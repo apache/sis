@@ -2,4 +2,7 @@ Apache SIS Change Log
 ======================
 Release 0.1-incubating (Current Development)
 
-1. SIS-1 Import LocalLucene (mattmann)
+
+* SIS-4 Add test data (pjaol)
+
+* SIS-1 Import LocalLucene (mattmann)
