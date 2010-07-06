@@ -2,6 +2,7 @@ Apache SIS Change Log
 ======================
 Release 0.1-incubating (Current Development)
 
+* SIS-6 Create DOAP file for projects.a.o (mattmann)
 
 * SIS-4 Add test data (pjaol)
 
