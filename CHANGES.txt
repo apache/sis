@@ -2,6 +2,10 @@ Apache SIS Change Log
 ======================
 Release 0.1-incubating (Current Development)
 
+* SIS-5 Website logo (mattmann)
+
+* SIS-2 Stand up SIS website (mattmann)
+
 * SIS-6 Create DOAP file for projects.a.o (mattmann)
 
 * SIS-4 Add test data (pjaol)
