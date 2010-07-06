@@ -89,6 +89,19 @@
       </roles>
     </developer>
     <developer>
+      <name>Patrick O'Leary</name>
+      <id>pjaol</id>
+      <email>pjaol@apache.org</email>
+      <url>http://people.apache.org/~pjaol/</url>
+      <organization>AT&amp;T Interactive</organization>
+      <organizationUrl>http://www.attinteractive.com/</organizationUrl>
+      <timezone>-8</timezone>
+      <properties />
+      <roles>
+        <role>committer</role>
+      </roles>
+    </developer>
+    <developer>
       <name>Paul Ramirez</name>
       <id>pramirez</id>
       <email>pramirez@apache.org</email>
@@ -114,27 +127,33 @@
         <role>committer</role>
       </roles>
     </developer>
-    <developer>
-      <name>Patrick O'Leary</name>
-      <id>pjaol</id>
-      <email>pjaol@apache.org</email>
-      <url>http://people.apache.org/~pjaol/</url>
-      <organization>AT&amp;T Interactive</organization>
-      <organizationUrl>http://www.attinteractive.com/</organizationUrl>
-      <timezone>-8</timezone>
-      <properties />
-      <roles>
-        <role>committer</role>
-      </roles>
-    </developer>
   </developers>
   <contributors>
+    <contributor>
+      <name>Greg Reddin</name>
+      <roles>
+        <role>mentor</role>
+      </roles>
+    </contributor>
     <contributor>
       <name>Ian Holsman</name>
       <roles>
         <role>mentor</role>
       </roles>
     </contributor>
+    <contributor>
+      <name>Joe Schaefer</name>
+      <roles>
+        <role>mentor</role>
+      </roles>        
+    </contributor>
+    <contributor>
+      <name>Kevan Miller</name>
+      <roles>
+        <role>mentor</role>
+      </roles>    
+    </contributor>
+
   </contributors>
 
   <dependencyManagement>
