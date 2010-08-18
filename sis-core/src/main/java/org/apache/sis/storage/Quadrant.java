@@ -15,15 +15,49 @@
  * limitations under the License.
  */
 
-package org.apache.sis.core;
+package org.apache.sis.storage;
 
 /**
- *  Useful constants describing the different intersection cases
- *  of SIS objects.
+ * Enum to represent the 4 quadrants of a quad tree node.
+ * 
  */
-public enum IntersectCase {
-  WITHIN,
-  CONTAINS,
-  OUTSIDE,
-  INTERSECTS;
+public enum Quadrant {
+
+  NW(0), NE(1), SW(2), SE(3);
+  private final int index;
+
+  private Quadrant(int index) {
+    this.index = index;
+  }
+
+  /**
+   * Returns the index of the quadrant.
+   * 
+   * @return index of the quadrant
+   */
+  public int index() {
+    return index;
+  }
+
+  /**
+   * Retrieves the quadrant matching specified index.
+   * 
+   * @param index
+   *          specified index
+   * @return quadrant matching specified index
+   */
+  public static Quadrant getQuadrant(int index) {
+    switch (index) {
+    case 0:
+      return NW;
+    case 1:
+      return NE;
+    case 2:
+      return SW;
+    case 3:
+      return SE;
+    default:
+      return null;
+    }
+  }
 }

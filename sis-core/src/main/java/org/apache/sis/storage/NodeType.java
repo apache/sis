@@ -15,37 +15,13 @@
  * limitations under the License.
  */
 
-package org.apache.sis.core;
-
-import java.util.ArrayList;
-import java.util.List;
+package org.apache.sis.storage;
 
 /**
- * @author pjaol
+ * Enum to represent node type of quad tree. Black means node contains data.
+ * White means node is empty. Gray means node is parent.
  * 
  */
-public class Shape {
-
-  protected List<Double> area = new ArrayList<Double>();
-  private String tierId;
-
-  public Shape(String tierId) {
-    this.tierId = tierId;
-  }
-
-  public void addBox(double boxId) {
-    area.add(boxId);
-  }
-
-  public List<Double> getArea() {
-    return area;
-  }
-
-  public String getTierId() {
-    return tierId;
-  }
-
-  public boolean isInside(double boxId) {
-    return area.contains(boxId);
-  }
+public enum NodeType {
+  BLACK, WHITE, GRAY
 }

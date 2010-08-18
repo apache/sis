@@ -17,6 +17,7 @@
 
 package org.apache.sis.util;
 
+//JDK imports
 import java.util.HashMap;
 import java.util.Map;
 
