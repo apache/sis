@@ -15,35 +15,47 @@
  * limitations under the License.
  */
 
-package org.apache.sis.core;
+package org.apache.sis.storage;
 
 /**
- * Common set of operations available on 2d shapes.
+ * Interface representing data stored in quad tree. All data to be stored in
+ * quad tree must implement this interface, so that quad tree can access
+ * location and store name of file in which data is saved.
  * 
  */
-public interface Geometry2D {
+public interface QuadTreeData {
   /**
-   * Translate according to the vector
+   * Returns the Java 2D x-coordinate for the longitude.
    * 
-   * @param v
+   * @return the Java 2D x-coordinate
    */
-  public void translate(Vector2D v);
+  public double getX();
 
   /**
-   * Does the shape contain the given point
+   * Returns the Java 2D y-coordinate for the latitude.
    * 
-   * @param p
+   * @return the Java 2D y-coordinate
    */
-  public boolean contains(Point2D p);
+  public double getY();
 
   /**
-   * Return the area
+   * Returns the latitude.
+   * 
+   * @return the latitude
    */
-  public double area();
+  public double getLat();
 
   /**
-   * Return the centroid
+   * Returns the longitude.
+   * 
+   * @return the longitude
    */
-  public Point2D centroid();
+  public double getLon();
 
+  /**
+   * Returns the name of the file where the entry's info is saved.
+   * 
+   * @return the name of the file where the entry's info is saved
+   */
+  public String getFileName();
 }

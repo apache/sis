@@ -47,6 +47,7 @@
   <modules>
     <module>sis-parent</module>
     <module>sis-core</module>
+    <module>sis-webapp</module>
   </modules>
 
   <build>
