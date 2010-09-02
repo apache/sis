@@ -127,6 +127,19 @@
         <role>committer</role>
       </roles>
     </developer>
+    <developer>
+      <name>Nga Chung</name>
+      <id>nchung</id>
+      <email>nchung@apache.org</email>
+      <url>http://people.apache.org/~nchung/</url>
+      <organization>NASA Jet Propulsion Laboratory</organization>
+      <organizationUrl>http://www.jpl.nasa.gov</organizationUrl>
+      <timezone>-8</timezone>
+      <properties />
+      <roles>
+        <role>committer</role>
+      </roles>
+    </developer>
   </developers>
   <contributors>
     <contributor>
