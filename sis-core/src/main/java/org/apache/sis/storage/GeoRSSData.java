@@ -20,6 +20,7 @@ package org.apache.sis.storage;
 //JDK imports
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -105,6 +106,7 @@ public class GeoRSSData implements QuadTreeData {
 	 */
 	public void saveToFile(Item item, GeoRSSModule geoRSSModule,
 			String directory) {
+	  if(!new File(directory).exists()) new File(directory).mkdirs();
 		try {
 			BufferedWriter writer = new BufferedWriter(new FileWriter(directory
 					+ filename));
