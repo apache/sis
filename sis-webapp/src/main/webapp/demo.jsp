@@ -89,7 +89,7 @@ body {
 		}
 
 		if (queryStr != "") {
-			getXMLDoc("/location?" + queryStr);
+			getXMLDoc("location?" + queryStr);
 		}
 	}
 
@@ -200,7 +200,7 @@ body {
 		if (req) {
 			globalMarker = marker;
 			req.onreadystatechange = displayMarker;
-			req.open("POST", "/location", true);
+			req.open("POST", "location", true);
 			req.setRequestHeader("Content-type","application/x-www-form-urlencoded");
 			req.send("filename=" + filename);
 		}
