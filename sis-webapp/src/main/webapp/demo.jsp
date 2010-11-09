@@ -283,7 +283,7 @@ body {
 <form method="get"
 	onsubmit="return validate()">
 
-<p><a href="http://incubator.apache.org/sis/"><image src="sis_logo_small.png" alt="Apache SIS: Spatial Information System" border="0"/></a></p>
+<p><a href="http://incubator.apache.org/sis/"><image src="images/sis_logo_small.png" alt="Apache SIS: Spatial Information System" border="0"/></a></p>
 <p><label><b>Query By&nbsp;</b></label> <select id="type"
 	onchange="switchType()" name="type">
 	<option value="bbox">Bounding Box</option>
