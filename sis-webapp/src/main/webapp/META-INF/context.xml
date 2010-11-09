@@ -18,6 +18,6 @@ the License.
 <Context path="/sis" docBase="/path/to/sis-webapp-x.y.war">
         
     <Parameter name="org.apache.sis.services.config.filePath" 
-        value="/path/to/sis-location-config.xml"/>
+        value="/path/to/sis-location-config.xml" override="false"/>
 
 </Context>
