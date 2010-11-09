@@ -37,12 +37,20 @@ public class QuadTreeWriter {
    * @param directory
    */
   public static void writeTreeToFile(QuadTree tree, String directory) {
+    createIdxDir(directory);
     writeTreeConfigsToFile(tree, directory);
     writeNodeToFile(tree.getRoot(), directory);
   }
 
+  private static void createIdxDir(String directory) {
+    File dir = new File(directory);
+    if (!dir.exists()) {
+      System.out.println("[INFO] Creating qtree idx dir: [" + directory + "]");
+      new File(directory).mkdirs();
+    }
+  }
+
   private static void writeTreeConfigsToFile(QuadTree tree, String directory) {
-    if(!new File(directory).exists()) new File(directory).mkdirs();
     try {
       BufferedWriter writer = new BufferedWriter(new FileWriter(directory
           + "tree_config.txt"));
