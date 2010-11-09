@@ -1,6 +1,9 @@
 Apache SIS Change Log
 ======================
-Release 0.1-incubating (Current Development)
+Release 0.1-incubating - 11/09/2010
+
+* SIS-24 Refactor sis.version into build process flowdown through Maven and 
+  rename to 0.1-incubating (mattmann)
 
 * SIS-23 Brand demo.jsp with ApacheSIS TM logo (mattmann)
 

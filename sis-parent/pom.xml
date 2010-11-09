@@ -30,7 +30,7 @@
  
   <groupId>org.apache.sis</groupId>
   <artifactId>sis-parent</artifactId>
-  <version>0.1-SNAPSHOT</version>
+  <version>0.1-incubating</version>
   <packaging>pom</packaging>
 
   <name>Apache SIS parent</name>
@@ -183,6 +183,7 @@
   <properties>
     <maven.compile.source>1.5</maven.compile.source>
     <maven.compile.target>1.5</maven.compile.target>
+    <sis.version>${project.version}</sis.version>
   </properties>
 
   <build>
