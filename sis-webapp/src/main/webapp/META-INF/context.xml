@@ -19,5 +19,11 @@ the License.
         
     <Parameter name="org.apache.sis.services.config.filePath" 
         value="/path/to/sis-location-config.xml" override="false"/>
+        
+    <Parameter name="org.apache.sis.services.config.qIndexPath"
+        value="/path/to/qtree/index/dir" override="false"/>
+        
+    <Parameter name="org.apache.sis.services.config.geodataPath"
+        value="/path/to/georss/xml/files/dir" override="false"/>
 
 </Context>
