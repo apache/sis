@@ -342,8 +342,8 @@ public class QuadTree {
       else {
         QuadTreeData[] data = node.getData();
         for (int i = 0; i < node.getCount(); i++) {
-          if (DistanceUtils.getHaversineDistance(data[i].getLat(), data[i]
-              .getLon(), point.getLat(), point.getLon()) <= radiusKM) {
+          if (DistanceUtils.getHaversineDistance(data[i].getLatLon().getLat(), data[i]
+              .getLatLon().getLon(), point.getLat(), point.getLon()) <= radiusKM) {
             matches.add(data[i]);
           }
         }

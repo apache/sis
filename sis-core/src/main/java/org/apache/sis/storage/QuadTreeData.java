@@ -17,6 +17,9 @@
 
 package org.apache.sis.storage;
 
+//SIS imports
+import org.apache.sis.core.LatLon;
+
 /**
  * Interface representing data stored in quad tree. All data to be stored in
  * quad tree must implement this interface, so that quad tree can access
@@ -39,18 +42,11 @@ public interface QuadTreeData {
   public double getY();
 
   /**
-   * Returns the latitude.
+   * Returns the latitude/longitude pair.
    * 
-   * @return the latitude
+   * @return the latitude/longitude pair.
    */
-  public double getLat();
-
-  /**
-   * Returns the longitude.
-   * 
-   * @return the longitude
-   */
-  public double getLon();
+  public LatLon getLatLon();
 
   /**
    * Returns the name of the file where the entry's info is saved.
