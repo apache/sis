@@ -2,6 +2,8 @@ Apache SIS Change Log
 ======================
 Release 0.1-incubating (Current Development)
 
+* SIS-12 Write basic SIS documentation for CLI and for WS layer (mattmann)
+
 * SIS-14 Use LatLon class instead of plain double points in QuadTreeData interface (greddin, mattmann)
 
 * SIS-15 Bake in Demo JSP page for initial release (mattmann, nchung)
