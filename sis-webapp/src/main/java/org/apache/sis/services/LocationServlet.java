@@ -174,7 +174,7 @@ public class LocationServlet extends HttpServlet {
                       + File.separator);
                 } else {
                   System.out.println("[INFO] Unable to store data at location "
-                      + data.getLat() + ", " + data.getLon()
+                      + data.getLatLon().getLat() + ", " + data.getLatLon().getLon()
                       + " under filename " + data.getFileName());
                 }
               }
@@ -371,12 +371,12 @@ public class LocationServlet extends HttpServlet {
         item.appendChild(id);
 
         Element lat = doc.createElement("lat");
-        Text latText = doc.createTextNode(Double.toString(geo.getLat()));
+        Text latText = doc.createTextNode(Double.toString(geo.getLatLon().getLat()));
         lat.appendChild(latText);
         item.appendChild(lat);
 
         Element lon = doc.createElement("lon");
-        Text lonText = doc.createTextNode(Double.toString(geo.getLon()));
+        Text lonText = doc.createTextNode(Double.toString(geo.getLatLon().getLon()));
         lon.appendChild(lonText);
         item.appendChild(lon);
 

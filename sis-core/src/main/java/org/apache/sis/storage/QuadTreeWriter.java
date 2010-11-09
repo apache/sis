@@ -125,9 +125,9 @@ public class QuadTreeWriter {
     str.append(':');
     QuadTreeData[] data = node.getData();
     for (int i = 0; i < node.getCount(); i++) {
-      str.append(data[i].getLat());
+      str.append(data[i].getLatLon().getLat());
       str.append(';');
-      str.append(data[i].getLon());
+      str.append(data[i].getLatLon().getLon());
       str.append(';');
       str.append(data[i].getFileName());
       str.append(':');

@@ -75,23 +75,14 @@ public class GeoRSSData implements QuadTreeData {
 		return latLon.getShiftedLat();
 	}
 
-	/**
-	 * Returns the latitude.
-	 * 
-	 * @return the latitude
-	 */
-	public double getLat() {
-		return this.latLon.getLat();
-	}
 
-	/**
-	 * Returns the longitude.
-	 * 
-	 * @return the longitude
-	 */
-	public double getLon() {
-		return this.latLon.getLon();
-	}
+  /* (non-Javadoc)
+   * @see org.apache.sis.storage.QuadTreeData#getLatLon()
+   */
+  @Override
+  public LatLon getLatLon() {
+    return this.latLon;
+  }
 
 	/**
 	 * Returns the name of the file where the entry's info is saved.
@@ -184,4 +175,5 @@ public class GeoRSSData implements QuadTreeData {
 		return map;
 
 	}
+	
 }
