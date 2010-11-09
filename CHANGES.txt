@@ -2,6 +2,8 @@ Apache SIS Change Log
 ======================
 Release 0.1-incubating (Current Development)
 
+* SIS-18 demo JSP has incorrect form get action set (mattmann)
+
 * SIS-17 Context params need override set to false (mattmann)
 
 * SIS-16 SIS location service is configured incorrectly (mattmann)

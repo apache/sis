@@ -280,7 +280,7 @@ body {
 </script>
 </head>
 <body onload="initialize()">
-<form method="get" action="quad-tree-demo.html"
+<form method="get"
 	onsubmit="return validate()">
 
 <p><label><b>Query By&nbsp;</b></label> <select id="type"
