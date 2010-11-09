@@ -2,6 +2,8 @@ Apache SIS Change Log
 ======================
 Release 0.1-incubating (Current Development)
 
+* SIS-23 Brand demo.jsp with ApacheSIS TM logo (mattmann)
+
 * SIS-22 Error obtaining geodata RSS causes Qtree index to not be written
 
 * SIS-21 Path to location service shouldn't include prefix slash (mattmann)
