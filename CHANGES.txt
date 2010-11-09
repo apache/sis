@@ -2,6 +2,8 @@ Apache SIS Change Log
 ======================
 Release 0.1-incubating (Current Development)
 
+* SIS-15 Bake in Demo JSP page for initial release (mattmann, nchung)
+
 * SIS-3 Refactor SIS (Nga Chung, mattmann)
 
 * SIS-7 Top level pom for SIS (mattmann)
