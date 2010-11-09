@@ -35,7 +35,15 @@ file (WAR) you can use to try out SISfeatures. You can run it on top of Apache T
     edit sis-location-config.xml (add or delete GeoRSS URLs)
     ln -s /usr/local/sis/sis.xml /usr/local/tomcat/conf/Catalina/localhost/sis.xml
     /usr/local/tomcat/bin/startup.sh
-    Visit http://localhost:8080/sis/ and checkout the demo!    
+    Visit http://localhost:8080/sis/demo.jsp and checkout the demo!    
+    Try some queries:
+    
+    Bounding Box:
+      0, 50, 50, 100
+      
+    Point Raidus:
+      0, 80, 400km
+      
 
 License (see also LICENSE.txt)
 ==============================

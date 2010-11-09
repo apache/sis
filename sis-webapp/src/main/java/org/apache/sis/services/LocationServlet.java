@@ -19,7 +19,6 @@ package org.apache.sis.services;
 
 //JDK imports
 import java.awt.geom.Rectangle2D;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -46,7 +45,13 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
+import org.xml.sax.SAXException;
 
+//SIS imports
 import org.apache.sis.core.LatLon;
 import org.apache.sis.core.LatLonRect;
 import org.apache.sis.distance.DistanceUtils;
@@ -55,26 +60,20 @@ import org.apache.sis.storage.QuadTree;
 import org.apache.sis.storage.QuadTreeData;
 import org.apache.sis.storage.QuadTreeReader;
 import org.apache.sis.storage.QuadTreeWriter;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
-import org.xml.sax.SAXException;
 
 //ROME imports
 import com.sun.syndication.feed.WireFeed;
 import com.sun.syndication.feed.module.georss.GeoRSSModule;
 import com.sun.syndication.feed.rss.Channel;
 import com.sun.syndication.feed.rss.Item;
-import com.sun.syndication.io.FeedException;
 import com.sun.syndication.io.WireFeedInput;
 import com.sun.syndication.io.XmlReader;
 
 /**
  * 
- * A location web service that loads data from GeoRSS format
- * (configured via a provided config.xml file), and then loads up 
- * a {@link QuadTree} with this information, making it queryable for callers.
+ * A location web service that loads data from GeoRSS format (configured via a
+ * provided config.xml file), and then loads up a {@link QuadTree} with this
+ * information, making it queryable for callers.
  * 
  */
 public class LocationServlet extends HttpServlet {
@@ -83,29 +82,36 @@ public class LocationServlet extends HttpServlet {
   private QuadTree tree;
   private ServletContext context;
   private String timeToLoad;
+  private String qtreeIdxPath;
+  private String georssStoragePath;
 
   @SuppressWarnings("unchecked")
   public void init(ServletConfig config) throws ServletException {
     this.context = config.getServletContext();
     long startTime = 0;
     long endTime = 0;
-    int capacity=-1, depth=-1;
-    String qtreeIdxPath = this.context.getInitParameter("org.apache.sis.services.config.qIndexPath");
-    String georssStoragePath = this.context.getInitParameter("org.apache.sis.services.config.geodataPath");
-    
-    if(!qtreeIdxPath.endsWith("/")) qtreeIdxPath+="/";
-    if(!georssStoragePath.endsWith("/")) georssStoragePath+="/";
-    
+    int capacity = -1, depth = -1;
+    this.qtreeIdxPath = this.context
+        .getInitParameter("org.apache.sis.services.config.qIndexPath");
+    this.georssStoragePath = this.context
+        .getInitParameter("org.apache.sis.services.config.geodataPath");
+
+    if (!this.qtreeIdxPath.endsWith("/"))
+      this.qtreeIdxPath += "/";
+    if (!this.georssStoragePath.endsWith("/"))
+      this.georssStoragePath += "/";
+
     InputStream indexStream = null;
     try {
-      indexStream = new FileInputStream(qtreeIdxPath+"node_0.txt");
+      indexStream = new FileInputStream(qtreeIdxPath + "node_0.txt");
     } catch (FileNotFoundException e) {
-      e.printStackTrace();      
+      System.out.println("[INFO] Existing qtree index at: ["+qtreeIdxPath+"] not found. Creating new index.");
     }
-    
+
     if (indexStream != null) {
       startTime = System.currentTimeMillis();
-      this.tree = QuadTreeReader.readFromFile(qtreeIdxPath, "tree_config.txt", "node_0.txt");
+      this.tree = QuadTreeReader.readFromFile(qtreeIdxPath, "tree_config.txt",
+          "node_0.txt");
       try {
         indexStream.close();
       } catch (IOException e) {
@@ -121,13 +127,13 @@ public class LocationServlet extends HttpServlet {
       WireFeedInput wf = new WireFeedInput(true);
       // read quad tree properties set in config xml file
       InputStream configStream = null;
-      try{
-        configStream = new FileInputStream(this.context.getInitParameter("org.apache.sis.services.config.filePath"));
-      }
-      catch(Exception e){
+      try {
+        configStream = new FileInputStream(this.context
+            .getInitParameter("org.apache.sis.services.config.filePath"));
+      } catch (Exception e) {
         e.printStackTrace();
       }
-      
+
       if (configStream != null) {
         DocumentBuilderFactory dbfac = DocumentBuilderFactory.newInstance();
         try {
@@ -150,8 +156,17 @@ public class LocationServlet extends HttpServlet {
           NodeList urlNodes = configDoc.getElementsByTagName("url");
           for (int i = 0; i < urlNodes.getLength(); i++) {
             // read in georss and build tree
-            WireFeed feed = wf.build(new XmlReader(new URL(urlNodes.item(i)
-                .getFirstChild().getNodeValue())));
+            String georssUrlStr = urlNodes.item(i).getFirstChild()
+                .getNodeValue();
+            WireFeed feed = null;
+            try {
+              feed = wf.build(new XmlReader(new URL(georssUrlStr)));
+            } catch (Exception e) {
+              System.out.println("[ERROR] Error obtaining geodata url: ["
+                  + georssUrlStr + "]: Message: "+e.getMessage()+": skipping and continuing");
+              continue;
+            }
+
             Channel c = (Channel) feed;
             List<Item> items = (List<Item>) c.getItems();
             for (Item item : items) {
@@ -176,12 +191,12 @@ public class LocationServlet extends HttpServlet {
                     geoRSSModule.getPosition().getLatitude(), geoRSSModule
                         .getPosition().getLongitude()));
                 if (this.tree.insert(data)) {
-                  data.saveToFile(item, geoRSSModule,
-                      georssStoragePath);
+                  data.saveToFile(item, geoRSSModule, georssStoragePath);
                 } else {
                   System.out.println("[INFO] Unable to store data at location "
-                      + data.getLatLon().getLat() + ", " + data.getLatLon().getLon()
-                      + " under filename " + data.getFileName());
+                      + data.getLatLon().getLat() + ", "
+                      + data.getLatLon().getLon() + " under filename "
+                      + data.getFileName());
                 }
               }
             }
@@ -203,12 +218,10 @@ public class LocationServlet extends HttpServlet {
         } catch (IllegalArgumentException e) {
           // TODO Auto-generated catch block
           e.printStackTrace();
-        } catch (FeedException e) {
-          // TODO Auto-generated catch block
-          e.printStackTrace();
         }
       } else {
-        throw new ServletException("Unable to read location service XML config: null!");
+        throw new ServletException(
+            "Unable to read location service XML config: null!");
       }
     }
   }
@@ -314,9 +327,8 @@ public class LocationServlet extends HttpServlet {
 
     if (filename != null) {
 
-      HashMap<String, String> map = GeoRSSData.loadFromFile(this.context
-          .getRealPath("/")
-          + "geodata" + File.separator + filename);
+      HashMap<String, String> map = GeoRSSData
+          .loadFromFile(this.georssStoragePath + filename);
       String html = "";
 
       if (map.get("title") != null && !map.get("title").equals("null")) {
@@ -375,12 +387,14 @@ public class LocationServlet extends HttpServlet {
         item.appendChild(id);
 
         Element lat = doc.createElement("lat");
-        Text latText = doc.createTextNode(Double.toString(geo.getLatLon().getLat()));
+        Text latText = doc.createTextNode(Double.toString(geo.getLatLon()
+            .getLat()));
         lat.appendChild(latText);
         item.appendChild(lat);
 
         Element lon = doc.createElement("lon");
-        Text lonText = doc.createTextNode(Double.toString(geo.getLatLon().getLon()));
+        Text lonText = doc.createTextNode(Double.toString(geo.getLatLon()
+            .getLon()));
         lon.appendChild(lonText);
         item.appendChild(lon);
 
