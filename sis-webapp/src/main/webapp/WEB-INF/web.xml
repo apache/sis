@@ -18,14 +18,6 @@ the License.
 <web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" id="WebApp_ID" version="2.5">
   <display-name>Apache SIS</display-name>
   <context-param>
-    <param-name>org.apache.sis.services.qtree.capacity</param-name>
-    <param-value>4</param-value>
-  </context-param>
-  <context-param>
-    <param-name>org.apache.sis.services.qtree.depth</param-name>
-    <param-value>10</param-value>
-  </context-param>
-  <context-param>
     <param-name>org.apache.sis.services.config.filePath</param-name>
     <param-value>/path/to/sis-location-config.xml</param-value>
   </context-param>
