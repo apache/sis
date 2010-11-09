@@ -30,7 +30,7 @@
  
   <groupId>org.apache.sis</groupId>
   <artifactId>sis-parent</artifactId>
-  <version>0.1-incubating-SNAPSHOT</version>
+  <version>0.1-incubating</version>
   <packaging>pom</packaging>
 
   <name>Apache SIS parent</name>
@@ -54,7 +54,7 @@
       <unsubscribe>sis-dev-unsubscribe@incubator.apache.org</unsubscribe>
       <post>sis-dev@incubator.apache.org</post>
       <archive>http://mail-archives.apache.org/mod_mbox/incubator-sis-dev/</archive>
-      <otherArchives/>
+      <otherArchives />
     </mailingList>
     <mailingList>
       <name>Commit mailing list</name>
@@ -62,7 +62,7 @@
       <unsubscribe>sis-commits-unsubscribe@incubator.apache.org</unsubscribe>
       <post>sis-commits@incubator.apache.org</post>
       <archive>http://mail-archives.apache.org/mod_mbox/incubator-sis-commits/</archive>
-      <otherArchives/>
+      <otherArchives />
     </mailingList>
     <mailingList>
       <name>User mailing list</name>
@@ -70,7 +70,7 @@
       <unsubscribe>sis-user-unsubscribe@incubator.apache.org</unsubscribe>
       <post>sis-user@incubator.apache.org</post>
       <archive>http://mail-archives.apache.org/mod_mbox/incubator-sis-user/</archive>
-      <otherArchives/>
+      <otherArchives />
     </mailingList>
   </mailingLists>
 
@@ -201,7 +201,7 @@
   <profiles>
     <profile>
       <id>apache-release</id>
-      <build/>
+      <build />
     </profile>
   </profiles>
 
@@ -266,4 +266,10 @@
 
     </plugins>
   </reporting>
+
+  <scm>
+    <connection>scm:svn:http://svn.apache.org/repos/asf/maven/pom/tags/sis-0.1-incubating</connection>
+    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/maven/pom/tags/sis-0.1-incubating</developerConnection>
+    <url>http://svn.apache.org/viewvc/maven/pom/tags/sis-0.1-incubating</url>
+  </scm>
 </project>
