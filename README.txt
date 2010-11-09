@@ -28,7 +28,9 @@ file (WAR) you can use to try out SISfeatures. You can run it on top of Apache T
     cp -R /path/to/apache-sis-X.Y-src/sis-webapp/target/sis-webapp-X.Y.war ./
     cp -R /path/to/apache-sis-X.Y-src/sis-webapp/src/main/webapp/META-INF/context.xml ./sis.xml
     edit sis.xml (set the docBase to /usr/local/sis/sis-webapp-X.Y.war and the property 
-          org.apache.sis.services.config.filePath to /usr/local/sis/sis-location-config.xml)
+          org.apache.sis.services.config.filePath to /usr/local/sis/sis-location-config.xml, 
+          org.apache.sis.services.config.qIndexPath to /usr/local/sis/qtree, 
+          org.apache.sis.services.config.geodataPath to /usr/local/sis/geodata)
     cp -R /path/to/apache-sis-X.Y-src/sis-webapp/src/main/resources/sis-location-config.xml ./
     edit sis-location-config.xml (add or delete GeoRSS URLs)
     ln -s /usr/local/sis/sis.xml /usr/local/tomcat/conf/Catalina/localhost/sis.xml

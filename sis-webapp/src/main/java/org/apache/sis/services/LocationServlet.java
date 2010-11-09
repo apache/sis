@@ -21,6 +21,7 @@ package org.apache.sis.services;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -89,13 +90,22 @@ public class LocationServlet extends HttpServlet {
     long startTime = 0;
     long endTime = 0;
     int capacity=-1, depth=-1;
-    InputStream indexStream = config.getServletContext().getResourceAsStream(
-        File.separator + "index" + File.separator + "node_0.txt");
+    String qtreeIdxPath = this.context.getInitParameter("org.apache.sis.services.config.qIndexPath");
+    String georssStoragePath = this.context.getInitParameter("org.apache.sis.services.config.geodataPath");
+    
+    if(!qtreeIdxPath.endsWith("/")) qtreeIdxPath+="/";
+    if(!georssStoragePath.endsWith("/")) georssStoragePath+="/";
+    
+    InputStream indexStream = null;
+    try {
+      indexStream = new FileInputStream(qtreeIdxPath+"node_0.txt");
+    } catch (FileNotFoundException e) {
+      e.printStackTrace();      
+    }
+    
     if (indexStream != null) {
       startTime = System.currentTimeMillis();
-      this.tree = QuadTreeReader.readFromFile(config.getServletContext()
-          .getRealPath("/")
-          + "index" + File.separator, "tree_config.txt", "node_0.txt");
+      this.tree = QuadTreeReader.readFromFile(qtreeIdxPath, "tree_config.txt", "node_0.txt");
       try {
         indexStream.close();
       } catch (IOException e) {
@@ -167,9 +177,7 @@ public class LocationServlet extends HttpServlet {
                         .getPosition().getLongitude()));
                 if (this.tree.insert(data)) {
                   data.saveToFile(item, geoRSSModule,
-
-                  config.getServletContext().getRealPath("/") + "geodata"
-                      + File.separator);
+                      georssStoragePath);
                 } else {
                   System.out.println("[INFO] Unable to store data at location "
                       + data.getLatLon().getLat() + ", " + data.getLatLon().getLon()
@@ -182,9 +190,7 @@ public class LocationServlet extends HttpServlet {
           endTime = System.currentTimeMillis();
           this.timeToLoad = "Quad Tree fully loaded from retrieving GeoRSS files over the network in "
               + Double.toString((endTime - startTime) / 1000L) + " seconds";
-          QuadTreeWriter.writeTreeToFile(tree, config.getServletContext()
-              .getRealPath("/")
-              + "index" + File.separator);
+          QuadTreeWriter.writeTreeToFile(tree, qtreeIdxPath);
         } catch (ParserConfigurationException e) {
           // TODO Auto-generated catch block
           e.printStackTrace();

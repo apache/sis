@@ -2,6 +2,9 @@ Apache SIS Change Log
 ======================
 Release 0.1-incubating (Current Development)
 
+* SIS-20 Make the qTreeIdxPath and geodata paths configurable 
+  properties (mattmann)
+
 * SIS-19 QTreeWriter and GeoRSSData.save don't check to make sure 
   the directory exists before creating data there (mattmann)
 
