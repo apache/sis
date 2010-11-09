@@ -34,6 +34,26 @@
   <name>Apache SIS web services layer</name>
   <url>http://incubator.apache.org/sis/</url>
 
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-war-plugin</artifactId>
+        <version>2.1.1</version>
+        <configuration>
+          <webResources>
+            <resource>
+              <!-- this is relative to the pom.xml directory -->
+              <directory>${basedir}/../../site/src/site/resources</directory>
+              <includes>
+                <include>**/*.png</include>
+              </includes>
+            </resource>
+          </webResources>
+        </configuration>
+      </plugin>    
+    </plugins>  
+  </build>
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
