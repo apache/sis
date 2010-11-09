@@ -84,12 +84,11 @@ public class LocationServlet extends HttpServlet {
   private String timeToLoad;
 
   @SuppressWarnings("unchecked")
-  public void init(ServletConfig config) {
-    int capacity = Integer.valueOf(config.getInitParameter("org.apache.sis.services.qtree.capacity"));
-    int depth = Integer.valueOf(config.getInitParameter("org.apache.sis.services.qtree.depth"));
+  public void init(ServletConfig config) throws ServletException {
     this.context = config.getServletContext();
     long startTime = 0;
     long endTime = 0;
+    int capacity=-1, depth=-1;
     InputStream indexStream = config.getServletContext().getResourceAsStream(
         File.separator + "index" + File.separator + "node_0.txt");
     if (indexStream != null) {
@@ -113,14 +112,13 @@ public class LocationServlet extends HttpServlet {
       // read quad tree properties set in config xml file
       InputStream configStream = null;
       try{
-        configStream = new FileInputStream(config.getInitParameter("org.apache.sis.services.config.filePath"));
+        configStream = new FileInputStream(this.context.getInitParameter("org.apache.sis.services.config.filePath"));
       }
       catch(Exception e){
         e.printStackTrace();
       }
       
       if (configStream != null) {
-
         DocumentBuilderFactory dbfac = DocumentBuilderFactory.newInstance();
         try {
           DocumentBuilder docBuilder = dbfac.newDocumentBuilder();
@@ -204,7 +202,7 @@ public class LocationServlet extends HttpServlet {
           e.printStackTrace();
         }
       } else {
-        this.tree = new QuadTree(capacity, depth);
+        throw new ServletException("Unable to read location service XML config: null!");
       }
     }
   }

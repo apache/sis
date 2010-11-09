@@ -16,12 +16,6 @@ License for the specific language governing permissions and limitations under
 the License.
 -->
 <Context path="/sis" docBase="/path/to/sis-webapp-x.y.war">
-
-    <Parameter name="org.apache.sis.services.qtree.capacity"
-        value="4"/>
-
-    <Parameter name="org.apache.sis.services.qtree.depth"
-        value="10"/>
         
     <Parameter name="org.apache.sis.services.config.filePath" 
         value="/path/to/sis-location-config.xml"/>
