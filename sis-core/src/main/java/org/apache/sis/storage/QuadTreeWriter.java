@@ -19,6 +19,7 @@ package org.apache.sis.storage;
 
 //JDK imports
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
@@ -41,6 +42,7 @@ public class QuadTreeWriter {
   }
 
   private static void writeTreeConfigsToFile(QuadTree tree, String directory) {
+    if(!new File(directory).exists()) new File(directory).mkdirs();
     try {
       BufferedWriter writer = new BufferedWriter(new FileWriter(directory
           + "tree_config.txt"));
