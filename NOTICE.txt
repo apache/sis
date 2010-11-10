@@ -4,6 +4,9 @@ Copyright 2010 The Apache Software Foundation
 This product includes software developed at
 The Apache Software Foundation (http://www.apache.org/).
 
+This product includes the ROME and Georss-ROME libaries, 
+which are both released under the ASLv2 license.
+
 This product includes JDOM 1.0 as a transitive dependency 
 of the ROME and Georss-ROME libraries:
 
