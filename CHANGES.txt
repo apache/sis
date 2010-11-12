@@ -7,7 +7,7 @@ Release 0.1-incubating - 11/09/2010
 
 * SIS-23 Brand demo.jsp with ApacheSIS TM logo (mattmann)
 
-* SIS-22 Error obtaining geodata RSS causes Qtree index to not be written
+* SIS-22 Error obtaining geodata RSS causes Qtree index to not be written (mattmann)
 
 * SIS-21 Path to location service shouldn't include prefix slash (mattmann)
 
