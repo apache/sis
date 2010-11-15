@@ -1,6 +1,8 @@
 Apache SIS Change Log
 ======================
 
+Release 0.2-incubating - Current Development
+
 * SIS-25 Location servlet doesn't return correct coordinates for point-radius query region (nchung)
 
 Release 0.1-incubating - 11/09/2010
