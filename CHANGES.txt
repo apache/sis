@@ -1,5 +1,8 @@
 Apache SIS Change Log
 ======================
+
+* SIS-25 Location servlet doesn't return correct coordinates for point-radius query region (nchung)
+
 Release 0.1-incubating - 11/09/2010
 
 * SIS-24 Refactor sis.version into build process flowdown through Maven and 
