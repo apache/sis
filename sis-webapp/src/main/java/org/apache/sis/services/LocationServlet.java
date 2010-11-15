@@ -293,8 +293,6 @@ public class LocationServlet extends HttpServlet {
         double radiusKM = Double.parseDouble(radius);
 
         String regionStr = "";
-        regionStr = "-90.0,-180.0, 90.0, -180.0, 90.0, 180.0, -90.0, 180.0, -90.0,-180.0";
-        regions.add(regionStr);
 
         for (int i = 0; i < 360; i += 10) {
           LatLon pt = DistanceUtils.getPointOnGreatCircle(point.getLat(), point
