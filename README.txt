@@ -27,6 +27,9 @@ build system. To build SIS, use the following command in this directory:
 
     mvn clean install
 
+
+Tomcat Server (See much simpler Jetty integration below)
+===============
 The build consists of a number of components, including a web-based application
 file (WAR) you can use to try out SISfeatures. You can run it on top of Apache Tomcat like this:
 
@@ -51,7 +54,24 @@ file (WAR) you can use to try out SISfeatures. You can run it on top of Apache T
       
     Point Raidus:
       0, 80, 400km
+   
+Jetty Server
+===============
+Jetty is now supported too (as of 02/11/2012). Simply build the project at the root level
+
+	mvn clean install 
+
+Then browse to the sis-webapp directory. To run the built-in Jetty server, type the command:
+
+	mvn jetty:run
+	
+Visit http://localhost:8080/sis-webapp/demp.jsp and run the same queries as noted above.
+
+    Bounding Box:
+      0, 50, 50, 100
       
+    Point Raidus:
+      0, 80, 400km
 
 License (see also LICENSE.txt)
 ==============================
