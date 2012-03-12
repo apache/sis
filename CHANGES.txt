@@ -1,7 +1,10 @@
 Apache SIS Change Log
 ======================
 
-Release 0.2-incubating - Current Development
+Release 0.3-incubating - Current Development
+
+
+Release 0.2-incubating - 03/08/2012
 
 * SIS-30 Added Jetty Server to sis-webapp/pom.xml. To run, cd to sis-webapp/ and run [mvn jetty:run]
   (aestrada)
