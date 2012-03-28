@@ -34,7 +34,9 @@ public class QuadTreeWriter {
    * separate file.
    * 
    * @param tree
+   *          the quad tree
    * @param directory
+   *          the directory where the index file is located
    */
   public static void writeTreeToFile(QuadTree tree, String directory) {
     createIdxDir(directory);
@@ -42,6 +44,12 @@ public class QuadTreeWriter {
     writeNodeToFile(tree.getRoot(), directory);
   }
 
+  /**
+   * Creating quad tree index file.
+   * 
+   * @param directory
+   *          the directory where the index file is located
+   */
   private static void createIdxDir(String directory) {
     File dir = new File(directory);
     if (!dir.exists()) {
@@ -50,6 +58,14 @@ public class QuadTreeWriter {
     }
   }
 
+  /**
+   * Write quad tree configerations to file.
+   * 
+   * @param tree
+   *          the quad tree
+   * @param directory
+   *          the directory where the configerations file is located
+   */
   private static void writeTreeConfigsToFile(QuadTree tree, String directory) {
     try {
       BufferedWriter writer = new BufferedWriter(new FileWriter(directory
@@ -59,11 +75,18 @@ public class QuadTreeWriter {
       writer.newLine();
       writer.close();
     } catch (IOException e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     }
   }
 
+  /**
+   * Write quad tree node to index file.
+   * 
+   * @param node
+   *          the quad tree node
+   * @param directory
+   *          the directory where the index file is located
+   */
   private static void writeNodeToFile(QuadTreeNode node, String directory) {
     try {
       BufferedWriter writer = new BufferedWriter(new FileWriter(directory
@@ -96,7 +119,6 @@ public class QuadTreeWriter {
       }
       writer.close();
     } catch (IOException e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     }
     if (node.getNodeType() == NodeType.GRAY) {
@@ -122,6 +144,15 @@ public class QuadTreeWriter {
     }
   }
 
+  /**
+   * Get the quad tree data string
+   * 
+   * @param quadrant
+   *          specified quadrant
+   * @param node
+   *          the quad tree node
+   * @return quad tree data string
+   */
   private static String getQuadTreeDataString(Quadrant quadrant,
       final QuadTreeNode node) {
     StringBuffer str = new StringBuffer();
