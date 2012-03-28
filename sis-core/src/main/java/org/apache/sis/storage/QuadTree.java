@@ -330,6 +330,22 @@ public class QuadTree {
             EARTH_MAX_Y), pr.getRectangularRegionApproximation(360));
   }
 
+  /**
+   * Performs point radius search.
+   * 
+   * @param point
+   *          the center of the circular region
+   * @param radiusKM
+   *          the radius in kilometers
+   * @param node
+   *          quad tree root node
+   * @param nodeRegion
+   *          Rectangle2D representing the circular node region
+   * @param searchRegion
+   *          Rectangle2D representing the circular search region
+   * @return a list of QuadTreeData that are within the given radius from the
+   *         point
+   */
   private List<QuadTreeData> queryByPointRadius(final LatLon point,
       final double radiusKM, final QuadTreeNode node,
       final Rectangle2D nodeRegion, final Rectangle2D searchRegion) {
@@ -428,11 +444,31 @@ public class QuadTree {
     }
   }
 
+  /**
+   * Performs bounding box search.
+   * 
+   * @param searchRegion
+   *          Rectangle2D representing the rectangular search region
+   * @return a list of QuadTreeData that are within the given radius from the
+   *         point
+   */
   private List<QuadTreeData> queryByBoundingBox(final Rectangle2D searchRegion) {
     return queryByBoundingBox(this.root, new Rectangle2D.Double(EARTH_MIN_X,
         EARTH_MIN_Y, EARTH_MAX_X, EARTH_MAX_Y), searchRegion);
   }
 
+  /**
+   * Performs bounding box search.
+   * 
+   * @param node
+   *          quad tree root node
+   * @param nodeRegion
+   *          Rectangle2D representing the rectangular node region
+   * @param searchRegion
+   *          Rectangle2D representing the rectangular search region
+   * @return a list of QuadTreeData that are within the given radius from the
+   *         point
+   */
   private List<QuadTreeData> queryByBoundingBox(final QuadTreeNode node,
       final Rectangle2D nodeRegion, final Rectangle2D searchRegion) {
 
@@ -499,42 +535,92 @@ public class QuadTree {
     return matches;
   }
 
+  /**
+   * Returns the size of the quad tree.
+   * 
+   * @return size of the quad tree.
+   */
   public int size() {
     return this.size;
   }
 
+  /**
+   * Returns the root node of the quad tree.
+   * 
+   * @return root node of the quad tree.
+   */
   public QuadTreeNode getRoot() {
     return this.root;
   }
 
+  /**
+   * Sets the size of the quad tree.
+   * 
+   * @param size
+   */
   public void setSize(int size) {
     this.size = size;
   }
 
+  /**
+   * Returns the size of the quad tree.
+   * 
+   * @return size of quad tree
+   */
   public int getSize() {
     return this.size;
   }
 
+  /**
+   * Sets the node size of the quad tree.
+   * 
+   * @param nodeSize
+   */
   public void setNodeSize(int nodeSize) {
     this.nodeSize = nodeSize;
   }
 
+  /**
+   * Returns the node size of the quad tree.
+   * 
+   * @return node size of the quad tree.
+   */
   public int getNodeSize() {
     return this.nodeSize;
   }
 
+  /**
+   * Returns the capacity of node in the quad tree.
+   * 
+   * @return capacity of node in the quad tree.
+   */
   public int getCapacity() {
     return this.capacity;
   }
 
+  /**
+   * Returns the maximum depth of the quad tree.
+   * 
+   * @return maximum depth of the quad tree.
+   */
   public int getDepth() {
     return this.maxDepth;
   }
 
+  /**
+   * Sets the capacity of node in the quad tree.
+   * 
+   * @param capacity
+   */
   public void setCapacity(int capacity) {
     this.capacity = capacity;
   }
 
+  /**
+   * Sets the maximum depth of the quad tree.
+   * 
+   * @param depth
+   */
   public void setDepth(int depth) {
     this.maxDepth = depth;
   }

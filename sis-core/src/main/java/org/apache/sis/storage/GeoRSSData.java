@@ -139,7 +139,6 @@ public class GeoRSSData implements QuadTreeData {
 			writer.write("lon;" + geoRSSModule.getPosition().getLongitude());
 			writer.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -168,10 +167,8 @@ public class GeoRSSData implements QuadTreeData {
 			}
 			reader.close();
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return map;

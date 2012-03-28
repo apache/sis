@@ -51,6 +51,16 @@ public class QuadTreeReader {
     return tree;
   }
 
+  /**
+   * Read the quad tree configuration from file.
+   * 
+   *  @param tree
+   *           the quad tree
+   *  @param directory
+   *           the directory where the configuration file is located
+   *  @param treeConfigFile
+   *           the name of the tree configuration file
+   */
   private static void readConfigFromFile(QuadTree tree, String directory,
       String treeConfigFile) {
     try {
@@ -65,17 +75,26 @@ public class QuadTreeReader {
         tree.setDepth(depth);
       }
     } catch (FileNotFoundException e1) {
-      // TODO Auto-generated catch block
       e1.printStackTrace();
     } catch (NumberFormatException e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     } catch (IOException e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     }
   }
 
+  /**
+   * Read the quad tree index from file.
+   * 
+   * @param tree
+   *          the quad tree 
+   * @param parent
+   *          the quad tree parent node 
+   * @param directory
+   *          the directory where the index files are located
+   * @param filename
+   *          the name of the parent node file
+   */
   private static void readFromFile(final QuadTree tree,
       final QuadTreeNode parent, final String directory, final String filename) {
     try {
@@ -133,13 +152,10 @@ public class QuadTreeReader {
       }
 
     } catch (FileNotFoundException e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     } catch (NumberFormatException e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     } catch (IOException e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     }
   }
