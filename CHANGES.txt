@@ -3,6 +3,8 @@ Apache SIS Change Log
 
 Release 0.3-incubating - Current Development
 
+* SIS-41 Improve the demo.jsp CSS (Charitha Madusanka via mattmann)
+
 * SIS-40 Add the missing documentation comments for SIS 
   WS layer (Charitha Madusanka via mattmann)
 
