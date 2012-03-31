@@ -85,6 +85,15 @@ public class LocationServlet extends HttpServlet {
   private String qtreeIdxPath;
   private String georssStoragePath;
 
+  /**
+   * Read GeoRSS data (location information provide sis-location-config.xml )
+   * and build quad-tree.
+   * 
+   * @param config
+   *          Servlet configuration file
+   * @exception ServletException
+   *              General exception for servlet
+   */
   @SuppressWarnings("unchecked")
   public void init(ServletConfig config) throws ServletException {
     this.context = config.getServletContext();
@@ -115,7 +124,6 @@ public class LocationServlet extends HttpServlet {
       try {
         indexStream.close();
       } catch (IOException e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
       }
       endTime = System.currentTimeMillis();
@@ -207,16 +215,12 @@ public class LocationServlet extends HttpServlet {
               + Double.toString((endTime - startTime) / 1000L) + " seconds";
           QuadTreeWriter.writeTreeToFile(tree, qtreeIdxPath);
         } catch (ParserConfigurationException e) {
-          // TODO Auto-generated catch block
           e.printStackTrace();
         } catch (SAXException e) {
-          // TODO Auto-generated catch block
           e.printStackTrace();
         } catch (IOException e) {
-          // TODO Auto-generated catch block
           e.printStackTrace();
         } catch (IllegalArgumentException e) {
-          // TODO Auto-generated catch block
           e.printStackTrace();
         }
       } else {
@@ -226,6 +230,19 @@ public class LocationServlet extends HttpServlet {
     }
   }
 
+  /**
+   * Provide GET requests for Bounding-box and Point-radius search queries.
+   * Return search results to client in xml format.
+   * 
+   * @param request
+   *          Http Servlet Request
+   * @param response
+   *          Http Servlet Response
+   * @exception ServletException
+   *              General exception for servlet
+   * @exception IOException
+   *              General exception for I/O
+   */
   public void doGet(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, IOException {
 
@@ -316,6 +333,18 @@ public class LocationServlet extends HttpServlet {
     out.close();
   }
 
+  /**
+   * Provide Post requests for build GeoRSS data html file.
+   * 
+   * @param request
+   *          Http Servlet Request
+   * @param response
+   *          Http Servlet Response
+   * @exception ServletException
+   *              General exception for servlet
+   * @exception IOException
+   *              General exception for I/O
+   */
   public void doPost(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, IOException {
     response.setContentType("text/html");
@@ -432,20 +461,23 @@ public class LocationServlet extends HttpServlet {
         trans.transform(source, result);
         return sw.toString();
       } catch (TransformerConfigurationException e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
       } catch (TransformerException e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
       }
     } catch (ParserConfigurationException e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     }
     return null;
 
   }
 
+  /**
+   * Replace all non-alphanumeric characters with empty strings.
+   * 
+   * @param id
+   * @return String without any non-alphanumeric characters
+   */
   private static String cleanStr(String id) {
     String cleanedID = id;
     return cleanedID.replaceAll("[^a-zA-Z0-9]", "");
