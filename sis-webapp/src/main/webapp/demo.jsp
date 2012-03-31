@@ -23,7 +23,7 @@ API</title>
 <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
 <style type="text/css">
 html {
-	height: 100%
+	height: 80%
 }
 
 body {
@@ -33,7 +33,7 @@ body {
 }
 
 #map_canvas {
-	height: 85%;
+	height: 80%;
 	width: 50%;
 	font-size: 10px;
 }
@@ -41,6 +41,12 @@ body {
 #result {
 	font-color: #808080;
 	font-size: 10px;
+}
+
+.center {
+	margin-left: auto;
+	margin-right: auto;
+	width: 50%;
 }
 </style>
 <script type="text/javascript"
@@ -280,11 +286,11 @@ body {
 </script>
 </head>
 <body onload="initialize()">
+<div class="center" ><a href="http://incubator.apache.org/sis/"><image src="images/sis_logo_small.png" alt="Apache SIS: Spatial Information System" border="0"/></a></div>
 <form method="get"
-	onsubmit="return validate()">
+	onsubmit="return validate()" class="center">
 
-<p><a href="http://incubator.apache.org/sis/"><image src="images/sis_logo_small.png" alt="Apache SIS: Spatial Information System" border="0"/></a></p>
-<p><label><b>Query By&nbsp;</b></label> <select id="type"
+<label><b>Query By&nbsp;</b></label> <select id="type"
 	onchange="switchType()" name="type">
 	<option value="bbox">Bounding Box</option>
 	<option value="pointradius">Point-Radius</option>
@@ -321,7 +327,7 @@ body {
 </span>
 <p><input type="submit" value="Query" /></p>
 </form>
-<p id="result"></p>
-<div id="map_canvas"></div>
+<p id="result" class="center"></p>
+<div id="map_canvas" class="center"></div>
 </body>
 </html>
