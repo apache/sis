@@ -17,10 +17,14 @@
  -->
 <html>
 <head>
-<title>Apache SIS Spatial Query Demo with Quad Tree Storage and Google Maps
+<title>Apache SIS Spatial Query Demo with Quad Tree Storage and Leaflet Maps
 API</title>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+<link rel="stylesheet" href="http://leaflet.cloudmade.com/dist/leaflet.css" />
+<!--[if lte IE 8]>
+<link rel="stylesheet" href="http://leaflet.cloudmade.com/dist/leaflet.ie.css" />
+<![endif]-->
 <style type="text/css">
 html {
 	height: 80%
@@ -48,24 +52,25 @@ body {
 	margin-right: auto;
 	width: 50%;
 }
+.leaflet-popup-content {
+	height:200px;
+	width:200px;
+	overflow:auto;
+}
 </style>
 <script type="text/javascript"
-	src="http://maps.google.com/maps/api/js?sensor=true"></script>
+	src="http://leaflet.cloudmade.com/dist/leaflet.js"></script>
 
 <script type="text/javascript">
 	var map;
-	var infoWindow;
 	var req;
 	
 	function initialize() {
-		var myLatlng = new google.maps.LatLng(0, 0);
-		var myOptions = {
-			zoom : 1,
-			center : myLatlng,
-			mapTypeId : google.maps.MapTypeId.ROADMAP
-		}
-		map = new google.maps.Map(document.getElementById("map_canvas"),
-				myOptions);
+		map = new L.Map('map_canvas', {scrollWheelZoom:false});
+		var tileURL = 'http://{s}.mqcdn.com/tiles/1.0.0/osm/{z}/{x}/{y}.png';
+		var tileAttribution = 'Basemap <a href="http://creativecommons.org/licenses/by-sa/2.0/" target="_blank">CC-BY-SA</a> by &copy; <a href="http://openstreetmap.org/" target="_blank">OpenStreetMap</a>, Tiles Courtesy of &copy; <a href="http://open.mapquest.com" target="_blank">MapQuest</a>';
+		var tileLayer = new L.TileLayer(tileURL, {minZoom: 1, attribution: tileAttribution, subdomains: ['otile1','otile2','otile3','otile4']});
+		map.setView(new L.LatLng(0, 0), 1).addLayer(tileLayer);
 
 		//get the query string
 		var queryStr = window.location.search.substring(1);
@@ -144,7 +149,7 @@ body {
 				document.getElementById("result").innerHTML = ids.length + " results (" + ( parseInt(time[0].firstChild.nodeValue)  / 1000 ) + " seconds)";
 				
 				for ( var i = 0; i < ids.length; i++) {
-					var latLon = new google.maps.LatLng(
+					var latLon = new L.LatLng(
 							parseFloat(lats[i].firstChild.nodeValue),
 							parseFloat(lons[i].firstChild.nodeValue));
 
@@ -162,20 +167,11 @@ body {
 						var lon = latLonPairs[k+1];
 						if (lon == 180.0)
 							lon = 179.99;
-						var point = new google.maps.LatLng(latLonPairs[k], lon);
+						var point = new L.LatLng(latLonPairs[k], lon);
 						regionCoordinates.push(point);
 					}
-					var regionPath = new google.maps.Polygon({
-						    paths: regionCoordinates,
-						    strokeColor: "#FF0000",
-						    strokeOpacity: 0.8,
-						    strokeWeight: 2,
-						    fillColor: "#FF0000",
-						    fillOpacity: 0.0
-						  });
-
-					regionPath.setMap(map);
-					
+					var polygon = new L.Polygon(regionCoordinates, {weight:2, opacity:0.8, clickable:false});
+					map.addLayer(polygon);
 				}
 			} else {
 				alert("Error retrieving results from server: " + req.statusText);
@@ -213,11 +209,9 @@ body {
 	}
 	
 	function createMarker(latLon, filename) {
-		var marker = new google.maps.Marker( {
-			position : latLon,
-			map : map
-		});
-		google.maps.event.addListener(marker, "click", function(event)
+		var marker = new L.Marker(latLon);
+		map.addLayer(marker);
+		marker.on('click', function(event) 
 		{
 			getHTMLDescription(filename, marker);
 		});
@@ -229,13 +223,7 @@ body {
 		if (req.readyState == 4) {
 			if (req.status == 200) {
 				var text = req.responseText;
-				if (infoWindow != null)
-					infoWindow.close();
-				infoWindow = new google.maps.InfoWindow( {
-					content : text,
-					maxWidth : 300
-				});
-				infoWindow.open(map, globalMarker);
+				globalMarker.bindPopup(text).openPopup();
 			}
 		}
 	}
