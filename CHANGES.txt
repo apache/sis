@@ -3,6 +3,8 @@ Apache SIS Change Log
 
 Release 0.3-incubating - Current Development
 
+* SIS-46 Add sis-app module to current SIS project (Charithcc)
+
 * SIS-44 Update the 'demo.jsp' file in the SIS webapp to use an 
   open source maps API (Ross Laidlaw via mattmann)
 
