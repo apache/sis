@@ -69,7 +69,10 @@ public class LatLonPointRadius {
     }
     // plus one to add closing point
     LatLon[] points = new LatLon[numberOfPoints + 1];
-    int bearingIncrement = 360/numberOfPoints;
+    
+    double bearingIncrement = 0;
+    if (numberOfPoints > 0) { bearingIncrement = 360/numberOfPoints; }
+
     for (int i = 0; i < numberOfPoints; i++) 
     {
       points[i] = DistanceUtils.getPointOnGreatCircle(this.center.getLat(),
