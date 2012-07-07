@@ -32,7 +32,7 @@ public class TestLatLonPointRadius extends TestCase
   private static final double EPSILON = 0.000001;
 
   /**
-   * Tests the LatLonPoint constructor.
+   * Tests the LatLonPointRadius constructor.
    */
   public void testCreateLatLonPointRadius()
   {
