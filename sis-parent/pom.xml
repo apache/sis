@@ -195,6 +195,36 @@
           <target>${maven.compile.target}</target>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-war-plugin</artifactId>
+        <version>2.2</version>
+        <configuration>
+          <!-- 
+           copy legal files added by the maven-remote-resources-plugin 
+           to the /META-INF directory as expected for web application archives,
+           see SIS-34
+          -->
+          <webResources>
+            <resource>
+              <directory>${project.build.outputDirectory}/META-INF</directory>
+              <includes>
+                <include>LICENSE</include>
+                <include>NOTICE</include>
+                <include>DEPENDENCIES</include>
+              </includes>
+              <targetPath>META-INF</targetPath>
+              <filtering>false</filtering>
+            </resource>
+          </webResources>
+          <!-- 
+            remove the META-INF directory from /WEB-INF/classes in the packaged
+            war because this directory should be at the top level of web 
+            application archives as /META-INF, see SIS-34
+          -->
+          <packagingExcludes>WEB-INF/classes/META-INF/</packagingExcludes>
+        </configuration>
+      </plugin>  
     </plugins>
   </build>
 
