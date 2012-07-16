@@ -30,7 +30,7 @@
  
   <groupId>org.apache.sis</groupId>
   <artifactId>sis-parent</artifactId>
-  <version>0.2-incubating</version>
+  <version>0.3-incubating-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Apache SIS parent</name>
@@ -298,8 +298,8 @@
   </reporting>
 
   <scm>
-    <connection>scm:svn:http://svn.apache.org/repos/asf/maven/pom/tags/0.2-incubating-rc2</connection>
-    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/maven/pom/tags/0.2-incubating-rc2</developerConnection>
-    <url>http://svn.apache.org/viewvc/maven/pom/tags/0.2-incubating-rc2</url>
+    <connection>scm:svn:http://svn.apache.org/repos/asf/maven/pom/tags/0.2-incubating</connection>
+    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/maven/pom/tags/0.2-incubating</developerConnection>
+    <url>http://svn.apache.org/viewvc/maven/pom/tags/0.2-incubating</url>
   </scm>
 </project>
