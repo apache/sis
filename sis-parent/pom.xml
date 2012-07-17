@@ -298,8 +298,8 @@
   </reporting>
 
   <scm>
-    <connection>scm:svn:http://svn.apache.org/repos/asf/maven/pom/tags/0.2-incubating</connection>
-    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/maven/pom/tags/0.2-incubating</developerConnection>
-    <url>http://svn.apache.org/viewvc/maven/pom/tags/0.2-incubating</url>
+    <connection>scm:svn:http://svn.apache.org/repos/asf/incubator/sis/branches/0.2-incubating</connection>
+    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/incubator/sis/branches/0.2-incubating</developerConnection>
+    <url>http://svn.apache.org/viewvc/incubator/sis/branches/0.2-incubating</url>
   </scm>
 </project>
