@@ -58,7 +58,7 @@
 				<version>6.1.21</version>
 				<configuration>
 					<contextPath>/sis-webapp</contextPath>
-					<webApp>${basedir}/target/sis-webapp-0.2-incubating-SNAPSHOT.war</webApp>
+					<webApp>${basedir}/target/sis-webapp-0.2-incubating.war</webApp>
 				</configuration>
 				<executions>
 					<execution>
