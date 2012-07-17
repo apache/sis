@@ -52,7 +52,7 @@ file (WAR) you can use to try out SISfeatures. You can run it on top of Apache T
     Bounding Box:
       0, 50, 50, 100
       
-    Point Raidus:
+    Point Radius:
       0, 80, 400km
    
 Jetty Server
