@@ -5,7 +5,7 @@ Release 0.2-incubating - 07/16/2012
 
 * SIS-35 Include JDOM license in the NOTICE file and remove servlet dependency (mattmann)
 
-* SIS-34 LICENSE/NOTICE file is in incorrect location in SIS webapp (mattmann)
+* SIS-34 LICENSE/NOTICE file is in incorrect location in SIS webapp (mattmann, kevan)
 
 * SIS-30 Added Jetty Server to sis-webapp/pom.xml. To run, cd to sis-webapp/ and run [mvn jetty:run]
   (aestrada)
