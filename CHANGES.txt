@@ -3,6 +3,8 @@ Apache SIS Change Log
 
 Release 0.3-incubating - Current Development
 
+* SIS-52: Create a sis-metadata module (Martin Desruisseaux via mattmann)
+
 * SIS-50: added simple junit tests for the GeoHashUtils class in sis-core
   (rlaidlaw)
 
