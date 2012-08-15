@@ -27,7 +27,7 @@
     <artifactId>apache</artifactId>
     <version>7</version>
   </parent>
- 
+
   <groupId>org.apache.sis</groupId>
   <artifactId>sis-parent</artifactId>
   <version>0.3-incubating-SNAPSHOT</version>
@@ -35,8 +35,8 @@
 
   <name>Apache SIS parent</name>
   <description>
-    Apache SIS is a toolkit for describing location information, including points, 
-    bounding boxes, polygons, and for computing distances on that information. 
+    Apache SIS is a toolkit for describing location information, including points,
+    bounding boxes, polygons, and for computing distances on that information.
   </description>
   <inceptionYear>2010</inceptionYear>
 
@@ -158,23 +158,37 @@
       <name>Joe Schaefer</name>
       <roles>
         <role>mentor</role>
-      </roles>        
+      </roles>
     </contributor>
     <contributor>
       <name>Kevan Miller</name>
       <roles>
         <role>mentor</role>
-      </roles>    
+      </roles>
     </contributor>
 
   </contributors>
 
   <dependencyManagement>
     <dependencies>
+      <!-- Import all dependency management used by the GeAPI project.
+           This include JUnit, vecmath and units of measurement. -->
       <dependency>
-        <groupId>junit</groupId>
-        <artifactId>junit</artifactId>
-        <version>3.8.1</version>
+        <groupId>org.opengis</groupId>
+        <artifactId>geoapi-parent</artifactId>
+        <version>${geoapi.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.opengis</groupId>
+        <artifactId>geoapi</artifactId>
+        <version>${geoapi.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.opengis</groupId>
+        <artifactId>geoapi-conformance</artifactId>
+        <version>${geoapi.version}</version>
         <scope>test</scope>
       </dependency>
     </dependencies>
@@ -184,6 +198,7 @@
     <maven.compile.source>1.6</maven.compile.source>
     <maven.compile.target>1.6</maven.compile.target>
     <sis.version>${project.version}</sis.version>
+    <geoapi.version>3.0.0</geoapi.version>
   </properties>
 
   <build>
@@ -211,9 +226,9 @@
       <!-- Produce JavaDoc -->
       <plugin>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <configuration> 
+        <configuration>
           <source>${maven.compile.source}</source>
-        </configuration> 
+        </configuration>
       </plugin>
 
       <!-- Produce Source cross references -->
