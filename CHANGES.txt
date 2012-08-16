@@ -3,6 +3,9 @@ Apache SIS Change Log
 
 Release 0.3-incubating - Current Development
 
+* SIS-54: Remove the definition of the sis.version property 
+  (Martin Desruisseaux via mattmann)
+
 * SIS-53: "svn:ignore" property missing on the "sis-app" directory 
   (Martin Desruisseaux via mattmann)
 
