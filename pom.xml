@@ -62,10 +62,6 @@
       </plugin>
        <plugin>
         <artifactId>maven-site-plugin</artifactId>
-        <configuration>
-          <templateDirectory>src/site</templateDirectory>
-          <template>site.vm</template>
-        </configuration>
       </plugin>
     </plugins>
   </build>
