@@ -3,13 +3,16 @@ Apache SIS Change Log
 
 Release 0.3-incubating - Current Development
 
+* SIS-56: Merged the sis-parent/pom.xml with the root pom.xml.
+  (Martin Desruisseaux)
+
 * SIS-58: Fix SIS Jetty Webapp definition to pick random port
   (mattmann)
 
-* SIS-54: Remove the definition of the sis.version property 
+* SIS-54: Remove the definition of the sis.version property
   (Martin Desruisseaux via mattmann)
 
-* SIS-53: "svn:ignore" property missing on the "sis-app" directory 
+* SIS-53: "svn:ignore" property missing on the "sis-app" directory
   (Martin Desruisseaux via mattmann)
 
 * SIS-52: Create a sis-metadata module (Martin Desruisseaux via mattmann)
@@ -17,7 +20,7 @@ Release 0.3-incubating - Current Development
 * SIS-50: added simple junit tests for the GeoHashUtils class in sis-core
   (rlaidlaw)
 
-* SIS-49: updated for loop in getCircularRegionApproximation of LatLonPointRadius 
+* SIS-49: updated for loop in getCircularRegionApproximation of LatLonPointRadius
   to prevent ArrayIndexOutOfBoundsException, ArithmeticException (rlaidlaw)
 
 * SIS-48: added simple junit tests for the core geometry classes in sis-core
@@ -25,15 +28,15 @@ Release 0.3-incubating - Current Development
 
 * SIS-46 Add sis-app module to current SIS project (Charithcc)
 
-* SIS-44 Update the 'demo.jsp' file in the SIS webapp to use an 
+* SIS-44 Update the 'demo.jsp' file in the SIS webapp to use an
   open source maps API (Ross Laidlaw via mattmann)
 
 * SIS-41 Improve the demo.jsp CSS (Charitha Madusanka via mattmann)
 
-* SIS-40 Add the missing documentation comments for SIS 
+* SIS-40 Add the missing documentation comments for SIS
   WS layer (Charitha Madusanka via mattmann)
 
-* SIS-38 Add the missing documentation comments for SIS-core 
+* SIS-38 Add the missing documentation comments for SIS-core
   storage (Charitha Madusanka via mattmann)
 
 Release 0.2-incubating - 03/08/2012
@@ -45,14 +48,14 @@ Release 0.2-incubating - 03/08/2012
 
 * SIS-29 Website must display disclaimer text (mattmann, sebb)
 
-* SIS-26 Use of Java 1.6 Annotation in 
+* SIS-26 Use of Java 1.6 Annotation in
   /sis-core/src/main/java/org/apache/sis/storage/GeoRSSData.java (Fabian Christ via mattmann)
 
 * SIS-25 Location servlet doesn't return correct coordinates for point-radius query region (nchung)
 
 Release 0.1-incubating - 11/09/2010
 
-* SIS-24 Refactor sis.version into build process flowdown through Maven and 
+* SIS-24 Refactor sis.version into build process flowdown through Maven and
   rename to 0.1-incubating (mattmann)
 
 * SIS-23 Brand demo.jsp with ApacheSIS TM logo (mattmann)
@@ -61,10 +64,10 @@ Release 0.1-incubating - 11/09/2010
 
 * SIS-21 Path to location service shouldn't include prefix slash (mattmann)
 
-* SIS-20 Make the qTreeIdxPath and geodata paths configurable 
+* SIS-20 Make the qTreeIdxPath and geodata paths configurable
   properties (mattmann)
 
-* SIS-19 QTreeWriter and GeoRSSData.save don't check to make sure 
+* SIS-19 QTreeWriter and GeoRSSData.save don't check to make sure
   the directory exists before creating data there (mattmann)
 
 * SIS-18 demo JSP has incorrect form get action set (mattmann)
