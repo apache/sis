@@ -19,21 +19,42 @@
   under the License.
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns     = "http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi = "http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation = "http://maven.apache.org/POM/4.0.0
+                               http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.apache.sis</groupId>
-    <artifactId>sis-parent</artifactId>
-    <version>0.3-incubating-SNAPSHOT</version>
-    <relativePath>sis-parent/pom.xml</relativePath>
+    <groupId>org.apache</groupId>
+    <artifactId>apache</artifactId>
+    <version>11</version>
   </parent>
 
-  <artifactId>sis</artifactId>
+
+
+  <!-- ==============================================================
+         Project description. The <organization> and <licenses>
+         elements are inherited from the parent Apache pom.xml.
+       ============================================================== -->
+  <groupId>org.apache.sis</groupId>
+  <artifactId>sis-parent</artifactId>
+  <version>0.3-incubating-SNAPSHOT</version>
   <packaging>pom</packaging>
+
   <name>Apache SIS</name>
   <url>http://incubator.apache.org/sis/</url>
+  <description>
+    Apache SIS is a toolkit for describing location information, including points,
+    bounding boxes, polygons, and for computing distances on that information.
+  </description>
+  <inceptionYear>2010</inceptionYear>
 
+
+
+  <!-- ==============================================================
+         Source code repository, issue managements and mailing lists.
+       ============================================================== -->
   <scm>
     <connection>
       scm:svn:http://svn.apache.org/repos/asf/incubator/sis/trunk
@@ -44,27 +65,281 @@
     <url>http://svn.apache.org/viewvc/incubator/sis/trunk</url>
   </scm>
 
+  <ciManagement>
+    <system>jenkins</system>
+    <url>https://builds.apache.org/job/sis-trunk</url>
+  </ciManagement>
+
+  <issueManagement>
+    <system>JIRA</system>
+    <url>https://issues.apache.org/jira/browse/SIS</url>
+  </issueManagement>
+
+  <mailingLists>
+    <mailingList>
+      <name>Development mailing list</name>
+      <subscribe>sis-dev-subscribe@incubator.apache.org</subscribe>
+      <unsubscribe>sis-dev-unsubscribe@incubator.apache.org</unsubscribe>
+      <post>sis-dev@incubator.apache.org</post>
+      <archive>http://mail-archives.apache.org/mod_mbox/incubator-sis-dev/</archive>
+      <otherArchives />
+    </mailingList>
+    <mailingList>
+      <name>Commit mailing list</name>
+      <subscribe>sis-commits-subscribe@incubator.apache.org</subscribe>
+      <unsubscribe>sis-commits-unsubscribe@incubator.apache.org</unsubscribe>
+      <post>sis-commits@incubator.apache.org</post>
+      <archive>http://mail-archives.apache.org/mod_mbox/incubator-sis-commits/</archive>
+      <otherArchives />
+    </mailingList>
+    <mailingList>
+      <name>User mailing list</name>
+      <subscribe>sis-user-subscribe@incubator.apache.org</subscribe>
+      <unsubscribe>sis-user-unsubscribe@incubator.apache.org</unsubscribe>
+      <post>sis-user@incubator.apache.org</post>
+      <archive>http://mail-archives.apache.org/mod_mbox/incubator-sis-user/</archive>
+      <otherArchives />
+    </mailingList>
+  </mailingLists>
+
+
+
+  <!-- ==============================================================
+         Developers and Contributors.
+       ============================================================== -->
+  <developers>
+    <developer>
+      <name>Chris A. Mattmann</name>
+      <id>mattmann</id>
+      <email>mattmann@apache.org</email>
+      <url>http://people.apache.org/~mattmann/</url>
+      <organization>NASA Jet Propulsion Laboratory</organization>
+      <organizationUrl>http://www.jpl.nasa.gov</organizationUrl>
+      <timezone>-8</timezone>
+      <properties />
+      <roles>
+        <role>committer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Patrick O'Leary</name>
+      <id>pjaol</id>
+      <email>pjaol@apache.org</email>
+      <url>http://people.apache.org/~pjaol/</url>
+      <organization>AT&amp;T Interactive</organization>
+      <organizationUrl>http://www.attinteractive.com/</organizationUrl>
+      <timezone>-8</timezone>
+      <properties />
+      <roles>
+        <role>committer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Paul Ramirez</name>
+      <id>pramirez</id>
+      <email>pramirez@apache.org</email>
+      <url>http://people.apache.org/~pramirez/</url>
+      <organization>NASA Jet Propulsion Laboratory</organization>
+      <organizationUrl>http://www.jpl.nasa.gov</organizationUrl>
+      <timezone>-8</timezone>
+      <properties />
+      <roles>
+        <role>committer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Sean McCleese</name>
+      <id>smcclees</id>
+      <email>smcclees@apache.org</email>
+      <url>http://people.apache.org/~smcclees/</url>
+      <organization>NASA Jet Propulsion Laboratory</organization>
+      <organizationUrl>http://www.jpl.nasa.gov</organizationUrl>
+      <timezone>-8</timezone>
+      <properties />
+      <roles>
+        <role>committer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Nga Chung</name>
+      <id>nchung</id>
+      <email>nchung@apache.org</email>
+      <url>http://people.apache.org/~nchung/</url>
+      <organization>NASA Jet Propulsion Laboratory</organization>
+      <organizationUrl>http://www.jpl.nasa.gov</organizationUrl>
+      <timezone>-8</timezone>
+      <properties />
+      <roles>
+        <role>committer</role>
+      </roles>
+    </developer>
+  </developers>
+  <contributors>
+    <contributor>
+      <name>Greg Reddin</name>
+      <roles>
+        <role>mentor</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Ian Holsman</name>
+      <roles>
+        <role>mentor</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Joe Schaefer</name>
+      <roles>
+        <role>mentor</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Kevan Miller</name>
+      <roles>
+        <role>mentor</role>
+      </roles>
+    </contributor>
+  </contributors>
+
+
+
+  <!-- ==============================================================
+         Dependency management. If a POM in a child module declares
+         one of those dependencies, then it will use the version
+         specified here. Otherwise, those dependencies are ignored.
+
+         See http://search.maven.org/ for latest version numbers.
+       ============================================================== -->
+  <dependencyManagement>
+    <dependencies>
+      <!-- Import all dependency management used by the GeAPI project.
+           This include JUnit, vecmath and units of measurement. -->
+      <dependency>
+        <groupId>org.opengis</groupId>
+        <artifactId>geoapi-parent</artifactId>
+        <version>${geoapi.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.opengis</groupId>
+        <artifactId>geoapi</artifactId>
+        <version>${geoapi.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.opengis</groupId>
+        <artifactId>geoapi-conformance</artifactId>
+        <version>${geoapi.version}</version>
+        <scope>test</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+
+
+  <!-- ==============================================================
+         Properties, used in dependency management and build
+         configuration.
+       ============================================================== -->
+  <properties>
+    <maven.compile.source>1.6</maven.compile.source>
+    <maven.compile.target>1.6</maven.compile.target>
+    <geoapi.version>3.0.0</geoapi.version>
+  </properties>
+
+
+
+  <!-- ==============================================================
+         Build configuration.
+         See http://maven.apache.org/plugins/ for latest versions.
+       ============================================================== -->
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>${maven.compile.source}</source>
+          <target>${maven.compile.target}</target>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-site-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
+
+  <reporting>
+    <plugins>
+
+      <!-- Produce JavaDoc -->
+      <plugin>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <configuration>
+          <source>${maven.compile.source}</source>
+        </configuration>
+      </plugin>
+
+      <!-- Produce Source cross references -->
+      <plugin>
+        <artifactId>maven-jxr-plugin</artifactId>
+      </plugin>
+
+      <!-- Unit tests report -->
+      <plugin>
+        <artifactId>maven-surefire-report-plugin</artifactId>
+      </plugin>
+
+      <!-- "Release Audit" report (checks license headers etc.) -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>rat-maven-plugin</artifactId>
+        <version>1.0-alpha-3</version>
+      </plugin>
+
+      <!-- FindBugs Report -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>findbugs-maven-plugin</artifactId>
+        <version>2.5.2</version>
+        <configuration>
+          <threshold>Normal</threshold>
+          <effort>Default</effort>
+       </configuration>
+      </plugin>
+
+      <!-- Checkstyle report -->
+      <plugin>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>2.9.1</version>
+        <configuration>
+          <!--configLocation>checkstyle.xml</configLocation-->
+          <enableRulesSummary>false</enableRulesSummary>
+        </configuration>
+      </plugin>
+
+      <!-- PMD report -->
+      <plugin>
+        <artifactId>maven-pmd-plugin</artifactId>
+        <configuration>
+          <linkXref>true</linkXref>
+          <sourceEncoding>ASCII</sourceEncoding>
+          <targetJdk>${maven.compile.target}</targetJdk>
+        </configuration>
+      </plugin>
+    </plugins>
+  </reporting>
+
+
+
+  <!-- ==============================================================
+         Modules to build in approximate dependency order.
+       ============================================================== -->
   <modules>
-    <module>sis-parent</module>
     <module>sis-core</module>
     <module>sis-metadata</module>
     <module>sis-webapp</module>
     <module>sis-app</module>
   </modules>
-
-  <build>
-    <plugins>
-      <plugin>
-        <artifactId>maven-deploy-plugin</artifactId>
-        <configuration>
-          <skip>true</skip> <!-- No need to deploy the reactor -->
-        </configuration>
-      </plugin>
-       <plugin>
-        <artifactId>maven-site-plugin</artifactId>
-      </plugin>
-    </plugins>
-  </build>
 
   <profiles>
     <profile>
