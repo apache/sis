@@ -35,11 +35,6 @@
 
   <dependencies>
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.geonames</groupId>
       <artifactId>georss-rome</artifactId>
       <version>0.9.8</version>

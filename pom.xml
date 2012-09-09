@@ -239,6 +239,19 @@ Apache SIS is a toolkit for describing location information, including points,
 
 
 
+  <!-- ===========================================================
+           Dependencies to be inherited by all modules.
+       =========================================================== -->
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+
+
   <!-- ==============================================================
          Properties, used in dependency management and build
          configuration.
