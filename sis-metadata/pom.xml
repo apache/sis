@@ -104,10 +104,6 @@ Implementations of metadata derived from ISO 19115. This module provides both an
       <groupId>org.opengis</groupId>
       <artifactId>geoapi-conformance</artifactId>
     </dependency>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-    </dependency>
   </dependencies>
 
 </project>

@@ -34,14 +34,6 @@
   <name>Apache SIS app</name>
   <url>http://incubator.apache.org/sis/</url>
 
-  <dependencies>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
-
   <build>
     <plugins>
       <plugin>
