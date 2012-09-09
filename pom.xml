@@ -234,6 +234,16 @@ Apache SIS is a toolkit for describing location information, including points,
         <version>${geoapi.version}</version>
         <scope>test</scope>
       </dependency>
+      <dependency>
+        <groupId>javax.servlet</groupId>
+        <artifactId>servlet-api</artifactId>
+        <version>2.4</version>
+      </dependency>
+      <dependency>
+        <groupId>org.geonames</groupId>
+        <artifactId>georss-rome</artifactId>
+        <version>0.9.8</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -298,6 +308,17 @@ Apache SIS is a toolkit for describing location information, including points,
         <artifactId>maven-site-plugin</artifactId>
       </plugin>
     </plugins>
+
+    <!-- Following plugins are used only by some specific modules. -->
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.mortbay.jetty</groupId>
+          <artifactId>jetty-maven-plugin</artifactId>
+          <version>8.0.0.M2</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
   </build>
 
 
