@@ -39,10 +39,9 @@
   <packaging>bundle</packaging>
   <name>Apache SIS metadata</name>
   <url>http://incubator.apache.org/sis/</url>
-
+  <description>
   <!-- Left alignment because this description will be copied in META-INF/MANIFEST.MF
        The leading space after the first line is necessary for proper formatting. -->
-  <description>
 Implementations of metadata derived from ISO 19115. This module provides both an implementation
  of the metadata interfaces defined in GeoAPI, and a framework for handling those metadata through
  Java reflection.
@@ -110,29 +109,5 @@ Implementations of metadata derived from ISO 19115. This module provides both an
       <artifactId>junit</artifactId>
     </dependency>
   </dependencies>
-
-
-
-  <!-- ===========================================================
-           Build configuration
-       =========================================================== -->
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.felix</groupId>
-        <artifactId>maven-bundle-plugin</artifactId>
-        <version>2.0.0</version>
-        <extensions>true</extensions>
-        <configuration>
-          <instructions>
-            <Import-Package>
-              *
-            </Import-Package>
-            <Bundle-DocURL>${project.url}</Bundle-DocURL>
-          </instructions>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
 
 </project>
