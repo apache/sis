@@ -343,11 +343,18 @@ Apache SIS is a toolkit for describing location information, including points,
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>2.8.1</version>
         <configuration>
-          <source>${maven.compile.source}</source>
-          <encoding>${project.build.sourceEncoding}</encoding>
-          <docencoding>${website.encoding}</docencoding>
-          <charset>${website.encoding}</charset>
-          <locale>${website.locale}</locale>
+          <source>${maven.compile.source}</source>              <!-- Enables javadoc to handle language constructs present in target JDK. -->
+          <encoding>${project.build.sourceEncoding}</encoding>  <!-- Encoding of Java source file. -->
+          <docencoding>${website.encoding}</docencoding>        <!-- Encoding of the generated HTML files. -->
+          <charset>${website.encoding}</charset>                <!-- Encoding to declare in the HTML META tag. -->
+          <locale>${website.locale}</locale>                    <!-- Locale for navigation bar, help file contents, etc. -->
+          <noqualifier>all</noqualifier>                        <!-- Omit qualifying package name before class names in output. -->
+          <quiet>true</quiet>                                   <!-- Shuts off non-error and non-warning messages. -->
+          <keywords>true</keywords>                             <!-- Adds HTML meta keyword tags to the generated files. -->
+          <breakiterator>true</breakiterator>                   <!-- Better boundary detection when determining the end of the first sentence. -->
+          <links>
+            <link>http://www.geoapi.org/3.0/javadoc</link>
+          </links>
         </configuration>
       </plugin>
 
