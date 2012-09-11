@@ -279,7 +279,7 @@ Apache SIS is a toolkit for describing location information, including points,
     <profile>
       <id>apache-release</id>
       <properties>
-        <maven.compiler.debug>false</maven.compiler.debug>
+        <maven.compiler.debug>false</maven.compiler.debug> <!-- For smaller JAR files size. -->
         <maven.compiler.optimize>true</maven.compiler.optimize>
       </properties>
     </profile>
@@ -362,6 +362,7 @@ Apache SIS is a toolkit for describing location information, including points,
           <quiet>true</quiet>                                   <!-- Shuts off non-error and non-warning messages. -->
           <keywords>true</keywords>                             <!-- Adds HTML meta keyword tags to the generated files. -->
           <breakiterator>true</breakiterator>                   <!-- Better boundary detection when determining the end of the first sentence. -->
+          <stylesheetfile>src/main/javadoc/stylesheet.css</stylesheetfile>
           <links>
             <link>http://www.geoapi.org/3.0/javadoc</link>
           </links>
