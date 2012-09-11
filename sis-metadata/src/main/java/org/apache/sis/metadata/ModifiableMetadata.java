@@ -363,7 +363,7 @@ public abstract class ModifiableMetadata {
     /**
      * Returns the type of collection to use for the given type. The current implementation can
      * return only two values: <code>{@linkplain Set}.class</code> if the attribute should not
-     * accept duplicated values, or <code>{@linkplain List}.class</code> otherwise. Future Geotk
+     * accept duplicated values, or <code>{@linkplain List}.class</code> otherwise. Future SIS
      * versions may accept other types.
      * <p>
      * The default implementation returns <code>{@linkplain Set}.class</code> if the element type

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>API Overview</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  </head>
+  <body>
+    Overview of <a href="http://incubator.apache.org/sis/">Apache Spatial Information System (SIS)</a>.
+
+    <h3>Requirements</h3>
+    <p>SIS requires Java 6 Standard Edition.</p>
+
+    <h3>Javadoc annotations</h3>
+    <p>SIS uses standard javadoc annotations. The meaning of some tags are refined as below:</p>
+    <ul>
+      <li>{@code @since}   - the SIS version when the annotated element (class, method, <i>etc.</i>) was first introduced.</li>
+      <li>{@code @version} - the last SIS version when the code of the annotated class got a significant change.</li>
+      <li>{@code @author}  - developer names in <var>First name</var> <var>Last name</var> <var>(organization)</var> format.</li>
+    </ul>
+
+    <h3>Classes naming</h3>
+    <p>Implementations of <a href="http://www.geoapi.org/">GeoAPI interfaces</a> usually (but not always)
+    begin with {@code Abstract}, {@code Default} or {@code General} prefix.
+    The {@code Abstract} prefix is used when a class is abstract according ISO specifications -
+    it may or may not be be abstract in the Java sense.
+    The {@code General} prefix is used when an implementation is designed for use in the general case,
+    as opposed to other implementations specialized for a fixed number of dimensions or other conditions.
+    Implementations specialized for a fixed number of dimensions are suffixed with {@code 1D}, {@code 2D},
+    {@code 3D} or {@code 4D} rather than being prefixed.</p>
+
+    <p>Classes that are not GeoAPI implementation are usually not prefixed by any of the above.</p>
+  </body>
+</html>
