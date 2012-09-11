@@ -1,17 +1,17 @@
-=================================================
+========================================================
 Welcome to Apache SIS <http://incubator.apache.org/sis/>
-=================================================
+========================================================
 
-Apache SIS(TM) is a spatial framework that enables better representation 
-of coordinates for searching, data clustering, archiving, or any other 
+Apache SIS(TM) is a spatial framework that enables better representation
+of coordinates for searching, data clustering, archiving, or any other
 relevant spatial needs.
 
-Apache SIS is an effort undergoing incubation at The Apache Software Foundation (ASF), 
-sponsored by the Apache Incubator PMC. Incubation is required of all newly accepted 
-projects until a further review indicates that the infrastructure, communications, 
-and decision making process have stabilized in a manner consistent with other successful 
-ASF projects. While incubation status is not necessarily a reflection of the completeness 
-or stability of the code, it does indicate that the project has yet to be fully endorsed 
+Apache SIS is an effort undergoing incubation at The Apache Software Foundation (ASF),
+sponsored by the Apache Incubator PMC. Incubation is required of all newly accepted
+projects until a further review indicates that the infrastructure, communications,
+and decision making process have stabilized in a manner consistent with other successful
+ASF projects. While incubation status is not necessarily a reflection of the completeness
+or stability of the code, it does indicate that the project has yet to be fully endorsed
 by the ASF.
 
 SIS is a project of the Apache Software Foundation <http://www.apache.org/>.
@@ -29,7 +29,7 @@ build system. To build SIS, use the following command in this directory:
 
 
 Tomcat Server (See much simpler Jetty integration below)
-===============
+========================================================
 The build consists of a number of components, including a web-based application
 file (WAR) you can use to try out SISfeatures. You can run it on top of Apache Tomcat like this:
 
@@ -38,43 +38,43 @@ file (WAR) you can use to try out SISfeatures. You can run it on top of Apache T
     cd /usr/local/sis
     cp -R /path/to/apache-sis-X.Y-src/sis-webapp/target/sis-webapp-X.Y.war ./
     cp -R /path/to/apache-sis-X.Y-src/sis-webapp/src/main/webapp/META-INF/context.xml ./sis.xml
-    edit sis.xml (set the docBase to /usr/local/sis/sis-webapp-X.Y.war and the property 
-          org.apache.sis.services.config.filePath to /usr/local/sis/sis-location-config.xml, 
-          org.apache.sis.services.config.qIndexPath to /usr/local/sis/qtree, 
+    edit sis.xml (set the docBase to /usr/local/sis/sis-webapp-X.Y.war and the property
+          org.apache.sis.services.config.filePath to /usr/local/sis/sis-location-config.xml,
+          org.apache.sis.services.config.qIndexPath to /usr/local/sis/qtree,
           org.apache.sis.services.config.geodataPath to /usr/local/sis/geodata)
     cp -R /path/to/apache-sis-X.Y-src/sis-webapp/src/main/resources/sis-location-config.xml ./
     edit sis-location-config.xml (add or delete GeoRSS URLs)
     ln -s /usr/local/sis/sis.xml /usr/local/tomcat/conf/Catalina/localhost/sis.xml
     /usr/local/tomcat/bin/startup.sh
-    Visit http://localhost:8080/sis/demo.jsp and checkout the demo!    
+    Visit http://localhost:8080/sis/demo.jsp and checkout the demo!
     Try some queries:
-    
+
     Bounding Box:
       0, 50, 50, 100
-      
+
     Point Raidus:
       0, 80, 400km
-   
+
 Jetty Server
-===============
+============
 Jetty is now supported too (as of 02/11/2012). Simply build the project at the root level
 
-	mvn clean install 
+	mvn clean install
 
 Then browse to the sis-webapp directory. To run the built-in Jetty server, type the command:
 
 	mvn jetty:run
-	
+
 Visit http://localhost:8080/sis-webapp/demp.jsp and run the same queries as noted above.
 
     Bounding Box:
       0, 50, 50, 100
-      
+
     Point Raidus:
       0, 80, 400km
 
-License (see also LICENSE.txt)
-==============================
+License (see also LICENSE)
+==========================
 
 Collective work: Copyright 2010 The Apache Software Foundation.
 
@@ -95,7 +95,7 @@ limitations under the License.
 
 Apache SIS includes a number of subcomponents with separate copyright
 notices and license terms. Your use of these subcomponents is subject to
-the terms and conditions of the licenses listed in the LICENSE.txt file.
+the terms and conditions of the licenses listed in the LICENSE file.
 
 
 Mailing Lists
