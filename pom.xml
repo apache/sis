@@ -275,6 +275,16 @@ Apache SIS is a toolkit for describing location information, including points,
     <website.locale>en</website.locale>
   </properties>
 
+  <profiles>
+    <profile>
+      <id>apache-release</id>
+      <properties>
+        <maven.compiler.debug>false</maven.compiler.debug>
+        <maven.compiler.optimize>true</maven.compiler.optimize>
+      </properties>
+    </profile>
+  </profiles>
+
 
 
   <!-- ==============================================================
