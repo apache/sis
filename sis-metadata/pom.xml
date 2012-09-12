@@ -38,7 +38,6 @@
   <artifactId>sis-metadata</artifactId>
   <packaging>bundle</packaging>
   <name>Apache SIS metadata</name>
-  <url>http://incubator.apache.org/sis/</url>
   <description>
   <!-- Left alignment because this description will be copied in META-INF/MANIFEST.MF
        The leading space after the first line is necessary for proper formatting. -->
@@ -51,8 +50,9 @@ Implementations of metadata derived from ISO 19115. This module provides both an
   <!-- ===========================================================
            Developers and Contributors
        =========================================================== -->
-  <contributors>
-    <contributor>
+  <developers>
+    <developer>
+      <id>desruisseaux</id>
       <name>Martin Desruisseaux</name>
       <email>martin.desruisseaux@geomatys.fr</email>
       <organization>Geomatys</organization>
@@ -61,7 +61,9 @@ Implementations of metadata derived from ISO 19115. This module provides both an
       <roles>
         <role>Developer</role>
       </roles>
-    </contributor>
+    </developer>
+  </developers>
+  <contributors>
     <contributor>
       <name>Cédric Briançon</name>
       <email>cedric.briancon@geomatys.com</email>
