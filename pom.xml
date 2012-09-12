@@ -366,6 +366,9 @@ Apache SIS is a toolkit for describing location information, including points,
           <links>
             <link>http://www.geoapi.org/3.0/javadoc</link>
           </links>
+
+          <!-- Internal packages to hide from javadoc. -->
+          <excludePackageNames>org.apache.sis.resources</excludePackageNames>
         </configuration>
       </plugin>
 
@@ -428,6 +431,7 @@ Apache SIS is a toolkit for describing location information, including points,
          Modules to build in approximate dependency order.
        ============================================================== -->
   <modules>
+    <module>sis-build-helper</module>
     <module>sis-core</module>
     <module>sis-metadata</module>
     <module>sis-webapp</module>
