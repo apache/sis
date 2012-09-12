@@ -23,7 +23,7 @@ import org.apache.sis.core.LatLon;
 /**
  * Class to calculate distances on earth surface. Actual calculation code very
  * similar to Apache SIS but refractor to allow use of custom classes.
- * 
+ *
  */
 public class DistanceUtils {
 
@@ -32,10 +32,10 @@ public class DistanceUtils {
 
   /**
    * Returns a coordinate on the great circle at the specified bearing.
-   * 
+   *
    * @param latitude
    *          the latitude of center of circle
-   * @param longtitude
+   * @param longitude
    *          the longitude of center of circle
    * @param d
    *          the distance from the center
@@ -68,7 +68,7 @@ public class DistanceUtils {
   /**
    * Calculates haversine (great circle) distance between two lat/lon
    * coordinates.
-   * 
+   *
    * @param latitude1
    *          latitude of first coordinate
    * @param longitude1
