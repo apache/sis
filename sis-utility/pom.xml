@@ -35,15 +35,13 @@
   <!-- ===========================================================
            Module Description
        =========================================================== -->
-  <artifactId>sis-metadata</artifactId>
+  <artifactId>sis-utility</artifactId>
   <packaging>bundle</packaging>
-  <name>Apache SIS metadata</name>
+  <name>Apache SIS utilities</name>
   <description>
   <!-- Left alignment because this description will be copied in META-INF/MANIFEST.MF
        The leading space after the first line is necessary for proper formatting. -->
-Implementations of metadata derived from ISO 19115. This module provides both an implementation
- of the metadata interfaces defined in GeoAPI, and a framework for handling those metadata through
- Java reflection.
+Miscellaneous utilities.
   </description>
 
 
@@ -99,17 +97,16 @@ Implementations of metadata derived from ISO 19115. This module provides both an
        =========================================================== -->
   <dependencies>
     <dependency>
-      <groupId>org.apache.sis</groupId>
-      <artifactId>sis-utility</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
       <groupId>org.opengis</groupId>
       <artifactId>geoapi</artifactId>
     </dependency>
     <dependency>
       <groupId>org.opengis</groupId>
       <artifactId>geoapi-conformance</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>net.jcip</groupId>
+      <artifactId>jcip-annotations</artifactId>
     </dependency>
   </dependencies>
 
