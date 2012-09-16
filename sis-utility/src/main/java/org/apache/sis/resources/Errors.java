@@ -43,6 +43,57 @@ public final class Errors extends IndexedResourceBundle {
     public static final class Keys {
         private Keys() {
         }
+
+        /**
+         * Argument ‘{0}’ shall not be empty.
+         */
+        public static final int EmptyArgument_1 = 1;
+
+        /**
+         * Argument ‘{0}’ can not be an instance of ‘{1}’. Expected an instance of ‘{2}’ or derived
+         * type.
+         */
+        public static final int IllegalArgumentClass_3 = 2;
+
+        /**
+         * Class ‘{0}’ is illegal. It must be ‘{1}’ or a derived class.
+         */
+        public static final int IllegalClass_2 = 3;
+
+        /**
+         * Index {0} is out of bounds.
+         */
+        public static final int IndexOutOfBounds_1 = 4;
+
+        /**
+         * Argument ‘{0}’ shall not be negative. The given value was {1}.
+         */
+        public static final int NegativeArgument_2 = 8;
+
+        /**
+         * Argument '{0}' shall not be NaN (Not-a-Number).
+         */
+        public static final int NotANumber_1 = 9;
+
+        /**
+         * Argument ‘{0}’ shall not be null.
+         */
+        public static final int NullArgument_1 = 0;
+
+        /**
+         * Argument ‘{0}’ has {1} dimensions, while {2} was expected.
+         */
+        public static final int UnexpectedArgumentDimension_3 = 5;
+
+        /**
+         * Value ‘{0}’={1} is invalid. Expected a number greater than 0.
+         */
+        public static final int ValueNotGreaterThanZero_2 = 7;
+
+        /**
+         * Value ‘{0}’={1} is invalid. Expected a value in the [{2} … {3}] range.
+         */
+        public static final int ValueOutOfRange_4 = 6;
     }
 
     /**
