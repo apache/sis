@@ -49,9 +49,9 @@ public class IndexedResourceCompiler implements FilenameFilter, Comparator<Objec
 
     /**
      * Prefix for argument count in resource key names. For example, a resource
-     * expecting one argument may have a key name like "HELLO_p1".
+     * expecting one argument may have a key name like "{@code HelloWorld_1}".
      */
-    private static final String ARGUMENT_COUNT_PREFIX = "_p";
+    private static final String ARGUMENT_COUNT_PREFIX = "_";
 
     /**
      * The maximal length of comment lines.
