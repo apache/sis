@@ -375,7 +375,7 @@ Apache SIS is a toolkit for describing location information, including points,
           </links>
 
           <!-- Internal packages to hide from javadoc. -->
-          <excludePackageNames>org.apache.sis.resources</excludePackageNames>
+          <excludePackageNames>org.apache.sis.internal</excludePackageNames>
         </configuration>
       </plugin>
 
