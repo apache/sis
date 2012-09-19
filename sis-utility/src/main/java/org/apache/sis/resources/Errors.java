@@ -61,6 +61,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int IllegalClass_2 = 3;
 
         /**
+         * Range [{0} … {1}] is not valid.
+         */
+        public static final int IllegalRange_2 = 11;
+
+        /**
          * Index {0} is out of bounds.
          */
         public static final int IndexOutOfBounds_1 = 4;
@@ -74,6 +79,11 @@ public final class Errors extends IndexedResourceBundle {
          * Argument '{0}' shall not be NaN (Not-a-Number).
          */
         public static final int NotANumber_1 = 9;
+
+        /**
+         * Class '{0}' is not a primitive type wrapper.
+         */
+        public static final int NotAPrimitiveWrapper_1 = 10;
 
         /**
          * Argument ‘{0}’ shall not be null.
