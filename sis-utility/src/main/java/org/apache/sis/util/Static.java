@@ -39,6 +39,9 @@ package org.apache.sis.util;
  *     <td>Perform argument checks and throw {@link IllegalArgumentException} if needed.</td></tr>
  * <tr><td>{@link org.apache.sis.util.Exceptions}</td>
  *     <td>Format a stack trace summary or change the exception message.</td></tr>
+ * <tr><td>{@link org.apache.sis.util.logging.Logging}</td>
+ *     <td>Get a JDK {@linkplain java.util.logging.Logger logger}, which may be a wrapper around
+ *         the <cite>Apache Commons Logging</cite> or <cite>Log4J</cite> framework.</td></tr>
  * </table>
  *
  * @author Martin Desruisseaux (Geomatys)
