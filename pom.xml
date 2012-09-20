@@ -311,6 +311,27 @@ Apache SIS is a toolkit for describing location information, including points,
         </configuration>
       </plugin>
 
+      <!-- JAR packaging -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifest>
+              <addClasspath>true</addClasspath>
+              <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+            </manifest>
+            <manifestEntries>
+              <Built-On>${maven.build.timestamp}</Built-On>
+              <Implementation-URL>${project.url}</Implementation-URL>
+              <Specification-Title>GeoAPI</Specification-Title>
+              <Specification-Version>${geoapi.version}</Specification-Version>
+              <Specification-Vendor>Open Geospatial Consortium</Specification-Vendor>
+            </manifestEntries>
+          </archive>
+        </configuration>
+      </plugin>
+
       <!-- Package as OSGi bundle -->
       <plugin>
         <groupId>org.apache.felix</groupId>
