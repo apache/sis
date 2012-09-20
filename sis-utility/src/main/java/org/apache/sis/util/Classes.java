@@ -236,8 +236,6 @@ public final class Classes extends Static {
      *         or {@code null} if this cast can not be performed.
      *
      * @see Class#asSubclass(Class)
-     *
-     * @since 3.09
      */
     @SuppressWarnings({"unchecked","rawtypes"})
     public static <U> Class<? extends U> asSubclassOrNull(final Class<?> type, final Class<U> sub) {
@@ -278,8 +276,6 @@ public final class Classes extends Static {
      * @param  <T> The base type of elements in the given collection.
      * @param  objects The collection of objects.
      * @return The set of classes of all objects in the given collection.
-     *
-     * @since 3.00
      */
     public static <T> Set<Class<? extends T>> getClasses(final Collection<? extends T> objects) {
         final Set<Class<? extends T>> types = new LinkedHashSet<Class<? extends T>>();
@@ -299,8 +295,6 @@ public final class Classes extends Static {
      * @param  type The class or interface for which to get all implemented interfaces.
      * @return All implemented interfaces (not including the given {@code type} if it was an
      *         interface), or an empty set if none. Callers can freely modify the returned set.
-     *
-     * @since 3.01
      */
     public static Set<Class<?>> getAllInterfaces(Class<?> type) {
         final Set<Class<?>> interfaces = new LinkedHashSet<Class<?>>();
@@ -338,8 +332,6 @@ public final class Classes extends Static {
      * @param  baseInterface The base type of the interface to search.
      * @return The leaf interfaces matching the given criterion, or {@code null} if none.
      *         If non-null, than the array is guaranteed to contain at least one element.
-     *
-     * @since 3.18
      */
     @SuppressWarnings("unchecked")
     public static <T> Class<? extends T>[] getLeafInterfaces(Class<?> type, final Class<T> baseInterface) {
@@ -388,8 +380,6 @@ next:       for (final Class<?> candidate : candidates) {
      * @param  objects A collection of objects. May contains duplicated values and null values.
      * @return The most specialized class, or {@code null} if the given collection does not contain
      *         at least one non-null element.
-     *
-     * @since 3.01 (derived from 2.5)
      */
     public static Class<?> findSpecializedClass(final Collection<?> objects) {
         final Set<Class<?>> types = getClasses(objects);
@@ -442,8 +432,6 @@ next:       for (final Class<?> candidate : candidates) {
      * @param  objects A collection of objects. May contains duplicated values and null values.
      * @return The most specific class common to all supplied objects, or {@code null} if the
      *         given collection does not contain at least one non-null element.
-     *
-     * @since 3.01 (derived from 2.5)
      */
     public static Class<?> findCommonClass(final Collection<?> objects) {
         final Set<Class<?>> types = getClasses(objects);
@@ -462,8 +450,6 @@ next:       for (final Class<?> candidate : candidates) {
      * @param  c2 The second class, or {@code null}.
      * @return The most specific class common to the supplied classes, or {@code null}
      *         if both {@code c1} and {@code c2} are null.
-     *
-     * @since 3.01 (derived from 3.00)
      */
     public static Class<?> findCommonClass(Class<?> c1, Class<?> c2) {
         if (c1 == null) return c2;
@@ -491,8 +477,6 @@ next:       for (final Class<?> candidate : candidates) {
      * @param  c2 The second class.
      * @return The interfaces common to both classes, or an empty set if none.
      *         Callers can freely modify the returned set.
-     *
-     * @since 3.01
      */
     public static Set<Class<?>> findCommonInterfaces(final Class<?> c1, final Class<?> c2) {
         final Set<Class<?>> interfaces = getAllInterfaces(c1);
@@ -527,8 +511,6 @@ next:       for (final Class<?> candidate : candidates) {
      * @param base    The parent of all interfaces to check.
      * @return        {@code true} if both objects implement the same set of interfaces,
      *                considering only sub-interfaces of {@code base}.
-     *
-     * @since 3.01 (derived from 2.5)
      */
     public static boolean implementSameInterfaces(final Class<?> object1, final Class<?> object2, final Class<?> base) {
         if (object1 == object2) {
@@ -635,8 +617,6 @@ compare:for (int i=0; i<c1.length; i++) {
      * @param  type The type to be tested, or {@code null}.
      * @param  allowedTypes The allowed types.
      * @return {@code true} if the given type is assignable to one of the allowed types.
-     *
-     * @since 3.12
      */
     public static boolean isAssignableTo(final Class<?> type, final Class<?>... allowedTypes) {
         if (type != null) {
