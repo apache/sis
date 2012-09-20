@@ -22,7 +22,13 @@
  *   <li><p>General purpose static methods working on:</p>
  *   <ul>
  *     <li>Primitive or basic Java types:
- *         {@link org.apache.sis.util.CharSequences}.</li>
+ *         {@link org.apache.sis.util.CharSequences},
+ *         {@link org.apache.sis.util.Numbers},
+ *         {@link org.apache.sis.util.Classes}.</li>
+ *     <li>Arrays:
+ *         {@link org.apache.sis.util.Arrays}.</li>
+ *     <li>Other standard Java types:
+ *         {@link org.apache.sis.util.Exceptions}.</li>
  *   </ul></li>
  * </ul>
  *

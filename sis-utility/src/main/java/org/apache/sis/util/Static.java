@@ -25,6 +25,10 @@ package org.apache.sis.util;
  * <tr><th colspan="2">Primitives and classes</th></tr>
  * <tr><td>{@link CharSequences}</td>
  *     <td>Methods working on {@link CharSequence} or {@link String} instances.</td></tr>
+ * <tr><td>{@link Numbers}</td>
+ *     <td>Conversions between different kind of {@link Number}.</td></tr>
+ * <tr><td>{@link Classes}</td>
+ *     <td>Methods working on {@link Class} instances.</td></tr>
  *
  * <tr><th colspan="2" bgcolor="lightblue">Structures (trees, collections, arrays, parameters)</th></tr>
  * <tr><td>{@link Arrays}</td>
@@ -33,6 +37,8 @@ package org.apache.sis.util;
  * <tr><th colspan="2">Loggings and exceptions</th></tr>
  * <tr><td>{@link ArgumentChecks}</td>
  *     <td>Perform argument checks and throw {@link IllegalArgumentException} if needed.</td></tr>
+ * <tr><td>{@link org.apache.sis.util.Exceptions}</td>
+ *     <td>Format a stack trace summary or change the exception message.</td></tr>
  * </table>
  *
  * @author Martin Desruisseaux (Geomatys)
