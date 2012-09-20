@@ -35,8 +35,9 @@ import net.jcip.annotations.ThreadSafe;
 import org.opengis.util.InternationalString;
 
 import org.apache.sis.util.Debug;
-//import org.apache.sis.util.Classes;
-//import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.Classes;
+import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.logging.Logging;
 
 
 /**
@@ -123,9 +124,8 @@ public class IndexedResourceBundle extends ResourceBundle {
      * @return Resources in the given locale.
      * @throws MissingResourceException if resources can't be found.
      *
-     * @see Vocabulary#getResources
-     * @see Loggings#getResources
-     * @see Errors#getResources
+     * @see Vocabulary#getResources(Locale)
+     * @see Errors#getResources(Locale)
      */
     protected static <T extends IndexedResourceBundle> T getBundle(Class<T> base, Locale locale)
             throws MissingResourceException
@@ -186,7 +186,7 @@ public class IndexedResourceBundle extends ResourceBundle {
             int indexCR = value.indexOf('\r'); if (indexCR < 0) indexCR = value.length();
             int indexLF = value.indexOf('\n'); if (indexLF < 0) indexLF = value.length();
             final String number = String.valueOf(i);
-// TODO     out.write(CharSequences.spaces(5 - number.length()));
+            out.write(CharSequences.spaces(5 - number.length()));
             out.write(number);
             out.write(":\t");
             out.write(value, 0, Math.min(indexCR,indexLF));
@@ -262,13 +262,13 @@ public class IndexedResourceBundle extends ResourceBundle {
                 }
                 record.setParameters(new String[] {language, getClass().getCanonicalName()});
             }
-// TODO     Logging.log(IndexedResourceBundle.class, methodName, record);
+            Logging.log(IndexedResourceBundle.class, methodName, record);
             return values;
         } catch (IOException exception) {
             record.setLevel  (Level.WARNING);
             record.setMessage(exception.getLocalizedMessage());
             record.setThrown (exception);
-// TODO     Logging.log(IndexedResourceBundle.class, methodName, record);
+            Logging.log(IndexedResourceBundle.class, methodName, record);
             final MissingResourceException error = new MissingResourceException(
                     exception.getLocalizedMessage(), getClass().getCanonicalName(), key);
             error.initCause(exception);
@@ -367,7 +367,7 @@ public class IndexedResourceBundle extends ResourceBundle {
      * @return A sentence not longer than {@code maxLength}.
      */
     private static String summarize(String text, int maxLength) {
-// TODO text = CharSequences.trim(text);
+        text = CharSequences.trim(text);
         final int length = text.length();
         if (length <= maxLength) {
             return text;
@@ -401,7 +401,7 @@ public class IndexedResourceBundle extends ResourceBundle {
                 break;
             }
         }
-        return /*CharSequences.trim TODO */(new StringBuilder(break1 + (length-break2) + 6)
+        return CharSequences.trim(new StringBuilder(break1 + (length-break2) + 6)
                 .append(text, 0, break1+1).append(" (…) ").append(text, break2, length).toString());
     }
 
@@ -442,11 +442,11 @@ public class IndexedResourceBundle extends ResourceBundle {
             } else if (element instanceof Throwable) {
                 String message = ((Throwable) element).getLocalizedMessage();
                 if (message == null) {
-                    message = element.getClass().getSimpleName(); // TODO Classes.getShortClassName(element);
+                    message = Classes.getShortClassName(element);
                 }
                 array[i] = message;
             } else if (element instanceof Class<?>) {
-                array[i] = ((Class<?>) element).getSimpleName(); // TODO Classes.getShortName((Class<?>) element);
+                array[i] = Classes.getShortName((Class<?>) element);
             }
         }
         return array;
@@ -756,7 +756,7 @@ public class IndexedResourceBundle extends ResourceBundle {
      * Invoked when an unexpected exception occurred in the {@link #format} method.
      */
     private static void unexpectedException(final RuntimeException exception) {
-// TODO Logging.unexpectedException(IndexedResourceBundle.class, "format", exception);
+        Logging.unexpectedException(IndexedResourceBundle.class, "format", exception);
     }
 
     /**
