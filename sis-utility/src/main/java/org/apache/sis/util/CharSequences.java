@@ -267,8 +267,6 @@ public final class CharSequences extends Static {
      * @return The array of numbers parsed from the given string,
      *         or an empty array if {@code values} was null.
      * @throws NumberFormatException If at least one number can not be parsed.
-     *
-     * @since 3.19
      */
     public static double[] parseDoubles(final String values, final char separator) throws NumberFormatException {
         final String[] tokens = split(values, separator);
@@ -289,8 +287,6 @@ public final class CharSequences extends Static {
      * @return The array of numbers parsed from the given string,
      *         or an empty array if {@code values} was null.
      * @throws NumberFormatException If at least one number can not be parsed.
-     *
-     * @since 3.19
      */
     public static float[] parseFloats(final String values, final char separator) throws NumberFormatException {
         final String[] tokens = split(values, separator);
@@ -312,8 +308,6 @@ public final class CharSequences extends Static {
      * @return The array of numbers parsed from the given string,
      *         or an empty array if {@code values} was null.
      * @throws NumberFormatException If at least one number can not be parsed.
-     *
-     * @since 3.19
      */
     public static long[] parseLongs(final String values, final char separator, final int radix) throws NumberFormatException {
         final String[] tokens = split(values, separator);
@@ -334,8 +328,6 @@ public final class CharSequences extends Static {
      * @return The array of numbers parsed from the given string,
      *         or an empty array if {@code values} was null.
      * @throws NumberFormatException If at least one number can not be parsed.
-     *
-     * @since 3.19
      */
     public static int[] parseInts(final String values, final char separator, final int radix) throws NumberFormatException {
         final String[] tokens = split(values, separator);
@@ -356,8 +348,6 @@ public final class CharSequences extends Static {
      * @return The array of numbers parsed from the given string,
      *         or an empty array if {@code values} was null.
      * @throws NumberFormatException If at least one number can not be parsed.
-     *
-     * @since 3.19
      */
     public static short[] parseShorts(final String values, final char separator, final int radix) throws NumberFormatException {
         final String[] tokens = split(values, separator);
@@ -378,8 +368,6 @@ public final class CharSequences extends Static {
      * @return The array of numbers parsed from the given string,
      *         or an empty array if {@code values} was null.
      * @throws NumberFormatException If at least one number can not be parsed.
-     *
-     * @since 3.19
      */
     public static byte[] parseBytes(final String values, final char separator, final int radix) throws NumberFormatException {
         final String[] tokens = split(values, separator);
@@ -411,8 +399,6 @@ public final class CharSequences extends Static {
      * @param  separator  The element separator, which is usually {@code ", "}.
      * @return The (typically) comma-separated list, or {@code null} if the given {@code collection}
      *         was null or contains only null elements.
-     *
-     * @since 3.20
      */
     public static String formatList(final Iterable<?> collection, final String separator) {
         ArgumentChecks.ensureNonNull("separator", separator);
@@ -475,8 +461,6 @@ public final class CharSequences extends Static {
      * @throws NullPointerException if the {@code buffer} or {@code chars} argument is null.
      *
      * @see StringBuilder#replace(int, int, String)
-     *
-     * @since 3.20
      */
     public static void replace(final StringBuilder buffer, int start, final int end, final char[] chars) {
         int length = end - start;
@@ -626,8 +610,6 @@ public final class CharSequences extends Static {
      *         or {@code null}.
      * @return The given text with substitution applied, or {@code text} if no replacement
      *         has been applied.
-     *
-     * @since 3.18
      */
     public static CharSequence toASCII(CharSequence text) {
         if (text != null) {
@@ -685,8 +667,6 @@ public final class CharSequences extends Static {
      *         or {@code null}.
      * @return The identifier with spaces inserted after what looks like words, or {@code null}
      *         if the given argument was null.
-     *
-     * @since 3.18 (derived from 3.09)
      */
     public static String camelCaseToSentence(final CharSequence identifier) {
         if (identifier == null) {
@@ -935,8 +915,6 @@ cmp:    while (ia < lga) {
      * like {@code "UTF-8"} or {@code "ISO-LATIN-1"}.
      *
      * @see #isJavaIdentifier(CharSequence)
-     *
-     * @since 3.18 (derived from 3.17)
      */
     private static boolean isCode(final CharSequence identifier) {
         for (int i=identifier.length(); --i>=0;) {

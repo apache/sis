@@ -1067,8 +1067,6 @@ public final class Arrays extends Static {
      * @return         A copy of the given array with the given element appended at the end.
      *
      * @see #concatenate(Object[][])
-     *
-     * @since 3.20
      */
     public static <T> T[] append(final T[] array, final T element) {
         ArgumentChecks.ensureNonNull("array", array);
@@ -1103,8 +1101,6 @@ public final class Arrays extends Static {
      * @param  array Array from which to remove duplicated elements, or {@code null}.
      * @return The number of remaining elements in the given array, or 0 if the given
      *         {@code array} was null.
-     *
-     * @since 3.20
      */
     public static int removeDuplicated(final Object[] array) {
         if (array == null) {
@@ -1130,8 +1126,6 @@ public final class Arrays extends Static {
      * If the given array is {@code null}, then this method does nothing.
      *
      * @param entries The array in which to reverse the order of elements, or {@code null} if none.
-     *
-     * @since 3.11
      */
     public static void reverse(final Object[] entries) {
         if (entries != null) {

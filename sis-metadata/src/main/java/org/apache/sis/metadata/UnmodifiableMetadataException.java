@@ -22,10 +22,9 @@ package org.apache.sis.metadata;
  * {@linkplain org.apache.sis.metadata.ModifiableMetadata modifiable metadata},
  * but this metadata has since be declared unmodifiable.
  *
- * @author Martin Desruisseaux (Geomatys)
- * @version 3.00
- *
- * @since 2.4
+ * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @since   0.3 (derived from geotk-2.4)
+ * @version 0.3
  * @module
  */
 public class UnmodifiableMetadataException extends UnsupportedOperationException {
