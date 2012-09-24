@@ -20,7 +20,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 
 
 /**
- * Thrown when the {@link IndexedResourceCompiler} exit abnormally.
+ * Thrown when the {@link ResourceCompilerMojo} exit abnormally.
  *
  * @author Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
