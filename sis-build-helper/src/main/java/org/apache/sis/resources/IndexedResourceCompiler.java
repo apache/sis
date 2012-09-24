@@ -26,12 +26,16 @@ import java.util.regex.Pattern;
  * Reads a given list of {@code .properties} files and copies their content to {@code .utf} files
  * using UTF-8 encoding. It also checks for key validity and checks values for {@link MessageFormat}
  * compatibility. Finally, it writes the key values in the Java source files.
+ * <p>
+ * This class is independent of any Mojo and could be executed from the command-line.
+ * For now we keep it package-private, but we could consider to enable execution from
+ * the command-line in a future version if this happen to be useful.
  *
  * @author Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-1.2)
  * @version 0.3
  */
-public class IndexedResourceCompiler implements FilenameFilter, Comparator<Object> {
+class IndexedResourceCompiler implements FilenameFilter, Comparator<Object> {
     /**
      * Extension for java source files.
      */

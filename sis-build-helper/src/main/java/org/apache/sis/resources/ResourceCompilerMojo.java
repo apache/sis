@@ -30,7 +30,7 @@ import org.apache.maven.plugin.MojoExecutionException;
  * @since   0.3 (derived from geotk-3.00)
  * @version 0.3
  *
- * @goal compile
+ * @goal compile-resources
  * @phase generate-resources
  */
 public class ResourceCompilerMojo extends AbstractMojo implements FilenameFilter {

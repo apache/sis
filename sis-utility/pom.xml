@@ -93,6 +93,27 @@ Miscellaneous utilities.
 
 
   <!-- ===========================================================
+           Compile properties files into resources UTF files
+       =========================================================== -->
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.sis</groupId>
+        <artifactId>sis-build-helper</artifactId>
+        <version>${project.version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>compile-resources</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+
+  <!-- ===========================================================
            Dependencies
        =========================================================== -->
   <dependencies>
