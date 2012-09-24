@@ -103,19 +103,19 @@ Mailing Lists
 
 Discussion about SIS takes place on the following mailing lists:
 
-    sis-user@incubator.apache.org    - About using SIS
-    sis-dev@incubator.apache.org     - About developing SIS
+    user@sis.apache.org    - About using SIS
+    dev@sis.apache.org     - About developing SIS
 
 Notification on all code changes are sent to the following mailing list:
 
-    sis-commits@incubator.apache.org
+    commits@sis.apache.org
 
 The mailing lists are open to anyone and publicly archived.
 
 You can subscribe the mailing lists by sending a message to
-sis-<LIST>-subscribe@incubator.apache.org (for example sis-user-subscribe@...).
-To unsubscribe, send a message to sis-<LIST>-unsubscribe@incubator.apache.org.
-For more instructions, send a message to sis-<LIST>-help@incubator.apache.org.
+<LIST>-subscribe@sis.apache.org (for example user-subscribe@...).
+To unsubscribe, send a message to <LIST>-unsubscribe@sis.apache.org.
+For more instructions, send a message to <LIST>-help@sis.apache.org.
 
 Issue Tracker
 =============

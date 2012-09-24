@@ -59,12 +59,12 @@ Apache SIS is a toolkit for describing location information, including points,
        ============================================================== -->
   <scm>
     <connection>
-      scm:svn:http://svn.apache.org/repos/asf/incubator/sis/trunk
+      scm:svn:http://svn.apache.org/repos/asf/sis/trunk
     </connection>
     <developerConnection>
-      scm:svn:https://svn.apache.org/repos/asf/incubator/sis/trunk
+      scm:svn:https://svn.apache.org/repos/asf/sis/trunk
     </developerConnection>
-    <url>http://svn.apache.org/viewvc/incubator/sis/trunk</url>
+    <url>http://svn.apache.org/viewvc/sis/trunk</url>
   </scm>
 
   <ciManagement>
@@ -80,27 +80,24 @@ Apache SIS is a toolkit for describing location information, including points,
   <mailingLists>
     <mailingList>
       <name>Development mailing list</name>
-      <subscribe>sis-dev-subscribe@incubator.apache.org</subscribe>
-      <unsubscribe>sis-dev-unsubscribe@incubator.apache.org</unsubscribe>
-      <post>sis-dev@incubator.apache.org</post>
-      <archive>http://mail-archives.apache.org/mod_mbox/incubator-sis-dev/</archive>
-      <otherArchives />
+      <subscribe>dev-subscribe@sis.apache.org</subscribe>
+      <unsubscribe>dev-unsubscribe@sis.apache.org</unsubscribe>
+      <post>dev@sis.apache.org</post>
+      <archive>http://mail-archives.apache.org/mod_mbox/sis-dev/</archive>
     </mailingList>
     <mailingList>
       <name>Commit mailing list</name>
-      <subscribe>sis-commits-subscribe@incubator.apache.org</subscribe>
-      <unsubscribe>sis-commits-unsubscribe@incubator.apache.org</unsubscribe>
-      <post>sis-commits@incubator.apache.org</post>
-      <archive>http://mail-archives.apache.org/mod_mbox/incubator-sis-commits/</archive>
-      <otherArchives />
+      <subscribe>commits-subscribe@sis.apache.org</subscribe>
+      <unsubscribe>commits-unsubscribe@sis.apache.org</unsubscribe>
+      <post>commits@sis.apache.org</post>
+      <archive>http://mail-archives.apache.org/mod_mbox/sis-commits/</archive>
     </mailingList>
     <mailingList>
       <name>User mailing list</name>
-      <subscribe>sis-user-subscribe@incubator.apache.org</subscribe>
-      <unsubscribe>sis-user-unsubscribe@incubator.apache.org</unsubscribe>
-      <post>sis-user@incubator.apache.org</post>
-      <archive>http://mail-archives.apache.org/mod_mbox/incubator-sis-user/</archive>
-      <otherArchives />
+      <subscribe>user-subscribe@sis.apache.org</subscribe>
+      <unsubscribe>user-unsubscribe@sis.apache.org</unsubscribe>
+      <post>user@sis.apache.org</post>
+      <archive>http://mail-archives.apache.org/mod_mbox/sis-user/</archive>
     </mailingList>
   </mailingLists>
 
