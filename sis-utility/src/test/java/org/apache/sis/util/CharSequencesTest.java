@@ -16,6 +16,7 @@
  */
 package org.apache.sis.util;
 
+import java.util.Arrays;
 import org.junit.*;
 import static org.junit.Assert.*;
 import static org.apache.sis.util.CharSequences.*;
@@ -39,34 +40,85 @@ public final strictfp class CharSequencesTest {
         assertEquals("",         spaces(0));
         assertEquals(" ",        spaces(1));
         assertEquals("        ", spaces(8));
+        assertEquals("",         spaces(-2));
     }
 
     /**
-     * Tests {@link CharSequences#count(String, String)} and its variants.
+     * Tests {@link CharSequences#length(CharSequence)}.
+     */
+    @Test
+    public void testLength() {
+        assertEquals(3, length("ABC"));
+        assertEquals(0, length(null));
+    }
+
+    /**
+     * Tests {@link CharSequences#count(CharSequence, String)} and its variants.
      */
     @Test
     public void testCount() {
         assertEquals(0, count("An ordinary sentence.",   '-'));
         assertEquals(4, count("- this one has -dashs--", '-'));
         assertEquals(2, count("An ordinary sentence.",  "en"));
+        assertEquals(0, count(new StringBuilder("An ordinary sentence."),   '-'));
+        assertEquals(4, count(new StringBuilder("- this one has -dashs--"), '-'));
+        assertEquals(2, count(new StringBuilder("An ordinary sentence."),  "en"));
     }
 
     /**
-     * Tests {@link CharSequences#split(String, char)}.
+     * Tests {@link CharSequences#split(CharSequence, char)}.
      */
     @Test
     public void testSplit() {
-        assertArrayEquals(new String[] {"lundi", "mardi", "mercredi"},
-                CharSequences.split("lundi , mardi,mercredi ", ','));
+        assertArrayEquals(new String[] {"lundi", "mardi", "", "mercredi"}, split("lundi , mardi,,mercredi ", ','));
     }
 
     /**
-     * Tests {@link CharSequences#parseFloats(String, char)}.
+     * Tests {@link CharSequences#parseDoubles(CharSequence, char)}.
      */
     @Test
-    public void testFloats() {
-        assertArrayEquals(new float[] {5, 1.5f, Float.NaN, -8},
-                CharSequences.parseFloats("5 , 1.5,, -8 ", ','), 0f);
+    public void testParseDoubles() {
+        assertArrayEquals(new double[] {5, 1.5, Double.NaN, -8}, parseDoubles("5 , 1.5,, -8 ", ','), 0.0);
+    }
+
+    /**
+     * Tests {@link CharSequences#parseFloats(CharSequence, char)}.
+     */
+    @Test
+    public void testParseFloats() {
+        assertArrayEquals(new float[] {5, 1.5f, Float.NaN, -8}, parseFloats("5 , 1.5,, -8 ", ','), 0f);
+    }
+
+    /**
+     * Tests {@link CharSequences#parseLongs(CharSequence, char)}.
+     */
+    @Test
+    public void testParseLongs() {
+        assertArrayEquals(new long[] {5, 2, -8}, parseLongs("5 , 2, -8 ", ',', 10));
+    }
+
+    /**
+     * Tests {@link CharSequences#parseInts(CharSequence, char)}.
+     */
+    @Test
+    public void testParseInts() {
+        assertArrayEquals(new int[] {5, 2, -8}, parseInts("5 , 2, -8 ", ',', 10));
+    }
+
+    /**
+     * Tests {@link CharSequences#parseShorts(CharSequence, char)}.
+     */
+    @Test
+    public void testParseShorts() {
+        assertArrayEquals(new short[] {5, 2, -8}, parseShorts("5 , 2, -8 ", ',', 10));
+    }
+
+    /**
+     * Tests {@link CharSequences#parseBytes(CharSequence, char)}.
+     */
+    @Test
+    public void testParseBytes() {
+        assertArrayEquals(new byte[] {5, 2, -8}, parseBytes("5 , 2, -8 ", ',', 10));
     }
 
     /**
@@ -93,51 +145,24 @@ public final strictfp class CharSequencesTest {
     }
 
     /**
-     * Tests the {@link CharSequences#replace(StringBuilder, String, String)} method.
+     * Tests the {@link CharSequences#formatList(Iterable, String)} method.
      */
     @Test
-    public void testReplace() {
-        final StringBuilder buffer = new StringBuilder("One two three two one");
-        replace(buffer, "two", "zero");
-        assertEquals("One zero three zero one", buffer.toString());
-        replace(buffer, "zero", "ten");
-        assertEquals("One ten three ten one", buffer.toString());
+    public void testFormatList() {
+        assertEquals("4, 8, 12, 9", formatList(Arrays.asList(4, 8, 12, 9), ", "));
+        assertSame  ("singleton",   formatList(Arrays.asList("singleton"), ", "));
     }
 
     /**
-     * Tests the {@link CharSequences#replace(StringBuilder, int, int, char[])} method.
+     * Tests the {@link CharSequences#trimWhitespaces(CharSequence)} method.
      */
     @Test
-    public void testReplaceChars() {
-        final StringBuilder buffer = new StringBuilder("ABCD1234EFGH");
-        replace(buffer, 4, 8, new char[] {'5','6','7','8'});
-        assertEquals("ABCD5678EFGH", buffer.toString());
-        replace(buffer, 4, 6, new char[] {'1','2','3','4'});
-        assertEquals("ABCD123478EFGH", buffer.toString());
-        replace(buffer, 8, 10, new char[] {'a','b','c','d'});
-        assertEquals("ABCD1234abcdEFGH", buffer.toString());
+    public void testTrimWhitespaces() {
+        assertEquals("A text.", trimWhitespaces("  A text. "));
     }
 
     /**
-     * Tests the {@link CharSequences#remove(StringBuilder, String)} method.
-     */
-    @Test
-    public void testRemove() {
-        final StringBuilder buffer = new StringBuilder("EPSG.6.7");
-        remove(buffer, ".");
-        assertEquals("EPSG67", buffer.toString());
-    }
-
-    /**
-     * Tests the {@link CharSequences#trim(String)} method.
-     */
-    @Test
-    public void testTrim() {
-        assertEquals("A text.", trim("  A text. "));
-    }
-
-    /**
-     * Tests the {@link CharSequences#trimFractionalPart(String)} method.
+     * Tests the {@link CharSequences#trimFractionalPart(CharSequence)} method.
      */
     @Test
     public void testTrimFractionalPart() {
@@ -177,35 +202,16 @@ public final strictfp class CharSequencesTest {
     }
 
     /**
-     * Tests the {@link CharSequences#getLinesFromMultilines(String)} method.
-     */
-    @Test
-    public void testGetLinesFromMultilines() {
-        final String[] splitted = getLinesFromMultilines("\nOne\r\nTwo\rThree\rFour\nFive\n\rSix\n");
-        assertArrayEquals(new String[] {
-            "",
-            "One",
-            "Two",
-            "Three",
-            "Four",
-            "Five",
-            "",
-            "Six",
-            ""
-        }, splitted);
-    }
-
-    /**
      * Tests the {@link CharSequences#camelCaseToAcronym(String)} method.
      */
     @Test
     public void testCamelCaseToAcronym() {
-        assertEquals("OGC", camelCaseToAcronym("OGC"));
-        assertEquals("OGC", camelCaseToAcronym("Open Geospatial Consortium"));
-        assertEquals("E",   camelCaseToAcronym("East"));
-        assertEquals("NE",  camelCaseToAcronym("North-East"));
-        assertEquals("NE",  camelCaseToAcronym("NORTH_EAST"));
-        assertEquals("NE",  camelCaseToAcronym("northEast"));
+        assertEquals("OGC", camelCaseToAcronym("OGC").toString());
+        assertEquals("OGC", camelCaseToAcronym("Open Geospatial Consortium").toString());
+        assertEquals("E",   camelCaseToAcronym("East").toString());
+        assertEquals("NE",  camelCaseToAcronym("North-East").toString());
+        assertEquals("NE",  camelCaseToAcronym("NORTH_EAST").toString());
+        assertEquals("NE",  camelCaseToAcronym("northEast").toString());
     }
 
     /**
@@ -259,5 +265,24 @@ public final strictfp class CharSequencesTest {
          * otherwise it leads to a confusion in DirectEpsgFactory.
          */
         assertFalse(isAcronymForWords("coordoperation", "[Coordinate_Operation Method]"));
+    }
+
+    /**
+     * Tests the {@link CharSequences#getLinesFromMultilines(String)} method.
+     */
+    @Test
+    public void testGetLinesFromMultilines() {
+        final CharSequence[] splitted = getLinesFromMultilines("\nOne\r\nTwo\rThree\rFour\nFive\n\rSix\n");
+        assertArrayEquals(new String[] {
+            "",
+            "One",
+            "Two",
+            "Three",
+            "Four",
+            "Five",
+            "",
+            "Six",
+            ""
+        }, splitted);
     }
 }
