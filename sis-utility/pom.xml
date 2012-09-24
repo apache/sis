@@ -95,6 +95,9 @@ Miscellaneous utilities.
   <!-- ===========================================================
            Compile properties files into resources UTF files
        =========================================================== -->
+  <!-- Temporarily disabled because we need for the plugin to be built
+       by the various slaves of Jenkins. Alternatively it may be safer
+       to deploy the plugin for avoiding this issue.
   <build>
     <plugins>
       <plugin>
@@ -111,6 +114,7 @@ Miscellaneous utilities.
       </plugin>
     </plugins>
   </build>
+  -->
 
 
   <!-- ===========================================================
