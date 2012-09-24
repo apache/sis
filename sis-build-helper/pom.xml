@@ -112,4 +112,51 @@
     </plugins>
   </build>
 
+
+  <!-- ===========================================================
+           Sun's tools dependency   (from Maven FAQ)
+       =========================================================== -->
+  <profiles>
+    <profile>
+      <id>default-tools.jar</id>
+      <activation>
+        <property>
+          <name>java.vendor</name>
+          <value>Sun Microsystems Inc.</value>
+        </property>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>com.sun</groupId>
+          <artifactId>tools</artifactId>
+          <version>${java.version}</version>
+          <scope>system</scope>
+          <systemPath>${java.home}/../lib/tools.jar</systemPath>
+        </dependency>
+      </dependencies>
+    </profile>
+
+    <!-- Following is a copy of the above profile with only the Java vendor name changed.
+         This copy will not be needed anymore if http://jira.codehaus.org/browse/MNG-3328
+         get fixed. -->
+    <profile>
+      <id>jdk7-tools.jar</id>
+      <activation>
+        <property>
+          <name>java.vendor</name>
+          <value>Oracle Corporation</value>
+        </property>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>com.sun</groupId>
+          <artifactId>tools</artifactId>
+          <version>${java.version}</version>
+          <scope>system</scope>
+          <systemPath>${java.home}/../lib/tools.jar</systemPath>
+        </dependency>
+      </dependencies>
+    </profile>
+  </profiles>
+
 </project>
