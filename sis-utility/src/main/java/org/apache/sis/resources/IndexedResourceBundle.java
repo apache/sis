@@ -367,7 +367,7 @@ public class IndexedResourceBundle extends ResourceBundle {
      * @return A sentence not longer than {@code maxLength}.
      */
     private static String summarize(String text, int maxLength) {
-        text = CharSequences.trim(text);
+        text = CharSequences.trimWhitespaces(text).toString();
         final int length = text.length();
         if (length <= maxLength) {
             return text;
@@ -401,8 +401,8 @@ public class IndexedResourceBundle extends ResourceBundle {
                 break;
             }
         }
-        return CharSequences.trim(new StringBuilder(break1 + (length-break2) + 6)
-                .append(text, 0, break1+1).append(" (…) ").append(text, break2, length).toString());
+        return CharSequences.trimWhitespaces(new StringBuilder(break1 + (length-break2) + 6)
+                .append(text, 0, break1+1).append(" (…) ").append(text, break2, length)).toString();
     }
 
     /**
