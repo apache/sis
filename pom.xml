@@ -461,6 +461,26 @@ Apache SIS is a toolkit for describing location information, including points,
 
 
   <!-- ==============================================================
+         Additional repositories from which to download artifacts.
+         The parent pom.xml already declares the apache.snapshots
+         repository for library artefacts. But we also need it for
+         Maven plugins in order to download sis-build-helper when
+         the user did not built it himself.
+       ============================================================== -->
+  <pluginRepositories>
+    <pluginRepository>
+      <id>apache.snapshots</id>
+      <name>Apache Snapshot Repository</name>
+      <url>http://repository.apache.org/snapshots</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+    </pluginRepository>
+  </pluginRepositories>
+
+
+
+  <!-- ==============================================================
          Modules to build in approximate dependency order.
        ============================================================== -->
   <modules>
