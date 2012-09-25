@@ -44,7 +44,7 @@
   <parent>
     <groupId>org.apache.sis</groupId>
     <artifactId>sis-parent</artifactId>
-    <version>0.3-incubating-SNAPSHOT</version>
+    <version>0.3-SNAPSHOT</version>
   </parent>
 
 
