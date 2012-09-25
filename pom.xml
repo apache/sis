@@ -372,6 +372,14 @@ Apache SIS is a toolkit for describing location information, including points,
        ============================================================== -->
   <reporting>
     <plugins>
+      <!-- Overwrite the configuration declared in the Apache parent pom.xml
+           in order to use version 2.5.1 instead than 2.5. This is necessary
+           for avoiding a NullPointerException (http://jira.codehaus.org/browse/MPIR-248) -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-project-info-reports-plugin</artifactId>
+        <version>2.5.1</version>
+      </plugin>
 
       <!-- Produce JavaDoc -->
       <plugin>
