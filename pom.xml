@@ -406,6 +406,22 @@ Apache SIS is a toolkit for describing location information, including points,
             <link>http://www.geoapi.org/3.0/javadoc</link>
           </links>
 
+          <!-- Separates packages on the overview page into the groups specified. -->
+          <groups>
+            <group>
+              <title>Referencing</title>
+              <packages>org.apache.sis.core*:org.apache.sis.distance*:org.apache.sis.referencing*:org.apache.sis.parameter*</packages>
+            </group>
+            <group>
+              <title>Metadata</title>
+              <packages>org.apache.sis.metadata*:org.apache.sis.naming*</packages>
+            </group>
+            <group>
+              <title>Utilities</title>
+              <packages>org.apache.sis.io*:org.apache.sis.util*:org.apache.sis.resources*</packages>
+            </group>
+          </groups>
+
           <!-- Internal packages to hide from javadoc. -->
           <excludePackageNames>org.apache.sis.internal</excludePackageNames>
 
