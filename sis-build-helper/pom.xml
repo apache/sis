@@ -53,11 +53,14 @@
        =========================================================== -->
   <artifactId>sis-build-helper</artifactId>
   <packaging>maven-plugin</packaging>
-  <name>Build helper</name>
+  <name>Apache SIS build helper</name>
   <description>
-    Compiles internationalization files. They are Java properties files transformed
-    into UTF files. Their values are made compliant with the java.text.MessageFormat
-    syntax, and a set of programmatic constants are generated for the keys.
+  <!-- Left alignment because this description will be copied in META-INF/MANIFEST.MF
+       The leading space after the first line is necessary for proper formatting. -->
+Define Maven Mojos and Javadoc taglets for generating resource files
+ or formatting the Javadoc. While any project could use it, this module
+ is primarily for internal use by Apache SIS and may change in any
+ future version.
   </description>
 
 

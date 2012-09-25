@@ -1,0 +1,77 @@
+                             ------------------------------
+                                          Index
+                             ------------------------------
+
+Building Apache SIS
+
+  The <<<sis-build-helper>>> module defines Maven Mojos and Javadoc taglets for generating
+  resource files or formatting the Javadoc. While any project could use it, this module is
+  primarily for internal use by Apache SIS and may change in any future version.
+
+
+* Javadoc taglets
+
+  This module provides the following javadoc taglets:
+
+   * <<<@module>>> - replaced in the generated javadoc by a link to the module where the
+     class is defined.
+
+   * <<<{@section}>>> - an inline taglet for the title of a new section in the javadoc.
+
+   * <<<{@note}>>> - an inline taglet for a remark that readers can safely ignore.
+     Notes appear in indented paragraphs with a smaller font.
+
+   * <<<{preformat}>>> - an inline taglet for pre-formatted text. The first word inside
+     the taglet shall be one of <<<java>>>, <<<xml>>>, <<<sql>>>, <<<wkt>>>, <<<text>>>,
+     <<<math>>> or <<<shell>>>.
+
+
+* Localized resources compiler
+
+  Localized resources are provided in <<<*.properties>>> files as specified by the
+  <<<java.util.PropertyResourceBundle>>> standard class. However SIS does not use
+  those resources files directly. Instead <<<*.properties>>> files are transformed
+  into binary files having the same filename but the <<<.utf>>> extension.
+  This conversion is done for efficiency, for convenience (the compiler applies
+  the <<<java.text.MessageFormat>>> <doubled single quotes> rule itself),
+  and for compile-time safety.
+
+  In addition to generating the <<<*.utf>>> files, the resource compiler may modify
+  the <<<*.java>>> files having the same name than the resource files.
+  For example given a set of <<<Vocabulary*.properties>>> files (one for each supported language),
+  the compiler will generate the corresponding <<<Vocabulary*.utf>>> files, then look for a
+  <<<Vocabulary.java>>> source file. If such source file is found and contains a public static
+  inner class named <<<Keys>>>, then the compiler will rewrite the constants declared in that
+  inner class with the list of keys found in the <<<Vocabulary*.properties>>> files.
+
+  The resource compiler is executed at Maven build time when the <<<pom.xml>>> file of a module
+  contains the following declaration. Note that current implementation looks only for resources
+  in the <<<org.apache.sis.resources>>> package; all other packages are ignored.
+
++-----------------------------------------------------
+<build>
+  <plugins>
+    <plugin>
+      <groupId>org.apache.sis</groupId>
+      <artifactId>sis-build-helper</artifactId>
+      <version>${project.version}</version>
+      <executions>
+        <execution>
+          <goals>
+            <goal>compile-resources</goal>
+          </goals>
+        </execution>
+      </executions>
+    </plugin>
+  </plugins>
+</build>
++-----------------------------------------------------
+
+  The resources compilation is part of the build process and does not need to be run explicitly.
+  However, if necessary the resources compiler can be invoked alone by the following command line
+  in the module containing the resources to recompile. This is sometime useful for regenerating
+  the constants in the <<<Keys>>> inner class.
+
++-----------------------------------------------------
+mvn org.apache.sis:sis-build-helper:compile-resources
++-----------------------------------------------------
