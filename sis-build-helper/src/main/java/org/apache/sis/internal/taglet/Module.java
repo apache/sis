@@ -35,7 +35,7 @@ public final class Module implements Taglet {
     /**
      * SIS version to be referenced by this taglet.
      */
-    private static final String VERSION = "0.3-incubating-SNAPSHOT";
+    private static final String VERSION = "0.3-SNAPSHOT";
 
     /**
      * Register this taglet.
