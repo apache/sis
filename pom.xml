@@ -308,12 +308,18 @@ Apache SIS is a toolkit for describing location information, including points,
         </configuration>
       </plugin>
 
-      <!-- JAR packaging -->
+      <!-- JAR packaging
+           Note: <index> and <addClasspath> are mutually exclusive: when both are enabled,
+           the META-INF/INDEX.LIST file has precedence over the "Class-Path" entry in the
+           META-INF/MANIFEST.MF file,  thus causing java.lang.NoClassDefFoundError if the
+           INDEX.LIST file is incomplete (which seem to happen in practice).
+      -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
         <configuration>
           <archive>
+            <index>false</index>
             <manifest>
               <addClasspath>true</addClasspath>
               <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
@@ -402,6 +408,24 @@ Apache SIS is a toolkit for describing location information, including points,
 
           <!-- Internal packages to hide from javadoc. -->
           <excludePackageNames>org.apache.sis.internal</excludePackageNames>
+
+          <!-- Custom taglets, some of them implemented in Java. -->
+          <tags>
+            <tag><placement>t</placement> <name>goal</name>  <head>Maven goal:</head></tag>
+            <tag><placement>t</placement> <name>phase</name> <head>Maven phase:</head></tag>
+            <tag><placement>a</placement> <name>todo</name>  <head>TODO:</head></tag>
+          </tags>
+          <taglets>
+            <taglet><tagletClass>org.apache.sis.internal.taglet.Module</tagletClass></taglet>
+            <taglet><tagletClass>org.apache.sis.internal.taglet.Section</tagletClass></taglet>
+            <taglet><tagletClass>org.apache.sis.internal.taglet.Note</tagletClass></taglet>
+            <taglet><tagletClass>org.apache.sis.internal.taglet.Preformat</tagletClass></taglet>
+          </taglets>
+          <tagletArtifact>
+            <groupId>org.apache.sis</groupId>
+            <artifactId>sis-build-helper</artifactId>
+            <version>${project.version}</version>
+          </tagletArtifact>
         </configuration>
       </plugin>
 
