@@ -28,7 +28,7 @@ import com.sun.tools.doclets.Taglet;
  * @since   0.3 (derived from geotk-3.00)
  * @version 0.3
  */
-public final class Note implements Taglet {
+public final class Note extends InlineTaglet {
     /**
      * Register this taglet.
      *
@@ -57,77 +57,6 @@ public final class Note implements Taglet {
     }
 
     /**
-     * Returns {@code true} since <code>@note</code> can be used in overview.
-     *
-     * @return Always {@code false}.
-     */
-    @Override
-    public boolean inOverview() {
-        return true;
-    }
-
-    /**
-     * Returns {@code true} since <code>@note</code> can be used in package documentation.
-     *
-     * @return Always {@code true}.
-     */
-    @Override
-    public boolean inPackage() {
-        return true;
-    }
-
-    /**
-     * Returns {@code true} since <code>@note</code> can be used in type documentation
-     * (classes or interfaces).
-     *
-     * @return Always {@code true}.
-     */
-    @Override
-    public boolean inType() {
-        return true;
-    }
-
-    /**
-     * Returns {@code true} since <code>@note</code> can be used in constructor
-     *
-     * @return Always {@code true}.
-     */
-    @Override
-    public boolean inConstructor() {
-        return true;
-    }
-
-    /**
-     * Returns {@code true} since <code>@note</code> can be used in method documentation.
-     *
-     * @return Always {@code true}.
-     */
-    @Override
-    public boolean inMethod() {
-        return true;
-    }
-
-    /**
-     * Returns {@code true} since <code>@note</code> can be used in field documentation.
-     *
-     * @return Always {@code true}.
-     */
-    @Override
-    public boolean inField() {
-        return true;
-    }
-
-    /**
-     * Returns {@code true} since <code>@note</code> is an inline tag.
-     *
-     * @return Always {@code true}.
-     */
-    @Override
-    public boolean isInlineTag() {
-        return true;
-    }
-
-    /**
      * Given the <code>Tag</code> representation of this custom tag, return its string representation.
      *
      * @param  tag The tag to format.
@@ -138,22 +67,5 @@ public final class Note implements Taglet {
         final StringBuilder buffer = new StringBuilder("<blockquote><font size=-1><b>Note:</b>\n");
         buffer.append(tag.text());
         return buffer.append("</font></blockquote>").toString();
-    }
-
-    /**
-     * Given an array of {@code Tag}s representing this custom tag, return its string
-     * representation. This method should not be called since arrays of inline tags do
-     * not exist. However we define it as a matter of principle.
-     *
-     * @param  tags The tags to format.
-     * @return A string representation of the given tags.
-     */
-    @Override
-    public String toString(final Tag[] tags) {
-        final StringBuilder buffer = new StringBuilder();
-        for (int i=0; i<tags.length; i++) {
-            buffer.append(toString(tags[i]));
-        }
-        return buffer.toString();
     }
 }

@@ -50,7 +50,7 @@ public final class Module implements Taglet {
     /**
      * The base URL for Maven reports, with a trailing slash.
      */
-    private static final String MAVEN_REPORTS_BASE_URL = "http://builds.apache.org/job/sis-trunk/site/";
+    private static final String MAVEN_REPORTS_BASE_URL = WebSite.URL + '/';
 
     /**
      * The base URL for Maven repository, with a trailing slash.

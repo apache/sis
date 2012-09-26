@@ -46,6 +46,5 @@
  *
  * @see java.util.ResourceBundle
  * @see java.text.MessageFormat
- * @see <a href="{@website}/sis-build-helper/index.html"><code>sis-build-helper</code> module</a>
  */
 package org.apache.sis.resources;
