@@ -48,12 +48,12 @@ public final class Module implements Taglet {
     }
 
     /**
-     * The base URL for Maven reports.
+     * The base URL for Maven reports, with a trailing slash.
      */
-    private static final String MAVEN_REPORTS_BASE_URL = "http://incubator.apache.org/sis/";
+    private static final String MAVEN_REPORTS_BASE_URL = "http://builds.apache.org/job/sis-trunk/site/";
 
     /**
-     * The base URL for Maven repository.
+     * The base URL for Maven repository, with a trailing slash.
      * See <a href="http://www.apache.org/dev/repository-faq.html">ASF Jar Repositories</a>
      * for more information.
      */
@@ -197,8 +197,8 @@ public final class Module implements Taglet {
             /*
              * Appends the module link.
              */
-            openMavenReportLink(buffer);
-            buffer.append("index.html\">").append(module).append("</a>");
+            buffer.append("<a href=\"").append(MAVEN_REPORTS_BASE_URL).append(module)
+                  .append("/index.html\">").append(module).append("</a>");
             /*
              * Appends the "(download binary)" link.
              */
@@ -215,23 +215,16 @@ public final class Module implements Taglet {
                 while ((outer = doc.containingClass()) != null) {
                     doc = outer;
                 }
-                buffer.append(" &nbsp;&nbsp; ");
-                openMavenReportLink(buffer);
-                buffer.append("xref/").append(doc.qualifiedName())
+                final String className = doc.qualifiedName();
+                buffer.append(" &nbsp;&nbsp; <a href=\"");
+                for (int j=className.indexOf('.'); j>=0; j=className.indexOf('.', j+1)) {
+                    buffer.append("../");
+                }
+                buffer.append("../xref/").append(className.replace('.', '/'))
                       .append(".html\">View source code for this class</a>");
             }
             buffer.append("\n</td></tr></table>");
         }
         return buffer.append("</dd>\n").toString();
-    }
-
-    /**
-     * Opens a {@code <A HREF>} element toward the Maven report directory.
-     * A trailing slash is included.
-     *
-     * @param buffer The buffer in which to write.
-     */
-    private void openMavenReportLink(final StringBuilder buffer) {
-        buffer.append("<a href=\"").append(MAVEN_REPORTS_BASE_URL).append('/').append(module).append('/');
     }
 }

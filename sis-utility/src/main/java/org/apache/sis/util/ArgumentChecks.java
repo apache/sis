@@ -23,21 +23,24 @@ import org.apache.sis.resources.Errors;
 
 
 /**
- * Provides static methods for performing argument checks. The methods in this class throw
- * one of the following exceptions (or a subclass of them) widely used in standard Java API:
+ * Provides static methods for performing argument checks.
+ * The methods in this class throw one of the following exceptions:
  * <p>
- * <table>
- * <tr><th>Exception</th></th>Thrown by</th></tr>
- * <tr><td>{@link NullPointerException}</td>
- * <td>{@link #ensureNonNull(String, Object) ensureNonNull}</td></tr>
+ * <table class="sis">
+ * <tr><th>Exception</th><th class="sep">Thrown by</th></tr>
+ * <tr><td>{@link NullArgumentException}</td>
+ * <td class="sep">{@link #ensureNonNull(String, Object) ensureNonNull}</td></tr>
  *
  * <tr><td>{@link IndexOutOfBoundsException}</td>
- * <td>{@link #ensureValidIndex(int, int) ensureValidIndex}</td></tr>
+ * <td class="sep">{@link #ensureValidIndex(int, int) ensureValidIndex}</td></tr>
  *
  * <tr><td>{@link IllegalArgumentException}</td>
- * <td>{@link #ensurePositive(String, int) ensurePositive},
+ * <td class="sep">{@link #ensurePositive(String, int) ensurePositive},
  * {@link #ensureStrictlyPositive(String, int) ensureStrictlyPositive},
  * {@link #ensureBetween(String, int, int, int) ensureBetween}</td></tr>
+ *
+ * <tr><td>{@link MismatchedDimensionException}</td>
+ * <td class="sep">{@link #ensureDimensionMatches(String, DirectPosition, int) ensureDimensionMatches}</td></tr>
  * </table>
  *
  * {@section Method Arguments}
@@ -381,7 +384,7 @@ public final class ArgumentChecks extends Static {
 
     /**
      * Ensures that the given direct position has the expected number of dimensions.
-     * This method does nothing if the direct position is null.
+     * This method does nothing if the given direct position is null.
      *
      * @param  name     The name of the argument to be checked. Used only in case an exception is thrown.
      * @param  position The direct position to check for its dimension.

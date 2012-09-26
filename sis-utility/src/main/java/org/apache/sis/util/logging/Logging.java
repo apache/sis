@@ -46,14 +46,8 @@ import static org.apache.sis.util.Arrays.insert;
  *
  * {@section Configuration}
  * The log records can be redirected explicitly to an other logging framework using the
- * following method call (replace {@link LoggerFactory#COMMONS_LOGGING} by
- * {@link LoggerFactory#LOG4J} or an other framework if desired):
- *
- * {@preformat java
- *     Logging.SIS.setLoggerFactory(LoggerFactory.COMMONS_LOGGING);
- * }
- *
- * Note however that the above method invocation is performed automatically if the
+ * {@link #setLoggerFactory(LoggerFactory)} method.
+ * Note however that this method call is performed automatically if the
  * {@code sis-logging-commons.jar} or the {@code sis-logging-log4j.jar} file is
  * found on the classpath, so it usually doesn't need to be invoked explicitely.
  * See the {@link #scanLoggerFactory()} method for more details on automatic logger
@@ -221,9 +215,8 @@ public final class Logging extends Static {
     }
 
     /**
-     * Returns a {@code Logging} instance for the specified base logger. This instance is
-     * used for controlling logging configuration in SIS. For example methods like
-     * {@link #forceMonolineConsoleOutput(Level)} are invoked on a {@code Logging} instance.
+     * Returns a {@code Logging} instance for the specified base logger.
+     * This instance can be used for controlling logging configuration in SIS.
      * <p>
      * {@code Logging} instances follow the same hierarchy than {@link Logger}, i.e.
      * {@code "org.apache.sis"} is the parent of {@code "org.apache.sis.referencing"},
@@ -332,9 +325,9 @@ public final class Logging extends Static {
      *     META-INF/services/org.apache.sis.util.logging.LoggerFactory
      * }
      *
-     * The first factory found on the classpath is given to {@link #setLoggerFactory(String)}.
-     * If it can't be used (for example because of missing dependency), then the second factory
-     * is tried, <i>etc.</i> until an acceptable factory is found.
+     * The factory found on the classpath is given to {@link #setLoggerFactory(String)}.
+     * If more than one factory is found, then the log messages will be sent to the logging
+     * frameworks managed by all those factories.
      * <p>
      * This method usually doesn't need to be invoked explicitly, since it is automatically
      * invoked on {@code Logging} class initialization. However developers may invoke it if

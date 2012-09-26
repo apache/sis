@@ -21,7 +21,7 @@ package org.apache.sis.util;
  * Parent of classes that contain only static utility methods. This parent is for documentation
  * purpose only. The list below summarizes some of the utility classes:
  *
- * <table>
+ * <table class="sis">
  * <tr><th colspan="2">Primitives and classes</th></tr>
  * <tr><td>{@link CharSequences}</td>
  *     <td>Methods working on {@link CharSequence} or {@link String} instances.</td></tr>
@@ -30,11 +30,11 @@ package org.apache.sis.util;
  * <tr><td>{@link Classes}</td>
  *     <td>Methods working on {@link Class} instances.</td></tr>
  *
- * <tr><th colspan="2" bgcolor="lightblue">Structures (trees, collections, arrays, parameters)</th></tr>
+ * <tr><th colspan="2" class="hsep">Structures (trees, collections, arrays, parameters)</th></tr>
  * <tr><td>{@link Arrays}</td>
  *     <td>Insert or remove elements in the middle of arrays.</td></tr>
  *
- * <tr><th colspan="2">Loggings and exceptions</th></tr>
+ * <tr><th colspan="2" class="hsep">Loggings and exceptions</th></tr>
  * <tr><td>{@link ArgumentChecks}</td>
  *     <td>Perform argument checks and throw {@link IllegalArgumentException} if needed.</td></tr>
  * <tr><td>{@link org.apache.sis.util.Exceptions}</td>
