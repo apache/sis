@@ -202,7 +202,7 @@ public final strictfp class CharSequencesTest {
     }
 
     /**
-     * Tests the {@link CharSequences#camelCaseToAcronym(String)} method.
+     * Tests the {@link CharSequences#camelCaseToAcronym(CharSequence)} method.
      */
     @Test
     public void testCamelCaseToAcronym() {
@@ -268,7 +268,7 @@ public final strictfp class CharSequencesTest {
     }
 
     /**
-     * Tests the {@link CharSequences#getLinesFromMultilines(String)} method.
+     * Tests the {@link CharSequences#getLinesFromMultilines(CharSequence)} method.
      */
     @Test
     public void testGetLinesFromMultilines() {

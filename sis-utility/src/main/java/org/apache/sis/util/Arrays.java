@@ -50,15 +50,15 @@ import org.apache.sis.internal.Objects;
  * <strong>small</strong> arrays. For large arrays or for frequent use, consider using the
  * Java collection framework instead.
  * <p>
- * <table>
- * <tr><th>Method</th><th>Alternative</th></tr>
- * <tr><td>{@link #resize(Object[], int)}</td>                     <td>{@link java.util.ArrayList}</td></tr>
- * <tr><td>{@link #append(Object[], Object)}</td>                  <td>{@link java.util.ArrayList}</td></tr>
- * <tr><td>{@link #insert(Object[], int, Object[], int, int)}</td> <td>{@link java.util.LinkedList}</td></tr>
- * <tr><td>{@link #remove(Object[], int, int)}</td>                <td>{@link java.util.LinkedList}</td></tr>
- * <tr><td>{@link #intersects(Object[], Object[])}</td>            <td>{@link java.util.HashSet}</td></tr>
- * <tr><td>{@link #contains(Object[], Object)}</td>                <td>{@link java.util.HashSet}</td></tr>
- * <tr><td>{@link #containsIdentity(Object[], Object)}</td>        <td>{@link java.util.IdentityHashMap}</td></tr>
+ * <table class="sis">
+ * <tr><th>Method</th>                                             <th class="sep">Alternative</th></tr>
+ * <tr><td>{@link #resize(Object[], int)}</td>                     <td class="sep">{@link java.util.ArrayList}</td></tr>
+ * <tr><td>{@link #append(Object[], Object)}</td>                  <td class="sep">{@link java.util.ArrayList}</td></tr>
+ * <tr><td>{@link #insert(Object[], int, Object[], int, int)}</td> <td class="sep">{@link java.util.LinkedList}</td></tr>
+ * <tr><td>{@link #remove(Object[], int, int)}</td>                <td class="sep">{@link java.util.LinkedList}</td></tr>
+ * <tr><td>{@link #intersects(Object[], Object[])}</td>            <td class="sep">{@link java.util.HashSet}</td></tr>
+ * <tr><td>{@link #contains(Object[], Object)}</td>                <td class="sep">{@link java.util.HashSet}</td></tr>
+ * <tr><td>{@link #containsIdentity(Object[], Object)}</td>        <td class="sep">{@link java.util.IdentityHashMap}</td></tr>
  * </table>
  * <p>
  * Note that this recommendation applies mostly to arrays of objects. It does not apply to arrays
@@ -133,12 +133,12 @@ public final class Arrays extends Static {
      * <ul>
      *   <li><p>If the given {@code length} is longer than the length of the given {@code array},
      *       then the returned array will contain all the elements of {@code array} at index
-     *       <var>i</var> &lt; {@code array.length}. Elements at index <var>i</var> &gt;=
-     *       {@code array.length} are initialized to {@code null}.</p></li>
+     *       <var>i</var>&nbsp;&lt;&nbsp;{@code array.length}. Elements at index
+     *       <var>i</var>&nbsp;&gt;=&nbsp;{@code array.length} are initialized to {@code null}.</p></li>
      *
      *   <li><p>If the given {@code length} is shorter than the length of the given {@code array},
      *       then the returned array will contain only the elements of {@code array} at index
-     *       <var>i</var> &lt; {@code length}. Remaining elements are not copied.</p></li>
+     *       <var>i</var>&nbsp;&lt;&nbsp;{@code length}. Remaining elements are not copied.</p></li>
      *
      *   <li><p>If the given {@code length} is equal to the length of the given {@code array},
      *       then {@code array} is returned unchanged. <strong>No copy</strong> is performed.

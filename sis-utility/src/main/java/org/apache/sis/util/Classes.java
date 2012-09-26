@@ -42,7 +42,7 @@ import static org.apache.sis.util.Arrays.contains;
  *       ({@link #changeArrayDimension(Class, int) changeArrayDimension})</li>
  *   <li>Find the common parent of two or more classes
  *       ({@link #findCommonClass(Class, Class) findCommonClass},
- *       ({@link #findCommonInterfaces(Class, Class) findCommonInterfaces})</li>
+ *        {@link #findCommonInterfaces(Class, Class) findCommonInterfaces})</li>
  *   <li>Getting the bounds of a parameterized field or method
  *       ({@link #boundOfParameterizedAttribute(Method) boundOfParameterizedAttribute})</li>
  *   <li>Getting a short class name ({@link #getShortName(Class) getShortName},

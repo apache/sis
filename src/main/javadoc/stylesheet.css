@@ -57,6 +57,26 @@ table.sis tr td {
 }
 
 /*
+ * Optionally add a line or column separator.
+ */
+table.sis tr th.hsep {
+  border-top-width: 1pt;
+  border-top-style: solid;
+}
+
+table.sis tr th.sep {
+  border-left-width: 1pt;
+  border-left-style: solid;
+  border-left-color: #819AB2;
+}
+
+table.sis tr td.sep {
+  border-left-width: 1pt;
+  border-left-style: solid;
+  border-left-color: #AAADB2;
+}
+
+/*
  * Table without vertical space between rows and a little bit of space between columns.
  * Other properties are left to their default values. In particular, there is no border.
  */

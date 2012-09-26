@@ -23,6 +23,7 @@
  *   <ul>
  *     <li>Primitive or basic Java types:
  *         {@link org.apache.sis.util.CharSequences},
+ *         {@link org.apache.sis.util.StringBuilders},
  *         {@link org.apache.sis.util.Numbers},
  *         {@link org.apache.sis.util.Classes}.</li>
  *     <li>Arrays:

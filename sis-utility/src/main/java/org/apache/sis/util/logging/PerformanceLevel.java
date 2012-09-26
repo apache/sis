@@ -17,6 +17,7 @@
 package org.apache.sis.util.logging;
 
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.concurrent.TimeUnit;
 import org.apache.sis.util.Configuration;
 
@@ -40,8 +41,11 @@ import static org.apache.sis.util.ArgumentChecks.ensurePositive;
  * <ul>
  *   <li>The {@code $JAVA_HOME/lib/logging.properties} file can be edited in order to log
  *       messages at the {@code FINE} level, at least for the packages of interest.</li>
- *   <li>The {@link Logging#forceMonolineConsoleOutput(Level)} convenience method
- *       can be invoked.</li>
+ *   <li>The {@link Logger#setLevel(Level)} can be invoked, together with
+ *       {@link java.util.logging.Handler#setLevel(Level)} on all relevant logging targets
+ *       (console or file, <i>etc.</i>).</li>
+ *   <li>The {@link MonolineFormatter#configureConsoleHandler(Logger, Level)} convenience
+ *       method can be invoked.</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
