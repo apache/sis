@@ -1,5 +1,5 @@
                              ------------------------------
-                                          Index
+                                        Overview
                              ------------------------------
 
 Building Apache SIS
@@ -13,19 +13,21 @@ Building Apache SIS
 
   This module provides the following javadoc taglets:
 
-   * <<<@module>>> - replaced in the generated javadoc by a link to the module where the
-     class is defined.
-
-   * <<<{@website}>>> - an inline taglet for the URL to the Apache SIS web site (Maven reports).
-
-   * <<<{@section}>>> - an inline taglet for the title of a new section in the javadoc.
-
-   * <<<{@note}>>> - an inline taglet for a remark that readers can safely ignore.
-     Notes appear in indented paragraphs with a smaller font.
-
-   * <<<{preformat}>>> - an inline taglet for pre-formatted text. The first word inside
-     the taglet shall be one of <<<java>>>, <<<xml>>>, <<<sql>>>, <<<wkt>>>, <<<text>>>,
-     <<<math>>> or <<<shell>>>.
+*---------------------+-------------------------------------------------------------------------------------------+
+|| Javadoc tag        || Description                                                                             ||
+*---------------------+-------------------------------------------------------------------------------------------+
+| <<<@module>>>       | Create links to the module where the class is defined, source code and Maven artifacts.   |
+*---------------------+-------------------------------------------------------------------------------------------+
+| <<<\{@website\}>>>  | an inline taglet for the URL to the Apache SIS web site (Maven reports).                  |
+*---------------------+-------------------------------------------------------------------------------------------+
+| <<<\{@section\}>>>  | an inline taglet for the title of a new section in the javadoc.                           |
+*---------------------+-------------------------------------------------------------------------------------------+
+| <<<\{@note\}>>>     | an inline taglet for a remark that readers can safely ignore.                             |
+|                     | Notes appear as indented paragraphs with a smaller font.                                  |
+*---------------------+-------------------------------------------------------------------------------------------+
+| <<<\{preformat\}>>> | an inline taglet for pre-formatted text. The first word inside the taglet shall be one of |
+|                     | <<<java>>>, <<<xml>>>, <<<sql>>>, <<<wkt>>>, <<<text>>>, <<<math>>> or <<<shell>>>.       |
+*---------------------+-------------------------------------------------------------------------------------------+
 
 
 * Localized resources compiler
@@ -46,7 +48,7 @@ Building Apache SIS
   inner class named <<<Keys>>>, then the compiler will rewrite the constants declared in that
   inner class with the list of keys found in the <<<Vocabulary*.properties>>> files.
 
-  The resource compiler is executed at Maven build time when the <<<pom.xml>>> file of a module
+  The resource compiler is executed at Maven build time if the <<<pom.xml>>> file
   contains the following declaration. Note that current implementation looks only for resources
   in the <<<org.apache.sis.resources>>> package; all other packages are ignored.
 
