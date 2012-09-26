@@ -56,13 +56,13 @@ public final strictfp class ArraysTest {
     }
 
     /**
-     * Tests {@link Arrays#unionSorted(int[], int[])}.
+     * Tests {@link Arrays#unionOfSorted(int[], int[])}.
      */
     @Test
-    public void testUnionSorted() {
+    public void testUnionOfSorted() {
         final int[] array1 = new int[] {2, 4, 6, 9, 12};
         final int[] array2 = new int[] {1, 2, 3, 12, 13, 18, 22};
-        final int[] union = Arrays.unionSorted(array1, array2);
+        final int[] union = Arrays.unionOfSorted(array1, array2);
         assertArrayEquals(new int[] {1, 2, 3, 4, 6, 9, 12, 13, 18, 22}, union);
     }
 }
