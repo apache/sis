@@ -16,6 +16,8 @@ Building Apache SIS
    * <<<@module>>> - replaced in the generated javadoc by a link to the module where the
      class is defined.
 
+   * <<<{@website}>>> - an inline taglet for the URL to the Apache SIS web site (Maven reports).
+
    * <<<{@section}>>> - an inline taglet for the title of a new section in the javadoc.
 
    * <<<{@note}>>> - an inline taglet for a remark that readers can safely ignore.
