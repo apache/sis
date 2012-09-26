@@ -24,20 +24,23 @@ import org.apache.sis.resources.Errors;
 
 /**
  * Provides static methods for performing argument checks.
- * The methods in this class throw one of the following exceptions:
+ * Every methods in this class can throw one of the following exceptions:
  * <p>
  * <table class="sis">
  * <tr><th>Exception</th><th class="sep">Thrown by</th></tr>
  * <tr><td>{@link NullArgumentException}</td>
- * <td class="sep">{@link #ensureNonNull(String, Object) ensureNonNull}</td></tr>
+ * <td class="sep">{@link #ensureNonNull(String, Object) ensureNonNull},
+ * {@link #ensureNonEmpty(String, CharSequence) ensureNonEmpty}</td></tr>
+ *
+ * <tr><td>{@link IllegalArgumentException}</td>
+ * <td class="sep">{@link #ensureNonEmpty(String, CharSequence) ensureNonEmpty},
+ * {@link #ensurePositive(String, int) ensurePositive},
+ * {@link #ensureStrictlyPositive(String, int) ensureStrictlyPositive},
+ * {@link #ensureBetween(String, int, int, int) ensureBetween},
+ * {@link #ensureCanCast(String, Class, Object) ensureCanCast}</td></tr>
  *
  * <tr><td>{@link IndexOutOfBoundsException}</td>
  * <td class="sep">{@link #ensureValidIndex(int, int) ensureValidIndex}</td></tr>
- *
- * <tr><td>{@link IllegalArgumentException}</td>
- * <td class="sep">{@link #ensurePositive(String, int) ensurePositive},
- * {@link #ensureStrictlyPositive(String, int) ensureStrictlyPositive},
- * {@link #ensureBetween(String, int, int, int) ensureBetween}</td></tr>
  *
  * <tr><td>{@link MismatchedDimensionException}</td>
  * <td class="sep">{@link #ensureDimensionMatches(String, DirectPosition, int) ensureDimensionMatches}</td></tr>
@@ -155,7 +158,7 @@ public final class ArgumentChecks extends Static {
 
     /**
      * Ensures that the given index is equals or greater than zero and lower than the given
-     * upper value. This method is primarily designed for methods that expect only an index
+     * upper value. This method is designed for methods that expect an index value as the only
      * argument. For this reason, this method does not take the argument name.
      *
      * @param  upper The maximal index value, exclusive.
@@ -171,6 +174,8 @@ public final class ArgumentChecks extends Static {
 
     /**
      * Ensures that the given integer value is greater than or equals to zero.
+     * This method is used for checking values that are <strong>not</strong> index.
+     * For checking index values, use {@link #ensureValidIndex(int, int)} instead.
      *
      * @param  name   The name of the argument to be checked, used only if an exception is thrown.
      * @param  value  The user argument to check.
@@ -202,7 +207,9 @@ public final class ArgumentChecks extends Static {
     }
 
     /**
-     * Ensures that the given floating point value is greater than or equals to zero.
+     * Ensures that the given floating point value is not
+     * {@linkplain Float#NaN NaN} and is greater than or equals to zero. Note that
+     * {@linkplain Float#POSITIVE_INFINITY positive infinity} is considered a valid value.
      *
      * @param  name   The name of the argument to be checked, used only if an exception is thrown.
      * @param  value  The user argument to check.
@@ -219,7 +226,9 @@ public final class ArgumentChecks extends Static {
     }
 
     /**
-     * Ensures that the given floating point value is greater than or equals to zero.
+     * Ensures that the given floating point value is not
+     * {@linkplain Double#NaN NaN} and is greater than or equals to zero. Note that
+     * {@linkplain Double#POSITIVE_INFINITY positive infinity} is considered a valid value.
      *
      * @param  name   The name of the argument to be checked, used only if an exception is thrown.
      * @param  value  The user argument to check.
@@ -268,7 +277,9 @@ public final class ArgumentChecks extends Static {
     }
 
     /**
-     * Ensures that the given floating point value is greater than zero.
+     * Ensures that the given floating point value is not
+     * {@linkplain Float#NaN NaN} and is greater than zero. Note that
+     * {@linkplain Float#POSITIVE_INFINITY positive infinity} is considered a valid value.
      *
      * @param  name   The name of the argument to be checked, used only if an exception is thrown.
      * @param  value  The user argument to check.
@@ -286,7 +297,9 @@ public final class ArgumentChecks extends Static {
     }
 
     /**
-     * Ensures that the given floating point value is greater than zero.
+     * Ensures that the given floating point value is not
+     * {@linkplain Double#NaN NaN} and is greater than zero. Note that
+     * {@linkplain Double#POSITIVE_INFINITY positive infinity} is considered a valid value.
      *
      * @param  name   The name of the argument to be checked, used only if an exception is thrown.
      * @param  value  The user argument to check.
@@ -305,15 +318,12 @@ public final class ArgumentChecks extends Static {
 
     /**
      * Ensures that the given integer value is between the given bounds, inclusive.
-     * This method is used for checking values that are <strong>not</strong> index.
      *
      * @param  name  The name of the argument to be checked. Used only in case an exception is thrown.
      * @param  min   The minimal value, inclusive.
      * @param  max   The maximal value, inclusive.
      * @param  value The value to be tested.
      * @throws IllegalArgumentException if the given value is not in the given range.
-     *
-     * @see #ensureValidIndex(int, int)
      */
     public static void ensureBetween(final String name, final int min, final int max, final int value)
             throws IllegalArgumentException

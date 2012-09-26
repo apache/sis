@@ -28,11 +28,6 @@ import java.lang.annotation.RetentionPolicy;
  * is defined in order to make easier to find which debugging tools are available in case of
  * problem. See the "<cite>Use</cite>" javadoc link for a list of annotated classes and methods.
  *
- * {@section <code>toString()</code> policy}
- * Note that many {@link Object#toString()} methods are overridden for debugging purpose.
- * This {@code Debug} annotation does not apply to those {@code toString()} methods,
- * because they are too numerous and their policy usage can change at any time.
- *
  * @author Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.19)
  * @version 0.3
