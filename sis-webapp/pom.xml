@@ -73,7 +73,8 @@
                   <port>50234</port>
                 </connector>
               </connectors>
-              <stopPort>50500</stopPort>							                                           <scanIntervalSeconds>10</scanIntervalSeconds>
+              <stopPort>50500</stopPort>
+              <scanIntervalSeconds>10</scanIntervalSeconds>
               <daemon>true</daemon>
               <systemProperties>
                 <systemProperty>
