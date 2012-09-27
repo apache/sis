@@ -70,10 +70,10 @@
             <configuration>
               <connectors>
                 <connector implementation="org.eclipse.jetty.server.nio.SelectChannelConnector">
-                  <port>8081</port>
+                  <port>50234</port>
                 </connector>
               </connectors>
-              <stopPort>18080</stopPort>							                                           <scanIntervalSeconds>10</scanIntervalSeconds>
+              <stopPort>50500</stopPort>							                                           <scanIntervalSeconds>10</scanIntervalSeconds>
               <daemon>true</daemon>
               <systemProperties>
                 <systemProperty>
