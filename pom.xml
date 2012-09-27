@@ -433,6 +433,7 @@ Apache SIS is a toolkit for describing location information, including points,
           </tags>
           <taglets>
             <taglet><tagletClass>org.apache.sis.internal.taglet.Module</tagletClass></taglet>
+            <taglet><tagletClass>org.apache.sis.internal.taglet.WebSite</tagletClass></taglet>
             <taglet><tagletClass>org.apache.sis.internal.taglet.Section</tagletClass></taglet>
             <taglet><tagletClass>org.apache.sis.internal.taglet.Note</tagletClass></taglet>
             <taglet><tagletClass>org.apache.sis.internal.taglet.Preformat</tagletClass></taglet>
