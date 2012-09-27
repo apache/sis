@@ -19,7 +19,7 @@
  * Inherit all the styles from the root site.css,
  * with only the URL to the images modified.
  */
-@import url("../css/site.css");
+@import url("../../css/site.css");
 
 h2 {
   background: url(../../images/h2.png) repeat-x;
