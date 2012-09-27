@@ -17,10 +17,10 @@
 
 /* Override styles in maven-base.css */
 #leftColumn {
- width: 180px;
+ width: 190px;
 }
 #bodyColumn {
-  margin-left: 207px;
+  margin-left: 210px;
 }
 
 /* Override styles in maven-theme.css */
