@@ -285,24 +285,33 @@ search:     for (; fromIndex <= stopAt; fromIndex++) {
     /**
      * Returns the index of the first character after the given number of lines.
      * This method counts the number of occurrence of {@code '\n'}, {@code '\r'}
-     * or {@code "\r\n"} starting from the given position. When {@code numToSkip}
+     * or {@code "\r\n"} starting from the given position. When {@code numLines}
      * occurrences have been found, the index of the first character after the last
      * occurrence is returned.
+     * <p>
+     * IF the {@code numLines} argument is positive, this method searches forward.
+     * If negative, this method searches backward. If 0, this method returns the
+     * beginning of the current line.
+     * <p>
+     * If this method reaches the end of {@code text} while searching forward, then
+     * {@code text.length()} is returned. If this method reaches the beginning of
+     * {@code text} while searching backward, then 0 is returned.
      *
      * @param  text      The string in which to skip a determined amount of lines.
-     * @param  numToSkip The number of lines to skip. Can be positive, zero or negative.
-     * @param  fromIndex Index at which to start the search.
+     * @param  numLines  The number of lines to skip. Can be positive, zero or negative.
+     * @param  fromIndex Index at which to start the search, from 0 to {@code text.length()} inclusive.
      * @return Index of the first character after the last skipped line.
-     * @throws NullPointerException if the {@code string} argument is null.
+     * @throws NullPointerException If the {@code string} argument is null.
+     * @throws IndexOutOfBoundsException If {@code fromIndex} is out of bounds.
      */
-    public static int skipLines(final CharSequence text, int numToSkip, int fromIndex) {
+    public static int indexOfLineStart(final CharSequence text, int numLines, int fromIndex) {
         final int length = text.length();
         /*
          * Go backward if the number of lines is negative.
          * No need to use the codePoint API because we are
          * looking only for '\r' and '\n' characters.
          */
-        if (numToSkip < 0) {
+        if (numLines <= 0) {
             do {
                 char c;
                 do {
@@ -317,16 +326,16 @@ search:     for (; fromIndex <= stopAt; fromIndex++) {
                         break;
                     }
                 } while (c != '\r');
-            } while (++numToSkip != 0);
-            numToSkip = 1; // For skipping the "end of line" characters.
+            } while (++numLines != 1);
+            // Execute the forward code below for skipping the "end of line" characters.
         }
         /*
          * Skips forward the given amount of lines.
          */
-        while (--numToSkip >= 0) {
+        while (--numLines >= 0) {
             char c;
             do {
-                if (fromIndex >= length) {
+                if (fromIndex == length) {
                     return fromIndex;
                 }
                 c = text.charAt(fromIndex++);
@@ -384,7 +393,7 @@ search:     for (; fromIndex <= stopAt; fromIndex++) {
         CharSequence[] strings = new CharSequence[4];
         int count = 0, last  = 0, i = 0;
         while ((i = indexOf(text, separator, i)) >= 0) {
-            final CharSequence item = trimWhitespaces(text.subSequence(last, i));
+            final CharSequence item = trimWhitespaces(text, last, i);
             if (!excludeEmpty || item.length() != 0) {
                 if (count == strings.length) {
                     strings = copyOf(strings, count << 1);
@@ -394,7 +403,7 @@ search:     for (; fromIndex <= stopAt; fromIndex++) {
             last = ++i;
         }
         // Add the last element.
-        final CharSequence item = trimWhitespaces(text.subSequence(last, text.length()));
+        final CharSequence item = trimWhitespaces(text, last, text.length());
         if (!excludeEmpty || item.length() != 0) {
             if (count == strings.length) {
                 strings = copyOf(strings, count + 1);
@@ -423,7 +432,7 @@ search:     for (; fromIndex <= stopAt; fromIndex++) {
      * @param  text The multi-line text from which to get the individual lines, or {@code null}.
      * @return The lines in the text, or an empty array if the given text was null.
      *
-     * @see #skipLines(CharSequence, int, int)
+     * @see #indexOfLineStart(CharSequence, int, int)
      */
     public static CharSequence[] splitOnEOL(final CharSequence text) {
         if (text == null) {
@@ -656,7 +665,13 @@ search:     for (; fromIndex <= stopAt; fromIndex++) {
                         if (buffer == null) {
                             buffer = new StringBuilder(list);
                         }
-                        buffer.append(separator).append(element);
+                        buffer.append(separator);
+                        if (element instanceof CharSequence) {
+                            // StringBuilder has numerous optimizations for this case.
+                            buffer.append((CharSequence) element);
+                        } else {
+                            buffer.append(element);
+                        }
                     }
                 }
             }
@@ -696,28 +711,46 @@ search:     for (; fromIndex <= stopAt; fromIndex++) {
      * sequences.
      *
      * @param  text The text from which to remove leading and trailing white spaces, or {@code null}.
-     * @return A string with leading and trailing white spaces removed, or {@code null} is the given
-     *         string was null.
+     * @return A characters sequence with leading and trailing white spaces removed,
+     *         or {@code null} is the given string was null.
      *
      * @see String#trim()
      */
     public static CharSequence trimWhitespaces(CharSequence text) {
         if (text != null) {
-            int upper = text.length();
-            while (upper != 0) {
-                final int c = codePointBefore(text, upper);
-                if (!isWhitespace(c)) break;
-                upper -= charCount(c);
-            }
-            int lower = 0;
-            while (lower < upper) {
-                final int c = codePointAt(text, lower);
-                if (!isWhitespace(c)) break;
-                lower += charCount(c);
-            }
-            text = text.subSequence(lower, upper);
+            text = trimWhitespaces(text, 0, text.length());
         }
         return text;
+    }
+
+    /**
+     * Returns a sub-sequence with leading and trailing white spaces omitted.
+     * White spaces are identified by the {@link Character#isWhitespace(int)} method.
+     * <p>
+     * Invoking this method is functionally equivalent to invoking
+     * <code>{@linkplain #trimWhitespaces(CharSequence) trimWhitespaces}(text.subSequence(lower,
+     * upper))</code>, except that only one call to {@link CharSequence#subSequence(int, int)}
+     * is performed instead of two.
+     *
+     * @param  text  The text from which to remove leading and trailing white spaces.
+     * @param  lower Index of the first character to consider for inclusion in the sub-sequence.
+     * @param  upper Index after the last character to consider for inclusion in the sub-sequence.
+     * @return A characters sequence with leading and trailing white spaces removed.
+     * @throws NullPointerException If {@code text} is {@code null}.
+     * @throws IndexOutOfBoundsException If {@code lower} or {@code upper} is out of bounds.
+     */
+    private static CharSequence trimWhitespaces(final CharSequence text, int lower, int upper) {
+        while (upper != 0) {
+            final int c = codePointBefore(text, upper);
+            if (!isWhitespace(c)) break;
+            upper -= charCount(c);
+        }
+        while (lower < upper) {
+            final int c = codePointAt(text, lower);
+            if (!isWhitespace(c)) break;
+            lower += charCount(c);
+        }
+        return text.subSequence(lower, upper);
     }
 
     /**
@@ -759,6 +792,101 @@ search:     for (; fromIndex <= stopAt; fromIndex++) {
             }
         }
         return value;
+    }
+
+    /**
+     * Makes sure that the {@code text} string is not longer than {@code maxLength} characters.
+     * If {@code text} is not longer, then it is returned unchanged. Otherwise this method returns
+     * a copy of {@code text} with some characters substituted by the {@code "(…)"} string.
+     * <p>
+     * If the text needs to be shortened, then this method tries to apply the above-cited
+     * substitution between two words. For example, the following string:
+     *
+     * <blockquote>
+     *   "This sentence given as an example is way too long to be included in a short name."
+     * </blockquote>
+     *
+     * May be shortened to something like this:
+     *
+     * <blockquote>
+     *   "This sentence given (…) in a short name."
+     * </blockquote>
+     *
+     * @param  text The sentence to reduce if it is too long, or {@code null}.
+     * @param  maxLength The maximum length allowed for {@code text}.
+     * @return A sentence not longer than {@code maxLength}, or {@code null}
+     *         if the given text was null.
+     */
+    public static CharSequence shortSentence(CharSequence text, final int maxLength) {
+        ArgumentChecks.ensureStrictlyPositive("maxLength", maxLength);
+        if (text != null) {
+            final int length = text.length();
+            int toRemove = length - maxLength;
+            if (toRemove > 0) {
+                toRemove += 5; // Space needed for the " (…) " string.
+                /*
+                 * We will remove characters from 'lower' to 'upper' both exclusive. We try to
+                 * adjust 'lower' and 'upper' in such a way that the first and last characters
+                 * to be removed will be spaces or punctuation characters.
+                 */
+                int lower = length >>> 1;
+                if (lower != 0 && isLowSurrogate(text.charAt(lower))) {
+                    lower--;
+                }
+                int upper = lower;
+                boolean forward = false;
+                do { // Do be run as long as we need to remove more characters.
+                    int nc=0, type=UNASSIGNED;
+                    forward = !forward;
+searchWordBreak:    while (true) {
+                        final int c;
+                        if (forward) {
+                            if ((upper += nc) == length) break;
+                            c = codePointAt(text, upper);
+                        } else {
+                            if ((lower -= nc) == 0) break;
+                            c = codePointBefore(text, lower);
+                        }
+                        nc = charCount(c);
+                        if (isWhitespace(c)) {
+                            if (type != UNASSIGNED) {
+                                type = SPACE_SEPARATOR;
+                            }
+                        } else switch (type) {
+                            // After we skipped white, then non-white, then white characters, stop.
+                            case SPACE_SEPARATOR: {
+                                break searchWordBreak;
+                            }
+                            // For the first non-white character, just remember its type.
+                            // Arbitrarily use UPPERCASE_LETTER for any kind of identifier
+                            // part (which include UPPERCASE_LETTER anyway).
+                            case UNASSIGNED: {
+                                type = isUnicodeIdentifierPart(c) ? UPPERCASE_LETTER : getType(c);
+                                break;
+                            }
+                            // If we expected an identifier, stop at the first other char.
+                            case UPPERCASE_LETTER: {
+                                if (!isUnicodeIdentifierPart(c)) {
+                                    break searchWordBreak;
+                                }
+                                break;
+                            }
+                            // For all other kind of character, break when the type change.
+                            default: {
+                                if (getType(c) != type) {
+                                    break searchWordBreak;
+                                }
+                                break;
+                            }
+                        }
+                        toRemove -= nc;
+                    }
+                } while (toRemove > 0);
+                text = new StringBuilder(lower + (length-upper) + 5) // 5 is the length of " (…) "
+                        .append(text, 0, lower).append(" (…) ").append(text, upper, length);
+            }
+        }
+        return text;
     }
 
     /**
@@ -1087,8 +1215,11 @@ cmp:    while (ia < lga) {
     }
 
     /**
-     * Returns {@code true} if every characters in the given character sequence are
-     * {@linkplain Character#isUpperCase(int) upper-case}.
+     * Returns {@code true} if every characters in the given sequence are
+     * {@linkplain Character#isUpperCase(int) upper-case} letters.
+     *
+     * {@note The behavior of this method regarding digits and punctuation is unspecified
+     *        and may change in future versions.}
      *
      * @param  text The character sequence to test.
      * @return {@code true} if every character are upper-case.
@@ -1096,7 +1227,7 @@ cmp:    while (ia < lga) {
      *
      * @see String#toUpperCase()
      */
-    public static boolean isUpperCase(final CharSequence text) {
+    static boolean isUpperCase(final CharSequence text) {
         return isUpperCase(text, 0, text.length());
     }
 
@@ -1139,7 +1270,8 @@ cmp:    while (ia < lga) {
      *
      * @param  s1 The first string to compare, or {@code null}.
      * @param  s2 The second string to compare, or {@code null}.
-     * @return {@code true} if the two given texts are equal, ignoring case.
+     * @return {@code true} if the two given texts are equal, ignoring case,
+     *         or if both arguments are {@code null}.
      *
      * @see String#equalsIgnoreCase(String)
      */
@@ -1150,6 +1282,8 @@ cmp:    while (ia < lga) {
         if (s1 == null || s2 == null) {
             return false;
         }
+        // Do not check for String cases. We do not want to delegate to String.equalsIgnoreCase
+        // because we compare code points while String.equalsIgnoreCase compares characters.
         final int lg1 = s1.length();
         final int lg2 = s2.length();
         int i1 = 0, i2 = 0;
@@ -1172,7 +1306,7 @@ cmp:    while (ia < lga) {
      *
      * @param  s1 The first string to compare, or {@code null}.
      * @param  s2 The second string to compare, or {@code null}.
-     * @return {@code true} if the two given texts are equal.
+     * @return {@code true} if the two given texts are equal, or if both arguments are {@code null}.
      *
      * @see String#contentEquals(CharSequence)
      */
@@ -1217,6 +1351,7 @@ cmp:    while (ia < lga) {
      */
     public static boolean regionMatches(final CharSequence text, final int fromIndex, final CharSequence part) {
         if (text instanceof String && part instanceof String) {
+            // It is okay to delegate to String implementation since we do not ignore cases.
             return ((String) text).regionMatches(fromIndex, (String) part, 0, part.length());
         }
         final int length = part.length();
