@@ -1,0 +1,25 @@
+                             ------------------------------
+                                        Overview
+                             ------------------------------
+
+
+The Apache SIS library
+
+  Apache SIS is a toolkit for describing location information, including points, bounding boxes,
+  polygons, and for computing distances on that information.
+
+
+* Using SIS
+
+  SIS requires a Java 6 Runtime Environment.
+  The latest release is <<<0.2-incubating>>>.
+  The current development branch is <<<0.3-snapshot>>>.
+
+
+* Documentation
+
+    * {{{./download.html}Downloading binaries}}
+
+    * {{{http://builds.apache.org/job/sis-trunk/site/apidocs/index.html}Aggregated Javadoc}}
+
+    * {{{./code-patterns.html}Recommended code patterns}}
