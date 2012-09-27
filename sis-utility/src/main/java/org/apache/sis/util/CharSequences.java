@@ -419,7 +419,7 @@ search:     for (; fromIndex <= stopAt; fromIndex++) {
      * Each element in the returned array will be a single line. If the given text is already
      * a single line, then this method returns a singleton containing only the given text.
      * <p>
-     * At the difference of <code>{@linkplain #split split}(toSplit, '\n’)}</code>,
+     * At the difference of <code>{@linkplain #split split}(toSplit, '\n’)</code>,
      * this method does not remove whitespaces.
      *
      * {@note Prior JDK8 this method was relatively cheap because all string instances created by
@@ -1501,7 +1501,7 @@ cmp:    while (ia < lga) {
      * <ul>
      *   <li>If <var>c</var> is a
      *       {@linkplain Character#isJavaIdentifierStart(int) Java identifier start},
-     *       then any following character that are
+     *       then any following characters that are
      *       {@linkplain Character#isJavaIdentifierPart(int) Java identifier part}.</li>
      *   <li>Otherwise any character for which {@link Character#getType(int)} returns
      *       the same value than for <var>c</var>.</li>
