@@ -78,6 +78,11 @@ class IndexedResourceCompiler implements FilenameFilter, Comparator<Object> {
     private static final String KEY_MODIFIERS = "public static final int ";
 
     /**
+     * Margin to write before the {@link #KEY_MODIFIERS}.
+     */
+    private static final String KEY_MARGIN = "        "; // 8 spaces
+
+    /**
      * The source directory of the java and properties files.
      */
     private final File sourceDirectory;
@@ -480,12 +485,16 @@ search: for (int i=0; i<buffer.length(); i++) { // Length of 'buffer' will vary.
             buffer.append(line).append(lineSeparator);
         } while (!classKeys.matcher(line).matches());
         /*
-         * Writes the constructor, then write keys values.
-         * We stopped reading the file for now (will continue later).
+         * Starting from this point, the content that we are going to write in the buffer
+         * may be different than the file content.  Remember the buffer position in order
+         * to allow us to compare the buffer with the file content.
+         *
+         * We stop reading the file for now. We will continue reading the file after the
+         * 'for' loop below. Instead, we now write the constructor followed by keys values.
          */
-        final String margin = "        "; // 8 spaces
-        buffer.append(margin).append("private ").append(KEYS_INNER_CLASS).append("() {").append(lineSeparator)
-              .append(margin).append('}').append(lineSeparator);
+        int startLineToCompare = buffer.length();
+        buffer.append(KEY_MARGIN).append("private ").append(KEYS_INNER_CLASS).append("() {").append(lineSeparator)
+              .append(KEY_MARGIN).append('}').append(lineSeparator);
         final Map.Entry<?,?>[] entries = allocatedIDs.entrySet().toArray(new Map.Entry<?,?>[allocatedIDs.size()]);
         Arrays.sort(entries, this);
         for (int i=0; i<entries.length; i++) {
@@ -495,9 +504,9 @@ search: for (int i=0; i<buffer.length(); i++) { // Length of 'buffer' will vary.
             String message = (String) resources.get(key);
             if (message != null) {
                 message = message.replace('\t', ' ');
-                buffer.append(margin).append("/**").append(lineSeparator);
+                buffer.append(KEY_MARGIN).append("/**").append(lineSeparator);
                 while (((message=message.trim()).length()) != 0) {
-                    buffer.append(margin).append(" * ");
+                    buffer.append(KEY_MARGIN).append(" * ");
                     int stop = message.indexOf('\n');
                     if (stop < 0) {
                         stop = message.length();
@@ -511,15 +520,20 @@ search: for (int i=0; i<buffer.length(); i++) { // Length of 'buffer' will vary.
                     buffer.append(message.substring(0, stop).trim()).append(lineSeparator);
                     message = message.substring(stop);
                 }
-                buffer.append(margin).append(" */").append(lineSeparator);
+                buffer.append(KEY_MARGIN).append(" */").append(lineSeparator);
             }
-            buffer.append(margin).append(KEY_MODIFIERS).append(key).append(" = ")
+            buffer.append(KEY_MARGIN).append(KEY_MODIFIERS).append(key).append(" = ")
                     .append(ID).append(';').append(lineSeparator);
         }
         /*
-         * Continue reading the input file, skipping the old key values.
-         * Once we have reached the closing bracket, copies all remaining lines.
+         * At this point, all key values have been written in the buffer. Skip the corresponding
+         * lines from the files without adding them to the buffer.  However we will compare them
+         * to the buffer content in order to detect if we really need to write the file.
+         *
+         * This operation will stop when we reach the closing bracket. Note that opening brackets
+         * may exist in the code that we are skipping, so we need to count them.
          */
+        boolean modified = false;
         int brackets = 1;
         do {
             line = in.readLine();
@@ -533,18 +547,35 @@ search: for (int i=0; i<buffer.length(); i++) { // Length of 'buffer' will vary.
                     case '}': brackets--; break;
                 }
             }
+            if (!modified) {
+                final int endOfLine = buffer.indexOf(lineSeparator, startLineToCompare);
+                if (endOfLine >= 0) {
+                    if (buffer.substring(startLineToCompare, endOfLine).equals(line)) {
+                        startLineToCompare = endOfLine + lineSeparator.length();
+                        continue; // Content is equals, do not set the 'modified' flag.
+                    }
+                } else if (brackets == 0) {
+                    break; // Content finished in same time, do not set the 'modified' flag.
+                }
+                modified = true;
+            }
         } while (brackets != 0);
-        buffer.append(line).append(lineSeparator);
-        while ((line = in.readLine()) != null) {
+        /*
+         * Only if we detected some changes in the file content, read all remaining parts of
+         * the file then write the result to disk. Note that this overwite the original file.
+         */
+        if (modified) {
             buffer.append(line).append(lineSeparator);
+            while ((line = in.readLine()) != null) {
+                buffer.append(line).append(lineSeparator);
+            }
         }
         in.close();
-        /*
-         * Now writes the results to disk, overwriting the original file.
-         */
-        final Writer out = new OutputStreamWriter(new FileOutputStream(file), JAVA_ENCODING);
-        out.write(buffer.toString());
-        out.close();
+        if (modified) {
+            final Writer out = new OutputStreamWriter(new FileOutputStream(file), JAVA_ENCODING);
+            out.write(buffer.toString());
+            out.close();
+        }
     }
 
     /**
