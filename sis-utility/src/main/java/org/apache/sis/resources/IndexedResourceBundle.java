@@ -344,76 +344,19 @@ public class IndexedResourceBundle extends ResourceBundle {
     }
 
     /**
-     * Makes sure that the {@code text} string is not longer than {@code maxLength} characters.
-     * If {@code text} is not longer, it is returned unchanged (except for trailing blanks,
-     * which are removed). If {@code text} is longer, it will be cut somewhere in the middle.
-     * This method tries to cut between two words and replace the missing words with "(...)".
-     * For example, the following string:
-     *
-     * <blockquote>
-     *   "This sentence given as an example is way too long to be
-     *    included in a message."
-     * </blockquote>
-     *
-     * May be "summarized" by something like this:
-     *
-     * <blockquote>
-     *   "This sentence given (...) included in a message."
-     * </blockquote>
-     *
-     * @param  text The sentence to summarize if it is too long.
-     * @param  maxLength The maximum length allowed for {@code text}.
-     *         If {@code text} is longer, it will be summarized.
-     * @return A sentence not longer than {@code maxLength}.
-     */
-    private static String summarize(String text, int maxLength) {
-        text = CharSequences.trimWhitespaces(text).toString();
-        final int length = text.length();
-        if (length <= maxLength) {
-            return text;
-        }
-        /*
-         * Computes maximum length for one half of the string. Take into
-         * account the space needed for inserting the " (...) " string.
-         */
-        maxLength = (maxLength - 7) >> 1;
-        if (maxLength <= 0) {
-            return text;
-        }
-        /*
-         * We will remove characters from 'break1' to 'break2', both exclusive. We try to adjust
-         * 'break1' and 'break2' in such a way that the first and last characters to be removed
-         * will be spaces or punctuation characters. Constants 'lower' and 'upper' are limit
-         * values. If we don't find values for 'break1' and 'break2' inside those limits, we
-         * will give up.
-         */
-        int break1 = maxLength;
-        int break2 = length - maxLength;
-        for (final int lower = (maxLength >> 1); break1 >= lower; break1--) {
-            if (!Character.isUnicodeIdentifierPart(text.charAt(break1))) {
-                while (--break1>=lower && !Character.isUnicodeIdentifierPart(text.charAt(break1)));
-                break;
-            }
-        }
-        for (final int upper = length - (maxLength >> 1); break2 < upper; break2++) {
-            if (!Character.isUnicodeIdentifierPart(text.charAt(break2))) {
-                while (++break2<upper && !Character.isUnicodeIdentifierPart(text.charAt(break2)));
-                break;
-            }
-        }
-        return CharSequences.trimWhitespaces(new StringBuilder(break1 + (length-break2) + 6)
-                .append(text, 0, break1+1).append(" (…) ").append(text, break2, length)).toString();
-    }
-
-    /**
-     * Returns {@code arguments} as an array. If {@code arguments} is already an array, this array
-     * or a copy of this array will be returned. If {@code arguments} is not an array, it will be
-     * placed in an array of length 1. In any case, all the array elements will be checked for
-     * {@link String} objects. Any strings of length greater than {@link #MAX_STRING_LENGTH} will
-     * be reduced using the {@link #summarize} method.
+     * Returns {@code arguments} as an array, and convert some types that are not recognized
+     * by {@link MessageFormat}. If {@code arguments} is already an array, then that array or
+     * a copy of that array will be returned. If {@code arguments} is not an array, it will be
+     * placed in an array of length 1.
+     * <p>
+     * All the array elements will be checked for {@link CharSequence}, {@link InternationalString},
+     * {@link Throwable} or {@link Class} instances. All {@code InternationalString} instances will
+     * be localized according this resource bundle locale. Any characters sequences of length
+     * greater than {@link #MAX_STRING_LENGTH} will be reduced using the
+     * {@link CharSequences#shortSentence(CharSequence, int)} method.
      *
      * @param  arguments The object to check.
-     * @return {@code arguments} as an array.
+     * @return {@code arguments} as an array, eventually with some elements replaced.
      */
     private Object[] toArray(final Object arguments) {
         Object[] array;
@@ -424,29 +367,29 @@ public class IndexedResourceBundle extends ResourceBundle {
         }
         for (int i=0; i<array.length; i++) {
             final Object element = array[i];
+            Object replacement = element;
             if (element instanceof CharSequence) {
-                final String s0;
-                if (element instanceof InternationalString) {
-                    s0 = ((InternationalString) element).toString(getFormatLocale());
-                } else {
-                    s0 = element.toString();
+                CharSequence text = (CharSequence) element;
+                if (text instanceof InternationalString) {
+                    text = ((InternationalString) element).toString(getFormatLocale());
                 }
-                final String s1 = summarize(s0, MAX_STRING_LENGTH);
-                if (!s0.equals(s1)) {
-                    if (array == arguments) {
-                        array = new Object[array.length];
-                        System.arraycopy(arguments, 0, array, 0, array.length);
-                    }
-                    array[i] = s1;
-                }
+                replacement = CharSequences.shortSentence(text, MAX_STRING_LENGTH);
             } else if (element instanceof Throwable) {
                 String message = ((Throwable) element).getLocalizedMessage();
                 if (message == null) {
                     message = Classes.getShortClassName(element);
                 }
-                array[i] = message;
+                replacement = message;
             } else if (element instanceof Class<?>) {
-                array[i] = Classes.getShortName((Class<?>) element);
+                replacement = Classes.getShortName((Class<?>) element);
+            }
+            // No need to check for Numbers or Dates instances, since they are
+            // properly formatted in the ResourceBundle locale by MessageFormat.
+            if (replacement != element) {
+                if (array == arguments) {
+                    array = array.clone(); // Protect the user-provided array from change.
+                }
+                array[i] = replacement;
             }
         }
         return array;

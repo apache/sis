@@ -89,12 +89,18 @@ public final strictfp class CharSequencesTest {
     }
 
     /**
-     * Tests the {@link CharSequences#skipLines(CharSequence, int, int)} method.
+     * Tests the {@link CharSequences#indexOfLineStart(CharSequence, int, int)} method.
      */
     @Test
-    public void testSkipLines() {
-        // Index 15 below is at the begining of "Third".
-        assertEquals(15, skipLines("\nFirst\r\nSecond\nThird\r4\n5", 2, 3));
+    public void testIndexOfLineStart() {
+        assertEquals("Forward search: expected the begining of \"Third\"", 15,
+                indexOfLineStart("\nFirst\r\nSecond\nThird\r4\n5", 2, 3));
+        assertEquals("Current line: expected the begining of \"Third\"", 15,
+                indexOfLineStart("\nFirst\r\nSecond\nThird\r4\n5", 0, 17));
+        assertEquals("Backward search: expected the begining of \"Second\"", 8,
+                indexOfLineStart("\nFirst\r\nSecond\nThird\r4\n5", -1, 17));
+        assertEquals("Backward search: expected the begining of \"First\"", 1,
+                indexOfLineStart("\nFirst\r\nSecond\nThird\r4\n5", -2, 17));
     }
 
     /**
@@ -103,6 +109,7 @@ public final strictfp class CharSequencesTest {
     @Test
     public void testSplit() {
         assertArrayEquals(new String[] {"lundi", "mardi", "", "mercredi"}, split("lundi , mardi,,mercredi ", ','));
+        assertArrayEquals(new String[] {"lundi", "mardi", "", "mercredi"}, split("lundi \n mardi\r\n\nmercredi ", '\n'));
     }
 
     /**
@@ -168,7 +175,7 @@ public final strictfp class CharSequencesTest {
      * Tests the {@link CharSequences#toString(Iterable, String)} method.
      */
     @Test
-    public void testToSimpleString() {
+    public void testToString() {
         assertEquals("4, 8, 12, 9", CharSequences.toString(Arrays.asList(4, 8, 12, 9), ", "));
         assertSame  ("singleton",   CharSequences.toString(Arrays.asList("singleton"), ", "));
     }
@@ -201,6 +208,15 @@ public final strictfp class CharSequencesTest {
         assertEquals("4",    trimFractionalPart("4.0"));
         assertEquals("4",    trimFractionalPart("4.00"));
         assertEquals("4.10", trimFractionalPart("4.10"));
+    }
+
+    /**
+     * Tests the {@link CharSequences#shortSentence(CharSequence, int)} method.
+     */
+    @Test
+    public void testShortSentence() {
+        assertEquals("This sentence given (…) in a short name.", String.valueOf(
+                shortSentence("This sentence given as an example is way too long to be included in a short name.", 40)));
     }
 
     /**
@@ -279,12 +295,84 @@ public final strictfp class CharSequencesTest {
     }
 
     /**
+     * Tests the {@link CharSequences#isJavaIdentifier(CharSequence)} method.
+     */
+    @Test
+    public void testIsJavaIdentifier() {
+        assertTrue ("A123", isJavaIdentifier("A123"));
+        assertFalse("123A", isJavaIdentifier("123A"));
+    }
+
+    /**
+     * Tests the {@link CharSequences#isUpperCase(CharSequence)} method.
+     */
+    @Test
+    public void testIsUpperCase() {
+        assertTrue ("ABC", isUpperCase("ABC"));
+        assertFalse("AbC", isUpperCase("AbC"));
+        assertFalse("A2C", isUpperCase("A2C")); // TODO: actually an unspecified behavior; we can change that.
+    }
+
+    /**
+     * Tests the {@link CharSequences#equalsIgnoreCase(CharSequence, CharSequence)} method.
+     */
+    @Test
+    public void testEqualsIgnoreCase() {
+        assertTrue (equalsIgnoreCase("Test", "TEST"));
+        assertTrue (equalsIgnoreCase("Test", new StringBuilder("TEST")));
+        assertFalse(equalsIgnoreCase("Test1", "Test2"));
+    }
+
+    /**
      * Tests the {@link CharSequences#equals(CharSequence, CharSequence)} method.
      */
     @Test
     public void testEquals() {
         assertTrue (CharSequences.equals("Test", new StringBuilder("Test")));
         assertFalse(CharSequences.equals("Test1", "Test2"));
+    }
+
+    /**
+     * Tests the {@link CharSequences#regionMatches(CharSequence, int, CharSequence)} method.
+     */
+    @Test
+    public void testRegionMatches() {
+        assertTrue (regionMatches(new StringBuilder("Un chasseur sachant chasser sans son chien"), 12, "sachant"));
+        assertFalse(regionMatches(new StringBuilder("Un chasseur sachant chasser sans son chien"), 12, "sacHant"));
+    }
+
+    /**
+     * Tests the {@link CharSequences#startsWith(CharSequence, CharSequence, boolean)} method.
+     */
+    @Test
+    public void testStartsWith() {
+        assertTrue (startsWith(new StringBuilder("Un chasseur sachant chasser sans son chien"), "un chasseur", true));
+        assertFalse(startsWith(new StringBuilder("Un chasseur sachant chasser sans son chien"), "un chasseur", false));
+    }
+
+    /**
+     * Tests the {@link CharSequences#endsWith(CharSequence, CharSequence, boolean)} method.
+     */
+    @Test
+    public void testEndsWith() {
+        assertTrue (endsWith(new StringBuilder("Un chasseur sachant chasser sans son chien"), "Son chien", true));
+        assertFalse(endsWith(new StringBuilder("Un chasseur sachant chasser sans son chien"), "Son chien", false));
+    }
+
+    /**
+     * Tests the {@link CharSequences#commonPrefix(CharSequence, CharSequence)} method.
+     */
+    @Test
+    public void testCommonPrefix() {
+        assertEquals("testCommon", commonPrefix(new StringBuilder("testCommonPrefix()"), "testCommonSuffix()"));
+    }
+
+    /**
+     * Tests the {@link CharSequences#commonSuffix(CharSequence, CharSequence)} method.
+     */
+    @Test
+    public void testCommonSuffix() {
+        assertEquals("fix()", commonSuffix(new StringBuilder("testCommonPrefix()"), "testCommonSuffix()"));
     }
 
     /**
