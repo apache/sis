@@ -140,7 +140,7 @@ public final strictfp class CharSequencesTest {
     }
 
     /**
-     * Tests {@link CharSequences#parseLongs(CharSequence, char)}.
+     * Tests {@link CharSequences#parseLongs(CharSequence, char, int)}.
      */
     @Test
     public void testParseLongs() {
@@ -148,7 +148,7 @@ public final strictfp class CharSequencesTest {
     }
 
     /**
-     * Tests {@link CharSequences#parseInts(CharSequence, char)}.
+     * Tests {@link CharSequences#parseInts(CharSequence, char, int)}.
      */
     @Test
     public void testParseInts() {
@@ -156,7 +156,7 @@ public final strictfp class CharSequencesTest {
     }
 
     /**
-     * Tests {@link CharSequences#parseShorts(CharSequence, char)}.
+     * Tests {@link CharSequences#parseShorts(CharSequence, char, int)}.
      */
     @Test
     public void testParseShorts() {
@@ -164,7 +164,7 @@ public final strictfp class CharSequencesTest {
     }
 
     /**
-     * Tests {@link CharSequences#parseBytes(CharSequence, char)}.
+     * Tests {@link CharSequences#parseBytes(CharSequence, char, int)}.
      */
     @Test
     public void testParseBytes() {

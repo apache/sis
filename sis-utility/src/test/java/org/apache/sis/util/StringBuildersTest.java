@@ -91,7 +91,7 @@ public final strictfp class StringBuildersTest {
     }
 
     /**
-     * Tests the {@link StringBuilders#toASCII(CharSequence)} method.
+     * Tests the {@link StringBuilders#toASCII(StringBuilder)} method.
      */
     @Test
     public void testToASCII() {

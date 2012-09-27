@@ -325,7 +325,7 @@ public final class Logging extends Static {
      *     META-INF/services/org.apache.sis.util.logging.LoggerFactory
      * }
      *
-     * The factory found on the classpath is given to {@link #setLoggerFactory(String)}.
+     * The factory found on the classpath is given to {@link #setLoggerFactory(LoggerFactory)}.
      * If more than one factory is found, then the log messages will be sent to the logging
      * frameworks managed by all those factories.
      * <p>
