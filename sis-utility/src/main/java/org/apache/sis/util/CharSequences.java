@@ -192,6 +192,156 @@ public final class CharSequences extends Static {
     }
 
     /**
+     * Returns the index within the given character sequence of the first occurrence of the
+     * specified character, starting the search at the specified index. If the character is
+     * not found, then this method returns -1.
+     * <p>
+     * There is no restriction on the value of {@code fromIndex}. If negative or greater
+     * than the length of the text, then the behavior of this method is the same than the
+     * one documented in {@link String#indexOf(int, int)}.
+     *
+     * @param  text      The character sequence in which to perform the search, or {@code null}.
+     * @param  toSearch  The Unicode code point of the character to search.
+     * @param  fromIndex The index to start the search from.
+     * @return The index of the first occurrence of the given character in the text, or -1
+     *         if no occurrence has been found or if the {@code text} argument is null.
+     *
+     * @see String#indexOf(int, int)
+     */
+    public static int indexOf(final CharSequence text, final int toSearch, int fromIndex) {
+        if (text != null) {
+            if (text instanceof String) {
+                // String provides a faster implementation.
+                return ((String) text).indexOf(toSearch, fromIndex);
+            }
+            if (fromIndex < 0) {
+                fromIndex = 0;
+            }
+            final int length = text.length();
+            while (fromIndex < length) {
+                final int c = codePointAt(text, fromIndex);
+                if (c == toSearch) {
+                    return fromIndex;
+                }
+                fromIndex += charCount(c);
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Returns the index within the given strings of the first occurrence of the specified part,
+     * starting at the specified index. This method is equivalent to the following code:
+     *
+     * {@preformat java
+     *     return string.indexOf(part, fromIndex);
+     * }
+     *
+     * Except that this method works on arbitrary {@link CharSequence} objects instead than
+     * {@link String}s only.
+     *
+     * @param  text      The string in which to perform the search.
+     * @param  toSearch  The substring for which to search.
+     * @param  fromIndex The index from which to start the search.
+     * @return The index within the string of the first occurrence of the specified part,
+     *         starting at the specified index, or -1 if none.
+     * @throws NullPointerException if any of the arguments is null.
+     *
+     * @see String#indexOf(String, int)
+     * @see StringBuilder#indexOf(String, int)
+     * @see StringBuffer#indexOf(String, int)
+     */
+    public static int indexOf(final CharSequence text, final CharSequence toSearch, int fromIndex) {
+        if (text != null) {
+            if (toSearch instanceof String) {
+                if (text instanceof String) {
+                    return ((String) text).indexOf((String) toSearch, fromIndex);
+                }
+                if (text instanceof StringBuilder) {
+                    return ((StringBuilder) text).indexOf((String) toSearch, fromIndex);
+                }
+                if (text instanceof StringBuffer) {
+                    return ((StringBuffer) text).indexOf((String) toSearch, fromIndex);
+                }
+            }
+            if (fromIndex < 0) {
+                fromIndex = 0;
+            }
+            final int length = toSearch.length();
+            final int stopAt = text.length() - length;
+search:     for (; fromIndex <= stopAt; fromIndex++) {
+                for (int i=0; i<length; i++) {
+                    // No need to use the codePointAt API here, since we are looking for exact matches.
+                    if (text.charAt(fromIndex + i) != toSearch.charAt(i)) {
+                        continue search;
+                    }
+                }
+                return fromIndex;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Returns the index of the first character after the given number of lines.
+     * This method counts the number of occurrence of {@code '\n'}, {@code '\r'}
+     * or {@code "\r\n"} starting from the given position. When {@code numToSkip}
+     * occurrences have been found, the index of the first character after the last
+     * occurrence is returned.
+     *
+     * @param  text      The string in which to skip a determined amount of lines.
+     * @param  numToSkip The number of lines to skip. Can be positive, zero or negative.
+     * @param  fromIndex Index at which to start the search.
+     * @return Index of the first character after the last skipped line.
+     * @throws NullPointerException if the {@code string} argument is null.
+     */
+    public static int skipLines(final CharSequence text, int numToSkip, int fromIndex) {
+        final int length = text.length();
+        /*
+         * Go backward if the number of lines is negative.
+         * No need to use the codePoint API because we are
+         * looking only for '\r' and '\n' characters.
+         */
+        if (numToSkip < 0) {
+            do {
+                char c;
+                do {
+                    if (fromIndex == 0) {
+                        return fromIndex;
+                    }
+                    c = text.charAt(--fromIndex);
+                    if (c == '\n') {
+                        if (fromIndex != 0 && text.charAt(fromIndex - 1) == '\r') {
+                            --fromIndex;
+                        }
+                        break;
+                    }
+                } while (c != '\r');
+            } while (++numToSkip != 0);
+            numToSkip = 1; // For skipping the "end of line" characters.
+        }
+        /*
+         * Skips forward the given amount of lines.
+         */
+        while (--numToSkip >= 0) {
+            char c;
+            do {
+                if (fromIndex >= length) {
+                    return fromIndex;
+                }
+                c = text.charAt(fromIndex++);
+                if (c == '\r') {
+                    if (fromIndex != length && text.charAt(fromIndex) == '\n') {
+                        fromIndex++;
+                    }
+                    break;
+                }
+            } while (c != '\n');
+        }
+        return fromIndex;
+    }
+
+    /**
      * Splits a text around the given character. The array returned by this method contains all
      * subsequences of the given text that is terminated by the given character or is terminated
      * by the end of the text. The subsequences in the array are in the order in which they occur
@@ -205,27 +355,36 @@ public final class CharSequences extends Static {
      *   <li>It accepts generic character sequences.</li>
      *   <li>It accepts {@code null} argument, in which case an empty array is returned.</li>
      *   <li>The separator is a simple character instead than a regular expression.</li>
+     *   <li>If the {@code separator} argument is {@code '\n'} or {@code '\r'}, then this method
+     *       splits around any of {@code "\r"}, {@code "\n"} or {@code "\r\n"} characters sequences.
      *   <li>The leading and trailing spaces of each subsequences are {@linkplain #trimWhitespaces trimmed}.</li>
      * </ul>
      *
-     * @param  toSplit   The text to split, or {@code null}.
+     * @param  text The text to split, or {@code null}.
      * @param  separator The delimiting character (typically the coma).
      * @return The array of subsequences computed by splitting the given text around the given
      *         character, or an empty array if {@code toSplit} was null.
      *
      * @see String#split(String)
      */
-    public static CharSequence[] split(final CharSequence toSplit, final char separator) {
-        if (toSplit == null) {
+    public static CharSequence[] split(final CharSequence text, final char separator) {
+        if (text == null) {
             return EMPTY_ARRAY;
+        }
+        if (separator == '\n' || separator == '\r') {
+            final CharSequence[] strings = splitOnEOL(text);
+            for (int i=0; i<strings.length; i++) {
+                // For consistency with the rest of this method.
+                strings[i] = trimWhitespaces(strings[i]);
+            }
+            return strings;
         }
         // 'excludeEmpty' must use the same criterion than trimWhitespaces(...).
         final boolean excludeEmpty = isWhitespace(separator);
         CharSequence[] strings = new CharSequence[4];
         int count = 0, last  = 0, i = 0;
-        while ((i = indexOf(toSplit, separator, i)) >= 0) {
-            // Note: parseDoubles(...) needs the call to trimWhitespaces(...).
-            final CharSequence item = trimWhitespaces(toSplit.subSequence(last, i));
+        while ((i = indexOf(text, separator, i)) >= 0) {
+            final CharSequence item = trimWhitespaces(text.subSequence(last, i));
             if (!excludeEmpty || item.length() != 0) {
                 if (count == strings.length) {
                     strings = copyOf(strings, count << 1);
@@ -235,7 +394,7 @@ public final class CharSequences extends Static {
             last = ++i;
         }
         // Add the last element.
-        final CharSequence item = trimWhitespaces(toSplit.subSequence(last, toSplit.length()));
+        final CharSequence item = trimWhitespaces(text.subSequence(last, text.length()));
         if (!excludeEmpty || item.length() != 0) {
             if (count == strings.length) {
                 strings = copyOf(strings, count + 1);
@@ -243,6 +402,92 @@ public final class CharSequences extends Static {
             strings[count++] = item;
         }
         return resize(strings, count);
+    }
+
+    /**
+     * Splits a text around the <cite>End Of Line</cite> (EOL) characters.
+     * EOL characters can be any of {@code "\r"}, {@code "\n"} or {@code "\r\n"} sequences.
+     * Each element in the returned array will be a single line. If the given text is already
+     * a single line, then this method returns a singleton containing only the given text.
+     * <p>
+     * At the difference of <code>{@linkplain #split split}(toSplit, '\n’)}</code>,
+     * this method does not remove whitespaces.
+     *
+     * {@note Prior JDK8 this method was relatively cheap because all string instances created by
+     * <code>String.substring(int,int)</code> shared the same <code>char[]</code> internal array.
+     * However since JDK8, the new <code>String</code> implementation copies the data in new arrays.
+     * Consequently it is better to use index rather than this method for splitting large
+     * <code>String</code>s. However this method still useful for other <code>CharSequence</code>
+     * implementations providing an efficient <code>subSequence(int,int)</code> method.}
+     *
+     * @param  text The multi-line text from which to get the individual lines, or {@code null}.
+     * @return The lines in the text, or an empty array if the given text was null.
+     *
+     * @see #skipLines(CharSequence, int, int)
+     */
+    public static CharSequence[] splitOnEOL(final CharSequence text) {
+        if (text == null) {
+            return EMPTY_ARRAY;
+        }
+        /*
+         * This method is implemented on top of String.indexOf(int,int), which is the
+         * fatest method available while taking care of the complexity of code points.
+         */
+        int lf = indexOf(text, '\n', 0);
+        int cr = indexOf(text, '\r', 0);
+        if (lf < 0 && cr < 0) {
+            return new CharSequence[] {
+                text
+            };
+        }
+        int count = 0;
+        CharSequence[] splitted = new CharSequence[8];
+        int last = 0;
+        boolean hasMore;
+        do {
+            int skip = 1;
+            final int splitAt;
+            if (cr < 0) {
+                // There is no "\r" character in the whole text, only "\n".
+                splitAt = lf;
+                hasMore = (lf = indexOf(text, '\n', lf+1)) >= 0;
+            } else if (lf < 0) {
+                // There is no "\n" character in the whole text, only "\r".
+                splitAt = cr;
+                hasMore = (cr = indexOf(text, '\r', cr+1)) >= 0;
+            } else if (lf < cr) {
+                // There is both "\n" and "\r" characters with "\n" first.
+                splitAt = lf;
+                hasMore = true;
+                lf = indexOf(text, '\n', lf+1);
+            } else {
+                // There is both "\r" and "\n" characters with "\r" first.
+                // We need special care for the "\r\n" sequence.
+                splitAt = cr;
+                if (lf == ++cr) {
+                    cr = indexOf(text, '\r', cr+1);
+                    lf = indexOf(text, '\n', lf+1);
+                    hasMore = (cr >= 0 || lf >= 0);
+                    skip = 2;
+                } else {
+                    cr = indexOf(text, '\r', cr+1);
+                    hasMore = true; // Because there is lf.
+                }
+            }
+            if (count >= splitted.length) {
+                splitted = copyOf(splitted, count*2);
+            }
+            splitted[count++] = text.subSequence(last, splitAt);
+            last = splitAt + skip;
+        } while (hasMore);
+        /*
+         * Add the remaining string and we are done.
+         */
+        if (count >= splitted.length) {
+            splitted = copyOf(splitted, count+1);
+        }
+        splitted[count++] = text.subSequence(last, text.length());
+        return resize(splitted, count);
     }
 
     /**
@@ -392,16 +637,13 @@ public final class CharSequences extends Static {
      *   <li>In the common case where the collection contains a single {@link String} element,
      *       that string is returned directly (no object duplication).</li>
      * </ul>
-     * <p>
-     * This method is the converse of {@link #getLinesFromMultilines(CharSequence)}
-     * when the separator is the system line separator.
      *
      * @param  collection The elements to format in a (typically) comma-separated list, or {@code null}.
      * @param  separator  The element separator, which is usually {@code ", "}.
      * @return The (typically) comma-separated list, or {@code null} if the given {@code collection}
      *         was null or contains only null elements.
      */
-    public static String formatList(final Iterable<?> collection, final String separator) {
+    public static String toString(final Iterable<?> collection, final String separator) {
         ArgumentChecks.ensureNonNull("separator", separator);
         String list = null;
         if (collection != null) {
@@ -423,6 +665,24 @@ public final class CharSequences extends Static {
             }
         }
         return list;
+    }
+
+    /**
+     * Replaces some Unicode characters by ASCII characters on a "best effort basis".
+     * For example the {@code 'é'} character is replaced by {@code 'e'} (without accent).
+     * <p>
+     * The current implementation replaces only the characters in the range {@code 00C0}
+     * to {@code 00FF}, inclusive. Other characters are left unchanged.
+     *
+     * @param  text The text to scan for Unicode characters to replace by ASCII characters,
+     *         or {@code null}.
+     * @return The given text with substitution applied, or {@code text} if no replacement
+     *         has been applied.
+     *
+     * @see StringBuilders#toASCII(StringBuilder)
+     */
+    public static CharSequence toASCII(final CharSequence text) {
+        return StringBuilders.toASCII(text, null);
     }
 
     /**
@@ -499,24 +759,6 @@ public final class CharSequences extends Static {
             }
         }
         return value;
-    }
-
-    /**
-     * Replaces some Unicode characters by ASCII characters on a "best effort basis".
-     * For example the {@code 'é'} character is replaced by {@code 'e'} (without accent).
-     * <p>
-     * The current implementation replaces only the characters in the range {@code 00C0}
-     * to {@code 00FF}, inclusive. Other characters are left unchanged.
-     *
-     * @param  text The text to scan for Unicode characters to replace by ASCII characters,
-     *         or {@code null}.
-     * @return The given text with substitution applied, or {@code text} if no replacement
-     *         has been applied.
-     *
-     * @see StringBuilders#toASCII(StringBuilder)
-     */
-    public static CharSequence toASCII(final CharSequence text) {
-        return StringBuilders.toASCII(text, null);
     }
 
     /**
@@ -965,25 +1207,25 @@ cmp:    while (ia < lga) {
      * Except that this method works on arbitrary {@link CharSequence} objects instead than
      * {@link String}s only.
      *
-     * @param string The string for which to tests for the presence of {@code part}.
-     * @param offset The offset in {@code string} where to test for the presence of {@code part}.
-     * @param part   The part which may be present in {@code string}.
+     * @param text      The character sequence for which to tests for the presence of {@code part}.
+     * @param fromIndex The offset in {@code text} where to test for the presence of {@code part}.
+     * @param part      The part which may be present in {@code string}.
      * @return {@code true} if {@code string} contains {@code part} at the given {@code offset}.
      * @throws NullPointerException if any of the arguments is null.
      *
      * @see String#regionMatches(int, String, int, int)
      */
-    public static boolean regionMatches(final CharSequence string, final int offset, final CharSequence part) {
-        if (string instanceof String && part instanceof String) {
-            return ((String) string).regionMatches(offset, (String) part, 0, part.length());
+    public static boolean regionMatches(final CharSequence text, final int fromIndex, final CharSequence part) {
+        if (text instanceof String && part instanceof String) {
+            return ((String) text).regionMatches(fromIndex, (String) part, 0, part.length());
         }
         final int length = part.length();
-        if (offset + length > string.length()) {
+        if (fromIndex + length > text.length()) {
             return false;
         }
         for (int i=0; i<length; i++) {
             // No need to use the code point API here, since we are looking for exact matches.
-            if (string.charAt(offset + i) != part.charAt(i)) {
+            if (text.charAt(fromIndex + i) != part.charAt(i)) {
                 return false;
             }
         }
@@ -991,149 +1233,59 @@ cmp:    while (ia < lga) {
     }
 
     /**
-     * Returns the index within the given character sequence of the first occurrence of the
-     * specified character, starting the search at the specified index. If the character is
-     * not found, then this method returns -1.
-     * <p>
-     * There is no restriction on the value of {@code fromIndex}. If negative or greater
-     * than the length of the text, then the behavior of this method is the same than the
-     * one documented in {@link String#indexOf(int, int)}.
+     * Returns {@code true} if the given character sequence starts with the given prefix.
      *
-     * @param  text      The character sequence in which to perform the search, or {@code null}.
-     * @param  toSearch  The Unicode code point of the character to search.
-     * @param  fromIndex The index to start the search from.
-     * @return The index of the first occurrence of the given character in the text, or -1
-     *         if no occurrence has been found or if the {@code text} argument is null.
-     *
-     * @see String#indexOf(int, int)
-     */
-    public static int indexOf(final CharSequence text, final int toSearch, int fromIndex) {
-        if (text != null) {
-            if (text instanceof String) {
-                // String provides a faster implementation.
-                return ((String) text).indexOf(toSearch, fromIndex);
-            }
-            if (fromIndex < 0) {
-                fromIndex = 0;
-            }
-            final int length = text.length();
-            while (fromIndex < length) {
-                final int c = codePointAt(text, fromIndex);
-                if (c == toSearch) {
-                    return fromIndex;
-                }
-                fromIndex += charCount(c);
-            }
-        }
-        return -1;
-    }
-
-    /**
-     * Returns the index within the given strings of the first occurrence of the specified part,
-     * starting at the specified index. This method is equivalent to the following code:
-     *
-     * {@preformat java
-     *     return string.indexOf(part, fromIndex);
-     * }
-     *
-     * Except that this method works on arbitrary {@link CharSequence} objects instead than
-     * {@link String}s only.
-     *
-     * @param  string    The string in which to perform the search.
-     * @param  part      The substring for which to search.
-     * @param  fromIndex The index from which to start the search.
-     * @return The index within the string of the first occurrence of the specified part,
-     *         starting at the specified index, or -1 if none.
+     * @param  text        The characters sequence to test.
+     * @param  prefix      The expected prefix.
+     * @param  ignoreCase  {@code true} if the case should be ignored.
+     * @return {@code true} if the given sequence starts with the given prefix.
      * @throws NullPointerException if any of the arguments is null.
-     *
-     * @see String#indexOf(String, int)
-     * @see StringBuilder#indexOf(String, int)
-     * @see StringBuffer#indexOf(String, int)
      */
-    public static int indexOf(final CharSequence string, final CharSequence part, int fromIndex) {
-        if (string != null) {
-            if (part instanceof String) {
-                if (string instanceof String) {
-                    return ((String) string).indexOf((String) part, fromIndex);
-                }
-                if (string instanceof StringBuilder) {
-                    return ((StringBuilder) string).indexOf((String) part, fromIndex);
-                }
-                if (string instanceof StringBuffer) {
-                    return ((StringBuffer) string).indexOf((String) part, fromIndex);
-                }
+    public static boolean startsWith(final CharSequence text, final CharSequence prefix, final boolean ignoreCase) {
+        final int lgs = text.length();
+        final int lgp = prefix.length();
+        int is = 0;
+        int ip = 0;
+        while (ip < lgp) {
+            if (is >= lgs) {
+                return false;
             }
-            if (fromIndex < 0) {
-                fromIndex = 0;
+            final int cs = codePointAt(text, is);
+            final int cp = codePointAt(prefix,   ip);
+            if (cs != cp && (!ignoreCase || !equalsIgnoreCase(cs, cp))) {
+                return false;
             }
-            final int length = part.length();
-            final int stopAt = string.length() - length;
-search:     for (; fromIndex <= stopAt; fromIndex++) {
-                for (int i=0; i<length; i++) {
-                    // No need to use the codePointAt API here, since we are looking for exact matches.
-                    if (string.charAt(fromIndex + i) != part.charAt(i)) {
-                        continue search;
-                    }
-                }
-                return fromIndex;
-            }
+            is += charCount(cs);
+            ip += charCount(cp);
         }
-        return -1;
+        return true;
     }
 
     /**
-     * Returns the token starting at the given offset in the given text. For the purpose of this
-     * method, a "token" is any sequence of consecutive characters of the same type, as defined
-     * below.
-     * <p>
-     * Let define <var>c</var> as the first non-blank character located at an index equals or
-     * greater than the given offset. Then the characters that are considered of the same type
-     * are:
-     * <p>
-     * <ul>
-     *   <li>If <var>c</var> is a
-     *       {@linkplain Character#isJavaIdentifierStart(int) Java identifier start},
-     *       then any following character that are
-     *       {@linkplain Character#isJavaIdentifierPart(int) Java identifier part}.</li>
-     *   <li>Otherwise any character for which {@link Character#getType(int)} returns
-     *       the same value than for <var>c</var>.</li>
-     * </ul>
+     * Returns {@code true} if the given character sequence ends with the given suffix.
      *
-     * @param  text The text for which to get the token.
-     * @param  offset Index of the fist character to consider in the given text.
-     * @return A sub-sequence of {@code text} starting at the given offset, or an empty string
-     *         if there is no non-blank character at or after the given offset.
-     * @throws NullPointerException if the {@code text} argument is null.
+     * @param  text        The characters sequence to test.
+     * @param  suffix      The expected suffix.
+     * @param  ignoreCase  {@code true} if the case should be ignored.
+     * @return {@code true} if the given sequence ends with the given suffix.
+     * @throws NullPointerException if any of the arguments is null.
      */
-    public static CharSequence token(final CharSequence text, int offset) {
-        final int length = text.length();
-        int upper = offset;
-        /*
-         * Skip whitespaces. At the end of this loop,
-         * 'c' will be the first non-blank character.
-         */
-        int c;
-        do {
-            if (upper >= length) return "";
-            c = codePointAt(text, upper);
-            offset = upper;
-            upper += charCount(c);
-        }
-        while (isWhitespace(c));
-        /*
-         * Advance over all characters "of the same type".
-         */
-        if (isJavaIdentifierStart(c)) {
-            while (upper<length && isJavaIdentifierPart(c = codePointAt(text, upper))) {
-                upper += charCount(c);
+    public static boolean endsWith(final CharSequence text, final CharSequence suffix, final boolean ignoreCase) {
+        int is = text.length();
+        int ip = suffix.length();
+        while (ip > 0) {
+            if (is <= 0) {
+                return false;
             }
-        } else {
-            final int type = getType(codePointAt(text, offset));
-            while (upper<length && getType(c = codePointAt(text, upper)) == type) {
-                upper += charCount(c);
+            final int cs = codePointBefore(text, is);
+            final int cp = codePointBefore(suffix,   ip);
+            if (cs != cp && (!ignoreCase || !equalsIgnoreCase(cs, cp))) {
+                return false;
             }
+            is -= charCount(cs);
+            ip -= charCount(cp);
         }
-        return text.subSequence(offset, upper);
+        return true;
     }
 
     /**
@@ -1203,199 +1355,57 @@ search:     for (; fromIndex <= stopAt; fromIndex++) {
     }
 
     /**
-     * Returns {@code true} if the given character sequence starts with the given prefix.
-     *
-     * @param  sequence    The sequence to test.
-     * @param  prefix      The expected prefix.
-     * @param  ignoreCase  {@code true} if the case should be ignored.
-     * @return {@code true} if the given sequence starts with the given prefix.
-     * @throws NullPointerException if any of the arguments is null.
-     */
-    public static boolean startsWith(final CharSequence sequence, final CharSequence prefix, final boolean ignoreCase) {
-        final int lgs = sequence.length();
-        final int lgp = prefix  .length();
-        int is = 0;
-        int ip = 0;
-        while (ip < lgp) {
-            if (is >= lgs) {
-                return false;
-            }
-            final int cs = codePointAt(sequence, is);
-            final int cp = codePointAt(prefix,   ip);
-            if (cs != cp && (!ignoreCase || !equalsIgnoreCase(cs, cp))) {
-                return false;
-            }
-            is += charCount(cs);
-            ip += charCount(cp);
-        }
-        return true;
-    }
-
-    /**
-     * Returns {@code true} if the given character sequence ends with the given suffix.
-     *
-     * @param  sequence    The sequence to test.
-     * @param  suffix      The expected suffix.
-     * @param  ignoreCase  {@code true} if the case should be ignored.
-     * @return {@code true} if the given sequence ends with the given suffix.
-     * @throws NullPointerException if any of the arguments is null.
-     */
-    public static boolean endsWith(final CharSequence sequence, final CharSequence suffix, final boolean ignoreCase) {
-        int is = sequence.length();
-        int ip = suffix  .length();
-        while (ip > 0) {
-            if (is <= 0) {
-                return false;
-            }
-            final int cs = codePointBefore(sequence, is);
-            final int cp = codePointBefore(suffix,   ip);
-            if (cs != cp && (!ignoreCase || !equalsIgnoreCase(cs, cp))) {
-                return false;
-            }
-            is -= charCount(cs);
-            ip -= charCount(cp);
-        }
-        return true;
-    }
-
-    /**
-     * Returns the index of the first character after the given number of lines.
-     * This method counts the number of occurrence of {@code '\n'}, {@code '\r'}
-     * or {@code "\r\n"} starting from the given position. When {@code numToSkip}
-     * occurrences have been found, the index of the first character after the last
-     * occurrence is returned.
-     *
-     * @param  string    The string in which to skip a determined amount of lines.
-     * @param  numToSkip The number of lines to skip. Can be positive, zero or negative.
-     * @param  startAt   Index at which to start the search.
-     * @return Index of the first character after the last skipped line.
-     * @throws NullPointerException if the {@code string} argument is null.
-     */
-    public static int skipLines(final CharSequence string, int numToSkip, int startAt) {
-        final int length = string.length();
-        /*
-         * Go backward if the number of lines is negative.
-         * No need to use the codePoint API because we are
-         * looking only for '\r' and '\n' characters.
-         */
-        if (numToSkip < 0) {
-            do {
-                char c;
-                do {
-                    if (startAt == 0) {
-                        return startAt;
-                    }
-                    c = string.charAt(--startAt);
-                    if (c == '\n') {
-                        if (startAt != 0 && string.charAt(startAt - 1) == '\r') {
-                            --startAt;
-                        }
-                        break;
-                    }
-                } while (c != '\r');
-            } while (++numToSkip != 0);
-            numToSkip = 1; // For skipping the "end of line" characters.
-        }
-        /*
-         * Skips forward the given amount of lines.
-         */
-        while (--numToSkip >= 0) {
-            char c;
-            do {
-                if (startAt >= length) {
-                    return startAt;
-                }
-                c = string.charAt(startAt++);
-                if (c == '\r') {
-                    if (startAt != length && string.charAt(startAt) == '\n') {
-                        startAt++;
-                    }
-                    break;
-                }
-            } while (c != '\n');
-        }
-        return startAt;
-    }
-
-    /**
-     * Returns a {@link CharSequence} instance for each line found in a multi-lines text.
-     * Each element in the returned array will be a single line. If the given text is already
-     * a single line, then this method returns a singleton containing only the given text.
+     * Returns the token starting at the given offset in the given text. For the purpose of this
+     * method, a "token" is any sequence of consecutive characters of the same type, as defined
+     * below.
      * <p>
-     * The converse of this method is {@link #formatList(Iterable, String)}.
+     * Let define <var>c</var> as the first non-blank character located at an index equals or
+     * greater than the given offset. Then the characters that are considered of the same type
+     * are:
+     * <p>
+     * <ul>
+     *   <li>If <var>c</var> is a
+     *       {@linkplain Character#isJavaIdentifierStart(int) Java identifier start},
+     *       then any following character that are
+     *       {@linkplain Character#isJavaIdentifierPart(int) Java identifier part}.</li>
+     *   <li>Otherwise any character for which {@link Character#getType(int)} returns
+     *       the same value than for <var>c</var>.</li>
+     * </ul>
      *
-     * {@note Prior JDK8 this method was relatively cheap because all string instances created by
-     * <code>String.substring(int,int)</code> shared the same <code>char[]</code> internal array.
-     * However since JDK8, the new <code>String</code> implementation copies the data in new arrays.
-     * Consequently it is better to use index rather than this method for splitting large
-     * <code>String</code>s. However this method still useful for other <code>CharSequence</code>
-     * implementations providing an efficient <code>subSequence(int,int)</code> method.}
-     *
-     * @param  text The multi-line text from which to get the individual lines.
-     * @return The lines in the text, or {@code null} if the given text was null.
+     * @param  text The text for which to get the token.
+     * @param  fromIndex Index of the fist character to consider in the given text.
+     * @return A sub-sequence of {@code text} starting at the given offset, or an empty string
+     *         if there is no non-blank character at or after the given offset.
+     * @throws NullPointerException if the {@code text} argument is null.
      */
-    public static CharSequence[] getLinesFromMultilines(final CharSequence text) {
-        if (text == null) {
-            return null;
-        }
+    public static CharSequence token(final CharSequence text, int fromIndex) {
+        final int length = text.length();
+        int upper = fromIndex;
         /*
-         * This method is implemented on top of String.indexOf(int,int), which is the
-         * fatest method available while taking care of the complexity of code points.
+         * Skip whitespaces. At the end of this loop,
+         * 'c' will be the first non-blank character.
          */
-        int lf = indexOf(text, '\n', 0);
-        int cr = indexOf(text, '\r', 0);
-        if (lf < 0 && cr < 0) {
-            return new CharSequence[] {
-                text
-            };
-        }
-        int count = 0;
-        CharSequence[] splitted = new CharSequence[8];
-        int last = 0;
-        boolean hasMore;
+        int c;
         do {
-            int skip = 1;
-            final int splitAt;
-            if (cr < 0) {
-                // There is no "\r" character in the whole text, only "\n".
-                splitAt = lf;
-                hasMore = (lf = indexOf(text, '\n', lf+1)) >= 0;
-            } else if (lf < 0) {
-                // There is no "\n" character in the whole text, only "\r".
-                splitAt = cr;
-                hasMore = (cr = indexOf(text, '\r', cr+1)) >= 0;
-            } else if (lf < cr) {
-                // There is both "\n" and "\r" characters with "\n" first.
-                splitAt = lf;
-                hasMore = true;
-                lf = indexOf(text, '\n', lf+1);
-            } else {
-                // There is both "\r" and "\n" characters with "\r" first.
-                // We need special care for the "\r\n" sequence.
-                splitAt = cr;
-                if (lf == ++cr) {
-                    cr = indexOf(text, '\r', cr+1);
-                    lf = indexOf(text, '\n', lf+1);
-                    hasMore = (cr >= 0 || lf >= 0);
-                    skip = 2;
-                } else {
-                    cr = indexOf(text, '\r', cr+1);
-                    hasMore = true; // Because there is lf.
-                }
-            }
-            if (count >= splitted.length) {
-                splitted = copyOf(splitted, count*2);
-            }
-            splitted[count++] = text.subSequence(last, splitAt);
-            last = splitAt + skip;
-        } while (hasMore);
-        /*
-         * Add the remaining string and we are done.
-         */
-        if (count >= splitted.length) {
-            splitted = copyOf(splitted, count+1);
+            if (upper >= length) return "";
+            c = codePointAt(text, upper);
+            fromIndex = upper;
+            upper += charCount(c);
         }
-        splitted[count++] = text.subSequence(last, text.length());
-        return resize(splitted, count);
+        while (isWhitespace(c));
+        /*
+         * Advance over all characters "of the same type".
+         */
+        if (isJavaIdentifierStart(c)) {
+            while (upper<length && isJavaIdentifierPart(c = codePointAt(text, upper))) {
+                upper += charCount(c);
+            }
+        } else {
+            final int type = getType(codePointAt(text, fromIndex));
+            while (upper<length && getType(c = codePointAt(text, upper)) == type) {
+                upper += charCount(c);
+            }
+        }
+        return text.subSequence(fromIndex, upper);
     }
 }
