@@ -66,11 +66,54 @@ public final strictfp class CharSequencesTest {
     }
 
     /**
+     * Tests the {@link CharSequences#indexOf(CharSequence, CharSequence, int)} method.
+     * We test four time with different kind of character sequences.
+     */
+    @Test
+    public void testIndexOf() {
+        for (int i=0; i<3; i++) {
+            CharSequence string = "An ordinary sentence.";
+            switch (i) {
+                case 0:  /* Test directly on the String instance. */              break;
+                case 1:  string = new StringBuilder            ((String) string); break;
+                case 2:  string = new StringBuffer             ((String) string); break;
+// TODO         case 3:  string = new SimpleInternationalString((String) string); break;
+                default: throw new AssertionError(i);
+            }
+            assertEquals(-1, indexOf(string, "dummy",        0));
+            assertEquals( 0, indexOf(string, "An",           0));
+            assertEquals(-1, indexOf(string, "An",           1));
+            assertEquals(12, indexOf(string, "sentence.",    0));
+            assertEquals(-1, indexOf(string, "sentence;",    0));
+        }
+    }
+
+    /**
+     * Tests the {@link CharSequences#skipLines(CharSequence, int, int)} method.
+     */
+    @Test
+    public void testSkipLines() {
+        // Index 15 below is at the begining of "Third".
+        assertEquals(15, skipLines("\nFirst\r\nSecond\nThird\r4\n5", 2, 3));
+    }
+
+    /**
      * Tests {@link CharSequences#split(CharSequence, char)}.
      */
     @Test
     public void testSplit() {
         assertArrayEquals(new String[] {"lundi", "mardi", "", "mercredi"}, split("lundi , mardi,,mercredi ", ','));
+    }
+
+    /**
+     * Tests the {@link CharSequences#splitOnEOL(CharSequence)} method.
+     */
+    @Test
+    public void testSplitOnEOL() {
+        final CharSequence[] splitted = splitOnEOL("\nOne\r\nTwo\rThree \rFour\n Five\n\r Six \n");
+        assertArrayEquals(new String[] {
+            "", "One", "Two", "Three ", "Four", " Five", "", " Six ", ""
+        }, splitted);
     }
 
     /**
@@ -122,35 +165,22 @@ public final strictfp class CharSequencesTest {
     }
 
     /**
-     * Tests the {@link CharSequences#indexOf(CharSequence, CharSequence, int)} method.
-     * We test four time with different kind of character sequences.
+     * Tests the {@link CharSequences#toString(Iterable, String)} method.
      */
     @Test
-    public void testIndexOf() {
-        for (int i=0; i<3; i++) {
-            CharSequence string = "An ordinary sentence.";
-            switch (i) {
-                case 0:  /* Test directly on the String instance. */              break;
-                case 1:  string = new StringBuilder            ((String) string); break;
-                case 2:  string = new StringBuffer             ((String) string); break;
-// TODO         case 3:  string = new SimpleInternationalString((String) string); break;
-                default: throw new AssertionError(i);
-            }
-            assertEquals(-1, indexOf(string, "dummy",        0));
-            assertEquals( 0, indexOf(string, "An",           0));
-            assertEquals(-1, indexOf(string, "An",           1));
-            assertEquals(12, indexOf(string, "sentence.",    0));
-            assertEquals(-1, indexOf(string, "sentence;",    0));
-        }
+    public void testToSimpleString() {
+        assertEquals("4, 8, 12, 9", CharSequences.toString(Arrays.asList(4, 8, 12, 9), ", "));
+        assertSame  ("singleton",   CharSequences.toString(Arrays.asList("singleton"), ", "));
     }
 
     /**
-     * Tests the {@link CharSequences#formatList(Iterable, String)} method.
+     * Tests the {@link CharSequences#toASCII(CharSequence)} method.
      */
     @Test
-    public void testFormatList() {
-        assertEquals("4, 8, 12, 9", formatList(Arrays.asList(4, 8, 12, 9), ", "));
-        assertSame  ("singleton",   formatList(Arrays.asList("singleton"), ", "));
+    public void testToASCII() {
+        final String metre = "metre";
+        assertSame  (metre, toASCII(metre));
+        assertEquals(metre, toASCII("mètre").toString());
     }
 
     /**
@@ -171,25 +201,6 @@ public final strictfp class CharSequencesTest {
         assertEquals("4",    trimFractionalPart("4.0"));
         assertEquals("4",    trimFractionalPart("4.00"));
         assertEquals("4.10", trimFractionalPart("4.10"));
-    }
-
-    /**
-     * Tests the {@link CharSequences#token(CharSequence, int)} method.
-     */
-    @Test
-    public void testToken() {
-        assertEquals("Id4", token("..Id4  56B..", 2));
-        assertEquals("56",  token("..Id4  56B..", 6));
-    }
-
-    /**
-     * Tests the {@link CharSequences#toASCII(CharSequence)} method.
-     */
-    @Test
-    public void testToASCII() {
-        final String metre = "metre";
-        assertSame  (metre, toASCII(metre));
-        assertEquals(metre, toASCII("mètre").toString());
     }
 
     /**
@@ -268,21 +279,20 @@ public final strictfp class CharSequencesTest {
     }
 
     /**
-     * Tests the {@link CharSequences#getLinesFromMultilines(CharSequence)} method.
+     * Tests the {@link CharSequences#equals(CharSequence, CharSequence)} method.
      */
     @Test
-    public void testGetLinesFromMultilines() {
-        final CharSequence[] splitted = getLinesFromMultilines("\nOne\r\nTwo\rThree\rFour\nFive\n\rSix\n");
-        assertArrayEquals(new String[] {
-            "",
-            "One",
-            "Two",
-            "Three",
-            "Four",
-            "Five",
-            "",
-            "Six",
-            ""
-        }, splitted);
+    public void testEquals() {
+        assertTrue (CharSequences.equals("Test", new StringBuilder("Test")));
+        assertFalse(CharSequences.equals("Test1", "Test2"));
+    }
+
+    /**
+     * Tests the {@link CharSequences#token(CharSequence, int)} method.
+     */
+    @Test
+    public void testToken() {
+        assertEquals("Id4", token("..Id4  56B..", 2));
+        assertEquals("56",  token("..Id4  56B..", 6));
     }
 }
