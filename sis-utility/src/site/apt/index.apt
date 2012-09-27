@@ -9,12 +9,12 @@ Apache SIS utilities
   Java types like Arrays and character strings, logging, and more.
 
   Some functionalities provided by this module may overlap some external libraries like
-  <<<common-logging>> and <<<commons-collections>>>. However this module often implement
+  <<<common-logging>>> and <<<commons-collections>>>. However this module often implement
   them in a slightly different way. For example instead of defining new API for logging
   operations, SIS uses the standard Java logging framework with optional adaptors on top
   of <<<java.util.logging.Logger>>> for users who want to redirect to other logging frameworks.
 
-  Since this is not the purpose of this module to compete with external libraries, this
+  Since this is not the purpose of this module to compete with dedicated libraries, this
   module should be considered as mostly internal to the Apache SIS project. For example
   any future SIS release may change the collection implementations (how they perform
   synchronizations, how they handle exceptions, <etc.>) in order to fit SIS needs.

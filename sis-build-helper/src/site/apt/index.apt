@@ -13,21 +13,21 @@ Building Apache SIS
 
   This module provides the following javadoc taglets:
 
-*---------------------+-------------------------------------------------------------------------------------------+
-|| Javadoc tag        || Description                                                                             ||
-*---------------------+-------------------------------------------------------------------------------------------+
-| <<<@module>>>       | Create links to the module where the class is defined, source code and Maven artifacts.   |
-*---------------------+-------------------------------------------------------------------------------------------+
-| <<<\{@website\}>>>  | an inline taglet for the URL to the Apache SIS web site (Maven reports).                  |
-*---------------------+-------------------------------------------------------------------------------------------+
-| <<<\{@section\}>>>  | an inline taglet for the title of a new section in the javadoc.                           |
-*---------------------+-------------------------------------------------------------------------------------------+
-| <<<\{@note\}>>>     | an inline taglet for a remark that readers can safely ignore.                             |
-|                     | Notes appear as indented paragraphs with a smaller font.                                  |
-*---------------------+-------------------------------------------------------------------------------------------+
-| <<<\{preformat\}>>> | an inline taglet for pre-formatted text. The first word inside the taglet shall be one of |
-|                     | <<<java>>>, <<<xml>>>, <<<sql>>>, <<<wkt>>>, <<<text>>>, <<<math>>> or <<<shell>>>.       |
-*---------------------+-------------------------------------------------------------------------------------------+
+*----------------------+-------------------------------------------------------------------------------------------+
+|| Javadoc tag         || Description                                                                             ||
+*----------------------+-------------------------------------------------------------------------------------------+
+| <<<@module>>>        | Create links to the module where the class is defined, source code and Maven artifacts.   |
+*----------------------+-------------------------------------------------------------------------------------------+
+| <<<\{@website\}>>>   | An inline taglet for the URL to the Apache SIS web site (Maven reports).                  |
+*----------------------+-------------------------------------------------------------------------------------------+
+| <<<\{@section\}>>>   | An inline taglet for the title of a new section in the javadoc.                           |
+*----------------------+-------------------------------------------------------------------------------------------+
+| <<<\{@note\}>>>      | An inline taglet for a remark that readers can safely ignore.                             |
+|                      | Notes appear as indented paragraphs with a smaller font.                                  |
+*----------------------+-------------------------------------------------------------------------------------------+
+| <<<\{@preformat\}>>> | An inline taglet for pre-formatted text. The first word inside the taglet shall be one of |
+|                      | <<<java>>>, <<<xml>>>, <<<sql>>>, <<<wkt>>>, <<<text>>>, <<<math>>> or <<<shell>>>.       |
+*----------------------+-------------------------------------------------------------------------------------------+
 
 
 * Localized resources compiler
