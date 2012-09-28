@@ -22,9 +22,11 @@ package org.apache.sis.util;
  * purpose only. The list below summarizes some of the utility classes:
  *
  * <table class="sis">
- * <tr><th colspan="2">Primitives and classes</th></tr>
+ * <tr><th colspan="2">Basic classes of the Java language</th></tr>
  * <tr><td>{@link CharSequences}</td>
  *     <td>Methods working on {@link CharSequence} or {@link String} instances.</td></tr>
+ * <tr><td>{@link StringBuilders}</td>
+ *     <td>Methods modifying {@link StringBuilder} content in-place.</td></tr>
  * <tr><td>{@link Numbers}</td>
  *     <td>Conversions between different kind of {@link Number}.</td></tr>
  * <tr><td>{@link Classes}</td>
