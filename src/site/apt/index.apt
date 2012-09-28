@@ -3,10 +3,12 @@
                              ------------------------------
 
 
-The Apache SIS library
+The Apache SIS™ library
 
   Apache SIS is a toolkit for describing location information, including points, bounding boxes,
   polygons, and for computing distances on that information.
+
+  SIS is a project of the {{{http://www.apache.org}Apache Software Foundation}}.
 
 
 * Using SIS
@@ -25,3 +27,7 @@ The Apache SIS library
     * {{{./code-patterns.html}Recommended code patterns}}
 
     * Developer Guide (English - translation to be provided later) ({{{./book/fr.xhtml}Français}})
+
+
+  Apache SIS, Apache, the Apache feather logo, and the Apache SIS project logo are trademarks of
+  The Apache Software Foundation.
