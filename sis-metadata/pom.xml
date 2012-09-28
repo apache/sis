@@ -54,7 +54,7 @@ Implementations of metadata derived from ISO 19115. This module provides both an
     <developer>
       <id>desruisseaux</id>
       <name>Martin Desruisseaux</name>
-      <email>martin.desruisseaux@geomatys.fr</email>
+      <email>desruisseaux@apache.org</email>
       <organization>Geomatys</organization>
       <organizationUrl>http://www.geomatys.com/</organizationUrl>
       <timezone>+1</timezone>
@@ -87,6 +87,7 @@ Implementations of metadata derived from ISO 19115. This module provides both an
       <organization>
         Institut de Recherche pour le Développement (IRD)
       </organization>
+      <timezone>+11</timezone>
       <roles>
         <role>Developer</role>
       </roles>
