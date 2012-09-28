@@ -31,6 +31,8 @@ package org.apache.sis.util;
  *     <td>Methods working on {@link Class} instances.</td></tr>
  *
  * <tr><th colspan="2" class="hsep">Structures (trees, collections, arrays, parameters)</th></tr>
+ * <tr><td>{@link org.apache.sis.util.collection.Collections}</td>
+ *     <td>Additions to the JDK {@link java.util.Collections} methods.</td></tr>
  * <tr><td>{@link Arrays}</td>
  *     <td>Insert or remove elements in the middle of arrays.</td></tr>
  *
