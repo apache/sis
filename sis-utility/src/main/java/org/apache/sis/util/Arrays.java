@@ -25,8 +25,9 @@ import org.apache.sis.internal.Objects;
 
 
 /**
- * Simple operations on array elements. This class provides methods for inserting and deleting
- * elements in an array, as well as resizing the array. Some worthy methods are:
+ * Static methods for simple operations on arrays and array elements. This class provides methods
+ * for inserting and deleting elements in an array, as well as resizing the array. Some worthy
+ * methods are:
  * <p>
  * <ul>
  *   <li>The {@link #resize(Object[], int) resize} methods, which are very similar to the

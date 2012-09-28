@@ -22,7 +22,7 @@ import static java.lang.Character.*;
 
 
 /**
- * Utility methods working on {@link StringBuilder} instances. Some methods defined in this
+ * Static methods working on {@link StringBuilder} instances. Some methods defined in this
  * class duplicate the functionalities provided in the {@link CharSequences} class, but
  * modify directly the content of the provided {@code StringBuilder} instead than creating
  * new objects.

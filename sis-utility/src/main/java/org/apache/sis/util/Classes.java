@@ -33,7 +33,7 @@ import static org.apache.sis.util.Arrays.contains;
 
 
 /**
- * Miscellaneous static methods working on {@link Class} objects.
+ * Static methods working on {@link Class} objects.
  * This class defines helper methods for working with reflection.
  * Some functionalities are:
  * <p>
