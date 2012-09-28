@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE book [
+  <!ENTITY % book.entities SYSTEM "book.entities">
+  %book.entities;
+]>
+<book xmlns="http://docbook.org/ns/docbook" version="5.0"
+      xmlns:xi    = "http://www.w3.org/2001/XInclude"
+      xmlns:xlink = "http://www.w3.org/1999/xlink">
+
+  <info>
+    <title>Introduction à Apache SIS</title>
+    <orgname class="informal">Apache SIS</orgname>
+    <author><personname>
+      <firstname>Martin</firstname>
+      <surname>Desruisseaux</surname>
+    </personname></author>
+    <abstract><para>
+      Introduction aux standards internationaux utilisées en information géographique,
+      et à l’approche choisie pour les implémenter dans la bibliothèque
+      <link xlink:href="http://incubator.apache.org/sis">Apache SIS</link> &sis-release;.
+      Ce document couvre les outils de développement, structures, conventions et
+      principales classes Java.
+    </para></abstract>
+    <keywordset>
+      <keyword>Apache SIS</keyword> <keyword>GeoAPI</keyword>
+      <keyword>OGC</keyword> <keyword>geospatial</keyword>
+    </keywordset>
+  </info>
+
+  <xi:include href="fr/introduction.xml"/>
+  <xi:include href="fr/standards.xml"/>
+  <xi:include href="fr/geoapi.xml"/>
+
+</book>

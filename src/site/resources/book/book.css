@@ -1,0 +1,104 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+div.informalexample {
+  margin-left:  1.25cm;
+  margin-right: 1.5cm;
+  font-size: smaller;
+}
+
+p {
+  text-align: justify;
+}
+
+span.deprecated {
+  text-decoration: line-through;
+}
+
+div.table p.title {
+  text-align: center;
+}
+
+table {
+  margin-left:  auto;
+  margin-right: auto;
+  border-style: solid;
+  border-width:   2pt;
+  border-spacing: 0pt;
+}
+
+table tr th {
+  background-color: #B9DCFF;
+  border-bottom-style: solid;
+  border-bottom-width: 1pt;
+  padding: 3pt;
+}
+
+table tr td {
+  padding-left:  9pt;
+  padding-right: 9pt;
+}
+
+table tr td.separator {
+  font-weight: bold;
+  text-align: center;
+  padding-top:    3pt;
+  padding-bottom: 3pt;
+  border-top-style: solid;
+  border-top-width: 1pt;
+  border-top-color: lightgray;
+  border-bottom-style: solid;
+  border-bottom-width: 1pt;
+  border-bottom-color: lightgray;
+  background-color: #EEEEFF;
+}
+
+pre.programlisting {
+  border-style: solid;
+  border-width: 1pt;
+  padding: 9pt;
+}
+
+/*
+ * OGC/ISO, GeoAPI and SIS legends.
+ */
+code.OGC {
+  color: MediumBlue;
+}
+
+code.GeoAPI {
+  color: Green;
+}
+
+code.Geotk {
+  color: SaddleBrown;
+}
+
+/*
+ * Syntax highlighting.
+ */
+span.hl-string {
+  color: fireBrick;
+}
+
+span.hl-annotation {
+  color: slateGray;
+}
+
+span.hl-doccomment {
+  font-style: italic;
+  color: teal;
+}
