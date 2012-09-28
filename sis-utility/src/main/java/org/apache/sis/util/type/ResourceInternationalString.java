@@ -39,20 +39,20 @@ import org.apache.sis.internal.Objects;
  * properties file with the right suffix, for example {@code "_en"} for English or {@code "_fr"}
  * for French. This mechanism is explained in J2SE javadoc for the
  * {@link ResourceBundle#getBundle(String,Locale,ClassLoader) getBundle} static method.
- * <p>
- * <b>Example:</b> If a file named "{@code MyResources.properties}" exists in the package
- * {@code org.apache.sis.mypackage} and contains a line like "{@code MyKey = some value}",
- * then an international string for "{@code some value}" can be created using the following
- * code:
+ *
+ * {@section Example}
+ * If a file named "{@code MyResources.properties}" exists in the package {@code org.mypackage}
+ * and contains a line like "{@code MyKey = some value}", then an international string for
+ * {@code "some value"} can be created using the following code:
  *
  * {@preformat java
- *     InternationalString value =
- *         new ResourceInternationalString("org.apache.sis.mypackage.MyResources", "MyKey");
+ *     InternationalString value = new ResourceInternationalString("org.mypackage.MyResources", "MyKey");
  * }
  *
- * The "{@code some value}" string will be localized if the required properties files exist, for
+ * The {@code "some value"} string will be localized if the required properties files exist, for
  * example "{@code MyResources_fr.properties}" for French, "{@code MyResources_it.properties}"
- * for Italian, <i>etc.</i>
+ * for Italian, <i>etc</i>.
+ * If needed, users can gain more control by overriding the {@link #getBundle(Locale)} method.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
@@ -107,7 +107,22 @@ public class ResourceInternationalString extends AbstractInternationalString imp
         this.loader    = loader;
         ensureNonNull("resources", resources);
         ensureNonNull("key",       key);
+    }
 
+    /**
+     * Returns the resource bundle for the given locale. The default implementation fetches the
+     * bundle from the name given at {@linkplain #ResourceInternationalString(String,String)
+     * construction time}. Subclasses can override this method if they need to fetch the
+     * bundle in an other way.
+     *
+     * @param  locale The locale for which to get the resource bundle.
+     * @return The resource bundle for the given locale.
+     *
+     * @see ResourceBundle#getBundle(String,Locale)
+     */
+    protected ResourceBundle getBundle(final Locale locale) {
+        return (loader == null) ? ResourceBundle.getBundle(resources, locale) :
+                ResourceBundle.getBundle(resources, locale, loader);
     }
 
     /**
@@ -129,22 +144,6 @@ public class ResourceInternationalString extends AbstractInternationalString imp
             locale = Locale.ENGLISH;
         }
         return getBundle(locale).getString(key);
-    }
-
-    /**
-     * Returns the resource bundle for the given locale. The default implementation fetches the
-     * bundle from the name given at {@linkplain #ResourceInternationalString(String,String)
-     * construction time}. Subclasses can override this method if they need to fetch the
-     * bundle in an other way.
-     *
-     * @param  locale The locale for which to get the resource bundle.
-     * @return The resource bundle for the given locale.
-     *
-     * @see ResourceBundle#getBundle(String,Locale)
-     */
-    protected ResourceBundle getBundle(final Locale locale) {
-        return (loader == null) ? ResourceBundle.getBundle(resources, locale) :
-                ResourceBundle.getBundle(resources, locale, loader);
     }
 
     /**

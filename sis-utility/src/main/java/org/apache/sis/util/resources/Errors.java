@@ -18,6 +18,7 @@ package org.apache.sis.util.resources;
 
 import java.util.Locale;
 import java.util.MissingResourceException;
+import org.opengis.util.InternationalString;
 
 
 /**
@@ -217,5 +218,60 @@ public final class Errors extends IndexedResourceBundle {
                                 final Object arg3) throws MissingResourceException
     {
         return getResources(null).getString(key, arg0, arg1, arg2, arg3);
+    }
+
+    /**
+     * The international string to be returned by {@link formatInternational}.
+     */
+    private static final class International extends ResourceInternationalString {
+        private static final long serialVersionUID = -229348959712294902L;
+
+        International(int key)              {super(key);}
+        International(int key, Object args) {super(key, args);}
+        @Override IndexedResourceBundle getBundle(Locale locale) {
+            return getResources(locale);
+        }
+    }
+
+    /**
+     * Gets an international string for the given key. This method does not check for the key
+     * validity. If the key is invalid, then a {@link MissingResourceException} may be thrown
+     * when a {@link InternationalString#toString(Locale)} method is invoked.
+     *
+     * @param  key The key for the desired string.
+     * @return An international string for the given key.
+     */
+    public static InternationalString formatInternational(final int key) {
+        return new International(key);
+    }
+
+    /**
+     * Gets an international string for the given key. This method does not check for the key
+     * validity. If the key is invalid, then a {@link MissingResourceException} may be thrown
+     * when a {@link InternationalString#toString(Locale)} method is invoked.
+     *
+     * {@note This method is redundant with the one expecting <code>Object...</code>, but avoid
+     *        the creation of a temporary array. There is no risk of confusion since the two
+     *        methods delegate their work to the same <code>format</code> method anyway.}
+     *
+     * @param  key The key for the desired string.
+     * @param  arg Values to substitute to "{0}".
+     * @return An international string for the given key.
+     */
+    public static InternationalString formatInternational(final int key, final Object arg) {
+        return new International(key, arg);
+    }
+
+    /**
+     * Gets an international string for the given key. This method does not check for the key
+     * validity. If the key is invalid, then a {@link MissingResourceException} may be thrown
+     * when a {@link InternationalString#toString(Locale)} method is invoked.
+     *
+     * @param  key  The key for the desired string.
+     * @param  args Values to substitute to "{0}", "{1}", <i>etc</i>.
+     * @return An international string for the given key.
+     */
+    public static InternationalString formatInternational(final int key, final Object... args) {
+        return new International(key, args);
     }
 }

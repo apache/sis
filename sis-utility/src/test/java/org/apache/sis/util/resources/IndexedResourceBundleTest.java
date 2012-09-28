@@ -17,6 +17,7 @@
 package org.apache.sis.util.resources;
 
 import java.util.Locale;
+import org.opengis.util.InternationalString;
 
 import org.junit.*;
 import static org.junit.Assert.*;
@@ -59,5 +60,19 @@ public final strictfp class IndexedResourceBundleTest {
                 Errors.getResources(Locale.ENGLISH).getString(Errors.Keys.NullArgument_1, "CRS"));
         assertEquals("L’argument ‘CRS’ ne doit pas être nul.",
                 Errors.getResources(Locale.FRENCH).getString(Errors.Keys.NullArgument_1, "CRS"));
+    }
+
+    /**
+     * Tests the formatting of an international string.
+     */
+    @Test
+    public void testInternationalString() {
+        InternationalString i18n = Errors.formatInternational(Errors.Keys.NullArgument_1);
+        assertEquals("Argument ‘{0}’ shall not be null.",      i18n.toString(Locale.ENGLISH));
+        assertEquals("L’argument ‘{0}’ ne doit pas être nul.", i18n.toString(Locale.FRENCH));
+
+        i18n = Errors.formatInternational(Errors.Keys.NullArgument_1, "CRS");
+        assertEquals("Argument ‘CRS’ shall not be null.",      i18n.toString(Locale.ENGLISH));
+        assertEquals("L’argument ‘CRS’ ne doit pas être nul.", i18n.toString(Locale.FRENCH));
     }
 }
