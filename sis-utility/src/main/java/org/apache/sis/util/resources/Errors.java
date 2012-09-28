@@ -101,6 +101,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int UnexpectedArgumentDimension_3 = 5;
 
         /**
+         * A value is already defined for “{0}”.
+         */
+        public static final int ValueAlreadyDefined_1 = 13;
+
+        /**
          * Value ‘{0}’={1} is invalid. Expected a number greater than 0.
          */
         public static final int ValueNotGreaterThanZero_2 = 7;
