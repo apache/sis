@@ -47,4 +47,4 @@
  * @see java.util.ResourceBundle
  * @see java.text.MessageFormat
  */
-package org.apache.sis.resources;
+package org.apache.sis.util.resources;

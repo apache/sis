@@ -50,7 +50,7 @@ Building Apache SIS
 
   The resource compiler is executed at Maven build time if the <<<pom.xml>>> file
   contains the following declaration. Note that current implementation looks only for resources
-  in the <<<org.apache.sis.resources>>> package; all other packages are ignored.
+  in the <<<org.apache.sis.util.resources>>> package; all other packages are ignored.
 
 +-----------------------------------------------------
 <build>

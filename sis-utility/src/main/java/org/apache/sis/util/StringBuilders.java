@@ -16,7 +16,7 @@
  */
 package org.apache.sis.util;
 
-import org.apache.sis.resources.Errors;
+import org.apache.sis.util.resources.Errors;
 
 import static java.lang.Character.*;
 

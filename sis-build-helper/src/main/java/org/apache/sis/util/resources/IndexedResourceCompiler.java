@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.resources;
+package org.apache.sis.util.resources;
 
 import java.io.*;
 import java.util.*;
@@ -94,7 +94,7 @@ class IndexedResourceCompiler implements FilenameFilter, Comparator<Object> {
 
     /**
      * The resource bundle base class being processed.
-     * Example: {@code org/apache/sis/resources/Vocabulary.java}.
+     * Example: {@code org/apache/sis/util/resources/Vocabulary.java}.
      */
     private File bundleClass;
 
@@ -126,7 +126,7 @@ class IndexedResourceCompiler implements FilenameFilter, Comparator<Object> {
      * @param sourceDirectory The source directory.
      * @param buildDirectory  The target directory where to write UTF files.
      * @param resourcesToProcess The resource bundle base classes
-     *        (e.g. {@code org/apache/sis/resources/Vocabulary.java}).
+     *        (e.g. {@code org/apache/sis/util/resources/Vocabulary.java}).
      */
     public IndexedResourceCompiler(final File sourceDirectory, final File buildDirectory,
             final File[] resourcesToProcess)

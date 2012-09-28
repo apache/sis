@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import org.apache.sis.resources.Errors;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
