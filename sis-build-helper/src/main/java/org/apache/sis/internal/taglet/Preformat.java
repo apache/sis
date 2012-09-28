@@ -30,6 +30,7 @@ import com.sun.tools.doclets.formats.html.ConfigurationImpl;
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
  * @version 0.3
+ * @module
  */
 public final class Preformat extends InlineTaglet {
     /**

@@ -27,6 +27,7 @@ import com.sun.tools.doclets.Taglet;
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
  * @version 0.3
+ * @module
  */
 public final class Note extends InlineTaglet {
     /**

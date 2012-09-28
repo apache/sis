@@ -25,9 +25,10 @@ import org.apache.maven.plugin.MojoExecutionException;
  * @author Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
  * @version 0.3
+ * @module
  */
 @SuppressWarnings("serial")
-public final class ResourceCompilerException extends MojoExecutionException {
+final class ResourceCompilerException extends MojoExecutionException {
     /**
      * Creates an exception with the given detail message.
      *

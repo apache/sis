@@ -26,6 +26,7 @@ import com.sun.tools.doclets.Taglet;
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
  * @version 0.3
+ * @module
  */
 abstract class InlineTaglet implements Taglet {
     /**

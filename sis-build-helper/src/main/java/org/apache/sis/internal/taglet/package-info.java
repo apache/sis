@@ -22,5 +22,6 @@
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.2)
  * @version 0.3
+ * @module
  */
 package org.apache.sis.internal.taglet;

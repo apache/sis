@@ -30,6 +30,7 @@ import com.sun.tools.doclets.Taglet;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.2)
  * @version 0.3
+ * @module
  */
 public final class Module implements Taglet {
     /**
