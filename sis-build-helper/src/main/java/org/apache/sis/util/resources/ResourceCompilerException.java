@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.resources;
+package org.apache.sis.util.resources;
 
 import org.apache.maven.plugin.MojoExecutionException;
 

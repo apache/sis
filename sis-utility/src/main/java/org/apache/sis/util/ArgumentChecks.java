@@ -19,7 +19,7 @@ package org.apache.sis.util;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 
-import org.apache.sis.resources.Errors;
+import org.apache.sis.util.resources.Errors;
 
 
 /**

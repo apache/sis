@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.resources;
+package org.apache.sis.util.resources;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -64,7 +64,7 @@ public class ResourceCompilerMojo extends AbstractMojo implements FilenameFilter
         for (final String sourceDirectory : compileSourceRoots) {
             File directory = new File(sourceDirectory);
             if (directory.getName().equals("java")) {
-                final File[] resourcesToProcess = new File(sourceDirectory, "org/apache/sis/resources").listFiles(this);
+                final File[] resourcesToProcess = new File(sourceDirectory, "org/apache/sis/util/resources").listFiles(this);
                 if (resourcesToProcess != null && resourcesToProcess.length != 0) {
                     errors += new Compiler(directory, target, resourcesToProcess).run();
                 }
