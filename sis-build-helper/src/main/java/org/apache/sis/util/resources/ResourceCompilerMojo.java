@@ -25,10 +25,13 @@ import org.apache.maven.plugin.MojoExecutionException;
 
 /**
  * Compiles the international resources that are found in the module from which this mojo is invoked.
+ * See the <code><a href="{@website}/sis-build-helper/index.html">sis-build-helper</a></code> module
+ * for more information.
  *
  * @author Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
  * @version 0.3
+ * @module
  *
  * @goal compile-resources
  * @phase generate-resources
