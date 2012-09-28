@@ -23,7 +23,7 @@ import org.apache.sis.util.resources.Errors;
 
 
 /**
- * Provides static methods for performing argument checks.
+ * Static methods for performing argument checks.
  * Every methods in this class can throw one of the following exceptions:
  * <p>
  * <table class="sis">

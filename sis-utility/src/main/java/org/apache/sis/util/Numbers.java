@@ -25,8 +25,7 @@ import org.apache.sis.util.resources.Errors;
 
 
 /**
- * Miscellaneous static methods working on {@link Number} objects, and a few primitive types
- * by extension.
+ * Static methods working with {@link Number} objects, and a few primitive types by extension.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.5)

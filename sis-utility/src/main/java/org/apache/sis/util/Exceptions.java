@@ -22,7 +22,7 @@ import java.util.HashSet;
 
 
 /**
- * Utilities methods for dealing with exceptions.
+ * Static methods working with {@link Exception} instances.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.0)

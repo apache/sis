@@ -24,7 +24,7 @@ import static org.apache.sis.util.StringBuilders.replace;
 
 
 /**
- * Utility methods working on {@link CharSequence} instances. Some methods defined in this
+ * Static methods working with {@link CharSequence} instances. Some methods defined in this
  * class duplicate the functionalities already provided in the standard {@link String} class,
  * but works on a generic {@code CharSequence} instance instead than {@code String}.
  *
