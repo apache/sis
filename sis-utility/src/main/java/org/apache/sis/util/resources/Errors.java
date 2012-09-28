@@ -61,6 +61,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int IllegalClass_2 = 3;
 
         /**
+         * The “{0}” language is not recognized.
+         */
+        public static final int IllegalLanguageCode_1 = 12;
+
+        /**
          * Range [{0} … {1}] is not valid.
          */
         public static final int IllegalRange_2 = 11;

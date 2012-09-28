@@ -39,6 +39,19 @@
  * necessary. This avoid the unfortunate confusion documented in the warning section of
  * {@link java.text.MessageFormat} javadoc.</p>
  *
+ * {@section Usage}
+ * All {@link org.apache.sis.util.resources.IndexedResourceBundle} subclasses provide a
+ * {@code getResources(Locale)} static method. It can be used for fetching localized strings
+ * as below:
+ *
+ * {@preformat java
+ *     String text = TheBundle.getResources(locale).getString(key, optionalArguments);
+ * }
+ *
+ * For convenience, all {@code IndexedResourceBundle} subclass provide also various
+ * {@code format(int, …)} static methods for fetching localized texts in the
+ * {@linkplain java.util.Locale#getDefault() system default locale}.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-1.2)
  * @version 0.3
