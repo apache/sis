@@ -39,13 +39,13 @@ import static java.util.Collections.unmodifiableMap;
  *   <li>Null-safe {@link #clear(Collection) clear}, {@link #isNullOrEmpty(Collection) isNullOrEmpty}
  *       and {@link #addIfNonNull(Collection, Object) addIfNonNull} methods, for the convenience of
  *       classes using the <cite>lazy instantiation</cite> pattern.</li>
+ *   <li>{@link #asCollection(Object) asCollection} for wrapping arbitrary objects to list or collection.</li>
+ *   <li>List and collection {@linkplain #listComparator() comparators}.</li>
+ *   <li>{@link #modifiableCopy(Collection) modifiableCopy} method for taking a snapshot of an arbitrary
+ *       implementation into an unsynchronized, modifiable, in-memory object.</li>
  *   <li>{@link #unmodifiableOrCopy(Set) unmodifiableOrCopy} methods, which may be slightly more
  *       compact than the standard {@link java.util.Collections#unmodifiableSet(Set)} equivalent
  *       when the unmodifiable collection is not required to be a view over the original collection.</li>
- *   <li>{@link #asCollection(Object) asCollection} for wrapping arbitrary objects to list or collection.</li>
- *   <li>List and collection {@linkplain #listComparator() comparators}.</li>
- *   <li>{@link #modifiableCopy(Collection) copy} method for taking a snapshot of an arbitrary
- *       implementation into an unsynchronized, modifiable, in-memory object.</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
@@ -188,14 +188,13 @@ public final class Collections extends Static {
      * Returns a unmodifiable version of the given set.
      * This method is different than the standard {@link java.util.Collections#unmodifiableSet(Set)}
      * in that it tries to returns a more efficient object when there is zero or one element.
+     * Such small set occurs frequently in Apache SIS, especially for
+     * {@link org.apache.sis.referencing.AbstractIdentifiedObject} names or identifiers.
+     * <p>
      * <em>The set returned by this method may or may not be a view of the given set</em>.
      * Consequently this method shall be used <strong>only</strong> if the given set will
      * <strong>not</strong> be modified after this method call. In case of doubt, use the
      * standard {@link java.util.Collections#unmodifiableSet(Set)} method instead.
-     * <p>
-     * This method is provided because sets of zero or one element are very frequent in Apache
-     * SIS, especially for {@link org.apache.sis.referencing.AbstractIdentifiedObject} names
-     * or identifiers.
      *
      * @param  <E>  The type of elements in the set.
      * @param  set  The set to make unmodifiable, or {@code null}.
@@ -225,13 +224,12 @@ public final class Collections extends Static {
      * Returns a unmodifiable version of the given map.
      * This method is different than the standard {@link java.util.Collections#unmodifiableMap(Map)}
      * in that it tries to returns a more efficient object when there is zero or one entry.
+     * Such small maps occur frequently in Apache SIS.
+     * <p>
      * <em>The map returned by this method may or may not be a view of the given map</em>.
      * Consequently this method shall be used <strong>only</strong> if the given map will
      * <strong>not</strong> be modified after this method call. In case of doubt, use the
      * standard {@link java.util.Collections#unmodifiableMap(Map)} method instead.
-     * <p>
-     * This method is provided because maps of zero or one element are very frequent
-     * in Apache SIS.
      *
      * @param  <K>  The type of keys in the map.
      * @param  <V>  The type of values in the map.
@@ -269,7 +267,7 @@ public final class Collections extends Static {
      * <tr><th>Input type</th><th>Output type</th></tr>
      * <tr><td>{@link SortedSet}</td><td>{@link TreeSet}</td></tr>
      * <tr><td>{@link HashSet}</td><td>{@link HashSet}</td></tr>
-     * <tr><td>Other {@link Set}</td><td>{@link LinkedHashSet}</td></tr>
+     * <tr><td>{@link Set} other than above</td><td>{@link LinkedHashSet}</td></tr>
      * <tr><td>{@link Queue}</td><td>{@link LinkedList}</td></tr>
      * <tr><td>{@link List} or other {@link Collection}</td><td>{@link ArrayList}</td></tr>
      * </table>
@@ -321,7 +319,7 @@ public final class Collections extends Static {
      * <tr><th>Input type</th><th>Output type</th></tr>
      * <tr><td>{@link SortedMap}</td><td>{@link TreeMap}</td></tr>
      * <tr><td>{@link HashMap}</td><td>{@link HashMap}</td></tr>
-     * <tr><td>Other {@link Map}</td><td>{@link LinkedHashMap}</td></tr>
+     * <tr><td>{@link Map} other than above</td><td>{@link LinkedHashMap}</td></tr>
      * </table>
      *
      * @param  <K> The type of keys in the map.

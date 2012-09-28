@@ -34,7 +34,7 @@ import static org.apache.sis.util.collection.Collections.hashMapCapacity;
 
 
 /**
- * Utilities methods working on {@link Locale} instances. While this class is documented as
+ * Static methods working on {@link Locale} instances. While this class is documented as
  * providing static methods, a few methods are actually non-static. Those methods need to be
  * invoked on the {@link #SYSTEM} or {@link #LIBRARY} instance in order to specify the scope.
  * Examples:
@@ -161,7 +161,7 @@ public final class Locales extends Static {
 
     /**
      * Returns the list of {@linkplain #getAvailableLocales() available locales} formatted
-     * as string in the specified locale.
+     * as strings in the specified locale.
      *
      * @param  locale The locale to use for formatting the strings to be returned.
      * @return String descriptions of available locales.
@@ -178,7 +178,8 @@ public final class Locales extends Static {
 
     /**
      * Returns the languages of the given locales, without duplicated values.
-     * The instances returned by this method have no country and no variant information.
+     * The instances returned by this method have no {@linkplain Locale#getCountry() country}
+     * and no {@linkplain Locale#getVariant() variant} information.
      *
      * @param  locales The locales from which to get the languages.
      * @return The languages, without country or variant information.
@@ -197,10 +198,13 @@ public final class Locales extends Static {
     }
 
     /**
-     * Returns the 3-letters ISO language code if available, or the 2-letters code otherwise.
+     * Returns the {@linkplain Locale#getISO3Language() 3-letters ISO language code} if available,
+     * or the {@linkplain Locale#getLanguage() 2-letters code} otherwise.
      *
      * @param  locale The locale for which we want the language.
      * @return The language code, 3 letters if possible or 2 letters otherwise.
+     *
+     * @see Locale#getISO3Language()
      */
     public static String getLanguageCode(final Locale locale) {
         try {
