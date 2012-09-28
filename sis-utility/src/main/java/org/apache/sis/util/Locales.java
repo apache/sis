@@ -89,13 +89,13 @@ public final class Locales extends Static {
     /**
      * All locales available on the JavaVM.
      */
-    public final Locales ALL = new Locales();
+    public static final Locales ALL = new Locales();
 
     /**
      * Only locales available in the Apache SIS library. They are the locales for which localized
      * resources are provided in the {@link org.apache.sis.util.resources} package.
      */
-    public final Locales SIS = new Locales();
+    public static final Locales SIS = new Locales();
 
     /**
      * Do not allow instantiation of this class,

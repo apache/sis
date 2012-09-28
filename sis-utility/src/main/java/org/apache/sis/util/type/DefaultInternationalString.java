@@ -152,12 +152,13 @@ public class DefaultInternationalString extends AbstractInternationalString impl
 
     /**
      * Adds a string for the given property key. This is a convenience method for constructing an
-     * {@code AbstractInternationalString} during iteration through the
+     * {@code DefaultInternationalString} during iteration through the
      * {@linkplain java.util.Map.Entry entries} in a {@link Map}. It infers the {@link Locale}
      * from the property {@code key}, using the following steps:
+     * <p>
      * <ul>
-     *   <li>If the {@code key} do not starts with the specified {@code prefix}, then
-     *       this method do nothing and returns {@code false}.</li>
+     *   <li>If the {@code key} does not start with the specified {@code prefix}, then
+     *       this method does nothing and returns {@code false}.</li>
      *   <li>Otherwise, the characters after the {@code prefix} are parsed as an ISO language
      *       and country code, and the {@link #add(Locale, String)} method is invoked.</li>
      * </ul>
@@ -167,13 +168,13 @@ public class DefaultInternationalString extends AbstractInternationalString impl
      * property key stands for remarks in {@linkplain Locale#CANADA_FRENCH French Canadian}.
      *
      * @param  prefix The prefix to skip at the beginning of the {@code key}.
-     * @param  key The property key.
-     * @param  string The localized string for the specified {@code key}.
+     * @param  key    The property key which will determined the locale.
+     * @param  value  The localized string for the specified {@code key}.
      * @return {@code true} if the key has been recognized, or {@code false} otherwise.
      * @throws IllegalArgumentException if the locale after the prefix is an illegal code,
      *         or a different string value was already set for the given locale.
      */
-    public boolean add(final String prefix, final String key, final String string)
+    public boolean add(final String prefix, final String key, final String value)
             throws IllegalArgumentException
     {
         if (key.startsWith(prefix)) {
@@ -186,7 +187,7 @@ public class DefaultInternationalString extends AbstractInternationalString impl
                     return false;
                 }
             }
-            add(locale, string);
+            add(locale, value);
             return true;
         }
         return false;
@@ -265,7 +266,7 @@ public class DefaultInternationalString extends AbstractInternationalString impl
      *       {@code null} locale, then that string is returned.</li>
      *   <li>Otherwise, acknowledging that UML identifiers in OGC/ISO specifications are primarily
      *       expressed in the English language, this method looks for an English string as an
-     *       approximation of a "unlocalized" string. The {@linkplain Locale#UK} variant is
+     *       approximation of a "unlocalized" string. The {@link Locale#UK} variant is
      *       preferred because ISO specifications seem to use that language.</li>
      *   <li>If no English string was found, this method looks for a string for the
      *       {@linkplain Locale#getDefault() system default locale}.</li>
@@ -322,24 +323,24 @@ public class DefaultInternationalString extends AbstractInternationalString impl
     /**
      * Returns {@code true} if all localized texts stored in this international string are
      * contained in the specified object. More specifically:
-     *
+     * <p>
      * <ul>
-     *   <li><p>If {@code candidate} is an instance of {@link InternationalString}, then this method
+     *   <li>If {@code candidate} is an instance of {@link InternationalString}, then this method
      *       returns {@code true} if, for all <var>{@linkplain Locale locale}</var>-<var>{@linkplain
      *       String string}</var> pairs contained in {@code this}, <code>candidate.{@linkplain
      *       InternationalString#toString(Locale) toString}(locale)</code> returns a string
-     *       {@linkplain String#equals equals} to {@code string}.</p></li>
+     *       {@linkplain String#equals equals} to {@code string}.</li>
      *
-     *   <li><p>If {@code candidate} is an instance of {@link CharSequence}, then this method
+     *   <li>If {@code candidate} is an instance of {@link CharSequence}, then this method
      *       returns {@code true} if {@link #toString(Locale)} returns a string {@linkplain
      *       String#equals equals} to <code>candidate.{@linkplain CharSequence#toString()
-     *       toString()}</code> for all locales.</p></li>
+     *       toString()}</code> for all locales.</li>
      *
-     *   <li><p>If {@code candidate} is an instance of {@link Map}, then this methods returns
+     *   <li>If {@code candidate} is an instance of {@link Map}, then this methods returns
      *       {@code true} if all <var>{@linkplain Locale locale}</var>-<var>{@linkplain String
-     *       string}</var> pairs are contained into {@code candidate}.</p></li>
+     *       string}</var> pairs are contained into {@code candidate}.</li>
      *
-     *   <li><p>Otherwise, this method returns {@code false}.</p></li>
+     *   <li>Otherwise, this method returns {@code false}.</li>
      * </ul>
      *
      * @param  candidate The object which may contains this international string.

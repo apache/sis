@@ -24,8 +24,8 @@
  *   <li>Implementations of {@link org.opengis.util.InternationalString}:
  *     <ul>
  *       <li>{@link org.apache.sis.util.type.SimpleInternationalString} for wrapping a single {@link java.lang.String};</li>
- *       <li>{@link org.apache.sis.util.type.DefaultInternationalString} for providing many localization in a {@link java.util.Map};</li>
- *       <li>{@link org.apache.sis.util.type.ResourceInternationalString} for providing localization from a {@link java.util.ResourceBundle}.</li>
+ *       <li>{@link org.apache.sis.util.type.DefaultInternationalString} for providing many localizations in a {@link java.util.Map};</li>
+ *       <li>{@link org.apache.sis.util.type.ResourceInternationalString} for providing localizations from a {@link java.util.ResourceBundle}.</li>
  *     </ul>
  *   </li>
  *   <li>Implementations of {@link org.opengis.util.GenericName}:

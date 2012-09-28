@@ -25,7 +25,7 @@ import org.opengis.util.InternationalString;
 
 
 /**
- * Base class for {@linkplain String string} that has been internationalized into several
+ * Base class for {@linkplain String string}s that has been internationalized into several
  * {@linkplain Locale locales}. The {@link InternationalString} interface is used as a replacement
  * for the {@link String} class whenever an attribute needs to be internationalization capable.
  * The default value (as returned by {@link #toString()} and other {@link CharSequence} methods)
@@ -122,7 +122,7 @@ public abstract class AbstractInternationalString implements InternationalString
     /**
      * Returns this string in the given locale. If no string is available in the given locale,
      * then some default locale is used. The default locale is implementation-dependent.
-     * It may or may not be the {@linkplain Locale#getDefault() system default}).
+     * It may or may not be the {@linkplain Locale#getDefault() system default}.
      *
      * @param  locale The desired locale for the string to be returned,
      *         or {@code null} for a string in the implementation default locale.
