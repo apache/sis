@@ -31,7 +31,7 @@ Downloading Apache SIS Binaries
 
 +---------------------------------------------------------+
 <properties>
-  <sis.version>0.3-snapshot</sis.version>
+  <sis.version>0.3-SNAPSHOT</sis.version>
 </properties>
 
 <dependencies>
