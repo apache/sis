@@ -36,12 +36,12 @@ import static org.apache.sis.util.collection.Collections.hashMapCapacity;
 /**
  * Static methods working on {@link Locale} instances. While this class is documented as
  * providing static methods, a few methods are actually non-static. Those methods need to be
- * invoked on the {@link #SYSTEM} or {@link #LIBRARY} instance in order to specify the scope.
+ * invoked on the {@link #ALL} or {@link #SIS} instance in order to specify the scope.
  * Examples:
  *
  * {@preformat java
- *     Locales[] lc1 = Locales.SYSTEM .getAvailableLanguages();  // All languages installed on the JavaVM.
- *     Locales[] lc2 = Locales.LIBRARY.getAvailableLanguages();  // Only the languages known to Apache SIS.
+ *     Locales[] lc1 = Locales.ALL.getAvailableLanguages();  // All languages installed on the JavaVM.
+ *     Locales[] lc2 = Locales.SIS.getAvailableLanguages();  // Only the languages known to Apache SIS.
  * }
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
@@ -89,13 +89,13 @@ public final class Locales extends Static {
     /**
      * All locales available on the JavaVM.
      */
-    public final Locales SYSTEM = new Locales();
+    public final Locales ALL = new Locales();
 
     /**
      * Only locales available in the Apache SIS library. They are the locales for which localized
      * resources are provided in the {@link org.apache.sis.util.resources} package.
      */
-    public final Locales LIBRARY = new Locales();
+    public final Locales SIS = new Locales();
 
     /**
      * Do not allow instantiation of this class,
@@ -105,14 +105,14 @@ public final class Locales extends Static {
     }
 
     /**
-     * Returns the languages known to the JavaVM ({@link #SYSTEM}) or to the Apache SIS library
-     * ({@link #LIBRARY}). In the later case, this method returns only the languages for which
+     * Returns the languages known to the JavaVM ({@link #ALL}) or to the Apache SIS library
+     * ({@link #SIS}). In the later case, this method returns only the languages for which
      * localized resources are provided in the {@link org.apache.sis.util.resources} package.
      *
      * @return The list of supported languages.
      */
     public Locale[] getAvailableLanguages() {
-        if (this == SYSTEM) {
+        if (this == ALL) {
             return getLanguages(Locale.getAvailableLocales());
         }
         return new Locale[] {
@@ -122,14 +122,14 @@ public final class Locales extends Static {
     }
 
     /**
-     * Returns the locales known to the JavaVM ({@link #SYSTEM}) or to the Apache SIS library
-     * ({@link #LIBRARY}). In the later case, this method returns only the locales for which
+     * Returns the locales known to the JavaVM ({@link #ALL}) or to the Apache SIS library
+     * ({@link #SIS}). In the later case, this method returns only the locales for which
      * localized resources are provided in the {@link org.apache.sis.util.resources} package.
      *
      * @return The list of supported locales.
      */
     public Locale[] getAvailableLocales() {
-        if (this == SYSTEM) {
+        if (this == ALL) {
             return Locale.getAvailableLocales();
         }
         final Locale[] languages = getAvailableLanguages();
