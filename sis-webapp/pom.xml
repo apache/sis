@@ -54,6 +54,25 @@
 
   <build>
     <plugins>
+    <plugin>
+    <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId> 
+        <executions>
+ 
+          <execution>
+            <id>reserve-ports</id>
+            <phase>initialize</phase>
+            <goals>
+              <goal>reserve-network-port</goal>
+            </goals>
+            <configuration>
+              <portNames>
+                <portName>jettyPort</portName>
+              </portNames> 
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>    
       <plugin>
         <groupId>org.mortbay.jetty</groupId>
         <artifactId>jetty-maven-plugin</artifactId>
@@ -70,10 +89,9 @@
             <configuration>
               <connectors>
                 <connector implementation="org.eclipse.jetty.server.nio.SelectChannelConnector">
-                  <port>50234</port>
+                  <port>${jettyPort}</port>
                 </connector>
               </connectors>
-              <stopPort>50500</stopPort>
               <scanIntervalSeconds>10</scanIntervalSeconds>
               <daemon>true</daemon>
               <systemProperties>
