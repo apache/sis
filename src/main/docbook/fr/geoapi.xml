@@ -285,6 +285,14 @@ Class&lt;?&gt;  type = Class.forName(geoName);
 System.out.println("L’interface GeoAPI du type ISO " + isoName + " est " + type);
 </programlisting>
   </example>
+
+  <sidebar>
+    <emphasis role="bold">Note:</emphasis>
+    La bibliothèque SIS fournit dans la classe <classname role="SIS">org.apache.sis.util.type.Types</classname>
+    des méthodes de commodités pour ces deux opérations: <function role="SIS">getStandardName(Class)</function>
+    et <function role="SIS">forStandardName(String)</function> respectivement.
+  </sidebar>
+
   <para>
     Certaines classes et méthodes n’ont ni annotation <classname role="GeoAPI">@UML</classname>,
     ni entrée dans le fichier <literal role="GeoAPI">class-index.properties</literal>. Il s’agit
@@ -460,12 +468,110 @@ System.out.println("L’interface GeoAPI du type ISO " + isoName + " est " + typ
     Ils ont en commun de définir toutes les valeurs autorisées, sans permettre à l’utilisateur d’en ajouter.
     Les <classname role="OGC">CodeList</classname> sont similaires à ces énumérations, excepté que les
     utilisateurs peuvent y ajouter leurs propres éléments. Le JDK standard n’offrant pas cette possibilité,
-    GeoAPI définie une classe abstraite <classname role="GeoAPI">CodeList</classname> reproduisant certaines
+    GeoAPI définit une classe abstraite <classname role="GeoAPI">CodeList</classname> reproduisant certaines
     fonctionnalités de <classname>Enum</classname> tout en étant extensible. Les extensions s’obtiennent par
     les méthodes statiques <function class="GeoAPI">valueOf(String)</function> qui, contrairement à celle de
     <classname>Enum</classname>, créera de nouvelles instances si le nom donné ne correspond pas au nom d’une
     instance existante.
   </para>
+
+  <example>
+    <title>Obtenir des instances de <classname role="OGC">CodeList</classname></title>
+    <programlisting language="java">MediumName cdRom  = MediumName.CD_ROM;
+MediumName usbKey = MediumName.valueOf("USB_KEY"); // Aucune constante n’existe pour cette valeur.
+assert MediumName.valueOf("CD_ROM")  == cdRom  : "valueOf doit retourner les constantes existantes.";
+assert MediumName.valueOf("USB_KEY") == usbKey : "valueOf doit cacher les valeurs précédemment demandées.";
+</programlisting>
+  </example>
 </section>
+</section>
+
+
+<section>
+  <title>Les modules de GeoAPI</title>
+  <para>
+    Le projet GeoAPI est composé d’une partie standardisée (<literal role="GeoAPI">geoapi</literal>) et
+    d’une partie expérimentale (<literal role="GeoAPI">geoapi-pending</literal>). Ces deux parties étant
+    mutuellement exclusives, les utilisateurs doivent veiller à ne pas les mélanger dans un même projet.
+    Cette séparation est garantie pour tous les projets qui ne dépendent que du dépôt central de Maven
+    (incluant les versions finales de Apache SIS), car le module <literal role="GeoAPI">geoapi-pending</literal>
+    n’est jamais déployé sur ce dépôt central. En revanche les <foreignphrase>snapshot</foreignphrase> et les
+    <foreignphrase>milestones</foreignphrase> peuvent dépendre de <literal role="GeoAPI">geoapi-pending</literal>.
+  </para>
+  <para>
+    Les modules de GeoAPI sont:
+  </para>
+  <itemizedlist>
+    <listitem><para>
+      <emphasis role="bold"><literal role="GeoAPI">geoapi</literal></emphasis> — contient les interfaces
+      couvertes par le <link xlink:href="http://www.opengeospatial.org/standards/geoapi">standard GeoAPI
+      de l’<acronym>OGC</acronym></link>. Les versions finales de Apache SIS dépendent de ce module.
+    </para></listitem>
+    <listitem><para>
+      <emphasis role="bold"><literal role="GeoAPI">geoapi-pending</literal></emphasis> — contient une
+      <emphasis>copie</emphasis> de toutes les interfaces du module <literal role="GeoAPI">geoapi</literal>
+      (non pas une dépendance) avec des ajouts qui n’ont pas encore été approuvés comme un standard
+      <acronym>OGC</acronym>. Certains ajouts apparaissent dans des interfaces normalement définies
+      par le module <literal role="GeoAPI">geoapi</literal>, d’où la nécessité de les copier.
+    </para><para>
+      Les versions <foreignphrase>snapshot</foreignphrase> de Apache SIS dépendent de ce module.
+      Mais cette dépendance est transformée en une dépendance vers le module <literal role="GeoAPI">geoapi</literal>
+      standard au moment de publier les versions finales.
+    </para></listitem>
+    <listitem><para>
+      <emphasis role="bold"><literal role="GeoAPI">geoapi-conformance</literal></emphasis> — contient
+      une suite de tests JUnit que les développeurs peuvent utiliser pour tester leurs implémentations.
+      Tout comme pour le projet Apache SIS, les versions <foreignphrase>snapshot</foreignphrase> et les
+      <foreignphrase>milestones</foreignphrase> dépendent du module <literal role="GeoAPI">geoapi-pending</literal>
+      alors que les versions finales dépendent de <literal role="GeoAPI">geoapi</literal>.
+    </para></listitem>
+    <listitem><para>
+      <emphasis role="bold"><literal role="GeoAPI">geoapi-examples</literal></emphasis> — contient des
+      exemples d’implémentations relativement simples. Ces exemples sont placés dans le domaine public
+      afin d’encourager les utilisateurs à les copier et les adapter à leurs besoins si les services
+      de Apache SIS ne conviennent pas.
+    </para></listitem>
+    <listitem><para>
+      <emphasis role="bold"><literal role="GeoAPI">geoapi-proj4</literal></emphasis> — contient une
+      implémentation partielle des paquets <literal role="GeoAPI">org.opengis.referencing</literal>
+      sous forme d’adaptateurs basés sur la bibliothèque C/C++ Proj.4.
+      Ce module peut être utilisé comme alternative au module <literal role="SIS">sis-referencing</literal>.
+    </para></listitem>
+    <listitem><para>
+      <emphasis role="bold"><literal role="GeoAPI">geoapi-netcdf</literal></emphasis> — contient une
+      implémentation partielle des paquets <literal role="GeoAPI">org.opengis.referencing</literal>
+      et <literal role="GeoAPI">org.opengis.coverage</literal> sous forme d’adaptateurs basés sur la
+      bibliothèque NetCDF de l’UCAR. La suite de tests de ce module a été conçue de manière à être
+      réutilisable par d’autres projets. Apache SIS l’utilise pour tester son propre module
+      <literal role="SIS">sis-coverageio-netcdf</literal>.
+    </para></listitem>
+    <listitem><para>
+      <emphasis role="bold"><literal role="GeoAPI">geoapi-openoffice</literal></emphasis> — contient
+      un <foreignphrase>add-in</foreignphrase> pour les suites bureautiques Libre/OpenOffice.org.
+      Apache SIS offre son propre <foreignphrase>add-in</foreignphrase> dans le module
+      <literal role="SIS">sis-openoffice</literal>, mais utilise les mêmes noms de fonctions
+      que le module de GeoAPI afin d’assurer une certaine compatibilité.
+    </para></listitem>
+  </itemizedlist>
+
+  <section>
+    <title>Le module de tests de conformité</title>
+    <para>
+      Le module <literal role="GeoAPI">geoapi-conformance</literal> fournit des
+      <firstterm>validateurs</firstterm>, une <firstterm>suite de tests</firstterm>
+      et des <firstterm>générateurs de rapports</firstterm>.
+      Ces services sont décrits dans les sections suivantes.
+    </para>
+    <section>
+      <title>Validations des instances</title>
+      <para>
+        GeoAPI peut valider une instance de ses interfaces en vérifiant que certaines contraintes sont respectées.
+        Par exemple dans une chaîne de <classname role="OGC">CoordinateOperation</classname>s, GeoAPI peut vérifier
+        que le nombre de dimensions en sortie d’une opération est égale au nombre de dimensions attendues en entré
+        de l’opération suivante. La façon la plus simple d’effectuer ces vérifications est d’appeler les méthodes statiques
+        <classname role="OGC">validate(…)</classname> de la classe <classname role="OGC">org.opengis.test.Validators</classname>
+      </para>
+    </section>
+  </section>
 </section>
 </chapter>

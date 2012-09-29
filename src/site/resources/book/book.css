@@ -14,14 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+p {
+  text-align: justify;
+}
+
 div.informalexample {
   margin-left:  1.25cm;
   margin-right: 1.5cm;
   font-size: smaller;
 }
 
-p {
-  text-align: justify;
+div.sidebar {
+  margin-left:  1.25cm;
+  margin-right: 1.5cm;
+  font-size: smaller;
+
+    border-style: solid;
+    border-width: 1px;
+    background-color: #EEEEEE;
+    border-color: #DDDDDD;
 }
 
 span.deprecated {
