@@ -48,9 +48,17 @@
  *     String text = TheBundle.getResources(locale).getString(key, optionalArguments);
  * }
  *
- * For convenience, all {@code IndexedResourceBundle} subclass provide also various
- * {@code format(int, …)} static methods for fetching localized texts in the
- * {@linkplain java.util.Locale#getDefault() system default locale}.
+ * For convenience, all {@code IndexedResourceBundle} subclasses provide also various
+ * {@code format(int, …)} and {@code formatInternational(int, …)} static methods for
+ * fetching localized texts in the {@linkplain java.util.Locale#getDefault() system
+ * default locale}, or localizable texts:
+ *
+ * {@preformat java
+ *     InternationalString i18n = TheBundle.formatInternational(key, optionalArguments);
+ *     String text = i18n.toString(locale); // Equivalent to the above example.
+ *
+ *     text = TheBundle.format(key, optionalArguments); // Uses the default locale.
+ * }
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-1.2)
@@ -59,5 +67,6 @@
  *
  * @see java.util.ResourceBundle
  * @see java.text.MessageFormat
+ * @see org.apache.sis.util.type.ResourceInternationalString
  */
 package org.apache.sis.util.resources;
