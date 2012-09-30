@@ -4,3 +4,5 @@ Copyright 2010-2012 The Apache Software Foundation
 This product includes software developed at
 The Apache Software Foundation (http://www.apache.org/).
 
+The test suite includes software developed by
+the JUnit community (http://github.com/junit-team/junit.contrib/)
