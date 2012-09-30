@@ -19,6 +19,7 @@ package org.apache.sis.util.type;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.cs.AxisDirection;
+import org.apache.sis.test.TestCase;
 import org.junit.*;
 
 import static org.junit.Assert.*;
@@ -32,7 +33,7 @@ import static org.junit.Assert.*;
  * @version 0.3
  * @module
  */
-public final strictfp class TypesTest {
+public final strictfp class TypesTest extends TestCase {
     /**
      * Tests the {@link Types#getStandardName(String)} method.
      */

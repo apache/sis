@@ -16,6 +16,8 @@
  */
 package org.apache.sis.util;
 
+import org.apache.sis.test.TestCase;
+
 import org.junit.*;
 import static org.junit.Assert.*;
 import static org.apache.sis.util.StringBuilders.*;
@@ -30,7 +32,7 @@ import static org.apache.sis.util.StringBuilders.*;
  * @version 0.3
  * @module
  */
-public final strictfp class StringBuildersTest {
+public final strictfp class StringBuildersTest extends TestCase {
     /**
      * Tests the {@link StringBuilders#replace(StringBuilder, String, String)} method.
      */

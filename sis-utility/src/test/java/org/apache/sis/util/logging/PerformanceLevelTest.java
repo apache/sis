@@ -17,6 +17,7 @@
 package org.apache.sis.util.logging;
 
 import java.util.concurrent.TimeUnit;
+import org.apache.sis.test.TestCase;
 
 import org.junit.*;
 import static org.junit.Assert.*;
@@ -31,7 +32,7 @@ import static org.apache.sis.util.logging.PerformanceLevel.*;
  * @version 0.3
  * @module
  */
-public final strictfp class PerformanceLevelTest {
+public final strictfp class PerformanceLevelTest extends TestCase {
     /**
      * Ensures that the duration are conform to the documentation.
      */

@@ -16,6 +16,8 @@
  */
 package org.apache.sis.util;
 
+import org.apache.sis.test.TestCase;
+
 import org.junit.*;
 import static org.junit.Assert.*;
 
@@ -29,7 +31,7 @@ import static org.junit.Assert.*;
  * @version 0.3
  * @module
  */
-public final strictfp class ArraysTest {
+public final strictfp class ArraysTest extends TestCase {
     /**
      * Tests {@link Arrays#removeDuplicated(Object[])}.
      */
