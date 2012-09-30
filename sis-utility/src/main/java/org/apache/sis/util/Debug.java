@@ -28,7 +28,15 @@ import java.lang.annotation.RetentionPolicy;
  * is defined in order to make easier to find which debugging tools are available in case of
  * problem. See the "<cite>Use</cite>" javadoc link for a list of annotated classes and methods.
  *
- * @author Martin Desruisseaux (Geomatys)
+ * {@section <code>Object.toString()</code> policy}
+ * Subclasses override the {@link Object#toString()} method for various purposes, sometime providing
+ * content targeted to the end user (e.g. {@link java.lang.CharSequence}) and sometime providing
+ * debugging information for developers only. In the Apache SIS library, <code>toString()</code>
+ * methods without <code>@Debug</code> annotation shall be understandable by the end users,
+ * while <code>toString()</code> methods with <code>@Debug</code> annotation is targeted to
+ * developers and may change in any future version.
+ *
+ * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.19)
  * @version 0.3
  * @module
