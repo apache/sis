@@ -21,17 +21,23 @@
  * This package defines also an {@link org.apache.sis.test.Assert} class which extend the GeoAPI
  * {@link org.opengis.test.Assert} (which itself extends the JUnit {@link org.junit.Assert} class)
  * with the addition of assertion methods commonly used in SIS tests.
- * <p>
+ *
+ * {@section Outputs configuration}
  * By default, successful tests do not produce any output. However it is possible to ask for
- * verbose output, which is sometime useful for debugging purpose. This behavior is controlled
- * by {@linkplain java.lang.System#getProperties() system properties} like below:
- * <p>
+ * verbose outputs, which is sometime useful for debugging purpose. This behavior is controlled
+ * from the command line by defining {@linkplain java.lang.System#getProperties() system properties}
+ * values like below:
+ *
  * <ul>
- *   <li><code>-D{@value org.apache.sis.test.TestBase#VERBOSE_KEY}=true</code>
- *       for verbose console output.</li>
- *   <li><code>-D{@value org.apache.sis.test.TestBase#ENCODING_KEY}=UTF-8</code>
- *       (or any other valid encoding name) for the encoding of the above-cited
- *       verbose output. If omitted, the platform encoding will be used.</li>
+ *   <li><p><b><code>-Dorg.apache.sis.test.verbose=true</code></b><br>
+ *     For enabling verbose outputs to the {@linkplain java.lang.System#console() console} if any,
+ *     or to the {@linkplain java.lang.System#out standard output stream} otherwise.</p></li>
+ *
+ *   <li><p><b><code>-Dorg.apache.sis.test.encoding=UTF-8</code></b> (or any other valid encoding name)<br>
+ *     For the encoding of the above-cited verbose output, and the encoding of logging messages
+ *     sent to the {@linkplain java.util.logging.ConsoleHandler console handler}.
+ *     This is useful on Windows or MacOS platforms having a console encoding different than the
+ *     platform encoding. If omitted, then the platform encoding will be used.</p></li>
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)

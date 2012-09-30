@@ -121,7 +121,7 @@ public strictfp class Assert extends org.opengis.test.Assert {
      * The inputs given to this method can be any of the following types:
      * <p>
      * <ul>
-     *   <li>{@link org.w3c.dom.Node}; used directly without further processing.</li>
+     *   <li>{@link org.w3c.dom.Node}: used directly without further processing.</li>
      *   <li>{@link java.io.File}, {@link java.net.URL} or {@link java.net.URI}: the
      *       stream is opened and parsed as a XML document.</li>
      *   <li>{@link String}: The string content is parsed directly as a XML document.
@@ -274,10 +274,10 @@ public strictfp class Assert extends org.opengis.test.Assert {
     }
 
     /**
-     * Serializes the given object in memory, deserialize it and ensure that the deserialized
-     * object is equal to the original one. This method doesn't write anything to the disk.
+     * Serializes the given object in memory, deserialize it and ensures that the deserialized
+     * object is equals to the original one. This method doesn't write anything to the disk.
      * <p>
-     * If the serialization fails, then this method thrown a {@link AssertionError}
+     * If the serialization fails, then this method thrown an {@link AssertionError}
      * as do the other JUnit assertion methods.
      *
      * @param  <T> The type of the object to serialize.

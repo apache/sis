@@ -34,34 +34,36 @@ import java.io.UnsupportedEncodingException;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.runner.RunWith;
+
+import static org.apache.sis.test.TestSuite.VERBOSE_OUTPUT_KEY;
+import static org.apache.sis.test.TestSuite.OUTPUT_ENCODING_KEY;
 
 
 /**
  * Base class of Apache SIS tests (except the ones that extend GeoAPI tests).
- * This base class provides some configuration commons to all subclasses.
+ * This base class provides an {@link #out} field that sub-classes can use
+ * <strong>if non-null</strong> for printing debugging information. This {@code out}
+ * field shall be used instead of {@link System#out} for the following reasons:
  *
- * {@section Printing to the console}
- * Subclasses should avoid printing to {@link System#out}. If nevertheless a test method
- * produces some information considered worth to be known, consider using the following
- * pattern instead:
+ * <ul>
+ *   <li><p>It is {@code null} by default and enabled only if a system property is set as
+ *     described in the {@linkplain org.apache.sis.test package javadoc}. This allows more
+ *     quiet (and sometime faster) Maven executions for those who are not SIS developers.</p></li>
+ *   <li><p>The outputs are collected and printed only after each test completion.
+ *     This avoid the problem of logging messages interleaved with the output.
+ *     If such interleaving is really wanted, then use the logging framework instead.</p></li>
+ * </ul>
+ *
+ * Usage example:
  *
  * {@preformat java
  *     if (out != null) {
- *         out.println("Put here some information of particular interest.");
+ *         // Performs here some potentially costly calculation to be printed.
+ *         out.println("Write here some information of particular interest.");
  *     }
  * }
- *
- * The above example uses the {@link #out} field, which will be set to a non-null value
- * if the following option has been provided on the command line:
- *
- * <blockquote><code>-D{@value #VERBOSE_KEY}=true</code></blockquote>
- *
- * Developers can also optionally provide the following option, which is useful on Windows
- * or MacOS platforms having a console encoding different than the system encoding:
- *
- * <blockquote><code>-D{@value #ENCODING_KEY}=UTF-8</code> (or any other valid encoding name)</blockquote>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.16)
@@ -71,28 +73,14 @@ import org.junit.runner.RunWith;
 @RunWith(TestRunner.class)
 public abstract strictfp class TestCase {
     /**
-     * The name of a system property for setting whatever the tests should provide verbose output.
-     * If this property is set to {@code true}, then the {@link #out} field will be set to a
-     * non-null value:
-     */
-    private static final String VERBOSE_KEY = "org.apache.sis.test.verbose";
-
-    /**
-     * The name of a system property for setting the encoding of test output.
-     * This property is used only if the {@link #VERBOSE_KEY} property is set
-     * to "{@code true}". If this property is not set, then the system encoding
-     * will be used.
-     */
-    private static final String ENCODING_KEY = "org.apache.sis.test.encoding";
-
-    /**
-     * If verbose outputs are enabled, the output writer where to print.
-     * Otherwise {@code null}.
-     * <p>
-     * This field will be assigned a non-null value if the {@value #VERBOSE_KEY}
-     * {@linkplain System#getProperties() system property} is set to {@code true}.
-     * The encoding will by the system-default, unless the {@value #ENCODING_KEY}
-     * system property has been set to a different value.
+     * If non-null, the output writer where to print debugging information.
+     * This field is non-null if the {@value org.apache.sis.test.TestSuite#VERBOSE_OUTPUT_KEY}
+     * system property is set to {@code true}. The encoding will by the system default, unless
+     * the {@value org.apache.sis.test.TestSuite#OUTPUT_ENCODING_KEY} system property has been
+     * set to a different value.
+     *
+     * @see org.apache.sis.test
+     * @see #flushVerboseOutput()
      */
     public static final PrintWriter out;
 
@@ -105,7 +93,7 @@ public abstract strictfp class TestCase {
      * Sets the {@link #out} writer and its underlying {@link #buffer}.
      */
     static {
-        if (Boolean.getBoolean(VERBOSE_KEY)) {
+        if (Boolean.getBoolean(VERBOSE_OUTPUT_KEY)) {
             out = new PrintWriter(buffer = new StringWriter());
         } else {
             buffer = null;
@@ -123,7 +111,7 @@ public abstract strictfp class TestCase {
      * message and left the encoding unchanged.
      */
     static {
-        final String encoding = System.getProperty(ENCODING_KEY);
+        final String encoding = System.getProperty(OUTPUT_ENCODING_KEY);
         if (encoding != null) try {
             for (Logger logger=Logger.getLogger("org.apache.sis"); logger!=null; logger=logger.getParent()) {
                 for (final Handler handler : logger.getHandlers()) {
@@ -189,16 +177,16 @@ public abstract strictfp class TestCase {
     }
 
     /**
-     * If verbose output is enabled, flushes the {@link #out} stream to the
-     * {@linkplain System#console() console} after every tests in the class
-     * have been run.
+     * If verbose output is enabled, flushes the {@link #out} stream after each test.
+     * The stream will be flushed to the {@linkplain System#console() console} if
+     * available, or to the {@linkplain System#out standard output stream} otherwise.
      * <p>
      * This method is invoked automatically by JUnit and doesn't need to be invoked
      * explicitely, unless the developer wants to flush the output at some specific
      * point.
      */
-    @AfterClass
-    public static void flushVerboseOutput() {
+    @After
+    public void flushVerboseOutput() {
         System.out.flush();
         System.err.flush();
         if (out == null) {
@@ -219,7 +207,7 @@ public abstract strictfp class TestCase {
              * Get the output writer, using the specified encoding if any.
              */
             PrintWriter writer = null;
-            final String encoding = System.getProperty(ENCODING_KEY);
+            final String encoding = System.getProperty(OUTPUT_ENCODING_KEY);
             if (encoding == null) {
                 final Console console = System.console();
                 if (console != null) {
