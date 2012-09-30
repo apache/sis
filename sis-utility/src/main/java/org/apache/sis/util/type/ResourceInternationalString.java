@@ -54,6 +54,13 @@ import org.apache.sis.internal.Objects;
  * for Italian, <i>etc</i>.
  * If needed, users can gain more control by overriding the {@link #getBundle(Locale)} method.
  *
+ * {@section Apache SIS resources}
+ * Apache SIS has its own resources mechanism, built on top of the standard {@code ResourceBundle}
+ * with the addition of type safety and optional arguments to be formatted in the localized string.
+ * Those resource bundles provide {@code formatInternational(int, …)} static methods for creating
+ * international strings with the same functionality than this {@code ResourceInternationalString}.
+ * See {@link org.apache.sis.util.resources} for more information.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @since   0.3 (derived from geotk-2.1)

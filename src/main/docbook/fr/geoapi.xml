@@ -495,8 +495,8 @@ assert MediumName.valueOf("USB_KEY") == usbKey : "valueOf doit cacher les valeur
     mutuellement exclusives, les utilisateurs doivent veiller à ne pas les mélanger dans un même projet.
     Cette séparation est garantie pour tous les projets qui ne dépendent que du dépôt central de Maven
     (incluant les versions finales de Apache SIS), car le module <literal role="GeoAPI">geoapi-pending</literal>
-    n’est jamais déployé sur ce dépôt central. En revanche les <foreignphrase>snapshot</foreignphrase> et les
-    <foreignphrase>milestones</foreignphrase> peuvent dépendre de <literal role="GeoAPI">geoapi-pending</literal>.
+    n’est jamais déployé sur ce dépôt central. En revanche les <foreignphrase>snapshot</foreignphrase>
+    de certaines branches de SIS peuvent dépendre de <literal role="GeoAPI">geoapi-pending</literal>.
   </para>
   <para>
     Les modules de GeoAPI sont:
@@ -514,16 +514,17 @@ assert MediumName.valueOf("USB_KEY") == usbKey : "valueOf doit cacher les valeur
       <acronym>OGC</acronym>. Certains ajouts apparaissent dans des interfaces normalement définies
       par le module <literal role="GeoAPI">geoapi</literal>, d’où la nécessité de les copier.
     </para><para>
-      Les versions <foreignphrase>snapshot</foreignphrase> de Apache SIS dépendent de ce module.
+      Les versions <foreignphrase>snapshot</foreignphrase> des branches <literal>jdk6</literal>,
+      <literal>jdk7</literal> et <literal>jdk8</literal> de Apache SIS dépendent de ce module.
       Mais cette dépendance est transformée en une dépendance vers le module <literal role="GeoAPI">geoapi</literal>
-      standard au moment de publier les versions finales.
+      standard au moment de fusionner les branches avec le tronc.
     </para></listitem>
     <listitem><para>
       <emphasis role="bold"><literal role="GeoAPI">geoapi-conformance</literal></emphasis> — contient
       une suite de tests JUnit que les développeurs peuvent utiliser pour tester leurs implémentations.
-      Tout comme pour le projet Apache SIS, les versions <foreignphrase>snapshot</foreignphrase> et les
-      <foreignphrase>milestones</foreignphrase> dépendent du module <literal role="GeoAPI">geoapi-pending</literal>
-      alors que les versions finales dépendent de <literal role="GeoAPI">geoapi</literal>.
+      Les versions <foreignphrase>snapshot</foreignphrase> et les <foreignphrase>milestones</foreignphrase>
+      dépendent du module <literal role="GeoAPI">geoapi-pending</literal> alors que les versions finales
+      dépendent de <literal role="GeoAPI">geoapi</literal>.
     </para></listitem>
     <listitem><para>
       <emphasis role="bold"><literal role="GeoAPI">geoapi-examples</literal></emphasis> — contient des

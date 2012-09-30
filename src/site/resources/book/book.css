@@ -27,12 +27,11 @@ div.informalexample {
 div.sidebar {
   margin-left:  1.25cm;
   margin-right: 1.5cm;
+  border-style: solid;
+  border-width: 1px;
+  background-color: #EEEEEE;
+  border-color: #DDDDDD;
   font-size: smaller;
-
-    border-style: solid;
-    border-width: 1px;
-    background-color: #EEEEEE;
-    border-color: #DDDDDD;
 }
 
 span.deprecated {
