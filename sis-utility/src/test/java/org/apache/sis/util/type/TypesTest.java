@@ -26,7 +26,7 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests the {@link GeoAPI} class.
+ * Tests the {@link Types} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.1)
@@ -35,7 +35,7 @@ import static org.junit.Assert.*;
  */
 public final strictfp class TypesTest extends TestCase {
     /**
-     * Tests the {@link Types#getStandardName(String)} method.
+     * Tests the {@link Types#getStandardName(Class)} method.
      */
     @Test
     public void testGetStandardName() {

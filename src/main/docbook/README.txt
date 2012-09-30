@@ -14,6 +14,6 @@ by executing the following command-line from the SIS project root:
 
    touch src/main/docbook/fr.xml
    mvn docbkx:generate-xhtml --non-recursive
-   ln src/site/resources/book/book.css target/site/book/
+   cp src/site/resources/book/book.css target/site/book/
 
 The result will be placed in the target/site/book directory.
