@@ -17,6 +17,7 @@
 package org.apache.sis.util;
 
 import java.util.Locale;
+import org.apache.sis.test.TestCase;
 
 import org.junit.*;
 import static org.junit.Assert.*;
@@ -30,7 +31,7 @@ import static org.junit.Assert.*;
  * @version 0.3
  * @module
  */
-public final strictfp class LocalesTest {
+public final strictfp class LocalesTest extends TestCase {
     /**
      * Tests the {@link Locales#getAvailableLanguages()} method.
      */
@@ -55,15 +56,6 @@ public final strictfp class LocalesTest {
     }
 
     /**
-     * Tests the {@link Locales#unique(Locale)} method.
-     */
-    @Test
-    public void testUnique() {
-        assertSame(Locale.ENGLISH, Locales.unique(new Locale("en")));
-        assertSame(Locale.FRENCH,  Locales.unique(new Locale("fr")));
-    }
-
-    /**
      * Tests the {@link Locales#parse(String)} method.
      * Depends on {@link #testUnique()}.
      */
@@ -82,5 +74,14 @@ public final strictfp class LocalesTest {
         assertEquals(new Locale("en", "US", "WIN"), Locales.parse("en_US_WIN"));
         assertEquals(new Locale("de", "", "POSIX"), Locales.parse("de__POSIX"));
         assertEquals(new Locale("fr", "", "MAC"),   Locales.parse("fr__MAC"));
+    }
+
+    /**
+     * Tests the {@link Locales#unique(Locale)} method.
+     */
+    @Test
+    public void testUnique() {
+        assertSame(Locale.ENGLISH, Locales.unique(new Locale("en")));
+        assertSame(Locale.FRENCH,  Locales.unique(new Locale("fr")));
     }
 }

@@ -18,6 +18,8 @@ package org.apache.sis.util.resources;
 
 import java.util.Locale;
 import org.opengis.util.InternationalString;
+import org.apache.sis.test.Dependency;
+import org.apache.sis.test.TestCase;
 
 import org.junit.*;
 import static org.junit.Assert.*;
@@ -30,7 +32,7 @@ import static org.junit.Assert.*;
  * @since   0.3 (derived from geotk-2.2)
  * @version 0.3
  */
-public final strictfp class IndexedResourceBundleTest {
+public final strictfp class IndexedResourceBundleTest extends TestCase {
     /**
      * Tests the {@link IndexedResourceBundle#getString(int)} method on different locales.
      */
@@ -55,6 +57,7 @@ public final strictfp class IndexedResourceBundleTest {
      * Tests the {@link IndexedResourceBundle#getString(int, Object)} method on different locales.
      */
     @Test
+    @Dependency("testGetString")
     public void testGetStringWithParameter() {
         assertEquals("Argument ‘CRS’ shall not be null.",
                 Errors.getResources(Locale.ENGLISH).getString(Errors.Keys.NullArgument_1, "CRS"));
