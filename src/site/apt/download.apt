@@ -31,7 +31,7 @@ Downloading Apache SIS Binaries
 
 +---------------------------------------------------------+
 <properties>
-  <sis.version>0.3-SNAPSHOT</sis.version>
+  <sis.version>0.3-geoapi3.0-SNAPSHOT</sis.version>
 </properties>
 
 <dependencies>

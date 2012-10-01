@@ -1,5 +1,5 @@
 <!ENTITY geoapi-version "3.0.0">
 <!ENTITY geoapi-release "3.0.0">
-<!ENTITY sis-release    "0.3-SNAPSHOT">
+<!ENTITY sis-release    "0.3-geoapi3.0-SNAPSHOT">
 <!ENTITY gml-version    "3.3">
 <!ENTITY geoapi-javadoc "http://www.geoapi.org/3.0/javadoc">
