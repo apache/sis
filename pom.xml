@@ -567,7 +567,7 @@ Apache SIS is a toolkit for describing location information, including points,
        ============================================================== -->
   <modules>
     <module>sis-build-helper</module>
-    <module>sis-core</module>
+    <module>sis-referencing</module>
     <module>sis-utility</module>
     <module>sis-metadata</module>
     <module>sis-webapp</module>

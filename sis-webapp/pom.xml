@@ -47,7 +47,7 @@
     </dependency>
     <dependency>
       <groupId>org.apache.sis</groupId>
-      <artifactId>sis-core</artifactId>
+      <artifactId>sis-referencing</artifactId>
       <version>${project.version}</version>
     </dependency>
   </dependencies>
@@ -56,9 +56,9 @@
     <plugins>
     <plugin>
     <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId> 
+        <artifactId>build-helper-maven-plugin</artifactId>
         <executions>
- 
+
           <execution>
             <id>reserve-ports</id>
             <phase>initialize</phase>
@@ -68,11 +68,11 @@
             <configuration>
               <portNames>
                 <portName>jettyPort</portName>
-              </portNames> 
+              </portNames>
             </configuration>
           </execution>
         </executions>
-      </plugin>    
+      </plugin>
       <plugin>
         <groupId>org.mortbay.jetty</groupId>
         <artifactId>jetty-maven-plugin</artifactId>

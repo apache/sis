@@ -20,7 +20,7 @@ Downloading Apache SIS Binaries
 <dependencies>
   <dependency>
     <groupId>org.apache.sis</groupId>
-    <artifactId>sis-core</artifactId>
+    <artifactId>sis-referencing</artifactId>
     <version>${sis.version}</version>
   </dependency>
 </dependencies>
@@ -37,7 +37,7 @@ Downloading Apache SIS Binaries
 <dependencies>
   <dependency>
     <groupId>org.apache.sis</groupId>
-    <artifactId>sis-core</artifactId>
+    <artifactId>sis-referencing</artifactId>
     <version>${sis.version}</version>
   </dependency>
 </dependencies>
