@@ -22,6 +22,7 @@
  *   <li><p>General purpose static methods working on:</p>
  *   <ul>
  *     <li>Primitive or basic Java types:
+ *         {@link org.apache.sis.util.Characters},
  *         {@link org.apache.sis.util.CharSequences},
  *         {@link org.apache.sis.util.StringBuilders},
  *         {@link org.apache.sis.util.Locales},

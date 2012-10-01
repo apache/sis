@@ -46,6 +46,7 @@ import org.apache.sis.util.ArgumentChecks;
 
 import static java.lang.StrictMath.*;
 import static org.opengis.test.Assert.*;
+import static org.apache.sis.util.Characters.NO_BREAK_SPACE;
 
 
 /**
@@ -596,14 +597,14 @@ public strictfp class XMLComparator {
             node = node.getParentNode();
         }
         if (hierarchy.equals(expected)) {
-            buffer.append("\u2514\u2500Same as expected").append(lineSeparator);
+            buffer.append("└─Same as expected").append(lineSeparator);
         } else {
             int indent = 2;
             for (int i=hierarchy.size(); --i>=0;) {
                 for (int j=indent; --j>=0;) {
-                    buffer.append('\u00A0');
+                    buffer.append(NO_BREAK_SPACE);
                 }
-                buffer.append("\u2514\u2500").append(hierarchy.get(i)).append(lineSeparator);
+                buffer.append("└─").append(hierarchy.get(i)).append(lineSeparator);
                 indent += 4;
             }
         }
