@@ -31,7 +31,7 @@
     <version>0.3-SNAPSHOT</version>
   </parent>
 
-  <artifactId>sis-core</artifactId>
+  <artifactId>sis-referencing</artifactId>
   <packaging>bundle</packaging>
   <name>Apache SIS core</name>
   <url>http://incubator.apache.org/sis/</url>
