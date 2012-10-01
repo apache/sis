@@ -17,9 +17,6 @@ modified by the NetBeans "Project properties" panel. PLEASE REVIEW MANUALLY
 BEFORE COMMITTING ANY CHANGE. Please preserve the formatting for easier
 reading. Ensure that all directories are relative to a variable.
 
-We recommend to modify this file by hand for adding new dependencies or new
-source directories instead than using the "Project properties" panel.
-
 
 nbproject/project.xml
 ---------------------

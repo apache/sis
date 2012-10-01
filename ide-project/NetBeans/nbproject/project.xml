@@ -13,8 +13,6 @@
                 <root id="src.utility.dir" name="Utility"/>
             </source-roots>
             <test-roots>
-                <root id="test.webapp.dir" name="Web application tests"/>
-                <root id="test.app.dir" name="Application tests"/>
                 <root id="test.referencing.dir" name="Referencing tests"/>
                 <root id="test.utility.dir" name="Utility tests"/>
             </test-roots>
