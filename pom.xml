@@ -450,6 +450,10 @@ Apache SIS is a toolkit for describing location information, including points,
           <!-- Separates packages on the overview page into the groups specified. -->
           <groups>
             <group>
+              <title>Testing tools</title> <!-- Exists in test javadoc only. -->
+              <packages>org.apache.sis.test*</packages>
+            </group>
+            <group>
               <title>Referencing</title>
               <packages>org.apache.sis.core*:org.apache.sis.distance*:org.apache.sis.referencing*:org.apache.sis.parameter*</packages>
             </group>
