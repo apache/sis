@@ -23,6 +23,8 @@ package org.apache.sis.util;
  *
  * <table class="sis">
  * <tr><th colspan="2">Basic classes of the Java language</th></tr>
+ * <tr><td>{@link Characters}</td>
+ *     <td>Find subscript and superscript digit characters.</td></tr>
  * <tr><td>{@link CharSequences}</td>
  *     <td>Methods working on {@link CharSequence} or {@link String} instances.</td></tr>
  * <tr><td>{@link StringBuilders}</td>
