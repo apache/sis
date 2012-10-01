@@ -39,7 +39,7 @@
        ============================================================== -->
   <groupId>org.apache.sis</groupId>
   <artifactId>sis-parent</artifactId>
-  <version>0.3-SNAPSHOT</version>
+  <version>0.3-geoapi3.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Apache SIS</name>
