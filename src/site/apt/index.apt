@@ -24,6 +24,8 @@ The Apache SIS™ library
 
     * {{{http://builds.apache.org/job/sis-trunk/site/apidocs/index.html}Aggregated Javadoc}}
 
+    * {{{./develop.html}Developing Apache SIS}}
+
     * {{{./code-patterns.html}Recommended code patterns}}
 
     * Developer Guide (English - translation to be provided later) ({{{./book/fr.xhtml}Français}})

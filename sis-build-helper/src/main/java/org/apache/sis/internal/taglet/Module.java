@@ -114,7 +114,7 @@ public final class Module implements Taglet {
     }
 
     /**
-     * Returns {@code false} since <code>@module</code> can not be used in constructor
+     * Returns {@code false} since <code>@module</code> can not be used in constructor.
      *
      * @return Always {@code false}.
      */
