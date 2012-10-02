@@ -18,7 +18,7 @@ package org.apache.sis.util;
 
 import java.util.Arrays;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.Dependency;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.util.type.SimpleInternationalString;
 import org.junit.Test;
 
@@ -131,7 +131,7 @@ public final strictfp class CharSequencesTest extends TestCase {
      * Tests {@link CharSequences#parseDoubles(CharSequence, char)}.
      */
     @Test
-    @Dependency("testSplit")
+    @DependsOnMethod("testSplit")
     public void testParseDoubles() {
         assertArrayEquals(new double[] {5, 1.5, Double.NaN, -8}, parseDoubles("5 , 1.5,, -8 ", ','), 0.0);
     }
@@ -140,7 +140,7 @@ public final strictfp class CharSequencesTest extends TestCase {
      * Tests {@link CharSequences#parseFloats(CharSequence, char)}.
      */
     @Test
-    @Dependency("testSplit")
+    @DependsOnMethod("testSplit")
     public void testParseFloats() {
         assertArrayEquals(new float[] {5, 1.5f, Float.NaN, -8}, parseFloats("5 , 1.5,, -8 ", ','), 0f);
     }
@@ -149,7 +149,7 @@ public final strictfp class CharSequencesTest extends TestCase {
      * Tests {@link CharSequences#parseLongs(CharSequence, char, int)}.
      */
     @Test
-    @Dependency("testSplit")
+    @DependsOnMethod("testSplit")
     public void testParseLongs() {
         assertArrayEquals(new long[] {5, 2, -8}, parseLongs("5 , 2, -8 ", ',', 10));
     }
@@ -158,7 +158,7 @@ public final strictfp class CharSequencesTest extends TestCase {
      * Tests {@link CharSequences#parseInts(CharSequence, char, int)}.
      */
     @Test
-    @Dependency("testSplit")
+    @DependsOnMethod("testSplit")
     public void testParseInts() {
         assertArrayEquals(new int[] {5, 2, -8}, parseInts("5 , 2, -8 ", ',', 10));
     }
@@ -167,7 +167,7 @@ public final strictfp class CharSequencesTest extends TestCase {
      * Tests {@link CharSequences#parseShorts(CharSequence, char, int)}.
      */
     @Test
-    @Dependency("testSplit")
+    @DependsOnMethod("testSplit")
     public void testParseShorts() {
         assertArrayEquals(new short[] {5, 2, -8}, parseShorts("5 , 2, -8 ", ',', 10));
     }
@@ -176,7 +176,7 @@ public final strictfp class CharSequencesTest extends TestCase {
      * Tests {@link CharSequences#parseBytes(CharSequence, char, int)}.
      */
     @Test
-    @Dependency("testSplit")
+    @DependsOnMethod("testSplit")
     public void testParseBytes() {
         assertArrayEquals(new byte[] {5, 2, -8}, parseBytes("5 , 2, -8 ", ',', 10));
     }

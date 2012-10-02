@@ -43,7 +43,7 @@ import static org.apache.sis.util.Arrays.resize;
  * This class extends the JUnit standard test runner with additional features:
  * <p>
  * <ul>
- *   <li>Support of the {@link Dependency} annotation.</li>
+ *   <li>Support of the {@link DependsOnMethod} annotation.</li>
  * </ul>
  * <p>
  * This runner is not designed for parallel execution of tests.
@@ -155,7 +155,7 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
         Set<String> dependencies = null;
         for (int i=methods.length-1; --i>=0;) {
             final FrameworkMethod method = methods[i];
-            final Dependency depend = method.getAnnotation(Dependency.class);
+            final DependsOnMethod depend = method.getAnnotation(DependsOnMethod.class);
             if (depend != null) {
                 if (dependencies == null) {
                     dependencies = new HashSet<String>();
@@ -235,7 +235,7 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
     @Override
     protected void runChild(final FrameworkMethod method, final RunNotifier notifier) {
         if (dependencyFailures != null) {
-            final Dependency assumptions = method.getAnnotation(Dependency.class);
+            final DependsOnMethod assumptions = method.getAnnotation(DependsOnMethod.class);
             if (assumptions != null) {
                 for (final String assumption : assumptions.value()) {
                     if (dependencyFailures.contains(assumption)) {
