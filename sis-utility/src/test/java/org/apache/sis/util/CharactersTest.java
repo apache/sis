@@ -16,8 +16,8 @@
  */
 package org.apache.sis.util;
 
-import org.junit.Test;
 import org.apache.sis.test.TestCase;
+import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.util.Characters.*;

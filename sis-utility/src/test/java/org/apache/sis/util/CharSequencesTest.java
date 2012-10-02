@@ -20,8 +20,8 @@ import java.util.Arrays;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.Dependency;
 import org.apache.sis.util.type.SimpleInternationalString;
+import org.junit.Test;
 
-import org.junit.*;
 import static org.junit.Assert.*;
 import static org.apache.sis.util.CharSequences.*;
 
