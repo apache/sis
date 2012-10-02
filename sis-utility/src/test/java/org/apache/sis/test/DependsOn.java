@@ -25,24 +25,23 @@ import java.lang.annotation.Target;
 
 
 /**
- * Declares that a test method depends on an other test method. If any of the dependencies of
- * a test can not be executed successfully, (i.e. those tests failed, threw an error, or were
- * skipped) then the annotated test will be skipped.
+ * Declares that a test class depends on an other test class. If any test method in any
+ * dependency failed, then all tests in the annotated class will be skipped.
  *
- * @author  Stephen Connolly
- * @since   0.3 (derived from <a href="http://github.com/junit-team/junit.contrib/tree/master/assumes">junit-team</a>)
+ * @author  Martin Desruisseaux
+ * @since   0.3 (derived from geotk-3.00)
  * @version 0.3
  * @module
  */
 @Inherited
 @Documented
-@Target(ElementType.METHOD)
+@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface DependsOnMethod {
+public @interface DependsOn {
     /**
-     * The names of test methods on which the annotated method depends.
+     * The other test classes on which this test depends.
      *
-     * @return The names of test methods on which the annotated method depends.
+     * @return The test dependencies.
      */
-    String[] value();
+    Class<?>[] value();
 }

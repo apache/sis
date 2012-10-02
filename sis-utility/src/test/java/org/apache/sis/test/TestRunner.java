@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import net.jcip.annotations.NotThreadSafe;
 
+import org.junit.Test;
 import org.junit.runner.Description;
 import org.junit.runner.manipulation.Filter;
 import org.junit.runner.manipulation.NoTestsRemainException;
@@ -34,8 +35,11 @@ import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
+import org.junit.runners.model.TestClass;
 
 import static org.apache.sis.util.Arrays.resize;
+import static org.apache.sis.util.collection.Collections.isNullOrEmpty;
+import static org.apache.sis.util.collection.Collections.hashMapCapacity;
 
 
 /**
@@ -43,7 +47,7 @@ import static org.apache.sis.util.Arrays.resize;
  * This class extends the JUnit standard test runner with additional features:
  * <p>
  * <ul>
- *   <li>Support of the {@link DependsOnMethod} annotation.</li>
+ *   <li>Support of the {@link DependsOn} and {@link DependsOnMethod} annotations.</li>
  * </ul>
  * <p>
  * This runner is not designed for parallel execution of tests.
@@ -67,7 +71,22 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
      *
      * @see #addDependencyFailure(String)
      */
-    private Set<String> dependencyFailures;
+    private Set<String> methodDependencyFailures;
+
+    /**
+     * The dependency classes that failed. This set will be created only when first needed.
+     *
+     * @see #addDependencyFailure(String)
+     */
+    private static Set<Class<?>> classDependencyFailures;
+
+    /**
+     * {@code true} if every tests shall be skipped. This happen if at least one test failure
+     * occurred in at least one class listed in the {@link DependsOn} annotation.
+     *
+     * @see #checkClassDependencies()
+     */
+    private boolean skipAll;
 
     /**
      * The listener to use for keeping trace of methods that failed.
@@ -97,6 +116,35 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
      */
     public TestRunner(final Class<?> klass) throws InitializationError {
         super(klass);
+    }
+
+    /**
+     * Validates all tests methods in the test class. This method first performs the default
+     * verification documented in {@link BlockJUnit4ClassRunner#validateTestMethods()}, then
+     * ensures that all {@link DependsOnMethod} annotations refer to an existing method.
+     *
+     * @param errors The list where to report any problem found.
+     */
+    @Override
+    protected void validateTestMethods(final List<Throwable> errors) {
+        super.validateTestMethods(errors);
+        final TestClass testClass = getTestClass();
+        final List<FrameworkMethod> depends = testClass.getAnnotatedMethods(DependsOnMethod.class);
+        if (!isNullOrEmpty(depends)) {
+            final Set<String> dependencies = new HashSet<String>(hashMapCapacity(depends.size()));
+            for (final FrameworkMethod method : depends) {
+                for (final String value : method.getAnnotation(DependsOnMethod.class).value()) {
+                    dependencies.add(value);
+                }
+            }
+            for (final FrameworkMethod method : testClass.getAnnotatedMethods(Test.class)) {
+                dependencies.remove(method.getName());
+            }
+            for (final String notFound : dependencies) {
+                errors.add(new NoSuchMethodException("@DependsOnMethod(\"" + notFound + "\"): "
+                        + "method not found in " + testClass.getName()));
+            }
+        }
     }
 
     /**
@@ -215,6 +263,7 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
         return new Statement() {
             @Override
             public void evaluate() throws Throwable {
+                checkClassDependencies();
                 notifier.addListener(listener);
                 try {
                     stmt.evaluate();
@@ -234,12 +283,16 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
      */
     @Override
     protected void runChild(final FrameworkMethod method, final RunNotifier notifier) {
-        if (dependencyFailures != null) {
+        if (skipAll) {
+            notifier.fireTestIgnored(describeChild(method));
+            return;
+        }
+        if (methodDependencyFailures != null) {
             final DependsOnMethod assumptions = method.getAnnotation(DependsOnMethod.class);
             if (assumptions != null) {
                 for (final String assumption : assumptions.value()) {
-                    if (dependencyFailures.contains(assumption)) {
-                        dependencyFailures.add(method.getName());
+                    if (methodDependencyFailures.contains(assumption)) {
+                        methodDependencyFailures.add(method.getName());
                         notifier.fireTestIgnored(describeChild(method));
                         return;
                     }
@@ -256,9 +309,37 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
      * @param methodName The name of the method that failed.
      */
     final void addDependencyFailure(final String methodName) {
-        if (dependencyFailures == null) {
-            dependencyFailures = new HashSet<String>();
+        if (methodDependencyFailures == null) {
+            methodDependencyFailures = new HashSet<String>();
         }
-        dependencyFailures.add(methodName);
+        methodDependencyFailures.add(methodName);
+        synchronized (TestRunner.class) {
+            if (classDependencyFailures == null) {
+                classDependencyFailures = new HashSet<Class<?>>();
+            }
+            classDependencyFailures.add(getTestClass().getJavaClass());
+        }
+    }
+
+    /**
+     * If at least one test failure occurred in at least one class listed in the {@link DependsOn}
+     * annotation, set the {@link #skipAll} field to {@code true}. This method shall be invoked
+     * before the tests are run.
+     */
+    final void checkClassDependencies() {
+        final Class<?> testClass = getTestClass().getJavaClass();
+        final DependsOn dependsOn = testClass.getAnnotation(DependsOn.class);
+        if (dependsOn != null) {
+            synchronized (TestRunner.class) {
+                if (classDependencyFailures != null) {
+                    for (final Class<?> dependency : dependsOn.value()) {
+                        if (classDependencyFailures.contains(dependency)) {
+                            classDependencyFailures.add(testClass);
+                            skipAll = true;
+                        }
+                    }
+                }
+            }
+        }
     }
 }
