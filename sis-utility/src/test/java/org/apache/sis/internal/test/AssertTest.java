@@ -16,7 +16,8 @@
  */
 package org.apache.sis.internal.test;
 
-import org.junit.*;
+import org.junit.Test;
+
 import static org.apache.sis.test.Assert.*;
 
 

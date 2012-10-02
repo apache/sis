@@ -17,8 +17,8 @@
 package org.apache.sis.internal.test;
 
 import org.apache.sis.test.XMLComparator;
+import org.junit.Test;
 
-import org.junit.*;
 import static org.junit.Assert.*;
 
 

@@ -20,8 +20,8 @@ import java.util.Locale;
 import org.opengis.util.InternationalString;
 import org.apache.sis.test.Dependency;
 import org.apache.sis.test.TestCase;
+import org.junit.Test;
 
-import org.junit.*;
 import static org.junit.Assert.*;
 
 
