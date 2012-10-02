@@ -21,7 +21,7 @@ import java.lang.reflect.Array;
 import static java.util.Arrays.copyOf;
 
 // Related to JDK7
-import org.apache.sis.internal.Objects;
+import org.apache.sis.internal.util.Objects;
 
 
 /**

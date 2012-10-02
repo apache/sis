@@ -34,7 +34,7 @@ import org.apache.sis.util.resources.Errors;
 import static org.apache.sis.util.collection.Collections.isNullOrEmpty;
 
 // Related to JDK7
-import org.apache.sis.internal.Objects;
+import org.apache.sis.internal.util.Objects;
 
 
 /**
