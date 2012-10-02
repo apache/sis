@@ -24,7 +24,7 @@ import org.apache.sis.util.type.AbstractInternationalString;
 
 // Related to JDK7
 import org.apache.sis.util.Utilities;
-import org.apache.sis.internal.Objects;
+import org.apache.sis.internal.util.Objects;
 
 
 /**

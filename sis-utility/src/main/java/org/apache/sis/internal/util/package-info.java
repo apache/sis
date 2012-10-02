@@ -28,4 +28,4 @@
  * @version 0.3
  * @module
  */
-package org.apache.sis.internal;
+package org.apache.sis.internal.util;
