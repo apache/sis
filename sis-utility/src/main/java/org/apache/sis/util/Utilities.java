@@ -71,15 +71,16 @@ public final class Utilities extends Static {
      * <ul>
      *   <li>If the supplied object is {@code null}, then this method returns 0.</li>
      *   <li>Otherwise if the object is an array of objects, then
-     *       {@link Arrays#deepHashCode(Object[])} is invoked.</li>
+     *       {@link java.util.Arrays#deepHashCode(Object[])} is invoked.</li>
      *   <li>Otherwise if the object is an array of primitive type, then the corresponding
-     *       {@link Arrays#hashCode(double[]) Arrays.hashCode(...)} method is invoked.</li>
-     *   <li>Otherwise {@link Object#hashCode()} is invoked.<li>
+     *       {@link java.util.Arrays#hashCode(double[]) Arrays.hashCode(...)} method is invoked.</li>
+     *   <li>Otherwise {@link Object#hashCode()} is invoked.</li>
      * </ul>
      * <p>
      * This method should be invoked <strong>only</strong> if the object type is declared
      * exactly as {@code Object}, not as some subtype like {@code Object[]}, {@code String} or
-     * {@code float[]}. In the later cases, use the appropriate {@link Arrays} method instead.
+     * {@code float[]}. In the later cases, use the appropriate {@link java.util.Arrays} method
+     * instead.
      *
      * @param object The object to compute hash code. May be {@code null}.
      * @return The hash code of the given object.
@@ -106,15 +107,16 @@ public final class Utilities extends Static {
      * <p>
      * <ul>
      *   <li>If the object is an array of objects, then
-     *       {@link Arrays#deepToString(Object[])} is invoked.</li>
+     *       {@link java.util.Arrays#deepToString(Object[])} is invoked.</li>
      *   <li>Otherwise if the object is an array of primitive type, then the corresponding
-     *       {@link Arrays#toString(double[]) Arrays.toString(...)} method is invoked.</li>
+     *       {@link java.util.Arrays#toString(double[]) Arrays.toString(...)} method is invoked.</li>
      *   <li>Otherwise {@link String#valueOf(Object)} is invoked.</li>
      * </ul>
      * <p>
      * This method should be invoked <strong>only</strong> if the object type is declared
      * exactly as {@code Object}, not as some subtype like {@code Object[]}, {@code Number} or
-     * {@code float[]}. In the later cases, use the appropriate {@link Arrays} method instead.
+     * {@code float[]}. In the later cases, use the appropriate {@link java.util.Arrays} method
+     * instead.
      *
      * @param object The object to format as a string. May be {@code null}.
      * @return A string representation of the given object.
