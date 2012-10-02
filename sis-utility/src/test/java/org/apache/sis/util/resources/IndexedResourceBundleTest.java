@@ -18,7 +18,7 @@ package org.apache.sis.util.resources;
 
 import java.util.Locale;
 import org.opengis.util.InternationalString;
-import org.apache.sis.test.Dependency;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -57,7 +57,7 @@ public final strictfp class IndexedResourceBundleTest extends TestCase {
      * Tests the {@link IndexedResourceBundle#getString(int, Object)} method on different locales.
      */
     @Test
-    @Dependency("testGetString")
+    @DependsOnMethod("testGetString")
     public void testGetStringWithParameter() {
         assertEquals("Argument ‘CRS’ shall not be null.",
                 Errors.getResources(Locale.ENGLISH).getString(Errors.Keys.NullArgument_1, "CRS"));

@@ -38,7 +38,7 @@ import java.lang.annotation.Target;
 @Documented
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Dependency {
+public @interface DependsOnMethod {
     /**
      * The names of test methods on which the annotated method depends.
      *
