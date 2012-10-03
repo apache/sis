@@ -56,13 +56,15 @@ import org.apache.sis.util.logging.Logging;
  */
 public final class ReferenceQueueConsumer<T> extends DaemonThread {
     /**
-     * The default thread.
+     * The singleton instance of the {@code ReferenceQueueConsumer} thread.
      */
     public static final ReferenceQueueConsumer<Object> DEFAULT;
     static {
+        synchronized (Threads.class) {
+            Threads.lastCreatedDaemon = DEFAULT = new ReferenceQueueConsumer<Object>(Threads.lastCreatedDaemon);
+        }
         // Call to Thread.start() must be outside the constructor
         // (Reference: Goetz et al.: "Java Concurrency in Practice").
-        DEFAULT = new ReferenceQueueConsumer<Object>("ReferenceQueueConsumer");
         DEFAULT.start();
     }
 
@@ -76,18 +78,17 @@ public final class ReferenceQueueConsumer<T> extends DaemonThread {
     /**
      * Constructs a new thread as a daemon thread. This thread will be sleeping most of the time.
      * It will run only only a few nanoseconds every time a new {@link Reference} is enqueded.
-     *
-     * @param name The thread name. This name appears in the debugger.
      */
-    private ReferenceQueueConsumer(final String name) {
-        super(Threads.RESOURCE_DISPOSERS, name);
-        setPriority(Thread.MAX_PRIORITY);
+    private ReferenceQueueConsumer(final DaemonThread lastCreatedDaemon) {
+        super(Threads.RESOURCE_DISPOSERS, "ReferenceQueueConsumer", lastCreatedDaemon);
+        setPriority(Thread.MAX_PRIORITY - 2);
         // The above line sets the priority to the maximal value allowed by the
         // RESOURCE_DISPOSERS group, which is actually lower than MAX_PRIORITY.
     }
 
     /**
      * Loop to be run during the virtual machine lifetime.
+     * Public as an implementation side-effect; <strong>do not invoke explicitly!</strong>
      */
     @Override
     public final void run() {
@@ -117,7 +118,7 @@ public final class ReferenceQueueConsumer<T> extends DaemonThread {
                     continue;
                 }
             } catch (InterruptedException exception) {
-                // Probably the 'kill()' method has been invoked.
+                // Probably the 'killAll' method has been invoked.
                 // We need to test 'isKillRequested()' below.
             } catch (Throwable exception) {
                 Logging.unexpectedException(getClass(), "run", exception);
