@@ -231,6 +231,8 @@ Apache SIS is a toolkit for describing location information, including points,
         <version>${geoapi.version}</version>
         <scope>test</scope>
       </dependency>
+
+      <!-- Libraries (language, XML, network) -->
       <dependency>
         <groupId>javax.servlet</groupId>
         <artifactId>servlet-api</artifactId>
@@ -241,12 +243,18 @@ Apache SIS is a toolkit for describing location information, including points,
         <artifactId>georss-rome</artifactId>
         <version>0.9.8</version>
       </dependency>
-
-      <!-- Libraries (language, XML, network) -->
       <dependency>
         <groupId>net.jcip</groupId>
         <artifactId>jcip-annotations</artifactId>
         <version>1.0</version>
+      </dependency>
+
+      <!-- Optional dependencies -->
+      <dependency>
+        <groupId>org.osgi</groupId>
+        <artifactId>org.osgi.core</artifactId>
+        <version>5.0.0</version>
+        <scope>provided</scope>
       </dependency>
     </dependencies>
   </dependencyManagement>
