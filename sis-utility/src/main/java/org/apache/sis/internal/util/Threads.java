@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.util;
 
+import org.apache.sis.util.Static;
 import org.apache.sis.util.logging.Logging;
 
 
@@ -29,7 +30,7 @@ import org.apache.sis.util.logging.Logging;
  * @version 0.3
  * @module
  */
-public final class Threads {
+final class Threads extends Static {
     /**
      * The parent of every threads declared in this class. This parent will be declared as close
      * as possible to the root of all thread groups (i.e. not as an application thread subgroup).
@@ -56,17 +57,40 @@ public final class Threads {
      * quickly, and the benefit of executing those tasks soon is more resources made available.
      */
     static final ThreadGroup RESOURCE_DISPOSERS = new ThreadGroup(SIS, "ResourceDisposers") {
+        /* Constructor */ {
+            setMaxPriority(Thread.NORM_PRIORITY + 3);
+        }
         @Override public void uncaughtException(final Thread thread, final Throwable exception) {
             Logging.severeException(Logging.getLogger("org.apache.sis"), thread.getClass(), "run", exception);
         }
     };
-    static {
-        RESOURCE_DISPOSERS.setMaxPriority(Thread.NORM_PRIORITY + 2);
-    }
+
+    /**
+     * The tail of a chain of {@code DaemonThread}s created by the {@code sis-utility} module.
+     * Other modules need to maintain their own chain, if any. See the {@link DaemonThread}
+     * javadoc for more information.
+     */
+    static DaemonThread lastCreatedDaemon;
 
     /**
      * Do not allows instantiation of this class.
      */
     private Threads() {
+    }
+
+    /**
+     * Sends a kill signal to all daemon threads created by the {@code sis-utility} module,
+     * and waits for the threads to die before to return.
+     * <p>
+     * <strong>This method is for internal use by Apache SIS shutdown hooks only.</strong>
+     * Users should never invoke this method explicitely.
+     *
+     * @param  stopWaitingAt A {@link System#nanoTime()} value telling when to stop waiting.
+     *         This is used for preventing shutdown process to block an indefinite amount of time.
+     * @throws InterruptedException If an other thread invoked {@link #interrupt()} while
+     *         we were waiting for the daemon threads to die.
+     */
+    static synchronized void shutdown(final long stopWaitingAt) throws InterruptedException {
+        DaemonThread.killAll(lastCreatedDaemon, stopWaitingAt);
     }
 }
