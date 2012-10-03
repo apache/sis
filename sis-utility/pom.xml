@@ -110,6 +110,17 @@ Miscellaneous utilities.
           </execution>
         </executions>
       </plugin>
+
+      <!-- Package as OSGi bundle -->
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <configuration>
+          <instructions>
+            <Bundle-Activator>org.apache.sis.internal.util.OSGiActivator</Bundle-Activator>
+          </instructions>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 
@@ -129,6 +140,13 @@ Miscellaneous utilities.
     <dependency>
       <groupId>net.jcip</groupId>
       <artifactId>jcip-annotations</artifactId>
+    </dependency>
+
+    <!-- Optional dependencies -->
+    <dependency>
+      <groupId>org.osgi</groupId>
+      <artifactId>org.osgi.core</artifactId>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
 
