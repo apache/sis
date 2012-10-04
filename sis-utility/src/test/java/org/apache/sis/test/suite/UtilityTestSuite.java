@@ -45,7 +45,8 @@ import org.junit.runners.Suite;
   org.apache.sis.util.type.SimpleInternationalStringTest.class,
   org.apache.sis.util.type.DefaultInternationalStringTest.class,
   org.apache.sis.internal.util.ReferenceQueueConsumerTest.class,
-  org.apache.sis.util.collection.WeakHashSetTest.class
+  org.apache.sis.util.collection.WeakHashSetTest.class,
+  org.apache.sis.util.collection.WeakValueHashMapTest.class
 })
 public final strictfp class UtilityTestSuite extends TestSuite {
 }
