@@ -144,7 +144,8 @@ public final strictfp class WeakHashSetTest extends TestCase {
      * Tests with array elements.
      */
     @Test
-    public void testArray() {
+    @DependsOnMethod("testStrongReferences")
+    public void testWithArrayElements() {
         final WeakHashSet<int[]> weakSet = WeakHashSet.newInstance(int[].class);
         final int[] array = new int[] {2, 5, 3};
         assertTrue (weakSet.add(array));
