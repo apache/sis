@@ -218,7 +218,7 @@ public abstract class ModifiableMetadata {
      * instead than this method when the collection type is enforced by ISO specification.
      * When the type is not enforced by the specification, some freedom are allowed at
      * implementor choice. The default implementation invokes {@link #collectionType(Class)}
-     * in order to get a hint about whatever a {@link List} or a {@link Set} should be used.
+     * in order to get a hint about whether a {@link List} or a {@link Set} should be used.
      *
      * @param  <E>         The type of elements in the collection.
      * @param  source      The source collection, or {@code null}.
@@ -313,7 +313,7 @@ public abstract class ModifiableMetadata {
      * nonNullSet} instead than this method when the collection type is enforced by ISO
      * specification. When the type is not enforced by the specification, some freedom are
      * allowed at implementor choice. The default implementation invokes
-     * {@link #collectionType(Class)} in order to get a hint about whatever a {@link List}
+     * {@link #collectionType(Class)} in order to get a hint about whether a {@link List}
      * or a {@link Set} should be used.
      *
      * @param  <E> The type of elements in the collection.
@@ -374,7 +374,7 @@ public abstract class ModifiableMetadata {
      *
      * @param  <E> The type of elements in the collection to be created.
      * @param  elementType The type of elements in the collection to be created.
-     * @return {@code List.class} or {@code Set.class} depending on whatever the
+     * @return {@code List.class} or {@code Set.class} depending on whether the
      *         attribute shall accept duplicated values or not.
      */
     @SuppressWarnings({"rawtypes","unchecked"})

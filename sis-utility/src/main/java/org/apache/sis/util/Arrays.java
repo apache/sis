@@ -37,7 +37,7 @@ import org.apache.sis.internal.util.Objects;
  *   <li>The {@link #insert(Object[], int, Object[], int, int) insert} and {@link #remove(Object[],
  *       int, int) remove} methods for adding and removing elements in the middle of an array.</li>
  *   <li>The {@link #isSorted(Object[], Comparator, boolean) isSorted} methods for verifying
- *       whatever an array is sorted, strictly or not.</li>
+ *       if an array is sorted, strictly or not.</li>
  * </ul>
  *
  * {@section Handling of null values}

@@ -22,9 +22,9 @@
  *   <li><p>
  *     {@link org.apache.sis.util.collection.WeakHashSet} provides a way to ensure that
  *     a factory returns unique instances for all values that are equal in the sense of
- *     {@link java.lang.Object#equals Object.equals(Object)}. The values that were created
- *     in previous factory operations are retained by {@linkplain java.lang.ref.WeakReference
- *     weak references} for reuse.
+ *     {@link java.util.Objects#deepEquals(Object, Object) Objects.deepEquals(Object, Object)}.
+ *     The values that were created in previous factory operations are retained by
+ *     {@linkplain java.lang.ref.WeakReference weak references} for reuse.
  *   </p></li><li><p>
  *     {@link org.apache.sis.util.collection.Cache} and
  *     {@link org.apache.sis.util.collection.WeakValueHashMap} are {@link java.util.Map java.util.Map}
