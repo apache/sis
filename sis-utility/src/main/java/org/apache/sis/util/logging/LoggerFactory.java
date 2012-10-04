@@ -18,6 +18,7 @@ package org.apache.sis.util.logging;
 
 import java.util.logging.Logger;
 import net.jcip.annotations.ThreadSafe;
+import org.apache.sis.util.collection.WeakValueHashMap;
 
 
 /**
@@ -47,12 +48,18 @@ public abstract class LoggerFactory<L> {
     private final Class<L> loggerClass;
 
     /**
+     * The loggers created up to date.
+     */
+    private final WeakValueHashMap<String,Logger> loggers;
+
+    /**
      * Creates a new factory.
      *
      * @param loggerClass The class of the wrapped logger.
      */
     protected LoggerFactory(final Class<L> loggerClass) {
         this.loggerClass = loggerClass;
+        loggers = WeakValueHashMap.newInstance(String.class);
     }
 
     /**
@@ -67,7 +74,14 @@ public abstract class LoggerFactory<L> {
         if (target == null) {
             return null;
         }
-        return wrap(name, target);
+        synchronized (loggers) {
+            Logger logger = loggers.get(name);
+            if (logger == null || !target.equals(unwrap(logger))) {
+                logger = wrap(name, target);
+                loggers.put(name, logger);
+            }
+            return logger;
+        }
     }
 
     /**
