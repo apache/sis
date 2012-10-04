@@ -19,21 +19,17 @@ package org.apache.sis.util.collection;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.AbstractSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.logging.LogRecord;
 import java.lang.reflect.Array;
-import java.lang.ref.WeakReference;
 import net.jcip.annotations.ThreadSafe;
 
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Utilities;
-import org.apache.sis.util.Disposable;
 import org.apache.sis.util.Workaround;
-import org.apache.sis.util.logging.Logging;
-import org.apache.sis.internal.util.ReferenceQueueConsumer;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.NullArgumentException;
 
 import static org.apache.sis.util.Arrays.resize;
+import static org.apache.sis.util.collection.WeakEntry.*;
 
 // Related to JDK7
 import org.apache.sis.internal.util.Objects;
@@ -83,42 +79,20 @@ import org.apache.sis.internal.util.Objects;
 @ThreadSafe
 public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E> {
     /**
-     * Minimal capacity for {@link #table}.
-     */
-    private static final int MIN_CAPACITY = 21;
-
-    /**
-     * Load factor. Control the moment where {@link #table} must be rebuild.
-     */
-    private static final float LOAD_FACTOR = 0.75f;
-
-    /**
      * A weak reference to an element. This is an element in a linked list.
      * When the reference is disposed, it is removed from the enclosing set.
      */
-    private final class Entry extends WeakReference<E> implements Disposable {
-        /**
-         * The next entry, or {@code null} if there is none.
-         */
-        Entry next;
-
-        /**
-         * The hash value of this element.
-         */
-        final int hash;
-
+    private final class Entry extends WeakEntry<E> {
         /**
          * Constructs a new weak reference.
          */
         Entry(final E obj, final Entry next, final int hash) {
-            super(obj, ReferenceQueueConsumer.DEFAULT.queue);
-            assert ReferenceQueueConsumer.DEFAULT.isAlive();
-            this.next = next;
-            this.hash = hash;
+            super(obj, next, hash);
         }
 
         /**
-         * Clears the reference.
+         * Invoked by {@link org.apache.sis.internal.util.ReferenceQueueConsumer}
+         * for removing the reference from the enclosing collection.
          */
         @Override
         public void dispose() {
@@ -149,13 +123,7 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
     private final boolean mayContainArrays;
 
     /**
-     * The next size value at which to resize. This value should
-     * be <code>{@link #table}.length*{@link #LOAD_FACTOR}</code>.
-     */
-    private int threshold;
-
-    /**
-     * Constructs a {@code WeakHashSet} for elements of the specified type.
+     * Creates a {@code WeakHashSet} for elements of the specified type.
      *
      * @param <E>  The type of elements in the set.
      * @param type The type of elements in the set.
@@ -166,30 +134,22 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
     }
 
     /**
-     * Constructs a {@code WeakHashSet} for elements of the specified type.
+     * Creates a {@code WeakHashSet} for elements of the specified type.
      *
      * @param type The type of the element to be included in this set.
      */
     protected WeakHashSet(final Class<E> type) {
-        this.elementType = type;
+        elementType      = type;
         mayContainArrays = type.isArray() || type.equals(Object.class);
-        final Entry[] table = newEntryTable(MIN_CAPACITY);
-        threshold = Math.round(table.length * LOAD_FACTOR);
-    }
-
-    /**
-     * Sets the {@link #table} array to the specified size. The content of the old array is lost.
-     * The value is returned for convenience (this is actually a paranoiac safety for making sure
-     * that the caller will really use the new array, in case of synchronization bug).
-     * <p>
-     * This method is a workaround for the "<cite>generic array creation</cite>" compiler error.
-     * Otherwise we would use the commented-out line instead.
-     */
-    @Workaround(library="JDK", version="1.7")
-    @SuppressWarnings("unchecked")
-    private Entry[] newEntryTable(final int size) {
+        /*
+         * Workaround for the "generic array creation" compiler error.
+         * Otherwise we would use the commented-out line instead.
+         */
+        @SuppressWarnings("unchecked")
+        @Workaround(library="JDK", version="1.7")
+        final Entry[] table = (Entry[]) Array.newInstance(Entry.class, MIN_CAPACITY);
 //      table = new Entry[size];
-        return table = (Entry[]) Array.newInstance(Entry.class, size);
+        this.table = table;
     }
 
     /**
@@ -202,82 +162,19 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
 
     /**
      * Invoked by {@link Entry} when an element has been collected by the garbage
-     * collector. This method will remove the weak reference from {@link #table}.
+     * collector. This method removes the weak reference from the {@link #table}.
      */
     private synchronized void removeEntry(final Entry toRemove) {
-        assert valid() : count;
-        final Entry[] table = this.table;
-        final int i = toRemove.hash % table.length;
-        Entry prev = null;
-        Entry e = table[i];
-        while (e != null) {
-            if (e == toRemove) {
-                if (prev != null) {
-                    prev.next = e.next;
-                } else {
-                    table[i] = e.next;
-                }
-                count--;
-                assert valid();
-                /*
-                 * If the number of elements has dimunished significatively, rehash the table.
-                 * We can't continue the loop pass that point, since 'e' is no longer valid.
-                 */
-                if (count <= threshold/4) {
-                    this.table = rehash("remove");
-                }
-                return;
-            }
-            prev = e;
-            e = e.next;
-        }
-        assert valid();
-        /*
-         * If we reach this point, its mean that reference 'toRemove' has not
-         * been found. This situation may occurs if 'toRemove' has already been
-         * removed in a previous run of 'rehash'.
-         */
-    }
-
-    /**
-     * Rehash {@link #table}.
-     *
-     * @param  caller The method invoking this one. User for logging purpose only.
-     * @return The new table array. This is actually the value of the {@link #table} field, but is
-     *         returned as a paranoiac safety for making sure that the caller uses the table we just
-     *         created (in case of synchronization bug).
-     */
-    private Entry[] rehash(final String caller) {
-        assert Thread.holdsLock(this);
-        assert valid();
-        final Entry[] oldTable = table;
-        final int capacity = Math.max(Math.round(count / (LOAD_FACTOR/2)), count + MIN_CAPACITY);
-        if (capacity == oldTable.length) {
-            return oldTable;
-        }
-        final Entry[] table = newEntryTable(capacity);
-        threshold = Math.round(capacity * LOAD_FACTOR);
-        for (int i=0; i<oldTable.length; i++) {
-            for (Entry next=oldTable[i]; next!=null;) {
-                final Entry e = next;
-                next = next.next; // We keep 'next' right now because its value will change.
-                final int index = e.hash % table.length;
-                e.next = table[index];
-                table[index] = e;
+        assert isValid();
+        final int capacity = table.length;
+        if (toRemove.removeFrom(table, toRemove.hash % capacity)) {
+            count--;
+            assert isValid();
+            if (count < lowerCapacityThreshold(capacity)) {
+                table = (Entry[]) WeakEntry.rehash(table, count, "remove");
+                assert isValid();
             }
         }
-        final Logger logger = Logging.getLogger(WeakHashSet.class);
-        final Level   level = Level.FINEST;
-        if (logger.isLoggable(level)) {
-            final LogRecord record = new LogRecord(level,
-                    "Rehash from " + oldTable.length + " to " + table.length);
-            record.setSourceMethodName(caller);
-            record.setSourceClassName(WeakHashSet.class.getName());
-            record.setLoggerName(logger.getName());
-            logger.log(record);
-        }
-        assert valid();
-        return table;
     }
 
     /**
@@ -288,14 +185,10 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
      * help to get similar behavior as if assertions hasn't been turned on.
      */
     @Debug
-    private boolean valid() {
-        int n = 0;
-        final Entry[] table = this.table;
-        for (int i=0; i<table.length; i++) {
-            for (Entry e=table[i]; e!=null; e=e.next) {
-                n++;
-            }
-        }
+    private boolean isValid() {
+        assert Thread.holdsLock(this);
+        assert count <= upperCapacityThreshold(table.length);
+        final int n = count(table);
         if (n != count) {
             count = n;
             return false;
@@ -311,7 +204,7 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
      */
     @Override
     public synchronized int size() {
-        assert valid();
+        assert isValid();
         return count;
     }
 
@@ -320,76 +213,81 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
      * If this set already contains the specified element, the call leaves
      * this set unchanged and returns {@code false}.
      *
-     * @param  obj Element to be added to this set.
+     * @param  element Element to be added to this set.
      * @return {@code true} if this set did not already contain the specified element.
+     * @throws NullArgumentException If the given object is {@code null}.
      */
     @Override
-    public synchronized boolean add(final E obj) {
-        return intern(obj, ADD) == null;
+    public synchronized boolean add(final E element) throws NullArgumentException {
+        ArgumentChecks.ensureNonNull("element", element);
+        return intern(element, ADD) == null;
     }
 
     /**
      * Removes a single instance of the specified element from this set, if it is present
+     * Null values are considered never present.
      *
-     * @param  obj element to be removed from this set, if present.
+     * @param  element element to be removed from this set, if present. Can be {@code null}.
      * @return {@code true} if the set contained the specified element.
      */
     @Override
-    public synchronized boolean remove(final Object obj) {
-        return intern(elementType.cast(obj), REMOVE) != null;
+    public synchronized boolean remove(final Object element) {
+        return intern(elementType.cast(element), REMOVE) != null;
     }
 
     /**
-     * Returns an object equals to the specified object, if present. If
-     * this set doesn't contains any object equals to {@code object},
-     * then this method returns {@code null}.
+     * Returns an object equals to the specified object, if present. If this set doesn't
+     * contain any object equals to {@code element}, then this method returns {@code null}.
+     * Null values are considered never present.
      *
-     * @param  <T> The type of the element to get.
-     * @param  object The element to get.
+     * @param  <T> The type of the element to get. Can be {@code null}.
+     * @param  element The element to get.
      * @return An element equals to the given one if already presents in the set,
      *         or {@code null} otherwise.
      *
      * @see #unique(Object)
      */
-    public synchronized <T extends E> T get(final T object) {
-        return intern(object, GET);
+    public synchronized <T extends E> T get(final T element) {
+        return intern(element, GET);
     }
 
     /**
      * Returns {@code true} if this set contains the specified element.
+     * Null values are considered never present.
      *
-     * @param  obj Object to be checked for containment in this set.
+     * @param  element Object to be checked for containment in this set. Can be {@code null}.
      * @return {@code true} if this set contains the specified element.
      */
     @Override
-    public synchronized boolean contains(final Object obj) {
-        return obj != null && intern(elementType.cast(obj), GET) != null;
+    public synchronized boolean contains(final Object element) {
+        return intern(element, GET) != null;
     }
 
     /**
-     * Returns an object equals to {@code object} if such an object already exist in this
-     * {@code WeakHashSet}. Otherwise, adds {@code object} to this {@code WeakHashSet}.
-     * This method is equivalents to the following code:
+     * Returns an object equals to {@code element} if such an object already exist in this
+     * {@code WeakHashSet}. Otherwise, adds {@code element} to this {@code WeakHashSet}.
+     * This method is functionally equivalents to the following code:
      *
      * {@preformat java
-     *     if (object != null) {
-     *         Object current = get(object);
+     *     if (element != null) {
+     *         T current = get(element);
      *         if (current != null) {
      *             return current;
      *         } else {
-     *             add(object);
+     *             add(element);
      *         }
      *     }
-     *     return object;
+     *     return element;
      * }
      *
-     * @param  <T> The type of the element to get.
-     * @param  object The element to get or to add in the set if not already presents.
+     * @param  <T> The type of the element to get. Can be {@code null}.
+     * @param  element The element to get or to add in the set if not already presents,
+     *         or {@code null} if the given element was null.
      * @return An element equals to the given one if already presents in the set,
      *         or the given {@code object} otherwise.
      */
-    public synchronized <T extends E> T unique(final T object) {
-        return intern(object, INTERN);
+    public synchronized <T extends E> T unique(final T element) {
+        return intern(element, INTERN);
     }
 
     /**
@@ -397,20 +295,19 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
      * This method is equivalents to the following code:
      *
      * {@preformat java
-     *     for (int i=0; i<objects.length; i++) {
-     *         objects[i] = unique(objects[i]);
+     *     for (int i=0; i<elements.length; i++) {
+     *         elements[i] = unique(elements[i]);
      *     }
      * }
      *
-     * @param objects
+     * @param elements
      *          On input, the objects to add to this set if not already present. On output,
-     *          elements that are {@linkplain Object#equals(Object) equal}, but where every
-     *          reference to an instance already presents in this set has been replaced by
-     *          a reference to the existing instance.
+     *          elements that are equal, but where every reference to an instance already
+     *          presents in this set has been replaced by a reference to the existing instance.
      */
-    public synchronized void uniques(final E[] objects) {
-        for (int i=0; i<objects.length; i++) {
-            objects[i] = intern(objects[i], INTERN);
+    public synchronized void uniques(final E[] elements) {
+        for (int i=0; i<elements.length; i++) {
+            elements[i] = intern(elements[i], INTERN);
         }
     }
 
@@ -437,28 +334,26 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
      *     return object;
      * }
      */
-    private <T extends E> T intern(final T obj, final int operation) {
-        assert Thread.holdsLock(this);
-        assert ReferenceQueueConsumer.DEFAULT.isAlive();
-        assert valid() : count;
+    private <T> T intern(final T obj, final int operation) {
+        assert isValid();
         if (obj != null) {
             /*
              * Check if the object is already contained in this
              * WeakHashSet. If yes, return the existing element.
              */
             Entry[] table = this.table;
-            final int hash = (mayContainArrays ? Utilities.deepHashCode(obj) : obj.hashCode()) & 0x7FFFFFFF;
+            final int hash = (mayContainArrays ? Utilities.deepHashCode(obj) : obj.hashCode()) & HASH_MASK;
             int index = hash % table.length;
-            for (Entry e=table[index]; e!=null; e=e.next) {
+            for (Entry e=table[index]; e!=null; e=(Entry) e.next) {
                 final E candidate = e.get();
                 if (mayContainArrays ? Objects.deepEquals(candidate, obj) : obj.equals(candidate)) {
                     if (operation == REMOVE) {
                         e.dispose();
                     }
-                    assert candidate.getClass() == obj.getClass() : candidate;
-                    @SuppressWarnings("unchecked")
-                    final T result = (T) candidate;
-                    return result;
+                    // There is no way to make sure that this operation is really safe.
+                    // We have to trust the Object.equals(Object) method to be strict
+                    // about the type of compared objects.
+                    return (T) candidate;
                 }
                 // Do not remove the null element; lets ReferenceQueue do its job
                 // (it was a bug to remove element here as an "optimization")
@@ -467,15 +362,15 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
                 /*
                  * Check if the table needs to be rehashed, and add {@code obj} to the table.
                  */
-                if (count >= threshold) {
-                    table = rehash("add");
+                if (count >= upperCapacityThreshold(table.length)) {
+                    this.table = table = (Entry[]) rehash(table, count, "add");
                     index = hash % table.length;
                 }
-                table[index] = new Entry(obj, table[index], hash);
+                table[index] = new Entry(elementType.cast(obj), table[index], hash);
                 count++;
             }
         }
-        assert valid();
+        assert isValid();
         return (operation == INTERN) ? obj : null;
     }
 
@@ -497,13 +392,13 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
      */
     @Override
     public synchronized E[] toArray() {
-        assert valid();
+        assert isValid();
         @SuppressWarnings("unchecked")
         final E[] elements = (E[]) Array.newInstance(elementType, count);
         int index = 0;
         final Entry[] table = this.table;
         for (int i=0; i<table.length; i++) {
-            for (Entry el=table[i]; el!=null; el=el.next) {
+            for (Entry el=table[i]; el!=null; el=(Entry) el.next) {
                 if ((elements[index] = el.get()) != null) {
                     index++;
                 }
