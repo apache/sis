@@ -18,7 +18,9 @@ package org.apache.sis.util.collection;
 
 import java.util.*;
 import java.io.Serializable;
+import java.util.logging.Logger;
 import org.apache.sis.util.Static;
+import org.apache.sis.util.logging.Logging;
 
 import static java.util.Collections.list;
 import static java.util.Collections.emptySet;
@@ -54,6 +56,11 @@ import static java.util.Collections.unmodifiableMap;
  * @module
  */
 public final class Collections extends Static {
+    /**
+     * The logger where to logs collection events, if logging at the finest level is enabled.
+     */
+    static final Logger LOGGER = Logging.getLogger(Collections.class);
+
     /**
      * Do not allow instantiation of this class.
      */
