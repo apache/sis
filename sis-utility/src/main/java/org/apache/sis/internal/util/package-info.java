@@ -23,7 +23,7 @@
  * This package is for internal use by SIS only. Classes in this package
  * may change in incompatible ways in any future version without notice.
  *
- * @author Martin Desruisseaux (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.0)
  * @version 0.3
  * @module
