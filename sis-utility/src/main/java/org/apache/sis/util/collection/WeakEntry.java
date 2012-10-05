@@ -25,6 +25,7 @@ import java.lang.reflect.Array;
 import org.apache.sis.util.Disposable;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.internal.util.ReferenceQueueConsumer;
+import org.apache.sis.math.MathFunctions;
 
 
 /**
@@ -42,6 +43,7 @@ import org.apache.sis.internal.util.ReferenceQueueConsumer;
 abstract class WeakEntry<E> extends WeakReference<E> implements Disposable {
     /**
      * Minimal capacity for the internal table of entries.
+     * Must be a prime number.
      */
     static final int MIN_CAPACITY = 7;
 
@@ -133,10 +135,22 @@ abstract class WeakEntry<E> extends WeakReference<E> implements Disposable {
      * @return The new table array, or {@code oldTable} if no rehash were needed.
      */
     static <E> WeakEntry<E>[] rehash(final WeakEntry<E>[] oldTable, final int count, final String callerMethod) {
-        final int capacity = Math.max(count*2, MIN_CAPACITY);
+        /*
+         * Compute the capacity as twice the expected number of elements, then take
+         * (if possible) the first prime number equals or greater to that value.
+         * This is based on classical books saying that prime values reduce the
+         * risk of key collisions.
+         */
+        int capacity = Math.max(count*2, MIN_CAPACITY);
+        if (capacity < MathFunctions.HIGHEST_SUPPORTED_PRIME_NUMBER) {
+            capacity = MathFunctions.nextPrimeNumber(capacity);
+        }
         if (capacity == oldTable.length) {
             return oldTable;
         }
+        /*
+         * Rehash the table.
+         */
         final Class<?> entryType = oldTable.getClass().getComponentType();
         @SuppressWarnings("unchecked")
         final WeakEntry<E>[] table = (WeakEntry<E>[]) Array.newInstance(entryType, capacity);
@@ -149,6 +163,9 @@ abstract class WeakEntry<E> extends WeakReference<E> implements Disposable {
                 table[index] = e;
             }
         }
+        /*
+         * We are done. Log the operation if logging is enabled at that level.
+         */
         final Logger logger = Collections.LOGGER;
         if (logger.isLoggable(Level.FINEST)) {
             final LogRecord record = Messages.getResources(null).getLogRecord(Level.FINEST,
