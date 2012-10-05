@@ -49,7 +49,6 @@ public final strictfp class TypesTest extends TestCase {
      * Tests the {@link Types#forStandardName(String)} method.
      */
     @Test
-    @Ignore("class-index.properties not available in GeoAPI 3.0.0")
     public void testForStandardName() {
         assertEquals(Citation     .class, Types.forStandardName("CI_Citation"));
         assertEquals(Datum        .class, Types.forStandardName("CD_Datum"));
