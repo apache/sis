@@ -39,7 +39,7 @@
        ============================================================== -->
   <groupId>org.apache.sis</groupId>
   <artifactId>sis-parent</artifactId>
-  <version>0.3-geoapi3.0-SNAPSHOT</version>
+  <version>0.3-jdk6-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Apache SIS</name>
@@ -279,7 +279,7 @@ Apache SIS is a toolkit for describing location information, including points,
          configuration.
        ============================================================== -->
   <properties>
-    <geoapi.version>3.0.0</geoapi.version>
+    <geoapi.version>3.1-M03</geoapi.version>
     <maven.compile.source>1.6</maven.compile.source>
     <maven.compile.target>1.6</maven.compile.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -452,7 +452,7 @@ Apache SIS is a toolkit for describing location information, including points,
           <breakiterator>true</breakiterator>                   <!-- Better boundary detection when determining the end of the first sentence. -->
           <stylesheetfile>src/main/javadoc/stylesheet.css</stylesheetfile>
           <links>
-            <link>http://www.geoapi.org/3.0/javadoc</link>
+            <link>http://www.geoapi.org/snapshot/javadoc</link>
           </links>
 
           <!-- Separates packages on the overview page into the groups specified. -->
@@ -571,6 +571,15 @@ Apache SIS is a toolkit for describing location information, including points,
       </releases>
     </pluginRepository>
   </pluginRepositories>
+
+  <repositories>
+    <repository>
+      <!-- Used for GeoAPI snapshots only, removed for releases. -->
+      <id>geotoolkit</id>
+      <name>Geotoolkit.org repository</name>
+      <url>http://maven.geotoolkit.org</url>
+    </repository>
+  </repositories>
 
 
 

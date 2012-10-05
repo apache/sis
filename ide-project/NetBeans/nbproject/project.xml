@@ -3,7 +3,7 @@
     <type>org.netbeans.modules.java.j2seproject</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/j2se-project/3">
-            <name>Apache SIS on GeoAPI 3.0</name>
+            <name>Apache SIS for JDK6</name>
             <source-roots>
                 <root id="src.local-src.dir" name="Local sources (unversioned)"/>
                 <root id="src.webapp.dir" name="Web application"/>
