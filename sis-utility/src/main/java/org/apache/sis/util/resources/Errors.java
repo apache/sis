@@ -82,12 +82,12 @@ public final class Errors extends IndexedResourceBundle {
         public static final int NegativeArgument_2 = 8;
 
         /**
-         * Argument '{0}' shall not be NaN (Not-a-Number).
+         * Argument ‘{0}’ shall not be NaN (Not-a-Number).
          */
         public static final int NotANumber_1 = 9;
 
         /**
-         * Class '{0}' is not a primitive type wrapper.
+         * Class ‘{0}’ is not a primitive type wrapper.
          */
         public static final int NotAPrimitiveWrapper_1 = 10;
 
@@ -124,6 +124,15 @@ public final class Errors extends IndexedResourceBundle {
      */
     Errors(final String filename) {
         super(filename);
+    }
+
+    /**
+     * Returns the {@code Keys} class.
+     */
+    @Override
+    final Class<?> getKeysClass() throws ClassNotFoundException {
+        assert super.getKeysClass() == Keys.class;
+        return Keys.class;
     }
 
     /**

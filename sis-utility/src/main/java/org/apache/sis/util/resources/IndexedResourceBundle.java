@@ -21,8 +21,8 @@ import java.io.DataInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Writer;
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.MissingResourceException;
@@ -30,6 +30,8 @@ import java.util.NoSuchElementException;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import net.jcip.annotations.ThreadSafe;
 
 import org.opengis.util.InternationalString;
@@ -38,6 +40,8 @@ import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
+
+import static org.apache.sis.util.Arrays.resize;
 
 
 /**
@@ -73,12 +77,23 @@ public class IndexedResourceBundle extends ResourceBundle {
     private final String filename;
 
     /**
+     * The key names. This is usually not needed, but may be created from the {@code Keys}
+     * inner class in some occasions.
+     *
+     * @see #getKeyNames()
+     * @see #getKeyName(int)
+     */
+    private transient String[] keys;
+
+    /**
      * The array of resources. Keys are an array index. For example, the value for key "14" is
      * {@code values[14]}. This array will be loaded only when first needed. We should not load
      * it at construction time, because some {@code ResourceBundle} objects will never ask for
      * values. This is particularly the case for ancestor classes of {@code Resources_fr_CA},
      * {@code Resources_en}, {@code Resources_de}, etc., which will only be used if a key has
      * not been found in the subclass.
+     *
+     * @see #ensureLoaded(String)
      */
     private String[] values;
 
@@ -156,6 +171,119 @@ public class IndexedResourceBundle extends ResourceBundle {
     }
 
     /**
+     * Returns the inner {@code Keys} class which declare the key constants.
+     * Subclasses defined in the {@code org.apache.sis.util.resources} package
+     * override this method for efficiency. However the default implementation
+     * should work for other cases (we don't want to expose too much internal API).
+     *
+     * @return The inner {@code Keys} class.
+     * @throws ClassNotFoundException If the inner class has not been found.
+     */
+    Class<?> getKeysClass() throws ClassNotFoundException {
+        for (final Class<?> inner : getClass().getClasses()) {
+            if ("Keys".equals(inner.getSimpleName())) {
+                return inner;
+            }
+        }
+        throw new ClassNotFoundException();
+    }
+
+    /**
+     * Returns the internal array of key names. <strong>Do not modify the returned array.</strong>
+     * This method should usually not be invoked, in order to avoid loading the inner Keys class.
+     * The keys names are used only in rare situation, like {@link #list(Writer)} or in log records.
+     */
+    private synchronized String[] getKeyNames() {
+        if (keys == null) {
+            String[] names;
+            int length = 0;
+            try {
+                final Field[] fields = getKeysClass().getFields();
+                names = new String[fields.length];
+                for (final Field field : fields) {
+                    if (Modifier.isStatic(field.getModifiers()) && field.getType() == Integer.TYPE) {
+                        final int index = (Integer) field.get(null);
+                        if (index >= length) {
+                            length = index + 1;
+                            if (length > names.length) {
+                                // Usually don't happen, except for incomplete bundles.
+                                names = Arrays.copyOf(names, length*2);
+                            }
+                        }
+                        names[index] = field.getName();
+                    }
+                }
+            } catch (Exception e) {
+                names = CharSequences.EMPTY_ARRAY;
+            }
+            keys = resize(names, length);
+        }
+        return keys;
+    }
+
+    /**
+     * Returns an enumeration of the keys.
+     *
+     * @return All keys in this resource bundle.
+     */
+    @Override
+    public final Enumeration<String> getKeys() {
+        return new KeyEnum(getKeyNames());
+    }
+
+    /**
+     * The keys as an enumeration. This enumeration needs to skip null values, which
+     * may occur if the resource bundle is incomplete for that particular locale.
+     */
+    private static final class KeyEnum implements Enumeration<String> {
+        /** The keys to return.          */ private final String[] keys;
+        /** Index of next key to return. */ private int next;
+
+        /** Creates a new enum for the given array of keys. */
+        KeyEnum(final String[] keys) {
+            this.keys = keys;
+        }
+
+        /** Returns {@code true} if there is at least one more non-null key. */
+        @Override public boolean hasMoreElements() {
+            while (next < keys.length) {
+                if (keys[next] != null) {
+                    return true;
+                }
+                next++;
+            }
+            return false;
+        }
+
+        /** Returns the next key. */
+        @Override public String nextElement() {
+            while (next < keys.length) {
+                final String key = keys[next++];
+                if (key != null) {
+                    return key;
+                }
+            }
+            throw new NoSuchElementException();
+        }
+    }
+
+    /**
+     * Returns the name of the key at the given index. If there is no name at that given
+     * index, format the index as a decimal number. Those decimal numbers are parsed by
+     * our {@link #handleGetObject(String)} implementation.
+     */
+    private String getKeyNameAt(final int index) {
+        final String[] keys = getKeyNames();
+        if (index < keys.length) {
+            final String key = keys[index];
+            if (key != null) {
+                return key;
+            }
+        }
+        return String.valueOf(index);
+    }
+
+    /**
      * Lists resources to the specified stream. If a resource has more than one line, only
      * the first line will be written. This method is used mostly for debugging purposes.
      *
@@ -163,34 +291,32 @@ public class IndexedResourceBundle extends ResourceBundle {
      * @throws IOException if an output operation failed.
      */
     @Debug
-    public final void list(final Writer out) throws IOException {
-        // Synchronization performed by 'ensureLoaded'
-        list(out, ensureLoaded(null));
-    }
-
-    /**
-     * Lists resources to the specified stream. If a resource has more than one line, only
-     * the first line will be written. This method is used mostly for debugging purposes.
-     *
-     * @param  out    The destination stream.
-     * @param  values The resources to list.
-     * @throws IOException if an output operation failed.
-     */
-    private static void list(final Writer out, final String[] values) throws IOException {
-        final String lineSeparator = System.getProperty("line.separator", "\n");
-        for (int i=0; i<values.length; i++) {
-            String value = values[i];
-            if (value == null) {
-                continue;
+    public final void list(final Appendable out) throws IOException {
+        int keyLength = 0;
+        final String[] keys = getKeyNames();
+        for (final String key : keys) {
+            if (key != null) {
+                keyLength = Math.max(keyLength, key.length());
             }
-            int indexCR = value.indexOf('\r'); if (indexCR < 0) indexCR = value.length();
-            int indexLF = value.indexOf('\n'); if (indexLF < 0) indexLF = value.length();
-            final String number = String.valueOf(i);
-            out.write(CharSequences.spaces(5 - number.length()));
-            out.write(number);
-            out.write(":\t");
-            out.write(value, 0, Math.min(indexCR,indexLF));
-            out.write(lineSeparator);
+        }
+        final String lineSeparator = System.getProperty("line.separator", "\n");
+        final String[] values = ensureLoaded(null);
+        for (int i=0; i<values.length; i++) {
+            final String key   = keys  [i];
+            final String value = values[i];
+            if (key != null && value != null) {
+                int indexCR = value.indexOf('\r'); if (indexCR < 0) indexCR = value.length();
+                int indexLF = value.indexOf('\n'); if (indexLF < 0) indexLF = value.length();
+                final String number = String.valueOf(i);
+                out.append(CharSequences.spaces(5 - number.length()))
+                   .append(number)
+                   .append(": ")
+                   .append(key)
+                   .append(CharSequences.spaces(keyLength - key.length()))
+                   .append(" = ")
+                   .append(value, 0, Math.min(indexCR, indexLF))
+                   .append(lineSeparator);
+            }
         }
     }
 
@@ -277,51 +403,6 @@ public class IndexedResourceBundle extends ResourceBundle {
     }
 
     /**
-     * Returns an enumeration of the keys.
-     *
-     * @return All keys in this resource bundle.
-     */
-    @Override
-    public final Enumeration<String> getKeys() {
-        // Synchronization performed by 'ensureLoaded'
-        return new KeyEnum(ensureLoaded(null));
-    }
-
-    /**
-     * The keys as an enumeration.
-     */
-    private static final class KeyEnum implements Enumeration<String> {
-        private final String[] values;
-        private int next=0;
-
-        KeyEnum(final String[] values) {
-            this.values = values;
-            while (next < values.length) {
-                if (values[next] != null) {
-                    break;
-                }
-                next++;
-            }
-        }
-
-        @Override
-        public boolean hasMoreElements() {
-            return next < values.length;
-        }
-
-        @Override
-        public String nextElement() {
-            while (next < values.length) {
-                if (values[next] != null) {
-                    return String.valueOf(next++);
-                }
-                next++;
-            }
-            throw new NoSuchElementException();
-        }
-    }
-
-    /**
      * Gets an object for the given key from this resource bundle.
      * Returns null if this resource bundle does not contain an
      * object for the given key.
@@ -334,11 +415,20 @@ public class IndexedResourceBundle extends ResourceBundle {
     protected final Object handleGetObject(final String key) {
         // Synchronization performed by 'ensureLoaded'
         final String[] values = ensureLoaded(key);
-        final int keyID;
+        int keyID;
         try {
             keyID = Integer.parseInt(key);
         } catch (NumberFormatException exception) {
-            return null; // This is okay as of 'handleGetObject' contract.
+            /*
+             * Maybe the full key name has been specified instead. We do that for localized
+             * LogRecords, for easier debugging if the message has not been properly formatted.
+             */
+            try {
+                keyID = (Integer) getKeysClass().getField(key).get(null);
+            } catch (Exception e) {
+                Logging.recoverableException(getClass(), "handleGetObject", e);
+                return null; // This is okay as of 'handleGetObject' contract.
+            }
         }
         return (keyID >= 0 && keyID < values.length) ? values[keyID] : null;
     }
@@ -571,8 +661,11 @@ public class IndexedResourceBundle extends ResourceBundle {
      * @param  key   The resource key.
      * @return The log record.
      */
-    public LogRecord getLogRecord(final Level level, final int key) {
-        return getLogRecord(level, key, null);
+    public final LogRecord getLogRecord(final Level level, final int key) {
+        final LogRecord record = new LogRecord(level, getKeyNameAt(key));
+        record.setResourceBundleName(getClass().getName());
+        record.setResourceBundle(this);
+        return record;
     }
 
     /**
@@ -580,17 +673,14 @@ public class IndexedResourceBundle extends ResourceBundle {
      *
      * @param  level The log record level.
      * @param  key   The resource key.
-     * @param  arg0  The parameter for the log message, or {@code null}.
+     * @param  arg0  The parameter for the log message, which may be an array.
      * @return The log record.
      */
-    public LogRecord getLogRecord(final Level level, final int key,
-                                  final Object arg0)
+    public final LogRecord getLogRecord(final Level level, final int key,
+                                        final Object arg0)
     {
-        final LogRecord record = new LogRecord(level, String.valueOf(key));
-        record.setResourceBundle(this);
-        if (arg0 != null) {
-            record.setParameters(toArray(arg0));
-        }
+        final LogRecord record = getLogRecord(level, key);
+        record.setParameters(toArray(arg0));
         return record;
     }
 
@@ -603,9 +693,9 @@ public class IndexedResourceBundle extends ResourceBundle {
      * @param  arg1  The second parameter.
      * @return The log record.
      */
-    public LogRecord getLogRecord(final Level level, final int key,
-                                  final Object arg0,
-                                  final Object arg1)
+    public final LogRecord getLogRecord(final Level level, final int key,
+                                        final Object arg0,
+                                        final Object arg1)
     {
         return getLogRecord(level, key, new Object[] {arg0, arg1});
     }
@@ -620,10 +710,10 @@ public class IndexedResourceBundle extends ResourceBundle {
      * @param  arg2  The third parameter.
      * @return The log record.
      */
-    public LogRecord getLogRecord(final Level level, final int key,
-                                  final Object arg0,
-                                  final Object arg1,
-                                  final Object arg2)
+    public final LogRecord getLogRecord(final Level level, final int key,
+                                        final Object arg0,
+                                        final Object arg1,
+                                        final Object arg2)
     {
         return getLogRecord(level, key, new Object[] {arg0, arg1, arg2});
     }
@@ -639,67 +729,13 @@ public class IndexedResourceBundle extends ResourceBundle {
      * @param  arg3  The fourth parameter.
      * @return The log record.
      */
-    public LogRecord getLogRecord(final Level level, final int key,
-                                  final Object arg0,
-                                  final Object arg1,
-                                  final Object arg2,
-                                  final Object arg3)
+    public final LogRecord getLogRecord(final Level level, final int key,
+                                        final Object arg0,
+                                        final Object arg1,
+                                        final Object arg2,
+                                        final Object arg3)
     {
         return getLogRecord(level, key, new Object[] {arg0, arg1, arg2, arg3});
-    }
-
-    /**
-     * Localizes and formats the message string from a log record. This method performs a work
-     * similar to {@link java.util.logging.Formatter#formatMessage}, except that the work will be
-     * delegated to {@link #getString(int, Object)} if the {@linkplain LogRecord#getResourceBundle
-     * record resource bundle} is an instance of {@code IndexedResourceBundle}.
-     *
-     * @param  record The log record to format.
-     * @return The formatted message.
-     */
-    public static String format(final LogRecord record) {
-        String message = record.getMessage();
-        final ResourceBundle resources = record.getResourceBundle();
-        if (resources instanceof IndexedResourceBundle) {
-            int key = -1;
-            try {
-                key = Integer.parseInt(message);
-            } catch (NumberFormatException e) {
-                 unexpectedException(e);
-            }
-            if (key >= 0) {
-                final Object[] parameters = record.getParameters();
-                return ((IndexedResourceBundle) resources).getString(key, parameters);
-            }
-        }
-        if (resources != null) {
-            try {
-                message = resources.getString(message);
-            } catch (MissingResourceException e) {
-                unexpectedException(e);
-            }
-            final Object[] parameters = record.getParameters();
-            if (parameters != null && parameters.length != 0) {
-                final int offset = message.indexOf('{');
-                if (offset >= 0 && offset < message.length()-1) {
-                    // Uses a more restrictive check than Character.isDigit(char)
-                    final char c = message.charAt(offset);
-                    if (c>='0' && c<='9') try {
-                        return MessageFormat.format(message, parameters);
-                    } catch (IllegalArgumentException e) {
-                        unexpectedException(e);
-                    }
-                }
-            }
-        }
-        return message;
-    }
-
-    /**
-     * Invoked when an unexpected exception occurred in the {@link #format} method.
-     */
-    private static void unexpectedException(final RuntimeException exception) {
-        Logging.unexpectedException(IndexedResourceBundle.class, "format", exception);
     }
 
     /**
