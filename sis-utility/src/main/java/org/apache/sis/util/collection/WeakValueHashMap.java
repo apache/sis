@@ -204,23 +204,11 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
     private transient long lastTimeNormalCapacity;
 
     /**
-     * Creates a {@code WeakValueHashMap} for keys of the specified type.
-     *
-     * @param  <K>  The type of keys in the map.
-     * @param  <V>  The type of values in the map.
-     * @param  keyType The type of keys in the map.
-     * @return An initially empty map for keys of the given type.
-     */
-    public static <K,V> WeakValueHashMap<K,V> newInstance(final Class<K> keyType) {
-        return new WeakValueHashMap<K,V>(keyType);
-    }
-
-    /**
      * Creates a new {@code WeakValueHashMap}.
      *
      * @param keyType The type of keys in the map.
      */
-    protected WeakValueHashMap(final Class<K> keyType) {
+    public WeakValueHashMap(final Class<K> keyType) {
         this.keyType           = keyType;
         mayContainArrays       = keyType.isArray() || keyType.equals(Object.class);
         lastTimeNormalCapacity = System.nanoTime();

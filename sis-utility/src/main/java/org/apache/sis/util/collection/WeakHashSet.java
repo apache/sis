@@ -56,7 +56,7 @@ import org.apache.sis.internal.util.Objects;
  * a convenient way to use {@code WeakHashSet} as an internal pool of immutable objects:
  *
  * {@preformat java
- *     private final WeakHashSet<Foo> pool = WeakHashSet.newInstance(Foo.class);
+ *     private final WeakHashSet<Foo> pool = new WeakHashSet<Foo>(Foo.class);
  *
  *     public Foo create(String definition) {
  *         Foo created = new Foo(definition);
@@ -133,20 +133,9 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
     /**
      * Creates a {@code WeakHashSet} for elements of the specified type.
      *
-     * @param <E>  The type of elements in the set.
-     * @param type The type of elements in the set.
-     * @return An initially empty set for elements of the given type.
-     */
-    public static <E> WeakHashSet<E> newInstance(final Class<E> type) {
-        return new WeakHashSet<E>(type);
-    }
-
-    /**
-     * Creates a {@code WeakHashSet} for elements of the specified type.
-     *
      * @param type The type of the element to be included in this set.
      */
-    protected WeakHashSet(final Class<E> type) {
+    public WeakHashSet(final Class<E> type) {
         elementType            = type;
         mayContainArrays       = type.isArray() || type.equals(Object.class);
         lastTimeNormalCapacity = System.nanoTime();
