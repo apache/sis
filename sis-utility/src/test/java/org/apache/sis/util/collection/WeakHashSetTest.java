@@ -20,9 +20,10 @@ import java.util.HashSet;
 import java.util.Random;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.test.TestConfiguration;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.apache.sis.test.Assert.*;
 
 
 /**
@@ -36,17 +37,27 @@ import static org.junit.Assert.*;
  */
 public final strictfp class WeakHashSetTest extends TestCase {
     /**
+     * The size of the test sets to be created.
+     */
+    private static final int SAMPLE_SIZE = 500;
+
+    /**
+     * Number of time to retry the tests.
+     */
+    private static final int NUM_RETRY = 4;
+
+    /**
      * Tests the {@link WeakHashSet} using strong references.
      * The tested {@link WeakHashSet} should behave like a standard {@link Set} object.
      */
     @Test
     public void testStrongReferences() {
         final Random random = new Random();
-        for (int pass=0; pass<20; pass++) {
+        for (int pass=0; pass<NUM_RETRY; pass++) {
             final WeakHashSet<Integer> weakSet = WeakHashSet.newInstance(Integer.class);
             final HashSet<Integer> strongSet = new HashSet<Integer>();
-            for (int i=0; i<1000; i++) {
-                final Integer value = random.nextInt(500);
+            for (int i=0; i<SAMPLE_SIZE; i++) {
+                final Integer value = random.nextInt(SAMPLE_SIZE);
                 if (random.nextBoolean()) {
                     /*
                      * Tests addition.
@@ -71,6 +82,7 @@ public final strictfp class WeakHashSetTest extends TestCase {
                 assertEquals("contains:", strongSet.contains(value), weakSet.contains(value));
                 assertEquals("equals:", strongSet, weakSet);
             }
+            assertSetEquals(strongSet, weakSet);
         }
     }
 
@@ -84,11 +96,11 @@ public final strictfp class WeakHashSetTest extends TestCase {
     @DependsOnMethod("testStrongReferences")
     public void testWeakReferences() throws InterruptedException {
         final Random random = new Random();
-        for (int pass=0; pass<2; pass++) {
+        for (int pass=0; pass<NUM_RETRY; pass++) {
             final WeakHashSet<Integer> weakSet = WeakHashSet.newInstance(Integer.class);
             final HashSet<Integer> strongSet = new HashSet<Integer>();
-            for (int i=0; i<500; i++) {
-                final Integer value = new Integer(random.nextInt(500)); // Really need new instances
+            for (int i=0; i<SAMPLE_SIZE; i++) {
+                final Integer value = new Integer(random.nextInt(SAMPLE_SIZE)); // Really need new instances
                 if (random.nextBoolean()) {
                     /*
                      * Tests addition.
@@ -131,12 +143,30 @@ public final strictfp class WeakHashSetTest extends TestCase {
                 }
                 assertTrue("containsAll:", weakSet.containsAll(strongSet));
             }
-            // Do our best to lets GC finish its work.
-            for (int i=0; i<4; i++) {
-                Thread.sleep(50);
-                System.gc();
+            /*
+             * The test below needs the garbage collector to complete fully its job in a timely
+             * manner. A failure in those tests is not necessarily a WeakValueHashMap bug, as it
+             * could be caused by a heavy server load preventing GC to complete its work. If this
+             * happen too often, we may turn off the "allow garbage collector dependent tests" flag.
+             */
+            if (TestConfiguration.allowGarbageCollectorDependentTests()) {
+                int retry = 4;
+                do { // Do our best to lets GC finish its work.
+                    Thread.sleep(50);
+                    System.gc();
+                } while (--retry >= 0 && weakSet.size() != strongSet.size());
+                assertSetEquals(strongSet, weakSet);
+                /*
+                 * Clearing all strong references should make the set empty.
+                 */
+                strongSet.clear();
+                retry = 4;
+                do { // Do our best to lets GC finish its work.
+                    assertTrue("Expected an empty set.", --retry >= 0);
+                    Thread.sleep(50);
+                    System.gc();
+                } while (!weakSet.isEmpty());
             }
-            assertEquals("equals:", strongSet, weakSet);
         }
     }
 

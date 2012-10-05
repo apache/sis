@@ -16,8 +16,12 @@
  */
 package org.apache.sis.test;
 
+import java.util.Set;
+import java.util.Map;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.LinkedHashSet;
+import java.util.LinkedHashMap;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -31,6 +35,9 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.SAXException;
 
 import org.apache.sis.util.CharSequences;
+
+// Related to JDK7
+import org.apache.sis.internal.util.Objects;
 
 
 /**
@@ -73,6 +80,68 @@ public strictfp class Assert extends org.opengis.test.Assert {
      */
     public static void assertMultilinesEquals(final String message, final CharSequence expected, final CharSequence actual) {
         assertArrayEquals(message, CharSequences.split(expected, '\n'), CharSequences.split(actual, '\n'));
+    }
+
+    /**
+     * Asserts that the given set contains the same elements.
+     * In case of failure, this method lists the missing or unexpected elements.
+     *
+     * @param expected The expected set, or {@code null}.
+     * @param actual   The actual set, or {@code null}.
+     */
+    public static void assertSetEquals(final Set<?> expected, final Set<?> actual) {
+        if (expected != null && actual != null && !expected.isEmpty()) {
+            final Set<Object> r = new LinkedHashSet<Object>(expected);
+            assertTrue("The two sets are disjoint.",                 r.removeAll(actual));
+            assertTrue("The set is missing elements: " + r,          r.isEmpty());
+            assertTrue("The set unexpectedly became empty.",         r.addAll(actual));
+            assertTrue("The two sets are disjoint.",                 r.removeAll(expected));
+            assertTrue("The set contains unexpected elements: " + r, r.isEmpty());
+        }
+        assertEquals("Set.equals(Object) failed:", expected, actual);
+    }
+
+    /**
+     * Asserts that the given map contains the same entries.
+     * In case of failure, this method lists the missing or unexpected entries.
+     *
+     * @param expected The expected map, or {@code null}.
+     * @param actual   The actual map, or {@code null}.
+     */
+    public static void assertMapEquals(final Map<?,?> expected, final Map<?,?> actual) {
+        if (expected != null && actual != null && !expected.isEmpty()) {
+            final Map<Object,Object> r = new LinkedHashMap<Object,Object>(expected);
+            for (final Map.Entry<?,?> entry : actual.entrySet()) {
+                final Object key = entry.getKey();
+                if (!r.containsKey(key)) {
+                    fail("Unexpected entry for key " + key);
+                }
+                final Object ve = r.remove(key);
+                final Object va = entry.getValue();
+                if (!Objects.equals(ve, va)) {
+                    fail("Wrong value for key " + key + ": expected " + ve + " but got " + va);
+                }
+            }
+            if (!r.isEmpty()) {
+                fail("The map is missing entries: " + r);
+            }
+            r.putAll(actual);
+            for (final Map.Entry<?,?> entry : expected.entrySet()) {
+                final Object key = entry.getKey();
+                if (!r.containsKey(key)) {
+                    fail("Missing an entry for key " + key);
+                }
+                final Object ve = entry.getValue();
+                final Object va = r.remove(key);
+                if (!Objects.equals(ve, va)) {
+                    fail("Wrong value for key " + key + ": expected " + ve + " but got " + va);
+                }
+            }
+            if (!r.isEmpty()) {
+                fail("The map contains unexpected elements:" + r);
+            }
+        }
+        assertEquals("Map.equals(Object) failed:", expected, actual);
     }
 
     /**

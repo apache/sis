@@ -123,6 +123,14 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
     private final boolean mayContainArrays;
 
     /**
+     * The last time when {@link #table} was not in need for rehash. When the garbage collector
+     * collected a lot of elements, we will wait a few seconds before rehashing {@link #table}
+     * in case lot of news elements are going to be added. Without this field, we noticed many
+     * "reduce", "expand", "reduce", "expand", <i>etc.</i> cycles.
+     */
+    private transient long lastTimeNormalCapacity;
+
+    /**
      * Creates a {@code WeakHashSet} for elements of the specified type.
      *
      * @param <E>  The type of elements in the set.
@@ -139,8 +147,9 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
      * @param type The type of the element to be included in this set.
      */
     protected WeakHashSet(final Class<E> type) {
-        elementType      = type;
-        mayContainArrays = type.isArray() || type.equals(Object.class);
+        elementType            = type;
+        mayContainArrays       = type.isArray() || type.equals(Object.class);
+        lastTimeNormalCapacity = System.nanoTime();
         /*
          * Workaround for the "generic array creation" compiler error.
          * Otherwise we would use the commented-out line instead.
@@ -171,8 +180,12 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
             count--;
             assert isValid();
             if (count < lowerCapacityThreshold(capacity)) {
-                table = (Entry[]) WeakEntry.rehash(table, count, "remove");
-                assert isValid();
+                final long currentTime = System.nanoTime();
+                if (currentTime - lastTimeNormalCapacity > REHASH_DELAY) {
+                    table = (Entry[]) WeakEntry.rehash(table, count, "remove");
+                    lastTimeNormalCapacity = currentTime;
+                    assert isValid();
+                }
             }
         }
     }
@@ -362,12 +375,14 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
                 /*
                  * Check if the table needs to be rehashed, and add {@code obj} to the table.
                  */
-                if (count >= upperCapacityThreshold(table.length)) {
-                    this.table = table = (Entry[]) rehash(table, count, "add");
-                    index = hash % table.length;
+                if (++count >= lowerCapacityThreshold(table.length)) {
+                    if (count > upperCapacityThreshold(table.length)) {
+                        this.table = table = (Entry[]) rehash(table, count, "add");
+                        index = hash % table.length;
+                    }
+                    lastTimeNormalCapacity = System.nanoTime();
                 }
                 table[index] = new Entry(elementType.cast(obj), table[index], hash);
-                count++;
             }
         }
         assert isValid();
