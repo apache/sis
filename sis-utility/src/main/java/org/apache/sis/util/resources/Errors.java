@@ -57,6 +57,21 @@ public final class Errors extends IndexedResourceBundle {
         public static final int IllegalArgumentClass_3 = 2;
 
         /**
+         * Argument ‘{0}’ can not take the “{1}” value.
+         */
+        public static final int IllegalArgumentValue_2 = 14;
+
+        /**
+         * Illegal value for argument ‘{0}’.
+         */
+        public static final int IllegalArgument_1 = 15;
+
+        /**
+         * Illegal bits pattern: {0}.
+         */
+        public static final int IllegalBitsPattern_1 = 16;
+
+        /**
          * Class ‘{0}’ is illegal. It must be ‘{1}’ or a derived class.
          */
         public static final int IllegalClass_2 = 3;

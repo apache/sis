@@ -16,16 +16,17 @@
  */
 
 /**
- * A set of helper classes for the SIS implementation.
+ * A set of mathematical objects and algebraic utilities.
  *
- * <STRONG>Do not use!</STRONG>
- *
- * This package is for internal use by SIS only. Classes in this package
- * may change in incompatible ways in any future version without notice.
+ * {@section References:}
+ * <ul>
+ *   <li><a href="http://mathworld.wolfram.com/">Eric Weisstein's World of Mathematic</a></li>
+ *   <li><a href="http://www.worldserver.com/turk/opensource/">Ken Turkiwski's Open Source Repository</a></li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.0)
  * @version 0.3
  * @module
  */
-package org.apache.sis.internal.util;
+package org.apache.sis.math;
