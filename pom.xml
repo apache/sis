@@ -471,7 +471,7 @@ Apache SIS is a toolkit for describing location information, including points,
             </group>
             <group>
               <title>Utilities</title>
-              <packages>org.apache.sis.io*:org.apache.sis.util*</packages>
+              <packages>org.apache.sis.math*:org.apache.sis.util*:org.apache.sis.io*</packages>
             </group>
           </groups>
 

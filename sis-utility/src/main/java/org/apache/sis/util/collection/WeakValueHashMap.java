@@ -149,7 +149,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
         public boolean equals(final Object other) {
             if (other instanceof Map.Entry<?,?>) {
                 final Map.Entry<?,?> that = (Map.Entry<?,?>) other;
-                return equal(key, that.getKey()) && Objects.equals(get(), that.getValue());
+                return keyEquals(key, that.getKey()) && Objects.equals(get(), that.getValue());
             }
             return false;
         }
@@ -160,7 +160,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
          */
         @Override
         public int hashCode() {
-            int code = hash(key);
+            int code = keyHashCode(key);
             final V val = get();
             if (val != null) {
                 code ^= val.hashCode();
@@ -279,14 +279,14 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
     /**
      * Returns the hash code value for the given key.
      */
-    final int hash(final Object key) {
+    final int keyHashCode(final Object key) {
         return mayContainArrays ? Utilities.deepHashCode(key) : key.hashCode();
     }
 
     /**
      * Returns {@code true} if the two given keys are equal.
      */
-    final boolean equal(final Object k1, final Object k2) {
+    final boolean keyEquals(final Object k1, final Object k2) {
         return mayContainArrays ? Objects.deepEquals(k1, k2) : k1.equals(k2);
     }
 
@@ -328,9 +328,9 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
         assert isValid();
         if (key != null) {
             final Entry[] table = this.table;
-            final int index = (hash(key) & HASH_MASK) % table.length;
+            final int index = (keyHashCode(key) & HASH_MASK) % table.length;
             for (Entry e = table[index]; e != null; e = (Entry) e.next) {
-                if (equal(key, e.key)) {
+                if (keyEquals(key, e.key)) {
                     return e.get();
                 }
             }
@@ -349,10 +349,10 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
          */
         V oldValue = null;
         Entry[] table = this.table;
-        final int hash = hash(key) & HASH_MASK;
+        final int hash = keyHashCode(key) & HASH_MASK;
         int index = hash % table.length;
         for (Entry e = table[index]; e != null; e = (Entry) e.next) {
-            if (equal(key, e.key)) {
+            if (keyEquals(key, e.key)) {
                 oldValue = e.get();
                 e.dispose();
                 table = this.table; // May have changed.
