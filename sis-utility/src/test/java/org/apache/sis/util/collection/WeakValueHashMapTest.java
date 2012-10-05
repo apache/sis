@@ -19,10 +19,11 @@ package org.apache.sis.util.collection;
 import java.util.HashMap;
 import java.util.Random;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.test.TestConfiguration;
 import org.apache.sis.test.DependsOnMethod;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.apache.sis.test.Assert.*;
 
 
 /**
@@ -41,13 +42,18 @@ public final strictfp class WeakValueHashMapTest extends TestCase {
     private static final int SAMPLE_SIZE = 500;
 
     /**
+     * Number of time to retry the tests.
+     */
+    private static final int NUM_RETRY = 2;
+
+    /**
      * Tests the {@link WeakValueHashMap} using strong references.
      * The tested {@link WeakValueHashMap} should behave like a standard {@link Map} object.
      */
     @Test
     public void testStrongReferences() {
         final Random random = new Random();
-        for (int pass=0; pass<4; pass++) {
+        for (int pass=0; pass<NUM_RETRY; pass++) {
             final WeakValueHashMap<Integer,Integer> weakMap = WeakValueHashMap.newInstance(Integer.class);
             final HashMap<Integer,Integer> strongMap = new HashMap<Integer,Integer>();
             for (int i=0; i<SAMPLE_SIZE; i++) {
@@ -63,8 +69,7 @@ public final strictfp class WeakValueHashMapTest extends TestCase {
                     // Test remove
                     assertSame("remove:", strongMap.remove(key), weakMap.remove(key));
                 }
-                assertEquals("size:", strongMap.size(), weakMap.size());
-                assertEquals("equals:", strongMap, weakMap);
+                assertMapEquals(strongMap, weakMap);
             }
         }
     }
@@ -80,7 +85,7 @@ public final strictfp class WeakValueHashMapTest extends TestCase {
     @DependsOnMethod("testStrongReferences")
     public void testWeakReferences() throws InterruptedException {
         final Random random = new Random();
-        for (int pass=0; pass<2; pass++) {
+        for (int pass=0; pass<NUM_RETRY; pass++) {
             final WeakValueHashMap<Integer,Integer> weakMap = WeakValueHashMap.newInstance(Integer.class);
             final HashMap<Integer,Integer> strongMap = new HashMap<Integer,Integer>();
             for (int i=0; i<SAMPLE_SIZE; i++) {
@@ -121,12 +126,30 @@ public final strictfp class WeakValueHashMapTest extends TestCase {
                 }
                 assertTrue("containsAll:", weakMap.entrySet().containsAll(strongMap.entrySet()));
             }
-            // Do our best to lets GC finish its work.
-            for (int i=0; i<4; i++) {
-                Thread.sleep(50);
-                System.gc();
+            /*
+             * The test below needs the garbage collector to complete fully its job in a timely
+             * manner. A failure in those tests is not necessarily a WeakValueHashMap bug, as it
+             * could be caused by a heavy server load preventing GC to complete its work. If this
+             * happen too often, we may turn off the "allow garbage collector dependent tests" flag.
+             */
+            if (TestConfiguration.allowGarbageCollectorDependentTests()) {
+                int retry = 4;
+                do { // Do our best to lets GC finish its work.
+                    Thread.sleep(50);
+                    System.gc();
+                } while (--retry >= 0 && weakMap.size() != strongMap.size());
+                assertMapEquals(strongMap, weakMap);
+                /*
+                 * Clearing all strong references should make the map empty.
+                 */
+                strongMap.clear();
+                retry = 4;
+                do { // Do our best to lets GC finish its work.
+                    assertTrue("Expected an empty map.", --retry >= 0);
+                    Thread.sleep(50);
+                    System.gc();
+                } while (!weakMap.isEmpty());
             }
-            assertEquals("equals:", strongMap, weakMap);
         }
     }
 

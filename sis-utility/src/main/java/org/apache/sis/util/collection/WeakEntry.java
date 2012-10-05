@@ -23,6 +23,7 @@ import java.lang.ref.WeakReference;
 import java.lang.reflect.Array;
 
 import org.apache.sis.util.Disposable;
+import org.apache.sis.util.resources.Messages;
 import org.apache.sis.internal.util.ReferenceQueueConsumer;
 
 
@@ -50,9 +51,12 @@ abstract class WeakEntry<E> extends WeakReference<E> implements Disposable {
     static final int HASH_MASK = Integer.MAX_VALUE;
 
     /**
-     * Number of millisecond to wait before to rehash the table for reducing its size.
+     * Number of nanoseconds to wait before to rehash the table for reducing its size.
+     * When the garbage collector collects a lot of elements, we will at least this amount of time
+     * before rehashing the tables, in case lot of news elements are going to be added. Without this
+     * field, we noticed many "reduce", "expand", "reduce", "expand", <i>etc.</i> cycles.
      */
-    static final long HOLD_TIME = 60 * 1000L;
+    static final long REHASH_DELAY = 4000000000L;
 
     /**
      * The next entry, or {@code null} if there is none.
@@ -147,8 +151,8 @@ abstract class WeakEntry<E> extends WeakReference<E> implements Disposable {
         }
         final Logger logger = Collections.LOGGER;
         if (logger.isLoggable(Level.FINEST)) {
-            final LogRecord record = new LogRecord(Level.FINEST,
-                    "Rehash from " + oldTable.length + " to " + table.length);
+            final LogRecord record = Messages.getResources(null).getLogRecord(Level.FINEST,
+                    Messages.Keys.ChangedContainerCapacity_2, oldTable.length, table.length);
             record.setSourceMethodName(callerMethod);
             record.setSourceClassName(entryType.getEnclosingClass().getName());
             record.setLoggerName(logger.getName());
@@ -176,6 +180,6 @@ abstract class WeakEntry<E> extends WeakReference<E> implements Disposable {
      * @return Maximal number of elements for not rehashing.
      */
     static int upperCapacityThreshold(final int capacity) {
-        return capacity + (capacity >>> 2);
+        return capacity - (capacity >>> 2);
     }
 }

@@ -31,21 +31,6 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 public abstract strictfp class TestSuite {
     /**
-     * The {@value} system property for enabling verbose outputs.
-     * If this {@linkplain System#getProperties() system property} is set to {@code true},
-     * then the {@link TestCase#out} field will be set to a non-null value.
-     */
-    public static final String VERBOSE_OUTPUT_KEY = "org.apache.sis.test.verbose";
-
-    /**
-     * The {@value} system property for setting the output encoding.
-     * This property is used only if the {@link #VERBOSE_OUTPUT_KEY} property
-     * is set to "{@code true}". If this property is not set, then the system
-     * encoding will be used.
-     */
-    public static final String OUTPUT_ENCODING_KEY = "org.apache.sis.test.encoding";
-
-    /**
      * Creates a new test suite.
      */
     protected TestSuite() {

@@ -196,6 +196,14 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
     private transient Set<Map.Entry<K,V>> entrySet;
 
     /**
+     * The last time when {@link #table} was not in need for rehash. When the garbage collector
+     * collected a lot of elements, we will wait a few seconds before rehashing {@link #table}
+     * in case lot of news entries are going to be added. Without this field, we noticed many
+     * "reduce", "expand", "reduce", "expand", <i>etc.</i> cycles.
+     */
+    private transient long lastTimeNormalCapacity;
+
+    /**
      * Creates a {@code WeakValueHashMap} for keys of the specified type.
      *
      * @param  <K>  The type of keys in the map.
@@ -213,8 +221,9 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
      * @param keyType The type of keys in the map.
      */
     protected WeakValueHashMap(final Class<K> keyType) {
-        this.keyType     = keyType;
-        mayContainArrays = keyType.isArray() || keyType.equals(Object.class);
+        this.keyType           = keyType;
+        mayContainArrays       = keyType.isArray() || keyType.equals(Object.class);
+        lastTimeNormalCapacity = System.nanoTime();
         /*
          * Workaround for the "generic array creation" compiler error.
          * Otherwise we would use the commented-out line instead.
@@ -238,8 +247,12 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
             count--;
             assert isValid();
             if (count < lowerCapacityThreshold(capacity)) {
-                table = (Entry[]) WeakEntry.rehash(table, count, "remove");
-                assert isValid();
+                final long currentTime = System.nanoTime();
+                if (currentTime - lastTimeNormalCapacity > REHASH_DELAY) {
+                    table = (Entry[]) WeakEntry.rehash(table, count, "remove");
+                    lastTimeNormalCapacity = currentTime;
+                    assert isValid();
+                }
             }
         }
     }
@@ -359,12 +372,14 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
             }
         }
         if (value != null) {
-            if (count >= upperCapacityThreshold(table.length)) {
-                this.table = table = (Entry[]) rehash(table, count, "put");
-                index = hash % table.length;
+            if (++count >= lowerCapacityThreshold(table.length)) {
+                if (count > upperCapacityThreshold(table.length)) {
+                    this.table = table = (Entry[]) rehash(table, count, "put");
+                    index = hash % table.length;
+                }
+                lastTimeNormalCapacity = System.nanoTime();
             }
             table[index] = new Entry(keyType.cast(key), value, table[index], hash);
-            count++;
         }
         assert isValid();
         return oldValue;

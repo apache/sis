@@ -37,8 +37,8 @@ import org.apache.sis.util.logging.Logging;
 import org.junit.After;
 import org.junit.runner.RunWith;
 
-import static org.apache.sis.test.TestSuite.VERBOSE_OUTPUT_KEY;
-import static org.apache.sis.test.TestSuite.OUTPUT_ENCODING_KEY;
+import static org.apache.sis.test.TestConfiguration.VERBOSE_OUTPUT_KEY;
+import static org.apache.sis.test.TestConfiguration.OUTPUT_ENCODING_KEY;
 
 
 /**
@@ -74,9 +74,9 @@ import static org.apache.sis.test.TestSuite.OUTPUT_ENCODING_KEY;
 public abstract strictfp class TestCase {
     /**
      * If non-null, the output writer where to print debugging information.
-     * This field is non-null if the {@value org.apache.sis.test.TestSuite#VERBOSE_OUTPUT_KEY}
-     * system property is set to {@code true}. The encoding will by the system default, unless
-     * the {@value org.apache.sis.test.TestSuite#OUTPUT_ENCODING_KEY} system property has been
+     * This field is non-null if the {@value org.apache.sis.test.TestConfiguration#VERBOSE_OUTPUT_KEY}
+     * system property is set to {@code true}. This writer will use the system default encoding, unless
+     * the {@value org.apache.sis.test.TestConfiguration#OUTPUT_ENCODING_KEY} system property has been
      * set to a different value.
      *
      * @see org.apache.sis.test
