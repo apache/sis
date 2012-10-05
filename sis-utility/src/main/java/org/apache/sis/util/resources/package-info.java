@@ -37,7 +37,10 @@
  * and localizes properly objects of unspecified type (by contrast, the <code>Formatter</code>
  * <code>"%s"</code> type always invoke <code>toString()</code>). The later advantage is
  * important for messages in wich the same argument could receive <code>Number</code> or
- * <code>Date</code> instances as well as <code>String</code>.}
+ * <code>Date</code> instances as well as <code>String</code>.
+ * <br><br>
+ * Furthermore, the <code>java.util.logging</code> framework is designed for use with
+ * <code>MessageFormat</code> (see the <code>Formatter.formatMessage(LogRecord)</code> method).}
  *
  * <p>Apache SIS developers can add resources by editing the {@code *.properties} file
  * in the source code directory, then run the localized resources compiler provided in the
