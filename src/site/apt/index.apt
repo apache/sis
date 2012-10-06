@@ -15,20 +15,27 @@ The Apache SIS™ library
 
   SIS requires a Java 6 Runtime Environment.
   The latest release is <<<0.2-incubating>>>.
-  The current development branch is <<<0.3-geoapi3.0-SNAPSHOT>>>.
+  The version under development is <<<0.3-geoapi3.0-SNAPSHOT>>>.
 
 
 * Documentation
+
+** User documentation
 
     * {{{./download.html}Downloading binaries}}
 
     * {{{http://builds.apache.org/job/sis-trunk/site/apidocs/index.html}Aggregated Javadoc}}
 
+    * Developer Guide (English - translation to be provided later) ({{{./book/fr.xhtml}Français}})
+
+
+** SIS developer documentation
+
     * {{{./develop.html}Developing Apache SIS}}
 
-    * {{{./code-patterns.html}Recommended code patterns}}
+    * {{{./branches.html}Branches (JDK6, JDK7, GeoAPI)}}
 
-    * Developer Guide (English - translation to be provided later) ({{{./book/fr.xhtml}Français}})
+    * {{{./code-patterns.html}Recommended code patterns}}
 
 
   Apache SIS, Apache, the Apache feather logo, and the Apache SIS project logo are trademarks of
