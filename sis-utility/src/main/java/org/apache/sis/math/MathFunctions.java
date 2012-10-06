@@ -38,15 +38,22 @@ import static org.apache.sis.util.Arrays.EMPTY_INT;
  * However the methods in this class put an emphasis on:
  * <p>
  * <ul>
- *   <li>Rounding errors: {@link #magnitude(double[])}, {@link #pow10(double)}.</li>
- *   <li>Distinguishing positive zero from negative zero: {@link #isPositive(double)},
- *       {@link #isNegative(double)}, {@link #isSameSign(double, double)},
- *       {@link #xorSign(double, double)}.</li>
- *   <li>Distinguishing the different kinds of NaN numbers: {@link #toNanFloat(int)},
- *       {@link #toNanOrdinal(float)}.</li>
+ *   <li>Rounding errors:
+ *       {@link #magnitude(double[]) magnitude},
+ *       {@link #pow10(double) pow10}.</li>
+ *   <li>Distinguishing positive zero from negative zero:
+ *       {@link #isPositive(double) isPositive},
+ *       {@link #isNegative(double) isNegative},
+ *       {@link #isSameSign(double, double) isSameSign},
+ *       {@link #xorSign(double, double) xorSign}.</li>
+ *   <li>Distinguishing the different kinds of NaN numbers:
+ *       {@link #toNanFloat(int) toNanFloat},
+ *       {@link #toNanOrdinal(float) toNanOrdinal}.</li>
  * </ul>
  * <p>
- * Additional functions not found in {@code Math} are: {@link #atanh(double)}.
+ * Some additional functions not found in {@code Math} are:
+ * {@link #atanh(double) atanh},
+ * {@link #nextPrimeNumber(int) nextPrimeNumber}.
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @since   0.3 (derived from geotk-1.0)
@@ -217,13 +224,14 @@ public final class MathFunctions extends Static {
 
     /**
      * Computes 10 raised to the power of <var>x</var>. This method tries to be slightly more
-     * accurate than <code>{@linkplain Math#pow(double, double) Math.pow}(10,x)</code>,
+     * accurate than <code>{@linkplain Math#pow(double, double) Math.pow}(10, x)</code>,
      * sometime at the cost of performance.
-     * <p>
-     * The {@code Math.pow(10,x)} method doesn't always return the closest IEEE floating point
-     * representation. More accurate calculations are slower and usually not necessary, but the
-     * base 10 is a special case since it is used for scaling axes or formatting human-readable
-     * output, in which case the precision may matter.
+     *
+     * {@note This method has been defined because the standard <code>Math.pow(10, x)</code>
+     * method does not always return the closest IEEE floating point representation. Slight
+     * departures (1 or 2 ULP) are often allowed in math functions for performance reasons.
+     * The most accurate calculations are usually not necessary, but the base 10 is a special
+     * case since it is used for scaling axes or formatting human-readable output.}
      *
      * @param x The exponent.
      * @return 10 raised to the given exponent.
@@ -258,7 +266,7 @@ public final class MathFunctions extends Static {
      * The range of input values shall be in the [-1 … 1].
      * <p>
      * Special cases:
-     * </ul>
+     * <ul>
      *   <li>For <var>x</var> = NaN, this method returns a {@linkplain Double#isNaN(double) NaN} value.</li>
      *   <li>For <var>x</var> = -1, this method returns {@linkplain Double#NEGATIVE_INFINITY negative infinity}.</li>
      *   <li>For <var>x</var> = +1, this method returns {@linkplain Double#POSITIVE_INFINITY positive infinity}.</li>
@@ -458,7 +466,7 @@ public final class MathFunctions extends Static {
     /**
      * Returns a {@linkplain Float#isNaN(float) NaN} number for the specified ordinal value.
      * Valid NaN numbers in Java can have bit fields in the ranges listed below.
-     * This method allocate one of valid NaN bit fields to each ordinal value.
+     * This method allocates one of valid NaN bit fields to each ordinal value.
      * <p>
      * <ul>
      *   <li>[{@code 0x7F800001} … {@code 0x7FFFFFFF}], with
@@ -469,7 +477,6 @@ public final class MathFunctions extends Static {
      * The relationship between bit fields and ordinal values is implementation dependent and may
      * change in any future version of the SIS library. The current implementation restricts the
      * range of allowed ordinal values to a smaller one than the range of all possible NaN values.
-     * However we
      *
      * @param  ordinal The NaN ordinal value, from {@code -0x200000} to {@code 0x1FFFFF} inclusive.
      * @return One of the legal {@linkplain Float#isNaN(float) NaN} values as a float.
