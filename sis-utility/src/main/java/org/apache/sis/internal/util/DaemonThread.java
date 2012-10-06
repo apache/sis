@@ -150,7 +150,7 @@ abstract class DaemonThread extends Thread {
         for (DaemonThread thread=first; thread!=null; thread=thread.previous) {
             if (!thread.isAlive()) {
                 if (list == null) {
-                    list = new ArrayList<String>();
+                    list = new ArrayList<>();
                 }
                 list.add(thread.getName());
             }

@@ -34,7 +34,7 @@ import org.apache.sis.util.resources.Errors;
 import static org.apache.sis.util.collection.Collections.isNullOrEmpty;
 
 // Related to JDK7
-import org.apache.sis.internal.util.Objects;
+import java.util.Objects;
 
 
 /**
@@ -107,7 +107,7 @@ public class DefaultInternationalString extends AbstractInternationalString impl
             if (!it.hasNext()) {
                 localeMap = Collections.singletonMap(entry.getKey(), entry.getValue());
             } else {
-                localeMap = new LinkedHashMap<Locale,String>(strings);
+                localeMap = new LinkedHashMap<>(strings);
                 // If HashMap is replaced by an other type, please revisit 'getLocales()'.
             }
         }
@@ -132,7 +132,7 @@ public class DefaultInternationalString extends AbstractInternationalString impl
                 }
                 case 1: {
                     // If HashMap is replaced by an other type, please revisit 'getLocales()'.
-                    localeMap = new LinkedHashMap<Locale,String>(localeMap);
+                    localeMap = new LinkedHashMap<>(localeMap);
                     localeSet = null;
                     break;
                 }

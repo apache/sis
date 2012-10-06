@@ -37,7 +37,7 @@ import org.xml.sax.SAXException;
 import org.apache.sis.util.CharSequences;
 
 // Related to JDK7
-import org.apache.sis.internal.util.Objects;
+import java.util.Objects;
 
 
 /**
@@ -91,7 +91,7 @@ public strictfp class Assert extends org.opengis.test.Assert {
      */
     public static void assertSetEquals(final Set<?> expected, final Set<?> actual) {
         if (expected != null && actual != null && !expected.isEmpty()) {
-            final Set<Object> r = new LinkedHashSet<Object>(expected);
+            final Set<Object> r = new LinkedHashSet<>(expected);
             assertTrue("The two sets are disjoint.",                 r.removeAll(actual));
             assertTrue("The set is missing elements: " + r,          r.isEmpty());
             assertTrue("The set unexpectedly became empty.",         r.addAll(actual));
@@ -110,7 +110,7 @@ public strictfp class Assert extends org.opengis.test.Assert {
      */
     public static void assertMapEquals(final Map<?,?> expected, final Map<?,?> actual) {
         if (expected != null && actual != null && !expected.isEmpty()) {
-            final Map<Object,Object> r = new LinkedHashMap<Object,Object>(expected);
+            final Map<Object,Object> r = new LinkedHashMap<>(expected);
             for (final Map.Entry<?,?> entry : actual.entrySet()) {
                 final Object key = entry.getKey();
                 if (!r.containsKey(key)) {
@@ -233,15 +233,11 @@ public strictfp class Assert extends org.opengis.test.Assert {
         final XMLComparator comparator;
         try {
             comparator = new XMLComparator(expected, actual);
-        } catch (IOException e) {
+        } catch (IOException | ParserConfigurationException | SAXException e) {
             // We don't throw directly those exceptions since failing to parse the XML file can
             // be considered as part of test failures and the JUnit exception for such failures
             // is AssertionError. Having no checked exception in "assert" methods allow us to
             // declare the checked exceptions only for the library code being tested.
-            throw new AssertionError(e);
-        } catch (ParserConfigurationException e) {
-            throw new AssertionError(e);
-        } catch (SAXException e) {
             throw new AssertionError(e);
         }
         comparator.tolerance = tolerance;
@@ -357,23 +353,17 @@ public strictfp class Assert extends org.opengis.test.Assert {
         final Object deserialized;
         try {
             final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-            final ObjectOutputStream out = new ObjectOutputStream(buffer);
-            try {
+            try (ObjectOutputStream out = new ObjectOutputStream(buffer)) {
                 out.writeObject(object);
-            } finally {
-                out.close();
             }
             // Now reads the object we just serialized.
             final byte[] data = buffer.toByteArray();
-            final ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(data));
-            try {
+            try (ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(data))) {
                 try {
                     deserialized = in.readObject();
                 } catch (ClassNotFoundException e) {
                     throw new AssertionError(e);
                 }
-            } finally {
-                in.close();
             }
         } catch (IOException e) {
             throw new AssertionError(e);

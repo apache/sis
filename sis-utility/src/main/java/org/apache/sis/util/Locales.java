@@ -57,7 +57,7 @@ public final class Locales extends Static {
     private static final Map<Locale,Locale> POOL;
     static {
         final Locale[] locales = Locale.getAvailableLocales();
-        POOL = new HashMap<Locale,Locale>(hashMapCapacity(locales.length));
+        POOL = new HashMap<>(hashMapCapacity(locales.length));
         for (final Locale lc : locales) {
             POOL.put(lc, lc);
         }
@@ -185,7 +185,7 @@ public final class Locales extends Static {
      * @return The languages, without country or variant information.
      */
     public static Locale[] getLanguages(final Locale... locales) {
-        final Set<String> codes = new LinkedHashSet<String>(hashMapCapacity(locales.length));
+        final Set<String> codes = new LinkedHashSet<>(hashMapCapacity(locales.length));
         for (final Locale locale : locales) {
             codes.add(locale.getLanguage());
         }

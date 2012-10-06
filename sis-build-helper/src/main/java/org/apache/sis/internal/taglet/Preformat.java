@@ -160,7 +160,7 @@ all:    while (tk.hasMoreTokens()) {
      * Lists of Java keywords.
      */
     private static final Set<String> KEYWORDS =
-            Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(
+            Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
         "abstract", "continue", "for",        "new",        "switch",
         "assert",   "default",  "goto",       "package",    "synchronized",
         "boolean",  "do",       "if",         "private",    "this",

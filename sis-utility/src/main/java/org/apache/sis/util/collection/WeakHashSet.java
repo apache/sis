@@ -32,7 +32,7 @@ import static org.apache.sis.util.Arrays.resize;
 import static org.apache.sis.util.collection.WeakEntry.*;
 
 // Related to JDK7
-import org.apache.sis.internal.util.Objects;
+import java.util.Objects;
 
 
 /**
