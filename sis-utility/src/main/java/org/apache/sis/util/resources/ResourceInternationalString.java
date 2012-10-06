@@ -20,10 +20,10 @@ import java.io.Serializable;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import net.jcip.annotations.Immutable;
+import org.apache.sis.util.Utilities;
 import org.apache.sis.util.type.AbstractInternationalString;
 
 // Related to JDK7
-import org.apache.sis.util.Utilities;
 import java.util.Objects;
 
 
