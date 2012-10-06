@@ -5,6 +5,11 @@
 
 Opening Apache SIS in an IDE
 
+  Different SIS branches are available depending on the target platforms (JDK6 versus JDK7,
+  or GeoAPI versions). The alternatives are listed in the {{{./branches.html}branches page}}.
+  This section documents how to checkout the trunk for development, but the same instructions
+  should work for any branch.
+
   While the primarily SIS build system is Maven, the project provides some IDE configuration files
   for developers convenience. Before opening the project in an IDE, the source code needs to be
   downloaded from the {{{./source-repository.html}source repository}} and the project built at
