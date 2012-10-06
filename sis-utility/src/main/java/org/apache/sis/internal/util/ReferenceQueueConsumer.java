@@ -61,7 +61,7 @@ public final class ReferenceQueueConsumer<T> extends DaemonThread {
     public static final ReferenceQueueConsumer<Object> DEFAULT;
     static {
         synchronized (Threads.class) {
-            Threads.lastCreatedDaemon = DEFAULT = new ReferenceQueueConsumer<Object>(Threads.lastCreatedDaemon);
+            Threads.lastCreatedDaemon = DEFAULT = new ReferenceQueueConsumer<>(Threads.lastCreatedDaemon);
         }
         // Call to Thread.start() must be outside the constructor
         // (Reference: Goetz et al.: "Java Concurrency in Practice").
@@ -73,7 +73,7 @@ public final class ReferenceQueueConsumer<T> extends DaemonThread {
      * {@link Reference} constructors as documented in the class javadoc. Those {@code Reference}
      * sub-classes <strong>must</strong> implement the {@link Disposable} interface.
      */
-    public final ReferenceQueue<T> queue = new ReferenceQueue<T>();
+    public final ReferenceQueue<T> queue = new ReferenceQueue<>();
 
     /**
      * Constructs a new thread as a daemon thread. This thread will be sleeping most of the time.

@@ -21,7 +21,7 @@ import java.lang.reflect.Array;
 import static java.util.Arrays.copyOf;
 
 // Related to JDK7
-import org.apache.sis.internal.util.Objects;
+import java.util.Objects;
 
 
 /**
@@ -1801,6 +1801,7 @@ public final class Arrays extends Static {
      * @see #append(Object[], Object)
      * @see #unionOfSorted(int[], int[])
      */
+    @SafeVarargs
     public static <T> T[] concatenate(final T[]... arrays) {
         T[] result = null;
         if (arrays != null) {

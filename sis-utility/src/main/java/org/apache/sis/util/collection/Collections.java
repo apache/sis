@@ -180,6 +180,7 @@ public final class Collections extends Static {
      *
      * @see java.util.Collections#unmodifiableSet(Set)
      */
+    @SafeVarargs
     public static <E> Set<E> immutableSet(final E... array) {
         if (array == null) {
             return null;
@@ -187,7 +188,7 @@ public final class Collections extends Static {
         switch (array.length) {
             case 0:  return emptySet();
             case 1:  return singleton(array[0]);
-            default: return unmodifiableSet(new LinkedHashSet<E>(Arrays.asList(array)));
+            default: return unmodifiableSet(new LinkedHashSet<>(Arrays.asList(array)));
         }
     }
 
@@ -298,23 +299,23 @@ public final class Collections extends Static {
                 if (type == TreeSet.class) {
                     return (Collection<E>) ((TreeSet<E>) collection).clone();
                 }
-                return new TreeSet<E>(collection);
+                return new TreeSet<>(collection);
             }
             if (type == HashSet.class || type == LinkedHashSet.class) {
                 return (Collection<E>) ((HashSet<E>) collection).clone();
             }
-            return new LinkedHashSet<E>(collection);
+            return new LinkedHashSet<>(collection);
         }
         if (collection instanceof Queue<?>) {
             if (type == LinkedList.class) {
                 return (Collection<E>) ((LinkedList<E>) collection).clone();
             }
-            return new LinkedList<E>(collection);
+            return new LinkedList<>(collection);
         }
         if (type == ArrayList.class) {
             return (Collection<E>) ((ArrayList<E>) collection).clone();
         }
-        return new ArrayList<E>(collection);
+        return new ArrayList<>(collection);
     }
 
     /**
@@ -348,12 +349,12 @@ public final class Collections extends Static {
             if (type == TreeMap.class) {
                 return (Map<K,V>) ((TreeMap<K,V>) map).clone();
             }
-            return new TreeMap<K,V>(map);
+            return new TreeMap<>(map);
         }
         if (type == HashMap.class || type == LinkedHashMap.class) {
             return (Map<K,V>) ((HashMap<K,V>) map).clone();
         }
-        return new LinkedHashMap<K,V>(map);
+        return new LinkedHashMap<>(map);
     }
 
     /**
@@ -391,7 +392,7 @@ public final class Collections extends Static {
             return Arrays.asList((Object[]) value);
         }
         if (value instanceof Iterable<?>) {
-            final List<Object> list = new ArrayList<Object>();
+            final List<Object> list = new ArrayList<>();
             for (final Object element : (Iterable<?>) value) {
                 list.add(element);
             }
@@ -399,7 +400,7 @@ public final class Collections extends Static {
         }
         if (value instanceof Iterator<?>) {
             final Iterator<?> it = (Iterator<?>) value;
-            final List<Object> list = new ArrayList<Object>();
+            final List<Object> list = new ArrayList<>();
             while (it.hasNext()) {
                 list.add(it.next());
             }
@@ -435,7 +436,7 @@ public final class Collections extends Static {
         if (collection instanceof List<?>) {
             return (List<T>) collection;
         }
-        return new ArrayList<T>(collection);
+        return new ArrayList<>(collection);
     }
 
     /**

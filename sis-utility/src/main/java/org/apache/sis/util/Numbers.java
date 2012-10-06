@@ -43,7 +43,7 @@ public final class Numbers extends Static {
     /**
      * Mapping between a primitive type and its wrapper, if any.
      */
-    private static final Map<Class<?>,Numbers> MAPPING = new HashMap<Class<?>,Numbers>(16);
+    private static final Map<Class<?>,Numbers> MAPPING = new HashMap<>(16);
     static {
         new Numbers(BigDecimal.class, true, false, (byte) (DOUBLE+2)); // Undocumented enum.
         new Numbers(BigInteger.class, false, true, (byte) (DOUBLE+1)); // Undocumented enum.

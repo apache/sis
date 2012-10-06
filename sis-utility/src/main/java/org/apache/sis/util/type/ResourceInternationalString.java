@@ -27,7 +27,7 @@ import org.opengis.util.InternationalString;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 // Related to JDK7
-import org.apache.sis.internal.util.Objects;
+import java.util.Objects;
 
 
 /**

@@ -104,7 +104,7 @@ public final class Exceptions extends Static {
             String message = cause.getLocalizedMessage();
             if (message != null && !(message = message.trim()).isEmpty()) {
                 if (buffer == null) {
-                    done = new HashSet<String>();
+                    done = new HashSet<>();
                     buffer = new StringBuilder(128);
                     lineSeparator = System.getProperty("line.separator", "\n");
                     if (header != null && !(header = header.trim()).isEmpty()) {

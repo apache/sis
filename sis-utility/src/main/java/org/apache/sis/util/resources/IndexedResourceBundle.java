@@ -360,8 +360,7 @@ public class IndexedResourceBundle extends ResourceBundle {
                     name = new StringBuilder(lang + (length-ext))
                             .append(name, 0, lang).append(name, ext, length).toString();
                 }
-                final DataInputStream input = new DataInputStream(new BufferedInputStream(in));
-                try {
+                try (DataInputStream input = new DataInputStream(new BufferedInputStream(in))) {
                     this.values = values = new String[input.readInt()];
                     for (int i=0; i<values.length; i++) {
                         values[i] = input.readUTF();
@@ -369,8 +368,6 @@ public class IndexedResourceBundle extends ResourceBundle {
                             values[i] = null;
                         }
                     }
-                } finally {
-                    input.close();
                 }
                 /*
                  * Now, logs the message. This message is not localized.  Note that
@@ -426,6 +423,7 @@ public class IndexedResourceBundle extends ResourceBundle {
             try {
                 keyID = (Integer) getKeysClass().getField(key).get(null);
             } catch (Exception e) {
+                e.addSuppressed(exception);
                 Logging.recoverableException(getClass(), "handleGetObject", e);
                 return null; // This is okay as of 'handleGetObject' contract.
             }

@@ -54,8 +54,8 @@ public final strictfp class WeakHashSetTest extends TestCase {
     public void testStrongReferences() {
         final Random random = new Random();
         for (int pass=0; pass<NUM_RETRY; pass++) {
-            final WeakHashSet<Integer> weakSet = new WeakHashSet<Integer>(Integer.class);
-            final HashSet<Integer> strongSet = new HashSet<Integer>();
+            final WeakHashSet<Integer> weakSet = new WeakHashSet<>(Integer.class);
+            final HashSet<Integer> strongSet = new HashSet<>();
             for (int i=0; i<SAMPLE_SIZE; i++) {
                 final Integer value = random.nextInt(SAMPLE_SIZE);
                 if (random.nextBoolean()) {
@@ -97,8 +97,8 @@ public final strictfp class WeakHashSetTest extends TestCase {
     public void testWeakReferences() throws InterruptedException {
         final Random random = new Random();
         for (int pass=0; pass<NUM_RETRY; pass++) {
-            final WeakHashSet<Integer> weakSet = new WeakHashSet<Integer>(Integer.class);
-            final HashSet<Integer> strongSet = new HashSet<Integer>();
+            final WeakHashSet<Integer> weakSet = new WeakHashSet<>(Integer.class);
+            final HashSet<Integer> strongSet = new HashSet<>();
             for (int i=0; i<SAMPLE_SIZE; i++) {
                 final Integer value = new Integer(random.nextInt(SAMPLE_SIZE)); // Really need new instances
                 if (random.nextBoolean()) {
@@ -176,7 +176,7 @@ public final strictfp class WeakHashSetTest extends TestCase {
     @Test
     @DependsOnMethod("testStrongReferences")
     public void testWithArrayElements() {
-        final WeakHashSet<int[]> weakSet = new WeakHashSet<int[]>(int[].class);
+        final WeakHashSet<int[]> weakSet = new WeakHashSet<>(int[].class);
         final int[] array = new int[] {2, 5, 3};
         assertTrue (weakSet.add(array));
         assertFalse(weakSet.add(array));
