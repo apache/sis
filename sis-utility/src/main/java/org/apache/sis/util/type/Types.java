@@ -102,7 +102,7 @@ public final class Types extends Static {
             return null;
         }
         if (typeForNames == null) {
-            final Class<UML> c = UML.class;
+            final Class<Types> c = Types.class;
             final InputStream in = c.getResourceAsStream("class-index.properties");
             if (in == null) {
                 throw new MissingResourceException("class-index.properties", c.getName(), identifier);

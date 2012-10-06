@@ -12,6 +12,11 @@
     can be built by the NetBeans IDE.
   -->
   <target name="-pre-jar">
+    <copy todir="${build.classes.dir}/org/apache/sis/util/type">
+      <fileset dir="${project.root}/sis-utility/src/main/resources/org/apache/sis/util/type">
+        <include name="class-index.properties"/>
+      </fileset>
+    </copy>
     <copy todir="${build.classes.dir}/org/apache/sis/util/resources">
       <fileset dir="${project.root}/sis-utility/target/classes/org/apache/sis/util/resources">
         <include name="*.utf"/>
