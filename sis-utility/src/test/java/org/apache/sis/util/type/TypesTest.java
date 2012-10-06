@@ -20,7 +20,6 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.test.TestCase;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
