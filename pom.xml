@@ -39,7 +39,7 @@
        ============================================================== -->
   <groupId>org.apache.sis</groupId>
   <artifactId>sis-parent</artifactId>
-  <version>0.3-jdk6-SNAPSHOT</version>
+  <version>0.3-jdk7-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Apache SIS</name>
@@ -280,8 +280,8 @@ Apache SIS is a toolkit for describing location information, including points,
        ============================================================== -->
   <properties>
     <geoapi.version>3.1-M03</geoapi.version>
-    <maven.compile.source>1.6</maven.compile.source>
-    <maven.compile.target>1.6</maven.compile.target>
+    <maven.compile.source>1.7</maven.compile.source>
+    <maven.compile.target>1.7</maven.compile.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <website.encoding>UTF-8</website.encoding>
     <website.locale>en</website.locale>

@@ -28,7 +28,7 @@
   <parent>
     <groupId>org.apache.sis</groupId>
     <artifactId>sis-parent</artifactId>
-    <version>0.3-jdk6-SNAPSHOT</version>
+    <version>0.3-jdk7-SNAPSHOT</version>
   </parent>
 
   <artifactId>sis-referencing</artifactId>
