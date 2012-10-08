@@ -77,13 +77,15 @@ public final class ReferenceQueueConsumer<T> extends DaemonThread {
 
     /**
      * Constructs a new thread as a daemon thread. This thread will be sleeping most of the time.
-     * It will run only only a few nanoseconds every time a new {@link Reference} is enqueded.
+     * It will run only only a few nanoseconds every time a new {@link Reference} is enqueued.
+     *
+     * {@note We give to this thread a priority higher than the normal one since this thread shall
+     * execute only tasks to be completed very shortly. Quick execution of those tasks is at the
+     * benefit of the rest of the system, since they make more resources available sooner.}
      */
     private ReferenceQueueConsumer(final DaemonThread lastCreatedDaemon) {
-        super(Threads.RESOURCE_DISPOSERS, "ReferenceQueueConsumer", lastCreatedDaemon);
+        super(Threads.DAEMONS, "ReferenceQueueConsumer", lastCreatedDaemon);
         setPriority(Thread.MAX_PRIORITY - 2);
-        // The above line sets the priority to the maximal value allowed by the
-        // RESOURCE_DISPOSERS group, which is actually lower than MAX_PRIORITY.
     }
 
     /**
