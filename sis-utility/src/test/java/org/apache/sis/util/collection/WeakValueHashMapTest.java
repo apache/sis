@@ -18,12 +18,14 @@ package org.apache.sis.util.collection;
 
 import java.util.HashMap;
 import java.util.Random;
+import java.util.concurrent.Callable;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestConfiguration;
 import org.apache.sis.test.DependsOnMethod;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
+import static org.apache.sis.test.TestUtilities.waitForGarbageCollection;
 
 
 /**
@@ -133,22 +135,21 @@ public final strictfp class WeakValueHashMapTest extends TestCase {
              * happen too often, we may turn off the "allow garbage collector dependent tests" flag.
              */
             if (TestConfiguration.allowGarbageCollectorDependentTests()) {
-                int retry = 4;
-                do { // Do our best to lets GC finish its work.
-                    Thread.sleep(50);
-                    System.gc();
-                } while (--retry >= 0 && weakMap.size() != strongMap.size());
+                waitForGarbageCollection(new Callable<Boolean>() {
+                    @Override public Boolean call() {
+                        return weakMap.size() == strongMap.size();
+                    }
+                });
                 assertMapEquals(strongMap, weakMap);
                 /*
                  * Clearing all strong references should make the map empty.
                  */
                 strongMap.clear();
-                retry = 4;
-                do { // Do our best to lets GC finish its work.
-                    assertTrue("Expected an empty map.", --retry >= 0);
-                    Thread.sleep(50);
-                    System.gc();
-                } while (!weakMap.isEmpty());
+                assertTrue("Expected an empty map.", waitForGarbageCollection(new Callable<Boolean>() {
+                    @Override public Boolean call() {
+                        return weakMap.isEmpty();
+                    }
+                }));
             }
         }
     }
