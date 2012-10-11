@@ -16,6 +16,8 @@
  */
 package org.apache.sis.internal.util;
 
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ExecutorService;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.logging.Logging;
 
@@ -24,6 +26,11 @@ import org.apache.sis.util.logging.Logging;
  * Utilities methods for threads. This class declares in a single place every {@link ThreadGroup}
  * used in SIS. Their intend is to bring some order in debugger informations, by grouping the
  * threads created by SIS together under the same parent tree node.
+ *
+ * {@section Note on dependencies}
+ * This class shall not depend on {@link Executors} or {@link ReferenceQueueConsumer}, because
+ * initialization of those classes create new threads or threaded executor. But it is okay to
+ * have dependencies the other way around.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.03)
@@ -36,7 +43,7 @@ final class Threads extends Static {
      * as possible to the root of all thread groups (i.e. not as an application thread subgroup).
      * The intend is to separate the library thread groups from the user application thread groups.
      */
-    private static final ThreadGroup SIS;
+    static final ThreadGroup SIS;
     static {
         ThreadGroup parent = Thread.currentThread().getThreadGroup();
         try {
@@ -52,14 +59,9 @@ final class Threads extends Static {
     }
 
     /**
-     * The group of threads for resources disposal. We give them a priority slightly higher
-     * than the normal one since this group shall contain only tasks to be completed very
-     * quickly, and the benefit of executing those tasks soon is more resources made available.
+     * The sub-group for daemon threads, usually for resources disposal.
      */
-    static final ThreadGroup RESOURCE_DISPOSERS = new ThreadGroup(SIS, "ResourceDisposers") {
-        /* Constructor */ {
-            setMaxPriority(Thread.NORM_PRIORITY + 3);
-        }
+    static final ThreadGroup DAEMONS = new ThreadGroup(SIS, "Daemons") {
         @Override public void uncaughtException(final Thread thread, final Throwable exception) {
             Logging.severeException(Logging.getLogger("org.apache.sis"), thread.getClass(), "run", exception);
         }
@@ -71,6 +73,13 @@ final class Threads extends Static {
      * javadoc for more information.
      */
     static DaemonThread lastCreatedDaemon;
+
+    /**
+     * Executor to shutdown. This is a copy of the {@link Executors#DAEMON_TASKS} field,
+     * copied here only when the {@link Executors} class is loaded and initialized. We
+     * do that way for avoiding dependency from {@code Threads} to {@code Executors}.
+     */
+    static ExecutorService executor;
 
     /**
      * Do not allows instantiation of this class.
@@ -91,6 +100,20 @@ final class Threads extends Static {
      *         we were waiting for the daemon threads to die.
      */
     static synchronized void shutdown(final long stopWaitingAt) throws InterruptedException {
+        if (executor != null) {
+            executor.shutdown();
+            /*
+             * Wait for work completion. In theory this is not necessary since the daemon
+             * tasks are only house-cleaning work. We nevertheless wait for their completion
+             * as a safety. There tasks are supposed to be short.
+             */
+            final long delay = stopWaitingAt - System.nanoTime();
+            if (delay > 0) {
+                executor.awaitTermination(delay, TimeUnit.NANOSECONDS);
+                // Even if the tasks didn't completed, continue without waiting for them.
+                // We can not log at this point, since the logging framework may be shutdown.
+            }
+        }
         DaemonThread.killAll(lastCreatedDaemon, stopWaitingAt);
     }
 }
