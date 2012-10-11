@@ -28,12 +28,12 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
 /**
- * A {@linkplain Collections#checkedList(List) checked} and
- * {@linkplain Collections#synchronizedList(List) synchronized} {@link ArrayList}.
+ * A {@linkplain java.util.Collections#checkedList(List) checked} and
+ * {@linkplain java.util.Collections#synchronizedList(List) synchronized} {@link ArrayList}.
  * The type checks are performed at run-time in addition to the compile-time checks.
  *
  * <p>Using this class is similar to wrapping an {@link ArrayList} using the methods provided
- * in the standard {@link Collections} class, except for the following advantages:</p>
+ * in the standard {@link java.util.Collections} class, except for the following advantages:</p>
  *
  * <ul>
  *   <li>Avoid the two levels of indirection (for type check and synchronization).</li>
@@ -58,8 +58,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @version 0.3
  * @module
  *
- * @see Collections#checkedList(List)
- * @see Collections#synchronizedList(List)
+ * @see java.util.Collections#checkedList(List)
+ * @see java.util.Collections#synchronizedList(List)
  */
 @ThreadSafe
 public class CheckedArrayList<E> extends ArrayList<E> implements CheckedContainer<E>, Cloneable {
