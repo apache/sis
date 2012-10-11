@@ -43,7 +43,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * </ul>
  *
  * <p>The synchronization is provided mostly in order to prevent damages
- * to the set in case of concurrent accesses. It does <strong>not</strong> prevent
+ * to the set in case of concurrent access. It does <strong>not</strong> prevent
  * {@link java.util.ConcurrentModificationException} to be thrown during iterations,
  * unless the whole iteration is synchronized on this set {@linkplain #getLock() lock}.
  * For real concurrency, see the {@link java.util.concurrent} package instead.</p>
@@ -157,7 +157,7 @@ public class CheckedHashSet<E> extends LinkedHashSet<E> implements CheckedContai
      *
      * {@section Note for subclass implementors}
      * Subclasses that override this method must be careful to update the lock reference
-     * when this set is {@linkplain #clone() cloned}.
+     * (if needed) when this set is {@linkplain #clone() cloned}.
      *
      * @return The synchronization lock.
      */

@@ -132,7 +132,7 @@ public class CheckedHashMap<K,V> extends LinkedHashMap<K,V> implements Cloneable
      *
      * {@section Note for subclass implementors}
      * Subclasses that override this method must be careful to update the lock reference
-     * when this map is {@linkplain #clone() cloned}.
+     * (if needed) when this map is {@linkplain #clone() cloned}.
      *
      * @return The synchronization lock.
      */

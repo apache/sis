@@ -157,7 +157,7 @@ public class CheckedArrayList<E> extends ArrayList<E> implements CheckedContaine
      *
      * {@section Note for subclass implementors}
      * Subclasses that override this method must be careful to update the lock reference
-     * when this list is {@linkplain #clone() cloned}.
+     * (if needed) when this list is {@linkplain #clone() cloned}.
      *
      * @return The synchronization lock.
      */
