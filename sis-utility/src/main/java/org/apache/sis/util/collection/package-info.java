@@ -33,7 +33,7 @@
  *     and supports concurrency, while the other implementations are more lightweight, sometime
  *     thread-safe but without concurrency support.
  *   </p></li><li><p>
- *     {@link org.apache.sis.util.collection.CheckedCollection},
+ *     {@link org.apache.sis.util.collection.CheckedContainer},
  *     {@link org.apache.sis.util.collection.CheckedArrayList},
  *     {@link org.apache.sis.util.collection.CheckedHashSet} and
  *     {@link org.apache.sis.util.collection.CheckedHashMap} can be used for combining <em>runtime</em>

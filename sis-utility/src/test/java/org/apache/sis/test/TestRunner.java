@@ -120,8 +120,8 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
 
     /**
      * Validates all tests methods in the test class. This method first performs the default
-     * verification documented in {@link BlockJUnit4ClassRunner#validateTestMethods()}, then
-     * ensures that all {@link DependsOnMethod} annotations refer to an existing method.
+     * verification documented in {@link BlockJUnit4ClassRunner#validateTestMethods(List)},
+     * then ensures that all {@link DependsOnMethod} annotations refer to an existing method.
      *
      * @param errors The list where to report any problem found.
      */
