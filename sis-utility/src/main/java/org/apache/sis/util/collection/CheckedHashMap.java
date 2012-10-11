@@ -1,0 +1,301 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.sis.util.collection;
+
+import java.util.Map;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import net.jcip.annotations.ThreadSafe;
+import org.apache.sis.util.resources.Errors;
+
+import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+
+
+/**
+ * A {@linkplain Collections#checkedMap(Map) checked} and
+ * {@linkplain Collections#synchronizedMap(Map) synchronized} {@link LinkedHashMap}.
+ * The type checks are performed at run-time in addition to the compile-time checks.
+ *
+ * <p>Using this class is similar to wrapping a {@link LinkedHashMap} using the methods provided
+ * in the standard {@link Collections} class, except for the following advantages:</p>
+ *
+ * <ul>
+ *   <li>Avoid the two levels of indirection (for type check and synchronization).</li>
+ *   <li>Checks for write permission.</li>
+ *   <li>Overrideable methods for controlling the synchronization lock and write permission checks.</li>
+ * </ul>
+ *
+ * <p>The synchronization is provided mostly in order to prevent damages
+ * to the map in case of concurrent access. It does <strong>not</strong> prevent
+ * {@link java.util.ConcurrentModificationException} to be thrown during iterations,
+ * unless the whole iteration is synchronized on this map {@linkplain #getLock() lock}.
+ * For real concurrency, see the {@link java.util.concurrent} package instead.</p>
+ *
+ * {@note The above is the reason why the name of this class emphases the <cite>checked</cite>
+ * aspect rather than the <cite>synchronized</cite> aspect of the map.}
+ *
+ * @todo Current implementation do not synchronize the {@linkplain #entrySet entry set},
+ *       {@linkplain #keySet key set} and {@linkplain #values values} collection.
+ *
+ * @param <K> The type of keys in the map.
+ * @param <V> The type of values in the map.
+ *
+ * @author  Martin Desruisseaux (Geomatys)
+ * @since   0.3 (derived from geotk-2.1)
+ * @version 0.3
+ * @module
+ *
+ * @see Collections#checkedMap(Map)
+ * @see Collections#synchronizedMap(Map)
+ */
+@ThreadSafe
+public class CheckedHashMap<K,V> extends LinkedHashMap<K,V> implements Cloneable {
+    /**
+     * Serial version UID for compatibility with different versions.
+     */
+    private static final long serialVersionUID = -7777695267921872849L;
+
+    /**
+     * The class type for keys.
+     */
+    private final Class<K> keyType;
+
+    /**
+     * The class type for values.
+     */
+    private final Class<V> valueType;
+
+    /**
+     * Constructs a map of the specified key and value types.
+     *
+     * @param keyType   The key type (can not be null).
+     * @param valueType The value type (can not be null).
+     */
+    public CheckedHashMap(final Class<K> keyType, final Class<V> valueType) {
+        this.keyType   = keyType;
+        this.valueType = valueType;
+        ensureNonNull("keyType",   keyType);
+        ensureNonNull("valueType", valueType);
+    }
+
+    /**
+     * Checks the type of the specified object.
+     *
+     * @param  element the object to check, or {@code null}.
+     * @throws IllegalArgumentException if the specified element is not of the expected type.
+     */
+    private static <E> void ensureValidType(final E element, final Class<E> type)
+            throws IllegalArgumentException
+    {
+        if (element!=null && !type.isInstance(element)) {
+            throw new IllegalArgumentException(Errors.format(
+                    Errors.Keys.IllegalArgumentClass_3, "element", element.getClass(), type));
+        }
+    }
+
+    /**
+     * Checks if changes in this map are allowed. This method is automatically invoked
+     * after this map got the {@linkplain #getLock() lock} and before any operation that
+     * may change the content. If the write operation is allowed, then this method shall
+     * returns normally. Otherwise an {@link UnsupportedOperationException} is thrown.
+     * <p>
+     * The default implementation does nothing significant (see below), thus allowing this map to
+     * be modified. Subclasses can override this method if they want to control write permissions.
+     *
+     * {@note Actually the current implementation contains an <code>assert</code> statement
+     * ensuring that the thread holds the lock. This is an implementation details that may
+     * change in any future version of the SIS library. Nevertheless methods that override
+     * this one are encouraged to invoke <code>super.checkWritePermission()</code>.}
+     *
+     * @throws UnsupportedOperationException if this map is unmodifiable.
+     */
+    protected void checkWritePermission() throws UnsupportedOperationException {
+        assert Thread.holdsLock(getLock());
+    }
+
+    /**
+     * Returns the synchronization lock. The default implementation returns {@code this}.
+     *
+     * {@section Note for subclass implementors}
+     * Subclasses that override this method must be careful to update the lock reference
+     * when this map is {@linkplain #clone() cloned}.
+     *
+     * @return The synchronization lock.
+     */
+    protected Object getLock() {
+        return this;
+    }
+
+    /**
+     * Returns the number of elements in this map.
+     */
+    @Override
+    public int size() {
+        synchronized (getLock()) {
+            return super.size();
+        }
+    }
+
+    /**
+     * Returns {@code true} if this map contains no elements.
+     */
+    @Override
+    public boolean isEmpty() {
+        synchronized (getLock()) {
+            return super.isEmpty();
+        }
+    }
+
+    /**
+     * Returns {@code true} if this map contains the specified key.
+     */
+    @Override
+    public boolean containsKey(final Object key) {
+        synchronized (getLock()) {
+            return super.containsKey(key);
+        }
+    }
+
+    /**
+     * Returns {@code true} if this map contains the specified value.
+     */
+    @Override
+    public boolean containsValue(final Object value) {
+        synchronized (getLock()) {
+            return super.containsValue(value);
+        }
+    }
+
+    /**
+     * Returns the value to which the specified key is mapped, or {@code null} if none.
+     */
+    @Override
+    public V get(Object key) {
+        synchronized (getLock()) {
+            return super.get(key);
+        }
+    }
+
+    /**
+     * Associates the specified value with the specified key in this map.
+     * If the map previously contained a mapping for this key, the old
+     * value is replaced.
+     *
+     * @param  key key with which the specified value is to be associated.
+     * @param  value value to be associated with the specified key.
+     * @return previous value associated with specified key, or {@code null}.
+     * @throws IllegalArgumentException if the key or the value is not of the expected type.
+     * @throws UnsupportedOperationException if this collection is unmodifiable.
+     */
+    @Override
+    public V put(final K key, final V value)
+            throws IllegalArgumentException, UnsupportedOperationException
+    {
+        ensureValidType(key,     keyType);
+        ensureValidType(value, valueType);
+        synchronized (getLock()) {
+            checkWritePermission();
+            return super.put(key, value);
+        }
+    }
+
+    /**
+     * Copies all of the mappings from the specified map to this map.
+     *
+     * @throws UnsupportedOperationException if this collection is unmodifiable.
+     */
+    @Override
+    public void putAll(Map<? extends K, ? extends V> m) throws UnsupportedOperationException {
+        for (final Map.Entry<? extends K, ? extends V> entry : m.entrySet()) {
+            ensureValidType(entry.getKey(),     keyType);
+            ensureValidType(entry.getValue(), valueType);
+        }
+        synchronized (getLock()) {
+            checkWritePermission();
+            super.putAll(m);
+        }
+    }
+
+    /**
+     * Removes the mapping for the specified key from this map if present.
+     *
+     * @throws UnsupportedOperationException if this collection is unmodifiable.
+     */
+    @Override
+    public V remove(Object key) throws UnsupportedOperationException {
+        synchronized (getLock()) {
+            checkWritePermission();
+            return super.remove(key);
+        }
+    }
+
+    /**
+     * Removes all of the elements from this map.
+     *
+     * @throws UnsupportedOperationException if this collection is unmodifiable.
+     */
+    @Override
+    public void clear() throws UnsupportedOperationException {
+        synchronized (getLock()) {
+            checkWritePermission();
+            super.clear();
+        }
+    }
+
+    /**
+     * Returns a string representation of this map.
+     */
+    @Override
+    public String toString() {
+        synchronized (getLock()) {
+            return super.toString();
+        }
+    }
+
+    /**
+     * Compares the specified object with this map for equality.
+     */
+    @Override
+    public boolean equals(Object o) {
+        synchronized (getLock()) {
+            return super.equals(o);
+        }
+    }
+
+    /**
+     * Returns the hash code value for this map.
+     */
+    @Override
+    public int hashCode() {
+        synchronized (getLock()) {
+            return super.hashCode();
+        }
+    }
+
+    /**
+     * Returns a shallow copy of this map.
+     *
+     * @return A shallow copy of this map.
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    public CheckedHashMap<K,V> clone() {
+        synchronized (getLock()) {
+            return (CheckedHashMap<K,V>) super.clone();
+        }
+    }
+}
