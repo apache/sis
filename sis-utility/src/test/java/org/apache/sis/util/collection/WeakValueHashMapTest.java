@@ -16,6 +16,7 @@
  */
 package org.apache.sis.util.collection;
 
+import java.util.Map;
 import java.util.HashMap;
 import java.util.Random;
 import java.util.concurrent.Callable;
@@ -50,13 +51,24 @@ public final strictfp class WeakValueHashMapTest extends TestCase {
 
     /**
      * Tests the {@link WeakValueHashMap} using strong references.
-     * The tested {@link WeakValueHashMap} should behave like a standard {@link Map} object.
+     * The tested {@code WeakValueHashMap} shall behave like a standard {@link HashMap},
+     * except for element order.
      */
     @Test
     public void testStrongReferences() {
+        testStrongReferences(new WeakValueHashMap<Integer,Integer>(Integer.class));
+    }
+
+    /**
+     * Implementation of the {@link #testStrongReferences()} method,
+     * to be reused by {@link CacheTest}.
+     *
+     * @param weakMap The map implementation to test.
+     */
+    static void testStrongReferences(final Map<Integer,Integer> weakMap) {
         final Random random = new Random();
         for (int pass=0; pass<NUM_RETRY; pass++) {
-            final WeakValueHashMap<Integer,Integer> weakMap = new WeakValueHashMap<>(Integer.class);
+            weakMap.clear();
             final HashMap<Integer,Integer> strongMap = new HashMap<>();
             for (int i=0; i<SAMPLE_SIZE; i++) {
                 final Integer key   = random.nextInt(SAMPLE_SIZE);
@@ -86,9 +98,19 @@ public final strictfp class WeakValueHashMapTest extends TestCase {
     @Test
     @DependsOnMethod("testStrongReferences")
     public void testWeakReferences() throws InterruptedException {
+        testWeakReferences(new WeakValueHashMap<Integer,Integer>(Integer.class));
+    }
+
+    /**
+     * Implementation of the {@link #testWeakReferences()} method,
+     * to be reused by {@link CacheTest}.
+     *
+     * @param weakMap The map implementation to test.
+     */
+    static void testWeakReferences(final Map<Integer,Integer> weakMap) throws InterruptedException {
         final Random random = new Random();
         for (int pass=0; pass<NUM_RETRY; pass++) {
-            final WeakValueHashMap<Integer,Integer> weakMap = new WeakValueHashMap<>(Integer.class);
+            weakMap.clear();
             final HashMap<Integer,Integer> strongMap = new HashMap<>();
             for (int i=0; i<SAMPLE_SIZE; i++) {
                 // We really want new instances here.

@@ -20,6 +20,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.concurrent.Callable;
+import java.lang.reflect.UndeclaredThrowableException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -38,6 +39,14 @@ import static org.junit.Assert.*;
  * @module
  */
 public final strictfp class TestUtilities extends Static {
+    /**
+     * Maximal time that {@code waitFoo()} methods can wait, in milliseconds.
+     *
+     * @see #waitForBlockedState(Thread)
+     * @see #waitForGarbageCollection(Callable)
+     */
+    private static final int MAXIMAL_WAIT_TIME = 1000;
+
     /**
      * Date parser and formatter using the {@code "yyyy-MM-dd HH:mm:ss"} pattern
      * and UTC time zone.
@@ -87,8 +96,54 @@ public final strictfp class TestUtilities extends Static {
     }
 
     /**
+     * If the given failure is not null, re-thrown it as an {@link Error} or
+     * {@link RuntimeException}. Otherwise do nothing.
+     *
+     * @param failure The exception to re-thrown if non-null.
+     */
+    public static void rethrownIfNotNull(final Throwable failure) {
+        if (failure != null) {
+            if (failure instanceof Error) {
+                throw (Error) failure;
+            }
+            if (failure instanceof RuntimeException) {
+                throw (RuntimeException) failure;
+            }
+            throw new UndeclaredThrowableException(failure);
+        }
+    }
+
+    /**
+     * Waits up to one second for the given thread to reach the
+     * {@linkplain java.lang.Thread.State#BLOCKED blocked} or the
+     * {@linkplain java.lang.Thread.State#WAITING waiting} state.
+     *
+     * @param  thread The thread to wait for blocked or waiting state.
+     * @throws IllegalThreadStateException If the thread has terminated its execution,
+     *         or has not reached the waiting or blocked state before the timeout.
+     * @throws InterruptedException If this thread has been interrupted while waiting.
+     */
+    public static void waitForBlockedState(final Thread thread) throws IllegalThreadStateException, InterruptedException {
+        int retry = MAXIMAL_WAIT_TIME / 5; // 5 shall be the same number than in the call to Thread.sleep.
+        do {
+            Thread.sleep(5);
+            switch (thread.getState()) {
+                case WAITING:
+                case BLOCKED: return;
+                case TERMINATED: throw new IllegalThreadStateException("The thread has completed execution.");
+            }
+        } while (--retry != 0);
+        throw new IllegalThreadStateException("The thread is not in a blocked or waiting state.");
+    }
+
+    /**
      * Waits up to one second for the garbage collector to do its work. This method can be invoked
      * only if {@link TestConfiguration#allowGarbageCollectorDependentTests()} returns {@code true}.
+     * <p>
+     * Note that this method does not throw any exception if the given condition has not been
+     * reached before the timeout. Instead, it is the caller responsibility to test the return
+     * value. This method is designed that way because the caller can usually produce a more
+     * accurate error message about which value has not been garbage collected as expected.
      *
      * @param  stopCondition A condition which return {@code true} if this method can stop waiting,
      *         or {@code false} if it needs to ask again for garbage collection.
@@ -98,7 +153,7 @@ public final strictfp class TestUtilities extends Static {
      */
     public static boolean waitForGarbageCollection(final Callable<Boolean> stopCondition) throws InterruptedException {
         assertTrue("GC-dependent tests not allowed in this run.", TestConfiguration.allowGarbageCollectorDependentTests());
-        int retry = 20;
+        int retry = MAXIMAL_WAIT_TIME / 50; // 50 shall be the same number than in the call to Thread.sleep.
         boolean stop;
         do {
             if (--retry == 0) {

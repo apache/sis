@@ -50,7 +50,8 @@ public final strictfp class WeakHashSetTest extends TestCase {
 
     /**
      * Tests the {@link WeakHashSet} using strong references.
-     * The tested {@link WeakHashSet} should behave like a standard {@link Set} object.
+     * The tested {@code WeakHashSet} shall behave like a standard {@link HashSet},
+     * except for element order.
      */
     @Test
     public void testStrongReferences() {
