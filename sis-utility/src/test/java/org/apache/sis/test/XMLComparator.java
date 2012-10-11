@@ -506,7 +506,7 @@ public strictfp class XMLComparator {
             if (tolerance > 0 && abs(doubleValue(expected) - doubleValue(actual)) <= tolerance) {
                 return;
             }
-            final String lineSeparator = System.getProperty("line.separator", "\n");
+            final String lineSeparator = System.lineSeparator();
             final StringBuilder buffer = new StringBuilder(1024).append("Expected ")
                     .append(propertyName).append(" \"")
                     .append(expected).append("\" but got \"")
@@ -551,7 +551,7 @@ public strictfp class XMLComparator {
      * @return         An error message containing the expected and actual node.
      */
     protected String formatErrorMessage(final Node expected, final Node result) {
-        final String lineSeparator = System.getProperty("line.separator", "\n");
+        final String lineSeparator = System.lineSeparator();
         final StringBuilder buffer = new StringBuilder(256).append("Nodes are not equal:").append(lineSeparator);
         formatErrorMessage(buffer, expected, result, lineSeparator);
         return buffer.toString();
