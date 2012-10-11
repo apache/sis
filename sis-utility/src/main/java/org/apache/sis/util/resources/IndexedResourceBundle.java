@@ -299,7 +299,7 @@ public class IndexedResourceBundle extends ResourceBundle {
                 keyLength = Math.max(keyLength, key.length());
             }
         }
-        final String lineSeparator = System.getProperty("line.separator", "\n");
+        final String lineSeparator = System.lineSeparator();
         final String[] values = ensureLoaded(null);
         for (int i=0; i<values.length; i++) {
             final String key   = keys  [i];
