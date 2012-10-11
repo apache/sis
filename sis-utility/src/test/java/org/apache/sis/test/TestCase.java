@@ -16,22 +16,15 @@
  */
 package org.apache.sis.test;
 
-import java.util.Date;
-import java.util.Locale;
-import java.util.TimeZone;
 import java.util.logging.Logger;
 import java.util.logging.Handler;
 import java.util.logging.ConsoleHandler;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.io.Console;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 
 import org.junit.After;
@@ -129,51 +122,9 @@ public abstract strictfp class TestCase {
     }
 
     /**
-     * Date parser and formatter using the {@code "yyyy-MM-dd HH:mm:ss"} pattern
-     * and UTC time zone.
-     */
-    private static final DateFormat dateFormat;
-    static {
-        dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CANADA);
-        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-        dateFormat.setLenient(false);
-    };
-
-    /**
      * Creates a new test case.
      */
     protected TestCase() {
-    }
-
-    /**
-     * Parses the date for the given string using the {@code "yyyy-MM-dd HH:mm:ss"} pattern
-     * in UTC timezone.
-     *
-     * @param  date The date as a {@link String}.
-     * @return The date as a {@link Date}.
-     */
-    public static Date date(final String date) {
-        ArgumentChecks.ensureNonNull("date", date);
-        try {
-            synchronized (dateFormat) {
-                return dateFormat.parse(date);
-            }
-        } catch (ParseException e) {
-            throw new AssertionError(e);
-        }
-    }
-
-    /**
-     * Formats the given date using the {@code "yyyy-MM-dd HH:mm:ss"} pattern in UTC timezone.
-     *
-     * @param  date The date to format.
-     * @return The date as a {@link String}.
-     */
-    public static String format(final Date date) {
-        ArgumentChecks.ensureNonNull("date", date);
-        synchronized (dateFormat) {
-            return dateFormat.format(date);
-        }
     }
 
     /**
