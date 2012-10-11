@@ -16,15 +16,18 @@
  */
 package org.apache.sis.metadata;
 
-import java.util.ArrayList;
 import java.util.Set;
 import java.util.List;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.NoSuchElementException;
-
+import net.jcip.annotations.ThreadSafe;
 import org.opengis.util.CodeList;
+import org.apache.sis.util.collection.CheckedHashSet;
+import org.apache.sis.util.collection.CheckedArrayList;
+
+import static org.apache.sis.util.collection.Collections.isNullOrEmpty;
+import static org.apache.sis.util.collection.Collections.hashMapCapacity;
 
 
 /**
@@ -71,6 +74,7 @@ import org.opengis.util.CodeList;
  * @version 0.3
  * @module
  */
+@ThreadSafe
 public abstract class ModifiableMetadata {
     /**
      * Constructs an initially empty metadata.
@@ -116,8 +120,8 @@ public abstract class ModifiableMetadata {
      * <ul>
      *   <li>Invokes {@link #checkWritePermission()} in order to ensure that this metadata is
      *       modifiable.</li>
-     *   <li>If {@code source} is {@linkplain XCollections#isNullOrEmpty(Collection) null or
-     *       empty}, returns {@code null} (meaning that the metadata is not provided).</li>
+     *   <li>If {@code source} is null or empty, returns {@code null}
+     *       (meaning that the metadata attribute is not provided).</li>
      *   <li>If {@code target} is null, creates a new {@link List}.</li>
      *   <li>Copies the content of the given {@code source} into the target.</li>
      * </ul>
@@ -140,13 +144,13 @@ public abstract class ModifiableMetadata {
         // See the comments in copyCollection(...) for implementation notes.
         if (source != target) {
             checkWritePermission();
-            if (source == null) {
+            if (isNullOrEmpty(source)) {
                 target = null;
             } else {
                 if (target != null) {
                     target.clear();
                 } else {
-                    target = new ArrayList<E>(source.size());
+                    target = new MutableList<E>(elementType, source.size());
                 }
                 target.addAll(source);
             }
@@ -161,8 +165,8 @@ public abstract class ModifiableMetadata {
      * <ul>
      *   <li>Invokes {@link #checkWritePermission()} in order to ensure that this metadata is
      *       modifiable.</li>
-     *   <li>If {@code source} is {@linkplain XCollections#isNullOrEmpty(Collection) null or
-     *       empty}, returns {@code null} (meaning that the metadata is not provided).</li>
+     *   <li>If {@code source} is null or empty, returns {@code null}
+     *       (meaning that the metadata attribute is not provided).</li>
      *   <li>If {@code target} is null, creates a new {@link Set}.</li>
      *   <li>Copies the content of the given {@code source} into the target.</li>
      * </ul>
@@ -185,13 +189,13 @@ public abstract class ModifiableMetadata {
         // See the comments in copyCollection(...) for implementation notes.
         if (source != target) {
             checkWritePermission();
-            if (source == null) {
+            if (isNullOrEmpty(source)) {
                 target = null;
             } else {
                 if (target != null) {
                     target.clear();
                 } else {
-                    target = new LinkedHashSet<E>(source.size());
+                    target = new MutableSet<E>(elementType, source.size());
                 }
                 target.addAll(source);
             }
@@ -206,8 +210,8 @@ public abstract class ModifiableMetadata {
      * <ul>
      *   <li>Invokes {@link #checkWritePermission()} in order to ensure that this metadata is
      *       modifiable.</li>
-     *   <li>If {@code source} is {@linkplain XCollections#isNullOrEmpty(Collection) null or
-     *       empty}, returns {@code null} (meaning that the metadata is not provided).</li>
+     *   <li>If {@code source} is null or empty, returns {@code null}
+     *       (meaning that the metadata attribute is not provided).</li>
      *   <li>If {@code target} is null, creates a new {@link Set} or a new {@link List}
      *       depending on the value returned by {@link #collectionType(Class)}.</li>
      *   <li>Copies the content of the given {@code source} into the target.</li>
@@ -240,7 +244,7 @@ public abstract class ModifiableMetadata {
          */
         if (source != target) {
             checkWritePermission();
-            if (source == null) {
+            if (isNullOrEmpty(source)) {
                 target = null;
             } else {
                 if (target != null) {
@@ -248,9 +252,9 @@ public abstract class ModifiableMetadata {
                 } else {
                     final int capacity = source.size();
                     if (useSet(elementType)) {
-                        target = new LinkedHashSet<E>(capacity);
+                        target = new MutableSet<E>(elementType, capacity);
                     } else {
-                        target = new ArrayList<E>(capacity);
+                        target = new MutableList<E>(elementType, capacity);
                     }
                 }
                 target.addAll(source);
@@ -276,7 +280,7 @@ public abstract class ModifiableMetadata {
             return c;
         }
         if (isModifiable()) {
-            return new ArrayList<E>();
+            return new MutableList<E>(elementType);
         }
         return Collections.emptyList();
     }
@@ -298,7 +302,7 @@ public abstract class ModifiableMetadata {
             return c;
         }
         if (isModifiable()) {
-            return new LinkedHashSet<E>();
+            return new MutableSet<E>(elementType);
         }
         return Collections.emptySet();
     }
@@ -332,16 +336,68 @@ public abstract class ModifiableMetadata {
         final boolean isModifiable = isModifiable();
         if (useSet(elementType)) {
             if (isModifiable) {
-                return new LinkedHashSet<E>();
+                return new MutableSet<E>(elementType);
             } else {
                 return Collections.emptySet();
             }
         } else {
             if (isModifiable) {
-                return new ArrayList<E>();
+                return new MutableList<E>(elementType);
             } else {
                 return Collections.emptyList();
             }
+        }
+    }
+
+    /**
+     * A checked set synchronized on the enclosing {@link ModifiableMetadata}.
+     * Used for mutable sets only.
+     */
+    private final class MutableSet<E> extends CheckedHashSet<E> {
+        private static final long serialVersionUID = 2337350768744454264L;
+
+        public MutableSet(Class<E> type) {
+            super(type, 4); // Use a small capacity because we typically have few elements.
+        }
+
+        public MutableSet(Class<E> type, int capacity) {
+            super(type, hashMapCapacity(capacity));
+        }
+
+        @Override
+        protected Object getLock() {
+            return ModifiableMetadata.this;
+        }
+
+        @Override
+        protected void checkWritePermission() throws UnsupportedOperationException {
+            ModifiableMetadata.this.checkWritePermission();
+        }
+    }
+
+    /**
+     * A checked list synchronized on the enclosing {@link ModifiableMetadata}.
+     * Used for mutable lists only.
+     */
+    private final class MutableList<E> extends CheckedArrayList<E> {
+        private static final long serialVersionUID = -5016778173550153002L;
+
+        public MutableList(Class<E> type) {
+            super(type, 4); // Use a small capacity because we typically have few elements.
+        }
+
+        public MutableList(Class<E> type, int capacity) {
+            super(type, capacity);
+        }
+
+        @Override
+        protected Object getLock() {
+            return ModifiableMetadata.this;
+        }
+
+        @Override
+        protected void checkWritePermission() throws UnsupportedOperationException {
+            ModifiableMetadata.this.checkWritePermission();
         }
     }
 
