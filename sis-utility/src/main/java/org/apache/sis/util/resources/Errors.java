@@ -51,6 +51,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int EmptyArgument_1 = 1;
 
         /**
+         * Argument ‘{0}’ can not be an instance of ‘{1}’.
+         */
+        public static final int IllegalArgumentClass_2 = 17;
+
+        /**
          * Argument ‘{0}’ can not be an instance of ‘{1}’. Expected an instance of ‘{2}’ or derived
          * type.
          */
@@ -110,6 +115,11 @@ public final class Errors extends IndexedResourceBundle {
          * Argument ‘{0}’ shall not be null.
          */
         public static final int NullArgument_1 = 0;
+
+        /**
+         * Recursive call while creating an object for the “{0}” key.
+         */
+        public static final int RecursiveCreateCallForKey_1 = 18;
 
         /**
          * Argument ‘{0}’ has {1} dimensions, while {2} was expected.

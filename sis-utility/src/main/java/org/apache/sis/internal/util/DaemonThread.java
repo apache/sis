@@ -133,7 +133,7 @@ abstract class DaemonThread extends Thread {
         for (DaemonThread thread=first; thread!=null; thread=thread.previous) {
             final long delay = stopWaitingAt - System.nanoTime();
             if (delay <= 0) break;
-            thread.join(delay);
+            thread.join(delay / 1000000); // Convert nanoseconds to milliseconds.
         }
     }
 
