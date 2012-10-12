@@ -97,6 +97,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int IndexOutOfBounds_1 = 4;
 
         /**
+         * A different value is already associated to the “{0}” key.
+         */
+        public static final int KeyCollision_1 = 19;
+
+        /**
          * Argument ‘{0}’ shall not be negative. The given value was {1}.
          */
         public static final int NegativeArgument_2 = 8;

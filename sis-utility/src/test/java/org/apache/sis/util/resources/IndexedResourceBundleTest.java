@@ -39,7 +39,7 @@ import static org.junit.Assert.*;
  */
 public final strictfp class IndexedResourceBundleTest extends TestCase {
     /**
-     * Tests the {@link Errors#getResources()} method on different locales.
+     * Tests the {@link Errors#getResources(Locale)} method on different locales.
      */
     @Test
     public void testGetResources() {

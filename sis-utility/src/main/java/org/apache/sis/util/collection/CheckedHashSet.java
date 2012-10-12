@@ -28,12 +28,12 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
 /**
- * A {@linkplain Collections#checkedSet(Set) checked} and
- * {@linkplain Collections#synchronizedSet(Set) synchronized} {@link LinkedHashSet}.
+ * A {@linkplain java.util.Collections#checkedSet(Set) checked} and
+ * {@linkplain java.util.Collections#synchronizedSet(Set) synchronized} {@link LinkedHashSet}.
  * The type checks are performed at run-time in addition to the compile-time checks.
  *
  * <p>Using this class is similar to wrapping a {@link LinkedHashSet} using the methods provided
- * in the standard {@link Collections} class, except for the following advantages:</p>
+ * in the standard {@link java.util.Collections} class, except for the following advantages:</p>
  *
  * <ul>
  *   <li>Avoid the two levels of indirection (for type check and synchronization).</li>
@@ -43,7 +43,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * </ul>
  *
  * <p>The synchronization is provided mostly in order to prevent damages
- * to the set in case of concurrent accesses. It does <strong>not</strong> prevent
+ * to the set in case of concurrent access. It does <strong>not</strong> prevent
  * {@link java.util.ConcurrentModificationException} to be thrown during iterations,
  * unless the whole iteration is synchronized on this set {@linkplain #getLock() lock}.
  * For real concurrency, see the {@link java.util.concurrent} package instead.</p>
@@ -58,8 +58,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @version 0.3
  * @module
  *
- * @see Collections#checkedSet(Set)
- * @see Collections#synchronizedSet(Set)
+ * @see java.util.Collections#checkedSet(Set)
+ * @see java.util.Collections#synchronizedSet(Set)
  */
 @ThreadSafe
 public class CheckedHashSet<E> extends LinkedHashSet<E> implements CheckedContainer<E>, Cloneable {
@@ -157,7 +157,7 @@ public class CheckedHashSet<E> extends LinkedHashSet<E> implements CheckedContai
      *
      * {@section Note for subclass implementors}
      * Subclasses that override this method must be careful to update the lock reference
-     * when this set is {@linkplain #clone() cloned}.
+     * (if needed) when this set is {@linkplain #clone() cloned}.
      *
      * @return The synchronization lock.
      */
