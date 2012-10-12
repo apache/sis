@@ -77,7 +77,7 @@ public final class Locales extends Static {
                     }
                 }
             }
-        } catch (Exception exception) { // Too many exceptions for enumerating them.
+        } catch (ReflectiveOperationException exception) {
             /*
              * Not a big deal if this operation fails (this is actually just an
              * optimization for reducing memory usage). Log a warning and stop.
