@@ -213,7 +213,7 @@ public class IndexedResourceBundle extends ResourceBundle {
                         names[index] = field.getName();
                     }
                 }
-            } catch (Exception e) {
+            } catch (ReflectiveOperationException e) {
                 names = CharSequences.EMPTY_ARRAY;
             }
             keys = resize(names, length);
@@ -422,7 +422,7 @@ public class IndexedResourceBundle extends ResourceBundle {
              */
             try {
                 keyID = (Integer) getKeysClass().getField(key).get(null);
-            } catch (Exception e) {
+            } catch (ReflectiveOperationException e) {
                 e.addSuppressed(exception);
                 Logging.recoverableException(getClass(), "handleGetObject", e);
                 return null; // This is okay as of 'handleGetObject' contract.

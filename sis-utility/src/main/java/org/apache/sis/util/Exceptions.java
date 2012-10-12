@@ -72,7 +72,7 @@ public final class Exceptions extends Static {
         final Throwable ne;
         try {
             ne = exception.getClass().getConstructor(String.class).newInstance(message);
-        } catch (Exception e) { // Too many exception for listing them all.
+        } catch (ReflectiveOperationException e) {
             return exception;
         }
         ne.setStackTrace(exception.getStackTrace());

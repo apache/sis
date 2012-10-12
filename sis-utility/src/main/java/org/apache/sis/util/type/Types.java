@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Properties;
 import java.util.MissingResourceException;
+import java.io.IOException;
 import java.io.InputStream;
 
 import org.opengis.annotation.UML;
@@ -111,7 +112,7 @@ public final class Types extends Static {
             try {
                 props.load(in);
                 in.close();
-            } catch (Exception e) { // Catch IOException and IllegalArgumentException.
+            } catch (IOException | IllegalArgumentException e) {
                 throw new BackingStoreException(e);
             }
             typeForNames = new HashMap<>(props);
