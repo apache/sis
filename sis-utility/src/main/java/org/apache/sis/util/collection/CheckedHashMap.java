@@ -17,9 +17,13 @@
 package org.apache.sis.util.collection;
 
 import java.util.Map;
+import java.util.Set;
+import java.util.Iterator;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import net.jcip.annotations.ThreadSafe;
+import org.apache.sis.util.Decorator;
 import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -47,9 +51,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * {@note The above is the reason why the name of this class emphases the <cite>checked</cite>
  * aspect rather than the <cite>synchronized</cite> aspect of the map.}
- *
- * @todo Current implementation do not synchronize the {@linkplain #entrySet entry set},
- *       {@linkplain #keySet key set} and {@linkplain #values values} collection.
  *
  * @param <K> The type of keys in the map.
  * @param <V> The type of values in the map.
@@ -257,6 +258,48 @@ public class CheckedHashMap<K,V> extends LinkedHashMap<K,V> implements Cloneable
     }
 
     /**
+     * Returns a view of the keys in the map.
+     * The returned set will support {@linkplain Set#remove(Object) element removal}
+     * only if the {@link #checkWritePermission()} method does not throw exception.
+     *
+     * @return A synchronized view of the keys in the map.
+     */
+    @Override
+    public Set<K> keySet() {
+        synchronized (getLock()) {
+            return new SyncSet<K>(super.keySet());
+        }
+    }
+
+    /**
+     * Returns a view of the values in the map.
+     * The returned collection will support {@linkplain Collection#remove(Object) element removal}
+     * only if the {@link #checkWritePermission()} method does not throw exception.
+     *
+     * @return A synchronized view of the values in the map.
+     */
+    @Override
+    public Collection<V> values() {
+        synchronized (getLock()) {
+            return new Sync<V>(super.values());
+        }
+    }
+
+    /**
+     * Returns a view of the entries in the map.
+     * The returned set will support {@linkplain Set#remove(Object) element removal}
+     * only if the {@link #checkWritePermission()} method does not throw exception.
+     *
+     * @return A synchronized view of the keys in the map.
+     */
+    @Override
+    public Set<Map.Entry<K,V>> entrySet() {
+        synchronized (getLock()) {
+            return new SyncSet<Map.Entry<K,V>>(super.entrySet());
+        }
+    }
+
+    /**
      * Returns a string representation of this map.
      */
     @Override
@@ -296,6 +339,71 @@ public class CheckedHashMap<K,V> extends LinkedHashMap<K,V> implements Cloneable
     public CheckedHashMap<K,V> clone() {
         synchronized (getLock()) {
             return (CheckedHashMap<K,V>) super.clone();
+        }
+    }
+
+    /**
+     * A synchronized iterator with a check for write permission prior element removal.
+     */
+    @ThreadSafe
+    @Decorator(Iterator.class)
+    private final class Iter<E> implements Iterator<E> {
+        final Iterator<E> iterator;
+        Iter(final Iterator<E> iterator)   {this.iterator = iterator;}
+        @Override public boolean hasNext() {synchronized (getLock()) {return                  iterator.hasNext();}}
+        @Override public E       next()    {synchronized (getLock()) {return                  iterator.next();}}
+        @Override public void    remove()  {synchronized (getLock()) {checkWritePermission(); iterator.remove();}}
+    }
+
+    /**
+     * A collection or a set synchronized on the enclosing map {@linkplain #getLock() lock}.
+     * This is used directly for wrapping {@link Map#values()}, or indirectly for wrapping
+     * {@link Map#keySet()} or {@link Map#entrySet()} views.
+     */
+    @ThreadSafe
+    @Decorator(Collection.class)
+    private class Sync<E> implements Collection<E> {
+        /**
+         * The {@link Map#keySet()}, {@link Map#values()} or {@link Map#entrySet()} view.
+         */
+        private final Collection<E> view;
+
+        /**
+         * Create a new synchronized wrapper for the given view.
+         */
+        Sync(final Collection<E> view) {
+            this.view = view;
+        }
+
+        @Override public final void     clear()                           {synchronized (getLock()) {                               view.clear      ( );}}
+        @Override public final int      size()                            {synchronized (getLock()) {                        return view.size       ( );}}
+        @Override public final boolean  isEmpty()                         {synchronized (getLock()) {                        return view.isEmpty    ( );}}
+        @Override public final boolean  contains(Object o)                {synchronized (getLock()) {                        return view.contains   (o);}}
+        @Override public final boolean  containsAll(Collection<?> c)      {synchronized (getLock()) {                        return view.containsAll(c);}}
+        @Override public final boolean  add(E e)                          {synchronized (getLock()) {checkWritePermission(); return view.add        (e);}}
+        @Override public final boolean  addAll(Collection<? extends E> c) {synchronized (getLock()) {checkWritePermission(); return view.addAll     (c);}}
+        @Override public final boolean  remove(Object o)                  {synchronized (getLock()) {checkWritePermission(); return view.remove     (o);}}
+        @Override public final boolean  removeAll(Collection<?> c)        {synchronized (getLock()) {checkWritePermission(); return view.removeAll  (c);}}
+        @Override public final boolean  retainAll(Collection<?> c)        {synchronized (getLock()) {checkWritePermission(); return view.retainAll  (c);}}
+        @Override public final Object[] toArray()                         {synchronized (getLock()) {                        return view.toArray    ( );}}
+        @Override public final <T> T[]  toArray(T[] a)                    {synchronized (getLock()) {                        return view.toArray    (a);}}
+        @Override public final String   toString()                        {synchronized (getLock()) {                        return view.toString   ( );}}
+        @Override public final boolean  equals(Object o)                  {synchronized (getLock()) {                        return view.equals     (o);}}
+        @Override public final int      hashCode()                        {synchronized (getLock()) {                        return view.hashCode   ( );}}
+        @Override public final Iterator<E> iterator()                     {synchronized (getLock()) {return new Iter<E>(view.iterator());}}
+    }
+
+    /**
+     * A set synchronized on the enclosing map {@linkplain #getLock() lock}.
+     * This is used for wrapping {@link Map#keySet()} or {@link Map#entrySet()} views.
+     */
+    @Decorator(Set.class)
+    private final class SyncSet<E> extends Sync<E> implements Set<E> {
+        /**
+         * Create a new synchronized wrapper for the given view.
+         */
+        SyncSet(final Set<E> set) {
+            super(set);
         }
     }
 }
