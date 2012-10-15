@@ -22,18 +22,19 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import net.jcip.annotations.ThreadSafe;
+import org.apache.sis.util.Decorator;
 import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
 /**
- * A {@linkplain Collections#checkedSet(Set) checked} and
- * {@linkplain Collections#synchronizedSet(Set) synchronized} {@link LinkedHashSet}.
+ * A {@linkplain java.util.Collections#checkedSet(Set) checked} and
+ * {@linkplain java.util.Collections#synchronizedSet(Set) synchronized} {@link LinkedHashSet}.
  * The type checks are performed at run-time in addition to the compile-time checks.
  *
  * <p>Using this class is similar to wrapping a {@link LinkedHashSet} using the methods provided
- * in the standard {@link Collections} class, except for the following advantages:</p>
+ * in the standard {@link java.util.Collections} class, except for the following advantages:</p>
  *
  * <ul>
  *   <li>Avoid the two levels of indirection (for type check and synchronization).</li>
@@ -43,7 +44,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * </ul>
  *
  * <p>The synchronization is provided mostly in order to prevent damages
- * to the set in case of concurrent accesses. It does <strong>not</strong> prevent
+ * to the set in case of concurrent access. It does <strong>not</strong> prevent
  * {@link java.util.ConcurrentModificationException} to be thrown during iterations,
  * unless the whole iteration is synchronized on this set {@linkplain #getLock() lock}.
  * For real concurrency, see the {@link java.util.concurrent} package instead.</p>
@@ -58,8 +59,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @version 0.3
  * @module
  *
- * @see Collections#checkedSet(Set)
- * @see Collections#synchronizedSet(Set)
+ * @see java.util.Collections#checkedSet(Set)
+ * @see java.util.Collections#synchronizedSet(Set)
  */
 @ThreadSafe
 public class CheckedHashSet<E> extends LinkedHashSet<E> implements CheckedContainer<E>, Cloneable {
@@ -157,7 +158,7 @@ public class CheckedHashSet<E> extends LinkedHashSet<E> implements CheckedContai
      *
      * {@section Note for subclass implementors}
      * Subclasses that override this method must be careful to update the lock reference
-     * when this set is {@linkplain #clone() cloned}.
+     * (if needed) when this set is {@linkplain #clone() cloned}.
      *
      * @return The synchronization lock.
      */
@@ -166,13 +167,27 @@ public class CheckedHashSet<E> extends LinkedHashSet<E> implements CheckedContai
     }
 
     /**
+     * A synchronized iterator with a check for write permission prior element removal.
+     */
+    @ThreadSafe
+    @Decorator(Iterator.class)
+    private final class Iter<E> implements Iterator<E> {
+        final Iterator<E> iterator;
+        Iter(final Iterator<E> iterator)   {this.iterator = iterator;}
+        @Override public boolean hasNext() {synchronized (getLock()) {return                  iterator.hasNext();}}
+        @Override public E       next()    {synchronized (getLock()) {return                  iterator.next();}}
+        @Override public void    remove()  {synchronized (getLock()) {checkWritePermission(); iterator.remove();}}
+    }
+
+    /**
      * Returns an iterator over the elements in this set.
+     * The returned iterator will support {@linkplain Iterator#remove() element removal}
+     * only if the {@link #checkWritePermission()} method does not throw exception.
      */
     @Override
     public Iterator<E> iterator() {
-        final Object lock = getLock();
-        synchronized (lock) {
-            return new SynchronizedIterator<E>(super.iterator(), lock);
+        synchronized (getLock()) {
+            return new Iter<E>(super.iterator());
         }
     }
 
