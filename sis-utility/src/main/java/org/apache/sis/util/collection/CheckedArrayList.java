@@ -18,10 +18,12 @@ package org.apache.sis.util.collection;
 
 import java.util.List;
 import java.util.Iterator;
+import java.util.ListIterator;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import net.jcip.annotations.ThreadSafe;
+import org.apache.sis.util.Decorator;
 import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -166,20 +168,69 @@ public class CheckedArrayList<E> extends ArrayList<E> implements CheckedContaine
     }
 
     /**
+     * A synchronized iterator with a check for write permission prior element removal.
+     */
+    @ThreadSafe
+    @Decorator(Iterator.class)
+    private class Iter<E,I extends Iterator<E>> implements Iterator<E> {
+        final I iterator;
+        Iter(final I iterator)                   {this.iterator = iterator;}
+        @Override public final boolean hasNext() {synchronized (getLock()) {return                  iterator.hasNext();}}
+        @Override public final E       next()    {synchronized (getLock()) {return                  iterator.next();}}
+        @Override public final void    remove()  {synchronized (getLock()) {checkWritePermission(); iterator.remove();}}
+    }
+
+    /**
+     * A synchronized list iterator with a check for write permission prior element removal.
+     */
+    @Decorator(ListIterator.class)
+    private class ListIter<E> extends Iter<E,ListIterator<E>> implements ListIterator<E> {
+        ListIter(final ListIterator<E> iterator) {super(iterator);}
+        @Override public int     nextIndex()     {synchronized (getLock()) {return                  iterator.nextIndex();}}
+        @Override public int     previousIndex() {synchronized (getLock()) {return                  iterator.previousIndex();}}
+        @Override public boolean hasPrevious()   {synchronized (getLock()) {return                  iterator.hasPrevious();}}
+        @Override public E       previous()      {synchronized (getLock()) {return                  iterator.previous();}}
+        @Override public void    set(final E e)  {synchronized (getLock()) {checkWritePermission(); iterator.set(e);}}
+        @Override public void    add(final E e)  {synchronized (getLock()) {checkWritePermission(); iterator.add(e);}}
+    }
+
+    /**
      * Returns an iterator over the elements in this list.
+     * The returned iterator will support {@linkplain Iterator#remove() element removal}
+     * only if the {@link #checkWritePermission()} method does not throw exception.
      */
     @Override
     public Iterator<E> iterator() {
-        final Object lock = getLock();
-        synchronized (lock) {
-            return new SynchronizedIterator<>(super.iterator(), lock);
+        synchronized (getLock()) {
+            return new Iter<>(super.iterator());
         }
     }
 
-    // Note: providing a synchronized iterator is a little bit of paranoia because the ArrayList
-    // implementation inherits the default AbstractList implementation, which delegate its work
-    // to the public List methods. All the later are already synchronized. We do not override
-    // ListIterator for this reason and because it is less used.
+    /**
+     * Returns an iterator over the elements in this list.
+     * The returned iterator will support {@linkplain ListIterator#remove() element removal},
+     * {@linkplain ListIterator#add(Object) addition} or {@linkplain ListIterator#set(Object)
+     * modification} only if the {@link #checkWritePermission()} method does not throw exception.
+     */
+    @Override
+    public ListIterator<E> listIterator() {
+        synchronized (getLock()) {
+            return new ListIter<>(super.listIterator());
+        }
+    }
+
+    /**
+     * Returns an iterator over the elements in this list, starting at the given index.
+     * The returned iterator will support {@linkplain ListIterator#remove() element removal},
+     * {@linkplain ListIterator#add(Object) addition} or {@linkplain ListIterator#set(Object)
+     * modification} only if the {@link #checkWritePermission()} method does not throw exception.
+     */
+    @Override
+    public ListIterator<E> listIterator(final int index) {
+        synchronized (getLock()) {
+            return new ListIter<>(super.listIterator(index));
+        }
+    }
 
     /**
      * Returns the number of elements in this list.
