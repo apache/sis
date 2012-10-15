@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import net.jcip.annotations.ThreadSafe;
+import org.apache.sis.util.Decorator;
 import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -166,13 +167,27 @@ public class CheckedHashSet<E> extends LinkedHashSet<E> implements CheckedContai
     }
 
     /**
+     * A synchronized iterator with a check for write permission prior element removal.
+     */
+    @ThreadSafe
+    @Decorator(Iterator.class)
+    private final class Iter<E> implements Iterator<E> {
+        final Iterator<E> iterator;
+        Iter(final Iterator<E> iterator)   {this.iterator = iterator;}
+        @Override public boolean hasNext() {synchronized (getLock()) {return                  iterator.hasNext();}}
+        @Override public E       next()    {synchronized (getLock()) {return                  iterator.next();}}
+        @Override public void    remove()  {synchronized (getLock()) {checkWritePermission(); iterator.remove();}}
+    }
+
+    /**
      * Returns an iterator over the elements in this set.
+     * The returned iterator will support {@linkplain Iterator#remove() element removal}
+     * only if the {@link #checkWritePermission()} method does not throw exception.
      */
     @Override
     public Iterator<E> iterator() {
-        final Object lock = getLock();
-        synchronized (lock) {
-            return new SynchronizedIterator<E>(super.iterator(), lock);
+        synchronized (getLock()) {
+            return new Iter<E>(super.iterator());
         }
     }
 
