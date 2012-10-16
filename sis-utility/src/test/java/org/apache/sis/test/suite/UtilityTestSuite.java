@@ -48,7 +48,8 @@ import org.junit.runners.Suite;
   org.apache.sis.internal.util.ReferenceQueueConsumerTest.class,
   org.apache.sis.util.collection.WeakHashSetTest.class,
   org.apache.sis.util.collection.WeakValueHashMapTest.class,
-  org.apache.sis.util.collection.CacheTest.class
+  org.apache.sis.util.collection.CacheTest.class,
+  org.apache.sis.xml.XLinkTest.class
 })
 public final strictfp class UtilityTestSuite extends TestSuite {
 }
