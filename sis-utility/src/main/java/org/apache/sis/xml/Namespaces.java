@@ -20,8 +20,8 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
 import javax.xml.XMLConstants;
-
 import org.apache.sis.util.Static;
+import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -163,11 +163,15 @@ public final class Namespaces extends Static {
     /**
      * Returns the preferred prefix for the given name space URI.
      *
-     * @param  namespace  The name space URI for which the prefix needs to be found. Can not be {@code null}.
-     * @param  suggestion The suggested prefix, returned if the given name space is not recognized.
-     * @return The prefix inferred from the name space URI.
+     * @param  namespace    The name space URI for which the prefix needs to be found.
+     *                      Can not be {@code null}.
+     * @param  defaultValue The default prefix to returned if the given {@code namespace}
+     *                      is not recognized, or {@code null}.
+     * @return The prefix inferred from the name space URI, or {@code null} if the given name space
+     *         is unrecognized and the {@code defaultValue} is null.
      */
-    public static String getPreferredPrefix(String namespace, final String suggestion) {
+    public static String getPreferredPrefix(String namespace, final String defaultValue) {
+        ArgumentChecks.ensureNonNull("namespace", namespace);
         String prefix = SPECIFIC_URLS.get(namespace);
         if (prefix != null) {
             return prefix;
@@ -185,6 +189,6 @@ public final class Namespaces extends Static {
                 return prefix;
             }
         }
-        return suggestion;
+        return defaultValue;
     }
 }
