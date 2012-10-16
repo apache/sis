@@ -18,7 +18,6 @@ package org.apache.sis.xml;
 
 import java.net.URI;
 import java.util.Locale;
-import java.util.Objects;
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
@@ -30,6 +29,9 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
+
+// Related to JDK7
+import java.util.Objects;
 
 
 /**
