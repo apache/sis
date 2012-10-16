@@ -54,34 +54,34 @@ import org.apache.sis.internal.util.Objects;
  *   <th width="14%">{@link XLink.Type#RESOURCE resource}</th>
  *   <th width="14%">{@link XLink.Type#TITLE title}</th>
  * </tr>
- *   <tr align="center"><th align="left">&nbsp;{@link #getType() type}</th>
+ *   <tr align="center"><td><b>{@link #getType() type}</b></td>
  *   <td>R</td><td>R</td><td>R</td><td>R</td><td>R</td><td>R</td>
  * </tr>
- *   <tr align="center"><th align="left">&nbsp;{@link #getHRef() href}</th>
+ *   <tr align="center"><td><b>{@link #getHRef() href}</b></td>
  *   <td>O</td><td>&nbsp;</td><td>R</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
  * </tr>
- *   <tr align="center"><th align="left">&nbsp;{@link #getRole() role}</th>
+ *   <tr align="center"><td><b>{@link #getRole() role}</b></td>
  *   <td>O</td><td>O</td><td>O</td><td>&nbsp;</td><td>O</td><td>&nbsp;</td>
  * </tr>
- *   <tr align="center"><th align="left">&nbsp;{@link #getArcRole() arcrole}</th>
+ *   <tr align="center"><td><b>{@link #getArcRole() arcrole}</b></td>
  *   <td>O</td><td>&nbsp;</td><td>&nbsp;</td><td>O</td><td>&nbsp;</td><td>&nbsp;</td>
  * </tr>
- *   <tr align="center"><th align="left">&nbsp;{@link #getTitle() title}</th>
+ *   <tr align="center"><td><b>{@link #getTitle() title}</b></td>
  *   <td>O</td><td>O</td><td>O</td><td>O</td><td>O</td><td>&nbsp;</td>
  * </tr>
- *   <tr align="center"><th align="left">&nbsp;{@link #getShow() show}</th>
+ *   <tr align="center"><td><b>{@link #getShow() show}</b></td>
  *   <td>O</td><td>&nbsp;</td><td>&nbsp;</td><td>O</td><td>&nbsp;</td><td>&nbsp;</td>
  * </tr>
- *   <tr align="center"><th align="left">&nbsp;{@link #getActuate() actuate}</th>
+ *   <tr align="center"><td><b>{@link #getActuate() actuate}</b></td>
  *   <td>O</td><td>&nbsp;</td><td>&nbsp;</td><td>O</td><td>&nbsp;</td><td>&nbsp;</td>
  * </tr>
- *   <tr align="center"><th align="left">&nbsp;{@link #getLabel() label}</th>
+ *   <tr align="center"><td><b>{@link #getLabel() label}</b></td>
  *   <td>&nbsp;</td><td>&nbsp;</td><td>O</td><td>&nbsp;</td><td>O</td><td>&nbsp;</td>
  * </tr>
- *   <tr align="center"><th align="left">&nbsp;{@link #getFrom() from}</th>
+ *   <tr align="center"><td><b>{@link #getFrom() from}</b></td>
  *   <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>O</td><td>&nbsp;</td><td>&nbsp;</td>
  * </tr>
- *   <tr align="center"><th align="left">&nbsp;{@link #getTo() to}</th>
+ *   <tr align="center"><td><b>{@link #getTo() to}</b></td>
  *   <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>O</td><td>&nbsp;</td><td>&nbsp;</td>
  * </tr></table></blockquote>
  *
@@ -292,6 +292,7 @@ public class XLink implements Serializable {
         /**
          * A bitmask which specified the non-null fields expected for a given type.
          * The bit values are:
+         * <p>
          * <ul>
          *   <li>{@code type}:     0x1</li>
          *   <li>{@code href}:     0x2</li>
@@ -344,7 +345,7 @@ public class XLink implements Serializable {
 
     /**
      * Returns the type of link. May have one of the following values:
-     *
+     * <p>
      * <ul>
      *   <li><b>simple:</b>   a simple link</li>
      *   <li><b>extended:</b> an extended, possibly multi-resource, link</li>
@@ -782,8 +783,6 @@ public class XLink implements Serializable {
      * method will throw an {@link UnsupportedOperationException}.
      * <p>
      * After the first call to this method, any subsequent calls have no effect.
-     *
-     * @todo We have a hole, since the {@link #getTitle() title} attribute could be modifiable...
      */
     public synchronized void freeze() {
         if (hashCode == 0) {

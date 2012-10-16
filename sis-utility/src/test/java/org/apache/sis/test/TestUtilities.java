@@ -19,6 +19,7 @@ package org.apache.sis.test;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.Iterator;
 import java.util.concurrent.Callable;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.text.DateFormat;
@@ -93,6 +94,23 @@ public final strictfp class TestUtilities extends Static {
         synchronized (dateFormat) {
             return dateFormat.format(date);
         }
+    }
+
+    /**
+     * Returns the single element from the given collection. If the given collection is null
+     * or does not contains exactly one element, then an {@link AssertionError} is thrown.
+     *
+     * @param  <E> The type of collection elements.
+     * @param  collection The collection from which to get the singleton.
+     * @return The singleton element from the collection.
+     */
+    public static <E> E getSingleton(final Iterable<? extends E> collection) {
+        assertNotNull("Null collection.", collection);
+        final Iterator<? extends E> it = collection.iterator();
+        assertTrue("The collection is empty.", it.hasNext());
+        final E element = it.next();
+        assertFalse("The collection has more than one element.", it.hasNext());
+        return element;
     }
 
     /**

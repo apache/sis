@@ -167,6 +167,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int UnmodifiableObject_1 = 26;
 
         /**
+         * Can not handle instances of ‘{0}’ because arbitrary implementations are not yet supported.
+         */
+        public static final int UnsupportedImplementation_1 = 28;
+
+        /**
          * The ‘{0}’ operation is unsupported.
          */
         public static final int UnsupportedOperation_1 = 20;
