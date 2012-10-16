@@ -132,6 +132,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int UnexpectedArgumentDimension_3 = 5;
 
         /**
+         * The ‘{0}’ operation is unsupported.
+         */
+        public static final int UnsupportedOperation_1 = 20;
+
+        /**
          * A value is already defined for “{0}”.
          */
         public static final int ValueAlreadyDefined_1 = 13;
