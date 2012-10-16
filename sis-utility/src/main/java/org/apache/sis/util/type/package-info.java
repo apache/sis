@@ -30,7 +30,7 @@
  *   </li>
  *   <li>Implementations of {@link org.opengis.util.GenericName}:
  *     <ul>
- *       <li>{@link org.apache.sis.util.type.DefaultLocalName} for identifier within a name space.</li>
+ *       <li>{@link org.apache.sis.util.type.DefaultLocalName} for identifier within a namespace.</li>
  *       <li>{@link org.apache.sis.util.type.DefaultScopedName} for a composite of a <cite>head</cite>
  *           name and a <cite>tail</cite> name.</li>
  *     </ul>
