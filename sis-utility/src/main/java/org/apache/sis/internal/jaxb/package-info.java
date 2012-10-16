@@ -23,6 +23,15 @@
  * This package is for internal use by SIS only. Classes in this package
  * may change in incompatible ways in any future version without notice.
  *
+ * {@section Main content}
+ * {@link org.apache.sis.internal.jaxb.IdentifierMapAdapter} is our internal implementation of
+ * the public {@link org.apache.sis.xml.IdentifierMap} interface. The actual implementation is
+ * usually the {@code IdentifierMapWithSpecialCases} subclass.
+ *
+ * <p>{@link org.apache.sis.internal.jaxb.SpecializedIdentifier} wraps {@link org.apache.sis.xml.XLink},
+ * {@link java.net.URI} and {@link java.util.UUID} as {@link org.opengis.metadata.Identifier} instances.
+ * This is used for storing the value in a list of identifiers while preserving the original object.</p>
+ *
  * @author  Cédric Briançon (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
  * @version 0.3
