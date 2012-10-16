@@ -30,7 +30,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
 /**
- * A {@linkplain java.util.Collections#checkedSet(Set) checked} and
+ * A {@linkplain java.util.Collections#checkedSet(Set, Class) checked} and
  * {@linkplain java.util.Collections#synchronizedSet(Set) synchronized} {@link LinkedHashSet}.
  * The type checks are performed at run-time in addition to the compile-time checks.
  *
