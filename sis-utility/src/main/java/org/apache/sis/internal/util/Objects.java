@@ -157,4 +157,14 @@ public final class Objects {
         }
         return object1.equals(object2);
     }
+
+    /**
+     * Delegates to {@link Arrays#hashCode(Object[])}.
+     *
+     * @param  values The object for which to compute hash code values.
+     * @return The hash code value for the given objects.
+     */
+    public static int hash(Object... values) {
+        return Arrays.hashCode(values);
+    }
 }

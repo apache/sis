@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.NoSuchElementException;
 import net.jcip.annotations.ThreadSafe;
 import org.apache.sis.util.Decorator;
 import org.apache.sis.util.resources.Errors;
@@ -168,15 +169,45 @@ public class CheckedHashSet<E> extends LinkedHashSet<E> implements CheckedContai
 
     /**
      * A synchronized iterator with a check for write permission prior element removal.
+     * This class wraps the iterator provided by {@link LinkedHashSet#iterator()}.
+     *
+     * @see CheckedHashSet#iterator()
      */
     @ThreadSafe
     @Decorator(Iterator.class)
-    private final class Iter<E> implements Iterator<E> {
-        final Iterator<E> iterator;
-        Iter(final Iterator<E> iterator)   {this.iterator = iterator;}
-        @Override public boolean hasNext() {synchronized (getLock()) {return                  iterator.hasNext();}}
-        @Override public E       next()    {synchronized (getLock()) {return                  iterator.next();}}
-        @Override public void    remove()  {synchronized (getLock()) {checkWritePermission(); iterator.remove();}}
+    private final class Iter implements Iterator<E> {
+        /** The {@link LinkedHashSet} iterator. */
+        private final Iterator<E> iterator;
+
+        /** Creates a new wrapper for the given {@link LinkedHashSet} iterator. */
+        Iter(final Iterator<E> iterator) {
+            this.iterator = iterator;
+        }
+
+        /** Returns {@code true} if there is more elements in the iteration. */
+        @Override
+        public boolean hasNext() {
+            synchronized (getLock()) {
+                return iterator.hasNext();
+            }
+        }
+
+        /** Returns the next element in the iteration. */
+        @Override
+        public E next() throws NoSuchElementException {
+            synchronized (getLock()) {
+                return iterator.next();
+            }
+        }
+
+        /** Removes the previous element if the enclosing {@link CheckedHashSet} allows write operations. */
+        @Override
+        public void remove() throws UnsupportedOperationException {
+            synchronized (getLock()) {
+                checkWritePermission();
+                iterator.remove();
+            }
+        }
     }
 
     /**
@@ -187,7 +218,7 @@ public class CheckedHashSet<E> extends LinkedHashSet<E> implements CheckedContai
     @Override
     public Iterator<E> iterator() {
         synchronized (getLock()) {
-            return new Iter<E>(super.iterator());
+            return new Iter(super.iterator());
         }
     }
 
