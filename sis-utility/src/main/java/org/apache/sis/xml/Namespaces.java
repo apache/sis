@@ -25,7 +25,7 @@ import org.apache.sis.util.ArgumentChecks;
 
 
 /**
- * List some name spaces URLs used by JAXB when (un)marshalling.
+ * List some namespaces URLs used by JAXB when (un)marshalling.
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Quentin Boileau (Geomatys)
@@ -161,13 +161,13 @@ public final class Namespaces extends Static {
     }
 
     /**
-     * Returns the preferred prefix for the given name space URI.
+     * Returns the preferred prefix for the given namespace URI.
      *
-     * @param  namespace    The name space URI for which the prefix needs to be found.
+     * @param  namespace    The namespace URI for which the prefix needs to be found.
      *                      Can not be {@code null}.
      * @param  defaultValue The default prefix to returned if the given {@code namespace}
      *                      is not recognized, or {@code null}.
-     * @return The prefix inferred from the name space URI, or {@code null} if the given name space
+     * @return The prefix inferred from the namespace URI, or {@code null} if the given namespace
      *         is unrecognized and the {@code defaultValue} is null.
      */
     public static String getPreferredPrefix(String namespace, final String defaultValue) {

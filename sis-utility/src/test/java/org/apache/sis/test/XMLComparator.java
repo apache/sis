@@ -87,10 +87,10 @@ public strictfp class XMLComparator {
 
     /**
      * The fully-qualified name of attributes to ignore in comparisons. The name shall be in
-     * the form {@code "namespace:name"}, or only {@code "name"} if there is no name space.
-     * In order to ignore everything in a name space, use {@code "namespace:*"}.
+     * the form {@code "namespace:name"}, or only {@code "name"} if there is no namespace.
+     * In order to ignore everything in a namespace, use {@code "namespace:*"}.
      * <p>
-     * For example in order to ignore the name space, type and schema location declaration,
+     * For example in order to ignore the namespace, type and schema location declaration,
      * the following strings can be added in this set:
      *
      * {@preformat text
@@ -105,8 +105,8 @@ public strictfp class XMLComparator {
 
     /**
      * The fully-qualified name of nodes to ignore in comparisons. The name shall be in the form
-     * {@code "namespace:name"}, or only {@code "name"} if there is no name space. In order to
-     * ignore everything in a name space, use {@code "namespace:*"}.
+     * {@code "namespace:name"}, or only {@code "name"} if there is no namespace. In order to
+     * ignore everything in a namespace, use {@code "namespace:*"}.
      * <p>
      * This set provides a way to ignore a node of the given name <em>and all its children</em>.
      * In order to ignore a node but still compare its children, override the
@@ -361,10 +361,10 @@ public strictfp class XMLComparator {
     }
 
     /**
-     * Compares the names and name spaces of the given node.
+     * Compares the names and namespaces of the given node.
      * Subclasses can override this method if they need a different comparison.
      *
-     * @param expected The node having the expected name and name space.
+     * @param expected The node having the expected name and namespace.
      * @param actual The node to compare.
      */
     protected void compareNames(final Node expected, final Node actual) {
@@ -413,7 +413,7 @@ public strictfp class XMLComparator {
      * Returns {@code true} if the given node or attribute shall be ignored.
      *
      * @param ignored The set of node or attribute fully qualified names to ignore.
-     * @param ns      The node or attribute name space, or {@code null}.
+     * @param ns      The node or attribute namespace, or {@code null}.
      * @param name    The node or attribute name.
      * @return        {@coce true} if the node or attribute shall be ignored.
      */
@@ -490,7 +490,7 @@ public strictfp class XMLComparator {
      * Verifies that the given property (text or number) are equal, ignoring spaces. If they are
      * not equal, then an error message is formatted using the given property name and nodes.
      *
-     * @param propertyName The name of the property being compared (typically "name", "name space", etc.).
+     * @param propertyName The name of the property being compared (typically "name", "namespace", etc.).
      * @param expected     The property value from the expected node to compare.
      * @param actual       The property value to compare to the expected one.
      * @param expectedNode The node from which the expected property has been fetched.

@@ -23,7 +23,7 @@ import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
 
 
 /**
- * Some identifier name spaces that are handled in a special way. The identifier name spaces are
+ * Some identifier namespaces that are handled in a special way. The identifier namespaces are
  * usually defined as authorities in the {@link org.apache.sis.metadata.iso.citation.Citations}
  * class. However a few identifiers defined in the {@code gco:ObjectIdentification} XML attribute
  * group are handled in a special way. For example identifiers associated to the {@link #HREF}
@@ -107,7 +107,7 @@ public interface IdentifierSpace<T> extends Citation {
      *       {@code "gco:uuid"} or {@code "xlink:href"}.</p></li>
      *
      *   <li><p>For the constants defined in the {@link org.apache.sis.metadata.iso.citation.Citations}
-     *       class, this is the identifier name space. They are usually not XML attribute name because those
+     *       class, this is the identifier namespace. They are usually not XML attribute name because those
      *       identifiers are marshalled as {@code <MD_Identifier>} XML elements rather than attributes.</p></li>
      * </ul>
      *
