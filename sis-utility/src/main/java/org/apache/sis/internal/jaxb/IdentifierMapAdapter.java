@@ -24,13 +24,15 @@ import java.util.Collections;
 import java.util.AbstractSet;
 import java.util.AbstractMap;
 import java.util.NoSuchElementException;
-import java.util.Objects;
 import java.io.Serializable;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.IdentifierMap;
+
+// Related to JDK7
+import java.util.Objects;
 
 import static org.apache.sis.util.collection.Collections.hashMapCapacity;
 
