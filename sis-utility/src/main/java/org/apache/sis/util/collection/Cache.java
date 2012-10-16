@@ -32,6 +32,7 @@ import net.jcip.annotations.GuardedBy;
 import net.jcip.annotations.ThreadSafe;
 
 import org.apache.sis.util.Disposable;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.ReferenceQueueConsumer;
 
@@ -204,14 +205,8 @@ public class Cache<K,V> extends AbstractMap<K,V> {
      * @param soft If {@code true}, use {@link SoftReference} instead of {@link WeakReference}.
      */
     public Cache(int initialCapacity, final long costLimit, final boolean soft) {
-        if (initialCapacity < 1) {
-            throw new IllegalArgumentException(Errors.format(
-                    Errors.Keys.IllegalArgumentValue_2, "initialCapacity", initialCapacity));
-        }
-        if (costLimit < 0) {
-            throw new IllegalArgumentException(Errors.format(
-                    Errors.Keys.IllegalArgumentValue_2, "costLimit", costLimit));
-        }
+        ArgumentChecks.ensureStrictlyPositive("initialCapacity", initialCapacity);
+        ArgumentChecks.ensurePositive("costLimit", costLimit);
         initialCapacity = Collections.hashMapCapacity(initialCapacity);
         this.map        = new ConcurrentHashMap<>(initialCapacity);
         this.costs      = new LinkedHashMap<>((int) Math.min(initialCapacity, costLimit), 0.75f, true);
