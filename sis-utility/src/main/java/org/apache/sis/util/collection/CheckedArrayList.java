@@ -22,6 +22,7 @@ import java.util.ListIterator;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.NoSuchElementException;
 import net.jcip.annotations.ThreadSafe;
 import org.apache.sis.util.Decorator;
 import org.apache.sis.util.resources.Errors;
@@ -169,29 +170,113 @@ public class CheckedArrayList<E> extends ArrayList<E> implements CheckedContaine
 
     /**
      * A synchronized iterator with a check for write permission prior element removal.
+     * This class wraps the iterator provided by {@link ArrayList#iterator()}, and is
+     * also the base class for the wrapper around {@link ArrayList#listIterator()}.
+     *
+     * @see CheckedArrayList#iterator()
      */
     @ThreadSafe
     @Decorator(Iterator.class)
-    private class Iter<E,I extends Iterator<E>> implements Iterator<E> {
-        final I iterator;
-        Iter(final I iterator)                   {this.iterator = iterator;}
-        @Override public final boolean hasNext() {synchronized (getLock()) {return                  iterator.hasNext();}}
-        @Override public final E       next()    {synchronized (getLock()) {return                  iterator.next();}}
-        @Override public final void    remove()  {synchronized (getLock()) {checkWritePermission(); iterator.remove();}}
+    private class Iter<I extends Iterator<E>> implements Iterator<E> {
+        /** The {@link ArrayList} iterator. */
+        protected final I iterator;
+
+        /** Creates a new wrapper for the given {@link ArrayList} iterator. */
+        Iter(final I iterator) {
+            this.iterator = iterator;
+        }
+
+        /** Returns {@code true} if there is more elements in the iteration. */
+        @Override
+        public final boolean hasNext() {
+            synchronized (getLock()) {
+                return iterator.hasNext();
+            }
+        }
+
+        /** Returns the next element in the iteration. */
+        @Override
+        public final E next() throws NoSuchElementException {
+            synchronized (getLock()) {
+                return iterator.next();
+            }
+        }
+
+        /** Removes the previous element if the enclosing {@link CheckedArrayList} allows write operations. */
+        @Override
+        public final void remove() throws UnsupportedOperationException {
+            synchronized (getLock()) {
+                checkWritePermission();
+                iterator.remove();
+            }
+        }
     }
 
     /**
      * A synchronized list iterator with a check for write permission prior element removal.
+     * This class wraps the iterator provided by {@link ArrayList#listIterator()}.
+     *
+     * @see CheckedArrayList#listIterator()
+     * @see CheckedArrayList#listIterator(int)
      */
     @Decorator(ListIterator.class)
-    private class ListIter<E> extends Iter<E,ListIterator<E>> implements ListIterator<E> {
-        ListIter(final ListIterator<E> iterator) {super(iterator);}
-        @Override public int     nextIndex()     {synchronized (getLock()) {return                  iterator.nextIndex();}}
-        @Override public int     previousIndex() {synchronized (getLock()) {return                  iterator.previousIndex();}}
-        @Override public boolean hasPrevious()   {synchronized (getLock()) {return                  iterator.hasPrevious();}}
-        @Override public E       previous()      {synchronized (getLock()) {return                  iterator.previous();}}
-        @Override public void    set(final E e)  {synchronized (getLock()) {checkWritePermission(); iterator.set(e);}}
-        @Override public void    add(final E e)  {synchronized (getLock()) {checkWritePermission(); iterator.add(e);}}
+    private class ListIter extends Iter<ListIterator<E>> implements ListIterator<E> {
+        /** Creates a new wrapper for the given {@link ArrayList} list iterator. */
+        ListIter(final ListIterator<E> iterator) {
+            super(iterator);
+        }
+
+        /** Returns the index of the element to be returned by {@link #next()}. */
+        @Override
+        public int nextIndex() {
+            synchronized (getLock()) {
+                return iterator.nextIndex();
+            }
+        }
+
+        /** Returns the index of the element to be returned by {@link #previous()}. */
+        @Override
+        public int previousIndex() {
+            synchronized (getLock()) {
+                return iterator.previousIndex();
+            }
+        }
+
+        /** Returns {@code true} if there is elements before current position. */
+        @Override
+        public boolean hasPrevious() {
+            synchronized (getLock()) {
+                return iterator.hasPrevious();
+            }
+        }
+
+        /** Returns the previous element in the iteration. */
+        @Override
+        public E previous() throws NoSuchElementException {
+            synchronized (getLock()) {
+                return iterator.previous();
+            }
+        }
+
+        /** See the {@link CheckedArrayList#set(int, Object)} method contract. */
+        @Override
+        public void set(final E element) throws IllegalArgumentException, UnsupportedOperationException {
+            ensureValid(element);
+            synchronized (getLock()) {
+                checkWritePermission();
+                iterator.set(element);
+            }
+        }
+
+        /** See the {@link CheckedArrayList#add(Object)} method contract. */
+        @Override
+        public void add(final E element) throws IllegalArgumentException, UnsupportedOperationException {
+            ensureValid(element);
+            synchronized (getLock()) {
+                checkWritePermission();
+                iterator.add(element);
+            }
+        }
     }
 
     /**
@@ -202,7 +287,7 @@ public class CheckedArrayList<E> extends ArrayList<E> implements CheckedContaine
     @Override
     public Iterator<E> iterator() {
         synchronized (getLock()) {
-            return new Iter<E,Iterator<E>>(super.iterator());
+            return new Iter<Iterator<E>>(super.iterator());
         }
     }
 
@@ -215,7 +300,7 @@ public class CheckedArrayList<E> extends ArrayList<E> implements CheckedContaine
     @Override
     public ListIterator<E> listIterator() {
         synchronized (getLock()) {
-            return new ListIter<E>(super.listIterator());
+            return new ListIter(super.listIterator());
         }
     }
 
@@ -228,7 +313,7 @@ public class CheckedArrayList<E> extends ArrayList<E> implements CheckedContaine
     @Override
     public ListIterator<E> listIterator(final int index) {
         synchronized (getLock()) {
-            return new ListIter<E>(super.listIterator(index));
+            return new ListIter(super.listIterator(index));
         }
     }
 
