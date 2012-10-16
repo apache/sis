@@ -22,9 +22,7 @@ import java.util.Collection;
 import java.io.Serializable;
 import java.io.ObjectStreamException;
 import java.lang.reflect.Field;
-
 import org.opengis.metadata.Identifier;
-
 import org.apache.sis.internal.simple.SimpleCitation;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.xml.IdentifierSpace;

@@ -19,13 +19,13 @@ package org.apache.sis.internal.jaxb;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
-import java.util.Objects;
-
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
-
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.XLink;
+
+// Related to JDK7
+import java.util.Objects;
 
 
 /**
