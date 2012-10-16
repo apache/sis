@@ -31,7 +31,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
 /**
- * A {@linkplain java.util.Collections#checkedMap(Map) checked} and
+ * A {@linkplain java.util.Collections#checkedMap(Map, Class, Class) checked} and
  * {@linkplain java.util.Collections#synchronizedMap(Map) synchronized} {@link LinkedHashMap}.
  * The type checks are performed at run-time in addition to the compile-time checks.
  *

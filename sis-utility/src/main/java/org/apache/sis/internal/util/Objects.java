@@ -167,4 +167,19 @@ public final class Objects {
     public static int hash(Object... values) {
         return Arrays.hashCode(values);
     }
+
+    /**
+     * Returns the hash code of the given object, or 0 if the object is {@code null}.
+     * If non-null, then the given object is not allowed to be an array.
+     *
+     * @param  object The object for which to compute the hash code.
+     * @return The hash code of the given object.
+     */
+    public static int hashCode(final Object object) {
+        if (object == null) {
+            return 0;
+        }
+        assert !object.getClass().isArray() : object;
+        return object.hashCode();
+    }
 }
