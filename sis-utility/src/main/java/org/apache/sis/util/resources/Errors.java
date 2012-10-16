@@ -51,6 +51,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int EmptyArgument_1 = 1;
 
         /**
+         * Attribute “{0}” is not allowed for an object of type ‘{1}’.
+         */
+        public static final int ForbiddenAttribute_2 = 21;
+
+        /**
          * Argument ‘{0}’ can not be an instance of ‘{1}’.
          */
         public static final int IllegalArgumentClass_2 = 17;
@@ -92,6 +97,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int IllegalRange_2 = 11;
 
         /**
+         * Value “{1}” of attribute ‘{0}’ is inconsistent with other attributes.
+         */
+        public static final int InconsistentAttribute_2 = 27;
+
+        /**
          * Index {0} is out of bounds.
          */
         public static final int IndexOutOfBounds_1 = 4;
@@ -100,6 +110,11 @@ public final class Errors extends IndexedResourceBundle {
          * A different value is already associated to the “{0}” key.
          */
         public static final int KeyCollision_1 = 19;
+
+        /**
+         * Attribute “{0}” is mandatory for an object of type ‘{1}’.
+         */
+        public static final int MandatoryAttribute_2 = 22;
 
         /**
          * Argument ‘{0}’ shall not be negative. The given value was {1}.
@@ -130,6 +145,26 @@ public final class Errors extends IndexedResourceBundle {
          * Argument ‘{0}’ has {1} dimensions, while {2} was expected.
          */
         public static final int UnexpectedArgumentDimension_3 = 5;
+
+        /**
+         * This affine transform is unmodifiable.
+         */
+        public static final int UnmodifiableAffineTransform = 23;
+
+        /**
+         * This geometry is unmodifiable.
+         */
+        public static final int UnmodifiableGeometry = 24;
+
+        /**
+         * This metadata is unmodifiable.
+         */
+        public static final int UnmodifiableMetadata = 25;
+
+        /**
+         * Object ‘{0}’ is unmodifiable.
+         */
+        public static final int UnmodifiableObject_1 = 26;
 
         /**
          * The ‘{0}’ operation is unsupported.
