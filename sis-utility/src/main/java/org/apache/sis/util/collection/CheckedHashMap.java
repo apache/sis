@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.NoSuchElementException;
 import net.jcip.annotations.ThreadSafe;
 import org.apache.sis.util.Decorator;
 import org.apache.sis.util.resources.Errors;
@@ -344,15 +345,43 @@ public class CheckedHashMap<K,V> extends LinkedHashMap<K,V> implements Cloneable
 
     /**
      * A synchronized iterator with a check for write permission prior element removal.
+     * This class wraps the iterator provided by the {@link LinkedHashMap} views.
      */
     @ThreadSafe
     @Decorator(Iterator.class)
     private final class Iter<E> implements Iterator<E> {
-        final Iterator<E> iterator;
-        Iter(final Iterator<E> iterator)   {this.iterator = iterator;}
-        @Override public boolean hasNext() {synchronized (getLock()) {return                  iterator.hasNext();}}
-        @Override public E       next()    {synchronized (getLock()) {return                  iterator.next();}}
-        @Override public void    remove()  {synchronized (getLock()) {checkWritePermission(); iterator.remove();}}
+        /** The {@link LinkedHashMap} iterator. */
+        private final Iterator<E> iterator;
+
+        /** Creates a new wrapper for the given {@link LinkedHashMap} iterator. */
+        Iter(final Iterator<E> iterator) {
+            this.iterator = iterator;
+        }
+
+        /** Returns {@code true} if there is more elements in the iteration. */
+        @Override
+        public boolean hasNext() {
+            synchronized (getLock()) {
+                return iterator.hasNext();
+            }
+        }
+
+        /** Returns the next element in the iteration. */
+        @Override
+        public E next() throws NoSuchElementException {
+            synchronized (getLock()) {
+                return iterator.next();
+            }
+        }
+
+        /** Removes the previous element if the enclosing {@link CheckedHashMap} allows write operations. */
+        @Override
+        public void remove() throws UnsupportedOperationException {
+            synchronized (getLock()) {
+                checkWritePermission();
+                iterator.remove();
+            }
+        }
     }
 
     /**
@@ -363,34 +392,141 @@ public class CheckedHashMap<K,V> extends LinkedHashMap<K,V> implements Cloneable
     @ThreadSafe
     @Decorator(Collection.class)
     private class Sync<E> implements Collection<E> {
-        /**
-         * The {@link Map#keySet()}, {@link Map#values()} or {@link Map#entrySet()} view.
-         */
+        /** The {@link Map#keySet()}, {@link Map#values()} or {@link Map#entrySet()} view. */
         private final Collection<E> view;
 
-        /**
-         * Create a new synchronized wrapper for the given view.
-         */
+        /** Create a new synchronized wrapper for the given view. */
         Sync(final Collection<E> view) {
             this.view = view;
         }
 
-        @Override public final void     clear()                           {synchronized (getLock()) {                               view.clear      ( );}}
-        @Override public final int      size()                            {synchronized (getLock()) {                        return view.size       ( );}}
-        @Override public final boolean  isEmpty()                         {synchronized (getLock()) {                        return view.isEmpty    ( );}}
-        @Override public final boolean  contains(Object o)                {synchronized (getLock()) {                        return view.contains   (o);}}
-        @Override public final boolean  containsAll(Collection<?> c)      {synchronized (getLock()) {                        return view.containsAll(c);}}
-        @Override public final boolean  add(E e)                          {synchronized (getLock()) {checkWritePermission(); return view.add        (e);}}
-        @Override public final boolean  addAll(Collection<? extends E> c) {synchronized (getLock()) {checkWritePermission(); return view.addAll     (c);}}
-        @Override public final boolean  remove(Object o)                  {synchronized (getLock()) {checkWritePermission(); return view.remove     (o);}}
-        @Override public final boolean  removeAll(Collection<?> c)        {synchronized (getLock()) {checkWritePermission(); return view.removeAll  (c);}}
-        @Override public final boolean  retainAll(Collection<?> c)        {synchronized (getLock()) {checkWritePermission(); return view.retainAll  (c);}}
-        @Override public final Object[] toArray()                         {synchronized (getLock()) {                        return view.toArray    ( );}}
-        @Override public final <T> T[]  toArray(T[] a)                    {synchronized (getLock()) {                        return view.toArray    (a);}}
-        @Override public final String   toString()                        {synchronized (getLock()) {                        return view.toString   ( );}}
-        @Override public final boolean  equals(Object o)                  {synchronized (getLock()) {                        return view.equals     (o);}}
-        @Override public final int      hashCode()                        {synchronized (getLock()) {                        return view.hashCode   ( );}}
-        @Override public final Iterator<E> iterator()                     {synchronized (getLock()) {return new Iter<>(view.iterator());}}
+        /** Returns a synchronized and checked iterator over the elements in this collection. */
+        @Override
+        public final Iterator<E> iterator() {
+            synchronized (getLock()) {
+                return new Iter<>(view.iterator());
+            }
+        }
+
+        /** Returns the number of elements in the collection. */
+        @Override
+        public final int size() {
+            synchronized (getLock()) {
+                return view.size();
+            }
+        }
+
+        /** Returns {@code true} if the collection is empty. */
+        @Override
+        public final boolean isEmpty() {
+            synchronized (getLock()) {
+                return view.isEmpty();
+            }
+        }
+
+        /** Returns {@code true} if the collection contains the given element. */
+        @Override
+        public final boolean contains(final Object element) {
+            synchronized (getLock()) {
+                return view.contains(element);
+            }
+        }
+
+        /** Returns {@code true} if the collection contains all elements of the given collection. */
+        @Override
+        public final boolean containsAll(final Collection<?> collection) {
+            synchronized (getLock()) {
+                return view.containsAll(collection);
+            }
+        }
+
+        /** Always unsupported operation in hash map views. */
+        @Override
+        public final boolean add(final E element) throws UnsupportedOperationException {
+            throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnsupportedOperation_1, "add"));
+        }
+
+        /** Always unsupported operation in hash map views. */
+        @Override
+        public final boolean addAll(final Collection<? extends E> collection) throws UnsupportedOperationException {
+            throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnsupportedOperation_1, "addAll"));
+        }
+
+        /** Remove the given element if the enclosing {@link CheckedHashMap} supports write operations. */
+        @Override
+        public final boolean remove(final Object element) throws UnsupportedOperationException {
+            synchronized (getLock()) {
+                checkWritePermission();
+                return view.remove(element);
+            }
+        }
+
+        /** Remove the given elements if the enclosing {@link CheckedHashMap} supports write operations. */
+        @Override
+        public final boolean removeAll(final Collection<?> collection) throws UnsupportedOperationException {
+            synchronized (getLock()) {
+                checkWritePermission();
+                return view.removeAll(collection);
+            }
+        }
+
+        /** Retains only the given elements if the enclosing {@link CheckedHashMap} supports write operations. */
+        @Override
+        public final boolean retainAll(final Collection<?> collection) throws UnsupportedOperationException {
+            synchronized (getLock()) {
+                checkWritePermission();
+                return view.retainAll(collection);
+            }
+        }
+
+        /** Removes all elements from the collection. */
+        @Override
+        public final void clear() throws UnsupportedOperationException {
+            synchronized (getLock()) {
+                checkWritePermission();
+                view.clear();
+            }
+        }
+
+        /** Returns the elements in an array. */
+        @Override
+        public final Object[] toArray() {
+            synchronized (getLock()) {
+                return view.toArray();
+            }
+        }
+
+        /** Returns the elements in an array. */
+        @Override
+        public final <T> T[] toArray(final T[] array) {
+            synchronized (getLock()) {
+                return view.toArray(array);
+            }
+        }
+
+        /** Returns a string representation of the elements. */
+        @Override
+        public final String toString() {
+            synchronized (getLock()) {
+                return view.toString();
+            }
+        }
+
+        /** Compare this collection with the given object for equality. */
+        @Override
+        public final boolean equals(final Object other) {
+            synchronized (getLock()) {
+                return view.equals(other);
+            }
+        }
+
+        /** Returns a hash code value for this collection. */
+        @Override
+        public final int hashCode() {
+            synchronized (getLock()) {
+                return view.hashCode();
+            }
+        }
     }
 
     /**
@@ -399,9 +535,7 @@ public class CheckedHashMap<K,V> extends LinkedHashMap<K,V> implements Cloneable
      */
     @Decorator(Set.class)
     private final class SyncSet<E> extends Sync<E> implements Set<E> {
-        /**
-         * Create a new synchronized wrapper for the given view.
-         */
+        /** Create a new synchronized wrapper for the given view. */
         SyncSet(final Set<E> set) {
             super(set);
         }
