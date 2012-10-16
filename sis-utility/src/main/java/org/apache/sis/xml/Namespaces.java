@@ -87,7 +87,7 @@ public final class Namespaces extends Static {
      *
      * @category OGC
      */
-    public static final String CSW_202 = "http://www.opengis.net/cat/csw/2.0.2";
+    public static final String CSW = "http://www.opengis.net/cat/csw/2.0.2";
 
     /**
      * The <code>{@value}</code> URL.

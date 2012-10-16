@@ -31,7 +31,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
 /**
- * A {@linkplain java.util.Collections#checkedList(List) checked} and
+ * A {@linkplain java.util.Collections#checkedList(List, Class) checked} and
  * {@linkplain java.util.Collections#synchronizedList(List) synchronized} {@link ArrayList}.
  * The type checks are performed at run-time in addition to the compile-time checks.
  *
