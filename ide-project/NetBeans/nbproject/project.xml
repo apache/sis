@@ -23,12 +23,15 @@
             <word>deserialization</word>
             <word>deserialized</word>
             <word>initially</word>
+            <word>javadoc</word>
             <word>marshallable</word>
             <word>marshalled</word>
             <word>marshalling</word>
             <word>namespace</word>
             <word>namespaces</word>
+            <word>timezone</word>
             <word>Unicode</word>
+            <word>unmarshalling</word>
         </spellchecker-wordlist>
     </configuration>
 </project>
