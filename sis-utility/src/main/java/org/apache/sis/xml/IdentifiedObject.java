@@ -110,15 +110,15 @@ public interface IdentifiedObject {
      * <p>There is usually a one-to-one relationship between the map entries and the identifier
      * elements, but not always:</p>
      * <ul>
-     *   <li><p>The map view may contain less entries, because the map interface allows only one
+     *   <li>The map view may contain less entries, because the map interface allows only one
      *   entry per authority. If the {@linkplain #getIdentifiers() identifier collection} contains
      *   many identifiers for the same authority, then only the first occurrence is visible through
-     *   this {@code Map} view.</p></li>
+     *   this {@code Map} view.</li>
      *
-     *   <li><p>The map view may also contain more entries than the {@linkplain #getIdentifiers()
+     *   <li>The map view may also contain more entries than the {@linkplain #getIdentifiers()
      *   identifier collection}. For example the {@link org.opengis.metadata.citation.Citation}
      *   interface defines separated attributes for ISBN, ISSN and other identifiers. This map
-     *   view may choose to unify all those attributes in a single view.</p></li>
+     *   view may choose to unify all those attributes in a single view.</li>
      * </ul>
      *
      * <p>The map supports {@link IdentifierMap#put(Object, Object) put} operations

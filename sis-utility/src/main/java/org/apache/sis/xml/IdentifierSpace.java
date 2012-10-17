@@ -100,15 +100,15 @@ public interface IdentifierSpace<T> extends Citation {
 
     /**
      * Returns the name of this identifier space.
-     *
+     * <p>
      * <ul>
-     *   <li><p>For the constants defined in this {@code IdentifierSpace} interface, this is
+     *   <li>For the constants defined in this {@code IdentifierSpace} interface, this is
      *       the XML attribute name with its prefix. Attribute names can be {@code "gml:id"},
-     *       {@code "gco:uuid"} or {@code "xlink:href"}.</p></li>
+     *       {@code "gco:uuid"} or {@code "xlink:href"}.</li>
      *
-     *   <li><p>For the constants defined in the {@link org.apache.sis.metadata.iso.citation.Citations}
+     *   <li>For the constants defined in the {@link org.apache.sis.metadata.iso.citation.Citations}
      *       class, this is the identifier namespace. They are usually not XML attribute name because those
-     *       identifiers are marshalled as {@code <MD_Identifier>} XML elements rather than attributes.</p></li>
+     *       identifiers are marshalled as {@code <MD_Identifier>} XML elements rather than attributes.</li>
      * </ul>
      *
      * @return The name of this identifier space (may be XML attribute name).

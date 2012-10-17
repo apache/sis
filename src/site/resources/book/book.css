@@ -62,6 +62,12 @@ table tr td {
   padding-right: 9pt;
 }
 
+table tr td.leftBorder {
+  border-left-style: solid;
+  border-left-width: 1pt;
+  border-left-color: lightgray;
+}
+
 table tr td.separator {
   font-weight: bold;
   text-align: center;
