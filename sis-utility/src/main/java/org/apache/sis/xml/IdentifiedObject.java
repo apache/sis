@@ -64,7 +64,7 @@ import org.opengis.metadata.citation.Citation;
  * @module
  *
  * @see IdentifierSpace
- * @see org.geotoolkit.metadata.iso.MetadataEntity
+ * @see org.apache.sis.metadata.iso.MetadataEntity
  * @see ObjectLinker#newIdentifiedObject(Class, Identifier[])
  */
 public interface IdentifiedObject {
@@ -74,13 +74,13 @@ public interface IdentifiedObject {
      * authority} name space. Examples of namespace are:
      * <p>
      * <ul>
-     *   <li>{@linkplain org.geotoolkit.metadata.iso.citation.Citations#EPSG EPSG} codes</li>
+     *   <li>{@linkplain org.apache.sis.metadata.iso.citation.Citations#EPSG EPSG} codes</li>
      *   <li><cite>Universal Product Code</cite> (UPC)</li>
      *   <li><cite>National Stock Number</cite> (NSN)</li>
      *   <li><cite>International Standard Book Number</cite>
-     *       ({@linkplain org.geotoolkit.metadata.iso.citation.Citations#ISBN ISBN})</li>
+     *       ({@linkplain org.apache.sis.metadata.iso.citation.Citations#ISBN ISBN})</li>
      *   <li><cite>International Standard Serial Number</cite>
-     *       ({@linkplain org.geotoolkit.metadata.iso.citation.Citations#ISSN ISSN})</li>
+     *       ({@linkplain org.apache.sis.metadata.iso.citation.Citations#ISSN ISSN})</li>
      *   <li><cite>Universally Unique Identifier</cite> ({@linkplain java.util.UUID})</li>
      *   <li>XML {@linkplain IdentifierSpace#ID ID} attribute</li>
      *   <li>{@linkplain XLink} ({@code href}, {@code role}, {@code arcrole}, {@code title},
@@ -92,9 +92,9 @@ public interface IdentifiedObject {
      *
      * @return All identifiers associated to this object, or an empty collection if none.
      *
-     * @see org.geotoolkit.metadata.iso.citation.DefaultCitation#getIdentifiers()
-     * @see org.geotoolkit.metadata.iso.acquisition.DefaultObjective#getIdentifiers()
-     * @see org.geotoolkit.referencing.AbstractIdentifiedObject#getIdentifiers()
+     * @see org.apache.sis.metadata.iso.citation.DefaultCitation#getIdentifiers()
+     * @see org.apache.sis.metadata.iso.acquisition.DefaultObjective#getIdentifiers()
+     * @see org.apache.sis.referencing.AbstractIdentifiedObject#getIdentifiers()
      */
     Collection<? extends Identifier> getIdentifiers();
 
