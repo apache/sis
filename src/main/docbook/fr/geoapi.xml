@@ -24,11 +24,11 @@
       (due aux nombreuses publications en lien avec les standards de l’OGC), ainsi que d’une interopérabilité accrue.
       L’interopérabilité est facilitée par une meilleure séparation entre les applications qui <emphasis>appellent</emphasis> les fonctions de GeoAPI,
       et les bibliothèques qui <emphasis>implémentent</emphasis> GeoAPI. Il s’agit d’une séparation similaire à celle qu’offrent les interfaces
-      <link xlink:href="http://docs.oracle.com/javase/7/docs/technotes/guides/jdbc/"><acronym>JDBC</acronym></link>
+      <link xlink:href="&javase-docs;/technotes/guides/jdbc/"><acronym>JDBC</acronym></link>
       (<foreignphrase>Java Database Connectivity</foreignphrase>) du Java standard.
       En utilisant l’<acronym>API</acronym> des interfaces, les développeurs peuvent faire abstraction de l’implémentation sous-jacente.
       Par exemple ils peuvent effectuer des projections cartographiques à l’aide des bibliothèques
-      <link xlink:href="http://www.geoapi.org/geoapi-proj4/index.html">Proj.4</link> ou Apache SIS,
+      <link xlink:href="http://www.geoapi.org/geoapi-proj4/index.html">Proj.4</link> ou Apache <acronym>SIS</acronym>,
       sans changer leurs programmes lorsqu’ils changent de bibliothèque.
     </para></listitem>
     <listitem><para>
@@ -213,22 +213,16 @@
         Pour chaque classe, méthode et constante définie à partir d’un standard <acronym>OGC</acronym> ou <acronym>ISO</acronym>,
         GeoAPI indique sa provenance à l’aide d’annotations définies dans le paquet <literal role="GeoAPI">org.opengis.annotation</literal>.
         En particulier l’annotation <classname role="GeoAPI">@UML</classname> indique le standard, le nom de l’élément dans ce standard ainsi
-        que son niveau d’obligation. Par exemple dans l’extrait de code suivant:
+        que son niveau d’obligation. Par exemple dans l’extrait de code suivant,
+        la première annotation <classname role="GeoAPI">@UML</classname> indique que l’interface Java qui la suit
+        (<classname role="GeoAPI">ProjectedCRS</classname>) est définie à partir du type
+        <classname role="OGC">SC_ProjectedCRS</classname> du standard ISO 19111.
+        La seconde annotation <classname role="GeoAPI">@UML</classname>, appliquée cette fois à la méthode
+        <function role="GeoAPI">getCoordinateSystem()</function>, indique que la méthode est définie
+        à partir de l’association <function role="OGC">coordinateSystem</function> du standard ISO 19111,
+        et que cette association est obligatoire — ce qui, traduit en Java, signifie que la méthode n’est
+        pas autorisée à retourner la valeur <literal>null</literal>.
       </para>
-      <itemizedlist>
-        <listitem>
-          La première annotation <classname role="GeoAPI">@UML</classname> indique que l’interface Java qui la suit
-          (<classname role="GeoAPI">ProjectedCRS</classname>) est définie à partir du type
-          <classname role="OGC">SC_ProjectedCRS</classname> du standard ISO 19111.
-        </listitem>
-        <listitem>
-          La seconde annotation <classname role="GeoAPI">@UML</classname>, appliquée cette fois à la méthode
-          <function role="GeoAPI">getCoordinateSystem()</function>, indique que la méthode est définie
-          à partir de l’association <function role="OGC">coordinateSystem</function> du standard ISO 19111,
-          et que cette association est obligatoire — ce qui, traduit en Java, signifie que la méthode n’est
-          pas autorisée à retourner la valeur <literal>null</literal>.
-        </listitem>
-      </itemizedlist>
 
       <example>
         <title>Une interface annotée avec <classname>@UML</classname></title>
@@ -247,8 +241,7 @@ public interface ProjectedCRS extends GeneralDerivedCRS {
          specification = ISO_19111,
          identifier = "coordinateSystem")
     CartesianCS getCoordinateSystem();
-}
-        </programlisting>
+}</programlisting>
       </example>
 
       <para>
@@ -263,12 +256,16 @@ public interface ProjectedCRS extends GeneralDerivedCRS {
 Method   method = type.getMethod("getTitle", (Class&lt;?&gt;[]) null);
 UML      annot  = method.getAnnotation(UML.class);
 String   ident  = annot.identifier();
-System.out.println("Le nom standard de la méthode " + method.getName() + " est " + ident);
-        </programlisting>
+System.out.println("Le nom standard de la méthode " + method.getName() + " est " + ident);</programlisting>
       </example>
 
       <para>
-        L’opération inverse — obtenir la classe et méthode Java d’un nom standard — est un peu plus lourde.
+        La classe <classname role="SIS">org.apache.sis.util.type.Types</classname> fournit la méthode de commodité
+        <function role="SIS">getStandardName(Class)</function> pour effectuer cette opération.
+      </para>
+
+      <para>
+        L’opération inverse — obtenir la classe et méthode Java d’un nom standard — est un peu plus lourde.
         Elle nécessite la lecture du fichier <literal role="GeoAPI">class-index.properties</literal> fournit dans le
         paquet <literal role="GeoAPI">org.opengis.annotation</literal>. L’exemple suivant lit ce fichier juste avant
         de rechercher le nom de l’interface correspondant à <classname role="OGC">CI_Citation</classname>.
@@ -284,31 +281,24 @@ try (InputStream in = UML.class.getResourceAsStream("class-index.properties")) {
 String isoName = "CI_Citation";
 String geoName = getProperty(isoName);
 Class&lt;?&gt;  type = Class.forName(geoName);
-System.out.println("L’interface GeoAPI du type ISO " + isoName + " est " + type);
-        </programlisting>
+System.out.println("L’interface GeoAPI du type ISO " + isoName + " est " + type);</programlisting>
       </example>
 
-      <sidebar>
-        <emphasis role="bold">Note:</emphasis>
-        La bibliothèque SIS fournit dans la classe <classname role="SIS">org.apache.sis.util.type.Types</classname>
-        des méthodes de commodités pour ces deux opérations: <function role="SIS">getStandardName(Class)</function>
-        et <function role="SIS">forStandardName(String)</function> respectivement.
-      </sidebar>
-
       <para>
-        Certaines classes et méthodes n’ont ni annotation <classname role="GeoAPI">@UML</classname>,
-        ni entrée dans le fichier <literal role="GeoAPI">class-index.properties</literal>. Il s’agit
-        soit d’extensions de GeoAPI, ou soit de types définis dans d’autres bibliothèques (notamment
-        le <acronym>JDK</acronym> standard). Pour ce dernier cas, une correspondance implicite avec
-        les standards <acronym>ISO</acronym> est décrite dans la section suivante.
+        La classe <classname role="SIS">org.apache.sis.util.type.Types</classname> fournit la méthode de commodité
+        <function role="SIS">forStandardName(String)</function> pour effectuer cette opération.
       </para>
     </section>
 
     <section>
       <title>Correspondances implicites avec le <acronym>JDK</acronym> standard</title>
       <para>
-        Le tableau suivant énumère les types de la norme <acronym>ISO</acronym> 19103 pour lesquels des types du Java standard ont été utilisés.
-        Les types primitifs sont préférés lorsqu’ils sont applicables,
+        Certaines classes et méthodes n’ont ni annotation <classname role="GeoAPI">@UML</classname>,
+        ni entrée dans le fichier <literal role="GeoAPI">class-index.properties</literal>.
+        Il s’agit soit d’extensions de GeoAPI, ou soit de types définis dans d’autres bibliothèques, notamment le <acronym>JDK</acronym> standard.
+        Pour ce dernier cas, la correspondance avec les standards <acronym>ISO</acronym> est implicite.
+        Le tableau suivant décrit cette correspondance pour les types de la norme <acronym>ISO</acronym> 19103.
+        Les types primitifs du Java standard sont préférés lorsqu’ils sont applicables,
         mais parfois leurs équivalents sous forme d’objets sont employés lorsqu’il est nécessaire d’autoriser des valeurs nulles.
       </para>
       <table frame="none">
@@ -327,7 +317,7 @@ System.out.println("L’interface GeoAPI du type ISO " + isoName + " est " + typ
           <tbody>
             <row>
               <entry namest="ISO" nameend="JDK" role="separator">Nombres</entry>
-              <entry role="separator"></entry>
+              <entry role="leftBorder"></entry>
             </row>
             <row>
               <entry><classname role="OGC">Integer</classname></entry>
@@ -356,7 +346,7 @@ System.out.println("L’interface GeoAPI du type ISO " + isoName + " est " + typ
             </row>
             <row>
               <entry namest="ISO" nameend="JDK" role="separator">Textes</entry>
-              <entry role="separator"></entry>
+              <entry role="leftBorder"></entry>
             </row>
             <row>
               <entry><classname role="OGC">CharacterString</classname></entry>
@@ -375,7 +365,7 @@ System.out.println("L’interface GeoAPI du type ISO " + isoName + " est " + typ
             </row>
             <row>
               <entry namest="ISO" nameend="JDK" role="separator">Dates et heures</entry>
-              <entry role="separator"></entry>
+              <entry role="leftBorder"></entry>
             </row>
             <row>
               <entry><classname role="OGC">Date</classname></entry>
@@ -394,7 +384,7 @@ System.out.println("L’interface GeoAPI du type ISO " + isoName + " est " + typ
             </row>
             <row>
               <entry namest="ISO" nameend="JDK" role="separator">Collections</entry>
-              <entry role="separator"></entry>
+              <entry role="leftBorder"></entry>
             </row>
             <row>
               <entry><classname role="OGC">Collection</classname></entry>
@@ -429,7 +419,7 @@ System.out.println("L’interface GeoAPI du type ISO " + isoName + " est " + typ
             </row>
             <row>
               <entry namest="ISO" nameend="JDK" role="separator">Énumérations</entry>
-              <entry role="separator"></entry>
+              <entry role="leftBorder"></entry>
             </row>
             <row>
               <entry><classname role="OGC">Enumeration</classname></entry>
@@ -443,7 +433,7 @@ System.out.println("L’interface GeoAPI du type ISO " + isoName + " est " + typ
             </row>
             <row>
               <entry namest="ISO" nameend="JDK" role="separator">Divers</entry>
-              <entry role="separator"></entry>
+              <entry role="leftBorder"></entry>
             </row>
             <row>
               <entry><classname role="OGC">Boolean</classname></entry>
@@ -465,7 +455,7 @@ System.out.println("L’interface GeoAPI du type ISO " + isoName + " est " + typ
         <classname role="GeoAPI">InternationalString</classname> pour permettre au client de choisir la langue.
         C’est utile par exemple sur un serveur fournissant simultanément des pages dans plusieurs langues.
         En reportant les traductions à l’utilisation des objets plutôt qu’au moment de leur création,
-        on permet à la bibliothèque SIS de fournir les mêmes instances de <classname role="GeoAPI">Metadata</classname>
+        on permet à la bibliothèque <acronym>SIS</acronym> de fournir les mêmes instances de <classname role="GeoAPI">Metadata</classname>
         ou <classname role="GeoAPI">Coverage</classname> (par exemple) pour les mêmes données peu importe la langue du client.
         Les traductions peuvent être faites à la volée à l’aide d’un <classname>ResourceBundle</classname> de l’application,
         ou être fournies directement avec les données (cas des <classname role="GeoAPI">Metadata</classname> notamment).
@@ -486,8 +476,7 @@ System.out.println("L’interface GeoAPI du type ISO " + isoName + " est " + typ
         <programlisting language="java">MediumName cdRom  = MediumName.CD_ROM;
 MediumName usbKey = MediumName.valueOf("USB_KEY"); // Aucune constante n’existe pour cette valeur.
 assert MediumName.valueOf("CD_ROM")  == cdRom  : "valueOf doit retourner les constantes existantes.";
-assert MediumName.valueOf("USB_KEY") == usbKey : "valueOf doit cacher les valeurs précédemment demandées.";
-        </programlisting>
+assert MediumName.valueOf("USB_KEY") == usbKey : "valueOf doit cacher les valeurs précédemment demandées.";</programlisting>
       </example>
     </section>
   </section>
@@ -538,27 +527,27 @@ public class MyApplication {
       d’une partie expérimentale (<literal role="GeoAPI">geoapi-pending</literal>). Ces deux parties étant
       mutuellement exclusives, les utilisateurs doivent veiller à ne pas les mélanger dans un même projet.
       Cette séparation est garantie pour tous les projets qui ne dépendent que du dépôt central de Maven
-      (incluant les versions finales de Apache SIS), car le module <literal role="GeoAPI">geoapi-pending</literal>
+      (incluant les versions finales de Apache <acronym>SIS</acronym>), car le module <literal role="GeoAPI">geoapi-pending</literal>
       n’est jamais déployé sur ce dépôt central. En revanche les <foreignphrase>snapshot</foreignphrase>
-      de certaines branches de SIS peuvent dépendre de <literal role="GeoAPI">geoapi-pending</literal>.
+      de certaines branches de <acronym>SIS</acronym> peuvent dépendre de <literal role="GeoAPI">geoapi-pending</literal>.
     </para>
     <para>
       Les modules de GeoAPI sont:
     </para>
     <itemizedlist>
       <listitem><para>
-        <emphasis role="bold"><literal role="GeoAPI">geoapi</literal></emphasis> — contient les interfaces
-        couvertes par le <link xlink:href="http://www.opengeospatial.org/standards/geoapi">standard GeoAPI
-        de l’<acronym>OGC</acronym></link>. Les versions finales de Apache SIS dépendent de ce module.
+        <emphasis role="bold"><literal role="GeoAPI">geoapi</literal></emphasis> — contient les interfaces couvertes par le
+        <link xlink:href="http://www.opengeospatial.org/standards/geoapi">standard GeoAPI de l’<acronym>OGC</acronym></link>.
+        Les versions finales de Apache <acronym>SIS</acronym> dépendent de ce module.
       </para></listitem>
       <listitem><para>
         <emphasis role="bold"><literal role="GeoAPI">geoapi-pending</literal></emphasis> — contient une
         <emphasis>copie</emphasis> de toutes les interfaces du module <literal role="GeoAPI">geoapi</literal>
-        (non pas une dépendance) avec des ajouts qui n’ont pas encore été approuvés comme un standard
-        <acronym>OGC</acronym>. Certains ajouts apparaissent dans des interfaces normalement définies
-        par le module <literal role="GeoAPI">geoapi</literal>, d’où la nécessité de les copier.
+        (non pas une dépendance) avec des ajouts qui n’ont pas encore été approuvés comme un standard <acronym>OGC</acronym>.
+        Certains ajouts apparaissent dans des interfaces normalement définies par le module <literal role="GeoAPI">geoapi</literal>,
+        d’où la nécessité de les copier.
         Les versions <foreignphrase>snapshot</foreignphrase> des branches <literal>jdk6</literal>,
-        <literal>jdk7</literal> et <literal>jdk8</literal> de Apache SIS dépendent de ce module,
+        <literal>jdk7</literal> et <literal>jdk8</literal> de Apache <acronym>SIS</acronym> dépendent de ce module,
         mais cette dépendance est transformée en une dépendance vers le module <literal role="GeoAPI">geoapi</literal>
         standard au moment de fusionner les branches avec le tronc.
       </para></listitem>
@@ -573,7 +562,7 @@ public class MyApplication {
         <emphasis role="bold"><literal role="GeoAPI">geoapi-examples</literal></emphasis> — contient des
         exemples d’implémentations relativement simples. Ces exemples sont placés dans le domaine public
         afin d’encourager les utilisateurs à les copier et les adapter à leurs besoins si les services
-        de Apache SIS ne conviennent pas.
+        de Apache <acronym>SIS</acronym> ne conviennent pas.
       </para></listitem>
       <listitem><para>
         <emphasis role="bold"><literal role="GeoAPI">geoapi-proj4</literal></emphasis> — contient une
@@ -582,19 +571,17 @@ public class MyApplication {
         Ce module peut être utilisé comme alternative au module <literal role="SIS">sis-referencing</literal>.
       </para></listitem>
       <listitem><para>
-        <emphasis role="bold"><literal role="GeoAPI">geoapi-netcdf</literal></emphasis> — contient une
-        implémentation partielle des paquets <literal role="GeoAPI">org.opengis.referencing</literal>
-        et <literal role="GeoAPI">org.opengis.coverage</literal> sous forme d’adaptateurs basés sur la
-        bibliothèque NetCDF de l’UCAR. La suite de tests de ce module a été conçue de manière à être
-        réutilisable par d’autres projets. Apache SIS l’utilise pour tester son propre module
-        <literal role="SIS">sis-coverageio-netcdf</literal>.
+        <emphasis role="bold"><literal role="GeoAPI">geoapi-netcdf</literal></emphasis> — contient une implémentation partielle des paquets
+        <literal role="GeoAPI">org.opengis.referencing</literal> et <literal role="GeoAPI">org.opengis.coverage</literal>
+        sous forme d’adaptateurs basés sur la bibliothèque NetCDF de l’UCAR.
+        La suite de tests de ce module a été conçue de manière à être réutilisable par d’autres projets.
+        Apache <acronym>SIS</acronym> l’utilise pour tester son propre module <literal role="SIS">sis-coverageio-netcdf</literal>.
       </para></listitem>
       <listitem><para>
         <emphasis role="bold"><literal role="GeoAPI">geoapi-openoffice</literal></emphasis> — contient
         un <foreignphrase>add-in</foreignphrase> pour les suites bureautiques Libre/OpenOffice.org.
-        Apache SIS offre son propre <foreignphrase>add-in</foreignphrase> dans le module
-        <literal role="SIS">sis-openoffice</literal>, mais utilise les mêmes noms de fonctions
-        que le module de GeoAPI afin d’assurer une certaine compatibilité.
+        Apache <acronym>SIS</acronym> offre son propre <foreignphrase>add-in</foreignphrase> dans le module <literal role="SIS">sis-openoffice</literal>,
+        mais utilise les mêmes noms de fonctions que le module de GeoAPI afin d’assurer une certaine compatibilité.
       </para></listitem>
     </itemizedlist>
 
@@ -603,7 +590,9 @@ public class MyApplication {
       <para>
         Les modules <literal role="GeoAPI">geoapi</literal> et <literal role="GeoAPI">geoapi-pending</literal>
         fournissent les interfaces dérivées des schémas <acronym>UML</acronym> des standards internationaux.
-        Le modèle conceptuel sera expliqué en détails dans les chapitres décrivant l’implémentation Apache SIS.
+        Le modèle conceptuel sera expliqué en détails dans les chapitres décrivant l’implémentation Apache <acronym>SIS</acronym>.
+        On peut toutefois avoir un aperçu de son contenu en consultant la page listant les
+        <link xlink:href="&geoapi-javadoc;/content.html">types et méthodes de GeoAPI avec leurs standards d’origines</link>.
       </para>
     </section>
 
@@ -632,20 +621,19 @@ public class MyApplication {
         </para>
         <informalexample><para>
           <emphasis role="bold">Exemple:</emphasis>
-          La transformation d’une coordonnée peut nécessiter l’enchaînement de plusieurs <classname role="GeoAPI">CoordinateOperation</classname>.
-          Dans une telle chaîne d’opérations (<classname role="GeoAPI">ConcatenatedOperation</classname>),
-          pour chaque étape (<classname role="GeoAPI">SingleOperation</classname>) le nombre de dimensions
+          La transformation d’une coordonnée (<classname role="OGC">CC_CoordinateOperation</classname>) peut nécessiter l’enchaînement de plusieurs étapes.
+          Dans une telle chaîne d’opérations (<classname role="OGC">CC_ConcatenatedOperation</classname>),
+          pour chaque étape (<classname role="OGC">CC_SingleOperation</classname>) le nombre de dimensions
           en sortie doit être égal au nombre de dimensions attendu en entré par l’opération suivante.
           Exprimée en langage Java, cette contrainte stipule que pour tout index
-          0 &lt; <varname>i</varname> &lt; <varname>n</varname> où <varname>n</varname> est le
-          nombre d’opérations, on a
+          0 &lt; <varname>i</varname> &lt; <varname>n</varname> où <varname>n</varname> est le nombre d’opérations, on a
           <literal>coordOperation[i].sourceDimensions == coordOperation[i-1].targetDimensions</literal>.
         </para></informalexample>
 
         <para>
           La façon la plus simple d’effectuer ces vérifications est d’appeler les méthodes statiques
           <function role="GeoAPI">validate(…)</function> de la classe <literal role="GeoAPI">org.opengis.test.Validators</literal>.
-          Ces méthodes portant toutes le même nom, il suffit d’écrire "<function>validate(<varname>valeur</varname>)</function>"
+          Ces méthodes portant toutes le même nom, il suffit d’écrire “<function>validate(<varname>valeur</varname>)</function>”
           et de laisser le compilateur choisir la méthode la plus appropriée en fonction du type d’objet donné en argument.
           Si le type d’objet n’est pas connu au moment de la compilation, alors la méthode <function role="GeoAPI">dispatch(Object)</function>
           peut se charger de rediriger le travail à la méthode <function role="GeoAPI">validate(…)</function> appropriée.
@@ -720,9 +708,7 @@ public class MyTest {
       <section>
         <title>Exécution des tests pré-définis</title>
         <para>
-          Des classes de tests JUnit sont définies dans des sous-paquets de <literal role="GeoAPI">org.opengis.test</literal>
-          correspondants aux principaux modules de GeoAPI (<literal role="GeoAPI">org.opengis.test.metadata</literal>,
-          <literal role="GeoAPI">org.opengis.test.referencing</literal>, <foreignphrase>etc.</foreignphrase>).
+          Des classes de tests JUnit sont définies dans des sous-paquets de <literal role="GeoAPI">org.opengis.test</literal>.
           Toutes les classes de tests portent un nom se terminant en "<literal>Test</literal>".
           En outre, une classe <literal role="GeoAPI">org.opengis.test.TestSuite</literal> englobe l’ensemble
           de toutes les classes de tests définies dans le module <literal role="GeoAPI">geoapi-conformance</literal>.
