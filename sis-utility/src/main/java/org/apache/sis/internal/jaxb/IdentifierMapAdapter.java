@@ -39,7 +39,7 @@ import static org.apache.sis.util.collection.Collections.hashMapCapacity;
 
 /**
  * A map of identifiers which can be used as a helper class for
- * {@link org.geotoolkit.xml.IdentifiedObject} implementations.
+ * {@link org.apache.sis.xml.IdentifiedObject} implementations.
  *
  * <p>This class works as a wrapper around a collection of identifiers. Because all operations
  * are performed by an iteration over the collection elements, this implementation is suitable
@@ -76,7 +76,7 @@ import static org.apache.sis.util.collection.Collections.hashMapCapacity;
  * @version 0.3
  * @module
  *
- * @see org.geotoolkit.xml.IdentifiedObject
+ * @see org.apache.sis.xml.IdentifiedObject
  */
 public class IdentifierMapAdapter extends AbstractMap<Citation,String> implements IdentifierMap, Serializable {
     /**

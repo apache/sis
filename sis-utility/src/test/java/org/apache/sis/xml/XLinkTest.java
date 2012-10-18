@@ -52,45 +52,45 @@ public final strictfp class XLinkTest extends TestCase {
         assertFalse("Hash code should have changed.", hashCode == (hashCode = link.hashCode()));
         assertFalse("Hash code can not be zero.", hashCode == 0);
 
-        link.setRole(new URI("org:geotoolkit:role"));
+        link.setRole(new URI("org:apache:sis:role"));
         assertEquals(XLink.Type.EXTENDED, link.getType());
-        assertEquals("XLink[type=\"extended\", role=\"org:geotoolkit:role\"]", link.toString());
+        assertEquals("XLink[type=\"extended\", role=\"org:apache:sis:role\"]", link.toString());
         assertFalse("Hash code should have changed.", hashCode == (hashCode = link.hashCode()));
         assertFalse("Hash code can not be zero.", hashCode == 0);
 
         link.setTitle(new SimpleInternationalString("Some title"));
         assertEquals(XLink.Type.EXTENDED, link.getType());
-        assertEquals("XLink[type=\"extended\", role=\"org:geotoolkit:role\", title=\"Some title\"]", link.toString());
+        assertEquals("XLink[type=\"extended\", role=\"org:apache:sis:role\", title=\"Some title\"]", link.toString());
         assertFalse("Hash code should have changed.", hashCode == (hashCode = link.hashCode()));
         assertFalse("Hash code can not be zero.", hashCode == 0);
 
         link.setLabel("SomeLabel");
         assertEquals(XLink.Type.RESOURCE, link.getType());
-        assertEquals("XLink[type=\"resource\", role=\"org:geotoolkit:role\", title=\"Some title\", label=\"SomeLabel\"]", link.toString());
+        assertEquals("XLink[type=\"resource\", role=\"org:apache:sis:role\", title=\"Some title\", label=\"SomeLabel\"]", link.toString());
         assertFalse("Hash code should have changed.", hashCode == (hashCode = link.hashCode()));
         assertFalse("Hash code can not be zero.", hashCode == 0);
 
-        link.setHRef(new URI("org:geotoolkit:href"));
+        link.setHRef(new URI("org:apache:sis:href"));
         assertEquals(XLink.Type.LOCATOR, link.getType());
-        assertEquals("XLink[type=\"locator\", href=\"org:geotoolkit:href\", role=\"org:geotoolkit:role\", title=\"Some title\", label=\"SomeLabel\"]", link.toString());
+        assertEquals("XLink[type=\"locator\", href=\"org:apache:sis:href\", role=\"org:apache:sis:role\", title=\"Some title\", label=\"SomeLabel\"]", link.toString());
         assertFalse("Hash code should have changed.", hashCode == (hashCode = link.hashCode()));
         assertFalse("Hash code can not be zero.", hashCode == 0);
 
         link.setShow(XLink.Show.NEW);
         assertNull("Can't be Type.SIMPLE if a label is defined.", link.getType());
-        assertEquals("XLink[href=\"org:geotoolkit:href\", role=\"org:geotoolkit:role\", title=\"Some title\", show=\"new\", label=\"SomeLabel\"]", link.toString());
+        assertEquals("XLink[href=\"org:apache:sis:href\", role=\"org:apache:sis:role\", title=\"Some title\", show=\"new\", label=\"SomeLabel\"]", link.toString());
         assertFalse("Hash code should have changed.", hashCode == (hashCode = link.hashCode()));
         assertFalse("Hash code can not be zero.", hashCode == 0);
 
         link.setLabel(null);
         assertEquals(XLink.Type.SIMPLE, link.getType());
-        assertEquals("XLink[type=\"simple\", href=\"org:geotoolkit:href\", role=\"org:geotoolkit:role\", title=\"Some title\", show=\"new\"]", link.toString());
+        assertEquals("XLink[type=\"simple\", href=\"org:apache:sis:href\", role=\"org:apache:sis:role\", title=\"Some title\", show=\"new\"]", link.toString());
         assertFalse("Hash code should have changed.", hashCode == (hashCode = link.hashCode()));
         assertFalse("Hash code can not be zero.", hashCode == 0);
 
         link.setActuate(XLink.Actuate.ON_LOAD);
         assertEquals(XLink.Type.SIMPLE, link.getType());
-        assertEquals("XLink[type=\"simple\", href=\"org:geotoolkit:href\", role=\"org:geotoolkit:role\", title=\"Some title\", show=\"new\", actuate=\"onLoad\"]", link.toString());
+        assertEquals("XLink[type=\"simple\", href=\"org:apache:sis:href\", role=\"org:apache:sis:role\", title=\"Some title\", show=\"new\", actuate=\"onLoad\"]", link.toString());
         assertFalse("Hash code should have changed.", hashCode == (hashCode = link.hashCode()));
         assertFalse("Hash code can not be zero.", hashCode == 0);
         /*
@@ -116,8 +116,8 @@ public final strictfp class XLinkTest extends TestCase {
     public void testWrite() throws URISyntaxException {
         final XLink link = new XLink();
         link.setType(XLink.Type.SIMPLE);
-        link.setHRef(new URI("org:geotoolkit:href"));
-        assertEquals("XLink[type=\"simple\", href=\"org:geotoolkit:href\"]", link.toString());
+        link.setHRef(new URI("org:apache:sis:href"));
+        assertEquals("XLink[type=\"simple\", href=\"org:apache:sis:href\"]", link.toString());
         try {
             link.setLabel("SomeLabel");
             fail("Should not be allowed to set the label.");
@@ -126,7 +126,7 @@ public final strictfp class XLinkTest extends TestCase {
             assertTrue(e.getMessage().contains("label"));
             assertTrue(e.getMessage().contains("simple"));
         }
-        assertEquals("XLink[type=\"simple\", href=\"org:geotoolkit:href\"]", link.toString());
+        assertEquals("XLink[type=\"simple\", href=\"org:apache:sis:href\"]", link.toString());
         try {
             link.setType(XLink.Type.EXTENDED);
             fail("Should not be allowed to set a type that does not include HREF.");
@@ -134,13 +134,13 @@ public final strictfp class XLinkTest extends TestCase {
             // This is the expected exception. The message should contains the type name.
             assertTrue(e.getMessage().contains("extended"));
         }
-        assertEquals("XLink[type=\"simple\", href=\"org:geotoolkit:href\"]", link.toString());
+        assertEquals("XLink[type=\"simple\", href=\"org:apache:sis:href\"]", link.toString());
         /*
          * The Locator type contains the HREF attribute, so the following operation should be
          * allowed.
          */
         link.setType(XLink.Type.LOCATOR);
-        assertEquals("XLink[type=\"locator\", href=\"org:geotoolkit:href\"]", link.toString());
+        assertEquals("XLink[type=\"locator\", href=\"org:apache:sis:href\"]", link.toString());
         /*
          * Now freezes the XLink and ensures that it is really immutable.
          */
@@ -163,7 +163,7 @@ public final strictfp class XLinkTest extends TestCase {
     public void testEquals() throws URISyntaxException {
         final XLink link = new XLink();
         link.setType(XLink.Type.AUTO);
-        link.setRole(new URI("org:geotoolkit:role"));
+        link.setRole(new URI("org:apache:sis:role"));
         link.setTitle(new SimpleInternationalString("Some title"));
         link.freeze();
 
@@ -175,7 +175,7 @@ public final strictfp class XLinkTest extends TestCase {
         assertFalse(link.equals(other));
         assertFalse(link.hashCode() == other.hashCode());
 
-        other.setRole(new URI("org:geotoolkit:role"));
+        other.setRole(new URI("org:apache:sis:role"));
         assertFalse(link.equals(other));
         assertFalse(link.hashCode() == other.hashCode());
 

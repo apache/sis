@@ -6,7 +6,7 @@
 <chapter xmlns="http://docbook.org/ns/docbook" version="5.0"
       xmlns:xlink = "http://www.w3.org/1999/xlink">
 
-<title>GeoAPI</title>
+  <title>GeoAPI</title>
   <para>
     Le projet <link xlink:href="http://www.geoapi.org">GeoAPI</link> offre un ensemble d’interfaces Java pour les applications géo-spatiales.
     Dans une séries de paquets <literal role="GeoAPI">org.opengis.*</literal>, GeoAPI &geoapi-release; définit des structures représentant des méta-données,
@@ -24,11 +24,11 @@
       (due aux nombreuses publications en lien avec les standards de l’OGC), ainsi que d’une interopérabilité accrue.
       L’interopérabilité est facilitée par une meilleure séparation entre les applications qui <emphasis>appellent</emphasis> les fonctions de GeoAPI,
       et les bibliothèques qui <emphasis>implémentent</emphasis> GeoAPI. Il s’agit d’une séparation similaire à celle qu’offrent les interfaces
-      <link xlink:href="http://docs.oracle.com/javase/7/docs/technotes/guides/jdbc/"><acronym>JDBC</acronym></link>
+      <link xlink:href="&javase-docs;/technotes/guides/jdbc/"><acronym>JDBC</acronym></link>
       (<foreignphrase>Java Database Connectivity</foreignphrase>) du Java standard.
       En utilisant l’<acronym>API</acronym> des interfaces, les développeurs peuvent faire abstraction de l’implémentation sous-jacente.
       Par exemple ils peuvent effectuer des projections cartographiques à l’aide des bibliothèques
-      <link xlink:href="http://www.geoapi.org/geoapi-proj4/index.html">Proj.4</link> ou Apache SIS,
+      <link xlink:href="http://www.geoapi.org/geoapi-proj4/index.html">Proj.4</link> ou Apache <acronym>SIS</acronym>,
       sans changer leurs programmes lorsqu’ils changent de bibliothèque.
     </para></listitem>
     <listitem><para>
@@ -40,195 +40,193 @@
     </para></listitem>
   </itemizedlist>
 
-<section>
-  <title>Historique</title>
-  <para>
-    En 2001, le consortium <foreignphrase>Open GIS</foreignphrase> (l’ancien nom du consortium <foreignphrase>Open Geospatial</foreignphrase>) publia la spécification d’implémentation
-    <link xlink:href="http://www.opengeospatial.org/standards/ct"><acronym>OGC</acronym> 01-009: <foreignphrase>Coordinate Transformation Services</foreignphrase></link>.
-    Cette spécification, élaborée par <foreignphrase>Computer Aided Development Corporation</foreignphrase> (<acronym>Cadcorp</acronym>), était accompagnée d’interfaces
-    <acronym>COM</acronym>, <acronym>CORBA</acronym> et Java. À cette époque, la vague des services web n’avait pas encore éclipsé les interfaces de programmation classiques.
-    Les interfaces de l’<acronym>OGC</acronym> anticipaient tout de même un monde connecté en réseau,
-    mais misaient plutôt — dans le cas du Java — sur la technologie <acronym>RMI</acronym> (<foreignphrase>Remote Method Invocation</foreignphrase>).
-    Bien que le projet GeoAPI n’existait pas encore, nous désignons rétrospectivement ces interfaces historiques sous le nom de
-    « <link xlink:href="http://www.geoapi.org/0.1/index.html">GeoAPI 0.1</link> ».
-    Ces interfaces utilisaient déjà le nom de paquet <literal role="GeoAPI">org.opengis</literal>, qui sera adopté par GeoAPI.
-  </para>
-  <para>
-    En 2002, des développeurs de projets libres ont lancé un <link xlink:href="http://web.archive.org/web/20030509104308/http://digitalearth.org/story/2002/10/10/55046/206">appel
-    à la création d’un <acronym>API</acronym> géo-spatial</link>. La proposition initiale suscita l’intérêt d’au moins cinq projets libres.
-    Le projet fut créé sur <link xlink:href="http://sourceforge.net/projects/geoapi/">SourceForge</link>,
-    qui héberge depuis lors le code source dans un <link xlink:href="http://www.geoapi.org/source-repository.html">dépôt Subversion</link>.
-    Le projet pris le nom de « GeoAPI » à ce moment là, et utilisa les interfaces de la spécification <acronym>OGC</acronym> 01-009 comme point de départ.
-  </para>
-  <para>
-    Quelques mois plus tard, l’<acronym>OGC</acronym> lança le projet
-    <link xlink:href="http://www.opengeospatial.org/standards/go"><acronym>GO-1</acronym>: <foreignphrase>Geographic Objects</foreignphrase></link>,
-    qui poursuivait des buts similaires à ceux de GeoAPI. Entre-temps, l’OGC avait abandonné certaines de leur spécifications en faveur des normes <acronym>ISO</acronym>.
-    GeoAPI et <acronym>GO-1</acronym> ont joint leurs efforts pour une refonte des interfaces de GeoAPI en les basant sur ces nouvelles normes ISO.
-    La première mouture, <link xlink:href="http://www.geoapi.org/1.0/index.html">GeoAPI 1.0</link>, a servit de point de départ
-    aux premières ébauches de la spécification <acronym>OGC</acronym> 03-064 du groupe de travail <acronym>GO-1</acronym>.
-    La version finale de cette spécification est devenue un standard <acronym>OGC</acronym> en 2005, et
-    <link xlink:href="http://www.geoapi.org/2.0/index.html">GeoAPI 2.0</link> a été publiée à cette occasion.
-  </para>
-  <para>
-    Le projet <acronym>GO-1</acronym> était porté essentiellement par une compagnie nommée <foreignphrase>Polexis</foreignphrase>.
-    Son rachat par <foreignphrase>Sys Technology</foreignphrase> et le changement de priorité des nouveaux propriétaires
-    ont causé l’arrêt des travaux de <acronym>GO-1</acronym>, et par ricochet un ralentissement des développements de GeoAPI.
-    Afin de reprendre les développements, un nouveau groupe de travail « GeoAPI 3.0 » a été créé à l’<acronym>OGC</acronym>.
-    Ce groupe a réduit les ambitions par rapport à GeoAPI 2.0 en se concentrant sur les interfaces les plus stables,
-    et en plaçant les autres — notamment les géométries — dans un module nommé « <link xlink:href="http://www.geoapi.org/geoapi-pending/index.html">pending</link> »,
-    pour considérations futures. <link xlink:href="http://www.geoapi.org/3.0/index.html">GeoAPI 3.0</link> est devenu un
-    <link xlink:href="http://www.opengeospatial.org/standards/geoapi">standard <acronym>OGC</acronym></link> en 2011.
-    Cette version a été la première à être déployée dans le <link xlink:href="http://search.maven.org/#search|ga|1|geoapi">dépôt central de Maven</link>.
-  </para>
-</section>
+  <section>
+    <title>Historique</title>
+    <para>
+      En 2001, le consortium <foreignphrase>Open GIS</foreignphrase> (l’ancien nom du consortium <foreignphrase>Open Geospatial</foreignphrase>) publia la spécification d’implémentation
+      <link xlink:href="http://www.opengeospatial.org/standards/ct"><acronym>OGC</acronym> 01-009: <foreignphrase>Coordinate Transformation Services</foreignphrase></link>.
+      Cette spécification, élaborée par <foreignphrase>Computer Aided Development Corporation</foreignphrase> (<acronym>Cadcorp</acronym>), était accompagnée d’interfaces
+      <acronym>COM</acronym>, <acronym>CORBA</acronym> et Java. À cette époque, la vague des services web n’avait pas encore éclipsé les interfaces de programmation classiques.
+      Les interfaces de l’<acronym>OGC</acronym> anticipaient tout de même un monde connecté en réseau,
+      mais misaient plutôt — dans le cas du Java — sur la technologie <acronym>RMI</acronym> (<foreignphrase>Remote Method Invocation</foreignphrase>).
+      Bien que le projet GeoAPI n’existait pas encore, nous désignons rétrospectivement ces interfaces historiques sous le nom de
+      « <link xlink:href="http://www.geoapi.org/0.1/index.html">GeoAPI 0.1</link> ».
+      Ces interfaces utilisaient déjà le nom de paquet <literal role="GeoAPI">org.opengis</literal>, qui sera adopté par GeoAPI.
+    </para>
+    <para>
+      En 2002, des développeurs de projets libres ont lancé un <link xlink:href="http://web.archive.org/web/20030509104308/http://digitalearth.org/story/2002/10/10/55046/206">appel
+      à la création d’un <acronym>API</acronym> géo-spatial</link>. La proposition initiale suscita l’intérêt d’au moins cinq projets libres.
+      Le projet fut créé sur <link xlink:href="http://sourceforge.net/projects/geoapi/">SourceForge</link>,
+      qui héberge depuis lors le code source dans un <link xlink:href="http://www.geoapi.org/source-repository.html">dépôt Subversion</link>.
+      Le projet pris le nom de « GeoAPI » à ce moment là, et utilisa les interfaces de la spécification <acronym>OGC</acronym> 01-009 comme point de départ.
+    </para>
+    <para>
+      Quelques mois plus tard, l’<acronym>OGC</acronym> lança le projet
+      <link xlink:href="http://www.opengeospatial.org/standards/go"><acronym>GO-1</acronym>: <foreignphrase>Geographic Objects</foreignphrase></link>,
+      qui poursuivait des buts similaires à ceux de GeoAPI. Entre-temps, l’OGC avait abandonné certaines de leur spécifications en faveur des normes <acronym>ISO</acronym>.
+      GeoAPI et <acronym>GO-1</acronym> ont joint leurs efforts pour une refonte des interfaces de GeoAPI en les basant sur ces nouvelles normes ISO.
+      La première mouture, <link xlink:href="http://www.geoapi.org/1.0/index.html">GeoAPI 1.0</link>, a servit de point de départ
+      aux premières ébauches de la spécification <acronym>OGC</acronym> 03-064 du groupe de travail <acronym>GO-1</acronym>.
+      La version finale de cette spécification est devenue un standard <acronym>OGC</acronym> en 2005, et
+      <link xlink:href="http://www.geoapi.org/2.0/index.html">GeoAPI 2.0</link> a été publiée à cette occasion.
+    </para>
+    <para>
+      Le projet <acronym>GO-1</acronym> était porté essentiellement par une compagnie nommée <foreignphrase>Polexis</foreignphrase>.
+      Son rachat par <foreignphrase>Sys Technology</foreignphrase> et le changement de priorité des nouveaux propriétaires
+      ont causé l’arrêt des travaux de <acronym>GO-1</acronym>, et par ricochet un ralentissement des développements de GeoAPI.
+      Afin de reprendre les développements, un nouveau groupe de travail « GeoAPI 3.0 » a été créé à l’<acronym>OGC</acronym>.
+      Ce groupe a réduit les ambitions par rapport à GeoAPI 2.0 en se concentrant sur les interfaces les plus stables,
+      et en plaçant les autres — notamment les géométries — dans un module nommé « <link xlink:href="http://www.geoapi.org/geoapi-pending/index.html">pending</link> »,
+      pour considérations futures. <link xlink:href="http://www.geoapi.org/3.0/index.html">GeoAPI 3.0</link> est devenu un
+      <link xlink:href="http://www.opengeospatial.org/standards/geoapi">standard <acronym>OGC</acronym></link> en 2011.
+      Cette version a été la première à être déployée dans le <link xlink:href="http://search.maven.org/#search|ga|1|geoapi">dépôt central de Maven</link>.
+    </para>
+  </section>
 
-<section>
-  <title>Des spécifications aux interfaces</title>
-  <para>
-    Les standards de l’<acronym>OGC</acronym> étant définis par des moyens bien éprouvés en génie logiciel,
-    il est possible de générer automatiquement des interfaces Java à l’aide d’outils relativement répandus.
-    Une des approches les plus utilisées est de transformer les <link xlink:href="http://schemas.opengis.net/gml/&gml-version;/">schémas <acronym>XSD</acronym></link>
-    en interfaces Java à l’aide de l’utilitaire en ligne de commande <command>xjc</command>.
-    Cet utilitaire étant fournit avec la plupart des distributions du Java
-    (il fait partie des outils de <link xlink:href="http://jaxb.java.net"><acronym>JAXB</acronym></link>),
-    cette approche est choisie par plusieurs projets que l’on trouve sur internet.
-    D’autres approches utilisent des outils intégrés à l’environnement de développement Eclipse, ou
-    prennent comme point de départ les schémas <acronym>UML</acronym> plutôt que <acronym>XSD</acronym>.
-  </para>
-  <para>
-    Une approche similaire avait été tentée dans les débuts du projet GeoAPI, mais a été rapidement abandonnée.
-    Nous avons privilégié une approche manuelle pour les raisons suivantes:
-  </para>
+  <section>
+    <title>Des spécifications aux interfaces</title>
+    <para>
+      Les standards de l’<acronym>OGC</acronym> étant définis par des moyens bien éprouvés en génie logiciel,
+      il est possible de générer automatiquement des interfaces Java à l’aide d’outils relativement répandus.
+      Une des approches les plus utilisées est de transformer les <link xlink:href="http://schemas.opengis.net/gml/&gml-version;/">schémas <acronym>XSD</acronym></link>
+      en interfaces Java à l’aide de l’utilitaire en ligne de commande <command>xjc</command>.
+      Cet utilitaire étant fournit avec la plupart des distributions du Java
+      (il fait partie des outils de <link xlink:href="http://jaxb.java.net"><acronym>JAXB</acronym></link>),
+      cette approche est choisie par plusieurs projets que l’on trouve sur internet.
+      D’autres approches utilisent des outils intégrés à l’environnement de développement Eclipse, ou
+      prennent comme point de départ les schémas <acronym>UML</acronym> plutôt que <acronym>XSD</acronym>.
+    </para>
+    <para>
+      Une approche similaire avait été tentée dans les débuts du projet GeoAPI, mais a été rapidement abandonnée.
+      Nous avons privilégié une approche manuelle pour les raisons suivantes:
+    </para>
 
-  <itemizedlist>
-    <listitem><para>
-      Certains schémas <acronym>XSD</acronym> sont beaucoup plus verbeux que les schémas <acronym>UML</acronym> d’origines.
-      Une conversion à partir des schémas <acronym>XSD</acronym> introduit, au moins dans le cas des méta-données, près du
-      double du nombre d’interfaces réellement définies par le standard, sans que cela n’apporte de nouvelles fonctionnalités.
-      Une conversion à partir des schémas <acronym>UML</acronym> évite ce problème, mais les outils capable d’effectuer cette
-      opération sont plus rares.
+    <itemizedlist>
+      <listitem>
+        <para>
+          Certains schémas <acronym>XSD</acronym> sont beaucoup plus verbeux que les schémas <acronym>UML</acronym> d’origines.
+          Une conversion à partir des schémas <acronym>XSD</acronym> introduit, au moins dans le cas des méta-données, près du
+          double du nombre d’interfaces réellement définies par le standard, sans que cela n’apporte de nouvelles fonctionnalités.
+          Les schémas <acronym>XSD</acronym> définissent aussi des attributs propres aux documents <acronym>XML</acronym>
+          (<literal role="OGC">gmd:id</literal>, <literal role="OGC">gco:uuid</literal>, <literal>xlink:href</literal>, <foreignphrase>etc.</foreignphrase>),
+          qui n’existent pas dans les diagrammes <acronym>UML</acronym> originaux et que l’on ne souhaite pas forcément exposer dans un API Java.
+          Une conversion à partir des schémas <acronym>UML</acronym> évite ce problème, mais les outils capable d’effectuer cette
+          opération sont plus rares.
+        </para>
+        <informalexample><para>
+          <emphasis role="bold">Exemple:</emphasis>
+          Les schémas <acronym>XSD</acronym> des méta-données insèrent
+          un élément <classname role="OGC">&lt;gmd:CI_Citation&gt;</classname> à l’intérieur de <function role="OGC">&lt;gmd:citation&gt;</function>,
+          un élément <classname role="OGC">&lt;gmd:CI_OnlineResource&gt;</classname> à l’intérieur de <function role="OGC">&lt;gmd:onlineResource&gt;</function>,
+          et ainsi de suite pour la centaine de classes définies dans le standard ISO 19115.
+          Cette redondance n’est absolument pas nécessaire à un programme Java.
+        </para></informalexample>
+      </listitem>
+      <listitem>
+        <para>
+          Les standards de l’<acronym>OGC</acronym> utilisent des conventions de nommage qui sont différentes de celles du Java.
+          En particulier les noms de presque toutes les classes de l’<acronym>OGC</acronym> commencent par un préfixe de deux lettres,
+          comme dans <classname role="OGC">MD_Identifier</classname>. Ces préfixes jouent le même rôle que les noms de paquets en Java.
+          GeoAPI adapte cette pratique en utilisant des noms d’interfaces sans préfixes,
+          et en plaçant ces interfaces dans des paquets correspondants aux préfixes mais avec des noms plus descriptifs.
+          Occasionnellement nous changeons aussi les noms, par exemple pour éviter des acronymes
+          ou pour se conformer à une convention établie telle que <foreignphrase>Java beans</foreignphrase>.
+        </para>
+        <informalexample><para>
+          <emphasis role="bold">Exemple:</emphasis>
+          la classe <classname role="OGC">MD_Identifier</classname> de l’<acronym>OGC</acronym> devient
+          l’interface <classname role="GeoAPI">Identifier</classname> dans le paquet <literal role="GeoAPI">org.opengis.metadata</literal>.
+          La classe <classname role="OGC">SC_CRS</classname> de l’<acronym>OGC</acronym> devient l’interface <classname role="GeoAPI">CoordinateReferenceSystem</classname>,
+          et l’association <function role="OGC">usesDatum</function> devient une méthode <function role="GeoAPI">getDatum()</function> —
+          et non pas « <function>getUsesDatum()</function> » comme aurait fait un outil de conversion automatique.
+          Nous ne laissons pas des programmes appliquer aveuglement des règles qui ignorent les conventions de la communauté dont on traduit les schémas.
+        </para></informalexample>
+      </listitem>
+      <listitem>
+        <para>
+          Les standards contiennent parfois des structures qui n’ont pas d’équivalent direct en Java,
+          notamment les unions telles qu’on peut trouver en C/C++.
+          La stratégie employée pour obtenir une fonctionnalité équivalente en Java dépend du contexte:
+          multi-héritage des interfaces, modification de la hiérarchie ou simplement omettre l’union.
+          Les décisions se font au cas-par-cas en fonction de l’analyse des besoins.
+        </para>
+        <informalexample><para>
+          <emphasis role="bold">Exemple:</emphasis>
+          Le standard ISO 19111 définit différents types de systèmes de coordonnées, tels que sphérique, cylindrique, polaire ou cartésien.
+          Puis, il définit différents <emphasis>sous-ensembles</emphasis> de ces types de systèmes de coordonnées.
+          Ces sous-ensembles, représentés par des unions, servent à spécifier qu’une classe peut être associée à seulement tel ou tel type de système de coordonnées.
+          Par exemple l’union des types pouvant être associés à une image, nommée <classname role="OGC">CS_ImageCS</classname>,
+          ne contient que <classname role="OGC">CS_CartesianCS</classname> et <classname role="OGC">CS_AffineCS</classname>.
+          Dans ce cas particulier, nous obtenons en Java l’effet souhaité par une modification de la hiérarchie des classes:
+          nous définissons l’interface <classname role="GeoAPI">CartesianCS</classname> comme une spécialisation de <classname role="GeoAPI">AffineCS</classname>, ce qui est sémantiquement correct.
+          Mais il n’est pas possible d’appliquer une stratégie similaire pour les autres unions sans violer la sémantique.
+        </para></informalexample>
+      </listitem>
+      <listitem>
+        <para>
+          Plusieurs spécifications se chevauchent. GeoAPI effectue un travail d’intégration en remplaçant certaines
+          structures qui font doublons par des références vers les structures équivalentes du standard qui les définies le mieux.
+        </para>
+        <informalexample><para>
+          <emphasis role="bold">Exemple:</emphasis>
+          Le standard ISO 19115, qui définit des structures de méta-données,
+          s’aventure aussi à décrire quelques structures représentant les systèmes de références des coordonnées (<acronym>CRS</acronym>).
+          Or ces derniers sont le sujet à part entière d’un autre standard: ISO 19111.
+          D’ailleurs le standard ISO 19111:2007 stipule, dans sa section 3, qu’il réutilise tous les éléments
+          de ISO 19115 à l’exclusion de <classname role="OGC">MD_CRS</classname> et de ses composantes.
+          Les interfaces de GeoAPI réduisent la redondance en appliquant à l’ensemble du projet l’exclusion recommandée par ISO 19111.
+        </para></informalexample>
+      </listitem>
+      <listitem>
+        <para>
+          Certains standards ont vu leur complexité s’accroître pour des raisons historiques plutôt que techniques,
+          liées au processus de standardisation. GeoAPI réduit la dette technique en concevant les interfaces comme
+          si chaque élément avait pu être intégré à sa place, sans les contraintes liées à l’ordre chronologique
+          dans lequel les standards ont été publiés.
+        </para>
+        <informalexample><para>
+          <emphasis role="bold">Exemple:</emphasis>
+          Le standard ISO 19115-2 est une extension du standard ISO 19115-1 ajoutant des structures de méta-données d’images.
+          Ces méta-données ont été définies dans un standard séparé parce qu’elles n’ont pas été prêtes à temps pour la publication de la première partie du standard.
+          Comme il n’était pas possible, pour des raisons administratives, d’ajouter des attributs dans les classes déjà publiées,
+          les nouveaux attributs ont été ajoutées dans une sous-classe portant quasiment le même nom.
+          Ainsi, le standard ISO 19115-2 définit une classe <classname role="OGC">MI_Band</classname> qui étend la
+          classe <classname role="OGC">MD_Band</classname> du standard ISO 19115-1 en y ajoutant les attributs qui
+          auraient dû apparaître directement dans la classe parente s’ils avaient été prêts à temps.
+          Dans GeoAPI, nous avons choisis de « réparer » ces anomalies en fusionnant ces deux classes en une seule interface.
+        </para></informalexample>
+      </listitem>
+    </itemizedlist>
+
+    <para>
+      Les écarts par rapport aux normes sont documentés dans chaque classe et chaque méthode concernées.
+      Chaque mention d’un écart est aussi recopiée dans <link xlink:href="&geoapi-javadoc;/departures.html">une page unique</link>,
+      pour donner une vue d’ensemble.
+      Étant donné que ces écarts brouillent les liens qui existent entre les standards et certaines interfaces Java,
+      la correspondance entre ces langages est explicitée par des annotations <classname role="GeoAPI">@UML</classname>
+      et des fichiers de propriétés, décrits dans la section suivante.
+    </para>
+
+    <section>
+      <title>Correspondances explicitées par l’annotation <classname>@UML</classname></title>
+      <para>
+        Pour chaque classe, méthode et constante définie à partir d’un standard <acronym>OGC</acronym> ou <acronym>ISO</acronym>,
+        GeoAPI indique sa provenance à l’aide d’annotations définies dans le paquet <literal role="GeoAPI">org.opengis.annotation</literal>.
+        En particulier l’annotation <classname role="GeoAPI">@UML</classname> indique le standard, le nom de l’élément dans ce standard ainsi
+        que son niveau d’obligation. Par exemple dans l’extrait de code suivant,
+        la première annotation <classname role="GeoAPI">@UML</classname> indique que l’interface Java qui la suit
+        (<classname role="GeoAPI">ProjectedCRS</classname>) est définie à partir du type
+        <classname role="OGC">SC_ProjectedCRS</classname> du standard ISO 19111.
+        La seconde annotation <classname role="GeoAPI">@UML</classname>, appliquée cette fois à la méthode
+        <function role="GeoAPI">getCoordinateSystem()</function>, indique que la méthode est définie
+        à partir de l’association <function role="OGC">coordinateSystem</function> du standard ISO 19111,
+        et que cette association est obligatoire — ce qui, traduit en Java, signifie que la méthode n’est
+        pas autorisée à retourner la valeur <literal>null</literal>.
       </para>
-      <informalexample><para>
-        <emphasis role="bold">Exemple:</emphasis>
-        Les schémas <acronym>XSD</acronym> des méta-données insèrent
-        un élément <classname role="OGC">&lt;gmd:CI_Citation&gt;</classname> à l’intérieur de <function role="OGC">&lt;gmd:citation&gt;</function>,
-        un élément <classname role="OGC">&lt;gmd:CI_OnlineResource&gt;</classname> à l’intérieur de <function role="OGC">&lt;gmd:onlineResource&gt;</function>,
-        et ainsi de suite pour la centaine de classes définies dans le standard ISO 19115.
-        Cette redondance n’est absolument pas nécessaire à un programme Java.
-      </para></informalexample>
-    </listitem>
 
-    <listitem><para>
-      Les standards de l’<acronym>OGC</acronym> utilisent des conventions de nommage qui sont différentes de celles du Java.
-      En particulier les noms de presque toutes les classes de l’<acronym>OGC</acronym> commencent par un préfixe de deux lettres,
-      comme dans <classname role="OGC">MD_Identifier</classname>. Ces préfixes jouent le même rôle que les noms de paquets en Java.
-      GeoAPI adapte cette pratique en utilisant des noms d’interfaces sans préfixes,
-      et en plaçant ces interfaces dans des paquets correspondants aux préfixes mais avec des noms plus descriptifs.
-      Occasionnellement nous changeons aussi les noms, par exemple pour éviter des acronymes
-      ou pour se conformer à une convention établie telle que <foreignphrase>Java beans</foreignphrase>.
-      </para>
-      <informalexample><para>
-        <emphasis role="bold">Exemple:</emphasis>
-        la classe <classname role="OGC">MD_Identifier</classname> de l’<acronym>OGC</acronym> devient
-        l’interface <classname role="GeoAPI">Identifier</classname> dans le paquet <literal role="GeoAPI">org.opengis.metadata</literal>.
-        La classe <classname role="OGC">SC_CRS</classname> de l’<acronym>OGC</acronym> devient l’interface <classname role="GeoAPI">CoordinateReferenceSystem</classname>,
-        et l’association <function role="OGC">usesDatum</function> devient une méthode <function role="GeoAPI">getDatum()</function> —
-        et non pas « <function>getUsesDatum()</function> » comme aurait fait un outil de conversion automatique.
-        Nous ne laissons pas des programmes appliquer aveuglement des règles qui ignorent les conventions de la communauté dont on traduit les schémas.
-      </para></informalexample>
-    </listitem>
-
-    <listitem><para>
-      Les standards contiennent parfois des structures qui n’ont pas d’équivalent direct en Java,
-      notamment les unions telles qu’on peut trouver en C/C++.
-      La stratégie employée pour obtenir une fonctionnalité équivalente en Java dépend du contexte:
-      multi-héritage des interfaces, modification de la hiérarchie ou simplement omettre l’union.
-      Les décisions se font au cas-par-cas en fonction de l’analyse des besoins.
-      </para>
-      <informalexample><para>
-        <emphasis role="bold">Exemple:</emphasis>
-        Le standard ISO 19111 définit différents types de systèmes de coordonnées, tels que sphérique, cylindrique, polaire ou cartésien.
-        Puis, il définit différents <emphasis>sous-ensembles</emphasis> de ces types de systèmes de coordonnées.
-        Ces sous-ensembles, représentés par des unions, servent à spécifier qu’une classe peut être associée à seulement tel ou tel type de système de coordonnées.
-        Par exemple l’union des types pouvant être associés à une image, nommée <classname role="OGC">CS_ImageCS</classname>,
-        ne contient que <classname role="OGC">CS_CartesianCS</classname> et <classname role="OGC">CS_AffineCS</classname>.
-        Dans ce cas particulier, nous obtenons en Java l’effet souhaité par une modification de la hiérarchie des classes:
-        nous définissons l’interface <classname role="GeoAPI">CartesianCS</classname> comme une spécialisation de <classname role="GeoAPI">AffineCS</classname>, ce qui est sémantiquement correct.
-        Mais il n’est pas possible d’appliquer une stratégie similaire pour les autres unions sans violer la sémantique.
-      </para></informalexample>
-    </listitem>
-
-    <listitem><para>
-      Plusieurs spécifications se chevauchent. GeoAPI effectue un travail d’intégration en remplaçant certaines
-      structures qui font doublons par des références vers les structures équivalentes du standard qui les définies le mieux.
-      </para>
-      <informalexample><para>
-        <emphasis role="bold">Exemple:</emphasis>
-        Le standard ISO 19115, qui définit des structures de méta-données,
-        s’aventure aussi à décrire quelques structures représentant les systèmes de références des coordonnées (<acronym>CRS</acronym>).
-        Or ces derniers sont le sujet à part entière d’un autre standard: ISO 19111.
-        D’ailleurs le standard ISO 19111:2007 stipule, dans sa section 3, qu’il réutilise tous les éléments
-        de ISO 19115 à l’exclusion de <classname role="OGC">MD_CRS</classname> et de ses composantes.
-        Les interfaces de GeoAPI réduisent la redondance en appliquant à l’ensemble du projet l’exclusion recommandée par ISO 19111.
-      </para></informalexample>
-    </listitem>
-
-    <listitem><para>
-      Certains standards ont vu leur complexité s’accroître pour des raisons historiques plutôt que techniques,
-      liées au processus de standardisation. GeoAPI réduit la dette technique en concevant les interfaces comme
-      si chaque élément avait pu être intégré à sa place, sans les contraintes liées à l’ordre chronologique
-      dans lequel les standards ont été publiés.
-      </para>
-      <informalexample><para>
-        <emphasis role="bold">Exemple:</emphasis>
-        Le standard ISO 19115-2 est une extension du standard ISO 19115-1 ajoutant des structures de méta-données d’images.
-        Ces méta-données ont été définies dans un standard séparé parce qu’elles n’ont pas été prêtes à temps pour la publication de la première partie du standard.
-        Comme il n’était pas possible, pour des raisons administratives, d’ajouter des attributs dans les classes déjà publiées,
-        les nouveaux attributs ont été ajoutées dans une sous-classe portant quasiment le même nom.
-        Ainsi, le standard ISO 19115-2 définit une classe <classname role="OGC">MI_Band</classname> qui étend la
-        classe <classname role="OGC">MD_Band</classname> du standard ISO 19115-1 en y ajoutant les attributs qui
-        auraient dû apparaître directement dans la classe parente s’ils avaient été prêts à temps.
-        Dans GeoAPI, nous avons choisis de « réparer » ces anomalies en fusionnant ces deux classes en une seule interface.
-      </para></informalexample>
-    </listitem>
-  </itemizedlist>
-
-  <para>
-    Les écarts par rapport aux normes sont documentés dans chaque classe et chaque méthode concernées.
-    Chaque mention d’un écart est aussi recopiée dans <link xlink:href="&geoapi-javadoc;/departures.html">une page unique</link>,
-    pour donner une vue d’ensemble.
-    Étant donné que ces écarts brouillent les liens qui existent entre les standards et certaines interfaces Java,
-    la correspondance entre ces langages est explicitée par des annotations <classname role="GeoAPI">@UML</classname>
-    et des fichiers de propriétés, décrits dans la section suivante.
-  </para>
-
-<section>
-  <title>Correspondances explicitées par l’annotation <classname>@UML</classname></title>
-  <para>
-    Pour chaque classe, méthode et constante définie à partir d’un standard <acronym>OGC</acronym> ou <acronym>ISO</acronym>,
-    GeoAPI indique sa provenance à l’aide d’annotations définies dans le paquet <literal role="GeoAPI">org.opengis.annotation</literal>.
-    En particulier l’annotation <classname role="GeoAPI">@UML</classname> indique le standard, le nom de l’élément dans ce standard ainsi
-    que son niveau d’obligation. Par exemple dans l’extrait de code suivant:
-  </para>
-  <itemizedlist>
-    <listitem>
-      La première annotation <classname role="GeoAPI">@UML</classname> indique que l’interface Java qui la suit
-      (<classname role="GeoAPI">ProjectedCRS</classname>) est définie à partir du type
-      <classname role="OGC">SC_ProjectedCRS</classname> du standard ISO 19111.
-    </listitem>
-    <listitem>
-      La seconde annotation <classname role="GeoAPI">@UML</classname>, appliquée cette fois à la méthode
-      <function role="GeoAPI">getCoordinateSystem()</function>, indique que la méthode est définie
-      à partir de l’association <function role="OGC">coordinateSystem</function> du standard ISO 19111,
-      et que cette association est obligatoire — ce qui, traduit en Java, signifie que la méthode n’est
-      pas autorisée à retourner la valeur <literal>null</literal>.
-    </listitem>
-  </itemizedlist>
-
-  <example>
-    <title>Une interface annotée avec <classname>@UML</classname></title>
-    <programlisting language="java">package org.opengis.referencing.crs;
+      <example>
+        <title>Une interface annotée avec <classname>@UML</classname></title>
+        <programlisting language="java">package org.opengis.referencing.crs;
 
 /**
  * A 2D coordinate reference system used to approximate the shape of the earth on a planar surface.
@@ -243,336 +241,485 @@ public interface ProjectedCRS extends GeneralDerivedCRS {
          specification = ISO_19111,
          identifier = "coordinateSystem")
     CartesianCS getCoordinateSystem();
-}
-</programlisting>
-  </example>
+}</programlisting>
+      </example>
 
-  <para>
-    Les méthodes d’introspections du Java permettent d’accéder à ces informations pendant l’exécution d’une application.
-    C’est utile pour obtenir les noms à afficher à des utilisateurs familiers avec les normes de l’<acronym>OGC</acronym>,
-    ou pour écrire des éléments dans un document <acronym>XML</acronym>. L’exemple suivant affiche le nom standard de la
-    méthode <function role="GeoAPI">getTitle()</function> de l’interface <classname role="GeoAPI">Citation</classname>:
-  </para>
-
-  <example>
-    <title>Obtenir le nom <acronym>OGC</acronym>/<acronym>ISO</acronym> d’une méthode de GeoAPI</title>
-    <programlisting language="java">Class&lt;?&gt; type   = Citation.class;
+      <para>
+        Les méthodes d’introspections du Java permettent d’accéder à ces informations pendant l’exécution d’une application.
+        C’est utile pour obtenir les noms à afficher à des utilisateurs familiers avec les normes de l’<acronym>OGC</acronym>,
+        ou pour écrire des éléments dans un document <acronym>XML</acronym>. L’exemple suivant affiche le nom standard de la
+        méthode <function role="GeoAPI">getTitle()</function> de l’interface <classname role="GeoAPI">Citation</classname>:
+      </para>
+      <example>
+        <title>Obtenir le nom <acronym>OGC</acronym>/<acronym>ISO</acronym> d’une méthode de GeoAPI</title>
+        <programlisting language="java">Class&lt;?&gt; type   = Citation.class;
 Method   method = type.getMethod("getTitle", (Class&lt;?&gt;[]) null);
 UML      annot  = method.getAnnotation(UML.class);
 String   ident  = annot.identifier();
-System.out.println("Le nom standard de la méthode " + method.getName() + " est " + ident);
-</programlisting>
-  </example>
+System.out.println("Le nom standard de la méthode " + method.getName() + " est " + ident);</programlisting>
+      </example>
 
-  <para>
-    L’opération inverse — obtenir la classe et méthode Java d’un nom standard — est un peu plus lourde.
-    Elle nécessite la lecture du fichier <literal role="GeoAPI">class-index.properties</literal> fournit dans le
-    paquet <literal role="GeoAPI">org.opengis.annotation</literal>. L’exemple suivant lit ce fichier juste avant
-    de rechercher le nom de l’interface correspondant à <classname role="OGC">CI_Citation</classname>.
-    Toutefois les utilisateurs sont encouragés à ne lire ce fichier qu’une fois et de conserver son contenu dans
-    une cache de leur application.
-  </para>
+      <para>
+        La classe <classname role="SIS">org.apache.sis.util.type.Types</classname> fournit la méthode de commodité
+        <function role="SIS">getStandardName(Class)</function> pour effectuer cette opération.
+      </para>
 
-  <example>
-    <title>Obtenir une interface GeoAPI à partir d’un nom <acronym>OGC</acronym>/<acronym>ISO</acronym></title>
-    <programlisting language="java">Properties isoToGeoAPI = new Properties();
-try (InputStream in = UML.class.getResourceAsStream("class-index.properties")) {
+      <para>
+        L’opération inverse — obtenir la classe et méthode Java d’un nom standard — est un peu plus lourde.
+        Elle nécessite la lecture du fichier <literal role="GeoAPI">class-index.properties</literal> fournit dans le
+        paquet <literal role="GeoAPI">org.opengis.annotation</literal>. L’exemple suivant lit ce fichier juste avant
+        de rechercher le nom de l’interface correspondant à <classname role="OGC">CI_Citation</classname>.
+        Toutefois les utilisateurs sont encouragés à ne lire ce fichier qu’une fois et de conserver son contenu dans
+        une cache de leur application.
+      </para>
+      <example>
+        <title>Obtenir une interface GeoAPI à partir d’un nom <acronym>OGC</acronym>/<acronym>ISO</acronym></title>
+        <programlisting language="java">Properties isoToGeoAPI = new Properties();
+InputStream in = UML.class.getResourceAsStream("class-index.properties");
+try {
     isoToGeoAPI.load(in);
+} finally {
+    in.close();
 }
 String isoName = "CI_Citation";
 String geoName = getProperty(isoName);
 Class&lt;?&gt;  type = Class.forName(geoName);
-System.out.println("L’interface GeoAPI du type ISO " + isoName + " est " + type);
-</programlisting>
-  </example>
+System.out.println("L’interface GeoAPI du type ISO " + isoName + " est " + type);</programlisting>
+      </example>
 
-  <sidebar>
-    <emphasis role="bold">Note:</emphasis>
-    La bibliothèque SIS fournit dans la classe <classname role="SIS">org.apache.sis.util.type.Types</classname>
-    des méthodes de commodités pour ces deux opérations: <function role="SIS">getStandardName(Class)</function>
-    et <function role="SIS">forStandardName(String)</function> respectivement.
-  </sidebar>
-
-  <para>
-    Certaines classes et méthodes n’ont ni annotation <classname role="GeoAPI">@UML</classname>,
-    ni entrée dans le fichier <literal role="GeoAPI">class-index.properties</literal>. Il s’agit
-    soit d’extensions de GeoAPI, ou soit de types définis dans d’autres bibliothèques (notamment
-    le JDK standard). Pour ce dernier cas, une correspondance implicite avec les standards ISO
-    est décrite dans la section suivante.
-  </para>
-</section>
-
-<section>
-  <title>Correspondances implicites avec le JDK standard</title>
-  <para>
-    Le tableau suivant énumère les types de la norme ISO 19103 pour lesquels des types du Java
-    standard ont été utilisés. Les types primitifs sont préférés lorsqu’ils sont applicables,
-    mais parfois leurs équivalents sous forme d’objets sont employés lorsqu’il est nécessaire
-    d’autoriser des valeurs nulles.
-  </para>
-  <table frame="none">
-    <title>Correspondances entre ISO 19103 et JDK</title>
-    <tgroup cols="3">
-      <colspec colname="ISO"/>
-      <colspec colname="JDK"/>
-      <colspec colname="Remark"/>
-      <thead>
-        <row>
-          <entry>Type ISO</entry>
-          <entry>Type JDK</entry>
-          <entry>Remarques</entry>
-        </row>
-      </thead>
-      <tbody>
-        <row>
-          <entry namest="ISO" nameend="Remark" role="separator">Nombres</entry>
-        </row>
-        <row>
-          <entry><classname role="OGC">Integer</classname></entry>
-          <entry><classname>int</classname></entry>
-          <entry>Parfois <classname>java.lang.Integer</classname> pour les attributs optionnels.</entry>
-        </row>
-        <row>
-          <entry><classname role="OGC">Integer</classname> (certains cas)</entry>
-          <entry><classname>long</classname></entry>
-          <entry>Parfois <classname>java.lang.Long</classname> pour les attributs optionnels.</entry>
-        </row>
-        <row>
-          <entry><classname role="OGC">Real</classname></entry>
-          <entry><classname>double</classname></entry>
-          <entry>Parfois <classname>java.lang.Double</classname> pour les attributs optionnels.</entry>
-        </row>
-        <row>
-          <entry><classname role="OGC">Decimal</classname></entry>
-          <entry><classname>java.math.BigDecimal</classname></entry>
-          <entry></entry>
-        </row>
-        <row>
-          <entry><classname role="OGC">Number</classname></entry>
-          <entry><classname>java.lang.Number</classname></entry>
-          <entry></entry>
-        </row>
-        <row>
-          <entry namest="ISO" nameend="Remark" role="separator">Textes</entry>
-        </row>
-        <row>
-          <entry><classname role="OGC">CharacterString</classname></entry>
-          <entry><classname>java.lang.String</classname></entry>
-          <entry>Souvent <classname role="GeoAPI">org.opengis.util.InternationalString</classname> (voir ci-dessous)</entry>
-        </row>
-        <row>
-          <entry><classname role="OGC">Sequence&lt;Character&gt;</classname></entry>
-          <entry><classname>java.lang.CharSequence</classname></entry>
-          <entry></entry>
-        </row>
-        <row>
-          <entry><classname role="OGC">Character</classname></entry>
-          <entry><classname>char</classname></entry>
-          <entry></entry>
-        </row>
-        <row>
-          <entry namest="ISO" nameend="Remark" role="separator">Dates et heures</entry>
-        </row>
-        <row>
-          <entry><classname role="OGC">Date</classname></entry>
-          <entry><classname>java.util.Date</classname></entry>
-          <entry></entry>
-        </row>
-        <row>
-          <entry><classname role="OGC">Time</classname></entry>
-          <entry><classname>java.util.Date</classname></entry>
-          <entry></entry>
-        </row>
-        <row>
-          <entry><classname role="OGC">DateTime</classname></entry>
-          <entry><classname>java.util.Date</classname></entry>
-          <entry></entry>
-        </row>
-        <row>
-          <entry namest="ISO" nameend="Remark" role="separator">Collections</entry>
-        </row>
-        <row>
-          <entry><classname role="OGC">Collection</classname></entry>
-          <entry><classname>java.util.Collection</classname></entry>
-          <entry></entry>
-        </row>
-        <row>
-          <entry><classname role="OGC">Bag</classname></entry>
-          <entry><classname>java.util.Collection</classname></entry>
-          <entry>Un <classname role="OGC">Bag</classname> est similaire à un <classname>Set</classname>
-                 sans la restriction d’unicité.</entry>
-        </row>
-        <row>
-          <entry><classname role="OGC">Set</classname></entry>
-          <entry><classname>java.util.Set</classname></entry>
-          <entry></entry>
-        </row>
-        <row>
-          <entry><classname role="OGC">Sequence</classname></entry>
-          <entry><classname>java.util.List</classname></entry>
-          <entry></entry>
-        </row>
-        <row>
-          <entry><classname role="OGC">Dictionary</classname></entry>
-          <entry><classname>java.util.Map</classname></entry>
-          <entry></entry>
-        </row>
-        <row>
-          <entry><classname role="OGC">KeyValuePair</classname></entry>
-          <entry><classname>java.util.Map.Entry</classname></entry>
-          <entry></entry>
-        </row>
-        <row>
-          <entry namest="ISO" nameend="Remark" role="separator">Énumérations</entry>
-        </row>
-        <row>
-          <entry><classname role="OGC">Enumeration</classname></entry>
-          <entry><classname>java.lang.Enum</classname></entry>
-          <entry></entry>
-        </row>
-        <row>
-          <entry><classname role="OGC">CodeList</classname></entry>
-          <entry>(pas d’équivalent)</entry>
-          <entry>Voir <classname role="GeoAPI">org.opengis.util.CodeList</classname> ci-dessous.</entry>
-        </row>
-        <row>
-          <entry namest="ISO" nameend="Remark" role="separator">Divers</entry>
-        </row>
-        <row>
-          <entry><classname role="OGC">Boolean</classname></entry>
-          <entry><classname>boolean</classname></entry>
-          <entry>Parfois <classname>java.lang.Boolean</classname> pour les attributs optionnels.</entry>
-        </row>
-        <row>
-          <entry><classname role="OGC">Any</classname></entry>
-          <entry><classname>java.lang.Object</classname></entry>
-          <entry></entry>
-        </row>
-      </tbody>
-    </tgroup>
-  </table>
-
-  <para>
-    L’équivalent le plus direct de <classname role="OGC">CharacterString</classname> est la classe
-    <classname>String</classname>, mais GeoAPI emploie souvent l’interface
-    <classname role="GeoAPI">InternationalString</classname> pour permettre au client de choisir la langue.
-    C’est utile par exemple sur un serveur fournissant simultanément des pages dans plusieurs langues.
-    En reportant les traductions à l’utilisation des objets plutôt qu’au moment de leur création,
-    on permet à la bibliothèque SIS de fournir les mêmes instances de <classname role="GeoAPI">Metadata</classname>
-    ou <classname role="GeoAPI">Coverage</classname> (par exemple) pour les mêmes données peu importe la langue du client.
-    Les traductions peuvent être faites à la volée à l’aide d’un <classname>ResourceBundle</classname> de l’application,
-    ou être fournies directement avec les données (cas des <classname role="GeoAPI">Metadata</classname> notamment).
-  </para>
-  <para>
-    Les <classname role="OGC">Enumeration</classname> correspondent aux <classname>Enum</classname> du Java.
-    Ils ont en commun de définir toutes les valeurs autorisées, sans permettre à l’utilisateur d’en ajouter.
-    Les <classname role="OGC">CodeList</classname> sont similaires à ces énumérations, excepté que les
-    utilisateurs peuvent y ajouter leurs propres éléments. Le JDK standard n’offrant pas cette possibilité,
-    GeoAPI définit une classe abstraite <classname role="GeoAPI">CodeList</classname> reproduisant certaines
-    fonctionnalités de <classname>Enum</classname> tout en étant extensible. Les extensions s’obtiennent par
-    les méthodes statiques <function class="GeoAPI">valueOf(String)</function> qui, contrairement à celle de
-    <classname>Enum</classname>, créera de nouvelles instances si le nom donné ne correspond pas au nom d’une
-    instance existante.
-  </para>
-
-  <example>
-    <title>Obtenir des instances de <classname role="OGC">CodeList</classname></title>
-    <programlisting language="java">MediumName cdRom  = MediumName.CD_ROM;
-MediumName usbKey = MediumName.valueOf("USB_KEY"); // Aucune constante n’existe pour cette valeur.
-assert MediumName.valueOf("CD_ROM")  == cdRom  : "valueOf doit retourner les constantes existantes.";
-assert MediumName.valueOf("USB_KEY") == usbKey : "valueOf doit cacher les valeurs précédemment demandées.";
-</programlisting>
-  </example>
-</section>
-</section>
-
-
-<section>
-  <title>Les modules de GeoAPI</title>
-  <para>
-    Le projet GeoAPI est composé d’une partie standardisée (<literal role="GeoAPI">geoapi</literal>) et
-    d’une partie expérimentale (<literal role="GeoAPI">geoapi-pending</literal>). Ces deux parties étant
-    mutuellement exclusives, les utilisateurs doivent veiller à ne pas les mélanger dans un même projet.
-    Cette séparation est garantie pour tous les projets qui ne dépendent que du dépôt central de Maven
-    (incluant les versions finales de Apache SIS), car le module <literal role="GeoAPI">geoapi-pending</literal>
-    n’est jamais déployé sur ce dépôt central. En revanche les <foreignphrase>snapshot</foreignphrase>
-    de certaines branches de SIS peuvent dépendre de <literal role="GeoAPI">geoapi-pending</literal>.
-  </para>
-  <para>
-    Les modules de GeoAPI sont:
-  </para>
-  <itemizedlist>
-    <listitem><para>
-      <emphasis role="bold"><literal role="GeoAPI">geoapi</literal></emphasis> — contient les interfaces
-      couvertes par le <link xlink:href="http://www.opengeospatial.org/standards/geoapi">standard GeoAPI
-      de l’<acronym>OGC</acronym></link>. Les versions finales de Apache SIS dépendent de ce module.
-    </para></listitem>
-    <listitem><para>
-      <emphasis role="bold"><literal role="GeoAPI">geoapi-pending</literal></emphasis> — contient une
-      <emphasis>copie</emphasis> de toutes les interfaces du module <literal role="GeoAPI">geoapi</literal>
-      (non pas une dépendance) avec des ajouts qui n’ont pas encore été approuvés comme un standard
-      <acronym>OGC</acronym>. Certains ajouts apparaissent dans des interfaces normalement définies
-      par le module <literal role="GeoAPI">geoapi</literal>, d’où la nécessité de les copier.
-    </para><para>
-      Les versions <foreignphrase>snapshot</foreignphrase> des branches <literal>jdk6</literal>,
-      <literal>jdk7</literal> et <literal>jdk8</literal> de Apache SIS dépendent de ce module.
-      Mais cette dépendance est transformée en une dépendance vers le module <literal role="GeoAPI">geoapi</literal>
-      standard au moment de fusionner les branches avec le tronc.
-    </para></listitem>
-    <listitem><para>
-      <emphasis role="bold"><literal role="GeoAPI">geoapi-conformance</literal></emphasis> — contient
-      une suite de tests JUnit que les développeurs peuvent utiliser pour tester leurs implémentations.
-      Les versions <foreignphrase>snapshot</foreignphrase> et les <foreignphrase>milestones</foreignphrase>
-      dépendent du module <literal role="GeoAPI">geoapi-pending</literal> alors que les versions finales
-      dépendent de <literal role="GeoAPI">geoapi</literal>.
-    </para></listitem>
-    <listitem><para>
-      <emphasis role="bold"><literal role="GeoAPI">geoapi-examples</literal></emphasis> — contient des
-      exemples d’implémentations relativement simples. Ces exemples sont placés dans le domaine public
-      afin d’encourager les utilisateurs à les copier et les adapter à leurs besoins si les services
-      de Apache SIS ne conviennent pas.
-    </para></listitem>
-    <listitem><para>
-      <emphasis role="bold"><literal role="GeoAPI">geoapi-proj4</literal></emphasis> — contient une
-      implémentation partielle des paquets <literal role="GeoAPI">org.opengis.referencing</literal>
-      sous forme d’adaptateurs basés sur la bibliothèque C/C++ Proj.4.
-      Ce module peut être utilisé comme alternative au module <literal role="SIS">sis-referencing</literal>.
-    </para></listitem>
-    <listitem><para>
-      <emphasis role="bold"><literal role="GeoAPI">geoapi-netcdf</literal></emphasis> — contient une
-      implémentation partielle des paquets <literal role="GeoAPI">org.opengis.referencing</literal>
-      et <literal role="GeoAPI">org.opengis.coverage</literal> sous forme d’adaptateurs basés sur la
-      bibliothèque NetCDF de l’UCAR. La suite de tests de ce module a été conçue de manière à être
-      réutilisable par d’autres projets. Apache SIS l’utilise pour tester son propre module
-      <literal role="SIS">sis-coverageio-netcdf</literal>.
-    </para></listitem>
-    <listitem><para>
-      <emphasis role="bold"><literal role="GeoAPI">geoapi-openoffice</literal></emphasis> — contient
-      un <foreignphrase>add-in</foreignphrase> pour les suites bureautiques Libre/OpenOffice.org.
-      Apache SIS offre son propre <foreignphrase>add-in</foreignphrase> dans le module
-      <literal role="SIS">sis-openoffice</literal>, mais utilise les mêmes noms de fonctions
-      que le module de GeoAPI afin d’assurer une certaine compatibilité.
-    </para></listitem>
-  </itemizedlist>
-
-  <section>
-    <title>Le module de tests de conformité</title>
-    <para>
-      Le module <literal role="GeoAPI">geoapi-conformance</literal> fournit des
-      <firstterm>validateurs</firstterm>, une <firstterm>suite de tests</firstterm>
-      et des <firstterm>générateurs de rapports</firstterm>.
-      Ces services sont décrits dans les sections suivantes.
-    </para>
-    <section>
-      <title>Validations des instances</title>
       <para>
-        GeoAPI peut valider une instance de ses interfaces en vérifiant que certaines contraintes sont respectées.
-        Par exemple dans une chaîne de <classname role="OGC">CoordinateOperation</classname>s, GeoAPI peut vérifier
-        que le nombre de dimensions en sortie d’une opération est égale au nombre de dimensions attendues en entré
-        de l’opération suivante. La façon la plus simple d’effectuer ces vérifications est d’appeler les méthodes statiques
-        <classname role="OGC">validate(…)</classname> de la classe <classname role="OGC">org.opengis.test.Validators</classname>
+        La classe <classname role="SIS">org.apache.sis.util.type.Types</classname> fournit la méthode de commodité
+        <function role="SIS">forStandardName(String)</function> pour effectuer cette opération.
       </para>
     </section>
+
+    <section>
+      <title>Correspondances implicites avec le <acronym>JDK</acronym> standard</title>
+      <para>
+        Certaines classes et méthodes n’ont ni annotation <classname role="GeoAPI">@UML</classname>,
+        ni entrée dans le fichier <literal role="GeoAPI">class-index.properties</literal>.
+        Il s’agit soit d’extensions de GeoAPI, ou soit de types définis dans d’autres bibliothèques, notamment le <acronym>JDK</acronym> standard.
+        Pour ce dernier cas, la correspondance avec les standards <acronym>ISO</acronym> est implicite.
+        Le tableau suivant décrit cette correspondance pour les types de la norme <acronym>ISO</acronym> 19103.
+        Les types primitifs du Java standard sont préférés lorsqu’ils sont applicables,
+        mais parfois leurs équivalents sous forme d’objets sont employés lorsqu’il est nécessaire d’autoriser des valeurs nulles.
+      </para>
+      <table frame="none">
+        <title>Correspondances entre <acronym>ISO</acronym> 19103 et <acronym>JDK</acronym></title>
+        <tgroup cols="3">
+          <colspec colname="ISO"/>
+          <colspec colname="JDK"/>
+          <colspec colname="Remark"/>
+          <thead>
+            <row>
+              <entry>Type ISO</entry>
+              <entry>Type JDK</entry>
+              <entry>Remarques</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry namest="ISO" nameend="JDK" role="separator">Nombres</entry>
+              <entry role="leftBorder"></entry>
+            </row>
+            <row>
+              <entry><classname role="OGC">Integer</classname></entry>
+              <entry><classname>int</classname></entry>
+              <entry role="leftBorder">Parfois <classname>java.lang.Integer</classname> pour les attributs optionnels.</entry>
+            </row>
+            <row>
+              <entry><classname role="OGC">Integer</classname> (certains cas)</entry>
+              <entry><classname>long</classname></entry>
+              <entry role="leftBorder">Parfois <classname>java.lang.Long</classname> pour les attributs optionnels.</entry>
+            </row>
+            <row>
+              <entry><classname role="OGC">Real</classname></entry>
+              <entry><classname>double</classname></entry>
+              <entry role="leftBorder">Parfois <classname>java.lang.Double</classname> pour les attributs optionnels.</entry>
+            </row>
+            <row>
+              <entry><classname role="OGC">Decimal</classname></entry>
+              <entry><classname>java.math.BigDecimal</classname></entry>
+              <entry role="leftBorder"></entry>
+            </row>
+            <row>
+              <entry><classname role="OGC">Number</classname></entry>
+              <entry><classname>java.lang.Number</classname></entry>
+              <entry role="leftBorder"></entry>
+            </row>
+            <row>
+              <entry namest="ISO" nameend="JDK" role="separator">Textes</entry>
+              <entry role="leftBorder"></entry>
+            </row>
+            <row>
+              <entry><classname role="OGC">CharacterString</classname></entry>
+              <entry><classname>java.lang.String</classname></entry>
+              <entry role="leftBorder">Souvent <classname role="GeoAPI">org.opengis.util.InternationalString</classname> (voir ci-dessous)</entry>
+            </row>
+            <row>
+              <entry><classname role="OGC">Sequence&lt;Character&gt;</classname></entry>
+              <entry><classname>java.lang.CharSequence</classname></entry>
+              <entry role="leftBorder"></entry>
+            </row>
+            <row>
+              <entry><classname role="OGC">Character</classname></entry>
+              <entry><classname>char</classname></entry>
+              <entry role="leftBorder"></entry>
+            </row>
+            <row>
+              <entry namest="ISO" nameend="JDK" role="separator">Dates et heures</entry>
+              <entry role="leftBorder"></entry>
+            </row>
+            <row>
+              <entry><classname role="OGC">Date</classname></entry>
+              <entry><classname>java.util.Date</classname></entry>
+              <entry role="leftBorder"></entry>
+            </row>
+            <row>
+              <entry><classname role="OGC">Time</classname></entry>
+              <entry><classname>java.util.Date</classname></entry>
+              <entry role="leftBorder"></entry>
+            </row>
+            <row>
+              <entry><classname role="OGC">DateTime</classname></entry>
+              <entry><classname>java.util.Date</classname></entry>
+              <entry role="leftBorder"></entry>
+            </row>
+            <row>
+              <entry namest="ISO" nameend="JDK" role="separator">Collections</entry>
+              <entry role="leftBorder"></entry>
+            </row>
+            <row>
+              <entry><classname role="OGC">Collection</classname></entry>
+              <entry><classname>java.util.Collection</classname></entry>
+              <entry role="leftBorder"></entry>
+            </row>
+            <row>
+              <entry><classname role="OGC">Bag</classname></entry>
+              <entry><classname>java.util.Collection</classname></entry>
+              <entry role="leftBorder">Un <classname role="OGC">Bag</classname> est similaire à un
+                  <classname role="OGC">Set</classname> sans la restriction d’unicité.</entry>
+            </row>
+            <row>
+              <entry><classname role="OGC">Set</classname></entry>
+              <entry><classname>java.util.Set</classname></entry>
+              <entry role="leftBorder"></entry>
+            </row>
+            <row>
+              <entry><classname role="OGC">Sequence</classname></entry>
+              <entry><classname>java.util.List</classname></entry>
+              <entry role="leftBorder"></entry>
+            </row>
+            <row>
+              <entry><classname role="OGC">Dictionary</classname></entry>
+              <entry><classname>java.util.Map</classname></entry>
+              <entry role="leftBorder"></entry>
+            </row>
+            <row>
+              <entry><classname role="OGC">KeyValuePair</classname></entry>
+              <entry><classname>java.util.Map.Entry</classname></entry>
+              <entry role="leftBorder"></entry>
+            </row>
+            <row>
+              <entry namest="ISO" nameend="JDK" role="separator">Énumérations</entry>
+              <entry role="leftBorder"></entry>
+            </row>
+            <row>
+              <entry><classname role="OGC">Enumeration</classname></entry>
+              <entry><classname>java.lang.Enum</classname></entry>
+              <entry role="leftBorder"></entry>
+            </row>
+            <row>
+              <entry><classname role="OGC">CodeList</classname></entry>
+              <entry>(pas d’équivalent)</entry>
+              <entry role="leftBorder">Voir <classname role="GeoAPI">org.opengis.util.CodeList</classname> ci-dessous.</entry>
+            </row>
+            <row>
+              <entry namest="ISO" nameend="JDK" role="separator">Divers</entry>
+              <entry role="leftBorder"></entry>
+            </row>
+            <row>
+              <entry><classname role="OGC">Boolean</classname></entry>
+              <entry><classname>boolean</classname></entry>
+              <entry role="leftBorder">Parfois <classname>java.lang.Boolean</classname> pour les attributs optionnels.</entry>
+            </row>
+            <row>
+              <entry><classname role="OGC">Any</classname></entry>
+              <entry><classname>java.lang.Object</classname></entry>
+              <entry role="leftBorder"></entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+
+      <para>
+        L’équivalent le plus direct de <classname role="OGC">CharacterString</classname> est la classe
+        <classname>String</classname>, mais GeoAPI emploie souvent l’interface
+        <classname role="GeoAPI">InternationalString</classname> pour permettre au client de choisir la langue.
+        C’est utile par exemple sur un serveur fournissant simultanément des pages dans plusieurs langues.
+        En reportant les traductions à l’utilisation des objets plutôt qu’au moment de leur création,
+        on permet à la bibliothèque <acronym>SIS</acronym> de fournir les mêmes instances de <classname role="GeoAPI">Metadata</classname>
+        ou <classname role="GeoAPI">Coverage</classname> (par exemple) pour les mêmes données peu importe la langue du client.
+        Les traductions peuvent être faites à la volée à l’aide d’un <classname>ResourceBundle</classname> de l’application,
+        ou être fournies directement avec les données (cas des <classname role="GeoAPI">Metadata</classname> notamment).
+      </para>
+      <para>
+        Les <classname role="OGC">Enumeration</classname> correspondent aux <classname>Enum</classname> du Java.
+        Ils ont en commun de définir toutes les valeurs autorisées, sans permettre à l’utilisateur d’en ajouter.
+        Les <classname role="OGC">CodeList</classname> sont similaires à ces énumérations, excepté que les
+        utilisateurs peuvent y ajouter leurs propres éléments. Le JDK standard n’offrant pas cette possibilité,
+        GeoAPI définit une classe abstraite <classname role="GeoAPI">CodeList</classname> reproduisant certaines
+        fonctionnalités de <classname>Enum</classname> tout en étant extensible. Les extensions s’obtiennent par
+        les méthodes statiques <function class="GeoAPI">valueOf(String)</function> qui, contrairement à celle de
+        <classname>Enum</classname>, créera de nouvelles instances si le nom donné ne correspond pas au nom d’une
+        instance existante.
+    </para>
+    <example>
+      <title>Obtenir des instances de <classname role="GeoAPI">CodeList</classname></title>
+        <programlisting language="java">MediumName cdRom  = MediumName.CD_ROM;
+MediumName usbKey = MediumName.valueOf("USB_KEY"); // Aucune constante n’existe pour cette valeur.
+assert MediumName.valueOf("CD_ROM")  == cdRom  : "valueOf doit retourner les constantes existantes.";
+assert MediumName.valueOf("USB_KEY") == usbKey : "valueOf doit cacher les valeurs précédemment demandées.";</programlisting>
+      </example>
+    </section>
   </section>
-</section>
+
+
+  <section>
+    <title>Obtenir une implémentation des interfaces</title>
+    <para>
+      GeoAPI définit des fabriques (<classname role="GeoAPI">Factory</classname>) permettant de créer des implémentations de ses interfaces.
+      Par exemple <classname role="GeoAPI">DatumFactory</classname> fournit des méthodes permettant de créer des instances
+      implémentant les interfaces du paquet <literal role="GeoAPI">org.opengis.referencing.datum</literal>.
+      Ces <classname role="GeoAPI">Factory</classname> doivent être implémentées par les bibliothèques géospatiales
+      et déclarées comme <firstterm>services</firstterm> tel que défini par la classe standard <classname>java.util.ServiceLoader</classname>.
+      La javadoc de <classname>ServiceLoader</classname> explique la façon de procéder.
+      Mais pour résumer, les bibliothèques doivent créer dans le répertoire <literal>META-INF/services/</literal>
+      un fichier dont le nom correspond au nom complet de l’interface de la fabrique
+      (<literal role="GeoAPI">org.opengis.referencing.datum.DatumFactory</literal> dans l’exemple précédent).
+      Ce fichier texte doit contenir sur une ligne le nom complet de la classe implémentant cette interface.
+      Il peut s’agir d’une classe cachée aux yeux des utilisateurs, car ils n’ont pas besoin de connaître son existence.
+    </para>
+    <para>
+      Si la bibliothèque a bien déclaré ses fabriques comme des services, alors
+      les utilisateurs peuvent les obtenir en utilisant <classname>ServiceLoader</classname> comme dans l’exemple ci-dessous.
+      Cet exemple ne prend que la première fabrique trouvée; s’il existe plusieurs fabriques,
+      par exemple lorsque plusieurs bibliothèques cohabitent, alors le choix est laissé à l’utilisateur.
+    </para>
+    <example>
+      <title>Obtenir une fabrique de référentiels</title>
+      <programlisting language="java">import org.opengis.referencing.GeodeticDatum;
+import org.opengis.referencing.DatumFactory;
+import java.util.ServiceLoader;
+
+public class MyApplication {
+    public void createMyDatum() {
+        ServiceLoader  loader = ServiceLoader.load(DatumFactory.class);
+        DatumFactory  factory = loader.iterator().next();
+        GeodeticDatum myDatum = factory.createGeodeticDatum(…);
+    }
+}</programlisting>
+    </example>
+  </section>
+
+
+  <section>
+    <title>Les modules de GeoAPI</title>
+    <para>
+      Le projet GeoAPI est composé d’une partie standardisée (<literal role="GeoAPI">geoapi</literal>) et
+      d’une partie expérimentale (<literal role="GeoAPI">geoapi-pending</literal>). Ces deux parties étant
+      mutuellement exclusives, les utilisateurs doivent veiller à ne pas les mélanger dans un même projet.
+      Cette séparation est garantie pour tous les projets qui ne dépendent que du dépôt central de Maven
+      (incluant les versions finales de Apache <acronym>SIS</acronym>), car le module <literal role="GeoAPI">geoapi-pending</literal>
+      n’est jamais déployé sur ce dépôt central. En revanche les <foreignphrase>snapshot</foreignphrase>
+      de certaines branches de <acronym>SIS</acronym> peuvent dépendre de <literal role="GeoAPI">geoapi-pending</literal>.
+    </para>
+    <para>
+      Les modules de GeoAPI sont:
+    </para>
+    <itemizedlist>
+      <listitem><para>
+        <emphasis role="bold"><literal role="GeoAPI">geoapi</literal></emphasis> — contient les interfaces couvertes par le
+        <link xlink:href="http://www.opengeospatial.org/standards/geoapi">standard GeoAPI de l’<acronym>OGC</acronym></link>.
+        Les versions finales de Apache <acronym>SIS</acronym> dépendent de ce module.
+      </para></listitem>
+      <listitem><para>
+        <emphasis role="bold"><literal role="GeoAPI">geoapi-pending</literal></emphasis> — contient une
+        <emphasis>copie</emphasis> de toutes les interfaces du module <literal role="GeoAPI">geoapi</literal>
+        (non pas une dépendance) avec des ajouts qui n’ont pas encore été approuvés comme un standard <acronym>OGC</acronym>.
+        Certains ajouts apparaissent dans des interfaces normalement définies par le module <literal role="GeoAPI">geoapi</literal>,
+        d’où la nécessité de les copier.
+        Les versions <foreignphrase>snapshot</foreignphrase> des branches <literal>jdk6</literal>,
+        <literal>jdk7</literal> et <literal>jdk8</literal> de Apache <acronym>SIS</acronym> dépendent de ce module,
+        mais cette dépendance est transformée en une dépendance vers le module <literal role="GeoAPI">geoapi</literal>
+        standard au moment de fusionner les branches avec le tronc.
+      </para></listitem>
+      <listitem><para>
+        <emphasis role="bold"><literal role="GeoAPI">geoapi-conformance</literal></emphasis> — contient
+        une suite de tests JUnit que les développeurs peuvent utiliser pour tester leurs implémentations.
+        Les versions <foreignphrase>snapshot</foreignphrase> et les <foreignphrase>milestones</foreignphrase>
+        dépendent du module <literal role="GeoAPI">geoapi-pending</literal> alors que les versions finales
+        dépendent de <literal role="GeoAPI">geoapi</literal>.
+      </para></listitem>
+      <listitem><para>
+        <emphasis role="bold"><literal role="GeoAPI">geoapi-examples</literal></emphasis> — contient des
+        exemples d’implémentations relativement simples. Ces exemples sont placés dans le domaine public
+        afin d’encourager les utilisateurs à les copier et les adapter à leurs besoins si les services
+        de Apache <acronym>SIS</acronym> ne conviennent pas.
+      </para></listitem>
+      <listitem><para>
+        <emphasis role="bold"><literal role="GeoAPI">geoapi-proj4</literal></emphasis> — contient une
+        implémentation partielle des paquets <literal role="GeoAPI">org.opengis.referencing</literal>
+        sous forme d’adaptateurs basés sur la bibliothèque C/C++ Proj.4.
+        Ce module peut être utilisé comme alternative au module <literal role="SIS">sis-referencing</literal>.
+      </para></listitem>
+      <listitem><para>
+        <emphasis role="bold"><literal role="GeoAPI">geoapi-netcdf</literal></emphasis> — contient une implémentation partielle des paquets
+        <literal role="GeoAPI">org.opengis.referencing</literal> et <literal role="GeoAPI">org.opengis.coverage</literal>
+        sous forme d’adaptateurs basés sur la bibliothèque NetCDF de l’UCAR.
+        La suite de tests de ce module a été conçue de manière à être réutilisable par d’autres projets.
+        Apache <acronym>SIS</acronym> l’utilise pour tester son propre module <literal role="SIS">sis-coverageio-netcdf</literal>.
+      </para></listitem>
+      <listitem><para>
+        <emphasis role="bold"><literal role="GeoAPI">geoapi-openoffice</literal></emphasis> — contient
+        un <foreignphrase>add-in</foreignphrase> pour les suites bureautiques Libre/OpenOffice.org.
+        Apache <acronym>SIS</acronym> offre son propre <foreignphrase>add-in</foreignphrase> dans le module <literal role="SIS">sis-openoffice</literal>,
+        mais utilise les mêmes noms de fonctions que le module de GeoAPI afin d’assurer une certaine compatibilité.
+      </para></listitem>
+    </itemizedlist>
+
+    <section>
+      <title>Les modules de définition des interfaces</title>
+      <para>
+        Les modules <literal role="GeoAPI">geoapi</literal> et <literal role="GeoAPI">geoapi-pending</literal>
+        fournissent les interfaces dérivées des schémas <acronym>UML</acronym> des standards internationaux.
+        Le modèle conceptuel sera expliqué en détails dans les chapitres décrivant l’implémentation Apache <acronym>SIS</acronym>.
+        On peut toutefois avoir un aperçu de son contenu en consultant la page listant les
+        <link xlink:href="&geoapi-javadoc;/content.html">types et méthodes de GeoAPI avec leurs standards d’origines</link>.
+      </para>
+    </section>
+
+    <section>
+      <title>Le module de tests de conformité</title>
+      <para>
+        Le module <literal role="GeoAPI">geoapi-conformance</literal> fournit des
+        <firstterm>validateurs</firstterm>, une <firstterm>suite de tests</firstterm> JUnit
+        et des <firstterm>générateurs de rapports</firstterm> sous forme de pages <acronym>HTML</acronym>.
+        Ce module peut être utilisé avec n’importe quelle implémentation de GeoAPI.
+        Pour les développeurs d’une bibliothèque géospatiale, il offre les avantages suivants:
+      </para>
+      <itemizedlist>
+        <listitem>Réduire la fastidieuse tâche d’écriture des tests, en réutilisant des tests existants.</listitem>
+        <listitem>Accroître la confiance en la validité des tests, du fait que <literal role="GeoAPI">geoapi-conformance</literal>
+                  a lui-même sa propre suite de tests et est appliqué à d’autres implémentations.</listitem>
+        <listitem>Faciliter la comparaison avec les autres implémentations.</listitem>
+      </itemizedlist>
+
+      <section>
+        <title>Validations des instances</title>
+        <para>
+          GeoAPI peut valider une instance de ses interfaces en vérifiant que certaines contraintes sont respectées.
+          Ces contraintes, qui ne peuvent pas être exprimées dans la signature de la méthode, sont généralement décrites
+          textuellement dans les spécifications abstraites ou dans la javadoc.
+        </para>
+        <informalexample><para>
+          <emphasis role="bold">Exemple:</emphasis>
+          La transformation d’une coordonnée (<classname role="OGC">CC_CoordinateOperation</classname>) peut nécessiter l’enchaînement de plusieurs étapes.
+          Dans une telle chaîne d’opérations (<classname role="OGC">CC_ConcatenatedOperation</classname>),
+          pour chaque étape (<classname role="OGC">CC_SingleOperation</classname>) le nombre de dimensions
+          en sortie doit être égal au nombre de dimensions attendu en entré par l’opération suivante.
+          Exprimée en langage Java, cette contrainte stipule que pour tout index
+          0 &lt; <varname>i</varname> &lt; <varname>n</varname> où <varname>n</varname> est le nombre d’opérations, on a
+          <literal>coordOperation[i].sourceDimensions == coordOperation[i-1].targetDimensions</literal>.
+        </para></informalexample>
+
+        <para>
+          La façon la plus simple d’effectuer ces vérifications est d’appeler les méthodes statiques
+          <function role="GeoAPI">validate(…)</function> de la classe <literal role="GeoAPI">org.opengis.test.Validators</literal>.
+          Ces méthodes portant toutes le même nom, il suffit d’écrire “<function>validate(<varname>valeur</varname>)</function>”
+          et de laisser le compilateur choisir la méthode la plus appropriée en fonction du type d’objet donné en argument.
+          Si le type d’objet n’est pas connu au moment de la compilation, alors la méthode <function role="GeoAPI">dispatch(Object)</function>
+          peut se charger de rediriger le travail à la méthode <function role="GeoAPI">validate(…)</function> appropriée.
+        </para>
+        <para>
+          Toutes les fonctions <function role="GeoAPI">validate(…)</function> suivent le fil des dépendances,
+          c’est-à-dire qu’elles valideront aussi chaque composantes de l’objet à valider.
+          Par exemple la validation d’un objet <classname role="GeoAPI">GeographicCRS</classname> impliquera
+          la validation de sa composante <classname role="GeoAPI">GeodeticDatum</classname>, qui impliquera elle-même
+          la validation de sa composante <classname role="GeoAPI">Ellipsoid</classname>, et ainsi de suite.
+          Il est donc inutile de valider soi-même les composantes, à moins de vouloir isoler le test d’un élément
+          connu pour être souvent problématique.
+        </para>
+        <para>
+          Par défaut, les validations sont aussi strictes que possible. Il est possible toutefois d’assouplir certaines règles.
+          L’assouplissement le plus fréquent consiste à tolérer l’absence d’attributs qui étaient sensés être obligatoires.
+          Cette règle et quelques autres peuvent être modifiées globalement pour tous les tests exécutés dans la
+          <acronym>JVM</acronym> courante comme dans l’exemple suivant:
+        </para>
+        <example>
+          <title>Validation d’une méta-donnée en tolérant l’absence de certains attributs obligatoires</title>
+          <programlisting language="java">import org.opengis.metadata.Metadata;
+import org.opengis.test.Validators;
+import org.junit.Test;
+
+public class MyTest {
+    static {
+        // Tolérer l’absence d’attributs obligatoires dans les paquets metadata et citation.
+        // Cette modification s’appliquera à tous les tests exécutés dans la JVM courante.
+        // S’il existe plusieurs classes de tests, cette initialisation peut être effectuée
+        // dans une classe parente à toutes les classes de tests.
+        Validators.DEFAULT.metadata.requireMandatoryAttributes = false;
+        Validators.DEFAULT.citation.requireMandatoryAttributes = false;
+    }
+
+    @Test
+    public void testMyMetadata() {
+        Metadata myObject = …; // Construisez un objet ici.
+        Validators.validate(myObject);
+    }
+}</programlisting>
+        </example>
+        <para>
+          Les règles peuvent aussi être modifiées pour une suite de tests particulière,
+          sans affecter la configuration par défaut de la <acronym>JVM</acronym> courante.
+          Cette approche nécessite de créer une nouvelle instance du validateur dont on souhaite
+          modifier la configuration.
+        </para>
+        <example>
+          <title>Modifier localement les règles de validation</title>
+          <programlisting language="java">import org.opengis.metadata.Metadata;
+import org.opengis.test.ValidatorContainer;
+import org.junit.Test;
+
+public class MyTest {
+    private final ValidatorContainer validators;
+
+    public MyTest() {
+        validators = new ValidatorContainer();
+        validators.metadata.requireMandatoryAttributes = false;
+        validators.citation.requireMandatoryAttributes = false;
+    }
+
+    @Test
+    public void testMyMetadata() {
+        Metadata myObject = …; // Construisez un objet ici.
+        validators.validate(myObject);
+    }
+}</programlisting>
+        </example>
+      </section>
+      <section>
+        <title>Exécution des tests pré-définis</title>
+        <para>
+          Des classes de tests JUnit sont définies dans des sous-paquets de <literal role="GeoAPI">org.opengis.test</literal>.
+          Toutes les classes de tests portent un nom se terminant en "<literal>Test</literal>".
+          En outre, une classe <literal role="GeoAPI">org.opengis.test.TestSuite</literal> englobe l’ensemble
+          de toutes les classes de tests définies dans le module <literal role="GeoAPI">geoapi-conformance</literal>.
+          La façon la plus simple d’exécuter l’ensemble de ces tests est donc de créer une sous-classe de
+          <literal role="GeoAPI">TestSuite</literal>, éventuellement y placer un bloc statique effectuant
+          une configuration des validateurs comme dans l’exemple précédent, et d’hériter les tests définis dans GeoAPI.
+        </para>
+      </section>
+    </section>
+  </section>
 </chapter>
