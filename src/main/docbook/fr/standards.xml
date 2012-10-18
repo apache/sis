@@ -11,7 +11,7 @@
   <section>
     <title>Contexte et historique</title>
     <para>
-      La majorité des standards utilisés par Apache SIS ont été élaborés par le
+      La majorité des standards utilisés par Apache <acronym>SIS</acronym> ont été élaborés par le
       <link xlink:href="http://www.opengeospatial.org">consortium <foreignphrase>Open Geospatial</foreignphrase></link> (<acronym>OGC</acronym>),
       parfois en collaboration avec l’<link xlink:href="http://www.iso.org">organisation internationale de normalisation</link> (<acronym>ISO</acronym>).
       Certains standards de l’ISO deviennent eux-mêmes des standards Européens via la <link xlink:href="http://inspire.jrc.ec.europa.eu">directive <acronym>INSPIRE</acronym></link>,
@@ -226,9 +226,10 @@
     </itemizedlist>
 
     <para>
-      Le projet Apache SIS se base sur les spécifications les plus récentes, tout en puisant dans les archives
-      de l’<acronym>OGC</acronym> pour compléter certains standards abstraits ou les rendre un peu plus facile
-      d’utilisation. Certaines anciennes définitions sont conservées comme « méthodes de commodités »,
+      Le projet Apache <acronym>SIS</acronym> se base sur les spécifications les plus récentes,
+      tout en puisant dans les archives de l’<acronym>OGC</acronym>
+      pour compléter certains standards abstraits ou les rendre un peu plus facile d’utilisation.
+      Certaines anciennes définitions sont conservées comme « méthodes de commodités »,
       n’apportant pas toujours de nouvelles fonctionnalités mais facilitant l’usage pratique d’une bibliothèque.
     </para>
     <para>
@@ -240,7 +241,7 @@
     </para>
 
     <table frame="none">
-      <title>Principaux standards utilisés par le projet Apache SIS</title>
+      <title>Principaux standards utilisés par le projet Apache <acronym>SIS</acronym></title>
       <tgroup cols="4">
         <colspec colname="ISO"/>
         <colspec colname="OGC"/>
