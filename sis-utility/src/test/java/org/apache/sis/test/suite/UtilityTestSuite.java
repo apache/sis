@@ -34,6 +34,7 @@ import org.junit.runners.Suite;
   org.apache.sis.internal.test.XMLComparatorTest.class,
 
   // Following are testing the actual SIS library.
+  org.apache.sis.util.UtilitiesTest.class,
   org.apache.sis.util.ArraysTest.class,
   org.apache.sis.util.CharactersTest.class,
   org.apache.sis.util.CharSequencesTest.class,
