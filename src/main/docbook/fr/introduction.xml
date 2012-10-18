@@ -6,7 +6,7 @@
 <chapter xmlns="http://docbook.org/ns/docbook" version="5.0"
       xmlns:xlink = "http://www.w3.org/1999/xlink">
 
-<title>Introduction</title>
+  <title>Introduction</title>
   <para>
     Une communauté d’informations géospatiales est un ensemble de systèmes ou d’individus capables d’échanger
     leurs données géospatiales grâce à des définitions et des standards communs ainsi qu’une reconnaissance réciproque.
@@ -47,11 +47,11 @@
     surtout les plus anciens, sont incomplètes et pas toujours cohérentes.
     Au moment d’écrire ces lignes, aucun produit de notre connaissance n’implémente la totalité des spécifications.
     Mais on trouve de nombreuses implémentations couvrant un spectre plus ou moins large.
-    La bibliothèque Apache SIS décrite dans ce document en est une.
+    La bibliothèque Apache <acronym>SIS</acronym> décrite dans ce document en est une.
   </para>
 
   <para>
-    Apache SIS se caractérise par un effort soutenu de respect des standards,
+    Apache <acronym>SIS</acronym> se caractérise par un effort soutenu de respect des standards,
     allant jusqu’à une participation à certains travaux de l’OGC.
     De manière générale, le respect des standards exige un effort plus grand que ce qu’aurait requis un
     développement isolé, mais se rentabilise par un double avantage: en plus d’accroître l’interopérabilité
@@ -61,37 +61,36 @@
     qui échappent parfois à l’ingénieur en début de projet, mais qui risquent de le rattraper avant la fin.
   </para>
 
-<section>
-  <title>À propos de ce document</title>
-  <para>
-   Les éléments définis dans un langage informatique, tels que les classes ou méthodes en Java
-   ainsi que les éléments dans un fichier <acronym>XML</acronym>, apparaissent avec une police
-   de caractères mono-espacée.
-   Afin de faciliter la compréhension des liens qui existent entre Apache SIS et les standards,
-   ces éléments sont en outre représentés en utilisant les codes de couleurs suivants:
-  </para>
-  <itemizedlist>
-    <listitem>
-      Les éléments définis dans un standard de l’<acronym>OGC</acronym> ou de l’<acronym>ISO</acronym> apparaissent en bleu.
-      Exemple: <classname role="OGC">CD_Ellipsoid</classname>.
-    </listitem>
-    <listitem>
-      Les éléments définis dans GeoAPI apparaissent en vert.
-      Exemple: <classname role="GeoAPI">Ellipsoid</classname>.
-    </listitem>
-    <listitem>
-      Les éléments définis dans Apache SIS apparaissent en brun.
-      Exemple: <classname role="SIS">DefaultEllipsoid</classname>.
-    </listitem>
-    <listitem>
-      Les autres éléments, notamment ceux du Java standard, sont laissés en noir.
-      Exemple: <classname>String</classname>.
-    </listitem>
-  </itemizedlist>
-  <para>
-    Cette convention est appliquée dans le texte, mais pas dans les cadres contenant des exemples de codes.
-    Ces cadres utilisent leur propre coloration syntactique.
-  </para>
-
-</section>
+  <section>
+    <title>À propos de ce document</title>
+    <para>
+     Les éléments définis dans un langage informatique, tels que les classes ou méthodes en Java
+     ainsi que les éléments dans un fichier <acronym>XML</acronym>, apparaissent avec une police
+     de caractères mono-espacée.
+     Afin de faciliter la compréhension des liens qui existent entre Apache <acronym>SIS</acronym> et les standards,
+     ces éléments sont en outre représentés en utilisant les codes de couleurs suivants:
+    </para>
+    <itemizedlist>
+      <listitem>
+        Les éléments définis dans un standard de l’<acronym>OGC</acronym> ou de l’<acronym>ISO</acronym> apparaissent en bleu.
+        Exemple: <classname role="OGC">CD_Ellipsoid</classname>.
+      </listitem>
+      <listitem>
+        Les éléments définis dans GeoAPI apparaissent en vert.
+        Exemple: <classname role="GeoAPI">Ellipsoid</classname>.
+      </listitem>
+      <listitem>
+        Les éléments définis dans Apache <acronym>SIS</acronym> apparaissent en brun.
+        Exemple: <classname role="SIS">DefaultEllipsoid</classname>.
+      </listitem>
+      <listitem>
+        Les autres éléments, notamment ceux du Java standard, sont laissés en noir.
+        Exemple: <classname>String</classname>.
+      </listitem>
+    </itemizedlist>
+    <para>
+      Cette convention est appliquée dans le texte, mais pas dans les cadres contenant des exemples de codes.
+      Ces cadres utilisent leur propre coloration syntactique.
+    </para>
+  </section>
 </chapter>
