@@ -19,6 +19,10 @@
   <xsl:import href="urn:docbkx:stylesheet/docbook.xsl"/>
   <xsl:import href="urn:docbkx:stylesheet/highlight.xsl"/>
 
+  <!-- Parameters from http://docbook.sourceforge.net/release/xsl/current/doc/fo/  -->
+  <xsl:param name="section.autolabel" select="1"/>
+  <xsl:param name="section.label.includes.component.label" select="1"/>
+
   <!--
        Following is copied from "http://docbook.sourceforge.net/release/xsl/current/xhtml/component.xsl".
        Only the lines identified by a comment have been modified.  This file is used only for building
@@ -69,6 +73,11 @@
       <xsl:apply-templates mode="xslthl"/>
     </span>
   </xsl:template>
+  <xsl:template match="xslthl:comment" mode="xslthl">
+    <span class="hl-comment">
+      <xsl:apply-templates mode="xslthl"/>
+    </span>
+  </xsl:template>
   <xsl:template match="xslthl:doccomment|xslthl:doctype" mode="xslthl">
     <span class="hl-doccomment">
       <xsl:apply-templates mode="xslthl"/>
@@ -86,6 +95,7 @@
   <xsl:template match= "d:function[@role = 'OGC']"    mode="class.value"> <xsl:value-of select="'OGC'"   /> </xsl:template>
   <xsl:template match= "d:function[@role = 'GeoAPI']" mode="class.value"> <xsl:value-of select="'GeoAPI'"/> </xsl:template>
   <xsl:template match= "d:function[@role = 'SIS']"    mode="class.value"> <xsl:value-of select="'SIS'"   /> </xsl:template>
+  <xsl:template match=  "d:literal[@role = 'OGC']"    mode="class.value"> <xsl:value-of select="'OGC'"   /> </xsl:template>
   <xsl:template match=  "d:literal[@role = 'GeoAPI']" mode="class.value"> <xsl:value-of select="'GeoAPI'"/> </xsl:template>
   <xsl:template match=  "d:literal[@role = 'SIS']"    mode="class.value"> <xsl:value-of select="'SIS'"   /> </xsl:template>
 

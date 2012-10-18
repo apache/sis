@@ -14,47 +14,88 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+/*
+ * Chapters and sections titles (excluding the book titles).
+ */
+div.chapter h1 {
+  margin-top:          3cm;
+  background-color:    #99AAFF;
+  border-top-color:    #0000CC;
+  border-bottom-color: #0000CC;
+  border-top-style:    solid;
+  border-bottom-style: solid;
+  border-top-width:    2pt;
+  border-bottom-width: 2pt;
+  padding-bottom:      4pt;
+  padding-top:         4pt;
+}
+
+div.chapter h2 {
+  margin-top:          2cm;
+  border-bottom-style: solid;
+  border-bottom-width: 1pt;
+}
+
+div.chapter h3 {
+  margin-top: 1.5cm;
+}
+
+div.chapter h4 {
+  margin-top: 1cm;
+}
+
 p {
   text-align: justify;
+}
+
+/*
+ * Boxes (programs listing, examples).
+ */
+pre.programlisting {
+  border-style: solid;
+  border-width: 1pt;
+  padding:      9pt;
+}
+
+div.sidebar {
+  margin-left:      1.25cm;
+  margin-right:     1.5cm;
+  padding-right:    9pt;
+  padding-left:     9pt;
+  border-style:     solid;
+  border-width:     1pt;
+  background-color: #EEEEEE;
+  border-color:     #BBBBBB;
+  font-size:        smaller;
 }
 
 div.informalexample {
   margin-left:  1.25cm;
   margin-right: 1.5cm;
-  font-size: smaller;
+  font-size:    smaller;
 }
 
-div.sidebar {
-  margin-left:  1.25cm;
-  margin-right: 1.5cm;
-  border-style: solid;
-  border-width: 1px;
-  background-color: #EEEEEE;
-  border-color: #DDDDDD;
-  font-size: smaller;
-}
-
-span.deprecated {
-  text-decoration: line-through;
-}
-
+/*
+ * Tables.
+ */
 div.table p.title {
   text-align: center;
 }
 
 table {
-  margin-left:  auto;
-  margin-right: auto;
-  border-style: solid;
+  margin-left:    auto;
+  margin-right:   auto;
+  border-style:   solid;
   border-width:   2pt;
   border-spacing: 0pt;
 }
 
 table tr th {
-  background-color: #B9DCFF;
+  background-color:    #B9DCFF;
   border-bottom-style: solid;
   border-bottom-width: 1pt;
-  padding: 3pt;
+  padding:             3pt;
 }
 
 table tr td {
@@ -69,23 +110,17 @@ table tr td.leftBorder {
 }
 
 table tr td.separator {
-  font-weight: bold;
-  text-align: center;
-  padding-top:    3pt;
-  padding-bottom: 3pt;
-  border-top-style: solid;
-  border-top-width: 1pt;
-  border-top-color: lightgray;
+  text-align:          center;
+  font-weight:         bold;
+  background-color:    #EEEEFF;
+  border-top-color:    LightGray;
+  border-bottom-color: LightGray;
+  border-top-style:    solid;
   border-bottom-style: solid;
+  border-top-width:    1pt;
   border-bottom-width: 1pt;
-  border-bottom-color: lightgray;
-  background-color: #EEEEFF;
-}
-
-pre.programlisting {
-  border-style: solid;
-  border-width: 1pt;
-  padding: 9pt;
+  padding-top:         3pt;
+  padding-bottom:      3pt;
 }
 
 /*
@@ -107,14 +142,30 @@ code.SIS {
  * Syntax highlighting.
  */
 span.hl-string {
-  color: fireBrick;
+  color: FireBrick;
 }
 
 span.hl-annotation {
-  color: slateGray;
+  color: SeaGreen;
+}
+
+span.hl-comment {
+  font-style: italic;
+  color: MediumSeaGreen;
 }
 
 span.hl-doccomment {
   font-style: italic;
-  color: teal;
+  color: MediumSeaGreen;
+}
+
+/*
+ * Miscellaneous.
+ */
+span.deprecated {
+  text-decoration: line-through;
+}
+
+.example-break {
+  display: none;
 }
