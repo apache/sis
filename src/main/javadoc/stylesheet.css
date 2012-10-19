@@ -11,7 +11,8 @@
  * also have a little bit more space, and a border is drawn around the table.
  */
 .contentContainer .description table.sis,
-.contentContainer .details     table.sis
+.contentContainer .details     table.sis,
+.contentContainer ul.blockList ul.blockList li.blockList table.sis
 {
   background-color: #F4F8FF;
   border-color:     Black;
@@ -21,12 +22,6 @@
   margin:           12pt 0 12pt 0;
   padding:          0;
   width:            auto;
-}
-
-/* Cancel a definition in the javadoc stylesheet. */
-ul.blockList ul.blockList li.blockList table.sis {
-  margin: 0;
-  width:  auto;
 }
 
 .contentContainer .description table.sis tr th,
@@ -40,9 +35,10 @@ ul.blockList ul.blockList li.blockList table.sis {
 }
 
 .contentContainer .description table.sis tr td,
-.contentContainer .details     table.sis tr td
+.contentContainer .details     table.sis tr td,
+.contentContainer ul.blockList li.blockList table.sis td
 {
-  padding:        1pt 6pt;
+  padding:        1pt 9pt 2pt 9pt;
   vertical-align: text-top;
 }
 
