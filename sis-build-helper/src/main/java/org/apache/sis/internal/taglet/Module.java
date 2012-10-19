@@ -174,10 +174,11 @@ public final class Module implements Taglet {
      */
     @Override
     public String toString(final Tag[] tags) {
-        if (tags==null || tags.length==0) {
+        if (tags == null || tags.length == 0) {
             return "";
         }
-        final StringBuilder buffer = new StringBuilder("\n<dt><b>Module:</b></dt>");
+        final StringBuilder buffer = new StringBuilder(128);
+        buffer.append("\n<p><font size=\"-1\">");
         for (int i=0; i<tags.length; i++) {
             final Tag tag = tags[i];
             File file = tag.position().file();
@@ -192,14 +193,11 @@ public final class Module implements Taglet {
                     break;
                 }
             }
-            buffer.append('\n').append(i==0 ? "<dd>" : "<br>")
-                  .append("<table width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\">" +
-                          "<tr>\n<td align=\"left\">");
             /*
              * Appends the module link.
              */
-            buffer.append("<a href=\"").append(MAVEN_REPORTS_BASE_URL).append(module)
-                  .append("/index.html\">").append(module).append("</a>");
+            buffer.append("Defined in the <a href=\"").append(MAVEN_REPORTS_BASE_URL).append(module)
+                  .append("/index.html\">").append(module).append("</a> module");
             /*
              * Appends the "(download binary)" link.
              */
@@ -209,7 +207,6 @@ public final class Module implements Taglet {
             /*
              * Appends the "View source code for this class" link.
              */
-            buffer.append("\n</td><td align=\"right\">\n");
             final Doc holder = tag.holder();
             if (holder instanceof ClassDoc) {
                 ClassDoc outer, doc = (ClassDoc) holder;
@@ -217,15 +214,14 @@ public final class Module implements Taglet {
                     doc = outer;
                 }
                 final String className = doc.qualifiedName();
-                buffer.append(" &nbsp;&nbsp; <a href=\"");
+                buffer.append("<br><a href=\"");
                 for (int j=className.indexOf('.'); j>=0; j=className.indexOf('.', j+1)) {
                     buffer.append("../");
                 }
                 buffer.append("../xref/").append(className.replace('.', '/'))
                       .append(".html\">View source code for this class</a>");
             }
-            buffer.append("\n</td></tr></table>");
         }
-        return buffer.append("</dd>\n").toString();
+        return buffer.append("</font></p>\n").toString();
     }
 }
