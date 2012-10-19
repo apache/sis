@@ -272,12 +272,12 @@ public final class Collections extends Static {
      * applied by this method:
      * <p>
      * <table class="sis">
-     * <tr><th>Input type</th><th>Output type</th></tr>
-     * <tr><td>{@link SortedSet}</td><td>{@link TreeSet}</td></tr>
-     * <tr><td>{@link HashSet}</td><td>{@link HashSet}</td></tr>
-     * <tr><td>{@link Set} other than above</td><td>{@link LinkedHashSet}</td></tr>
-     * <tr><td>{@link Queue}</td><td>{@link LinkedList}</td></tr>
-     * <tr><td>{@link List} or other {@link Collection}</td><td>{@link ArrayList}</td></tr>
+     * <tr><th>Input type</th>                              <th class="sep">Output type</th></tr>
+     * <tr><td>{@link SortedSet}</td>                       <td class="sep">{@link TreeSet}</td></tr>
+     * <tr><td>{@link HashSet}</td>                         <td class="sep">{@link HashSet}</td></tr>
+     * <tr><td>{@link Set} other than above</td>            <td class="sep">{@link LinkedHashSet}</td></tr>
+     * <tr><td>{@link Queue}</td>                           <td class="sep">{@link LinkedList}</td></tr>
+     * <tr><td>{@link List} or other {@link Collection}</td><td class="sep">{@link ArrayList}</td></tr>
      * </table>
      *
      * @param  <E> The type of elements in the collection.
@@ -324,10 +324,10 @@ public final class Collections extends Static {
      * given in argument. The following table gives the types mapping applied by this method:
      * <p>
      * <table class="sis">
-     * <tr><th>Input type</th><th>Output type</th></tr>
-     * <tr><td>{@link SortedMap}</td><td>{@link TreeMap}</td></tr>
-     * <tr><td>{@link HashMap}</td><td>{@link HashMap}</td></tr>
-     * <tr><td>{@link Map} other than above</td><td>{@link LinkedHashMap}</td></tr>
+     * <tr><th>Input type</th>                  <th class="sep">Output type</th></tr>
+     * <tr><td>{@link SortedMap}</td>           <td class="sep">{@link TreeMap}</td></tr>
+     * <tr><td>{@link HashMap}</td>             <td class="sep">{@link HashMap}</td></tr>
+     * <tr><td>{@link Map} other than above</td><td class="sep">{@link LinkedHashMap}</td></tr>
      * </table>
      *
      * @param  <K> The type of keys in the map.
