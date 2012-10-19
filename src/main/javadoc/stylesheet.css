@@ -1,76 +1,72 @@
 /*
- * Javadoc style sheet
+ * This file is divided in two parts.   The first part is specific to the SIS project
+ * and defines the styles used by the developers in the javadoc comments.  The second
+ * part is a modified copy of the default stylesheet provided by the Javadoc tools.
+ * Note that the second part is totally different between JDK6 and JDK7.
  */
 
-/* Page background color */
-body { background-color: #FFFFFF; color:#000000 }
-
-/* Headings */
-h1 { font-size: 145% }
-
-/* Table colors */
-.TableHeadingColor     { background: #CCCCFF; color:#000000 } /* Dark mauve */
-.TableSubHeadingColor  { background: #EEEEFF; color:#000000 } /* Light mauve */
-.TableRowColor         { background: #FFFFFF; color:#000000 } /* White */
-
-/* Font used in left-hand frame lists */
-.FrameTitleFont   { font-size: 100%; font-family: Helvetica, Arial, sans-serif; color:#000000 }
-.FrameHeadingFont { font-size:  90%; font-family: Helvetica, Arial, sans-serif; color:#000000 }
-.FrameItemFont    { font-size:  90%; font-family: Helvetica, Arial, sans-serif; color:#000000 }
-
-/* Navigation bar fonts and colors */
-.NavBarCell1    { background-color:#EEEEFF; color:#000000} /* Light mauve */
-.NavBarCell1Rev { background-color:#00008B; color:#FFFFFF} /* Dark Blue */
-.NavBarFont1    { font-family: Arial, Helvetica, sans-serif; color:#000000;color:#000000;}
-.NavBarFont1Rev { font-family: Arial, Helvetica, sans-serif; color:#FFFFFF;color:#FFFFFF;}
-
-.NavBarCell2    { font-family: Arial, Helvetica, sans-serif; background-color:#FFFFFF; color:#000000}
-.NavBarCell3    { font-family: Arial, Helvetica, sans-serif; background-color:#FFFFFF; color:#000000}
-
-
-/*
- * Following is specific to the SIS project.
- */
 /*
  * Table without vertical space between rows, a little bit of space between columns,
  * a light background color and a header with a darker background color. The header
  * also have a little bit more space, and a border is drawn around the table.
  */
-table.sis {
+.contentContainer .description table.sis,
+.contentContainer .details     table.sis
+{
   background-color: #F4F8FF;
-  border-spacing: 0pt;
-  border-style: solid;
-  white-space: nowrap;
+  border-color:     Black;
+  border-style:     solid;
+  border-width:     1pt;
+  border-spacing:   0pt;
+  margin:           12pt 0 12pt 0;
+  padding:          0;
+  width:            auto;
 }
 
-table.sis tr th {
-  background-color: #B9DCFF;
+/* Cancel a definition in the javadoc stylesheet. */
+ul.blockList ul.blockList li.blockList table.sis {
+  margin: 0;
+  width:  auto;
+}
+
+.contentContainer .description table.sis tr th,
+.contentContainer .details     table.sis tr th
+{
+  background-color:    #B9DCFF;
+  border-bottom-color: Black;
   border-bottom-style: solid;
   border-bottom-width: 1pt;
-  padding: 3pt;
+  padding:             3pt;
 }
 
-table.sis tr td {
-  padding-left:  6pt;
-  padding-right: 6pt;
+.contentContainer .description table.sis tr td,
+.contentContainer .details     table.sis tr td
+{
+  padding:        1pt 6pt;
   vertical-align: text-top;
 }
 
 /*
  * Optionally add a line or column separator.
  */
-table.sis tr th.hsep {
+.contentContainer .description table.sis tr th.hsep,
+.contentContainer .details     table.sis tr th.hsep
+{
   border-top-width: 1pt;
   border-top-style: solid;
 }
 
-table.sis tr th.sep {
+.contentContainer .description table.sis tr th.sep,
+.contentContainer .details     table.sis tr th.sep
+{
   border-left-width: 1pt;
   border-left-style: solid;
   border-left-color: #819AB2;
 }
 
-table.sis tr td.sep {
+.contentContainer .description table.sis tr td.sep,
+.contentContainer .details     table.sis tr td.sep
+{
   border-left-width: 1pt;
   border-left-style: solid;
   border-left-color: #AAADB2;
@@ -80,25 +76,617 @@ table.sis tr td.sep {
  * Table without vertical space between rows and a little bit of space between columns.
  * Other properties are left to their default values. In particular, there is no border.
  */
-table.compact {
+.contentContainer .description table.compact,
+.contentContainer .details     table.compact
+{
   border-spacing: 0pt;
 }
 
-table.compact tr td {
+.contentContainer .description table.compact tr td,
+.contentContainer .details     table.compact tr td
+{
   padding-top:    0pt;
   padding-bottom: 0pt;
   padding-right:  3pt;
   padding-left:   3pt;
 }
 
-table.compact tr td.onright {
+.contentContainer .description table.compact tr td.onright,
+.contentContainer .details     table.compact tr td.onright
+{
   padding-right: 1pt;
   text-align:    right;
   font-weight:   normal;
 }
 
-table.compact tr td.onleft {
+.contentContainer .description table.compact tr td.onleft,
+.contentContainer .details     table.compact tr td.onleft
+{
   padding-left: 1pt;
   text-align:   left;
   font-weight:  normal;
+}
+
+/*
+ * Code example formatted by the {@preformat} taglet.
+ * Overrides the <pre> definition provided by the Javadoc tools.
+ */
+div.block pre {
+  font-size: 1em;
+}
+
+
+
+
+/* ----------------------------------------------------------------------
+ * End of SIS-specific part. The remaining of this file is derived from
+ * the Javadoc default stylesheet for the target platform (JDK6 or JDK7).
+ *
+ * The styles in this file are declared in their approximative usage order,
+ * from top to bottom: frame, navigation bar, class description, details...
+ */
+body {
+  background-color: White;
+  color:            Black;
+  font-family:      Arial, Helvetica, sans-serif;
+  margin:           0;
+}
+
+/*
+ * Hyperlinks in the main document, and specializations:
+ *   .bar       : links for the title (package name) in the bottom-left frame.
+ *   .topNav    : links in the navigation bar on the top of every pages.
+ *   .bottomNav : links in the navigation bar on the bottom of every pages.
+ *   div.subNav : links in the sub-navigation bar below ".topNav".
+ *
+ * Note that the navigation bars (defined later) use a dark background,
+ * so the font color for hyperlinks in those bars need to be bright.
+ */
+a:link    {color: RoyalBlue;}
+a:visited {color: DarkSlateBlue;}
+
+a:link, a:visited {
+  text-decoration: none;
+}
+
+a:hover, a:focus {
+  text-decoration: underline;
+}
+
+.indexHeader a:link, .indexHeader a:active, .indexHeader a:visited,
+.bar         a:link, .bar         a:active, .bar         a:visited,
+.topNav      a:link, .topNav      a:active, .topNav      a:visited,
+.bottomNav   a:link, .bottomNav   a:active, .bottomNav   a:visited,
+ caption     a:link,  caption     a:active,  caption     a:visited {
+  color: White;
+}
+
+div.subNav a:link, div.subNav a:visited {
+  color: #4c6b87;
+}
+
+/*
+ * Navigation bar styles:
+ *   .indexHeader    : the "All classes" title in the upper-left frame.
+ *   .bar            : the title (package name) in the bottom-left frame.
+ *   .topNav         : the navigation bar on the top of every pages.
+ *   .bottomNav      : the navigation bar on the bottom of every pages.
+ *   .navBarCell1Rev : the selected cell in the navigation bar.
+ */
+.indexHeader, .bar, .topNav, .bottomNav {
+  background-image:  url(resources/background.gif);
+  background-repeat: repeat-x;
+  color:             White;
+  margin:            0;
+}
+
+.indexHeader, .bar {
+  font-size:      1.1em;
+  padding-top:    0.2em;
+  padding-bottom: 0.2em;
+  padding-left:   0.8em;
+}
+
+.topNav, .bottomNav, .subNav {
+  width:          100%;
+  float:          left;
+  clear:          right;
+  padding:        0;
+  overflow:       hidden;
+  padding-top:    2px;
+  padding-bottom: 2px;
+}
+
+.bottomNav {
+  margin-top: 9pt;
+}
+
+.navBarCell1Rev {
+  background-image: url(resources/tab.gif);
+  background-color: #a88834;
+  border: 1px solid #c9aa44;
+  margin: auto 3pt;
+}
+
+/*
+ * The sub-navigation bar style, which appear below the above "topNav".
+ *   navList    : the line containing Prev Class | Next Class | Frame | No Frame.
+ *   subNavList : the line containing Field | Constr | Methods.
+ */
+.subNav {
+  background-color: #dee3e9;
+  border-bottom: 1px solid #9eadc0;
+  padding: 0;
+}
+
+.subNav div {
+  clear: left;
+  float: left;
+  padding-left:   5pt;
+  padding-bottom: 3pt;
+}
+
+ul.navList, ul.subNavList {
+  float:   left;
+  margin:  0 24pt 0 0;
+  padding: 0;
+}
+
+ul.navList li {
+  list-style: none;
+  float:      left;
+  padding:    3pt 5pt;
+}
+
+ul.subNavList li {
+  list-style: none;
+  float:      left;
+  font-size:  90%;
+}
+
+/*
+ * Page header and footer styles.
+ *   .footer    : the overview description below the list of all packages.
+ *   .header    : the package name and the class name below the sub-navigation bar.
+ *   .subTitle  : only the package name (not the class name).
+ *   .title     : only the class name (not the package name).
+ */
+.header, .footer {
+  clear:       both;
+  margin-left: 15pt;
+  padding-top: 6pt;
+}
+
+.subTitle {
+  margin-top: 6pt;
+}
+.title {
+  margin-top:    9pt;
+  margin-bottom: 9pt;
+}
+
+/*
+ * Titles in library/package/class overviews.
+ *   <h1> : title of "Apache SIS" (overview page) or "Package XXX" (package overview), combined with ".header" and ".title".
+ *   <h2> : title of "Class XXX" in class overview or the left frames, combined with ".header" and ".title".
+ *   <h3> : title of "Field/Method summary" and "Field/Method details".
+ *   <h4> : name of a single member (enum, field, method).
+ *   <h5> : not yet used.
+ *   <h6> : not yet used.
+ */
+h1 {font-size: 1.8em;}
+h2 {font-size: 1.7em;}
+h3 {font-size: 1.4em;}
+h4 {font-size: 1.2em;}
+h5 {font-size: 1.2em;}
+h6 {font-size: 1.1em;}
+
+/* "Packages", "Interfaces" or "Classes" title in the frames on the left side. */
+.indexContainer h2 {
+  font-size:     1.1em;
+  margin-top:    15pt;
+  margin-bottom: 3pt;
+}
+
+/* Box decoration around the above <h3> and <h4> levels. */
+ul.blockList ul.blockList ul.blockList li.blockList h3,
+div.details  ul.blockList ul.blockList ul.blockList     li.blockList h4,
+div.details  ul.blockList ul.blockList ul.blockListLast li.blockList h4 {
+  background-color:        #dee3e9;
+  border-top:    1px solid #9eadc0;
+  border-bottom: 1px solid #9eadc0;
+  margin: 0 0 3pt -6pt;
+  padding: 3pt 6pt;
+}
+
+/* Title of "Field/methods summary" */
+ul.blockList ul.blockList li.blockList h3 {
+  padding: 0;
+  margin: 12pt 0;
+}
+
+/* Title of "Fields/methods inherited from class XXX" */
+ul.blockList ul.blockList ul.blockList li.blockList h3 {
+  font-size: 1.1em;
+}
+
+/*
+ * Drawing of the inheritance tree below the class title.
+ */
+ul.inheritance {
+  margin:  0;
+  padding: 0;
+}
+
+ul.inheritance li {
+  display:    inline;
+  list-style: none;
+}
+
+ul.inheritance li ul.inheritance {
+  margin-left:  9pt;
+  padding-left: 9pt;
+  padding-top:  1pt;
+}
+
+ul.blockList, ul.blockListLast {
+  margin: 9pt 0 9pt 0;
+  padding:0;
+}
+
+/* Used in the "Hierarchy for package XXX" page. */
+ul.horizontal li {
+  display:   inline;
+  font-size: 0.9em;
+}
+
+/*
+ * Declaration of classes and members using Java syntax.
+ *   .description : apply to class signatures only.
+ *   .details     : apply to member signatures only.
+ *
+ * If this style is modified, remember to cancel the effect
+ * in the "div.block pre" definition above.
+ */
+.description pre {
+  font-size: 1.2em;
+  margin-top: 0;
+}
+
+.details pre {
+  font-size: 1.1em;
+}
+
+/*
+ * Page layout container styles.
+ *   .indexContainer    : contains the list of packages and classes in the frames on the left side.
+ *   .contentContainer  : contains the text provided by the developer in the source code.
+ *     .description     : all the class javadoc text in the class description.
+ *     .details         : all the member javadoc in the details description (not in the summary).
+ *       .dl            : the "Parameters", "Returns" or "Throws" titles.
+ *       .dt            : the parameter, return value or throw text provided by the developer.
+ */
+.contentContainer, .sourceContainer, .classUseContainer, .serializedFormContainer, .constantValuesContainer {
+  clear:    both;
+  padding:  10px 20px;
+  position: relative;
+}
+
+.indexContainer {
+  margin-top:  9pt;
+  margin-left: 9pt;
+  position: relative;
+}
+
+.indexContainer ul {
+  margin:  0;
+  padding: 0;
+}
+
+.indexContainer ul li {
+  list-style: none;
+}
+
+/*
+ * "Author", "See also", "Override", "Parameters", etc. titles and textes.
+ *    .description  :  "Author", "See also", etc. in the class description.
+ *    .details      :  "Override", "Parameters", "Returns" in the method descriptions.
+ *
+ * .dt are the titles and .dl are the textes provided by the developers.
+ */
+.contentContainer .description dl dt,
+.contentContainer .details     dl dt,
+.serializedFormContainer       dl dt
+{
+  font-weight: bold;
+  margin-top:  9pt;
+}
+
+.contentContainer .description dl dd,
+.contentContainer .details     dl dd,
+.serializedFormContainer       dl dd
+{
+  font-size:   0.9em;
+  margin-left:  18pt;
+  margin-bottom: 2pt;
+}
+
+.contentContainer .description dl {
+  margin-top: 12pt;
+}
+
+.contentContainer .description dl dt,
+.contentContainer .description dl dd
+{
+  margin-top: 0;
+  color: #4E4E4E;
+}
+
+.serializedFormContainer dl.nameValue dt,
+.serializedFormContainer dl.nameValue dd
+{
+  margin-left: 1pt;
+  display: inline;
+}
+
+/*
+ * The boxes around the main sections of the page.
+ */
+ul.blockList     li.blockList,
+ul.blockListLast li.blockList
+{
+  list-style:    none;
+  margin-bottom: 25px;
+}
+
+ul.blockList ul.blockList     li.blockList,
+ul.blockList ul.blockListLast li.blockList
+{
+  padding: 0px 20px 5px 10px;
+  border:  1px solid #9eadc0;
+  background-color:  #f9f9f9;
+}
+
+ul.blockList ul.blockList ul.blockList     li.blockList,
+ul.blockList ul.blockList ul.blockListLast li.blockList
+{
+  padding:          0 0 5px 8px;
+  background-color: White;
+  border:           1px solid #9eadc0;
+  border-top:       none;
+}
+
+ul.blockList ul.blockList ul.blockList ul.blockList li.blockList {
+  margin-left:    0;
+  padding-left:   0;
+  padding-bottom: 15px;
+  border:         none;
+  border-bottom:  1px solid #9eadc0;
+}
+
+ul.blockList ul.blockList ul.blockList ul.blockList li.blockListLast {
+  list-style:     none;
+  border-bottom:  none;
+  padding-bottom: 0;
+}
+
+/*
+ * The yellow tab containing the word "Methods", "Fields", etc.
+ */
+.overviewSummary                            caption,
+.packageSummary                             caption,
+.contentContainer ul.blockList li.blockList caption,
+.summary                                    caption,
+.classUseContainer                          caption,
+.constantValuesContainer                    caption
+{
+  position:          relative;
+  text-align:        left;
+  background-repeat: no-repeat;
+  color:             White;
+  font-weight:       bold;
+  clear:             none;
+  overflow:          hidden;
+  padding:           0;
+  margin:            0;
+}
+
+.overviewSummary                            caption span,
+.packageSummary                             caption span,
+.contentContainer ul.blockList li.blockList caption span,
+.summary                                    caption span,
+.classUseContainer                          caption span,
+.constantValuesContainer                    caption span
+{
+  height:           15pt;
+  padding-top:      3pt;
+  padding-left:     6pt;
+  white-space:      nowrap;
+  display:          block;
+  float:            left;
+  background-image: url(resources/titlebar.gif);
+}
+
+.overviewSummary                            .tabEnd,
+.packageSummary                             .tabEnd,
+.contentContainer ul.blockList li.blockList .tabEnd,
+.summary                                    .tabEnd,
+.classUseContainer                          .tabEnd,
+.constantValuesContainer                    .tabEnd
+{
+  width:               10px;
+  background-image:    url(resources/titlebar_end.gif);
+  background-repeat:   no-repeat;
+  background-position: top right;
+  position:            relative;
+  float:               left;
+}
+
+/*
+ * The tables that contains the list of package, classes and methods.
+ * This is where we define the width of the first column.  The width
+ * specified here has been determined empirically from the Apache SIS
+ * javadoc output.
+ */
+table.overviewSummary  {
+  padding:     0px;
+  margin-left: 0px;
+}
+
+table.overviewSummary td.colFirst, table.overviewSummary th.colFirst,
+table.overviewSummary td.colOne,   table.overviewSummary th.colOne,
+table.packageSummary  td.colFirst {
+  vertical-align: middle;
+  width:          180pt;
+}
+
+/*
+ * The table for the class or members summaries.
+ * This is where the appareance of rows are specified.
+ *
+ * Note: definitions need to be cancelled "table.sis" definition.
+ */
+ul.blockList ul.blockList li.blockList table {
+  margin: 0 0 12px 0px;
+  width:  100%;
+}
+
+.tableSubHeadingColor {background-color: #EEEEFF;}
+.rowColor             {background-color: #FFFFFF;}
+.altColor             {background-color: #EEEEEF;}
+
+.summary                                    td,
+.overviewSummary                            td,
+.packageSummary                             td,
+.contentContainer ul.blockList li.blockList td,
+.classUseContainer                          td,
+.constantValuesContainer                    td,
+.constantValuesContainer                    th,
+th.colFirst, th.colLast, th.colOne
+{
+  text-align: left;
+  padding:    3px 3pt 3px 6pt;
+}
+
+/* The cell headers with "Modifier and type" and "Method and descriptior" labels. */
+th.colFirst, th.colLast, th.colOne, .constantValuesContainer th {
+  background:    #dee3e9;
+  border-top:    1px solid #9eadc0;
+  border-bottom: 1px solid #9eadc0;
+}
+
+td.colFirst, th.colFirst {
+  border-left: 1px solid #9eadc0;
+  white-space: nowrap;
+}
+
+td.colLast, th.colLast {
+  border-right: 1px solid #9eadc0;
+}
+
+td.colOne, th.colOne {
+  border-right: 1px solid #9eadc0;
+  border-left:  1px solid #9eadc0;
+}
+
+/*
+ * Other tables.
+ */
+table tr td dl,
+table tr td dl dt,
+table tr td dl dd
+{
+  margin-top:    0;
+  margin-bottom: 1px;
+}
+
+.contentContainer        table,
+.classUseContainer       table,
+.constantValuesContainer table
+{
+  border-bottom: 1px solid #9eadc0;
+  width:         100%;
+}
+
+.contentContainer        ul li table,
+.classUseContainer       ul li table,
+.constantValuesContainer ul li table
+{
+  width: 100%;
+}
+
+.contentContainer .description table,
+.contentContainer .details     table
+{
+  border-bottom: none;
+}
+
+.contentContainer        ul li table th.colOne,
+.contentContainer        ul li table th.colFirst,
+.contentContainer        ul li table th.colLast,
+.classUseContainer       ul li table th,
+.constantValuesContainer ul li table th,
+.contentContainer        ul li table td.colOne,
+.contentContainer        ul li table td.colFirst,
+.contentContainer        ul li table td.colLast,
+.classUseContainer       ul li table td,
+.constantValuesContainer ul li table td
+{
+  vertical-align: top;
+  padding-right: 18pt;
+}
+
+.contentContainer        ul li table th.colLast,
+.classUseContainer       ul li table th.colLast,
+.constantValuesContainer ul li table th.colLast,
+.contentContainer        ul li table td.colLast,
+.classUseContainer       ul li table td.colLast,
+.constantValuesContainer ul li table td.colLast,
+.contentContainer        ul li table th.colOne,
+.classUseContainer       ul li table th.colOne,
+.contentContainer        ul li table td.colOne,
+.classUseContainer       ul li table td.colOne
+{
+  padding-right: 3pt;
+}
+
+/*
+ * Content styles
+ */
+.deprecatedContent {
+  margin:  0;
+  padding: 10px 0;
+}
+.docSummary {
+  padding: 0;
+}
+
+/*
+ * Formatting effect styles
+ */
+.sourceLineNo {
+  color:   green;
+  padding: 0 30px 0 0;
+}
+
+h1.hidden {
+  visibility: hidden;
+  overflow:   hidden;
+  font-size:  .9em;
+}
+
+.block {
+  display: block;
+  margin:  3px 0 0 0;
+}
+
+.strong {
+  font-weight: bold;
+}
+
+/*
+ * Copyright at the bottom of every pages (combined with <small>).
+ */
+.legalCopy {
+  margin-left: 0.5em;
 }
