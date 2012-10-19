@@ -289,7 +289,7 @@ search:     for (; fromIndex <= stopAt; fromIndex++) {
      * occurrences have been found, the index of the first character after the last
      * occurrence is returned.
      * <p>
-     * IF the {@code numLines} argument is positive, this method searches forward.
+     * If the {@code numLines} argument is positive, this method searches forward.
      * If negative, this method searches backward. If 0, this method returns the
      * beginning of the current line.
      * <p>
