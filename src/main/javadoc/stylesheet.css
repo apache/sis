@@ -104,6 +104,19 @@
 }
 
 /*
+ * Formatting if the {@section} custom javadoc tag.
+ */
+div.block h5 {
+  margin-top:   15pt;
+  margin-bottom: 3pt;
+}
+
+div.block h6 {
+  margin-top:   15pt;
+  margin-bottom: 3pt;
+}
+
+/*
  * Bullet and ordered lists. Put some space before and after the list.
  * Listes of the "verbose" class also have some space betweem items.
  */
