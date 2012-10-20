@@ -104,7 +104,8 @@
 }
 
 /*
- * Bullet and ordered lists.
+ * Bullet and ordered lists. Put some space before and after the list.
+ * Listes of the "verbose" class also have some space betweem items.
  */
 div.block ul,
 div.block ol {
@@ -114,6 +115,11 @@ div.block ol {
 
 div.block ul {
   list-style-type: square;
+}
+
+ul.verbose li {
+  margin-top:    6pt;
+  margin-bottom: 6pt;
 }
 
 /*

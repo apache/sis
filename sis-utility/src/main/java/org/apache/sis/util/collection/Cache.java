@@ -108,16 +108,16 @@ import static org.apache.sis.internal.util.Executors.executeDaemonTask;
  * {@section Eviction of eldest values}
  *
  * <ul>
- *   <li><p>The <cite>cost</cite> of a value is the value returned by {@link #cost}. The default
+ *   <li>The <cite>cost</cite> of a value is the value returned by {@link #cost}. The default
  *       implementation returns 1 in all cases, but subclasses can override this method for
- *       more elaborated cost computation.</p></li>
- *   <li><p>The <cite>total cost</cite> is the sum of the cost of all values held by strong
+ *       more elaborated cost computation.</li>
+ *   <li>The <cite>total cost</cite> is the sum of the cost of all values held by strong
  *       reference in this cache. The total cost does not include the cost of values held
- *       by {@linkplain Reference weak or soft reference}.</p></li>
- *   <li><p>The <cite>cost limit</cite> is the maximal value allowed for the total cost. If
+ *       by {@linkplain Reference weak or soft reference}.</li>
+ *   <li>The <cite>cost limit</cite> is the maximal value allowed for the total cost. If
  *       the total cost exceed this value, then strong references to the eldest values are
  *       replaced by {@linkplain Reference weak or soft references} until the total cost
- *       become equals or lower than the cost limit.</p></li>
+ *       become equals or lower than the cost limit.</li>
  * </ul>
  *
  * The total cost is given at construction time. If the {@link #cost} method has not been
