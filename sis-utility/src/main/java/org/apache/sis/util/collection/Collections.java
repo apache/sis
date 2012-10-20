@@ -36,7 +36,7 @@ import static java.util.Collections.unmodifiableMap;
 /**
  * Static methods working on {@link Collection} objects.
  * This is an extension to the Java {@link java.util.Collections} utility class providing:
- * <p>
+ *
  * <ul>
  *   <li>Null-safe {@link #clear(Collection) clear}, {@link #isNullOrEmpty(Collection) isNullOrEmpty}
  *       and {@link #addIfNonNull(Collection, Object) addIfNonNull} methods, for the convenience of
@@ -70,10 +70,10 @@ public final class Collections extends Static {
     /**
      * Clears the given collection, if non-null.
      * If the given collection is null, then this method does nothing.
-     * <p>
-     * This is a convenience method for classes implementing the <cite>lazy instantiation</cite>
+     *
+     * <p>This is a convenience method for classes implementing the <cite>lazy instantiation</cite>
      * pattern. In such cases, null collections (i.e. collections not yet instantiated) are typically
-     * considered as {@linkplain Collection#isEmpty() empty}.
+     * considered as {@linkplain Collection#isEmpty() empty}.</p>
      *
      * @param collection The collection to clear, or {@code null}.
      */
@@ -86,10 +86,10 @@ public final class Collections extends Static {
     /**
      * Clears the given map, if non-null.
      * If the given map is null, then this method does nothing.
-     * <p>
-     * This is a convenience method for classes implementing the <cite>lazy instantiation</cite>
+     *
+     * <p>This is a convenience method for classes implementing the <cite>lazy instantiation</cite>
      * pattern. In such cases, null maps (i.e. maps not yet instantiated) are typically considered
-     * as {@linkplain Map#isEmpty() empty}.
+     * as {@linkplain Map#isEmpty() empty}.</p>
      *
      * @param map The map to clear, or {@code null}.
      */
@@ -197,11 +197,11 @@ public final class Collections extends Static {
      * in that it tries to returns a more efficient object when there is zero or one element.
      * Such small set occurs frequently in Apache SIS, especially for
      * {@link org.apache.sis.referencing.AbstractIdentifiedObject} names or identifiers.
-     * <p>
-     * <em>The set returned by this method may or may not be a view of the given set</em>.
+     *
+     * <p><em>The set returned by this method may or may not be a view of the given set</em>.
      * Consequently this method shall be used <strong>only</strong> if the given set will
      * <strong>not</strong> be modified after this method call. In case of doubt, use the
-     * standard {@link java.util.Collections#unmodifiableSet(Set)} method instead.
+     * standard {@link java.util.Collections#unmodifiableSet(Set)} method instead.</p>
      *
      * @param  <E>  The type of elements in the set.
      * @param  set  The set to make unmodifiable, or {@code null}.
@@ -232,11 +232,11 @@ public final class Collections extends Static {
      * This method is different than the standard {@link java.util.Collections#unmodifiableMap(Map)}
      * in that it tries to returns a more efficient object when there is zero or one entry.
      * Such small maps occur frequently in Apache SIS.
-     * <p>
-     * <em>The map returned by this method may or may not be a view of the given map</em>.
+     *
+     * <p><em>The map returned by this method may or may not be a view of the given map</em>.
      * Consequently this method shall be used <strong>only</strong> if the given map will
      * <strong>not</strong> be modified after this method call. In case of doubt, use the
-     * standard {@link java.util.Collections#unmodifiableMap(Map)} method instead.
+     * standard {@link java.util.Collections#unmodifiableMap(Map)} method instead.</p>
      *
      * @param  <K>  The type of keys in the map.
      * @param  <V>  The type of values in the map.
@@ -269,14 +269,14 @@ public final class Collections extends Static {
      * collection. The implementation class of the returned collection may be different than the
      * class of the collection given in argument. The following table gives the types mapping
      * applied by this method:
-     * <p>
+     *
      * <table class="sis">
-     * <tr><th>Input type</th><th>Output type</th></tr>
-     * <tr><td>{@link SortedSet}</td><td>{@link TreeSet}</td></tr>
-     * <tr><td>{@link HashSet}</td><td>{@link HashSet}</td></tr>
-     * <tr><td>{@link Set} other than above</td><td>{@link LinkedHashSet}</td></tr>
-     * <tr><td>{@link Queue}</td><td>{@link LinkedList}</td></tr>
-     * <tr><td>{@link List} or other {@link Collection}</td><td>{@link ArrayList}</td></tr>
+     * <tr><th>Input type</th>                              <th class="sep">Output type</th></tr>
+     * <tr><td>{@link SortedSet}</td>                       <td class="sep">{@link TreeSet}</td></tr>
+     * <tr><td>{@link HashSet}</td>                         <td class="sep">{@link HashSet}</td></tr>
+     * <tr><td>{@link Set} other than above</td>            <td class="sep">{@link LinkedHashSet}</td></tr>
+     * <tr><td>{@link Queue}</td>                           <td class="sep">{@link LinkedList}</td></tr>
+     * <tr><td>{@link List} or other {@link Collection}</td><td class="sep">{@link ArrayList}</td></tr>
      * </table>
      *
      * @param  <E> The type of elements in the collection.
@@ -321,12 +321,12 @@ public final class Collections extends Static {
      * Copies the content of the given map to a new unsynchronized, modifiable, in-memory map.
      * The implementation class of the returned map may be different than the class of the map
      * given in argument. The following table gives the types mapping applied by this method:
-     * <p>
+     *
      * <table class="sis">
-     * <tr><th>Input type</th><th>Output type</th></tr>
-     * <tr><td>{@link SortedMap}</td><td>{@link TreeMap}</td></tr>
-     * <tr><td>{@link HashMap}</td><td>{@link HashMap}</td></tr>
-     * <tr><td>{@link Map} other than above</td><td>{@link LinkedHashMap}</td></tr>
+     * <tr><th>Input type</th>                  <th class="sep">Output type</th></tr>
+     * <tr><td>{@link SortedMap}</td>           <td class="sep">{@link TreeMap}</td></tr>
+     * <tr><td>{@link HashMap}</td>             <td class="sep">{@link HashMap}</td></tr>
+     * <tr><td>{@link Map} other than above</td><td class="sep">{@link LinkedHashMap}</td></tr>
      * </table>
      *
      * @param  <K> The type of keys in the map.
@@ -358,7 +358,7 @@ public final class Collections extends Static {
 
     /**
      * Returns the given value as a collection. Special cases:
-     * <p>
+     *
      * <ul>
      *   <li>If the value is null, then this method returns an {@linkplain java.util.Collections#emptyList() empty list}.</li>
      *   <li>If the value is an instance of {@link Collection}, then it is returned unchanged.</li>
@@ -366,12 +366,12 @@ public final class Collections extends Static {
      *   <li>If the value is an instance of {@link Iterable}, {@link Iterator} or {@link Enumeration}, copies the values in a new list.</li>
      *   <li>Otherwise the value is returned as a {@linkplain java.util.Collections#singletonList(Object) singleton list}.</li>
      * </ul>
-     * <p>
-     * Note that in the {@link Iterator} and {@link Enumeration} cases, the given value object
-     * is not valid anymore after this method call since it has been used for the iteration.
-     * <p>
-     * If the returned object needs to be a list, then this method can be chained
-     * with {@link #asList(Collection)} as below:
+     *
+     * <p>Note that in the {@link Iterator} and {@link Enumeration} cases, the given value object
+     * is not valid anymore after this method call since it has been used for the iteration.</p>
+     *
+     * <p>If the returned object needs to be a list, then this method can be chained
+     * with {@link #asList(Collection)} as below:</p>
      *
      * {@preformat java
      *     List<?> list = asList(asCollection(object));
@@ -413,13 +413,13 @@ public final class Collections extends Static {
 
     /**
      * Casts or copies the given collection to a list. Special cases:
-     * <p>
+     *
      * <ul>
      *   <li>If the given collection is {@code null}, then this method returns {@code null}.</li>
      *   <li>If the given collection is already a list, then it is returned unchanged.</li>
      *   <li>Otherwise the elements are copied in a new list, which is returned.</li>
      * </ul>
-     * <p>
+     *
      * This method can be chained with {@link #asCollection(Object)}
      * for handling a wider range of types:
      *
@@ -484,9 +484,9 @@ public final class Collections extends Static {
      * the second element are compared, and so on until either non-equal elements are found,
      * or end-of-list are reached. In the later case, the shortest list is considered
      * <cite>less than</cite> the longest one.
-     * <p>
-     * If both lists have the same length and equal elements in the sense of
-     * {@link Comparable#compareTo}, then the comparator returns 0.
+     *
+     * <p>If both lists have the same length and equal elements in the sense of
+     * {@link Comparable#compareTo}, then the comparator returns 0.</p>
      *
      * @param  <T> The type of elements in both lists.
      * @return The ordering between two lists.
@@ -511,10 +511,10 @@ public final class Collections extends Static {
     /**
      * Returns a comparator for arbitrary collections of comparable elements. The elements are
      * compared in iteration order as for the {@linkplain #listComparator list comparator}.
-     * <p>
-     * <em>This comparator make sense only for collections having determinist order</em>
+     *
+     * <p><em>This comparator make sense only for collections having determinist order</em>
      * like {@link java.util.TreeSet}, {@link java.util.LinkedHashSet} or queues.
-     * Do <strong>not</strong> use it with {@link java.util.HashSet}.
+     * Do <strong>not</strong> use it with {@link java.util.HashSet}.</p>
      *
      * @param <T> The type of elements in both collections.
      * @return The ordering between two collections.
@@ -528,9 +528,9 @@ public final class Collections extends Static {
      * Returns the capacity to be given to the {@link java.util.HashMap#HashMap(int) HashMap}
      * constructor for holding the given number of elements. This method computes the capacity
      * for the default <cite>load factor</cite>, which is 0.75.
-     * <p>
-     * The same calculation can be used for {@link java.util.LinkedHashMap} and
-     * {@link java.util.HashSet} as well, which are built on top of {@code HashMap}.
+     *
+     * <p>The same calculation can be used for {@link java.util.LinkedHashMap} and
+     * {@link java.util.HashSet} as well, which are built on top of {@code HashMap}.</p>
      *
      * @param elements The number of elements to be put into the hash map or hash set.
      * @return The optimal initial capacity to be given to the hash map constructor.

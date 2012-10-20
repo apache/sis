@@ -77,19 +77,17 @@ public final class Section extends InlineTaglet {
     @Override
     public String toString(final Tag tag) {
         final Doc holder = tag.holder();
-        final boolean small = holder == null || holder.isField() || holder.isMethod() || holder.isConstructor();
-        final StringBuilder buffer = new StringBuilder("<p>");
-        if (!small) {
-            buffer.append("<br>");
-        }
-        buffer.append("\n<b><u>");
-        if (!small) {
-            buffer.append("<font size=+1>");
-        }
-        buffer.append(tag.text());
-        if (!small) {
-            buffer.append("</font>");
-        }
-        return buffer.append("</u></b><br>").toString();
+        final boolean small = (holder == null)
+                || holder.isEnumConstant()
+                || holder.isField()
+                || holder.isMethod()
+                || holder.isConstructor();
+        final String text = tag.text();
+        final StringBuilder buffer = new StringBuilder(text.length() + 8);
+        buffer.append('\n')
+              .append(small ? "<h6>" : "<h5>")
+              .append(text)
+              .append(small ? "</h6>" : "</h5>");
+        return buffer.toString();
     }
 }

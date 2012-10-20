@@ -155,14 +155,14 @@ public class DefaultInternationalString extends AbstractInternationalString impl
      * {@code DefaultInternationalString} during iteration through the
      * {@linkplain java.util.Map.Entry entries} in a {@link Map}. It infers the {@link Locale}
      * from the property {@code key}, using the following steps:
-     * <p>
+     *
      * <ul>
      *   <li>If the {@code key} does not start with the specified {@code prefix}, then
      *       this method does nothing and returns {@code false}.</li>
      *   <li>Otherwise, the characters after the {@code prefix} are parsed as an ISO language
      *       and country code, and the {@link #add(Locale, String)} method is invoked.</li>
      * </ul>
-     * <p>
+     *
      * For example if the prefix is {@code "remarks"}, then the {@code "remarks_fr"} property key
      * stands for remarks in {@linkplain Locale#FRENCH French} while the {@code "remarks_fr_CA"}
      * property key stands for remarks in {@linkplain Locale#CANADA_FRENCH French Canadian}.
@@ -260,7 +260,7 @@ public class DefaultInternationalString extends AbstractInternationalString impl
      * identifiers often look like English words, they are not considered as the
      * {@linkplain Locale#ENGLISH English locale}. In order to produce a value close
      * to the common practice, this method handles {@code null} argument value as below:
-     * <p>
+     *
      * <ul>
      *   <li>If a string has been explicitly {@linkplain #add(Locale, String) added} for the
      *       {@code null} locale, then that string is returned.</li>
@@ -323,7 +323,7 @@ public class DefaultInternationalString extends AbstractInternationalString impl
     /**
      * Returns {@code true} if all localized texts stored in this international string are
      * contained in the specified object. More specifically:
-     * <p>
+     *
      * <ul>
      *   <li>If {@code candidate} is an instance of {@link InternationalString}, then this method
      *       returns {@code true} if, for all <var>{@linkplain Locale locale}</var>-<var>{@linkplain

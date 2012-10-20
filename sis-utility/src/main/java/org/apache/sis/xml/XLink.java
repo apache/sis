@@ -292,7 +292,7 @@ public class XLink implements Serializable {
         /**
          * A bitmask which specified the non-null fields expected for a given type.
          * The bit values are:
-         * <p>
+         *
          * <ul>
          *   <li>{@code type}:     0x1</li>
          *   <li>{@code href}:     0x2</li>
@@ -345,7 +345,7 @@ public class XLink implements Serializable {
 
     /**
      * Returns the type of link. May have one of the following values:
-     * <p>
+     *
      * <ul>
      *   <li><b>simple:</b>   a simple link</li>
      *   <li><b>extended:</b> an extended, possibly multi-resource, link</li>
@@ -355,9 +355,9 @@ public class XLink implements Serializable {
      *   <li><b>title:</b>    a descriptive title for another linking element</li>
      * </ul>
      *
-     * <p>The default value is {@code null}. If the {@link #setType(XLink.Type)} method has been
+     * The default value is {@code null}. If the {@link #setType(XLink.Type)} method has been
      * invoked with the {@link org.apache.sis.xml.XLink.Type#AUTO AUTO} enum, then this method
-     * will infer a type from the attributes having a non-null value.</p>
+     * will infer a type from the attributes having a non-null value.
      *
      * @return The type of link, or {@code null}.
      */
@@ -440,8 +440,8 @@ public class XLink implements Serializable {
      * identifier.
      *
      * {@note This serves a role similar to <code>idref</code>. The <code>idref</code>
-     * attribute allows an XML element to refer to another XML element that has a
-     * corresponding <code>id</code> attribute.}
+     *        attribute allows an XML element to refer to another XML element that has
+     *        a corresponding <code>id</code> attribute.}
      *
      * @return A URN to a resources, or {@code null} if none.
      *
@@ -591,7 +591,7 @@ public class XLink implements Serializable {
     /**
      * Returns the desired presentation of the ending resource on traversal
      * from the starting resource. It's value should be treated as follows:
-     * <p>
+     *
      * <ul>
      *   <li><b>new:</b>     load ending resource in a new window, frame, pane, or other presentation context</li>
      *   <li><b>replace:</b> load the resource in the same window, frame, pane, or other presentation context</li>
@@ -662,7 +662,7 @@ public class XLink implements Serializable {
     /**
      * Returns the desired timing of traversal from the starting resource to the ending
      * resource. It's value should be treated as follows:
-     * <p>
+     *
      * <ul>
      *   <li><b>onLoad:</b>    traverse to the ending resource immediately on loading the starting resource</li>
      *   <li><b>onRequest:</b> traverse from the starting resource to the ending resource only on a post-loading event triggered for this purpose</li>
@@ -781,8 +781,8 @@ public class XLink implements Serializable {
     /**
      * Marks this {@code xlink} as unmodifiable. After this method call, any call to a setter
      * method will throw an {@link UnsupportedOperationException}.
-     * <p>
-     * After the first call to this method, any subsequent calls have no effect.
+     *
+     * <p>After the first call to this method, any subsequent calls have no effect.</p>
      */
     public synchronized void freeze() {
         if (hashCode == 0) {

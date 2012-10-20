@@ -27,7 +27,7 @@ package org.apache.sis.util;
  */
 public final class Characters extends Static {
     /**
-     * The <cite>no-break space</cite> (Unicode {@code \u00A0}, HTML {@code &nbsp;}).
+     * The <cite>no-break space</cite> (Unicode {@code \\u00A0}, HTML {@code &nbsp;}).
      * Apache SIS uses Unicode symbols directly in the source code for easier reading,
      * except for no-break spaces since they can not be visually distinguished from the
      * ordinary space (Unicode {@code \u0020}).

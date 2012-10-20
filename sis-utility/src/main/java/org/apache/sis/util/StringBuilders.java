@@ -161,11 +161,11 @@ public final class StringBuilders extends Static {
      * Trims the fractional part of the given formatted number, provided that it doesn't change
      * the value. This method assumes that the number is formatted in the US locale, typically
      * by the {@link Double#toString(double)} method.
-     * <p>
-     * More specifically if the given buffer ends with a {@code '.'} character followed by a
+     *
+     * <p>More specifically if the given buffer ends with a {@code '.'} character followed by a
      * sequence of {@code '0'} characters, then those characters are removed. Otherwise this
      * method does nothing. This is a "<cite>all or nothing</cite>" method: either the fractional
-     * part is completely removed, or either it is left unchanged.
+     * part is completely removed, or either it is left unchanged.</p>
      *
      * {@section Use case}
      * This method is useful after a {@linkplain StringBuilder#append(double) double value has
@@ -193,9 +193,9 @@ public final class StringBuilders extends Static {
     /**
      * Replaces some Unicode characters by ASCII characters on a "best effort basis".
      * For example the {@code 'é'} character is replaced by {@code 'e'} (without accent).
-     * <p>
-     * The current implementation replaces only the characters in the range {@code 00C0}
-     * to {@code 00FF}, inclusive. Other characters are left unchanged.
+     *
+     * <p>The current implementation replaces only the characters in the range {@code 00C0}
+     * to {@code 00FF}, inclusive. Other characters are left unchanged.</p>
      *
      * @param  buffer The text to scan for Unicode characters to replace by ASCII characters.
      * @throws NullArgumentException If the given {@code buffer} is null.

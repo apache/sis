@@ -75,8 +75,8 @@ public strictfp class IdentifierMapAdapterTest extends TestCase {
     /**
      * Tests read and write operations on an {@link IdentifierMapAdapter}, using a well-formed
      * identifier collection (no null values, no duplicated authorities).
-     * <p>
-     * This test does not use the {@link IdentifierMap}-specific API.
+     *
+     * <p>This test does not use the {@link IdentifierMap}-specific API.</p>
      */
     @Test
     public void testGetAndPut() {

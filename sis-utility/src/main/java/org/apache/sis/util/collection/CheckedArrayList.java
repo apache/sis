@@ -45,14 +45,14 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *       type checks and write permission checks.</li>
  * </ul>
  *
- * <p>The synchronization is provided mostly in order to prevent damages
+ * The synchronization is provided mostly in order to prevent damages
  * to the list in case of concurrent access. It does <strong>not</strong> prevent
  * {@link java.util.ConcurrentModificationException} to be thrown during iterations,
  * unless the whole iteration is synchronized on this list {@linkplain #getLock() lock}.
- * For real concurrency, see the {@link java.util.concurrent} package instead.</p>
+ * For real concurrency, see the {@link java.util.concurrent} package instead.
  *
  * {@note The above is the reason why the name of this class emphases the <cite>checked</cite>
- * aspect rather than the <cite>synchronized</cite> aspect of the list.}
+ *        aspect rather than the <cite>synchronized</cite> aspect of the list.}
  *
  * @param <E> The type of elements in the list.
  *
@@ -140,9 +140,9 @@ public class CheckedArrayList<E> extends ArrayList<E> implements CheckedContaine
      * after this list got the {@linkplain #getLock() lock} and before any operation that
      * may change the content. If the write operation is allowed, then this method shall
      * returns normally. Otherwise an {@link UnsupportedOperationException} is thrown.
-     * <p>
-     * The default implementation does nothing significant (see below), thus allowing this list to
-     * be modified. Subclasses can override this method if they want to control write permissions.
+     *
+     * <p>The default implementation does nothing significant (see below), thus allowing this list to
+     * be modified. Subclasses can override this method if they want to control write permissions.</p>
      *
      * {@note Actually the current implementation contains an <code>assert</code> statement
      * ensuring that the thread holds the lock. This is an implementation details that may

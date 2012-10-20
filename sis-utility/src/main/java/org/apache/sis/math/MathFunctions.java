@@ -36,7 +36,7 @@ import static org.apache.sis.util.Arrays.EMPTY_INT;
  * Some methods in this class are very similar to the standard {@link Math} methods
  * or could be implemented with straightforward formulas.
  * However the methods in this class put an emphasis on:
- * <p>
+ *
  * <ul>
  *   <li>Rounding errors:
  *       {@link #magnitude(double[]) magnitude},
@@ -50,7 +50,7 @@ import static org.apache.sis.util.Arrays.EMPTY_INT;
  *       {@link #toNanFloat(int) toNanFloat},
  *       {@link #toNanOrdinal(float) toNanOrdinal}.</li>
  * </ul>
- * <p>
+ *
  * Some additional functions not found in {@code Math} are:
  * {@link #atanh(double) atanh},
  * {@link #nextPrimeNumber(int) nextPrimeNumber}.
@@ -122,8 +122,8 @@ public final class MathFunctions extends Static {
      * change in any future Apache SIS version.
      *
      * {@note The current value is the highest prime number representable as an unsigned 16 bits
-     * integer. This is enough for current needs because 16 bits prime numbers are sufficient for
-     * finding the divisors of any 32 bits integers.}
+     *        integer. This is enough for current needs because 16 bits prime numbers are sufficient
+     *        for finding the divisors of any 32 bits integers.}
      *
      * @see #nextPrimeNumber(int)
      */
@@ -228,10 +228,11 @@ public final class MathFunctions extends Static {
      * sometime at the cost of performance.
      *
      * {@note This method has been defined because the standard <code>Math.pow(10, x)</code>
-     * method does not always return the closest IEEE floating point representation. Slight
-     * departures (1 or 2 ULP) are often allowed in math functions for performance reasons.
-     * The most accurate calculations are usually not necessary, but the base 10 is a special
-     * case since it is used for scaling axes or formatting human-readable output.}
+     *        method does not always return the closest IEEE floating point representation.
+     *        Slight departures (1 or 2 ULP) are often allowed in math functions for performance
+     *        reasons. The most accurate calculations are usually not necessary, but the base 10
+     *        is a special case since it is used for scaling axes or formatting human-readable
+     *        output.}
      *
      * @param x The exponent.
      * @return 10 raised to the given exponent.
@@ -264,8 +265,8 @@ public final class MathFunctions extends Static {
      * Returns the inverse hyperbolic tangent of the given value.
      * This is the inverse of the {@linkplain Math#tanh(double) tanh} method.
      * The range of input values shall be in the [-1 … 1].
-     * <p>
      * Special cases:
+     *
      * <ul>
      *   <li>For <var>x</var> = NaN, this method returns a {@linkplain Double#isNaN(double) NaN} value.</li>
      *   <li>For <var>x</var> = -1, this method returns {@linkplain Double#NEGATIVE_INFINITY negative infinity}.</li>
@@ -287,14 +288,14 @@ public final class MathFunctions extends Static {
 
     /**
      * Returns {@code true} if the given value is positive, <em>excluding</em> negative zero.
-     * <p>
      * Special cases:
+     *
      * <ul>
      *   <li>If the value is {@code +0.0}, returns {@code true}</li>
      *   <li>If the value is {@code -0.0}, returns <b>{@code false}</b></li>
      *   <li>If the value is {@link Double#isNaN(double) NaN}, returns {@code false}</li>
      * </ul>
-     * <p>
+     *
      * As seen from the above cases, this method distinguishes positive zero from negative zero.
      * The handling of zero values is the difference between invoking {@code isPositive(double)}
      * and testing if (<var>value</var> &gt;= 0).
@@ -308,14 +309,14 @@ public final class MathFunctions extends Static {
 
     /**
      * Returns {@code true} if the given value is negative, <em>including</em> negative zero.
-     * <p>
      * Special cases:
+     *
      * <ul>
      *   <li>If the value is {@code +0.0}, returns {@code false}</li>
      *   <li>If the value is {@code -0.0}, returns <b>{@code true}</b></li>
      *   <li>If the value is {@link Double#isNaN(double) NaN}, returns {@code false}</li>
      * </ul>
-     * <p>
+     *
      * As seen from the above cases, this method distinguishes positive zero from negative zero.
      * The handling of zero values is the difference between invoking {@code isNegative(double)}
      * and testing if (<var>value</var> &lt; 0).
@@ -330,13 +331,12 @@ public final class MathFunctions extends Static {
     /**
      * Returns {@code true} if the given values have the same sign, differentiating positive
      * and negative zeros.
-     * <p>
      * Special cases:
+     *
      * <ul>
      *   <li>{@code +0.0} and {@code -0.0} are considered to have opposite sign</li>
      *   <li>If any value is {@link Double#isNaN(double) NaN}, returns {@code false}</li>
      * </ul>
-     * <p>
      *
      * @param  v1 The first value.
      * @param  v2 The second value, to compare the sign with the first value.
@@ -354,9 +354,9 @@ public final class MathFunctions extends Static {
      * argument is negative. This method is similar to <code>{@linkplain Math#copySign(double,double)
      * Math.copySign}(value, sign)</code> except that the sign is combined with an <cite>exclusive
      * or</cite> operation instead than being copied.
-     * <p>
-     * This method makes no guarantee about whether {@code NaN} values are handled as positive
-     * or negative numbers. This is the same policy than {@link Math#copySign(double, double)}.
+     *
+     * <p>This method makes no guarantee about whether {@code NaN} values are handled as positive
+     * or negative numbers. This is the same policy than {@link Math#copySign(double, double)}.</p>
      *
      * @param  value The parameter providing the value that may need a sign change.
      * @param  sign The parameter providing the sign to <cite>xor</cite> with the value.
@@ -467,13 +467,13 @@ public final class MathFunctions extends Static {
      * Returns a {@linkplain Float#isNaN(float) NaN} number for the specified ordinal value.
      * Valid NaN numbers in Java can have bit fields in the ranges listed below.
      * This method allocates one of valid NaN bit fields to each ordinal value.
-     * <p>
+     *
      * <ul>
      *   <li>[{@code 0x7F800001} … {@code 0x7FFFFFFF}], with
      *        {@code 0x7FC00000} as the bit fields of the standard {@link Float#NaN} value</li>
      *   <li>[{@code 0xFF800001} … {@code 0xFFFFFFFF}]</li>
      * </ul>
-     * <p>
+     *
      * The relationship between bit fields and ordinal values is implementation dependent and may
      * change in any future version of the SIS library. The current implementation restricts the
      * range of allowed ordinal values to a smaller one than the range of all possible NaN values.
