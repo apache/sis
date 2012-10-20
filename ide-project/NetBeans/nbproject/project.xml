@@ -20,18 +20,24 @@
         </data>
         <spellchecker-wordlist xmlns="http://www.netbeans.org/ns/spellchecker-wordlist/1">
             <word>bitmask</word>
+            <word>classname</word>
+            <word>classpath</word>
             <word>deserialization</word>
             <word>deserialized</word>
             <word>initially</word>
             <word>javadoc</word>
+            <word>loggings</word>
             <word>marshallable</word>
             <word>marshalled</word>
             <word>marshalling</word>
+            <word>metadata</word>
+            <word>monospaced</word>
             <word>namespace</word>
             <word>namespaces</word>
             <word>timezone</word>
             <word>Unicode</word>
             <word>unmarshalling</word>
+            <word>whitespaces</word>
         </spellchecker-wordlist>
     </configuration>
 </project>
