@@ -188,7 +188,7 @@ public strictfp class Assert extends org.opengis.test.Assert {
     /**
      * Parses two XML tree as DOM documents, and compares the nodes.
      * The inputs given to this method can be any of the following types:
-     * <p>
+     *
      * <ul>
      *   <li>{@link org.w3c.dom.Node}: used directly without further processing.</li>
      *   <li>{@link java.io.File}, {@link java.net.URL} or {@link java.net.URI}: the
@@ -197,7 +197,7 @@ public strictfp class Assert extends org.opengis.test.Assert {
      *       Encoding <strong>must</strong> be UTF-8 (no other encoding is supported
      *       by current implementation of this method).</li>
      * </ul>
-     * <p>
+     *
      * This method will ignore comments and the optional attributes given in arguments.
      *
      * @param  expected The expected XML document.
@@ -254,9 +254,9 @@ public strictfp class Assert extends org.opengis.test.Assert {
      * Tests if the given {@code outer} shape contains the given {@code inner} rectangle.
      * This method will also verify class consistency by invoking the {@code intersects}
      * method, and by interchanging the arguments.
-     * <p>
-     * This method can be used for testing the {@code outer} implementation -
-     * it should not be needed for standard JDK implementations.
+     *
+     * <p>This method can be used for testing the {@code outer} implementation -
+     * it should not be needed for standard JDK implementations.</p>
      *
      * @param outer The shape which is expected to contains the given rectangle.
      * @param inner The rectangle which should be contained by the shape.
@@ -276,9 +276,9 @@ public strictfp class Assert extends org.opengis.test.Assert {
      * Tests if the given {@code r1} shape is disjoint with the given {@code r2} rectangle.
      * This method will also verify class consistency by invoking the {@code contains}
      * method, and by interchanging the arguments.
-     * <p>
-     * This method can be used for testing the {@code r1} implementation -
-     * it should not be needed for standard implementations.
+     *
+     * <p>This method can be used for testing the {@code r1} implementation - it should not
+     * be needed for standard implementations.</p>
      *
      * @param r1 The first shape to test.
      * @param r2 The second rectangle to test.
@@ -345,9 +345,9 @@ public strictfp class Assert extends org.opengis.test.Assert {
     /**
      * Serializes the given object in memory, deserialize it and ensures that the deserialized
      * object is equals to the original one. This method doesn't write anything to the disk.
-     * <p>
-     * If the serialization fails, then this method thrown an {@link AssertionError}
-     * as do the other JUnit assertion methods.
+     *
+     * <p>If the serialization fails, then this method thrown an {@link AssertionError}
+     * as do the other JUnit assertion methods.</p>
      *
      * @param  <T> The type of the object to serialize.
      * @param  object The object to serialize.

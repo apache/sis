@@ -157,11 +157,11 @@ public final strictfp class TestUtilities extends Static {
     /**
      * Waits up to one second for the garbage collector to do its work. This method can be invoked
      * only if {@link TestConfiguration#allowGarbageCollectorDependentTests()} returns {@code true}.
-     * <p>
-     * Note that this method does not throw any exception if the given condition has not been
+     *
+     * <p>Note that this method does not throw any exception if the given condition has not been
      * reached before the timeout. Instead, it is the caller responsibility to test the return
      * value. This method is designed that way because the caller can usually produce a more
-     * accurate error message about which value has not been garbage collected as expected.
+     * accurate error message about which value has not been garbage collected as expected.</p>
      *
      * @param  stopCondition A condition which return {@code true} if this method can stop waiting,
      *         or {@code false} if it needs to ask again for garbage collection.

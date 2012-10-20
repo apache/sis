@@ -24,39 +24,39 @@ package org.apache.sis.util;
  * coordinates calculation.
  *
  * {@section Conditions for equality}
- * <p><b>{@link org.apache.sis.metadata.iso.MetadataEntity} subclasses:</b></p>
+ *
  * <table class="sis">
- * <tr><td><b>{@link ComparisonMode#STRICT STRICT}:</b></td>
- * <td>Objects must be of the same class and all attributes must be equal, including
- * {@linkplain org.apache.sis.metadata.iso.MetadataEntity#getIdentifiers() identifiers}.</td></tr>
+ * <tr><th colspan="2">{@link org.apache.sis.metadata.iso.MetadataEntity} subclasses</th></tr>
+ * <tr><td>{@link ComparisonMode#STRICT STRICT}</td>
+ * <td class="sep">Objects must be of the same class and all attributes must be equal, including {@code xlink}
+ * and others {@linkplain org.apache.sis.metadata.iso.MetadataEntity#getIdentifiers() identifiers}.</td></tr>
  *
- * <tr><td><b>{@link ComparisonMode#BY_CONTRACT BY_CONTRACT}:</b></td>
- * <td>The same attributes than the above {@code STRICT} mode must be equal, but the metadata
- * object doesn't need to be implemented by the same class, provided that they implement the
- * same GeoAPI interface.</td></tr>
+ * <tr><td>{@link ComparisonMode#BY_CONTRACT BY_CONTRACT}</td>
+ * <td class="sep">The same attributes than the above {@code STRICT} mode must be equal,
+ * but the metadata object don't need to be implemented by the same class
+ * provided that they implement the same GeoAPI interface.</td></tr>
  *
- * <tr><td><b>{@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA}:</b></td>
- * <td>Only the attributes defined in the GeoAPI interfaces are compared. The above-cited identifiers
- * and {@code xlinks} attributes are ignored.</td></tr>
+ * <tr><td>{@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA}</td>
+ * <td class="sep">Only the attributes defined in the GeoAPI interfaces are compared.
+ * The above-cited identifiers and {@code xlinks} attributes are ignored.</td></tr>
  *
- * <tr><td><b>{@link ComparisonMode#APPROXIMATIVE APPROXIMATIVE}:</b></td>
- * <td>The same attributes than the above {@code IGNORE_METADATA} mode are compared, but a slight
- * (implementation dependant) difference is tolerated in floating point numbers.</td></tr>
- * </table>
+ * <tr><td>{@link ComparisonMode#APPROXIMATIVE APPROXIMATIVE}</td>
+ * <td class="sep">The same attributes than the above {@code IGNORE_METADATA} mode are compared,
+ * but a slight (implementation dependant) difference is tolerated in floating point numbers.</td></tr>
  *
- * <p>&nbsp;</p>
- * <p><b>{@link org.apache.sis.referencing.AbstractIdentifiedObject} subclasses:</b></p>
- * <table class="sis">
- * <tr><td><b>{@link ComparisonMode#STRICT STRICT}:</b></td>
- * <td>Objects must be of the same class and all attributes must be equal.</td></tr>
  *
- * <tr><td><b>{@link ComparisonMode#BY_CONTRACT BY_CONTRACT}:</b></td>
- * <td>The same attributes than the above {@code STRICT} mode must be equal, but the referencing
- * object don't need to be implemented by the same class, provided that they implement the
- * same GeoAPI interface.</td></tr>
  *
- * <tr><td><b>{@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA}:</b></td>
- * <td>The
+ * <tr><th class="hsep" colspan="2">{@link org.apache.sis.referencing.AbstractIdentifiedObject} subclasses</th></tr>
+ * <tr><td>{@link ComparisonMode#STRICT STRICT}</td>
+ * <td class="sep">Objects must be of the same class and all attributes must be equal.</td></tr>
+ *
+ * <tr><td>{@link ComparisonMode#BY_CONTRACT BY_CONTRACT}</td>
+ * <td class="sep">The same attributes than the above {@code STRICT} mode must be equal,
+ * but the referencing object don't need to be implemented by the same class
+ * provided that they implement the same GeoAPI interface.</td></tr>
+ *
+ * <tr><td>{@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA}</td>
+ * <td class="sep">The
  * {@linkplain org.apache.sis.referencing.crs.AbstractCRS#getIdentifiers() identifiers},
  * {@linkplain org.apache.sis.referencing.crs.AbstractCRS#getAlias() aliases},
  * {@linkplain org.apache.sis.referencing.crs.AbstractCRS#getScope() scope},
@@ -66,56 +66,55 @@ package org.apache.sis.util;
  * {@linkplain org.opengis.referencing.operation.ConcatenatedOperation coordinate operations}.
  * All other attributes that are relevant to coordinate calculations, must be equal.</td></tr>
  *
- * <tr><td><b>{@link ComparisonMode#APPROXIMATIVE APPROXIMATIVE}:</b></td>
- * <td>The same attributes than the above {@code IGNORE_METADATA} mode are compared, but a slight
- * (implementation dependant) difference is tolerated in floating point numbers.</td></tr>
- * </table>
+ * <tr><td>{@link ComparisonMode#APPROXIMATIVE APPROXIMATIVE}</td>
+ * <td class="sep">The same attributes than the above {@code IGNORE_METADATA} mode are compared,
+ * but a slight (implementation dependant) difference is tolerated in floating point numbers.</td></tr>
  *
- * <p>&nbsp;</p>
- * <p><b>{@link org.apache.sis.referencing.operation.transform.AbstractMathTransform} subclasses
- * except {@link org.apache.sis.referencing.operation.transform.LinearTransform}:</b></p>
- * <table class="sis">
- * <tr><td><b>{@link ComparisonMode#STRICT STRICT}:</b></td>
- * <td>Objects must be of the same class and all attributes must be equal, including the
+ *
+ *
+ * <tr><th class="hsep" colspan="2">{@link org.apache.sis.referencing.operation.transform.AbstractMathTransform} subclasses
+ * except {@link org.apache.sis.referencing.operation.transform.LinearTransform}</th></tr>
+ * <tr><td>{@link ComparisonMode#STRICT STRICT}</td>
+ * <td class="sep">Objects must be of the same class and all attributes must be equal, including the
  * {@linkplain org.apache.sis.referencing.operation.transform.AbstractMathTransform#getParameterValues()
  * parameter values}.</td></tr>
  *
- * <tr><td><b>{@link ComparisonMode#BY_CONTRACT BY_CONTRACT}:</b></td>
- * <td>Synonymous to the {@code STRICT} mode, because there is no GeoAPI interfaces for the various
+ * <tr><td>{@link ComparisonMode#BY_CONTRACT BY_CONTRACT}</td>
+ * <td class="sep">Synonymous to the {@code STRICT} mode, because there is no GeoAPI interfaces for the various
  * kind of math transforms.</td></tr>
  *
- * <tr><td><b>{@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA}:</b></td>
- * <td>Objects must be of the same class, but the parameter values can be different if they are
- * different way to formulate the same transform. For example a {@code "Mercator (2SP)"} projection
- * with a {@linkplain org.apache.sis.referencing.operation.projection.UnitaryProjection.Parameters#standardParallels
+ * <tr><td>{@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA}</td>
+ * <td class="sep">Objects must be of the same class, but the parameter values can be different
+ * if they are different way to formulate the same transform.
+ * For example a {@code "Mercator (2SP)"} projection with a
+ * {@linkplain org.apache.sis.referencing.operation.projection.UnitaryProjection.Parameters#standardParallels
  * standard parallel} value of 60° produces the same results than a {@code "Mercator (1SP)"} projection with a
- * {@linkplain org.apache.sis.referencing.operation.projection.UnitaryProjection.Parameters#scaleFactor scale
- * factor} value of 0.5</td></tr>
+ * {@linkplain org.apache.sis.referencing.operation.projection.UnitaryProjection.Parameters#scaleFactor scale factor}
+ * value of 0.5</td></tr>
  *
- * <tr><td><b>{@link ComparisonMode#APPROXIMATIVE APPROXIMATIVE}:</b></td>
- * <td>The same attributes than the above {@code IGNORE_METADATA} mode are compared, but a slight
- * (implementation dependant) difference is tolerated in floating point numbers.</td></tr>
- * </table>
+ * <tr><td>{@link ComparisonMode#APPROXIMATIVE APPROXIMATIVE}</td>
+ * <td class="sep">The same attributes than the above {@code IGNORE_METADATA} mode are compared,
+ * but a slight (implementation dependant) difference is tolerated in floating point numbers.</td></tr>
  *
- * <p>&nbsp;</p>
- * <p><b>{@link org.apache.sis.referencing.operation.matrix.XMatrix} and
- * {@link org.apache.sis.referencing.operation.transform.LinearTransform} implementations:</b></p>
- * <table class="sis">
- * <tr><td><b>{@link ComparisonMode#STRICT STRICT}:</b></td>
- * <td>Objects must be of the same class, matrixes must have the same size and all matrix
+ *
+ *
+ * <tr><th class="hsep" colspan="2">{@link org.apache.sis.referencing.operation.matrix.XMatrix} and
+ * {@link org.apache.sis.referencing.operation.transform.LinearTransform} implementations</th></tr>
+ * <tr><td>{@link ComparisonMode#STRICT STRICT}</td>
+ * <td class="sep">Objects must be of the same class, matrixes must have the same size and all matrix
  * elements must be equal.</td></tr>
  *
- * <tr><td><b>{@link ComparisonMode#BY_CONTRACT BY_CONTRACT}:</b></td>
- * <td>Matrixes must have the same size and all matrix elements must be equal, but the matrixes
- * are not required to be the same implementation class
+ * <tr><td>{@link ComparisonMode#BY_CONTRACT BY_CONTRACT}</td>
+ * <td class="sep">Matrixes must have the same size and all matrix elements must be equal,
+ * but the matrixes are not required to be the same implementation class
  * (any {@link org.opengis.referencing.operation.Matrix} is okay).</td></tr>
  *
- * <tr><td><b>{@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA}:</b></td>
- * <td>Synonymous to the {@code BY_CONTRACT} mode, because matrixes don't have metadata.</td></tr>
+ * <tr><td>{@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA}</td>
+ * <td class="sep">Synonymous to the {@code BY_CONTRACT} mode, because matrixes don't have metadata.</td></tr>
  *
- * <tr><td><b>{@link ComparisonMode#APPROXIMATIVE APPROXIMATIVE}:</b></td>
- * <td>The same attributes than the above {@code BY_CONTRACT} mode are compared, but a slight
- * (implementation dependant) difference is tolerated in floating point numbers.</td></tr>
+ * <tr><td>{@link ComparisonMode#APPROXIMATIVE APPROXIMATIVE}</td>
+ * <td class="sep">The same attributes than the above {@code BY_CONTRACT} mode are compared,
+ * but a slight (implementation dependant) difference is tolerated in floating point numbers.</td></tr>
  * </table>
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -126,7 +125,21 @@ package org.apache.sis.util;
 public interface LenientComparable {
     /**
      * Compares this object with the given object for equality.
-     * The strictness level is controlled by the second argument.
+     * The strictness level is controlled by the second argument:
+     *
+     * <table class="sis">
+     *   <tr><td>{@link ComparisonMode#STRICT STRICT}</td>
+     *     <td class="sep">All attributes of the compared objects shall be strictly equal.</td></tr>
+     *   <tr><td>{@link ComparisonMode#BY_CONTRACT BY_CONTRACT}</td>
+     *     <td class="sep">Only the attributes published in the interface contract need to be compared.</td></tr>
+     *   <tr><td>{@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA}</td>
+     *     <td class="sep">Only the attributes relevant to the object functionality are compared.</td></tr>
+     *   <tr><td>{@link ComparisonMode#APPROXIMATIVE APPROXIMATIVE}</td>
+     *     <td class="sep">Only the attributes relevant to the object functionality are compared,
+     *                     with some tolerance threshold on numerical values.</td></tr>
+     *   <tr><td>{@link ComparisonMode#DEBUG DEBUG}</td>
+     *     <td class="sep">Special mode for figuring out why two objects expected to be equal are not.</td></tr>
+     * </table>
      *
      * @param  other The object to compare to {@code this}.
      * @param  mode The strictness level of the comparison.

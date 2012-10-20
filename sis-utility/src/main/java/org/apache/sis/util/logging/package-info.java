@@ -18,7 +18,7 @@
 /**
  * Extensions to the {@linkplain java.util.logging JDK logging} framework.
  * This package provides:
- * <p>
+ *
  * <ul>
  *   <li>A {@link org.apache.sis.util.logging.Logging} utility class with static methods for
  *       fetching a logger (see <cite>Choosing a logging framework</cite> below) or logging an
@@ -33,11 +33,11 @@
  * The SIS project uses the standard {@link java.util.logging.Logger} API for its logging,
  * but this package allows redirection of logging messages to some other frameworks like
  * <a href="http://logging.apache.org/log4j/">Log4J</a>.
- * <p>
- * We recommend to stick to standard JDK logging when possible. However if inter-operability
+ *
+ * <p>We recommend to stick to standard JDK logging when possible. However if inter-operability
  * with an other logging framework is required, then the only action needed is to include
- * <strong>one</strong> of the following JAR on the classpath:
- * <p>
+ * <strong>one</strong> of the following JAR on the classpath:</p>
+ *
  * <ul>
  *   <li>{@code geotk-logging-commons.jar} for Apache logging</li>
  *   <li>{@code geotk-logging-log4j.jar} for Log4J logging</li>

@@ -41,12 +41,12 @@ import static org.apache.sis.test.TestConfiguration.OUTPUT_ENCODING_KEY;
  * field shall be used instead of {@link System#out} for the following reasons:
  *
  * <ul>
- *   <li><p>It is {@code null} by default and enabled only if a system property is set as
+ *   <li>It is {@code null} by default and enabled only if a system property is set as
  *     described in the {@linkplain org.apache.sis.test package javadoc}. This allows more
- *     quiet (and sometime faster) Maven executions for those who are not SIS developers.</p></li>
- *   <li><p>The outputs are collected and printed only after each test completion.
+ *     quiet (and sometime faster) Maven executions for those who are not SIS developers.</li>
+ *   <li>The outputs are collected and printed only after each test completion.
  *     This avoid the problem of logging messages interleaved with the output.
- *     If such interleaving is really wanted, then use the logging framework instead.</p></li>
+ *     If such interleaving is really wanted, then use the logging framework instead.</li>
  * </ul>
  *
  * Usage example:
@@ -99,9 +99,9 @@ public abstract strictfp class TestCase {
      * Note that we look specifically for {@link ConsoleHandler}; we do not generalize to
      * {@link StreamHandler} because the log files may not be intended for being show in
      * the console.
-     * <p>
-     * In case of failure to use the given encoding, we will just print a short error
-     * message and left the encoding unchanged.
+     *
+     * <p>In case of failure to use the given encoding, we will just print a short error
+     * message and left the encoding unchanged.</p>
      */
     static {
         final String encoding = System.getProperty(OUTPUT_ENCODING_KEY);
@@ -131,10 +131,10 @@ public abstract strictfp class TestCase {
      * If verbose output is enabled, flushes the {@link #out} stream after each test.
      * The stream will be flushed to the {@linkplain System#console() console} if
      * available, or to the {@linkplain System#out standard output stream} otherwise.
-     * <p>
-     * This method is invoked automatically by JUnit and doesn't need to be invoked
+     *
+     * <p>This method is invoked automatically by JUnit and doesn't need to be invoked
      * explicitely, unless the developer wants to flush the output at some specific
-     * point.
+     * point.</p>
      */
     @After
     public void flushVerboseOutput() {

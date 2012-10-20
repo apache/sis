@@ -19,7 +19,7 @@
  * Simple data objects and miscellaneous utilities. This package provides:
  *
  * <ul>
- *   <li><p>General purpose static methods working on:</p>
+ *   <li>General purpose static methods working on:
  *   <ul>
  *     <li>Primitive or basic Java types:
  *         {@link org.apache.sis.util.Characters},

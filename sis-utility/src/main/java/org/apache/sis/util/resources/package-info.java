@@ -32,22 +32,22 @@
  * </ul>
  *
  * {@note <code>java.util.Formatter</code> is an alternative to <code>MessageFormat</code> providing
- * similar functionalities with a C/C++ like syntax. However <code>MessageFormat</code> has two
- * advantages: it provides a <code>choice</code> format type (useful for handling plural forms),
- * and localizes properly objects of unspecified type (by contrast, the <code>Formatter</code>
- * <code>"%s"</code> type always invoke <code>toString()</code>). The later advantage is
- * important for messages in wich the same argument could receive <code>Number</code> or
- * <code>Date</code> instances as well as <code>String</code>.
- * Furthermore, the <code>java.util.logging</code> framework is designed for use with
- * <code>MessageFormat</code> (see the <code>Formatter.formatMessage(LogRecord)</code> method).}
+ *        similar functionalities with a C/C++ like syntax. However <code>MessageFormat</code> has two
+ *        advantages: it provides a <code>choice</code> format type (useful for handling plural forms),
+ *        and localizes properly objects of unspecified type (by contrast, the <code>Formatter</code>
+ *        <code>"%s"</code> type always invoke <code>toString()</code>). The later advantage is
+ *        important for messages in wich the same argument could receive <code>Number</code> or
+ *        <code>Date</code> instances as well as <code>String</code>.
+ *        Furthermore, the <code>java.util.logging</code> framework is designed for use with
+ *        <code>MessageFormat</code> (see the <code>Formatter.formatMessage(LogRecord)</code> method).}
  *
- * <p>Apache SIS developers can add resources by editing the {@code *.properties} file
+ * Apache SIS developers can add resources by editing the {@code *.properties} file
  * in the source code directory, then run the localized resources compiler provided in the
  * <code><a href="{@website}/sis-build-helper/index.html">sis-build-helper</a></code> module.
  * Developers shall <strong>not</strong> apply the {@code MessageFormat} rules for using quotes,
  * since the resources compiler will apply itself the <cite>doubled single quotes</cite> when
  * necessary. This avoid the unfortunate confusion documented in the warning section of
- * {@link java.text.MessageFormat} javadoc.</p>
+ * {@link java.text.MessageFormat} javadoc.
  *
  * {@section Usage}
  * All {@link org.apache.sis.util.resources.IndexedResourceBundle} subclasses provide a

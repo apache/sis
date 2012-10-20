@@ -45,9 +45,9 @@ import org.apache.sis.internal.util.Objects;
  * will automatically be removed when its value is no longer in ordinary use. This class is
  * similar to the standard {@link java.util.WeakHashMap} class provided in J2SE, except that
  * weak references are hold on values instead of keys.
- * <p>
- * This class is convenient for avoiding the creation of duplicated elements, as in the
- * example below:
+ *
+ * <p>This class is convenient for avoiding the creation of duplicated elements, as in the
+ * example below:</p>
  *
  * {@preformat java
  *     K key = ...
@@ -64,10 +64,10 @@ import org.apache.sis.internal.util.Objects;
  * The calculation of a new value should be fast, because it is performed inside a synchronized
  * statement blocking all other access to the map. This is okay if that particular map instance
  * is not expected to be used in a highly concurrent environment.
- * <p>
- * Note that this class is <strong>not</strong> a cache, because the entries are discarded
+ *
+ * <p>Note that this class is <strong>not</strong> a cache, because the entries are discarded
  * as soon as the garbage collector determines that they are no longer in use. If caching
- * service are wanted, or if concurrency are wanted, consider using {@link Cache} instead.
+ * service are wanted, or if concurrency are wanted, consider using {@link Cache} instead.</p>
  *
  * @param <K> The class of key elements.
  * @param <V> The class of value elements.

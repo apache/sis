@@ -27,12 +27,12 @@ import org.opengis.metadata.citation.Citation;
  * {@linkplain java.util.Map.Entry#getKey() key} is the {@linkplain Identifier#getAuthority()
  * identifier authority} and the {@linkplain java.util.Map.Entry#getValue() value} is the
  * {@linkplain Identifier#getCode() identifier code}.
- * <p>
- * Some XML identifiers are difficult to handle as {@link Identifier} objects. Those identifiers are
+ *
+ * <p>Some XML identifiers are difficult to handle as {@link Identifier} objects. Those identifiers are
  * rather handled using specialized classes like {@link XLink}. This {@code IdentifierMap} interface
  * mirrors the standard {@link Map#get(Object) get} and {@link Map#put(Object, Object) put} methods
  * with specialized methods, in order to fetch and store identifiers as objects of the specialized
- * class.
+ * class.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.19)
