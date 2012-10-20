@@ -34,18 +34,18 @@ import static org.apache.sis.util.collection.Collections.addIfNonNull;
  * The {@linkplain Identifier#getAuthority() authority of identifiers} that are not expected to be
  * marshalled in a {@code MD_Identifier} XML element. Those identifiers are also excluded from the
  * tree formatted by {@link org.apache.sis.metadata.AbstractMetadata#asTree()}.
- * <p>
- * There is two kinds of non-marshalled identifiers:
+ *
+ * <p>There is two kinds of non-marshalled identifiers:</p>
  *
  * <ul>
- *   <li><p>The XML attributes declared by ISO 19139 specification in the {@code gco:PropertyType}
+ *   <li>The XML attributes declared by ISO 19139 specification in the {@code gco:PropertyType}
  *       element: {@code gml:id}, {@code gco:uuid} and {@code xlink:href}. Those attributes are not
  *       part of the ISO 19115 specification. Those authorities are declared in the
- *       {@link IdentifierSpace} interfaces.</p></li>
+ *       {@link IdentifierSpace} interfaces.</li>
  *
- *   <li><p>ISO 19115 attributes that we choose, for the SIS implementation, to merge with
+ *   <li>ISO 19115 attributes that we choose, for the SIS implementation, to merge with
  *       other identifiers: ISBN and ISSN codes. Those attributes are declared in the
- *       {@link org.apache.sis.metadata.iso.citation.Citations} class.</p></li>
+ *       {@link org.apache.sis.metadata.iso.citation.Citations} class.</li>
  * </ul>
  *
  * In the current SIS library, there is different places where identifiers are filtered on the
@@ -83,10 +83,10 @@ public final class NonMarshalledAuthority<T> extends SimpleCitation implements I
     /**
      * Ordinal values for switch statements, as one of the {@link #ID}, {@link #UUID},
      * <i>etc.</i> constants.
-     * <p>
-     * This value is not serialized because its value may not be consistent between different
-     * versions of the SIS library (the attribute name is more reliable). This instance
-     * should be replaced by one of the exiting constants at deserialization time anyway.
+     *
+     * <p>This value is not serialized because its value may not be consistent between different
+     * versions of the SIS library (the attribute name is more reliable). This instance should
+     * be replaced by one of the exiting constants at deserialization time anyway.</p>
      */
     final transient int ordinal;
 

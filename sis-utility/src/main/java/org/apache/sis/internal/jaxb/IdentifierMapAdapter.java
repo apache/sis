@@ -50,7 +50,7 @@ import static org.apache.sis.util.collection.Collections.hashMapCapacity;
  * The collection shall not contains more than one identifier for the same
  * {@linkplain Identifier#getAuthority() authority}. Nevertheless if such duplication
  * is found, then this map implementation applies the following rules:
- * <p>
+ *
  * <ul>
  *   <li>All getter methods (including the iterators and the values returned by the {@code put}
  *       and {@code remove} methods) return only the identifier code associated to the first
@@ -389,13 +389,13 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
      * The iterator over the (<var>citation</var>, <var>code</var>) entries. This iterator is
      * created by the {@link IdentifierMap.Entries} collection. It extends {@link HashMap} as
      * an opportunist implementation strategy, but users don't need to know this detail.
-     * <p>
-     * This iterator supports the {@link #remove()} operation if the underlying collection
-     * supports it.
-     * <p>
-     * The map entries are used as a safety against duplicated authority values. The map values are
-     * non-null only after we iterated over an authority. Then the value is {@link Boolean#TRUE} if
-     * the identifier has been removed, of {@code Boolean#FALSE} otherwise.
+     *
+     * <p>This iterator supports the {@link #remove()} operation if the underlying collection
+     * supports it.</p>
+     *
+     * <p>The map entries are used as a safety against duplicated authority values. The map values
+     * are non-null only after we iterated over an authority. Then the value is {@link Boolean#TRUE}
+     * if the identifier has been removed, of {@code Boolean#FALSE} otherwise.</p>
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @since   0.3 (derived from geotk-3.18)

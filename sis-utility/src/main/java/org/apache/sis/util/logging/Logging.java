@@ -38,11 +38,11 @@ import static org.apache.sis.util.Arrays.insert;
  * than {@link Logger#getLogger(String)}, in order to give SIS a chance to redirect the logging
  * to an other framework like <A HREF="http://commons.apache.org/logging/">Commons-logging</A> or
  * <A HREF="http://logging.apache.org/log4j">Log4J</A>.
- * <p>
- * This method provides also a {@link #log(Class, String, LogRecord)} convenience static method, which
- * {@linkplain LogRecord#setLoggerName set the logger name} of the given record before to log it.
- * An other worthy static method is {@link #unexpectedException(Class, String, Throwable)}, for
- * reporting an anomalous but nevertheless non-fatal exception.
+ *
+ * <p>This method provides also a {@link #log(Class, String, LogRecord)} convenience static method,
+ * which {@linkplain LogRecord#setLoggerName set the logger name} of the given record before to log
+ * it. An other worthy static method is {@link #unexpectedException(Class, String, Throwable)}, for
+ * reporting an anomalous but nevertheless non-fatal exception.</p>
  *
  * {@section Configuration}
  * The log records can be redirected explicitly to an other logging framework using the
@@ -95,10 +95,10 @@ public final class Logging extends Static {
 
     /**
      * The children {@link Logging} objects.
-     * <p>
-     * The plain array used there is not efficient for adding new items (an {@code ArrayList}
+     *
+     * {@note The array used there is not efficient for adding new items (<code>ArrayList</code>
      * would be more efficient), but we assume that very few new items will be added. Furthermore
-     * a plain array is efficient for reading, and the later is way more common than the former.
+     * a plain array is efficient for reading, and the later is way more common than the former.}
      */
     private Logging[] children = EMPTY;
 
@@ -140,7 +140,7 @@ public final class Logging extends Static {
     /**
      * Logs the given record to the logger associated to the given class.
      * This convenience method performs the following steps:
-     * <p>
+     *
      * <ul>
      *   <li>Get the logger using {@link #getLogger(Class)};</li>
      *   <li>{@linkplain LogRecord#setLoggerName(String) Set the logger name} of the given record,
@@ -190,9 +190,9 @@ public final class Logging extends Static {
      * It gives SIS a chance to redirect logging events to
      * <A HREF="http://commons.apache.org/logging/">commons-logging</A>
      * or some equivalent framework.
-     * <p>
-     * If no factory was found or if the factory choose to not redirect the loggings, then this
-     * method returns the usual <code>{@linkplain Logger#getLogger Logger.getLogger}(name)</code>.
+     *
+     * <p>If no factory was found or if the factory choose to not redirect the loggings, then this
+     * method returns the usual <code>{@linkplain Logger#getLogger Logger.getLogger}(name)</code>.</p>
      *
      * @param  name The logger name.
      * @return A logger for the specified name.
@@ -217,10 +217,10 @@ public final class Logging extends Static {
     /**
      * Returns a {@code Logging} instance for the specified base logger.
      * This instance can be used for controlling logging configuration in SIS.
-     * <p>
-     * {@code Logging} instances follow the same hierarchy than {@link Logger}, i.e.
+     *
+     * <p>{@code Logging} instances follow the same hierarchy than {@link Logger}, i.e.
      * {@code "org.apache.sis"} is the parent of {@code "org.apache.sis.referencing"},
-     * {@code "org.apache.sis.metadata"}, <i>etc</i>.
+     * {@code "org.apache.sis.metadata"}, <i>etc</i>.</p>
      *
      * @param name The base logger name.
      * @return The logging instance for the given name.
@@ -285,9 +285,9 @@ public final class Logging extends Static {
      * Sets a new logger factory for this {@code Logging} instance and every children. The
      * specified factory will be used by <code>{@linkplain #getLogger(String) getLogger}(name)</code>
      * when {@code name} is this {@code Logging} name or one of its children.
-     * <p>
-     * If the factory is set to {@code null} (the default), then the standard Logging framework
-     * will be used.
+     *
+     * <p>If the factory is set to {@code null} (the default), then the standard Logging framework
+     * will be used.</p>
      *
      * @param factory The new logger factory, or {@code null} if none.
      */
@@ -328,10 +328,10 @@ public final class Logging extends Static {
      * The factory found on the classpath is given to {@link #setLoggerFactory(LoggerFactory)}.
      * If more than one factory is found, then the log messages will be sent to the logging
      * frameworks managed by all those factories.
-     * <p>
-     * This method usually doesn't need to be invoked explicitly, since it is automatically
+     *
+     * <p>This method usually doesn't need to be invoked explicitly, since it is automatically
      * invoked on {@code Logging} class initialization. However developers may invoke it if
-     * new {@code LoggerFactory}s are added later on the classpath of a running JVM.
+     * new {@code LoggerFactory}s are added later on the classpath of a running JVM.</p>
      */
     @Configuration
     public void scanLoggerFactory() {
@@ -350,10 +350,10 @@ public final class Logging extends Static {
      * Flushes all {@linkplain Handler handlers} used by the logger named {@link #name}.
      * If that logger {@linkplain Logger#getUseParentHandlers() uses parent handlers},
      * then those handlers will be flushed as well.
-     * <p>
-     * If the log records seem to be interleaved with the content of {@link System#out}
+     *
+     * <p>If the log records seem to be interleaved with the content of {@link System#out}
      * or {@link System#err}, invoking this method before to write to the standard streams
-     * may help.
+     * may help.</p>
      *
      * @see Handler#flush()
      */
@@ -394,10 +394,10 @@ public final class Logging extends Static {
      * class name and method name can optionally be specified. If any of them is
      * {@code null}, then it will be inferred from the error stack trace as in
      * {@link #unexpectedException(Logger, Throwable)}.
-     * <p>
-     * Explicit value for class and method names are sometime preferred to automatic
-     * inference for the following reasons:
-     * <p>
+     *
+     * <p>Explicit value for class and method names are sometime preferred to automatic
+     * inference for the following reasons:</p>
+     *
      * <ul>
      *   <li>Automatic inference is not 100% reliable, since the Java Virtual Machine
      *       is free to omit stack frame in optimized code.</li>

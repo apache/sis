@@ -19,7 +19,7 @@
  * Implementation of GeoAPI types from the {@link org.opengis.util} package.
  * All those types except {@code InternationalString} are derived from the ISO 19103 specification.
  * The main content of this package are:
- * <p>
+ *
  * <ul>
  *   <li>Implementations of {@link org.opengis.util.InternationalString}:
  *     <ul>

@@ -30,9 +30,9 @@ import net.jcip.annotations.ThreadSafe;
 /**
  * The set of entries in the {@link Cache#map}. On iteration, handlers will be skipped
  * and the values of weak references are returned instead of the {@link Reference} object.
- * <p>
- * This class is not needed for the normal working of {@link Cache}. it is used only if
- * the user wants to see the cache entries through the standard Java collection API.
+ *
+ * <p>This class is not needed for the normal working of {@link Cache}. it is used only if
+ * the user wants to see the cache entries through the standard Java collection API.</p>
  *
  * @param <K> The type of key objects.
  * @param <V> The type of value objects.

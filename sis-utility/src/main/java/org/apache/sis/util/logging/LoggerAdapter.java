@@ -36,19 +36,19 @@ import org.apache.sis.util.Debug;
  * {@link #finer(String) finer} and {@link #finest(String) finest} methods as <em>abstract</em>
  * ones. Subclasses should implement those methods in order to map JDK logging levels to
  * the backend logging framework.
- * <p>
- * All {@link #log(Level,String) log} methods are overridden in order to redirect to one of the
+ *
+ * <p>All {@link #log(Level,String) log} methods are overridden in order to redirect to one of the
  * above-cited methods. Note that this is the opposite approach than the JDK logging framework
  * one, which implements everything on top of {@link Logger#log(LogRecord)}. This adapter is
  * defined in terms of {@link #severe(String) severe} … {@link #finest(String) finest} methods
  * instead because external frameworks like <a href="http://commons.apache.org/logging/">Commons-logging</a>
  * don't work with {@link LogRecord}, and sometime provides nothing else than convenience methods
- * equivalent to {@link #severe(String) severe} &hellip; {@link #finest(String) finest}.
+ * equivalent to {@link #severe(String) severe} &hellip; {@link #finest(String) finest}.</p>
  *
  * {@section Restrictions}
  * Because the configuration is expected to be fully controlled by the external logging
  * framework, every configuration methods inherited from {@link Logger} are disabled:
- * <p>
+ *
  * <ul>
  *   <li>{@link #addHandler(Handler)}
  *       since the handling is performed by the external framework.</li>
@@ -64,7 +64,7 @@ import org.apache.sis.util.Debug;
  *   <li>{@link #setFilter(Filter)}
  *       for keeping this {@code LoggerAdapter} simple.</li>
  * </ul>
- * <p>
+ *
  * Since {@code LoggerAdapter}s do not hold any configuration by themselves, it is not strictly
  * necessary to {@linkplain java.util.logging.LogManager#addLogger add them to the log manager}.
  * The adapters can be created, garbage-collected and recreated again while preserving their
@@ -517,9 +517,9 @@ public abstract class LoggerAdapter extends Logger {
      * <code>{@linkplain #logp(Level,String,String,String,Object[]) logp}(level, sourceClass,
      * sourceMethod, message, params)</code> where the {@code params} array is built from the
      * {@code param} object.
-     * <p>
-     * Note that {@code sourceClass} and {@code sourceMethod} will be discarded unless the
-     * target {@link #logp(Level,String,String,String) logp} method has been overridden.
+     *
+     * <p>Note that {@code sourceClass} and {@code sourceMethod} will be discarded unless the
+     * target {@link #logp(Level,String,String,String) logp} method has been overridden.</p>
      *
      * @param level        One of the message level identifiers.
      * @param sourceClass  Name of class that issued the logging request.
@@ -538,9 +538,9 @@ public abstract class LoggerAdapter extends Logger {
      * Logs a record at the specified level. The defaut implementation formats the message
      * immediately, then delegates to <code>{@linkplain #logp(Level,String,String,String)
      * logp}(level, sourceClass, sourceMethod, message)</code>.
-     * <p>
-     * Note that {@code sourceClass} and {@code sourceMethod} will be discarded unless the
-     * target {@link #logp(Level,String,String,String) logp} method has been overridden.
+     *
+     * <p>Note that {@code sourceClass} and {@code sourceMethod} will be discarded unless the
+     * target {@link #logp(Level,String,String,String) logp} method has been overridden.</p>
      *
      * @param level        One of the message level identifiers.
      * @param sourceClass  Name of class that issued the logging request.

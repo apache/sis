@@ -41,11 +41,11 @@ import java.util.Objects;
  * not prevent the entry from being discarded by the garbage collector, that is, made finalizable,
  * finalized, and then reclaimed. When an entry has been discarded it is effectively removed from
  * the set, so this class behaves somewhat differently than other {@link java.util.Set} implementations.
- * <p>
- * If the elements stored in this set are arrays like {@code int[]}, {@code float[]} or
+ *
+ * <p>If the elements stored in this set are arrays like {@code int[]}, {@code float[]} or
  * {@code Object[]}, then the hash code computations and the comparisons are performed using
  * the static {@code hashCode(a)} and {@code equals(a1, a2)} methods defined in the {@link Arrays}
- * class.
+ * class.</p>
  *
  * {@section Optimizing memory use in factory implementations}
  * The {@code WeakHashSet} class has a {@link #get(Object)} method that is not part of the

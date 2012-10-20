@@ -54,11 +54,11 @@ import static org.apache.sis.util.Characters.NO_BREAK_SPACE;
  * The two XML documents are specified at construction time. The comparison is performed
  * by a call to the {@link #compare()} method. The execution is delegated to the various
  * protected methods defined in this class, which can be overridden.
- * <p>
- * By default, this comparator expects the documents to contain the same elements and
+ *
+ * <p>By default, this comparator expects the documents to contain the same elements and
  * the same attributes (but the order of attributes may be different). However it is
- * possible to:
- * <p>
+ * possible to:</p>
+ *
  * <ul>
  *   <li>Specify attributes to ignore in comparisons (see {@link #ignoredAttributes})</li>
  * </ul>
@@ -89,9 +89,9 @@ public strictfp class XMLComparator {
      * The fully-qualified name of attributes to ignore in comparisons. The name shall be in
      * the form {@code "namespace:name"}, or only {@code "name"} if there is no namespace.
      * In order to ignore everything in a namespace, use {@code "namespace:*"}.
-     * <p>
-     * For example in order to ignore the namespace, type and schema location declaration,
-     * the following strings can be added in this set:
+     *
+     * <p>For example in order to ignore the namespace, type and schema location declaration,
+     * the following strings can be added in this set:</p>
      *
      * {@preformat text
      *   "xmlns:*", "xsi:schemaLocation", "xsi:type"
@@ -107,14 +107,14 @@ public strictfp class XMLComparator {
      * The fully-qualified name of nodes to ignore in comparisons. The name shall be in the form
      * {@code "namespace:name"}, or only {@code "name"} if there is no namespace. In order to
      * ignore everything in a namespace, use {@code "namespace:*"}.
-     * <p>
-     * This set provides a way to ignore a node of the given name <em>and all its children</em>.
+     *
+     * <p>This set provides a way to ignore a node of the given name <em>and all its children</em>.
      * In order to ignore a node but still compare its children, override the
-     * {@link #compareNode(Node, Node)} method instead.
-     * <p>
-     * This set is initially empty. Users can add or remove elements in this set as they wish.
+     * {@link #compareNode(Node, Node)} method instead.</p>
+     *
+     * <p>This set is initially empty. Users can add or remove elements in this set as they wish.
      * The content of this set will be honored by the default {@link #compareChildren(Node, Node)}
-     * implementation.
+     * implementation.</p>
      */
     public final Set<String> ignoredNodes;
 
@@ -142,7 +142,7 @@ public strictfp class XMLComparator {
     /**
      * Creates a new comparator for the given inputs.
      * The inputs can be any of the following types:
-     * <p>
+     *
      * <ul>
      *   <li>{@link Node}; used directly without further processing.</li>
      *   <li>{@link File}, {@link URL} or {@link URI}: the stream is opened and parsed
@@ -206,7 +206,7 @@ public strictfp class XMLComparator {
     /**
      * Compares the two given nodes. This method delegates to one of the given methods depending
      * on the expected node type:
-     * <p>
+     *
      * <ul>
      *   <li>{@link #compareCDATASectionNode(CDATASection, Node)}</li>
      *   <li>{@link #compareTextNode(Text, Node)}</li>
@@ -215,7 +215,7 @@ public strictfp class XMLComparator {
      *   <li>For all other types, {@link #compareNames(Node, Node)} and
      *       {@link #compareAttributes(Node, Node)}</li>
      * </ul>
-     * <p>
+     *
      * Then this method invokes itself recursively for every children,
      * by a call to {@link #compareChildren(Node, Node)}.
      *
@@ -256,8 +256,8 @@ public strictfp class XMLComparator {
      * Compares a node which is expected to be of {@link Text} type. The default implementation
      * ensures that the given node is an instance of {@link Text}, then ensures that both nodes
      * have the same names, attributes and text content.
-     * <p>
-     * Subclasses can override this method if they need a different processing.
+     *
+     * <p>Subclasses can override this method if they need a different processing.</p>
      *
      * @param expected The expected node.
      * @param actual   The actual node.
@@ -273,8 +273,8 @@ public strictfp class XMLComparator {
      * Compares a node which is expected to be of {@link CDATASection} type. The default
      * implementation ensures that the given node is an instance of {@link CDATASection},
      * then ensures that both nodes have the same names, attributes and text content.
-     * <p>
-     * Subclasses can override this method if they need a different processing.
+     *
+     * <p>Subclasses can override this method if they need a different processing.</p>
      *
      * @param expected The expected node.
      * @param actual   The actual node.
@@ -290,8 +290,8 @@ public strictfp class XMLComparator {
      * Compares a node which is expected to be of {@link Comment} type. The default
      * implementation ensures that the given node is an instance of {@link Comment},
      * then ensures that both nodes have the same names, attributes and text content.
-     * <p>
-     * Subclasses can override this method if they need a different processing.
+     *
+     * <p>Subclasses can override this method if they need a different processing.</p>
      *
      * @param expected The expected node.
      * @param actual   The actual node.
@@ -307,8 +307,8 @@ public strictfp class XMLComparator {
      * Compares a node which is expected to be of {@link ProcessingInstruction} type. The default
      * implementation ensures that the given node is an instance of {@link ProcessingInstruction},
      * then ensures that both nodes have the same names, attributes and text content.
-     * <p>
-     * Subclasses can override this method if they need a different processing.
+     *
+     * <p>Subclasses can override this method if they need a different processing.</p>
      *
      * @param expected The expected node.
      * @param actual   The actual node.
@@ -324,8 +324,8 @@ public strictfp class XMLComparator {
      * Compares a node which is expected to be of {@link Attr} type. The default
      * implementation ensures that the given node is an instance of {@link Attr},
      * then ensures that both nodes have the same names and text content.
-     * <p>
-     * Subclasses can override this method if they need a different processing.
+     *
+     * <p>Subclasses can override this method if they need a different processing.</p>
      *
      * @param expected The expected node.
      * @param actual   The actual node.
@@ -341,8 +341,8 @@ public strictfp class XMLComparator {
      * Compares the children of the given nodes. The node themselves are not compared.
      * Children shall appear in the same order. Nodes having a name declared in the
      * {@link #ignoredNodes} set are ignored.
-     * <p>
-     * Subclasses can override this method if they need a different processing.
+     *
+     * <p>Subclasses can override this method if they need a different processing.</p>
      *
      * @param expected The expected node.
      * @param actual The node for which to compare children.
@@ -375,12 +375,12 @@ public strictfp class XMLComparator {
     /**
      * Compares the attributes of the given nodes.
      * Subclasses can override this method if they need a different comparison.
-     * <p>
-     * <strong>NOTE:</strong> Current implementation requires the number of attributes to be the
+     *
+     * <p><strong>NOTE:</strong> Current implementation requires the number of attributes to be the
      * same only if the {@link #ignoredAttributes} set is empty. If the {@code ignoredAttributes}
      * set is not empty, then the actual node could have more attributes than the expected node;
      * the extra attributes are ignored. This may change in a future version if it appears to be
-     * a problem in practice.
+     * a problem in practice.</p>
      *
      * @param expected The node having the expected attributes.
      * @param actual The node to compare.
@@ -577,8 +577,8 @@ public strictfp class XMLComparator {
      * Appends to the given buffer the string representation of the node hierarchy.
      * The first line will contains the root of the tree. Other lines will contain
      * the child down in the hierarchy until the given node, inclusive.
-     * <p>
-     * This method formats only a summary if the hierarchy is equals to the expected one.
+     *
+     * <p>This method formats only a summary if the hierarchy is equals to the expected one.</p>
      *
      * @param buffer        The buffer in which to append the formatted hierarchy.
      * @param node          The node for which to format the parents.

@@ -114,9 +114,9 @@ public class CheckedHashMap<K,V> extends LinkedHashMap<K,V> implements Cloneable
      * after this map got the {@linkplain #getLock() lock} and before any operation that
      * may change the content. If the write operation is allowed, then this method shall
      * returns normally. Otherwise an {@link UnsupportedOperationException} is thrown.
-     * <p>
-     * The default implementation does nothing significant (see below), thus allowing this map to
-     * be modified. Subclasses can override this method if they want to control write permissions.
+     *
+     * <p>The default implementation does nothing significant (see below), thus allowing this map to
+     * be modified. Subclasses can override this method if they want to control write permissions.</p>
      *
      * {@note Actually the current implementation contains an <code>assert</code> statement
      * ensuring that the thread holds the lock. This is an implementation details that may

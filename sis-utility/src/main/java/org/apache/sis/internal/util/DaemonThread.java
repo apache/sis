@@ -60,11 +60,11 @@ abstract class DaemonThread extends Thread {
 
     /**
      * Creates a new daemon thread. This constructor sets the daemon flag to {@code true}.
-     * <p>
-     * We need to maintain a list of daemon threads created by each SIS module in order to
+     *
+     * <p>We need to maintain a list of daemon threads created by each SIS module in order to
      * kill them at shutdown time (not strictly necessary for pure JSEE applications, but
      * required in OSGi environment). Each module using {@code DaemonThread} shall maintain
-     * its <strong>own</strong> list (don't use the list of another module), like below:
+     * its <strong>own</strong> list (don't use the list of another module), like below:</p>
      *
      * {@preformat java
      *     class MyInternalClass {
@@ -113,9 +113,9 @@ abstract class DaemonThread extends Thread {
     /**
      * Sends a kill signal to all threads in the chain starting by the given thread,
      * and waits for the threads to die before to return.
-     * <p>
-     * <strong>This method is for internal use by Apache SIS shutdown hooks only.</strong>
-     * Users should never invoke this method explicitely.
+     *
+     * <p><strong>This method is for internal use by Apache SIS shutdown hooks only.</strong>
+     * Users should never invoke this method explicitely.</p>
      *
      * @param  first The first thread in the chain of threads to kill.
      * @param  stopWaitingAt A {@link System#nanoTime()} value telling when to stop waiting.

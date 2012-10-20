@@ -25,7 +25,7 @@ import org.apache.sis.util.resources.Errors;
 /**
  * Static methods for performing argument checks.
  * Every methods in this class can throw one of the following exceptions:
- * <p>
+ *
  * <table class="sis">
  * <tr><th>Exception</th><th class="sep">Thrown by</th></tr>
  * <tr><td>{@link NullArgumentException}</td>

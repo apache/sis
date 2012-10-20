@@ -26,11 +26,11 @@ import org.opengis.metadata.citation.Citation;
  * a namespace identified by a {@link Citation}. The namespace can be some organization like
  * <a href="http://www.epsg.org">EPSG</a> for Coordinate Reference System objects, or a
  * well-known acronym like ISBN for <cite>International Standard Book Number</cite>.
- * <p>
- * When an identified object is marshalled in a ISO 19139 compliant XML document, some identifiers
+ *
+ * <p>When an identified object is marshalled in a ISO 19139 compliant XML document, some identifiers
  * are handled in a special way: they appear as {@code gml:id}, {@code gco:uuid} or {@code xlink:href}
  * attributes of the XML element. Those identifiers can be specified using the {@link IdentifierSpace}
- * enum values as below:
+ * enum values as below:</p>
  *
  * {@preformat java
  *     IdentifiedObject object = ...;
@@ -48,15 +48,15 @@ import org.opengis.metadata.citation.Citation;
  * {@code uuid} or {@code href} attributes, since they are specific to XML marshalling (they do not
  * appear in OGC/ISO abstract specifications). This {@code IdentifiedObject} interface provides a
  * way to handle those identifiers.
- * <p>
- * Note that GeoAPI defines a similar interface, also named {@link org.opengis.referencing.IdentifiedObject}.
+ *
+ * <p>Note that GeoAPI defines a similar interface, also named {@link org.opengis.referencing.IdentifiedObject}.
  * However that GeoAPI interface is not of general use, since it contains methods like
  * {@link org.opengis.referencing.IdentifiedObject#toWKT() toWKT()} that are specific to referencing
  * or geometric objects. In addition, the GeoAPI interface defines some attributes
  * ({@linkplain org.opengis.referencing.IdentifiedObject#getName() name},
  * {@linkplain org.opengis.referencing.IdentifiedObject#getAlias() alias},
  * {@linkplain org.opengis.referencing.IdentifiedObject#getRemarks() remarks}) that are not needed
- * for the purpose of handling XML {@code id}, {@code uuid} or {@code href} attributes.
+ * for the purpose of handling XML {@code id}, {@code uuid} or {@code href} attributes.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.18)
@@ -72,7 +72,7 @@ public interface IdentifiedObject {
      * Returns all identifiers associated to this object. Each {@linkplain Identifier#getCode()
      * identifier code} shall be unique in the {@linkplain Identifier#getAuthority() identifier
      * authority} name space. Examples of namespace are:
-     * <p>
+     *
      * <ul>
      *   <li>{@linkplain org.apache.sis.metadata.iso.citation.Citations#EPSG EPSG} codes</li>
      *   <li><cite>Universal Product Code</cite> (UPC)</li>
@@ -109,6 +109,7 @@ public interface IdentifiedObject {
      *
      * <p>There is usually a one-to-one relationship between the map entries and the identifier
      * elements, but not always:</p>
+     *
      * <ul>
      *   <li>The map view may contain less entries, because the map interface allows only one
      *   entry per authority. If the {@linkplain #getIdentifiers() identifier collection} contains

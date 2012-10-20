@@ -29,7 +29,7 @@ import org.apache.sis.util.logging.Logging;
  * are consumed. This thread will invoke the {@link Disposeable#dispose()} method for each
  * references enqueued by the garbage collector. Those references <strong>must</strong>
  * implement the {@link Disposable} interface.
- * <p>
+ *
  * Example:
  *
  * {@preformat java
