@@ -33,7 +33,7 @@ import java.util.Objects;
  * The identifiers for the following authorities are handled in a special way.
  * See usages of {@link #isSpecialCase(Citation)} for spotting the code where
  * a special handling is applied.
- * <p>
+ *
  * <ul>
  *   <li>{@link IdentifierSpace#HREF}, handled as a shortcut to {@link XLink#getHRef()}.</li>
  * </ul>

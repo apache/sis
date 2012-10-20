@@ -33,7 +33,7 @@ import org.apache.sis.util.collection.BackingStoreException;
 /**
  * Convenience methods working on GeoAPI types.
  * The methods in this class can be used for:
- * <p>
+ *
  * <ul>
  *   <li>Creating {@link InternationalString} instances from {@link CharSequence} instances.</li>
  *   <li>Mapping ISO identifiers to the GeoAPI types (interfaces or {@linkplain CodeList code lists}).</li>
@@ -62,7 +62,7 @@ public final class Types extends Static {
     /**
      * Returns the ISO name for the given class, or {@code null} if none.
      * Examples:
-     * <p>
+     *
      * <ul>
      *   <li><code>getStandardName({@linkplain org.opengis.metadata.citation.Citation}.class)</code>   returns {@code "CI_Citation"}.</li>
      *   <li><code>getStandardName({@linkplain org.opengis.referencing.cs.AxisDirection}.class)</code> returns {@code "CS_AxisDirection"}. </li>
@@ -86,12 +86,12 @@ public final class Types extends Static {
      * The identifier argument shall be the value documented in the {@link UML#identifier()}
      * annotation associated with the GeoAPI interface.
      * Examples:
-     * <p>
+     *
      * <ul>
      *   <li>{@code forStandardName("CI_Citation")}      returns <code>{@linkplain org.opengis.metadata.citation.Citation}.class</code></li>
      *   <li>{@code forStandardName("CS_AxisDirection")} returns <code>{@linkplain org.opengis.referencing.cs.AxisDirection}.class</code></li>
      * </ul>
-     * <p>
+     *
      * Only identifiers for the stable part of GeoAPI are recognized. This method does not handle
      * the identifiers for the {@code geoapi-pending} module.
      *
@@ -154,9 +154,9 @@ public final class Types extends Static {
      * returns it unchanged. Otherwise a new array of type {@code InternationalString[]} is created
      * and every elements from the given array is copied or
      * {@linkplain #toInternationalString(CharSequence) converted} in the new array.
-     * <p>
-     * If a defensive copy of the {@code strings} array is wanted, then the caller needs to check
-     * if the returned array is the same instance than the one given in argument to this method.
+     *
+     * <p>If a defensive copy of the {@code strings} array is wanted, then the caller needs to check
+     * if the returned array is the same instance than the one given in argument to this method.</p>
      *
      * @param  strings The characters sequences to convert, or {@code null}.
      * @return The given array as an array of type {@code InternationalString[]},

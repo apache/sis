@@ -209,9 +209,9 @@ public final class Numbers extends Static {
      * Returns the widest type of two numbers. Numbers {@code n1} and {@code n2} can be instance of
      * {@link Byte}, {@link Short}, {@link Integer}, {@link Long}, {@link Float}, {@link Double},
      * {@link BigInteger} or {@link BigDecimal} types.
-     * <p>
-     * If one of the given argument is null, then this method returns the class of the
-     * non-null argument. If both arguments are null, then this method returns {@code null}.
+     *
+     * <p>If one of the given argument is null, then this method returns the class of the
+     * non-null argument. If both arguments are null, then this method returns {@code null}.</p>
      *
      * @param  n1 The first number, or {@code null}.
      * @param  n2 The second number, or {@code null}.
@@ -232,10 +232,10 @@ public final class Numbers extends Static {
      * Returns the widest of the given types. Classes {@code c1} and {@code c2} can be
      * {@link Byte}, {@link Short}, {@link Integer}, {@link Long}, {@link Float},
      * {@link Double}, {@link BigInteger} or {@link BigDecimal} types.
-     * <p>
-     * If one of the given argument is null, then this method returns the non-null argument.
-     * If both arguments are null, then this method returns {@code null}.
-     * <p>
+     *
+     * <p>If one of the given argument is null, then this method returns the non-null argument.
+     * If both arguments are null, then this method returns {@code null}.</p>
+     *
      * Example:
      *
      * {@preformat java
@@ -293,10 +293,10 @@ public final class Numbers extends Static {
      * Returns the finest of the given types. Classes {@code c1} and {@code c2} can be
      * {@link Byte}, {@link Short}, {@link Integer}, {@link Long}, {@link Float},
      * {@link Double}, {@link BigInteger} or {@link BigDecimal} types.
-     * <p>
-     * If one of the given argument is null, then this method returns the non-null argument.
-     * If both arguments are null, then this method returns {@code null}.
-     * <p>
+     *
+     * <p>If one of the given argument is null, then this method returns the non-null argument.
+     * If both arguments are null, then this method returns {@code null}.</p>
+     *
      * Example:
      *
      * {@preformat java
@@ -375,7 +375,7 @@ public final class Numbers extends Static {
     /**
      * Returns the smallest class capable to hold the specified value.
      * This method makes the following choice:
-     * <p>
+     *
      * <ul>
      *   <li>If the given value is between {@value java.lang.Byte#MIN_VALUE} and
      *       {@value java.lang.Byte#MAX_VALUE}, then this method returns {@code Byte.class};</li>
@@ -448,7 +448,7 @@ public final class Numbers extends Static {
     /**
      * Returns the number of the smallest type capable to hold the specified value.
      * This method makes the following choice:
-     * <p>
+     *
      * <ul>
      *   <li>If the given value is between {@value java.lang.Byte#MIN_VALUE} and
      *       {@value java.lang.Byte#MAX_VALUE}, then it is wrapped in a {@link Byte} object.</li>
@@ -499,7 +499,7 @@ public final class Numbers extends Static {
      * Casts a number to the specified class. The class must by one of {@link Byte},
      * {@link Short}, {@link Integer}, {@link Long}, {@link Float} or {@link Double}.
      * This method makes the following choice:
-     * <p>
+     *
      * <ul>
      *   <li>If the given type is {@code Double.class}, then this method returns
      *       <code>{@linkplain Double#valueOf(double) Double.valueOf}(n.doubleValue())</code>;</li>
@@ -539,7 +539,7 @@ public final class Numbers extends Static {
      * {@link Double}, {@link Float}, {@link Long}, {@link Integer}, {@link Short}, {@link Byte},
      * {@link Boolean}, {@link Character} or {@link String} according the specified type. This
      * method makes the following choice:
-     * <p>
+     *
      * <ul>
      *   <li>If the given type is {@code Double.class}, then this method returns
      *       <code>{@linkplain Double#valueOf(String) Double.valueOf}(value)</code>;</li>

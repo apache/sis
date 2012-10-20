@@ -42,11 +42,11 @@ public final class Exceptions extends Static {
      * that we would have if {@link Throwable} defined a {@code setMessage(String)} method.
      * We use this method when an external library throws an exception of the right type,
      * but with too few details.
-     * <p>
-     * This method tries to create a new exception using reflection. The exception class needs
+     *
+     * <p>This method tries to create a new exception using reflection. The exception class needs
      * to provide a public constructor expecting a single {@link String} argument. If the
      * exception class does not provide such constructor, then the given exception is returned
-     * unchanged.
+     * unchanged.</p>
      *
      * @param <T>       The type of the exception.
      * @param exception The exception to copy with a different message.
@@ -85,11 +85,11 @@ public final class Exceptions extends Static {
      * on the next line. If the exception has a {@linkplain Throwable#getCause() causes}, then
      * the localized message of the cause is formatted on the next line and the process is
      * repeated for the whole cause chain.
-     * <p>
-     * {@link SQLException} is handled especially in order to process the
-     * {@linkplain SQLException#getNextException() next exception} instead than the cause.
-     * <p>
-     * This method does not format the stack trace.
+     *
+     * <p>{@link SQLException} is handled especially in order to process the
+     * {@linkplain SQLException#getNextException() next exception} instead than the cause.</p>
+     *
+     * <p>This method does not format the stack trace.</p>
      *
      * @param  header The message to insert on the first line, or {@code null} if none.
      * @param  cause  The exception, or {@code null} if none.

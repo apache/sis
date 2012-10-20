@@ -126,7 +126,7 @@ public interface LenientComparable {
     /**
      * Compares this object with the given object for equality.
      * The strictness level is controlled by the second argument:
-     * <p>
+     *
      * <table class="sis">
      *   <tr><td>{@link ComparisonMode#STRICT STRICT}</td>
      *     <td class="sep">All attributes of the compared objects shall be strictly equal.</td></tr>

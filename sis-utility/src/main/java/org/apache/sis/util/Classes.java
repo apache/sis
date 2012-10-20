@@ -36,7 +36,7 @@ import static org.apache.sis.util.Arrays.contains;
  * Static methods working on {@link Class} objects.
  * This class defines helper methods for working with reflection.
  * Some functionalities are:
- * <p>
+ *
  * <ul>
  *   <li>Add or remove dimension to an array type
  *       ({@link #changeArrayDimension(Class, int) changeArrayDimension})</li>
@@ -59,9 +59,9 @@ public final class Classes extends Static {
      * Methods to be rejected by {@link #isGetter(Method)}. They are mostly methods inherited
      * from {@link Object}. Only no-argument methods having a non-void return value need to be
      * declared in this list.
-     * <p>
-     * Note that testing {@code type.getDeclaringClass().equals(Object.class)}
-     * is not sufficient because those methods may be overridden in subclasses.
+     *
+     * <p>Note that testing {@code type.getDeclaringClass().equals(Object.class)}
+     * is not sufficient because those methods may be overridden in subclasses.</p>
      */
     private static final String[] EXCLUDES = {
         "clone", "getClass", "hashCode", "toString", "toWKT"
@@ -80,10 +80,10 @@ public final class Classes extends Static {
      * will change a {@code int} class into {@code int[]}, and a {@code String[]} class into
      * {@code String[][]}. A change of dimension 2 is like applying a change of dimension 1 two
      * times.
-     * <p>
-     * The change of dimension can also be negative. For example a change of dimension -1 will
-     * change a {@code String[]} class into a {@code String}. More specifically:
-     * <p>
+     *
+     * <p>The change of dimension can also be negative. For example a change of dimension -1 will
+     * change a {@code String[]} class into a {@code String}. More specifically:</p>
+     *
      * <ul>
      *   <li>If the given {@code element} is null, then this method returns {@code null}.</li>
      *   <li>Otherwise if the given {@code dimension} change is 0, then the given {@code element}
@@ -134,11 +134,11 @@ public final class Classes extends Static {
     /**
      * Returns the upper bounds of the parameterized type of the given attribute.
      * If the attribute does not have a parameterized type, returns {@code null}.
-     * <p>
-     * This method is typically used for fetching the type of elements in a collection.
-     * We do not provide a method working from a {@link Class} instance because of the
-     * way parameterized types are implemented in Java (by erasure).
-     * <p>
+     *
+     * <p>This method is typically used for fetching the type of elements in a collection.
+     * We do not provide a method working from a {@link Class} instance because of the way
+     * parameterized types are implemented in Java (by erasure).</p>
+     *
      * <b>Examples:</b> When invoking this method for a field of the type below:
      * <ul>
      *   <li>{@code Set<Number>} returns {@code Number.class}.</li>
@@ -167,10 +167,10 @@ public final class Classes extends Static {
      * provides the same semantic than {@link #boundOfParameterizedAttribute(Field)}, but
      * works on a getter or setter method rather then the field. See the javadoc of above
      * method for more details.
-     * <p>
-     * This method is typically used for fetching the type of elements in a collection.
-     * We do not provide a method working from a {@link Class} instance because of the
-     * way parameterized types are implemented in Java (by erasure).
+     *
+     * <p>This method is typically used for fetching the type of elements in a collection.
+     * We do not provide a method working from a {@link Class} instance because of the way
+     * parameterized types are implemented in Java (by erasure).</p>
      *
      * @param  method The getter or setter method for which to obtain the parameterized type.
      * @return The upper bound of parameterized type, or {@code null} if the given method
@@ -223,11 +223,11 @@ public final class Classes extends Static {
      * Casts the {@code type} class to represent a subclass of the class represented by the
      * {@code sub} argument. Checks that the cast is valid, and returns {@code null} if it
      * is not.
-     * <p>
-     * This method performs the same work than
+     *
+     * <p>This method performs the same work than
      * <code>type.{@linkplain Class#asSubclass(Class) asSubclass}(sub)</code>,
      * except that {@code null} is returned instead than throwing an exception
-     * if the cast is not valid or if any of the argument is {@code null}.
+     * if the cast is not valid or if any of the argument is {@code null}.</p>
      *
      * @param  <U>  The compile-time bounds of the {@code sub} argument.
      * @param  type The class to cast to a sub-class, or {@code null}.
@@ -270,8 +270,8 @@ public final class Classes extends Static {
      * Returns the classes of all objects in the given collection. If the given collection
      * contains some null elements, then the returned set will contains a null element as well.
      * The returned set is modifiable and can be freely updated by the caller.
-     * <p>
-     * Note that interfaces are not included in the returned set.
+     *
+     * <p>Note that interfaces are not included in the returned set.</p>
      *
      * @param  <T> The base type of elements in the given collection.
      * @param  objects The collection of objects.
@@ -374,8 +374,8 @@ next:       for (final Class<?> candidate : candidates) {
      * Returns the most specific class implemented by the objects in the given collection.
      * If there is more than one specialized class, returns their {@linkplain #findCommonClass
      * most specific common super class}.
-     * <p>
-     * This method searches for classes only, not interfaces.
+     *
+     * <p>This method searches for classes only, not interfaces.</p>
      *
      * @param  objects A collection of objects. May contains duplicated values and null values.
      * @return The most specialized class, or {@code null} if the given collection does not contain
@@ -426,8 +426,8 @@ next:       for (final Class<?> candidate : candidates) {
      * the type of all given objects. If no element in the given collection has a type assignable
      * from the type of all other elements, then this method searches for a common
      * {@linkplain Class#getSuperclass super class}.
-     * <p>
-     * This method searches for classes only, not interfaces.
+     *
+     * <p>This method searches for classes only, not interfaces.</p>
      *
      * @param  objects A collection of objects. May contains duplicated values and null values.
      * @return The most specific class common to all supplied objects, or {@code null} if the
@@ -443,8 +443,8 @@ next:       for (final Class<?> candidate : candidates) {
      * Returns the most specific class which {@linkplain Class#isAssignableFrom is assignable from}
      * the given classes or a parent of those classes. This method returns either {@code c1},
      * {@code c2} or a common parent of {@code c1} and {@code c2}.
-     * <p>
-     * This method considers classes only, not the interfaces.
+     *
+     * <p>This method considers classes only, not the interfaces.</p>
      *
      * @param  c1 The first class, or {@code null}.
      * @param  c2 The second class, or {@code null}.
@@ -558,11 +558,11 @@ compare:for (int i=0; i<c1.length; i++) {
      * of {@code "java.lang.String"} for a {@link String} object. It will also name
      * array according Java language usage,  for example {@code "double[]"} instead
      * of {@code "[D"}.
-     * <p>
-     * This method is similar to the {@link Class#getSimpleName()} method, except that
-     * if the given class is an inner class, then the returned value is prefixed with
-     * the outer class name. For example this method returns {@code "Point2D.Double"}
-     * instead of {@code "Double"}.
+     *
+     * <p>This method is similar to the {@link Class#getSimpleName()} method, except that
+     * if the given class is an inner class, then the returned value is prefixed with the
+     * outer class name. For example this method returns {@code "Point2D.Double"} instead
+     * of {@code "Double"}.</p>
      *
      * @param  classe The object class (may be {@code null}).
      * @return A short class name for the specified object, or {@code "<*>"} if the
@@ -605,8 +605,8 @@ compare:for (int i=0; i<c1.length; i++) {
      * More specifically, if at least one {@code allowedTypes[i]} element exists for which
      * <code>allowedTypes[i].{@linkplain Class#isAssignableFrom(Class) isAssignableFrom}(type)</code>
      * returns {@code true}, then this method returns {@code true}.
-     * <p>
-     * Special cases:
+     *
+     * <p>Special cases:</p>
      * <ul>
      *   <li>If {@code type} is null, then this method returns {@code false}.</li>
      *   <li>If {@code allowedTypes} is null, then this method returns {@code true}.

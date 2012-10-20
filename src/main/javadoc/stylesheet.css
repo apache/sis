@@ -38,7 +38,7 @@
 .contentContainer .details     table.sis tr td,
 .contentContainer ul.blockList li.blockList table.sis td
 {
-  padding:        1pt 9pt 2pt 9pt;
+  padding:        1.5pt 9pt;
   vertical-align: text-top;
 }
 
@@ -101,6 +101,19 @@
   padding-left: 1pt;
   text-align:   left;
   font-weight:  normal;
+}
+
+/*
+ * Bullet and ordered lists.
+ */
+div.block ul,
+div.block ol {
+  margin-top:    9pt;
+  margin-bottom: 9pt;
+}
+
+div.block ul {
+  list-style-type: square;
 }
 
 /*

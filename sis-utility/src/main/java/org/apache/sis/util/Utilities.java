@@ -78,8 +78,8 @@ public final class Utilities extends Static {
      * the comparison is performed using the {@link LenientComparable#equals(Object, ComparisonMode)}
      * method. Otherwise this method performs the same work than the
      * {@link Objects#deepEquals(Object, Object)} convenience method.
-     * <p>
-     * If both arguments are arrays or collections, then the elements are compared recursively.
+     *
+     * <p>If both arguments are arrays or collections, then the elements are compared recursively.</p>
      *
      * @param  object1 The first object to compare, or {@code null}.
      * @param  object2 The second object to compare, or {@code null}.
@@ -253,7 +253,7 @@ public final class Utilities extends Static {
     /**
      * Returns a hash code for the specified object, which may be an array.
      * This method returns one of the following values:
-     * <p>
+     *
      * <ul>
      *   <li>If the supplied object is {@code null}, then this method returns 0.</li>
      *   <li>Otherwise if the object is an array of objects, then
@@ -262,7 +262,7 @@ public final class Utilities extends Static {
      *       {@link java.util.Arrays#hashCode(double[]) Arrays.hashCode(...)} method is invoked.</li>
      *   <li>Otherwise {@link Object#hashCode()} is invoked.</li>
      * </ul>
-     * <p>
+     *
      * This method should be invoked <strong>only</strong> if the object type is declared
      * exactly as {@code Object}, not as some subtype like {@code Object[]}, {@code String} or
      * {@code float[]}. In the later cases, use the appropriate {@link java.util.Arrays} method
@@ -290,7 +290,7 @@ public final class Utilities extends Static {
     /**
      * Returns a string representation of the specified object, which may be an array.
      * This method returns one of the following values:
-     * <p>
+     *
      * <ul>
      *   <li>If the object is an array of objects, then
      *       {@link java.util.Arrays#deepToString(Object[])} is invoked.</li>
@@ -298,7 +298,7 @@ public final class Utilities extends Static {
      *       {@link java.util.Arrays#toString(double[]) Arrays.toString(...)} method is invoked.</li>
      *   <li>Otherwise {@link String#valueOf(Object)} is invoked.</li>
      * </ul>
-     * <p>
+     *
      * This method should be invoked <strong>only</strong> if the object type is declared
      * exactly as {@code Object}, not as some subtype like {@code Object[]}, {@code Number} or
      * {@code float[]}. In the later cases, use the appropriate {@link java.util.Arrays} method

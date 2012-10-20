@@ -43,7 +43,7 @@ import static org.apache.sis.internal.util.Executors.executeDaemonTask;
  * A concurrent cache mechanism. This implementation is thread-safe and supports concurrency.
  * A cache entry can be locked when an object is in process of being created. The steps
  * are as below:
- * <p>
+ *
  * <ol>
  *   <li>Check if the value is already available in the map.
  *       If it is, return it immediately and we are done.</li>
@@ -52,7 +52,7 @@ import static org.apache.sis.internal.util.Executors.executeDaemonTask;
  *       the obtention of the lock). If it is, release the lock and we are done.</li>
  *   <li>Otherwise compute the value, store the result and release the lock.</li>
  * </ol>
- * <p>
+ *
  * The easiest way (except for exception handling) to use this class is to prepare a
  * {@link Callable} statement to be executed only if the object is not in the cache,
  * and to invoke the {@link #getOrCreate getOrCreate} method. Example:
@@ -153,8 +153,8 @@ public class Cache<K,V> extends AbstractMap<K,V> {
      * together with an estimation of their cost. This map is <strong>not</strong> thread
      * safe. For this reason, it must be used by a single thread at a given time, even
      * for read-only operations.
-     * <p>
-     * Entries in this map are ordered from least-recently accessed to most-recently accessed.
+     *
+     * <p>Entries in this map are ordered from least-recently accessed to most-recently accessed.</p>
      */
     @GuardedBy("costs")
     private final Map<K,Integer> costs;
@@ -195,10 +195,10 @@ public class Cache<K,V> extends AbstractMap<K,V> {
      * is the expected number of values to be stored in this cache. More values are allowed, but
      * a little bit of CPU time may be saved if the expected capacity is known before the cache
      * is created.
-     * <p>
-     * The <cite>cost limit</cite> is the maximal value of the <cite>total cost</cite> (the sum
-     * of the {@linkplain #cost cost} of all values) before to replace eldest strong references
-     * by {@linkplain Reference weak or soft references}.
+     *
+     * <p>The <cite>cost limit</cite> is the maximal value of the <cite>total cost</cite> (the sum
+     * of the {@linkplain #cost cost} of all values) before to replace eldest strong references by
+     * {@linkplain Reference weak or soft references}.</p>
      *
      * @param initialCapacity the initial capacity.
      * @param costLimit The maximum number of objects to keep by strong reference.

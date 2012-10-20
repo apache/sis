@@ -90,9 +90,9 @@ final class Threads extends Static {
     /**
      * Sends a kill signal to all daemon threads created by the {@code sis-utility} module,
      * and waits for the threads to die before to return.
-     * <p>
-     * <strong>This method is for internal use by Apache SIS shutdown hooks only.</strong>
-     * Users should never invoke this method explicitely.
+     *
+     * <p><strong>This method is for internal use by Apache SIS shutdown hooks only.</strong>
+     * Users should never invoke this method explicitely.</p>
      *
      * @param  stopWaitingAt A {@link System#nanoTime()} value telling when to stop waiting.
      *         This is used for preventing shutdown process to block an indefinite amount of time.

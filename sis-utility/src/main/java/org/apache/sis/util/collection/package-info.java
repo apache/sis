@@ -18,6 +18,7 @@
 /**
  * Addition to the collection framework. Most classes in this package implement interfaces
  * from the <cite>Java Collection Framework</cite> defined in the {@link java.util} package.
+ *
  * <ul>
  *   <li><p>
  *     {@link org.apache.sis.util.collection.WeakHashSet} provides a way to ensure that

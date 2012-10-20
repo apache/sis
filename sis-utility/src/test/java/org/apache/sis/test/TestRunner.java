@@ -45,11 +45,11 @@ import static org.apache.sis.util.collection.Collections.hashMapCapacity;
 /**
  * The SIS test runner for individual classes.
  * This class extends the JUnit standard test runner with additional features:
- * <p>
+ *
  * <ul>
  *   <li>Support of the {@link DependsOn} and {@link DependsOnMethod} annotations.</li>
  * </ul>
- * <p>
+ *
  * This runner is not designed for parallel execution of tests.
  *
  * @author  Stephen Connolly
