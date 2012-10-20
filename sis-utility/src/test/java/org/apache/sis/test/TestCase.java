@@ -41,12 +41,12 @@ import static org.apache.sis.test.TestConfiguration.OUTPUT_ENCODING_KEY;
  * field shall be used instead of {@link System#out} for the following reasons:
  *
  * <ul>
- *   <li><p>It is {@code null} by default and enabled only if a system property is set as
+ *   <li>It is {@code null} by default and enabled only if a system property is set as
  *     described in the {@linkplain org.apache.sis.test package javadoc}. This allows more
- *     quiet (and sometime faster) Maven executions for those who are not SIS developers.</p></li>
- *   <li><p>The outputs are collected and printed only after each test completion.
+ *     quiet (and sometime faster) Maven executions for those who are not SIS developers.</li>
+ *   <li>The outputs are collected and printed only after each test completion.
  *     This avoid the problem of logging messages interleaved with the output.
- *     If such interleaving is really wanted, then use the logging framework instead.</p></li>
+ *     If such interleaving is really wanted, then use the logging framework instead.</li>
  * </ul>
  *
  * Usage example:

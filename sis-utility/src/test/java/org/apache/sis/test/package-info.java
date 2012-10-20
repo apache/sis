@@ -28,16 +28,16 @@
  * from the command line by defining {@linkplain java.lang.System#getProperties() system properties}
  * values like below:
  *
- * <ul>
- *   <li><p><b><code>-Dorg.apache.sis.test.verbose=true</code></b><br>
+ * <ul class="verbose">
+ *   <li><b><code>-Dorg.apache.sis.test.verbose=true</code></b><br>
  *     For enabling verbose outputs to the {@linkplain java.lang.System#console() console} if any,
- *     or to the {@linkplain java.lang.System#out standard output stream} otherwise.</p></li>
+ *     or to the {@linkplain java.lang.System#out standard output stream} otherwise.</li>
  *
- *   <li><p><b><code>-Dorg.apache.sis.test.encoding=UTF-8</code></b> (or any other valid encoding name)<br>
+ *   <li><b><code>-Dorg.apache.sis.test.encoding=UTF-8</code></b> (or any other valid encoding name)<br>
  *     For the encoding of the above-cited verbose output, and the encoding of logging messages
  *     sent to the {@linkplain java.util.logging.ConsoleHandler console handler}.
  *     This is useful on Windows or MacOS platforms having a console encoding different than the
- *     platform encoding. If omitted, then the platform encoding will be used.</p></li>
+ *     platform encoding. If omitted, then the platform encoding will be used.</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
