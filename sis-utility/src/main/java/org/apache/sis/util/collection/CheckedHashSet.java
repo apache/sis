@@ -44,11 +44,11 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *       type checks and write permission checks.</li>
  * </ul>
  *
- * <p>The synchronization is provided mostly in order to prevent damages
+ * The synchronization is provided mostly in order to prevent damages
  * to the set in case of concurrent access. It does <strong>not</strong> prevent
  * {@link java.util.ConcurrentModificationException} to be thrown during iterations,
  * unless the whole iteration is synchronized on this set {@linkplain #getLock() lock}.
- * For real concurrency, see the {@link java.util.concurrent} package instead.</p>
+ * For real concurrency, see the {@link java.util.concurrent} package instead.
  *
  * {@note The above is the reason why the name of this class emphases the <cite>checked</cite>
  * aspect rather than the <cite>synchronized</cite> aspect of the set.}

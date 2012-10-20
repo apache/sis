@@ -87,8 +87,8 @@ public interface IdentifiedObject {
      *       {@code show} and {@code actuate} attributes)</li>
      * </ul>
      *
-     * <p>Note that XML ID attribute are actually unique only in the scope of the XML document
-     * being processed.</p>
+     * Note that XML ID attribute are actually unique only in the scope of the XML document
+     * being processed.
      *
      * @return All identifiers associated to this object, or an empty collection if none.
      *
@@ -122,8 +122,8 @@ public interface IdentifiedObject {
      *   view may choose to unify all those attributes in a single view.</li>
      * </ul>
      *
-     * <p>The map supports {@link IdentifierMap#put(Object, Object) put} operations
-     * if and only if this {@code IdentifiedObject} is modifiable.</p>
+     * The map supports {@link IdentifierMap#put(Object, Object) put} operations
+     * if and only if this {@code IdentifiedObject} is modifiable.
      *
      * @return The identifiers as a map of (<var>authority</var>, <var>code</var>) entries,
      *         or an empty map if none.
