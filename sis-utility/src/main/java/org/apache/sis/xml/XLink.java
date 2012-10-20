@@ -355,9 +355,9 @@ public class XLink implements Serializable {
      *   <li><b>title:</b>    a descriptive title for another linking element</li>
      * </ul>
      *
-     * <p>The default value is {@code null}. If the {@link #setType(XLink.Type)} method has been
+     * The default value is {@code null}. If the {@link #setType(XLink.Type)} method has been
      * invoked with the {@link org.apache.sis.xml.XLink.Type#AUTO AUTO} enum, then this method
-     * will infer a type from the attributes having a non-null value.</p>
+     * will infer a type from the attributes having a non-null value.
      *
      * @return The type of link, or {@code null}.
      */

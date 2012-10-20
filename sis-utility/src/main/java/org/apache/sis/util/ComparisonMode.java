@@ -34,10 +34,10 @@ package org.apache.sis.util;
  *   <li>{@link #DEBUG}:           Special mode for figuring out why two objects expected to be equal are not.</li>
  * </ol>
  *
- * <p>If two objects are equal at some degree of strictness <var>E</var>, then they should also
+ * If two objects are equal at some degree of strictness <var>E</var>, then they should also
  * be equal at all degrees listed below <var>E</var> in the above list. For example if two objects
  * are equal at the degree {@link #BY_CONTRACT}, then they should also be equal at the degree
- * {@link #IGNORE_METADATA} but not necessarily at the degree {@link #STRICT}.</p>
+ * {@link #IGNORE_METADATA} but not necessarily at the degree {@link #STRICT}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.18)

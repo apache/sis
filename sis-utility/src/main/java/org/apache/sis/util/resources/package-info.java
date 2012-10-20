@@ -41,13 +41,13 @@
  * Furthermore, the <code>java.util.logging</code> framework is designed for use with
  * <code>MessageFormat</code> (see the <code>Formatter.formatMessage(LogRecord)</code> method).}
  *
- * <p>Apache SIS developers can add resources by editing the {@code *.properties} file
+ * Apache SIS developers can add resources by editing the {@code *.properties} file
  * in the source code directory, then run the localized resources compiler provided in the
  * <code><a href="{@website}/sis-build-helper/index.html">sis-build-helper</a></code> module.
  * Developers shall <strong>not</strong> apply the {@code MessageFormat} rules for using quotes,
  * since the resources compiler will apply itself the <cite>doubled single quotes</cite> when
  * necessary. This avoid the unfortunate confusion documented in the warning section of
- * {@link java.text.MessageFormat} javadoc.</p>
+ * {@link java.text.MessageFormat} javadoc.
  *
  * {@section Usage}
  * All {@link org.apache.sis.util.resources.IndexedResourceBundle} subclasses provide a
