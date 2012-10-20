@@ -26,12 +26,12 @@ package org.apache.sis.util;
  * <p>This enumeration is <em>ordered</em> from stricter to more lenient degrees:</p>
  *
  * <ol>
- *   <li>{@link #STRICT}:          All attributes of the compared objects shall be strictly equal.</li>
- *   <li>{@link #BY_CONTRACT}:     Only the attributes published in the interface contract need to be compared.</li>
- *   <li>{@link #IGNORE_METADATA}: Only the attributes relevant to the object functionality are compared.</li>
- *   <li>{@link #APPROXIMATIVE}:   Only the attributes relevant to the object functionality are compared,
- *                                 with some tolerance threshold on numerical values.</li>
- *   <li>{@link #DEBUG}:           Special mode for figuring out why two objects expected to be equal are not.</li>
+ *   <li>{@link #STRICT}          – All attributes of the compared objects shall be strictly equal.</li>
+ *   <li>{@link #BY_CONTRACT}     – Only the attributes published in the interface contract need to be compared.</li>
+ *   <li>{@link #IGNORE_METADATA} – Only the attributes relevant to the object functionality are compared.</li>
+ *   <li>{@link #APPROXIMATIVE}   – Only the attributes relevant to the object functionality are compared,
+ *                                  with some tolerance threshold on numerical values.</li>
+ *   <li>{@link #DEBUG}:          – Special mode for figuring out why two objects expected to be equal are not.</li>
  * </ol>
  *
  * If two objects are equal at some degree of strictness <var>E</var>, then they should also

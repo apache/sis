@@ -24,7 +24,7 @@ The Apache SIS™ library
 
     * {{{./download.html}Downloading binaries}}
 
-    * {{{http://builds.apache.org/job/sis-trunk/site/apidocs/index.html}Aggregated Javadoc}}
+    * {{{./apidocs/index.html}Aggregated Javadoc}}
 
     * Developer Guide (English - translation to be provided later) ({{{./book/fr.xhtml}Français}})
 
@@ -36,6 +36,8 @@ The Apache SIS™ library
     * {{{./branches.html}Branches (JDK6, JDK7, GeoAPI)}}
 
     * {{{./code-patterns.html}Recommended code patterns}}
+
+    * {{{./code-format.html}Code and Javadoc formatting}}
 
 
   Apache SIS, Apache, the Apache feather logo, and the Apache SIS project logo are trademarks of
