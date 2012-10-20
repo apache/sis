@@ -465,7 +465,7 @@ public abstract class LoggerAdapter extends Logger {
 
     /**
      * Logs a record at the specified level.
-     * The defaut implementation formats the message immediately, then delegates to
+     * The default implementation formats the message immediately, then delegates to
      * <code>{@linkplain #log(Level,String) log}(level, message)</code>.
      *
      * @param level   One of the message level identifiers.
@@ -478,7 +478,7 @@ public abstract class LoggerAdapter extends Logger {
     }
 
     /**
-     * Logs a record at the specified level. The defaut implementation discards
+     * Logs a record at the specified level. The default implementation discards
      * the source class and source method, then delegates to
      * <code>{@linkplain #log(Level,String) log}(level, message)</code>.
      *
@@ -495,7 +495,7 @@ public abstract class LoggerAdapter extends Logger {
     }
 
     /**
-     * Logs a record at the specified level. The defaut implementation discards
+     * Logs a record at the specified level. The default implementation discards
      * the source class and source method, then delegates to
      * <code>{@linkplain #log(Level,String,Throwable) log}(level, message, thrown)</code>.
      *
@@ -513,7 +513,7 @@ public abstract class LoggerAdapter extends Logger {
     }
 
     /**
-     * Logs a record at the specified level. The defaut implementation delegates to
+     * Logs a record at the specified level. The default implementation delegates to
      * <code>{@linkplain #logp(Level,String,String,String,Object[]) logp}(level, sourceClass,
      * sourceMethod, message, params)</code> where the {@code params} array is built from the
      * {@code param} object.
@@ -535,7 +535,7 @@ public abstract class LoggerAdapter extends Logger {
     }
 
     /**
-     * Logs a record at the specified level. The defaut implementation formats the message
+     * Logs a record at the specified level. The default implementation formats the message
      * immediately, then delegates to <code>{@linkplain #logp(Level,String,String,String)
      * logp}(level, sourceClass, sourceMethod, message)</code>.
      *
@@ -556,7 +556,7 @@ public abstract class LoggerAdapter extends Logger {
     }
 
     /**
-     * Logs a localizable record at the specified level. The defaut implementation localizes the
+     * Logs a localizable record at the specified level. The default implementation localizes the
      * message immediately, then delegates to <code>{@linkplain #logp(Level,String,String,String)
      * logp}(level, sourceClass, sourceMethod, message)</code>.
      *
@@ -574,7 +574,7 @@ public abstract class LoggerAdapter extends Logger {
     }
 
     /**
-     * Logs a localizable record at the specified level. The defaut implementation localizes the
+     * Logs a localizable record at the specified level. The default implementation localizes the
      * message immediately, then delegates to <code>{@linkplain #logp(Level,String,String,String,
      * Throwable) logp}(level, sourceClass, sourceMethod, message, thrown)</code>.
      *
@@ -593,7 +593,7 @@ public abstract class LoggerAdapter extends Logger {
     }
 
     /**
-     * Logs a localizable record at the specified level. The defaut implementation localizes the
+     * Logs a localizable record at the specified level. The default implementation localizes the
      * message immediately, then delegates to <code>{@linkplain #logp(Level,String,String,String,
      * Object) logp}(level, sourceClass, sourceMethod, message, param)</code>.
      *
@@ -612,7 +612,7 @@ public abstract class LoggerAdapter extends Logger {
     }
 
     /**
-     * Logs a localizable record at the specified level. The defaut implementation localizes the
+     * Logs a localizable record at the specified level. The default implementation localizes the
      * message immediately, then delegates to <code>{@linkplain #logp(Level,String,String,String,
      * Object[]) logp}(level, sourceClass, sourceMethod, message, params)</code>.
      *

@@ -29,11 +29,11 @@
  * values like below:
  *
  * <ul class="verbose">
- *   <li><b><code>-Dorg.apache.sis.test.verbose=true</code></b><br>
+ *   <li><b>{@code -Dorg.apache.sis.test.verbose=true}</b><br>
  *     For enabling verbose outputs to the {@linkplain java.lang.System#console() console} if any,
  *     or to the {@linkplain java.lang.System#out standard output stream} otherwise.</li>
  *
- *   <li><b><code>-Dorg.apache.sis.test.encoding=UTF-8</code></b> (or any other valid encoding name)<br>
+ *   <li><b>{@code -Dorg.apache.sis.test.encoding=UTF-8}</b> (or any other valid encoding name)<br>
  *     For the encoding of the above-cited verbose output, and the encoding of logging messages
  *     sent to the {@linkplain java.util.logging.ConsoleHandler console handler}.
  *     This is useful on Windows or MacOS platforms having a console encoding different than the
