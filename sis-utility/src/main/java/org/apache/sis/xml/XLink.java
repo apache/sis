@@ -440,8 +440,8 @@ public class XLink implements Serializable {
      * identifier.
      *
      * {@note This serves a role similar to <code>idref</code>. The <code>idref</code>
-     * attribute allows an XML element to refer to another XML element that has a
-     * corresponding <code>id</code> attribute.}
+     *        attribute allows an XML element to refer to another XML element that has
+     *        a corresponding <code>id</code> attribute.}
      *
      * @return A URN to a resources, or {@code null} if none.
      *

@@ -423,11 +423,12 @@ search:     for (; fromIndex <= stopAt; fromIndex++) {
      * this method does not remove whitespaces.</p>
      *
      * {@note Prior JDK8 this method was relatively cheap because all string instances created by
-     * <code>String.substring(int,int)</code> shared the same <code>char[]</code> internal array.
-     * However since JDK8, the new <code>String</code> implementation copies the data in new arrays.
-     * Consequently it is better to use index rather than this method for splitting large
-     * <code>String</code>s. However this method still useful for other <code>CharSequence</code>
-     * implementations providing an efficient <code>subSequence(int,int)</code> method.}
+     *        <code>String.substring(int,int)</code> shared the same <code>char[]</code> internal
+     *        array. However since JDK8, the new <code>String</code> implementation copies the data
+     *        in new arrays. Consequently it is better to use index rather than this method for
+     *        splitting large <code>String</code>s. However this method still useful for other
+     *        <code>CharSequence</code> implementations providing an efficient
+     *        <code>subSequence(int,int)</code> method.}
      *
      * @param  text The multi-line text from which to get the individual lines, or {@code null}.
      * @return The lines in the text, or an empty array if the given text was null.

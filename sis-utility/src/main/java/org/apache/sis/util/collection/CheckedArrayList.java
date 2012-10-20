@@ -52,7 +52,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * For real concurrency, see the {@link java.util.concurrent} package instead.
  *
  * {@note The above is the reason why the name of this class emphases the <cite>checked</cite>
- * aspect rather than the <cite>synchronized</cite> aspect of the list.}
+ *        aspect rather than the <cite>synchronized</cite> aspect of the list.}
  *
  * @param <E> The type of elements in the list.
  *

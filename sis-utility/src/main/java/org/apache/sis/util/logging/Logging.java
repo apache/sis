@@ -97,8 +97,9 @@ public final class Logging extends Static {
      * The children {@link Logging} objects.
      *
      * {@note The array used there is not efficient for adding new items (<code>ArrayList</code>
-     * would be more efficient), but we assume that very few new items will be added. Furthermore
-     * a plain array is efficient for reading, and the later is way more common than the former.}
+     *        would be more efficient), but we assume that very few new items will be added.
+     *        Furthermore a plain array is efficient for reading, and the later is way more
+     *        common than the former.}
      */
     private Logging[] children = EMPTY;
 
