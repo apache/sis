@@ -80,8 +80,8 @@ public final class ReferenceQueueConsumer<T> extends DaemonThread {
      * It will run only only a few nanoseconds every time a new {@link Reference} is enqueued.
      *
      * {@note We give to this thread a priority higher than the normal one since this thread shall
-     * execute only tasks to be completed very shortly. Quick execution of those tasks is at the
-     * benefit of the rest of the system, since they make more resources available sooner.}
+     *        execute only tasks to be completed very shortly. Quick execution of those tasks is at
+     *        the benefit of the rest of the system, since they make more resources available sooner.}
      */
     private ReferenceQueueConsumer(final DaemonThread lastCreatedDaemon) {
         super(Threads.DAEMONS, "ReferenceQueueConsumer", lastCreatedDaemon);

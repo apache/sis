@@ -51,7 +51,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * For real concurrency, see the {@link java.util.concurrent} package instead.
  *
  * {@note The above is the reason why the name of this class emphases the <cite>checked</cite>
- * aspect rather than the <cite>synchronized</cite> aspect of the map.}
+ *        aspect rather than the <cite>synchronized</cite> aspect of the map.}
  *
  * @param <K> The type of keys in the map.
  * @param <V> The type of values in the map.
@@ -119,9 +119,9 @@ public class CheckedHashMap<K,V> extends LinkedHashMap<K,V> implements Cloneable
      * be modified. Subclasses can override this method if they want to control write permissions.</p>
      *
      * {@note Actually the current implementation contains an <code>assert</code> statement
-     * ensuring that the thread holds the lock. This is an implementation details that may
-     * change in any future version of the SIS library. Nevertheless methods that override
-     * this one are encouraged to invoke <code>super.checkWritePermission()</code>.}
+     *        ensuring that the thread holds the lock. This is an implementation details that may
+     *        change in any future version of the SIS library. Nevertheless methods that override
+     *        this one are encouraged to invoke <code>super.checkWritePermission()</code>.}
      *
      * @throws UnsupportedOperationException if this map is unmodifiable.
      */
