@@ -35,9 +35,28 @@ public final class Characters extends Static {
     public static final char NO_BREAK_SPACE = '\u00A0';
 
     /**
+     * The Unicode line separator (<code>\\u2028</code>).
+     */
+    public static final char LINE_SEPARATOR = '\u2028';
+
+    /**
      * Do not allow instantiation of this class.
      */
     private Characters() {
+    }
+
+    /**
+     * Returns {@code true} if the given code point is a line separator.
+     *
+     * @param  c The code point to test.
+     * @return {@code true} if the given code point is a line separator.
+     */
+    public static boolean isLineSeparator(final int c) {
+        switch (Character.getType(c)) {
+            default: return false;
+            case Character.LINE_SEPARATOR: return true;
+            case Character.CONTROL: return (c == '\r') || (c == '\n');
+        }
     }
 
     /**
