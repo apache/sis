@@ -51,6 +51,8 @@ import org.junit.runners.Suite;
   org.apache.sis.util.collection.WeakValueHashMapTest.class,
   org.apache.sis.util.collection.CacheTest.class,
   org.apache.sis.io.X364Test.class,
+  org.apache.sis.io.EndOfLineFormatterTest.class,
+  org.apache.sis.io.ExpandedTabFormatterTest.class,
   org.apache.sis.xml.XLinkTest.class,
   org.apache.sis.internal.jaxb.IdentifierMapAdapterTest.class,
   org.apache.sis.internal.jaxb.IdentifierMapWithSpecialCasesTest.class

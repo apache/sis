@@ -16,11 +16,14 @@
  */
 package org.apache.sis.util;
 
+import java.nio.CharBuffer;
+
 import static java.lang.Character.*;
 import static java.util.Arrays.fill;
 import static java.util.Arrays.copyOf;
 import static org.apache.sis.util.Arrays.resize;
 import static org.apache.sis.util.StringBuilders.replace;
+import static org.apache.sis.util.Characters.LINE_SEPARATOR;
 
 
 /**
@@ -1543,5 +1546,39 @@ cmp:    while (ia < lga) {
             }
         }
         return text.subSequence(fromIndex, upper);
+    }
+
+    /**
+     * Copies a sequence of characters in the given {@code char[]} array.
+     *
+     * @param src       The character sequences from which to copy characters.
+     * @param srcOffset Index of the first character from {@code src} to copy.
+     * @param dst       The array where to copy the characters.
+     * @param dstOffset Index where to write the first character in {@code dst}.
+     * @param length    Number of characters to copy.
+     *
+     * @see String#getChars(int, int, char[], int)
+     * @see StringBuilder#getChars(int, int, char[], int)
+     * @see StringBuffer#getChars(int, int, char[], int)
+     * @see CharBuffer#get(char[], int, int)
+     */
+    public static void copyChars(final CharSequence src, int srcOffset,
+                                 final char[] dst, int dstOffset, int length)
+    {
+        ArgumentChecks.ensurePositive("length", length);
+        if (src instanceof String) {
+            ((String) src).getChars(srcOffset, srcOffset + length, dst, dstOffset);
+        } else if (src instanceof StringBuilder) {
+            ((StringBuilder) src).getChars(srcOffset, srcOffset + length, dst, dstOffset);
+        } else if (src instanceof StringBuffer) {
+            ((StringBuffer) src).getChars(srcOffset, srcOffset + length, dst, dstOffset);
+        } else if (src instanceof CharBuffer) {
+            ((CharBuffer) src).subSequence(srcOffset, srcOffset + length).get(dst, dstOffset, length);
+        } else {
+            while (length != 0) {
+                dst[dstOffset++] = src.charAt(srcOffset++);
+                length--;
+            }
+        }
     }
 }
