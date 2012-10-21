@@ -43,6 +43,9 @@ import org.apache.sis.util.logging.Logging;
 
 import static org.apache.sis.util.Arrays.resize;
 
+// Related to JDK7
+import org.apache.sis.internal.util.JDK7;
+
 
 /**
  * {@link ResourceBundle} implementation accepting integers instead of strings for resource keys.
@@ -299,7 +302,7 @@ public class IndexedResourceBundle extends ResourceBundle {
                 keyLength = Math.max(keyLength, key.length());
             }
         }
-        final String lineSeparator = System.getProperty("line.separator", "\n");
+        final String lineSeparator = JDK7.lineSeparator();
         final String[] values = ensureLoaded(null);
         for (int i=0; i<values.length; i++) {
             final String key   = keys  [i];

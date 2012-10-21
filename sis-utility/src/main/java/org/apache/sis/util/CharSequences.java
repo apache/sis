@@ -16,11 +16,17 @@
  */
 package org.apache.sis.util;
 
+import java.nio.CharBuffer;
+
 import static java.lang.Character.*;
 import static java.util.Arrays.fill;
 import static java.util.Arrays.copyOf;
 import static org.apache.sis.util.Arrays.resize;
 import static org.apache.sis.util.StringBuilders.replace;
+
+// Related to JDK7
+import static org.apache.sis.internal.util.JDK7.lowSurrogate;
+import static org.apache.sis.internal.util.JDK7.highSurrogate;
 
 
 /**
@@ -217,13 +223,21 @@ public final class CharSequences extends Static {
             if (fromIndex < 0) {
                 fromIndex = 0;
             }
-            final int length = text.length();
+            int length = text.length();
+            char head  = (char) toSearch;
+            char tail  = (char) 0;
+            if (head != toSearch) { // Outside BMP plane?
+                head = highSurrogate(toSearch);
+                tail = lowSurrogate (toSearch);
+                length--;
+            }
             while (fromIndex < length) {
-                final int c = codePointAt(text, fromIndex);
-                if (c == toSearch) {
-                    return fromIndex;
+                if (text.charAt(fromIndex) == head) {
+                    if (tail == 0 || text.charAt(fromIndex+1) == tail) {
+                        return fromIndex;
+                    }
                 }
-                fromIndex += charCount(c);
+                fromIndex++;
             }
         }
         return -1;
@@ -309,7 +323,7 @@ search:     for (; fromIndex <= stopAt; fromIndex++) {
         /*
          * Go backward if the number of lines is negative.
          * No need to use the codePoint API because we are
-         * looking only for '\r' and '\n' characters.
+         * looking only for characters in the BMP plane.
          */
         if (numLines <= 0) {
             do {
@@ -419,8 +433,14 @@ search:     for (; fromIndex <= stopAt; fromIndex++) {
      * Each element in the returned array will be a single line. If the given text is already
      * a single line, then this method returns a singleton containing only the given text.
      *
-     * <p>At the difference of <code>{@linkplain #split split}(toSplit, '\n’)</code>,
-     * this method does not remove whitespaces.</p>
+     * <p>Notes:</p>
+     * <ul>
+     *   <li>At the difference of <code>{@linkplain #split split}(toSplit, '\n’)</code>,
+     *       this method does not remove whitespaces.</li>
+     *   <li>This method does not check for Unicode
+     *       {@linkplain Characters#LINE_SEPARATOR line separator} and
+     *       {@linkplain Characters#PARAGRAPH_SEPARATOR paragraph separator}.</li>
+     * </ul>
      *
      * {@note Prior JDK8 this method was relatively cheap because all string instances created by
      *        <code>String.substring(int,int)</code> shared the same <code>char[]</code> internal
@@ -440,8 +460,8 @@ search:     for (; fromIndex <= stopAt; fromIndex++) {
             return EMPTY_ARRAY;
         }
         /*
-         * This method is implemented on top of String.indexOf(int,int), which is the
-         * fatest method available while taking care of the complexity of code points.
+         * This method is implemented on top of String.indexOf(int,int),
+         * assuming that it will be faster for String and StringBuilder.
          */
         int lf = indexOf(text, '\n', 0);
         int cr = indexOf(text, '\r', 0);
@@ -1543,5 +1563,39 @@ cmp:    while (ia < lga) {
             }
         }
         return text.subSequence(fromIndex, upper);
+    }
+
+    /**
+     * Copies a sequence of characters in the given {@code char[]} array.
+     *
+     * @param src       The character sequences from which to copy characters.
+     * @param srcOffset Index of the first character from {@code src} to copy.
+     * @param dst       The array where to copy the characters.
+     * @param dstOffset Index where to write the first character in {@code dst}.
+     * @param length    Number of characters to copy.
+     *
+     * @see String#getChars(int, int, char[], int)
+     * @see StringBuilder#getChars(int, int, char[], int)
+     * @see StringBuffer#getChars(int, int, char[], int)
+     * @see CharBuffer#get(char[], int, int)
+     */
+    public static void copyChars(final CharSequence src, int srcOffset,
+                                 final char[] dst, int dstOffset, int length)
+    {
+        ArgumentChecks.ensurePositive("length", length);
+        if (src instanceof String) {
+            ((String) src).getChars(srcOffset, srcOffset + length, dst, dstOffset);
+        } else if (src instanceof StringBuilder) {
+            ((StringBuilder) src).getChars(srcOffset, srcOffset + length, dst, dstOffset);
+        } else if (src instanceof StringBuffer) {
+            ((StringBuffer) src).getChars(srcOffset, srcOffset + length, dst, dstOffset);
+//      } else if (src instanceof CharBuffer) {
+// JDK7     ((CharBuffer) src).subSequence(srcOffset, srcOffset + length).get(dst, dstOffset, length);
+        } else {
+            while (length != 0) {
+                dst[dstOffset++] = src.charAt(srcOffset++);
+                length--;
+            }
+        }
     }
 }

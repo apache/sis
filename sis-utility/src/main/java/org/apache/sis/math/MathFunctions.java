@@ -298,7 +298,7 @@ public final class MathFunctions extends Static {
      *
      * As seen from the above cases, this method distinguishes positive zero from negative zero.
      * The handling of zero values is the difference between invoking {@code isPositive(double)}
-     * and testing if (<var>value</var> &gt;= 0).
+     * and testing if (<var>value</var> {@literal >= 0}).
      *
      * @param  value The value to test.
      * @return {@code true} if the given value is positive, excluding negative zero.
@@ -319,7 +319,7 @@ public final class MathFunctions extends Static {
      *
      * As seen from the above cases, this method distinguishes positive zero from negative zero.
      * The handling of zero values is the difference between invoking {@code isNegative(double)}
-     * and testing if (<var>value</var> &lt; 0).
+     * and testing if (<var>value</var> {@literal < 0}).
      *
      * @param  value The value to test.
      * @return {@code true} if the given value is negative, including negative zero.
