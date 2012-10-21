@@ -31,7 +31,7 @@ import org.apache.sis.util.Static;
  * This class extends {@link ThreadFactory} and {@link RejectedExecutionHandler} for opportunist
  * reasons. Developers shall ignore this implementation detail, which may change at any time.
  * The methods for use in this class are:
- * <p>
+ *
  * <ul>
  *   <li>{@link #executeDaemonTask(Runnable)}</li>
  *   <li>{@link #createThreadFactory(String)}</li>

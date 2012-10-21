@@ -25,10 +25,10 @@ import java.sql.SQLException;
  * store (a file or a database). This exception is thrown by collection implementations that are
  * not allowed to throw checked exceptions. This exception usually has an {@link IOException} or
  * a {@link SQLException} as its {@linkplain #getCause() cause}.
- * <p>
- * This method provides a {@link #unwrapOrRethrow(Class)} convenience method which can be used
+ *
+ * <p>This method provides a {@link #unwrapOrRethrow(Class)} convenience method which can be used
  * for re-throwing the cause as in the example below. This allows client code to behave as if a
- * {@link java.util.Collection} interface was allowed to declare checked exceptions.
+ * {@link java.util.Collection} interface was allowed to declare checked exceptions.</p>
  *
  * {@preformat java
  *     void myMethod() throws IOException {
@@ -89,7 +89,7 @@ public class BackingStoreException extends RuntimeException {
     /**
      * Returns the underlying {@linkplain #getCause() cause} as an exception of the given type,
      * or re-throw the exception. More specifically, this method makes the following choices:
-     * <p>
+     *
      * <ul>
      *   <li>If the cause {@linkplain Class#isInstance(Object) is an instance} of the given
      *       type, returns the cause.</li>
@@ -97,7 +97,7 @@ public class BackingStoreException extends RuntimeException {
      *       that exception.</li>
      *   <li>Otherwise re-throws {@code this}.</li>
      * </ul>
-     * <p>
+     *
      * This method should be used as in the example below:
      *
      * {@preformat java

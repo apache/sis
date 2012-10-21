@@ -451,11 +451,14 @@ Apache SIS is a toolkit for describing location information, including points,
           <docencoding>${website.encoding}</docencoding>        <!-- Encoding of the generated HTML files. -->
           <charset>${website.encoding}</charset>                <!-- Encoding to declare in the HTML META tag. -->
           <locale>${website.locale}</locale>                    <!-- Locale for navigation bar, help file contents, etc. -->
+          <version>false</version>                              <!-- Excludes the version text in the generated docs. -->
+          <nosince>true</nosince>                               <!-- Omits the "Since" sections associated with the since tags. -->
           <noqualifier>all</noqualifier>                        <!-- Omit qualifying package name before class names in output. -->
           <quiet>true</quiet>                                   <!-- Shuts off non-error and non-warning messages. -->
           <keywords>true</keywords>                             <!-- Adds HTML meta keyword tags to the generated files. -->
           <breakiterator>true</breakiterator>                   <!-- Better boundary detection when determining the end of the first sentence. -->
           <stylesheetfile>src/main/javadoc/stylesheet.css</stylesheetfile>
+          <validateLinks>true</validateLinks>
           <links>
             <link>http://www.geoapi.org/3.0/javadoc</link>
           </links>
