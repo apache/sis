@@ -27,7 +27,7 @@ import static org.apache.sis.test.Assert.*;
 
 
 /**
- * Base class for the testing {@code *Formatter} implementations.
+ * Base class for the testing {@code *Formatter} implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
@@ -177,8 +177,10 @@ public abstract class FormatterTestCase extends TestCase {
      * Ensures that the buffer content is equals to the given string.
      *
      * @param expected The expected content.
+     * @throws IOException Should never happen.
      */
-    final void assertOutputEquals(final String expected) {
+    final void assertOutputEquals(final String expected) throws IOException {
+        FilteredAppendable.flush(formatter);
         final String actual = buffer.toString();
         assertMultilinesEquals("Ignoring line separators.", expected, actual);
         assertEquals          ("Checking line separators.", expected, actual);

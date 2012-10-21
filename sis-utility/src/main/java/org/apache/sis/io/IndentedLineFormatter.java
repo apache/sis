@@ -119,12 +119,26 @@ public class IndentedLineFormatter extends FilteredAppendable {
     }
 
     /**
-     * Invoked when a new line is beginning. The default implementation writes the
-     * margin specified by the last call to {@link #setMargin(String)}.
+     * Invoked for writing the margin on the left side, before the actual line.
+     * The default implementation writes the margin specified by the last call
+     * to {@link #setMargin(String)}. Subclasses can override this method if
+     * they want to write more information in the margin. For example, the following
+     * code write a line number:
+     *
+     * {@preformat java
+     *     @Override
+     *     protected void writeMargin() throws IOException {
+     *         int lineNumber = ...; // Compute some line number here.
+     *         String asText = String.valueOf(lineNumber);
+     *         out.append(CharSequences.space(getIndentation() - asText.length() - 1))
+     *            .append(asText)
+     *            .append(' ');
+     *     }
+     * }
      *
      * @throws IOException If an I/O error occurs
      */
-    protected void beginNewLine() throws IOException {
+    protected void writeMargin() throws IOException {
         out.append(margin);
     }
 
@@ -135,7 +149,7 @@ public class IndentedLineFormatter extends FilteredAppendable {
      */
     private void write(final char c) throws IOException {
         if (newLine && (c != '\n' || !skipLF)) {
-            beginNewLine();
+            writeMargin();
         }
         out.append(c);
         skipLF  = (c == '\r');

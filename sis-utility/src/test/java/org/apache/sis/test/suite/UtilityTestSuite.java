@@ -55,6 +55,7 @@ import org.junit.runners.Suite;
   org.apache.sis.io.IndentedLineFormatterTest.class,
   org.apache.sis.io.ExpandedTabFormatterTest.class,
   org.apache.sis.io.LineWrapFormatterTest.class,
+  org.apache.sis.io.TableFormatterTest.class,
   org.apache.sis.xml.XLinkTest.class,
   org.apache.sis.internal.jaxb.IdentifierMapAdapterTest.class,
   org.apache.sis.internal.jaxb.IdentifierMapWithSpecialCasesTest.class

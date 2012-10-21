@@ -252,27 +252,12 @@ searchHyp:  for (int i=buffer.length(); i>0; i-=n) {
         ArgumentChecks.ensureValidIndexRange(sequence.length(), start, end);
         if (lineSeparator == null) {
             /*
-             * Use the line separator use in the submitted document, if possible.
+             * Use the line separator found in the submitted document, if possible.
              * If we don't find any line separator in the submitted content, leave
              * the 'lineSeparator' field to null since the 'write' method will set
              * it to the default value only if it really needs it.
              */
-            int i = start;
-            if (isHighSurrogate()) {
-                i++; // Skip invalid character.
-            }
-            while (i < end) {
-                final int c = Character.codePointAt(sequence, i);
-                final int b = i;
-                i += Character.charCount(c);
-                if (isLineOrParagraphSeparator(c)) {
-                    if (c == '\r' && (i < end) && sequence.charAt(i) == '\n') {
-                        i++;
-                    }
-                    lineSeparator = sequence.subSequence(b, i).toString();
-                    break;
-                }
-            }
+            lineSeparator = lineSeparator(sequence, start, end);
         }
         start = appendSurrogate(sequence, start, end);
         while (start < end) {

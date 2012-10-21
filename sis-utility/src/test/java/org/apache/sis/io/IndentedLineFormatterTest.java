@@ -22,7 +22,7 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests the {@link IndentedLineFormatter} implementations.
+ * Tests the {@link IndentedLineFormatter} implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
