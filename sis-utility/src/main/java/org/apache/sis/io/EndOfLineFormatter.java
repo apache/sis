@@ -23,7 +23,7 @@ import org.apache.sis.util.ArgumentChecks;
 
 
 /**
- * An {@link Appendable} that writes characters while replacing various EOL by a unique string.
+ * An {@link Appendable} which replaces various EOL by a unique string.
  * This class performs two works:
  *
  * <ul>
@@ -192,11 +192,11 @@ public class EndOfLineFormatter extends FilteredAppendable {
         if (start != end) {
             if (skipLF && sequence.charAt(start) == '\n') {
                 start++;
-                skipLF = false;
             }
+            int cp = 0;
             int upper = start;
-            do {
-                final int cp = toCodePoint(sequence.charAt(upper++));
+            while (upper != end) {
+                cp = toCodePoint(sequence.charAt(upper++));
                 if (cp >= 0 && isLineSeparator(cp)) {
                     writeTrimmedLine(sequence, start, upper - Character.charCount(cp));
                     writeEOL();
@@ -205,17 +205,17 @@ public class EndOfLineFormatter extends FilteredAppendable {
                     }
                     start = upper;
                 }
-            } while (upper != end);
+            }
             /*
              * Write the remainding characters and put the
              * trailing ignorable characters into the buffer.
              */
+            skipLF = (cp == '\r');
             if (isHighSurrogate()) {
                 end--;
             }
             start = writeTrimmedLine(sequence, start, end);
             ignorables.append(sequence, start, end);
-            skipLF = (sequence.charAt(end - 1) == '\r');
         }
         return this;
     }

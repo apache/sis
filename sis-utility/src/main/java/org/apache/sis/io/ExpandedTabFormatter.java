@@ -26,7 +26,7 @@ import static org.apache.sis.util.Characters.PARAGRAPH_SEPARATOR;
 
 
 /**
- * An {@link Appendable} that expand tabs ({@code '\t'}) into spaces.
+ * An {@link Appendable} which expands tabulations ({@code '\t'}) into spaces.
  *
  * @author  Martin Desruisseaux (MPO, IRD)
  * @since   0.3 (derived from geotk-1.0)

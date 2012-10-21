@@ -23,7 +23,7 @@ import org.apache.sis.util.ArgumentChecks;
 
 
 /**
- * An {@link Appendable} that put some spaces in front of every lines.
+ * An {@link Appendable} which inserts some spaces at the beginning of every lines.
  * The indentation is initially set to 0 spaces. Users must invoke {@link #setIndentation(int)}
  * or {@link #setMargin(String)} in order to set a different value.
  *
