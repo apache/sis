@@ -123,7 +123,7 @@ final class AppendableAdapter extends Writer {
 
     /**
      * IF {@link #out} implements {@link Flushable}, or is a {@link FilteredAppendable} wrapper
-     * around a flusheable object, delegates to that object. Otherwise do nothing.
+     * around a flushable object, delegates to that object. Otherwise do nothing.
      */
     @Override
     public void flush() throws IOException {

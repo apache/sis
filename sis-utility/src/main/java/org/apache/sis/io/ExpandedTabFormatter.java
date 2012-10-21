@@ -22,6 +22,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 
 import static org.apache.sis.util.Characters.LINE_SEPARATOR;
+import static org.apache.sis.util.Characters.PARAGRAPH_SEPARATOR;
 
 
 /**
@@ -109,6 +110,7 @@ public class ExpandedTabFormatter extends FilteredAppendable {
     public Appendable append(final char c) throws IOException {
         switch (c) {
             case LINE_SEPARATOR:
+            case PARAGRAPH_SEPARATOR:
             case '\r': // fall through
             case '\n': column=0; break;
             case '\t': expand(); return this;
@@ -133,6 +135,7 @@ public class ExpandedTabFormatter extends FilteredAppendable {
             final char c = sequence.charAt(i);
             switch (c) {
                 case LINE_SEPARATOR:
+                case PARAGRAPH_SEPARATOR:
                 case '\r': // fall through
                 case '\n': {
                     column = 0;

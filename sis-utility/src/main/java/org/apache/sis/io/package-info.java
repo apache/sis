@@ -23,6 +23,10 @@
  * replaces all occurrence of {@code '\t'} by the amount of spaces needed for producing a tabular
  * output.
  *
+ * {@section Supplementary Unicode characters}
+ * This package can handle the {@linkplain java.lang.Character#isSupplementaryCodePoint(int)
+ * Unicode supplementary characters}.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-1.0)
  * @version 0.3
