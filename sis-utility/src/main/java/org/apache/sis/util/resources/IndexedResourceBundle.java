@@ -43,6 +43,9 @@ import org.apache.sis.util.logging.Logging;
 
 import static org.apache.sis.util.Arrays.resize;
 
+// Related to JDK7
+import org.apache.sis.internal.util.JDK7;
+
 
 /**
  * {@link ResourceBundle} implementation accepting integers instead of strings for resource keys.
@@ -52,8 +55,8 @@ import static org.apache.sis.util.Arrays.resize;
  * inner classes, with the side-effect of compile-time safety. Because integer constants are
  * inlined right into class files at compile time, the declarative classes is never loaded at
  * run time.
- * <p>
- * This class also provides facilities for string formatting using {@link MessageFormat}.
+ *
+ * <p>This class also provides facilities for string formatting using {@link MessageFormat}.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-1.2)
@@ -299,7 +302,7 @@ public class IndexedResourceBundle extends ResourceBundle {
                 keyLength = Math.max(keyLength, key.length());
             }
         }
-        final String lineSeparator = System.getProperty("line.separator", "\n");
+        final String lineSeparator = JDK7.lineSeparator();
         final String[] values = ensureLoaded(null);
         for (int i=0; i<values.length; i++) {
             final String key   = keys  [i];
@@ -438,12 +441,12 @@ public class IndexedResourceBundle extends ResourceBundle {
      * by {@link MessageFormat}. If {@code arguments} is already an array, then that array or
      * a copy of that array will be returned. If {@code arguments} is not an array, it will be
      * placed in an array of length 1.
-     * <p>
-     * All the array elements will be checked for {@link CharSequence}, {@link InternationalString},
+     *
+     * <p>All the array elements will be checked for {@link CharSequence}, {@link InternationalString},
      * {@link Throwable} or {@link Class} instances. All {@code InternationalString} instances will
      * be localized according this resource bundle locale. Any characters sequences of length
      * greater than {@link #MAX_STRING_LENGTH} will be reduced using the
-     * {@link CharSequences#shortSentence(CharSequence, int)} method.
+     * {@link CharSequences#shortSentence(CharSequence, int)} method.</p>
      *
      * @param  arguments The object to check.
      * @return {@code arguments} as an array, eventually with some elements replaced.

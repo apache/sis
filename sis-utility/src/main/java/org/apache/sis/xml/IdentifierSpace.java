@@ -100,7 +100,7 @@ public interface IdentifierSpace<T> extends Citation {
 
     /**
      * Returns the name of this identifier space.
-     * <p>
+     *
      * <ul>
      *   <li>For the constants defined in this {@code IdentifierSpace} interface, this is
      *       the XML attribute name with its prefix. Attribute names can be {@code "gml:id"},

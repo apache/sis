@@ -25,7 +25,7 @@ import org.apache.sis.util.resources.Errors;
 /**
  * Static methods for performing argument checks.
  * Every methods in this class can throw one of the following exceptions:
- * <p>
+ *
  * <table class="sis">
  * <tr><th>Exception</th><th class="sep">Thrown by</th></tr>
  * <tr><td>{@link NullArgumentException}</td>
@@ -165,10 +165,36 @@ public final class ArgumentChecks extends Static {
      * @param  index The index to check.
      * @throws IndexOutOfBoundsException If the given index is negative or not lower than the
      *         given upper value.
+     *
+     * @see #ensurePositive(String, int)
      */
     public static void ensureValidIndex(final int upper, final int index) throws IndexOutOfBoundsException {
         if (index < 0 || index >= upper) {
             throw new IndexOutOfBoundsException(Errors.format(Errors.Keys.IndexOutOfBounds_1, index));
+        }
+    }
+
+    /**
+     * Ensures that the given index range is valid for a sequence of the given length.
+     * This method is designed for methods that expect an index range as their only arguments.
+     * For this reason, this method does not take argument names.
+     *
+     * <p>This method verifies only the {@code lower} and {@code upper} argument values.
+     * It does not <strong>not</strong> verify the validity of the {@code length} argument,
+     * because this information is assumed to be provided by the implementation rather than
+     * the user.</p>
+     *
+     * @param  length The length of the sequence (array, {@link CharSequence}, <i>etc.</i>).
+     * @param  lower  The user-specified lower index, inclusive.
+     * @param  upper  The user-specified upper index, exclusive.
+     * @throws IndexOutOfBoundsException If the given [{@code lower} … {@code upper}]
+     *         range is out of the sequence index range.
+     *
+     * @see #ensureBetween(String, int, int, int)
+     */
+    public static void ensureValidIndexRange(final int length, final int lower, final int upper) throws IndexOutOfBoundsException {
+        if (lower < 0 || upper < lower || upper > length) {
+            throw new IndexOutOfBoundsException(Errors.format(Errors.Keys.IllegalRange_2, lower, upper));
         }
     }
 
@@ -180,6 +206,9 @@ public final class ArgumentChecks extends Static {
      * @param  name   The name of the argument to be checked, used only if an exception is thrown.
      * @param  value  The user argument to check.
      * @throws IllegalArgumentException if the given value is negative.
+     *
+     * @see #ensureValidIndex(int, int)
+     * @see #ensureStrictlyPositive(String, int)
      */
     public static void ensurePositive(final String name, final int value)
             throws IllegalArgumentException
@@ -196,6 +225,8 @@ public final class ArgumentChecks extends Static {
      * @param  name   The name of the argument to be checked, used only if an exception is thrown.
      * @param  value  The user argument to check.
      * @throws IllegalArgumentException if the given value is negative.
+     *
+     * @see #ensureStrictlyPositive(String, long)
      */
     public static void ensurePositive(final String name, final long value)
             throws IllegalArgumentException
@@ -214,6 +245,8 @@ public final class ArgumentChecks extends Static {
      * @param  name   The name of the argument to be checked, used only if an exception is thrown.
      * @param  value  The user argument to check.
      * @throws IllegalArgumentException if the given value is {@linkplain Float#NaN NaN} or negative.
+     *
+     * @see #ensureStrictlyPositive(String, float)
      */
     public static void ensurePositive(final String name, final float value)
             throws IllegalArgumentException
@@ -233,6 +266,8 @@ public final class ArgumentChecks extends Static {
      * @param  name   The name of the argument to be checked, used only if an exception is thrown.
      * @param  value  The user argument to check.
      * @throws IllegalArgumentException if the given value is {@linkplain Double#NaN NaN} or negative.
+     *
+     * @see #ensureStrictlyPositive(String, double)
      */
     public static void ensurePositive(final String name, final double value)
             throws IllegalArgumentException
@@ -250,6 +285,8 @@ public final class ArgumentChecks extends Static {
      * @param  name   The name of the argument to be checked, used only if an exception is thrown.
      * @param  value  The user argument to check.
      * @throws IllegalArgumentException if the given value is negative or equals to zero.
+     *
+     * @see #ensurePositive(String, int)
      */
     public static void ensureStrictlyPositive(final String name, final int value)
             throws IllegalArgumentException
@@ -266,6 +303,8 @@ public final class ArgumentChecks extends Static {
      * @param  name   The name of the argument to be checked, used only if an exception is thrown.
      * @param  value  The user argument to check.
      * @throws IllegalArgumentException if the given value is negative or equals to zero.
+     *
+     * @see #ensurePositive(String, long)
      */
     public static void ensureStrictlyPositive(final String name, final long value)
             throws IllegalArgumentException
@@ -285,6 +324,8 @@ public final class ArgumentChecks extends Static {
      * @param  value  The user argument to check.
      * @throws IllegalArgumentException if the given value is {@linkplain Float#NaN NaN},
      *         zero or negative.
+     *
+     * @see #ensurePositive(String, float)
      */
     public static void ensureStrictlyPositive(final String name, final float value)
             throws IllegalArgumentException
@@ -305,6 +346,8 @@ public final class ArgumentChecks extends Static {
      * @param  value  The user argument to check.
      * @throws IllegalArgumentException if the given value is {@linkplain Double#NaN NaN},
      *         zero or negative.
+     *
+     * @see #ensurePositive(String, double)
      */
     public static void ensureStrictlyPositive(final String name, final double value)
             throws IllegalArgumentException
@@ -324,6 +367,8 @@ public final class ArgumentChecks extends Static {
      * @param  max   The maximal value, inclusive.
      * @param  value The value to be tested.
      * @throws IllegalArgumentException if the given value is not in the given range.
+     *
+     * @see #ensureValidIndexRange(int, int, int)
      */
     public static void ensureBetween(final String name, final int min, final int max, final int value)
             throws IllegalArgumentException
@@ -397,12 +442,12 @@ public final class ArgumentChecks extends Static {
      * This method does nothing if the given direct position is null.
      *
      * @param  name     The name of the argument to be checked. Used only in case an exception is thrown.
-     * @param  position The direct position to check for its dimension.
      * @param  expected The expected number of dimensions.
+     * @param  position The direct position to check for its dimension, or {@code null}.
      * @throws MismatchedDimensionException If the given direct position is non-null and does
      *         not have the expected number of dimensions.
      */
-    public static void ensureDimensionMatches(final String name, final DirectPosition position, final int expected)
+    public static void ensureDimensionMatches(final String name, final int expected, final DirectPosition position)
             throws MismatchedDimensionException
     {
         if (position != null) {

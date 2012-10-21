@@ -28,7 +28,7 @@ import org.apache.sis.internal.util.Objects;
  * Static methods for simple operations on arrays and array elements. This class provides methods
  * for inserting and deleting elements in an array, as well as resizing the array. Some worthy
  * methods are:
- * <p>
+ *
  * <ul>
  *   <li>The {@link #resize(Object[], int) resize} methods, which are very similar to the
  *       {@link java.util.Arrays#copyOf(Object[], int) Arrays.copyOf} methods except that
@@ -43,15 +43,15 @@ import org.apache.sis.internal.util.Objects;
  * {@section Handling of null values}
  * Many (but not all) methods in this class are tolerant to null parameter values,
  * sometime under certain conditions. See the method javadoc for details.
- * <p>
- * All methods in this class are tolerant to null elements in arrays.
- * Null and {@linkplain Double#NaN NaN} elements are ignored.
+ *
+ * <p>All methods in this class are tolerant to null elements in arrays.
+ * Null and {@linkplain Double#NaN NaN} elements are ignored.</p>
  *
  * {@section Performance consideration}
  * The methods listed below are provided as convenience for <strong>casual</strong> use on
  * <strong>small</strong> arrays. For large arrays or for frequent use, consider using the
  * Java collection framework instead.
- * <p>
+ *
  * <table class="sis">
  * <tr><th>Method</th>                                             <th class="sep">Alternative</th></tr>
  * <tr><td>{@link #resize(Object[], int)}</td>                     <td class="sep">{@link java.util.ArrayList}</td></tr>
@@ -62,7 +62,7 @@ import org.apache.sis.internal.util.Objects;
  * <tr><td>{@link #contains(Object[], Object)}</td>                <td class="sep">{@link java.util.HashSet}</td></tr>
  * <tr><td>{@link #containsIdentity(Object[], Object)}</td>        <td class="sep">{@link java.util.IdentityHashMap}</td></tr>
  * </table>
- * <p>
+ *
  * Note that this recommendation applies mostly to arrays of objects. It may not apply to arrays
  * of primitive types, since as of JDK7 the collection framework wraps every primitive types in
  * objects.
@@ -132,21 +132,22 @@ public final class Arrays extends Static {
     /**
      * Returns an array containing the same elements as the given {@code array} but with the
      * specified {@code length}, truncating or padding with {@code null} if necessary.
+     *
      * <ul>
-     *   <li><p>If the given {@code length} is longer than the length of the given {@code array},
+     *   <li>If the given {@code length} is longer than the length of the given {@code array},
      *       then the returned array will contain all the elements of {@code array} at index
-     *       <var>i</var>&nbsp;&lt;&nbsp;{@code array.length}. Elements at index
-     *       <var>i</var>&nbsp;&gt;=&nbsp;{@code array.length} are initialized to {@code null}.</p></li>
+     *       <var>i</var> {@literal <} {@code array.length}. Elements at index
+     *       <var>i</var> {@literal >=} {@code array.length} are initialized to {@code null}.</li>
      *
-     *   <li><p>If the given {@code length} is shorter than the length of the given {@code array},
+     *   <li>If the given {@code length} is shorter than the length of the given {@code array},
      *       then the returned array will contain only the elements of {@code array} at index
-     *       <var>i</var>&nbsp;&lt;&nbsp;{@code length}. Remaining elements are not copied.</p></li>
+     *       <var>i</var> {@literal <} {@code length}. Remaining elements are not copied.</li>
      *
-     *   <li><p>If the given {@code length} is equal to the length of the given {@code array},
+     *   <li>If the given {@code length} is equal to the length of the given {@code array},
      *       then {@code array} is returned unchanged. <strong>No copy</strong> is performed.
-     *       This behavior is different than the {@link java.util.Arrays#copyOf} one.</p></li>
+     *       This behavior is different than the {@link java.util.Arrays#copyOf} one.</li>
      * </ul>
-     * <p>
+     *
      * Note that if the given array is {@code null}, then this method unconditionally returns
      * {@code null} no matter the value of the {@code length} argument.
      *
@@ -166,9 +167,9 @@ public final class Arrays extends Static {
     /**
      * Returns an array containing the same elements as the given {@code array} but
      * specified {@code length}, truncating or padding with zeros if necessary.
-     * <p>
-     * This method returns {@code null} if and only if the given array is {@code null},
-     * in which case the value of the {@code length} argument is ignored.
+     *
+     * <p>This method returns {@code null} if and only if the given array is {@code null},
+     * in which case the value of the {@code length} argument is ignored.</p>
      *
      * @param  array  Array to resize, or {@code null}.
      * @param  length Length of the desired array.
@@ -193,9 +194,9 @@ public final class Arrays extends Static {
     /**
      * Returns an array containing the same elements as the given {@code array} but
      * specified {@code length}, truncating or padding with zeros if necessary.
-     * <p>
-     * This method returns {@code null} if and only if the given array is {@code null},
-     * in which case the value of the {@code length} argument is ignored.
+     *
+     * <p>This method returns {@code null} if and only if the given array is {@code null},
+     * in which case the value of the {@code length} argument is ignored.</p>
      *
      * @param  array  Array to resize, or {@code null}.
      * @param  length Length of the desired array.
@@ -220,9 +221,9 @@ public final class Arrays extends Static {
     /**
      * Returns an array containing the same elements as the given {@code array} but
      * specified {@code length}, truncating or padding with zeros if necessary.
-     * <p>
-     * This method returns {@code null} if and only if the given array is {@code null},
-     * in which case the value of the {@code length} argument is ignored.
+     *
+     * <p>This method returns {@code null} if and only if the given array is {@code null},
+     * in which case the value of the {@code length} argument is ignored.</p>
      *
      * @param  array  Array to resize, or {@code null}.
      * @param  length Length of the desired array.
@@ -247,9 +248,9 @@ public final class Arrays extends Static {
     /**
      * Returns an array containing the same elements as the given {@code array} but
      * specified {@code length}, truncating or padding with zeros if necessary.
-     * <p>
-     * This method returns {@code null} if and only if the given array is {@code null},
-     * in which case the value of the {@code length} argument is ignored.
+     *
+     * <p>This method returns {@code null} if and only if the given array is {@code null},
+     * in which case the value of the {@code length} argument is ignored.</p>
      *
      * @param  array  Array to resize, or {@code null}.
      * @param  length Length of the desired array.
@@ -274,9 +275,9 @@ public final class Arrays extends Static {
     /**
      * Returns an array containing the same elements as the given {@code array} but
      * specified {@code length}, truncating or padding with zeros if necessary.
-     * <p>
-     * This method returns {@code null} if and only if the given array is {@code null},
-     * in which case the value of the {@code length} argument is ignored.
+     *
+     * <p>This method returns {@code null} if and only if the given array is {@code null},
+     * in which case the value of the {@code length} argument is ignored.</p>
      *
      * @param  array  Array to resize, or {@code null}.
      * @param  length Length of the desired array.
@@ -301,9 +302,9 @@ public final class Arrays extends Static {
     /**
      * Returns an array containing the same elements as the given {@code array} but
      * specified {@code length}, truncating or padding with zeros if necessary.
-     * <p>
-     * This method returns {@code null} if and only if the given array is {@code null},
-     * in which case the value of the {@code length} argument is ignored.
+     *
+     * <p>This method returns {@code null} if and only if the given array is {@code null},
+     * in which case the value of the {@code length} argument is ignored.</p>
      *
      * @param  array  Array to resize, or {@code null}.
      * @param  length Length of the desired array.
@@ -328,9 +329,9 @@ public final class Arrays extends Static {
    /**
      * Returns an array containing the same elements as the given {@code array} but
      * specified {@code length}, truncating or padding with zeros if necessary.
-     * <p>
-     * This method returns {@code null} if and only if the given array is {@code null},
-     * in which case the value of the {@code length} argument is ignored.
+     *
+     * <p>This method returns {@code null} if and only if the given array is {@code null},
+     * in which case the value of the {@code length} argument is ignored.</p>
      *
      * @param  array  Array to resize, or {@code null}.
      * @param  length Length of the desired array.
@@ -355,9 +356,9 @@ public final class Arrays extends Static {
     /**
      * Returns an array containing the same elements as the given {@code array} but
      * specified {@code length}, truncating or padding with {@code false} if necessary.
-     * <p>
-     * This method returns {@code null} if and only if the given array is {@code null},
-     * in which case the value of the {@code length} argument is ignored.
+     *
+     * <p>This method returns {@code null} if and only if the given array is {@code null},
+     * in which case the value of the {@code length} argument is ignored.</p>
      *
      * @param  array  Array to resize, or {@code null}.
      * @param  length Length of the desired array.
@@ -382,10 +383,10 @@ public final class Arrays extends Static {
     /**
      * Returns an array containing the same elements than the given array except for
      * the given range.
-     * <p>
-     * If the {@code length} argument is 0, then this method returns the {@code array}
+     *
+     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
      * reference unchanged. Otherwise this method creates a new array.
-     * In every cases, the given array is never modified.
+     * In every cases, the given array is never modified.</p>
      *
      * @param <T>     The array type.
      * @param array   Array from which to remove elements. Can be {@code null} only if {@code length} is 0.
@@ -416,10 +417,10 @@ public final class Arrays extends Static {
     /**
      * Returns an array containing the same elements than the given array except for
      * the given range.
-     * <p>
-     * If the {@code length} argument is 0, then this method returns
+     *
+     * <p>If the {@code length} argument is 0, then this method returns
      * the {@code array} reference unchanged (except if empty). Otherwise this method
-     * creates a new array. In every cases, the given array is never modified.
+     * creates a new array. In every cases, the given array is never modified.</p>
      *
      * @param <E>     The type of array elements.
      * @param array   Array from which to remove elements. Can be {@code null} only if {@code length} is 0.
@@ -442,10 +443,10 @@ public final class Arrays extends Static {
     /**
      * Returns an array containing the same elements than the given array except for
      * the given range.
-     * <p>
-     * If the {@code length} argument is 0, then this method returns the {@code array}
+     *
+     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
      * reference unchanged, except for {@linkplain #EMPTY_DOUBLE empty} arrays. Otherwise
-     * this method creates a new array. In every cases, the given array is never modified.
+     * this method creates a new array. In every cases, the given array is never modified.</p>
      *
      * @param array   Array from which to remove elements. Can be {@code null} only if {@code length} is 0.
      * @param first   Index of the first element to remove from the given {@code array}.
@@ -468,10 +469,10 @@ public final class Arrays extends Static {
     /**
      * Returns an array containing the same elements than the given array except for
      * the given range.
-     * <p>
-     * If the {@code length} argument is 0, then this method returns the {@code array}
+     *
+     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
      * reference unchanged, except for {@linkplain #EMPTY_FLOAT empty} arrays. Otherwise
-     * this method creates a new array. In every cases, the given array is never modified.
+     * this method creates a new array. In every cases, the given array is never modified.</p>
      *
      * @param array   Array from which to remove elements. Can be {@code null} only if {@code length} is 0.
      * @param first   Index of the first element to remove from the given {@code array}.
@@ -494,10 +495,10 @@ public final class Arrays extends Static {
     /**
      * Returns an array containing the same elements than the given array except for
      * the given range.
-     * <p>
-     * If the {@code length} argument is 0, then this method returns the {@code array}
+     *
+     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
      * reference unchanged, except for {@linkplain #EMPTY_LONG empty} arrays. Otherwise
-     * this method creates a new array. In every cases, the given array is never modified.
+     * this method creates a new array. In every cases, the given array is never modified.</p>
      *
      * @param array   Array from which to remove elements. Can be {@code null} only if {@code length} is 0.
      * @param first   Index of the first element to remove from the given {@code array}.
@@ -520,10 +521,10 @@ public final class Arrays extends Static {
     /**
      * Returns an array containing the same elements than the given array except for
      * the given range.
-     * <p>
-     * If the {@code length} argument is 0, then this method returns the {@code array}
+     *
+     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
      * reference unchanged, except for {@linkplain #EMPTY_INT empty} arrays. Otherwise
-     * this method creates a new array. In every cases, the given array is never modified.
+     * this method creates a new array. In every cases, the given array is never modified.</p>
      *
      * @param array   Array from which to remove elements. Can be {@code null} only if {@code length} is 0.
      * @param first   Index of the first element to remove from the given {@code array}.
@@ -546,10 +547,10 @@ public final class Arrays extends Static {
     /**
      * Returns an array containing the same elements than the given array except for
      * the given range.
-     * <p>
-     * If the {@code length} argument is 0, then this method returns the {@code array}
+     *
+     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
      * reference unchanged, except for {@linkplain #EMPTY_SHORT empty} arrays. Otherwise
-     * this method creates a new array. In every cases, the given array is never modified.
+     * this method creates a new array. In every cases, the given array is never modified.</p>
      *
      * @param array   Array from which to remove elements. Can be {@code null} only if {@code length} is 0.
      * @param first   Index of the first element to remove from the given {@code array}.
@@ -572,10 +573,10 @@ public final class Arrays extends Static {
     /**
      * Returns an array containing the same elements than the given array except for
      * the given range.
-     * <p>
-     * If the {@code length} argument is 0, then this method returns the {@code array}
+     *
+     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
      * reference unchanged, except for {@linkplain #EMPTY_BYTE empty} arrays. Otherwise
-     * this method creates a new array. In every cases, the given array is never modified.
+     * this method creates a new array. In every cases, the given array is never modified.</p>
      *
      * @param array   Array from which to remove elements. Can be {@code null} only if {@code length} is 0.
      * @param first   Index of the first element to remove from the given {@code array}.
@@ -598,10 +599,10 @@ public final class Arrays extends Static {
     /**
      * Returns an array containing the same elements than the given array except for
      * the given range.
-     * <p>
-     * If the {@code length} argument is 0, then this method returns the {@code array}
+     *
+     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
      * reference unchanged, except for {@linkplain #EMPTY_CHAR empty} arrays. Otherwise
-     * this method creates a new array. In every cases, the given array is never modified.
+     * this method creates a new array. In every cases, the given array is never modified.</p>
      *
      * @param array   Array from which to remove elements. Can be {@code null} only if {@code length} is 0.
      * @param first   Index of the first element to remove from the given {@code array}.
@@ -624,10 +625,10 @@ public final class Arrays extends Static {
     /**
      * Returns an array containing the same elements than the given array except for
      * the given range.
-     * <p>
-     * If the {@code length} argument is 0, then this method returns the {@code array}
+     *
+     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
      * reference unchanged, except for {@linkplain #EMPTY_BOOLEAN empty} arrays. Otherwise
-     * this method creates a new array. In every cases, the given array is never modified.
+     * this method creates a new array. In every cases, the given array is never modified.</p>
      *
      * @param array   Array from which to remove elements. Can be {@code null} only if {@code length} is 0.
      * @param first   Index of the first element to remove from the given {@code array}.
@@ -650,10 +651,10 @@ public final class Arrays extends Static {
     /**
      * Returns an array containing the same elements than the given array, with additional
      * "spaces" in the given range. These "spaces" will be made up of {@code null} elements.
-     * <p>
-     * If the {@code length} argument is 0, then this method returns the {@code array}
+     *
+     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
      * reference unchanged. Otherwise this method creates a new array. In every cases,
-     * the given array is never modified.
+     * the given array is never modified.</p>
      *
      * @param <T>     The array type.
      * @param array   Array in which to insert spaces. Can be {@code null} only if {@code length} is 0.
@@ -685,10 +686,10 @@ public final class Arrays extends Static {
     /**
      * Returns an array containing the same elements than the given array, with additional
      * "spaces" in the given range. These "spaces" will be made up of {@code null} elements.
-     * <p>
-     * If the {@code length} argument is 0, then this method returns the {@code array}
+     *
+     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
      * reference unchanged. Otherwise this method creates a new array. In every cases,
-     * the given array is never modified.
+     * the given array is never modified.</p>
      *
      * @param <E>     The type of array elements.
      * @param array   Array in which to insert spaces. Can be {@code null} only if {@code length} is 0.
@@ -714,10 +715,10 @@ public final class Arrays extends Static {
      * Returns an array containing the same elements than the given array, with additional
      * "spaces" in the given range. These "spaces" will be made up of elements initialized
      * to zero.
-     * <p>
-     * If the {@code length} argument is 0, then this method returns the {@code array}
+     *
+     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
      * reference unchanged. Otherwise this method creates a new array. In every cases,
-     * the given array is never modified.
+     * the given array is never modified.</p>
      *
      * @param array   Array in which to insert spaces. Can be {@code null} only if {@code length} is 0.
      * @param first   Index where the first space should be inserted. All {@code array} elements
@@ -742,10 +743,10 @@ public final class Arrays extends Static {
      * Returns an array containing the same elements than the given array, with additional
      * "spaces" in the given range. These "spaces" will be made up of elements initialized
      * to zero.
-     * <p>
-     * If the {@code length} argument is 0, then this method returns the {@code array}
+     *
+     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
      * reference unchanged. Otherwise this method creates a new array. In every cases,
-     * the given array is never modified.
+     * the given array is never modified.</p>
      *
      * @param array   Array in which to insert spaces. Can be {@code null} only if {@code length} is 0.
      * @param first   Index where the first space should be inserted. All {@code array} elements
@@ -770,10 +771,10 @@ public final class Arrays extends Static {
      * Returns an array containing the same elements than the given array, with additional
      * "spaces" in the given range. These "spaces" will be made up of elements initialized
      * to zero.
-     * <p>
-     * If the {@code length} argument is 0, then this method returns the {@code array}
+     *
+     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
      * reference unchanged. Otherwise this method creates a new array. In every cases,
-     * the given array is never modified.
+     * the given array is never modified.</p>
      *
      * @param array   Array in which to insert spaces. Can be {@code null} only if {@code length} is 0.
      * @param first   Index where the first space should be inserted. All {@code array} elements
@@ -798,10 +799,10 @@ public final class Arrays extends Static {
      * Returns an array containing the same elements than the given array, with additional
      * "spaces" in the given range. These "spaces" will be made up of elements initialized
      * to zero.
-     * <p>
-     * If the {@code length} argument is 0, then this method returns the {@code array}
+     *
+     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
      * reference unchanged. Otherwise this method creates a new array. In every cases,
-     * the given array is never modified.
+     * the given array is never modified.</p>
      *
      * @param array   Array in which to insert spaces. Can be {@code null} only if {@code length} is 0.
      * @param first   Index where the first space should be inserted. All {@code array} elements
@@ -826,10 +827,10 @@ public final class Arrays extends Static {
      * Returns an array containing the same elements than the given array, with additional
      * "spaces" in the given range. These "spaces" will be made up of elements initialized
      * to zero.
-     * <p>
-     * If the {@code length} argument is 0, then this method returns the {@code array}
+     *
+     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
      * reference unchanged. Otherwise this method creates a new array. In every cases,
-     * the given array is never modified.
+     * the given array is never modified.</p>
      *
      * @param array   Array in which to insert spaces. Can be {@code null} only if {@code length} is 0.
      * @param first   Index where the first space should be inserted. All {@code array} elements
@@ -854,10 +855,10 @@ public final class Arrays extends Static {
      * Returns an array containing the same elements than the given array, with additional
      * "spaces" in the given range. These "spaces" will be made up of elements initialized
      * to zero.
-     * <p>
-     * If the {@code length} argument is 0, then this method returns the {@code array}
+     *
+     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
      * reference unchanged. Otherwise this method creates a new array. In every cases,
-     * the given array is never modified.
+     * the given array is never modified.</p>
      *
      * @param array   Array in which to insert spaces. Can be {@code null} only if {@code length} is 0.
      * @param first   Index where the first space should be inserted. All {@code array} elements
@@ -882,10 +883,10 @@ public final class Arrays extends Static {
      * Returns an array containing the same elements than the given array, with additional
      * "spaces" in the given range. These "spaces" will be made up of elements initialized
      * to zero.
-     * <p>
-     * If the {@code length} argument is 0, then this method returns the {@code array}
+     *
+     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
      * reference unchanged. Otherwise this method creates a new array. In every cases,
-     * the given array is never modified.
+     * the given array is never modified.</p>
      *
      * @param array   Array in which to insert spaces. Can be {@code null} only if {@code length} is 0.
      * @param first   Index where the first space should be inserted. All {@code array} elements
@@ -910,10 +911,10 @@ public final class Arrays extends Static {
      * Returns an array containing the same elements than the given array, with additional
      * "spaces" in the given range. These "spaces" will be made up of elements initialized
      * to {@code false}.
-     * <p>
-     * If the {@code length} argument is 0, then this method returns the {@code array}
+     *
+     * <p>If the {@code length} argument is 0, then this method returns the {@code array}
      * reference unchanged. Otherwise this method creates a new array. In every cases,
-     * the given array is never modified.
+     * the given array is never modified.</p>
      *
      * @param array   Array in which to insert spaces. Can be {@code null} only if {@code length} is 0.
      * @param first   Index where the first space should be inserted. All {@code array} elements
@@ -937,10 +938,10 @@ public final class Arrays extends Static {
     /**
      * Returns an array containing the same elements than the given array, with the content
      * of an other array inserted at the given index.
-     * <p>
-     * If the {@code length} argument is 0, then this method returns the {@code dst}
+     *
+     * <p>If the {@code length} argument is 0, then this method returns the {@code dst}
      * reference unchanged. Otherwise this method creates a new array. In every cases,
-     * the given arrays are never modified.
+     * the given arrays are never modified.</p>
      *
      * @param <T>     The arrays type.
      * @param src     Array to entirely or partially insert into {@code dst}.
@@ -981,10 +982,10 @@ public final class Arrays extends Static {
     /**
      * Returns an array containing the same elements than the given array, with the content
      * of an other array inserted at the given index.
-     * <p>
-     * If the {@code length} argument is 0, then this method returns the {@code dst}
+     *
+     * <p>If the {@code length} argument is 0, then this method returns the {@code dst}
      * reference unchanged. Otherwise this method creates a new array. In every cases,
-     * the given arrays are never modified.
+     * the given arrays are never modified.</p>
      *
      * @param <E>     The type of array elements.
      * @param src     Array to entirely or partially insert into {@code dst}.
@@ -1016,10 +1017,10 @@ public final class Arrays extends Static {
     /**
      * Returns an array containing the same elements than the given array, with the content
      * of an other array inserted at the given index.
-     * <p>
-     * If the {@code length} argument is 0, then this method returns the {@code dst}
+     *
+     * <p>If the {@code length} argument is 0, then this method returns the {@code dst}
      * reference unchanged. Otherwise this method creates a new array. In every cases,
-     * the given arrays are never modified.
+     * the given arrays are never modified.</p>
      *
      * @param src     Array to entirely or partially insert into {@code dst}.
      *                Can be null only if {@code length} is 0.
@@ -1050,10 +1051,10 @@ public final class Arrays extends Static {
     /**
      * Returns an array containing the same elements than the given array, with the content
      * of an other array inserted at the given index.
-     * <p>
-     * If the {@code length} argument is 0, then this method returns the {@code dst}
+     *
+     * <p>If the {@code length} argument is 0, then this method returns the {@code dst}
      * reference unchanged. Otherwise this method creates a new array. In every cases,
-     * the given arrays are never modified.
+     * the given arrays are never modified.</p>
      *
      * @param src     Array to entirely or partially insert into {@code dst}.
      *                Can be null only if {@code length} is 0.
@@ -1084,10 +1085,10 @@ public final class Arrays extends Static {
     /**
      * Returns an array containing the same elements than the given array, with the content
      * of an other array inserted at the given index.
-     * <p>
-     * If the {@code length} argument is 0, then this method returns the {@code dst}
+     *
+     * <p>If the {@code length} argument is 0, then this method returns the {@code dst}
      * reference unchanged. Otherwise this method creates a new array. In every cases,
-     * the given arrays are never modified.
+     * the given arrays are never modified.</p>
      *
      * @param src     Array to entirely or partially insert into {@code dst}.
      *                Can be null only if {@code length} is 0.
@@ -1118,10 +1119,10 @@ public final class Arrays extends Static {
     /**
      * Returns an array containing the same elements than the given array, with the content
      * of an other array inserted at the given index.
-     * <p>
-     * If the {@code length} argument is 0, then this method returns the {@code dst}
+     *
+     * <p>If the {@code length} argument is 0, then this method returns the {@code dst}
      * reference unchanged. Otherwise this method creates a new array. In every cases,
-     * the given arrays are never modified.
+     * the given arrays are never modified.</p>
      *
      * @param src     Array to entirely or partially insert into {@code dst}.
      *                Can be null only if {@code length} is 0.
@@ -1152,10 +1153,10 @@ public final class Arrays extends Static {
     /**
      * Returns an array containing the same elements than the given array, with the content
      * of an other array inserted at the given index.
-     * <p>
-     * If the {@code length} argument is 0, then this method returns the {@code dst}
+     *
+     * <p>If the {@code length} argument is 0, then this method returns the {@code dst}
      * reference unchanged. Otherwise this method creates a new array. In every cases,
-     * the given arrays are never modified.
+     * the given arrays are never modified.</p>
      *
      * @param src     Array to entirely or partially insert into {@code dst}.
      *                Can be null only if {@code length} is 0.
@@ -1186,10 +1187,10 @@ public final class Arrays extends Static {
     /**
      * Returns an array containing the same elements than the given array, with the content
      * of an other array inserted at the given index.
-     * <p>
-     * If the {@code length} argument is 0, then this method returns the {@code dst}
+     *
+     * <p>If the {@code length} argument is 0, then this method returns the {@code dst}
      * reference unchanged. Otherwise this method creates a new array. In every cases,
-     * the given arrays are never modified.
+     * the given arrays are never modified.</p>
      *
      * @param src     Array to entirely or partially insert into {@code dst}.
      *                Can be null only if {@code length} is 0.
@@ -1220,10 +1221,10 @@ public final class Arrays extends Static {
     /**
      * Returns an array containing the same elements than the given array, with the content
      * of an other array inserted at the given index.
-     * <p>
-     * If the {@code length} argument is 0, then this method returns the {@code dst}
+     *
+     * <p>If the {@code length} argument is 0, then this method returns the {@code dst}
      * reference unchanged. Otherwise this method creates a new array. In every cases,
-     * the given arrays are never modified.
+     * the given arrays are never modified.</p>
      *
      * @param src     Array to entirely or partially insert into {@code dst}.
      *                Can be null only if {@code length} is 0.
@@ -1254,10 +1255,10 @@ public final class Arrays extends Static {
     /**
      * Returns an array containing the same elements than the given array, with the content
      * of an other array inserted at the given index.
-     * <p>
-     * If the {@code length} argument is 0, then this method returns the {@code dst}
+     *
+     * <p>If the {@code length} argument is 0, then this method returns the {@code dst}
      * reference unchanged. Otherwise this method creates a new array. In every cases,
-     * the given arrays are never modified.
+     * the given arrays are never modified.</p>
      *
      * @param src     Array to entirely or partially insert into {@code dst}.
      *                Can be null only if {@code length} is 0.
@@ -1309,15 +1310,15 @@ public final class Arrays extends Static {
      * Removes the duplicated elements in the given array. This method should be invoked
      * only for small arrays, typically less than 10 distinct elements. For larger arrays,
      * use {@link java.util.LinkedHashSet} instead.
-     * <p>
-     * This method compares all pair of elements using the {@link Objects#equals(Object, Object)}
+     *
+     * <p>This method compares all pair of elements using the {@link Objects#equals(Object, Object)}
      * method - so null elements are allowed. If duplicated values are found, then only the first
      * occurrence is retained; the second occurrence is removed in-place. After all elements have
      * been compared, this method returns the number of remaining elements in the array. The free
-     * space at the end of the array is padded with {@code null} values.
-     * <p>
-     * Callers can obtain an array of appropriate length using the following idiom.
-     * Note that this idiom will create a new array only if necessary:
+     * space at the end of the array is padded with {@code null} values.</p>
+     *
+     * <p>Callers can obtain an array of appropriate length using the following idiom.
+     * Note that this idiom will create a new array only if necessary:</p>
      *
      * {@preformat java
      *     T[] array = ...;
@@ -1707,10 +1708,10 @@ public final class Arrays extends Static {
     /**
      * Returns {@code true} if the specified array contains the specified reference.
      * The comparisons are performed using the {@code ==} operator.
-     * <p>
-     * This method should be used only for very small arrays, or for searches to be performed
+     *
+     * <p>This method should be used only for very small arrays, or for searches to be performed
      * only once, because it performs a linear search. If more than one search need to be done
-     * on the same array, consider using {@link java.util.IdentityHashMap} instead.
+     * on the same array, consider using {@link java.util.IdentityHashMap} instead.</p>
      *
      * @param  array The array to search in. May be {@code null} and may contains null elements.
      * @param  value The value to search. May be {@code null}.
@@ -1731,10 +1732,10 @@ public final class Arrays extends Static {
     /**
      * Returns {@code true} if the specified array contains the specified value.
      * The comparisons are performed using the {@link Object#equals(Object)} method.
-     * <p>
-     * This method should be used only for very small arrays, or for searches to be performed
+     *
+     * <p>This method should be used only for very small arrays, or for searches to be performed
      * only once, because it performs a linear search. If more than one search need to be done
-     * on the same array, consider using {@link java.util.HashSet} instead.
+     * on the same array, consider using {@link java.util.HashSet} instead.</p>
      *
      * @param  array The array to search in. May be {@code null} and may contains null elements.
      * @param  value The value to search. May be {@code null}.
@@ -1758,10 +1759,10 @@ public final class Arrays extends Static {
      * Returns {@code true} if at least one element in the first array is {@linkplain Object#equals
      * equals} to an element in the second array. The element doesn't need to be at the same index
      * in both array.
-     * <p>
-     * This method should be used only for very small arrays since it may be very slow. If the
+     *
+     * <p>This method should be used only for very small arrays since it may be very slow. If the
      * arrays are large or if an array will be involved in more than one search, consider using
-     * {@link java.util.HashSet} instead.
+     * {@link java.util.HashSet} instead.</p>
      *
      * @param array1 The first array, or {@code null}.
      * @param array2 The second array, or {@code null}.
@@ -1782,7 +1783,7 @@ public final class Arrays extends Static {
 
     /**
      * Returns the concatenation of all given arrays. This method performs the following checks:
-     * <p>
+     *
      * <ul>
      *   <li>If the {@code arrays} argument is {@code null} or contains only {@code null}
      *       elements, then this method returns {@code null}.</li>

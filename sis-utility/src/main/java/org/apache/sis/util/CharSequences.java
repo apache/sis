@@ -16,11 +16,17 @@
  */
 package org.apache.sis.util;
 
+import java.nio.CharBuffer;
+
 import static java.lang.Character.*;
 import static java.util.Arrays.fill;
 import static java.util.Arrays.copyOf;
 import static org.apache.sis.util.Arrays.resize;
 import static org.apache.sis.util.StringBuilders.replace;
+
+// Related to JDK7
+import static org.apache.sis.internal.util.JDK7.lowSurrogate;
+import static org.apache.sis.internal.util.JDK7.highSurrogate;
 
 
 /**
@@ -89,12 +95,12 @@ public final class CharSequences extends Static {
     /**
      * Returns a string of the specified length filled with white spaces.
      * This method tries to return a pre-allocated string if possible.
-     * <p>
-     * This method is typically used for performing right-alignment of text on the
+     *
+     * <p>This method is typically used for performing right-alignment of text on the
      * {@linkplain java.io.Console console} or other device using monospaced font.
      * The {@code length} argument is then calculated by (<var>desired width</var> -
      * <var>used width</var>). Since the used width may be greater than expected,
-     * this method accepts negative {@code length} values as if they were zero.
+     * this method accepts negative {@code length} values as if they were zero.</p>
      *
      * @param  length The string length. Negative values are clamped to 0.
      * @return A string of length {@code length} filled with white spaces.
@@ -195,10 +201,10 @@ public final class CharSequences extends Static {
      * Returns the index within the given character sequence of the first occurrence of the
      * specified character, starting the search at the specified index. If the character is
      * not found, then this method returns -1.
-     * <p>
-     * There is no restriction on the value of {@code fromIndex}. If negative or greater
+     *
+     * <p>There is no restriction on the value of {@code fromIndex}. If negative or greater
      * than the length of the text, then the behavior of this method is the same than the
-     * one documented in {@link String#indexOf(int, int)}.
+     * one documented in {@link String#indexOf(int, int)}.</p>
      *
      * @param  text      The character sequence in which to perform the search, or {@code null}.
      * @param  toSearch  The Unicode code point of the character to search.
@@ -217,13 +223,21 @@ public final class CharSequences extends Static {
             if (fromIndex < 0) {
                 fromIndex = 0;
             }
-            final int length = text.length();
+            int length = text.length();
+            char head  = (char) toSearch;
+            char tail  = (char) 0;
+            if (head != toSearch) { // Outside BMP plane?
+                head = highSurrogate(toSearch);
+                tail = lowSurrogate (toSearch);
+                length--;
+            }
             while (fromIndex < length) {
-                final int c = codePointAt(text, fromIndex);
-                if (c == toSearch) {
-                    return fromIndex;
+                if (text.charAt(fromIndex) == head) {
+                    if (tail == 0 || text.charAt(fromIndex+1) == tail) {
+                        return fromIndex;
+                    }
                 }
-                fromIndex += charCount(c);
+                fromIndex++;
             }
         }
         return -1;
@@ -288,14 +302,14 @@ search:     for (; fromIndex <= stopAt; fromIndex++) {
      * or {@code "\r\n"} starting from the given position. When {@code numLines}
      * occurrences have been found, the index of the first character after the last
      * occurrence is returned.
-     * <p>
-     * IF the {@code numLines} argument is positive, this method searches forward.
+     *
+     * <p>If the {@code numLines} argument is positive, this method searches forward.
      * If negative, this method searches backward. If 0, this method returns the
-     * beginning of the current line.
-     * <p>
-     * If this method reaches the end of {@code text} while searching forward, then
+     * beginning of the current line.</p>
+     *
+     * <p>If this method reaches the end of {@code text} while searching forward, then
      * {@code text.length()} is returned. If this method reaches the beginning of
-     * {@code text} while searching backward, then 0 is returned.
+     * {@code text} while searching backward, then 0 is returned.</p>
      *
      * @param  text      The string in which to skip a determined amount of lines.
      * @param  numLines  The number of lines to skip. Can be positive, zero or negative.
@@ -309,7 +323,7 @@ search:     for (; fromIndex <= stopAt; fromIndex++) {
         /*
          * Go backward if the number of lines is negative.
          * No need to use the codePoint API because we are
-         * looking only for '\r' and '\n' characters.
+         * looking only for characters in the BMP plane.
          */
         if (numLines <= 0) {
             do {
@@ -356,10 +370,10 @@ search:     for (; fromIndex <= stopAt; fromIndex++) {
      * by the end of the text. The subsequences in the array are in the order in which they occur
      * in the given text. If the character is not found in the input, then the resulting array has
      * just one element, which is the whole given text.
-     * <p>
-     * This method is similar to the standard {@link String#split(String)} method except for the
-     * following:
-     * <p>
+     *
+     * <p>This method is similar to the standard {@link String#split(String)} method except for the
+     * following:</p>
+     *
      * <ul>
      *   <li>It accepts generic character sequences.</li>
      *   <li>It accepts {@code null} argument, in which case an empty array is returned.</li>
@@ -418,16 +432,23 @@ search:     for (; fromIndex <= stopAt; fromIndex++) {
      * EOL characters can be any of {@code "\r"}, {@code "\n"} or {@code "\r\n"} sequences.
      * Each element in the returned array will be a single line. If the given text is already
      * a single line, then this method returns a singleton containing only the given text.
-     * <p>
-     * At the difference of <code>{@linkplain #split split}(toSplit, '\n’)</code>,
-     * this method does not remove whitespaces.
+     *
+     * <p>Notes:</p>
+     * <ul>
+     *   <li>At the difference of <code>{@linkplain #split split}(toSplit, '\n’)</code>,
+     *       this method does not remove whitespaces.</li>
+     *   <li>This method does not check for Unicode
+     *       {@linkplain Characters#LINE_SEPARATOR line separator} and
+     *       {@linkplain Characters#PARAGRAPH_SEPARATOR paragraph separator}.</li>
+     * </ul>
      *
      * {@note Prior JDK8 this method was relatively cheap because all string instances created by
-     * <code>String.substring(int,int)</code> shared the same <code>char[]</code> internal array.
-     * However since JDK8, the new <code>String</code> implementation copies the data in new arrays.
-     * Consequently it is better to use index rather than this method for splitting large
-     * <code>String</code>s. However this method still useful for other <code>CharSequence</code>
-     * implementations providing an efficient <code>subSequence(int,int)</code> method.}
+     *        <code>String.substring(int,int)</code> shared the same <code>char[]</code> internal
+     *        array. However since JDK8, the new <code>String</code> implementation copies the data
+     *        in new arrays. Consequently it is better to use index rather than this method for
+     *        splitting large <code>String</code>s. However this method still useful for other
+     *        <code>CharSequence</code> implementations providing an efficient
+     *        <code>subSequence(int,int)</code> method.}
      *
      * @param  text The multi-line text from which to get the individual lines, or {@code null}.
      * @return The lines in the text, or an empty array if the given text was null.
@@ -439,8 +460,8 @@ search:     for (; fromIndex <= stopAt; fromIndex++) {
             return EMPTY_ARRAY;
         }
         /*
-         * This method is implemented on top of String.indexOf(int,int), which is the
-         * fatest method available while taking care of the complexity of code points.
+         * This method is implemented on top of String.indexOf(int,int),
+         * assuming that it will be faster for String and StringBuilder.
          */
         int lf = indexOf(text, '\n', 0);
         int cr = indexOf(text, '\r', 0);
@@ -637,7 +658,7 @@ search:     for (; fromIndex <= stopAt; fromIndex++) {
      * Formats the given elements as a (typically) comma-separated list. This method is similar to
      * {@link java.util.AbstractCollection#toString()} or {@link java.util.Arrays#toString(Object[])}
      * except for the following:
-     * <p>
+     *
      * <ul>
      *   <li>There is no leading {@code '['} or trailing {@code ']'} characters.</li>
      *   <li>Null elements are ignored instead than formatted as {@code "null"}.</li>
@@ -685,9 +706,9 @@ search:     for (; fromIndex <= stopAt; fromIndex++) {
     /**
      * Replaces some Unicode characters by ASCII characters on a "best effort basis".
      * For example the {@code 'é'} character is replaced by {@code 'e'} (without accent).
-     * <p>
-     * The current implementation replaces only the characters in the range {@code 00C0}
-     * to {@code 00FF}, inclusive. Other characters are left unchanged.
+     *
+     * <p>The current implementation replaces only the characters in the range {@code 00C0}
+     * to {@code 00FF}, inclusive. Other characters are left unchanged.</p>
      *
      * @param  text The text to scan for Unicode characters to replace by ASCII characters,
      *         or {@code null}.
@@ -703,12 +724,12 @@ search:     for (; fromIndex <= stopAt; fromIndex++) {
     /**
      * Returns a text with leading and trailing white spaces omitted. White spaces are identified
      * by the {@link Character#isWhitespace(int)} method.
-     * <p>
-     * This method is similar in purpose to {@link String#trim()}, except that the later considers
+     *
+     * <p>This method is similar in purpose to {@link String#trim()}, except that the later considers
      * every ASCII control codes below 32 to be a whitespace. This have the side effect of removing
      * {@linkplain org.apache.sis.io.X364 X3.64} escape sequences as well. Users should invoke this
      * {@code CharSequences.trimWhitespaces} method instead if they need to preserve X3.64 escape
-     * sequences.
+     * sequences.</p>
      *
      * @param  text The text from which to remove leading and trailing white spaces, or {@code null}.
      * @return A characters sequence with leading and trailing white spaces removed,
@@ -726,11 +747,11 @@ search:     for (; fromIndex <= stopAt; fromIndex++) {
     /**
      * Returns a sub-sequence with leading and trailing white spaces omitted.
      * White spaces are identified by the {@link Character#isWhitespace(int)} method.
-     * <p>
-     * Invoking this method is functionally equivalent to invoking
+     *
+     * <p>Invoking this method is functionally equivalent to invoking
      * <code>{@linkplain #trimWhitespaces(CharSequence) trimWhitespaces}(text.subSequence(lower,
      * upper))</code>, except that only one call to {@link CharSequence#subSequence(int, int)}
-     * is performed instead of two.
+     * is performed instead of two.</p>
      *
      * @param  text  The text from which to remove leading and trailing white spaces.
      * @param  lower Index of the first character to consider for inclusion in the sub-sequence.
@@ -757,11 +778,11 @@ search:     for (; fromIndex <= stopAt; fromIndex++) {
      * Trims the fractional part of the given formatted number, provided that it doesn't change
      * the value. This method assumes that the number is formatted in the US locale, typically
      * by the {@link Double#toString(double)} method.
-     * <p>
-     * More specifically if the given value ends with a {@code '.'} character followed by a
+     *
+     * <p>More specifically if the given value ends with a {@code '.'} character followed by a
      * sequence of {@code '0'} characters, then those characters are omitted. Otherwise this
      * method returns the string unchanged. This is a "<cite>all or nothing</cite>" method:
-     * either the fractional part is completely removed, or either it is left unchanged.
+     * either the fractional part is completely removed, or either it is left unchanged.</p>
      *
      * {@section Examples}
      * This method returns {@code "4"} if the given value is {@code "4."}, {@code "4.0"} or
@@ -798,9 +819,9 @@ search:     for (; fromIndex <= stopAt; fromIndex++) {
      * Makes sure that the {@code text} string is not longer than {@code maxLength} characters.
      * If {@code text} is not longer, then it is returned unchanged. Otherwise this method returns
      * a copy of {@code text} with some characters substituted by the {@code "(…)"} string.
-     * <p>
-     * If the text needs to be shortened, then this method tries to apply the above-cited
-     * substitution between two words. For example, the following string:
+     *
+     * <p>If the text needs to be shortened, then this method tries to apply the above-cited
+     * substitution between two words. For example, the following string:</p>
      *
      * <blockquote>
      *   "This sentence given as an example is way too long to be included in a short name."
@@ -894,15 +915,15 @@ searchWordBreak:    while (true) {
      * like an English sentence. This heuristic method performs the following steps:
      *
      * <ol>
-     *   <li><p>Invoke {@link #camelCaseToWords(CharSequence, boolean)}, which separate the words
+     *   <li>Invoke {@link #camelCaseToWords(CharSequence, boolean)}, which separate the words
      *     on the basis of character case. For example {@code "transferFunctionType"} become
-     *     "<cite>transfer function type</cite>". This works fine for ISO 19115 identifiers.</p></li>
+     *     "<cite>transfer function type</cite>". This works fine for ISO 19115 identifiers.</li>
      *
-     *   <li><p>Next replace all occurrence of {@code '_'} by spaces in order to take in account
+     *   <li>Next replace all occurrence of {@code '_'} by spaces in order to take in account
      *     an other common naming convention, which uses {@code '_'} as a word separator. This
-     *     convention is used by NetCDF attributes like {@code "project_name"}.</p></li>
+     *     convention is used by NetCDF attributes like {@code "project_name"}.</li>
      *
-     *   <li><p>Finally ensure that the first character is upper-case.</p></li>
+     *   <li>Finally ensure that the first character is upper-case.</li>
      * </ol>
      *
      * {@section Exception to the above rules}
@@ -910,9 +931,9 @@ searchWordBreak:    while (true) {
      * character, then the identifier is returned "as is" except for the {@code '_'} characters
      * which are replaced by {@code '-'}. This work well for identifiers like {@code "UTF-8"} or
      * {@code "ISO-LATIN-1"} for example.
-     * <p>
-     * Note that those heuristic rules may be modified in future SIS versions,
-     * depending on the practical experience gained.
+     *
+     * <p>Note that those heuristic rules may be modified in future SIS versions,
+     * depending on the practical experience gained.</p>
      *
      * @param  identifier An identifier with no space, words begin with an upper-case character,
      *         or {@code null}.
@@ -951,15 +972,15 @@ searchWordBreak:    while (true) {
      * if the given string is {@code "PixelInterleavedSampleModel"}, then this method returns
      * "<cite>Pixel Interleaved Sample Model</cite>" or "<cite>Pixel interleaved sample model</cite>"
      * depending on the value of the {@code toLowerCase} argument.
-     * <p>
-     * If {@code toLowerCase} is {@code false}, then this method inserts spaces but does not change
+     *
+     * <p>If {@code toLowerCase} is {@code false}, then this method inserts spaces but does not change
      * the case of characters. If {@code toLowerCase} is {@code true}, then this method changes
      * {@linkplain Character#toLowerCase(int) to lower case} the first character after each spaces
      * inserted by this method (note that this intentionally exclude the very first character in
      * the given string), except if the second character {@linkplain Character#isUpperCase(int)
-     * is upper case}, in which case the word is assumed an acronym.
-     * <p>
-     * The given string is usually a programmatic identifier like a class name or a method name.
+     * is upper case}, in which case the word is assumed an acronym.</p>
+     *
+     * <p>The given string is usually a programmatic identifier like a class name or a method name.</p>
      *
      * @param  identifier An identifier with no space, words begin with an upper-case character.
      * @param  toLowerCase {@code true} for changing the first character of words to lower case,
@@ -1023,9 +1044,9 @@ searchWordBreak:    while (true) {
      * the words are separated by the camel case convention, the {@code '_'} character, or any
      * character which is not a {@linkplain Character#isJavaIdentifierPart(int) java identifier
      * part} (including spaces).
-     * <p>
-     * <b>Examples:</b> given {@code "northEast"}, this method returns {@code "NE"}.
-     * Given {@code "Open Geospatial Consortium"}, this method returns {@code "OGC"}.
+     *
+     * <p><b>Examples:</b> given {@code "northEast"}, this method returns {@code "NE"}.
+     * Given {@code "Open Geospatial Consortium"}, this method returns {@code "OGC"}.</p>
      *
      * @param  text The text for which to create an acronym, or {@code null}.
      * @return The acronym, or {@code null} if the given text was null.
@@ -1081,10 +1102,10 @@ searchWordBreak:    while (true) {
      * built from at least one character of each word in the {@code words} string. More than
      * one character from the same word may appear in the acronym, but they must always
      * be the first consecutive characters. The comparison is case-insensitive.
-     * <p>
-     * <b>Example:</b> given the string {@code "Open Geospatial Consortium"}, the following
+     *
+     * <p><b>Example:</b> given the string {@code "Open Geospatial Consortium"}, the following
      * strings are recognized as acronyms: {@code "OGC"}, {@code "ogc"}, {@code "O.G.C."},
-     * {@code "OpGeoCon"}.
+     * {@code "OpGeoCon"}.</p>
      *
      * @param  acronym A possible acronym of the sequence of words.
      * @param  words The sequence of words.
@@ -1167,9 +1188,9 @@ cmp:    while (ia < lga) {
     /**
      * Returns {@code true} if the given string contains only upper case letters or digits.
      * A few punctuation characters like {@code '_'} and {@code '.'} are also accepted.
-     * <p>
-     * This method is used for identifying character strings that are likely to be code
-     * like {@code "UTF-8"} or {@code "ISO-LATIN-1"}.
+     *
+     * <p>This method is used for identifying character strings that are likely to be code
+     * like {@code "UTF-8"} or {@code "ISO-LATIN-1"}.</p>
      *
      * @see #isJavaIdentifier(CharSequence)
      */
@@ -1248,9 +1269,9 @@ cmp:    while (ia < lga) {
     /**
      * Returns {@code true} if the given code points are equal, ignoring case.
      * This method implements the same comparison algorithm than String#equalsIgnoreCase(String).
-     * <p>
-     * This method does not verify if {@code c1 == c2}. This check should have been done
-     * by the caller, since the caller code is a more optimal place for this check.
+     *
+     * <p>This method does not verify if {@code c1 == c2}. This check should have been done
+     * by the caller, since the caller code is a more optimal place for this check.</p>
      */
     private static boolean equalsIgnoreCase(int c1, int c2) {
         c1 = toUpperCase(c1);
@@ -1493,11 +1514,11 @@ cmp:    while (ia < lga) {
      * Returns the token starting at the given offset in the given text. For the purpose of this
      * method, a "token" is any sequence of consecutive characters of the same type, as defined
      * below.
-     * <p>
-     * Let define <var>c</var> as the first non-blank character located at an index equals or
+     *
+     * <p>Let define <var>c</var> as the first non-blank character located at an index equals or
      * greater than the given offset. Then the characters that are considered of the same type
-     * are:
-     * <p>
+     * are:</p>
+     *
      * <ul>
      *   <li>If <var>c</var> is a
      *       {@linkplain Character#isJavaIdentifierStart(int) Java identifier start},
@@ -1542,5 +1563,39 @@ cmp:    while (ia < lga) {
             }
         }
         return text.subSequence(fromIndex, upper);
+    }
+
+    /**
+     * Copies a sequence of characters in the given {@code char[]} array.
+     *
+     * @param src       The character sequences from which to copy characters.
+     * @param srcOffset Index of the first character from {@code src} to copy.
+     * @param dst       The array where to copy the characters.
+     * @param dstOffset Index where to write the first character in {@code dst}.
+     * @param length    Number of characters to copy.
+     *
+     * @see String#getChars(int, int, char[], int)
+     * @see StringBuilder#getChars(int, int, char[], int)
+     * @see StringBuffer#getChars(int, int, char[], int)
+     * @see CharBuffer#get(char[], int, int)
+     */
+    public static void copyChars(final CharSequence src, int srcOffset,
+                                 final char[] dst, int dstOffset, int length)
+    {
+        ArgumentChecks.ensurePositive("length", length);
+        if (src instanceof String) {
+            ((String) src).getChars(srcOffset, srcOffset + length, dst, dstOffset);
+        } else if (src instanceof StringBuilder) {
+            ((StringBuilder) src).getChars(srcOffset, srcOffset + length, dst, dstOffset);
+        } else if (src instanceof StringBuffer) {
+            ((StringBuffer) src).getChars(srcOffset, srcOffset + length, dst, dstOffset);
+//      } else if (src instanceof CharBuffer) {
+// JDK7     ((CharBuffer) src).subSequence(srcOffset, srcOffset + length).get(dst, dstOffset, length);
+        } else {
+            while (length != 0) {
+                dst[dstOffset++] = src.charAt(srcOffset++);
+                length--;
+            }
+        }
     }
 }

@@ -37,9 +37,9 @@ public final strictfp class ReferenceQueueConsumerTest extends TestCase {
      * to be thrown even if invoked <em>before</em> {@link ReferenceQueue#remove()} put the
      * thread in a waiting state. This behavior is documented in {@link Object#wait()}, but
      * the reference queue javadoc is silent on this topic.
-     * <p>
-     * This method is not a test of the SIS library, but rather a verification of our JDK
-     * library interpretation.
+     *
+     * <p>This method is not a test of the SIS library, but rather a verification of our JDK
+     * library interpretation.</p>
      *
      * @throws InterruptedException This is the excepted exception.
      */

@@ -30,9 +30,9 @@ import org.opengis.util.InternationalString;
  * for the {@link String} class whenever an attribute needs to be internationalization capable.
  * The default value (as returned by {@link #toString()} and other {@link CharSequence} methods)
  * is the string in the current {@linkplain Locale#getDefault() system-wide default locale}.
- * <p>
- * The {@linkplain Comparable natural ordering} is defined by the value returned by
- * {@link #toString()}.
+ *
+ * <p>The {@linkplain Comparable natural ordering} is defined by the value returned by
+ * {@link #toString()}.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.1)
@@ -134,9 +134,9 @@ public abstract class AbstractInternationalString implements InternationalString
     /**
      * Returns this string in the default locale. Invoking this method is equivalent to invoking
      * <code>{@linkplain #toString(Locale) toString}({@linkplain Locale#getDefault()})</code>.
-     * <p>
-     * All methods from {@link CharSequence} operate on this string.
-     * This string is also used as the criterion for {@linkplain Comparable natural ordering}.
+     *
+     * <p>All methods from {@link CharSequence} operate on this string.
+     * This string is also used as the criterion for {@linkplain Comparable natural ordering}.</p>
      *
      * @return The string in the default locale.
      */

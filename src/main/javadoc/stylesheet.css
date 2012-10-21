@@ -1,36 +1,10 @@
 /*
- * Javadoc style sheet
+ * This file is divided in two parts.   The first part is specific to the SIS project
+ * and defines the styles used by the developers in the javadoc comments.  The second
+ * part is a modified copy of the default stylesheet provided by the Javadoc tools.
+ * Note that the second part is totally different between JDK6 and JDK7.
  */
 
-/* Page background color */
-body { background-color: #FFFFFF; color:#000000 }
-
-/* Headings */
-h1 { font-size: 145% }
-
-/* Table colors */
-.TableHeadingColor     { background: #CCCCFF; color:#000000 } /* Dark mauve */
-.TableSubHeadingColor  { background: #EEEEFF; color:#000000 } /* Light mauve */
-.TableRowColor         { background: #FFFFFF; color:#000000 } /* White */
-
-/* Font used in left-hand frame lists */
-.FrameTitleFont   { font-size: 100%; font-family: Helvetica, Arial, sans-serif; color:#000000 }
-.FrameHeadingFont { font-size:  90%; font-family: Helvetica, Arial, sans-serif; color:#000000 }
-.FrameItemFont    { font-size:  90%; font-family: Helvetica, Arial, sans-serif; color:#000000 }
-
-/* Navigation bar fonts and colors */
-.NavBarCell1    { background-color:#EEEEFF; color:#000000} /* Light mauve */
-.NavBarCell1Rev { background-color:#00008B; color:#FFFFFF} /* Dark Blue */
-.NavBarFont1    { font-family: Arial, Helvetica, sans-serif; color:#000000;color:#000000;}
-.NavBarFont1Rev { font-family: Arial, Helvetica, sans-serif; color:#FFFFFF;color:#FFFFFF;}
-
-.NavBarCell2    { font-family: Arial, Helvetica, sans-serif; background-color:#FFFFFF; color:#000000}
-.NavBarCell3    { font-family: Arial, Helvetica, sans-serif; background-color:#FFFFFF; color:#000000}
-
-
-/*
- * Following is specific to the SIS project.
- */
 /*
  * Table without vertical space between rows, a little bit of space between columns,
  * a light background color and a header with a darker background color. The header
@@ -38,21 +12,25 @@ h1 { font-size: 145% }
  */
 table.sis {
   background-color: #F4F8FF;
-  border-spacing: 0pt;
-  border-style: solid;
-  white-space: nowrap;
+  border-color:     Black;
+  border-style:     solid;
+  border-width:     1pt;
+  border-spacing:   0pt;
+  margin:           12pt 0 12pt 0;
+  padding:          0;
+  width:            auto;
 }
 
 table.sis tr th {
-  background-color: #B9DCFF;
+  background-color:    #B9DCFF;
+  border-bottom-color: Black;
   border-bottom-style: solid;
   border-bottom-width: 1pt;
-  padding: 3pt;
+  padding:             3pt;
 }
 
 table.sis tr td {
-  padding-left:  6pt;
-  padding-right: 6pt;
+  padding:        1.5pt 9pt;
   vertical-align: text-top;
 }
 
@@ -102,3 +80,78 @@ table.compact tr td.onleft {
   text-align:   left;
   font-weight:  normal;
 }
+
+/*
+ * Formatting if the {@section} custom javadoc tag.
+ */
+div.block h5 {
+  margin-top:   15pt;
+  margin-bottom: 3pt;
+}
+
+div.block h6 {
+  margin-top:   15pt;
+  margin-bottom: 3pt;
+}
+
+/*
+ * Bullet and ordered lists. Put some space before and after the list.
+ * Listes of the "verbose" class also have some space betweem items.
+ */
+div.block ul,
+div.block ol {
+  margin-top:    9pt;
+  margin-bottom: 9pt;
+}
+
+div.block ul {
+  list-style-type: square;
+}
+
+ul.verbose li {
+  margin-top:    3pt;
+  margin-bottom: 3pt;
+}
+
+/*
+ * Code example formatted by the {@preformat} taglet.
+ * Overrides the <pre> definition provided by the Javadoc tools.
+ */
+div.block pre {
+  font-size: 1em;
+}
+
+
+
+
+/* ----------------------------------------------------------------------
+ * End of SIS-specific part. The remaining of this file is derived from
+ * the Javadoc default stylesheet for the target platform (JDK6 or JDK7).
+ *
+ * The styles in this file are declared in their approximative usage order,
+ * from top to bottom: frame, navigation bar, class description, details...
+ */
+/* Page background color */
+body { background-color: #FFFFFF; color:#000000 }
+
+/* Headings */
+h1 { font-size: 145% }
+
+/* Table colors */
+.TableHeadingColor     { background: #CCCCFF; color:#000000 } /* Dark mauve */
+.TableSubHeadingColor  { background: #EEEEFF; color:#000000 } /* Light mauve */
+.TableRowColor         { background: #FFFFFF; color:#000000 } /* White */
+
+/* Font used in left-hand frame lists */
+.FrameTitleFont   { font-size: 100%; font-family: Helvetica, Arial, sans-serif; color:#000000 }
+.FrameHeadingFont { font-size:  90%; font-family: Helvetica, Arial, sans-serif; color:#000000 }
+.FrameItemFont    { font-size:  90%; font-family: Helvetica, Arial, sans-serif; color:#000000 }
+
+/* Navigation bar fonts and colors */
+.NavBarCell1    { background-color:#EEEEFF; color:#000000} /* Light mauve */
+.NavBarCell1Rev { background-color:#00008B; color:#FFFFFF} /* Dark Blue */
+.NavBarFont1    { font-family: Arial, Helvetica, sans-serif; color:#000000;color:#000000;}
+.NavBarFont1Rev { font-family: Arial, Helvetica, sans-serif; color:#FFFFFF;color:#FFFFFF;}
+
+.NavBarCell2    { font-family: Arial, Helvetica, sans-serif; background-color:#FFFFFF; color:#000000}
+.NavBarCell3    { font-family: Arial, Helvetica, sans-serif; background-color:#FFFFFF; color:#000000}

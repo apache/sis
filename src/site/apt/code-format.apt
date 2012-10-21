@@ -1,0 +1,73 @@
+                             -----------------------------
+                                     Code formatting
+                             -----------------------------
+
+
+Code formatting
+
+  Apache SIS uses the standard Java conventions, except for the 80 characters line length restriction.
+  Other exceptions to the coding conventions may occur when tabular formatting can improve readability,
+  as in the example below:
+
+-----------------------
+if (x < xmin) xmin = x;
+if (x > xmax) xmax = x;
+if (y < ymin) ymin = y;
+if (y > ymax) ymax = y;
+-----------------------
+
+  Many mathematical operations in a two-dimensional space (or more) have symmetry.
+  Formatting the code in a way that emphase their symmetrical nature, for example
+  aligning identical terms in columns, can help to understand the overall pattern
+  and to identify bugs. The decision to use standard or tabular format is made on
+  a case-by-case basis. Of course, tabular format shall not be abused.
+
+
+* HTML in Javadoc
+
+  HTML tags and entities shall be used only when there is no equivalent Javadoc tag.
+  In addition to the standard Javadoc tags, a few
+  {{{./sis-build-helper/index.html}SIS-specific Javadoc tags}} are available.
+  For example:
+
+   * Instead of "<<<\<code\>>>>Foo<<<\</code\>>>>", use "<<<\{@code Foo\}>>>".
+
+   * Instead of "<<<a &lt; b &lt; c>>>", use "<<<\{@literal a \< b \< c\}>>>".
+
+   * Instead of "<<<\<pre\>>>>" for a Java listing, use "<<<\{@preformat java\}>>>"
+     (this Javadoc tag is specific to Apache SIS).
+
+
+** Paragraphs
+
+  Usages of the <<<\<p\>>>> tag should be relatively rare.
+  Do <<not>> use <<<\<p\>>>> for the first paragraph in a package, class or member documentation,
+  or for the first paragraph after a <<<\</ul\>>>>, <<<\</ol\>>>>, <<<\</table\>>>>,
+  <<<\</blockquote\>>>>, <<<\</pre\>>>>, <<<\{@preformat\}>>> or <<<\{@section\}>>> element.
+  The <<<\<p\>>>> tag shall be used only for separating a new paragraph from a previous one.
+  In such cases, <<<\<p\>>>> shall have a matching <<<\</p\>>>> tag at the paragraph end
+  in order to form valid HTML.
+
+
+** Styling
+
+  Avoid using HTML attributes other than <<<class>>> as much as possible.
+  Instead, rely on styling. Some HTML tags having a style definition in Apache SIS are:
+
+*---------------------------------+--------------------------------------------------------------------------------------------+
+|| HTML tag                       || Description                                                                              ||
+*---------------------------------+--------------------------------------------------------------------------------------------+
+| <<<\<table class="sis"\>>>>     | Table with a border, blue headers, light background and some space between columns.        |
+*---------------------------------+--------------------------------------------------------------------------------------------+
+| <<<\<th class="hsep"\>>>>       | In SIS tables, draw a line on the top border. Used for drawing table section separators.   |
+*---------------------------------+--------------------------------------------------------------------------------------------+
+| <<<\<th class="sep"\>>>>        | In SIS tables, draw a bright line on the left border. Used for drawing column separators.  |
+*---------------------------------+--------------------------------------------------------------------------------------------+
+| <<<\<td class="sep"\>>>>        | In SIS tables, draw a bright line on the left border. Used for drawing column separators.  |
+*---------------------------------+--------------------------------------------------------------------------------------------+
+| <<<\<table class="compact"\>>>> | Table without border and no space between rows. Used for lists with columns alignment.     |
+*---------------------------------+--------------------------------------------------------------------------------------------+
+| <<<\<ul\>>>> and <<<\<ol\>>>>   | Default list styles without space between items (suitable for compact lists).              |
+*---------------------------------+--------------------------------------------------------------------------------------------+
+| <<<\<ul class="verbose"\>>>>    | A list style with space between items. Used for lists having verbose (multi-lines) items.  |
+*---------------------------------+--------------------------------------------------------------------------------------------+

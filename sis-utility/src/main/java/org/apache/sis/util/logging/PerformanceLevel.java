@@ -29,15 +29,15 @@ import static org.apache.sis.util.ArgumentChecks.ensurePositive;
  * {@link #SLOWER} and {@link #SLOWEST} - are provided in order to log only the events taking
  * more than some time duration. For example the console could log only the slowest events,
  * while a file could log all events considered slow.
- * <p>
- * Every levels defined in this class have a {@linkplain #intValue() value} between the
+ *
+ * <p>Every levels defined in this class have a {@linkplain #intValue() value} between the
  * {@link Level#FINE} and {@link Level#CONFIG} values. Consequently performance logging are
  * disabled by default, and enabling them imply enabling configuration logging too. This is
- * done that way because the configuration typically have a significant impact on performance.
+ * done that way because the configuration typically have a significant impact on performance.</p>
  *
  * {@section Enabling performance logging}
  * Performance logging can be enabled in various ways. Among others:
- * <p>
+ *
  * <ul>
  *   <li>The {@code $JAVA_HOME/lib/logging.properties} file can be edited in order to log
  *       messages at the {@code FINE} level, at least for the packages of interest.</li>
@@ -139,7 +139,7 @@ public final class PerformanceLevel extends Level {
     /**
      * Sets the minimal duration for logging an event at this level. Invoking this method
      * may have an indirect impact of other performance levels:
-     * <p>
+     *
      * <ul>
      *   <li>If the given duration is longer than the duration of slower levels, then the later
      *       are also set to the given duration.</li>
@@ -148,8 +148,8 @@ public final class PerformanceLevel extends Level {
      * </ul>
      *
      * {@note The duration of the <code>PERFORMANCE</code> level can not be modified: it is
-     * always zero. However invoking this method on the <code>PERFORMANCE</code> field will
-     * ensure that every <code>SLOW*</code> levels will have at least the given duration.}
+     *        always zero. However invoking this method on the <code>PERFORMANCE</code> field will
+     *        ensure that every <code>SLOW*</code> levels will have at least the given duration.}
      *
      * @param  duration The minimal duration.
      * @param  unit The unit of the given duration value.

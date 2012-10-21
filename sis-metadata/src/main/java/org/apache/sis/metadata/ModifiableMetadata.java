@@ -39,8 +39,8 @@ import static org.apache.sis.util.collection.Collections.hashMapCapacity;
  * {@section Guidline for implementors}
  * Subclasses should follow the pattern below for every {@code get} and {@code set} methods,
  * with a different processing for singleton value or for {@linkplain Collection collections}.
- * <p>
- * For singleton value:
+ *
+ * <p>For singleton value:</p>
  *
  * {@preformat java
  *     private Foo property;
@@ -116,7 +116,7 @@ public abstract class ModifiableMetadata {
     /**
      * Copies the content of one list ({@code source}) into an other ({@code target}).
      * This method performs the following steps:
-     * <p>
+     *
      * <ul>
      *   <li>Invokes {@link #checkWritePermission()} in order to ensure that this metadata is
      *       modifiable.</li>
@@ -161,7 +161,7 @@ public abstract class ModifiableMetadata {
     /**
      * Copies the content of one Set ({@code source}) into an other ({@code target}).
      * This method performs the following steps:
-     * <p>
+     *
      * <ul>
      *   <li>Invokes {@link #checkWritePermission()} in order to ensure that this metadata is
      *       modifiable.</li>
@@ -206,7 +206,7 @@ public abstract class ModifiableMetadata {
     /**
      * Copies the content of one collection ({@code source}) into an other ({@code target}).
      * This method performs the following steps:
-     * <p>
+     *
      * <ul>
      *   <li>Invokes {@link #checkWritePermission()} in order to ensure that this metadata is
      *       modifiable.</li>
@@ -421,12 +421,12 @@ public abstract class ModifiableMetadata {
      * return only two values: <code>{@linkplain Set}.class</code> if the attribute should not
      * accept duplicated values, or <code>{@linkplain List}.class</code> otherwise. Future SIS
      * versions may accept other types.
-     * <p>
-     * The default implementation returns <code>{@linkplain Set}.class</code> if the element type
+     *
+     * <p>The default implementation returns <code>{@linkplain Set}.class</code> if the element type
      * is assignable to {@link Enum} or {@link CodeList}, and <code>{@linkplain List}.class</code>
      * otherwise. Subclasses can override this method for choosing different kind of collections.
      * <em>Note however that {@link Set} should be used only with immutable element types</em>,
-     * for {@linkplain Object#hashCode() hash code} stability.
+     * for {@linkplain Object#hashCode() hash code} stability.</p>
      *
      * @param  <E> The type of elements in the collection to be created.
      * @param  elementType The type of elements in the collection to be created.

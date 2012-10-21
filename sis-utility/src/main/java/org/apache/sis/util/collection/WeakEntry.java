@@ -179,7 +179,7 @@ abstract class WeakEntry<E> extends WeakReference<E> implements Disposable {
     }
 
     /**
-     * IF the number of elements is lower than this threshold, then the table should be
+     * If the number of elements is lower than this threshold, then the table should be
      * rehashed for saving space.
      *
      * @param  capacity The table capacity.
@@ -190,7 +190,7 @@ abstract class WeakEntry<E> extends WeakReference<E> implements Disposable {
     }
 
     /**
-     * IF the number of elements is upper than this threshold, then the table should be
+     * If the number of elements is upper than this threshold, then the table should be
      * rehashed for better performance.
      *
      * @param  capacity The table capacity.
