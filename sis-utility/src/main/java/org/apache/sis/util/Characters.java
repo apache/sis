@@ -18,7 +18,10 @@ package org.apache.sis.util;
 
 
 /**
- * Static methods working on {@code char} values.
+ * Static methods working on {@code char} values, and some character constants.
+ * Apache SIS uses Unicode symbols directly in the source code for easier reading,
+ * except for some symbols that are difficult to differentiate from other similar
+ * symbols. For those symbols, constants are declared in this class.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
@@ -26,6 +29,24 @@ package org.apache.sis.util;
  * @module
  */
 public final class Characters extends Static {
+    /**
+     * Hyphen character ('\u2010', Unicode: <code>\\u2010</code>).
+     * This code tells to {@link org.apache.sis.io.LineWrapFormatter}
+     * that a line break is allowed to be inserted after this character.
+     *
+     * <p>For non-breaking hyphen, use the <code>'\\u2011'</code> character.</p>
+     */
+    public static final char HYPHEN = '\u2010';
+
+    /**
+     * Hyphen character to be visible only if there is a line break to insert after it.
+     * Otherwise this character is invisible. When visible, the graphical symbol is similar
+     * to the {@link #HYPHEN} character.
+     * <p>
+     * This is equivalent to the HTML {@code &shy;} entity.
+     */
+    public static final char SOFT_HYPHEN = '\u00AD';
+
     /**
      * The <cite>no-break space</cite> (Unicode: <code>\\u00A0</code>, HTML: {@code &nbsp;}).
      * Apache SIS uses Unicode symbols directly in the source code for easier reading,
