@@ -26,6 +26,7 @@ import org.apache.sis.util.ArgumentChecks;
 
 import static org.apache.sis.util.Characters.LINE_SEPARATOR;
 import static org.apache.sis.util.Characters.PARAGRAPH_SEPARATOR;
+import static org.apache.sis.util.Characters.isLineOrParagraphSeparator;
 
 
 /**
@@ -89,6 +90,29 @@ public abstract class FilteredAppendable implements Appendable {
      */
     static boolean isLineSeparator(final char c) {
         return (c == '\n') || (c == '\r') || (c == LINE_SEPARATOR) || (c == PARAGRAPH_SEPARATOR);
+    }
+
+    /**
+     * Finds the line separator used in the given character sequence portion, or returns
+     * {@code null} if unknown. This method is designed for invocation at the beginning
+     * of {@code append(CharSequence, ...), before the characters are effectively read.
+     */
+    final String lineSeparator(final CharSequence sequence, int start, final int end) {
+        if (isHighSurrogate()) {
+            start++; // Skip invalid character.
+        }
+        while (start < end) {
+            final int c = Character.codePointAt(sequence, start);
+            final int b = start;
+            start += Character.charCount(c);
+            if (isLineOrParagraphSeparator(c)) {
+                if (c == '\r' && (start < end) && sequence.charAt(start) == '\n') {
+                    start++;
+                }
+                return sequence.subSequence(b, start).toString();
+            }
+        }
+        return null;
     }
 
     /**

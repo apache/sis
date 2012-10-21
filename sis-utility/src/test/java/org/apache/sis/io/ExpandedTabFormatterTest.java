@@ -22,7 +22,7 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests the {@link ExpandedTabFormatter} implementations.
+ * Tests the {@link ExpandedTabFormatter} implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
