@@ -47,11 +47,11 @@ public final strictfp class EndOfLineFormatterTest extends FormatterTestCase {
             assertEquals("getLineSeparator", " ", ((EndOfLineFormatter) out).getLineSeparator());
         }
         assertSame(out, out.append("Le vrai" + lineSeparator + "policitien, "));
-        assertSame(out, out.append("c'est celui\r\nqui\r"));
+        assertSame(out, out.append("c'est celui\r\nqui\r")); // Line separator broken on two method calls.
         assertSame(out, out.append("\narrive à garder " + lineSeparator));
         assertSame(out, out.append("son\ridéal   " + lineSeparator + 't'));
-        assertSame(out, out.append("out en perdant\r\ns"));
-        assertSame(out, out.append("es illusions."));
+        assertSame(out, out.append("out en perdant"));
+        assertSame(out, out.append(lineSeparator + "ses illusions."));
 
         assertOutputEquals("Le vrai policitien, c'est celui qui arrive à garder son idéal "
                          + "tout en perdant ses illusions.");

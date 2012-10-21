@@ -20,8 +20,12 @@ import java.io.Writer;
 import java.io.Flushable;
 import java.io.Closeable;
 import java.io.IOException;
+import java.io.CharConversionException;
 import org.apache.sis.util.Decorator;
 import org.apache.sis.util.ArgumentChecks;
+
+import static org.apache.sis.util.Characters.LINE_SEPARATOR;
+import static org.apache.sis.util.Characters.PARAGRAPH_SEPARATOR;
 
 
 /**
@@ -53,6 +57,12 @@ public abstract class FilteredAppendable implements Appendable {
     protected final Appendable out;
 
     /**
+     * If the last character given to {@link #toCodePoint(char)} if it was a high surrogate,
+     * or 0 otherwise.
+     */
+    private char highSurrogate;
+
+    /**
      * Creates a new filtered formatter which will send its output to the given stream or buffer.
      *
      * @param out The underlying character output stream or buffer.
@@ -60,6 +70,96 @@ public abstract class FilteredAppendable implements Appendable {
     protected FilteredAppendable(final Appendable out) {
         ArgumentChecks.ensureNonNull("out", out);
         this.out = out;
+    }
+
+    /**
+     * Returns {@code true} if the given character is a line separator in the sense of
+     * this {@code org.apache.sis.io} package. This method performs the same work than
+     * {@link org.apache.sis.util.Characters#isLineOrParagraphSeparator(int)} without
+     * using the code point API. This allows simpler and faster code in subclasses working
+     * only in the {@linkplain Character#isBmpCodePoint(int) Basic Multilingual Plane (BMP)}.
+     * However this method assumes that all line and paragraph separators are in the BMP.
+     *
+     * <p>This method provides a single item to search if we need to expand our definition of
+     * line separator in this package. However if such extension is needed, then developers
+     * shall also search for usages of {@code LINE_SEPARATOR} and {@code PARAGRAPH_SEPARATOR}
+     * constants in this package since they are sometime used directly.</p>
+     *
+     * @see org.apache.sis.util.Characters#isLineOrParagraphSeparator(int)
+     */
+    static boolean isLineSeparator(final char c) {
+        return (c == '\n') || (c == '\r') || (c == LINE_SEPARATOR) || (c == PARAGRAPH_SEPARATOR);
+    }
+
+    /**
+     * Returns the code point for the given character, or -1 if we need to wait for the next
+     * character. This method computes the code point from the given character and the character
+     * given to the previous call of this method. This works only if this method is consistently
+     * invoked for every characters.
+     */
+    final int toCodePoint(final char c) throws IOException {
+        final char h = highSurrogate;
+        if (h != 0) {
+            highSurrogate = 0;
+            if (Character.isLowSurrogate(c)) {
+                return Character.toCodePoint(h, c);
+            } else {
+                throw new CharConversionException();
+            }
+        }
+        if (Character.isHighSurrogate(c)) {
+            highSurrogate = c;
+            return -1;
+        }
+        return c;
+    }
+
+    /**
+     * Returns {@code true} if the last character given to {@link #toCodePoint(char)}
+     * is a {@linkplain Character#isHighSurrogate(char) high surrogate}.
+     */
+    final boolean isHighSurrogate() {
+        return highSurrogate != 0;
+    }
+
+    /**
+     * If the given sequence begins with a low surrogate completing a previous high surrogate,
+     * delegates to {@link #append(char)} and returns {@code start+1}. The intend is to avoid
+     * processing a character sequence which starts by an invalid code point.
+     *
+     * @param  sequence The character sequence to write.
+     * @param  start    Index of the first character to write by this method or by the caller.
+     * @param  end      Index after the last character to be written by the caller.
+     * @return Index of the first character which need to be written by the caller.
+     */
+    final int appendSurrogate(final CharSequence sequence, int start, final int end) throws IOException {
+        if (start != end && highSurrogate != 0) {
+            final char c = sequence.charAt(start);
+            if (Character.isLowSurrogate(c)) {
+                append(c);
+                start++;
+            } else {
+                throw new CharConversionException();
+            }
+        }
+        return start;
+    }
+
+    /**
+     * Appends the given code point to the underlying {@link #out} stream or buffer.
+     *
+     * @param  c The code point to append.
+     * @throws IOException If an error occurred while appending the code point.
+     */
+    final void appendCodePoint(final int c) throws IOException {
+        if (Character.isBmpCodePoint(c)) {
+            out.append((char) c);
+        } else if (Character.isSupplementaryCodePoint(c)) {
+            out.append(Character.highSurrogate(c))
+               .append(Character. lowSurrogate(c));
+        } else {
+            throw new CharConversionException();
+        }
     }
 
     /**
@@ -81,7 +181,7 @@ public abstract class FilteredAppendable implements Appendable {
 
     /**
      * If the given {@code out} argument implements {@link Flushable}, or is a
-     * {@code FilteredAppendable} wrapper around a flusheable object, delegates
+     * {@code FilteredAppendable} wrapper around a flushable object, delegates
      * to that object. Otherwise do nothing.
      */
     static void flush(Appendable out) throws IOException {

@@ -45,9 +45,11 @@ public class IndentedLineFormatter extends FilteredAppendable {
     private boolean newLine = true;
 
     /**
-     * {@code true} if we are waiting for a {@code '\n'} character.
+     * {@code true} if the next character needs to be skipped if equals to {@code '\n'}. The line
+     * terminators are not modified by this class (this is {@link EndOfLineFormatter} job), but
+     * we still need to check for {@code "\r\n"} cases in order to avoid writing the margin twice.
      */
-    private boolean waitLF;
+    private boolean skipLF;
 
     /**
      * Constructs a formatter which will add spaces in front of every lines.
@@ -132,12 +134,12 @@ public class IndentedLineFormatter extends FilteredAppendable {
      * @throws IOException If an I/O error occurs.
      */
     private void write(final char c) throws IOException {
-        if (newLine && (c != '\n' || !waitLF)) {
+        if (newLine && (c != '\n' || !skipLF)) {
             beginNewLine();
         }
         out.append(c);
-        waitLF  = (c == '\r');
-        newLine = (waitLF || c == '\n');
+        skipLF  = (c == '\r');
+        newLine = isLineSeparator(c);
     }
 
     /**
@@ -169,7 +171,7 @@ part:   while (start != end) {
                 final int previous = start;
                 do {
                     final char c = sequence.charAt(start);
-                    if (c == '\r' || c == '\n') {
+                    if (isLineSeparator(c)) {
                         out.append(sequence, previous, start);
                         write(c);
                         start++;

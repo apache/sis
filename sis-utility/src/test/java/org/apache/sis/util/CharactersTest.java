@@ -34,24 +34,27 @@ import static org.apache.sis.util.Characters.*;
  */
 public final strictfp class CharactersTest extends TestCase {
     /**
-     * Tests the value of {@link Characters#LINE_SEPARATOR} constant value.
+     * Tests the value of {@link Characters#LINE_SEPARATOR}
+     * and {@link Characters#PARAGRAPH_SEPARATOR} constant value.
      */
     @Test
     public void testUnicodeSeparators() {
-        assertEquals(Character.LINE_SEPARATOR, Character.getType(LINE_SEPARATOR));
+        assertEquals(Character.LINE_SEPARATOR,      Character.getType(LINE_SEPARATOR));
+        assertEquals(Character.PARAGRAPH_SEPARATOR, Character.getType(PARAGRAPH_SEPARATOR));
     }
 
     /**
-     * Tests the {@link Characters#isLineSeparator(int)} method.
+     * Tests the {@link Characters#isLineOrParagraphSeparator(int)} method.
      */
     @Test
     @DependsOnMethod("testUnicodeSeparators")
-    public void testIsLineSeparator() {
-        assertFalse(isLineSeparator('z'));
-        assertFalse(isLineSeparator('\t'));
-        assertTrue (isLineSeparator('\r'));
-        assertTrue (isLineSeparator('\n'));
-        assertTrue (isLineSeparator(LINE_SEPARATOR));
+    public void testLineOrParagraphSeparator() {
+        assertFalse(isLineOrParagraphSeparator('z'));
+        assertFalse(isLineOrParagraphSeparator('\t'));
+        assertTrue (isLineOrParagraphSeparator('\r'));
+        assertTrue (isLineOrParagraphSeparator('\n'));
+        assertTrue (isLineOrParagraphSeparator(LINE_SEPARATOR));
+        assertTrue (isLineOrParagraphSeparator(PARAGRAPH_SEPARATOR));
     }
 
     /**

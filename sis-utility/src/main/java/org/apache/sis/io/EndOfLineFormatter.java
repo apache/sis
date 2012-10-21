@@ -16,15 +16,10 @@
  */
 package org.apache.sis.io;
 
-import java.util.Arrays;
-import java.io.Flushable;
 import java.io.IOException;
 import org.apache.sis.util.Decorator;
 import org.apache.sis.util.Characters;
-import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
-
-import static org.apache.sis.util.Characters.LINE_SEPARATOR;
 
 
 /**
@@ -32,12 +27,12 @@ import static org.apache.sis.util.Characters.LINE_SEPARATOR;
  * This class performs two works:
  *
  * <ul>
- *   <li>Replace all occurrences of {@code "\r"}, {@code "\n"} and {@code "\r\n"} by the
- *       {@linkplain System#lineSeparator() platform-depend EOL string} ({@code "\r\n"}
+ *   <li>Replace all occurrences of {@linkplain #isLineSeparator(int) line separators} by
+ *       the {@linkplain System#lineSeparator() platform-depend EOL string} ({@code "\r\n"}
  *       on Windows and {@code "\n"} on Unix), or any other string
  *       {@linkplain #setLineSeparator(String) explicitly set}.</li>
  *   <li>Remove trailing blanks before end of lines (this behavior can be modified
- *       by overriding the {@link #isIgnorable(char)} method).</li>
+ *       by overriding the {@link #isIgnorable(int)} method).</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
@@ -46,17 +41,17 @@ import static org.apache.sis.util.Characters.LINE_SEPARATOR;
  * @module
  */
 @Decorator(Appendable.class)
-public class EndOfLineFormatter extends FilteredAppendable implements Flushable {
+public class EndOfLineFormatter extends FilteredAppendable {
     /**
      * The line separator for End Of Line (EOL).
      */
     private String lineSeparator;
 
     /**
-     * Tells if the next {@code '\n'} character must be ignored. This field
-     * is used in order to avoid writing two EOL in place of "\r\n".
+     * {@code true} if the next character needs to be skipped if equals to {@code '\n'}.
+     * This field is used in order to avoid writing two EOL in place of "\r\n".
      */
-    private boolean skipCR;
+    private boolean skipLF;
 
     /**
      * Temporary buffer containing trailing ignorable characters. Those characters are stored in
@@ -64,15 +59,8 @@ public class EndOfLineFormatter extends FilteredAppendable implements Flushable 
      * one, then the ignorable characters are written to the underlying stream before the
      * non-ignorable one. Otherwise if ignorable characters are followed by a line separator,
      * then they are discarded.
-     *
-     * <p>The buffer capacity will be expanded as needed.</p>
      */
-    private char[] ignorables = new char[4];
-
-    /**
-     * Number of valid characters in {@link #ignorables}.
-     */
-    private int count;
+    private final StringBuilder ignorables = new StringBuilder(4);
 
     /**
      * Constructs a formatter which will use the platform-dependent line separator.
@@ -107,7 +95,8 @@ public class EndOfLineFormatter extends FilteredAppendable implements Flushable 
 
     /**
      * Changes the line separator. This is the string to insert in place of every occurrences of
-     * {@code "\r"}, {@code "\n"} or {@code "\r\n"}.
+     * a {@linkplain #isLineSeparator(int) line separator} (typically {@code "\r"}, {@code "\n"}
+     * or {@code "\r\n"}).
      *
      * @param  lineSeparator The new line separator.
      */
@@ -122,7 +111,7 @@ public class EndOfLineFormatter extends FilteredAppendable implements Flushable 
      * @throws IOException If an I/O error occurs.
      */
     private void writeEOL() throws IOException {
-        assert count == 0 : count;
+        assert ignorables.length() == 0;
         out.append(lineSeparator);
     }
 
@@ -132,11 +121,8 @@ public class EndOfLineFormatter extends FilteredAppendable implements Flushable 
      * @throws IOException If an I/O error occurs.
      */
     private void writeIgnorables() throws IOException {
-        for (int i=0; i<count; i++) {
-            assert isIgnorable(Character.codePointAt(ignorables, i, count));
-            out.append(ignorables[i]);
-        }
-        count = 0;
+        out.append(ignorables);
+        ignorables.setLength(0);
     }
 
     /**
@@ -148,10 +134,9 @@ public class EndOfLineFormatter extends FilteredAppendable implements Flushable 
      * @return The index after the last character sent to the underlying stream, or
      *         {@code lower} if the given portion contains only ignorable characters.
      */
-    private int writeLine(final CharSequence sequence, final int lower, int upper) throws IOException {
+    private int writeTrimmedLine(final CharSequence sequence, final int lower, int upper) throws IOException {
         while (upper > lower) {
             final int c = Character.codePointBefore(sequence, upper);
-            assert !Characters.isLineSeparator(c);
             if (!isIgnorable(c)) {
                 writeIgnorables();
                 out.append(sequence, lower, upper);
@@ -159,7 +144,7 @@ public class EndOfLineFormatter extends FilteredAppendable implements Flushable 
             }
             upper -= Character.charCount(c);
         }
-        count = 0;
+        ignorables.setLength(0);
         return upper;
     }
 
@@ -170,34 +155,23 @@ public class EndOfLineFormatter extends FilteredAppendable implements Flushable 
      */
     @Override
     public Appendable append(final char c) throws IOException {
-        switch (c) {
-            case '\r': {
-                count = 0; // Discard ignorable characters.
-                writeEOL();
-                skipCR = true;
-                break;
-            }
-            case '\n':
-            case LINE_SEPARATOR: {
-                if (!skipCR) {
-                    count = 0; // Discard ignorable characters.
+        final int cp = toCodePoint(c);
+        if (cp >= 0) {
+            if (isLineSeparator(cp)) {
+                final boolean skip = skipLF && (cp == '\n');
+                skipLF = (cp == '\r');
+                if (!skip) {
+                    ignorables.setLength(0);  // Discard ignorable characters.
                     writeEOL();
                 }
-                skipCR = false;
-                break;
-            }
-            default: {
-                if (isIgnorable(c)) {
-                    if (count >= ignorables.length) {
-                        ignorables = Arrays.copyOf(ignorables, 2*count);
-                    }
-                    ignorables[count++] = c;
+            } else {
+                skipLF = false;
+                if (isIgnorable(cp)) {
+                    ignorables.appendCodePoint(cp);
                 } else {
                     writeIgnorables();
-                    out.append(c);
+                    appendCodePoint(cp);
                 }
-                skipCR = false;
-                break;
             }
         }
         return this;
@@ -212,57 +186,51 @@ public class EndOfLineFormatter extends FilteredAppendable implements Flushable 
      * @throws IOException If an I/O error occurs.
      */
     @Override
-    public Appendable append(final CharSequence sequence, int start, final int end) throws IOException {
+    public Appendable append(final CharSequence sequence, int start, int end) throws IOException {
         ArgumentChecks.ensureValidIndexRange(sequence.length(), start, end);
+        start = appendSurrogate(sequence, start, end);
         if (start != end) {
-            if (skipCR && sequence.charAt(start) == '\n') {
+            if (skipLF && sequence.charAt(start) == '\n') {
                 start++;
-                skipCR = false;
+                skipLF = false;
             }
             int upper = start;
-            while (upper != end) {
-                final int c = Character.codePointAt(sequence, upper);
-                if (Characters.isLineSeparator(c)) {
-                    writeLine(sequence, start, upper++);
+            do {
+                final int cp = toCodePoint(sequence.charAt(upper++));
+                if (cp >= 0 && isLineSeparator(cp)) {
+                    writeTrimmedLine(sequence, start, upper - Character.charCount(cp));
                     writeEOL();
-                    if (c == '\r' && (upper != end) && sequence.charAt(upper) == '\n') {
+                    if (cp == '\r' && (upper != end) && sequence.charAt(upper) == '\n') {
                         upper++;
                     }
                     start = upper;
-                } else {
-                    upper += Character.charCount(c);
                 }
-            }
+            } while (upper != end);
             /*
              * Write the remainding characters and put the
              * trailing ignorable characters into the buffer.
              */
-            start = writeLine(sequence, start, end);
-            final int length = end - start;
-            if (length != 0) {
-                final int newCount = count + length;
-                if (newCount > ignorables.length) {
-                    ignorables = Arrays.copyOf(ignorables, newCount);
-                }
-                CharSequences.copyChars(sequence, start, ignorables, count, length);
-                count = newCount;
+            if (isHighSurrogate()) {
+                end--;
             }
-            skipCR = (sequence.charAt(end - 1) == '\r');
+            start = writeTrimmedLine(sequence, start, end);
+            ignorables.append(sequence, start, end);
+            skipLF = (sequence.charAt(end - 1) == '\r');
         }
         return this;
     }
 
     /**
-     * Flushes the stream content to the underlying stream. This method flushes the internal
-     * buffers, including any trailing {@linkplain #isIgnorable(int) ignorable characters}
-     * that should have been skipped if the next character was a line separator.
+     * Returns {@code true} if the specified character shall be considered as a line separator.
+     * The default implementation returns {@link Characters#isLineOrParagraphSeparator(int)}.
+     * Subclasses can override this method in order to change the criterion.
      *
-     * @throws IOException If an I/O error occurs.
+     * @param  c The character to test.
+     * @return {@code true} if {@code c} is a line separator.
+     * @throws IOException if this method can not determine if the character is a line separator.
      */
-    @Override
-    public void flush() throws IOException {
-        writeIgnorables();
-        flush(out);
+    protected boolean isLineSeparator(final int c) throws IOException {
+        return Characters.isLineOrParagraphSeparator(c);
     }
 
     /**

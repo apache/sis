@@ -23,7 +23,6 @@ import static java.util.Arrays.fill;
 import static java.util.Arrays.copyOf;
 import static org.apache.sis.util.Arrays.resize;
 import static org.apache.sis.util.StringBuilders.replace;
-import static org.apache.sis.util.Characters.LINE_SEPARATOR;
 
 
 /**
@@ -220,13 +219,21 @@ public final class CharSequences extends Static {
             if (fromIndex < 0) {
                 fromIndex = 0;
             }
-            final int length = text.length();
+            int length = text.length();
+            char head  = (char) toSearch;
+            char tail  = (char) 0;
+            if (head != toSearch) { // Outside BMP plane?
+                head = highSurrogate(toSearch);
+                tail = lowSurrogate (toSearch);
+                length--;
+            }
             while (fromIndex < length) {
-                final int c = codePointAt(text, fromIndex);
-                if (c == toSearch) {
-                    return fromIndex;
+                if (text.charAt(fromIndex) == head) {
+                    if (tail == 0 || text.charAt(fromIndex+1) == tail) {
+                        return fromIndex;
+                    }
                 }
-                fromIndex += charCount(c);
+                fromIndex++;
             }
         }
         return -1;
@@ -312,7 +319,7 @@ search:     for (; fromIndex <= stopAt; fromIndex++) {
         /*
          * Go backward if the number of lines is negative.
          * No need to use the codePoint API because we are
-         * looking only for '\r' and '\n' characters.
+         * looking only for characters in the BMP plane.
          */
         if (numLines <= 0) {
             do {
@@ -422,8 +429,14 @@ search:     for (; fromIndex <= stopAt; fromIndex++) {
      * Each element in the returned array will be a single line. If the given text is already
      * a single line, then this method returns a singleton containing only the given text.
      *
-     * <p>At the difference of <code>{@linkplain #split split}(toSplit, '\n’)</code>,
-     * this method does not remove whitespaces.</p>
+     * <p>Notes:</p>
+     * <ul>
+     *   <li>At the difference of <code>{@linkplain #split split}(toSplit, '\n’)</code>,
+     *       this method does not remove whitespaces.</li>
+     *   <li>This method does not check for Unicode
+     *       {@linkplain Characters#LINE_SEPARATOR line separator} and
+     *       {@linkplain Characters#PARAGRAPH_SEPARATOR paragraph separator}.</li>
+     * </ul>
      *
      * {@note Prior JDK8 this method was relatively cheap because all string instances created by
      *        <code>String.substring(int,int)</code> shared the same <code>char[]</code> internal
@@ -443,8 +456,8 @@ search:     for (; fromIndex <= stopAt; fromIndex++) {
             return EMPTY_ARRAY;
         }
         /*
-         * This method is implemented on top of String.indexOf(int,int), which is the
-         * fatest method available while taking care of the complexity of code points.
+         * This method is implemented on top of String.indexOf(int,int),
+         * assuming that it will be faster for String and StringBuilder.
          */
         int lf = indexOf(text, '\n', 0);
         int cr = indexOf(text, '\r', 0);

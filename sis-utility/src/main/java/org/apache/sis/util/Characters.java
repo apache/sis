@@ -27,17 +27,26 @@ package org.apache.sis.util;
  */
 public final class Characters extends Static {
     /**
-     * The <cite>no-break space</cite> (Unicode <code>\\u00A0</code>, HTML {@code &nbsp;}).
+     * The <cite>no-break space</cite> (Unicode: <code>\\u00A0</code>, HTML: {@code &nbsp;}).
      * Apache SIS uses Unicode symbols directly in the source code for easier reading,
      * except for no-break spaces since they can not be visually distinguished from the
-     * ordinary space (Unicode {@code \u0020}).
+     * ordinary space (Unicode: <code>\\u0020</code>).
      */
     public static final char NO_BREAK_SPACE = '\u00A0';
 
     /**
-     * The Unicode line separator (<code>\\u2028</code>).
+     * The Unicode line separator (Unicode: <code>\\u2028</code>, HTML: {@code <br>}).
+     *
+     * @see Character#LINE_SEPARATOR
      */
     public static final char LINE_SEPARATOR = '\u2028';
+
+    /**
+     * The Unicode paragraph separator (Unicode: <code>\\u2029</code>, HTML: {@code <p>…</p>}).
+     *
+     * @see Character#PARAGRAPH_SEPARATOR
+     */
+    public static final char PARAGRAPH_SEPARATOR = '\u2029';
 
     /**
      * Do not allow instantiation of this class.
@@ -46,15 +55,21 @@ public final class Characters extends Static {
     }
 
     /**
-     * Returns {@code true} if the given code point is a line separator.
+     * Returns {@code true} if the given code point is a {@linkplain Character#LINE_SEPARATOR
+     * line separator}, a {@linkplain Character#PARAGRAPH_SEPARATOR paragraph separator} or one
+     * of the {@code '\r'} or {@code '\n'} control characters.
      *
      * @param  c The code point to test.
-     * @return {@code true} if the given code point is a line separator.
+     * @return {@code true} if the given code point is a line or paragraph separator.
+     *
+     * @see #LINE_SEPARATOR
+     * @see #PARAGRAPH_SEPARATOR
      */
-    public static boolean isLineSeparator(final int c) {
+    public static boolean isLineOrParagraphSeparator(final int c) {
         switch (Character.getType(c)) {
             default: return false;
-            case Character.LINE_SEPARATOR: return true;
+            case Character.LINE_SEPARATOR:
+            case Character.PARAGRAPH_SEPARATOR: return true;
             case Character.CONTROL: return (c == '\r') || (c == '\n');
         }
     }
