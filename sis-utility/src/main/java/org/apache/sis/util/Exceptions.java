@@ -20,6 +20,9 @@ import java.sql.SQLException;
 import java.util.Set;
 import java.util.HashSet;
 
+// Related to JDK7
+import org.apache.sis.internal.util.JDK7;
+
 
 /**
  * Static methods working with {@link Exception} instances.
@@ -106,7 +109,7 @@ public final class Exceptions extends Static {
                 if (buffer == null) {
                     done = new HashSet<String>();
                     buffer = new StringBuilder(128);
-                    lineSeparator = System.getProperty("line.separator", "\n");
+                    lineSeparator = JDK7.lineSeparator();
                     if (header != null && !(header = header.trim()).isEmpty()) {
                         buffer.append(header);
                         done.add(header);

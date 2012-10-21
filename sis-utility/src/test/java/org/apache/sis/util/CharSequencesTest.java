@@ -17,6 +17,7 @@
 package org.apache.sis.util;
 
 import java.util.Arrays;
+import java.nio.CharBuffer;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.util.type.SimpleInternationalString;
@@ -392,5 +393,28 @@ public final strictfp class CharSequencesTest extends TestCase {
     public void testToken() {
         assertEquals("Id4", token("..Id4  56B..", 2));
         assertEquals("56",  token("..Id4  56B..", 6));
+    }
+
+    /**
+     * Tests the {@link CharSequences#copyChars(CharSequence, int, char[], int, int)} method.
+     */
+    @Test
+    public void testCopyChars() {
+        final char[] buffer = new char[12];
+        for (int i=0; i<=4; i++) {
+            final CharSequence sequence;
+            switch (i) {
+                case 0:  sequence =                              ("testCopyChars()"); break;
+                case 1:  sequence = new StringBuilder            ("testCopyChars()"); break;
+                case 2:  sequence = new StringBuffer             ("testCopyChars()"); break;
+                case 3:  sequence =     CharBuffer.wrap          ("testCopyChars()"); break;
+                case 4:  sequence = new SimpleInternationalString("testCopyChars()"); break;
+                default: throw new AssertionError(i);
+            }
+            Arrays.fill(buffer, '-');
+            copyChars(sequence, 4, buffer, 2, 9);
+            assertEquals("--CopyChars-", String.valueOf(buffer));
+            assertEquals("testCopyChars()", sequence.toString()); // CharBuffer position must be unchanged.
+        }
     }
 }

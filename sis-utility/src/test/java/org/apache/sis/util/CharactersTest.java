@@ -16,6 +16,7 @@
  */
 package org.apache.sis.util;
 
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -32,6 +33,30 @@ import static org.apache.sis.util.Characters.*;
  * @module
  */
 public final strictfp class CharactersTest extends TestCase {
+    /**
+     * Tests the value of {@link Characters#LINE_SEPARATOR}
+     * and {@link Characters#PARAGRAPH_SEPARATOR} constant value.
+     */
+    @Test
+    public void testUnicodeSeparators() {
+        assertEquals(Character.LINE_SEPARATOR,      Character.getType(LINE_SEPARATOR));
+        assertEquals(Character.PARAGRAPH_SEPARATOR, Character.getType(PARAGRAPH_SEPARATOR));
+    }
+
+    /**
+     * Tests the {@link Characters#isLineOrParagraphSeparator(int)} method.
+     */
+    @Test
+    @DependsOnMethod("testUnicodeSeparators")
+    public void testLineOrParagraphSeparator() {
+        assertFalse(isLineOrParagraphSeparator('z'));
+        assertFalse(isLineOrParagraphSeparator('\t'));
+        assertTrue (isLineOrParagraphSeparator('\r'));
+        assertTrue (isLineOrParagraphSeparator('\n'));
+        assertTrue (isLineOrParagraphSeparator(LINE_SEPARATOR));
+        assertTrue (isLineOrParagraphSeparator(PARAGRAPH_SEPARATOR));
+    }
+
     /**
      * Tests {@link Characters#toSuperScript(char)}.
      */

@@ -18,7 +18,10 @@ package org.apache.sis.util;
 
 
 /**
- * Static methods working on {@code char} values.
+ * Static methods working on {@code char} values, and some character constants.
+ * Apache SIS uses Unicode symbols directly in the source code for easier reading,
+ * except for some symbols that are difficult to differentiate from other similar
+ * symbols. For those symbols, constants are declared in this class.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
@@ -27,17 +30,68 @@ package org.apache.sis.util;
  */
 public final class Characters extends Static {
     /**
-     * The <cite>no-break space</cite> (Unicode {@code \\u00A0}, HTML {@code &nbsp;}).
+     * Hyphen character ('\u2010', Unicode {@code 2010}).
+     * This code tells to {@link org.apache.sis.io.LineWrapFormatter}
+     * that a line break is allowed to be inserted after this character.
+     *
+     * <p>For non-breaking hyphen, use the Unicode {@code 2011} character.</p>
+     */
+    public static final char HYPHEN = '\u2010';
+
+    /**
+     * Hyphen character to be visible only if there is a line break to insert after it
+     * (Unicode {@code 00AD}, HTML {@code &shy;}).
+     * Otherwise this character is invisible. When visible, the graphical symbol is similar
+     * to the {@link #HYPHEN} character.
+     */
+    public static final char SOFT_HYPHEN = '\u00AD';
+
+    /**
+     * The <cite>no-break space</cite> (Unicode {@code 00A0}, HTML {@code &nbsp;}).
      * Apache SIS uses Unicode symbols directly in the source code for easier reading,
      * except for no-break spaces since they can not be visually distinguished from the
-     * ordinary space (Unicode {@code \u0020}).
+     * ordinary space (Unicode {@code 0020}).
      */
     public static final char NO_BREAK_SPACE = '\u00A0';
+
+    /**
+     * The Unicode line separator (Unicode {@code 2028}, HTML {@code <br>}).
+     *
+     * @see Character#LINE_SEPARATOR
+     */
+    public static final char LINE_SEPARATOR = '\u2028';
+
+    /**
+     * The Unicode paragraph separator (Unicode {@code 2029}, HTML {@code <p>…</p>}).
+     *
+     * @see Character#PARAGRAPH_SEPARATOR
+     */
+    public static final char PARAGRAPH_SEPARATOR = '\u2029';
 
     /**
      * Do not allow instantiation of this class.
      */
     private Characters() {
+    }
+
+    /**
+     * Returns {@code true} if the given code point is a {@linkplain Character#LINE_SEPARATOR
+     * line separator}, a {@linkplain Character#PARAGRAPH_SEPARATOR paragraph separator} or one
+     * of the {@code '\r'} or {@code '\n'} control characters.
+     *
+     * @param  c The code point to test.
+     * @return {@code true} if the given code point is a line or paragraph separator.
+     *
+     * @see #LINE_SEPARATOR
+     * @see #PARAGRAPH_SEPARATOR
+     */
+    public static boolean isLineOrParagraphSeparator(final int c) {
+        switch (Character.getType(c)) {
+            default: return false;
+            case Character.LINE_SEPARATOR:
+            case Character.PARAGRAPH_SEPARATOR: return true;
+            case Character.CONTROL: return (c == '\r') || (c == '\n');
+        }
     }
 
     /**

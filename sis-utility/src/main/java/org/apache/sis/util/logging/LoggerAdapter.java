@@ -43,7 +43,7 @@ import org.apache.sis.util.Debug;
  * defined in terms of {@link #severe(String) severe} … {@link #finest(String) finest} methods
  * instead because external frameworks like <a href="http://commons.apache.org/logging/">Commons-logging</a>
  * don't work with {@link LogRecord}, and sometime provides nothing else than convenience methods
- * equivalent to {@link #severe(String) severe} &hellip; {@link #finest(String) finest}.</p>
+ * equivalent to {@link #severe(String) severe} … {@link #finest(String) finest}.</p>
  *
  * {@section Restrictions}
  * Because the configuration is expected to be fully controlled by the external logging

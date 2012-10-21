@@ -136,12 +136,12 @@ public final class Arrays extends Static {
      * <ul>
      *   <li>If the given {@code length} is longer than the length of the given {@code array},
      *       then the returned array will contain all the elements of {@code array} at index
-     *       <var>i</var>&nbsp;&lt;&nbsp;{@code array.length}. Elements at index
-     *       <var>i</var>&nbsp;&gt;=&nbsp;{@code array.length} are initialized to {@code null}.</li>
+     *       <var>i</var> {@literal <} {@code array.length}. Elements at index
+     *       <var>i</var> {@literal >=} {@code array.length} are initialized to {@code null}.</li>
      *
      *   <li>If the given {@code length} is shorter than the length of the given {@code array},
      *       then the returned array will contain only the elements of {@code array} at index
-     *       <var>i</var>&nbsp;&lt;&nbsp;{@code length}. Remaining elements are not copied.</li>
+     *       <var>i</var> {@literal <} {@code length}. Remaining elements are not copied.</li>
      *
      *   <li>If the given {@code length} is equal to the length of the given {@code array},
      *       then {@code array} is returned unchanged. <strong>No copy</strong> is performed.
