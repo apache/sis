@@ -53,7 +53,18 @@ public enum X364 {
     /** Reset the background color.                  */ BACKGROUND_DEFAULT  (FOREGROUND_DEFAULT);
 
     /**
+     * The first character of the {@link #START} escape string.
+     */
+    static final char ESCAPE = '\u001B';
+
+    /**
+     * The second character of the {@link #START} escape string.
+     */
+    static final char AFTER_ESCAPE = '[';
+
+    /**
      * The beginning of escape sequences.
+     * Must be the concatenation of {@link #ESCAPE} with {@link #AFTER_ESCAPE}.
      */
     private static final String START = "\u001B[";
 

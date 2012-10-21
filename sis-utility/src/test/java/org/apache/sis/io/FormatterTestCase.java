@@ -179,6 +179,8 @@ public abstract class FormatterTestCase extends TestCase {
      * @param expected The expected content.
      */
     final void assertOutputEquals(final String expected) {
-        assertMultilinesEquals("Using append(CharSequence)", expected, buffer.toString());
+        final String actual = buffer.toString();
+        assertMultilinesEquals("Ignoring line separators.", expected, actual);
+        assertEquals          ("Checking line separators.", expected, actual);
     }
 }
