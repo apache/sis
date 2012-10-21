@@ -23,6 +23,12 @@
  * replaces all occurrence of {@code '\t'} by the amount of spaces needed for producing a tabular
  * output.
  *
+ * {@section Unicode characters}
+ * Some formatters in this package make extensive use of Unicode characters. This may produce
+ * unexpected results in a Windows console, unless the underlying output stream uses the correct
+ * encoding (e.g. {@code OutputStreamWriter(System.out, "Cp437")}). To display the appropriate
+ * code page for a Windows console, type <code>chcp</code> on the command line.
+ *
  * {@section Supplementary Unicode characters}
  * This package can handle the {@linkplain java.lang.Character#isSupplementaryCodePoint(int)
  * Unicode supplementary characters}.

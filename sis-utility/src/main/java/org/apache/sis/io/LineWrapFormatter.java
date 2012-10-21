@@ -29,7 +29,7 @@ import static org.apache.sis.util.Characters.isLineOrParagraphSeparator;
 
 
 /**
- * An {@link Appendable} that wraps the lines to some maximal line length.
+ * An {@link Appendable} which wraps the lines to some maximal line length.
  * The default line length is 80 characters, but can be changed by a call to
  * {@link #setMaximalLineLength(int)}.
  *
@@ -274,6 +274,7 @@ searchHyp:  for (int i=buffer.length(); i>0; i-=n) {
                 }
             }
         }
+        start = appendSurrogate(sequence, start, end);
         while (start < end) {
             final int c = toCodePoint(sequence.charAt(start++));
             if (c >= 0) {
