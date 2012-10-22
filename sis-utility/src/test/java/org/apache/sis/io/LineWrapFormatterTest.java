@@ -17,6 +17,8 @@
 package org.apache.sis.io;
 
 import java.io.IOException;
+import org.apache.sis.test.DependsOn;
+import org.apache.sis.util.CharSequencesTest;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.util.Characters.SOFT_HYPHEN;
@@ -30,6 +32,7 @@ import static org.apache.sis.util.Characters.SOFT_HYPHEN;
  * @version 0.3
  * @module
  */
+@DependsOn({CharSequencesTest.class, X364Test.class})
 public final strictfp class LineWrapFormatterTest extends FormatterTestCase {
     /**
      * Creates a new test case.

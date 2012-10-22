@@ -17,6 +17,8 @@
 package org.apache.sis.io;
 
 import java.io.IOException;
+import org.apache.sis.test.DependsOn;
+import org.apache.sis.util.CharSequencesTest;
 
 import static org.junit.Assert.*;
 
@@ -29,6 +31,7 @@ import static org.junit.Assert.*;
  * @version 0.3
  * @module
  */
+@DependsOn({CharSequencesTest.class, X364Test.class, ExpandedTabFormatterTest.class})
 public final strictfp class TableFormatterTest extends FormatterTestCase {
     /**
      * The table formatter to test. May not be same instance than {@link #formatter},
