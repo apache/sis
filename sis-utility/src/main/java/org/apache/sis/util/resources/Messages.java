@@ -49,6 +49,11 @@ public final class Messages extends IndexedResourceBundle {
          * Changed the container capacity from {0} to {1} elements.
          */
         public static final int ChangedContainerCapacity_2 = 0;
+
+        /**
+         * Unavailable content.
+         */
+        public static final int UnavailableContent = 1;
     }
 
     /**

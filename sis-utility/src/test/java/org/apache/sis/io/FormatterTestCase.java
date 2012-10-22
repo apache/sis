@@ -18,9 +18,7 @@ package org.apache.sis.io;
 
 import java.io.IOException;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.util.CharSequencesTest;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
@@ -34,7 +32,6 @@ import static org.apache.sis.test.Assert.*;
  * @version 0.3
  * @module
  */
-@DependsOn({CharSequencesTest.class, X364Test.class})
 public abstract class FormatterTestCase extends TestCase {
     /**
      * The buffer where to write test data.
@@ -180,7 +177,7 @@ public abstract class FormatterTestCase extends TestCase {
      * @throws IOException Should never happen.
      */
     final void assertOutputEquals(final String expected) throws IOException {
-        FilteredAppendable.flush(formatter);
+        IO.flush(formatter);
         final String actual = buffer.toString();
         assertMultilinesEquals("Ignoring line separators.", expected, actual);
         assertEquals          ("Checking line separators.", expected, actual);
