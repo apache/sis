@@ -394,7 +394,7 @@ public class IndexedResourceBundle extends ResourceBundle {
             record.setThrown (exception);
             Logging.log(IndexedResourceBundle.class, methodName, record);
             final MissingResourceException error = new MissingResourceException(
-                    Exceptions.getMessage(exception, getLocale()), // For users, use requested locale.
+                    Exceptions.getLocalizedMessage(exception, getLocale()), // For users, use requested locale.
                     getClass().getCanonicalName(), key);
             error.initCause(exception);
             throw error;
@@ -465,7 +465,7 @@ public class IndexedResourceBundle extends ResourceBundle {
                 }
                 replacement = CharSequences.shortSentence(text, MAX_STRING_LENGTH);
             } else if (element instanceof Throwable) {
-                String message = Exceptions.getMessage((Throwable) element, getFormatLocale());
+                String message = Exceptions.getLocalizedMessage((Throwable) element, getFormatLocale());
                 if (message == null) {
                     message = Classes.getShortClassName(element);
                 }

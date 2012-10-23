@@ -55,10 +55,10 @@ public final class Latitude extends Angle {
     /**
      * Construct a new latitude with the specified angular value.
      *
-     * @param θ Angle in decimal degrees.
+     * @param φ Latitude value in decimal degrees.
      */
-    public Latitude(final double θ) {
-        super(θ);
+    public Latitude(final double φ) {
+        super(φ);
     }
 
     /**
