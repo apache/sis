@@ -16,10 +16,11 @@
  */
 
 /**
- * Extensions to standard Java {@link java.io.Reader} and {@link java.io.Writer} for I/O operations.
- * Many classes defined in this package are actually filters applying on-the-fly formatting while
- * writing text to the output device. For example {@link org.apache.sis.io.IndentedLineFormatter}
- * adds indentation at the beginning of every new line, and {@link org.apache.sis.io.TableFormatter}
+ * Extensions to standard Java I/O ({@link java.io.Reader}, {@link java.io.Writer},
+ * {@link java.lang.Appendable}).
+ * Many classes defined in this package are filters applying on-the-fly formatting while writing
+ * text to the output device. For example {@link org.apache.sis.io.IndentedLineFormatter} adds
+ * indentation at the beginning of every new line, and {@link org.apache.sis.io.TableFormatter}
  * replaces all occurrence of {@code '\t'} by the amount of spaces needed for producing a tabular
  * output.
  *

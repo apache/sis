@@ -16,9 +16,12 @@
  */
 package org.apache.sis.util;
 
-import java.sql.SQLException;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.Locale;
+import java.sql.SQLException;
+import java.text.ParsePosition;
+import java.text.ParseException;
 
 // Related to JDK7
 import org.apache.sis.internal.util.JDK7;
@@ -37,6 +40,56 @@ public final class Exceptions extends Static {
      * Do not allow instantiation of this class.
      */
     private Exceptions() {
+    }
+
+    /**
+     * Creates a {@link ParseException} with a localized message built from the given parsing
+     * information. The exception returned by this method contains the error message in two
+     * languages:
+     *
+     * <ul>
+     *   <li>{@link ParseException#getMessage()} returns the message in the default locale.</li>
+     *   <li>{@link ParseException#getLocalizedMessage() getLocalizedMessage()} returns the
+     *       message in the locale given in argument to this method. This is usually the
+     *       {@link java.text.Format} locale, which is presumed to be the end-user locale.</li>
+     * </ul>
+     *
+     * @param  locale The locale for {@link ParseException#getLocalizedMessage()}.
+     * @param  type   The type of objects parsed by the {@link java.text.Format}.
+     * @param  text   The text that {@code Format} failed to parse.
+     * @param  pos    Index of the {@linkplain ParsePosition#getIndex() first parsed character},
+     *                together with the {@linkplain ParsePosition#getErrorIndex() error index}.
+     * @return The localized exception.
+     */
+    public static ParseException createParseException(final Locale locale, final Class<?> type,
+            final String text, final ParsePosition pos)
+    {
+        final int offset = pos.getIndex();
+        final int errorOffset = Math.max(offset, pos.getErrorIndex());
+        return new LocalizedParseException(locale,
+                LocalizedParseException.arguments(type, text, offset, errorOffset), errorOffset);
+    }
+
+    /**
+     * Returns the message of the given exception, localized in the given locale if possible.
+     * Some exceptions created by SIS can format a message in different locales. This method
+     * will return such localized message if possible, or fallback on the standard
+     * {@link Throwable#getLocalizedMessage()} method otherwise. Note that by default,
+     * {@code getLocalizedMessage()} itself fallback on {@link Throwable#getMessage()}.
+     *
+     * @param  exception The exception from which to get the localize message, or {@code null}.
+     * @param  locale    The locale for the message, or {@code null} for the default locale.
+     * @return The message in the given locale if possible, or {@code null} if the {@code exception}
+     *         argument was {@code null} or the exception does not contain a message.
+     */
+    public static String getMessage(final Throwable exception, final Locale locale) {
+        if (exception == null) {
+            return null;
+        }
+        if (locale != null && exception instanceof LocalizedException) {
+            return ((LocalizedException) exception).getMessage(locale);
+        }
+        return exception.getLocalizedMessage();
     }
 
     /**
@@ -94,17 +147,18 @@ public final class Exceptions extends Static {
      *
      * <p>This method does not format the stack trace.</p>
      *
+     * @param  locale The preferred locale for the exception message, or {@code null}.
      * @param  header The message to insert on the first line, or {@code null} if none.
      * @param  cause  The exception, or {@code null} if none.
      * @return The formatted message, or {@code null} if both the header was {@code null}
      *         and no exception provide a message.
      */
-    public static String formatChainedMessages(String header, Throwable cause) {
+    public static String formatChainedMessages(final Locale locale, String header, Throwable cause) {
         Set<String> done = null;
         String lineSeparator = null;
         StringBuilder buffer = null;
         while (cause != null) {
-            String message = cause.getLocalizedMessage();
+            String message = getMessage(cause, locale);
             if (message != null && !(message = message.trim()).isEmpty()) {
                 if (buffer == null) {
                     done = new HashSet<String>();

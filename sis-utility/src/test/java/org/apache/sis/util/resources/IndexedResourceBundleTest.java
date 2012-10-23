@@ -24,6 +24,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.SimpleFormatter;
 import org.opengis.util.InternationalString;
 import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -37,6 +38,7 @@ import static org.junit.Assert.*;
  * @since   0.3 (derived from geotk-2.2)
  * @version 0.3
  */
+@DependsOn(org.apache.sis.util.ArraysTest.class)
 public final strictfp class IndexedResourceBundleTest extends TestCase {
     /**
      * Tests the {@link Errors#getResources(Locale)} method on different locales.

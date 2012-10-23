@@ -16,9 +16,6 @@
  */
 package org.apache.sis.io;
 
-import java.io.Writer;
-import java.io.Flushable;
-import java.io.Closeable;
 import java.io.IOException;
 import java.io.CharConversionException;
 import org.apache.sis.util.Decorator;
@@ -43,8 +40,15 @@ import org.apache.sis.internal.util.JDK7;
  *   <li>No synchronization is performed.</li>
  * </ul>
  *
- * If needed, this {@code FilteredAppendable} can be viewed as a synchronized {@link Writer}
- * by invoking the {@link #asWriter()} method.
+ * If needed, this {@code FilteredAppendable} can be viewed as a synchronized
+ * {@link java.io.Writer} by invoking the {@link IO#asWriter(Appendable)} method.
+ *
+ * {@section Flushing and closing the stream}
+ * Subclasses implement the {@link java.io.Flushable} interface only if they
+ * hold data in an internal buffer before to send them to the wrapped {@code Appendable}.
+ * This is the case of {@link TableFormatter} and {@link LineWrapFormatter} for instance.
+ * For unconditionally flushing or closing an {@code Appendable} and its underlying stream,
+ * see {@link IO#flush(Appendable)} and {@link IO#close(Appendable)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
@@ -207,47 +211,15 @@ public abstract class FilteredAppendable implements Appendable {
     }
 
     /**
-     * If the given {@code out} argument implements {@link Flushable}, or is a
-     * {@code FilteredAppendable} wrapper around a flushable object, delegates
-     * to that object. Otherwise do nothing.
-     */
-    static void flush(Appendable out) throws IOException {
-        while (!(out instanceof Flushable)) {
-            if (!(out instanceof FilteredAppendable)) {
-                return;
-            }
-            out = ((FilteredAppendable) out).out;
-        }
-        ((Flushable) out).flush();
-    }
-
-    /**
-     * If the given {@code out} argument implements {@link Closeable}, or is a
-     * {@code FilteredAppendable} wrapper around a closeable object, delegates
-     * to that object. Otherwise do nothing.
-     */
-    static void close(Appendable out) throws IOException {
-        while (!(out instanceof Closeable)) {
-            if (out instanceof Flushable) {
-                ((Flushable) out).flush();
-            }
-            if (!(out instanceof FilteredAppendable)) {
-                return;
-            }
-            out = ((FilteredAppendable) out).out;
-        }
-        ((Closeable) out).close();
-    }
-
-    /**
-     * Returns a view of this {@code Appendable} as a writer. Any write operations performed
-     * on the writer will be forwarded to this {@code Appendable} in a synchronized block.
+     * Returns the content of this {@code Appendable} as a string if possible,
+     * or the localized "<cite>Unavailable content</cite>" string otherwise.
      *
-     * @return A view of this {@code Appendable} as a writer.
+     * @return The content of this {@code Appendable}, or a localized message for unavailable content.
+     *
+     * @see IO#content(Appendable)
      */
-    public Writer asWriter() {
-        // No need to cache this instance, since creating AppendableAdapter
-        // is cheap and AppendableAdapter does not hold any internal state.
-        return new AppendableAdapter(this);
+    @Override
+    public String toString() {
+        return IO.toString(this);
     }
 }
