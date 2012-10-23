@@ -38,6 +38,7 @@ import org.opengis.util.InternationalString;
 
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
 
@@ -389,11 +390,12 @@ public class IndexedResourceBundle extends ResourceBundle {
             return values;
         } catch (IOException exception) {
             record.setLevel  (Level.WARNING);
-            record.setMessage(exception.getLocalizedMessage());
+            record.setMessage(exception.getMessage()); // For administrator, use system locale.
             record.setThrown (exception);
             Logging.log(IndexedResourceBundle.class, methodName, record);
             final MissingResourceException error = new MissingResourceException(
-                    exception.getLocalizedMessage(), getClass().getCanonicalName(), key);
+                    Exceptions.getMessage(exception, getLocale()), // For users, use requested locale.
+                    getClass().getCanonicalName(), key);
             error.initCause(exception);
             throw error;
         }
@@ -463,7 +465,7 @@ public class IndexedResourceBundle extends ResourceBundle {
                 }
                 replacement = CharSequences.shortSentence(text, MAX_STRING_LENGTH);
             } else if (element instanceof Throwable) {
-                String message = ((Throwable) element).getLocalizedMessage();
+                String message = Exceptions.getMessage((Throwable) element, getFormatLocale());
                 if (message == null) {
                     message = Classes.getShortClassName(element);
                 }
