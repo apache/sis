@@ -87,6 +87,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int IllegalClass_2 = 3;
 
         /**
+         * The “{0}” pattern can not be applied to formating of objects of type ‘{1}’.
+         */
+        public static final int IllegalFormatPatternForClass_2 = 29;
+
+        /**
          * The “{0}” language is not recognized.
          */
         public static final int IllegalLanguageCode_1 = 12;
@@ -147,6 +152,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int UnexpectedArgumentDimension_3 = 5;
 
         /**
+         * More characters were expected at the end of “{0}”.
+         */
+        public static final int UnexpectedEndOfString_1 = 30;
+
+        /**
          * This affine transform is unmodifiable.
          */
         public static final int UnmodifiableAffineTransform = 23;
@@ -165,6 +175,16 @@ public final class Errors extends IndexedResourceBundle {
          * Object ‘{0}’ is unmodifiable.
          */
         public static final int UnmodifiableObject_1 = 26;
+
+        /**
+         * Text “{1}” can not be parsed as an object of type ‘{0}’.
+         */
+        public static final int UnparsableStringForClass_2 = 31;
+
+        /**
+         * Text “{1}” can not be parsed as an object of type ‘{0}’, because of the “{2}” characters.
+         */
+        public static final int UnparsableStringForClass_3 = 32;
 
         /**
          * Can not handle instances of ‘{0}’ because arbitrary implementations are not yet supported.

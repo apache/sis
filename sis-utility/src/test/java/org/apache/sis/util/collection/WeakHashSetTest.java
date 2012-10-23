@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.Random;
 import java.util.concurrent.Callable;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestConfiguration;
 import org.junit.Test;
@@ -37,6 +38,7 @@ import static org.apache.sis.test.TestUtilities.waitForGarbageCollection;
  * @version 0.3
  * @module
  */
+@DependsOn(org.apache.sis.util.ArraysTest.class)
 public final strictfp class WeakHashSetTest extends TestCase {
     /**
      * The size of the test sets to be created.

@@ -18,6 +18,7 @@ package org.apache.sis.util;
 
 import java.util.Locale;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -31,6 +32,7 @@ import static org.junit.Assert.*;
  * @version 0.3
  * @module
  */
+@DependsOn(Arrays.class)
 public final strictfp class LocalesTest extends TestCase {
     /**
      * Tests the {@link Locales#getAvailableLanguages()} method.

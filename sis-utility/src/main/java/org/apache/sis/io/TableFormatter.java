@@ -619,7 +619,7 @@ public class TableFormatter extends FilteredAppendable implements Flushable {
              * Flush only if this table is not included in an outer (bigger) table.
              * This is because flushing the outer table would break its formatting.
              */
-            flush(out);
+            IO.flush(out);
         }
     }
 
