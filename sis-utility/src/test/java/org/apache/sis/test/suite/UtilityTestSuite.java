@@ -46,6 +46,7 @@ import org.junit.runners.Suite;
   org.apache.sis.util.type.SimpleInternationalStringTest.class,
   org.apache.sis.util.type.DefaultInternationalStringTest.class,
   org.apache.sis.math.MathFunctionsTest.class,
+  org.apache.sis.measure.AngleFormatTest.class,
   org.apache.sis.internal.util.ReferenceQueueConsumerTest.class,
   org.apache.sis.util.collection.WeakHashSetTest.class,
   org.apache.sis.util.collection.WeakValueHashMapTest.class,

@@ -550,7 +550,7 @@ public final class Logging extends Static {
             buffer.append(": ").append(message);
         }
         message = buffer.toString();
-        message = Exceptions.formatChainedMessages(message, error);
+        message = Exceptions.formatChainedMessages(null, message, error);
         final LogRecord record = new LogRecord(level, message);
         if (classe != null) {
             record.setSourceClassName(classe);
