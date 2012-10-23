@@ -169,7 +169,7 @@ public class Angle implements Comparable<Angle>, Serializable {
      * Developers should consider using {@link AngleFormat} for end-user applications instead
      * than this method.
      *
-     * @see AngleFormat#format(Angle)
+     * @see AngleFormat#format(double)
      */
     @Override
     public String toString() {

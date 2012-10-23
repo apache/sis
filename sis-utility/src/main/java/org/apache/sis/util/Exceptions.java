@@ -46,9 +46,9 @@ public final class Exceptions extends Static {
      *
      * <ul>
      *   <li>{@link ParseException#getMessage()} returns the message in the default locale.</li>
-     *   <li>{@link ParseException#getLocalizedMessage() getLocalizedMessage()} returns the
-     *       message in the locale given in argument to this method. This is usually the
-     *       {@link java.text.Format} locale, which is presumed to be the end-user locale.</li>
+     *   <li>{@link ParseException#getLocalizedMessage()} returns the message in the locale given
+     *       in argument to this method. This is usually the {@link java.text.Format} locale,
+     *       which is presumed to be the end-user locale.</li>
      * </ul>
      *
      * @param  locale The locale for {@link ParseException#getLocalizedMessage()}.
@@ -79,12 +79,12 @@ public final class Exceptions extends Static {
      * @return The message in the given locale if possible, or {@code null} if the {@code exception}
      *         argument was {@code null} or the exception does not contain a message.
      */
-    public static String getMessage(final Throwable exception, final Locale locale) {
+    public static String getLocalizedMessage(final Throwable exception, final Locale locale) {
         if (exception == null) {
             return null;
         }
         if (locale != null && exception instanceof LocalizedException) {
-            return ((LocalizedException) exception).getMessage(locale);
+            return ((LocalizedException) exception).getLocalizedMessage(locale);
         }
         return exception.getLocalizedMessage();
     }
@@ -155,7 +155,7 @@ public final class Exceptions extends Static {
         String lineSeparator = null;
         StringBuilder buffer = null;
         while (cause != null) {
-            String message = getMessage(cause, locale);
+            String message = getLocalizedMessage(cause, locale);
             if (message != null && !(message = message.trim()).isEmpty()) {
                 if (buffer == null) {
                     done = new HashSet<>();

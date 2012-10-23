@@ -48,7 +48,8 @@ import java.util.Objects;
  * Parses and formats angles according a specified pattern. The pattern is a string
  * containing any characters, with a special meaning for the following characters:
  *
- * <blockquote><table class="compact">
+ * <blockquote><table class="sis">
+ *   <tr><th>Symbol</th><th>Meaning</th></tr>
  *   <tr><td>{@code D}</td><td>The integer part of degrees</td></tr>
  *   <tr><td>{@code d}</td><td>The fractional part of degrees</td></tr>
  *   <tr><td>{@code M}</td><td>The integer part of minutes</td></tr>
@@ -82,7 +83,7 @@ import java.util.Objects;
  *
  * <p>The following table gives some pattern examples:</p>
  *
- * <blockquote><table class="compact">
+ * <blockquote><table class="sis">
  *   <tr><th>Pattern           </th>  <th>Example   </th></tr>
  *   <tr><td>{@code DD°MM′SS″ }</td>  <td>48°30′00″ </td></tr>
  *   <tr><td>{@code DD°MM′    }</td>  <td>48°30′    </td></tr>
@@ -195,8 +196,10 @@ public class AngleFormat extends Format implements Localized {
      * Formats to use for writing numbers (degrees, minutes or seconds) when formatting an angle.
      * The pattern given to this {@code DecimalFormat} shall NOT accept exponential notation,
      * because "E" of "Exponent" would be confused with "E" of "East".
+     *
+     * <p>Consider this field as final. It is modified only by the {@link #clone()} method.</p>
      */
-    private final DecimalFormat numberFormat;
+    private DecimalFormat numberFormat;
 
     /**
      * Object to give to {@code DecimalFormat.format} methods,
@@ -1250,6 +1253,17 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
     @Override
     public Locale getLocale() {
         return locale;
+    }
+
+    /**
+     * Returns a clone of this {@code AngleFormat}.
+     */
+    @Override
+    public AngleFormat clone() {
+        final AngleFormat clone = (AngleFormat) super.clone();
+        clone.numberFormat = (DecimalFormat) numberFormat.clone();
+        clone.dummy = null;
+        return clone;
     }
 
     /**
