@@ -128,7 +128,6 @@ public final class ArgumentChecks extends Static {
      * If this method does not thrown an exception, then the value can be casted to the class
      * represented by {@code expectedType} without throwing a {@link ClassCastException}.
      *
-     * @param  <T> The compile-time type of the value.
      * @param  name The name of the argument to be checked, used only if an exception is thrown.
      *         Can be {@code null} if the name is unknown.
      * @param  expectedType the expected type (class or interface).
@@ -136,7 +135,7 @@ public final class ArgumentChecks extends Static {
      * @throws IllegalArgumentException if {@code value} is non-null and is not assignable
      *         to the given type.
      */
-    public static <T> void ensureCanCast(final String name, final Class<? extends T> expectedType, final T value)
+    public static void ensureCanCast(final String name, final Class<?> expectedType, final Object value)
             throws IllegalArgumentException
     {
         if (value != null) {

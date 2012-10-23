@@ -18,6 +18,7 @@ package org.apache.sis.math;
 
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 
 import static org.junit.Assert.*;
@@ -33,6 +34,7 @@ import static org.apache.sis.util.Arrays.isSorted;
  * @version 0.3
  * @module
  */
+@DependsOn(org.apache.sis.util.ArraysTest.class)
 public final strictfp class MathFunctionsTest extends TestCase {
     /**
      * Small number for floating point comparisons.

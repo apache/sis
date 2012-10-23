@@ -289,6 +289,6 @@ searchHyp:  for (int i=buffer.length(); i>0; i-=n) {
     public void flush() throws IOException {
         out.append(buffer);
         buffer.setLength(0);
-        flush(out);
+        IO.flush(out);
     }
 }

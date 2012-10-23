@@ -543,14 +543,18 @@ public final class Logging extends Static {
          * Now prepare the log message. If we have been unable to figure out a source class and
          * method name, we will fallback on JDK logging default mechanism, which may returns a
          * less relevant name than our attempt to use the logger name as the package name.
+         *
+         * The message is fetched using Exception.getMessage() instead than getLocalizedMessage()
+         * because in a client-server architecture, we want the locale on the server-side instead
+         * than the locale on the client side.
          */
         final StringBuilder buffer = new StringBuilder(Classes.getShortClassName(error));
-        String message = error.getLocalizedMessage();
+        String message = error.getMessage(); // Targeted to system administrators.
         if (message != null) {
             buffer.append(": ").append(message);
         }
         message = buffer.toString();
-        message = Exceptions.formatChainedMessages(message, error);
+        message = Exceptions.formatChainedMessages(null, message, error);
         final LogRecord record = new LogRecord(level, message);
         if (classe != null) {
             record.setSourceClassName(classe);

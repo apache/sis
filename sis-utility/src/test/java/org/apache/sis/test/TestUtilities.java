@@ -22,6 +22,7 @@ import java.util.TimeZone;
 import java.util.Iterator;
 import java.util.concurrent.Callable;
 import java.lang.reflect.UndeclaredThrowableException;
+import java.text.Format;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -94,6 +95,26 @@ public final strictfp class TestUtilities extends Static {
         synchronized (dateFormat) {
             return dateFormat.format(date);
         }
+    }
+
+    /**
+     * Formats the given value using the given formatter, and parses the text back to its value.
+     * If the parsed value is not equal to the original one, an {@link AssertionError} is thrown.
+     *
+     * @param  formatter The formatter to use for formatting and parsing.
+     * @param  value The value to format.
+     * @return The formatted value.
+     */
+    public static String formatAndParse(final Format formatter, final Object value) {
+        final String text = formatter.format(value);
+        final Object parsed;
+        try {
+            parsed = formatter.parseObject(text);
+        } catch (ParseException e) {
+            throw new AssertionError(e);
+        }
+        assertEquals("Parsed text not equal to the original value", value, parsed);
+        return text;
     }
 
     /**

@@ -154,6 +154,19 @@ public final class MathFunctions extends Static {
     }
 
     /**
+     * Truncates the given value toward zero. Invoking this method is equivalent to invoking
+     * {@link Math#floor(double)} if the value is positive, or {@link Math#ceil(double)} if
+     * the value is negative.
+     *
+     * @param  value The value to truncate.
+     * @return The largest in magnitude (further from zero) integer value which is equals
+     *         or less in magnitude than the given value.
+     */
+    public static double truncate(final double value) {
+        return (value < 0) ? Math.ceil(value) : Math.floor(value);
+    }
+
+    /**
      * Returns the magnitude of the given vector. This is defined by:
      *
      * {@preformat math
