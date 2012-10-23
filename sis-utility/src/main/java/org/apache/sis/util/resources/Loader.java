@@ -23,6 +23,7 @@ import java.util.ResourceBundle;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.io.IOException;
+import org.apache.sis.util.Exceptions;
 
 
 /**
@@ -119,29 +120,16 @@ final class Loader extends ResourceBundle.Control {
         /*
          * If the file exists, instantiate now the resource bundle. Note that the constructor
          * will not loads the data immediately, which is why we don't pass it the above URL.
+         *
+         * Note: Do not call Constructor.setAccessible(true) - this is not allowed in Applet.
          */
         final Constructor<?> c;
         try {
-            c = classe.getDeclaredConstructor(String.class);
-        } catch (NoSuchMethodException e) {
-            throw instantiationFailure(e);
+            return (ResourceBundle) classe.getDeclaredConstructor(String.class).newInstance(filename);
+        } catch (NoSuchMethodException | InvocationTargetException e) {
+            InstantiationException exception = new InstantiationException(Exceptions.getMessage(e, locale));
+            exception.initCause(e);
+            throw exception;
         }
-        final ResourceBundle bundle;
-        // Do not call c.setAccessible(true) - this is not allowed in Applet.
-        try {
-            bundle = (ResourceBundle) c.newInstance(filename);
-        } catch (InvocationTargetException e) {
-            throw instantiationFailure(e);
-        }
-        return bundle;
-    }
-
-    /**
-     * Creates an exception for a resource bundle that can not be created.
-     */
-    private static InstantiationException instantiationFailure(final Exception cause) {
-        InstantiationException exception = new InstantiationException(cause.getLocalizedMessage());
-        exception.initCause(cause);
-        return exception;
     }
 }

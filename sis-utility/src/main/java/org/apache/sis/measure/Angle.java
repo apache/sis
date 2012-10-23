@@ -90,7 +90,13 @@ public class Angle implements Comparable<Angle>, Serializable {
                 angle = getAngleFormat().parseObject(string);
             }
         } catch (ParseException exception) {
-            NumberFormatException e = new NumberFormatException(exception.getLocalizedMessage());
+            /*
+             * Use Exception.getMessage() instead than getLocalizedMessage() because the later
+             * is formatted in the AngleFormat locale, which is hard-coded to Locale.CANADA in
+             * our 'getAngleFormat()' implementation. The getMessage() method uses the system
+             * locale, which is what we actually want.
+             */
+            NumberFormatException e = new NumberFormatException(exception.getMessage());
             e.initCause(exception);
             throw e;
         }
