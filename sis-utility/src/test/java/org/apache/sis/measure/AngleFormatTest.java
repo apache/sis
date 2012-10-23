@@ -19,7 +19,6 @@ package org.apache.sis.measure;
 import java.util.Locale;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
-import org.apache.sis.math.MathFunctionsTest;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -34,7 +33,7 @@ import static org.apache.sis.test.TestUtilities.*;
  * @version 0.3
  * @module
  */
-@DependsOn(MathFunctionsTest.class)
+@DependsOn(org.apache.sis.math.MathFunctionsTest.class)
 public final strictfp class AngleFormatTest extends TestCase {
     /**
      * Tests using {@link Locale#CANADA}.

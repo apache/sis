@@ -19,6 +19,7 @@ package org.apache.sis.util;
 import java.util.Arrays;
 import java.nio.CharBuffer;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.util.type.SimpleInternationalString;
 import org.junit.Test;
@@ -36,6 +37,7 @@ import static org.apache.sis.util.CharSequences.*;
  * @version 0.3
  * @module
  */
+@DependsOn(ArraysTest.class)
 public final strictfp class CharSequencesTest extends TestCase {
     /**
      * Tests {@link CharSequences#spaces(int)}.

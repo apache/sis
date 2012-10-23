@@ -33,30 +33,38 @@ import org.junit.runners.Suite;
   org.apache.sis.internal.test.AssertTest.class,
   org.apache.sis.internal.test.XMLComparatorTest.class,
 
-  // Following are testing the actual SIS library.
-  org.apache.sis.util.UtilitiesTest.class,
+  // Most basic functions of SIS library.
   org.apache.sis.util.ArraysTest.class,
   org.apache.sis.util.CharactersTest.class,
   org.apache.sis.util.CharSequencesTest.class,
   org.apache.sis.util.StringBuildersTest.class,
+  org.apache.sis.util.UtilitiesTest.class,
   org.apache.sis.util.LocalesTest.class,
   org.apache.sis.util.resources.IndexedResourceBundleTest.class,
   org.apache.sis.util.logging.PerformanceLevelTest.class,
-  org.apache.sis.util.type.TypesTest.class,
-  org.apache.sis.util.type.SimpleInternationalStringTest.class,
-  org.apache.sis.util.type.DefaultInternationalStringTest.class,
   org.apache.sis.math.MathFunctionsTest.class,
-  org.apache.sis.measure.AngleFormatTest.class,
+
+  // Collections.
   org.apache.sis.internal.util.ReferenceQueueConsumerTest.class,
   org.apache.sis.util.collection.WeakHashSetTest.class,
   org.apache.sis.util.collection.WeakValueHashMapTest.class,
   org.apache.sis.util.collection.CacheTest.class,
+
+  // GeoAPI most basic types.
+  org.apache.sis.util.type.TypesTest.class,
+  org.apache.sis.util.type.SimpleInternationalStringTest.class,
+  org.apache.sis.util.type.DefaultInternationalStringTest.class,
+
+  // Formatting
+  org.apache.sis.measure.AngleFormatTest.class,
   org.apache.sis.io.X364Test.class,
   org.apache.sis.io.EndOfLineFormatterTest.class,
   org.apache.sis.io.IndentedLineFormatterTest.class,
   org.apache.sis.io.ExpandedTabFormatterTest.class,
   org.apache.sis.io.LineWrapFormatterTest.class,
   org.apache.sis.io.TableFormatterTest.class,
+
+  // XML most basic types.
   org.apache.sis.xml.XLinkTest.class,
   org.apache.sis.internal.jaxb.IdentifierMapAdapterTest.class,
   org.apache.sis.internal.jaxb.IdentifierMapWithSpecialCasesTest.class
