@@ -19,6 +19,7 @@ package org.apache.sis.measure;
 import java.util.Locale;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.DependsOnMethod;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -36,11 +37,32 @@ import static org.apache.sis.test.TestUtilities.*;
 @DependsOn(org.apache.sis.math.MathFunctionsTest.class)
 public final strictfp class AngleFormatTest extends TestCase {
     /**
+     * Tests a pattern with illegal usage of D, M and S symbols.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testIllegalPattern() {
+        final AngleFormat f = new AngleFormat(Locale.CANADA);
+        f.applyPattern("DD°SS′MM″");
+    }
+
+    /**
+     * Tests an illegal pattern with illegal symbols for the fraction part.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testIllegalFractionPattern() {
+        final AngleFormat f = new AngleFormat(Locale.CANADA);
+        f.applyPattern("DD°MM′SS.m″");
+    }
+
+    /**
      * Tests using {@link Locale#CANADA}.
      */
     @Test
     public void testCanadaLocale() {
         final AngleFormat f = new AngleFormat("DD.ddd°", Locale.CANADA);
+        assertEquals(3, f.getMinimumFractionDigits());
+        assertEquals(3, f.getMaximumFractionDigits());
+        assertEquals( "DD.ddd°",  f.toPattern());
         assertEquals( "20.000°",  formatAndParse(f, new Angle   ( 20.000)));
         assertEquals( "20.749°",  formatAndParse(f, new Angle   ( 20.749)));
         assertEquals("-12.247°",  formatAndParse(f, new Angle   (-12.247)));
@@ -54,6 +76,9 @@ public final strictfp class AngleFormatTest extends TestCase {
     @Test
     public void testFranceLocale() {
         final AngleFormat f = new AngleFormat("DD.ddd°", Locale.FRANCE);
+        assertEquals(3, f.getMinimumFractionDigits());
+        assertEquals(3, f.getMaximumFractionDigits());
+        assertEquals( "DD.ddd°", f.toPattern());
         assertEquals("19,457°E", formatAndParse(f, new Longitude( 19.457)));
         assertEquals("78,124°S", formatAndParse(f, new Latitude (-78.124)));
     }
@@ -64,17 +89,63 @@ public final strictfp class AngleFormatTest extends TestCase {
     @Test
     public void testNoSeparator() {
         final AngleFormat f = new AngleFormat("DDddd", Locale.CANADA);
+        assertEquals(3, f.getMinimumFractionDigits());
+        assertEquals(3, f.getMaximumFractionDigits());
+        assertEquals("DDddd",  f.toPattern());
         assertEquals("19457E", formatAndParse(f, new Longitude( 19.457)));
         assertEquals("78124S", formatAndParse(f, new Latitude (-78.124)));
     }
 
     /**
-     * Tests with the degree separator.
+     * Tests with a minute fields.
      */
     @Test
-    public void testDegreeSeparator() {
+    @DependsOnMethod("testCanadaLocale")
+    public void testDegreeMinutes() {
         final AngleFormat f = new AngleFormat("DD°MM.m", Locale.CANADA);
+        assertEquals(1, f.getMinimumFractionDigits());
+        assertEquals(1, f.getMaximumFractionDigits());
+        assertEquals( "DD°MM.m", f.toPattern());
         assertEquals( "12°30.0", formatAndParse(f, new Angle( 12.50)));
         assertEquals("-10°15.0", formatAndParse(f, new Angle(-10.25)));
+    }
+
+    /**
+     * Tests with a seconds fields.
+     */
+    @Test
+    @DependsOnMethod("testDegreeMinutes")
+    public void testDegreeMinutesSeconds() {
+        final AngleFormat f = new AngleFormat("DD°MM′SS.sss″", Locale.CANADA);
+        assertEquals(3, f.getMinimumFractionDigits());
+        assertEquals(3, f.getMaximumFractionDigits());
+        assertEquals( "DD°MM′SS.sss″", f.toPattern());
+        assertEquals( "12°30′56.250″", formatAndParse(f, new Angle( 12.515625)));
+        assertEquals("-12°30′56.250″", formatAndParse(f, new Angle(-12.515625)));
+    }
+
+    /**
+     * Tests with optional digits.
+     */
+    @Test
+    @DependsOnMethod("testDegreeMinutesSeconds")
+    public void testOptionalFractionDigits() {
+        final AngleFormat f = new AngleFormat("DD°MM′SS.s##″", Locale.CANADA);
+        assertEquals(1, f.getMinimumFractionDigits());
+        assertEquals(3, f.getMaximumFractionDigits());
+        assertEquals( "DD°MM′SS.s##″", f.toPattern());
+        assertEquals( "12°30′56.25″",  formatAndParse(f, new Angle( 12.515625)));
+        assertEquals("-12°30′56.25″",  formatAndParse(f, new Angle(-12.515625)));
+        assertEquals( "12°31′52.5″",   formatAndParse(f, new Angle( 12.53125 )));
+        assertEquals("-12°31′52.5″",   formatAndParse(f, new Angle(-12.53125 )));
+        assertEquals( "12°33′45.0″",   formatAndParse(f, new Angle( 12.5625  )));
+        assertEquals("-12°33′45.0″",   formatAndParse(f, new Angle(-12.5625  )));
+
+        f.applyPattern("DD°MM′SS.###″");
+        assertEquals(0, f.getMinimumFractionDigits());
+        assertEquals(3, f.getMaximumFractionDigits());
+        assertEquals( "DD°MM′SS.###″", f.toPattern());
+        assertEquals( "12°33′45″", formatAndParse(f, new Angle( 12.5625)));
+        assertEquals("-12°33′45″", formatAndParse(f, new Angle(-12.5625)));
     }
 }
