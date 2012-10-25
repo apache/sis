@@ -80,4 +80,22 @@ public final class Latitude extends Angle {
     public Latitude(final String string) throws NumberFormatException {
         super(string);
     }
+
+    /**
+     * Returns the hemisphere character for an angle of the given sign.
+     * This is used only by {@link #toString()}, not by {@link AngleFormat}.
+     */
+    @Override
+    final char hemisphere(final boolean negative) {
+        return negative ? 'S' : 'N';
+    }
+
+    /**
+     * Upper threshold before to format an angle as an ordinary number.
+     * This is used only by {@link #toString()}, not by {@link AngleFormat}.
+     */
+    @Override
+    final double maximum() {
+        return 90;
+    }
 }

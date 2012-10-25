@@ -57,6 +57,7 @@ import org.junit.runners.Suite;
 
   // Formatting
   org.apache.sis.measure.AngleFormatTest.class,
+  org.apache.sis.measure.AngleTest.class,
   org.apache.sis.io.X364Test.class,
   org.apache.sis.io.EndOfLineFormatterTest.class,
   org.apache.sis.io.IndentedLineFormatterTest.class,
