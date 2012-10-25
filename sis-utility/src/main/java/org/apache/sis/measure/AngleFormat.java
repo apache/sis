@@ -40,6 +40,7 @@ import static java.lang.Double.isInfinite;
 import static org.apache.sis.math.MathFunctions.pow10;
 import static org.apache.sis.math.MathFunctions.truncate;
 import static org.apache.sis.math.MathFunctions.isNegative;
+import static org.apache.sis.math.MathFunctions.fractionDigitsForDelta;
 
 // Related to JDK7
 import java.util.Objects;
@@ -146,9 +147,9 @@ public class AngleFormat extends Format implements Localized {
     /**
      * Constant for the fractional part of the degrees, minutes or seconds field. When formatting
      * a string, this value may be specified to the {@link FieldPosition} constructor in order to
-     * get the bounding index where seconds have been written.
+     * get the bounding index where fraction digits have been written.
      */
-    public static final int FRACTION_FIELD = 3;
+    private static final int FRACTION_FIELD = 3; // Not yet implemented.
 
     /**
      * Constant for hemisphere field. When formatting a string, this value may be specified to the
@@ -278,7 +279,7 @@ public class AngleFormat extends Format implements Localized {
         degreesFieldWidth     = 1;
         minutesFieldWidth     = 2;
         secondsFieldWidth     = 2;
-        minimumFractionDigits = 6;
+        fractionFieldWidth    = 16;  // Number of digits for accurate representation of 1″ ULP.
         degreesSuffix         = "°";
         minutesSuffix         = "′";
         secondsSuffix         = "″";
@@ -316,7 +317,8 @@ public class AngleFormat extends Format implements Localized {
      * @param  pattern Pattern to use for parsing and formatting angle.
      * @throws IllegalArgumentException If the specified pattern is not legal.
      *
-     * @see #setFallbackAllowed(boolean)
+     * @see #setMinimumFractionDigits(int)
+     * @see #setMaximumFractionDigits(int)
      */
     public void applyPattern(final String pattern) throws IllegalArgumentException {
         applyPattern(pattern, SYMBOLS, '.');
@@ -450,6 +452,9 @@ scan:   for (int i=0; i<length;) {
      * See class description for an explanation of how patterns work.
      *
      * @return The formatting pattern.
+     *
+     * @see #getMinimumFractionDigits()
+     * @see #getMaximumFractionDigits()
      */
     public String toPattern() {
         return toPattern(SYMBOLS, '.');
@@ -461,8 +466,6 @@ scan:   for (int i=0; i<length;) {
      * @param symbols An array of 3 characters containing the reserved symbols as upper-case letters.
      *        This is always the {@link #SYMBOLS} array, unless we apply localized patterns.
      * @param decimalSeparator The code point which represent decimal separator in the pattern.
-     *
-     * @see #isFallbackAllowed()
      */
     private String toPattern(final char[] symbols, final int decimalSeparator) {
         char symbol = 0;
@@ -605,7 +608,7 @@ scan:   for (int i=0; i<length;) {
      *
      * @return The {@code toAppendTo} buffer, returned for method calls chaining.
      */
-    public StringBuffer format(final double angle, StringBuffer toAppendTo, final FieldPosition pos) {
+    public StringBuffer format(double angle, StringBuffer toAppendTo, final FieldPosition pos) {
         if (isNaN(angle) || isInfinite(angle)) {
             return numberFormat().format(angle, toAppendTo,
                     (pos != null) ? pos : new FieldPosition(DecimalFormat.INTEGER_FIELD));
@@ -638,8 +641,23 @@ scan:   for (int i=0; i<length;) {
             degrees += correction;
         }
         /*
-         * At this point, 'degrees', 'minutes' and 'seconds'
-         * contain the final values to format.
+         * At this point the 'degrees', 'minutes' and 'seconds' variables contain the final values
+         * to format. But before to perform the numbers formating,  if the pattern uses a variable
+         * number of fraction digits, then limit the maximal number to the amount of significant
+         * fraction digits for a 'double' value. The intend is to avoid non-significant garbage
+         * that are pure artifacts from the conversion from base 2 to base 10.
+         */
+        int maximumFractionDigits = fractionFieldWidth;
+        if (maximumFractionDigits != minimumFractionDigits) {
+            if      (secondsFieldWidth != 0) angle *= 3600;
+            else if (minutesFieldWidth != 0) angle *=   60;
+            final int n = fractionDigitsForDelta(Math.ulp(angle));
+            if (n < maximumFractionDigits) {
+                maximumFractionDigits = Math.max(minimumFractionDigits, n);
+            }
+        }
+        /*
+         * Formatting fields.
          */
         if (prefix != null) {
             toAppendTo.append(prefix);
@@ -653,14 +671,14 @@ scan:   for (int i=0; i<length;) {
             field = PREFIX_FIELD;
         }
         toAppendTo = formatField(degrees, toAppendTo, (field == DEGREES_FIELD) ? pos : null,
-                degreesFieldWidth, (minutesFieldWidth == 0), degreesSuffix);
+                degreesFieldWidth, (minutesFieldWidth == 0) ? maximumFractionDigits : -1, degreesSuffix);
         if (!isNaN(minutes)) {
             toAppendTo = formatField(minutes, toAppendTo, (field == MINUTES_FIELD) ? pos : null,
-                    minutesFieldWidth, (secondsFieldWidth == 0), minutesSuffix);
+                    minutesFieldWidth, (secondsFieldWidth == 0) ? maximumFractionDigits : -1, minutesSuffix);
         }
         if (!isNaN(seconds)) {
             toAppendTo = formatField(seconds, toAppendTo, (field == SECONDS_FIELD) ? pos : null,
-                    secondsFieldWidth, true, secondsSuffix);
+                    secondsFieldWidth, maximumFractionDigits, secondsSuffix);
         }
         return toAppendTo;
     }
@@ -672,22 +690,24 @@ scan:   for (int i=0; i<length;) {
      * @param toAppendTo The buffer where to append the formatted angle.
      * @param pos        An optional object where to store the position of a field in the formatted text.
      * @param width      The field width.
-     * @param decimal    {@code true} for formatting the decimal digits (last field only).
      * @param suffix     Suffix to append, or {@code null} if none.
+     * @param maximumFractionDigits
+     *          Maximal number of digits for formatting the decimal digits (last field only),
+     *          or -1 for formatting an other field than the last one.
      */
     private StringBuffer formatField(double value, StringBuffer toAppendTo, final FieldPosition pos,
-                                     final int width, final boolean decimal, final String suffix)
+            final int width, final int maximumFractionDigits, final String suffix)
     {
         final NumberFormat numberFormat = numberFormat();
         final int startPosition = toAppendTo.length();
-        if (!decimal) {
+        if (maximumFractionDigits < 0) {
             numberFormat.setMinimumIntegerDigits(width);
             numberFormat.setMaximumFractionDigits(0);
             toAppendTo = numberFormat.format(value, toAppendTo, dummyFieldPosition());
         } else if (useDecimalSeparator) {
             numberFormat.setMinimumIntegerDigits(width);
             numberFormat.setMinimumFractionDigits(minimumFractionDigits);
-            numberFormat.setMaximumFractionDigits(fractionFieldWidth);
+            numberFormat.setMaximumFractionDigits(maximumFractionDigits);
             toAppendTo = numberFormat.format(value, toAppendTo, dummyFieldPosition());
         } else {
             value *= pow10(fractionFieldWidth);
@@ -886,6 +906,8 @@ scan:   for (int i=0; i<length;) {
      * @param  pos    On input, index of the first {@code source} character to read.
      *                On output, index after the last parsed character.
      * @return The parsed string as an {@link Angle}, {@link Latitude} or {@link Longitude} object.
+     *
+     * @see #isFallbackAllowed()
      */
     public Angle parse(final String source, final ParsePosition pos) {
         return parse(source, pos, false);
@@ -1233,6 +1255,8 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
      * @param  source The string to parse.
      * @return The parsed string as an {@link Angle}, {@link Latitude} or {@link Longitude} object.
      * @throws ParseException If the string can not be fully parsed.
+     *
+     * @see #isFallbackAllowed()
      */
     public Angle parse(final String source) throws ParseException {
         final ParsePosition pos = new ParsePosition(0);

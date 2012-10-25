@@ -80,4 +80,13 @@ public final class Longitude extends Angle {
     public Longitude(final String string) throws NumberFormatException {
         super(string);
     }
+
+    /**
+     * Returns the hemisphere character for an angle of the given sign.
+     * This is used only by {@link #toString()}, not by {@link AngleFormat}.
+     */
+    @Override
+    final char hemisphere(final boolean negative) {
+        return negative ? 'W' : 'E';
+    }
 }

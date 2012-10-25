@@ -21,8 +21,8 @@ import java.text.Format;
 import java.text.ParseException;
 import java.io.Serializable;
 import net.jcip.annotations.Immutable;
-
 import org.apache.sis.util.Utilities;
+import org.apache.sis.math.MathFunctions;
 
 
 /**
@@ -100,7 +100,8 @@ public class Angle implements Comparable<Angle>, Serializable {
             e.initCause(exception);
             throw e;
         }
-        if (getClass().isAssignableFrom(angle.getClass())) {
+        final Class<?> type = angle.getClass();
+        if (type == Angle.class || getClass().isAssignableFrom(type)) {
             this.θ = ((Angle) angle).θ;
         } else {
             throw new NumberFormatException(string);
@@ -164,6 +165,22 @@ public class Angle implements Comparable<Angle>, Serializable {
     }
 
     /**
+     * Upper threshold before to format an angle as an ordinary number.
+     * This is set to 90° in the case of latitude numbers.
+     */
+    double maximum() {
+        return 360;
+    }
+
+    /**
+     * Returns the hemisphere character for an angle of the given sign.
+     * This is used only by {@link #toString()}, not by {@link AngleFormat}.
+     */
+    char hemisphere(final boolean negative) {
+        return 0;
+    }
+
+    /**
      * Returns a string representation of this {@code Angle} object.
      * This is a convenience method mostly for debugging purpose, since it uses a fixed locale.
      * Developers should consider using {@link AngleFormat} for end-user applications instead
@@ -174,8 +191,26 @@ public class Angle implements Comparable<Angle>, Serializable {
     @Override
     public String toString() {
         StringBuffer buffer = new StringBuffer(16);
-        synchronized (Angle.class) {
-            buffer = getAngleFormat().format(this, buffer, null);
+        double m = Math.abs(θ);
+        final boolean isSmall = m <= (1 / 3600E+6); // 1 micro-second.
+        if (isSmall || m > maximum()) {
+            final char h = hemisphere(MathFunctions.isNegative(θ));
+            if (h == 0) {
+                m = θ;  // Restore the sign.
+            }
+            char symbol = '°';
+            if (isSmall) {
+                symbol = '″';
+                m *= 3600;
+            }
+            buffer.append(m).append(symbol);
+            if (h != 0) {
+                buffer.append(h);
+            }
+        } else {
+            synchronized (Angle.class) {
+                buffer = getAngleFormat().format(this, buffer, null);
+            }
         }
         return buffer.toString();
     }
