@@ -21,6 +21,7 @@ import java.text.Format;
 import java.text.FieldPosition;
 import java.text.ParsePosition;
 import java.text.ParseException;
+import java.text.NumberFormat;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import net.jcip.annotations.NotThreadSafe;
@@ -56,6 +57,7 @@ import java.util.Objects;
  *   <tr><td>{@code m}</td><td>The fractional part of minutes</td></tr>
  *   <tr><td>{@code S}</td><td>The integer part of seconds</td></tr>
  *   <tr><td>{@code s}</td><td>The fractional part of seconds</td></tr>
+ *   <tr><td>{@code #}</td><td>Fraction digits shown only if non-zero</td></tr>
  *   <tr><td>{@code .}</td><td>The decimal separator</td></tr>
  * </table></blockquote>
  *
@@ -88,6 +90,7 @@ import java.util.Objects;
  *   <tr><td>{@code DD°MM′SS″ }</td>  <td>48°30′00″ </td></tr>
  *   <tr><td>{@code DD°MM′    }</td>  <td>48°30′    </td></tr>
  *   <tr><td>{@code DD.ddd    }</td>  <td>48.500    </td></tr>
+ *   <tr><td>{@code DD.###    }</td>  <td>48.5      </td></tr>
  *   <tr><td>{@code DDMM      }</td>  <td>4830      </td></tr>
  *   <tr><td>{@code DDMMSS    }</td>  <td>483000    </td></tr>
  * </table></blockquote>
@@ -141,16 +144,24 @@ public class AngleFormat extends Format implements Localized {
     public static final int SECONDS_FIELD = 2;
 
     /**
+     * Constant for the fractional part of the degrees, minutes or seconds field. When formatting
+     * a string, this value may be specified to the {@link FieldPosition} constructor in order to
+     * get the bounding index where seconds have been written.
+     */
+    public static final int FRACTION_FIELD = 3;
+
+    /**
      * Constant for hemisphere field. When formatting a string, this value may be specified to the
      * {@link FieldPosition} constructor in order to get the bounding index where the hemisphere
      * symbol has been written.
      */
-    public static final int HEMISPHERE_FIELD = 3;
+    public static final int HEMISPHERE_FIELD = 4;
 
     /**
-     * Symbols for degrees (0), minutes (1) and seconds (2).
+     * Symbols for degrees (0), minutes (1), seconds (2) and optional fraction digits (3).
+     * The index of each symbol shall be equals to the corresponding {@code *_FIELD} constant.
      */
-    private static final char[] SYMBOLS = {'D', 'M', 'S'};
+    private static final char[] SYMBOLS = {'D', 'M', 'S', '#'};
 
     /**
      * The locale specified at construction time.
@@ -162,10 +173,11 @@ public class AngleFormat extends Format implements Localized {
      * and by the decimal digits. A value of 0 means that the field is not formatted.
      * {@code fractionFieldWidth} applies to the last non-zero field.
      */
-    private int degreesFieldWidth,
-                minutesFieldWidth,
-                secondsFieldWidth,
-                fractionFieldWidth;
+    private byte degreesFieldWidth,
+                 minutesFieldWidth,
+                 secondsFieldWidth,
+                 fractionFieldWidth,
+                 minimumFractionDigits;
 
     /**
      * Characters to insert before the text to format, and after each field.
@@ -180,10 +192,13 @@ public class AngleFormat extends Format implements Localized {
      * {@code true} if the {@link #parse(String, ParsePosition)} method is allowed to fallback
      * on the build-in default symbols if the string to parse doesn't match the pattern.
      *
+     * <p>This field can not be set by the pattern string,
+     * so it needs to be initialized separately.</p>
+     *
      * @see #isFallbackAllowed()
      * @see #setFallbackAllowed(boolean)
      */
-    private boolean isFallbackAllowed;
+    private boolean isFallbackAllowed = true;
 
     /**
      * Specifies whatever the decimal separator shall be inserted between the integer part
@@ -193,13 +208,11 @@ public class AngleFormat extends Format implements Localized {
     private boolean useDecimalSeparator;
 
     /**
-     * Formats to use for writing numbers (degrees, minutes or seconds) when formatting an angle.
+     * Format to use for writing numbers (degrees, minutes or seconds) when formatting an angle.
      * The pattern given to this {@code DecimalFormat} shall NOT accept exponential notation,
      * because "E" of "Exponent" would be confused with "E" of "East".
-     *
-     * <p>Consider this field as final. It is modified only by the {@link #clone()} method.</p>
      */
-    private DecimalFormat numberFormat;
+    private transient NumberFormat numberFormat;
 
     /**
      * Object to give to {@code DecimalFormat.format} methods,
@@ -210,55 +223,13 @@ public class AngleFormat extends Format implements Localized {
     private transient FieldPosition dummy;
 
     /**
-     * Returns the width of the specified field.
+     * Returns the number format, created when first needed.
      */
-    private int getWidth(final int index) {
-        switch (index) {
-            case DEGREES_FIELD: return degreesFieldWidth;
-            case MINUTES_FIELD: return minutesFieldWidth;
-            case SECONDS_FIELD: return secondsFieldWidth;
-            default:            return 0; // Must be 0 (important!)
+    private NumberFormat numberFormat() {
+        if (numberFormat == null) {
+            numberFormat = new DecimalFormat("#0", DecimalFormatSymbols.getInstance(locale));
         }
-    }
-
-    /**
-     * Sets the width for the specified field.
-     * All following fields will be set to 0.
-     */
-    @SuppressWarnings("fallthrough")
-    private void setWidth(final int index, int width) {
-        switch (index) {
-            case DEGREES_FIELD: degreesFieldWidth = width; width = 0; // fall through
-            case MINUTES_FIELD: minutesFieldWidth = width; width = 0; // fall through
-            case SECONDS_FIELD: secondsFieldWidth = width;
-        }
-    }
-
-    /**
-     * Returns the suffix for the specified field.
-     */
-    private String getSuffix(final int index) {
-        switch (index) {
-            case  PREFIX_FIELD: return prefix;
-            case DEGREES_FIELD: return degreesSuffix;
-            case MINUTES_FIELD: return minutesSuffix;
-            case SECONDS_FIELD: return secondsSuffix;
-            default:            return null;
-        }
-    }
-
-    /**
-     * Sets the suffix for the specified field. Suffix for all
-     * following fields will be set to their default value.
-     */
-    @SuppressWarnings("fallthrough")
-    private void setSuffix(final int field, String suffix) {
-        switch (field) {
-            case  PREFIX_FIELD: prefix        = suffix; suffix = "°";  // fall through
-            case DEGREES_FIELD: degreesSuffix = suffix; suffix = "′";  // fall through
-            case MINUTES_FIELD: minutesSuffix = suffix; suffix = "″";  // fall through
-            case SECONDS_FIELD: secondsSuffix = suffix;
-        }
+        return numberFormat;
     }
 
     /**
@@ -294,7 +265,7 @@ public class AngleFormat extends Format implements Localized {
      * Constructs a new {@code AngleFormat} for the default pattern and the current default locale.
      */
     public AngleFormat() {
-        this(Locale.getDefault(Locale.Category.FORMAT), new DecimalFormat("#0"));
+        this(Locale.getDefault(Locale.Category.FORMAT));
     }
 
     /**
@@ -303,7 +274,15 @@ public class AngleFormat extends Format implements Localized {
      * @param  locale The locale to use.
      */
     public AngleFormat(final Locale locale) {
-        this(locale, new DecimalFormat("#0", DecimalFormatSymbols.getInstance(locale)));
+        this.locale = locale;
+        degreesFieldWidth     = 1;
+        minutesFieldWidth     = 2;
+        secondsFieldWidth     = 2;
+        minimumFractionDigits = 6;
+        degreesSuffix         = "°";
+        minutesSuffix         = "′";
+        secondsSuffix         = "″";
+        useDecimalSeparator   = true;
     }
 
     /**
@@ -314,7 +293,7 @@ public class AngleFormat extends Format implements Localized {
      * @throws IllegalArgumentException If the specified pattern is illegal.
      */
     public AngleFormat(final String pattern) throws IllegalArgumentException {
-        this(pattern, Locale.getDefault(Locale.Category.FORMAT), new DecimalFormat("#0"));
+        this(pattern, Locale.getDefault(Locale.Category.FORMAT));
     }
 
     /**
@@ -326,42 +305,7 @@ public class AngleFormat extends Format implements Localized {
      * @throws IllegalArgumentException If the specified pattern is illegal.
      */
     public AngleFormat(final String pattern, final Locale locale) throws IllegalArgumentException {
-        this(pattern, locale, new DecimalFormat("#0", DecimalFormatSymbols.getInstance(locale)));
-    }
-
-    /**
-     * Constructs a new {@code AngleFormat} using the default pattern and the specified decimal
-     * format.
-     *
-     * @param  locale  The locale specified by the user, or the default locale otherwise.
-     * @param  symbols The symbols to use for parsing and formatting numbers.
-     * @throws IllegalArgumentException If the specified pattern is illegal.
-     */
-    private AngleFormat(final Locale locale, final DecimalFormat decimalFormat) {
         this.locale = locale;
-        degreesFieldWidth   = 1;
-        minutesFieldWidth   = 2;
-        degreesSuffix       = "°";
-        minutesSuffix       = "′";
-        secondsSuffix       = "″";
-        isFallbackAllowed = true;
-        useDecimalSeparator = true;
-        numberFormat        = decimalFormat;
-    }
-
-    /**
-     * Constructs a new {@code AngleFormat} using the specified pattern and decimal symbols.
-     *
-     * @param  pattern Pattern to use for parsing and formatting angles.
-     *         See class description for an explanation of pattern syntax.
-     * @param  locale  The locale specified by the user, or the default locale otherwise.
-     * @param  symbols The symbols to use for parsing and formatting numbers.
-     * @throws IllegalArgumentException If the specified pattern is illegal.
-     */
-    private AngleFormat(final String pattern, final Locale locale, final DecimalFormat decimalFormat) {
-        this.locale = locale;
-        numberFormat = decimalFormat;
-        isFallbackAllowed = true;
         applyPattern(pattern, SYMBOLS, '.');
     }
 
@@ -388,86 +332,117 @@ public class AngleFormat extends Format implements Localized {
      */
     @SuppressWarnings("fallthrough")
     private void applyPattern(final String pattern, final char[] symbols, final int decimalSeparator) {
-        fractionFieldWidth = 0;
-        useDecimalSeparator = true;
-        int startPrefix = 0;
-        int symbolIndex = 0;
+        ArgumentChecks.ensureNonEmpty("pattern", pattern);
+        degreesFieldWidth     = 1;
+        minutesFieldWidth     = 0;
+        secondsFieldWidth     = 0;
+        fractionFieldWidth    = 0;
+        minimumFractionDigits = 0;
+        prefix                = null;
+        degreesSuffix         = null;
+        minutesSuffix         = null;
+        secondsSuffix         = null;
+        useDecimalSeparator   = true;
+        int expectedField     = PREFIX_FIELD;
+        int endPreviousField  = 0;
         boolean parseFinished = false;
         final int length = pattern.length();
 scan:   for (int i=0; i<length;) {
             /*
-             * Examine all character pattern, skipping the non-reserved ones
-             * ("D", "M", "S", "d", "m", "s"). Non-reserved characters will
-             * be stored as suffix later.
+             * Examine the first characters in the pattern, skipping the non-reserved ones
+             * ("D", "M", "S", "d", "m", "s", "#"). Non-reserved characters will be stored
+             * as suffix later.
              */
-            final int c          = pattern.codePointAt(i);
-            final int charCount  = Character.charCount(c);
-            final int upperCaseC = Character.toUpperCase(c);
-            for (int field=DEGREES_FIELD; field<=SECONDS_FIELD; field++) {
-                if (upperCaseC == symbols[field]) {
-                    /*
-                     * A reserved character has been found.  Ensure that it appears in a legal
-                     * location. For example "MM.mm" is illegal because there is no 'D' before
-                     * 'M', and "DD.mm" is illegal because the integer part is not 'M'.
-                     */
-                    if (c == upperCaseC) {
-                        symbolIndex++;
-                    }
-                    if (field != symbolIndex-1 || parseFinished) {
-                        /*
-                         * Illegal pattern. Before to throw an exception, reset this format
-                         * to the default pattern in order to avoid leaving the object in a
-                         * random state.
-                         */
-                        setWidth(DEGREES_FIELD, 1);
-                        setSuffix(PREFIX_FIELD, null);
-                        fractionFieldWidth   = 0;
-                        useDecimalSeparator = true;
-                        throw new IllegalArgumentException(Errors.format(
-                                Errors.Keys.IllegalFormatPatternForClass_2, pattern, Angle.class));
-                    }
-                    if (c == upperCaseC) {
-                        /*
-                         * Memorize the characters prior the reserved letter as the suffix of
-                         * the previous field. Then count the number of occurrences of that
-                         * reserved letter. This number will be the field width.
-                         */
-                        setSuffix(field-1, (i > startPrefix) ? pattern.substring(startPrefix, i) : null);
-                        int w = 1;
-                        while ((i += charCount) < length && pattern.codePointAt(i) == c) {
-                            w++;
-                        }
-                        setWidth(field, w);
-                    } else {
-                        /*
-                         * If the reserved letter is lower-case, the part before that letter will
-                         * be the decimal separator rather than the suffix of previous field.
-                         * The count the number of occurrences of the lower-case letter; this
-                         * will be the precision of the fraction part.
-                         */
-                        if (i == startPrefix) {
-                            useDecimalSeparator = false;
-                        } else {
-                            final int b = pattern.codePointAt(startPrefix);
-                            if (b != decimalSeparator || startPrefix + Character.charCount(b) != i) {
-                                throw new IllegalArgumentException(Errors.format(
-                                        Errors.Keys.IllegalFormatPatternForClass_2, pattern, Angle.class));
-                            }
-                        }
-                        int w = 1;
-                        while ((i += charCount) < length && pattern.codePointAt(i) == c) {
-                            w++;
-                        }
-                        fractionFieldWidth = w;
-                        parseFinished = true;
-                    }
-                    startPrefix = i;
-                    continue scan;
+            int c          = pattern.codePointAt(i);
+            int charCount  = Character.charCount(c);
+            int upperCaseC = Character.toUpperCase(c);
+            for (int field=DEGREES_FIELD; field<=FRACTION_FIELD; field++) {
+                if (upperCaseC != symbols[field]) {
+                    continue;
                 }
+                /*
+                 * A reserved character has been found.  Ensure that it appears in a legal
+                 * location. For example "MM.mm" is illegal because there is no 'D' before
+                 * 'M', and "DD.mm" is illegal because the integer part is not 'M'.
+                 */
+                final boolean isIntegerField = (c == upperCaseC) && (field != FRACTION_FIELD);
+                if (isIntegerField) {
+                    expectedField++;
+                }
+                if (parseFinished || (field != expectedField && field != FRACTION_FIELD)) {
+                    throw new IllegalArgumentException(Errors.format(
+                            Errors.Keys.IllegalFormatPatternForClass_2, pattern, Angle.class));
+                }
+                if (isIntegerField) {
+                    /*
+                     * Memorize the characters prior the reserved letter as the suffix of
+                     * the previous field. Then count the number of occurrences of that
+                     * reserved letter. This number will be the field width.
+                     */
+                    final String previousSuffix = (i > endPreviousField) ? pattern.substring(endPreviousField, i) : null;
+                    int width = 1;
+                    while ((i += charCount) < length && pattern.codePointAt(i) == c) {
+                        width++;
+                    }
+                    final byte wb = (byte) Math.min(width, Byte.MAX_VALUE);
+                    switch (field) {
+                        case DEGREES_FIELD: prefix        = previousSuffix; degreesFieldWidth = wb; break;
+                        case MINUTES_FIELD: degreesSuffix = previousSuffix; minutesFieldWidth = wb; break;
+                        case SECONDS_FIELD: minutesSuffix = previousSuffix; secondsFieldWidth = wb; break;
+                        default: throw new AssertionError(field);
+                    }
+                } else {
+                    /*
+                     * If the reserved letter is lower-case or the symbol for optional fraction
+                     * digit, the part before that letter will be the decimal separator rather
+                     * than the suffix of previous field. The count the number of occurrences of
+                     * the lower-case letter; this will be the precision of the fraction part.
+                     */
+                    if (i == endPreviousField) {
+                        useDecimalSeparator = false;
+                    } else {
+                        final int b = pattern.codePointAt(endPreviousField);
+                        if (b != decimalSeparator || endPreviousField + Character.charCount(b) != i) {
+                            throw new IllegalArgumentException(Errors.format(
+                                    Errors.Keys.IllegalFormatPatternForClass_2, pattern, Angle.class));
+                        }
+                    }
+                    int width = 1;
+                    while ((i += charCount) < length) {
+                        final int fc = pattern.codePointAt(i);
+                        if (fc != c) {
+                            if (fc != symbols[FRACTION_FIELD]) break;
+                            // Switch the search from mandatory to optional digits.
+                            minimumFractionDigits = (byte) Math.min(width, Byte.MAX_VALUE);
+                            charCount = Character.charCount(c = fc);
+                        }
+                        width++;
+                    }
+                    fractionFieldWidth = (byte) Math.min(width, Byte.MAX_VALUE);
+                    if (c != symbols[FRACTION_FIELD]) {
+                        // The pattern contains only mandatory digits.
+                        minimumFractionDigits = fractionFieldWidth;
+                    }
+                    parseFinished = true;
+                }
+                endPreviousField = i;
+                continue scan;
             }
             i += charCount;
         }
-        setSuffix(symbolIndex-1, (startPrefix < length) ? pattern.substring(startPrefix) : null);
+        if (endPreviousField < length) {
+            final String suffix = pattern.substring(endPreviousField);
+            switch (expectedField) {
+                case DEGREES_FIELD: degreesSuffix = suffix; break;
+                case MINUTES_FIELD: minutesSuffix = suffix; break;
+                case SECONDS_FIELD: secondsSuffix = suffix; break;
+                default: {
+                    // Happen if no symbol has been recognized in the pattern.
+                    throw new IllegalArgumentException(Errors.format(
+                            Errors.Keys.IllegalFormatPatternForClass_2, pattern, Angle.class));
+                }
+            }
+        }
     }
 
     /**
@@ -490,43 +465,117 @@ scan:   for (int i=0; i<length;) {
      * @see #isFallbackAllowed()
      */
     private String toPattern(final char[] symbols, final int decimalSeparator) {
-        char symbol = '#';
+        char symbol = 0;
         final StringBuilder buffer = new StringBuilder(12);
-        for (int field=DEGREES_FIELD; field<=symbols.length; field++) {
-            final String previousSuffix = getSuffix(field-1);
-            int w = getWidth(field);
-            if (w > 0) {
+        for (int field=DEGREES_FIELD; field<=FRACTION_FIELD; field++) {
+            final String previousSuffix;
+            int width;
+            switch (field) {
+                case DEGREES_FIELD: previousSuffix = prefix;        width = degreesFieldWidth; break;
+                case MINUTES_FIELD: previousSuffix = degreesSuffix; width = minutesFieldWidth; break;
+                case SECONDS_FIELD: previousSuffix = minutesSuffix; width = secondsFieldWidth; break;
+                default:            previousSuffix = secondsSuffix; width = 0;
+            }
+            if (width == 0) {
                 /*
-                 * Write the integer parts of degrees, minutes and seconds.
-                 * The suffix of previous field will be written first.
+                 * We reached the field after the last one. This is not necessarily FRACTIONAL_FIELD
+                 * since a previous field can be marked as omitted. Before to stop the loop, write
+                 * the pattern for the fractional part of degrees, minutes or seconds, followed by
+                 * the suffix. In this case, 'previousSuffix' is actually associated to the integer
+                 * part of the current field.
                  */
-                if (previousSuffix != null) {
-                    buffer.append(previousSuffix);
-                }
-                symbol = symbols[field];
-                do buffer.append(symbol);
-                while (--w > 0);
-            } else {
-                /*
-                 * Write the fractional part of degrees, minutes or seconds,
-                 * then the suffix of the last field.
-                 */
-                w = fractionFieldWidth;
-                if (w > 0) {
+                width = fractionFieldWidth;
+                if (width > 0) {
                     if (useDecimalSeparator) {
                         buffer.appendCodePoint(decimalSeparator);
                     }
+                    final int optional = width - minimumFractionDigits;
                     symbol = Character.toLowerCase(symbol);
-                    do buffer.append(symbol);
-                    while (--w > 0);
+                    do {
+                        if (width == optional) {
+                            symbol = symbols[FRACTION_FIELD];
+                        }
+                        buffer.append(symbol);
+                    }
+                    while (--width > 0);
                 }
                 if (previousSuffix != null) {
                     buffer.append(previousSuffix);
                 }
-                break;
+                break; // We are done.
             }
+            /*
+             * This is the normal part of the loop, before the final fractional part handled
+             * in the above block. Write the suffix of the previous field, then the pattern
+             * for the integer part of degrees, minutes or second field.
+             */
+            if (previousSuffix != null) {
+                buffer.append(previousSuffix);
+            }
+            symbol = symbols[field];
+            do buffer.append(symbol);
+            while (--width > 0);
         }
         return buffer.toString();
+    }
+
+    /**
+     * Returns the minimum number of digits allowed in the fraction portion of the last field.
+     * This value can be set by the repetition of {@code 'd'}, {@code 'm'} or {@code 's'} symbol
+     * in the pattern.
+     *
+     * @return The minimum number of digits allowed in the fraction portion.
+     *
+     * @see DecimalFormat#getMinimumFractionDigits()
+     */
+    public int getMinimumFractionDigits() {
+        return minimumFractionDigits;
+    }
+
+    /**
+     * Sets the minimum number of digits allowed in the fraction portion of the last field.
+     * If the given value is greater than the {@linkplain #getMaximumFractionDigits() maximum
+     * number of fraction digits}, then that maximum number will be set to the given value too.
+     *
+     * @param count The minimum number of digits allowed in the fraction portion.
+     *
+     * @see DecimalFormat#setMinimumFractionDigits(int)
+     */
+    public void setMinimumFractionDigits(final int count) {
+        ArgumentChecks.ensurePositive("count", count);
+        minimumFractionDigits = (byte) Math.min(count, Byte.MAX_VALUE);
+        if (minimumFractionDigits > fractionFieldWidth) {
+            fractionFieldWidth = minimumFractionDigits;
+        }
+    }
+
+    /**
+     * Returns the maximum number of digits allowed in the fraction portion of the last field.
+     * This value can be set by the repetition of {@code '#'} symbol in the pattern.
+     *
+     * @return The maximum number of digits allowed in the fraction portion.
+     *
+     * @see DecimalFormat#getMaximumFractionDigits()
+     */
+    public int getMaximumFractionDigits() {
+        return fractionFieldWidth;
+    }
+
+    /**
+     * Sets the maximum number of digits allowed in the fraction portion of the last field.
+     * If the given value is smaller than the {@linkplain #getMinimumFractionDigits() minimum
+     * number of fraction digits}, then that minimum number will be set to the given value too.
+     *
+     * @param count The maximum number of digits allowed in the fraction portion.
+     *
+     * @see DecimalFormat#setMaximumFractionDigits(int)
+     */
+    public void setMaximumFractionDigits(final int count) {
+        ArgumentChecks.ensurePositive("count", count);
+        fractionFieldWidth = (byte) Math.min(count, Byte.MAX_VALUE);
+        if (fractionFieldWidth < minimumFractionDigits) {
+            minimumFractionDigits = fractionFieldWidth;
+        }
     }
 
     /**
@@ -558,7 +607,7 @@ scan:   for (int i=0; i<length;) {
      */
     public StringBuffer format(final double angle, StringBuffer toAppendTo, final FieldPosition pos) {
         if (isNaN(angle) || isInfinite(angle)) {
-            return numberFormat.format(angle, toAppendTo,
+            return numberFormat().format(angle, toAppendTo,
                     (pos != null) ? pos : new FieldPosition(DecimalFormat.INTEGER_FIELD));
         }
         double degrees = angle;
@@ -629,6 +678,7 @@ scan:   for (int i=0; i<length;) {
     private StringBuffer formatField(double value, StringBuffer toAppendTo, final FieldPosition pos,
                                      final int width, final boolean decimal, final String suffix)
     {
+        final NumberFormat numberFormat = numberFormat();
         final int startPosition = toAppendTo.length();
         if (!decimal) {
             numberFormat.setMinimumIntegerDigits(width);
@@ -636,7 +686,7 @@ scan:   for (int i=0; i<length;) {
             toAppendTo = numberFormat.format(value, toAppendTo, dummyFieldPosition());
         } else if (useDecimalSeparator) {
             numberFormat.setMinimumIntegerDigits(width);
-            numberFormat.setMinimumFractionDigits(fractionFieldWidth);
+            numberFormat.setMinimumFractionDigits(minimumFractionDigits);
             numberFormat.setMaximumFractionDigits(fractionFieldWidth);
             toAppendTo = numberFormat.format(value, toAppendTo, dummyFieldPosition());
         } else {
@@ -750,7 +800,14 @@ scan:   for (int i=0; i<length;) {
         assert field >= PREFIX_FIELD && field <= SECONDS_FIELD : field;
         do {
             int index = start;
-            final String toSkip = getSuffix(field);
+            final String toSkip;
+            switch (field) {
+                case  PREFIX_FIELD: toSkip = prefix;        break;
+                case DEGREES_FIELD: toSkip = degreesSuffix; break;
+                case MINUTES_FIELD: toSkip = minutesSuffix; break;
+                case SECONDS_FIELD: toSkip = secondsSuffix; break;
+                default: throw new AssertionError(field);
+            }
             if (toSkip != null) {
                 final int toSkipLength = toSkip.length();
                 int c;
@@ -845,6 +902,7 @@ scan:   for (int i=0; i<length;) {
         double minutes   = NaN;
         double seconds   = NaN;
         final int length = source.length();
+        final NumberFormat numberFormat = numberFormat();
         ///////////////////////////////////////////////////////////////////////////////
         // BLOCK A: Assign values to 'degrees', 'minutes' and 'seconds' variables.   //
         //          This block does not take the hemisphere field in account, and    //
@@ -1261,7 +1319,7 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
     @Override
     public AngleFormat clone() {
         final AngleFormat clone = (AngleFormat) super.clone();
-        clone.numberFormat = (DecimalFormat) numberFormat.clone();
+        clone.numberFormat = null;
         clone.dummy = null;
         return clone;
     }
@@ -1271,8 +1329,9 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
      */
     @Override
     public int hashCode() {
-        return Objects.hash(degreesFieldWidth, minutesFieldWidth, secondsFieldWidth, fractionFieldWidth,
-                prefix, degreesSuffix, minutesSuffix, secondsSuffix, useDecimalSeparator) ^ (int) serialVersionUID;
+        return Objects.hash(degreesFieldWidth, minutesFieldWidth, secondsFieldWidth,
+                fractionFieldWidth, minimumFractionDigits, useDecimalSeparator, isFallbackAllowed,
+                locale, prefix, degreesSuffix, minutesSuffix, secondsSuffix) ^ (int) serialVersionUID;
     }
 
     /**
@@ -1287,17 +1346,18 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
         }
         if (object != null && getClass() == object.getClass()) {
             final  AngleFormat cast = (AngleFormat) object;
-            return degreesFieldWidth   == cast.degreesFieldWidth     &&
-                   minutesFieldWidth   == cast.minutesFieldWidth     &&
-                   secondsFieldWidth   == cast.secondsFieldWidth     &&
-                   fractionFieldWidth  == cast.fractionFieldWidth    &&
-                   useDecimalSeparator == cast.useDecimalSeparator   &&
-                   Objects.equals(prefix,        cast.prefix )       &&
-                   Objects.equals(degreesSuffix, cast.degreesSuffix) &&
-                   Objects.equals(minutesSuffix, cast.minutesSuffix) &&
-                   Objects.equals(secondsSuffix, cast.secondsSuffix) &&
-                   Objects.equals(numberFormat.getDecimalFormatSymbols(),
-                             cast.numberFormat.getDecimalFormatSymbols());
+            return degreesFieldWidth     == cast.degreesFieldWidth     &&
+                   minutesFieldWidth     == cast.minutesFieldWidth     &&
+                   secondsFieldWidth     == cast.secondsFieldWidth     &&
+                   fractionFieldWidth    == cast.fractionFieldWidth    &&
+                   minimumFractionDigits == cast.minimumFractionDigits &&
+                   useDecimalSeparator   == cast.useDecimalSeparator   &&
+                   isFallbackAllowed     == cast.isFallbackAllowed     &&
+                   Objects.equals(locale,        cast.locale)          &&
+                   Objects.equals(prefix,        cast.prefix)          &&
+                   Objects.equals(degreesSuffix, cast.degreesSuffix)   &&
+                   Objects.equals(minutesSuffix, cast.minutesSuffix)   &&
+                   Objects.equals(secondsSuffix, cast.secondsSuffix);
         } else {
             return false;
         }
