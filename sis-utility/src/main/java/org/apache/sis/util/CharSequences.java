@@ -137,6 +137,30 @@ public final class CharSequences extends Static {
     }
 
     /**
+     * Returns the number of Unicode code points in the given characters sequence,
+     * or 0 if {@code null}. Unpaired surrogates within the text count as one code
+     * point each.
+     *
+     * @param  text The character sequence from which to get the count, or {@code null}.
+     * @return The number of Unicode code points, or 0 if the argument is {@code null}.
+     *
+     * @see Character#codePointCount(CharSequence, int, int)
+     */
+    public static int codePointCount(final CharSequence text) {
+        if (text == null)                  return 0;
+        if (text instanceof String)        return ((String)        text).codePointCount(0, text.length());
+        if (text instanceof StringBuilder) return ((StringBuilder) text).codePointCount(0, text.length());
+        if (text instanceof StringBuffer)  return ((StringBuffer)  text).codePointCount(0, text.length());
+        if (text instanceof CharBuffer) {
+            final CharBuffer buffer = (CharBuffer) text;
+            if (buffer.hasArray() && !buffer.isReadOnly()) {
+                return Character.codePointCount(buffer.array(), buffer.position(), buffer.limit());
+            }
+        }
+        return Character.codePointCount(text, 0, text.length());
+    }
+
+    /**
      * Returns the number of occurrences of the {@code toSearch} string in the given {@code text}.
      * The search is case-sensitive.
      *
