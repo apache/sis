@@ -96,7 +96,7 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
          */
         @Override
         public void dispose() {
-            clear();
+            super.clear();
             removeEntry(this);
         }
     }

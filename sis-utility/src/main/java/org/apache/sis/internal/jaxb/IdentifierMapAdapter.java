@@ -452,7 +452,7 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
                             this.authority = authority;
                             return;
                         }
-                        if (state == Boolean.TRUE) {
+                        if (state) {
                             // Found a duplicated entry, and user asked for the
                             // removal of that authority.
                             it.remove();
