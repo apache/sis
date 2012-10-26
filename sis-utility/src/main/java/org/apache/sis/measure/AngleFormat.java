@@ -745,7 +745,7 @@ scan:   for (int i=0; i<length;) {
         if (maximumFractionDigits != minimumFractionDigits) {
             if      (secondsFieldWidth != 0) angle *= 3600;
             else if (minutesFieldWidth != 0) angle *=   60;
-            final int n = fractionDigitsForDelta(Math.ulp(angle));
+            final int n = fractionDigitsForDelta(Math.ulp(angle)) - 1;
             if (n < maximumFractionDigits) {
                 maximumFractionDigits = Math.max(minimumFractionDigits, n);
             }

@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Collections;
 import java.util.ResourceBundle;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.io.IOException;
 import org.apache.sis.util.Exceptions;
@@ -123,7 +122,6 @@ final class Loader extends ResourceBundle.Control {
          *
          * Note: Do not call Constructor.setAccessible(true) - this is not allowed in Applet.
          */
-        final Constructor<?> c;
         try {
             return (ResourceBundle) classe.getDeclaredConstructor(String.class).newInstance(filename);
         } catch (NoSuchMethodException | InvocationTargetException e) {
