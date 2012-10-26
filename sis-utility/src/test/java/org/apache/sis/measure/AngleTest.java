@@ -16,6 +16,7 @@
  */
 package org.apache.sis.measure;
 
+import java.util.Locale;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
@@ -67,5 +68,20 @@ public final strictfp class AngleTest extends TestCase {
         assertEquals(new Longitude(45.5), new Longitude("45.5E"));
         assertEquals(new Longitude(455.), new Longitude("45.5E1"));
         assertEquals(new Longitude(4.55), new Longitude("45.5E-1"));
+    }
+
+    /**
+     * Tests the {@link Angle#formatTo(Formatter, int, int, int)} method.
+     */
+    @Test
+    public void testFormatTo() {
+        assertEquals("5°30′00″",  String.format(Locale.CANADA,  "%s",    new Angle   (5.5)));
+        assertEquals("5°30′00″N", String.format(Locale.CANADA,  "%s",    new Latitude(5.5)));
+        assertEquals("  5°30′",   String.format(Locale.CANADA,  "%7.5s", new Angle   (5.5)));
+        assertEquals("  5.5°N",   String.format(Locale.CANADA,  "%7.5s", new Latitude(5.5)));
+        assertEquals("  5,5°N",   String.format(Locale.FRANCE,  "%7.5s", new Latitude(5.5)));
+        assertEquals("5,5°N  ",   String.format(Locale.FRANCE, "%-7.5s", new Latitude(5.5)));
+        assertEquals("N",         String.format(Locale.FRANCE,  "%1.1s", new Latitude(5.5)));
+        assertEquals(" ",         String.format(Locale.FRANCE,  "%1.0s", new Latitude(5.5)));
     }
 }

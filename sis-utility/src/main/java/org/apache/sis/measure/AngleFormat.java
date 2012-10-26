@@ -173,12 +173,14 @@ public class AngleFormat extends Format implements Localized {
      * Minimal amount of spaces to be used by the degrees, minutes and seconds fields,
      * and by the decimal digits. A value of 0 means that the field is not formatted.
      * {@code fractionFieldWidth} applies to the last non-zero field.
+     * {@code maximumTotalWidth} is 0 (the default) if there is no restriction.
      */
     private byte degreesFieldWidth,
                  minutesFieldWidth,
                  secondsFieldWidth,
                  fractionFieldWidth,
-                 minimumFractionDigits;
+                 minimumFractionDigits,
+                 maximumTotalWidth;
 
     /**
      * Characters to insert before the text to format, and after each field.
@@ -340,6 +342,7 @@ public class AngleFormat extends Format implements Localized {
         secondsFieldWidth     = 0;
         fractionFieldWidth    = 0;
         minimumFractionDigits = 0;
+        maximumTotalWidth     = 0;
         prefix                = null;
         degreesSuffix         = null;
         minutesSuffix         = null;
@@ -386,7 +389,7 @@ scan:   for (int i=0; i<length;) {
                     while ((i += charCount) < length && pattern.codePointAt(i) == c) {
                         width++;
                     }
-                    final byte wb = (byte) Math.min(width, Byte.MAX_VALUE);
+                    final byte wb = toByte(width);
                     switch (field) {
                         case DEGREES_FIELD: prefix        = previousSuffix; degreesFieldWidth = wb; break;
                         case MINUTES_FIELD: degreesSuffix = previousSuffix; minutesFieldWidth = wb; break;
@@ -415,15 +418,18 @@ scan:   for (int i=0; i<length;) {
                         if (fc != c) {
                             if (fc != symbols[FRACTION_FIELD]) break;
                             // Switch the search from mandatory to optional digits.
-                            minimumFractionDigits = (byte) Math.min(width, Byte.MAX_VALUE);
+                            minimumFractionDigits = toByte(width);
                             charCount = Character.charCount(c = fc);
                         }
                         width++;
                     }
-                    fractionFieldWidth = (byte) Math.min(width, Byte.MAX_VALUE);
+                    fractionFieldWidth = toByte(width);
                     if (c != symbols[FRACTION_FIELD]) {
                         // The pattern contains only mandatory digits.
                         minimumFractionDigits = fractionFieldWidth;
+                    } else if (!useDecimalSeparator) {
+                        // Variable number of digits not allowed if there is no decimal separator.
+                        throw new IllegalArgumentException(Errors.format(Errors.Keys.RequireDecimalSeparator));
                     }
                     parseFinished = true;
                 }
@@ -523,6 +529,14 @@ scan:   for (int i=0; i<length;) {
     }
 
     /**
+     * Returns the given value as a byte. Values greater
+     * than the maximal supported value are clamped.
+     */
+    private static byte toByte(final int n) {
+        return (byte) Math.min(n, Byte.MAX_VALUE);
+    }
+
+    /**
      * Returns the minimum number of digits allowed in the fraction portion of the last field.
      * This value can be set by the repetition of {@code 'd'}, {@code 'm'} or {@code 's'} symbol
      * in the pattern.
@@ -546,7 +560,11 @@ scan:   for (int i=0; i<length;) {
      */
     public void setMinimumFractionDigits(final int count) {
         ArgumentChecks.ensurePositive("count", count);
-        minimumFractionDigits = (byte) Math.min(count, Byte.MAX_VALUE);
+        if (!useDecimalSeparator) {
+            throw new IllegalStateException(Errors.format(Errors.Keys.RequireDecimalSeparator));
+        }
+        maximumTotalWidth = 0; // Means "no restriction".
+        minimumFractionDigits = toByte(count);
         if (minimumFractionDigits > fractionFieldWidth) {
             fractionFieldWidth = minimumFractionDigits;
         }
@@ -575,9 +593,85 @@ scan:   for (int i=0; i<length;) {
      */
     public void setMaximumFractionDigits(final int count) {
         ArgumentChecks.ensurePositive("count", count);
-        fractionFieldWidth = (byte) Math.min(count, Byte.MAX_VALUE);
+        if (!useDecimalSeparator) {
+            throw new IllegalStateException(Errors.format(Errors.Keys.RequireDecimalSeparator));
+        }
+        maximumTotalWidth = 0; // Means "no restriction".
+        fractionFieldWidth = toByte(count);
         if (fractionFieldWidth < minimumFractionDigits) {
             minimumFractionDigits = fractionFieldWidth;
+        }
+    }
+
+    /**
+     * Modifies, if needed, the pattern in order to fit formatted angles in the given maximum
+     * total width. This method applies zero, one or more of the following changes, in that order:
+     *
+     * <ol>
+     *   <li>If needed, reduce the {@linkplain #setMaximumFractionDigits(int) maximum number of
+     *       fraction digits}.</li>
+     *   <li>If omitting all fraction digits would not be sufficient for fitting a formatted
+     *       angle in the given width, remove the seconds field (if any) from the pattern.</li>
+     *   <li>If the above changes are not sufficient, remove the minutes field (if any) from
+     *       the pattern.</li>
+     *   <li>If the above changes are not sufficient, set the minimal width of degrees field to 1.</li>
+     * </ol>
+     *
+     * Note that despite the above changes, formatted angles may still be larger than the given
+     * width if that width is small, or if the formatted angles are too large in magnitude.
+     *
+     * <p>This method does not take into account the space needed for the hemisphere symbol when
+     * formatting {@link Latitude} or {@link Longitude} objects.</p>
+     *
+     * @param width The maximum total width of formatted angle.
+     */
+    @SuppressWarnings("fallthrough")
+    public void setMaximumWidth(int width) {
+        ArgumentChecks.ensureStrictlyPositive("width", width);
+        if (!useDecimalSeparator) {
+            throw new IllegalStateException(Errors.format(Errors.Keys.RequireDecimalSeparator));
+        }
+        maximumTotalWidth = toByte(width);
+        for (int field=PREFIX_FIELD; field<=SECONDS_FIELD; field++) {
+            final int previousWidth = width;
+            final String suffix;
+            switch (field) {
+                case PREFIX_FIELD:                              suffix = prefix;        break;
+                case DEGREES_FIELD: width -= degreesFieldWidth; suffix = degreesSuffix; break;
+                case MINUTES_FIELD: width -= minutesFieldWidth; suffix = minutesSuffix; break;
+                case SECONDS_FIELD: width -= secondsFieldWidth; suffix = secondsSuffix; break;
+                default: throw new AssertionError(field);
+            }
+            if (suffix != null) {
+                width -= suffix.length();
+            }
+            /*
+             * At this point, we computed the spaces remaining after formatting the angle up to
+             * the field identified by the 'field' variable. If there is not enough space, remove
+             * that field (if we are allowed to) and all subsequent fields from the pattern, then
+             * reset the 'width' variable to its previous value.
+             */
+            if (width < 0) {
+                switch (field) {
+                    default:  width += (degreesFieldWidth-1); degreesFieldWidth = 1; // Fall through
+                    case MINUTES_FIELD: minutesSuffix = null; minutesFieldWidth = 0; // Fall through
+                    case SECONDS_FIELD: secondsSuffix = null; secondsFieldWidth = 0;
+                }
+                if (field >= MINUTES_FIELD) {
+                    width = previousWidth;
+                }
+                break;
+            }
+        }
+        /*
+         * Removes 1 for the space needed by the decimal separator, then
+         * set the maximum number of fraction digits to the remaining space.
+         */
+        if (--width < fractionFieldWidth) {
+            fractionFieldWidth = toByte(Math.max(width, 0));
+            if (fractionFieldWidth < minimumFractionDigits) {
+                minimumFractionDigits = fractionFieldWidth;
+            }
         }
     }
 
@@ -657,71 +751,74 @@ scan:   for (int i=0; i<length;) {
             }
         }
         /*
-         * Formatting fields.
+         * Formats fields in a loop from DEGREES_FIELD to SECONDS_FIELD inclusive.
          */
+        int field    = DEGREES_FIELD;
+        int fieldPos = PREFIX_FIELD; // Dummy value not in the DEGREES … SECONDS_FIELD range.
+        if (pos != null) {
+            fieldPos = pos.getField();
+            pos.setBeginIndex(0);
+            pos.setEndIndex(0);
+        }
+        final int offset = toAppendTo.length();
         if (prefix != null) {
             toAppendTo.append(prefix);
         }
-        final int field;
-        if (pos != null) {
-            field = pos.getField();
-            pos.setBeginIndex(0);
-            pos.setEndIndex(0);
-        } else {
-            field = PREFIX_FIELD;
-        }
-        toAppendTo = formatField(degrees, toAppendTo, (field == DEGREES_FIELD) ? pos : null,
-                degreesFieldWidth, (minutesFieldWidth == 0) ? maximumFractionDigits : -1, degreesSuffix);
-        if (!isNaN(minutes)) {
-            toAppendTo = formatField(minutes, toAppendTo, (field == MINUTES_FIELD) ? pos : null,
-                    minutesFieldWidth, (secondsFieldWidth == 0) ? maximumFractionDigits : -1, minutesSuffix);
-        }
-        if (!isNaN(seconds)) {
-            toAppendTo = formatField(seconds, toAppendTo, (field == SECONDS_FIELD) ? pos : null,
-                    secondsFieldWidth, maximumFractionDigits, secondsSuffix);
-        }
-        return toAppendTo;
-    }
-
-    /**
-     * Formats a single field value.
-     *
-     * @param value      The field value.
-     * @param toAppendTo The buffer where to append the formatted angle.
-     * @param pos        An optional object where to store the position of a field in the formatted text.
-     * @param width      The field width.
-     * @param suffix     Suffix to append, or {@code null} if none.
-     * @param maximumFractionDigits
-     *          Maximal number of digits for formatting the decimal digits (last field only),
-     *          or -1 for formatting an other field than the last one.
-     */
-    private StringBuffer formatField(double value, StringBuffer toAppendTo, final FieldPosition pos,
-            final int width, final int maximumFractionDigits, final String suffix)
-    {
         final NumberFormat numberFormat = numberFormat();
-        final int startPosition = toAppendTo.length();
-        if (maximumFractionDigits < 0) {
-            numberFormat.setMinimumIntegerDigits(width);
-            numberFormat.setMaximumFractionDigits(0);
-            toAppendTo = numberFormat.format(value, toAppendTo, dummyFieldPosition());
-        } else if (useDecimalSeparator) {
-            numberFormat.setMinimumIntegerDigits(width);
-            numberFormat.setMinimumFractionDigits(minimumFractionDigits);
-            numberFormat.setMaximumFractionDigits(maximumFractionDigits);
-            toAppendTo = numberFormat.format(value, toAppendTo, dummyFieldPosition());
-        } else {
-            value *= pow10(fractionFieldWidth);
-            numberFormat.setMaximumFractionDigits(0);
-            numberFormat.setMinimumIntegerDigits(width + fractionFieldWidth);
-            toAppendTo = numberFormat.format(value, toAppendTo, dummyFieldPosition());
-        }
-        if (suffix != null) {
-            toAppendTo.append(suffix);
-        }
-        if (pos != null) {
-            pos.setBeginIndex(startPosition);
-            pos.setEndIndex(toAppendTo.length() - 1);
-        }
+        boolean hasMore;
+        do {
+            int    width;
+            double value;
+            String suffix;
+            switch (field) {
+                case DEGREES_FIELD: value=degrees; width=degreesFieldWidth; suffix=degreesSuffix; hasMore=(minutesFieldWidth != 0); break;
+                case MINUTES_FIELD: value=minutes; width=minutesFieldWidth; suffix=minutesSuffix; hasMore=(secondsFieldWidth != 0); break;
+                case SECONDS_FIELD: value=seconds; width=secondsFieldWidth; suffix=secondsSuffix; hasMore=false; break;
+                default: throw new AssertionError(field);
+            }
+            final int startPosition = toAppendTo.length();
+            if (hasMore) {
+                numberFormat.setMinimumIntegerDigits(width);
+                numberFormat.setMaximumFractionDigits(0);
+                toAppendTo = numberFormat.format(value, toAppendTo, dummyFieldPosition());
+            } else if (useDecimalSeparator) {
+                numberFormat.setMinimumIntegerDigits(width);
+                if (maximumTotalWidth != 0) {
+                    /*
+                     * If we are required to fit the formatted angle in some maximal total width
+                     * (i.e. the user called the setMaximumWidth(int) method), compute the space
+                     * available for fraction digits after we removed the space for the integer
+                     * digits, the decimal separator (this is the -1 below) and the suffix.
+                     */
+                    int available = maximumTotalWidth - toAppendTo.codePointCount(offset, toAppendTo.length()) - width - 1;
+                    if (suffix != null) {
+                        width -= suffix.length();
+                    }
+                    for (double scale=pow10(width); value >= scale; scale *= 10) {
+                        if (--available <= 0) break;
+                    }
+                    if (available < maximumFractionDigits) {
+                        maximumFractionDigits = Math.max(available, 0);
+                    }
+                }
+                numberFormat.setMinimumFractionDigits(minimumFractionDigits);
+                numberFormat.setMaximumFractionDigits(maximumFractionDigits);
+                toAppendTo = numberFormat.format(value, toAppendTo, dummyFieldPosition());
+            } else {
+                value *= pow10(fractionFieldWidth);
+                numberFormat.setMaximumFractionDigits(0);
+                numberFormat.setMinimumIntegerDigits(width + fractionFieldWidth);
+                toAppendTo = numberFormat.format(value, toAppendTo, dummyFieldPosition());
+            }
+            if (suffix != null) {
+                toAppendTo.append(suffix);
+            }
+            if (field == fieldPos) {
+                pos.setBeginIndex(startPosition);
+                pos.setEndIndex(toAppendTo.length() - 1);
+            }
+            field++;
+        } while (hasMore);
         return toAppendTo;
     }
 

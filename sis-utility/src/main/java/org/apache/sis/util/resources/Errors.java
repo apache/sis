@@ -147,6 +147,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int RecursiveCreateCallForKey_1 = 18;
 
         /**
+         * A decimal separator is required.
+         */
+        public static final int RequireDecimalSeparator = 33;
+
+        /**
          * Argument ‘{0}’ has {1} dimensions, while {2} was expected.
          */
         public static final int UnexpectedArgumentDimension_3 = 5;

@@ -17,6 +17,9 @@
 package org.apache.sis.measure;
 
 import java.util.Locale;
+import java.util.Formatter;
+import java.util.Formattable;
+import java.util.FormattableFlags;
 import java.text.Format;
 import java.text.ParseException;
 import java.io.Serializable;
@@ -30,6 +33,12 @@ import org.apache.sis.math.MathFunctions;
  * plane into coincidence with another, generally measured in degrees, sexagesimal degrees or
  * grads.
  *
+ * {@section Formatting angles}
+ * The recommended way to format angles is to instantiate an {@link AngleFormat} once, then to
+ * reuse it many times. As a convenience, {@code Angle} objects can also be formatted by the
+ * {@code "%s"} conversion specifier of {@link Formatter}, but this is less efficient for this
+ * class.
+ *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @since   0.3 (derived from geotk-1.0)
  * @version 0.3
@@ -40,7 +49,7 @@ import org.apache.sis.math.MathFunctions;
  * @see AngleFormat
  */
 @Immutable
-public class Angle implements Comparable<Angle>, Serializable {
+public class Angle implements Comparable<Angle>, Formattable, Serializable {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -192,7 +201,7 @@ public class Angle implements Comparable<Angle>, Serializable {
     public String toString() {
         StringBuffer buffer = new StringBuffer(16);
         double m = Math.abs(θ);
-        final boolean isSmall = m <= (1 / 3600E+6); // 1 micro-second.
+        final boolean isSmall = m <= (1 / 3600E+3); // 1E-3 arc-second.
         if (isSmall || m > maximum()) {
             final char h = hemisphere(MathFunctions.isNegative(θ));
             if (h == 0) {
@@ -234,5 +243,47 @@ public class Angle implements Comparable<Angle>, Serializable {
             // Canada locale is closer to ISO standards than US locale.
         }
         return format;
+    }
+
+    /**
+     * Formats this angle using the provider formatter. This method is invoked when an
+     * {@code Angle} object is formatted using the {@code "%s"} conversion specifier of
+     * {@link Formatter}. Users don't need to invoke this method explicitely.
+     *
+     * <p>Special cases:</p>
+     * <ul>
+     *   <li>If the precision is 0, then this method formats an empty string.</li>
+     *   <li>If the precision is 1 and this angle is a {@link Latitude} or {@link Longitude},
+     *       then this method formats only the hemisphere symbol.</li>
+     *   <li>Otherwise the precision, if positive, is given to {@link AngleFormat#setMaximumWidth(int)}.
+     *       That formatter will try to respect the precision limit, but the formatted angle may
+     *       still be wider if the precision is too small or the angle magnitude too large.</li>
+     * </ul>
+     *
+     * @param formatter The formatter in which to format this angle.
+     * @param flags     {@link FormattableFlags#LEFT_JUSTIFY} for left alignment, or 0 for right alignment.
+     * @param width     Minimal number of characters to write, padding with {@code ' '} if necessary.
+     * @param precision Maximal number of characters to write, or -1 if no limit.
+     */
+    @Override
+    public void formatTo(final Formatter formatter, final int flags, final int width, int precision) {
+        final String value;
+        if (precision == 0) {
+            value = "";
+        } else {
+            if (precision > 0) {
+                final char h = hemisphere(MathFunctions.isNegative(θ));
+                if (h != 0 && --precision == 0) {
+                    formatter.format("%c", h);
+                    return;
+                }
+            }
+            final AngleFormat format = new AngleFormat(formatter.locale());
+            if (precision > 0) {
+                format.setMaximumWidth(precision);
+            }
+            value = format.format(this, new StringBuffer(16), null).toString();
+        }
+        org.apache.sis.internal.util.Utilities.formatTo(formatter, flags, width, value);
     }
 }

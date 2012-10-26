@@ -148,4 +148,53 @@ public final strictfp class AngleFormatTest extends TestCase {
         assertEquals( "12°33′45″", formatAndParse(f, new Angle( 12.5625)));
         assertEquals("-12°33′45″", formatAndParse(f, new Angle(-12.5625)));
     }
+
+    /**
+     * Tests the {@link AngleFormat#setMaximumWidth(int)} method.
+     */
+    @Test
+    @DependsOnMethod("testOptionalFractionDigits")
+    public void testSetMaximumWidth() {
+        final AngleFormat f = new AngleFormat(Locale.CANADA);
+        assertEquals("D°MM′SS.################″", f.toPattern());
+
+        f.setMaximumWidth(12);
+        assertEquals("D°MM′SS.###″", f.toPattern());
+        assertEquals("8°07′24.442″", f.format(new Angle( 8.123456)));
+        assertEquals("20°07′24.44″", f.format(new Angle(20.123456)));
+
+        f.setMaximumWidth(10);
+        assertEquals("D°MM′SS.#″", f.toPattern());
+        assertEquals("8°07′24.4″", f.format(new Angle( 8.123456)));
+        assertEquals("20°07′24″",  f.format(new Angle(20.123456)));
+
+        f.setMaximumWidth(9);
+        assertEquals("D°MM′SS″", f.toPattern());
+        f.setMaximumWidth(8);
+        assertEquals("D°MM′SS″", f.toPattern());
+
+        // Test the drop of seconds field.
+        f.setMaximumFractionDigits(6);
+        f.setMaximumWidth(7);
+        assertEquals("D°MM.#′",  f.toPattern());
+        assertEquals("8°07.4′",  f.format(new Angle( 8.123456)));
+        assertEquals("20°07.4′", f.format(new Angle(20.123456)));
+
+        f.setMaximumWidth(6);
+        assertEquals("D°MM′",  f.toPattern());
+        assertEquals("8°07′",  f.format(new Angle( 8.123456)));
+        assertEquals("20°07′", f.format(new Angle(20.123456)));
+
+        // Test the drop of minutes field.
+        f.setMaximumFractionDigits(6);
+        f.setMaximumWidth(4);
+        assertEquals("D.#°", f.toPattern());
+        assertEquals("8.1°", f.format(new Angle( 8.123456)));
+        assertEquals("20°",  f.format(new Angle(20.123456)));
+
+        f.setMaximumWidth(3);
+        assertEquals("D°",  f.toPattern());
+        assertEquals("8°",  f.format(new Angle( 8.123456)));
+        assertEquals("20°", f.format(new Angle(20.123456)));
+    }
 }
