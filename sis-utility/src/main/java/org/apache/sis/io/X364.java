@@ -16,6 +16,7 @@
  */
 package org.apache.sis.io;
 
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.StringBuilders;
 
 
@@ -244,9 +245,10 @@ search:     do {
     }
 
     /**
-     * Returns the length of the given string without the ANSI escape codes.
-     * This is equivalent to <code>{@linkplain #plain plain}(text).length()</code>
-     * without the cost of creating a temporary string.
+     * Returns the number of Unicode code points in the given string without the ANSI escape codes.
+     * This is equivalent to <code>{@linkplain CharSequences#codePointCount(CharSequence)
+     * CharSequences.codePointCount}({@linkplain #plain plain}(text))</code> without the
+     * cost of creating a temporary string.
      *
      * @param  text The string which may contains escape codes.
      * @return The length of the given string without escape codes.
@@ -254,7 +256,7 @@ search:     do {
     public static int lengthOfPlain(final String text) {
         int i = text.indexOf(START);
         if (i < 0) {
-            return text.length();
+            return text.codePointCount(0, text.length());
         }
         int last   = 0;
         int length = 0;
@@ -268,14 +270,14 @@ search: do {
             while (i < end) {
                 final char c = text.charAt(i++);
                 if (c < '0' || c > '9') {
-                    continue search;
+                    continue search; // Not an X.364 sequence.
                 }
             }
-            length += start - last;
+            length += text.codePointCount(last, start);
             last = ++i; // The ++ is for skipping the END character.
         } while ((i = text.indexOf(START, i)) >= 0);
-        length += text.length() - last;
-        assert plain(text).length() == length : text;
+        length += text.codePointCount(last, text.length());
+        assert CharSequences.codePointCount(plain(text)) == length : text;
         return length;
     }
 
