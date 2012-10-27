@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book [
+  <!ENTITY % book.entities SYSTEM "../book.entities">
+  %book.entities;
+]>
+<chapter xmlns="http://docbook.org/ns/docbook" version="5.0"
+      xmlns:xlink = "http://www.w3.org/1999/xlink">
+
+  <title>Classes et méthodes utilitaires</title>
+  <para>
+    Ce chapitre décrit des aspects de Apache <acronym>SIS</acronym> qui s’appliquent à l’ensemble de la bibliothèque.
+    La plupart de ces utilitaires ne sont pas spécifiques aux systèmes d’information spatiales.
+  </para>
+
+  <section>
+    <title>Internationalisation</title>
+    <para>
+      Dans une architecture où un programme exécuté sur un serveur fournit ses données à plusieurs clients,
+      les conventions locales du serveur ne sont pas nécessairement les mêmes que celles des clients.
+      Les conventions peuvent différer par la langue, mais aussi par la façon d’écrire les valeurs numériques
+      (même entre deux pays parlant la même langue) ainsi que par le fuseau horaire.
+      Pour produire des messages conformes aux conventions du client, <acronym>SIS</acronym> emploie
+      deux approches qui diffèrent par leur niveau de granularité: au niveau des messages eux-mêmes,
+      ou au niveau des objets produisant les messages. L’approche utilisée détermine aussi s’il est
+      possible de partager une même instance d’un objet pour toutes les langues.
+    </para>
+
+    <section>
+      <title>Instances distinctes pour chaque conventions locales</title>
+      <para>
+        Certaines classes ne sont conçues que pour fonctionner selon une convention locale à la fois.
+        C’est évidemment le cas des implémentations standards de <classname>java.text.Format</classname>,
+        puisqu’elles sont entièrement dédiées au travail d’internationalisation.
+        Mais c’est aussi le cas de d’autres classes moins évidentes comme
+        <classname>javax.imageio.ImageReader</classname>/<classname>ImageWriter</classname> ainsi que les exceptions.
+        Lorsque une de ces classes est implémentée par <acronym>SIS</acronym>,
+        nous l’identifions en implémentant l’interface <classname role="SIS">Localized</classname>.
+        La méthode <function role="SIS">getLocale()</function> de cette interface permet alors de déterminer
+        selon quelles conventions locales l’instance produira ses messages.
+      </para>
+      <para>
+        Certaines sous-classes de <classname>Exception</classname> définies par <acronym>SIS</acronym>
+        implémentent aussi l’interface <classname role="SIS">Localized</classname>.
+        Pour ces exceptions, le message d’erreur peut être produit selon deux conventions locales
+        selon qu’il s’adresse à l’administrateur du système ou au client:
+        <function>getMessage()</function> retourne le message de l’exception selon les conventions par défaut du système, alors que
+        <function>getLocalizedMessage()</function> retourne le message de l’exception selon les conventions locales spécifiées par <function role="SIS">getLocale()</function>.
+        Ce <classname>Locale</classname> sera lui-même déterminé par l’objet <classname role="SIS">Localized</classname> qui a lancé l’exception.
+      </para>
+      <informalexample><para>
+        <emphasis role="bold">Exemple:</emphasis>
+        Supposons que dans un environnement où la langue par défaut serait l’anglais,
+        un objet <classname role="SIS">AngleFormat</classname> est construit pour lire des angles selon les conventions françaises.
+        Si une <classname>ParseException</classname> est lancée lors de l’utilisation de ce formateur,
+        alors <function>getMessage()</function> retournera le message d’erreur en anglais
+        tandis que <function>getLocalizedMessage()</function> retournera le message d’erreur en français.
+      </para></informalexample>
+      <para>
+        Les exceptions définies par <acronym>SIS</acronym> n’implémentent pas toutes l’interface <classname role="SIS">Localized</classname>.
+        Seules celles dont le message est le plus susceptible d’être montré à l’utilisateur sont ainsi localisées.
+        Les <classname>ParseException</classname> sont de bonnes candidates puisqu’elles surviennent souvent
+        suite à une saisie incorrecte du client. En revanche les <classname>NullPointerException</classname>
+        sont généralement la conséquence d’une erreur de programmation;
+        elles peuvent être localisées dans la langue par défaut du système, mais ça sera généralement tout.
+      </para>
+      <para>
+        La classe utilitaire <classname role="SIS">org.apache.sis.util.Exceptions</classname> fournit
+        des méthodes de commodité pour obtenir des messages selon des conventions locales données
+        lorsque cette information est disponible.
+      </para>
+    </section>
+
+    <section>
+      <title>Instance unique pour toutes les conventions locales</title>
+      <para>
+        Les <acronym>API</acronym> définit par <acronym>SIS</acronym> ou hérités de GeoAPI
+        privilégient plutôt l’utilisation du type <classname role="GeoAPI">InternationalString</classname>
+        là où une valeur de type <classname>String</classname> serait susceptible d’être localisée.
+        Cette approche permet de différer le processus d’internationalisation au moment d’obtenir
+        une chaîne de caractères plutôt qu’au moment de construire l’objet qui les contient.
+        C’est particulièrement utile pour les classes immutables dont les instances existent
+        en un seul exemplaire indépendamment des conventions locales.
+      </para>
+      <informalexample><para>
+        <emphasis role="bold">Exemple:</emphasis>
+        Il existe dans <acronym>SIS</acronym> une seule instance de type <classname role="GeoAPI">OperationMethod</classname>
+        représentant la projection de Mercator, quelle que soit la langue du client.
+        Mais sa méthode <function role="GeoAPI">getName()</function> fournit (indirectement)
+        une instance de <classname role="GeoAPI">InternationalString</classname> telle que
+        <literal>toString(Locale.ENGLISH)</literal> retourne <quote>Mercator Projection</quote>
+        alors que <literal>toString(Locale.FRENCH)</literal> retourne <quote>Projection de Mercator</quote>.
+      </para></informalexample>
+      <para>
+        En définissant des objets spatiaux indépendemment des conventions locales, on réduit les risques de sur-coûts de calculs.
+        Par exemple il est plus facile de détecter que deux cartes emploient la même projection cartographique si cette dernière
+        est représentée par la même instance de <classname role="GeoAPI">CoordinateOperation</classname>, même si la projection
+        porte différents noms selon les pays. En outre, certain types de <classname role="GeoAPI">CoordinateOperation</classname>
+        peuvent nécessiter des grilles de transformation de coordonnées, ce qui accroît l’intérêt de partager une instance unique
+        pour des raisons d’économie de mémoire.
+      </para>
+    </section>
+  </section>
+</chapter>
