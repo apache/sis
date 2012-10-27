@@ -125,15 +125,15 @@ public abstract class FilteredAppendable implements Appendable {
      * given to the previous call of this method. This works only if this method is consistently
      * invoked for every characters.
      */
-    final int toCodePoint(final char c) throws IOException {
+    final int toCodePoint(final char c) {
         final char h = highSurrogate;
         if (h != 0) {
             highSurrogate = 0;
             if (Character.isLowSurrogate(c)) {
                 return Character.toCodePoint(h, c);
-            } else {
-                throw new CharConversionException();
             }
+            // Unpaired surrogate.  This is usually an error, but this not the fault of
+            // this class since we are processing data supplied by the user. Be lenient.
         }
         if (Character.isHighSurrogate(c)) {
             highSurrogate = c;
@@ -203,8 +203,7 @@ public abstract class FilteredAppendable implements Appendable {
         if (sequence == null) {
             sequence = "null";
         }
-        append(sequence, 0, sequence.length());
-        return this;
+        return append(sequence, 0, sequence.length());
     }
 
     /**

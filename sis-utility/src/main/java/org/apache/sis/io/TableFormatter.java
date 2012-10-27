@@ -23,7 +23,6 @@ import java.util.StringTokenizer;
 import java.io.Flushable;
 import java.io.IOException;
 import org.apache.sis.util.Decorator;
-import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
@@ -203,9 +202,35 @@ public class TableFormatter extends FilteredAppendable implements Flushable {
     private boolean skipLF;
 
     /**
-     * Creates a new table formatter with a default column separator. The default is a double
-     * vertical line for the left and right table borders, and a single horizontal line
-     * between the columns.
+     * Sets to {@code true} at construction time if {@link #out} has been created by the
+     * constructor rather than supplied by the user.
+     */
+    private boolean ownOut;
+
+    /**
+     * Creates a new table formatter writing in an internal buffer with a default column separator.
+     * The default is a vertical double line for the left and right table borders, and a single
+     * line between the columns.
+     */
+    public TableFormatter() {
+        this(new StringBuilder(256));
+        ownOut = true;
+    }
+
+    /**
+     * Creates a new table formatter writing in an internal buffer with the specified column separator.
+     *
+     * @param separator String to write between columns.
+     */
+    public TableFormatter(final String separator) {
+        this(new StringBuilder(256), separator);
+        ownOut = true;
+    }
+
+    /**
+     * Creates a new table formatter writing in the given output with a default column separator.
+     * The default is a vertical double line for the left and right table borders, and a single
+     * line between the columns.
      *
      * @param out The underlying stream or buffer to write to.
      */
@@ -217,21 +242,7 @@ public class TableFormatter extends FilteredAppendable implements Flushable {
     }
 
     /**
-     * Creates a new table formatter with the specified amount of spaces as column separator.
-     *
-     * @param out    The underlying stream or buffer to write to.
-     * @param spaces Amount of white spaces to use as column separator.
-     */
-    public TableFormatter(final Appendable out, final int spaces) {
-        super(out);
-        ArgumentChecks.ensurePositive("spaces", spaces);
-        leftBorder      = "";
-        rightBorder     = "";
-        columnSeparator = CharSequences.spaces(spaces);
-    }
-
-    /**
-     * Creates a new table writer with the specified column separator.
+     * Creates a new table formatter writing in the given output with the specified column separator.
      *
      * @param out The underlying stream or buffer to write to.
      * @param separator String to write between columns.
@@ -434,10 +445,9 @@ public class TableFormatter extends FilteredAppendable implements Flushable {
      * </ul>
      *
      * @param  c Character to write.
-     * @throws IOException If an I/O error occurs.
      */
     @Override
-    public Appendable append(final char c) throws IOException {
+    public TableFormatter append(final char c) {
         final int cp = toCodePoint(c);
         if (!multiLinesCells) {
             if (cp == '\t') {
@@ -464,22 +474,41 @@ public class TableFormatter extends FilteredAppendable implements Flushable {
     }
 
     /**
+     * Appends the specified character sequence.
+     *
+     * @param  sequence The character sequence to append, or {@code null}.
+     * @return A reference to this {@code Appendable}.
+     */
+    @Override
+    public TableFormatter append(CharSequence sequence) {
+        if (sequence == null) {
+            sequence = "null";
+        }
+        return append(sequence, 0, sequence.length());
+    }
+
+    /**
      * Writes a portion of a character sequence. Tabulations and line separators are
      * interpreted as by {@link #append(c)}.
      *
      * @param  sequence The character sequence to be written.
      * @param  start    Index from which to start reading characters.
      * @param  end      Index of the character following the last character to read.
-     * @throws IOException If an I/O error occurs.
      */
     @Override
     @SuppressWarnings("fallthrough")
-    public Appendable append(final CharSequence sequence, int start, int end) throws IOException {
+    public TableFormatter append(final CharSequence sequence, int start, int end) {
         ArgumentChecks.ensureValidIndexRange(sequence.length(), start, end);
         if (lineSeparator == null) {
             lineSeparator = lineSeparator(sequence, start, end);
         }
-        start = appendSurrogate(sequence, start, end);
+        try {
+            start = appendSurrogate(sequence, start, end);
+        } catch (IOException e) {
+            // Should never happen, because appendSurrogate(…) delegates to append(char)
+            // which is overriden without 'throws IOException' clause in this class.
+            throw new AssertionError(e);
+        }
         if (start != end) {
             if (skipLF && sequence.charAt(start) == '\n') {
                 start++;
@@ -607,7 +636,9 @@ public class TableFormatter extends FilteredAppendable implements Flushable {
             nextLine();
             assert buffer.length() == 0;
         }
-        writeTable();
+        if (!ownOut) {
+            writeTable();
+        }
         cells.clear();
         currentRow    = 0;
         currentColumn = 0;
@@ -618,6 +649,33 @@ public class TableFormatter extends FilteredAppendable implements Flushable {
              */
             IO.flush(out);
         }
+    }
+
+    /**
+     * Returns the content of this {@code TableFormatter} as a string if possible.
+     *
+     * <ul>
+     *   <li>If this {@code TableFormatter} has been created without explicit {@link Appendable},
+     *       then this method always returns the current table content formatted as a string.</li>
+     *   <li>Otherwise, if {@link #out} implements {@link CharSequence} or is directly or
+     *       indirectly a wrapper around a {@code CharSequence}, returns its {@code toString()}
+     *       representation. The string will contain this table content only if {@link #flush()}
+     *       has been invoked prior this {@code toString()} method.</li>
+     *   <li>Otherwise returns the localized "<cite>Unavailable content</cite>" string.</li>
+     * </ul>
+     */
+    @Override
+    public String toString() {
+        if (ownOut) {
+            ((StringBuilder) out).setLength(0);
+            try {
+                writeTable();
+            } catch (IOException e) {
+                // Should never happen because we are writing in a StringBuilder.
+                throw new AssertionError(e);
+            }
+        }
+        return super.toString();
     }
 
     /**
@@ -741,10 +799,10 @@ public class TableFormatter extends FilteredAppendable implements Flushable {
                             break;
                         }
                         case ALIGN_CENTER: {
-                            final int rightMargin = (cellWidth-textLength)/2;
+                            final int rightMargin = (cellWidth - textLength) / 2;
                             repeat(tabExpander, cell.fill, rightMargin);
                             tabExpander.append(cellText);
-                            repeat(tabExpander, cell.fill, (cellWidth-rightMargin)-textLength);
+                            repeat(tabExpander, cell.fill, (cellWidth - rightMargin) - textLength);
                             break;
                         }
                     }
