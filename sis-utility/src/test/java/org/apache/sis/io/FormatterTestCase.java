@@ -51,7 +51,7 @@ public abstract class FormatterTestCase extends TestCase {
      * Creates a new test case.
      */
     FormatterTestCase() {
-        buffer = new StringBuilder(40);
+        buffer = new StringBuilder(128);
         formatter = buffer;
     }
 
