@@ -88,47 +88,47 @@ public final strictfp class MathFunctionsTest extends TestCase {
      */
     @Test
     public void testFractionDigitsForDelta() {
-        assertEquals(3, fractionDigitsForDelta(0.001));
-        assertEquals(3, fractionDigitsForDelta(0.009));
-        assertEquals(2, fractionDigitsForDelta(0.010));
-        assertEquals(2, fractionDigitsForDelta(0.015));
-        assertEquals(1, fractionDigitsForDelta(0.100));
-        assertEquals(1, fractionDigitsForDelta(0.125));
-        assertEquals(1, fractionDigitsForDelta(0.949));
-        assertEquals(2, fractionDigitsForDelta(0.994)); // Special case
-        assertEquals(3, fractionDigitsForDelta(0.999)); // Special case
+        assertEquals(3, fractionDigitsForDelta(0.001, true));
+        assertEquals(3, fractionDigitsForDelta(0.009, true));
+        assertEquals(2, fractionDigitsForDelta(0.010, true));
+        assertEquals(2, fractionDigitsForDelta(0.015, true));
+        assertEquals(1, fractionDigitsForDelta(0.100, true));
+        assertEquals(1, fractionDigitsForDelta(0.125, true));
+        assertEquals(1, fractionDigitsForDelta(0.949, true));
+        assertEquals(2, fractionDigitsForDelta(0.994, true)); // Special case
+        assertEquals(3, fractionDigitsForDelta(0.999, true)); // Special case
 
-        assertEquals( 0, fractionDigitsForDelta(  1.0));
-        assertEquals( 0, fractionDigitsForDelta(  1.9));
-        assertEquals( 0, fractionDigitsForDelta(  9.1));
-        assertEquals(-1, fractionDigitsForDelta( 10.0));
-        assertEquals(-1, fractionDigitsForDelta( 19.9));
-        assertEquals(-1, fractionDigitsForDelta( 94.9));
-        assertEquals( 0, fractionDigitsForDelta( 99.0)); // Special case
-        assertEquals(-2, fractionDigitsForDelta(100.0));
-        assertEquals(-2, fractionDigitsForDelta(100.1));
-        assertEquals(-1, fractionDigitsForDelta(994.9)); // Special case
-        assertEquals(+1, fractionDigitsForDelta(999.9)); // Special case
-        assertEquals(-3, fractionDigitsForDelta(1000));
+        assertEquals( 0, fractionDigitsForDelta(  1.0, true));
+        assertEquals( 0, fractionDigitsForDelta(  1.9, true));
+        assertEquals( 0, fractionDigitsForDelta(  9.1, true));
+        assertEquals(-1, fractionDigitsForDelta( 10.0, true));
+        assertEquals(-1, fractionDigitsForDelta( 19.9, true));
+        assertEquals(-1, fractionDigitsForDelta( 94.9, true));
+        assertEquals( 0, fractionDigitsForDelta( 99.0, true)); // Special case
+        assertEquals(-2, fractionDigitsForDelta(100.0, true));
+        assertEquals(-2, fractionDigitsForDelta(100.1, true));
+        assertEquals(-1, fractionDigitsForDelta(994.9, true)); // Special case
+        assertEquals(+1, fractionDigitsForDelta(999.9, true)); // Special case
+        assertEquals(-3, fractionDigitsForDelta(1000,  true));
 
         // Tests values out of the POW10 array range.
-        assertEquals(23,  fractionDigitsForDelta(1.0E-23));
-        assertEquals(23,  fractionDigitsForDelta(1.9E-23));
-        assertEquals(23,  fractionDigitsForDelta(9.1E-23));
-        assertEquals(24,  fractionDigitsForDelta(9.6E-23)); // Special case
-        assertEquals(300, fractionDigitsForDelta(1.1E-300));
+        assertEquals(23,  fractionDigitsForDelta(1.0E-23,  true));
+        assertEquals(23,  fractionDigitsForDelta(1.9E-23,  true));
+        assertEquals(23,  fractionDigitsForDelta(9.1E-23,  true));
+        assertEquals(24,  fractionDigitsForDelta(9.6E-23,  true)); // Special case
+        assertEquals(300, fractionDigitsForDelta(1.1E-300, true));
 
-        assertEquals(-23,  fractionDigitsForDelta(1.0E+23));
-        assertEquals(-23,  fractionDigitsForDelta(1.9E+23));
-        assertEquals(-23,  fractionDigitsForDelta(9.1E+23));
-        assertEquals(-22,  fractionDigitsForDelta(9.6E+23)); // Special case
-        assertEquals(-300, fractionDigitsForDelta(1.1E+300));
+        assertEquals(-23,  fractionDigitsForDelta(1.0E+23,  true));
+        assertEquals(-23,  fractionDigitsForDelta(1.9E+23,  true));
+        assertEquals(-23,  fractionDigitsForDelta(9.1E+23,  true));
+        assertEquals(-22,  fractionDigitsForDelta(9.6E+23,  true)); // Special case
+        assertEquals(-300, fractionDigitsForDelta(1.1E+300, true));
 
         // Special cases.
-        assertEquals(0,  fractionDigitsForDelta(0));
-        assertEquals(0,  fractionDigitsForDelta(Double.NaN));
-        assertEquals(0,  fractionDigitsForDelta(Double.POSITIVE_INFINITY));
-        assertEquals(0,  fractionDigitsForDelta(Double.NEGATIVE_INFINITY));
+        assertEquals(0,  fractionDigitsForDelta(0, true));
+        assertEquals(0,  fractionDigitsForDelta(Double.NaN, true));
+        assertEquals(0,  fractionDigitsForDelta(Double.POSITIVE_INFINITY, true));
+        assertEquals(0,  fractionDigitsForDelta(Double.NEGATIVE_INFINITY, true));
     }
 
     /**
