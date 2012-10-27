@@ -216,14 +216,16 @@ public final class MathFunctions extends Static {
 
     /**
      * Returns the number of fraction digits needed for formatting in base 10 numbers of the given
-     * accuracy. For any value {@code accuracy}, this method returns a value <var>n</var> such as
-     * the difference between adjacent numbers formatted in base 10 with <var>n</var> fraction
-     * digits will always be equals or smaller than {@code accuracy}. Examples:
+     * accuracy. If the {@code strict} argument is {@code true}, then for any given {@code accuracy}
+     * this method returns a value <var>n</var> such as the difference between adjacent numbers
+     * formatted in base 10 with <var>n</var> fraction digits will always be equals or smaller
+     * than {@code accuracy}. Examples:
      *
      * <ul>
-     *   <li>{@code fractionDigitsForDelta(0.001)} returns 3.</li>
-     *   <li>{@code fractionDigitsForDelta(0.009)} returns 3.</li>
-     *   <li>{@code fractionDigitsForDelta(0.010)} returns 2.</li>
+     *   <li>{@code fractionDigitsForDelta(0.001, true)} returns 3.</li>
+     *   <li>{@code fractionDigitsForDelta(0.009, true)} returns 3.</li>
+     *   <li>{@code fractionDigitsForDelta(0.010, true)} returns 2.</li>
+     *   <li>{@code fractionDigitsForDelta(0.099, true)} returns 3 (special case).</li>
      * </ul>
      *
      * <p>Special cases:</p>
@@ -232,10 +234,11 @@ public final class MathFunctions extends Static {
      *       then this method returns 0.</li>
      *   <li>If {@code accuracy} is greater than 1, then this method returns
      *       the number of "unnecessary" trailing zeros as a negative number.
-     *       For example {@code fractionDigitsForDelta(100)} returns -2.</li>
+     *       For example {@code fractionDigitsForDelta(100, …)} returns -2.</li>
      *   <li>If the first non-zero digits of {@code accuracy} are equal or greater than 95
-     *       (e.g. 0.00099), then this method increases the number of needed fraction digits
-     *       in order to prevent the rounded number to be collapsed into the next integer value.
+     *       (e.g. 0.00099) and the {@code strict} argument is {@code true}, then this method
+     *       increases the number of needed fraction digits in order to prevent the rounded
+     *       number to be collapsed into the next integer value.
      *
      *       <blockquote><font size="-1"><b>Example:</b>
      *       If {@code accuracy} is 0.95, then a return value of 1 is not sufficient since the
@@ -248,15 +251,18 @@ public final class MathFunctions extends Static {
      *
      * <p>Invoking this method is equivalent to computing <code>(int)
      * -{@linkplain Math#floor(double) floor}({@linkplain Math#log10(double) log10}(accuracy))</code>
-     * except for the 0, {@code NaN}, infinities and 0.…95 special cases.</p>
+     * except for the 0, {@code NaN}, infinities and {@code 0.…95} special cases.</p>
      *
      * @param  accuracy The desired accuracy of numbers to format in base 10.
+     * @param  strict {@code true} for checking the {@code 0.…95} special case.
+     *         If {@code false}, then the difference between adjacent formatted numbers is not
+     *         guaranteed to be smaller than {@code accuracy} in every cases.
      * @return Number of fraction digits needed for formatting numbers with the given accuracy.
      *         May be negative.
      *
      * @see java.text.NumberFormat#setMaximumFractionDigits(int)
      */
-    public static int fractionDigitsForDelta(double accuracy) {
+    public static int fractionDigitsForDelta(double accuracy, final boolean strict) {
         accuracy = Math.abs(accuracy);
         final boolean isFraction = (accuracy < 1);
         /*
