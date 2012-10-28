@@ -25,7 +25,8 @@ import static org.apache.sis.util.Characters.SOFT_HYPHEN;
 
 
 /**
- * Tests the {@link LineWrapFormatter} implementations.
+ * Tests the {@link LineWrapFormatter} implementation
+ * when used for wrapping lines to 80 characters.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
@@ -38,7 +39,7 @@ public final strictfp class LineWrapFormatterTest extends FormatterTestCase {
      * Creates a new test case.
      */
     public LineWrapFormatterTest() {
-        formatter = new LineWrapFormatter(formatter, 10);
+        formatter = new LineWrapFormatter(formatter, 10, false);
     }
 
     /**
