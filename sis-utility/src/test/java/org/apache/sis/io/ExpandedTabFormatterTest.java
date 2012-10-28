@@ -24,7 +24,8 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests the {@link ExpandedTabFormatter} implementation.
+ * Tests the {@link LineWrapFormatter} implementation
+ * when used for expanding tabulations to spaces.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
@@ -37,7 +38,7 @@ public final strictfp class ExpandedTabFormatterTest extends FormatterTestCase {
      * Creates a new test case.
      */
     public ExpandedTabFormatterTest() {
-        formatter = new ExpandedTabFormatter(formatter);
+        formatter = new LineWrapFormatter(formatter, Integer.MAX_VALUE, true);
     }
 
     /**
@@ -46,8 +47,8 @@ public final strictfp class ExpandedTabFormatterTest extends FormatterTestCase {
     @Override
     void run(final String lineSeparator) throws IOException {
         final Appendable out = formatter;
-        if (out instanceof ExpandedTabFormatter) {
-            assertEquals("getTabWidth", 8, ((ExpandedTabFormatter) out).getTabWidth());
+        if (out instanceof LineWrapFormatter) {
+            assertEquals("getTabWidth", 8, ((LineWrapFormatter) out).getTabulationWidth());
         }
         assertSame(out, out.append("12\t8"   + lineSeparator));
         assertSame(out, out.append("1234\t8" + lineSeparator));

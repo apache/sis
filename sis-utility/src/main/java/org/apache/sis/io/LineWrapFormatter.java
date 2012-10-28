@@ -19,6 +19,7 @@ package org.apache.sis.io;
 import java.io.Flushable;
 import java.io.IOException;
 import org.apache.sis.util.Decorator;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 
 import static org.apache.sis.io.X364.ESCAPE;
@@ -30,8 +31,19 @@ import static org.apache.sis.util.Characters.isLineOrParagraphSeparator;
 
 /**
  * An {@link Appendable} which wraps the lines to some maximal line length.
- * The default line length is 80 characters, but can be changed by a call to
- * {@link #setMaximalLineLength(int)}.
+ * The default line length is 80 Unicode characters (code points), but can
+ * be changed by a call to {@link #setMaximalLineLength(int)}.
+ *
+ * <p>The characters given to this filter can contain {@linkplain X364 X.364} escape sequences,
+ * as this class will not count the space used by those escape sequences in the calculation of
+ * line length.</p>
+ *
+ * {@section Tabulations}
+ * For proper calculation of line lengths in presence of tabulation characters ({@code '\t'}),
+ * this class needs to known the tabulation width. The default value is 8, but this can be changed
+ * by a call to {@link #setTabulationWidth(int)}. By default tabulation characters are sent to the
+ * {@linkplain #out underlying appendable} <i>as-is</i>, but this class can optionally be instructed
+ * to expand tabulations by a call to {@link #setTabulationExpanded(boolean)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
@@ -41,13 +53,17 @@ import static org.apache.sis.util.Characters.isLineOrParagraphSeparator;
 @Decorator(Appendable.class)
 public class LineWrapFormatter extends FilteredAppendable implements Flushable {
     /**
-     * The line separator. We will use the first line separator found in the
-     * text to write, or the system default if none.
+     * The line separator to use when this class inserts some (line separators found in the
+     * texts given by the user will be passed "as is"). We will use the first line separator
+     * found in the given texts, or the system default if none.
      */
     private String lineSeparator;
 
     /**
      * The maximal line length, in units of <em>code points</em> (not {@code char}).
+     * Can be set to {@link Integer#MAX_VALUE} if there is no limit.
+     *
+     * @see #setMaximalLineLength(int)
      */
     private int maximalLineLength;
 
@@ -57,6 +73,20 @@ public class LineWrapFormatter extends FilteredAppendable implements Flushable {
      * the last word.
      */
     private int codePointCount;
+
+    /**
+     * The tabulation width, in number of code points.
+     *
+     * @see #setTabulationWidth(int)
+     */
+    private int tabulationWidth = 8;
+
+    /**
+     * {@code true} if this formatter shall expands tabulations into spaces.
+     *
+     * @see #setTabulationExpanded(boolean)
+     */
+    private boolean isTabulationExpanded;
 
     /**
      * {@code true} if an escape sequence is in progress. The escape sequence will stop
@@ -70,7 +100,7 @@ public class LineWrapFormatter extends FilteredAppendable implements Flushable {
     private final StringBuilder buffer = new StringBuilder(16);
 
     /**
-     * Constructs a formatter which will wrap the lines at a maximum of 80 characters.
+     * Constructs a formatter which will wrap the lines at a maximum of 80 Unicode characters.
      * The maximal line length can be changed by a call to {@link #setMaximalLineLength(int)}.
      *
      * @param out The underlying stream or buffer to write to.
@@ -83,32 +113,95 @@ public class LineWrapFormatter extends FilteredAppendable implements Flushable {
     /**
      * Constructs a formatter which will wrap the lines at a given maximal length.
      *
-     * @param out The underlying stream or buffer to write to.
-     * @param length The maximal line length.
+     * @param out                   The underlying stream or buffer to write to.
+     * @param maximalLineLength     The maximal number of Unicode characters per line,
+     *                              or {@link Integer#MAX_VALUE} if there is no limit.
+     * @param isTabulationExpanded  {@code true} for expanding tabulations into spaces,
+     *                              or {@code false} for sending {@code '\t'} characters as-is.
      */
-    public LineWrapFormatter(final Appendable out, final int length) {
+    public LineWrapFormatter(final Appendable out, final int maximalLineLength, final boolean isTabulationExpanded) {
         super(out);
-        ArgumentChecks.ensureStrictlyPositive("length", length);
-        maximalLineLength = length;
+        ArgumentChecks.ensureStrictlyPositive("maximalLineLength", maximalLineLength);
+        this.maximalLineLength    = maximalLineLength;
+        this.isTabulationExpanded = isTabulationExpanded;
     }
 
     /**
-     * Returns the maximal line length. The default value is 80.
+     * Returns the maximal line length, in unit of Unicode characters (code point count).
+     * The default value is 80.
      *
-     * @return The current maximal line length.
+     * @return The current maximal number of Unicode characters per line,
+     *         or {@link Integer#MAX_VALUE} if there is no limit.
      */
     public int getMaximalLineLength() {
         return maximalLineLength;
     }
 
     /**
-     * Sets the maximal line length.
+     * Sets the maximal line length, in units of Unicode characters (code point count).
      *
-     * @param length The new maximal line length.
+     * @param length The new maximal number of Unicode characters per line,
+     *               or {@link Integer#MAX_VALUE} if there is no limit.
      */
     public void setMaximalLineLength(final int length) {
         ArgumentChecks.ensureStrictlyPositive("length", length);
         maximalLineLength = length;
+    }
+
+    /**
+     * Returns the current tabulation width, in unit of Unicode characters (code point count).
+     * The default value is 8.
+     *
+     * @return The current tabulation width in number of Unicode characters.
+     */
+    public int getTabulationWidth() {
+        return tabulationWidth;
+    }
+
+    /**
+     * Sets the tabulation width, in unit of Unicode characters (code point count).
+     *
+     * @param  width The new tabulation width. Must be greater than 0.
+     * @throws IllegalArgumentException if {@code tabWidth} is not greater than 0.
+     */
+    public void setTabulationWidth(final int width) {
+        ArgumentChecks.ensureStrictlyPositive("width", width);
+        tabulationWidth = width;
+    }
+
+    /**
+     * Returns {@code true} if this formatter expands tabulations into spaces.
+     * The default value is {@code false}, which means that {@code '\t'} characters
+     * are sent to the {@linkplain #out underlying appendable} <i>as-is</i>.
+     *
+     * @return {@code true} if this formatter expands tabulations into spaces,
+     *         or {@code false} if {@code '\t'} characters are sent <i>as-is</i>.
+     */
+    public boolean isTabulationExpanded() {
+        return isTabulationExpanded;
+    }
+
+    /**
+     * Sets whether this class formatter expands tabulations into spaces.
+     *
+     * @param expanded {@code true} if this class shall expands tabulations into spaces,
+     *                 or {@code false} for sending {@code '\t'} characters as-is.
+     */
+    public void setTabulationExpanded(final boolean expanded) {
+        isTabulationExpanded = expanded;
+    }
+
+    /**
+     * Writes a line separator to {@link #out}. This method is invoked only for new line separators
+     * generated by this class, not for the line separators found in the texts supplied by the user.
+     * The {@link #append(CharSequence,int,int)} method tries to detect the line separator used in
+     * the text, but if no line separator has been found we have to use some fallback.
+     */
+    private void lineSeparator() throws IOException {
+        if (lineSeparator == null) {
+            lineSeparator = System.lineSeparator();
+        }
+        out.append(lineSeparator);
     }
 
     /**
@@ -145,11 +238,35 @@ public class LineWrapFormatter extends FilteredAppendable implements Flushable {
             isEscapeSequence = true;
             return;
         }
-        if (Character.isSpaceChar(c)) {
+        /*
+         * Use Character.isWhitespace(…) instead of Character.isSpaceChar(…)
+         * because the former accepts tabulations (which we want), and does
+         * not returns 'true' for non-breaking spaces (which we also want).
+         */
+        if (Character.isWhitespace(c)) {
             deleteSoftHyphen(buffer);
             out.append(buffer);
             buffer.setLength(0);
             isEscapeSequence = false; // Handle spaces as "end of escape sequence".
+        }
+        /*
+         * If the character is the tabulation, compute the number of spaces and optionally replace
+         * the tabulation by spaces. Note that in such case, the buffer is empty (because of the
+         * above block) so we don't need to bother about the buffer when writing to 'out'.
+         */
+        if (c == '\t') {
+            final int width = tabulationWidth - (codePointCount % tabulationWidth);
+            if ((codePointCount += width) > maximalLineLength) {
+                lineSeparator();
+                codePointCount = 0;
+            } else {
+                if (isTabulationExpanded) {
+                    buffer.append(CharSequences.spaces(width));
+                } else {
+                    buffer.append('\t');
+                }
+            }
+            return;
         }
         buffer.appendCodePoint(c);
         /*
@@ -198,20 +315,12 @@ searchHyp:  for (int i=buffer.length(); i>0; i-=n) {
                     }
                 }
             }
-            /*
-             * The append(CharSequence,int,int) method tries to detect the line separator
-             * used in the document to be formatted. But if no line separator can be found,
-             * then fallback on the system default.
-             */
-            if (lineSeparator == null) {
-                lineSeparator = System.lineSeparator();
-            }
-            out.append(lineSeparator);
+            lineSeparator();
             final int length = buffer.length();
             codePointCount = buffer.codePointCount(0, length);
             for (int i=0; i<length;) {
                 final int s = buffer.codePointAt(i);
-                if (!Character.isSpaceChar(s)) {
+                if (!Character.isWhitespace(s)) {
                     buffer.delete(0, i);
                     return;
                 }

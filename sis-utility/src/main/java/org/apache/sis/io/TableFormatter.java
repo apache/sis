@@ -125,7 +125,7 @@ public class TableFormatter extends FilteredAppendable implements Flushable {
     };
 
     /**
-     * Default character for space.
+     * The character for empty spaces to insert between columns.
      */
     private static final char SPACE = ' ';
 
@@ -249,6 +249,15 @@ public class TableFormatter extends FilteredAppendable implements Flushable {
      */
     public TableFormatter(final Appendable out, final String separator) {
         super(out);
+        /*
+         * Use Character.isSpaceChar(…) instead of Character.isWhitespace(…) because the former
+         * does not consider control characters (tabulation, group separator, etc.) as spaces.
+         * We presume that if the user wants to put such characters in the border, he has reasons.
+         *
+         * If this policy is changed, search for other occurrences of 'isSpaceChar' in this class
+         * for ensuring consistency. Note however that the same policy is not necessarily applied
+         * everywhere.
+         */
         final int length = separator.length();
         int lower = 0;
         int upper = length;
@@ -302,8 +311,10 @@ public class TableFormatter extends FilteredAppendable implements Flushable {
         }
         assert (verticalBorder >= -1) && (verticalBorder <= +1) : verticalBorder;
         /*
-         * Remplaces spaces by the horizontal lines,
-         * and vertical lines by an intersection.
+         * Remplaces spaces by the horizontal lines, and vertical lines by an intersection.
+         * Use Character.isSpaceChar(…) instead of Character.isWhitespace(…) for consistency
+         * with the policy used in the constructor, since we work on the same object (namely
+         * the border strings).
          */
         final int index = (horizontalBorder+1) + (verticalBorder+1)*3;
         final int borderLength = border.length();
@@ -619,7 +630,7 @@ public class TableFormatter extends FilteredAppendable implements Flushable {
             nextColumn(fill);
         }
         assert buffer.length() == 0;
-        cells.add(!Character.isSpaceChar(fill) ? new Cell(null, alignment, fill) : null);
+        cells.add((fill != SPACE) ? new Cell(null, alignment, fill) : null);
         currentColumn = 0;
         currentRow++;
     }
@@ -743,8 +754,14 @@ public class TableFormatter extends FilteredAppendable implements Flushable {
                             if (c == '\r' && (next < textLength) && cellText.charAt(next) == '\n') {
                                 next++;
                             }
-                            // Verify if the remaining contains only whitespaces, but do not skip
-                            // those whitespaces if there is at least one non-white character.
+                            /*
+                             * Verify if the remaining contains only white spaces. If so, those spaces
+                             * will be ignored. But if there is at least one non-white character, then
+                             * we will not skip those spaces. We use Character.isWhitespace(…) instead
+                             * of Character.isSpaceChar(…) in order to consider non-breaking spaces as
+                             * non-white characters. This is similar to the use of &nbsp; in HTML tables,
+                             * which can be used for forcing the insertion of an otherwise ignored space.
+                             */
                             for (int i=next; i<textLength; i += Character.charCount(c)) {
                                 c = cellText.codePointAt(i);
                                 if (!Character.isWhitespace(c)) {
@@ -783,7 +800,8 @@ public class TableFormatter extends FilteredAppendable implements Flushable {
                     if (isFirstColumn) {
                         out.append(leftBorder);
                     }
-                    final Appendable tabExpander = (cellText.indexOf('\t') >= 0) ? new ExpandedTabFormatter(out) : out;
+                    final Appendable tabExpander = (cellText.indexOf('\t') >= 0)
+                            ? new LineWrapFormatter(out, Integer.MAX_VALUE, true) : out;
                     switch (cell.alignment) {
                         default: {
                             throw new AssertionError(cell.alignment);

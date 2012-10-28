@@ -1050,7 +1050,7 @@ searchWordBreak:    while (true) {
         final int lg = buffer.length();
         if (lg != 0) {
             final int cp = buffer.codePointBefore(lg);
-            if (isSpaceChar(cp)) {
+            if (isWhitespace(cp)) {
                 buffer.setLength(lg - charCount(cp));
             }
         }
