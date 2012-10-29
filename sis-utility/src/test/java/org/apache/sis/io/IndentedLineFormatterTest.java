@@ -24,7 +24,8 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests the {@link IndentedLineFormatter} implementation.
+ * Tests the {@link LineWrapFormatter} implementation
+ * when used for inserting a margin before every line.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
@@ -37,7 +38,12 @@ public final strictfp class IndentedLineFormatterTest extends FormatterTestCase 
      * Creates a new test case.
      */
     public IndentedLineFormatterTest() {
-        formatter = new IndentedLineFormatter(formatter, 4);
+        formatter = new LineWrapFormatter(formatter) {
+            @Override
+            protected void onLineBegin(boolean isContinuation) throws IOException {
+                out.append("    ");
+            }
+        };
     }
 
     /**
@@ -46,9 +52,6 @@ public final strictfp class IndentedLineFormatterTest extends FormatterTestCase 
     @Override
     void run(final String lineSeparator) throws IOException {
         final Appendable out = formatter;
-        if (out instanceof IndentedLineFormatter) {
-            assertEquals("getMargin", "    ", ((IndentedLineFormatter) out).getMargin());
-        }
 
         // Extract from Arthur RIMBAUD (1854-1891), "Le bateau ivre"
         assertSame(out, out.append("Comme je descendais des Fleuves impassibles,\r"
