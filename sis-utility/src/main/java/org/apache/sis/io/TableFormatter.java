@@ -801,7 +801,7 @@ public class TableFormatter extends FilteredAppendable implements Flushable {
                         out.append(leftBorder);
                     }
                     final Appendable tabExpander = (cellText.indexOf('\t') >= 0)
-                            ? new LineWrapFormatter(out, Integer.MAX_VALUE, true) : out;
+                            ? new LineFormatter(out, Integer.MAX_VALUE, true) : out;
                     switch (cell.alignment) {
                         default: {
                             throw new AssertionError(cell.alignment);

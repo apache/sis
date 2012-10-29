@@ -43,7 +43,7 @@ import static org.apache.sis.util.Characters.isLineOrParagraphSeparator;
  * {@section Flushing and closing the stream}
  * Subclasses implement the {@link java.io.Flushable} interface only if they
  * hold data in an internal buffer before to send them to the wrapped {@code Appendable}.
- * This is the case of {@link TableFormatter} and {@link LineWrapFormatter} for instance.
+ * This is the case of {@link TableFormatter} and {@link LineFormatter} for instance.
  * For unconditionally flushing or closing an {@code Appendable} and its underlying stream,
  * see {@link IO#flush(Appendable)} and {@link IO#close(Appendable)}.
  *

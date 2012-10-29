@@ -111,7 +111,7 @@ public final class IO extends Static {
      *
      * <p>It may be necessary to invoke {@link #flush(Appendable)} before this method in order
      * to get proper content. In particular, this is necessary if the chain of {@code Appendable}s
-     * contains {@link TableFormatter} or {@link LineWrapFormatter} instances.</p>
+     * contains {@link TableFormatter} or {@link LineFormatter} instances.</p>
      *
      * @param  out The stream or buffer from which to get the content, or {@code null}.
      * @return The content of the given stream of buffer, or {@code null} if unavailable.

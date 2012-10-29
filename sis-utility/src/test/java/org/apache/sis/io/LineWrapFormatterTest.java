@@ -25,7 +25,7 @@ import static org.apache.sis.util.Characters.SOFT_HYPHEN;
 
 
 /**
- * Tests the {@link LineWrapFormatter} implementation
+ * Tests the {@link LineFormatter} implementation
  * when used for wrapping lines to 80 characters.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -39,7 +39,7 @@ public final strictfp class LineWrapFormatterTest extends FormatterTestCase {
      * Creates a new test case.
      */
     public LineWrapFormatterTest() {
-        formatter = new LineWrapFormatter(formatter, 10, false);
+        formatter = new LineFormatter(formatter, 10, false);
     }
 
     /**
@@ -48,8 +48,8 @@ public final strictfp class LineWrapFormatterTest extends FormatterTestCase {
     @Override
     void run(final String lineSeparator) throws IOException {
         final Appendable out = formatter;
-        if (out instanceof LineWrapFormatter) {
-            assertEquals("getMaximalLineLength", 10, ((LineWrapFormatter) out).getMaximalLineLength());
+        if (out instanceof LineFormatter) {
+            assertEquals("getMaximalLineLength", 10, ((LineFormatter) out).getMaximalLineLength());
         }
         final String BLUE    = X364.FOREGROUND_BLUE   .sequence();
         final String DEFAULT = X364.FOREGROUND_DEFAULT.sequence();
@@ -60,7 +60,7 @@ public final strictfp class LineWrapFormatterTest extends FormatterTestCase {
         assertSame(out, out.append("Ma vitre est un jar" + SOFT_HYPHEN + "din de givre."    + lineSeparator));
         /*
          * If our test case is using the wrapper which will send the data once character at time,
-         * our LineWrapFormatter implementation will not be able to detect the line separator and
+         * our LineFormatter implementation will not be able to detect the line separator and
          * will fallback on the default one. So we set the line separator to the one actually used
          * not because this is the class contract (quite the opposite, this is a limitation in our
          * implementation), but simply in order to allow the test to pass.

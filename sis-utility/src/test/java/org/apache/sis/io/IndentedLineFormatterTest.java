@@ -24,7 +24,7 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests the {@link LineWrapFormatter} implementation
+ * Tests the {@link LineFormatter} implementation
  * when used for inserting a margin before every line.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -38,7 +38,7 @@ public final strictfp class IndentedLineFormatterTest extends FormatterTestCase 
      * Creates a new test case.
      */
     public IndentedLineFormatterTest() {
-        formatter = new LineWrapFormatter(formatter) {
+        formatter = new LineFormatter(formatter) {
             @Override
             protected void onLineBegin(boolean isContinuation) throws IOException {
                 out.append("    ");
