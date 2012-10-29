@@ -117,6 +117,17 @@ public class LineWrapFormatter extends FilteredAppendable implements Flushable {
     private boolean skipLF;
 
     /**
+     * {@code true} if the next character will be at the beginning of a new line.
+     * This flag is set to {@code true} only for "real" new lines, as a result of
+     * line separator found in the input given to this formatter. The "generated"
+     * new lines (resulting from line wrap) will invoke {@link #onLineBegin(boolean)}
+     * directly without the help of this temporary variable.
+     *
+     * @see #transfer(int)
+     */
+    private boolean isNewLine = true;
+
+    /**
      * {@code true} if an escape sequence is in progress. The escape sequence will stop
      * after the first non-digit character other than {@link X364#AFTER_ESCAPE}.
      */
@@ -310,6 +321,20 @@ public class LineWrapFormatter extends FilteredAppendable implements Flushable {
     }
 
     /**
+     * Writes the given amount of characters from the {@linkplain #buffer},
+     * then removes those characters from the buffer. This method does not
+     * adjust {@link #printableLength}; it is caller responsibility to do so.
+     */
+    private void transfer(final int length) throws IOException {
+        if (isNewLine) {
+            isNewLine = false;
+            onLineBegin(false);
+        }
+        out.append(buffer, 0, length);
+        buffer.delete(0, length);
+    }
+
+    /**
      * Writes the specified code point.
      *
      * @throws IOException If an I/O error occurs.
@@ -326,18 +351,20 @@ public class LineWrapFormatter extends FilteredAppendable implements Flushable {
          *   4) Write the line separator.
          */
         if (Characters.isLineOrParagraphSeparator(c)) {
-            buffer.setLength(printableLength); // Reduce the amount of work for StringBuilder.deleteCharAt(int).
-            deleteSoftHyphen();
-            out.append(buffer);
-            buffer.setLength(0);
-            printableLength  = 0;
-            codePointCount   = 0;
-            isEscapeSequence = false; // Handle line-breaks as "end of escape sequence".
             final boolean skip;
             switch (c) {
                 case '\r': skip = false;  skipLF = true;  break;
                 case '\n': skip = skipLF; skipLF = false; break;
                 default:   skip = false;  skipLF = false; break;
+            }
+            if (!skip) {
+                buffer.setLength(printableLength); // Reduce the amount of work for StringBuilder.deleteCharAt(int).
+                deleteSoftHyphen();
+                transfer(printableLength);
+                printableLength  = 0;
+                codePointCount   = 0;
+                isEscapeSequence = false; // Handle line-breaks as "end of escape sequence".
+                isNewLine        = true;
             }
             if (!isEndOfLineReplaced) {
                 appendCodePoint(c); // Forward EOL sequences "as-is".
@@ -351,12 +378,15 @@ public class LineWrapFormatter extends FilteredAppendable implements Flushable {
          * If the character to write is a whitespace, then write any pending characters from
          * the buffer to the underlying appendable since we know that those characters didn't
          * exceeded the line length limit.
+         *
+         * We use Character.isWhitespace(…) instead of Character.isSpaceChar(…) because
+         * the former returns 'true' tabulations (which we want), and returns 'false'
+         * for non-breaking spaces (which we also want).
          */
         if (Character.isWhitespace(c)) {
             if (printableLength != 0) {
                 deleteSoftHyphen();
-                out.append(buffer, 0, printableLength);
-                buffer.delete(0, printableLength);
+                transfer(printableLength);
                 printableLength = 0;
             }
             if (c != '\t') {
@@ -415,8 +445,7 @@ searchHyp:  for (int i=buffer.length(); i>0;) {
                     }
                     case Characters.HYPHEN:
                     case Characters.SOFT_HYPHEN: {
-                        out.append(buffer, 0, i);
-                        buffer.delete(0, i);
+                        transfer(i);
                         break searchHyp;
                     }
                 }
@@ -438,6 +467,7 @@ searchHyp:  for (int i=buffer.length(); i>0;) {
             }
             printableLength = buffer.length();
             codePointCount  = buffer.codePointCount(0, printableLength);
+            onLineBegin(true);
         }
     }
 
@@ -504,5 +534,22 @@ searchHyp:  for (int i=buffer.length(); i>0;) {
         out.append(buffer);
         buffer.setLength(0);
         IO.flush(out);
+    }
+
+    /**
+     * Invoked when a new line is beginning. The default implementation does nothing,
+     * but subclasses can override this method for example in order to insert a margin
+     * on the left side before each line.
+     *
+     * <p>If an implementation wishes to write characters, it shall do so by writing
+     * directly to {@link #out}, <strong>not</strong> by invoking the {@code append}
+     * methods of this class.</p>
+     *
+     * @param  isContinuation {@code true} if the new line is the continuation of the previous
+     *         line after a "line wrap", or {@code false} if a line or paragraph separator has
+     *         been explicitly sent to this formatter.
+     * @throws IOException if an error occurred while writing to {@link #out}.
+     */
+    protected void onLineBegin(boolean isContinuation) throws IOException {
     }
 }
