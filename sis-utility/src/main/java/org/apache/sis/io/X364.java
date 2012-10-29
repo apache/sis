@@ -64,15 +64,16 @@ public enum X364 {
     static final char AFTER_ESCAPE = '[';
 
     /**
-     * The beginning of escape sequences.
+     * The Control Sequence Introducer (CSI).
      * Must be the concatenation of {@link #ESCAPE} with {@link #AFTER_ESCAPE}.
      */
     private static final String START = "\u001B[";
 
     /**
-     * The end of escape sequences.
+     * The end of escape sequences. Fixed to {@code 'm'} for now, but a wider range
+     * of letters actually exists for different operations.
      */
-    private static char END = 'm';
+    private static final char END = 'm';
 
     /**
      * The X3.64 code.

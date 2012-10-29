@@ -21,8 +21,6 @@ import java.io.CharConversionException;
 import org.apache.sis.util.Decorator;
 import org.apache.sis.util.ArgumentChecks;
 
-import static org.apache.sis.util.Characters.LINE_SEPARATOR;
-import static org.apache.sis.util.Characters.PARAGRAPH_SEPARATOR;
 import static org.apache.sis.util.Characters.isLineOrParagraphSeparator;
 
 
@@ -75,25 +73,6 @@ public abstract class FilteredAppendable implements Appendable {
     protected FilteredAppendable(final Appendable out) {
         ArgumentChecks.ensureNonNull("out", out);
         this.out = out;
-    }
-
-    /**
-     * Returns {@code true} if the given character is a line separator in the sense of
-     * this {@code org.apache.sis.io} package. This method performs the same work than
-     * {@link org.apache.sis.util.Characters#isLineOrParagraphSeparator(int)} without
-     * using the code point API. This allows simpler and faster code in subclasses working
-     * only in the {@linkplain Character#isBmpCodePoint(int) Basic Multilingual Plane (BMP)}.
-     * However this method assumes that all line and paragraph separators are in the BMP.
-     *
-     * <p>This method provides a single item to search if we need to expand our definition of
-     * line separator in this package. However if such extension is needed, then developers
-     * shall also search for usages of {@code LINE_SEPARATOR} and {@code PARAGRAPH_SEPARATOR}
-     * constants in this package since they are sometime used directly.</p>
-     *
-     * @see org.apache.sis.util.Characters#isLineOrParagraphSeparator(int)
-     */
-    static boolean isLineSeparator(final char c) {
-        return (c == '\n') || (c == '\r') || (c == LINE_SEPARATOR) || (c == PARAGRAPH_SEPARATOR);
     }
 
     /**

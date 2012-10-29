@@ -44,10 +44,10 @@ public final strictfp class CharSequencesTest extends TestCase {
      */
     @Test
     public void testSpaces() {
-        assertEquals("",         spaces(0));
-        assertEquals(" ",        spaces(1));
-        assertEquals("        ", spaces(8));
-        assertEquals("",         spaces(-2));
+        assertEquals("",         spaces( 0).toString());
+        assertEquals(" ",        spaces( 1).toString());
+        assertEquals("        ", spaces( 8).toString());
+        assertEquals("",         spaces(-2).toString());
     }
 
     /**
