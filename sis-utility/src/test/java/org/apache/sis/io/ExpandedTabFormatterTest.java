@@ -38,7 +38,7 @@ public final strictfp class ExpandedTabFormatterTest extends FormatterTestCase {
      * Creates a new test case.
      */
     public ExpandedTabFormatterTest() {
-        formatter = new LineWrapFormatter(formatter, Integer.MAX_VALUE, true);
+        formatter = new LineWrapFormatter(formatter, null, true);
     }
 
     /**

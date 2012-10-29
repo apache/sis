@@ -24,7 +24,8 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests the {@link EndOfLineFormatter} implementation.
+ * Tests the {@link LineWrapFormatter} implementation
+ * when used for changing the line separator.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
@@ -37,7 +38,7 @@ public final strictfp class EndOfLineFormatterTest extends FormatterTestCase {
      * Creates a new test case.
      */
     public EndOfLineFormatterTest() {
-        formatter = new EndOfLineFormatter(formatter, " ");
+        formatter = new LineWrapFormatter(formatter, " ", false);
     }
 
     /**
@@ -46,8 +47,8 @@ public final strictfp class EndOfLineFormatterTest extends FormatterTestCase {
     @Override
     void run(final String lineSeparator) throws IOException {
         final Appendable out = formatter;
-        if (out instanceof EndOfLineFormatter) {
-            assertEquals("getLineSeparator", " ", ((EndOfLineFormatter) out).getLineSeparator());
+        if (out instanceof LineWrapFormatter) {
+            assertEquals("getLineSeparator", " ", ((LineWrapFormatter) out).getLineSeparator());
         }
         assertSame(out, out.append("Le vrai" + lineSeparator + "policitien, "));
         assertSame(out, out.append("c'est celui\r\nqui\r")); // Line separator broken on two method calls.
