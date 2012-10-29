@@ -63,7 +63,7 @@ import org.apache.sis.util.ArgumentChecks;
  * @module
  */
 @Decorator(Appendable.class)
-public class LineWrapFormatter extends FilteredAppendable implements Flushable {
+public class LineFormatter extends FilteredAppendable implements Flushable {
     /**
      * The line separator, or {@code null} if not yet determined. If {@code null}, then the
      * {@link #append(CharSequence, int, int)} method will try to infer it from the submitted text.
@@ -160,7 +160,7 @@ public class LineWrapFormatter extends FilteredAppendable implements Flushable {
      *
      * @param out The underlying stream or buffer to write to.
      */
-    public LineWrapFormatter(final Appendable out) {
+    public LineFormatter(final Appendable out) {
         super(out);
         maximalLineLength = Integer.MAX_VALUE;
     }
@@ -174,7 +174,7 @@ public class LineWrapFormatter extends FilteredAppendable implements Flushable {
      * @param isTabulationExpanded  {@code true} for expanding tabulations into spaces,
      *                              or {@code false} for sending {@code '\t'} characters as-is.
      */
-    public LineWrapFormatter(final Appendable out, final String lineSeparator, final boolean isTabulationExpanded) {
+    public LineFormatter(final Appendable out, final String lineSeparator, final boolean isTabulationExpanded) {
         super(out);
         maximalLineLength = Integer.MAX_VALUE;
         this.lineSeparator        = lineSeparator;
@@ -191,7 +191,7 @@ public class LineWrapFormatter extends FilteredAppendable implements Flushable {
      * @param isTabulationExpanded  {@code true} for expanding tabulations into spaces,
      *                              or {@code false} for forwarding {@code '\t'} characters as-is.
      */
-    public LineWrapFormatter(final Appendable out, final int maximalLineLength, final boolean isTabulationExpanded) {
+    public LineFormatter(final Appendable out, final int maximalLineLength, final boolean isTabulationExpanded) {
         super(out);
         ArgumentChecks.ensureStrictlyPositive("maximalLineLength", maximalLineLength);
         this.maximalLineLength    = maximalLineLength;
@@ -519,7 +519,7 @@ searchHyp:  for (int i=buffer.length(); i>0;) {
     /**
      * Sends pending characters to the underlying stream. Note that this method should
      * preferably be invoked at the end of a word, sentence or line, since invoking it
-     * may prevent {@code LineWrapFormatter} to properly wrap the current line if it is
+     * may prevent {@code LineFormatter} to properly wrap the current line if it is
      * in the middle of a word.
      *
      * <p>Invoking this method also flushes the {@linkplain #out underlying stream}.
