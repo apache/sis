@@ -471,10 +471,11 @@ searchHyp:  for (int i=buffer.length(); i>0;) {
         }
     }
 
-
     /**
      * Writes a single character.
      *
+     * @param  c The character to append.
+     * @return A reference to this {@code Appendable}.
      * @throws IOException If an I/O error occurs.
      */
     @Override
@@ -492,6 +493,7 @@ searchHyp:  for (int i=buffer.length(); i>0;) {
      * @param  sequence The character sequence to be written.
      * @param  start    Index from which to start reading characters.
      * @param  end      Index of the character following the last character to read.
+     * @return A reference to this {@code Appendable}.
      * @throws IOException If an I/O error occurs.
      */
     @Override
