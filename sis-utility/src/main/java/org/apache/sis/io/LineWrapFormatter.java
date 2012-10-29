@@ -19,31 +19,43 @@ package org.apache.sis.io;
 import java.io.Flushable;
 import java.io.IOException;
 import org.apache.sis.util.Decorator;
+import org.apache.sis.util.Characters;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 
-import static org.apache.sis.io.X364.ESCAPE;
-import static org.apache.sis.io.X364.AFTER_ESCAPE;
-import static org.apache.sis.util.Characters.HYPHEN;
-import static org.apache.sis.util.Characters.SOFT_HYPHEN;
-import static org.apache.sis.util.Characters.isLineOrParagraphSeparator;
-
 
 /**
- * An {@link Appendable} which wraps the lines to some maximal line length.
- * The default line length is 80 Unicode characters (code points), but can
- * be changed by a call to {@link #setMaximalLineLength(int)}.
+ * An {@link Appendable} which can apply different kinds of reformatting that depend on the
+ * <cite>End Of Line</cite> (EOL) occurrences. Available reformatting include inserting a
+ * a margin before each line, wrapping to a maximal line length and replacing tabulations or
+ * EOL characters. The actual work to be done can be enabled by invoking one or many of the
+ * following methods:
+ *
+ * <ul>
+ *   <li>{@link #setMaximalLineLength(int)} for wrapping the lines to some maximal line length,
+ *       typically 80 Unicode characters (code points).</li>
+ *   <li>{@link #setTabulationExpanded(boolean)} for replacing tabulation characters by spaces.</li>
+ *   <li>{@link #setLineSeparator(String)} for replacing all occurrences of
+ *       {@linkplain Characters#isLineOrParagraphSeparator(int) line separators} by the given string.</li>
+ * </ul>
+ *
+ * In addition this class removes trailing {@linkplain Character#isWhitespace(int) whitespaces}
+ * before end of lines.
+ *
+ * {@section How line lengths are calculated}
+ * Line length are measured in unit of Unicode <cite>code points</cite>. This is usually the same
+ * than the number of {@code char} primitive values, but not always. Combining characters are not
+ * yet recognized by this class, but future versions may improve on that.
+ *
+ * <p>For proper line length calculation in presence of tabulation characters ({@code '\t'}),
+ * this class needs to known the tabulation width. The default value is 8, but this can be changed
+ * by a call to {@link #setTabulationWidth(int)}. Note that invoking that method affects only line
+ * length calculation; it does not replace tabulations by spaces. For tabulation expansion, see
+ * {@link #setTabulationExpanded(boolean)}.</p>
  *
  * <p>The characters given to this filter can contain {@linkplain X364 X.364} escape sequences,
  * as this class will not count the space used by those escape sequences in the calculation of
  * line length.</p>
- *
- * {@section Tabulations}
- * For proper calculation of line lengths in presence of tabulation characters ({@code '\t'}),
- * this class needs to known the tabulation width. The default value is 8, but this can be changed
- * by a call to {@link #setTabulationWidth(int)}. By default tabulation characters are sent to the
- * {@linkplain #out underlying appendable} <i>as-is</i>, but this class can optionally be instructed
- * to expand tabulations by a call to {@link #setTabulationExpanded(boolean)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
@@ -53,9 +65,13 @@ import static org.apache.sis.util.Characters.isLineOrParagraphSeparator;
 @Decorator(Appendable.class)
 public class LineWrapFormatter extends FilteredAppendable implements Flushable {
     /**
-     * The line separator to use when this class inserts some (line separators found in the
-     * texts given by the user will be passed "as is"). We will use the first line separator
-     * found in the given texts, or the system default if none.
+     * The line separator, or {@code null} if not yet determined. If {@code null}, then the
+     * {@link #append(CharSequence, int, int)} method will try to infer it from the submitted text.
+     *
+     * <p>If {@link #isEndOfLineReplaced} is {@code false} (the default), then this line separator
+     * will be used only when this class inserts new line separators as a consequence of line wraps;
+     * line separators found in the texts given by the user will be passed "as is". If {@code true},
+     * then all line separators are replaced.</p>
      */
     private String lineSeparator;
 
@@ -79,7 +95,7 @@ public class LineWrapFormatter extends FilteredAppendable implements Flushable {
      *
      * @see #setTabulationWidth(int)
      */
-    private int tabulationWidth = 8;
+    private short tabulationWidth = 8;
 
     /**
      * {@code true} if this formatter shall expands tabulations into spaces.
@@ -89,25 +105,70 @@ public class LineWrapFormatter extends FilteredAppendable implements Flushable {
     private boolean isTabulationExpanded;
 
     /**
+     * {@code true} if all occurrences of EOL sequences shall be replaced by
+     * the {@link #lineSeparator}, or {@code false} for keeping EOL unchanged.
+     */
+    private boolean isEndOfLineReplaced;
+
+    /**
+     * {@code true} if the next character needs to be skipped if equals to {@code '\n'}.
+     * This field is used in order to avoid writing two EOL in place of {@code "\r\n"}.
+     */
+    private boolean skipLF;
+
+    /**
      * {@code true} if an escape sequence is in progress. The escape sequence will stop
-     * after the first non-digit character other than {@link #IGNORE_AFTER_ESCAPE}.
+     * after the first non-digit character other than {@link X364#AFTER_ESCAPE}.
      */
     private boolean isEscapeSequence;
 
     /**
      * The buffer for the last word being written.
+     * This buffer will also contain trailing whitespace characters. If whitespaces are followed
+     * by at least one non-white character, then the whitespaces are written to the underlying
+     * stream before the non-ignorable one. Otherwise if whitespaces are followed by a line
+     * separator, then they are discarded.
      */
     private final StringBuilder buffer = new StringBuilder(16);
 
     /**
-     * Constructs a formatter which will wrap the lines at a maximum of 80 Unicode characters.
-     * The maximal line length can be changed by a call to {@link #setMaximalLineLength(int)}.
+     * The number of Java characters (not Unicode code points) in {@link #buffer},
+     * ignoring trailing whitespaces.
+     */
+    private int printableLength;
+
+    /**
+     * Constructs a default formatter. Callers should invoke at least one of the following methods
+     * after construction in order to perform useful work:
+     *
+     * <ul>
+     *   <li>{@link #setMaximalLineLength(int)}</li>
+     *   <li>{@link #setTabulationExpanded(boolean)</li>
+     *   <li>{@link #setLineSeparator(String)}</li>
+     * </ul>
      *
      * @param out The underlying stream or buffer to write to.
      */
     public LineWrapFormatter(final Appendable out) {
         super(out);
-        maximalLineLength = 80;
+        maximalLineLength = Integer.MAX_VALUE;
+    }
+
+    /**
+     * Constructs a formatter which will replaces line separators by the given string.
+     *
+     * @param out                   The underlying stream or buffer to write to.
+     * @param lineSeparator         The line separator to send to {@code out}, or {@code null}
+     *                              for forwarding the EOL sequences unchanged.
+     * @param isTabulationExpanded  {@code true} for expanding tabulations into spaces,
+     *                              or {@code false} for sending {@code '\t'} characters as-is.
+     */
+    public LineWrapFormatter(final Appendable out, final String lineSeparator, final boolean isTabulationExpanded) {
+        super(out);
+        maximalLineLength = Integer.MAX_VALUE;
+        this.lineSeparator        = lineSeparator;
+        this.isEndOfLineReplaced  = (lineSeparator != null);
+        this.isTabulationExpanded = isTabulationExpanded;
     }
 
     /**
@@ -117,7 +178,7 @@ public class LineWrapFormatter extends FilteredAppendable implements Flushable {
      * @param maximalLineLength     The maximal number of Unicode characters per line,
      *                              or {@link Integer#MAX_VALUE} if there is no limit.
      * @param isTabulationExpanded  {@code true} for expanding tabulations into spaces,
-     *                              or {@code false} for sending {@code '\t'} characters as-is.
+     *                              or {@code false} for forwarding {@code '\t'} characters as-is.
      */
     public LineWrapFormatter(final Appendable out, final int maximalLineLength, final boolean isTabulationExpanded) {
         super(out);
@@ -128,7 +189,7 @@ public class LineWrapFormatter extends FilteredAppendable implements Flushable {
 
     /**
      * Returns the maximal line length, in unit of Unicode characters (code point count).
-     * The default value is 80.
+     * The default value is no limit.
      *
      * @return The current maximal number of Unicode characters per line,
      *         or {@link Integer#MAX_VALUE} if there is no limit.
@@ -162,11 +223,13 @@ public class LineWrapFormatter extends FilteredAppendable implements Flushable {
      * Sets the tabulation width, in unit of Unicode characters (code point count).
      *
      * @param  width The new tabulation width. Must be greater than 0.
-     * @throws IllegalArgumentException if {@code tabWidth} is not greater than 0.
+     * @throws IllegalArgumentException if {@code tabWidth} is not greater than 0
+     *         or is unreasonably high.
      */
     public void setTabulationWidth(final int width) {
         ArgumentChecks.ensureStrictlyPositive("width", width);
-        tabulationWidth = width;
+        ArgumentChecks.ensureBetween("width", 1, Integer.MAX_VALUE, width);
+        tabulationWidth = (short) width;
     }
 
     /**
@@ -175,7 +238,7 @@ public class LineWrapFormatter extends FilteredAppendable implements Flushable {
      * are sent to the {@linkplain #out underlying appendable} <i>as-is</i>.
      *
      * @return {@code true} if this formatter expands tabulations into spaces,
-     *         or {@code false} if {@code '\t'} characters are sent <i>as-is</i>.
+     *         or {@code false} if {@code '\t'} characters are forwarded <i>as-is</i>.
      */
     public boolean isTabulationExpanded() {
         return isTabulationExpanded;
@@ -185,19 +248,48 @@ public class LineWrapFormatter extends FilteredAppendable implements Flushable {
      * Sets whether this class formatter expands tabulations into spaces.
      *
      * @param expanded {@code true} if this class shall expands tabulations into spaces,
-     *                 or {@code false} for sending {@code '\t'} characters as-is.
+     *                 or {@code false} for forwarding {@code '\t'} characters as-is.
      */
     public void setTabulationExpanded(final boolean expanded) {
         isTabulationExpanded = expanded;
     }
 
     /**
-     * Writes a line separator to {@link #out}. This method is invoked only for new line separators
-     * generated by this class, not for the line separators found in the texts supplied by the user.
-     * The {@link #append(CharSequence,int,int)} method tries to detect the line separator used in
-     * the text, but if no line separator has been found we have to use some fallback.
+     * Returns the line separator to be sent to the {@linkplain #out underlying appendable},
+     * or {@code null} if EOL sequences are forwarded unchanged.
+     *
+     * @return The current line separator, or {@code null} if EOL are forwarded <i>as-is</i>.
      */
-    private void lineSeparator() throws IOException {
+    public String getLineSeparator() {
+        return isEndOfLineReplaced ? lineSeparator : null;
+    }
+
+    /**
+     * Changes the line separator to be sent to the {@linkplain #out underlying appendable}.
+     * This is the string to insert in place of every occurrences of {@code "\r"}, {@code "\n"},
+     * {@code "\r\n"} or other {@linkplain Characters#isLineOrParagraphSeparator(int) line separators}.
+     * If {@code null} (the default), then the line separators given to the {@code append}
+     * methods are forwarded unchanged.
+     *
+     * @param  lineSeparator The new line separator, or {@code null} for forwarding EOL <i>as-is</i>.
+     *
+     * @see System#lineSeparator()
+     * @see Characters#isLineOrParagraphSeparator(int)
+     */
+    public void setLineSeparator(final String lineSeparator) {
+        this.lineSeparator  = lineSeparator;
+        isEndOfLineReplaced = (lineSeparator != null);
+    }
+
+    /**
+     * Writes a line separator to {@link #out}. This method is invoked for new line separators
+     * generated by this class, not for the line separators found in the texts supplied by the
+     * user, unless {@link #isEndOfLineReplaced} is {@code true}.
+     *
+     * The {@link #append(CharSequence,int,int)} method tries to detect the line separator used
+     * in the text, but if no line separator has been found we have to use some fallback.
+     */
+    private void writeLineSeparator() throws IOException {
         if (lineSeparator == null) {
             lineSeparator = System.lineSeparator();
         }
@@ -208,10 +300,11 @@ public class LineWrapFormatter extends FilteredAppendable implements Flushable {
      * Removes the soft hyphen characters from the given buffer. This is invoked
      * when the buffer is about to be written without being split on two lines.
      */
-    private static void deleteSoftHyphen(final StringBuilder buffer) {
-        for (int i=buffer.length(); --i>=0;) {
-            if (buffer.charAt(i) == SOFT_HYPHEN) {
+    private void deleteSoftHyphen() {
+        for (int i=printableLength; --i >= 0;) {
+            if (buffer.charAt(i) == Characters.SOFT_HYPHEN) {
                 buffer.deleteCharAt(i);
+                printableLength--;
             }
         }
     }
@@ -224,112 +317,127 @@ public class LineWrapFormatter extends FilteredAppendable implements Flushable {
     @SuppressWarnings("fallthrough")
     private void write(final int c) throws IOException {
         final StringBuilder buffer = this.buffer;
-        if (isLineOrParagraphSeparator(c)) {
-            deleteSoftHyphen(buffer);
-            out.append(buffer);
-            appendCodePoint(c);
-            buffer.setLength(0);
-            codePointCount = 0;
-            isEscapeSequence = false; // Handle line-breaks as "end of escape sequence".
-            return;
-        }
-        if (c == ESCAPE) {
-            buffer.append(ESCAPE);
-            isEscapeSequence = true;
-            return;
-        }
         /*
-         * Use Character.isWhitespace(…) instead of Character.isSpaceChar(…)
-         * because the former accepts tabulations (which we want), and does
-         * not returns 'true' for non-breaking spaces (which we also want).
+         * If the character to write is a EOL sequence, then:
+         *
+         *   1) Trim trailing whitespaces in the buffer.
+         *   2) Remove unused soft-hyphens (otherwise some consoles display them).
+         *   3) Flush the buffer to the underlying appendable.
+         *   4) Write the line separator.
+         */
+        if (Characters.isLineOrParagraphSeparator(c)) {
+            buffer.setLength(printableLength); // Reduce the amount of work for StringBuilder.deleteCharAt(int).
+            deleteSoftHyphen();
+            out.append(buffer);
+            buffer.setLength(0);
+            printableLength  = 0;
+            codePointCount   = 0;
+            isEscapeSequence = false; // Handle line-breaks as "end of escape sequence".
+            final boolean skip;
+            switch (c) {
+                case '\r': skip = false;  skipLF = true;  break;
+                case '\n': skip = skipLF; skipLF = false; break;
+                default:   skip = false;  skipLF = false; break;
+            }
+            if (!isEndOfLineReplaced) {
+                appendCodePoint(c); // Forward EOL sequences "as-is".
+            } else if (!skip) {
+                writeLineSeparator(); // Replace EOL sequences by the unique line separator.
+            }
+            return;
+        }
+        skipLF = false;
+        /*
+         * If the character to write is a whitespace, then write any pending characters from
+         * the buffer to the underlying appendable since we know that those characters didn't
+         * exceeded the line length limit.
          */
         if (Character.isWhitespace(c)) {
-            deleteSoftHyphen(buffer);
-            out.append(buffer);
-            buffer.setLength(0);
-            isEscapeSequence = false; // Handle spaces as "end of escape sequence".
-        }
-        /*
-         * If the character is the tabulation, compute the number of spaces and optionally replace
-         * the tabulation by spaces. Note that in such case, the buffer is empty (because of the
-         * above block) so we don't need to bother about the buffer when writing to 'out'.
-         */
-        if (c == '\t') {
-            final int width = tabulationWidth - (codePointCount % tabulationWidth);
-            if ((codePointCount += width) > maximalLineLength) {
-                lineSeparator();
-                codePointCount = 0;
+            if (printableLength != 0) {
+                deleteSoftHyphen();
+                out.append(buffer, 0, printableLength);
+                buffer.delete(0, printableLength);
+                printableLength = 0;
+            }
+            if (c != '\t') {
+                codePointCount++;
             } else {
+                final int width = tabulationWidth - (codePointCount % tabulationWidth);
+                codePointCount += width;
                 if (isTabulationExpanded) {
                     buffer.append(CharSequences.spaces(width));
-                } else {
-                    buffer.append('\t');
+                    return;
                 }
             }
+            buffer.appendCodePoint(c);
             return;
         }
         buffer.appendCodePoint(c);
+        printableLength = buffer.length();
         /*
          * Special handling of ANSI X3.64 escape sequences. Since they are not visible
-         * characters (they are used for controlling the colors), do not count them.
+         * characters (they are used for controlling the colors), do not count them in
+         * 'codePointCount' (but still count them as "printable" characters, since we
+         * don't want to trim them). The sequence pattern is "CSI <digits> <command>"
+         * where <command> is a single letter.
          */
-        if (isEscapeSequence) {
-            if (c < '0' || c > '9') {
-                if (c == AFTER_ESCAPE) {
-                    final int previous = buffer.length() - 2;
-                    if (previous >= 0 && buffer.charAt(previous) == ESCAPE) {
-                        return; // Found the character to ignore.
-                    }
-                }
-                isEscapeSequence = false;
-                // The first character after the digits is not counted neither,
-                // so we exit this method for it too.
-            }
+        if (c == X364.ESCAPE) {
+            isEscapeSequence = true;
             return;
+        } else if (isEscapeSequence) {
+            final char previous = buffer.charAt(printableLength - 2);
+            if (previous != X364.ESCAPE) {
+                isEscapeSequence = (c >= '0' && c <= '9');
+                return; // The letter after the digits will be the last character to skip.
+            } else if (c == X364.AFTER_ESCAPE) {
+                return; // Found the second part of the Control Sequence Introducer (CSI).
+            }
+            // [ESC] was not followed by '['. Proceed as a normal character.
+            isEscapeSequence = false;
         }
         /*
-         * The remaining of this method is executed only if we have exceeded the maximal line
-         * length. First search for the hyphen character, if any. If we find one and if it is
-         * preceeded by a letter, split there. The "letter before" condition is a way to avoid
-         * to split at the minus sign of negative numbers like "-99", assuming that the minus
-         * sign is preceeded by a space. We can not look at the character after since we may
-         * not know it yet.
+         * The remaining of this method is executed only if we exceeded the maximal line length.
+         * First, search for the hyphen character, if any. If we find one and if it is preceeded
+         * by a letter, split there. The "letter before" condition is a way to avoid to split at
+         * the minus sign of negative numbers like "-99", assuming that the minus sign is preceeded
+         * by a space. We can not look at the character after since we may not know it yet.
          */
         if (++codePointCount > maximalLineLength) {
-            int n;
-searchHyp:  for (int i=buffer.length(); i>0; i-=n) {
+searchHyp:  for (int i=buffer.length(); i>0;) {
                 final int b = buffer.codePointBefore(i);
-                n = Character.charCount(b);
+                final int n = Character.charCount(b);
                 switch (b) {
                     case '-': {
                         if (i>=n && !Character.isLetter(buffer.codePointBefore(i-n))) {
-                            continue; // Continue searching previous characters.
+                            break; // Continue searching previous characters.
                         }
                         // fall through
                     }
-                    case HYPHEN:
-                    case SOFT_HYPHEN: {
+                    case Characters.HYPHEN:
+                    case Characters.SOFT_HYPHEN: {
                         out.append(buffer, 0, i);
                         buffer.delete(0, i);
                         break searchHyp;
                     }
                 }
+                i -= n;
             }
-            lineSeparator();
+            /*
+             * At this point, all the remaining content of the buffer must move on the next line.
+             * Skip the leading whitespaces on the new line.
+             */
+            writeLineSeparator();
             final int length = buffer.length();
-            codePointCount = buffer.codePointCount(0, length);
             for (int i=0; i<length;) {
                 final int s = buffer.codePointAt(i);
                 if (!Character.isWhitespace(s)) {
                     buffer.delete(0, i);
-                    return;
+                    break;
                 }
                 i += Character.charCount(s);
-                codePointCount--;
             }
-            // If we reach this point, only spaces were found in the buffer.
-            assert codePointCount == 0 : codePointCount;
-            buffer.setLength(0);
+            printableLength = buffer.length();
+            codePointCount  = buffer.codePointCount(0, printableLength);
         }
     }
 
