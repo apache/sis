@@ -53,7 +53,7 @@ import static org.apache.sis.util.Characters.isLineOrParagraphSeparator;
  * @see java.io.FilterWriter
  */
 @Decorator(Appendable.class)
-public abstract class FilteredAppendable implements Appendable {
+abstract class FilteredAppendable implements Appendable {
     /**
      * The underlying character output stream or buffer.
      */
