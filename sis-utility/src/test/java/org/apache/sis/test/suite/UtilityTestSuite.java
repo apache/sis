@@ -59,10 +59,7 @@ import org.junit.runners.Suite;
   org.apache.sis.measure.AngleFormatTest.class,
   org.apache.sis.measure.AngleTest.class,
   org.apache.sis.io.X364Test.class,
-  org.apache.sis.io.EndOfLineFormatterTest.class,
-  org.apache.sis.io.IndentedLineFormatterTest.class,
-  org.apache.sis.io.ExpandedTabFormatterTest.class,
-  org.apache.sis.io.LineWrapFormatterTest.class,
+  org.apache.sis.io.LineFormatterTest.class,
   org.apache.sis.io.TableFormatterTest.class,
 
   // XML most basic types.
