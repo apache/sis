@@ -154,7 +154,7 @@ public class LineFormatter extends FilteredAppendable implements Flushable {
      *
      * <ul>
      *   <li>{@link #setMaximalLineLength(int)}</li>
-     *   <li>{@link #setTabulationExpanded(boolean)</li>
+     *   <li>{@link #setTabulationExpanded(boolean)}</li>
      *   <li>{@link #setLineSeparator(String)}</li>
      * </ul>
      *
