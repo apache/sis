@@ -60,7 +60,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @version 0.3
  * @module
  *
- * @see java.util.Collections#checkedSet(Set)
+ * @see java.util.Collections#checkedSet(Set, Class)
  * @see java.util.Collections#synchronizedSet(Set)
  */
 @ThreadSafe

@@ -61,7 +61,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @version 0.3
  * @module
  *
- * @see java.util.Collections#checkedList(List)
+ * @see java.util.Collections#checkedList(List, Class)
  * @see java.util.Collections#synchronizedList(List)
  */
 @ThreadSafe

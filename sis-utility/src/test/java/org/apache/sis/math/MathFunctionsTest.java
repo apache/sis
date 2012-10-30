@@ -52,6 +52,27 @@ public final strictfp class MathFunctionsTest extends TestCase {
     private static final int LOWEST_USHORT_PRIME = 32771;
 
     /**
+     * Tests {@link MathFunctions#truncate(double)}.
+     */
+    @Test
+    public void testTruncate() {
+        assertEquals(+4, truncate(+4.9), 0);
+        assertEquals(-4, truncate(-4.9), 0);
+        assertEquals("Positive zero",
+                Double.doubleToLongBits(+0.0),
+                Double.doubleToLongBits(truncate(+0.5)));
+        assertEquals("Negative zero",
+                Double.doubleToLongBits(-0.0),
+                Double.doubleToLongBits(truncate(-0.5)));
+        assertEquals("Positive zero",
+                Double.doubleToLongBits(+0.0),
+                Double.doubleToLongBits(truncate(+0.0)));
+        assertEquals("Negative zero",
+                Double.doubleToLongBits(-0.0),
+                Double.doubleToLongBits(truncate(-0.0)));
+    }
+
+    /**
      * Tests the {@link MathFunctions#magnitude(double[])} method.
      */
     @Test
@@ -60,6 +81,54 @@ public final strictfp class MathFunctionsTest extends TestCase {
         assertEquals(4, magnitude(0, -4, 0), EPS);
         assertEquals(5, magnitude(0, -4, 0, 3, 0), EPS);
         assertEquals(5, magnitude(3, 1, -2, 1, -3, -1), EPS);
+    }
+
+    /**
+     * Tests {@link MathFunctions#fractionDigitsForDelta(double, boolean)}.
+     */
+    @Test
+    public void testFractionDigitsForDelta() {
+        assertEquals(3, fractionDigitsForDelta(0.001, true));
+        assertEquals(3, fractionDigitsForDelta(0.009, true));
+        assertEquals(2, fractionDigitsForDelta(0.010, true));
+        assertEquals(2, fractionDigitsForDelta(0.015, true));
+        assertEquals(1, fractionDigitsForDelta(0.100, true));
+        assertEquals(1, fractionDigitsForDelta(0.125, true));
+        assertEquals(1, fractionDigitsForDelta(0.949, true));
+        assertEquals(2, fractionDigitsForDelta(0.994, true)); // Special case
+        assertEquals(3, fractionDigitsForDelta(0.999, true)); // Special case
+
+        assertEquals( 0, fractionDigitsForDelta(  1.0, true));
+        assertEquals( 0, fractionDigitsForDelta(  1.9, true));
+        assertEquals( 0, fractionDigitsForDelta(  9.1, true));
+        assertEquals(-1, fractionDigitsForDelta( 10.0, true));
+        assertEquals(-1, fractionDigitsForDelta( 19.9, true));
+        assertEquals(-1, fractionDigitsForDelta( 94.9, true));
+        assertEquals( 0, fractionDigitsForDelta( 99.0, true)); // Special case
+        assertEquals(-2, fractionDigitsForDelta(100.0, true));
+        assertEquals(-2, fractionDigitsForDelta(100.1, true));
+        assertEquals(-1, fractionDigitsForDelta(994.9, true)); // Special case
+        assertEquals(+1, fractionDigitsForDelta(999.9, true)); // Special case
+        assertEquals(-3, fractionDigitsForDelta(1000,  true));
+
+        // Tests values out of the POW10 array range.
+        assertEquals(23,  fractionDigitsForDelta(1.0E-23,  true));
+        assertEquals(23,  fractionDigitsForDelta(1.9E-23,  true));
+        assertEquals(23,  fractionDigitsForDelta(9.1E-23,  true));
+        assertEquals(24,  fractionDigitsForDelta(9.6E-23,  true)); // Special case
+        assertEquals(300, fractionDigitsForDelta(1.1E-300, true));
+
+        assertEquals(-23,  fractionDigitsForDelta(1.0E+23,  true));
+        assertEquals(-23,  fractionDigitsForDelta(1.9E+23,  true));
+        assertEquals(-23,  fractionDigitsForDelta(9.1E+23,  true));
+        assertEquals(-22,  fractionDigitsForDelta(9.6E+23,  true)); // Special case
+        assertEquals(-300, fractionDigitsForDelta(1.1E+300, true));
+
+        // Special cases.
+        assertEquals(0,  fractionDigitsForDelta(0, true));
+        assertEquals(0,  fractionDigitsForDelta(Double.NaN, true));
+        assertEquals(0,  fractionDigitsForDelta(Double.POSITIVE_INFINITY, true));
+        assertEquals(0,  fractionDigitsForDelta(Double.NEGATIVE_INFINITY, true));
     }
 
     /**

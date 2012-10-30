@@ -29,7 +29,7 @@ import java.util.Locale;
  *   <li>{@link Throwable#getLocalizedMessage()} returns the message in the locale returned by the
  *       {@link #getLocale()} method. This is often the locale used by a {@link java.text.Format}
  *       object for example, and can be presumed to be the locale on the client side.</li>
- *   <li>{@link #getMessage(Locale)} returns the message in the given locale.
+ *   <li>{@link #getLocalizedMessage(Locale)} returns the message in the given locale.
  *       This method is specific to Apache SIS however.</li>
  * </ul>
  *
@@ -38,7 +38,7 @@ import java.util.Locale;
  * @version 0.3
  * @module
  *
- * @see Exceptions#getMessage(Throwable, Locale)
+ * @see Exceptions#getLocalizedMessage(Throwable, Locale)
  */
 interface LocalizedException extends Localized {
     /**
@@ -69,5 +69,5 @@ interface LocalizedException extends Localized {
      * @param  locale The locale of the message to produce, or {@code null} for the default locale.
      * @return The exception message in the given locale.
      */
-    String getMessage(Locale locale);
+    String getLocalizedMessage(Locale locale);
 }

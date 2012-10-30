@@ -20,7 +20,7 @@ import java.util.Locale;
 
 
 /**
- * Interface of localized services (parser, formatter, codes, <i>etc.</i>).
+ * Interface of localized services (parser, formatter, codes, …).
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.05)

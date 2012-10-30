@@ -519,7 +519,7 @@ public class Cache<K,V> extends AbstractMap<K,V> {
          * A calculation has already been completed. Returns a wrapper
          * which will just return the result without any processing.
          */
-        assert (value != null) && !isReservedType(value) : value;
+        assert !isReservedType(value) : value;
         @SuppressWarnings("unchecked")
         final V result = (V) value;
         return new Simple<V>(result);
