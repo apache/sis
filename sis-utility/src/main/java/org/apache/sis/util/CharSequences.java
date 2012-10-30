@@ -763,9 +763,9 @@ search:     for (; fromIndex <= stopAt; fromIndex++) {
      *
      * <p>This method is similar in purpose to {@link String#trim()}, except that the later considers
      * every ASCII control codes below 32 to be a whitespace. This have the side effect of removing
-     * {@linkplain org.apache.sis.io.X364 X3.64} escape sequences as well. Users should invoke this
-     * {@code CharSequences.trimWhitespaces} method instead if they need to preserve X3.64 escape
-     * sequences.</p>
+     * ANSI escape sequences (a.k.a. X3.64) as well. Users should invoke this
+     * {@code CharSequences.trimWhitespaces} method instead if they need to preserve
+     * those ANSI escape sequences.</p>
      *
      * @param  text The text from which to remove leading and trailing white spaces, or {@code null}.
      * @return A characters sequence with leading and trailing white spaces removed,

@@ -22,6 +22,7 @@ import org.apache.sis.util.Decorator;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.internal.util.X364;
 
 
 /**
@@ -52,10 +53,6 @@ import org.apache.sis.util.ArgumentChecks;
  * by a call to {@link #setTabulationWidth(int)}. Note that invoking that method affects only line
  * length calculation; it does not replace tabulations by spaces. For tabulation expansion, see
  * {@link #setTabulationExpanded(boolean)}.</p>
- *
- * <p>The characters given to this filter can contain {@linkplain X364 X.364} escape sequences,
- * as this class will not count the space used by those escape sequences in the calculation of
- * line length.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
@@ -129,7 +126,7 @@ public class LineFormatter extends FilteredAppendable implements Flushable {
 
     /**
      * {@code true} if an escape sequence is in progress. The escape sequence will stop
-     * after the first non-digit character other than {@link X364#AFTER_ESCAPE}.
+     * after the first non-digit character other than {@link X364#BRACKET}.
      */
     private boolean isEscapeSequence;
 
@@ -419,7 +416,7 @@ public class LineFormatter extends FilteredAppendable implements Flushable {
             if (previous != X364.ESCAPE) {
                 isEscapeSequence = (c >= '0' && c <= '9');
                 return; // The letter after the digits will be the last character to skip.
-            } else if (c == X364.AFTER_ESCAPE) {
+            } else if (c == X364.BRACKET) {
                 return; // Found the second part of the Control Sequence Introducer (CSI).
             }
             // [ESC] was not followed by '['. Proceed as a normal character.

@@ -16,7 +16,7 @@
  */
 
 /**
- * Simple implementations of some ISO interfaces.
+ * Simple implementations of some ISO or Java interfaces.
  *
  * <STRONG>Do not use!</STRONG>
  *

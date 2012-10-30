@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Arrays;
 import java.io.IOException;
 import org.apache.sis.test.DependsOn;
-import org.apache.sis.util.CharSequencesTest;
+import org.apache.sis.internal.util.X364;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -39,7 +39,10 @@ import static org.apache.sis.util.Characters.SOFT_HYPHEN;
  * @module
  */
 @RunWith(Parameterized.class)
-@DependsOn({CharSequencesTest.class, X364Test.class})
+@DependsOn({
+  org.apache.sis.util.CharSequencesTest.class,
+  org.apache.sis.internal.util.X364Test.class
+})
 public final strictfp class LineFormatterTest extends FormatterTestCase {
     /**
      * Returns all {@link LineFormatter} aspects to test. Each element of the returned list is

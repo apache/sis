@@ -25,6 +25,7 @@ import java.io.IOException;
 import org.apache.sis.util.Decorator;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.util.X364;
 
 import static org.apache.sis.util.Arrays.EMPTY_INT;
 import static org.apache.sis.util.Characters.isLineOrParagraphSeparator;
