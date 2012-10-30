@@ -163,7 +163,7 @@ public final class MathFunctions extends Static {
      *         or less in magnitude than the given value.
      */
     public static double truncate(final double value) {
-        return (value < 0) ? Math.ceil(value) : Math.floor(value);
+        return (doubleToRawLongBits(value) & SIGN_BIT_MASK) == 0 ? Math.floor(value) : Math.ceil(value);
     }
 
     /**
@@ -212,6 +212,91 @@ public final class MathFunctions extends Static {
             sum += v*v;
         }
         return Math.sqrt(sum);
+    }
+
+    /**
+     * Returns the number of fraction digits needed for formatting in base 10 numbers of the given
+     * accuracy. If the {@code strict} argument is {@code true}, then for any given {@code accuracy}
+     * this method returns a value <var>n</var> such as the difference between adjacent numbers
+     * formatted in base 10 with <var>n</var> fraction digits will always be equals or smaller
+     * than {@code accuracy}. Examples:
+     *
+     * <ul>
+     *   <li>{@code fractionDigitsForDelta(0.001, true)} returns 3.</li>
+     *   <li>{@code fractionDigitsForDelta(0.009, true)} returns 3.</li>
+     *   <li>{@code fractionDigitsForDelta(0.010, true)} returns 2.</li>
+     *   <li>{@code fractionDigitsForDelta(0.099, true)} returns 3 (special case).</li>
+     * </ul>
+     *
+     * <p>Special cases:</p>
+     * <ul>
+     *   <li>If {@code accuracy} is 0, {@link Double#NaN NaN} or infinity,
+     *       then this method returns 0.</li>
+     *   <li>If {@code accuracy} is greater than 1, then this method returns
+     *       the number of "unnecessary" trailing zeros as a negative number.
+     *       For example {@code fractionDigitsForDelta(100, …)} returns -2.</li>
+     *   <li>If the first non-zero digits of {@code accuracy} are equal or greater than 95
+     *       (e.g. 0.00099) and the {@code strict} argument is {@code true}, then this method
+     *       increases the number of needed fraction digits in order to prevent the rounded
+     *       number to be collapsed into the next integer value.
+     *
+     *       <blockquote><font size="-1"><b>Example:</b>
+     *       If {@code accuracy} is 0.95, then a return value of 1 is not sufficient since the
+     *       rounded value of 0.95 with 1 fraction digit would be 1.0. Such value would be a
+     *       violation of this method contract since the difference between 0 and that formatted
+     *       value would be greater than the accuracy. Note that this is not an artificial rule;
+     *       this is related to the fact that 0.9999… is mathematically strictly equals to 1.
+     *       </font></blockquote></li>
+     * </ul>
+     *
+     * <p>Invoking this method is equivalent to computing <code>(int)
+     * -{@linkplain Math#floor(double) floor}({@linkplain Math#log10(double) log10}(accuracy))</code>
+     * except for the 0, {@code NaN}, infinities and {@code 0.…95} special cases.</p>
+     *
+     * @param  accuracy The desired accuracy of numbers to format in base 10.
+     * @param  strict {@code true} for checking the {@code 0.…95} special case.
+     *         If {@code false}, then the difference between adjacent formatted numbers is not
+     *         guaranteed to be smaller than {@code accuracy} in every cases.
+     * @return Number of fraction digits needed for formatting numbers with the given accuracy.
+     *         May be negative.
+     *
+     * @see java.text.NumberFormat#setMaximumFractionDigits(int)
+     */
+    public static int fractionDigitsForDelta(double accuracy, final boolean strict) {
+        accuracy = Math.abs(accuracy);
+        final boolean isFraction = (accuracy < 1);
+        /*
+         * Compute (int) Math.log10(x) with opportunist use of the POW10 array.
+         * We use the POW10 array because accurate calculation of log10 is relatively costly,
+         * while we only want the integer part. A micro-benchmarking on JDK7 suggested that a
+         * binary search on POW10 is about 30% faster than invoking (int) Math.log10(x).
+         */
+        int i = Arrays.binarySearch(POW10, isFraction ? 1/accuracy : accuracy);
+        if (i >= 0) {
+            return isFraction ? i : -i;
+        }
+        i = ~i;
+        double scale;
+        if (i < POW10.length) {
+            scale = POW10[i];
+            if (!isFraction) {
+                i = -(i-1);
+                scale = 10 / scale;
+            }
+        } else { // 'x' is out of range or NaN.
+            final double y = Math.log10(accuracy);
+            if (Double.isInfinite(y)) {
+                return 0;
+            }
+            i = -((int) Math.floor(y));
+            scale = pow10(i);
+        }
+        while ((accuracy *= scale) >= 9.5) {
+            i++; // The 0.…95 special case.
+            accuracy -= Math.floor(accuracy);
+            scale = 10;
+        }
+        return i;
     }
 
     /**

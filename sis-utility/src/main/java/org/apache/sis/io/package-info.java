@@ -19,8 +19,8 @@
  * Extensions to standard Java I/O ({@link java.io.Reader}, {@link java.io.Writer},
  * {@link java.lang.Appendable}).
  * Many classes defined in this package are filters applying on-the-fly formatting while writing
- * text to the output device. For example {@link org.apache.sis.io.IndentedLineFormatter} adds
- * indentation at the beginning of every new line, and {@link org.apache.sis.io.TableFormatter}
+ * text to the output device. For example {@link org.apache.sis.io.LineFormatter} can wrap lines
+ * to some maximal line length (e.g. 80 characters), and {@link org.apache.sis.io.TableFormatter}
  * replaces all occurrence of {@code '\t'} by the amount of spaces needed for producing a tabular
  * output.
  *

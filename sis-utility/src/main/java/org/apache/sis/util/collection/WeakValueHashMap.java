@@ -138,7 +138,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
          */
         @Override
         public void dispose() {
-            clear();
+            super.clear();
             removeEntry(this);
         }
 

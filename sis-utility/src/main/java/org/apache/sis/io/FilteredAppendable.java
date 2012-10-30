@@ -21,8 +21,6 @@ import java.io.CharConversionException;
 import org.apache.sis.util.Decorator;
 import org.apache.sis.util.ArgumentChecks;
 
-import static org.apache.sis.util.Characters.LINE_SEPARATOR;
-import static org.apache.sis.util.Characters.PARAGRAPH_SEPARATOR;
 import static org.apache.sis.util.Characters.isLineOrParagraphSeparator;
 
 // Related to JDK7
@@ -46,7 +44,7 @@ import org.apache.sis.internal.util.JDK7;
  * {@section Flushing and closing the stream}
  * Subclasses implement the {@link java.io.Flushable} interface only if they
  * hold data in an internal buffer before to send them to the wrapped {@code Appendable}.
- * This is the case of {@link TableFormatter} and {@link LineWrapFormatter} for instance.
+ * This is the case of {@link TableFormatter} and {@link LineFormatter} for instance.
  * For unconditionally flushing or closing an {@code Appendable} and its underlying stream,
  * see {@link IO#flush(Appendable)} and {@link IO#close(Appendable)}.
  *
@@ -58,7 +56,7 @@ import org.apache.sis.internal.util.JDK7;
  * @see java.io.FilterWriter
  */
 @Decorator(Appendable.class)
-public abstract class FilteredAppendable implements Appendable {
+abstract class FilteredAppendable implements Appendable {
     /**
      * The underlying character output stream or buffer.
      */
@@ -78,25 +76,6 @@ public abstract class FilteredAppendable implements Appendable {
     protected FilteredAppendable(final Appendable out) {
         ArgumentChecks.ensureNonNull("out", out);
         this.out = out;
-    }
-
-    /**
-     * Returns {@code true} if the given character is a line separator in the sense of
-     * this {@code org.apache.sis.io} package. This method performs the same work than
-     * {@link org.apache.sis.util.Characters#isLineOrParagraphSeparator(int)} without
-     * using the code point API. This allows simpler and faster code in subclasses working
-     * only in the {@linkplain Character#isBmpCodePoint(int) Basic Multilingual Plane (BMP)}.
-     * However this method assumes that all line and paragraph separators are in the BMP.
-     *
-     * <p>This method provides a single item to search if we need to expand our definition of
-     * line separator in this package. However if such extension is needed, then developers
-     * shall also search for usages of {@code LINE_SEPARATOR} and {@code PARAGRAPH_SEPARATOR}
-     * constants in this package since they are sometime used directly.</p>
-     *
-     * @see org.apache.sis.util.Characters#isLineOrParagraphSeparator(int)
-     */
-    static boolean isLineSeparator(final char c) {
-        return (c == '\n') || (c == '\r') || (c == LINE_SEPARATOR) || (c == PARAGRAPH_SEPARATOR);
     }
 
     /**
@@ -128,15 +107,15 @@ public abstract class FilteredAppendable implements Appendable {
      * given to the previous call of this method. This works only if this method is consistently
      * invoked for every characters.
      */
-    final int toCodePoint(final char c) throws IOException {
+    final int toCodePoint(final char c) {
         final char h = highSurrogate;
         if (h != 0) {
             highSurrogate = 0;
             if (Character.isLowSurrogate(c)) {
                 return Character.toCodePoint(h, c);
-            } else {
-                throw new CharConversionException();
             }
+            // Unpaired surrogate.  This is usually an error, but this not the fault of
+            // this class since we are processing data supplied by the user. Be lenient.
         }
         if (Character.isHighSurrogate(c)) {
             highSurrogate = c;
@@ -206,8 +185,7 @@ public abstract class FilteredAppendable implements Appendable {
         if (sequence == null) {
             sequence = "null";
         }
-        append(sequence, 0, sequence.length());
-        return this;
+        return append(sequence, 0, sequence.length());
     }
 
     /**

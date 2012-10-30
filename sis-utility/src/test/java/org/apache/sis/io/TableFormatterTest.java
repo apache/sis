@@ -18,7 +18,7 @@ package org.apache.sis.io;
 
 import java.io.IOException;
 import org.apache.sis.test.DependsOn;
-import org.apache.sis.util.CharSequencesTest;
+import org.junit.Test;
 
 import static org.junit.Assert.*;
 
@@ -34,7 +34,10 @@ import org.apache.sis.internal.util.JDK7;
  * @version 0.3
  * @module
  */
-@DependsOn({CharSequencesTest.class, X364Test.class, ExpandedTabFormatterTest.class})
+@DependsOn({
+  org.apache.sis.util.CharSequencesTest.class,
+  org.apache.sis.internal.util.X364Test.class,
+  LineFormatterTest.class})
 public final strictfp class TableFormatterTest extends FormatterTestCase {
     /**
      * The table formatter to test. May not be same instance than {@link #formatter},
@@ -99,5 +102,47 @@ public final strictfp class TableFormatterTest extends FormatterTestCase {
                 + "║ Uranus  │ Uranus  │ 4.007  ║" + lineSeparator
                 + "║ Neptune │ Neptune │ 3.883  ║" + lineSeparator
                 + "╚═════════╧═════════╧════════╝" + lineSeparator);
+    }
+
+    /**
+     * Tests the {@link TableFormatter#toString()} method.
+     * The intend of this test is also to ensure that we can use the API
+     * more easily, without having to deal with {@link IOException}.
+     */
+    @Test
+    public void testToString() { // NO throws IOException
+        /*
+         * First, ensure that TableFormatter.toString() does not
+         * mess with the content of user-supplied Appendable.
+         */
+        testToString(table, "");
+        /*
+         * When TableFormatter is created with its own internal buffer,
+         * then TableFormatter.toString() is allowed to format the table.
+         */
+        testToString(new TableFormatter(),
+                "╔═════════╤═════════╤════════╗\n"
+              + "║ English │ French  │ r.e.d. ║\n"
+              + "╟─────────┼─────────┼────────╢\n"
+              + "║ Mercury │ Mercure │ 0.382  ║\n"
+              + "║ Venus   │ Vénus   │ 0.949  ║\n"
+              + "║ Earth   │ Terre   │ 1.00   ║\n"
+              + "╚═════════╧═════════╧════════╝\n");
+    }
+
+    /**
+     * Helper method for {@link #testToString()}.
+     *
+     * @param table    Where to format the table.
+     * @param expected The expected string representation of the formatted table.
+     */
+    private static void testToString(final TableFormatter table, final String expected) {
+        table.nextLine('═');
+        table.append("English\tFrench\tr.e.d.\n").writeHorizontalSeparator();
+        table.append("Mercury\tMercure\t0.382\n")
+             .append("Venus\tVénus\t0.949\n")
+             .append("Earth\tTerre\t1.00\n")
+             .nextLine('═');
+        assertEquals(expected, table.toString());
     }
 }

@@ -55,10 +55,10 @@ public final class Longitude extends Angle {
     /**
      * Construct a new longitude with the specified angular value.
      *
-     * @param θ Angle in decimal degrees.
+     * @param λ Longitude value in decimal degrees.
      */
-    public Longitude(final double θ) {
-        super(θ);
+    public Longitude(final double λ) {
+        super(λ);
     }
 
     /**
@@ -79,5 +79,14 @@ public final class Longitude extends Angle {
      */
     public Longitude(final String string) throws NumberFormatException {
         super(string);
+    }
+
+    /**
+     * Returns the hemisphere character for an angle of the given sign.
+     * This is used only by {@link #toString()}, not by {@link AngleFormat}.
+     */
+    @Override
+    final char hemisphere(final boolean negative) {
+        return negative ? 'W' : 'E';
     }
 }

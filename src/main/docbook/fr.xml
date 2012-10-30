@@ -31,5 +31,6 @@
   <xi:include href="fr/standards.xml"/>
   <xi:include href="fr/geoapi.xml"/>
   <xi:include href="fr/XML.xml"/>
+  <xi:include href="fr/utility.xml"/>
 
 </book>
