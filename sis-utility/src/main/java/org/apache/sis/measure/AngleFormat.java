@@ -127,22 +127,28 @@ public class AngleFormat extends Format implements Localized {
      * Constant for degrees field. When formatting a string, this value may be specified to the
      * {@link FieldPosition} constructor in order to get the bounding index where degrees have
      * been written.
+     *
+     * @see Field#DEGREES
      */
-    public static final int DEGREES_FIELD = 0;
+    static final int DEGREES_FIELD = 0;
 
     /**
      * Constant for minutes field. When formatting a string, this value may be specified to the
      * {@link FieldPosition} constructor in order to get the bounding index where minutes have
      * been written.
+     *
+     * @see Field#MINUTES
      */
-    public static final int MINUTES_FIELD = 1;
+    static final int MINUTES_FIELD = 1;
 
     /**
      * Constant for seconds field. When formatting a string, this value may be specified to the
      * {@link FieldPosition} constructor in order to get the bounding index where seconds have
      * been written.
+     *
+     * @see Field#SECONDS
      */
-    public static final int SECONDS_FIELD = 2;
+    static final int SECONDS_FIELD = 2;
 
     /**
      * Constant for the fractional part of the degrees, minutes or seconds field. When formatting
@@ -155,14 +161,68 @@ public class AngleFormat extends Format implements Localized {
      * Constant for hemisphere field. When formatting a string, this value may be specified to the
      * {@link FieldPosition} constructor in order to get the bounding index where the hemisphere
      * symbol has been written.
+     *
+     * @see Field#HEMISPHERE
      */
-    public static final int HEMISPHERE_FIELD = 4;
+    static final int HEMISPHERE_FIELD = 4;
 
     /**
      * Symbols for degrees (0), minutes (1), seconds (2) and optional fraction digits (3).
      * The index of each symbol shall be equals to the corresponding {@code *_FIELD} constant.
      */
     private static final char[] SYMBOLS = {'D', 'M', 'S', '#'};
+
+    /**
+     * Defines constants that are used as attribute keys in the iterator returned from
+     * {@link AngleFormat#formatToCharacterIterator(Object)}.
+     *
+     * @author  Martin Desruisseaux (Geomatys)
+     * @since   0.3
+     * @version 0.3
+     * @module
+     */
+    public static final class Field extends FormatField {
+        /**
+         * For cross-version compatibility.
+         */
+        private static final long serialVersionUID = 3824094360855371451L;
+
+        /**
+         * Creates a new field of the given name. The given name shall
+         * be identical to the name of the public static constant.
+         */
+        private Field(final String name, final int fieldID) {
+            super(name, fieldID);
+        }
+
+        /**
+         * Identifies the degrees field, including the degrees symbol (if any).
+         * When formatting a string, this value may be specified to the {@link FieldPosition}
+         * constructor in order to get the bounding index where degrees have been written.
+         */
+        public static final Field DEGREES = new Field("DEGREES", DEGREES_FIELD);
+
+        /**
+         * Identifies the minutes field, including the minutes symbol (if any).
+         * When formatting a string, this value may be specified to the {@link FieldPosition}
+         * constructor in order to get the bounding index where minutes have been written.
+         */
+        public static final Field MINUTES = new Field("MINUTES", MINUTES_FIELD);
+
+        /**
+         * Identifies the seconds field, including the seconds symbol (if any).
+         * When formatting a string, this value may be specified to the {@link FieldPosition}
+         * constructor in order to get the bounding index where seconds have been written.
+         */
+        public static final Field SECONDS = new Field("SECONDS", SECONDS_FIELD);
+
+        /**
+         * Identifies the hemisphere symbol (if any).
+         * When formatting a string, this value may be specified to the {@link FieldPosition}
+         * constructor in order to get the bounding index where hemisphere have been written.
+         */
+        public static final Field HEMISPHERE = new Field("HEMISPHERE", HEMISPHERE_FIELD);
+    }
 
     /**
      * The locale specified at construction time.
@@ -240,7 +300,7 @@ public class AngleFormat extends Format implements Localized {
      */
     private FieldPosition dummyFieldPosition() {
         if (dummy == null) {
-            dummy = new FieldPosition(0);
+            dummy = new FieldPosition(-1);
         }
         return dummy;
     }
@@ -676,6 +736,20 @@ scan:   for (int i=0; i<length;) {
     }
 
     /**
+     * Returns the {@code *_FIELD} constant for the given field position, or -1 if none.
+     */
+    private static int getField(final FieldPosition position) {
+        if (position != null) {
+            final Format.Field field = position.getFieldAttribute();
+            if (field instanceof Field) {
+                return ((Field) field).field;
+            }
+            return position.getField();
+        }
+        return -1;
+    }
+
+    /**
      * Formats an angle. The angle will be formatted according the pattern given to the last call
      * of {@link #applyPattern(String)}.
      *
@@ -697,15 +771,20 @@ scan:   for (int i=0; i<length;) {
      * @param pos
      *          An optional object where to store the position of the field in the formatted
      *          text, or {@code null} if this information is not wanted. This field position
-     *          shall be created with one of the following constants: {@link #DEGREES_FIELD},
-     *          {@link #MINUTES_FIELD}, {@link #SECONDS_FIELD} or {@link #HEMISPHERE_FIELD}.
+     *          shall be created with one of the {@link Field} constants.
      *
      * @return The {@code toAppendTo} buffer, returned for method calls chaining.
      */
     public StringBuffer format(double angle, StringBuffer toAppendTo, final FieldPosition pos) {
+        final int offset = toAppendTo.length();
+        final int fieldPos = getField(pos);
         if (isNaN(angle) || isInfinite(angle)) {
-            return numberFormat().format(angle, toAppendTo,
-                    (pos != null) ? pos : new FieldPosition(DecimalFormat.INTEGER_FIELD));
+            toAppendTo = numberFormat().format(angle, toAppendTo, dummyFieldPosition());
+            if (fieldPos >= DEGREES_FIELD && fieldPos <= SECONDS_FIELD) {
+                pos.setBeginIndex(offset);
+                pos.setEndIndex(toAppendTo.length());
+            }
+            return toAppendTo;
         }
         double degrees = angle;
         /*
@@ -753,14 +832,7 @@ scan:   for (int i=0; i<length;) {
         /*
          * Formats fields in a loop from DEGREES_FIELD to SECONDS_FIELD inclusive.
          */
-        int field    = DEGREES_FIELD;
-        int fieldPos = PREFIX_FIELD; // Dummy value not in the DEGREES … SECONDS_FIELD range.
-        if (pos != null) {
-            fieldPos = pos.getField();
-            pos.setBeginIndex(0);
-            pos.setEndIndex(0);
-        }
-        final int offset = toAppendTo.length();
+        int field = DEGREES_FIELD;
         if (prefix != null) {
             toAppendTo.append(prefix);
         }
@@ -845,8 +917,7 @@ scan:   for (int i=0; i<length;) {
      * @param pos
      *          An optional object where to store the position of the field in the formatted
      *          text, or {@code null} if this information is not wanted. This field position
-     *          shall be created with one of the following constants: {@link #DEGREES_FIELD},
-     *          {@link #MINUTES_FIELD}, {@link #SECONDS_FIELD} or {@link #HEMISPHERE_FIELD}.
+     *          shall be created with one of the {@link Field} constants.
      *
      * @return The {@code toAppendTo} buffer, returned for method calls chaining.
      * @throws IllegalArgumentException if {@code value} if not an instance of {@link Angle}.
@@ -881,7 +952,7 @@ scan:   for (int i=0; i<length;) {
         toAppendTo = format(abs(angle), toAppendTo, pos);
         final int start = toAppendTo.length();
         toAppendTo.append(isNegative(angle) ? negativeSuffix : positiveSuffix);
-        if (pos != null && pos.getField() == HEMISPHERE_FIELD) {
+        if (getField(pos) == HEMISPHERE_FIELD) {
             pos.setBeginIndex(start);
             pos.setEndIndex(toAppendTo.length()-1);
         }
