@@ -64,14 +64,14 @@ public final class CharSequences extends Static {
      * index in the {@code spaces} array. For example, {@code spaces[4]} contains a string
      * of length 4. Strings are constructed only when first needed.
      */
-    private static final String[] SPACES = new String[21];
+    private static final String[] SPACES = new String[10];
     static {
         // Our 'spaces(int)' method will invoke 'substring' on the longuest string in an attempt
         // to share the same char[] array. Note however that array sharing has been removed from
         // JDK8, which copy every char[] arrays anyway. Consequently the JDK8 branch will abandon
         // this strategy and build the char[] array on the fly.
         final int last = SPACES.length - 1;
-        final char[] spaces = new char[last];
+        final char[] spaces = new char[last+1];
         fill(spaces, ' ');
         SPACES[last] = new String(spaces).intern();
     }
@@ -93,8 +93,7 @@ public final class CharSequences extends Static {
     }
 
     /**
-     * Returns a string of the specified length filled with white spaces.
-     * This method tries to return a pre-allocated string if possible.
+     * Returns a character sequence of the specified length filled with white spaces.
      *
      * <p>This method is typically used for performing right-alignment of text on the
      * {@linkplain java.io.Console console} or other device using monospaced font.
@@ -105,28 +104,45 @@ public final class CharSequences extends Static {
      * @param  length The string length. Negative values are clamped to 0.
      * @return A string of length {@code length} filled with white spaces.
      */
-    public static String spaces(int length) {
+    public static CharSequence spaces(final int length) {
         /*
          * No need to synchronize.  In the unlikely event of two threads calling this method
          * at the same time and the two calls creating a new string, the String.intern() call
          * will take care of canonicalizing the strings.
          */
-        if (length < 0) {
-            length = 0;
+        if (length <= 0) {
+            return "";
         }
-        String s;
         if (length < SPACES.length) {
-            s = SPACES[length];
+            String s = SPACES[length-1];
             if (s == null) {
                 s = SPACES[SPACES.length - 1].substring(0, length).intern();
-                SPACES[length] = s;
+                SPACES[length-1] = s;
             }
-        } else {
-            final char[] spaces = new char[length];
-            fill(spaces, ' ');
-            s = new String(spaces);
+            return s;
         }
-        return s;
+        return new CharSequence() {
+            @Override public int length() {
+                return length;
+            }
+
+            @Override public char charAt(int index) {
+                ArgumentChecks.ensureValidIndex(length, index);
+                return ' ';
+            }
+
+            @Override public CharSequence subSequence(final int start, final int end) {
+                ArgumentChecks.ensureValidIndexRange(length, start, end);
+                final int n = end - start;
+                return (n == length) ? this : spaces(n);
+            }
+
+            @Override public String toString() {
+                final char[] array = new char[length];
+                fill(array, ' ');
+                return new String(array);
+            }
+        };
     }
 
     /**
@@ -138,6 +154,30 @@ public final class CharSequences extends Static {
      */
     public static int length(final CharSequence text) {
         return (text != null) ? text.length() : 0;
+    }
+
+    /**
+     * Returns the number of Unicode code points in the given characters sequence,
+     * or 0 if {@code null}. Unpaired surrogates within the text count as one code
+     * point each.
+     *
+     * @param  text The character sequence from which to get the count, or {@code null}.
+     * @return The number of Unicode code points, or 0 if the argument is {@code null}.
+     *
+     * @see Character#codePointCount(CharSequence, int, int)
+     */
+    public static int codePointCount(final CharSequence text) {
+        if (text == null)                  return 0;
+        if (text instanceof String)        return ((String)        text).codePointCount(0, text.length());
+        if (text instanceof StringBuilder) return ((StringBuilder) text).codePointCount(0, text.length());
+        if (text instanceof StringBuffer)  return ((StringBuffer)  text).codePointCount(0, text.length());
+        if (text instanceof CharBuffer) {
+            final CharBuffer buffer = (CharBuffer) text;
+            if (buffer.hasArray() && !buffer.isReadOnly()) {
+                return Character.codePointCount(buffer.array(), buffer.position(), buffer.limit());
+            }
+        }
+        return Character.codePointCount(text, 0, text.length());
     }
 
     /**
@@ -727,9 +767,9 @@ search:     for (; fromIndex <= stopAt; fromIndex++) {
      *
      * <p>This method is similar in purpose to {@link String#trim()}, except that the later considers
      * every ASCII control codes below 32 to be a whitespace. This have the side effect of removing
-     * {@linkplain org.apache.sis.io.X364 X3.64} escape sequences as well. Users should invoke this
-     * {@code CharSequences.trimWhitespaces} method instead if they need to preserve X3.64 escape
-     * sequences.</p>
+     * ANSI escape sequences (a.k.a. X3.64) as well. Users should invoke this
+     * {@code CharSequences.trimWhitespaces} method instead if they need to preserve
+     * those ANSI escape sequences.</p>
      *
      * @param  text The text from which to remove leading and trailing white spaces, or {@code null}.
      * @return A characters sequence with leading and trailing white spaces removed,
@@ -1030,7 +1070,7 @@ searchWordBreak:    while (true) {
         final int lg = buffer.length();
         if (lg != 0) {
             final int cp = buffer.codePointBefore(lg);
-            if (isSpaceChar(cp)) {
+            if (isWhitespace(cp)) {
                 buffer.setLength(lg - charCount(cp));
             }
         }
@@ -1578,6 +1618,7 @@ cmp:    while (ia < lga) {
      * @see StringBuilder#getChars(int, int, char[], int)
      * @see StringBuffer#getChars(int, int, char[], int)
      * @see CharBuffer#get(char[], int, int)
+     * @see javax.swing.text.Segment#array
      */
     public static void copyChars(final CharSequence src, int srcOffset,
                                  final char[] dst, int dstOffset, int length)
@@ -1592,6 +1633,8 @@ cmp:    while (ia < lga) {
 //      } else if (src instanceof CharBuffer) {
 // JDK7     ((CharBuffer) src).subSequence(srcOffset, srcOffset + length).get(dst, dstOffset, length);
         } else {
+            // An other candidate could be javax.swing.text.Segment, but it
+            // is probably not worth to introduce a Swing dependency for it.
             while (length != 0) {
                 dst[dstOffset++] = src.charAt(srcOffset++);
                 length--;

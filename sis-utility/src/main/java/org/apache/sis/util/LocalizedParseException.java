@@ -124,7 +124,7 @@ final class LocalizedParseException extends ParseException implements LocalizedE
      * {@inheritDoc}
      */
     @Override
-    public String getMessage(final Locale locale) {
+    public String getLocalizedMessage(final Locale locale) {
         return message(locale, arguments);
     }
 }

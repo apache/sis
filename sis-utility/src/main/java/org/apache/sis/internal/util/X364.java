@@ -14,8 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.io;
+package org.apache.sis.internal.util;
 
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.StringBuilders;
 
 
@@ -55,38 +56,39 @@ public enum X364 {
     /**
      * The first character of the {@link #START} escape string.
      */
-    static final char ESCAPE = '\u001B';
+    public static final char ESCAPE = '\u001B';
 
     /**
      * The second character of the {@link #START} escape string.
      */
-    static final char AFTER_ESCAPE = '[';
+    public static final char BRACKET = '[';
 
     /**
-     * The beginning of escape sequences.
-     * Must be the concatenation of {@link #ESCAPE} with {@link #AFTER_ESCAPE}.
+     * The Control Sequence Introducer (CSI).
+     * Must be the concatenation of {@link #ESCAPE} with {@link #BRACKET}.
      */
     private static final String START = "\u001B[";
 
     /**
-     * The end of escape sequences.
+     * The end of escape sequences. Fixed to {@code 'm'} for now, but a wider range
+     * of letters actually exists for different operations.
      */
-    private static char END = 'm';
+    private static final char END = 'm';
 
     /**
      * The X3.64 code.
      */
-    private final byte code;
+    private final transient byte code;
 
     /**
-     * The X3.64 escape sequence. Created only when first needed.
+     * The X3.64 escape sequence, built when first needed.
      */
-    private transient String sequence;
+    private transient volatile String sequence;
 
     /**
      * Foreground or background flavors of this enum.
      */
-    private X364 foreground, background;
+    private transient X364 foreground, background;
 
     /**
      * Creates a new code.
@@ -134,10 +136,11 @@ public enum X364 {
      * @return The X3.64 escape sequence.
      */
     public String sequence() {
-        if (sequence == null) {
-            sequence = START + code + END;
+        String s = sequence;
+        if (s == null) {
+            sequence = s = START + code + END;
         }
-        return sequence;
+        return s;
     }
 
     /**
@@ -244,9 +247,10 @@ search:     do {
     }
 
     /**
-     * Returns the length of the given string without the ANSI escape codes.
-     * This is equivalent to <code>{@linkplain #plain plain}(text).length()</code>
-     * without the cost of creating a temporary string.
+     * Returns the number of Unicode code points in the given string without the ANSI escape codes.
+     * This is equivalent to <code>{@linkplain CharSequences#codePointCount(CharSequence)
+     * CharSequences.codePointCount}({@linkplain #plain plain}(text))</code> without the
+     * cost of creating a temporary string.
      *
      * @param  text The string which may contains escape codes.
      * @return The length of the given string without escape codes.
@@ -254,7 +258,7 @@ search:     do {
     public static int lengthOfPlain(final String text) {
         int i = text.indexOf(START);
         if (i < 0) {
-            return text.length();
+            return text.codePointCount(0, text.length());
         }
         int last   = 0;
         int length = 0;
@@ -268,14 +272,14 @@ search: do {
             while (i < end) {
                 final char c = text.charAt(i++);
                 if (c < '0' || c > '9') {
-                    continue search;
+                    continue search; // Not an X.364 sequence.
                 }
             }
-            length += start - last;
+            length += text.codePointCount(last, start);
             last = ++i; // The ++ is for skipping the END character.
         } while ((i = text.indexOf(START, i)) >= 0);
-        length += text.length() - last;
-        assert plain(text).length() == length : text;
+        length += text.codePointCount(last, text.length());
+        assert CharSequences.codePointCount(plain(text)) == length : text;
         return length;
     }
 
