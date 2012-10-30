@@ -1614,6 +1614,7 @@ cmp:    while (ia < lga) {
      * @see StringBuilder#getChars(int, int, char[], int)
      * @see StringBuffer#getChars(int, int, char[], int)
      * @see CharBuffer#get(char[], int, int)
+     * @see javax.swing.text.Segment#array
      */
     public static void copyChars(final CharSequence src, int srcOffset,
                                  final char[] dst, int dstOffset, int length)
@@ -1628,6 +1629,8 @@ cmp:    while (ia < lga) {
         } else if (src instanceof CharBuffer) {
             ((CharBuffer) src).subSequence(srcOffset, srcOffset + length).get(dst, dstOffset, length);
         } else {
+            // An other candidate could be javax.swing.text.Segment, but it
+            // is probably not worth to introduce a Swing dependency for it.
             while (length != 0) {
                 dst[dstOffset++] = src.charAt(srcOffset++);
                 length--;
