@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.io;
+package org.apache.sis.internal.util;
 
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.StringBuilders;
@@ -56,16 +56,16 @@ public enum X364 {
     /**
      * The first character of the {@link #START} escape string.
      */
-    static final char ESCAPE = '\u001B';
+    public static final char ESCAPE = '\u001B';
 
     /**
      * The second character of the {@link #START} escape string.
      */
-    static final char AFTER_ESCAPE = '[';
+    public static final char BRACKET = '[';
 
     /**
      * The Control Sequence Introducer (CSI).
-     * Must be the concatenation of {@link #ESCAPE} with {@link #AFTER_ESCAPE}.
+     * Must be the concatenation of {@link #ESCAPE} with {@link #BRACKET}.
      */
     private static final String START = "\u001B[";
 
@@ -78,17 +78,17 @@ public enum X364 {
     /**
      * The X3.64 code.
      */
-    private final byte code;
+    private final transient byte code;
 
     /**
-     * The X3.64 escape sequence. Created only when first needed.
+     * The X3.64 escape sequence, built when first needed.
      */
-    private transient String sequence;
+    private transient volatile String sequence;
 
     /**
      * Foreground or background flavors of this enum.
      */
-    private X364 foreground, background;
+    private transient X364 foreground, background;
 
     /**
      * Creates a new code.
@@ -136,10 +136,11 @@ public enum X364 {
      * @return The X3.64 escape sequence.
      */
     public String sequence() {
-        if (sequence == null) {
-            sequence = START + code + END;
+        String s = sequence;
+        if (s == null) {
+            sequence = s = START + code + END;
         }
-        return sequence;
+        return s;
     }
 
     /**
