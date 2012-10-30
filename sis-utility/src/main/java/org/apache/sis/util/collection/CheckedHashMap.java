@@ -61,7 +61,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @version 0.3
  * @module
  *
- * @see java.util.Collections#checkedMap(Map)
+ * @see java.util.Collections#checkedMap(Map, Class, Class)
  * @see java.util.Collections#synchronizedMap(Map)
  */
 @ThreadSafe

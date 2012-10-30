@@ -84,7 +84,7 @@ public final strictfp class MathFunctionsTest extends TestCase {
     }
 
     /**
-     * Tests {@link #fractionDigitsForDelta(double)}.
+     * Tests {@link MathFunctions#fractionDigitsForDelta(double, boolean)}.
      */
     @Test
     public void testFractionDigitsForDelta() {
