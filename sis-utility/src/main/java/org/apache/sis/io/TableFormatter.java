@@ -501,7 +501,7 @@ public class TableFormatter extends FilteredAppendable implements Flushable {
 
     /**
      * Writes a portion of a character sequence. Tabulations and line separators are
-     * interpreted as by {@link #append(c)}.
+     * interpreted as by {@link #append(char)}.
      *
      * @param  sequence The character sequence to be written.
      * @param  start    Index from which to start reading characters.

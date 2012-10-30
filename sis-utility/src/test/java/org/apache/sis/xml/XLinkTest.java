@@ -35,7 +35,7 @@ import static org.junit.Assert.*;
  */
 public final strictfp class XLinkTest extends TestCase {
     /**
-     * Tests the automatic {@link #getType()} detection.
+     * Tests the automatic {@link XLink#getType()} detection.
      *
      * @throws URISyntaxException Should never happen.
      */
