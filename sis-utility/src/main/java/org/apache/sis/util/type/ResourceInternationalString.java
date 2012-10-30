@@ -88,7 +88,7 @@ public class ResourceInternationalString extends AbstractInternationalString imp
      * The class loader to use for loading the resources file, or {@code null} for the default
      * class loader.
      */
-    private final ClassLoader loader;
+    private final transient ClassLoader loader;
 
     /**
      * Creates a new international string from the specified resource bundle and key.

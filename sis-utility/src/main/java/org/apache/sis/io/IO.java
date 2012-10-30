@@ -43,10 +43,10 @@ public final class IO extends Static {
 
     /**
      * If the given {@code out} argument implements {@link Flushable}, or is a chain
-     * of {@link FilteredAppendable} wrappers around a flushable object, invokes the
+     * of wrappers defined in this package around a flushable object, invokes the
      * {@link Flushable#flush() flush()} method on that object. Otherwise do nothing.
      *
-     * <p>Chains of {@code FilteredAppendable} instances are followed until a {@code Flushable}
+     * <p>Chains of wrappers are followed until a {@code Flushable}
      * instance is found, if any. The search stops at the first occurrence found.</p>
      *
      * @param  out The stream or buffer to flush, or {@code null}.
@@ -64,10 +64,10 @@ public final class IO extends Static {
 
     /**
      * If the given {@code out} argument implements {@link Closeable}, or is a chain
-     * of {@link FilteredAppendable} wrappers around a closeable object, invokes the
+     * of wrappers defined in this package around a closeable object, invokes the
      * {@link Closeable#close() close()} method on that object. Otherwise do nothing.
      *
-     * <p>Chains of {@code FilteredAppendable} instances are followed until a {@code Closeable}
+     * <p>Chains of wrappers are followed until a {@code Closeable}
      * instance is found, if any. The first {@link Flushable} instance found <em>before</em> the
      * {@code Closeable} one, if any, is {@linkplain Flushable#flush() flushed}. The search stops
      * at the first {@code Closeable} occurrence found.</p>
@@ -92,7 +92,7 @@ public final class IO extends Static {
 
     /**
      * If the given {@code out} argument implements {@link CharSequence}, or is a
-     * chain of {@link FilteredAppendable} wrappers around a {@code CharSequence},
+     * chain of wrappers defined in this package around a {@code CharSequence},
      * returns that character sequence. Otherwise returns {@code null}.
      *
      * <p>Special cases:</p>
@@ -111,13 +111,12 @@ public final class IO extends Static {
      *
      * <p>It may be necessary to invoke {@link #flush(Appendable)} before this method in order
      * to get proper content. In particular, this is necessary if the chain of {@code Appendable}s
-     * contains {@link TableFormatter} or {@link LineWrapFormatter} instances.</p>
+     * contains {@link TableFormatter} or {@link LineFormatter} instances.</p>
      *
      * @param  out The stream or buffer from which to get the content, or {@code null}.
      * @return The content of the given stream of buffer, or {@code null} if unavailable.
      *
      * @see #flush(Appendable)
-     * @see FilteredAppendable#toString()
      */
     public static CharSequence content(Appendable out) {
         while (!(out instanceof CharSequence)) {

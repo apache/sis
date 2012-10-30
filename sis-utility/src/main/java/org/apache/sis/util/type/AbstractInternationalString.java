@@ -20,8 +20,8 @@ import java.util.Locale;
 import java.util.Formatter;
 import java.util.Formattable;
 import java.util.FormattableFlags;
-import org.apache.sis.util.CharSequences;
 import org.opengis.util.InternationalString;
+import org.apache.sis.internal.util.Utilities;
 
 
 /**
@@ -166,23 +166,28 @@ public abstract class AbstractInternationalString implements InternationalString
      *                  or -1 for no restriction.
      */
     @Override
-    public void formatTo(final Formatter formatter, final int flags, int width, final int precision) {
+    public void formatTo(final Formatter formatter, int flags, final int width, int precision) {
         final Locale locale = formatter.locale();
         String value = toString(locale);
-        if ((flags & FormattableFlags.UPPERCASE) != 0) {
-            value = value.toUpperCase(locale);
+        if (precision >= 0) {
+            if ((flags & FormattableFlags.UPPERCASE) != 0) {
+                value = value.toUpperCase(locale); // May change the length in some locales.
+                flags &= ~FormattableFlags.UPPERCASE;
+            }
+            final int length = value.length();
+            if (precision < length) {
+                try {
+                    precision = value.offsetByCodePoints(0, precision);
+                } catch (IndexOutOfBoundsException e) {
+                    precision = length;
+                    // Happen if the string has fewer code-points than 'precision'. We could
+                    // avoid the try-catch block by checking value.codePointCount(…), but it
+                    // would result in scanning the string twice.
+                }
+                value = value.substring(0, precision);
+            }
         }
-        if (precision >= 0 && precision < value.length()) {
-            value = value.substring(0, precision);
-        }
-        final Object[] args = new Object[] {value, value};
-        width -= value.length();
-        String format = "%s";
-        if (width >= 0) {
-            format = "%s%s";
-            args[(flags & FormattableFlags.LEFT_JUSTIFY) != 0 ? 1 : 0] = CharSequences.spaces(width);
-        }
-        formatter.format(format, args);
+        Utilities.formatTo(formatter, flags, width, value);
     }
 
     /**

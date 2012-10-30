@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+
+<FindBugsFilter>
+  <!--
+    "Class is Serializable, but does not define serialVersionUID":
+    Disabled because overlaps with the javac warning. Rely on javac instead
+    since it can be controlled by the standard @SuppressWarnings annotation.
+  -->
+  <Match>
+    <Bug pattern="SE_NO_SERIALVERSIONID"/>
+  </Match>
+
+  <!--
+    "Switch statement found where one case falls through to the next case":
+    Disabled because overlaps with the javac warning. Rely on javac instead
+    since it can be controlled by the standard @SuppressWarnings annotation.
+  -->
+  <Match>
+    <Bug pattern="SF_SWITCH_FALLTHROUGH"/>
+  </Match>
+
+  <!--
+    "Switch statement found where default case is missing":
+    Not a bug. When a default statement was really necessary, we usually
+    get other compilation errors like unassigned final local variables.
+  -->
+  <Match>
+    <Bug pattern="SF_SWITCH_NO_DEFAULT"/>
+  </Match>
+
+</FindBugsFilter>

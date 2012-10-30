@@ -43,7 +43,7 @@ import org.apache.sis.util.resources.Errors;
  * <td class="sep">{@link #ensureValidIndex(int, int) ensureValidIndex}</td></tr>
  *
  * <tr><td>{@link MismatchedDimensionException}</td>
- * <td class="sep">{@link #ensureDimensionMatches(String, DirectPosition, int) ensureDimensionMatches}</td></tr>
+ * <td class="sep">{@link #ensureDimensionMatches(String, int, DirectPosition) ensureDimensionMatches}</td></tr>
  * </table>
  *
  * {@section Method Arguments}

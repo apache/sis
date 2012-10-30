@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.io;
+package org.apache.sis.internal.util;
 
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
 
 import static org.junit.Assert.*;
-import static org.apache.sis.io.X364.*;
+import static org.apache.sis.internal.util.X364.*;
 
 
 /**
