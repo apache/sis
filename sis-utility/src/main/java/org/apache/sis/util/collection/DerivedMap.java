@@ -151,7 +151,7 @@ class DerivedMap<BK,BV,K,V> extends AbstractMap<K,V> implements
      */
     @Override
     public int size() {
-        return base.isEmpty() ? 0 : keySet().size();
+        return keySet().size();
     }
 
     /**
