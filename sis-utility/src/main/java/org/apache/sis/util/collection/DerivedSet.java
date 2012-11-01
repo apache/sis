@@ -19,7 +19,6 @@ package org.apache.sis.util.collection;
 import java.util.Set;
 import java.util.Iterator;
 import java.util.AbstractSet;
-import java.util.EnumSet;
 import java.io.Serializable;
 import org.apache.sis.util.Decorator;
 import org.apache.sis.util.ObjectConverter;
@@ -88,7 +87,7 @@ class DerivedSet<B,E> extends AbstractSet<E> implements CheckedContainer<E>, Ser
     static <B,E> Set<E> create(final Set<B> base, final ObjectConverter<B,E> converter) {
         final Set<FunctionProperty> properties = converter.properties();
         if (properties.contains(FunctionProperty.INVERTIBLE)) {
-            if (properties.containsAll(EnumSet.of(FunctionProperty.INJECTIVE, FunctionProperty.SURJECTIVE))) {
+            if (FunctionProperty.isBijective(properties)) {
                 return new Bijective<>(base, converter);
             }
             return new Invertible<>(base, converter);

@@ -16,6 +16,9 @@
  */
 package org.apache.sis.math;
 
+import java.util.Set;
+import java.util.EnumSet;
+
 
 /**
  * The manners in which the inputs of a function are mapped to the outputs.
@@ -75,6 +78,9 @@ public enum FunctionProperty {
      * A function which is both injective and {@linkplain #SURJECTIVE surjective} is a
      * <cite>bijective</cite> function. In such functions, there is a one-to-one relationship
      * between all input and output values.
+     *
+     * @see #SURJECTIVE
+     * @see #isBijective(Set)
      */
     INJECTIVE,
 
@@ -92,6 +98,9 @@ public enum FunctionProperty {
      * A function which is both {@linkplain #INJECTIVE injective} and surjective is a
      * <cite>bijective</cite> function. In such functions, there is a one-to-one relationship
      * between all input and output values.
+     *
+     * @see #INJECTIVE
+     * @see #isBijective(Set)
      */
     SURJECTIVE,
 
@@ -105,6 +114,9 @@ public enum FunctionProperty {
      *
      * <p>A function may be both order preserving and {@linkplain #ORDER_REVERSING order reversing}
      * if all input values are mapped to a constant output value.</p>
+     *
+     * @see #ORDER_REVERSING
+     * @see #isMonotonic(Set)
      */
     ORDER_PRESERVING,
 
@@ -118,6 +130,48 @@ public enum FunctionProperty {
      *
      * <p>A function may be both {@linkplain #ORDER_PRESERVING order preserving} and order reversing
      * if all input values are mapped to a constant output value.</p>
+     *
+     * @see #ORDER_PRESERVING
+     * @see #isMonotonic(Set)
      */
-    ORDER_REVERSING
+    ORDER_REVERSING;
+
+    /**
+     * Bijective functions shall contains all the value in this set.
+     *
+     * @see #isBijective(Set)
+     */
+    private static EnumSet<FunctionProperty> BIJECTIVE = EnumSet.of(INJECTIVE, SURJECTIVE);
+
+    /**
+     * Returns {@code true} if a function having the given set of properties is <cite>bijective</cite>.
+     * This convenience method tests if the given set contains <em>all</em> following properties:
+     *
+     * <ul>
+     *   <li>{@link #INJECTIVE}</li>
+     *   <li>{@link #SURJECTIVE}</li>
+     * </u>
+     *
+     * @param  properties The properties of the function to test for bijectivity.
+     * @return {@code true} if a function having the given set of properties is bijective.
+     */
+    public static boolean isBijective(final Set<FunctionProperty> properties) {
+        return properties.containsAll(BIJECTIVE);
+    }
+
+    /**
+     * Returns {@code true} if a function having the given set of properties is <cite>monotonic</cite>.
+     * This convenience method tests if the given set contains <em>at least one</em> following properties:
+     *
+     * <ul>
+     *   <li>{@link #ORDER_PRESERVING}</li>
+     *   <li>{@link #ORDER_REVERSING}</li>
+     * </u>
+     *
+     * @param  properties The properties of the function to test for monotonicity.
+     * @return {@code true} if a function having the given set of properties is monotonic.
+     */
+    public static boolean isMonotonic(final Set<FunctionProperty> properties) {
+        return properties.contains(ORDER_PRESERVING) || properties.contains(ORDER_REVERSING);
+    }
 }
