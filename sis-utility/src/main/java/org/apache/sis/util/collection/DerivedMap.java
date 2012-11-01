@@ -16,25 +16,29 @@
  */
 package org.apache.sis.util.collection;
 
-import java.io.Serializable;
-import java.util.AbstractMap;
-import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import java.util.EnumSet;
+import java.util.AbstractMap;
+import java.io.Serializable;
 import org.apache.sis.util.Decorator;
+import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.math.FunctionProperty;
 
 
 /**
  * A map whose keys are derived <cite>on-the-fly</cite> from an other map.
- * Conversions are performed when needed by two methods:
+ * Conversions are performed when needed by the following methods:
  *
  * <ul>
  *   <li>The iterators over the {@linkplain #keySet() key set} or {@linkplain #entrySet() entry set}
- *       obtain the derived values by calls to the {@link #baseToDerived(Object)} method.</li>
+ *       obtain the derived keys using the {@link #keyConverter}.</li>
+ *   <li>The iterators over the {@linkplain #values() values} or {@linkplain #entrySet() entry set}
+ *       obtain the derived values using the {@link #valueConverter}.</li>
  *   <li>Queries ({@link #get get}, {@link #containsKey containsKey}) and write operations
- *       ({@link #put put}, {@link #remove remove}) obtain the storage values by calls to the
- *       {@link #derivedToBase(Object)} method.</li>
+ *       ({@link #put put}, {@link #remove remove}) obtain the storage values using the
+ *       inverse of the above converters.</li>
  * </ul>
  *
  * {@section Constraints}
@@ -52,6 +56,7 @@ import org.apache.sis.util.ArgumentChecks;
  * especially the result of the {@link #size()} method.
  *
  * @param <BK> The type of keys in the backing map.
+ * @param <BV> The type of values in the backing map.
  * @param <K>  The type of keys in this map.
  * @param <V>  The type of values in both this map and the underlying map.
  *
@@ -61,7 +66,9 @@ import org.apache.sis.util.ArgumentChecks;
  * @module
  */
 @Decorator(Map.class)
-public abstract class DerivedMap<BK,K,V> extends AbstractMap<K,V> implements Serializable {
+class DerivedMap<BK,BV,K,V> extends AbstractMap<K,V> implements
+        ObjectConverter<Map.Entry<BK,BV>, Map.Entry<K,V>>, Serializable
+{
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -69,11 +76,18 @@ public abstract class DerivedMap<BK,K,V> extends AbstractMap<K,V> implements Ser
 
     /**
      * The base map whose keys are derived from.
-     *
-     * @see #baseToDerived(Object)
-     * @see #derivedToBase(Object)
      */
-    protected final Map<BK,V> base;
+    protected final Map<BK,BV> base;
+
+    /**
+     * The converter from the base to the derived keys.
+     */
+    protected final ObjectConverter<BK,K> keyConverter;
+
+    /**
+     * The converter from the base to the derived values.
+     */
+    protected final ObjectConverter<BV,V> valueConverter;
 
     /**
      * Key set. Will be constructed only when first needed.
@@ -87,41 +101,58 @@ public abstract class DerivedMap<BK,K,V> extends AbstractMap<K,V> implements Ser
      *
      * @see #entrySet()
      */
-    private transient Set<? extends Map.Entry<K,V>> entrySet;
-
-    /**
-     * The derived key type.
-     */
-    private final Class<K> keyType;
+    private transient Set<Map.Entry<K,V>> entrySet;
 
     /**
      * Creates a new derived map from the specified base map.
      *
-     * @param base The base map.
-     * @param keyType the type of keys in the derived map.
+     * @param base           The base map.
+     * @param keyConverter   The converter for the keys.
+     * @param valueConverter The converter for the values.
      */
-    public DerivedMap(final Map<BK,V> base, final Class<K> keyType) {
-        ArgumentChecks.ensureNonNull("base",    this.base    = base);
-        ArgumentChecks.ensureNonNull("keyType", this.keyType = keyType);
+    static <BK,BV,K,V> Map<K,V> create(final Map<BK,BV> base,
+                                       final ObjectConverter<BK,K> keyConverter,
+                                       final ObjectConverter<BV,V> valueConverter)
+    {
+        final Set<FunctionProperty> kp =   keyConverter.properties();
+        final Set<FunctionProperty> vp = valueConverter.properties();
+        if (kp.contains(FunctionProperty.INVERTIBLE)) {
+            if (vp.contains(FunctionProperty.INVERTIBLE)) {
+                return new Invertible<>(base, keyConverter, valueConverter);
+            }
+            return new InvertibleKey<>(base, keyConverter, valueConverter);
+        }
+        if (vp.contains(FunctionProperty.INVERTIBLE)) {
+            return new InvertibleValue<>(base, keyConverter, valueConverter);
+        }
+        return new DerivedMap<>(base, keyConverter, valueConverter);
     }
 
     /**
-     * Transforms a key from the {@linkplain #base} map to a key in this map.
-     * If there is no key in the derived map for the specified base key,
-     * then this method returns {@code null}.
+     * Creates a new derived map from the specified base map.
      *
-     * @param  key A ley from the {@linkplain #base} map.
-     * @return The key that this view should contains instead of {@code key}, or {@code null}.
+     * @param base           The base map.
+     * @param keyConverter   The converter for the keys.
+     * @param valueConverter The converter for the values.
      */
-    protected abstract K baseToDerived(final BK key);
+    private DerivedMap(final Map<BK,BV> base,
+                       final ObjectConverter<BK,K> keyConverter,
+                       final ObjectConverter<BV,V> valueConverter)
+    {
+        this.base           = base;
+        this.keyConverter   = keyConverter;
+        this.valueConverter = valueConverter;
+    }
 
     /**
-     * Transforms a key from this derived map to a key in the {@linkplain #base} map.
+     * Returns the number of entries in this map.
      *
-     * @param  key A key in this map.
-     * @return The key stored in the {@linkplain #base} map.
+     * @return The number of entries in this map.
      */
-    protected abstract BK derivedToBase(final K key);
+    @Override
+    public int size() {
+        return base.isEmpty() ? 0 : keySet().size();
+    }
 
     /**
      * Returns {@code true} if this map contains no key-value mappings.
@@ -130,204 +161,205 @@ public abstract class DerivedMap<BK,K,V> extends AbstractMap<K,V> implements Ser
      */
     @Override
     public boolean isEmpty() {
-        return base.isEmpty() || entrySet().isEmpty();
-    }
-
-    /**
-     * Returns {@code true} if this map maps one or more keys to this value.
-     * The default implementation delegates directly to the {@linkplain #base} map.
-     *
-     * @return {@code true} if this map maps one or more keys to this value.
-     */
-    @Override
-    public boolean containsValue(final Object value) {
-        return base.containsValue(value);
-    }
-
-    /**
-     * Returns {@code true} if this map contains a mapping for the specified key.
-     * This method first checks if the given element is an instance of {@link #keyType},
-     * then delegates to the {@link #base} map like below:
-     *
-     * {@preformat java
-     *     return base.containsKey(derivedToBase(element));
-     * }
-     *
-     * @param  key key whose presence in this map is to be tested.
-     * @return {@code true} if this map contains a mapping for the specified key.
-     */
-    @Override
-    public boolean containsKey(final Object key) {
-        return keyType.isInstance(key) && base.containsKey(derivedToBase(keyType.cast(key)));
-    }
-
-    /**
-     * Returns the value to which this map maps the specified key.
-     * This method first checks if the given element is an instance of {@link #keyType},
-     * then delegates to the {@link #base} map like below:
-     *
-     * {@preformat java
-     *     return base.get(derivedToBase(element));
-     * }
-     *
-     * @param  key key whose associated value is to be returned.
-     * @return the value to which this map maps the specified key.
-     */
-    @Override
-    public V get(final Object key) {
-        return keyType.isInstance(key) ? base.get(derivedToBase(keyType.cast(key))) : null;
+        return base.isEmpty() || keySet().isEmpty();
     }
 
     /**
      * Associates the specified value with the specified key in this map.
-     * This method first checks if the given element is non-null,
-     * then delegates to the {@link #base} map like below:
-     *
-     * {@preformat java
-     *     return base.put(derivedToBase(key), value);
-     * }
      *
      * @param  key key with which the specified value is to be associated.
      * @param  value value to be associated with the specified key.
      * @return previous value associated with specified key, or {@code null}
      *         if there was no mapping for key.
-     * @throws UnsupportedOperationException if the {@linkplain #base} map doesn't
-     *         supports the {@code put} operation.
+     * @throws UnsupportedOperationException if the converters are not invertible,
+     *         or the {@linkplain #base} map doesn't supports the {@code put} operation.
      */
     @Override
     public V put(final K key, final V value) throws UnsupportedOperationException {
-        return base.put(derivedToBase(key), value);
+        ArgumentChecks.ensureNonNull("key", key);
+        return valueConverter.convert(base.put(
+                 keyConverter.inverse().convert(key),
+               valueConverter.inverse().convert(value)));
     }
 
     /**
-     * Removes the mapping for this key from this map if present.
-     * This method first checks if the given element is an instance of {@link #keyType},
-     * then delegates to the {@link #base} map like below:
-     *
-     * {@preformat java
-     *     return base.remove(derivedToBase(element));
-     * }
-     *
-     * @param  key key whose mapping is to be removed from the map.
-     * @return previous value associated with specified key, or {@code null}
-     *         if there was no entry for key.
-     * @throws UnsupportedOperationException if the {@linkplain #base} map doesn't
-     *         supports the {@code remove} operation.
+     * A {@link DerivedMap} used when the {@link #keyConverter} is invertible.
+     * Availability of the inverse conversion allows us to delegate some operations
+     * to the {@linkplain #base} map instead than iterating over all entries.
      */
-    @Override
-    public V remove(final Object key) throws UnsupportedOperationException {
-        return keyType.isInstance(key) ? base.remove(derivedToBase(keyType.cast(key))) : null;
+    private static class InvertibleKey<BK,BV,K,V> extends DerivedMap<BK,BV,K,V> {
+        private static final long serialVersionUID = -7770446176017835821L;
+
+        /** The inverse of {@link #keyConverter}. */
+        protected final ObjectConverter<K,BK> keyInverse;
+
+        InvertibleKey(final Map<BK,BV> base,
+                      final ObjectConverter<BK,K> keyConverter,
+                      final ObjectConverter<BV,V> valueConverter)
+        {
+            super(base, keyConverter, valueConverter);
+            keyInverse = keyConverter.inverse();
+        }
+
+        @Override
+        public final V get(final Object key) {
+            final Class<? extends K> type = keyConverter.getTargetClass();
+            return type.isInstance(key) ? valueConverter.convert(base.get(keyInverse.convert(type.cast(key)))) : null;
+        }
+
+        @Override
+        public final V remove(final Object key) throws UnsupportedOperationException {
+            final Class<? extends K> type = keyConverter.getTargetClass();
+            return type.isInstance(key) ? valueConverter.convert(base.remove(keyInverse.convert(type.cast(key)))) : null;
+        }
+
+        @Override
+        public final boolean containsKey(final Object key) {
+            final Class<? extends K> type = keyConverter.getTargetClass();
+            return type.isInstance(key) && base.containsKey(keyInverse.convert(type.cast(key)));
+        }
+    }
+
+    /**
+     * A {@link DerivedMap} used when the {@link #valueConverter} is invertible.
+     * Availability of the inverse conversion allows us to delegate some operations
+     * to the {@linkplain #base} map instead than iterating over all entries.
+     */
+    private static final class InvertibleValue<BK,BV,K,V> extends DerivedMap<BK,BV,K,V> {
+        private static final long serialVersionUID = 6249800498911409046L;
+
+        /** The inverse of {@link #valueConverter}. */
+        private final ObjectConverter<V,BV> valueInverse;
+
+        InvertibleValue(final Map<BK,BV> base,
+                        final ObjectConverter<BK,K> keyConverter,
+                        final ObjectConverter<BV,V> valueConverter)
+        {
+            super(base, keyConverter, valueConverter);
+            valueInverse = valueConverter.inverse();
+        }
+
+        @Override
+        public boolean containsValue(final Object value) {
+            final Class<? extends V> type = valueConverter.getTargetClass();
+            return type.isInstance(value) && base.containsValue(valueInverse.convert(type.cast(value)));
+        }
+    }
+
+    /**
+     * A {@link DerivedMap} used when both the {@link #keyConverter} and {@link #valueConverter}
+     * are invertible. Availability of the inverse conversion allows us to delegate some operations
+     * to the {@linkplain #base} map instead than iterating over all entries.
+     */
+    private static final class Invertible<BK,BV,K,V> extends InvertibleKey<BK,BV,K,V> {
+        private static final long serialVersionUID = 3830322680676020356L;
+
+        /** The inverse of {@link #valueConverter}. */
+        private final ObjectConverter<V,BV> valueInverse;
+
+        /** The inverse of this entry converter. */
+        private transient ObjectConverter<Entry<K,V>, Entry<BK,BV>> inverse;
+
+        Invertible(final Map<BK,BV> base,
+                   final ObjectConverter<BK,K> keyConverter,
+                   final ObjectConverter<BV,V> valueConverter)
+        {
+            super(base, keyConverter, valueConverter);
+            valueInverse = valueConverter.inverse();
+        }
+
+        @Override
+        public boolean containsValue(final Object value) {
+            final Class<? extends V> type = valueConverter.getTargetClass();
+            return type.isInstance(value) && base.containsValue(valueInverse.convert(type.cast(value)));
+        }
+
+        @Override
+        public V put(final K key, final V value) {
+            ArgumentChecks.ensureNonNull("key", key);
+            return valueConverter.convert(base.put(keyInverse.convert(key), valueInverse.convert(value)));
+        }
+
+        @Override
+        public ObjectConverter<Entry<K,V>, Entry<BK,BV>> inverse() {
+            if (inverse == null) {
+                inverse = new DerivedMap<>(null, keyInverse, valueInverse);
+            }
+            return inverse;
+        }
     }
 
     /**
      * Returns a set view of the keys contained in this map.
-     *
-     * @return a set view of the keys contained in this map.
      */
     @Override
-    public Set<K> keySet() {
+    public final Set<K> keySet() {
         if (keySet == null) {
-            keySet = new KeySet(base.keySet());
+            keySet = DerivedSet.create(base.keySet(), keyConverter);
         }
         return keySet;
     }
 
     /**
-     * Returns a collection view of the values contained in this map.
-     *
-     * @return a collection view of the values contained in this map.
-     */
-    @Override
-    public Collection<V> values() {
-        return base.values();
-    }
-
-    /**
      * Returns a set view of the mappings contained in this map.
-     *
-     * @return a set view of the mappings contained in this map.
      */
     @Override
-    @SuppressWarnings("unchecked")
-    public Set<Map.Entry<K,V>> entrySet() {
+    public final Set<Map.Entry<K,V>> entrySet() {
         if (entrySet == null) {
-            entrySet = new EntrySet(base.entrySet());
+            entrySet = DerivedSet.create(base.entrySet(), this);
         }
-        return (Set<Map.Entry<K,V>>) entrySet; // Safe because read-only.
+        return entrySet;
     }
 
     /**
-     * The key set.
+     * Returns the properties of the entry converter, as the union of some properties
+     * of the key and value converters.
      */
-    @Decorator(Set.class)
-    private final class KeySet extends DerivedSet<BK,K> {
-        private static final long serialVersionUID = -2931806200277420177L;
-
-        public KeySet(final Set<BK> base) {
-            super(base, keyType);
-        }
-
-        @Override
-        protected K baseToDerived(final BK element) {
-            return DerivedMap.this.baseToDerived(element);
-        }
-
-        @Override
-        protected BK derivedToBase(final K element) {
-            return DerivedMap.this.derivedToBase(element);
-        }
+    @Override
+    public final Set<FunctionProperty> properties() {
+        final EnumSet<FunctionProperty> properties = EnumSet.of(
+                FunctionProperty.INVERTIBLE,
+                FunctionProperty.INJECTIVE,
+                FunctionProperty.SURJECTIVE);
+        properties.retainAll(  keyConverter.properties());
+        properties.retainAll(valueConverter.properties());
+        return properties;
     }
 
     /**
-     * The entry set.
+     * Returns the source class of the map entry converter.
+     * Defined because the interface requires so but not used.
      */
-    @Decorator(Set.class)
-    private final class EntrySet extends DerivedSet<Map.Entry<BK,V>, Entry<BK,K,V>> {
-        private static final long serialVersionUID = -1328083271645313149L;
-
-        @SuppressWarnings({"unchecked","rawtypes"})
-        public EntrySet(final Set<Map.Entry<BK,V>> base) {
-            super(base, (Class) Entry.class);
-        }
-
-        @Override
-        protected Entry<BK,K,V> baseToDerived(final Map.Entry<BK,V> entry) {
-            final K derived = DerivedMap.this.baseToDerived(entry.getKey());
-            return (derived != null) ? new Entry<>(entry, derived) : null;
-        }
-
-        @Override
-        protected Map.Entry<BK,V> derivedToBase(final Entry<BK,K,V> element) {
-            return element.entry;
-        }
+    @Override
+    public final Class<? super Entry<BK,BV>> getSourceClass() {
+        return Entry.class;
     }
 
     /**
-     * The entry element.
+     * Returns the target class of the map entry converter.
+     * Defined because the interface requires so but not used.
      */
-    @Decorator(Map.Entry.class)
-    private static final class Entry<BK,K,V> implements Map.Entry<K,V> {
-        public final Map.Entry<BK,V> entry;
-        private final K derived;
+    @Override
+    @SuppressWarnings({"unchecked","rawtypes"})
+    public final Class<? extends Entry<K,V>> getTargetClass() {
+        return (Class) Entry.class;
+    }
 
-        public Entry(final Map.Entry<BK,V> entry, final K derived) {
-            this.entry   = entry;
-            this.derived = derived;
-        }
+    /**
+     * Converts the given entry.
+     */
+    @Override
+    public final Entry<K,V> convert(final Entry<BK,BV> entry) {
+        final K key   =   keyConverter.convert(entry.getKey());
+        final V value = valueConverter.convert(entry.getValue());
+        return (key != null) ? new SimpleEntry<>(key, value) : null;
+    }
 
-        @Override
-        public K getKey() {
-            return derived;
-        }
-
-        @Override
-        public V getValue() {
-            return entry.getValue();
-        }
-
-        @Override
-        public V setValue(V value) {
-            return entry.setValue(value);
-        }
+    /**
+     * To be defined in the {@link Invertible} sub-class only.
+     */
+    @Override
+    public ObjectConverter<Entry<K,V>, Entry<BK,BV>> inverse() throws UnsupportedOperationException {
+        throw new UnsupportedOperationException();
     }
 }
