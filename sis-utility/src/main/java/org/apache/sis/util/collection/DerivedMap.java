@@ -203,19 +203,19 @@ class DerivedMap<BK,BV,K,V> extends AbstractMap<K,V> implements
 
         @Override
         public final V get(final Object key) {
-            final Class<? extends K> type = keyConverter.getTargetClass();
+            final Class<K> type = keyConverter.getTargetClass();
             return type.isInstance(key) ? valueConverter.convert(base.get(keyInverse.convert(type.cast(key)))) : null;
         }
 
         @Override
         public final V remove(final Object key) throws UnsupportedOperationException {
-            final Class<? extends K> type = keyConverter.getTargetClass();
+            final Class<K> type = keyConverter.getTargetClass();
             return type.isInstance(key) ? valueConverter.convert(base.remove(keyInverse.convert(type.cast(key)))) : null;
         }
 
         @Override
         public final boolean containsKey(final Object key) {
-            final Class<? extends K> type = keyConverter.getTargetClass();
+            final Class<K> type = keyConverter.getTargetClass();
             return type.isInstance(key) && base.containsKey(keyInverse.convert(type.cast(key)));
         }
     }
@@ -241,7 +241,7 @@ class DerivedMap<BK,BV,K,V> extends AbstractMap<K,V> implements
 
         @Override
         public boolean containsValue(final Object value) {
-            final Class<? extends V> type = valueConverter.getTargetClass();
+            final Class<V> type = valueConverter.getTargetClass();
             return type.isInstance(value) && base.containsValue(valueInverse.convert(type.cast(value)));
         }
     }
@@ -270,7 +270,7 @@ class DerivedMap<BK,BV,K,V> extends AbstractMap<K,V> implements
 
         @Override
         public boolean containsValue(final Object value) {
-            final Class<? extends V> type = valueConverter.getTargetClass();
+            final Class<V> type = valueConverter.getTargetClass();
             return type.isInstance(value) && base.containsValue(valueInverse.convert(type.cast(value)));
         }
 
@@ -331,8 +331,9 @@ class DerivedMap<BK,BV,K,V> extends AbstractMap<K,V> implements
      * Defined because the interface requires so but not used.
      */
     @Override
-    public final Class<? super Entry<BK,BV>> getSourceClass() {
-        return Entry.class;
+    @SuppressWarnings({"unchecked","rawtypes"})
+    public final Class<Entry<BK,BV>> getSourceClass() {
+        return (Class) Entry.class;
     }
 
     /**
@@ -341,7 +342,7 @@ class DerivedMap<BK,BV,K,V> extends AbstractMap<K,V> implements
      */
     @Override
     @SuppressWarnings({"unchecked","rawtypes"})
-    public final Class<? extends Entry<K,V>> getTargetClass() {
+    public final Class<Entry<K,V>> getTargetClass() {
         return (Class) Entry.class;
     }
 

@@ -26,23 +26,23 @@ import java.util.EnumSet;
  * can be used with {@link org.apache.sis.util.ObjectConverter}.
  *
  * <p>Any given function can have zero, one or more properties from this enumeration.
- * Some properties not included in this enumeration can be tested by a combination of
- * other properties. For example in order to test if a function is <cite>bijective</cite>
- * (i.e. if there is a one-to-one relationship between all input and output values),
- * one can use:</p>
+ * Some properties not included in this enumeration can be expressed by a combination of
+ * other properties:</p>
  *
- * {@preformat java
- *     private static final Set<FunctionProperty> BIJECTIVE = EnumSet.of(INJECTIVE, SURJECTIVE);
+ * <table class="sis">
+ *   <tr><th>Property</th> <th>How to build</th></tr>
+ *   <tr><td>{@linkplain #isBijective(Set) Bijective}</td>
+ *       <td><code>EnumSet.of({@linkplain #INJECTIVE}, {@linkplain #SURJECTIVE})</code></td>
+ *   <tr><td>{@linkplain #isMonotonic(Set) Monotonic}</td>
+ *       <td><code>EnumSet.of({@linkplain #INJECTIVE})</code>
+ *        or <code>EnumSet.of({@linkplain #SURJECTIVE})</code></td>
+ *   <tr><td>Strictly increasing</td>
+ *       <td><code>EnumSet.of({@linkplain #ORDER_PRESERVING}, {@linkplain #INJECTIVE})</code></td>
+ *   <tr><td>Strictly decreasing</td>
+ *       <td><code>EnumSet.of({@linkplain #ORDER_REVERSING}, {@linkplain #INJECTIVE})</code></td>
+ * </table>
  *
- *     public void doSomeStuff(Set<FunctionProperty> properties) {
- *         if (properties.containsAll(BIJECTIVE)) {
- *             // At this point, we have determined that a function
- *             // having the given properties is bijective.
- *         }
- *     }
- * }
- *
- * <p>The Javadoc in this class uses the following terms:</p>
+ * The Javadoc in this class uses the following terms:
  * <ul>
  *   <li><var>S</var> (as in <cite>source</cite>) is the set of all possible input values (the <cite>domain</cite>).
  *   <li><var>T</var> (as in <cite>target</cite>) is a set containing all possible output values,
@@ -56,11 +56,19 @@ import java.util.EnumSet;
  * @since   0.3
  * @version 0.3
  * @module
+ *
+ * @see org.apache.sis.util.ObjectConverter#properties()
  */
 public enum FunctionProperty {
     /**
      * A function is <cite>invertible</cite> if it can provide an other function mapping
      * <var>T</var> values to <var>S</var> values.
+     *
+     * <p>While other values defined in this enumeration are more about the mathematical aspects
+     * of functions, this particular value is more about the programmatical aspect. A function
+     * may be conceptually invertible (all {@linkplain #isBijective(Set) bijective} functions
+     * should be), but the inverse operation may not be implemented. In such case, the function
+     * properties shall not include this {@code INVERTIBLE} value.</p>
      *
      * @see org.apache.sis.util.ObjectConverter#inverse()
      */
@@ -145,6 +153,7 @@ public enum FunctionProperty {
 
     /**
      * Returns {@code true} if a function having the given set of properties is <cite>bijective</cite>.
+     * Bijective functions have a one-to-one relationship between all input and output values.
      * This convenience method tests if the given set contains <em>all</em> following properties:
      *
      * <ul>
@@ -161,7 +170,8 @@ public enum FunctionProperty {
 
     /**
      * Returns {@code true} if a function having the given set of properties is <cite>monotonic</cite>.
-     * This convenience method tests if the given set contains <em>at least one</em> following properties:
+     * This convenience method tests if the given set contains <em>at least one</em> of the following
+     * properties:
      *
      * <ul>
      *   <li>{@link #ORDER_PRESERVING}</li>
