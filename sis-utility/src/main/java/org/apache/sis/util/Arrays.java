@@ -1433,7 +1433,7 @@ public final class Arrays extends Static {
      *                    elements are not allowed), or {@code false} otherwise.
      * @return {@code true} if all elements in the given array are sorted in increasing order.
      */
-    public static <E> boolean isSorted(final E[] array, final Comparator<E> comparator, final boolean strict) {
+    public static <E> boolean isSorted(final E[] array, final Comparator<? super E> comparator, final boolean strict) {
         for (int i=1; i<array.length; i++) {
             final int c = comparator.compare(array[i], array[i-1]);
             if (strict ? c <= 0 : c < 0) {
