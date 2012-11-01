@@ -49,6 +49,8 @@ import org.junit.runners.Suite;
   org.apache.sis.util.collection.WeakHashSetTest.class,
   org.apache.sis.util.collection.WeakValueHashMapTest.class,
   org.apache.sis.util.collection.CacheTest.class,
+  org.apache.sis.util.collection.DerivedSetTest.class,
+  org.apache.sis.util.collection.DerivedMapTest.class,
 
   // GeoAPI most basic types.
   org.apache.sis.util.type.TypesTest.class,
