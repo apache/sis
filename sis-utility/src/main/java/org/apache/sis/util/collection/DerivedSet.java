@@ -19,6 +19,7 @@ package org.apache.sis.util.collection;
 import java.util.Set;
 import java.util.Iterator;
 import java.util.AbstractSet;
+import java.util.EnumSet;
 import java.io.Serializable;
 import org.apache.sis.util.Decorator;
 import org.apache.sis.util.ObjectConverter;
@@ -87,6 +88,9 @@ class DerivedSet<B,E> extends AbstractSet<E> implements CheckedContainer<E>, Ser
     static <B,E> Set<E> create(final Set<B> base, final ObjectConverter<B,E> converter) {
         final Set<FunctionProperty> properties = converter.properties();
         if (properties.contains(FunctionProperty.INVERTIBLE)) {
+            if (properties.containsAll(EnumSet.of(FunctionProperty.INJECTIVE, FunctionProperty.SURJECTIVE))) {
+                return new Bijective<>(base, converter);
+            }
             return new Invertible<>(base, converter);
         }
         return new DerivedSet<>(base, converter);
@@ -178,7 +182,7 @@ class DerivedSet<B,E> extends AbstractSet<E> implements CheckedContainer<E>, Ser
      * @param <B> The type of elements in the backing set.
      * @param <E> The type of elements in this set.
      */
-    private static final class Invertible<B,E> extends DerivedSet<B,E> {
+    private static class Invertible<B,E> extends DerivedSet<B,E> {
         /**
          * For cross-version compatibility.
          */
@@ -204,7 +208,7 @@ class DerivedSet<B,E> extends AbstractSet<E> implements CheckedContainer<E>, Ser
          * {@inheritDoc}
          */
         @Override
-        public boolean add(final E element) throws UnsupportedOperationException {
+        public final boolean add(final E element) throws UnsupportedOperationException {
             ArgumentChecks.ensureNonNull("element", element);
             return base.add(inverse.convert(element));
         }
@@ -222,7 +226,7 @@ class DerivedSet<B,E> extends AbstractSet<E> implements CheckedContainer<E>, Ser
          * @return {@code true} if this set contains the specified element.
          */
         @Override
-        public boolean contains(final Object element) {
+        public final boolean contains(final Object element) {
             final Class<? extends E> type = getElementType();
             return type.isInstance(element) && base.contains(inverse.convert(type.cast(element)));
         }
@@ -242,9 +246,50 @@ class DerivedSet<B,E> extends AbstractSet<E> implements CheckedContainer<E>, Ser
          *         supports the {@code remove} operation.
          */
         @Override
-        public boolean remove(final Object element) throws UnsupportedOperationException {
+        public final boolean remove(final Object element) throws UnsupportedOperationException {
             final Class<? extends E> type = getElementType();
             return type.isInstance(element) && base.remove(inverse.convert(type.cast(element)));
+        }
+    }
+
+    /**
+     * A {@link DerivedSet} for converters that are both invertible and bijective.
+     * The bijection allows us to query the {@linkplai #base} set size directly
+     * instead than iterating over all elements.
+     *
+     * @param <B> The type of elements in the backing set.
+     * @param <E> The type of elements in this set.
+     */
+    private static final class Bijective<B,E> extends Invertible<B,E> {
+        /**
+         * For cross-version compatibility.
+         */
+        private static final long serialVersionUID = -7601944988804380342L;
+
+        /**
+         * Creates a new derived set from the specified base set.
+         *
+         * @param base The base set.
+         * @param converter The type of elements in this derived set.
+         */
+        Bijective(final Set<B> base, final ObjectConverter<B,E> converter) {
+            super(base, converter);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public int size() {
+            return base.size();
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public boolean isEmpty() {
+            return base.isEmpty();
         }
     }
 }
