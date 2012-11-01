@@ -110,7 +110,7 @@ class DerivedSet<B,E> extends AbstractSet<E> implements CheckedContainer<E>, Ser
      * Returns the derived element type.
      */
     @Override
-    public final Class<? extends E> getElementType() {
+    public final Class<E> getElementType() {
         return converter.getTargetClass();
     }
 
