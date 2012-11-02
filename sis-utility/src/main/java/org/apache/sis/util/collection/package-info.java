@@ -47,6 +47,7 @@
  *     {@linkplain org.apache.sis.util.collection.Collections#derivedMap Derived Map} and
  *     {@linkplain org.apache.sis.util.collection.Collections#derivedSet derived Set} are wrapper collections
  *     in which the keys or the values are derived on-the-fly from the content of an other collection.
+ *     The can also be used for creating filtered views.
  *   </li><li>
  *     {@link org.apache.sis.util.collection.IntegerList} and
  *     {@link org.apache.sis.util.collection.RangeSet} are collections specialized for a particular kind
