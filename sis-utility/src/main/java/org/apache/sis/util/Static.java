@@ -40,6 +40,10 @@ package org.apache.sis.util;
  * <tr><td>{@link Arrays}</td>
  *     <td>Insert or remove elements in the middle of arrays.</td></tr>
  *
+ * <tr><th colspan="2" class="hsep">Input / Output (including CRS, XML, images)</th></tr>
+ * <tr><td>{@link org.apache.sis.io.IO}</td>
+ *     <td>Methods working on {@link Appendable} instances.</td></tr>
+ *
  * <tr><th colspan="2" class="hsep">Loggings and exceptions</th></tr>
  * <tr><td>{@link ArgumentChecks}</td>
  *     <td>Perform argument checks and throw {@link IllegalArgumentException} if needed.</td></tr>
@@ -48,6 +52,10 @@ package org.apache.sis.util;
  * <tr><td>{@link org.apache.sis.util.logging.Logging}</td>
  *     <td>Get a JDK {@linkplain java.util.logging.Logger logger}, which may be a wrapper around
  *         the <cite>Apache Commons Logging</cite> or <cite>Log4J</cite> framework.</td></tr>
+ *
+ * <tr><th colspan="2" class="hsep">Factories</th></tr>
+ * <tr><td>{@link ObjectConverters}</td>
+ *     <td>Creates {@link ObjectConverter} instances, or collection views using object converters.</td></tr>
  * </table>
  *
  * @author Martin Desruisseaux (Geomatys)
