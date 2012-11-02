@@ -18,9 +18,9 @@ package org.apache.sis.util.collection;
 
 import java.util.*;
 import java.io.Serializable;
-import java.util.logging.Logger;
 import org.apache.sis.util.Static;
-import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ObjectConverter;
 
 import static java.util.Collections.list;
 import static java.util.Collections.emptySet;
@@ -38,9 +38,8 @@ import static java.util.Collections.unmodifiableMap;
  * This is an extension to the Java {@link java.util.Collections} utility class providing:
  *
  * <ul>
- *   <li>Null-safe {@link #clear(Collection) clear}, {@link #isNullOrEmpty(Collection) isNullOrEmpty}
- *       and {@link #addIfNonNull(Collection, Object) addIfNonNull} methods, for the convenience of
- *       classes using the <cite>lazy instantiation</cite> pattern.</li>
+ *   <li>Null-safe {@link #isNullOrEmpty(Collection) isNullOrEmpty} method,
+ *       for the convenience of classes using the <cite>lazy instantiation</cite> pattern.</li>
  *   <li>{@link #asCollection(Object) asCollection} for wrapping arbitrary objects to list or collection.</li>
  *   <li>List and collection {@linkplain #listComparator() comparators}.</li>
  *   <li>{@link #modifiableCopy(Collection) modifiableCopy} method for taking a snapshot of an arbitrary
@@ -57,46 +56,9 @@ import static java.util.Collections.unmodifiableMap;
  */
 public final class Collections extends Static {
     /**
-     * The logger where to logs collection events, if logging at the finest level is enabled.
-     */
-    static final Logger LOGGER = Logging.getLogger(Collections.class);
-
-    /**
      * Do not allow instantiation of this class.
      */
     private Collections() {
-    }
-
-    /**
-     * Clears the given collection, if non-null.
-     * If the given collection is null, then this method does nothing.
-     *
-     * <p>This is a convenience method for classes implementing the <cite>lazy instantiation</cite>
-     * pattern. In such cases, null collections (i.e. collections not yet instantiated) are typically
-     * considered as {@linkplain Collection#isEmpty() empty}.</p>
-     *
-     * @param collection The collection to clear, or {@code null}.
-     */
-    public static void clear(final Collection<?> collection) {
-        if (collection != null) {
-            collection.clear();
-        }
-    }
-
-    /**
-     * Clears the given map, if non-null.
-     * If the given map is null, then this method does nothing.
-     *
-     * <p>This is a convenience method for classes implementing the <cite>lazy instantiation</cite>
-     * pattern. In such cases, null maps (i.e. maps not yet instantiated) are typically considered
-     * as {@linkplain Map#isEmpty() empty}.</p>
-     *
-     * @param map The map to clear, or {@code null}.
-     */
-    public static void clear(final Map<?,?> map) {
-        if (map != null) {
-            map.clear();
-        }
     }
 
     /**
@@ -104,6 +66,10 @@ public final class Collections extends Static {
      * {@linkplain Collection#isEmpty() empty}. If this method returns {@code false},
      * then the given collection is guaranteed to be non-null and to contain at least
      * one element.
+     *
+     * <p>This is a convenience method for classes implementing the <cite>lazy instantiation</cite>
+     * pattern. In such cases, null collections (i.e. collections not yet instantiated) are typically
+     * considered as {@linkplain Collection#isEmpty() empty}.</p>
      *
      * @param collection The collection to test, or {@code null}.
      * @return {@code true} if the given collection is null or empty, or {@code false} otherwise.
@@ -117,24 +83,15 @@ public final class Collections extends Static {
      * If this method returns {@code false}, then the given map is guaranteed to be non-null and
      * to contain at least one element.
      *
+     * <p>This is a convenience method for classes implementing the <cite>lazy instantiation</cite>
+     * pattern. In such cases, null maps (i.e. maps not yet instantiated) are typically considered
+     * as {@linkplain Map#isEmpty() empty}.</p>
+     *
      * @param map The map to test, or {@code null}.
      * @return {@code true} if the given map is null or empty, or {@code false} otherwise.
      */
     public static boolean isNullOrEmpty(final Map<?,?> map) {
         return (map == null) || map.isEmpty();
-    }
-
-    /**
-     * Adds the given element to the given collection only if the element is non-null.
-     * If any of the given argument is null, then this method does nothing.
-     *
-     * @param  <E>        The type of elements in the collection.
-     * @param  collection The collection in which to add elements, or {@code null}.
-     * @param  element    The element to add in the collection, or {@code null}.
-     * @return {@code true} if the given element has been added, or {@code false} otherwise.
-     */
-    public static <E> boolean addIfNonNull(final Collection<E> collection, final E element) {
-        return (collection != null && element != null) && collection.add(element);
     }
 
     /**
@@ -166,6 +123,95 @@ public final class Collections extends Static {
     @SuppressWarnings({"unchecked","rawtype"})
     public static <E> SortedSet<E> emptySortedSet() {
         return EmptySortedSet.INSTANCE;
+    }
+
+    /**
+     * Returns a set whose elements are derived <cite>on-the-fly</cite> from the given set.
+     * Conversions from the original elements to the derived elements are performed when needed
+     * by invoking the {@link ObjectConverter#convert(Object)} method on the given converter.
+     * Those conversions are repeated every time a {@code Set} method is invoked; there is no cache.
+     * Consequently, any change in the original set is immediately visible in the derived set,
+     * and conversely.
+     *
+     * <p>The {@link Set#add(Object) Set.add(E)} method is supported only if the given converter
+     * is {@linkplain org.apache.sis.math.FunctionProperty#INVERTIBLE invertible}.
+     * An invertible converter is not mandatory for other {@code Set} operations.
+     * However {@link Set#contains(Object) contains} and {@link #remove(Object) remove}
+     * operations are likely to be faster if the inverse converter is available.</p>
+     *
+     * <p>The derived set may contain fewer elements than the original set if some elements
+     * are not convertible. Non-convertible elements are <var>S</var> values for which
+     * {@code converter.convert(S)} returns {@code null}. As a consequence of this sentinel
+     * value usage, the derived set can not contain {@code null} elements.</p>
+     *
+     * <p>The returned set can be serialized if the given set and converter are serializable.
+     * The returned set is not synchronized by itself, but is nevertheless thread-safe if the
+     * given set (including its iterator) and converter are thread-safe.</p>
+     *
+     * @param  <S>       The type of elements in the storage (original) set.
+     * @param  <E>       The type of elements in the derived set.
+     * @param  storage   The storage set containing the original elements, or {@code null}.
+     * @param  converter The converter from the elements in the storage set to the elements
+     *                   in the derived set.
+     * @return A view over the {@code storage} set containing all elements converted by the given
+     *         converter, or {@code null} if {@code storage} was null.
+     *
+     * @see org.apache.sis.util.ObjectConverters#derivedSet(Set, ObjectConverter)
+     */
+    public static <S,E> Set<E> derivedSet(final Set<S> storage, final ObjectConverter<S,E> converter) {
+        ArgumentChecks.ensureNonNull("converter", converter);
+        if (storage == null) {
+            return null;
+        }
+        return DerivedSet.create(storage, converter);
+    }
+
+    /**
+     * Returns a map whose whose keys and values are derived <cite>on-the-fly</cite> from the given map.
+     * Conversions from the original entries to the derived entries are performed when needed
+     * by invoking the {@link ObjectConverter#convert(Object)} method on the given converters.
+     * Those conversions are repeated every time a {@code Map} method is invoked; there is no cache.
+     * Consequently, any change in the original map is immediately visible in the derived map,
+     * and conversely.
+     *
+     * <p>The {@link Map#put(Object,Object) Map.put(K,V)} method is supported only if the given
+     * converters are {@linkplain org.apache.sis.math.FunctionProperty#INVERTIBLE invertible}.
+     * An invertible converter is not mandatory for other {@code Map} operations.
+     * However some of them are likely to be faster if the inverse converters are available.</p>
+     *
+     * <p>The derived map may contain fewer entries than the original map if some keys
+     * are not convertible. Non-convertible keys are <var>K</var> values for which
+     * {@code keyConverter.convert(K)} returns {@code null}. As a consequence of this sentinel
+     * value usage, the derived map can not contain {@code null} keys.
+     * It may contain {@code null} values however.</p>
+     *
+     * <p>The returned map can be serialized if the given map and converters are serializable.
+     * The returned map is <strong>not</strong> thread-safe.</p>
+     *
+     * @param <SK>         The type of keys   in the storage map.
+     * @param <SV>         The type of values in the storage map.
+     * @param <K>          The type of keys   in the derived map.
+     * @param <V>          The type of values in the derived map.
+     * @param storage      The storage map containing the original entries, or {@code null}.
+     * @param keyConverter The converter from the keys in the storage map to the keys in the derived map.
+     * @param valueConverter The converter from the values in the storage map to the values in the derived map.
+     * @return A view over the {@code storage} map containing all entries converted by the given
+     *         converters, or {@code null} if {@code storage} was null.
+     *
+     * @see org.apache.sis.util.ObjectConverters#derivedMap(Map, ObjectConverter, ObjectConverter)
+     * @see org.apache.sis.util.ObjectConverters#derivedKeys(Map, ObjectConverter, Class)
+     * @see org.apache.sis.util.ObjectConverters#derivedValues(Map, Class, ObjectConverter)
+     */
+    public static <SK,SV,K,V> Map<K,V> derivedMap(final Map<SK,SV> storage,
+                                                  final ObjectConverter<SK,K> keyConverter,
+                                                  final ObjectConverter<SV,V> valueConverter)
+    {
+        ArgumentChecks.ensureNonNull("keyConverter",   keyConverter);
+        ArgumentChecks.ensureNonNull("valueConverter", valueConverter);
+        if (storage == null) {
+            return null;
+        }
+        return DerivedMap.create(storage, keyConverter, valueConverter);
     }
 
     /**
@@ -532,14 +578,14 @@ public final class Collections extends Static {
      * <p>The same calculation can be used for {@link java.util.LinkedHashMap} and
      * {@link java.util.HashSet} as well, which are built on top of {@code HashMap}.</p>
      *
-     * @param elements The number of elements to be put into the hash map or hash set.
-     * @return The optimal initial capacity to be given to the hash map constructor.
+     * @param count The number of elements to be put into the hash map or hash set.
+     * @return The minimal initial capacity to be given to the hash map constructor.
      */
-    public static int hashMapCapacity(int elements) {
-        final int r = elements >>> 2;
-        if (elements != (r << 2)) {
-            elements++;
+    public static int hashMapCapacity(final int count) {
+        int r = count >>> 2;
+        if ((count & 0x3) != 0) {
+            r++;
         }
-        return elements + r;
+        return count + r;
     }
 }

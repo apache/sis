@@ -83,7 +83,7 @@ public enum X364 {
     /**
      * The X3.64 escape sequence, built when first needed.
      */
-    private transient volatile String sequence;
+    private transient String sequence;
 
     /**
      * Foreground or background flavors of this enum.
@@ -136,11 +136,14 @@ public enum X364 {
      * @return The X3.64 escape sequence.
      */
     public String sequence() {
-        String s = sequence;
-        if (s == null) {
-            sequence = s = START + code + END;
+        if (sequence == null) {
+            sequence = (START + code + END).intern();
+            // We used the string.intern() method in order to avoid worrying about memory barrier
+            // (synchronization or volatile variable) since intern() does its own synchronization.
+            // The String will live for the whole library lifetime anyway, and if there is other
+            // X3.64 libraries on the JVM we may share the strings with them as a side effect.
         }
-        return s;
+        return sequence;
     }
 
     /**
