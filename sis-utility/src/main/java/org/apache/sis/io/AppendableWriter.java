@@ -139,7 +139,7 @@ final class AppendableWriter extends Writer {
     }
 
     /**
-     * IF {@link #out} implements {@link Flushable}, or is a {@link FilteredAppendable} wrapper
+     * If {@link #out} implements {@link Flushable}, or is a {@link FilteredAppendable} wrapper
      * around a flushable object, delegates to that object. Otherwise do nothing.
      */
     @Override
@@ -150,7 +150,7 @@ final class AppendableWriter extends Writer {
     }
 
     /**
-     * IF {@link #out} implements {@link Closeable}, or is a {@link FilteredAppendable} wrapper
+     * If {@link #out} implements {@link Closeable}, or is a {@link FilteredAppendable} wrapper
      * around a closeable object, delegates to that object. Otherwise just flush (if possible).
      */
     @Override
