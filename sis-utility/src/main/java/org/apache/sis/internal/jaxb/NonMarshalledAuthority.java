@@ -27,8 +27,6 @@ import org.apache.sis.internal.simple.SimpleCitation;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.xml.IdentifierSpace;
 
-import static org.apache.sis.util.collection.Collections.addIfNonNull;
-
 
 /**
  * The {@linkplain Identifier#getAuthority() authority of identifiers} that are not expected to be
@@ -160,7 +158,9 @@ public final class NonMarshalledAuthority<T> extends SimpleCitation implements I
             }
             it.remove();
         }
-        addIfNonNull(identifiers, id);
+        if (id != null) {
+            identifiers.add(id);
+        }
     }
 
     /**

@@ -23,6 +23,7 @@ import java.lang.ref.WeakReference;
 import java.lang.reflect.Array;
 
 import org.apache.sis.util.Disposable;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.internal.util.ReferenceQueueConsumer;
 import org.apache.sis.math.MathFunctions;
@@ -59,6 +60,11 @@ abstract class WeakEntry<E> extends WeakReference<E> implements Disposable {
      * field, we noticed many "reduce", "expand", "reduce", "expand", <i>etc.</i> cycles.
      */
     static final long REHASH_DELAY = 4000000000L;
+
+    /**
+     * The logger where to logs collection events, if logging at the finest level is enabled.
+     */
+    private static final Logger LOGGER = Logging.getLogger(WeakEntry.class);
 
     /**
      * The next entry, or {@code null} if there is none.
@@ -166,14 +172,13 @@ abstract class WeakEntry<E> extends WeakReference<E> implements Disposable {
         /*
          * We are done. Log the operation if logging is enabled at that level.
          */
-        final Logger logger = Collections.LOGGER;
-        if (logger.isLoggable(Level.FINEST)) {
+        if (LOGGER.isLoggable(Level.FINEST)) {
             final LogRecord record = Messages.getResources(null).getLogRecord(Level.FINEST,
                     Messages.Keys.ChangedContainerCapacity_2, oldTable.length, table.length);
             record.setSourceMethodName(callerMethod);
             record.setSourceClassName(entryType.getEnclosingClass().getName());
-            record.setLoggerName(logger.getName());
-            logger.log(record);
+            record.setLoggerName(LOGGER.getName());
+            LOGGER.log(record);
         }
         return table;
     }

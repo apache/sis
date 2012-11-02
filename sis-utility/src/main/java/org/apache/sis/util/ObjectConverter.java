@@ -39,7 +39,7 @@ import org.apache.sis.math.FunctionProperty;
  * that this converter can declare:</p>
  *
  * <ul>
- *   <li>IF {@code convert(S)} returns {@code null} for unconvertible objects, then this {@code ObjectConverter}
+ *   <li>If {@code convert(S)} returns {@code null} for unconvertible objects, then this {@code ObjectConverter}
  *       can not declare {@link FunctionProperty#INJECTIVE} in its set of {@linkplain #properties() properties},
  *       because more than one source value can produce the same target value (namely {@code null}).</li>
  *   <li>If {@code convert(S)} throws an exception for unconvertible objects, then this {@code ObjectConverter}
