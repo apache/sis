@@ -51,8 +51,10 @@ public class SimpleCharacterIterator implements CharacterIterator, CharSequence,
 
     /**
      * The upper index (index after the last character that we can return).
+     * This field is not final because some classes need to update it, for
+     * example if {@link #text} is a growing {@link StringBuffer}.
      */
-    protected final int upper;
+    protected int upper;
 
     /**
      * The index of the next character to be returned by the iterator.
@@ -198,6 +200,6 @@ public class SimpleCharacterIterator implements CharacterIterator, CharSequence,
      */
     @Override
     public final String toString() {
-        return text.toString();
+        return text.subSequence(lower, upper).toString();
     }
 }
