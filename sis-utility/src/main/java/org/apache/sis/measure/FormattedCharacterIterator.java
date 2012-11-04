@@ -24,7 +24,6 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.text.Format;
-import java.text.FieldPosition;
 import java.text.AttributedCharacterIterator;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.internal.util.SurjectiveConverter;
@@ -161,26 +160,40 @@ final class FormattedCharacterIterator extends SimpleCharacterIterator implement
     }
 
     /**
-     * Adds the run range, together with the value, for a given field in the formatted text.
-     * Callers shall avoid adding the same (<var>field</var>, <var>value</var>) pair in two
-     * or more juxtaposed fields if possible, since it may cause a violation of the
-     * {@link java.text.AttributedCharacterIterator} contract in current implementation.
-     * See the class javadoc for details.
+     * Invoked by {@code Format} implementations when a field ended. This method stores the
+     * given attribute value for the run ranging from {@code start} inclusive to the current
+     * {@linkplain #text} length, exclusive.
      */
-    final void addField(final Attribute field, final Object value, final int start, final int limit) {
-        upper = text.length(); // Update for new charaters added in the StringBuffer since last call.
-        assert (start >= lower) && (limit >= start) && (limit <= upper) : limit;
-        Entry e = new Entry(field, value, start, limit, attributes); // Constructor adds itself to the map.
+    final void addFieldLimit(final Attribute field, final Object value, final int start) {
+        // The Entry constructor adds itself to the attributes map.
+        // The returned intance is used only for assertions checks.
+        Entry e = new Entry(field, value, start, upper = text.length(), attributes);
         assert ((e = e.previous) == null) || (start >= e.limit); // Check for non-overlapping fields.
     }
 
     /**
-     * Same as {@link #addField(Attribute, Object, int, int)}, but extracting the {@code start} and
-     * {@code limit} values from the given {@link FieldPosition}. This is a convenience method for
-     * the formatters which delegate part of their work to another formatter.
+     * Appends all characters and attributes from the given iterator.
+     *
+     * @param toAppendTo Shall be the same instance than {@link #text}.
      */
-    final void addField(final Attribute field, final Object value, final FieldPosition pos) {
-        addField(field, value, pos.getBeginIndex(), pos.getEndIndex());
+    final void append(final AttributedCharacterIterator it, final StringBuffer toAppendTo) {
+        final int offset = toAppendTo.length();
+        int currentRunLimit = 0; // Next index where to check for attributes.
+        for (char c=it.first(); c!=DONE; c=it.next()) {
+            toAppendTo.append(c);
+            if (it.getIndex() == currentRunLimit) {
+                currentRunLimit = it.getRunLimit();
+                for (final Map.Entry<Attribute,Object> entry : it.getAttributes().entrySet()) {
+                    final Attribute attribute = entry.getKey();
+                    if (it.getRunLimit(attribute) == currentRunLimit) {
+                        new Entry(attribute, entry.getValue(), // Constructeur adds itself to the map.
+                                offset + it.getRunStart(attribute),
+                                offset + currentRunLimit, attributes);
+                    }
+                }
+            }
+        }
+        upper = toAppendTo.length();
     }
 
     /**
@@ -206,12 +219,24 @@ final class FormattedCharacterIterator extends SimpleCharacterIterator implement
                 }
             }
             for (Entry entry : entries) {
+                Entry notFound = entry;
                 while (entry != null) {
                     if (index >= entry.start && index < entry.limit) {
                         if (entry.start > start) start = entry.start;
                         if (entry.limit < limit) limit = entry.limit;
+                        notFound = null; // Found the attribute.
                     }
                     entry = entry.previous;
+                }
+                /*
+                 * If the attribute has not been found for the current character position,
+                 * then we need to reverse the condition: if the attribute become defined
+                 * in another position, we must stop the run at that position.
+                 */
+                while (notFound != null) {
+                    if (notFound.start >  index && notFound.start < limit) limit = notFound.start;
+                    if (notFound.limit <= index && notFound.limit > start) start = notFound.limit;
+                    notFound = notFound.previous;
                 }
             }
         }

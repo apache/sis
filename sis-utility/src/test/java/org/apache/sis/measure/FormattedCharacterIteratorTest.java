@@ -22,9 +22,14 @@ import java.util.HashSet;
 import java.text.AttributedCharacterIterator;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.internal.simple.SimpleCharacterIterator;
 import org.junit.Test;
 
+import static java.lang.StrictMath.min;
+import static java.lang.StrictMath.max;
 import static java.text.NumberFormat.Field.INTEGER;
+import static java.text.NumberFormat.Field.FRACTION;
+import static java.text.NumberFormat.Field.DECIMAL_SEPARATOR;
 import static java.text.AttributedCharacterIterator.DONE;
 import static java.text.AttributedCharacterIterator.Attribute;
 import static org.apache.sis.measure.AngleFormat.Field.*;
@@ -87,7 +92,7 @@ public final strictfp class FormattedCharacterIteratorTest extends TestCase {
      */
     @Test
     public void testNonOverlappingAttributes() {
-        testAttributes(false);
+        testAttributes(new LatitudeString().iterator(false), false);
     }
 
     /**
@@ -98,7 +103,7 @@ public final strictfp class FormattedCharacterIteratorTest extends TestCase {
     @Test
     @DependsOnMethod("testNonOverlappingAttributes")
     public void testOverlappingAttributes() {
-        testAttributes(true);
+        testAttributes(new LatitudeString().iterator(true), true);
     }
 
     /**
@@ -114,26 +119,41 @@ public final strictfp class FormattedCharacterIteratorTest extends TestCase {
         assertTrue(keys.add(HEMISPHERE));
         if (overlapping) {
             assertTrue(keys.add(INTEGER));
+            assertTrue(keys.add(FRACTION));
+            assertTrue(keys.add(DECIMAL_SEPARATOR));
         }
         return keys;
     }
 
     /**
-     * Tests an iteration with attributes, optionally having {@code INTEGER} attributes
-     * overlapping the {@code DEGREES}/{@code MINUTES}/{@code SECONDS} ones.
+     * The {@value FormattedCharacterIteratorTest#LATITUDE_STRING} character string
+     * with attributes. Built in a sub-class of {@link SimpleCharacterIterator} in
+     * order to have access to the protected {@link #upper} field.
      */
-    private static void testAttributes(final boolean overlapping) {
-        final FormattedCharacterIterator it = new FormattedCharacterIterator(LATITUDE_STRING);
-        it.addField(DEGREES,     45,  0,  3);
-        it.addField(MINUTES,     30,  3,  6);
-        it.addField(SECONDS,     15,  6, 11);
-        it.addField(HEMISPHERE, 'N', 11, 12);
-        if (overlapping) {
-            it.addField(INTEGER, 45,  0,  2);
-            it.addField(INTEGER, 30,  3,  5);
-            it.addField(INTEGER, 15,  6,  8);
+    @SuppressWarnings("serial")
+    private static class LatitudeString extends SimpleCharacterIterator {
+        LatitudeString() {
+            super(LATITUDE_STRING);
         }
-        testAttributes(it, overlapping);
+
+        /**
+         * Creates and returns an attributed {@link FormattedCharacterIterator}
+         * with the attributes.
+         */
+        FormattedCharacterIterator iterator(final boolean o) {
+            final FormattedCharacterIterator it = new FormattedCharacterIterator(this);
+            int start=0; upper= 2; if (o) it.addFieldLimit(INTEGER,            45, start);
+                         upper= 3;        it.addFieldLimit(DEGREES,            45, start);
+            start=upper; upper= 5; if (o) it.addFieldLimit(INTEGER,            30, start);
+                         upper= 6;        it.addFieldLimit(MINUTES,            30, start);
+            start=upper; upper= 8; if (o) it.addFieldLimit(INTEGER,            15, start);
+            start=upper; upper= 9; if (o) it.addFieldLimit(DECIMAL_SEPARATOR, '.', start);
+            start=upper; upper=10; if (o) it.addFieldLimit(FRACTION,            0, start);
+            start=6;     upper=11;        it.addFieldLimit(SECONDS,            15, start);
+            start=upper; upper=12;        it.addFieldLimit(HEMISPHERE,        'N', start);
+            assertEquals(text.length(), upper);
+            return it;
+        }
     }
 
     /**
@@ -146,37 +166,85 @@ public final strictfp class FormattedCharacterIteratorTest extends TestCase {
     @SuppressWarnings("fallthrough")
     static void testAttributes(final AttributedCharacterIterator it, final boolean overlapping) {
         assertEquals(getAllAttributeKeys(overlapping), it.getAllAttributeKeys());
+        assertEquals(0, it.getIndex());
+        assertEquals(3, it.getRunLimit(MINUTES));
+        assertEquals(6, it.getRunLimit(SECONDS));
+
         for (char c=it.first(); c!=DONE; c=it.next()) {
+            final int index = it.getIndex();
             final AngleFormat.Field key;
             final Comparable<?> value;
             final int start, limit;
-            int oi = 0; // How many characters to remove for having the limit of the integer field.
-            switch (it.getIndex()) {
-                case  0: assertEquals('4', c); // Beginning of 45°
-                case  1: oi = overlapping ? 1 : 0;
-                case  2: key=DEGREES;    value= 45; start=0; limit= 3; break;
-                case  3: assertEquals('3', c); // Beginning of 30′
-                case  4: oi = overlapping ? 1 : 0;
-                case  5: key=MINUTES;    value= 30; start=3; limit= 6; break;
-                case  6: assertEquals('1', c); // Beginning of 15.0″
-                case  7: oi = overlapping ? 3 : 0;
-                case  8:
-                case  9:
-                case 10: key=SECONDS;    value= 15; start= 6; limit=11; break;
-                case 11: key=HEMISPHERE; value='N'; start=11; limit=12; break;
-                default: throw new AssertionError();
+                 if (index <  3) {key=DEGREES;    value= 45; start= 0; limit= 3;}
+            else if (index <  6) {key=MINUTES;    value= 30; start= 3; limit= 6;}
+            else if (index < 11) {key=SECONDS;    value= 15; start= 6; limit=11;}
+            else                 {key=HEMISPHERE; value='N'; start=11; limit=12;}
+            /*
+             * Expected values when asking for a NumberFormat field.
+             * Initialized to the values when no such field exists,
+             * then updated if overlapping fields are allowed.
+             */
+            boolean isInteger      = false;
+            boolean isSeparator    = false;
+            boolean isFraction     = false;
+            int     startInteger   =  0;
+            int     limitInteger   = 12;
+            int     startSeparator =  0;
+            int     limitSeparator = 12;
+            int     startFraction  =  0;
+            int     limitFraction  = 12;
+            int     numAttributes  =  1;
+            if (overlapping) {
+                /*
+                 * Update the above expected values when the current position
+                 * is inside a NumberFormat field.
+                 */
+                switch (index) {
+                    case 0: case 1: // Degrees
+                    case 3: case 4: // Minutes
+                    case 6: case 7: isInteger   = true; numAttributes = 2; startInteger = start; limitInteger   =  2+start; break;
+                    case 8:         isSeparator = true; numAttributes = 2; startSeparator = 8;   limitSeparator =  9; break;
+                    case 9:         isFraction  = true; numAttributes = 2; startFraction  = 9;   limitFraction  = 10; break;
+                }
+                /*
+                 * Update the expected values for fields which are not at the current position.
+                 * A search for a field should give the position where the next field start, or
+                 * where the previous field ended.
+                 */
+                if (!isInteger) {
+                    if (index < 7) {
+                        startInteger = index;   // End of previous integer field.
+                        limitInteger = index+1; // Start of next integer field.
+                    } else {
+                        startInteger = 8;       // End of last integer field.
+                    }
+                }
+                if (!isSeparator) {
+                    if (index < 8) limitSeparator = 8; // Start of next separator field.
+                    else           startSeparator = 9; // End of previous separator field.
+                }
+                if (!isFraction) {
+                    if (index < 9) limitFraction =  9; // Start of next fraction field.
+                    else           startFraction = 10; // End of previous fraction field.
+                }
             }
             final Map<Attribute,Object> attributes = it.getAttributes();
-            assertEquals("attributes.size", (oi!=0) ? 2     : 1,    attributes.size());
-            assertEquals("attributes.get",            value,        attributes.get(key));
-            assertEquals("attributes.get",  (oi!=0) ? value : null, attributes.get(INTEGER));
+            assertEquals("attributes.size", numAttributes, attributes.size());
+            assertEquals("attributes.get",  value,         attributes.get(key));
+            assertEquals("attributes.get",  isInteger,     attributes.get(INTEGER) != null);
+            assertEquals("attributes.get",  isFraction,    attributes.get(FRACTION) != null);
+            assertEquals("attributes.get",  isSeparator,   attributes.get(DECIMAL_SEPARATOR) != null);
 
-            assertEquals("getRunStart",           start,         it.getRunStart());
-            assertEquals("getRunLimit",           limit-oi,      it.getRunLimit());
-            assertEquals("getRunStart",           start,         it.getRunStart(key));
-            assertEquals("getRunLimit",           limit,         it.getRunLimit(key));
-            assertEquals("getRunStart", (oi!=0) ? start    :  0, it.getRunStart(INTEGER));
-            assertEquals("getRunLimit", (oi!=0) ? limit-oi : 12, it.getRunLimit(INTEGER));
+            assertEquals("getRunStart", start,          it.getRunStart(key));
+            assertEquals("getRunLimit", limit,          it.getRunLimit(key));
+            assertEquals("getRunStart", startInteger,   it.getRunStart(INTEGER));
+            assertEquals("getRunLimit", limitInteger,   it.getRunLimit(INTEGER));
+            assertEquals("getRunStart", startFraction,  it.getRunStart(FRACTION));
+            assertEquals("getRunLimit", limitFraction,  it.getRunLimit(FRACTION));
+            assertEquals("getRunStart", startSeparator, it.getRunStart(DECIMAL_SEPARATOR));
+            assertEquals("getRunLimit", limitSeparator, it.getRunLimit(DECIMAL_SEPARATOR));
+            assertEquals("getRunStart", max(max(max(startInteger, startSeparator), startFraction), start), it.getRunStart());
+            assertEquals("getRunLimit", min(min(min(limitInteger, limitSeparator), limitFraction), limit), it.getRunLimit());
         }
     }
 }
