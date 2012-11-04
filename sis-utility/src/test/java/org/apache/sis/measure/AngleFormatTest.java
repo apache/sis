@@ -17,6 +17,8 @@
 package org.apache.sis.measure;
 
 import java.util.Locale;
+import java.text.FieldPosition;
+import java.text.AttributedCharacterIterator;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
@@ -34,7 +36,10 @@ import static org.apache.sis.test.TestUtilities.*;
  * @version 0.3
  * @module
  */
-@DependsOn(org.apache.sis.math.MathFunctionsTest.class)
+@DependsOn({
+  FormattedCharacterIteratorTest.class,
+  org.apache.sis.math.MathFunctionsTest.class
+})
 public final strictfp class AngleFormatTest extends TestCase {
     /**
      * Tests a pattern with illegal usage of D, M and S symbols.
@@ -196,5 +201,45 @@ public final strictfp class AngleFormatTest extends TestCase {
         assertEquals("D°",  f.toPattern());
         assertEquals("8°",  f.format(new Angle( 8.123456)));
         assertEquals("20°", f.format(new Angle(20.123456)));
+    }
+
+    /**
+     * Tests the field position while formatting an angle.
+     */
+    @Test
+    public void testFieldPosition() {
+        final Latitude latitude = new Latitude(FormattedCharacterIteratorTest.LATITUDE_VALUE);
+        final AngleFormat f = new AngleFormat("DD°MM′SS.s″", Locale.CANADA);
+        final StringBuffer buffer = new StringBuffer(12);
+        for (int i=AngleFormat.DEGREES_FIELD; i<=AngleFormat.HEMISPHERE_FIELD; i++) {
+            final AngleFormat.Field field;
+            final int start, limit;
+            switch (i) {
+                case AngleFormat.DEGREES_FIELD:    field = AngleFormat.Field.DEGREES;    start= 0; limit= 3;  break;
+                case AngleFormat.MINUTES_FIELD:    field = AngleFormat.Field.MINUTES;    start= 3; limit= 6;  break;
+                case AngleFormat.SECONDS_FIELD:    field = AngleFormat.Field.SECONDS;    start= 6; limit=11; break;
+                case AngleFormat.HEMISPHERE_FIELD: field = AngleFormat.Field.HEMISPHERE; start=11; limit=12; break;
+                default: continue; // Skip the fraction field.
+            }
+            final FieldPosition pos = new FieldPosition(field);
+            assertEquals(FormattedCharacterIteratorTest.LATITUDE_STRING, f.format(latitude, buffer, pos).toString());
+            assertSame  ("getFieldAttribute", field, pos.getFieldAttribute());
+            assertEquals("getBeginIndex",     start, pos.getBeginIndex());
+            assertEquals("getEndIndex",       limit, pos.getEndIndex());
+            buffer.setLength(0);
+        }
+    }
+
+    /**
+     * Tests the {@link AngleFormat#formatToCharacterIterator(Object)} method.
+     */
+    @Test
+    @DependsOnMethod("testFieldPosition")
+    public void testFormatToCharacterIterator() {
+        final Latitude latitude = new Latitude(FormattedCharacterIteratorTest.LATITUDE_VALUE);
+        final AngleFormat f = new AngleFormat("DD°MM′SS.s″", Locale.CANADA);
+        final AttributedCharacterIterator it = f.formatToCharacterIterator(latitude);
+        assertEquals(FormattedCharacterIteratorTest.LATITUDE_STRING, it.toString());
+        FormattedCharacterIteratorTest.testAttributes(it, true);
     }
 }

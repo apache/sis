@@ -26,7 +26,7 @@ import org.apache.sis.util.ObjectConverter;
  * If a value is converted into a null value, then this iterator skips that value.
  * Consequently this iterator can not returns null value.
  *
- * @param <B> The type of elements in the backing set.
+ * @param <S> The type of elements in the storage collection.
  * @param <E> The type of elements in this set.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
@@ -35,16 +35,16 @@ import org.apache.sis.util.ObjectConverter;
  * @module
  */
 @Decorator(Iterator.class)
-final class DerivedIterator<B,E> implements Iterator<E> {
+final class DerivedIterator<S,E> implements Iterator<E> {
     /**
      * The original iterator to wrap.
      */
-    private final Iterator<B> iterator;
+    private final Iterator<S> iterator;
 
     /**
      * The converter from the original values to the converted values.
      */
-    private final ObjectConverter<B,E> converter;
+    private final ObjectConverter<S,E> converter;
 
     /**
      * The next element to be returned, or {@code null}.
@@ -55,7 +55,7 @@ final class DerivedIterator<B,E> implements Iterator<E> {
      * Creates a new iterator wrapping the given original iterator and converting the
      * values using the given converter.
      */
-    DerivedIterator(final Iterator<B> iterator, ObjectConverter<B,E> converter) {
+    DerivedIterator(final Iterator<S> iterator, ObjectConverter<S,E> converter) {
         this.iterator  = iterator;
         this.converter = converter;
     }
