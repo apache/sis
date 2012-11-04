@@ -917,7 +917,9 @@ scan:   for (int i=0; i<length;) {
                 if (suffix != null) {
                     toAppendTo.append(suffix);
                 }
-                it.addFieldLimit(Field.forCode(field), Integer.valueOf((int) value), startPosition);
+                it.addFieldLimit(Field.forCode(field), hasMore
+                        ? (Number) Integer.valueOf((int) Math.round(value))
+                        : (Number) Float.valueOf((float) value), startPosition);
             } else {
                 toAppendTo = numberFormat.format(value, toAppendTo, dummyFieldPosition());
                 if (suffix != null) {
