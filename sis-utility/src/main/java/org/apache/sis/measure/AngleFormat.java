@@ -24,6 +24,7 @@ import java.text.ParseException;
 import java.text.NumberFormat;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.text.AttributedCharacterIterator;
 import net.jcip.annotations.NotThreadSafe;
 
 import org.apache.sis.util.Debug;
@@ -222,6 +223,19 @@ public class AngleFormat extends Format implements Localized {
          * constructor in order to get the bounding index where hemisphere have been written.
          */
         public static final Field HEMISPHERE = new Field("HEMISPHERE", HEMISPHERE_FIELD);
+
+        /**
+         * Returns the field constant for the given numeric identifier.
+         */
+        static Field forCode(final int field) {
+            switch (field) {
+                case DEGREES_FIELD:    return DEGREES;
+                case MINUTES_FIELD:    return MINUTES;
+                case SECONDS_FIELD:    return SECONDS;
+                case HEMISPHERE_FIELD: return HEMISPHERE;
+                default: throw new AssertionError(field);
+            }
+        }
     }
 
     /**
@@ -283,7 +297,17 @@ public class AngleFormat extends Format implements Localized {
      *
      * @see #dummyFieldPosition()
      */
-    private transient FieldPosition dummy;
+    private transient FieldPosition dummyFieldPosition;
+
+    /**
+     * A temporary variable which may be set to the character iterator for which the
+     * attributes need to be set. IF non-null, then this is actually an instance of
+     * {@link FormattedCharacterIterator}. But we use the interface here for avoiding
+     * too early class loading.
+     *
+     * @see #formatToCharacterIterator(Object)
+     */
+    private transient AttributedCharacterIterator characterIterator;
 
     /**
      * Returns the number format, created when first needed.
@@ -299,10 +323,10 @@ public class AngleFormat extends Format implements Localized {
      * Returns the dummy field position.
      */
     private FieldPosition dummyFieldPosition() {
-        if (dummy == null) {
-            dummy = new FieldPosition(-1);
+        if (dummyFieldPosition == null) {
+            dummyFieldPosition = new FieldPosition(NumberFormat.INTEGER_FIELD);
         }
-        return dummy;
+        return dummyFieldPosition;
     }
 
     /**
@@ -831,6 +855,8 @@ scan:   for (int i=0; i<length;) {
         }
         /*
          * Formats fields in a loop from DEGREES_FIELD to SECONDS_FIELD inclusive.
+         * The first part of the loop will configure the NumberFormat, but without
+         * writing anything yet (ignoring the prefix written before the loop).
          */
         int field = DEGREES_FIELD;
         if (prefix != null) {
@@ -848,11 +874,9 @@ scan:   for (int i=0; i<length;) {
                 case SECONDS_FIELD: value=seconds; width=secondsFieldWidth; suffix=secondsSuffix; hasMore=false; break;
                 default: throw new AssertionError(field);
             }
-            final int startPosition = toAppendTo.length();
             if (hasMore) {
                 numberFormat.setMinimumIntegerDigits(width);
                 numberFormat.setMaximumFractionDigits(0);
-                toAppendTo = numberFormat.format(value, toAppendTo, dummyFieldPosition());
             } else if (useDecimalSeparator) {
                 numberFormat.setMinimumIntegerDigits(width);
                 if (maximumTotalWidth != 0) {
@@ -875,19 +899,34 @@ scan:   for (int i=0; i<length;) {
                 }
                 numberFormat.setMinimumFractionDigits(minimumFractionDigits);
                 numberFormat.setMaximumFractionDigits(maximumFractionDigits);
-                toAppendTo = numberFormat.format(value, toAppendTo, dummyFieldPosition());
             } else {
                 value *= pow10(fractionFieldWidth);
                 numberFormat.setMaximumFractionDigits(0);
                 numberFormat.setMinimumIntegerDigits(width + fractionFieldWidth);
-                toAppendTo = numberFormat.format(value, toAppendTo, dummyFieldPosition());
             }
-            if (suffix != null) {
-                toAppendTo.append(suffix);
+            /*
+             * At this point, we known the value to format and the NumberFormat instance has been
+             * configured. If the user asked for an attributed character iterator and assuming that
+             * we want also the attributes produced by the NumberFormat, then we have to invoke the
+             * heavy formatToCharacterIterator(…). Otherwise the usual format(…) method fits well.
+             */
+            final int startPosition = toAppendTo.length();
+            if (characterIterator instanceof FormattedCharacterIterator) {
+                final FormattedCharacterIterator it = (FormattedCharacterIterator) characterIterator;
+                it.append(numberFormat.formatToCharacterIterator(value), toAppendTo);
+                if (suffix != null) {
+                    toAppendTo.append(suffix);
+                }
+                it.addFieldLimit(Field.forCode(field), Integer.valueOf((int) value), startPosition);
+            } else {
+                toAppendTo = numberFormat.format(value, toAppendTo, dummyFieldPosition());
+                if (suffix != null) {
+                    toAppendTo.append(suffix);
+                }
             }
             if (field == fieldPos) {
                 pos.setBeginIndex(startPosition);
-                pos.setEndIndex(toAppendTo.length() - 1);
+                pos.setEndIndex(toAppendTo.length());
             }
             field++;
         } while (hasMore);
@@ -950,13 +989,75 @@ scan:   for (int i=0; i<length;) {
             final FieldPosition pos, final char positiveSuffix, final char negativeSuffix)
     {
         toAppendTo = format(abs(angle), toAppendTo, pos);
-        final int start = toAppendTo.length();
-        toAppendTo.append(isNegative(angle) ? negativeSuffix : positiveSuffix);
+        final int startPosition = toAppendTo.length();
+        final char suffix = isNegative(angle) ? negativeSuffix : positiveSuffix;
+        toAppendTo.append(suffix);
         if (getField(pos) == HEMISPHERE_FIELD) {
-            pos.setBeginIndex(start);
-            pos.setEndIndex(toAppendTo.length()-1);
+            pos.setBeginIndex(startPosition);
+            pos.setEndIndex(toAppendTo.length());
+        }
+        if (characterIterator instanceof FormattedCharacterIterator) {
+            ((FormattedCharacterIterator) characterIterator).addFieldLimit(
+                    Field.HEMISPHERE, suffix, startPosition);
         }
         return toAppendTo;
+    }
+
+    /**
+     * Formats an angle, latitude or longitude value as an attributed character iterator.
+     * Callers can iterator over the returned iterator and queries the attribute values as
+     * in the following example:
+     *
+     * {@preformat java
+     *     AttributedCharacterIterator it = angleFormat.formatToCharacterIterator(myAngle);
+     *     for (char c=it.first(); c!=AttributedCharacterIterator.DONE; c=c.next()) {
+     *         // 'c' is a character from the formatted string.
+     *         if (it.getAttribute(AngleFormat.Field.MINUTES) != null) {
+     *             // If we enter this block, then the character 'c' is part of the minutes field,
+     *             // This field extends from it.getRunStart(MINUTES) to it.getRunLimit(MINUTES).
+     *         }
+     *     }
+     * }
+     *
+     * Alternatively, if the current {@linkplain AttributedCharacterIterator#getIndex() iterator
+     * index} is before the start of the minutes field, then the starting position of that field
+     * can be obtained directly by {@code it.getRunLimit(MINUTES)}. If the current iterator index
+     * is inside the minutes field, then the above method call will rather returns the end of that
+     * field. The same strategy works for other all fields too.
+     *
+     * <p>The returned character iterator contains all {@link java.text.NumberFormat.Field}
+     * attributes in addition to the {@link Field} ones. Consequently the same character may
+     * have more than one attribute. For example when formatting 45°30′15.0″N, then:</p>
+     *
+     * <ul>
+     *   <li>The {@code 45°}   part has the {@link Field#DEGREES} attribute.</li>
+     *   <li>The {@code 30′}   part has the {@link Field#MINUTES} attribute.</li>
+     *   <li>The {@code 15.0″} part has the {@link Field#SECONDS} attribute.</li>
+     *   <li>The {@code N}     part has the {@link Field#HEMISPHERE} attribute.</li>
+     *   <li>The {@code 45}, {@code 30} and {@code 15} parts have the
+     *       {@link java.text.NumberFormat.Field#INTEGER} attribute.</li>
+     *   <li>The {@code .} part has the {@link java.text.NumberFormat.Field#DECIMAL_SEPARATOR} attribute.</li>
+     *   <li>The last {@code 0} part has the {@link java.text.NumberFormat.Field#FRACTION} attribute.</li>
+     * </ul>
+     *
+     * In Apache SIS implementation, the returned character iterator also implements the
+     * {@link CharSequence} interface for convenience.
+     *
+     * @param  value {@link Angle} object to format.
+     * @return A character iterator together with the attributes describing the formatted value.
+     * @throws IllegalArgumentException if {@code value} if not an instance of {@link Angle}.
+     */
+    @Override
+    public AttributedCharacterIterator formatToCharacterIterator(final Object value) {
+        final StringBuffer buffer = new StringBuffer(20);
+        final FormattedCharacterIterator it = new FormattedCharacterIterator(buffer);
+        try {
+            characterIterator = it;
+            format(value, buffer, null);
+        } finally {
+            characterIterator = null;
+        }
+        return it;
     }
 
     /**
@@ -1512,7 +1613,7 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
     public AngleFormat clone() {
         final AngleFormat clone = (AngleFormat) super.clone();
         clone.numberFormat = null;
-        clone.dummy = null;
+        clone.dummyFieldPosition = null;
         return clone;
     }
 

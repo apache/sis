@@ -55,6 +55,16 @@ public class ResourceCompilerMojo extends AbstractMojo implements FilenameFilter
     private String outputDirectory;
 
     /**
+     * The <code>compileSourceRoots</code> named "java" as a <code>File</code>.
+     */
+    private File javaDirectoryFile;
+
+    /**
+     * The <code>outputDirectory</code> as a <code>File</code>.
+     */
+    private File outputDirectoryFile;
+
+    /**
      * Executes the mojo.
      *
      * @throws MojoExecutionException if the plugin execution failed.
@@ -63,19 +73,38 @@ public class ResourceCompilerMojo extends AbstractMojo implements FilenameFilter
     @SuppressWarnings({"unchecked","rawtypes"}) // Generic array creation.
     public void execute() throws MojoExecutionException {
         int errors = 0;
-        final File target = new File(outputDirectory);
+        outputDirectoryFile = new File(outputDirectory);
         for (final String sourceDirectory : compileSourceRoots) {
-            File directory = new File(sourceDirectory);
+            final File directory = new File(sourceDirectory);
             if (directory.getName().equals("java")) {
-                final File[] resourcesToProcess = new File(sourceDirectory, "org/apache/sis/util/resources").listFiles(this);
-                if (resourcesToProcess != null && resourcesToProcess.length != 0) {
-                    errors += new Compiler(directory, target, resourcesToProcess).run();
-                }
+                javaDirectoryFile = directory;
+                errors += processAllResourceDirectories(directory);
             }
         }
         if (errors != 0) {
             throw new ResourceCompilerException(String.valueOf(errors) + " errors in resources bundles.");
         }
+    }
+
+    /**
+     * Recursively scans the directories for a sub-package named "resources",
+     * then invokes the resource compiler for that directory.
+     */
+    private int processAllResourceDirectories(final File directory) throws ResourceCompilerException {
+        int errors = 0;
+        for (final File subdir : directory.listFiles()) {
+            if (subdir.isDirectory()) {
+                if (subdir.getName().equals("resources")) {
+                    final File[] resourcesToProcess = subdir.listFiles(this);
+                    if (resourcesToProcess != null && resourcesToProcess.length != 0) {
+                        errors += new Compiler(resourcesToProcess).run();
+                    }
+                } else {
+                    errors += processAllResourceDirectories(subdir);
+                }
+            }
+        }
+        return errors;
     }
 
     /**
@@ -101,8 +130,8 @@ public class ResourceCompilerMojo extends AbstractMojo implements FilenameFilter
      * A resource compiler that delegates the messages to the Mojo logger.
      */
     private final class Compiler extends IndexedResourceCompiler {
-        public Compiler(File sourceDirectory, File buildDirectory, File[] resourcesToProcess) {
-            super(sourceDirectory, buildDirectory, resourcesToProcess);
+        public Compiler(File[] resourcesToProcess) {
+            super(javaDirectoryFile, outputDirectoryFile, resourcesToProcess);
         }
 
         /**

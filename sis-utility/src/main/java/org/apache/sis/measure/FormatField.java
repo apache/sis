@@ -28,11 +28,17 @@ import java.text.Format;
  * @version 0.3
  * @module
  */
-abstract class FormatField extends Format.Field {
+class FormatField extends Format.Field {
     /**
      * Serial number for cross-version compatibility.
      */
     private static final long serialVersionUID = -5344437554919766622L;
+
+    /**
+     * A sentinel value for {@link FormattedCharacterIterator} internal usage only,
+     * meaning that all attributes shall be taken in account while computing a run range.
+     */
+    static final FormatField ALL = new FormatField("ALL", 0);
 
     /**
      * The numeric {@code *_FIELD} value for this constant. This value doesn't need to

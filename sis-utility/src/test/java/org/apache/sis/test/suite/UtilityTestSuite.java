@@ -58,6 +58,7 @@ import org.junit.runners.Suite;
   org.apache.sis.util.type.DefaultInternationalStringTest.class,
 
   // Formatting
+  org.apache.sis.measure.FormattedCharacterIteratorTest.class,
   org.apache.sis.measure.AngleFormatTest.class,
   org.apache.sis.measure.AngleTest.class,
   org.apache.sis.internal.util.X364Test.class,
