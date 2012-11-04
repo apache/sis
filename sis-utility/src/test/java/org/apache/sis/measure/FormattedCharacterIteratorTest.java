@@ -109,15 +109,15 @@ public final strictfp class FormattedCharacterIteratorTest extends TestCase {
     /**
      * Returns all expected attribute keys for the tests in this class.
      *
-     * @param overlapping {@code true} for including the keys for overlapping attributes.
+     * @param withNumberFields {@code true} for including the keys for {@code NumberFormat} fields.
      */
-    private static Set<Attribute> getAllAttributeKeys(final boolean overlapping) {
+    private static Set<Attribute> getAllAttributeKeys(final boolean withNumberFields) {
         final Set<Attribute> keys = new HashSet<>(8);
         assertTrue(keys.add(DEGREES));
         assertTrue(keys.add(MINUTES));
         assertTrue(keys.add(SECONDS));
         assertTrue(keys.add(HEMISPHERE));
-        if (overlapping) {
+        if (withNumberFields) {
             assertTrue(keys.add(INTEGER));
             assertTrue(keys.add(FRACTION));
             assertTrue(keys.add(DECIMAL_SEPARATOR));
@@ -149,7 +149,7 @@ public final strictfp class FormattedCharacterIteratorTest extends TestCase {
             start=upper; upper= 8; if (o) it.addFieldLimit(INTEGER,            15, start);
             start=upper; upper= 9; if (o) it.addFieldLimit(DECIMAL_SEPARATOR, '.', start);
             start=upper; upper=10; if (o) it.addFieldLimit(FRACTION,            0, start);
-            start=6;     upper=11;        it.addFieldLimit(SECONDS,            15, start);
+            start=6;     upper=11;        it.addFieldLimit(SECONDS,           15f, start);
             start=upper; upper=12;        it.addFieldLimit(HEMISPHERE,        'N', start);
             assertEquals(text.length(), upper);
             return it;
@@ -164,8 +164,8 @@ public final strictfp class FormattedCharacterIteratorTest extends TestCase {
      * <p>This test is leveraged by {@link AngleFormatTest#testFormatToCharacterIterator()}.</p>
      */
     @SuppressWarnings("fallthrough")
-    static void testAttributes(final AttributedCharacterIterator it, final boolean overlapping) {
-        assertEquals(getAllAttributeKeys(overlapping), it.getAllAttributeKeys());
+    static void testAttributes(final AttributedCharacterIterator it, final boolean withNumberFields) {
+        assertEquals(getAllAttributeKeys(withNumberFields), it.getAllAttributeKeys());
         assertEquals(0, it.getIndex());
         assertEquals(3, it.getRunLimit(MINUTES));
         assertEquals(6, it.getRunLimit(SECONDS));
@@ -175,9 +175,9 @@ public final strictfp class FormattedCharacterIteratorTest extends TestCase {
             final AngleFormat.Field key;
             final Comparable<?> value;
             final int start, limit;
-                 if (index <  3) {key=DEGREES;    value= 45; start= 0; limit= 3;}
-            else if (index <  6) {key=MINUTES;    value= 30; start= 3; limit= 6;}
-            else if (index < 11) {key=SECONDS;    value= 15; start= 6; limit=11;}
+                 if (index <  3) {key=DEGREES;    value=45 ; start= 0; limit= 3;}
+            else if (index <  6) {key=MINUTES;    value=30 ; start= 3; limit= 6;}
+            else if (index < 11) {key=SECONDS;    value=15f; start= 6; limit=11;}
             else                 {key=HEMISPHERE; value='N'; start=11; limit=12;}
             /*
              * Expected values when asking for a NumberFormat field.
@@ -194,7 +194,7 @@ public final strictfp class FormattedCharacterIteratorTest extends TestCase {
             int     startFraction  =  0;
             int     limitFraction  = 12;
             int     numAttributes  =  1;
-            if (overlapping) {
+            if (withNumberFields) {
                 /*
                  * Update the above expected values when the current position
                  * is inside a NumberFormat field.
