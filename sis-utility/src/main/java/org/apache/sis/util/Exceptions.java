@@ -20,8 +20,7 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.Locale;
 import java.sql.SQLException;
-import java.text.ParsePosition;
-import java.text.ParseException;
+import org.apache.sis.internal.util.LocalizedException;
 
 
 /**
@@ -37,34 +36,6 @@ public final class Exceptions extends Static {
      * Do not allow instantiation of this class.
      */
     private Exceptions() {
-    }
-
-    /**
-     * Creates a {@link ParseException} with a localized message built from the given parsing
-     * information. The exception returned by this method contains the error message in two
-     * languages:
-     *
-     * <ul>
-     *   <li>{@link ParseException#getMessage()} returns the message in the default locale.</li>
-     *   <li>{@link ParseException#getLocalizedMessage()} returns the message in the locale given
-     *       in argument to this method. This is usually the {@link java.text.Format} locale,
-     *       which is presumed to be the end-user locale.</li>
-     * </ul>
-     *
-     * @param  locale The locale for {@link ParseException#getLocalizedMessage()}.
-     * @param  type   The type of objects parsed by the {@link java.text.Format}.
-     * @param  text   The text that {@code Format} failed to parse.
-     * @param  pos    Index of the {@linkplain ParsePosition#getIndex() first parsed character},
-     *                together with the {@linkplain ParsePosition#getErrorIndex() error index}.
-     * @return The localized exception.
-     */
-    public static ParseException createParseException(final Locale locale, final Class<?> type,
-            final String text, final ParsePosition pos)
-    {
-        final int offset = pos.getIndex();
-        final int errorOffset = Math.max(offset, pos.getErrorIndex());
-        return new LocalizedParseException(locale,
-                LocalizedParseException.arguments(type, text, offset, errorOffset), errorOffset);
     }
 
     /**

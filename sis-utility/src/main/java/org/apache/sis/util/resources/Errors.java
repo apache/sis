@@ -127,6 +127,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int NegativeArgument_2 = 8;
 
         /**
+         * Node “{0}” has no parent.
+         */
+        public static final int NodeHasNoParent_1 = 34;
+
+        /**
          * Argument ‘{0}’ shall not be NaN (Not-a-Number).
          */
         public static final int NotANumber_1 = 9;
