@@ -73,6 +73,8 @@ import static org.apache.sis.util.Characters.isLineOrParagraphSeparator;
  * @since   0.3 (derived from geotk-1.0)
  * @version 0.3
  * @module
+ *
+ * @see org.apache.sis.util.tree.TreeTableFormat
  */
 @Decorator(Appendable.class)
 public class TableFormatter extends FilteredAppendable implements Flushable {
