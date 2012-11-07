@@ -1537,9 +1537,7 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
         final Angle angle = parse(source, pos, true);
         final int offset = pos.getIndex();
         if (skipSpaces(source, offset) != source.length()) {
-            final int errorOffset = Math.max(offset, pos.getErrorIndex());
-            throw new LocalizedParseException(locale, LocalizedParseException.arguments(
-                    Angle.class, source, offset, errorOffset), errorOffset);
+            throw new LocalizedParseException(locale, Angle.class, source, pos);
         }
         return angle;
     }
