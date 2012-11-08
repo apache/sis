@@ -46,6 +46,11 @@ public final class Errors extends IndexedResourceBundle {
         }
 
         /**
+         * Element “{0}” is already present.
+         */
+        public static final int ElementAlreadyPresent_1 = 36;
+
+        /**
          * Argument ‘{0}’ shall not be empty.
          */
         public static final int EmptyArgument_1 = 1;
@@ -125,6 +130,16 @@ public final class Errors extends IndexedResourceBundle {
          * Argument ‘{0}’ shall not be negative. The given value was {1}.
          */
         public static final int NegativeArgument_2 = 8;
+
+        /**
+         * Node “{0}” can not be a child of itself.
+         */
+        public static final int NodeChildOfItself_1 = 37;
+
+        /**
+         * Node “{0}” already has another parent.
+         */
+        public static final int NodeHasAnotherParent_1 = 35;
 
         /**
          * Node “{0}” has no parent.
