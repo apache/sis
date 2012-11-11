@@ -349,8 +349,7 @@ class IndexedResourceCompiler implements FilenameFilter, Comparator<Object> {
         final String[] keys = resources.keySet().toArray(new String[resources.size()]);
         Arrays.sort(keys, this);
         int freeID = 0;
-        for (int i=0; i<keys.length; i++) {
-            final String key = keys[i];
+        for (final String key : keys) {
             if (!allocatedIDs.containsValue(key)) {
                 Integer ID;
                 do {
@@ -495,10 +494,10 @@ search: for (int i=0; i<buffer.length(); i++) { // Length of 'buffer' will vary.
                   .append(KEY_MARGIN).append('}').append(lineSeparator);
             final Map.Entry<?,?>[] entries = allocatedIDs.entrySet().toArray(new Map.Entry<?,?>[allocatedIDs.size()]);
             Arrays.sort(entries, this);
-            for (int i=0; i<entries.length; i++) {
+            for (final Map.Entry<?,?> entry : entries) {
                 buffer.append(lineSeparator);
-                final String key = (String) entries[i].getValue();
-                final String ID  = entries[i].getKey().toString();
+                final String key = (String) entry.getValue();
+                final String ID  = entry.getKey().toString();
                 String message = (String) resources.get(key);
                 if (message != null) {
                     message = message.replace('\t', ' ');
