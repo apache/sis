@@ -271,10 +271,11 @@ class IndexedResourceCompiler implements FilenameFilter, Comparator<Object> {
      * @throws IOException if the file can not be read.
      */
     private static Properties loadRawProperties(final File file) throws IOException {
-        final InputStream input = new FileInputStream(file);
-        final Properties properties = new Properties();
-        properties.load(input);
-        input.close();
+        final Properties properties;
+        try (InputStream input = new FileInputStream(file)) {
+            properties = new Properties();
+            properties.load(input);
+        }
         return properties;
     }
 
@@ -438,13 +439,13 @@ search: for (int i=0; i<buffer.length(); i++) { // Length of 'buffer' will vary.
             throw new IOException("Can't create the " + directory + " directory.");
         }
         final int count = allocatedIDs.isEmpty() ? 0 : Collections.max(allocatedIDs.keySet()) + 1;
-        final DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(file)));
-        out.writeInt(count);
-        for (int i=0; i<count; i++) {
-            final String value = (String) resources.get(allocatedIDs.get(i));
-            out.writeUTF((value != null) ? value : "");
+        try (DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(file)))) {
+            out.writeInt(count);
+            for (int i=0; i<count; i++) {
+                final String value = (String) resources.get(allocatedIDs.get(i));
+                out.writeUTF((value != null) ? value : "");
+            }
         }
-        out.close();
     }
 
     /**
@@ -467,7 +468,6 @@ search: for (int i=0; i<buffer.length(); i++) { // Length of 'buffer' will vary.
         if (!file.getParentFile().isDirectory()) {
             throw new FileNotFoundException("Parent directory not found for " + file);
         }
-        final BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file), JAVA_ENCODING));
         final String lineSeparator = System.getProperty("line.separator", "\n");
         final StringBuilder buffer = new StringBuilder(4096);
         /*
@@ -476,106 +476,108 @@ search: for (int i=0; i<buffer.length(); i++) { // Length of 'buffer' will vary.
          * on the same line than the class declaration).
          */
         final Pattern classKeys = Pattern.compile("[\\s\\w]*class\\s+" + KEYS_INNER_CLASS + "\\s*\\{");
-        String line;
-        do {
-            line = in.readLine();
-            if (line == null) {
-                in.close();
-                throw new EOFException(file.toString());
-            }
-            buffer.append(line).append(lineSeparator);
-        } while (!classKeys.matcher(line).matches());
-        /*
-         * Starting from this point, the content that we are going to write in the buffer
-         * may be different than the file content.  Remember the buffer position in order
-         * to allow us to compare the buffer with the file content.
-         *
-         * We stop reading the file for now. We will continue reading the file after the
-         * 'for' loop below. Instead, we now write the constructor followed by keys values.
-         */
-        int startLineToCompare = buffer.length();
-        buffer.append(KEY_MARGIN).append("private ").append(KEYS_INNER_CLASS).append("() {").append(lineSeparator)
-              .append(KEY_MARGIN).append('}').append(lineSeparator);
-        final Map.Entry<?,?>[] entries = allocatedIDs.entrySet().toArray(new Map.Entry<?,?>[allocatedIDs.size()]);
-        Arrays.sort(entries, this);
-        for (int i=0; i<entries.length; i++) {
-            buffer.append(lineSeparator);
-            final String key = (String) entries[i].getValue();
-            final String ID  = entries[i].getKey().toString();
-            String message = (String) resources.get(key);
-            if (message != null) {
-                message = message.replace('\t', ' ');
-                buffer.append(KEY_MARGIN).append("/**").append(lineSeparator);
-                while (((message=message.trim()).length()) != 0) {
-                    buffer.append(KEY_MARGIN).append(" * ");
-                    int stop = message.indexOf('\n');
-                    if (stop < 0) {
-                        stop = message.length();
-                    }
-                    if (stop > COMMENT_LENGTH) {
-                        stop = COMMENT_LENGTH;
-                        while (stop>20 && !Character.isWhitespace(message.charAt(stop))) {
-                            stop--;
-                        }
-                    }
-                    buffer.append(message.substring(0, stop).trim()).append(lineSeparator);
-                    message = message.substring(stop);
+        boolean modified;
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file), JAVA_ENCODING))) {
+            String line;
+            do {
+                line = in.readLine();
+                if (line == null) {
+                    in.close();
+                    throw new EOFException(file.toString());
                 }
-                buffer.append(KEY_MARGIN).append(" */").append(lineSeparator);
-            }
-            buffer.append(KEY_MARGIN).append(KEY_MODIFIERS).append(key).append(" = ")
-                    .append(ID).append(';').append(lineSeparator);
-        }
-        /*
-         * At this point, all key values have been written in the buffer. Skip the corresponding
-         * lines from the files without adding them to the buffer.  However we will compare them
-         * to the buffer content in order to detect if we really need to write the file.
-         *
-         * This operation will stop when we reach the closing bracket. Note that opening brackets
-         * may exist in the code that we are skipping, so we need to count them.
-         */
-        boolean modified = false;
-        int brackets = 1;
-        do {
-            line = in.readLine();
-            if (line == null) {
-                in.close();
-                throw new EOFException(file.toString());
-            }
-            for (int i=0; i<line.length(); i++) {
-                switch (line.charAt(i)) {
-                    case '{': brackets++; break;
-                    case '}': brackets--; break;
-                }
-            }
-            if (!modified) {
-                final int endOfLine = buffer.indexOf(lineSeparator, startLineToCompare);
-                if (endOfLine >= 0) {
-                    if (buffer.substring(startLineToCompare, endOfLine).equals(line)) {
-                        startLineToCompare = endOfLine + lineSeparator.length();
-                        continue; // Content is equals, do not set the 'modified' flag.
-                    }
-                } else if (brackets == 0) {
-                    break; // Content finished in same time, do not set the 'modified' flag.
-                }
-                modified = true;
-            }
-        } while (brackets != 0);
-        /*
-         * Only if we detected some changes in the file content, read all remaining parts of
-         * the file then write the result to disk. Note that this overwite the original file.
-         */
-        if (modified) {
-            buffer.append(line).append(lineSeparator);
-            while ((line = in.readLine()) != null) {
                 buffer.append(line).append(lineSeparator);
+            } while (!classKeys.matcher(line).matches());
+            /*
+             * Starting from this point, the content that we are going to write in the buffer
+             * may be different than the file content.  Remember the buffer position in order
+             * to allow us to compare the buffer with the file content.
+             *
+             * We stop reading the file for now. We will continue reading the file after the
+             * 'for' loop below. Instead, we now write the constructor followed by keys values.
+             */
+            int startLineToCompare = buffer.length();
+            buffer.append(KEY_MARGIN).append("private ").append(KEYS_INNER_CLASS).append("() {").append(lineSeparator)
+                  .append(KEY_MARGIN).append('}').append(lineSeparator);
+            final Map.Entry<?,?>[] entries = allocatedIDs.entrySet().toArray(new Map.Entry<?,?>[allocatedIDs.size()]);
+            Arrays.sort(entries, this);
+            for (int i=0; i<entries.length; i++) {
+                buffer.append(lineSeparator);
+                final String key = (String) entries[i].getValue();
+                final String ID  = entries[i].getKey().toString();
+                String message = (String) resources.get(key);
+                if (message != null) {
+                    message = message.replace('\t', ' ');
+                    buffer.append(KEY_MARGIN).append("/**").append(lineSeparator);
+                    while (((message=message.trim()).length()) != 0) {
+                        buffer.append(KEY_MARGIN).append(" * ");
+                        int stop = message.indexOf('\n');
+                        if (stop < 0) {
+                            stop = message.length();
+                        }
+                        if (stop > COMMENT_LENGTH) {
+                            stop = COMMENT_LENGTH;
+                            while (stop>20 && !Character.isWhitespace(message.charAt(stop))) {
+                                stop--;
+                            }
+                        }
+                        buffer.append(message.substring(0, stop).trim()).append(lineSeparator);
+                        message = message.substring(stop);
+                    }
+                    buffer.append(KEY_MARGIN).append(" */").append(lineSeparator);
+                }
+                buffer.append(KEY_MARGIN).append(KEY_MODIFIERS).append(key).append(" = ")
+                        .append(ID).append(';').append(lineSeparator);
+            }
+            /*
+             * At this point, all key values have been written in the buffer. Skip the corresponding
+             * lines from the files without adding them to the buffer.  However we will compare them
+             * to the buffer content in order to detect if we really need to write the file.
+             *
+             * This operation will stop when we reach the closing bracket. Note that opening brackets
+             * may exist in the code that we are skipping, so we need to count them.
+             */
+            modified = false;
+            int brackets = 1;
+            do {
+                line = in.readLine();
+                if (line == null) {
+                    in.close();
+                    throw new EOFException(file.toString());
+                }
+                for (int i=0; i<line.length(); i++) {
+                    switch (line.charAt(i)) {
+                        case '{': brackets++; break;
+                        case '}': brackets--; break;
+                    }
+                }
+                if (!modified) {
+                    final int endOfLine = buffer.indexOf(lineSeparator, startLineToCompare);
+                    if (endOfLine >= 0) {
+                        if (buffer.substring(startLineToCompare, endOfLine).equals(line)) {
+                            startLineToCompare = endOfLine + lineSeparator.length();
+                            continue; // Content is equals, do not set the 'modified' flag.
+                        }
+                    } else if (brackets == 0) {
+                        break; // Content finished in same time, do not set the 'modified' flag.
+                    }
+                    modified = true;
+                }
+            } while (brackets != 0);
+            /*
+             * Only if we detected some changes in the file content, read all remaining parts of
+             * the file then write the result to disk. Note that this overwite the original file.
+             */
+            if (modified) {
+                buffer.append(line).append(lineSeparator);
+                while ((line = in.readLine()) != null) {
+                    buffer.append(line).append(lineSeparator);
+                }
             }
         }
-        in.close();
         if (modified) {
-            final Writer out = new OutputStreamWriter(new FileOutputStream(file), JAVA_ENCODING);
-            out.write(buffer.toString());
-            out.close();
+            try (Writer out = new OutputStreamWriter(new FileOutputStream(file), JAVA_ENCODING)) {
+                out.write(buffer.toString());
+            }
         }
     }
 
