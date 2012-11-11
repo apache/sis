@@ -17,6 +17,7 @@
 package org.apache.sis.util.resources;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.Locale;
 import java.util.Enumeration;
 import java.util.logging.Level;
@@ -27,6 +28,7 @@ import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
+import org.junit.After;
 
 import static org.junit.Assert.*;
 
@@ -40,6 +42,13 @@ import static org.junit.Assert.*;
  */
 @DependsOn(org.apache.sis.util.ArraysTest.class)
 public final strictfp class IndexedResourceBundleTest extends TestCase {
+    /**
+     * The resource bundle in process of being tested. Shall be reset to {@code null} after every
+     * test. If non-null, then {@link #dumpResourcesOnError()} will consider that the test failed
+     * and will dump the resource bundle content to the standard error stream.
+     */
+    private IndexedResourceBundle testing;
+
     /**
      * Tests the {@link Errors#getResources(Locale)} method on different locales.
      */
@@ -80,7 +89,8 @@ public final strictfp class IndexedResourceBundleTest extends TestCase {
     @Test
     @DependsOnMethod("testGetResources")
     public void testGetKeys() {
-        final Enumeration<String> e=Errors.getResources(Locale.ENGLISH).getKeys();
+        testing = Errors.getResources(Locale.ENGLISH);
+        final Enumeration<String> e = testing.getKeys();
         int count = 0;
         boolean foundNullArgument_1 = false;
         while (e.hasMoreElements()) {
@@ -92,6 +102,7 @@ public final strictfp class IndexedResourceBundleTest extends TestCase {
         }
         assertTrue("foundNullArgument_1:", foundNullArgument_1);
         assertTrue("count > 5", count > 5);
+        testing = null;
     }
 
     /**
@@ -103,8 +114,9 @@ public final strictfp class IndexedResourceBundleTest extends TestCase {
         final Errors english = Errors.getResources(Locale.ENGLISH);
         final Errors french  = Errors.getResources(Locale.FRENCH);
 
-        assertEquals("Argument ‘{0}’ shall not be null.",     english.getString(Errors.Keys.NullArgument_1));
-        assertEquals("L’argument ‘{0}’ ne doit pas être nul.", french.getString(Errors.Keys.NullArgument_1));
+        assertEquals("Argument ‘{0}’ shall not be null.",      (testing = english).getString(Errors.Keys.NullArgument_1));
+        assertEquals("L’argument ‘{0}’ ne doit pas être nul.", (testing = french) .getString(Errors.Keys.NullArgument_1));
+        testing = null;
     }
 
     /**
@@ -116,8 +128,9 @@ public final strictfp class IndexedResourceBundleTest extends TestCase {
         final Errors english = Errors.getResources(Locale.ENGLISH);
         final Errors french  = Errors.getResources(Locale.FRENCH);
 
-        assertEquals("Argument ‘{0}’ shall not be null.",     english.getString("NullArgument_1"));
-        assertEquals("L’argument ‘{0}’ ne doit pas être nul.", french.getString("NullArgument_1"));
+        assertEquals("Argument ‘{0}’ shall not be null.",      (testing = english).getString("NullArgument_1"));
+        assertEquals("L’argument ‘{0}’ ne doit pas être nul.", (testing = french) .getString("NullArgument_1"));
+        testing = null;
     }
 
     /**
@@ -126,10 +139,11 @@ public final strictfp class IndexedResourceBundleTest extends TestCase {
     @Test
     @DependsOnMethod("testGetString")
     public void testGetStringWithParameter() {
-        assertEquals("Argument ‘CRS’ shall not be null.",
-                Errors.getResources(Locale.ENGLISH).getString(Errors.Keys.NullArgument_1, "CRS"));
-        assertEquals("L’argument ‘CRS’ ne doit pas être nul.",
-                Errors.getResources(Locale.FRENCH).getString(Errors.Keys.NullArgument_1, "CRS"));
+        testing = Errors.getResources(Locale.ENGLISH);
+        assertEquals("Argument ‘CRS’ shall not be null.", testing.getString(Errors.Keys.NullArgument_1, "CRS"));
+        testing = Errors.getResources(Locale.FRENCH);
+        assertEquals("L’argument ‘CRS’ ne doit pas être nul.", testing.getString(Errors.Keys.NullArgument_1, "CRS"));
+        testing = null;
     }
 
     /**
@@ -153,12 +167,31 @@ public final strictfp class IndexedResourceBundleTest extends TestCase {
     @Test
     @DependsOnMethod("testGetResources")
     public void testGetLogRecord() {
-        final IndexedResourceBundle resources = Errors.getResources(Locale.ENGLISH);
-        final LogRecord record = resources.getLogRecord(Level.FINE, Errors.Keys.NullArgument_1, "CRS");
+        testing = Errors.getResources(Locale.ENGLISH);
+        final LogRecord record = testing.getLogRecord(Level.FINE, Errors.Keys.NullArgument_1, "CRS");
         assertEquals("NullArgument_1", record.getMessage());
 
         final SimpleFormatter formatter = new SimpleFormatter();
         final String message = formatter.format(record);
         assertTrue(message.contains("Argument ‘CRS’ shall not be null."));
+        testing = null;
+    }
+
+    /**
+     * If a test failed, lists the resource bundle content to the
+     * {@linkplain System#err standard error stream}.
+     *
+     * @throws IOException Should never happen.
+     */
+    @After
+    public void dumpResourcesOnError() throws IOException {
+        if (testing != null) {
+            final PrintStream err = System.err;
+            err.print("Error while testing IndexedResourceBundle for locale ");
+            err.print(testing.getLocale());
+            err.println(". Bundle content is:");
+            testing.list(err);
+            err.flush();
+        }
     }
 }
