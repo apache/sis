@@ -266,8 +266,7 @@ public class DefaultInternationalString extends AbstractInternationalString impl
      *       {@code null} locale, then that string is returned.</li>
      *   <li>Otherwise, acknowledging that UML identifiers in OGC/ISO specifications are primarily
      *       expressed in the English language, this method looks for an English string as an
-     *       approximation of a "unlocalized" string. The {@link Locale#UK} variant is
-     *       preferred because ISO specifications seem to use that language.</li>
+     *       approximation of a "unlocalized" string.</li>
      *   <li>If no English string was found, this method looks for a string for the
      *       {@linkplain Locale#getDefault() system default locale}.</li>
      *   <li>If none of the above steps found a string, then this method returns
@@ -295,7 +294,7 @@ public class DefaultInternationalString extends AbstractInternationalString impl
              */
             text = localeMap.get(null);
             if (text == null) {
-                Locale def = Locale.UK; // The default language for "unlocalized" string.
+                Locale def = Locale.US; // The default language for "unlocalized" string.
                 if (locale != def) { // Avoid requesting the same locale twice (optimization).
                     text = getString(def);
                     if (text != null) {
@@ -303,7 +302,7 @@ public class DefaultInternationalString extends AbstractInternationalString impl
                     }
                 }
                 def = Locale.getDefault();
-                if (locale != def && def != Locale.UK) {
+                if (locale != def && def != Locale.US) {
                     text = getString(def);
                     if (text != null) {
                         return text;
