@@ -168,26 +168,26 @@ class IndexedResourceCompiler implements FilenameFilter, Comparator<Object> {
      * @throws IOException If an error occurred while reading the source file.
      */
     private void loadKeyValues() throws IOException {
-        final BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(bundleClass), JAVA_ENCODING));
-        String line;
-        while ((line = in.readLine()) != null) {
-            if ((line = line.trim()).startsWith(KEY_MODIFIERS)) {
-                final int s = line.indexOf('=', KEY_MODIFIERS.length());
-                if (s >= 0) {
-                    final int c = line.indexOf(';', s);
-                    if (c >= 0) {
-                        final String key = line.substring(KEY_MODIFIERS.length(), s).trim();
-                        final Integer ID = Integer.valueOf(line.substring(s+1, c).trim());
-                        final String old = allocatedIDs.put(ID, key);
-                        if (old != null) {
-                            warning("Key " + ID + " is used by " + old + " and " + key);
-                            errors++;
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(bundleClass), JAVA_ENCODING))) {
+            String line;
+            while ((line = in.readLine()) != null) {
+                if ((line = line.trim()).startsWith(KEY_MODIFIERS)) {
+                    final int s = line.indexOf('=', KEY_MODIFIERS.length());
+                    if (s >= 0) {
+                        final int c = line.indexOf(';', s);
+                        if (c >= 0) {
+                            final String key = line.substring(KEY_MODIFIERS.length(), s).trim();
+                            final Integer ID = Integer.valueOf(line.substring(s+1, c).trim());
+                            final String old = allocatedIDs.put(ID, key);
+                            if (old != null) {
+                                warning("Key " + ID + " is used by " + old + " and " + key);
+                                errors++;
+                            }
                         }
                     }
                 }
             }
         }
-        in.close();
     }
 
     /**
@@ -211,9 +211,9 @@ class IndexedResourceCompiler implements FilenameFilter, Comparator<Object> {
      * The following methods are invoked by this method:
      *
      * <ul>
-     *   <li>{@link #loadProperties}</li>
-     *   <li>{@link #writeUTF}</li>
-     *   <li>{@link #writeJavaSource}</li>
+     *   <li>{@link #loadProperties(File)}</li>
+     *   <li>{@link #writeUTF(File)}</li>
+     *   <li>{@link #writeJavaSource()}</li>
      * </ul>
      *
      * @throws IOException if an input/output operation failed.
@@ -229,10 +229,8 @@ class IndexedResourceCompiler implements FilenameFilter, Comparator<Object> {
         if (utfDir.exists() && !utfDir.isDirectory()) {
             throw new FileNotFoundException("\"" + utfDir + "\" is not a directory.");
         }
-        final File[] content = srcDir.listFiles(this);
         File defaultLanguage = null;
-        for (int i=0; i<content.length; i++) {
-            final File file = content[i];
+        for (final File file : srcDir.listFiles(this)) {
             final String filename = file.getName();
             if (filename.startsWith(classname)) {
                 loadProperties(file);
@@ -288,8 +286,7 @@ class IndexedResourceCompiler implements FilenameFilter, Comparator<Object> {
      * <p>The following methods must be invoked before this one:</p>
      *
      * <ul>
-     *   <li>{@link #initialize}</li>
-     *   <li>{@link #setResourceBundle}</li>
+     *   <li>{@link #loadKeyValues()}</li>
      * </ul>
      *
      * @param  file The properties file to read.
@@ -304,11 +301,11 @@ class IndexedResourceCompiler implements FilenameFilter, Comparator<Object> {
             /*
              * Checks key and value validity.
              */
-            if (key.trim().length() == 0) {
+            if (key.trim().isEmpty()) {
                 warning(file, key, "Empty key.", null);
                 continue;
             }
-            if (value.trim().length() == 0) {
+            if (value.trim().isEmpty()) {
                 warning(file, key, "Empty value.", null);
                 continue;
             }
@@ -425,9 +422,8 @@ search: for (int i=0; i<buffer.length(); i++) { // Length of 'buffer' will vary.
      * Writes UTF file. The following methods must be invoked before this one:
      *
      * <ul>
-     *   <li>{@link #initialize}</li>
-     *   <li>{@link #setResourceBundle}</li>
-     *   <li>{@link #loadProperties}</li>
+     *   <li>{@link #loadKeyValues()}</li>
+     *   <li>{@link #loadProperties(File)}</li>
      * </ul>
      *
      * @param  file The destination file.
@@ -453,9 +449,8 @@ search: for (int i=0; i<buffer.length(); i++) { // Length of 'buffer' will vary.
      * The following methods must be invoked before this one:
      *
      * <ul>
-     *   <li>{@link #initialize}</li>
-     *   <li>{@link #setResourceBundle}</li>
-     *   <li>{@link #loadProperties}</li>
+     *   <li>{@link #loadKeyValues()}</li>
+     *   <li>{@link #loadProperties(File)}</li>
      * </ul>
      *
      * @throws IOException if an input/output operation failed.
