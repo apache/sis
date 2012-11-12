@@ -70,7 +70,7 @@ public interface TreeTable {
      * </ul></td>
      * <td><ul>
      *   <li>{@link #getValue(TableColumn)}</li>
-     *   <li>{@link #setValueAt(TableColumn, Object)}</li>
+     *   <li>{@link #setValue(TableColumn, Object)}</li>
      *   <li>{@link #isEditable(TableColumn)}</li>
      * </ul></td></tr>
      * </table>
@@ -119,19 +119,24 @@ public interface TreeTable {
          * @param  <T>    The base type of values in the given column.
          * @param  column Identifier of the column into which to set the value.
          * @param  value  The value to set.
+         * @throws IllegalArgumentException If the given column is not a legal column for this node.
          * @throws UnsupportedOperationException If values in the given column can not be modified.
          *
          * @see TreeTable#getColumns()
          * @see #isEditable(TableColumn)
          * @category table
          */
-        <T> void setValueAt(TableColumn<T> column, T value) throws UnsupportedOperationException;
+        <T> void setValue(TableColumn<T> column, T value);
 
         /**
-         * Determines whether the specified column is editable.
+         * Determines whether the value in the specified column is editable. If the given
+         * column is not a legal column for this {@code Node} instance, then this method
+         * returns {@code false}.
          *
          * @param  column The column to query.
-         * @return {@code true} if the column is editable, {@code false} otherwise.
+         * @return {@code true} if the given column is a legal column for this {@code Node}
+         *         implementation and the corresponding value is editable, or {@code false}
+         *         otherwise.
          * @category table
          */
         boolean isEditable(TableColumn<?> column);

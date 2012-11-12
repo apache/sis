@@ -46,6 +46,11 @@ public final class Errors extends IndexedResourceBundle {
         }
 
         /**
+         * Value “{0}” is duplicated.
+         */
+        public static final int DuplicatedValue_1 = 38;
+
+        /**
          * Element “{0}” is already present.
          */
         public static final int ElementAlreadyPresent_1 = 36;
@@ -112,6 +117,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int InconsistentAttribute_2 = 27;
 
         /**
+         * Inconsistent table columns.
+         */
+        public static final int InconsistentTableColumns = 40;
+
+        /**
          * Index {0} is out of bounds.
          */
         public static final int IndexOutOfBounds_1 = 4;
@@ -145,6 +155,11 @@ public final class Errors extends IndexedResourceBundle {
          * Node “{0}” has no parent.
          */
         public static final int NodeHasNoParent_1 = 34;
+
+        /**
+         * No “{0}” node found.
+         */
+        public static final int NodeNotFound_1 = 39;
 
         /**
          * Argument ‘{0}’ shall not be NaN (Not-a-Number).
