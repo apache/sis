@@ -179,7 +179,8 @@ public class DefaultTreeTable implements TreeTable, Serializable {
     public void setRoot(final TreeTable.Node root) {
         ArgumentChecks.ensureNonNull("root", root);
         if (root instanceof Node) {
-            if (columnIndex.keySet().containsAll(((Node) root).columnIndex.keySet())) {
+            final Map<TableColumn<?>,Integer> other = ((Node) root).columnIndex;
+            if (other != columnIndex && !columnIndex.keySet().containsAll(other.keySet())) {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.InconsistentTableColumns));
             }
         }
@@ -286,6 +287,10 @@ public class DefaultTreeTable implements TreeTable, Serializable {
          * Creates a new node for the given table. The new node will be able to store a value
          * for each {@linkplain TreeTable#getColumns() columns} defined in the given table.
          *
+         * <p>This method does not set the new node as the root of the given table. If desired, it
+         * is the caller responsibility to {@linkplain DefaultTreeTable#setRoot set the table root
+         * node}.</p>
+         *
          * @param table The table for which this node is created.
          */
         public Node(final TreeTable table) {
@@ -300,15 +305,23 @@ public class DefaultTreeTable implements TreeTable, Serializable {
         }
 
         /**
-         * Creates a new node with the given parent. The new node will be able to store
-         * values for the same columns than the parent node.
+         * Creates a new node with the given parent. The new node is added to the parent
+         * {@linkplain #getChildren() list of children} at the given index. The new node
+         * will be able to store values for the same columns than the parent node.
          *
          * @param parent The parent of the new node.
+         * @param index  The index where to add the new node in the parent list of children,
+         *               or -1 for adding the new node at the end of the list.
          */
-        public Node(final Node parent) {
+        public Node(final Node parent, int index) {
             ArgumentChecks.ensureNonNull("parent", parent);
             this.parent = parent;
             columnIndex = parent.columnIndex;
+            final TreeNodeList addTo = (TreeNodeList) parent.getChildren();
+            if (index < 0) {
+                index = addTo.size();
+            }
+            addTo.addChild(index, this);
         }
 
         /**
@@ -317,7 +330,7 @@ public class DefaultTreeTable implements TreeTable, Serializable {
          * added as a child of another {@code Node} instance.
          */
         @Override
-        public TreeTable.Node getParent() {
+        public final TreeTable.Node getParent() {
             return parent;
         }
 
@@ -327,7 +340,8 @@ public class DefaultTreeTable implements TreeTable, Serializable {
          */
         final void setParent(final TreeTable.Node node) {
             if (node instanceof Node) {
-                if (((Node) node).columnIndex.keySet().containsAll(columnIndex.keySet())) {
+                final Map<TableColumn<?>,Integer> other = ((Node) node).columnIndex;
+                if (other != columnIndex && !other.keySet().containsAll(columnIndex.keySet())) {
                     throw new IllegalArgumentException(Errors.format(Errors.Keys.InconsistentTableColumns));
                 }
             }
@@ -339,8 +353,12 @@ public class DefaultTreeTable implements TreeTable, Serializable {
          * {@linkplain #getParent() parent} reference of any {@code Node} instance added to
          * ore removed from this list.
          */
+        /* NOTE: If a future version removes the "final" keyword, then search for calls to
+         * this method where the return value is casted to TreeNodeList. Any unconditional
+         * cast will need to be replaced by an "instanceof" check.
+         */
         @Override
-        public List<TreeTable.Node> getChildren() {
+        public final List<TreeTable.Node> getChildren() {
             if (children == null) {
                 children = new Children(this);
             }
@@ -409,6 +427,34 @@ public class DefaultTreeTable implements TreeTable, Serializable {
         @Override
         public Object getUserObject() {
             return null;
+        }
+
+        /**
+         * Returns a string representation of this node, for identification in error message
+         * or in debugger.
+         *
+         * @return A string representation of this node.
+         */
+        @Override
+        public String toString() {
+            Object value = getUserObject();
+            if (value instanceof CharSequence) {
+                return value.toString();
+            }
+            final Object[] values = this.values;
+            if (values != null) {
+                for (int i=0; i<values.length; i++) {
+                    value = values[i];
+                    if (value instanceof CharSequence) {
+                        return value.toString();
+                    }
+                }
+            }
+            String name = getClass().getSimpleName();
+            if (parent != null) {
+                name = name + '-' + parent.getChildren().indexOf(this);
+            }
+            return name;
         }
     }
 }

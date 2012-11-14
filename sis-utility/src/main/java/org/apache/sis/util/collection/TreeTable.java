@@ -97,7 +97,7 @@ public interface TreeTable {
          * @return The children, or an empty list if none.
          * @category tree
          */
-        List<? extends Node> getChildren();
+        List<Node> getChildren();
 
         /**
          * Returns the value in the given column, or {@code null} if none.
