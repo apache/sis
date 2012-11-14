@@ -187,8 +187,8 @@ public final strictfp class IndexedResourceBundleTest extends TestCase {
     public void dumpResourcesOnError() throws IOException {
         if (testing != null) {
             final PrintStream err = System.err;
-            err.print("Error while testing IndexedResourceBundle for locale ");
-            err.print(testing.getLocale());
+            err.print("Error while testing ");
+            err.print(testing);
             err.println(". Bundle content is:");
             testing.list(err);
             err.flush();

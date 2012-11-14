@@ -554,6 +554,7 @@ public class IndexedResourceBundle extends ResourceBundle {
                  * Constructs a new MessageFormat for formatting the arguments.
                  */
                 format = new MessageFormat(pattern, getFormatLocale());
+                lastKey = key;
             } else if (key != lastKey) {
                 /*
                  * Method MessageFormat.applyPattern(...) is costly! We will avoid
