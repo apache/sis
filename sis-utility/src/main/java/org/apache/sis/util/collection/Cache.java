@@ -67,9 +67,7 @@ import static org.apache.sis.internal.util.Executors.executeDaemonTask;
  *                     return createMyObject(key);
  *                 }
  *             });
- *         } catch (MyCheckedException e) {
- *             throw e;
- *         } catch (RuntimeException e) {
+ *         } catch (MyCheckedException | RuntimeException e) {
  *             throw e;
  *         } catch (Exception e) {
  *             throw new UndeclaredThrowableException(e);
