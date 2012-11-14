@@ -101,6 +101,14 @@ public final class ColumnConstant<T> implements TableColumn<T>, Serializable {
     }
 
     /**
+     * Returns the name of the field declaring this constant.
+     */
+    @Override
+    public String toString() {
+        return name;
+    }
+
+    /**
      * Invoked on deserialization for resolving this instance to one of the predefined constants.
      *
      * @return One of the predefined constants.

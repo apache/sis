@@ -216,6 +216,15 @@ abstract class TreeNodeList extends AbstractList<TreeTable.Node>
         } else {
             setParentOf(node, THIS);
         }
+        addChild(index, node);
+    }
+
+    /**
+     * Adds the given node at the given index in this list, without any check for the parent.
+     * The {@linkplain TreeTable.Node#getParent() parent} of the given node shall already be
+     * set to {@code this} before this method is invoked.
+     */
+    final void addChild(final int index, final TreeTable.Node node) {
         if (children == null) {
             children = new TreeTable.Node[4];
         } else if (size == children.length) {
