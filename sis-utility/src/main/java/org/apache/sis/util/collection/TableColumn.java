@@ -27,14 +27,18 @@ import org.opengis.util.InternationalString;
  *
  * {@preformat java
  *     class CityLocation {
- *         static final TableColumn<String> CITY_NAME  = new MyColumn<>(String.class);
- *         static final TableColumn<Float>  LATITUDE   = new MyColumn<>(Float .class);
- *         static final TableColumn<Float>  LONGTITUDE = new MyColumn<>(Float .class);
+ *         public static final TableColumn<String> CITY_NAME  = new MyColumn<>(String.class);
+ *         public static final TableColumn<Float>  LATITUDE   = new MyColumn<>(Float .class);
+ *         public static final TableColumn<Float>  LONGTITUDE = new MyColumn<>(Float .class);
  *
- *         void myMethod(TreeTable.Node myNode) {
- *             String city      = myNode.getValue(CITY_NAME);
- *             float  latitude  = myNode.getValue(LATITUDE );
- *             float  longitude = myNode.getValue(LONGITUDE);
+ *         private String city;
+ *         private float  latitude;
+ *         private float  longitude;
+ *
+ *         CityLocation(TreeTable.Node myNode) {
+ *             city      = myNode.getValue(CITY_NAME);
+ *             latitude  = myNode.getValue(LATITUDE );
+ *             longitude = myNode.getValue(LONGITUDE);
  *         }
  *     }
  * }

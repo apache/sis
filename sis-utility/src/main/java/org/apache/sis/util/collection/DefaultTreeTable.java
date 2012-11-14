@@ -31,9 +31,29 @@ import org.apache.sis.util.resources.Errors;
  * construction time. The list of columns is unmodifiable, but the {@linkplain #getRoot() root node}
  * can be modified.
  *
- * <p>{@code DefaultTreeTable} accepts arbitrary {@link TreeTable.Node} implementations.
- * However it is likely to be safer and more memory efficient when used together with the
- * implementation provided in the {@link Node} inner class.</p>
+ * Example:
+ *
+ * {@preformat java
+ *     class CityLocation {
+ *         public static final TableColumn<String> CITY_NAME  = new MyColumn<>(String.class);
+ *         public static final TableColumn<Float>  LATITUDE   = new MyColumn<>(Float .class);
+ *         public static final TableColumn<Float>  LONGTITUDE = new MyColumn<>(Float .class);
+ *
+ *         TreeTable createTable() {
+ *             DefaultTreeTable table = new DefaultTreeTable(CITY_NAME, LATITUDE, LONGITUDE);
+ *             TreeTable.Node   city  = new DefaultTreeTable.Node(table);
+ *             city.setValue(CITY_NAME, "Rimouski");
+ *             city.setValue(LATITUDE,   48.470417);
+ *             city.setValue(LONGITUDE, -68.521385);
+ *             table.setRoot(city);
+ *             return table;
+ *         }
+ *     }
+ * }
+ *
+ * {@code DefaultTreeTable} accepts arbitrary {@link TreeTable.Node} implementations.
+ * However it is likely to be safer and more memory efficient when used together with
+ * the implementation provided in the {@link Node} inner class.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
@@ -192,7 +212,8 @@ public class DefaultTreeTable implements TreeTable, Serializable {
 
     /**
      * A {@link TreeTable.Node} implementation which can store values for a pre-defined list
-     * of columns.
+     * of columns. The list of columns is specified by a {@link TreeTable}, or inherited from
+     * a parent node.
      *
      * <p>The {@linkplain #getChildren() list of children} provided by this class is <cite>live</cite>:
      * adding a {@code Node} child to that list will automatically set its parent to {@code this},
