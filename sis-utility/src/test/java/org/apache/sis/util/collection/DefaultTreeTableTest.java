@@ -27,7 +27,7 @@ import static org.apache.sis.internal.util.ColumnConstant.*;
 
 
 /**
- * Tests the {@link DefaultTreeTable} class.
+ * Tests the {@link DefaultTreeTable} class and its {@code Node} inner class.
  * This will also test indirectly the {@link TreeNodeList} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -145,5 +145,20 @@ public final strictfp class DefaultTreeTableTest extends TestCase {
     @Test
     public void testTreeTableCreation() {
         testNodeDisplacement(testNodeCreation(testTableCreation()));
+    }
+
+    /**
+     * Tests {@link DefaultTreeTable.Node#setValue(TableColumn, Object)}.
+     */
+    @Test
+    public void testNodeValues() {
+        final DefaultTreeTable table = new DefaultTreeTable(NAME, TYPE);
+        final TreeTable.Node   node  = new DefaultTreeTable.Node(table);
+        assertNull(node.getValue(NAME));
+        assertNull(node.getValue(TYPE));
+        node.setValue(NAME, "A number");
+        node.setValue(TYPE, Number.class);
+        assertEquals("A number",   node.getValue(NAME));
+        assertEquals(Number.class, node.getValue(TYPE));
     }
 }
