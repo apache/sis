@@ -16,6 +16,8 @@
  */
 package org.apache.sis.internal.util;
 
+import java.util.Map;
+import java.util.Collections;
 import java.io.Serializable;
 import java.io.InvalidObjectException;
 import org.opengis.util.InternationalString;
@@ -55,6 +57,12 @@ public final class ColumnConstant<T> implements TableColumn<T>, Serializable {
     @SuppressWarnings("unchecked")
     public static final TableColumn<Class<?>> TYPE = new ColumnConstant<>("TYPE",
             (Class) Class.class, Vocabulary.Keys.Type);
+
+    /**
+     * The default set of columns when parsing a table tree.
+     */
+    public static final Map<TableColumn<?>,Integer> PARSING =
+            Collections.<TableColumn<?>,Integer>singletonMap(NAME, 0);
 
     /**
      * The programmatic name of the static final field holding this constant.

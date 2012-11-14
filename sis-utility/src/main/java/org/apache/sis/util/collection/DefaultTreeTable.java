@@ -16,14 +16,16 @@
  */
 package org.apache.sis.util.collection;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Collections;
 import java.io.Serializable;
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+
+import static org.apache.sis.util.collection.Collections.hashMapCapacity;
 
 
 /**
@@ -97,6 +99,13 @@ public class DefaultTreeTable implements TreeTable, Serializable {
     final Map<TableColumn<?>,Integer> columnIndex;
 
     /**
+     * Creates a new table using the given columns.
+     */
+    DefaultTreeTable(final Map<TableColumn<?>,Integer> columnIndex) {
+        this.columnIndex = columnIndex;
+    }
+
+    /**
      * Creates a new tree table with the given columns. The given array shall not be null or
      * empty, and shall not contain null or duplicated elements.
      *
@@ -134,12 +143,20 @@ public class DefaultTreeTable implements TreeTable, Serializable {
      * @param  columns The list of columns.
      * @return The map of column indices.
      */
-    static Map<TableColumn<?>,Integer> createColumnIndex(final TableColumn<?>... columns) {
-        final Map<TableColumn<?>,Integer> map = new HashMap<>(Collections.hashMapCapacity(columns.length));
+    static Map<TableColumn<?>,Integer> createColumnIndex(final TableColumn<?>[] columns) {
+        Map<TableColumn<?>,Integer> map;
+        switch (columns.length) {
+            case 0:  map = Collections.emptyMap(); break;
+            case 1:  map = null; break; // Will be created inside the loop (common case).
+            default: map = new LinkedHashMap<>(hashMapCapacity(columns.length)); break;
+        }
         for (int i=0; i<columns.length; i++) {
             ArgumentChecks.ensureNonNull("columns", i, columns);
             final TableColumn<?> column = columns[i];
-            if (map.put(column, i) != null) {
+            final Integer pos = i;
+            if (map == null) {
+                map = Collections.<TableColumn<?>,Integer>singletonMap(column, pos);
+            } else if (map.put(column, pos) != null) {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.DuplicatedValue_1, column));
             }
         }
@@ -148,17 +165,10 @@ public class DefaultTreeTable implements TreeTable, Serializable {
 
     /**
      * Returns all columns in the given map, sorted by increasing index value.
+     * This method relies on {@link LinkedHashSet} preserving insertion order.
      */
     static TableColumn<?>[] getColumns(final Map<TableColumn<?>,Integer> columnIndex) {
-        @SuppressWarnings({"unchecked","rawtypes"})
-        final Map.Entry<TableColumn<?>,Integer>[] entries =
-                columnIndex.entrySet().toArray(new Map.Entry[columnIndex.size()]);
-        Arrays.sort(entries, Collections.<TableColumn<?>,Integer>valueComparator());
-        final TableColumn<?>[] columns = new TableColumn<?>[entries.length];
-        for (int i=0; i<columns.length; i++) {
-            columns[i] = entries[i].getKey();
-        }
-        return columns;
+        return columnIndex.keySet().toArray(new TableColumn<?>[columnIndex.size()]);
     }
 
     /**
