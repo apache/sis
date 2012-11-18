@@ -102,21 +102,21 @@ public interface TreeTable {
         /**
          * Returns the value in the given column, or {@code null} if none.
          *
-         * @param  <T>    The base type of values in the given column.
+         * @param  <V>    The base type of values in the given column.
          * @param  column Identifier of the column from which to get the value.
          * @return The value in the given column, or {@code null} if none.
          *
          * @see TreeTable#getColumns()
          * @category table
          */
-        <T> T getValue(TableColumn<T> column);
+        <V> V getValue(TableColumn<V> column);
 
         /**
          * Sets the value for the given column (optional operation).
          * The {@link #isEditable(TableColumn)} method can be invoked before this setter method
          * for determining if the given column is modifiable.
          *
-         * @param  <T>    The base type of values in the given column.
+         * @param  <V>    The base type of values in the given column.
          * @param  column Identifier of the column into which to set the value.
          * @param  value  The value to set.
          * @throws IllegalArgumentException If the given column is not a legal column for this node.
@@ -126,7 +126,7 @@ public interface TreeTable {
          * @see #isEditable(TableColumn)
          * @category table
          */
-        <T> void setValue(TableColumn<T> column, T value);
+        <V> void setValue(TableColumn<V> column, V value);
 
         /**
          * Determines whether the value in the specified column is editable. If the given

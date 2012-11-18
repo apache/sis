@@ -79,7 +79,7 @@ public class DefaultTreeTable implements TreeTable, Serializable {
 
     /**
      * The table columns as an unmodifiable list, or {@code null} if not yet created.
-     * The content of this list is the {@link #columnIndex} keys sorted by their index values.
+     * The content of this list is the {@link #columnIndices} keys sorted by their index values.
      *
      * @see #getColumns()
      */
@@ -94,15 +94,15 @@ public class DefaultTreeTable implements TreeTable, Serializable {
      *        We serialize this field because children nodes will typically hold a reference
      *        to that map, and we want to preserve the references tree.}
      *
-     * @see DefaultTreeTable.Node#columnIndex
+     * @see DefaultTreeTable.Node#columnIndices
      */
-    final Map<TableColumn<?>,Integer> columnIndex;
+    final Map<TableColumn<?>,Integer> columnIndices;
 
     /**
      * Creates a new table using the given columns.
      */
-    DefaultTreeTable(final Map<TableColumn<?>,Integer> columnIndex) {
-        this.columnIndex = columnIndex;
+    DefaultTreeTable(final Map<TableColumn<?>,Integer> columnIndices) {
+        this.columnIndices = columnIndices;
     }
 
     /**
@@ -120,7 +120,7 @@ public class DefaultTreeTable implements TreeTable, Serializable {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "columns"));
         }
         columns = columns.clone();
-        this.columnIndex = createColumnIndex(columns);
+        this.columnIndices = createColumnIndices(columns);
         this.columns = UnmodifiableArrayList.wrap(columns);
     }
 
@@ -133,17 +133,17 @@ public class DefaultTreeTable implements TreeTable, Serializable {
     public DefaultTreeTable(final Node root) {
         ArgumentChecks.ensureNonNull("root", root);
         this.root = root;
-        columnIndex = root.columnIndex;
+        columnIndices = root.columnIndices;
     }
 
     /**
      * Creates a map of column indices from the given list of columns.
-     * This method is invoked for initializing the {@link #columnIndex} field.
+     * This method is invoked for initializing the {@link #columnIndices} field.
      *
      * @param  columns The list of columns.
      * @return The map of column indices.
      */
-    static Map<TableColumn<?>,Integer> createColumnIndex(final TableColumn<?>[] columns) {
+    static Map<TableColumn<?>,Integer> createColumnIndices(final TableColumn<?>[] columns) {
         Map<TableColumn<?>,Integer> map;
         switch (columns.length) {
             case 0:  map = Collections.emptyMap(); break;
@@ -167,8 +167,8 @@ public class DefaultTreeTable implements TreeTable, Serializable {
      * Returns all columns in the given map, sorted by increasing index value.
      * This method relies on {@link LinkedHashSet} preserving insertion order.
      */
-    static TableColumn<?>[] getColumns(final Map<TableColumn<?>,Integer> columnIndex) {
-        return columnIndex.keySet().toArray(new TableColumn<?>[columnIndex.size()]);
+    static TableColumn<?>[] getColumns(final Map<TableColumn<?>,Integer> columnIndices) {
+        return columnIndices.keySet().toArray(new TableColumn<?>[columnIndices.size()]);
     }
 
     /**
@@ -178,7 +178,7 @@ public class DefaultTreeTable implements TreeTable, Serializable {
     @Override
     public final List<TableColumn<?>> getColumns() {
         if (columns == null) {
-            columns = UnmodifiableArrayList.wrap(getColumns(columnIndex));
+            columns = UnmodifiableArrayList.wrap(getColumns(columnIndices));
         }
         return columns;
     }
@@ -209,8 +209,8 @@ public class DefaultTreeTable implements TreeTable, Serializable {
     public void setRoot(final TreeTable.Node root) {
         ArgumentChecks.ensureNonNull("root", root);
         if (root instanceof Node) {
-            final Map<TableColumn<?>,Integer> other = ((Node) root).columnIndex;
-            if (other != columnIndex && !columnIndex.keySet().containsAll(other.keySet())) {
+            final Map<TableColumn<?>,Integer> other = ((Node) root).columnIndices;
+            if (other != columnIndices && !columnIndices.keySet().containsAll(other.keySet())) {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.InconsistentTableColumns));
             }
         }
@@ -305,9 +305,9 @@ public class DefaultTreeTable implements TreeTable, Serializable {
          *
          * <p>This map shall be read-only since many {@code Node} instances may share it.</p>
          *
-         * @see DefaultTreeTable#columnIndex
+         * @see DefaultTreeTable#columnIndices
          */
-        final Map<TableColumn<?>,Integer> columnIndex;
+        final Map<TableColumn<?>,Integer> columnIndices;
 
         /**
          * The values, or {@code null} if not yet created.
@@ -328,10 +328,10 @@ public class DefaultTreeTable implements TreeTable, Serializable {
             ArgumentChecks.ensureNonNull("table", table);
             if (table instanceof DefaultTreeTable) {
                 // Share the same instance if possible.
-                columnIndex = ((DefaultTreeTable) table).columnIndex;
+                columnIndices = ((DefaultTreeTable) table).columnIndices;
             } else {
                 final List<TableColumn<?>> columns = table.getColumns();
-                columnIndex = createColumnIndex(columns.toArray(new TableColumn<?>[columns.size()]));
+                columnIndices = createColumnIndices(columns.toArray(new TableColumn<?>[columns.size()]));
             }
         }
 
@@ -347,7 +347,7 @@ public class DefaultTreeTable implements TreeTable, Serializable {
         public Node(final Node parent, int index) {
             ArgumentChecks.ensureNonNull("parent", parent);
             this.parent = parent;
-            columnIndex = parent.columnIndex;
+            columnIndices = parent.columnIndices;
             final TreeNodeList addTo = (TreeNodeList) parent.getChildren();
             if (index < 0) {
                 index = addTo.size();
@@ -371,8 +371,8 @@ public class DefaultTreeTable implements TreeTable, Serializable {
          */
         final void setParent(final TreeTable.Node node) {
             if (node instanceof Node) {
-                final Map<TableColumn<?>,Integer> other = ((Node) node).columnIndex;
-                if (other != columnIndex && !other.keySet().containsAll(columnIndex.keySet())) {
+                final Map<TableColumn<?>,Integer> other = ((Node) node).columnIndices;
+                if (other != columnIndices && !other.keySet().containsAll(columnIndices.keySet())) {
                     throw new IllegalArgumentException(Errors.format(Errors.Keys.InconsistentTableColumns));
                 }
             }
@@ -399,15 +399,15 @@ public class DefaultTreeTable implements TreeTable, Serializable {
         /**
          * Returns the value in the given column, or {@code null} if none.
          *
-         * @param  <T>    The base type of values in the given column.
+         * @param  <V>    The base type of values in the given column.
          * @param  column Identifier of the column from which to get the value.
          * @return The value in the given column, or {@code null} if none.
          */
         @Override
-        public <T> T getValue(final TableColumn<T> column) {
+        public <V> V getValue(final TableColumn<V> column) {
             ArgumentChecks.ensureNonNull("column", column);
             if (values != null) {
-                final Integer index = columnIndex.get(column);
+                final Integer index = columnIndices.get(column);
                 if (index != null) {
                     return column.getElementType().cast(values[index]);
                 }
@@ -420,7 +420,7 @@ public class DefaultTreeTable implements TreeTable, Serializable {
          * The {@link #isEditable(TableColumn)} method can be invoked before this setter method
          * for determining if the given column is modifiable.
          *
-         * @param  <T>    The base type of values in the given column.
+         * @param  <V>    The base type of values in the given column.
          * @param  column Identifier of the column into which to set the value.
          * @param  value  The value to set.
          * @throws IllegalArgumentException If the given column is not a legal column for this node.
@@ -428,16 +428,16 @@ public class DefaultTreeTable implements TreeTable, Serializable {
          * @see #isEditable(TableColumn)
          */
         @Override
-        public <T> void setValue(final TableColumn<T> column, final T value) {
+        public <V> void setValue(final TableColumn<V> column, final V value) {
             ArgumentChecks.ensureNonNull("column", column);
-            final Integer index = columnIndex.get(column);
+            final Integer index = columnIndices.get(column);
             if (index == null) {
                 throw new IllegalArgumentException(Errors.format(
                         Errors.Keys.IllegalArgumentValue_2, "column", column));
             }
             if (values == null) {
                 if (value == null) return;
-                values = new Object[columnIndex.size()];
+                values = new Object[columnIndices.size()];
             }
             values[index] = value;
         }
@@ -448,7 +448,7 @@ public class DefaultTreeTable implements TreeTable, Serializable {
         @Override
         public boolean isEditable(final TableColumn<?> column) {
             ArgumentChecks.ensureNonNull("column", column);
-            return columnIndex.containsKey(column);
+            return columnIndices.containsKey(column);
         }
 
         /**

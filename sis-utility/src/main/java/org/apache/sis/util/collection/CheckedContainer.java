@@ -34,5 +34,5 @@ public interface CheckedContainer<E> {
      *
      * @return The element type.
      */
-    Class<? extends E> getElementType();
+    Class<E> getElementType();
 }

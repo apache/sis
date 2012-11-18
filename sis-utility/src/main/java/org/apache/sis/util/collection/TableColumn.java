@@ -43,14 +43,14 @@ import org.opengis.util.InternationalString;
  *     }
  * }
  *
- * @param <T> Base type of all values in the column identified by this instance.
+ * @param <V> Base type of all values in the column identified by this instance.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
  * @version 0.3
  * @module
  */
-public interface TableColumn<T> extends CheckedContainer<T> {
+public interface TableColumn<V> extends CheckedContainer<V> {
     /**
      * Returns the text to display as column header.
      *
@@ -63,5 +63,5 @@ public interface TableColumn<T> extends CheckedContainer<T> {
      * instance.
      */
     @Override
-    Class<T> getElementType();
+    Class<V> getElementType();
 }
