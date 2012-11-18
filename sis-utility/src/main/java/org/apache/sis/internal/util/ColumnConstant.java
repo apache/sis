@@ -28,14 +28,14 @@ import org.apache.sis.util.collection.TableColumn;
 /**
  * {@link TableColumn} constants used in the SIS library.
  *
- * @param <T> Base type of all values in the column identified by this instance.
+ * @param <V> Base type of all values in the column identified by this instance.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
  * @version 0.3
  * @module
  */
-public final class ColumnConstant<T> implements TableColumn<T>, Serializable {
+public final class ColumnConstant<V> implements TableColumn<V>, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -72,7 +72,7 @@ public final class ColumnConstant<T> implements TableColumn<T>, Serializable {
     /**
      * Base type of all values in the column identified by this {@code ColumnConstant} instance.
      */
-    private final transient Class<T> type;
+    private final transient Class<V> type;
 
     /**
      * The resource key for the column header.
@@ -86,7 +86,7 @@ public final class ColumnConstant<T> implements TableColumn<T>, Serializable {
      * @param type Base type of all values in the column identified by this instance.
      * @param resourceKey The resource key for the column header.
      */
-    private ColumnConstant(final String name, final Class<T> type, final int resourceKey) {
+    private ColumnConstant(final String name, final Class<V> type, final int resourceKey) {
         this.name        = name;
         this.type        = type;
         this.resourceKey = resourceKey;
@@ -104,7 +104,7 @@ public final class ColumnConstant<T> implements TableColumn<T>, Serializable {
      * Returns the base type of all values in any column identified by this {@code TableConstant}.
      */
     @Override
-    public final Class<T> getElementType() {
+    public final Class<V> getElementType() {
         return type;
     }
 
