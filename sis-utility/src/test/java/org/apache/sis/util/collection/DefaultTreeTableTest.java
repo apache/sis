@@ -49,9 +49,9 @@ public final strictfp class DefaultTreeTableTest extends TestCase {
     @TestStep
     private static DefaultTreeTable testTableCreation() {
         final DefaultTreeTable table = new DefaultTreeTable(NAME, TYPE);
-        assertEquals("Number of columns:",      2,                  table.columnIndex.size());
-        assertEquals("Index of first column:",  Integer.valueOf(0), table.columnIndex.get(NAME));
-        assertEquals("Index of second column:", Integer.valueOf(1), table.columnIndex.get(TYPE));
+        assertEquals("Number of columns:",      2,                  table.columnIndices.size());
+        assertEquals("Index of first column:",  Integer.valueOf(0), table.columnIndices.get(NAME));
+        assertEquals("Index of second column:", Integer.valueOf(1), table.columnIndices.get(TYPE));
         assertArrayEquals(new TableColumn<?>[] {NAME, TYPE}, table.getColumns().toArray());
         try {
             assertNull(table.getRoot());
@@ -80,7 +80,7 @@ public final strictfp class DefaultTreeTableTest extends TestCase {
          * Create a root node with an initially empty list of children.
          */
         final DefaultTreeTable.Node root = new DefaultTreeTable.Node(table);
-        assertSame("Internal table sharing:", table.columnIndex, root.columnIndex);
+        assertSame("Internal table sharing:", table.columnIndices, root.columnIndices);
         assertTrue("Initial children list:",  root.getChildren().isEmpty());
         table.setRoot(root);
         /*
@@ -88,7 +88,7 @@ public final strictfp class DefaultTreeTableTest extends TestCase {
          * to the root list of children.
          */
         final DefaultTreeTable.Node node1 = new DefaultTreeTable.Node(root, -1);
-        assertSame("Internal table sharing:",  table.columnIndex, node1.columnIndex);
+        assertSame("Internal table sharing:",  table.columnIndices, node1.columnIndices);
         assertTrue("Initial children list:",   node1.getChildren().isEmpty());
         assertSame("Specified parent:",        root, node1.getParent());
         assertSame("Children list after add:", node1, getSingleton(root.getChildren()));
@@ -96,7 +96,7 @@ public final strictfp class DefaultTreeTableTest extends TestCase {
          * Create a child of the previous child.
          */
         final DefaultTreeTable.Node node2 = new DefaultTreeTable.Node(node1, 0);
-        assertSame("Internal table sharing:",    table.columnIndex, node2.columnIndex);
+        assertSame("Internal table sharing:",    table.columnIndices, node2.columnIndices);
         assertTrue("Initial children list:",     node2.getChildren().isEmpty());
         assertSame("Specified parent:",          node1, node2.getParent());
         assertSame("Children list after add:",   node2, getSingleton(node1.getChildren()));
