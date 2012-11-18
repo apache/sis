@@ -239,35 +239,36 @@ public final class CharSequences extends Static {
      * not found, then this method returns -1.
      *
      * <p>There is no restriction on the value of {@code fromIndex}. If negative or greater
-     * than the length of the text, then the behavior of this method is the same than the
-     * one documented in {@link String#indexOf(int, int)}.</p>
+     * than {@code toIndex}, then the behavior of this method is as if the search started
+     * from 0 or {@code toIndex} respectively. This is consistent with the behavior documented
+     * in {@link String#indexOf(int, int)}.</p>
      *
      * @param  text      The character sequence in which to perform the search, or {@code null}.
      * @param  toSearch  The Unicode code point of the character to search.
      * @param  fromIndex The index to start the search from.
+     * @param  toIndex   The index of the character after the last one to search.
      * @return The index of the first occurrence of the given character in the text, or -1
      *         if no occurrence has been found or if the {@code text} argument is null.
      *
      * @see String#indexOf(int, int)
      */
-    public static int indexOf(final CharSequence text, final int toSearch, int fromIndex) {
+    public static int indexOf(final CharSequence text, final int toSearch, int fromIndex, int toIndex) {
         if (text != null) {
-            if (text instanceof String) {
+            if (text instanceof String && toIndex == text.length()) {
                 // String provides a faster implementation.
                 return ((String) text).indexOf(toSearch, fromIndex);
             }
             if (fromIndex < 0) {
                 fromIndex = 0;
             }
-            int length = text.length();
             char head  = (char) toSearch;
             char tail  = (char) 0;
             if (head != toSearch) { // Outside BMP plane?
                 head = highSurrogate(toSearch);
                 tail = lowSurrogate (toSearch);
-                length--;
+                toIndex--;
             }
-            while (fromIndex < length) {
+            while (fromIndex < toIndex) {
                 if (text.charAt(fromIndex) == head) {
                     if (tail == 0 || text.charAt(fromIndex+1) == tail) {
                         return fromIndex;
@@ -441,8 +442,9 @@ search:     for (; fromIndex <= stopAt; fromIndex++) {
         // 'excludeEmpty' must use the same criterion than trimWhitespaces(...).
         final boolean excludeEmpty = isWhitespace(separator);
         CharSequence[] strings = new CharSequence[4];
+        final int length = text.length();
         int count = 0, last  = 0, i = 0;
-        while ((i = indexOf(text, separator, i)) >= 0) {
+        while ((i = indexOf(text, separator, i, length)) >= 0) {
             final CharSequence item = trimWhitespaces(text, last, i);
             if (!excludeEmpty || item.length() != 0) {
                 if (count == strings.length) {
@@ -453,7 +455,7 @@ search:     for (; fromIndex <= stopAt; fromIndex++) {
             last = ++i;
         }
         // Add the last element.
-        final CharSequence item = trimWhitespaces(text, last, text.length());
+        final CharSequence item = trimWhitespaces(text, last, length);
         if (!excludeEmpty || item.length() != 0) {
             if (count == strings.length) {
                 strings = copyOf(strings, count + 1);
@@ -499,8 +501,9 @@ search:     for (; fromIndex <= stopAt; fromIndex++) {
          * This method is implemented on top of String.indexOf(int,int),
          * assuming that it will be faster for String and StringBuilder.
          */
-        int lf = indexOf(text, '\n', 0);
-        int cr = indexOf(text, '\r', 0);
+        final int length = text.length();
+        int lf = indexOf(text, '\n', 0, length);
+        int cr = indexOf(text, '\r', 0, length);
         if (lf < 0 && cr < 0) {
             return new CharSequence[] {
                 text
@@ -516,27 +519,27 @@ search:     for (; fromIndex <= stopAt; fromIndex++) {
             if (cr < 0) {
                 // There is no "\r" character in the whole text, only "\n".
                 splitAt = lf;
-                hasMore = (lf = indexOf(text, '\n', lf+1)) >= 0;
+                hasMore = (lf = indexOf(text, '\n', lf+1, length)) >= 0;
             } else if (lf < 0) {
                 // There is no "\n" character in the whole text, only "\r".
                 splitAt = cr;
-                hasMore = (cr = indexOf(text, '\r', cr+1)) >= 0;
+                hasMore = (cr = indexOf(text, '\r', cr+1, length)) >= 0;
             } else if (lf < cr) {
                 // There is both "\n" and "\r" characters with "\n" first.
                 splitAt = lf;
                 hasMore = true;
-                lf = indexOf(text, '\n', lf+1);
+                lf = indexOf(text, '\n', lf+1, length);
             } else {
                 // There is both "\r" and "\n" characters with "\r" first.
                 // We need special care for the "\r\n" sequence.
                 splitAt = cr;
                 if (lf == ++cr) {
-                    cr = indexOf(text, '\r', cr+1);
-                    lf = indexOf(text, '\n', lf+1);
+                    cr = indexOf(text, '\r', cr+1, length);
+                    lf = indexOf(text, '\n', lf+1, length);
                     hasMore = (cr >= 0 || lf >= 0);
                     skip = 2;
                 } else {
-                    cr = indexOf(text, '\r', cr+1);
+                    cr = indexOf(text, '\r', cr+1, length);
                     hasMore = true; // Because there is lf.
                 }
             }
