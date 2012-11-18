@@ -103,9 +103,10 @@ public final class LocalizedParseException extends ParseException implements Loc
      * @param  text   The full text that {@code Format} failed to parse.
      * @param  pos    Index of the {@linkplain ParsePosition#getIndex() first parsed character},
      *                together with the {@linkplain ParsePosition#getErrorIndex() error index}.
+     *                Can be {@code null} if index and error index are zero.
      */
     public LocalizedParseException(final Locale locale, final Class<?> type, final CharSequence text, final ParsePosition pos) {
-        this(locale, type, text, pos.getIndex(), pos.getErrorIndex());
+        this(locale, type, text, (pos != null) ? pos.getIndex() : 0, (pos != null) ? pos.getErrorIndex() : 0);
     }
 
     /**
