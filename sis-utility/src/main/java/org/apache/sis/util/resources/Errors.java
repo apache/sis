@@ -227,6 +227,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int UnparsableStringForClass_3 = 32;
 
         /**
+         * No format is specified for objects of class ‘{0}’.
+         */
+        public static final int UnspecifiedFormatForClass_1 = 41;
+
+        /**
          * Can not handle instances of ‘{0}’ because arbitrary implementations are not yet supported.
          */
         public static final int UnsupportedImplementation_1 = 28;

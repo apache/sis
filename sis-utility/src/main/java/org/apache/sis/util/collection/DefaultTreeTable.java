@@ -315,6 +315,14 @@ public class DefaultTreeTable implements TreeTable, Serializable {
         private Object[] values;
 
         /**
+         * Creates a new node with the given shared map of columns and the given values.
+         */
+        Node(final Map<TableColumn<?>,Integer> columnIndices, final Object[] values) {
+            this.columnIndices = columnIndices;
+            this.values = values;
+        }
+
+        /**
          * Creates a new node for the given table. The new node will be able to store a value
          * for each {@linkplain TreeTable#getColumns() columns} defined in the given table.
          *
@@ -336,22 +344,34 @@ public class DefaultTreeTable implements TreeTable, Serializable {
         }
 
         /**
+         * Creates a new node with the given parent. The new node is added at the end of the parent
+         * {@linkplain #getChildren() list of children}. The new node will be able to store values
+         * for the same columns than the parent node.
+         *
+         * @param parent The parent of the new node.
+         */
+        public Node(final Node parent) {
+            ArgumentChecks.ensureNonNull("parent", parent);
+            this.parent = parent;
+            columnIndices = parent.columnIndices;
+            final TreeNodeList addTo = (TreeNodeList) parent.getChildren();
+            addTo.addChild(addTo.size(), this);
+        }
+
+        /**
          * Creates a new node with the given parent. The new node is added to the parent
          * {@linkplain #getChildren() list of children} at the given index. The new node
          * will be able to store values for the same columns than the parent node.
          *
          * @param parent The parent of the new node.
-         * @param index  The index where to add the new node in the parent list of children,
-         *               or -1 for adding the new node at the end of the list.
+         * @param index  The index where to add the new node in the parent list of children.
          */
-        public Node(final Node parent, int index) {
+        public Node(final Node parent, final int index) {
             ArgumentChecks.ensureNonNull("parent", parent);
             this.parent = parent;
             columnIndices = parent.columnIndices;
             final TreeNodeList addTo = (TreeNodeList) parent.getChildren();
-            if (index < 0) {
-                index = addTo.size();
-            }
+            ArgumentChecks.ensureValidIndex(addTo.size() + 1, index);
             addTo.addChild(index, this);
         }
 

@@ -66,6 +66,7 @@ import org.junit.runners.Suite;
   org.apache.sis.internal.util.X364Test.class,
   org.apache.sis.io.LineFormatterTest.class,
   org.apache.sis.io.TableFormatterTest.class,
+  org.apache.sis.util.collection.TreeTableFormatTest.class,
 
   // XML most basic types.
   org.apache.sis.xml.XLinkTest.class,
