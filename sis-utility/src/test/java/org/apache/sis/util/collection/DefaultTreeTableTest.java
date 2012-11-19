@@ -87,7 +87,7 @@ public final strictfp class DefaultTreeTableTest extends TestCase {
          * Create a first child node, which should be added automatically
          * to the root list of children.
          */
-        final DefaultTreeTable.Node node1 = new DefaultTreeTable.Node(root, -1);
+        final DefaultTreeTable.Node node1 = new DefaultTreeTable.Node(root);
         assertSame("Internal table sharing:",  table.columnIndices, node1.columnIndices);
         assertTrue("Initial children list:",   node1.getChildren().isEmpty());
         assertSame("Specified parent:",        root, node1.getParent());

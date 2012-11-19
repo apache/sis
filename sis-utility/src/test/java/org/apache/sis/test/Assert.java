@@ -79,13 +79,7 @@ public strictfp class Assert extends org.opengis.test.Assert {
      * @param actual   The actual string.
      */
     public static void assertMultilinesEquals(final String message, final CharSequence expected, final CharSequence actual) {
-        final CharSequence[] a1 = CharSequences.split(expected, '\n');
-        final CharSequence[] a2 = CharSequences.split(actual,   '\n');
-        final int length = Math.min(a1.length, a2.length);
-        for (int i=0; i<length; i++) {
-            assertEquals("Line " + (i+1) + ':', a1[i], a2[i]);
-        }
-        assertArrayEquals(message, a1, a2);
+        assertArrayEquals(message, CharSequences.split(expected, '\n'), CharSequences.split(actual, '\n'));
     }
 
     /**

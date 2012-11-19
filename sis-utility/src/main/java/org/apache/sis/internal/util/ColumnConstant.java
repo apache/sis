@@ -59,9 +59,10 @@ public final class ColumnConstant<V> implements TableColumn<V>, Serializable {
             (Class) Class.class, Vocabulary.Keys.Type);
 
     /**
-     * The default set of columns when parsing a table tree.
+     * A map containing only the {@link #NAME} column.
+     * This is the default set of columns when parsing a table tree.
      */
-    public static final Map<TableColumn<?>,Integer> PARSING =
+    public static final Map<TableColumn<?>,Integer> NAME_MAP =
             Collections.<TableColumn<?>,Integer>singletonMap(NAME, 0);
 
     /**

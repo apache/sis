@@ -223,7 +223,9 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
     /**
      * Creates an object from the given string representation.
      * The default implementation delegates to {@link #parse(CharSequence, ParsePosition)}
-     * and ensures that the given string has been fully used (ignoring trailing spaces).
+     * and ensures that the given string has been fully used, ignoring trailing
+     * {@linkplain Character#isSpaceChar(int) spaces} and
+     * {@linkplain Character#isISOControl(int) ISO control characters}.
      *
      * @param  text The string representation of the object to parse.
      * @return The parsed object.
@@ -242,7 +244,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
                 }
                 c = text.codePointAt(i);
                 n = Character.charCount(c);
-            } while (c < 32 || Character.isSpaceChar(c)); // c<32 is for skipping control characters.
+            } while (Character.isSpaceChar(c) || Character.isISOControl(c));
             pos.setErrorIndex(i);
         }
         throw new LocalizedParseException(locale, getValueType(), text, pos);
