@@ -67,13 +67,15 @@ public abstract class AbstractInternationalString implements InternationalString
      */
     @Override
     public int length() {
-        if (defaultValue == null) {
-            defaultValue = toString();
-            if (defaultValue == null) {
+        String text = defaultValue;
+        if (text == null) {
+            text = toString();
+            if (text == null) {
                 return 0;
             }
+            defaultValue = text;
         }
-        return defaultValue.length();
+        return text.length();
     }
 
     /**
@@ -86,13 +88,15 @@ public abstract class AbstractInternationalString implements InternationalString
      */
     @Override
     public char charAt(final int index) throws IndexOutOfBoundsException {
-        if (defaultValue == null) {
-            defaultValue = toString();
-            if (defaultValue == null) {
+        String text = defaultValue;
+        if (text == null) {
+            text = toString();
+            if (text == null) {
                 throw new StringIndexOutOfBoundsException();
             }
+            defaultValue = text;
         }
-        return defaultValue.charAt(index);
+        return text.charAt(index);
     }
 
     /**
@@ -107,16 +111,18 @@ public abstract class AbstractInternationalString implements InternationalString
      */
     @Override
     public CharSequence subSequence(final int start, final int end) {
-        if (defaultValue == null) {
-            defaultValue = toString();
-            if (defaultValue == null) {
+        String text = defaultValue;
+        if (text == null) {
+            text = toString();
+            if (text == null) {
                 if (start == 0 && end == 0) {
                     return "";
                 }
                 throw new StringIndexOutOfBoundsException();
             }
+            defaultValue = text;
         }
-        return defaultValue.substring(start, end);
+        return text.substring(start, end);
     }
 
     /**
@@ -142,13 +148,15 @@ public abstract class AbstractInternationalString implements InternationalString
      */
     @Override
     public String toString() {
-        if (defaultValue == null) {
-            defaultValue = toString(Locale.getDefault());
-            if (defaultValue == null) {
+        String text = defaultValue;
+        if (text == null) {
+            text = toString(Locale.getDefault());
+            if (text == null) {
                 return "";
             }
+            defaultValue = text;
         }
-        return defaultValue;
+        return text;
     }
 
     /**

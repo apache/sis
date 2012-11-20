@@ -202,7 +202,7 @@ public final class CharSequences extends Static {
         int n = 0;
         if (text != null) {
             int i = 0;
-            while ((i = indexOf(text, toSearch, i)) >= 0) {
+            while ((i = indexOf(text, toSearch, i, text.length())) >= 0) {
                 n++;
                 i += length;
             }
@@ -243,35 +243,40 @@ public final class CharSequences extends Static {
      * not found, then this method returns -1.
      *
      * <p>There is no restriction on the value of {@code fromIndex}. If negative or greater
-     * than the length of the text, then the behavior of this method is the same than the
-     * one documented in {@link String#indexOf(int, int)}.</p>
+     * than {@code toIndex}, then the behavior of this method is as if the search started
+     * from 0 or {@code toIndex} respectively. This is consistent with the behavior documented
+     * in {@link String#indexOf(int, int)}.</p>
      *
      * @param  text      The character sequence in which to perform the search, or {@code null}.
      * @param  toSearch  The Unicode code point of the character to search.
      * @param  fromIndex The index to start the search from.
+     * @param  toIndex   The index after the last character where to perform the search.
      * @return The index of the first occurrence of the given character in the text, or -1
      *         if no occurrence has been found or if the {@code text} argument is null.
      *
      * @see String#indexOf(int, int)
      */
-    public static int indexOf(final CharSequence text, final int toSearch, int fromIndex) {
+    public static int indexOf(final CharSequence text, final int toSearch, int fromIndex, int toIndex) {
         if (text != null) {
-            if (text instanceof String) {
+            final int length = text.length();
+            if (toIndex > length) {
+                toIndex = length;
+            }
+            if (text instanceof String && toIndex == length) {
                 // String provides a faster implementation.
                 return ((String) text).indexOf(toSearch, fromIndex);
             }
             if (fromIndex < 0) {
                 fromIndex = 0;
             }
-            int length = text.length();
             char head  = (char) toSearch;
             char tail  = (char) 0;
             if (head != toSearch) { // Outside BMP plane?
                 head = highSurrogate(toSearch);
                 tail = lowSurrogate (toSearch);
-                length--;
+                toIndex--;
             }
-            while (fromIndex < length) {
+            while (fromIndex < toIndex) {
                 if (text.charAt(fromIndex) == head) {
                     if (tail == 0 || text.charAt(fromIndex+1) == tail) {
                         return fromIndex;
@@ -285,19 +290,24 @@ public final class CharSequences extends Static {
 
     /**
      * Returns the index within the given strings of the first occurrence of the specified part,
-     * starting at the specified index. This method is equivalent to the following code:
+     * starting at the specified index. This method is equivalent to the following method call,
+     * except that this method works on arbitrary {@link CharSequence} objects instead than
+     * {@link String}s only, and that the upper limit can be specified:
      *
      * {@preformat java
-     *     return string.indexOf(part, fromIndex);
+     *     return text.indexOf(part, fromIndex);
      * }
      *
-     * Except that this method works on arbitrary {@link CharSequence} objects instead than
-     * {@link String}s only.
+     * There is no restriction on the value of {@code fromIndex}. If negative or greater
+     * than {@code toIndex}, then the behavior of this method is as if the search started
+     * from 0 or {@code toIndex} respectively. This is consistent with the
+     * {@link String#indexOf(String, int)} behavior.
      *
      * @param  text      The string in which to perform the search.
      * @param  toSearch  The substring for which to search.
      * @param  fromIndex The index from which to start the search.
-     * @return The index within the string of the first occurrence of the specified part,
+     * @param  toIndex   The index after the last character where to perform the search.
+     * @return The index within the text of the first occurrence of the specified part,
      *         starting at the specified index, or -1 if none.
      * @throws NullPointerException if any of the arguments is null.
      *
@@ -305,9 +315,13 @@ public final class CharSequences extends Static {
      * @see StringBuilder#indexOf(String, int)
      * @see StringBuffer#indexOf(String, int)
      */
-    public static int indexOf(final CharSequence text, final CharSequence toSearch, int fromIndex) {
+    public static int indexOf(final CharSequence text, final CharSequence toSearch, int fromIndex, int toIndex) {
         if (text != null) {
-            if (toSearch instanceof String) {
+            int length = text.length();
+            if (toIndex > length) {
+                toIndex = length;
+            }
+            if (toSearch instanceof String && toIndex == length) {
                 if (text instanceof String) {
                     return ((String) text).indexOf((String) toSearch, fromIndex);
                 }
@@ -321,9 +335,9 @@ public final class CharSequences extends Static {
             if (fromIndex < 0) {
                 fromIndex = 0;
             }
-            final int length = toSearch.length();
-            final int stopAt = text.length() - length;
-search:     for (; fromIndex <= stopAt; fromIndex++) {
+            length = toSearch.length();
+            toIndex -= length;
+search:     for (; fromIndex <= toIndex; fromIndex++) {
                 for (int i=0; i<length; i++) {
                     // No need to use the codePointAt API here, since we are looking for exact matches.
                     if (text.charAt(fromIndex + i) != toSearch.charAt(i)) {
@@ -355,7 +369,7 @@ search:     for (; fromIndex <= stopAt; fromIndex++) {
      * @param  numLines  The number of lines to skip. Can be positive, zero or negative.
      * @param  fromIndex Index at which to start the search, from 0 to {@code text.length()} inclusive.
      * @return Index of the first character after the last skipped line.
-     * @throws NullPointerException If the {@code string} argument is null.
+     * @throws NullPointerException If the {@code text} argument is null.
      * @throws IndexOutOfBoundsException If {@code fromIndex} is out of bounds.
      */
     public static int indexOfLineStart(final CharSequence text, int numLines, int fromIndex) {
@@ -445,8 +459,9 @@ search:     for (; fromIndex <= stopAt; fromIndex++) {
         // 'excludeEmpty' must use the same criterion than trimWhitespaces(...).
         final boolean excludeEmpty = isWhitespace(separator);
         CharSequence[] strings = new CharSequence[4];
+        final int length = text.length();
         int count = 0, last  = 0, i = 0;
-        while ((i = indexOf(text, separator, i)) >= 0) {
+        while ((i = indexOf(text, separator, i, length)) >= 0) {
             final CharSequence item = trimWhitespaces(text, last, i);
             if (!excludeEmpty || item.length() != 0) {
                 if (count == strings.length) {
@@ -457,7 +472,7 @@ search:     for (; fromIndex <= stopAt; fromIndex++) {
             last = ++i;
         }
         // Add the last element.
-        final CharSequence item = trimWhitespaces(text, last, text.length());
+        final CharSequence item = trimWhitespaces(text, last, length);
         if (!excludeEmpty || item.length() != 0) {
             if (count == strings.length) {
                 strings = copyOf(strings, count + 1);
@@ -503,8 +518,9 @@ search:     for (; fromIndex <= stopAt; fromIndex++) {
          * This method is implemented on top of String.indexOf(int,int),
          * assuming that it will be faster for String and StringBuilder.
          */
-        int lf = indexOf(text, '\n', 0);
-        int cr = indexOf(text, '\r', 0);
+        final int length = text.length();
+        int lf = indexOf(text, '\n', 0, length);
+        int cr = indexOf(text, '\r', 0, length);
         if (lf < 0 && cr < 0) {
             return new CharSequence[] {
                 text
@@ -520,27 +536,27 @@ search:     for (; fromIndex <= stopAt; fromIndex++) {
             if (cr < 0) {
                 // There is no "\r" character in the whole text, only "\n".
                 splitAt = lf;
-                hasMore = (lf = indexOf(text, '\n', lf+1)) >= 0;
+                hasMore = (lf = indexOf(text, '\n', lf+1, length)) >= 0;
             } else if (lf < 0) {
                 // There is no "\n" character in the whole text, only "\r".
                 splitAt = cr;
-                hasMore = (cr = indexOf(text, '\r', cr+1)) >= 0;
+                hasMore = (cr = indexOf(text, '\r', cr+1, length)) >= 0;
             } else if (lf < cr) {
                 // There is both "\n" and "\r" characters with "\n" first.
                 splitAt = lf;
                 hasMore = true;
-                lf = indexOf(text, '\n', lf+1);
+                lf = indexOf(text, '\n', lf+1, length);
             } else {
                 // There is both "\r" and "\n" characters with "\r" first.
                 // We need special care for the "\r\n" sequence.
                 splitAt = cr;
                 if (lf == ++cr) {
-                    cr = indexOf(text, '\r', cr+1);
-                    lf = indexOf(text, '\n', lf+1);
+                    cr = indexOf(text, '\r', cr+1, length);
+                    lf = indexOf(text, '\n', lf+1, length);
                     hasMore = (cr >= 0 || lf >= 0);
                     skip = 2;
                 } else {
-                    cr = indexOf(text, '\r', cr+1);
+                    cr = indexOf(text, '\r', cr+1, length);
                     hasMore = true; // Because there is lf.
                 }
             }
@@ -567,7 +583,7 @@ search:     for (; fromIndex <= stopAt; fromIndex++) {
      *
      * @param  values    The text containing the values to parse, or {@code null}.
      * @param  separator The delimiting character (typically the coma).
-     * @return The array of numbers parsed from the given string,
+     * @return The array of numbers parsed from the given text,
      *         or an empty array if {@code values} was null.
      * @throws NumberFormatException If at least one number can not be parsed.
      */
@@ -590,7 +606,7 @@ search:     for (; fromIndex <= stopAt; fromIndex++) {
      *
      * @param  values    The text containing the values to parse, or {@code null}.
      * @param  separator The delimiting character (typically the coma).
-     * @return The array of numbers parsed from the given string,
+     * @return The array of numbers parsed from the given text,
      *         or an empty array if {@code values} was null.
      * @throws NumberFormatException If at least one number can not be parsed.
      */
@@ -613,7 +629,7 @@ search:     for (; fromIndex <= stopAt; fromIndex++) {
      * @param  values    The text containing the values to parse, or {@code null}.
      * @param  separator The delimiting character (typically the coma).
      * @param  radix     The radix to be used for parsing. This is usually 10.
-     * @return The array of numbers parsed from the given string,
+     * @return The array of numbers parsed from the given text,
      *         or an empty array if {@code values} was null.
      * @throws NumberFormatException If at least one number can not be parsed.
      */
@@ -635,7 +651,7 @@ search:     for (; fromIndex <= stopAt; fromIndex++) {
      * @param  values    The text containing the values to parse, or {@code null}.
      * @param  separator The delimiting character (typically the coma).
      * @param  radix     The radix to be used for parsing. This is usually 10.
-     * @return The array of numbers parsed from the given string,
+     * @return The array of numbers parsed from the given text,
      *         or an empty array if {@code values} was null.
      * @throws NumberFormatException If at least one number can not be parsed.
      */
@@ -657,7 +673,7 @@ search:     for (; fromIndex <= stopAt; fromIndex++) {
      * @param  values    The text containing the values to parse, or {@code null}.
      * @param  separator The delimiting character (typically the coma).
      * @param  radix     The radix to be used for parsing. This is usually 10.
-     * @return The array of numbers parsed from the given string,
+     * @return The array of numbers parsed from the given text,
      *         or an empty array if {@code values} was null.
      * @throws NumberFormatException If at least one number can not be parsed.
      */
@@ -679,7 +695,7 @@ search:     for (; fromIndex <= stopAt; fromIndex++) {
      * @param  values    The text containing the values to parse, or {@code null}.
      * @param  separator The delimiting character (typically the coma).
      * @param  radix     The radix to be used for parsing. This is usually 10.
-     * @return The array of numbers parsed from the given string,
+     * @return The array of numbers parsed from the given text,
      *         or an empty array if {@code values} was null.
      * @throws NumberFormatException If at least one number can not be parsed.
      */
@@ -773,7 +789,7 @@ search:     for (; fromIndex <= stopAt; fromIndex++) {
      *
      * @param  text The text from which to remove leading and trailing white spaces, or {@code null}.
      * @return A characters sequence with leading and trailing white spaces removed,
-     *         or {@code null} is the given string was null.
+     *         or {@code null} is the given text was null.
      *
      * @see String#trim()
      */
@@ -821,7 +837,7 @@ search:     for (; fromIndex <= stopAt; fromIndex++) {
      *
      * <p>More specifically if the given value ends with a {@code '.'} character followed by a
      * sequence of {@code '0'} characters, then those characters are omitted. Otherwise this
-     * method returns the string unchanged. This is a "<cite>all or nothing</cite>" method:
+     * method returns the text unchanged. This is a "<cite>all or nothing</cite>" method:
      * either the fractional part is completely removed, or either it is left unchanged.</p>
      *
      * {@section Examples}
@@ -836,7 +852,7 @@ search:     for (; fromIndex <= stopAt; fromIndex++) {
      *
      * @param  value The value to trim if possible, or {@code null}.
      * @return The value without the trailing {@code ".0"} part (if any),
-     *         or {@code null} if the given string was null.
+     *         or {@code null} if the given text was null.
      *
      * @see StringBuilders#trimFractionalPart(StringBuilder)
      */
@@ -861,7 +877,7 @@ search:     for (; fromIndex <= stopAt; fromIndex++) {
      * a copy of {@code text} with some characters substituted by the {@code "(…)"} string.
      *
      * <p>If the text needs to be shortened, then this method tries to apply the above-cited
-     * substitution between two words. For example, the following string:</p>
+     * substitution between two words. For example, the following text:</p>
      *
      * <blockquote>
      *   "This sentence given as an example is way too long to be included in a short name."
@@ -1392,20 +1408,23 @@ cmp:    while (ia < lga) {
     }
 
     /**
-     * Returns {@code true} if the given string at the given offset contains the given part,
-     * in a case-sensitive comparison. This method is equivalent to the following code:
+     * Returns {@code true} if the given text at the given offset contains the given part,
+     * in a case-sensitive comparison. This method is equivalent to the following code,
+     * except that this method works on arbitrary {@link CharSequence} objects instead than
+     * {@link String}s only:
      *
      * {@preformat java
-     *     return string.regionMatches(offset, part, 0, part.length());
+     *     return text.regionMatches(offset, part, 0, part.length());
      * }
      *
-     * Except that this method works on arbitrary {@link CharSequence} objects instead than
-     * {@link String}s only.
+     * This method does not thrown {@code IndexOutOfBoundsException}. Instead if
+     * {@code fromIndex < 0} or {@code fromIndex + part.length() > text.length()},
+     * then this method returns {@code false}.
      *
      * @param text      The character sequence for which to tests for the presence of {@code part}.
      * @param fromIndex The offset in {@code text} where to test for the presence of {@code part}.
-     * @param part      The part which may be present in {@code string}.
-     * @return {@code true} if {@code string} contains {@code part} at the given {@code offset}.
+     * @param part      The part which may be present in {@code text}.
+     * @return {@code true} if {@code text} contains {@code part} at the given {@code offset}.
      * @throws NullPointerException if any of the arguments is null.
      *
      * @see String#regionMatches(int, String, int, int)
@@ -1415,8 +1434,8 @@ cmp:    while (ia < lga) {
             // It is okay to delegate to String implementation since we do not ignore cases.
             return ((String) text).regionMatches(fromIndex, (String) part, 0, part.length());
         }
-        final int length = part.length();
-        if (fromIndex + length > text.length()) {
+        final int length;
+        if (fromIndex < 0 || fromIndex + (length = part.length()) > text.length()) {
             return false;
         }
         for (int i=0; i<length; i++) {

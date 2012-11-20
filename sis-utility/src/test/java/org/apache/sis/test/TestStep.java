@@ -14,24 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.sis.test;
+
+import java.lang.annotation.Documented;
+import java.lang.annotation.Target;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 
 /**
- * A set of helper classes for the SIS implementation.
- *
- * <STRONG>Do not use!</STRONG>
- *
- * This package is for internal use by SIS only. Classes in this package
- * may change in incompatible ways in any future version without notice.
- *
- * {@section Note on serialization}
- * Developers should avoid putting serializable classes in this package as much as possible,
- * since the serialization forms may be considered as a kind of API contract (depending how
- * much strict we want to be regarding compatibility). This is not always practical however,
- * so some serialized classes still exist in this package.
+ * A test method producing an object to be used by another test method.
+ * Such methods are annotated with this {@code TestStep} annotation instead than the
+ * JUnit {@link org.junit.Test} one. However in current implementation, those methods
+ * must be explicitely invoked from another method. This is because JUnit 4 does not
+ * support tests chaining, so this annotation is currently used only for documentation
+ * purpose.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-2.0)
+ * @since   0.3
  * @version 0.3
  * @module
  */
-package org.apache.sis.internal.util;
+@Documented
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.SOURCE)
+public @interface TestStep {
+}

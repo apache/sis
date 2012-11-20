@@ -87,11 +87,12 @@ public final strictfp class CharSequencesTest extends TestCase {
                 case 3:  string = new SimpleInternationalString((String) string); break;
                 default: throw new AssertionError(i);
             }
-            assertEquals(-1, indexOf(string, "dummy",        0));
-            assertEquals( 0, indexOf(string, "An",           0));
-            assertEquals(-1, indexOf(string, "An",           1));
-            assertEquals(12, indexOf(string, "sentence.",    0));
-            assertEquals(-1, indexOf(string, "sentence;",    0));
+            final int length = string.length();
+            assertEquals(-1, indexOf(string, "dummy",     0, length));
+            assertEquals( 0, indexOf(string, "An",        0, length));
+            assertEquals(-1, indexOf(string, "An",        1, length));
+            assertEquals(12, indexOf(string, "sentence.", 0, length));
+            assertEquals(-1, indexOf(string, "sentence;", 0, length));
         }
     }
 

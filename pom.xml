@@ -490,7 +490,7 @@ Apache SIS is a toolkit for describing location information, including points,
           <tags>
             <tag><placement>t</placement> <name>goal</name>     <head>Maven goal:</head></tag>
             <tag><placement>t</placement> <name>phase</name>    <head>Maven phase:</head></tag>
-            <tag><placement>a</placement> <name>category</name> <head>Category:</head></tag>
+            <tag><placement>X</placement> <name>category</name> <head>Category:</head></tag>
             <tag><placement>a</placement> <name>todo</name>     <head>TODO:</head></tag>
           </tags>
           <taglets>
