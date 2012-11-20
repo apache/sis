@@ -169,25 +169,28 @@ class IndexedResourceCompiler implements FilenameFilter, Comparator<Object> {
      */
     private void loadKeyValues() throws IOException {
         final BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(bundleClass), JAVA_ENCODING));
-        String line;
-        while ((line = in.readLine()) != null) {
-            if ((line = line.trim()).startsWith(KEY_MODIFIERS)) {
-                final int s = line.indexOf('=', KEY_MODIFIERS.length());
-                if (s >= 0) {
-                    final int c = line.indexOf(';', s);
-                    if (c >= 0) {
-                        final String key = line.substring(KEY_MODIFIERS.length(), s).trim();
-                        final Integer ID = Integer.valueOf(line.substring(s+1, c).trim());
-                        final String old = allocatedIDs.put(ID, key);
-                        if (old != null) {
-                            warning("Key " + ID + " is used by " + old + " and " + key);
-                            errors++;
+        try {
+            String line;
+            while ((line = in.readLine()) != null) {
+                if ((line = line.trim()).startsWith(KEY_MODIFIERS)) {
+                    final int s = line.indexOf('=', KEY_MODIFIERS.length());
+                    if (s >= 0) {
+                        final int c = line.indexOf(';', s);
+                        if (c >= 0) {
+                            final String key = line.substring(KEY_MODIFIERS.length(), s).trim();
+                            final Integer ID = Integer.valueOf(line.substring(s+1, c).trim());
+                            final String old = allocatedIDs.put(ID, key);
+                            if (old != null) {
+                                warning("Key " + ID + " is used by " + old + " and " + key);
+                                errors++;
+                            }
                         }
                     }
                 }
             }
+        } finally {
+            in.close();
         }
-        in.close();
     }
 
     /**
@@ -211,9 +214,9 @@ class IndexedResourceCompiler implements FilenameFilter, Comparator<Object> {
      * The following methods are invoked by this method:
      *
      * <ul>
-     *   <li>{@link #loadProperties}</li>
-     *   <li>{@link #writeUTF}</li>
-     *   <li>{@link #writeJavaSource}</li>
+     *   <li>{@link #loadProperties(File)}</li>
+     *   <li>{@link #writeUTF(File)}</li>
+     *   <li>{@link #writeJavaSource()}</li>
      * </ul>
      *
      * @throws IOException if an input/output operation failed.
@@ -229,10 +232,8 @@ class IndexedResourceCompiler implements FilenameFilter, Comparator<Object> {
         if (utfDir.exists() && !utfDir.isDirectory()) {
             throw new FileNotFoundException("\"" + utfDir + "\" is not a directory.");
         }
-        final File[] content = srcDir.listFiles(this);
         File defaultLanguage = null;
-        for (int i=0; i<content.length; i++) {
-            final File file = content[i];
+        for (final File file : srcDir.listFiles(this)) {
             final String filename = file.getName();
             if (filename.startsWith(classname)) {
                 loadProperties(file);
@@ -271,10 +272,14 @@ class IndexedResourceCompiler implements FilenameFilter, Comparator<Object> {
      * @throws IOException if the file can not be read.
      */
     private static Properties loadRawProperties(final File file) throws IOException {
+        final Properties properties;
         final InputStream input = new FileInputStream(file);
-        final Properties properties = new Properties();
-        properties.load(input);
-        input.close();
+        try {
+            properties = new Properties();
+            properties.load(input);
+        } finally {
+            input.close();
+        }
         return properties;
     }
 
@@ -287,8 +292,7 @@ class IndexedResourceCompiler implements FilenameFilter, Comparator<Object> {
      * <p>The following methods must be invoked before this one:</p>
      *
      * <ul>
-     *   <li>{@link #initialize}</li>
-     *   <li>{@link #setResourceBundle}</li>
+     *   <li>{@link #loadKeyValues()}</li>
      * </ul>
      *
      * @param  file The properties file to read.
@@ -303,11 +307,11 @@ class IndexedResourceCompiler implements FilenameFilter, Comparator<Object> {
             /*
              * Checks key and value validity.
              */
-            if (key.trim().length() == 0) {
+            if (key.trim().isEmpty()) {
                 warning(file, key, "Empty key.", null);
                 continue;
             }
-            if (value.trim().length() == 0) {
+            if (value.trim().isEmpty()) {
                 warning(file, key, "Empty value.", null);
                 continue;
             }
@@ -351,8 +355,7 @@ class IndexedResourceCompiler implements FilenameFilter, Comparator<Object> {
         final String[] keys = resources.keySet().toArray(new String[resources.size()]);
         Arrays.sort(keys, this);
         int freeID = 0;
-        for (int i=0; i<keys.length; i++) {
-            final String key = keys[i];
+        for (final String key : keys) {
             if (!allocatedIDs.containsValue(key)) {
                 Integer ID;
                 do {
@@ -424,9 +427,8 @@ search: for (int i=0; i<buffer.length(); i++) { // Length of 'buffer' will vary.
      * Writes UTF file. The following methods must be invoked before this one:
      *
      * <ul>
-     *   <li>{@link #initialize}</li>
-     *   <li>{@link #setResourceBundle}</li>
-     *   <li>{@link #loadProperties}</li>
+     *   <li>{@link #loadKeyValues()}</li>
+     *   <li>{@link #loadProperties(File)}</li>
      * </ul>
      *
      * @param  file The destination file.
@@ -439,12 +441,15 @@ search: for (int i=0; i<buffer.length(); i++) { // Length of 'buffer' will vary.
         }
         final int count = allocatedIDs.isEmpty() ? 0 : Collections.max(allocatedIDs.keySet()) + 1;
         final DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(file)));
-        out.writeInt(count);
-        for (int i=0; i<count; i++) {
-            final String value = (String) resources.get(allocatedIDs.get(i));
-            out.writeUTF((value != null) ? value : "");
+        try {
+            out.writeInt(count);
+            for (int i=0; i<count; i++) {
+                final String value = (String) resources.get(allocatedIDs.get(i));
+                out.writeUTF((value != null) ? value : "");
+            }
+        } finally {
+            out.close();
         }
-        out.close();
     }
 
     /**
@@ -452,9 +457,8 @@ search: for (int i=0; i<buffer.length(); i++) { // Length of 'buffer' will vary.
      * The following methods must be invoked before this one:
      *
      * <ul>
-     *   <li>{@link #initialize}</li>
-     *   <li>{@link #setResourceBundle}</li>
-     *   <li>{@link #loadProperties}</li>
+     *   <li>{@link #loadKeyValues()}</li>
+     *   <li>{@link #loadProperties(File)}</li>
      * </ul>
      *
      * @throws IOException if an input/output operation failed.
@@ -467,115 +471,130 @@ search: for (int i=0; i<buffer.length(); i++) { // Length of 'buffer' will vary.
         if (!file.getParentFile().isDirectory()) {
             throw new FileNotFoundException("Parent directory not found for " + file);
         }
-        final BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file), JAVA_ENCODING));
         final String lineSeparator = System.getProperty("line.separator", "\n");
         final StringBuilder buffer = new StringBuilder(4096);
         /*
-         * Copies everything up to (including) the declaration of the Keys inner class.
+         * Copies everything up to (including) the constructor of the Keys inner class.
          * The declaration must follow Sun's convention on brace location (i.e. must be
          * on the same line than the class declaration).
          */
-        final Pattern classKeys = Pattern.compile("[\\s\\w]*class\\s+" + KEYS_INNER_CLASS + "\\s*\\{");
-        String line;
-        do {
-            line = in.readLine();
-            if (line == null) {
-                in.close();
-                throw new EOFException(file.toString());
-            }
-            buffer.append(line).append(lineSeparator);
-        } while (!classKeys.matcher(line).matches());
-        /*
-         * Starting from this point, the content that we are going to write in the buffer
-         * may be different than the file content.  Remember the buffer position in order
-         * to allow us to compare the buffer with the file content.
-         *
-         * We stop reading the file for now. We will continue reading the file after the
-         * 'for' loop below. Instead, we now write the constructor followed by keys values.
-         */
-        int startLineToCompare = buffer.length();
-        buffer.append(KEY_MARGIN).append("private ").append(KEYS_INNER_CLASS).append("() {").append(lineSeparator)
-              .append(KEY_MARGIN).append('}').append(lineSeparator);
-        final Map.Entry<?,?>[] entries = allocatedIDs.entrySet().toArray(new Map.Entry<?,?>[allocatedIDs.size()]);
-        Arrays.sort(entries, this);
-        for (int i=0; i<entries.length; i++) {
-            buffer.append(lineSeparator);
-            final String key = (String) entries[i].getValue();
-            final String ID  = entries[i].getKey().toString();
-            String message = (String) resources.get(key);
-            if (message != null) {
-                message = message.replace('\t', ' ');
-                buffer.append(KEY_MARGIN).append("/**").append(lineSeparator);
-                while (((message=message.trim()).length()) != 0) {
-                    buffer.append(KEY_MARGIN).append(" * ");
-                    int stop = message.indexOf('\n');
-                    if (stop < 0) {
-                        stop = message.length();
+        boolean modified;
+        final BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file), JAVA_ENCODING));
+        try {
+            for (int state=0; state<=2; state++) {
+                final String regex;
+                switch (state) {
+                    case 0: regex = "[\\s\\w]*class\\s+" + KEYS_INNER_CLASS + "\\s+[\\s\\w]*\\{";      break; // Class declaration
+                    case 1: regex = "[\\s\\w]*\\s+" + KEYS_INNER_CLASS + "\\s*\\([\\s\\w]*\\)\\s+\\{"; break; // Constructor declaration
+                    case 2: regex = "\\s*\\}"; break; // Constructor end.
+                    default: throw new AssertionError(state);
+                }
+                final Pattern pattern = Pattern.compile(regex);
+                String line;
+                do {
+                    line = in.readLine();
+                    if (line == null) {
+                        in.close();
+                        throw new EOFException(file.toString());
                     }
-                    if (stop > COMMENT_LENGTH) {
-                        stop = COMMENT_LENGTH;
-                        while (stop>20 && !Character.isWhitespace(message.charAt(stop))) {
-                            stop--;
+                    buffer.append(line).append(lineSeparator);
+                } while (!pattern.matcher(line).matches());
+            }
+            /*
+             * Starting from this point, the content that we are going to write in the buffer
+             * may be different than the file content.  Remember the buffer position in order
+             * to allow us to compare the buffer with the file content.
+             *
+             * We stop reading the file for now. We will continue reading the file after the
+             * 'for' loop below. Instead, we now write the constructor followed by keys values.
+             */
+            int startLineToCompare = buffer.length();
+            final Map.Entry<?,?>[] entries = allocatedIDs.entrySet().toArray(new Map.Entry<?,?>[allocatedIDs.size()]);
+            Arrays.sort(entries, this);
+            for (final Map.Entry<?,?> entry : entries) {
+                buffer.append(lineSeparator);
+                final String key = (String) entry.getValue();
+                final String ID  = entry.getKey().toString();
+                String message = (String) resources.get(key);
+                if (message != null) {
+                    message = message.replace('\t', ' ');
+                    buffer.append(KEY_MARGIN).append("/**").append(lineSeparator);
+                    while (((message=message.trim()).length()) != 0) {
+                        buffer.append(KEY_MARGIN).append(" * ");
+                        int stop = message.indexOf('\n');
+                        if (stop < 0) {
+                            stop = message.length();
                         }
+                        if (stop > COMMENT_LENGTH) {
+                            stop = COMMENT_LENGTH;
+                            while (stop>20 && !Character.isWhitespace(message.charAt(stop))) {
+                                stop--;
+                            }
+                        }
+                        buffer.append(message.substring(0, stop).trim()).append(lineSeparator);
+                        message = message.substring(stop);
                     }
-                    buffer.append(message.substring(0, stop).trim()).append(lineSeparator);
-                    message = message.substring(stop);
+                    buffer.append(KEY_MARGIN).append(" */").append(lineSeparator);
                 }
-                buffer.append(KEY_MARGIN).append(" */").append(lineSeparator);
+                buffer.append(KEY_MARGIN).append(KEY_MODIFIERS).append(key).append(" = ")
+                        .append(ID).append(';').append(lineSeparator);
             }
-            buffer.append(KEY_MARGIN).append(KEY_MODIFIERS).append(key).append(" = ")
-                    .append(ID).append(';').append(lineSeparator);
-        }
-        /*
-         * At this point, all key values have been written in the buffer. Skip the corresponding
-         * lines from the files without adding them to the buffer.  However we will compare them
-         * to the buffer content in order to detect if we really need to write the file.
-         *
-         * This operation will stop when we reach the closing bracket. Note that opening brackets
-         * may exist in the code that we are skipping, so we need to count them.
-         */
-        boolean modified = false;
-        int brackets = 1;
-        do {
-            line = in.readLine();
-            if (line == null) {
-                in.close();
-                throw new EOFException(file.toString());
-            }
-            for (int i=0; i<line.length(); i++) {
-                switch (line.charAt(i)) {
-                    case '{': brackets++; break;
-                    case '}': brackets--; break;
+            /*
+             * At this point, all key values have been written in the buffer. Skip the corresponding
+             * lines from the files without adding them to the buffer.  However we will compare them
+             * to the buffer content in order to detect if we really need to write the file.
+             *
+             * This operation will stop when we reach the closing bracket. Note that opening brackets
+             * may exist in the code that we are skipping, so we need to count them.
+             */
+            modified = false;
+            int brackets = 1;
+            String line;
+            do {
+                line = in.readLine();
+                if (line == null) {
+                    in.close();
+                    throw new EOFException(file.toString());
                 }
-            }
-            if (!modified) {
-                final int endOfLine = buffer.indexOf(lineSeparator, startLineToCompare);
-                if (endOfLine >= 0) {
-                    if (buffer.substring(startLineToCompare, endOfLine).equals(line)) {
-                        startLineToCompare = endOfLine + lineSeparator.length();
-                        continue; // Content is equals, do not set the 'modified' flag.
+                for (int i=0; i<line.length(); i++) {
+                    switch (line.charAt(i)) {
+                        case '{': brackets++; break;
+                        case '}': brackets--; break;
                     }
-                } else if (brackets == 0) {
-                    break; // Content finished in same time, do not set the 'modified' flag.
                 }
-                modified = true;
-            }
-        } while (brackets != 0);
-        /*
-         * Only if we detected some changes in the file content, read all remaining parts of
-         * the file then write the result to disk. Note that this overwite the original file.
-         */
-        if (modified) {
-            buffer.append(line).append(lineSeparator);
-            while ((line = in.readLine()) != null) {
+                if (!modified) {
+                    final int endOfLine = buffer.indexOf(lineSeparator, startLineToCompare);
+                    if (endOfLine >= 0) {
+                        if (buffer.substring(startLineToCompare, endOfLine).equals(line)) {
+                            startLineToCompare = endOfLine + lineSeparator.length();
+                            continue; // Content is equals, do not set the 'modified' flag.
+                        }
+                    } else if (brackets == 0) {
+                        break; // Content finished in same time, do not set the 'modified' flag.
+                    }
+                    modified = true;
+                }
+            } while (brackets != 0);
+            /*
+             * Only if we detected some changes in the file content, read all remaining parts of
+             * the file then write the result to disk. Note that this overwite the original file.
+             */
+            if (modified) {
                 buffer.append(line).append(lineSeparator);
+                while ((line = in.readLine()) != null) {
+                    buffer.append(line).append(lineSeparator);
+                }
             }
+        } finally {
+            in.close();
         }
-        in.close();
         if (modified) {
             final Writer out = new OutputStreamWriter(new FileOutputStream(file), JAVA_ENCODING);
-            out.write(buffer.toString());
-            out.close();
+            try {
+                out.write(buffer.toString());
+            } finally {
+                out.close();
+            }
         }
     }
 

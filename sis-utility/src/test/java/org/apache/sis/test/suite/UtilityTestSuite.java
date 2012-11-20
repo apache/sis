@@ -51,6 +51,7 @@ import org.junit.runners.Suite;
   org.apache.sis.util.collection.CacheTest.class,
   org.apache.sis.util.collection.DerivedSetTest.class,
   org.apache.sis.util.collection.DerivedMapTest.class,
+  org.apache.sis.util.collection.DefaultTreeTableTest.class,
 
   // GeoAPI most basic types.
   org.apache.sis.util.type.TypesTest.class,
@@ -58,12 +59,14 @@ import org.junit.runners.Suite;
   org.apache.sis.util.type.DefaultInternationalStringTest.class,
 
   // Formatting
+  org.apache.sis.internal.util.LocalizedParseExceptionTest.class,
   org.apache.sis.measure.FormattedCharacterIteratorTest.class,
   org.apache.sis.measure.AngleFormatTest.class,
   org.apache.sis.measure.AngleTest.class,
   org.apache.sis.internal.util.X364Test.class,
   org.apache.sis.io.LineFormatterTest.class,
   org.apache.sis.io.TableFormatterTest.class,
+  org.apache.sis.util.collection.TreeTableFormatTest.class,
 
   // XML most basic types.
   org.apache.sis.xml.XLinkTest.class,

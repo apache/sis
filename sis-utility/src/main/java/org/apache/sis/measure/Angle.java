@@ -101,9 +101,9 @@ public class Angle implements Comparable<Angle>, Formattable, Serializable {
         } catch (ParseException exception) {
             /*
              * Use Exception.getMessage() instead than getLocalizedMessage() because the later
-             * is formatted in the AngleFormat locale, which is hard-coded to Locale.CANADA in
-             * our 'getAngleFormat()' implementation. The getMessage() method uses the system
-             * locale, which is what we actually want.
+             * is formatted in the AngleFormat locale, which is hard-coded to Locale.US in our
+             * 'getAngleFormat()' implementation. The getMessage() method uses the system locale,
+             * which is what we actually want.
              */
             NumberFormatException e = new NumberFormatException(exception.getMessage());
             e.initCause(exception);
@@ -239,8 +239,7 @@ public class Angle implements Comparable<Angle>, Formattable, Serializable {
     private static Format getAngleFormat() {
         assert Thread.holdsLock(Angle.class);
         if (format == null) {
-            format = AngleFormat.getInstance(Locale.CANADA);
-            // Canada locale is closer to ISO standards than US locale.
+            format = AngleFormat.getInstance(Locale.US);
         }
         return format;
     }

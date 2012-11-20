@@ -40,8 +40,9 @@ import static java.util.Collections.unmodifiableMap;
  * <ul>
  *   <li>Null-safe {@link #isNullOrEmpty(Collection) isNullOrEmpty} method,
  *       for the convenience of classes using the <cite>lazy instantiation</cite> pattern.</li>
- *   <li>{@link #asCollection(Object) asCollection} for wrapping arbitrary objects to list or collection.</li>
- *   <li>List and collection {@linkplain #listComparator() comparators}.</li>
+ *   <li>{@link #toCollection(Object) toCollection} for wrapping or copying arbitrary objects to
+ *       list or collection.</li>
+ *   <li>List and sorted set {@linkplain #listComparator() comparators}.</li>
  *   <li>{@link #modifiableCopy(Collection) modifiableCopy} method for taking a snapshot of an arbitrary
  *       implementation into an unsynchronized, modifiable, in-memory object.</li>
  *   <li>{@link #unmodifiableOrCopy(Set) unmodifiableOrCopy} methods, which may be slightly more
@@ -157,6 +158,8 @@ public final class Collections extends Static {
      *         converter, or {@code null} if {@code storage} was null.
      *
      * @see org.apache.sis.util.ObjectConverters#derivedSet(Set, ObjectConverter)
+     *
+     * @category converter
      */
     public static <S,E> Set<E> derivedSet(final Set<S> storage, final ObjectConverter<S,E> converter) {
         ArgumentChecks.ensureNonNull("converter", converter);
@@ -201,6 +204,8 @@ public final class Collections extends Static {
      * @see org.apache.sis.util.ObjectConverters#derivedMap(Map, ObjectConverter, ObjectConverter)
      * @see org.apache.sis.util.ObjectConverters#derivedKeys(Map, ObjectConverter, Class)
      * @see org.apache.sis.util.ObjectConverters#derivedValues(Map, Class, ObjectConverter)
+     *
+     * @category converter
      */
     public static <SK,SV,K,V> Map<K,V> derivedMap(final Map<SK,SV> storage,
                                                   final ObjectConverter<SK,K> keyConverter,
@@ -225,6 +230,8 @@ public final class Collections extends Static {
      * @return A set containing the array elements, or {@code null} if the given array was null.
      *
      * @see java.util.Collections#unmodifiableSet(Set)
+     *
+     * @category converter
      */
     public static <E> Set<E> immutableSet(final E... array) {
         if (array == null) {
@@ -252,6 +259,8 @@ public final class Collections extends Static {
      * @param  <E>  The type of elements in the set.
      * @param  set  The set to make unmodifiable, or {@code null}.
      * @return A unmodifiable version of the given set, or {@code null} if the given set was null.
+     *
+     * @category converter
      */
     public static <E> Set<E> unmodifiableOrCopy(Set<E> set) {
         if (set != null) {
@@ -288,6 +297,8 @@ public final class Collections extends Static {
      * @param  <V>  The type of values in the map.
      * @param  map  The map to make unmodifiable, or {@code null}.
      * @return A unmodifiable version of the given map, or {@code null} if the given map was null.
+     *
+     * @category converter
      */
     public static <K,V> Map<K,V> unmodifiableOrCopy(Map<K,V> map) {
         if (map != null) {
@@ -328,6 +339,8 @@ public final class Collections extends Static {
      * @param  <E> The type of elements in the collection.
      * @param  collection The collection to copy, or {@code null}.
      * @return A copy of the given collection, or {@code null} if the given collection was null.
+     *
+     * @category converter
      */
     @SuppressWarnings("unchecked")
     public static <E> Collection<E> modifiableCopy(final Collection<E> collection) {
@@ -379,6 +392,8 @@ public final class Collections extends Static {
      * @param  <V> The type of values in the map.
      * @param  map The map to copy, or {@code null}.
      * @return A copy of the given map, or {@code null} if the given map was null.
+     *
+     * @category converter
      */
     @SuppressWarnings("unchecked")
     public static <K,V> Map<K,V> modifiableCopy(final Map<K,V> map) {
@@ -417,16 +432,18 @@ public final class Collections extends Static {
      * is not valid anymore after this method call since it has been used for the iteration.</p>
      *
      * <p>If the returned object needs to be a list, then this method can be chained
-     * with {@link #asList(Collection)} as below:</p>
+     * with {@link #toList(Collection)} as below:</p>
      *
      * {@preformat java
-     *     List<?> list = asList(asCollection(object));
+     *     List<?> list = toList(toCollection(object));
      * }
      *
      * @param  value The value to return as a collection, or {@code null}.
      * @return The value as a collection, or wrapped in a collection (never {@code null}).
+     *
+     * @category converter
      */
-    public static Collection<?> asCollection(final Object value) {
+    public static Collection<?> toCollection(final Object value) {
         if (value == null) {
             return emptyList();
         }
@@ -466,18 +483,20 @@ public final class Collections extends Static {
      *   <li>Otherwise the elements are copied in a new list, which is returned.</li>
      * </ul>
      *
-     * This method can be chained with {@link #asCollection(Object)}
+     * This method can be chained with {@link #toCollection(Object)}
      * for handling a wider range of types:
      *
      * {@preformat java
-     *     List<?> list = asList(asCollection(object));
+     *     List<?> list = toList(toCollection(object));
      * }
      *
      * @param  <T> The type of elements in the given collection.
      * @param  collection The collection to cast or copy to a list.
      * @return The given collection as a list, or a copy of the given collection.
+     *
+     * @category converter
      */
-    public static <T> List<T> asList(final Collection<T> collection) {
+    public static <T> List<T> toList(final Collection<T> collection) {
         if (collection instanceof List<?>) {
             return (List<T>) collection;
         }
@@ -485,38 +504,45 @@ public final class Collections extends Static {
     }
 
     /**
-     * The comparator to be returned by {@code #listComparator} and similar methods. Can not be
-     * public because of parameterized types: we need a method for casting to the expected type.
-     * This is the same trick than {@link Collections#emptySet()} for example.
+     * The comparator to be returned by {@link Collections#listComparator()} and similar methods.
      */
-    @SuppressWarnings("rawtypes")
-    private static final class Compare implements Comparator<Collection<Comparable>>, Serializable {
-        /**
-         * The unique instance.
-         */
-        static final Comparator<Collection<Comparable>> INSTANCE = new Compare();
-
+    private static final class Compare<T extends Comparable<T>>
+            implements Comparator<Collection<T>>, Serializable
+    {
         /**
          * For cross-version compatibility.
          */
         private static final long serialVersionUID = -8926770873102046405L;
 
         /**
-         * Compares to collections of comparable objects.
+         * The unique instance. Can not be public because of parameterized types: we need a method
+         * for casting to the expected type. This is the same trick than the one used by the JDK
+         * in the {@link Collections#emptySet()} method for instance.
+         */
+        @SuppressWarnings("rawtypes")
+        static final Comparator INSTANCE = new Compare();
+
+        /**
+         * Do not allow instantiation other than the unique {@link #INSTANCE}.
+         */
+        private Compare() {
+        }
+
+        /**
+         * Compares two collections of comparable objects.
          */
         @Override
-        @SuppressWarnings("unchecked")
-        public int compare(final Collection<Comparable> c1, final Collection<Comparable> c2) {
-            final Iterator<Comparable> i1 = c1.iterator();
-            final Iterator<Comparable> i2 = c2.iterator();
+        public int compare(final Collection<T> c1, final Collection<T> c2) {
+            final Iterator<T> i1 = c1.iterator();
+            final Iterator<T> i2 = c2.iterator();
             int c;
             do {
                 final boolean h1 = i1.hasNext();
                 final boolean h2 = i2.hasNext();
                 if (!h1) return h2 ? -1 : 0;
                 if (!h2) return +1;
-                final Comparable e1 = i1.next();
-                final Comparable e2 = i2.next();
+                final T e1 = i1.next();
+                final T e2 = i2.next();
                 c = e1.compareTo(e2);
             } while (c == 0);
             return c;
@@ -524,8 +550,8 @@ public final class Collections extends Static {
     };
 
     /**
-     * Returns a comparator for lists of comparable elements. The first element of each list
-     * are {@linkplain Comparable#compareTo compared}. If one is <cite>greater than</cite> or
+     * Returns a comparator for lists of comparable elements. The first element of each list are
+     * {@linkplain Comparable#compareTo(Object) compared}. If one is <cite>greater than</cite> or
      * <cite>less than</cite> the other, the result of that comparison is returned. Otherwise
      * the second element are compared, and so on until either non-equal elements are found,
      * or end-of-list are reached. In the later case, the shortest list is considered
@@ -536,38 +562,91 @@ public final class Collections extends Static {
      *
      * @param  <T> The type of elements in both lists.
      * @return The ordering between two lists.
+     *
+     * @category comparator
      */
-    @SuppressWarnings({"unchecked","rawtypes"})
+    @SuppressWarnings("unchecked")
     public static <T extends Comparable<T>> Comparator<List<T>> listComparator() {
-        return (Comparator) Compare.INSTANCE;
+        return Compare.INSTANCE;
     }
 
     /**
-     * Returns a comparator for sorted sets of comparable elements. The elements are compared in
-     * iteration order as for the {@linkplain #listComparator list comparator}.
+     * Returns a comparator for sorted sets of comparable elements. The first element of each set
+     * are {@linkplain Comparable#compareTo(Object) compared}. If one is <cite>greater than</cite>
+     * or <cite>less than</cite> the other, the result of that comparison is returned. Otherwise
+     * the second element are compared, and so on until either non-equal elements are found,
+     * or end-of-set are reached. In the later case, the smallest set is considered
+     * <cite>less than</cite> the largest one.
+     *
+     * {@note There is no method accepting an arbitrary <code>Set</code> or <code>Collection</code>
+     *        argument because this comparator makes sense only for collections having determinist
+     *        iteration order.}
      *
      * @param <T> The type of elements in both sets.
      * @return The ordering between two sets.
+     *
+     * @category comparator
      */
-    @SuppressWarnings({"unchecked","rawtypes"})
+    @SuppressWarnings("unchecked")
     public static <T extends Comparable<T>> Comparator<SortedSet<T>> sortedSetComparator() {
-        return (Comparator) Compare.INSTANCE;
+        return Compare.INSTANCE;
     }
 
     /**
-     * Returns a comparator for arbitrary collections of comparable elements. The elements are
-     * compared in iteration order as for the {@linkplain #listComparator list comparator}.
-     *
-     * <p><em>This comparator make sense only for collections having determinist order</em>
-     * like {@link java.util.TreeSet}, {@link java.util.LinkedHashSet} or queues.
-     * Do <strong>not</strong> use it with {@link java.util.HashSet}.</p>
-     *
-     * @param <T> The type of elements in both collections.
-     * @return The ordering between two collections.
+     * The comparator to be returned by {@link Collections#valueComparator()}.
      */
-    @SuppressWarnings({"unchecked","rawtypes"})
-    public static <T extends Comparable<T>> Comparator<Collection<T>> collectionComparator() {
-        return (Comparator) Compare.INSTANCE;
+    private static final class ValueComparator<K,V extends Comparable<V>>
+            implements Comparator<Map.Entry<K,V>>, Serializable
+    {
+        /**
+         * For cross-version compatibility.
+         */
+        private static final long serialVersionUID = 3809610984070771228L;
+
+        /**
+         * The unique instance. Can not be public because of parameterized types: we need a method
+         * for casting to the expected type. This is the same trick than the one used by the JDK
+         * in the {@link Collections#emptySet()} method for instance.
+         */
+        @SuppressWarnings("rawtypes")
+        static final ValueComparator INSTANCE = new ValueComparator();
+
+        /**
+         * Do not allow instantiation other than the unique {@link #INSTANCE}.
+         */
+        private ValueComparator() {
+        }
+
+        /**
+         * Compares the values of two entries.
+         */
+        @Override
+        public int compare(final Map.Entry<K,V> e1, final Map.Entry<K,V> e2) {
+            return e1.getValue().compareTo(e2.getValue());
+        }
+    }
+
+    /**
+     * Returns a comparator for map entries having comparable {@linkplain java.util.Map.Entry#getValue() values}.
+     * For any pair of entries {@code e1} and {@code e2}, this method performs the comparison as below:
+     *
+     * {@preformat java
+     *     return e1.getValue().compareTo(e2.getValue());
+     * }
+     *
+     * This comparator can be used as a complement to {@link SortedSet}. While {@code SortedSet}
+     * maintains keys ordering at all time, {@code valueComparator()} is typically used only at
+     * the end of a process in which the values are the numerical calculation results.
+     *
+     * @param <K> The type of keys in the map entries.
+     * @param <V> The type of values in the map entries.
+     * @return A comparator for the values of the given type.
+     *
+     * @category comparator
+     */
+    @SuppressWarnings("unchecked")
+    public static <K,V extends Comparable<V>> Comparator<Map.Entry<K,V>> valueComparator() {
+        return ValueComparator.INSTANCE;
     }
 
     /**

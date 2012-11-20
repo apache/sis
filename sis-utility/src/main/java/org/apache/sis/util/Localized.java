@@ -30,10 +30,18 @@ import java.util.Locale;
 public interface Localized {
     /**
      * Returns the locale of the implemented service. Some implementations may return
-     * {@code null} if no locale is explicitly defined. In such case, the locale to use
-     * is typically the {@linkplain Locale#getDefault() default} locale.
+     * {@code null} if no locale is explicitly defined. The meaning of null locale is
+     * implementation-dependent, but typical interpretations are:
+     *
+     * <ul>
+     *   <li>A synonymous of the {@linkplain Locale#getDefault() system default locale};</li>
+     *   <li>or an "unlocalized" service, for example formatting numbers using
+     *       {@link Double#toString(double)} instead than {@link java.text.NumberFormat}.</li>
+     * </ul>
      *
      * @return The locale, or {@code null} if not explicitly defined.
+     *
+     * @see org.apache.sis.io.CompoundFormat#getLocale()
      */
     Locale getLocale();
 }
