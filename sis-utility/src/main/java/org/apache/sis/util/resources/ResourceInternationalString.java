@@ -17,10 +17,15 @@
 package org.apache.sis.util.resources;
 
 import java.io.Serializable;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.InvalidObjectException;
+import java.io.IOException;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import net.jcip.annotations.Immutable;
 import org.apache.sis.util.Utilities;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.type.AbstractInternationalString;
 
 // Related to JDK7
@@ -45,16 +50,16 @@ abstract class ResourceInternationalString extends AbstractInternationalString i
     private static final long serialVersionUID = 4744571031462678126L;
 
     /**
-     * The key for the resource to fetch.
+     * The key for the resource to fetch. A negative value means that the resource takes no
+     * argument, in which case the {@link #arguments} field shall be ignored. Negative key
+     * values are converted to positive values using the {@code ~} operator.
      */
-    private final int key;
+    private transient int key;
 
     /**
-     * The argument(s), or {@code Loader.class} if none. The choice of {@code Loader.class} for
-     * meaning "no argument" is arbitrary - we just need a reference that the user is unlikely
-     * to known, and we need the referenced object to be serializable. We can not use the
-     * {@code null} value for "no argument" because the user may really wants to specify
-     * {@code null} as an argument value.
+     * The argument(s), or {@code null} if none. Note that the user may also really want to
+     * specify {@code null} as an argument value. We distinguish the two cases with the sign
+     * of the {@link #key} value.
      */
     private final Object arguments;
 
@@ -64,8 +69,9 @@ abstract class ResourceInternationalString extends AbstractInternationalString i
      * @param key The key for the resource to fetch.
      */
     ResourceInternationalString(final int key) {
-        this.key  = key;
-        arguments = Loader.class;
+        ArgumentChecks.ensurePositive("key", key);
+        this.key  = ~key;
+        arguments = null;
     }
 
     /**
@@ -75,9 +81,19 @@ abstract class ResourceInternationalString extends AbstractInternationalString i
      * @param The argument(s).
      */
     ResourceInternationalString(final int key, final Object arguments) {
+        ArgumentChecks.ensurePositive("key", key);
         this.key = key;
         this.arguments = arguments;
     }
+
+    /**
+     * Returns a handler for the constants declared in the inner {@code Keys} class.
+     * This is used at serialization time in order to serialize the constant name
+     * rather than its numeric value.
+     *
+     * @return A handler for the constants declared in the inner {@code Keys} class.
+     */
+    abstract KeyConstants getKeyConstants();
 
     /**
      * Returns the resource bundle for the given locale.
@@ -104,8 +120,8 @@ abstract class ResourceInternationalString extends AbstractInternationalString i
             locale = Locale.ENGLISH;
         }
         final IndexedResourceBundle resources = getBundle(locale);
-        return (arguments == Loader.class)
-                ? resources.getString(key)
+        return (key < 0)
+                ? resources.getString(~key)
                 : resources.getString(key, arguments);
     }
 
@@ -117,7 +133,7 @@ abstract class ResourceInternationalString extends AbstractInternationalString i
      */
     @Override
     public boolean equals(final Object object) {
-        if (object instanceof ResourceInternationalString) {
+        if (object != null && object.getClass() == getClass()) {
             final ResourceInternationalString that = (ResourceInternationalString) object;
             return this.key == that.key && Objects.equals(this.arguments, that.arguments);
         }
@@ -131,6 +147,32 @@ abstract class ResourceInternationalString extends AbstractInternationalString i
      */
     @Override
     public int hashCode() {
-        return key ^ Utilities.deepHashCode(arguments) ^ (int) serialVersionUID;
+        return getClass().hashCode() ^ (key + 31*Utilities.deepHashCode(arguments)) ^ (int) serialVersionUID;
+    }
+
+    /**
+     * Serializes this international string using the key name rather than numerical value.
+     */
+    private void writeObject(final ObjectOutputStream out) throws IOException {
+        out.defaultWriteObject();
+        out.writeUTF(getKeyConstants().getKeyName(key >= 0 ? key : ~key));
+        out.writeBoolean(key < 0);
+    }
+
+    /**
+     * Deserializes an object serialized by {@link #writeObject(ObjectOutputStream)}.
+     */
+    private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        try {
+            key = getKeyConstants().getKeyValue(in.readUTF());
+        } catch (ReflectiveOperationException cause) {
+            InvalidObjectException e = new InvalidObjectException(cause.toString());
+            e.initCause(cause);
+            throw e;
+        }
+        if (in.readBoolean()) {
+            key = ~key;
+        }
     }
 }

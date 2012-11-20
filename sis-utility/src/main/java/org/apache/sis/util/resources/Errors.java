@@ -41,7 +41,15 @@ public final class Errors extends IndexedResourceBundle {
      * @version 0.3
      * @module
      */
-    public static final class Keys {
+    public static final class Keys extends KeyConstants {
+        /**
+         * The unique instance of key constants handler.
+         */
+        static final Keys INSTANCE = new Keys();
+
+        /**
+         * For {@link #INSTANCE} creation only.
+         */
         private Keys() {
         }
 
@@ -267,12 +275,11 @@ public final class Errors extends IndexedResourceBundle {
     }
 
     /**
-     * Returns the {@code Keys} class.
+     * Returns the handle for the {@code Keys} constants.
      */
     @Override
-    final Class<?> getKeysClass() throws ClassNotFoundException {
-        assert super.getKeysClass() == Keys.class;
-        return Keys.class;
+    final KeyConstants getKeyConstants() {
+        return Keys.INSTANCE;
     }
 
     /**
@@ -375,9 +382,10 @@ public final class Errors extends IndexedResourceBundle {
     private static final class International extends ResourceInternationalString {
         private static final long serialVersionUID = -229348959712294902L;
 
-        International(int key)              {super(key);}
-        International(int key, Object args) {super(key, args);}
-        @Override IndexedResourceBundle getBundle(Locale locale) {
+        International(int key)                   {super(key);}
+        International(int key, Object args)      {super(key, args);}
+        @Override KeyConstants getKeyConstants() {return Keys.INSTANCE;}
+        @Override IndexedResourceBundle getBundle(final Locale locale) {
             return getResources(locale);
         }
     }
