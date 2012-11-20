@@ -30,7 +30,7 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 import org.junit.After;
 
-import static org.junit.Assert.*;
+import static org.apache.sis.test.Assert.*;
 
 
 /**
@@ -155,10 +155,12 @@ public final strictfp class IndexedResourceBundleTest extends TestCase {
         InternationalString i18n = Errors.formatInternational(Errors.Keys.NullArgument_1);
         assertEquals("Argument ‘{0}’ shall not be null.",      i18n.toString(Locale.ENGLISH));
         assertEquals("L’argument ‘{0}’ ne doit pas être nul.", i18n.toString(Locale.FRENCH));
+        assertSerializedEquals(i18n);
 
         i18n = Errors.formatInternational(Errors.Keys.NullArgument_1, "CRS");
         assertEquals("Argument ‘CRS’ shall not be null.",      i18n.toString(Locale.ENGLISH));
         assertEquals("L’argument ‘CRS’ ne doit pas être nul.", i18n.toString(Locale.FRENCH));
+        assertSerializedEquals(i18n);
     }
 
     /**
