@@ -308,6 +308,22 @@ public class LineFormatter extends FilteredAppendable implements Flushable {
     }
 
     /**
+     * Writes pending non-white characters, discards trailing whitespaces, and resets column
+     * position to zero. This method does <strong>not</strong> write the line separator and
+     * does not modify the status of the {@link #skipLF} flag; those tasks are caller's
+     * responsibility.
+     */
+    private void endOfLine() throws IOException {
+        buffer.setLength(printableLength); // Reduce the amount of work for StringBuilder.deleteCharAt(int).
+        deleteSoftHyphen();
+        transfer(printableLength);
+        printableLength  = 0;
+        codePointCount   = 0;
+        isEscapeSequence = false; // Handle line-breaks as "end of escape sequence".
+        isNewLine        = true;
+    }
+
+    /**
      * Removes the soft hyphen characters from the given buffer. This is invoked
      * when the buffer is about to be written without being split on two lines.
      */
@@ -358,13 +374,7 @@ public class LineFormatter extends FilteredAppendable implements Flushable {
                 default:   skip = false;  skipLF = false; break;
             }
             if (!skip) {
-                buffer.setLength(printableLength); // Reduce the amount of work for StringBuilder.deleteCharAt(int).
-                deleteSoftHyphen();
-                transfer(printableLength);
-                printableLength  = 0;
-                codePointCount   = 0;
-                isEscapeSequence = false; // Handle line-breaks as "end of escape sequence".
-                isNewLine        = true;
+                endOfLine();
             }
             if (!isEndOfLineReplaced) {
                 appendCodePoint(c); // Forward EOL sequences "as-is".
@@ -519,15 +529,29 @@ searchHyp:  for (int i=buffer.length(); i>0;) {
     }
 
     /**
-     * Sends pending characters to the underlying stream. Note that this method should
-     * preferably be invoked at the end of a word, sentence or line, since invoking it
-     * may prevent {@code LineFormatter} to properly wrap the current line if it is
-     * in the middle of a word.
+     * Resets the {@code LineFormatter} internal state as if a new line was beginning.
+     * Trailing whitespaces not yet sent to the {@linkplain #out underlying appendable}
+     * are discarded, and the column position (for tabulation expansion calculation) is
+     * reset to 0. This method does not write any line separator.
      *
-     * <p>Invoking this method also flushes the {@linkplain #out underlying stream}.
-     * A cheaper way to send pending characters is to make sure that the last character
-     * is a {@linkplain org.apache.sis.util.Characters#isLineOrParagraphSeparator(int)
-     * line or paragraph terminator}.</p>
+     * @throws IOException If an error occurred while sending the trailing non-white
+     *         characters to the underlying stream.
+     */
+    public void clear() throws IOException {
+        endOfLine();
+        skipLF = false;
+    }
+
+    /**
+     * Sends all pending characters to the {@linkplain #out underlying appendable}, including
+     * trailing whitespaces. Note that this method should preferably be invoked at the end of
+     * a word, sentence or line, since invoking this method may prevent {@code LineFormatter}
+     * to properly wrap the current line if the current position is in the middle of a word.
+     *
+     * <p>Invoking this method also flushes the underlying stream, if {@linkplain Flushable flushable}.
+     * A cheaper way to send pending characters is to make sure that the last character is a
+     * {@linkplain Characters#isLineOrParagraphSeparator(int) line or paragraph terminator},
+     * or to invoke {@link #clear()}.</p>
      *
      * @throws IOException If an I/O error occurs.
      */

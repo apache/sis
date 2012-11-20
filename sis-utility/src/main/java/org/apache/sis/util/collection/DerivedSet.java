@@ -238,7 +238,7 @@ class DerivedSet<S,E> extends AbstractSet<E> implements CheckedContainer<E>, Ser
          */
         @Override
         public final boolean contains(final Object element) {
-            final Class<? extends E> type = getElementType();
+            final Class<E> type = getElementType();
             return type.isInstance(element) && storage.contains(inverse.convert(type.cast(element)));
         }
 
@@ -258,7 +258,7 @@ class DerivedSet<S,E> extends AbstractSet<E> implements CheckedContainer<E>, Ser
          */
         @Override
         public final boolean remove(final Object element) throws UnsupportedOperationException {
-            final Class<? extends E> type = getElementType();
+            final Class<E> type = getElementType();
             return type.isInstance(element) && storage.remove(inverse.convert(type.cast(element)));
         }
     }

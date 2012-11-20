@@ -14,9 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.util;
+package org.apache.sis.internal.util;
 
 import java.util.Locale;
+import org.apache.sis.util.Localized;
 
 
 /**
@@ -38,9 +39,9 @@ import java.util.Locale;
  * @version 0.3
  * @module
  *
- * @see Exceptions#getLocalizedMessage(Throwable, Locale)
+ * @see org.apache.sis.util.Exceptions#getLocalizedMessage(Throwable, Locale)
  */
-interface LocalizedException extends Localized {
+public interface LocalizedException extends Localized {
     /**
      * The locale of the string returned by {@link #getLocalizedMessage()}.
      *

@@ -29,9 +29,9 @@ import net.jcip.annotations.NotThreadSafe;
 
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Localized;
-import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.util.LocalizedParseException;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.rint;
@@ -917,7 +917,12 @@ scan:   for (int i=0; i<length;) {
                 if (suffix != null) {
                     toAppendTo.append(suffix);
                 }
-                it.addFieldLimit(Field.forCode(field), Integer.valueOf((int) value), startPosition);
+                it.addFieldLimit(Field.forCode(field), hasMore
+                        ? (Number) Integer.valueOf((int) Math.round(value))
+                        : (Number) Float.valueOf((float) value), startPosition);
+                // The 'valueOf(…)' was for information purpose only. We use Float instead of Double
+                // because we don't want to give a false impression of accuracy (when formatting the
+                // seconds field, at least the 10 last bits of the double value are non-significant).
             } else {
                 toAppendTo = numberFormat.format(value, toAppendTo, dummyFieldPosition());
                 if (suffix != null) {
@@ -1530,8 +1535,9 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
     public Angle parse(final String source) throws ParseException {
         final ParsePosition pos = new ParsePosition(0);
         final Angle angle = parse(source, pos, true);
-        if (skipSpaces(source, pos.getIndex()) != source.length()) {
-            throw Exceptions.createParseException(locale, Angle.class, source, pos);
+        final int offset = pos.getIndex();
+        if (skipSpaces(source, offset) != source.length()) {
+            throw new LocalizedParseException(locale, Angle.class, source, pos);
         }
         return angle;
     }

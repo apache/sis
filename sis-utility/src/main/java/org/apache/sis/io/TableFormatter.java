@@ -76,6 +76,8 @@ import org.apache.sis.internal.util.JDK7;
  * @since   0.3 (derived from geotk-1.0)
  * @version 0.3
  * @module
+ *
+ * @see org.apache.sis.util.tree.TreeTableFormat
  */
 @Decorator(Appendable.class)
 public class TableFormatter extends FilteredAppendable implements Flushable {
@@ -286,7 +288,7 @@ public class TableFormatter extends FilteredAppendable implements Flushable {
      * @param  horizontalBorder -1 for left border, +1 for right border,  0 for center.
      * @param  verticalBorder   -1 for top  border, +1 for bottom border, 0 for center.
      * @param  horizontalChar   Character to use for horizontal line.
-     * @throws IOException     if the writing operation failed.
+     * @throws IOException      If the writing operation failed.
      */
     private void writeBorder(final int  horizontalBorder,
                              final int  verticalBorder,
@@ -733,13 +735,14 @@ public class TableFormatter extends FilteredAppendable implements Flushable {
                 for (int j=0; j<currentLine.length; j++) {
                     final boolean isFirstColumn = (j   == 0);
                     final boolean isLastColumn  = (j+1 == currentLine.length);
-                    final Cell cell = currentLine[j];
-                    final int cellWidth = maximalColumnWidths[j];
+                    final Cell    cell          = currentLine[j];
+                    final int     cellWidth     = maximalColumnWidths[j];
+                    final int     cellPadding   = isLastColumn && rightBorder.isEmpty() ? 0 : cellWidth;
                     if (cell == null) {
                         if (isFirstColumn) {
                             out.append(leftBorder);
                         }
-                        repeat(out, SPACE, cellWidth);
+                        repeat(out, SPACE, cellPadding);
                         out.append(isLastColumn ? rightBorder : columnSeparator);
                         continue;
                     }
@@ -793,7 +796,7 @@ public class TableFormatter extends FilteredAppendable implements Flushable {
                         if (isFirstColumn) {
                             writeBorder(-1, verticalBorder, cell.fill);
                         }
-                        repeat(out, cell.fill, cellWidth);
+                        repeat(out, cell.fill, Character.isSpaceChar(cell.fill) ? cellPadding : cellWidth);
                         writeBorder(isLastColumn ? +1 : 0, verticalBorder, cell.fill);
                         continue;
                     }
@@ -812,7 +815,7 @@ public class TableFormatter extends FilteredAppendable implements Flushable {
                         }
                         case ALIGN_LEFT: {
                             tabExpander.append(cellText);
-                            repeat(tabExpander, cell.fill, cellWidth - textLength);
+                            repeat(tabExpander, cell.fill, cellPadding - textLength);
                             break;
                         }
                         case ALIGN_RIGHT: {
@@ -821,10 +824,10 @@ public class TableFormatter extends FilteredAppendable implements Flushable {
                             break;
                         }
                         case ALIGN_CENTER: {
-                            final int rightMargin = (cellWidth - textLength) / 2;
-                            repeat(tabExpander, cell.fill, rightMargin);
+                            final int leftPadding = (cellWidth - textLength) / 2;
+                            repeat(tabExpander, cell.fill, leftPadding);
                             tabExpander.append(cellText);
-                            repeat(tabExpander, cell.fill, (cellWidth - rightMargin) - textLength);
+                            repeat(tabExpander, cell.fill, (cellPadding - leftPadding) - textLength);
                             break;
                         }
                     }
@@ -851,7 +854,8 @@ public class TableFormatter extends FilteredAppendable implements Flushable {
     }
 
     /**
-     * Repeats a character.
+     * Repeats a character. The {@code count} value may be negative,
+     * which is handled as if it was zero.
      *
      * @param out   The stream or buffer where to repeat the character.
      * @param car   Character to write (usually ' ').
