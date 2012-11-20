@@ -217,6 +217,20 @@ public class DefaultTreeTable implements TreeTable, Serializable {
         this.root = root;
     }
 
+    /**
+     * Returns a string representation of this tree table.
+     * The default implementation delegates to {@link TreeTables#toString(TreeTable)}.
+     * This is okay for debugging or occasional usages. However for more extensive usages,
+     * developers are encouraged to create and configure their own {@link TreeTableFormat}
+     * instance.
+     *
+     * @return A string representation of this tree table.
+     */
+    @Override
+    public String toString() {
+        return TreeTables.toString(this);
+    }
+
 
 
 

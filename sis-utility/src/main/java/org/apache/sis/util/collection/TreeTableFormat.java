@@ -33,7 +33,6 @@ import org.apache.sis.util.Workaround;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.util.ColumnConstant;
 import org.apache.sis.internal.util.LocalizedParseException;
 
 import static org.apache.sis.util.Characters.NO_BREAK_SPACE;

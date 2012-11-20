@@ -23,7 +23,7 @@ import org.apache.sis.test.TestStep;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
-import static org.apache.sis.internal.util.ColumnConstant.*;
+import static org.apache.sis.util.collection.TreeTables.*;
 
 
 /**

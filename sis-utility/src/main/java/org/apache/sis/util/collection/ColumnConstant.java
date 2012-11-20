@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.util;
+package org.apache.sis.util.collection;
 
 import java.util.Map;
 import java.util.Collections;
@@ -22,7 +22,6 @@ import java.io.Serializable;
 import java.io.InvalidObjectException;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.util.collection.TableColumn;
 
 
 /**
@@ -35,7 +34,7 @@ import org.apache.sis.util.collection.TableColumn;
  * @version 0.3
  * @module
  */
-public final class ColumnConstant<V> implements TableColumn<V>, Serializable {
+final class ColumnConstant<V> implements TableColumn<V>, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -51,18 +50,10 @@ public final class ColumnConstant<V> implements TableColumn<V>, Serializable {
             CharSequence.class, Vocabulary.Keys.Name);
 
     /**
-     * Frequently-used constant for a column of object types.
-     * The values are instances of {@link Class}.
-     */
-    @SuppressWarnings("unchecked")
-    public static final TableColumn<Class<?>> TYPE = new ColumnConstant<>("TYPE",
-            (Class) Class.class, Vocabulary.Keys.Type);
-
-    /**
      * A map containing only the {@link #NAME} column.
      * This is the default set of columns when parsing a table tree.
      */
-    public static final Map<TableColumn<?>,Integer> NAME_MAP =
+    static final Map<TableColumn<?>,Integer> NAME_MAP =
             Collections.<TableColumn<?>,Integer>singletonMap(NAME, 0);
 
     /**
@@ -87,7 +78,7 @@ public final class ColumnConstant<V> implements TableColumn<V>, Serializable {
      * @param type Base type of all values in the column identified by this instance.
      * @param resourceKey The resource key for the column header.
      */
-    private ColumnConstant(final String name, final Class<V> type, final int resourceKey) {
+    ColumnConstant(final String name, final Class<V> type, final int resourceKey) {
         this.name        = name;
         this.type        = type;
         this.resourceKey = resourceKey;

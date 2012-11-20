@@ -22,7 +22,7 @@ import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 
 import static org.apache.sis.test.Assert.*;
-import static org.apache.sis.internal.util.ColumnConstant.*;
+import static org.apache.sis.util.collection.ColumnConstant.*;
 
 
 /**
@@ -33,7 +33,10 @@ import static org.apache.sis.internal.util.ColumnConstant.*;
  * @version 0.3
  * @module
  */
-@DependsOn(org.apache.sis.io.TableFormatterTest.class)
+@DependsOn({
+    DefaultTreeTableTest.class,
+    org.apache.sis.io.TableFormatterTest.class
+})
 public final strictfp class TreeTableFormatTest extends TestCase {
     /**
      * Creates a node with a single column for object names.

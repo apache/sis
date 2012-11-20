@@ -23,7 +23,7 @@ import java.util.List;
  * The root of a tree of nodes, together with the definition of table columns.
  * The {@link #getColumns()} method gives the list of all columns that can be found
  * in a {@code TreeTable}. Usually some or all of those columns are also available as
- * {@link TableColumn} constants defined close to the method creating the tree tables.
+ * {@link TableColumn} constants defined in {@link TreeTables}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
