@@ -46,6 +46,16 @@ public final class Errors extends IndexedResourceBundle {
         }
 
         /**
+         * Value “{0}” is duplicated.
+         */
+        public static final int DuplicatedValue_1 = 38;
+
+        /**
+         * Element “{0}” is already present.
+         */
+        public static final int ElementAlreadyPresent_1 = 36;
+
+        /**
          * Argument ‘{0}’ shall not be empty.
          */
         public static final int EmptyArgument_1 = 1;
@@ -107,6 +117,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int InconsistentAttribute_2 = 27;
 
         /**
+         * Inconsistent table columns.
+         */
+        public static final int InconsistentTableColumns = 40;
+
+        /**
          * Index {0} is out of bounds.
          */
         public static final int IndexOutOfBounds_1 = 4;
@@ -125,6 +140,26 @@ public final class Errors extends IndexedResourceBundle {
          * Argument ‘{0}’ shall not be negative. The given value was {1}.
          */
         public static final int NegativeArgument_2 = 8;
+
+        /**
+         * Node “{0}” can not be a child of itself.
+         */
+        public static final int NodeChildOfItself_1 = 37;
+
+        /**
+         * Node “{0}” already has another parent.
+         */
+        public static final int NodeHasAnotherParent_1 = 35;
+
+        /**
+         * Node “{0}” has no parent.
+         */
+        public static final int NodeHasNoParent_1 = 34;
+
+        /**
+         * No “{0}” node found.
+         */
+        public static final int NodeNotFound_1 = 39;
 
         /**
          * Argument ‘{0}’ shall not be NaN (Not-a-Number).
@@ -190,6 +225,11 @@ public final class Errors extends IndexedResourceBundle {
          * Text “{1}” can not be parsed as an object of type ‘{0}’, because of the “{2}” characters.
          */
         public static final int UnparsableStringForClass_3 = 32;
+
+        /**
+         * No format is specified for objects of class ‘{0}’.
+         */
+        public static final int UnspecifiedFormatForClass_1 = 41;
 
         /**
          * Can not handle instances of ‘{0}’ because arbitrary implementations are not yet supported.
