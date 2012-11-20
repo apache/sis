@@ -465,22 +465,31 @@ search: for (int i=0; i<buffer.length(); i++) { // Length of 'buffer' will vary.
         final String lineSeparator = System.getProperty("line.separator", "\n");
         final StringBuilder buffer = new StringBuilder(4096);
         /*
-         * Copies everything up to (including) the declaration of the Keys inner class.
+         * Copies everything up to (including) the constructor of the Keys inner class.
          * The declaration must follow Sun's convention on brace location (i.e. must be
          * on the same line than the class declaration).
          */
-        final Pattern classKeys = Pattern.compile("[\\s\\w]*class\\s+" + KEYS_INNER_CLASS + "\\s*\\{");
         boolean modified;
         try (BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file), JAVA_ENCODING))) {
-            String line;
-            do {
-                line = in.readLine();
-                if (line == null) {
-                    in.close();
-                    throw new EOFException(file.toString());
+            for (int state=0; state<=2; state++) {
+                final String regex;
+                switch (state) {
+                    case 0: regex = "[\\s\\w]*class\\s+" + KEYS_INNER_CLASS + "\\s+[\\s\\w]*\\{";      break; // Class declaration
+                    case 1: regex = "[\\s\\w]*\\s+" + KEYS_INNER_CLASS + "\\s*\\([\\s\\w]*\\)\\s+\\{"; break; // Constructor declaration
+                    case 2: regex = "\\s*\\}"; break; // Constructor end.
+                    default: throw new AssertionError(state);
                 }
-                buffer.append(line).append(lineSeparator);
-            } while (!classKeys.matcher(line).matches());
+                final Pattern pattern = Pattern.compile(regex);
+                String line;
+                do {
+                    line = in.readLine();
+                    if (line == null) {
+                        in.close();
+                        throw new EOFException(file.toString());
+                    }
+                    buffer.append(line).append(lineSeparator);
+                } while (!pattern.matcher(line).matches());
+            }
             /*
              * Starting from this point, the content that we are going to write in the buffer
              * may be different than the file content.  Remember the buffer position in order
@@ -490,8 +499,6 @@ search: for (int i=0; i<buffer.length(); i++) { // Length of 'buffer' will vary.
              * 'for' loop below. Instead, we now write the constructor followed by keys values.
              */
             int startLineToCompare = buffer.length();
-            buffer.append(KEY_MARGIN).append("private ").append(KEYS_INNER_CLASS).append("() {").append(lineSeparator)
-                  .append(KEY_MARGIN).append('}').append(lineSeparator);
             final Map.Entry<?,?>[] entries = allocatedIDs.entrySet().toArray(new Map.Entry<?,?>[allocatedIDs.size()]);
             Arrays.sort(entries, this);
             for (final Map.Entry<?,?> entry : entries) {
@@ -532,6 +539,7 @@ search: for (int i=0; i<buffer.length(); i++) { // Length of 'buffer' will vary.
              */
             modified = false;
             int brackets = 1;
+            String line;
             do {
                 line = in.readLine();
                 if (line == null) {
