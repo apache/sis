@@ -366,7 +366,7 @@ public strictfp class Assert extends org.opengis.test.Assert {
                 }
             }
         } catch (IOException e) {
-            throw new AssertionError(e);
+            throw new AssertionError(e.toString(), e);
         }
         // Compares with the original object and returns it.
         @SuppressWarnings("unchecked")

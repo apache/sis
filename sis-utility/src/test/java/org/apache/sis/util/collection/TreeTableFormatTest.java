@@ -22,7 +22,7 @@ import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 
 import static org.apache.sis.test.Assert.*;
-import static org.apache.sis.util.collection.ColumnConstant.*;
+import static org.apache.sis.util.collection.TableColumn.*;
 
 
 /**
@@ -90,8 +90,8 @@ public final strictfp class TreeTableFormatTest extends TestCase {
      */
     @Test
     public void testTreeTableFormat() {
-        final StringColumn     valueA = new StringColumn("value #1");
-        final StringColumn     valueB = new StringColumn("value #2");
+        final TableColumn<String> valueA = new TableColumn<>(String.class, "value #1");
+        final TableColumn<String> valueB = new TableColumn<>(String.class, "value #2");
         final DefaultTreeTable table  = new DefaultTreeTable(NAME, valueA, valueB);
         final TreeTable.Node   root   = new DefaultTreeTable.Node(table);
         root.setValue(NAME,   "Node #1");
