@@ -88,8 +88,8 @@ public final class Vocabulary extends IndexedResourceBundle {
      * @return Resources in the given locale.
      * @throws MissingResourceException if resources can't be found.
      */
-    public static Messages getResources(final Locale locale) throws MissingResourceException {
-        return getBundle(Messages.class, locale);
+    public static Vocabulary getResources(final Locale locale) throws MissingResourceException {
+        return getBundle(Vocabulary.class, locale);
     }
 
     /**

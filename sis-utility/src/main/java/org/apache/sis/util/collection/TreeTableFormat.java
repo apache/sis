@@ -377,7 +377,7 @@ public class TreeTableFormat extends CompoundFormat<TreeTable> {
         int[] indentations      = new int[16];      // Number of spaces (ignoring drawing characters) for each level.
         TreeTable.Node lastNode = null;             // Last parsed node, having 'indentation[level]' characters before its content.
         TreeTable.Node root     = null;             // First node found while parsing.
-        final DefaultTreeTable table = new DefaultTreeTable(columnIndices != null ? columnIndices : ColumnConstant.NAME_MAP);
+        final DefaultTreeTable table = new DefaultTreeTable(columnIndices != null ? columnIndices : TableColumn.NAME_MAP);
         final TableColumn<?>[] columns = DefaultTreeTable.getColumns(table.columnIndices);
         final Format[] formats = getFormats(columns, true);
         do {

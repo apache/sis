@@ -19,7 +19,6 @@ package org.apache.sis.util.collection;
 import java.text.Format;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
@@ -33,22 +32,6 @@ import org.apache.sis.util.resources.Vocabulary;
  * @module
  */
 public final class TreeTables extends Static {
-    /**
-     * Frequently-used constant for a column of object names.
-     * The values are typically instances of {@link String} or
-     * {@link org.opengis.util.InternationalString}, depending
-     * if the data provide localization support or not.
-     */
-    public static final TableColumn<CharSequence> NAME = ColumnConstant.NAME;
-
-    /**
-     * Frequently-used constant for a column of object types.
-     * The values are instances of {@link Class}.
-     */
-    @SuppressWarnings("unchecked")
-    public static final TableColumn<Class<?>> TYPE = new ColumnConstant<>("TYPE",
-            (Class) Class.class, Vocabulary.Keys.Type);
-
     /**
      * Shared {@code TreeTableFormat} instance for {@link #toString()} implementation.
      */
@@ -64,7 +47,7 @@ public final class TreeTables extends Static {
      * Creates a node with a single column for object names.
      * The node will have the following columns:
      *
-     * <table>
+     * <table class="sis">
      *   <tr><th>Header</th> <th>Type</th>                 <th>Initial value</th></tr>
      *   <tr><td>"Name"</td> <td>{@link CharSequence}</td> <td>{@code name}</td></tr>
      * </table>
@@ -73,7 +56,7 @@ public final class TreeTables extends Static {
      * @return A new node with a name column initialized to the given value.
      */
     public static TreeTable.Node createNode(final CharSequence name) {
-        return new DefaultTreeTable.Node(ColumnConstant.NAME_MAP, (name != null) ? new CharSequence[] {name} : null);
+        return new DefaultTreeTable.Node(TableColumn.NAME_MAP, (name != null) ? new CharSequence[] {name} : null);
     }
 
     /**

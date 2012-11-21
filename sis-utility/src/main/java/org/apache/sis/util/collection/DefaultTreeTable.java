@@ -25,7 +25,11 @@ import net.jcip.annotations.NotThreadSafe;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
+import static org.apache.sis.util.collection.Collections.isNullOrEmpty;
 import static org.apache.sis.util.collection.Collections.hashMapCapacity;
+
+// Related to JDK7
+import java.util.Objects;
 
 
 /**
@@ -215,6 +219,37 @@ public class DefaultTreeTable implements TreeTable, Serializable {
             }
         }
         this.root = root;
+    }
+
+    /**
+     * Compares the given object with this tree table for equality. This method compares the
+     * {@linkplain #getColumns() columns} and the {@linkplain #getRoot() root node}. If the
+     * later is an instance of the {@link Node} inner class, then all node values and children
+     * will be {@linkplain Node#equals(Object) compared} recursively.
+     *
+     * @param  other The object to compare with this table.
+     * @return {@code true} if the two objects are equal.
+     */
+    @Override
+    public boolean equals(final Object other) {
+        if (other == this) {
+            return true;
+        }
+        if (other != null && other.getClass() == getClass()) {
+            final DefaultTreeTable that = (DefaultTreeTable) other;
+            return columnIndices.equals(that.columnIndices) &&
+                    Objects.equals(root, that.root);
+        }
+        return false;
+    }
+
+    /**
+     * Returns a hash code value for this table.
+     * This method is defined for consistency with {@link #equals(Object)} contract.
+     */
+    @Override
+    public int hashCode() {
+        return (columnIndices.hashCode() + 31*Objects.hashCode(root)) ^ (int) serialVersionUID;
     }
 
     /**
@@ -492,6 +527,77 @@ public class DefaultTreeTable implements TreeTable, Serializable {
         @Override
         public Object getUserObject() {
             return null;
+        }
+
+        /**
+         * Compares the given object with this node for {@linkplain #getValue(TableColumn) values}
+         * and {@linkplain #getChildren() children} equality, ignoring the {@linkplain #getParent()
+         * parent}. This method can be used for determining if two branches of a same tree or of two
+         * different trees are identical.
+         *
+         * <p>This method compares children recursively, which is another reason why the parents
+         * need to be ignored.</p>
+         *
+         * @param  other The object to compare with this node.
+         * @return {@code true} if the two objects are equal, ignoring the parent node.
+         */
+        @Override
+        public boolean equals(final Object other) {
+            if (other == this) {
+                return true;
+            }
+            if (other != null && other.getClass() == getClass()) {
+                final Node that = (Node) other;
+                if (columnIndices.equals(that.columnIndices)) {
+                    final Object[] v1 = this.values;
+                    final Object[] v2 = that.values;
+                    if (v1 != v2) { // For skipping the loop if v1 and v2 are null.
+                        for (int i=columnIndices.size(); --i>=0;) {
+                            if (!Objects.equals((v1 != null) ? v1[i] : null,
+                                                (v2 != null) ? v2[i] : null))
+                            {
+                                return false;
+                            }
+                        }
+                    }
+                    final List<TreeTable.Node> c1 = this.children;
+                    final List<TreeTable.Node> c2 = that.children;
+                    final int n = (c1 != null) ? c1.size() : 0;
+                    if (((c2 != null) ? c2.size() : 0) == n) {
+                        for (int i=0; i<n; i++) {
+                            if (!c1.get(i).equals(c2.get(i))) {
+                                return false;
+                            }
+                        }
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        /**
+         * Returns a hash-code value computed from the {@linkplain #getValue(TableColumn) values}
+         * and {@linkplain #getChildren() children}, ignoring the {@linkplain #getParent() parent}.
+         * This method is defined for consistency with {@link #equals(Object)} contract.
+         */
+        @Override
+        public int hashCode() {
+            int hash = 0;
+            final Object[] values = this.values;
+            if (values != null) {
+                // Do not use Objects.hashCode(...) because we want the result of array
+                // containing only null elements to be the same than null array (zero).
+                for (int i=values.length; --i>=0;) {
+                    hash = 31*hash + Objects.hash(values[i]);
+                }
+            }
+            // Do not use Objects.hashCode(...) because we
+            // want the same result for null and empty list.
+            if (!isNullOrEmpty(children)) {
+                hash += 37 * children.hashCode();
+            }
+            return hash ^ (int) serialVersionUID;
         }
 
         /**
