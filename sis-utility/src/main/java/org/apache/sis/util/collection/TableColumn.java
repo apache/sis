@@ -33,13 +33,17 @@ import org.apache.sis.util.resources.Vocabulary;
  * as in the following example:
  *
  * {@preformat java
- *     class CityLocation {
+ *     public class CityLocation {
+ *         public static final ColumnTable<String> CITY_NAME = new ColumnTable<>(String.class, "City name");
+ *         public static final ColumnTable<Float>  LATITUDE  = new ColumnTable<>(Float.class,  "Latitude");
+ *         public static final ColumnTable<Float>  LONGITUDE = new ColumnTable<>(Float.class,  "Longitude");
+ *
  *         private String name;
  *         private float  latitude;
  *         private float  longitude;
  *
  *         CityLocation(TreeTable.Node myNode) {
- *             name      = myNode.getValue(NAME);
+ *             name      = myNode.getValue(CITY_NAME);
  *             latitude  = myNode.getValue(LATITUDE);
  *             longitude = myNode.getValue(LONGITUDE);
  *         }
@@ -50,13 +54,43 @@ import org.apache.sis.util.resources.Vocabulary;
  * This base class relies on <cite>identity comparisons</cite> instead than defining the
  * {@code equals(Object)} method, because the {@linkplain #getElementType() element type}
  * is not a sufficient criterion for differentiating the columns (many columns have values
- * of the same type) and the {@linkplain #getHeader() header} is arbitrary. Developers who
- * create their own instances are encouraged to declare them as static final constants.
+ * of the same type) and the {@linkplain #getHeader() header} is arbitrary. Consequently
+ * developers who create their own instances are encouraged to declare them as static final
+ * constants as in the above example, and use those constants consistently.
  *
- * <p>This base class is not {@linkplain Serializable serializable}. However the pre-defined
- * constants defined in this class are serializable. Developers who need custom serializable
- * columns are encouraged to create their own subclass and resolve to the singleton instance
- * on deserialization.</p>
+ * <p>This base class is not serializable because the default deserialization mechanism does
+ * not resolve automatically the deserialized instances to the above-cited singleton instances.
+ * Developers who need serialization support for their own instances have to resolve them in
+ * their own subclass. The following example is one possible way to achieve that goal:</p>
+ *
+ * {@preformat java
+ *     public class CityLocation {
+ *         public static final ColumnTable<String> CITY_NAME = new MyColumn<>("CITY_NAME", String.class, "City name");
+ *         public static final ColumnTable<Float>  LATITUDE  = new MyColumn<>("LATITUDE",  Float.class,  "Latitude");
+ *         public static final ColumnTable<Float>  LONGITUDE = new MyColumn<>("LONGITUDE", Float.class,  "Longitude");
+ *
+ *         private static final class MyColumn<V> extends TableColumn<V> implements Serializable {
+ *             private final String field;
+ *
+ *             private MyColumn(String field, Class<V> type, CharSequence header) {
+ *                 super(type, header);
+ *                 this.field = field;
+ *             }
+ *
+ *             private Object readResolve() throws InvalidObjectException {
+ *                 try {
+ *                     return CityLocation.class.getField(field).get(null);
+ *                 } catch (Exception cause) { // Many exceptions, including unchecked ones.
+ *                     InvalidObjectException e = new InvalidObjectException(cause.toString());
+ *                     e.initCause(cause);
+ *                     throw e;
+ *                 }
+ *             }
+ *         }
+ *     }
+ * }
+ *
+ * The constants defined in this class use a similar approach for providing serialization support.
  *
  * @param <V> Base type of all values in the column identified by this instance.
  *
@@ -76,7 +110,6 @@ public class TableColumn<V> implements CheckedContainer<V> {
 
     /**
      * Frequently-used constant for a column of object types.
-     * The values are instances of {@link Class}.
      */
     @SuppressWarnings("unchecked")
     public static final TableColumn<Class<?>> TYPE = new Constant<>("TYPE",
@@ -173,22 +206,8 @@ public class TableColumn<V> implements CheckedContainer<V> {
      * Invoked on deserialization for creating an initially empty instance.
      * This constructor has {@code protected} visibility only because the Java deserialization
      * mechanism requires so; this constructor shall not be invoked in any other context.
-     *
-     * <p>Subclasses are responsible for resolving the deserialized instance to a singleton
-     * instance. This can be done by the following method, which assume that the subclass
-     * declares a public static field named {@code fieldName}:</p>
-     *
-     * {@preformat java
-     *     private Object readResolve() throws InvalidObjectException {
-     *         try {
-     *             return getClass().getField(fieldName).get(null);
-     *         } catch (Exception cause) { // Many exceptions, including unchecked ones.
-     *             InvalidObjectException e = new InvalidObjectException(cause.toString());
-     *             e.initCause(cause);
-     *             throw e;
-     *         }
-     *     }
-     * }
+     * See the <cite>Identity comparisons and serialization</cite> section in the class
+     * javadoc for more information.
      */
     protected TableColumn() {
         type = null;
@@ -237,9 +256,11 @@ public class TableColumn<V> implements CheckedContainer<V> {
 
     /**
      * Returns a string representation of this table column.
+     * The default implementation returns the {@linkplain #getHeader() header}
+     * in its default locale.
      */
     @Override
     public String toString() {
-        return getHeader().toString(null);
+        return String.valueOf(getHeader());
     }
 }

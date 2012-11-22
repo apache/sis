@@ -20,10 +20,46 @@ import java.util.List;
 
 
 /**
- * The root of a tree of nodes, together with the definition of table columns.
- * The {@link #getColumns()} method gives the list of all columns that can be found
- * in a {@code TreeTable}. Usually some or all of those columns are also available as
- * {@link TableColumn} constants defined in {@link TreeTables}.
+ * Defines the structure (list of columns) of a table and provides the root of the tree
+ * containing the data. {@code TreeTable} can be seen as a table in which the first
+ * column contains a tree. Every row in this table is a {@link Node} instance, and each
+ * node can have an arbitrary number of {@linkplain Node#getChildren() children} nodes.
+ *
+ * <p>Below is an example of what a two-columns {@code TreeTable} instance may look like
+ * when {@linkplain TreeTableFormat formatted as a text}:</p>
+ *
+ * {@preformat text
+ *   Citation
+ *   ├───Title…………………………………………………………… Open Geospatial Consortium
+ *   ├───Presentation Forms………………………… document digital
+ *   ├───Cited Responsible Parties
+ *   │   ├───Organisation Name………………… Open Geospatial Consortium
+ *   │   ├───Role…………………………………………………… resource provider
+ *   │   └───Contact Info
+ *   │       └───Online Resource
+ *   │           ├───Linkage……………………… http://www.opengeospatial.org/
+ *   │           └───Function…………………… information
+ *   └───Identifiers
+ *       └───Code…………………………………………………… OGC
+ * }
+ *
+ * <p>In many cases, the columns are known in advance as hard-coded static constants.
+ * Those column constants are typically documented close to the class producing the
+ * {@code TreeTable} instance. Using directly those static constants provides type
+ * safety, as in the following example:</p>
+ *
+ * {@preformat java
+ *     TreeTable table = ...; // Put here a TreeTable instance.
+ *     TreeTable.Node node = table.getRoot();
+ *     CharSequence   name = node.getValue(TableColumn.NAME);
+ *     Class<?>       type = node.getValue(TableColumn.TYPE);
+ * }
+ *
+ * In the above example, the type of value returned by the {@link Node#getValue(TableColumn)}
+ * method is determined by the column constant. However this approach is possible only when
+ * the table structure is known in advance. If a method needs to work with arbitrary tables,
+ * then that method can get the list of columns by a call to {@link #getColumns()}. However
+ * this column list does not provide the above type-safety.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
@@ -40,6 +76,7 @@ public interface TreeTable {
      * @return The union of all table columns in every tree node.
      *
      * @see Node#getValue(TableColumn)
+     * @see Node#setValue(TableColumn, Object)
      */
     List<TableColumn<?>> getColumns();
 
@@ -84,6 +121,11 @@ public interface TreeTable {
         /**
          * Returns the parent node, or {@code null} if this node is the root of the tree.
          *
+         * <p>There is intentionally no {@code setParent(Node)} method, as children and parent
+         * managements are highly implementation-dependant. If the {@linkplain #getChildren()
+         * children list} is modifiable, then implementations are encouraged to update automatically
+         * the parent when a child is added or removed to the list.</p>
+         *
          * @return The parent, or {@code null} if none.
          * @category tree
          */
@@ -93,6 +135,12 @@ public interface TreeTable {
          * Returns the children of this node. The returned list may or may not be modifiable, at
          * implementation choice. If the list is modifiable, then it shall be <cite>live</cite>,
          * i.e. any modification to the returned list are reflected immediately in the tree.
+         * This allows addition or removal of child nodes as below:
+         *
+         * {@preformat java
+         *     TreeTable.Node newNode = new ...; // Create a new node here.
+         *     parent.getChildren().add(newNode);
+         * }
          *
          * @return The children, or an empty list if none.
          * @category tree

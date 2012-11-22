@@ -39,22 +39,15 @@ import static org.apache.sis.util.collection.TableColumn.*;
 })
 public final strictfp class TreeTableFormatTest extends TestCase {
     /**
-     * Creates a node with a single column for object names.
-     */
-    private static DefaultTreeTable.Node createNode(final CharSequence name) {
-        return new DefaultTreeTable.Node(NAME_MAP, new CharSequence[] {name});
-    }
-
-    /**
      * Tests the formatting as a tree, with control on the indentation.
      */
     @Test
     public void testTreeFormat() {
-        final DefaultTreeTable.Node root   = createNode("Node #1");
-        final DefaultTreeTable.Node branch = createNode("Node #2");
+        final DefaultTreeTable.Node root   = new DefaultTreeTable.Node("Node #1");
+        final DefaultTreeTable.Node branch = new DefaultTreeTable.Node("Node #2");
         root.getChildren().add(branch);
-        root.getChildren().add(createNode("Node #3"));
-        branch.getChildren().add(createNode("Node #4"));
+        root.getChildren().add(new DefaultTreeTable.Node("Node #3"));
+        branch.getChildren().add(new DefaultTreeTable.Node("Node #4"));
 
         final TreeTableFormat tf = new TreeTableFormat(null, null);
         tf.setVerticalLinePosition(2);
