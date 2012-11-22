@@ -54,6 +54,11 @@ public final class Errors extends IndexedResourceBundle {
         }
 
         /**
+         * Can not clone an object of type ‘{0}’.
+         */
+        public static final int CloneNotSupported_1 = 42;
+
+        /**
          * Value “{0}” is duplicated.
          */
         public static final int DuplicatedValue_1 = 38;
