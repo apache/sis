@@ -324,9 +324,12 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
      * of columns. The list of columns is specified by a {@link TreeTable}, or inherited from
      * a parent node.
      *
-     * <p>The {@linkplain #getChildren() list of children} provided by this class is <cite>live</cite>:
-     * adding a {@code Node} child to that list will automatically set its parent to {@code this},
-     * and removing a {@code Node} from that list will set its parent to {@code null}.</p>
+     * {@section Note on the parent node}
+     * The value returned by the {@link #getParent()} method is updated automatically when
+     * this node is <em>added to</em> or <em>removed from</em> the {@linkplain #getChildren()
+     * list of children} of another {@code Node} instance - there is no {@code setParent(Node)}
+     * method. As a derived value, the parent is ignored by the {@link #clone()},
+     * {@link #equals(Object)} and {@link #hashCode()} methods.
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @since   0.3
@@ -489,8 +492,8 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
          * {@code null}. It will be automatically set to a non-null value when this node will be
          * added as a child of another {@code Node} instance.
          *
-         * <p>Note that the parent is ignored by {@link #clone()}, {@link #equals(Object)} and
-         * {@link #hashCode()} operations.</p>
+         * <p>Note that the parent is intentionally ignored by the {@link #clone()},
+         * {@link #equals(Object)} and {@link #hashCode()} methods.</p>
          */
         @Override
         public final TreeTable.Node getParent() {

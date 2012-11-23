@@ -34,7 +34,7 @@ import org.apache.sis.util.resources.Errors;
  */
 public final class Numbers extends Static {
     /**
-     * Constants to be used in {@code switch} statements.
+     * Constant of value {@value} used in {@code switch} statements or as index in arrays.
      */
     public static final byte
             DOUBLE=8, FLOAT=7, LONG=6, INTEGER=5, SHORT=4, BYTE=3, CHARACTER=2, BOOLEAN=1, OTHER=0;
@@ -62,7 +62,7 @@ public final class Numbers extends Static {
     /** The wrapper for the primitive type.     */ private final Class<?> wrapper;
     /** {@code true} for floating point number. */ private final boolean  isFloat;
     /** {@code true} for integer number.        */ private final boolean  isInteger;
-    /** The size in bytes.                      */ private final byte     size;
+    /** The size in bytes, or -1 if variable.   */ private final byte     size;
     /** Constant to be used in switch statement.*/ private final byte     ordinal;
     /** The internal form of the primitive name.*/ private final char     internal;
     /** The null, NaN, 0 or false value.        */ private final Object   nullValue;
@@ -562,19 +562,12 @@ public final class Numbers extends Static {
      *         string value is not parseable as a number of the specified type.
      */
     @SuppressWarnings("unchecked")
-    public static <T> T valueOf(final Class<T> type, final String value)
+    public static <T> T valueOf(final Class<T> type, String value)
             throws IllegalArgumentException, NumberFormatException
     {
-        if (value == null) {
-            return null;
+        if (value == null || type == String.class) {
+            return (T) value;
         }
-        if (type == Double .class) return (T) Double .valueOf(value);
-        if (type == Float  .class) return (T) Float  .valueOf(value);
-        if (type == Long   .class) return (T) Long   .valueOf(value);
-        if (type == Integer.class) return (T) Integer.valueOf(value);
-        if (type == Short  .class) return (T) Short  .valueOf(value);
-        if (type == Byte   .class) return (T) Byte   .valueOf(value);
-        if (type == Boolean.class) return (T) Boolean.valueOf(value);
         if (type == Character.class) {
             /*
              * If the string is empty, returns 0 which means "end of string" in C/C++
@@ -585,9 +578,14 @@ public final class Numbers extends Static {
              */
             return (T) Character.valueOf(value.isEmpty() ? 0 : value.charAt(0));
         }
-        if (type == String.class) {
-            return (T) value;
-        }
+        value = value.trim();
+        if (type == Double .class) return (T) Double .valueOf(value);
+        if (type == Float  .class) return (T) Float  .valueOf(value);
+        if (type == Long   .class) return (T) Long   .valueOf(value);
+        if (type == Integer.class) return (T) Integer.valueOf(value);
+        if (type == Short  .class) return (T) Short  .valueOf(value);
+        if (type == Byte   .class) return (T) Byte   .valueOf(value);
+        if (type == Boolean.class) return (T) Boolean.valueOf(value);
         throw unknownType(type);
     }
 
