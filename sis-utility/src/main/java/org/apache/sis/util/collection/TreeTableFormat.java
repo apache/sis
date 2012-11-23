@@ -25,12 +25,15 @@ import java.io.IOException;
 import java.text.Format;
 import java.text.ParsePosition;
 import java.text.ParseException;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.sis.io.LineFormatter;
 import org.apache.sis.io.TableFormatter;
 import org.apache.sis.io.CompoundFormat;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.StringBuilders;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.LocalizedParseException;
@@ -111,12 +114,19 @@ public class TreeTableFormat extends CompoundFormat<TreeTable> {
     private int verticalLinePosition;
 
     /**
-     * The column separator to use at formatting time if there is more than one column.
-     *
-     * @see #getColumnSeparator()
-     * @see #setColumnSeparator(String)
+     * The string to write before and after the {@link #columnSeparator},
+     * or an empty string if none.
      */
-    String columnSeparator;
+    String separatorPrefix, separatorSuffix;
+
+    /**
+     * The column separator to use at formatting time if there is more than one column.
+     * This character will be repeated as many time as needed.
+     *
+     * @see #getColumnSeparatorPattern()
+     * @see #setColumnSeparatorPattern(String)
+     */
+    char columnSeparator;
 
     /**
      * The line separator to use for formatting the tree.
@@ -151,7 +161,9 @@ public class TreeTableFormat extends CompoundFormat<TreeTable> {
     public TreeTableFormat(final Locale locale, final TimeZone timezone) {
         super(locale, timezone);
         indentation     = 4;
-        columnSeparator = "……";
+        separatorPrefix = "……";
+        columnSeparator = '…';
+        separatorSuffix = " ";
         lineSeparator   = System.lineSeparator();
     }
 
@@ -211,41 +223,87 @@ public class TreeTableFormat extends CompoundFormat<TreeTable> {
     }
 
     /**
-     * Returns the characters used in column separators. This character will be used
-     * only if more than one column is formatted. The default value is {@code "……"}.
+     * Returns the pattern of characters used in column separators. Those characters will be used
+     * only if more than one column is formatted. The default pattern is {@code "……[…] "}, which
+     * means "<cite>insert the {@code "……"} string, then repeat the {@code '…'} character as many
+     * time as needed (may be zero), and finally insert a space</cite>".
      *
-     * @return The current column separator.
+     * @return The pattern of the current column separator.
      */
-    public String getColumnSeparator() {
-        return columnSeparator;
+    public String getColumnSeparatorPattern() {
+        final StringBuilder buffer = new StringBuilder(8);
+        buffer.append(separatorPrefix).append('\uFFFF').append(separatorSuffix);
+        StringBuilders.replace(buffer, "\\", "\\\\");
+        StringBuilders.replace(buffer, "[",  "\\[");
+        StringBuilders.replace(buffer, "]",  "\\]");
+        final int insertAt = buffer.indexOf("\uFFFF");
+        buffer.replace(insertAt, insertAt+1, "[\uFFFF]").setCharAt(insertAt+1, columnSeparator);
+        return buffer.toString();
     }
 
     /**
-     * Sets the characters to insert between the columns. The separator shall be non-empty and
-     * contains at least one non-space character. The last character will be repeated as many
-     * time as needed for columns alignment.
+     * Sets the pattern of the characters to insert between the columns. The pattern shall contain
+     * exactly one occurrence of the {@code "[ ]"} pair of bracket, with exactly one character
+     * between them. This character will be repeated as many time as needed for columns alignment.
      *
      * <p>In current implementation, the above-cited repeated character must be in the
      * {@linkplain Character#isBmpCodePoint(int) Basic Multilanguage Plane}.</p>
      *
-     * @param  separator The new column separator.
-     * @throws IllegalArgumentException If the given separator does not contains at least one
-     *         non-space character, or the last character is not in the BMP plane.
+     * @param  pattern The pattern of the new column separator.
+     * @throws IllegalArgumentException If the given pattern is illegal.
      */
-    public void setColumnSeparator(final String separator) throws IllegalArgumentException {
-        ArgumentChecks.ensureNonEmpty("separator", separator);
-        final int length = separator.length();
-        if (Character.isBmpCodePoint(separator.codePointBefore(length))) {
-            for (int i=0; i<length; i++) {
-                final int c = separator.codePointAt(i);
-                if (!Character.isSpaceChar(c) && !Character.isISOControl(c)) {
-                    columnSeparator = separator;
-                    return;
+    public void setColumnSeparatorPattern(final String pattern) throws IllegalArgumentException {
+        ArgumentChecks.ensureNonEmpty("pattern", pattern);
+        final int length = pattern.length();
+        final StringBuilder buffer = new StringBuilder(length);
+        boolean escape  = false;
+        String  prefix  = null;
+        int separatorIndex = -1;
+scan:   for (int i=0; i<length; i++) {
+            final char c = pattern.charAt(i);
+            switch (c) {
+                case '\uFFFF': { // This "character" is reserved.
+                    prefix = null;
+                    break scan; // This will cause IllegalArgumentException to be thrown.
+                }
+                case '\\': {
+                    if (i != separatorIndex) {
+                        if (escape) break;
+                        escape = true;
+                    }
+                    continue;
+                }
+                case '[': {
+                    if (escape) break;
+                    if (i != separatorIndex) {
+                        if (separatorIndex >= 0) {
+                            prefix = null;
+                            break scan; // This will cause IllegalArgumentException to be thrown.
+                        }
+                        separatorIndex = i+1;
+                    }
+                    continue;
+                }
+                case ']': {
+                    if (escape) break;
+                    switch (i - separatorIndex) {
+                        case 0:  continue;
+                        case 1:  prefix = buffer.toString(); buffer.setLength(0); continue;
+                        default: prefix = null; break scan;
+                    }
                 }
             }
+            if (i != separatorIndex) {
+                buffer.append(c);
+            }
         }
-        throw new IllegalArgumentException(Errors.format(
-                Errors.Keys.IllegalArgumentValue_2, "separator", separator));
+        if (prefix == null) {
+            throw new IllegalArgumentException(Errors.format(
+                    Errors.Keys.IllegalFormatPatternForClass_2, pattern, TreeTable.class));
+        }
+        separatorPrefix = prefix;
+        separatorSuffix = buffer.toString();
+        columnSeparator = pattern.charAt(separatorIndex);
     }
 
     /**
@@ -353,7 +411,8 @@ public class TreeTableFormat extends CompoundFormat<TreeTable> {
      *   <li>Each node shall be represented by a single line made of two parts, in that order:
      *     <ol>
      *       <li>white spaces and tree drawing characters ({@code '│'}, {@code '├'}, {@code '└'} or {@code '─'});</li>
-     *       <li>string representations of node values, separated by the {@linkplain #getColumnSeparator() colunm separator}.</li>
+     *       <li>string representations of node values, separated by the
+     *           {@linkplain #getColumnSeparatorPattern() colunm separator}.</li>
      *     </ol>
      *   </li>
      *   <li>The number of spaces and drawing characters before the node values determines the node
@@ -370,7 +429,10 @@ public class TreeTableFormat extends CompoundFormat<TreeTable> {
      */
     @Override
     public TreeTable parse(final CharSequence text, final ParsePosition pos) throws ParseException {
-        final char separator    = columnSeparator.charAt(columnSeparator.length() - 1);
+        final Matcher matcher = Pattern.compile(
+                Pattern.quote(separatorPrefix)
+              + Pattern.quote(String.valueOf(columnSeparator)) + '*'
+              + Pattern.quote(separatorSuffix)).matcher(text);
         final int length        = text.length();
         int indexOfLineStart    = pos.getIndex();
         int indentationLevel    = 0;                // Current index in the 'indentations' array.
@@ -382,15 +444,15 @@ public class TreeTableFormat extends CompoundFormat<TreeTable> {
         final Format[] formats = getFormats(columns, true);
         do {
             final int startNextLine = CharSequences.indexOfLineStart(text, 1, indexOfLineStart);
-            int endPosition = startNextLine;
-            while (endPosition > indexOfLineStart) {
-                final int c = text.charAt(endPosition-1);
+            int endOfLine = startNextLine;
+            while (endOfLine > indexOfLineStart) {
+                final int c = text.charAt(endOfLine-1);
                 if (c != '\r' && c != '\n') break;
-                endPosition--; // Skip trailing '\r' and '\n'.
+                endOfLine--; // Skip trailing '\r' and '\n'.
             }
             boolean hasChar = false;
             int i; // The indentation of current line.
-            for (i=indexOfLineStart; i<endPosition;) {
+            for (i=indexOfLineStart; i<endOfLine;) {
                 final int c = Character.codePointAt(text, i);
                 if (!Character.isSpaceChar(c)) {
                     hasChar = true;
@@ -422,11 +484,16 @@ public class TreeTableFormat extends CompoundFormat<TreeTable> {
              */
             final TreeTable.Node node = new DefaultTreeTable.Node(table);
             try {
-parseColumns:   for (int ci=0; ci<columns.length; ci++) {
-                    int endOfColumn = CharSequences.indexOf(text, columnSeparator, indexOfValue, endPosition);
-                    if (endOfColumn < 0) {
-                        endOfColumn = endPosition;
+                matcher.region(indexOfValue, endOfLine);
+                for (int ci=0; ci<columns.length; ci++) {
+                    final boolean found = matcher.find();
+                    int endOfColumn = found ? matcher.start() : endOfLine;
+                    while (indexOfValue < endOfColumn) {
+                        final int c = Character.codePointAt(text, indexOfValue);
+                        if (!Character.isSpaceChar(c)) break;
+                        indexOfValue += Character.charCount(c);
                     }
+                    // Ignore trailing spaces at the end of this column, then parse the value.
                     for (int endOfValue = endOfColumn; endOfValue > indexOfValue;) {
                         final int c = Character.codePointBefore(text, endOfValue);
                         if (!Character.isSpaceChar(c)) {
@@ -435,11 +502,10 @@ parseColumns:   for (int ci=0; ci<columns.length; ci++) {
                         }
                         endOfValue -= Character.charCount(c);
                     }
-                    indexOfValue = endOfColumn;
-                    do if (++indexOfValue >= endPosition) {
-                        break parseColumns;
-                    }
-                    while (text.charAt(indexOfValue) == separator);
+                    if (!found) break;
+                    // The end of this column will be the beginning of the next column,
+                    // after skipping the last character of the column separator.
+                    indexOfValue = matcher.end();
                 }
             } catch (ParseException e) {
                 pos.setErrorIndex(indexOfValue);
@@ -581,7 +647,7 @@ parseColumns:   for (int ci=0; ci<columns.length; ci++) {
          * For each indentation level, {@code true} if the previous levels are writing the last node.
          * This array will growth as needed.
          */
-        private boolean[] last;
+        private boolean[] isLast;
 
         /**
          * The columns to write.
@@ -594,9 +660,9 @@ parseColumns:   for (int ci=0; ci<columns.length; ci++) {
         private final Format[] formats;
 
         /**
-         * The column separator character to repeat until the columns are aligned.
+         * The node values to format.
          */
-        private final char toRepeat;
+        private final Object[] values;
 
         /**
          * Creates a new instance which will write in the given appendable.
@@ -605,8 +671,8 @@ parseColumns:   for (int ci=0; ci<columns.length; ci++) {
             super(columns.length >= 2 ? new TableFormatter(out, "") : out);
             this.columns  = columns;
             this.formats  = getFormats(columns, false);
-            this.last     = new boolean[8];
-            this.toRepeat = columnSeparator.charAt(columnSeparator.length() - 1);
+            this.values   = new Object[columns.length];
+            this.isLast   = new boolean[8];
             setTabulationExpanded(true);
             setLineSeparator(" ¶ ");
         }
@@ -650,24 +716,31 @@ parseColumns:   for (int ci=0; ci<columns.length; ci++) {
          */
         final void format(final TreeTable.Node node, final int level) throws IOException {
             for (int i=0; i<level; i++) {
-                out.append(getTreeSymbols(i != level-1, last[i]));
+                out.append(getTreeSymbols(i != level-1, isLast[i]));
             }
+            int n = 0;
             for (int i=0; i<columns.length; i++) {
+                if ((values[i] = node.getValue(columns[i])) != null) {
+                    n = i;
+                }
+            }
+            for (int i=0; i<=n; i++) {
                 if (i != 0) {
                     // We have a TableFormatter instance if and only if there is 2 or more columns.
-                    ((TableFormatter) out.append(columnSeparator)).nextColumn(toRepeat);
+                    ((TableFormatter) out.append(separatorPrefix)).nextColumn(columnSeparator);
+                    out.append(separatorSuffix);
                 }
-                formatValue(formats[i], node.getValue(columns[i]));
+                formatValue(formats[i], values[i]);
                 clear();
             }
             out.append(lineSeparator);
-            if (level >= last.length) {
-                last = Arrays.copyOf(last, level*2);
+            if (level >= isLast.length) {
+                isLast = Arrays.copyOf(isLast, level*2);
             }
             final List<? extends TreeTable.Node> children = node.getChildren();
             final int count = children.size();
             for (int i=0; i<count; i++) {
-                last[level] = (i == count-1);
+                isLast[level] = (i == count-1);
                 format(children.get(i), level+1);
             }
         }

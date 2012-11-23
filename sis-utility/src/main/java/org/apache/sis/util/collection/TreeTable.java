@@ -124,7 +124,7 @@ public interface TreeTable {
          * <p>There is intentionally no {@code setParent(Node)} method, as children and parent
          * managements are highly implementation-dependant. If the {@linkplain #getChildren()
          * children list} is modifiable, then implementations are encouraged to update automatically
-         * the parent when a child is added or removed to the list.</p>
+         * the parent when a child is <em>added to</em> or <em>removed from</em> the children list.</p>
          *
          * @return The parent, or {@code null} if none.
          * @category tree

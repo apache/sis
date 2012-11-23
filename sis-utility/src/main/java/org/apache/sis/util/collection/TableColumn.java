@@ -65,14 +65,14 @@ import org.apache.sis.util.resources.Vocabulary;
  *
  * {@preformat java
  *     public class CityLocation {
- *         public static final ColumnTable<String> CITY_NAME = new MyColumn<>("CITY_NAME", String.class, "City name");
- *         public static final ColumnTable<Float>  LATITUDE  = new MyColumn<>("LATITUDE",  Float.class,  "Latitude");
- *         public static final ColumnTable<Float>  LONGITUDE = new MyColumn<>("LONGITUDE", Float.class,  "Longitude");
+ *         public static final ColumnTable<String> CITY_NAME = new Column<>("CITY_NAME", String.class, "City name");
+ *         public static final ColumnTable<Float>  LATITUDE  = new Column<>("LATITUDE",  Float.class,  "Latitude");
+ *         public static final ColumnTable<Float>  LONGITUDE = new Column<>("LONGITUDE", Float.class,  "Longitude");
  *
- *         private static final class MyColumn<V> extends TableColumn<V> implements Serializable {
+ *         private static final class Column<V> extends TableColumn<V> implements Serializable {
  *             private final String field;
  *
- *             private MyColumn(String field, Class<V> type, CharSequence header) {
+ *             private Column(String field, Class<V> type, CharSequence header) {
  *                 super(type, header);
  *                 this.field = field;
  *             }
@@ -81,9 +81,7 @@ import org.apache.sis.util.resources.Vocabulary;
  *                 try {
  *                     return CityLocation.class.getField(field).get(null);
  *                 } catch (Exception cause) { // Many exceptions, including unchecked ones.
- *                     InvalidObjectException e = new InvalidObjectException(cause.toString());
- *                     e.initCause(cause);
- *                     throw e;
+ *                     throw new InvalidObjectException(cause.toString());
  *                 }
  *             }
  *         }
