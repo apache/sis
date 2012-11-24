@@ -97,7 +97,7 @@ final class DefaultFormat extends Format {
      * @throws NumberFormatException If the parsing failed.
      */
     private Object valueOf(final String source) throws NumberFormatException {
-        return (type != Number.class) ? Numbers.valueOf(type, source) : Numbers.finestNumber(source);
+        return (type != Number.class) ? Numbers.valueOf(type, source) : Numbers.narrowestNumber(source);
     }
 
     /**
