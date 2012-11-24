@@ -19,10 +19,10 @@ package org.apache.sis.io;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.StringTokenizer;
 import java.io.Flushable;
 import java.io.IOException;
 import org.apache.sis.util.Decorator;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.X364;
@@ -594,16 +594,23 @@ public class TableFormatter extends FilteredAppendable implements Flushable {
         if (currentColumn >= maximalColumnWidths.length) {
             maximalColumnWidths = Arrays.copyOf(maximalColumnWidths, currentColumn+1);
         }
-        int length = 0;
-        final StringTokenizer tk = new StringTokenizer(cellText, "\r\n");
-        while (tk.hasMoreTokens()) {
-            final int lg = X364.lengthOfPlain(tk.nextToken());
-            if (lg > length) {
-                length = lg;
+        int width     = 0;
+        int lineStart = 0;
+        final int length = cellText.length();
+        while (lineStart < length) {
+            final int nextLine = CharSequences.indexOfLineStart(cellText, 1, lineStart);
+            for (int i=nextLine; --i >= lineStart;) {
+                if (!Character.isISOControl(cellText.charAt(i))) {
+                    final int lg = X364.lengthOfPlain(cellText, lineStart, i+1);
+                    if (lg > width) {
+                        width = lg;
+                    }
+                }
             }
+            lineStart = nextLine;
         }
-        if (length > maximalColumnWidths[currentColumn]) {
-            maximalColumnWidths[currentColumn] = length;
+        if (width > maximalColumnWidths[currentColumn]) {
+            maximalColumnWidths[currentColumn] = width;
         }
         currentColumn++;
         buffer.setLength(0);
@@ -779,7 +786,7 @@ public class TableFormatter extends FilteredAppendable implements Flushable {
                         endOfFirstLine = next;
                     }
                     currentLine[j] = remaining;
-                    textLength = X364.lengthOfPlain(cellText);
+                    textLength = X364.lengthOfPlain(cellText, 0, cellText.length());
                     /*
                      * If the cell to write is actually a border, do a special processing
                      * in order to use the characters defined in the BOX static constant.

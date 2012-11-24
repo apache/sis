@@ -1010,8 +1010,7 @@ scan:   for (int i=0; i<length;) {
 
     /**
      * Formats an angle, latitude or longitude value as an attributed character iterator.
-     * Callers can iterator over the returned iterator and queries the attribute values as
-     * in the following example:
+     * Callers can iterate and queries the attribute values as in the following example:
      *
      * {@preformat java
      *     AttributedCharacterIterator it = angleFormat.formatToCharacterIterator(myAngle);
