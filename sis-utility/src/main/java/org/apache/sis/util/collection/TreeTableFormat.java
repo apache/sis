@@ -129,6 +129,22 @@ public class TreeTableFormat extends CompoundFormat<TreeTable> {
     char columnSeparator;
 
     /**
+     * {@code true} if the trailing {@code null} values shall be omitted at formatting time.
+     */
+    boolean omitTrailingNulls;
+
+    /**
+     * {@code true} if the user defined the parsing pattern explicitely.
+     */
+    boolean isParsePatternDefined;
+
+    /**
+     * The pattern used at parsing time for finding the column separators, or {@code null}
+     * if not yet constructed. This field is serialized because it may be a user-specified pattern.
+     */
+    private Pattern parsePattern;
+
+    /**
      * The line separator to use for formatting the tree.
      *
      * @see #getLineSeparator()
@@ -160,11 +176,12 @@ public class TreeTableFormat extends CompoundFormat<TreeTable> {
      */
     public TreeTableFormat(final Locale locale, final TimeZone timezone) {
         super(locale, timezone);
-        indentation     = 4;
-        separatorPrefix = "……";
-        columnSeparator = '…';
-        separatorSuffix = " ";
-        lineSeparator   = System.lineSeparator();
+        indentation       = 4;
+        separatorPrefix   = "……";
+        columnSeparator   = '…';
+        separatorSuffix   = " ";
+        omitTrailingNulls = true;
+        lineSeparator     = System.lineSeparator();
     }
 
     /**
@@ -224,9 +241,12 @@ public class TreeTableFormat extends CompoundFormat<TreeTable> {
 
     /**
      * Returns the pattern of characters used in column separators. Those characters will be used
-     * only if more than one column is formatted. The default pattern is {@code "……[…] "}, which
-     * means "<cite>insert the {@code "……"} string, then repeat the {@code '…'} character as many
-     * time as needed (may be zero), and finally insert a space</cite>".
+     * only if more than one column is formatted. See {@link #setColumnSeparatorPattern(String)}
+     * for a description of the pattern syntax.
+     *
+     * <p>The default pattern is {@code "?……[…] "}, which means "<cite>If the next value is
+     * non-null, then insert the {@code "……"} string, repeat the {@code '…'} character as many
+     * time as needed (may be zero), and finally insert a space</cite>".</p>
      *
      * @return The pattern of the current column separator.
      */
@@ -234,10 +254,18 @@ public class TreeTableFormat extends CompoundFormat<TreeTable> {
         final StringBuilder buffer = new StringBuilder(8);
         buffer.append(separatorPrefix).append('\uFFFF').append(separatorSuffix);
         StringBuilders.replace(buffer, "\\", "\\\\");
+        StringBuilders.replace(buffer, "?",  "\\?");
         StringBuilders.replace(buffer, "[",  "\\[");
         StringBuilders.replace(buffer, "]",  "\\]");
+        StringBuilders.replace(buffer, "/",  "\\/");
+        if (omitTrailingNulls) {
+            buffer.insert(0, '?');
+        }
         final int insertAt = buffer.indexOf("\uFFFF");
         buffer.replace(insertAt, insertAt+1, "[\uFFFF]").setCharAt(insertAt+1, columnSeparator);
+        if (isParsePatternDefined) {
+            buffer.append('/').append(parsePattern.pattern());
+        }
         return buffer.toString();
     }
 
@@ -246,8 +274,31 @@ public class TreeTableFormat extends CompoundFormat<TreeTable> {
      * exactly one occurrence of the {@code "[ ]"} pair of bracket, with exactly one character
      * between them. This character will be repeated as many time as needed for columns alignment.
      *
-     * <p>In current implementation, the above-cited repeated character must be in the
-     * {@linkplain Character#isBmpCodePoint(int) Basic Multilanguage Plane}.</p>
+     * <p>The formatting pattern can optionally be followed by a regular expression to be used at
+     * parsing time. If omitted, the parsing pattern will be inferred from the formatting pattern.
+     * If specified, then the {@link #parse(CharSequence, ParsePosition) parse} method will invoke
+     * the {@link Matcher#find()} method for determining the column boundaries.</p>
+     *
+     * <p>The characters listed below have special meaning in the pattern.
+     * Other characters are appended <cite>as-is</cite> between the columns.</p>
+     *
+     * <table class="sis">
+     *   <tr><th>Character(s)</th> <th>Meaning</th></tr>
+     *   <tr><td>{@code '?'}</td>  <td>Omit the column separator for trailing null values.</td></tr>
+     *   <tr><td>{@code "[ ]"}</td><td>Repeat the character between bracket as needed.</td></tr>
+     *   <tr><td>{@code '/'}</td>  <td>Separate the formatting pattern from the parsing pattern.</td></tr>
+     *   <tr><td>{@code '\\'}</td> <td>Escape any of the characters listed in this table.</td></tr>
+     * </table>
+     *
+     * Restrictions:
+     * <ul>
+     *   <li>If present, {@code '?'} shall be the first character in the pattern.</li>
+     *   <li>The repeated character (specified inside the pair of brackets) is mandatory.</li>
+     *   <li>In the current implementation, the repeated character must be in the
+     *       {@linkplain Character#isBmpCodePoint(int) Basic Multilanguage Plane}.</li>
+     *   <li>If {@code '/'} is present, anything on its right must be compliant
+     *       with the {@link Pattern} syntax.</li>
+     * </ul>
      *
      * @param  pattern The pattern of the new column separator.
      * @throws IllegalArgumentException If the given pattern is illegal.
@@ -257,7 +308,9 @@ public class TreeTableFormat extends CompoundFormat<TreeTable> {
         final int length = pattern.length();
         final StringBuilder buffer = new StringBuilder(length);
         boolean escape  = false;
+        boolean trim    = false;
         String  prefix  = null;
+        String  regex   = null;
         int separatorIndex = -1;
 scan:   for (int i=0; i<length; i++) {
             final char c = pattern.charAt(i);
@@ -271,6 +324,14 @@ scan:   for (int i=0; i<length; i++) {
                         if (escape) break;
                         escape = true;
                     }
+                    continue;
+                }
+                case '?': {
+                    if (i != 0) {
+                        prefix = null;
+                        break scan;
+                    }
+                    trim = true;
                     continue;
                 }
                 case '[': {
@@ -292,6 +353,11 @@ scan:   for (int i=0; i<length; i++) {
                         default: prefix = null; break scan;
                     }
                 }
+                case '/': {
+                    if (escape) break;
+                    regex = pattern.substring(i+1);
+                    break scan;
+                }
             }
             if (i != separatorIndex) {
                 buffer.append(c);
@@ -301,9 +367,22 @@ scan:   for (int i=0; i<length; i++) {
             throw new IllegalArgumentException(Errors.format(
                     Errors.Keys.IllegalFormatPatternForClass_2, pattern, TreeTable.class));
         }
-        separatorPrefix = prefix;
-        separatorSuffix = buffer.toString();
-        columnSeparator = pattern.charAt(separatorIndex);
+        /*
+         * Finally store the result. The parsing pattern must be first because the call to
+         * Pattern.compile(regex) may thrown PatternSyntaxException. In such case, we want
+         * it to happen before we modified anything else.
+         */
+        if (regex != null) {
+            parsePattern = Pattern.compile(regex);
+            isParsePatternDefined = true;
+        } else {
+            parsePattern = null;
+            isParsePatternDefined = false;
+        }
+        omitTrailingNulls = trim;
+        separatorPrefix   = prefix;
+        separatorSuffix   = buffer.toString();
+        columnSeparator   = pattern.charAt(separatorIndex);
     }
 
     /**
@@ -429,10 +508,13 @@ scan:   for (int i=0; i<length; i++) {
      */
     @Override
     public TreeTable parse(final CharSequence text, final ParsePosition pos) throws ParseException {
-        final Matcher matcher = Pattern.compile(
-                Pattern.quote(separatorPrefix)
-              + Pattern.quote(String.valueOf(columnSeparator)) + '*'
-              + Pattern.quote(separatorSuffix)).matcher(text);
+        if (parsePattern == null) {
+            parsePattern = Pattern.compile(
+                    Pattern.quote(separatorPrefix)
+                  + Pattern.quote(String.valueOf(columnSeparator)) + '*'
+                  + Pattern.quote(separatorSuffix));
+        }
+        final Matcher matcher = parsePattern.matcher(text);
         final int length        = text.length();
         int indexOfLineStart    = pos.getIndex();
         int indentationLevel    = 0;                // Current index in the 'indentations' array.
@@ -723,6 +805,9 @@ scan:   for (int i=0; i<length; i++) {
                 if ((values[i] = node.getValue(columns[i])) != null) {
                     n = i;
                 }
+            }
+            if (!omitTrailingNulls) {
+                n = values.length - 1;
             }
             for (int i=0; i<=n; i++) {
                 if (i != 0) {
