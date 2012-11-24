@@ -161,21 +161,39 @@ public final strictfp class TreeTableFormatTest extends TestCase {
      */
     @Test
     @DependsOnMethod("testTreeTableParse")
-    public void testAlternativeColumnSeparator() throws ParseException {
+    public void testAlternativeColumnSeparatorPattern() throws ParseException {
         final TableColumn<Integer> valueA = new TableColumn<>(Integer.class, "value #1");
         final TableColumn<String>  valueB = new TableColumn<>(String .class, "value #2");
         final TreeTableFormat tf = new TreeTableFormat(null, null);
-        assertEquals("……[…] ", tf.getColumnSeparatorPattern());
-        tf.setColumnSeparatorPattern(" [ ]│ ");
-        assertEquals(" [ ]│ ", tf.getColumnSeparatorPattern());
+        assertEquals("?……[…] ", tf.getColumnSeparatorPattern());
         tf.setColumns(NAME, valueA, valueB);
         tf.setVerticalLinePosition(1);
+        /*
+         * Test with all column separators.
+         */
+        tf.setColumnSeparatorPattern(" [ ]│ ");
+        assertEquals(" [ ]│ ", tf.getColumnSeparatorPattern());
         final String text =
                 "Node #1         │ 10 │ Value #1B\n" +
-                " ├──Node #2     │ 20\n" +
+                " ├──Node #2     │ 20 │ \n" +
                 " │   └──Node #4 │ 40 │ Value #4B\n" +
                 " └──Node #3     │    │ Value #3B\n";
         final TreeTable table = tf.parseObject(text);
         assertMultilinesEquals(text, tf.format(table));
+        /*
+         * Test with omission of column separator for trailing null values.
+         */
+        tf.setColumnSeparatorPattern("? [ ]; ");
+        assertMultilinesEquals(
+                "Node #1         ; 10 ; Value #1B\n" +
+                " ├──Node #2     ; 20\n" + // Column separator omitted here.
+                " │   └──Node #4 ; 40 ; Value #4B\n" +
+                " └──Node #3     ;    ; Value #3B\n", tf.format(table));
+        /*
+         * Test with regular expression at parsing time.
+         */
+        tf.setColumnSeparatorPattern("?……[…] /\\w*│+\\w*");
+        assertEquals("?……[…] /\\w*│+\\w*", tf.getColumnSeparatorPattern());
+        assertEquals(table, tf.parseObject(text));
     }
 }
