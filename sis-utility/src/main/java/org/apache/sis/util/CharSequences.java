@@ -160,7 +160,7 @@ public final class CharSequences extends Static {
      * @param  text The character sequence from which to get the count, or {@code null}.
      * @return The number of Unicode code points, or 0 if the argument is {@code null}.
      *
-     * @see Character#codePointCount(CharSequence, int, int)
+     * @see #codePointCount(CharSequence, int, int)
      */
     public static int codePointCount(final CharSequence text) {
         if (text == null)                  return 0;
@@ -174,6 +174,40 @@ public final class CharSequences extends Static {
             }
         }
         return Character.codePointCount(text, 0, text.length());
+    }
+
+    /**
+     * Returns the number of Unicode code points in the given characters sub-sequence,
+     * or 0 if {@code null}. Unpaired surrogates within the text count as one code
+     * point each.
+     *
+     * <p>This method performs the same work than the standard
+     * {@link Character#codePointCount(CharSequence, int, int)} method, except that it tries
+     * to delegate to the optimized methods from the {@link String}, {@link StringBuilder},
+     * {@link StringBuffer} or {@link CharBuffer} classes if possible.</p>
+     *
+     * @param  text      The character sequence from which to get the count, or {@code null}.
+     * @param  fromIndex The index from which to start the computation.
+     * @param  toIndex   The index after the last character to take in account.
+     * @return The number of Unicode code points, or 0 if the argument is {@code null}.
+     *
+     * @see Character#codePointCount(CharSequence, int, int)
+     * @see String#codePointCount(int, int)
+     * @see StringBuilder#codePointCount(int, int)
+     */
+    public static int codePointCount(final CharSequence text, final int fromIndex, final int toIndex) {
+        if (text == null)                  return 0;
+        if (text instanceof String)        return ((String)        text).codePointCount(fromIndex, toIndex);
+        if (text instanceof StringBuilder) return ((StringBuilder) text).codePointCount(fromIndex, toIndex);
+        if (text instanceof StringBuffer)  return ((StringBuffer)  text).codePointCount(fromIndex, toIndex);
+        if (text instanceof CharBuffer) {
+            final CharBuffer buffer = (CharBuffer) text;
+            if (buffer.hasArray() && !buffer.isReadOnly()) {
+                final int position = buffer.position();
+                return Character.codePointCount(buffer.array(), position + fromIndex, position + toIndex);
+            }
+        }
+        return Character.codePointCount(text, fromIndex, toIndex);
     }
 
     /**
