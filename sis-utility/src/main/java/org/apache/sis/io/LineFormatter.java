@@ -540,10 +540,10 @@ searchHyp:  for (int i=buffer.length(); i>0;) {
     }
 
     /**
-     * Sends all pending characters to the {@linkplain #out underlying appendable}, including
-     * trailing whitespaces. Note that this method should preferably be invoked at the end of
-     * a word, sentence or line, since invoking this method may prevent {@code LineFormatter}
-     * to properly wrap the current line if the current position is in the middle of a word.
+     * Sends all pending characters to the underlying appendable, including trailing whitespaces.
+     * Note that this method should preferably be invoked at the end of a word, sentence or line,
+     * since invoking this method may prevent {@code LineFormatter} to properly wrap the current
+     * line if the current position is in the middle of a word.
      *
      * <p>Invoking this method also flushes the underlying stream, if {@linkplain Flushable flushable}.
      * A cheaper way to send pending characters is to make sure that the last character is a
