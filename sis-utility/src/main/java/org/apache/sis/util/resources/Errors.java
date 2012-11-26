@@ -59,6 +59,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int CloneNotSupported_1 = 42;
 
         /**
+         * Thread “{0}” is dead.
+         */
+        public static final int DeadThread_1 = 43;
+
+        /**
          * Value “{0}” is duplicated.
          */
         public static final int DuplicatedValue_1 = 38;
