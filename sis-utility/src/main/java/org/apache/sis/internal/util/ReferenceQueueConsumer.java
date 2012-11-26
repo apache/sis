@@ -63,6 +63,9 @@ public final class ReferenceQueueConsumer<T> extends DaemonThread {
         synchronized (Threads.class) {
             Threads.lastCreatedDaemon = DEFAULT = new ReferenceQueueConsumer<>(Threads.lastCreatedDaemon);
         }
+        if (Supervisor.ENABLED) {
+            Supervisor.register();
+        }
         // Call to Thread.start() must be outside the constructor
         // (Reference: Goetz et al.: "Java Concurrency in Practice").
         DEFAULT.start();
