@@ -54,6 +54,11 @@ public final class Errors extends IndexedResourceBundle {
         }
 
         /**
+         * Can not compute the derivative.
+         */
+        public static final int CanNotComputeDerivative = 44;
+
+        /**
          * Can not clone an object of type ‘{0}’.
          */
         public static final int CloneNotSupported_1 = 42;
@@ -143,6 +148,11 @@ public final class Errors extends IndexedResourceBundle {
          * Index {0} is out of bounds.
          */
         public static final int IndexOutOfBounds_1 = 4;
+
+        /**
+         * Argument ‘{0}’ can not take an infinite value.
+         */
+        public static final int InfiniteArgumentValue_1 = 45;
 
         /**
          * A different value is already associated to the “{0}” key.

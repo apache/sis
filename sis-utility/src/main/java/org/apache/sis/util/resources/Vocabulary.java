@@ -54,9 +54,44 @@ public final class Vocabulary extends IndexedResourceBundle {
         }
 
         /**
+         * Maximum value
+         */
+        public static final int MaximumValue = 5;
+
+        /**
+         * Mean value
+         */
+        public static final int MeanValue = 6;
+
+        /**
+         * Minimum value
+         */
+        public static final int MinimumValue = 4;
+
+        /**
          * Name
          */
         public static final int Name = 0;
+
+        /**
+         * Number of ‘NaN’
+         */
+        public static final int NumberOfNaN = 3;
+
+        /**
+         * Number of values
+         */
+        public static final int NumberOfValues = 2;
+
+        /**
+         * Root Mean Square
+         */
+        public static final int RootMeanSquare = 7;
+
+        /**
+         * Standard deviation
+         */
+        public static final int StandardDeviation = 8;
 
         /**
          * Type
