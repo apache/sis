@@ -35,7 +35,7 @@ import static java.lang.Double.doubleToLongBits;
  *
  * <p>In addition to the statistics on the sample values, this class can optionally compute
  * statistics on the differences between consecutive sample values, i.e. the statistics on
- * <var>y₁</var>−<var>y₀</var>, <var>y₂</var>−<var>y₁</var>, <var>y₃</var>−<var>y₂</var>, <i>etc…</i>,
+ * <var>y₁</var>-<var>y₀</var>, <var>y₂</var>-<var>y₁</var>, <var>y₃</var>-<var>y₂</var>, <i>etc…</i>,
  * Those statistics can be fetched by a call to {@link #differences()}.
  * They are useful for verifying if the interval between sample values is approximatively constant.</p>
  *
@@ -348,7 +348,7 @@ public class Statistics implements Cloneable, Serializable {
     }
 
     /**
-     * Equivalents to <code>{@link #maximum() maximum} - {@link #minimum() minimum}</code>,
+     * Equivalents to <code>{@link #maximum() maximum} - {@link #minimum() minimum}</code>.
      * If no samples were added, then returns {@link Double#NaN NaN}.
      *
      * @return The span of sample values, or NaN if none.
@@ -419,7 +419,7 @@ public class Statistics implements Cloneable, Serializable {
      * Returns the statistics on the differences between sample values, or {@code null} if none.
      * For example if the sample values given to the {@code add(…)} methods were <var>y₀</var>,
      * <var>y₁</var>, <var>y₂</var> and <var>y₃</var>, then this method returns statistics on
-     * <var>y₁</var>−<var>y₀</var>, <var>y₂</var>−<var>y₁</var> and <var>y₃</var>−<var>y₂</var>.
+     * <var>y₁</var>-<var>y₀</var>, <var>y₂</var>-<var>y₁</var> and <var>y₃</var>-<var>y₂</var>.
      *
      * <p>The differences between sample values are related to the discrete derivatives as below,
      * where Δ<var>x</var> is the constant interval between the <var>x</var> values of the
@@ -452,10 +452,10 @@ public class Statistics implements Cloneable, Serializable {
      * multiple lines, one for each statistical value. For example:
      *
      * {@preformat text
-     *     Count:                8726
-     *     Minimum:             6.853
-     *     Maximum:             8.259
-     *     Mean:                7.421
+     *     Number of values:     8726
+     *     Minimum value:       6.853
+     *     Maximum value:       8.259
+     *     Mean value:          7.421
      *     Root Mean Square:    7.846
      *     Standard deviation:  6.489
      * }
@@ -519,10 +519,8 @@ public class Statistics implements Cloneable, Serializable {
     /**
      * Holds some statistics about the difference between consecutive sample values.
      * Given a series of <var>s₀</var>, <var>s₁</var>, <var>s₂</var>, <var>s₃</var>,
-     * <i>etc…</i> samples, this class computes statistics for
-     * <var>s₁</var>−<var>s₀</var>,
-     * <var>s₂</var>−<var>s₁</var>,
-     * <var>s₃</var>−<var>s₂</var>, <i>etc…</i>
+     * <i>etc…</i> samples, this class computes statistics for <var>s₁</var>-<var>s₀</var>,
+     * <var>s₂</var>-<var>s₁</var>, <var>s₃</var>-<var>s₂</var>, <i>etc…</i>
      * which are stored in a {@link #delta} statistics object.
      *
      * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
@@ -589,7 +587,7 @@ public class Statistics implements Cloneable, Serializable {
 
         /**
          * Updates statistics for the specified sample value and its discrete derivatives.
-         * The {@link #delta} statistics are updated with <code>sample − sample<sub>last</sub></code>
+         * The {@link #delta} statistics are updated with <code>sample - sample<sub>last</sub></code>
          * value, where <code>sample<sub>last</sub></code> is the value given to the previous call of
          * an {@code add(…)} method.
          */
