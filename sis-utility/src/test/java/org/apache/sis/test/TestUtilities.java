@@ -21,6 +21,7 @@ import java.util.Locale;
 import java.util.TimeZone;
 import java.util.Iterator;
 import java.util.concurrent.Callable;
+import java.io.PrintWriter;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.text.Format;
 import java.text.DateFormat;
@@ -28,6 +29,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.internal.util.X364;
 
 import static org.junit.Assert.*;
 
@@ -41,6 +43,11 @@ import static org.junit.Assert.*;
  * @module
  */
 public final strictfp class TestUtilities extends Static {
+    /**
+     * Width of the separator to print to {@link TestCase#out}, in number of characters.
+     */
+    private static final int SEPARATOR_WIDTH = 80;
+
     /**
      * Maximal time that {@code waitFoo()} methods can wait, in milliseconds.
      *
@@ -64,6 +71,41 @@ public final strictfp class TestUtilities extends Static {
      * Do not allow instantiation of this class.
      */
     private TestUtilities() {
+    }
+
+    /**
+     * Prints the given title to {@link TestCase#out} in a box. This method is invoked for
+     * writing a clear visual separator between the verbose output of different test cases.
+     *
+     * @param title The title to write.
+     */
+    public static void printSeparator(final String title) {
+        final PrintWriter out = TestCase.out;
+        if (out != null) {
+            final boolean isAnsiSupported = X364.isAnsiSupported();
+            if (isAnsiSupported) {
+                out.print(X364.FOREGROUND_CYAN.sequence());
+            }
+            out.print('╒');
+            for (int i=0; i<SEPARATOR_WIDTH-2; i++) {
+                out.print('═');
+            }
+            out.println('╕');
+            out.print("│ ");
+            out.print(title);
+            for (int i=title.codePointCount(0, title.length()); i<SEPARATOR_WIDTH-3; i++) {
+                out.print(' ');
+            }
+            out.println('│');
+            out.print('└');
+            for (int i=0; i<SEPARATOR_WIDTH-2; i++) {
+                out.print('─');
+            }
+            out.println('┘');
+            if (isAnsiSupported) {
+                out.print(X364.FOREGROUND_DEFAULT.sequence());
+            }
+        }
     }
 
     /**

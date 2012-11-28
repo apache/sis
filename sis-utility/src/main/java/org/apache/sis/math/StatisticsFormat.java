@@ -53,6 +53,12 @@ final class StatisticsFormat extends CompoundFormat<Statistics> {
     private static final int ADDITIONAL_DIGITS = 2;
 
     /**
+     * The locale for row labels. This is usually the same than the format locale,
+     * but not necessarily.
+     */
+    private final Locale labelLocale;
+
+    /**
      * {@code true} if the sample values given to {@code Statistics.add(…)} methods were the
      * totality of the population under study, or {@code false} if they were only a sampling.
      *
@@ -72,7 +78,22 @@ final class StatisticsFormat extends CompoundFormat<Statistics> {
      * @return A statistics format instance for the current default locale.
      */
     public static StatisticsFormat getInstance() {
-        return new StatisticsFormat(Locale.getDefault(Locale.Category.FORMAT), null);
+        return new StatisticsFormat(
+                Locale.getDefault(Locale.Category.FORMAT),
+                Locale.getDefault(Locale.Category.DISPLAY), null);
+    }
+
+    /**
+     * Constructs a new format for the given locales.
+     * The timezone is used only if the values added to the {@link Statistics} are dates.
+     *
+     * @param locale      The locale, or {@code null} for unlocalized format.
+     * @param labelLocale The locale for row labels. Usually, but not necessarily, same as {@code locale}.
+     * @param timezone    The timezone, or {@code null} for UTC.
+     */
+    private StatisticsFormat(final Locale locale, final Locale labelLocale, final TimeZone timezone) {
+        super(locale, timezone);
+        this.labelLocale = labelLocale;
     }
 
     /**
@@ -84,6 +105,7 @@ final class StatisticsFormat extends CompoundFormat<Statistics> {
      */
     public StatisticsFormat(final Locale locale, final TimeZone timezone) {
         super(locale, timezone);
+        labelLocale = locale;
     }
 
     /**
@@ -159,7 +181,7 @@ final class StatisticsFormat extends CompoundFormat<Statistics> {
             toAppendTo = table = new TableFormatter(toAppendTo, " ");
             separator = '\t'; // Will be handled especially by TableFormatter.
         }
-        final Vocabulary resources = Vocabulary.getResources(getLocale());
+        final Vocabulary resources = Vocabulary.getResources(labelLocale);
         /*
          * Initialize the NumberFormat for formatting integers without scientific notation.
          * This is necessary since the format may have been modified by a previous execution
