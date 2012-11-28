@@ -21,7 +21,11 @@ import java.util.HashMap;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
+import java.io.IOException;
+import java.io.PrintWriter;
 
+import org.apache.sis.math.Statistics;
+import org.apache.sis.io.TableFormatter;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
@@ -169,13 +173,19 @@ public final strictfp class CacheTest extends TestCase {
     /**
      * Validates the entries created by the {@link #stress()} test. The check performed in
      * this method shall obviously be consistent with the values created by {@code stress()}.
+     *
+     * @param  cache The cache to validate.
+     * @return Statistics on the key values of the given map.
      */
-    private static void validateStressEntries(final Map<Integer,Integer> cache) {
+    private static Statistics validateStressEntries(final Map<Integer,Integer> cache) {
+        final Statistics statistics = new Statistics();
         for (final Map.Entry<Integer,Integer> entry : cache.entrySet()) {
             final int key = entry.getKey();
             final int value = entry.getValue();
             assertEquals(key*key, value);
+            statistics.add(key);
         }
+        return statistics;
     }
 
     /**
@@ -234,15 +244,20 @@ public final strictfp class CacheTest extends TestCase {
         /*
          * Verifies the values.
          */
-        validateStressEntries(cache);
+        final Statistics beforeGC = validateStressEntries(cache);
         assertTrue("Should not have more entries than what we put in.", cache.size() <= count);
         assertFalse("Some entries should be retained by strong references.", cache.isEmpty());
+        /*
+         * If verbose test output is enabled, report the number of cache hits.
+         * The numbers below are for tuning the test only. The output is somewhat
+         * random so we can not check it in a test suite.  However if the test is
+         * properly tuned, most values should be non-zero.
+         */
+        final PrintWriter out = CacheTest.out;
         if (out != null) {
-            out.println();
-            out.println("The numbers below are for tuning the test only. The output is somewhat");
-            out.println("random so we can not check it in a test suite.  However if the test is");
-            out.println("properly tuned, most values should be non-zero.");
-            out.println();
+            TestUtilities.printSeparator("CacheTest.stress() - testing concurrent accesses");
+            out.print("There is "); out.print(threads.length); out.print(" threads, each of them"
+                    + " fetching or creating "); out.print(count); out.println(" values.");
             out.println("Number of times a cached value has been reused, for each thread:");
             for (int i=0; i<threads.length;) {
                 final String n = String.valueOf(threads[i++].addCount);
@@ -267,7 +282,32 @@ public final strictfp class CacheTest extends TestCase {
             out.println();
             out.flush();
         }
+        /*
+         * Gets the statistics of key values after garbage collection. The mean value should
+         * be higher, because oldest values (which should have been garbage collected first)
+         * have lower values. If verbose output is enabled, then we will print the statistics
+         * before to perform the actual check in order to allow the developer to have more
+         * information in case of failure.
+         */
         System.gc();
-        validateStressEntries(cache);
+        final Statistics afterGC = validateStressEntries(cache);
+        if (out != null) {
+            final TableFormatter table = new TableFormatter(out, " │ ");
+            table.setMultiLinesCells(true);
+            table.append("Statistics on the keys before garbage collection:");
+            table.nextColumn();
+            table.append("Statistics on the keys after garbage collection.\n" +
+                         "The minimum and the mean values should be greater.");
+            table.nextLine();
+            table.append(beforeGC.toString());
+            table.nextColumn();
+            table.append(afterGC.toString());
+            try {
+                table.flush();
+            } catch (IOException e) {
+                throw new AssertionError(e);
+            }
+        }
+        assertTrue("Mean key value should be greater after garbage collection.", afterGC.mean() >= beforeGC.mean());
     }
 }
