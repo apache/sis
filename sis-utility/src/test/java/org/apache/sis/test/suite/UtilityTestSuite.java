@@ -43,6 +43,7 @@ import org.junit.runners.Suite;
   org.apache.sis.util.resources.IndexedResourceBundleTest.class,
   org.apache.sis.util.logging.PerformanceLevelTest.class,
   org.apache.sis.math.MathFunctionsTest.class,
+  org.apache.sis.math.StatisticsTest.class,
 
   // Collections.
   org.apache.sis.internal.util.ReferenceQueueConsumerTest.class,

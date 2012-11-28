@@ -148,8 +148,8 @@ public class TableFormatter extends FilteredAppendable implements Flushable {
     /**
      * Alignment for current and next cells.
      *
-     * @see #getAlignment()
-     * @see #setAlignment(byte)
+     * @see #getCellAlignment()
+     * @see #setCellAlignment(byte)
      */
     private byte alignment = ALIGN_LEFT;
 
@@ -370,60 +370,33 @@ public class TableFormatter extends FilteredAppendable implements Flushable {
     }
 
     /**
-     * Returns the alignment for current and next cells.
-     * The default alignment is {@link #ALIGN_LEFT}.
+     * Returns the alignment of the text inside the current cell.
+     * The default value is {@link #ALIGN_LEFT}.
      *
-     * @return Cell alignment: {@link #ALIGN_LEFT} (the default),
-     *         {@link #ALIGN_RIGHT} or {@link #ALIGN_CENTER}.
+     * @return Current cell alignment as one of the {@link #ALIGN_LEFT},
+     *         {@link #ALIGN_RIGHT} or {@link #ALIGN_CENTER} constants.
      */
-    public byte getAlignment() {
+    public byte getCellAlignment() {
         return alignment;
     }
 
     /**
-     * Sets the alignment for current and next cells. Invoking this method
-     * does does not affect the alignment of previous written cells.
+     * Sets the alignment of the text inside the current cell. The alignments of any cell
+     * written prior this method call are left unchanged. The new alignment will apply to
+     * the next cells too until this {@code setCellAlignment(…)} method is invoked again
+     * with a different value.
      *
-     * <p>The default alignment is {@link #ALIGN_LEFT}.</p>
+     * <p>If this method is never invoked, then the default alignment is {@link #ALIGN_LEFT}.</p>
      *
-     * @param alignment Cell alignment. Must be one of {@link #ALIGN_LEFT}
-     *        {@link #ALIGN_RIGHT} or {@link #ALIGN_CENTER}.
+     * @param alignment The new cell alignment as one of the {@link #ALIGN_LEFT},
+     *        {@link #ALIGN_RIGHT} or {@link #ALIGN_CENTER} constants.
      */
-    public void setAlignment(final byte alignment) {
+    public void setCellAlignment(final byte alignment) {
         if (alignment < ALIGN_LEFT || alignment > ALIGN_RIGHT) {
             throw new IllegalArgumentException(Errors.format(
                     Errors.Keys.IllegalArgument_1, "alignment"));
         }
         this.alignment = alignment;
-    }
-
-    /**
-     * Sets the alignment for all cells in the specified column.
-     * The alignments of cells already written prior this method
-     * call are also modified.
-     *
-     * <p>The default alignment is {@link #ALIGN_LEFT}.</p>
-     *
-     * @param column The 0-based column number.
-     * @param alignment Cell alignment. Must be one of {@link #ALIGN_LEFT}
-     *        {@link #ALIGN_RIGHT} or {@link #ALIGN_CENTER}.
-     */
-    public void setColumnAlignment(final int column, final byte alignment) {
-        if (alignment < ALIGN_LEFT || alignment > ALIGN_RIGHT) {
-            throw new IllegalArgumentException(Errors.format(
-                    Errors.Keys.IllegalArgument_1, "alignment"));
-        }
-        int columnIndex = 0;
-        for (final Cell cell : cells) {
-            if (cell == null || cell.text == null) {
-                columnIndex = 0; // New line.
-            } else {
-                if (columnIndex == column) {
-                    cell.alignment = alignment;
-                }
-                columnIndex++;
-            }
-        }
     }
 
     /**
