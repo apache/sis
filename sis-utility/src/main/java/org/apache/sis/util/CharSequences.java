@@ -42,22 +42,24 @@ import static org.apache.sis.util.StringBuilders.replace;
  * no-break spaces}, tabulations and line feeds. The general policy in the SIS library is:
  *
  * <ul>
- *   <li>Use {@code isWhitespace(…)} when separating entities (words, numbers, tokens).
+ *   <li><p>Use {@code isWhitespace(…)} when separating entities (words, numbers, tokens).
  *       Using this method, characters separated by a no-break space are considered as
  *       part of the same entity (e.g. the French locale uses no-break space instead of
  *       coma as group separator in number representations), while line feeds and
- *       tabulations are accepted as valid entity separator.</li>
- *   <li>Use {@code isSpaceChar(…)} when parsing a single entity. Using this method,
+ *       tabulations are accepted as valid entity separator.
+ *       This {@code CharSequences} class consistently uses {@code isWhitespace(…)}.</p></li>
+ *
+ *   <li><p>Use {@code isSpaceChar(…)} when parsing a single entity. Using this method,
  *       no-break spaces are considered as part of the entity (e.g. the above-cited
- *       group separator), while line feeds or tabulation mark entity boundaries.</li>
+ *       group separator), while line feeds or tabulation mark entity boundaries.
+ *       For this reason, the {@link java.text.Format} implementations in the SIS
+ *       library typically use {@code isSpaceChar(…)}.</p></li>
  * </ul>
  *
- * This {@code CharSequences} class consistently uses {@code isWhitespace(…)}, while
- * {@link java.text.Format} implementations in SIS typically use {@code isSpaceChar(…)}.
- *
- * <p>Note that the {@link String#trim()} method doesn't follow any of those politics and should
+ * Note that the {@link String#trim()} method doesn't follow any of those policies and should
  * generally be avoided. That {@code trim()} method removes every ISO control characters without
- * distinction about whether the characters are space or not, and ignore all Unicode spaces.</p>
+ * distinction about whether the characters are space or not, and ignore all Unicode spaces.
+ * The {@link #trimWhitespaces(String) method defined in this class can be used as an alternative.
  *
  * {@section Handling of null values}
  * Most methods in this class accept a {@code null} {@code CharSequence} argument. In such cases
@@ -908,8 +910,14 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
 
     /**
      * Returns a string with leading and trailing whitespace characters omitted.
-     * This method performs the same work than {@link #trimWhitespaces(CharSequence)},
-     * but is overloaded for the {@code String} type because very often used.
+     * This method is similar in purpose to {@link String#trim()}, except that the later considers
+     * every {@linkplain Character#isISOControl(int) ISO control codes} below 32 to be a whitespace.
+     * That {@code String.trim()} behavior has the side effect of removing the heading of ANSI escape
+     * sequences (a.k.a. X3.64), and to ignore Unicode spaces. This {@code trimWhitespaces(…)} method
+     * is built on the more accurate {@link Character#isWhitespace(int)} method instead.
+     *
+     * <p>This method performs the same work than {@link #trimWhitespaces(CharSequence)},
+     * but is overloaded for the {@code String} type because of its frequent use.</p>
      *
      * @param  text The text from which to remove leading and trailing whitespaces, or {@code null}.
      * @return A string with leading and trailing whitespaces removed, or {@code null} is the given
@@ -928,11 +936,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      * Returns a text with leading and trailing whitespace characters omitted.
      * Space characters are identified by the {@link Character#isWhitespace(int)} method.
      *
-     * <p>This method is similar in purpose to {@link String#trim()}, except that the later considers
-     * every ASCII control codes below 32 to be a whitespace. This have the side effect of removing
-     * ANSI escape sequences (a.k.a. X3.64) as well. Users should invoke this
-     * {@code CharSequences.trimWhitespaces(…)} method instead if they need to preserve
-     * those ANSI escape sequences.</p>
+     * <p>This method is the generic version of {@link #trimWhitespaces(String)}.</p>
      *
      * @param  text The text from which to remove leading and trailing whitespaces, or {@code null}.
      * @return A characters sequence with leading and trailing whitespaces removed,
@@ -952,9 +956,13 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      * Returns a sub-sequence with leading and trailing whitespace characters omitted.
      * Space characters are identified by the {@link Character#isWhitespace(int)} method.
      *
-     * <p>Invoking this method is functionally equivalent to invoking
-     * <code>{@linkplain #trimWhitespaces(CharSequence) trimWhitespaces}(text.subSequence(lower, upper))</code>,
-     * except that only one call to {@link CharSequence#subSequence(int, int)} is performed instead of two.</p>
+     * <p>Invoking this method is functionally equivalent to the following code snippet,
+     * except that the {@link CharSequence#subSequence(int, int) subSequence} method is
+     * invoked only once instead of two times:</p>
+     *
+     * {@preformat java
+     *     text = trimWhitespaces(text.subSequence(lower, upper));
+     * }
      *
      * @param  text  The text from which to remove leading and trailing white spaces.
      * @param  lower Index of the first character to consider for inclusion in the sub-sequence.
