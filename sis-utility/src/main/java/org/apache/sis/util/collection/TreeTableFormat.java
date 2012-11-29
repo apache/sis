@@ -532,6 +532,11 @@ scan:   for (int i=0; i<length; i++) {
                 if (c != '\r' && c != '\n') break;
                 endOfLine--; // Skip trailing '\r' and '\n'.
             }
+            /*
+             * Skip leading spaces using Character.isSpaceChar(…) instead than isWhitespace(…)
+             * because we need to skip non-breaking spaces as well as ordinary space. We don't
+             * need to consider line feeds since they were handled by the lines just above.
+             */
             boolean hasChar = false;
             int i; // The indentation of current line.
             for (i=indexOfLineStart; i<endOfLine;) {
@@ -553,12 +558,7 @@ scan:   for (int i=0; i<length; i++) {
              * user-spaces to interfer with the calculation of indentation.
              */
             int indexOfValue = i;
-            while (i > indexOfLineStart) {
-                final int c = Character.codePointBefore(text, i);
-                if (!Character.isSpaceChar(c)) break;
-                i -= Character.charCount(c);
-            }
-            i -= indexOfLineStart;
+            i = CharSequences.skipTrailingWhitespaces(text, indexOfLineStart, i) - indexOfLineStart;
             /*
              * Found the first character which is not part of the indentation. Create a new root
              * (without parent for now) and parse the values for each column. Columns with empty
@@ -570,19 +570,10 @@ scan:   for (int i=0; i<length; i++) {
                 for (int ci=0; ci<columns.length; ci++) {
                     final boolean found = matcher.find();
                     int endOfColumn = found ? matcher.start() : endOfLine;
-                    while (indexOfValue < endOfColumn) {
-                        final int c = Character.codePointAt(text, indexOfValue);
-                        if (!Character.isSpaceChar(c)) break;
-                        indexOfValue += Character.charCount(c);
-                    }
-                    // Ignore trailing spaces at the end of this column, then parse the value.
-                    for (int endOfValue = endOfColumn; endOfValue > indexOfValue;) {
-                        final int c = Character.codePointBefore(text, endOfValue);
-                        if (!Character.isSpaceChar(c)) {
-                            parseValue(node, columns[ci], formats[ci], text.subSequence(indexOfValue, endOfValue).toString());
-                            break;
-                        }
-                        endOfValue -= Character.charCount(c);
+                    indexOfValue   = CharSequences.skipLeadingWhitespaces (text, indexOfValue, endOfColumn);
+                    int endOfValue = CharSequences.skipTrailingWhitespaces(text, indexOfValue, endOfColumn);
+                    if (endOfValue > indexOfValue) {
+                        parseValue(node, columns[ci], formats[ci], text.subSequence(indexOfValue, endOfValue).toString());
                     }
                     if (!found) break;
                     // The end of this column will be the beginning of the next column,

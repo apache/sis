@@ -253,29 +253,15 @@ public class TableFormatter extends FilteredAppendable implements Flushable {
     public TableFormatter(final Appendable out, final String separator) {
         super(out);
         /*
-         * Use Character.isSpaceChar(…) instead of Character.isWhitespace(…) because the former
-         * does not consider control characters (tabulation, group separator, etc.) as spaces.
-         * We presume that if the user wants to put such characters in the border, he has reasons.
-         *
-         * If this policy is changed, search for other occurrences of 'isSpaceChar' in this class
-         * for ensuring consistency. Note however that the same policy is not necessarily applied
-         * everywhere.
+         * Following methods use Character.isWhitespace(…) instead of Character.isSpaceChar(…).
+         * This has the effect of removing some ISO control characters (line feeds, tabulation,
+         * etc.) from the border. If this policy is changed, search for other occurrences of
+         * 'isWhitespace' in this class for ensuring consistency. Note however that the same
+         * policy is not necessarily applied everywhere.
          */
         final int length = separator.length();
-        int lower = 0;
-        int upper = length;
-        while (lower < length) {
-            final int c = separator.codePointAt(lower);
-            if (!Character.isSpaceChar(c)) break;
-            lower += Character.charCount(c);
-        }
-        while (upper > 0) {
-            final int c = separator.codePointBefore(upper);
-            if (!Character.isSpaceChar(c)) break;
-            upper -= Character.charCount(c);
-        }
-        leftBorder      = separator.substring(lower);
-        rightBorder     = separator.substring(0, upper);
+        leftBorder      = separator.substring(   CharSequences.skipLeadingWhitespaces (separator, 0, length));
+        rightBorder     = separator.substring(0, CharSequences.skipTrailingWhitespaces(separator, 0, length));
         columnSeparator = separator;
     }
 
@@ -315,7 +301,7 @@ public class TableFormatter extends FilteredAppendable implements Flushable {
         assert (verticalBorder >= -1) && (verticalBorder <= +1) : verticalBorder;
         /*
          * Remplaces spaces by the horizontal lines, and vertical lines by an intersection.
-         * Use Character.isSpaceChar(…) instead of Character.isWhitespace(…) for consistency
+         * Use Character.isWhitespace(…) instead of Character.isSpaceChar(…) for consistency
          * with the policy used in the constructor, since we work on the same object (namely
          * the border strings).
          */
@@ -324,7 +310,7 @@ public class TableFormatter extends FilteredAppendable implements Flushable {
         for (int i=0; i<borderLength;) {
             int c = border.codePointAt(i);
             i += Character.charCount(c);
-            if (Character.isSpaceChar(c)) {
+            if (Character.isWhitespace(c)) {
                 c = horizontalChar;
             } else {
                 for (int j=0; j<boxCount; j++) {
@@ -773,7 +759,7 @@ public class TableFormatter extends FilteredAppendable implements Flushable {
                         if (isFirstColumn) {
                             writeBorder(-1, verticalBorder, cell.fill);
                         }
-                        repeat(out, cell.fill, Character.isSpaceChar(cell.fill) ? cellPadding : cellWidth);
+                        repeat(out, cell.fill, Character.isWhitespace(cell.fill) ? cellPadding : cellWidth);
                         writeBorder(isLastColumn ? +1 : 0, verticalBorder, cell.fill);
                         continue;
                     }

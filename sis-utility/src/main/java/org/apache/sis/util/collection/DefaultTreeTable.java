@@ -27,6 +27,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Cloner;
 
+import static org.apache.sis.util.CharSequences.trimWhitespaces;
 import static org.apache.sis.util.collection.Collections.isNullOrEmpty;
 import static org.apache.sis.util.collection.Collections.hashMapCapacity;
 
@@ -720,8 +721,8 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
             if (values != null) {
                 for (final Object value : values) {
                     if (value instanceof CharSequence) {
-                        final String text = value.toString().trim();
-                        if (!text.isEmpty()) {
+                        final String text = trimWhitespaces(value.toString());
+                        if (text != null && !text.isEmpty()) {
                             return text;
                         }
                     }

@@ -22,6 +22,8 @@ import java.util.Locale;
 import java.sql.SQLException;
 import org.apache.sis.internal.util.LocalizedException;
 
+import static org.apache.sis.util.CharSequences.trimWhitespaces;
+
 
 /**
  * Static methods working with {@link Exception} instances.
@@ -83,9 +85,9 @@ public final class Exceptions extends Static {
     @SuppressWarnings("unchecked")
     public static <T extends Throwable> T setMessage(final T exception, String message, final boolean append) {
         if (append) {
-            String em = exception.getLocalizedMessage();
-            if (em != null && !(em = em.trim()).isEmpty()) {
-                final StringBuilder buffer = new StringBuilder(message.trim());
+            final String em = trimWhitespaces(exception.getLocalizedMessage());
+            if (em != null && !em.isEmpty()) {
+                final StringBuilder buffer = new StringBuilder(trimWhitespaces(message));
                 final int length = buffer.length();
                 if (length != 0 && Character.isLetterOrDigit(buffer.charAt(length-1))) {
                     buffer.append(". ");
@@ -122,17 +124,18 @@ public final class Exceptions extends Static {
      *         and no exception provide a message.
      */
     public static String formatChainedMessages(final Locale locale, String header, Throwable cause) {
-        Set<String> done = null;
+        Set<CharSequence> done = null;
         String lineSeparator = null;
         StringBuilder buffer = null;
         while (cause != null) {
-            String message = getLocalizedMessage(cause, locale);
-            if (message != null && !(message = message.trim()).isEmpty()) {
+            final String message = trimWhitespaces(getLocalizedMessage(cause, locale));
+            if (message != null && !message.isEmpty()) {
                 if (buffer == null) {
                     done = new HashSet<>();
                     buffer = new StringBuilder(128);
                     lineSeparator = System.lineSeparator();
-                    if (header != null && !(header = header.trim()).isEmpty()) {
+                    header = trimWhitespaces(header);
+                    if (header != null && !header.isEmpty()) {
                         buffer.append(header);
                         done.add(header);
                         /*
@@ -144,7 +147,7 @@ public final class Exceptions extends Static {
                          */
                         int s=0;
                         while ((s=header.indexOf(':', s)) >= 0) {
-                            done.add(header.substring(++s).trim());
+                            done.add(trimWhitespaces(header, ++s, header.length()));
                         }
                     }
                 }

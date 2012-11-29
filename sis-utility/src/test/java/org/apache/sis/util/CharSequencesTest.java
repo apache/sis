@@ -209,7 +209,10 @@ public final strictfp class CharSequencesTest extends TestCase {
      */
     @Test
     public void testTrimWhitespaces() {
-        assertEquals("A text.", trimWhitespaces("  A text. "));
+        assertEquals("A text.", trimWhitespaces(               "  A text. "));
+        assertEquals("A text.", trimWhitespaces((CharSequence) "  A text. "));
+        assertEquals("",        trimWhitespaces(               "          "));
+        assertEquals("",        trimWhitespaces((CharSequence) "          "));
     }
 
     /**

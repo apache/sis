@@ -227,6 +227,12 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      * {@linkplain Character#isSpaceChar(int) spaces} and
      * {@linkplain Character#isISOControl(int) ISO control characters}.
      *
+     * {@note The usual SIS policy, as documented in the <code>CharSequences</code> class,
+     * is to test for whitespaces using the <code>Characters.isWhitespace(…)</code> method.
+     * The combination of <code>isSpaceChar(…)</code> and <code>isISOControl(…)</code> done
+     * in this <code>parseObject(…)</code> method is more permissive since it encompasses
+     * all whitespace characters, plus non-breaking spaces and non-white ISO controls.}
+     *
      * @param  text The string representation of the object to parse.
      * @return The parsed object.
      * @throws ParseException If an error occurred while parsing the object.
