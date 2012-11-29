@@ -47,6 +47,7 @@ import org.apache.sis.util.ArgumentChecks;
 import static java.lang.StrictMath.*;
 import static org.opengis.test.Assert.*;
 import static org.apache.sis.util.Characters.NO_BREAK_SPACE;
+import static org.apache.sis.util.CharSequences.trimWhitespaces;
 
 
 /**
@@ -454,8 +455,8 @@ public strictfp class XMLComparator {
 
                     // For text node, continue the search if the node is empty.
                     case Node.TEXT_NODE: {
-                        final String text = node.getTextContent();
-                        if (text == null || text.trim().isEmpty()) {
+                        final String text = trimWhitespaces(node.getTextContent());
+                        if (text == null || text.isEmpty()) {
                             continue;
                         }
                         break;
@@ -522,7 +523,7 @@ public strictfp class XMLComparator {
      * if it is actually a {@link String} object.
      */
     private static Comparable<?> trim(final Comparable<?> property) {
-        return (property instanceof String) ? ((String) property).trim() : property;
+        return (property instanceof String) ? trimWhitespaces(((String) property)) : property;
     }
 
     /**

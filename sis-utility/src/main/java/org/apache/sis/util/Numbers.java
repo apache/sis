@@ -484,7 +484,7 @@ public final class Numbers extends Static {
      * @see #narrowestNumber(long)
      */
     public static Number narrowestNumber(String value) throws NumberFormatException {
-        value = value.trim();
+        value = CharSequences.trimWhitespaces(value);
         final int length = value.length();
         for (int i=0; i<length; i++) {
             final char c = value.charAt(i);
@@ -578,7 +578,7 @@ public final class Numbers extends Static {
              */
             return (T) Character.valueOf(value.isEmpty() ? 0 : value.charAt(0));
         }
-        value = value.trim();
+        value = CharSequences.trimWhitespaces(value);
         if (type == Double .class) return (T) Double .valueOf(value);
         if (type == Float  .class) return (T) Float  .valueOf(value);
         if (type == Long   .class) return (T) Long   .valueOf(value);
