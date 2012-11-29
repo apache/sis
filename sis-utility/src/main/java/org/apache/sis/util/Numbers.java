@@ -18,10 +18,19 @@ package org.apache.sis.util;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Queue;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.Collections;
+import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import org.apache.sis.util.resources.Errors;
+
+import static org.apache.sis.util.collection.Collections.emptyQueue;
+import static org.apache.sis.util.collection.Collections.emptySortedSet;
 
 
 /**
@@ -587,6 +596,63 @@ public final class Numbers extends Static {
         if (type == Byte   .class) return (T) Byte   .valueOf(value);
         if (type == Boolean.class) return (T) Boolean.valueOf(value);
         throw unknownType(type);
+    }
+
+    /**
+     * Returns a {@code NaN}, zero, empty or {@code null} value of the given type. This method
+     * tries to return the closest value that can be interpreted as "<cite>none</cite>", which
+     * is usually not the same than "<cite>zero</cite>". More specifically:
+     *
+     * <ul>
+     *   <li>If the given type is a floating point <strong>primitive</strong> type ({@code float}
+     *       or {@code double}), then this method returns {@link Float#NaN} or {@link Double#NaN}
+     *       depending on the given type.</li>
+     *
+     *   <li>If the given type is an integer <strong>primitive</strong> type or the character type
+     *       ({@code long}, {@code int}, {@code short}, {@code byte} or {@code char}), then this
+     *       method returns the zero value of the given type.</li>
+     *
+     *   <li>If the given type is the {@code boolean} <strong>primitive</strong> type, then this
+     *       method returns {@link Boolean#FALSE}.</li>
+     *
+     *   <li>If the given type is an array or a collection, then this method returns an empty
+     *       array or collection. The given type is honored on a <cite>best effort</cite> basis.</li>
+     *
+     *   <li>For all other cases, including the wrapper classes of primitive types, this method
+     *       returns {@code null}.</li>
+     * </ul>
+     *
+     * Despite being defined in the {@code Numbers} class, the scope of this method has been
+     * extended to array and collection types because those objects can also be seen as
+     * mathematical concepts.
+     *
+     * @param  <T> The compile-time type of the requested object.
+     * @param  type The type of the object for which to get a nil value.
+     * @return An object of the given type which represents a nil value, or {@code null}.
+     *
+     * @see org.apache.sis.xml.NilObject
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> T valueOfNil(final Class<T> type) {
+        final Numbers mapping = MAPPING.get(type);
+        if (mapping != null) {
+            if (type.isPrimitive()) {
+                return (T) mapping.nullValue;
+            }
+        } else if (type != null && type != Object.class) {
+            if (type == Map      .class) return (T) Collections.EMPTY_MAP;
+            if (type == List     .class) return (T) Collections.EMPTY_LIST;
+            if (type == Queue    .class) return (T) emptyQueue();
+            if (type == SortedSet.class) return (T) emptySortedSet();
+            if (type.isAssignableFrom(Set.class)) {
+                return (T) Collections.EMPTY_SET;
+            }
+            final Class<?> element = type.getComponentType();
+            if (element != null) {
+                return (T) Array.newInstance(element, 0);
+            }
+        }
+        return null;
     }
 
     /**
