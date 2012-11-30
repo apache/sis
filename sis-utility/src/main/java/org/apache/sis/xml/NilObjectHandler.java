@@ -165,7 +165,7 @@ final class NilObjectHandler implements InvocationHandler {
     /**
      * Compares the given objects to the given level of strictness. The first object shall
      * be the proxy, and the second object an arbitrary implementation. This method returns
-     * {@code true} if the given arbitrary implementation is empty.
+     * {@code true} if the given arbitrary implementation contains only null or empty attributes.
      */
     private boolean equals(final Object proxy, final Object other, final ComparisonMode mode) throws Throwable {
         if (other == proxy) return true;

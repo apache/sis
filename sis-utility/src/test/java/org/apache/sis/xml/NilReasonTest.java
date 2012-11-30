@@ -66,7 +66,7 @@ public final strictfp class NilReasonTest extends TestCase {
         assertSame(other, NilReason.valueOf("  OTHER : myReason "));
         assertNotSame("Expected a new instance.", NilReason.OTHER, other);
         assertFalse  ("NilReason.equals(Object)", NilReason.OTHER.equals(other));
-        assertEquals ("NilReason.getExplanation()", "myReason", other.getExplanation());
+        assertEquals ("NilReason.getOtherExplanation()", "myReason", other.getOtherExplanation());
         assertNull   ("NilReason.getURI()", other.getURI());
 
         final NilReason[] reasons = NilReason.values();
@@ -84,7 +84,7 @@ public final strictfp class NilReasonTest extends TestCase {
     public void testValueOfURI() throws URISyntaxException {
         final NilReason other = NilReason.valueOf("http://www.nilreasons.org");
         assertSame(other, NilReason.valueOf("  http://www.nilreasons.org  "));
-        assertNull  ("NilReason.getExplanation()", other.getExplanation());
+        assertNull  ("NilReason.getOtherExplanation()", other.getOtherExplanation());
         assertEquals("NilReason.getURI()", "http://www.nilreasons.org", String.valueOf(other.getURI()));
 
         final NilReason[] reasons = NilReason.values();
