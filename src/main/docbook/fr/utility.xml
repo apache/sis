@@ -13,6 +13,72 @@
   </para>
 
   <section>
+    <title>Modes de comparaisons des objets</title>
+    <para>
+      Il existe différentes opinions sur la façon d’implémenter la méthode <function>Object.equals(Object)</function> du Java standard.
+      Selon certains, il doit être possible de comparer différentes implémentations d’une même interface ou classe de base.
+      Mais cette politique nécessite que chaque interface ou classe de base définisse entièrement dans sa Javadoc les critères ou calculs
+      que doivent employer les méthodes <function>equals(Object)</function> et <function>hashCode()</function> dans toutes les implémentations.
+      Cette approche est choisie notamment par <classname>java.util.Collection</classname> et ses interfaces filles.
+      Elle se fait toutefois au détriment de la possibilité de prendre en compte des attributs supplémentaires dans les interfaces filles,
+      si cette possibilité n’a pas été spécifiée dans l’interface parente.
+      Cette contrainte découle des points suivants du contrat des méthodes <function>equals(Object)</function> et <function>hashCode()</function>:
+    </para>
+    <itemizedlist>
+      <listitem><literal>A.equals(B)</literal> implique <literal>B.equals(A)</literal> (symétrie);</listitem>
+      <listitem><literal>A.equals(B)</literal> et <literal>B.equals(C)</literal> implique <literal>A.equals(C)</literal> (transitivité);</listitem>
+      <listitem><literal>A.equals(B)</literal> implique <literal>A.hashCode() == B.hashCode()</literal>.</listitem>
+    </itemizedlist>
+    <para>
+      Par exemple ces trois contraintes sont violées si <varname>A</varname> (et éventuellement <varname>C</varname>)
+      peuvent contenir des attributs que <varname>B</varname> ignore.
+      Pour contourner cette difficulté, une approche alternative consiste à exiger que les objets comparés par la méthode
+      <function>Object.equals(Object)</function> soient exactement de la même classe, c’est-à-dire que <literal>A.getClass() == B.getClass()</literal>.
+      Cette approche est parfois considérée contraire aux principes de la programmation orientée objets.
+      Dans la pratique, pour des applications relativement complexes, ça dépend du contexte dans lequel les objets sont comparés:
+      si les objets sont ajoutés à un <classname>HashSet</classname> ou utilisés comme clés dans un <classname>HashMap</classname>,
+      alors nous avons besoin d’un strict respect du contrat de <function>equals(Object)</function> et <function>hashCode()</function>.
+      Mais si le développeur compare les objets lui-même, par exemple pour vérifier si des informations qui l’intéresse ont changées,
+      alors les contraintes de symétrie, transitivité ou de cohérence avec les valeurs de hachages peuvent ne pas être pertinentes pour lui.
+      Des comparaisons plus permissives peuvent être souhaitables, allant parfois jusqu’à tolérer de légers écarts dans les valeurs numériques.
+    </para>
+    <para>
+      Afin de donner une certaine flexibilité aux développeurs, un grand nombre de classes de la bibliothèque <acronym>SIS</acronym>
+      implémentent l’interface <classname role="SIS">org.apache.sis.util.LenientComparable</classname>, qui défini une méthode <function role="SIS">equals(Object, ComparisonMode)</function>.
+      Les principaux modes de comparaisons sont:
+    </para>
+    <itemizedlist>
+      <listitem><para>
+        <emphasis role="bold"><constant role="SIS">STRICT</constant></emphasis> — Les objets comparés doivent être de la même classe
+        et tous leurs attributs strictement égaux, y compris d’éventuels attributs publics propres à l’implémentation.
+      </para></listitem>
+      <listitem><para>
+        <emphasis role="bold"><constant role="SIS">BY_CONTRACT</constant></emphasis> — Les objets comparés doivent implémenter la même interface de GeoAPI (ou tout autre standard),
+        mais n’ont pas besoin d’être de la même classe d’implémentation. Seuls les attributs définis dans l’interface sont comparés;
+        tout autres attributs propres à l’implémentation — même s’ils sont publics — sont ignorés.
+      </para></listitem>
+      <listitem><para>
+        <emphasis role="bold"><constant role="SIS">IGNORE_METADATA</constant></emphasis> — Comme <constant role="SIS">BY_CONTRACT</constant>,
+        mais ne compare que les attributs qui influencent les opérations (calculs numériques ou autre) effectuées par l’objet.
+        Par exemple dans un référentiel géodésique, la longitude (par rapport à Greenwich) du méridien d’origine sera pris en compte
+        alors que le nom de ce méridien sera ignoré.
+      </para></listitem>
+      <listitem><para>
+        <emphasis role="bold"><constant role="SIS">APPROXIMATIVE</constant></emphasis> — Comme <constant role="SIS">IGNORE_METADATA</constant>,
+        mais tolère de légères différences dans les valeurs numériques.
+      </para></listitem>
+    </itemizedlist>
+    <para>
+      Le mode par défaut, utilisé par les toutes les méthodes <function>equals(Object)</function> de <acronym>SIS</acronym>,
+      est <constant role="SIS">STRICT</constant>. Ce mode est choisi à la fois pour une utilisation plus sécuritaire avec <classname>HashMap</classname>,
+      et aussi parce que définir rigoureusement le contrat des méthodes <function>equals(Object)</function> et <function>hashCode()</function>
+      dans les centaines d’interfaces de GeoAPI semble une entreprise peu réaliste, qui risque d’être assez peu suivit par les diverses implémentations.
+    </para>
+  </section>
+
+
+
+  <section>
     <title>Internationalisation</title>
     <para>
       Dans une architecture où un programme exécuté sur un serveur fournit ses données à plusieurs clients,
@@ -26,7 +92,7 @@
     </para>
 
     <section>
-      <title>Instances distinctes pour chaque conventions locales</title>
+      <title>Chaînes de caractères distinctes pour chaque conventions locales</title>
       <para>
         Certaines classes ne sont conçues que pour fonctionner selon une convention locale à la fois.
         C’est évidemment le cas des implémentations standards de <classname>java.text.Format</classname>,
@@ -34,7 +100,7 @@
         Mais c’est aussi le cas de d’autres classes moins évidentes comme
         <classname>javax.imageio.ImageReader</classname>/<classname>ImageWriter</classname> ainsi que les exceptions.
         Lorsque une de ces classes est implémentée par <acronym>SIS</acronym>,
-        nous l’identifions en implémentant l’interface <classname role="SIS">Localized</classname>.
+        nous l’identifions en implémentant l’interface <classname role="SIS">org.apache.sis.util.Localized</classname>.
         La méthode <function role="SIS">getLocale()</function> de cette interface permet alors de déterminer
         selon quelles conventions locales l’instance produira ses messages.
       </para>
@@ -98,6 +164,96 @@
         peuvent nécessiter des grilles de transformation de coordonnées, ce qui accroît l’intérêt de partager une instance unique
         pour des raisons d’économie de mémoire.
       </para>
+    </section>
+
+    <section>
+      <title>Traitement des caractères</title>
+      <para>
+        Les chaînes de caractères en Java utilisent l’encodage UTF-16. Il existe une correspondance directe
+        entre les valeurs de type <classname>char</classname> et la très grande majorité des caractères, ce
+        qui facilite l’utilisation des chaînes lorsque ces caractères suffisent.
+        Mais certains caractères Unicode ne sont pas représentables par un seul <classname>char</classname>.
+        Ces <firstterm>caractères supplémentaires</firstterm> comprennent certains idéogrammes,
+        mais aussi des symboles routiers et géographiques dans la plage 1F680 à 1F700.
+        Le support de ces caractères supplémentaires nécessite des itérations un peu plus complexes
+        que le cas classique où l’on supposait une correspondance directe.
+        Ainsi, au lieu de la boucle de gauche ci-dessous, les applications internationales devraient
+        généralement utiliser la boucle de droite:
+      </para>
+      <example>
+        <title>Boucle sur une chaîne pouvant contenir des caractères supplémentaires</title>
+        <informaltable frame="none">
+          <tgroup cols="2">
+            <colspec colwidth="50%"/>
+            <colspec colwidth="50%"/>
+            <tbody>
+              <row>
+                <entry>
+                  <programlisting language="java">for (int i=0; i&lt;string.length(); i++) {
+    char c = string.charAt(i);
+    if (Character.isWhitespace(c)) {
+        // Un espace blanc a été trouvé.
+    }
+}</programlisting>
+                </entry>
+                <entry>
+                  <programlisting language="java">for (int i=0; i&lt;string.length();) {
+    int c = string.codePointAt(i);
+    if (Character.isWhitespace(c)) {
+        // Un espace blanc a été trouvé.
+    }
+    i += Character.charCount(c);
+}</programlisting>
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </example>
+      <para>
+        <acronym>SIS</acronym> supporte les caractères supplémentaires en utilisant la boucle de droite lorsque nécessaire.
+        Mais la boucle de gauche reste occasionnellement utilisée lorsqu’il est connu que les caractères recherchés ne sont
+        pas des caractères supplémentaires, même si la chaîne dans laquelle on fait la recherche peut en contenir.
+      </para>
+
+      <section>
+      <title>Interprétation des espaces blancs</title>
+        <para>
+          Le Java standard fournit deux méthodes pour déterminer si un caractères est un espace blanc:
+          <function>Character.isWhitespace(…)</function> et <function>Character.isSpaceChar(…)</function>.
+          Ces deux méthodes diffèrent dans leurs interprétations des espaces insécables, des tabulations et des retours à la ligne.
+          La première méthode est conforme à l’interprétation couramment utilisée dans des langages telles que le Java, C/C++ et XML,
+          qui considère les tabulations et retours à la ligne comme des espaces blancs,
+          alors que les espaces insécables sont interprétés comme des caractères non-blanc.
+          La seconde méthode — strictement conforme à la définition Unicode — fait l’interprétation inverse.
+        </para>
+        <para>
+          <acronym>SIS</acronym> emploie ces deux méthodes dans des contextes différents.
+          <function>isWhitespace(…)</function> est utilisée pour <emphasis>séparer</emphasis>
+          les éléments d’une liste (nombres, dates, mots, <foreignphrase>etc.</foreignphrase>),
+          tandis que <function>isSpaceChar(…)</function> est utilisée pour ignorer les espaces
+          blancs <emphasis>à l’intérieur</emphasis> d’un seul élément.
+        </para>
+        <informalexample><para>
+          <emphasis role="bold">Exemple:</emphasis>
+          Supposons une liste de nombres représentés selon les conventions françaises.
+          Chaque nombre peut contenir des <emphasis>espace insécables</emphasis> comme séparateurs des milliers,
+          tandis que les différents nombres de la liste peuvent être séparés par des espaces ordinaires, des tabulations ou des retours à la ligne.
+          Pendant l’analyse d’un nombre, on veut considérer les espaces insécables comme faisant partie du nombre,
+          alors qu’une tabulation ou un retour à la ligne indique très probablement une séparation entre ce nombre et le nombre suivant.
+          On utilisera donc <function>isSpaceChar(…)</function>.
+          Inversement, lors de la séparation des nombres de la liste, on veut considérer les tabulations et
+          les retours à la ligne comme des séparateurs mais pas les espaces insécables.
+          On utilisera donc <function>isWhitespace(…)</function>.
+          Le rôle des espaces ordinaires, qui pourraient s’appliquer aux deux cas, doit être décidé en amont.
+        </para></informalexample>
+        <para>
+          Dans la pratique, cette distinction se traduit pas une utilisation de <function>isSpaceChar(…)</function>
+          dans les implémentations de <classname>java.text.Format</classname>,
+          et une utilisation de <function>isWhitespace(…)</function> dans pratiquement tout le reste
+          de la bibliothèque <acronym>SIS</acronym>.
+        </para>
+      </section>
     </section>
   </section>
 </chapter>

@@ -54,8 +54,16 @@ p {
  */
 pre.programlisting {
   border-style: solid;
+  border-color: gray;
   border-width: 1pt;
   padding:      9pt;
+}
+
+/* If inside a table, rely on the table border instead. */
+table pre.programlisting {
+  border-style: none;
+  margin:       0pt;
+  padding:      0pt;
 }
 
 div.sidebar {
@@ -79,11 +87,22 @@ div.informalexample {
 /*
  * Tables.
  */
+div.informaltable table tr {
+  vertical-align: top;
+}
+
+div.informaltable table tr td {
+  border-style: solid;
+  border-color: gray;
+  border-width: 1pt;
+  padding:      9pt;
+}
+
 div.table p.title {
   text-align: center;
 }
 
-table {
+div.table-contents table {
   margin-left:    auto;
   margin-right:   auto;
   border-style:   solid;
@@ -91,25 +110,25 @@ table {
   border-spacing: 0pt;
 }
 
-table tr th {
+div.table-contents table tr th {
   background-color:    #B9DCFF;
   border-bottom-style: solid;
   border-bottom-width: 1pt;
   padding:             3pt;
 }
 
-table tr td {
+div.table-contents table tr td {
   padding-left:  9pt;
   padding-right: 9pt;
 }
 
-table tr td.leftBorder {
+div.table-contents table tr td.leftBorder {
   border-left-style: solid;
   border-left-width: 1pt;
   border-left-color: lightgray;
 }
 
-table tr td.separator {
+div.table-contents table tr td.separator {
   text-align:          center;
   font-weight:         bold;
   background-color:    #EEEEFF;
