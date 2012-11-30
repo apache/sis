@@ -315,11 +315,13 @@ public final class NilReason implements Serializable {
     }
 
     /**
-     * Returns an object of the given type which is nil for the reason represented by this enum.
+     * Returns an object of the given type which is nil for the reason represented by this instance.
      * This method returns an object which implement the given interface together with the
      * {@link NilObject} interface. The {@link NilObject#getNilReason()} method will return
-     * this enum, and all other methods (except the ones inherited from the {@link Object} class)
-     * will return {@code null} or an empty collection as appropriate.
+     * this {@code NilReason} instance, and all other methods (except the ones inherited from
+     * the {@code Object} class) will return an empty collection, empty array, {@code null},
+     * {@link Double#NaN NaN}, {@code 0} or {@code false}, in this preference order,
+     * depending on the method return type.
      *
      * @param  <T> The compile-time type of the {@code type} argument.
      * @param  type The object type as an <strong>interface</strong>.
