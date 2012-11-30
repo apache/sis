@@ -20,20 +20,20 @@ import java.util.Map;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Objects;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
-
 import org.opengis.metadata.Identifier;
-
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.jaxb.IdentifierMapAdapter;
+
+// Related to JDK7
+import java.util.Objects;
 
 
 /**
