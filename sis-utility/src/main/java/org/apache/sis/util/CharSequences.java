@@ -42,24 +42,31 @@ import static org.apache.sis.util.StringBuilders.replace;
  * no-break spaces}, tabulations and line feeds. The general policy in the SIS library is:
  *
  * <ul>
- *   <li><p>Use {@code isWhitespace(…)} when separating entities (words, numbers, tokens).
- *       Using this method, characters separated by a no-break space are considered as
- *       part of the same entity (e.g. the French locale uses no-break space instead of
- *       coma as group separator in number representations), while line feeds and
- *       tabulations are accepted as valid entity separator.
- *       This {@code CharSequences} class consistently uses {@code isWhitespace(…)}.</p></li>
- *
- *   <li><p>Use {@code isSpaceChar(…)} when parsing a single entity. Using this method,
- *       no-break spaces are considered as part of the entity (e.g. the above-cited
- *       group separator), while line feeds or tabulation mark entity boundaries.
- *       For this reason, the {@link java.text.Format} implementations in the SIS
- *       library typically use {@code isSpaceChar(…)}.</p></li>
+ *   <li>Use {@code isWhitespace(…)} when separating entities (words, numbers, tokens, <i>etc.</i>)
+ *       in a list. Using that method, characters separated by a no-break space are considered as
+ *       part of the same entity.</li>
+ *   <li>Use {@code isSpaceChar(…)} when parsing a single entity, for example a single word.
+ *       Using this method, no-break spaces are considered as part of the entity while line
+ *       feeds or tabulations are entity boundaries.</li>
  * </ul>
  *
- * Note that the {@link String#trim()} method doesn't follow any of those policies and should
+ * <blockquote><font size="-1"><b>Example:</b> Numbers formatted in the French locale use no-break
+ * spaces as group separators. When parsing a list of numbers, ordinary spaces around the numbers
+ * may need to be ignored, but no-break spaces shall be considered as part of the numbers.
+ * Consequently {@code isWhitespace(…)} is appropriate for skipping spaces <em>between</em> the numbers.
+ * But if there is spaces to skip <em>inside</em> a single number, then {@code isSpaceChar(…)} is a
+ * good choice for accepting no-break spaces and for stopping the parse operation at tabulations or
+ * line feed character. A tabulation or line feed between two characters is very likely to separate
+ * two distinct values.</font></blockquote>
+ *
+ * In practice, the {@link java.text.Format} implementations in the SIS library typically use
+ * {@code isSpaceChar(…)} while most of the rest of the SIS library, including this
+ * {@code CharSequences} class, consistently uses {@code isWhitespace(…)}.
+ *
+ * <p>Note that the {@link String#trim()} method doesn't follow any of those policies and should
  * generally be avoided. That {@code trim()} method removes every ISO control characters without
  * distinction about whether the characters are space or not, and ignore all Unicode spaces.
- * The {@link #trimWhitespaces(String) method defined in this class can be used as an alternative.
+ * The {@link #trimWhitespaces(String) method defined in this class can be used as an alternative.</p>
  *
  * {@section Handling of null values}
  * Most methods in this class accept a {@code null} {@code CharSequence} argument. In such cases

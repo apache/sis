@@ -249,8 +249,7 @@ public class MyClass {
       <para>
         Dans l’exemple suivant, la partie gauche montre un élément <classname role="OGC">CI_Citation</classname>
         contenant un élément <classname role="OGC">CI_Series</classname>, alors que dans la partie droite la série est inconnue.
-        Si l’élément <classname role="OGC">CI_Series</classname> avait été complètement omis
-        (ce qui est illégal selon les standards <acronym>ISO</acronym> mais toléré par <acronym>SIS</acronym>),
+        Si l’élément <classname role="OGC">CI_Series</classname> avait été complètement omis,
         alors la méthode <function role="GeoAPI">Citation.getSeries()</function> retournerait <literal>null</literal> en Java.
         Mais en présence d’un attribut <literal role="OGC">nilReason</literal>, l’implémentation <acronym>SIS</acronym>
         de <function role="SIS">getSeries()</function> retournera plutôt un objet implémentant à la fois les interfaces

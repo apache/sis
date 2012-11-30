@@ -18,14 +18,23 @@ package org.apache.sis.xml;
 
 
 /**
- * A marker interface for empty XML elements. Note that an "nil" XML element may not be an
- * empty Java object, since the Java object can still be associated with {@link XLink} or
- * {@link NilReason} attributes. Those attributes are not part of ISO 19115, but may appear
- * in ISO 19139 XML documents like below:
+ * A marker interface for empty XML elements providing an explanation about why the information is absent.
+ * GeoAPI getter methods usually return a {@code null} value when no information is available for
+ * a given attribute. However it is possible to specify why an information is absent, in which case
+ * the corresponding getter method will rather return an instance of this {@code NilObject} interface.
+ * The information may be absent for various reasons, including the attribute being inapplicable in the metadata context
+ * ({@link NilReason#INAPPLICABLE}), the information probably exists but is unknown to the data provider
+ * ({@link NilReason#UNKNOWN UNKNOW}), the information may not exist at all ({@link NilReason#MISSING
+ * MISSING}) or can not be divulged ({@link NilReason#WITHHELD WITHHELD}).
+ *
+ * <p>Nil objects appear most frequently in XML documents since if a mandatory ISO 19115 attribute
+ * is absent, then the ISO 19139 standard requires us to said why it is so. The following example
+ * shows a {@code CI_Citation} fragment with an ordinary {@code CI_Series} element on the left side,
+ * and an unknown {@code CI_Series} element on the right side:</p>
  *
  * <blockquote><table class="sis" border="1"><tr>
- *   <th>Non-empty {@code Series} element</th>
- *   <th>Empty {@code Series} element</th>
+ *   <th>Normal {@code Series} element</th>
+ *   <th>Unknown {@code Series} element</th>
  * </tr><tr><td>
  * {@preformat xml
  *   <gmd:CI_Citation>
@@ -44,11 +53,16 @@ package org.apache.sis.xml;
  * }
  * </td></tr></table></blockquote>
  *
- * The reason why an object is empty can be obtained by the {@link #getNilReason()} method.
+ * If the {@code CI_Series} element was completely omitted, then {@link org.opengis.metadata.citation.Citation#getSeries()}
+ * method would return {@code null} in Apache SIS implementation. But since a {@code nilReason} is provided,
+ * then the SIS implementation of {@code getSeries()} will rather return an object which implement
+ * both the {@code Series} and the {@code NilObject} interfaces, and the {@link #getNilReason()} method
+ * on that instance will return the {@link NilReason#UNKNOWN} constant.
  *
  * {@section Instantiation}
- * The following example instantiates a {@link org.opengis.metadata.citation.Citation} object
- * which is empty because the information are missing:
+ * Instances of {@code NilObject} are created by first fetching the reason why the information
+ * is missing, then invoking {@link NilReason#createNilObject(Class)}. The following example
+ * instantiates a {@code Citation} object which is empty because the information are missing:
  *
  * {@preformat java
  *     Citation nil = NilReason.MISSING.createNilObject(Citation.class);
