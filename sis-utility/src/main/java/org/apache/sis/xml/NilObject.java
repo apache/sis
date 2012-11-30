@@ -18,7 +18,7 @@ package org.apache.sis.xml;
 
 
 /**
- * A marker interface for empty XML elements providing an explanation about why the information is absent.
+ * A marker interface for nil XML elements providing an explanation about why the information is absent.
  * GeoAPI getter methods usually return a {@code null} value when no information is available for
  * a given attribute. However it is possible to specify why an information is absent, in which case
  * the corresponding getter method will rather return an instance of this {@code NilObject} interface.
@@ -62,7 +62,7 @@ package org.apache.sis.xml;
  * {@section Instantiation}
  * Instances of {@code NilObject} are created by first fetching the reason why the information
  * is missing, then invoking {@link NilReason#createNilObject(Class)}. The following example
- * instantiates a {@code Citation} object which is empty because the information are missing:
+ * instantiates a {@code Citation} object which is nil because the information are missing:
  *
  * {@preformat java
  *     Citation nil = NilReason.MISSING.createNilObject(Citation.class);
@@ -79,9 +79,9 @@ package org.apache.sis.xml;
  */
 public interface NilObject {
     /**
-     * Returns the reason why this object is empty.
+     * Returns the reason why this object contains no information.
      *
-     * @return The reason why this object is empty.
+     * @return The reason why this object contains no information.
      */
     NilReason getNilReason();
 }

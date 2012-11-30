@@ -66,7 +66,7 @@ import static org.apache.sis.util.StringBuilders.replace;
  * <p>Note that the {@link String#trim()} method doesn't follow any of those policies and should
  * generally be avoided. That {@code trim()} method removes every ISO control characters without
  * distinction about whether the characters are space or not, and ignore all Unicode spaces.
- * The {@link #trimWhitespaces(String) method defined in this class can be used as an alternative.</p>
+ * The {@link #trimWhitespaces(String)} method defined in this class can be used as an alternative.</p>
  *
  * {@section Handling of null values}
  * Most methods in this class accept a {@code null} {@code CharSequence} argument. In such cases

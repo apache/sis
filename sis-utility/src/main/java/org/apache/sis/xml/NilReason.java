@@ -63,7 +63,8 @@ public final class NilReason implements Serializable {
     /**
      * There is no value.
      *
-     * <p>The string representation is {@code "inapplicable"}.</p>
+     * <p>The string representation is {@code "inapplicable"}.
+     * Other properties (explanation and URI) are {@code null}.</p>
      */
     public static final NilReason INAPPLICABLE = new NilReason("inapplicable");
 
@@ -71,14 +72,16 @@ public final class NilReason implements Serializable {
      * The correct value is not readily available to the sender of this data.
      * Furthermore, a correct value may not exist.
      *
-     * <p>The string representation is {@code "missing"}.</p>
+     * <p>The string representation is {@code "missing"}.
+     * Other properties (explanation and URI) are {@code null}.</p>
      */
     public static final NilReason MISSING = new NilReason("missing");
 
     /**
      * The value will be available later.
      *
-     * <p>The string representation is {@code "template"}.</p>
+     * <p>The string representation is {@code "template"}.
+     * Other properties (explanation and URI) are {@code null}.</p>
      */
     public static final NilReason TEMPLATE = new NilReason("template");
 
@@ -86,31 +89,40 @@ public final class NilReason implements Serializable {
      * The correct value is not known to, and not computable by, the sender of this data.
      * However, a correct value probably exists.
      *
-     * <p>The string representation is {@code "unknown"}.</p>
+     * <p>The string representation is {@code "unknown"}.
+     * Other properties (explanation and URI) are {@code null}.</p>
      */
     public static final NilReason UNKNOWN = new NilReason("unknown");
 
     /**
      * The value is not divulged.
      *
-     * <p>The string representation is {@code "withheld"}.</p>
+     * <p>The string representation is {@code "withheld"}.
+     * Other properties (explanation and URI) are {@code null}.</p>
      */
     public static final NilReason WITHHELD = new NilReason("withheld");
 
     /**
-     * Other reason without explanation. Users are encouraged to use the {@link #valueOf(String)}
-     * method instead than this constant, in order to provide a brief explanation.
-     *
-     * <p>When testing if a {@code NilReason} is {@code "other"}, users should test if
-     * <code>{@linkplain #getExplanation()} != null</code> instead than comparing
-     * against this constant.</p>
-     *
-     * <p>The string representation of this constant is {@code "other"}.
-     * The string representation of other values created by {@code valueOf(String)} is
-     * {@code "other:text"} where {@code text} is a string of two or more characters
-     * with no included spaces.</p>
+     * The {@value} string.
      */
-    public static final NilReason OTHER = new NilReason("other");
+    private static final String other = "other";
+
+    /**
+     * Other reason without explanation.
+     * The string representation of this constant is {@code "other"}.
+     * The explanation property is an empty string, and the URI is {@code null}.
+     *
+     * {@section Providing an explanation}
+     * Users are encouraged to use the {@link #valueOf(String)} method instead than this constant,
+     * in order to provide a brief explanation. The string representation for {@code valueOf(…)}
+     * is <code>"other:<var>explanation</var>"</code> where <var>explanation</var> is a string of
+     * two or more characters with no included spaces.
+     *
+     * <p>When testing if a {@code NilReason} instance is any kind of {@code "other"} reason,
+     * users should test if <code>{@linkplain #getOtherExplanation()} != null</code> instead
+     * than comparing the reference against this constant.</p>
+     */
+    public static final NilReason OTHER = new NilReason(other);
 
     /**
      * List of predefined constants.
@@ -131,8 +143,9 @@ public final class NilReason implements Serializable {
     private final Object reason;
 
     /**
-     * The invocation handler for empty objects, created when first needed.
-     * The same handler can be shared for all objects.
+     * The invocation handler for {@link NilObject} instances, created when first needed.
+     * The same handler can be shared for all objects having the same {@code NilReason},
+     * no matter the interface they implement.
      */
     private transient InvocationHandler handler;
 
@@ -180,10 +193,14 @@ public final class NilReason implements Serializable {
      *       strings (ignoring cases and leading/trailing spaces), then the corresponding
      *       pre-defined constant is returned.</li>
      *   <li>Otherwise if the given argument is {@code "other:"} followed by an explanation
-     *       text, then a new instance is created and returned for that explanation.
-     *       Note that if the given explanation contains any characters that are not
-     *       {@linkplain Character#isUnicodeIdentifierPart(char) unicode identifier}
-     *       (for example white spaces), then those characters are omitted.</li>
+     *       text, then an instance for that explanation is returned. More specifically:
+     *       <ul>
+     *         <li>{@linkplain Character#isSpaceChar(int) Space characters} and
+     *             {@linkplain Character#isISOControl(int) ISO controls} are silently omitted.</li>
+     *         <li>If the remaining string has less than two characters, then the {@link #OTHER}
+     *             constant is returned.</li>
+     *       </ul>
+     *   </li>
      *   <li>Otherwise this method attempts to parse the given argument as a {@link URI}.
      *       Such URI should refer to a resource which describes the reason for the exception.</li>
      * </ul>
@@ -207,10 +224,9 @@ public final class NilReason implements Serializable {
         } else {
             final int lower = CharSequences.skipLeadingWhitespaces(reason, 0,  i);
             final int upper = CharSequences.skipTrailingWhitespaces(reason, lower, i);
-            if (reason.regionMatches(true, lower, "other", 0, upper - lower)) {
+            if (reason.regionMatches(true, lower, other, 0, upper - lower)) {
                 final int length = reason.length();
-                final StringBuilder buffer = new StringBuilder(length).append("other:");
-                i++; // Skip the ':' character.
+                final StringBuilder buffer = new StringBuilder(length).append(other);
                 while (i < length) {
                     final int c = reason.codePointAt(i);
                     if (!Character.isSpaceChar(c) && !Character.isISOControl(c)) {
@@ -218,7 +234,7 @@ public final class NilReason implements Serializable {
                     }
                     i += Character.charCount(c);
                 }
-                if (buffer.length() == 6) { // 6 is the length of "other:"
+                if (buffer.length() < other.length() + 2) {
                     return OTHER;
                 }
                 String result = buffer.toString();
@@ -251,18 +267,19 @@ public final class NilReason implements Serializable {
      * whitespace.
      *
      * <p>Note that in the special case where {@code this} nil reason is the {@link #OTHER}
-     * instance itself, then this method returns an empty string.</p>
+     * instance itself, then this method returns an empty string. For all other cases, the
+     * string contains at least two characters.</p>
      *
      * @return The explanation, or {@code null} if this {@code NilReason} is not of kind {@link #OTHER}.
      */
-    public String getExplanation() {
+    public String getOtherExplanation() {
         if (reason instanceof String) {
             final String text = (String) reason;
             final int s = text.indexOf(':');
             if (s >= 0) {
                 return text.substring(s + 1);
             }
-            if (text.equals("other")) {
+            if (text.equals(other)) {
                 return "";
             }
         }
@@ -271,7 +288,8 @@ public final class NilReason implements Serializable {
 
     /**
      * If the explanation of this {@code NilReason} is referenced by a URI, returns that URI.
-     * Otherwise returns {@code null}.
+     * Otherwise returns {@code null}. The URI and the {@linkplain #getOtherExplanation() other
+     * explanation} attributes are mutually exclusive.
      *
      * @return The URI, or {@code null} if the explanation of this {@code NilReason}
      *         is not referenced by a URI.
@@ -283,8 +301,8 @@ public final class NilReason implements Serializable {
     /**
      * Returns the GML string representation of this {@code NilReason}. The returned string
      * is a simple enumeration value (e.g. {@code "inapplicable"}) if this {@code NilReason}
-     * is one of the predefined constants, or a string of the form {@code "other:text"}, or
-     * a URI.
+     * is one of the predefined constants, or a string of the form {@code "other:explanation"},
+     * or a URI.
      *
      * @return The GML string representation of this {@code NilReason}.
      */
