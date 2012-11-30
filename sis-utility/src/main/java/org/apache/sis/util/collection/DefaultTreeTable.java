@@ -21,11 +21,18 @@ import java.util.Map;
 import java.util.LinkedHashMap;
 import java.util.Collections;
 import java.io.Serializable;
+import java.text.Format;
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.util.Cloner;
 
+import static org.apache.sis.util.CharSequences.trimWhitespaces;
+import static org.apache.sis.util.collection.Collections.isNullOrEmpty;
 import static org.apache.sis.util.collection.Collections.hashMapCapacity;
+
+// Related to JDK7
+import org.apache.sis.internal.util.Objects;
 
 
 /**
@@ -36,12 +43,12 @@ import static org.apache.sis.util.collection.Collections.hashMapCapacity;
  * Example:
  *
  * {@preformat java
- *     class CityLocation {
- *         public static final TableColumn<String> CITY_NAME  = new MyColumn<>(String.class);
- *         public static final TableColumn<Float>  LATITUDE   = new MyColumn<>(Float .class);
- *         public static final TableColumn<Float>  LONGTITUDE = new MyColumn<>(Float .class);
+ *     public class CityLocation {
+ *         public static final TableColumn<String> CITY_NAME  = new TableColumn<>(String.class);
+ *         public static final TableColumn<Float>  LATITUDE   = new TableColumn<>(Float .class);
+ *         public static final TableColumn<Float>  LONGTITUDE = new TableColumn<>(Float .class);
  *
- *         TreeTable createTable() {
+ *         public TreeTable createTable() {
  *             DefaultTreeTable table = new DefaultTreeTable(CITY_NAME, LATITUDE, LONGITUDE);
  *             TreeTable.Node   city  = new DefaultTreeTable.Node(table);
  *             city.setValue(CITY_NAME, "Rimouski");
@@ -63,11 +70,16 @@ import static org.apache.sis.util.collection.Collections.hashMapCapacity;
  * @module
  */
 @NotThreadSafe
-public class DefaultTreeTable implements TreeTable, Serializable {
+public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
     /**
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = 1951201018202846555L;
+
+    /**
+     * Shared {@code TreeTableFormat} instance for {@link #toString()} implementation.
+     */
+    private static Format format;
 
     /**
      * The root node, or {@code null} if not yet specified.
@@ -112,7 +124,7 @@ public class DefaultTreeTable implements TreeTable, Serializable {
      * <p>The {@linkplain #getRoot() root} node is initially {@code null}. Callers can initialize
      * it after construction time by a call to the {@link #setRoot(TreeTable.Node)} method.</p>
      *
-     * @param columns The table columns.
+     * @param columns The list of table columns.
      */
     public DefaultTreeTable(TableColumn<?>... columns) {
         ArgumentChecks.ensureNonNull("columns", columns);
@@ -174,6 +186,9 @@ public class DefaultTreeTable implements TreeTable, Serializable {
     /**
      * Returns the table columns given at construction time.
      * The returned list is never null neither empty.
+     *
+     * @see Node#getValue(TableColumn)
+     * @see Node#setValue(TableColumn, Object)
      */
     @Override
     public final List<TableColumn<?>> getColumns() {
@@ -218,8 +233,61 @@ public class DefaultTreeTable implements TreeTable, Serializable {
     }
 
     /**
+     * Returns a clone of this table. This method clones the {@linkplain #getRoot() root} node.
+     * If the root is an instance of {@link Node}, then cloning the root will recursively clone
+     * all its {@linkplain Node#getChildren() children}.
+     *
+     * @return A clone of this table.
+     * @throws CloneNotSupportedException If this table, the root node or one of its children
+     *         can not be cloned.
+     *
+     * @see Node#clone()
+     */
+    @Override
+    public DefaultTreeTable clone() throws CloneNotSupportedException {
+        final DefaultTreeTable clone = (DefaultTreeTable) super.clone();
+        clone.root = (TreeTable.Node) new Cloner().clone(clone.root);
+        return clone;
+    }
+
+    /**
+     * Compares the given object with this tree table for equality. This method compares the
+     * {@linkplain #getColumns() columns} and the {@linkplain #getRoot() root node}. If the
+     * later is an instance of the {@link Node} inner class, then all node values and children
+     * will be compared recursively.
+     *
+     * @param  other The object to compare with this table.
+     * @return {@code true} if the two objects are equal.
+     *
+     * @see Node#equals(Object)
+     */
+    @Override
+    public boolean equals(final Object other) {
+        if (other == this) {
+            return true;
+        }
+        if (other != null && other.getClass() == getClass()) {
+            final DefaultTreeTable that = (DefaultTreeTable) other;
+            return columnIndices.equals(that.columnIndices) &&
+                    Objects.equals(root, that.root);
+        }
+        return false;
+    }
+
+    /**
+     * Returns a hash code value for this table.
+     * This method is defined for consistency with {@link #equals(Object)} contract.
+     *
+     * @see Node#hashCode()
+     */
+    @Override
+    public int hashCode() {
+        return (columnIndices.hashCode() + 31*Objects.hashCode(root)) ^ (int) serialVersionUID;
+    }
+
+    /**
      * Returns a string representation of this tree table.
-     * The default implementation delegates to {@link TreeTables#toString(TreeTable)}.
+     * The default implementation delegates to {@link #toString(TreeTable)}.
      * This is okay for debugging or occasional usages. However for more extensive usages,
      * developers are encouraged to create and configure their own {@link TreeTableFormat}
      * instance.
@@ -228,7 +296,25 @@ public class DefaultTreeTable implements TreeTable, Serializable {
      */
     @Override
     public String toString() {
-        return TreeTables.toString(this);
+        return toString(this);
+    }
+
+    /**
+     * Returns a string representation of the given tree table.
+     * The default implementation uses a shared instance of {@link TreeTableFormat}.
+     * This is okay for debugging or occasional usages. However for more extensive usages,
+     * developers are encouraged to create and configure their own {@code TreeTableFormat}
+     * instance.
+     *
+     * @param  table The tree table to format.
+     * @return A string representation of the given tree table.
+     */
+    public static synchronized String toString(final TreeTable table) {
+        ArgumentChecks.ensureNonNull("table", table);
+        if (format == null) {
+            format = new TreeTableFormat(null, null);
+        }
+        return format.format(table);
     }
 
 
@@ -239,9 +325,12 @@ public class DefaultTreeTable implements TreeTable, Serializable {
      * of columns. The list of columns is specified by a {@link TreeTable}, or inherited from
      * a parent node.
      *
-     * <p>The {@linkplain #getChildren() list of children} provided by this class is <cite>live</cite>:
-     * adding a {@code Node} child to that list will automatically set its parent to {@code this},
-     * and removing a {@code Node} from that list will set its parent to {@code null}.</p>
+     * {@section Note on the parent node}
+     * The value returned by the {@link #getParent()} method is updated automatically when
+     * this node is <em>added to</em> or <em>removed from</em> the {@linkplain #getChildren()
+     * list of children} of another {@code Node} instance - there is no {@code setParent(Node)}
+     * method. As a derived value, the parent is ignored by the {@link #clone()},
+     * {@link #equals(Object)} and {@link #hashCode()} methods.
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @since   0.3
@@ -249,7 +338,7 @@ public class DefaultTreeTable implements TreeTable, Serializable {
      * @module
      */
     @NotThreadSafe
-    public static class Node implements TreeTable.Node, Serializable {
+    public static class Node implements TreeTable.Node, Cloneable, Serializable {
         /**
          * For cross-version compatibility.
          */
@@ -329,14 +418,6 @@ public class DefaultTreeTable implements TreeTable, Serializable {
         private Object[] values;
 
         /**
-         * Creates a new node with the given shared map of columns and the given values.
-         */
-        Node(final Map<TableColumn<?>,Integer> columnIndices, final Object[] values) {
-            this.columnIndices = columnIndices;
-            this.values = values;
-        }
-
-        /**
          * Creates a new node for the given table. The new node will be able to store a value
          * for each {@linkplain TreeTable#getColumns() columns} defined in the given table.
          *
@@ -390,9 +471,30 @@ public class DefaultTreeTable implements TreeTable, Serializable {
         }
 
         /**
+         * Creates a node with a single column for object names (c<cite>convenience constructor</cite>).
+         * The node will have the following columns:
+         *
+         * <table class="sis">
+         *   <tr><th>Header</th> <th>Type</th>                 <th>Initial value</th></tr>
+         *   <tr><td>"Name"</td> <td>{@link CharSequence}</td> <td>{@code name}</td></tr>
+         * </table>
+         *
+         * @param  name The initial value for the "Name" column (can be {@code null}).
+         */
+        public Node(final CharSequence name) {
+            columnIndices = TableColumn.NAME_MAP;
+            if (name != null) {
+                values = new CharSequence[] {name};
+            }
+        }
+
+        /**
          * Returns the parent of this node. On {@code Node} creation, this value may be initially
          * {@code null}. It will be automatically set to a non-null value when this node will be
          * added as a child of another {@code Node} instance.
+         *
+         * <p>Note that the parent is intentionally ignored by the {@link #clone()},
+         * {@link #equals(Object)} and {@link #hashCode()} methods.</p>
          */
         @Override
         public final TreeTable.Node getParent() {
@@ -495,23 +597,134 @@ public class DefaultTreeTable implements TreeTable, Serializable {
         }
 
         /**
-         * Returns a string representation of this node, for identification in error message
-         * or in debugger.
+         * Returns a clone of this node without parent.
+         * This method recursively clones all {@linkplain #getChildren() children},
+         * but does not clone the column {@linkplain #getValue(TableColumn) values}.
+         * The parent of the cloned node is set to {@code null}.
+         *
+         * @return A clone of this node without parent.
+         * @throws CloneNotSupportedException If this node or one of its children can not be cloned.
+         */
+        @Override
+        public Node clone() throws CloneNotSupportedException {
+            final Node clone = (Node) super.clone();
+            clone.parent = null;
+            if (clone.values != null) {
+                clone.values = clone.values.clone();
+            }
+            if (clone.children != null) {
+                clone.children = new Children(clone);
+                for (final TreeTable.Node child : children) {
+                    /*
+                     * Implementation note: we could have used the Cloner for cloning arbitrary
+                     * node implementations, but children.add(...) would fail anyway because it
+                     * can not set the parent of unknown implementation.
+                     */
+                    if (!(child instanceof Node)) {
+                        throw new CloneNotSupportedException(Errors.format(
+                                Errors.Keys.CloneNotSupported_1, child.getClass()));
+                    }
+                    clone.children.add(((Node) child).clone());
+                }
+            }
+            return clone;
+        }
+
+        /**
+         * Compares the given object with this node for {@linkplain #getValue(TableColumn) values}
+         * and {@linkplain #getChildren() children} equality, ignoring the {@linkplain #getParent()
+         * parent}. This method can be used for determining if two branches of a same tree or of two
+         * different trees are identical.
+         *
+         * {@note This method ignores the parent because:
+         * <ul>
+         *   <li>When comparing the children recursively, comparing the parents would cause infinite recursivity.</li>
+         *   <li>For consistency with the <code>clone()</code> method, which can not clone the parent.</li>
+         *   <li>For making possible to compare branches instead than only whole trees.</li>
+         * </ul>}
+         *
+         * @param  other The object to compare with this node.
+         * @return {@code true} if the two objects are equal, ignoring the parent node.
+         */
+        @Override
+        public boolean equals(final Object other) {
+            if (other == this) {
+                return true;
+            }
+            if (other != null && other.getClass() == getClass()) {
+                final Node that = (Node) other;
+                if (columnIndices.equals(that.columnIndices)) {
+                    final Object[] v1 = this.values;
+                    final Object[] v2 = that.values;
+                    if (v1 != v2) { // For skipping the loop if v1 and v2 are null.
+                        for (int i=columnIndices.size(); --i>=0;) {
+                            if (!Objects.equals((v1 != null) ? v1[i] : null,
+                                                (v2 != null) ? v2[i] : null))
+                            {
+                                return false;
+                            }
+                        }
+                    }
+                    final List<TreeTable.Node> c1 = this.children;
+                    final List<TreeTable.Node> c2 = that.children;
+                    final int n = (c1 != null) ? c1.size() : 0;
+                    if (((c2 != null) ? c2.size() : 0) == n) {
+                        for (int i=0; i<n; i++) {
+                            if (!c1.get(i).equals(c2.get(i))) {
+                                return false;
+                            }
+                        }
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        /**
+         * Returns a hash-code value computed from the {@linkplain #getValue(TableColumn) values}
+         * and {@linkplain #getChildren() children}, ignoring the {@linkplain #getParent() parent}.
+         * This method is defined for consistency with {@link #equals(Object)} contract.
+         */
+        @Override
+        public int hashCode() {
+            int hash = 0;
+            final Object[] values = this.values;
+            if (values != null) {
+                // Do not use Objects.hashCode(...) because we want the result of array
+                // containing only null elements to be the same than null array (zero).
+                for (int i=values.length; --i>=0;) {
+                    hash = 31*hash + Objects.hash(values[i]);
+                }
+            }
+            // Do not use Objects.hashCode(...) because we
+            // want the same result for null and empty list.
+            if (!isNullOrEmpty(children)) {
+                hash += 37 * children.hashCode();
+            }
+            return hash ^ (int) serialVersionUID;
+        }
+
+        /**
+         * Returns a string representation of this node for identification in error message or in debugger.
+         * The default implementation returns the {@code toString()} value of the first non-empty
+         * {@link CharSequence} found in the {@linkplain #getValue(TableColumn) values}, if any.
+         * If no such value is found, then this method returns "<var>Node</var>-<var>i</var>"
+         * where <var>Node</var> is the {@linkplain Class#getSimpleName() simple classname}
+         * and <var>i</var> is the index of this node in the parent node.
          *
          * @return A string representation of this node.
          */
         @Override
         public String toString() {
-            Object value = getUserObject();
-            if (value instanceof CharSequence) {
-                return value.toString();
-            }
             final Object[] values = this.values;
             if (values != null) {
-                for (int i=0; i<values.length; i++) {
-                    value = values[i];
+                for (final Object value : values) {
                     if (value instanceof CharSequence) {
-                        return value.toString();
+                        final String text = trimWhitespaces(value.toString());
+                        if (text != null && !text.isEmpty()) {
+                            return text;
+                        }
                     }
                 }
             }

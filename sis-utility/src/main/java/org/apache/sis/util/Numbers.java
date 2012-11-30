@@ -18,10 +18,19 @@ package org.apache.sis.util;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Queue;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.Collections;
+import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import org.apache.sis.util.resources.Errors;
+
+import static org.apache.sis.util.collection.Collections.emptyQueue;
+import static org.apache.sis.util.collection.Collections.emptySortedSet;
 
 
 /**
@@ -34,7 +43,7 @@ import org.apache.sis.util.resources.Errors;
  */
 public final class Numbers extends Static {
     /**
-     * Constants to be used in {@code switch} statements.
+     * Constant of value {@value} used in {@code switch} statements or as index in arrays.
      */
     public static final byte
             DOUBLE=8, FLOAT=7, LONG=6, INTEGER=5, SHORT=4, BYTE=3, CHARACTER=2, BOOLEAN=1, OTHER=0;
@@ -62,7 +71,7 @@ public final class Numbers extends Static {
     /** The wrapper for the primitive type.     */ private final Class<?> wrapper;
     /** {@code true} for floating point number. */ private final boolean  isFloat;
     /** {@code true} for integer number.        */ private final boolean  isInteger;
-    /** The size in bytes.                      */ private final byte     size;
+    /** The size in bytes, or -1 if variable.   */ private final byte     size;
     /** Constant to be used in switch statement.*/ private final byte     ordinal;
     /** The internal form of the primitive name.*/ private final char     internal;
     /** The null, NaN, 0 or false value.        */ private final Object   nullValue;
@@ -219,7 +228,7 @@ public final class Numbers extends Static {
      * @throws IllegalArgumentException If a number is not of a known type.
      *
      * @see #widestClass(Number, Number)
-     * @see #finestClass(Number, Number)
+     * @see #narrowestClass(Number, Number)
      */
     public static Class<? extends Number> widestClass(final Number n1, final Number n2)
             throws IllegalArgumentException
@@ -250,7 +259,7 @@ public final class Numbers extends Static {
      * @throws IllegalArgumentException If one of the given types is unknown.
      *
      * @see #widestClass(Class, Class)
-     * @see #finestClass(Number, Number)
+     * @see #narrowestClass(Number, Number)
      */
     public static Class<? extends Number> widestClass(final Class<? extends Number> c1,
                                                       final Class<? extends Number> c2)
@@ -270,27 +279,27 @@ public final class Numbers extends Static {
     }
 
     /**
-     * Returns the finest type of two numbers. Numbers {@code n1} and {@code n2} must be instance
+     * Returns the narrowest type of two numbers. Numbers {@code n1} and {@code n2} must be instance
      * of any of {@link Byte}, {@link Short}, {@link Integer}, {@link Long}, {@link Float}
      * {@link Double}, {@link BigInteger} or {@link BigDecimal} types.
      *
      * @param  n1 The first number.
      * @param  n2 The second number.
-     * @return The finest type of the given numbers.
+     * @return The narrowest type of the given numbers.
      * @throws IllegalArgumentException If a number is not of a known type.
      *
-     * @see #finestClass(Class, Class)
+     * @see #narrowestClass(Class, Class)
      * @see #widestClass(Class, Class)
      */
-    public static Class<? extends Number> finestClass(final Number n1, final Number n2)
+    public static Class<? extends Number> narrowestClass(final Number n1, final Number n2)
             throws IllegalArgumentException
     {
-        return finestClass((n1 != null) ? n1.getClass() : null,
+        return narrowestClass((n1 != null) ? n1.getClass() : null,
                            (n2 != null) ? n2.getClass() : null);
     }
 
     /**
-     * Returns the finest of the given types. Classes {@code c1} and {@code c2} can be
+     * Returns the narrowest of the given types. Classes {@code c1} and {@code c2} can be
      * {@link Byte}, {@link Short}, {@link Integer}, {@link Long}, {@link Float},
      * {@link Double}, {@link BigInteger} or {@link BigDecimal} types.
      *
@@ -300,21 +309,21 @@ public final class Numbers extends Static {
      * Example:
      *
      * {@preformat java
-     *     finestClass(Short.class, Long.class);
+     *     narrowestClass(Short.class, Long.class);
      * }
      *
      * returns {@code Short.class}.
      *
      * @param  c1 The first number type, or {@code null}.
      * @param  c2 The second number type, or {@code null}.
-     * @return The finest of the given types, or {@code null} if both {@code c1} and {@code c2} are null.
+     * @return The narrowest of the given types, or {@code null} if both {@code c1} and {@code c2} are null.
      * @throws IllegalArgumentException If one of the given types is unknown.
      *
-     * @see #finestClass(Number, Number)
+     * @see #narrowestClass(Number, Number)
      * @see #widestClass(Class, Class)
      */
-    public static Class<? extends Number> finestClass(final Class<? extends Number> c1,
-                                                      final Class<? extends Number> c2)
+    public static Class<? extends Number> narrowestClass(final Class<? extends Number> c1,
+                                                         final Class<? extends Number> c2)
             throws IllegalArgumentException
     {
         final Numbers m1 = MAPPING.get(c1);
@@ -333,37 +342,37 @@ public final class Numbers extends Static {
     /**
      * Returns the smallest class capable to hold the specified value. If the given value is
      * {@code null}, then this method returns {@code null}. Otherwise this method delegates
-     * to {@link #finestClass(double)} or {@link #finestClass(long)} depending on the value type.
+     * to {@link #narrowestClass(double)} or {@link #narrowestClass(long)} depending on the value type.
      *
      * @param  value The value to be wrapped in a finer (if possible) {@link Number}.
-     * @return The finest type capable to hold the given value.
+     * @return The narrowest type capable to hold the given value.
      *
-     * @see #finestNumber(Number)
+     * @see #narrowestNumber(Number)
      */
-    public static Class<? extends Number> finestClass(final Number value) {
+    public static Class<? extends Number> narrowestClass(final Number value) {
         if (value == null) {
             return null;
         }
         if (isPrimitiveInteger(value.getClass())) {
-            return finestClass(value.longValue());
+            return narrowestClass(value.longValue());
         } else {
-            return finestClass(value.doubleValue());
+            return narrowestClass(value.doubleValue());
         }
     }
 
     /**
      * Returns the smallest class capable to hold the specified value.
-     * This is similar to {@link #finestClass(long)}, but extended to floating point values.
+     * This is similar to {@link #narrowestClass(long)}, but extended to floating point values.
      *
      * @param  value The value to be wrapped in a {@link Number}.
-     * @return The finest type capable to hold the given value.
+     * @return The narrowest type capable to hold the given value.
      *
-     * @see #finestNumber(double)
+     * @see #narrowestNumber(double)
      */
-    public static Class<? extends Number> finestClass(final double value) {
+    public static Class<? extends Number> narrowestClass(final double value) {
         final long lg = (long) value;
         if (value == lg) {
-            return finestClass(lg);
+            return narrowestClass(lg);
         }
         final float fv = (float) value;
         if (Double.doubleToRawLongBits(value) == Double.doubleToRawLongBits(fv)) {
@@ -387,11 +396,11 @@ public final class Numbers extends Static {
      * </ul>
      *
      * @param  value The value to be wrapped in a {@link Number}.
-     * @return The finest type capable to hold the given value.
+     * @return The narrowest type capable to hold the given value.
      *
-     * @see #finestNumber(long)
+     * @see #narrowestNumber(long)
      */
-    public static Class<? extends Number> finestClass(final long value) {
+    public static Class<? extends Number> narrowestClass(final long value) {
         // Tests MAX_VALUE before MIN_VALUE because it is more likely to fail.
         if (value <= Byte   .MAX_VALUE  &&  value >= Byte   .MIN_VALUE) return Byte.class;
         if (value <= Short  .MAX_VALUE  &&  value >= Short  .MIN_VALUE) return Short.class;
@@ -402,23 +411,23 @@ public final class Numbers extends Static {
     /**
      * Returns the number of the smallest class capable to hold the specified value. If the
      * given value is {@code null}, then this method returns {@code null}. Otherwise this
-     * method delegates to {@link #finestNumber(double)} or {@link #finestNumber(long)}
+     * method delegates to {@link #narrowestNumber(double)} or {@link #narrowestNumber(long)}
      * depending on the value type.
      *
      * @param  value The value to be wrapped in a finer (if possible) {@link Number}.
-     * @return The finest type capable to hold the given value.
+     * @return The narrowest type capable to hold the given value.
      *
-     * @see #finestClass(Number)
+     * @see #narrowestClass(Number)
      */
-    public static Number finestNumber(final Number value) {
+    public static Number narrowestNumber(final Number value) {
         if (value == null) {
             return null;
         }
         final Number candidate;
         if (isPrimitiveInteger(value.getClass())) {
-            candidate = finestNumber(value.longValue());
+            candidate = narrowestNumber(value.longValue());
         } else {
-            candidate = finestNumber(value.doubleValue());
+            candidate = narrowestNumber(value.doubleValue());
         }
         // Keep the existing instance if possible.
         return value.equals(candidate) ? value : candidate;
@@ -426,17 +435,17 @@ public final class Numbers extends Static {
 
     /**
      * Returns the number of the smallest class capable to hold the specified value.
-     * This is similar to {@link #finestNumber(long)}, but extended to floating point values.
+     * This is similar to {@link #narrowestNumber(long)}, but extended to floating point values.
      *
      * @param  value The value to be wrapped in a {@link Number}.
-     * @return The finest type capable to hold the given value.
+     * @return The narrowest type capable to hold the given value.
      *
-     * @see #finestClass(double)
+     * @see #narrowestClass(double)
      */
-    public static Number finestNumber(final double value) {
+    public static Number narrowestNumber(final double value) {
         final long lg = (long) value;
         if (value == lg) {
-            return finestNumber(lg);
+            return narrowestNumber(lg);
         }
         final float fv = (float) value;
         if (Double.doubleToRawLongBits(value) == Double.doubleToRawLongBits(fv)) {
@@ -460,11 +469,11 @@ public final class Numbers extends Static {
      * </ul>
      *
      * @param  value The value to be wrapped in a {@link Number}.
-     * @return The given value as a number of the finest type capable to hold it.
+     * @return The given value as a number of the narrowest type capable to hold it.
      *
-     * @see #finestClass(long)
+     * @see #narrowestClass(long)
      */
-    public static Number finestNumber(final long value) {
+    public static Number narrowestNumber(final long value) {
         // Tests MAX_VALUE before MIN_VALUE because it is more likely to fail.
         if (value <= Byte   .MAX_VALUE  &&  value >= Byte   .MIN_VALUE) return Byte   .valueOf((byte)  value);
         if (value <= Short  .MAX_VALUE  &&  value >= Short  .MIN_VALUE) return Short  .valueOf((short) value);
@@ -476,23 +485,23 @@ public final class Numbers extends Static {
      * Returns the smallest number capable to hold the specified value.
      *
      * @param  value The value to be wrapped in a {@link Number}.
-     * @return The finest type capable to hold the given value.
+     * @return The narrowest type capable to hold the given value.
      * @throws NumberFormatException if the given value can not be parsed as a number.
      *
-     * @see #finestNumber(Number)
-     * @see #finestNumber(double)
-     * @see #finestNumber(long)
+     * @see #narrowestNumber(Number)
+     * @see #narrowestNumber(double)
+     * @see #narrowestNumber(long)
      */
-    public static Number finestNumber(String value) throws NumberFormatException {
-        value = value.trim();
+    public static Number narrowestNumber(String value) throws NumberFormatException {
+        value = CharSequences.trimWhitespaces(value);
         final int length = value.length();
         for (int i=0; i<length; i++) {
             final char c = value.charAt(i);
             if (c == '.' || c == 'e' || c == 'E') {
-                return finestNumber(Double.parseDouble(value));
+                return narrowestNumber(Double.parseDouble(value));
             }
         }
-        return finestNumber(Long.parseLong(value));
+        return narrowestNumber(Long.parseLong(value));
     }
 
     /**
@@ -562,19 +571,12 @@ public final class Numbers extends Static {
      *         string value is not parseable as a number of the specified type.
      */
     @SuppressWarnings("unchecked")
-    public static <T> T valueOf(final Class<T> type, final String value)
+    public static <T> T valueOf(final Class<T> type, String value)
             throws IllegalArgumentException, NumberFormatException
     {
-        if (value == null) {
-            return null;
+        if (value == null || type == String.class) {
+            return (T) value;
         }
-        if (type == Double .class) return (T) Double .valueOf(value);
-        if (type == Float  .class) return (T) Float  .valueOf(value);
-        if (type == Long   .class) return (T) Long   .valueOf(value);
-        if (type == Integer.class) return (T) Integer.valueOf(value);
-        if (type == Short  .class) return (T) Short  .valueOf(value);
-        if (type == Byte   .class) return (T) Byte   .valueOf(value);
-        if (type == Boolean.class) return (T) Boolean.valueOf(value);
         if (type == Character.class) {
             /*
              * If the string is empty, returns 0 which means "end of string" in C/C++
@@ -585,10 +587,72 @@ public final class Numbers extends Static {
              */
             return (T) Character.valueOf(value.isEmpty() ? 0 : value.charAt(0));
         }
-        if (type == String.class) {
-            return (T) value;
-        }
+        value = CharSequences.trimWhitespaces(value);
+        if (type == Double .class) return (T) Double .valueOf(value);
+        if (type == Float  .class) return (T) Float  .valueOf(value);
+        if (type == Long   .class) return (T) Long   .valueOf(value);
+        if (type == Integer.class) return (T) Integer.valueOf(value);
+        if (type == Short  .class) return (T) Short  .valueOf(value);
+        if (type == Byte   .class) return (T) Byte   .valueOf(value);
+        if (type == Boolean.class) return (T) Boolean.valueOf(value);
         throw unknownType(type);
+    }
+
+    /**
+     * Returns a {@code NaN}, zero, empty or {@code null} value of the given type. This method
+     * tries to return the closest value that can be interpreted as "<cite>none</cite>", which
+     * is usually not the same than "<cite>zero</cite>". More specifically:
+     *
+     * <ul>
+     *   <li>If the given type is a floating point <strong>primitive</strong> type ({@code float}
+     *       or {@code double}), then this method returns {@link Float#NaN} or {@link Double#NaN}
+     *       depending on the given type.</li>
+     *
+     *   <li>If the given type is an integer <strong>primitive</strong> type or the character type
+     *       ({@code long}, {@code int}, {@code short}, {@code byte} or {@code char}), then this
+     *       method returns the zero value of the given type.</li>
+     *
+     *   <li>If the given type is the {@code boolean} <strong>primitive</strong> type, then this
+     *       method returns {@link Boolean#FALSE}.</li>
+     *
+     *   <li>If the given type is an array or a collection, then this method returns an empty
+     *       array or collection. The given type is honored on a <cite>best effort</cite> basis.</li>
+     *
+     *   <li>For all other cases, including the wrapper classes of primitive types, this method
+     *       returns {@code null}.</li>
+     * </ul>
+     *
+     * Despite being defined in the {@code Numbers} class, the scope of this method has been
+     * extended to array and collection types because those objects can also be seen as
+     * mathematical concepts.
+     *
+     * @param  <T> The compile-time type of the requested object.
+     * @param  type The type of the object for which to get a nil value.
+     * @return An object of the given type which represents a nil value, or {@code null}.
+     *
+     * @see org.apache.sis.xml.NilObject
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> T valueOfNil(final Class<T> type) {
+        final Numbers mapping = MAPPING.get(type);
+        if (mapping != null) {
+            if (type.isPrimitive()) {
+                return (T) mapping.nullValue;
+            }
+        } else if (type != null && type != Object.class) {
+            if (type == Map      .class) return (T) Collections.EMPTY_MAP;
+            if (type == List     .class) return (T) Collections.EMPTY_LIST;
+            if (type == Queue    .class) return (T) emptyQueue();
+            if (type == SortedSet.class) return (T) emptySortedSet();
+            if (type.isAssignableFrom(Set.class)) {
+                return (T) Collections.EMPTY_SET;
+            }
+            final Class<?> element = type.getComponentType();
+            if (element != null) {
+                return (T) Array.newInstance(element, 0);
+            }
+        }
+        return null;
     }
 
     /**

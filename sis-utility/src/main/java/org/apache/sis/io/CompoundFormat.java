@@ -227,6 +227,12 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      * {@linkplain Character#isSpaceChar(int) spaces} and
      * {@linkplain Character#isISOControl(int) ISO control characters}.
      *
+     * {@note The usual SIS policy, as documented in the <code>CharSequences</code> class,
+     * is to test for whitespaces using the <code>Characters.isWhitespace(…)</code> method.
+     * The combination of <code>isSpaceChar(…)</code> and <code>isISOControl(…)</code> done
+     * in this <code>parseObject(…)</code> method is more permissive since it encompasses
+     * all whitespace characters, plus non-breaking spaces and non-white ISO controls.}
+     *
      * @param  text The string representation of the object to parse.
      * @return The parsed object.
      * @throws ParseException If an error occurred while parsing the object.
@@ -364,11 +370,18 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      *         or {@code null} if none.
      */
     protected Format createFormat(final Class<?> valueType) {
-        if (valueType == Number.class) {
-            if (locale == null) return null;
-            return NumberFormat.getInstance(locale);
-        }
-        if (valueType == Date.class) {
+        /*
+         * The first case below is an apparent exception to the 'expected == type' rule
+         * documented in this method javadoc. But actually it is not, since the call to
+         * DefaultFormat.getInstance(…) will indirectly perform this kind of comparison.
+         */
+        if (Number.class.isAssignableFrom(valueType)) {
+            if (locale == null) {
+                return DefaultFormat.getInstance(valueType);
+            } else if (valueType == Number.class) {
+                return NumberFormat.getInstance(locale);
+            }
+        } else if (valueType == Date.class) {
             final DateFormat format;
             if (locale != null) {
                 format = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM, locale);
@@ -376,10 +389,9 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
                 format = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.US);
             }
             format.setTimeZone(timezone != null ? timezone : TimeZone.getTimeZone("UTC"));
-        }
-        if (valueType == Angle.class) {
-            if (locale == null) return null;
-            return AngleFormat.getInstance(locale);
+            return format;
+        } else if (valueType == Angle.class) {
+            return AngleFormat.getInstance(locale != null ? locale : Locale.US);
         }
         return null;
     }

@@ -95,6 +95,9 @@
   <xsl:template match= "d:function[@role = 'OGC']"    mode="class.value"> <xsl:value-of select="'OGC'"   /> </xsl:template>
   <xsl:template match= "d:function[@role = 'GeoAPI']" mode="class.value"> <xsl:value-of select="'GeoAPI'"/> </xsl:template>
   <xsl:template match= "d:function[@role = 'SIS']"    mode="class.value"> <xsl:value-of select="'SIS'"   /> </xsl:template>
+  <xsl:template match= "d:constant[@role = 'OGC']"    mode="class.value"> <xsl:value-of select="'OGC'"   /> </xsl:template>
+  <xsl:template match= "d:constant[@role = 'GeoAPI']" mode="class.value"> <xsl:value-of select="'GeoAPI'"/> </xsl:template>
+  <xsl:template match= "d:constant[@role = 'SIS']"    mode="class.value"> <xsl:value-of select="'SIS'"   /> </xsl:template>
   <xsl:template match=  "d:literal[@role = 'OGC']"    mode="class.value"> <xsl:value-of select="'OGC'"   /> </xsl:template>
   <xsl:template match=  "d:literal[@role = 'GeoAPI']" mode="class.value"> <xsl:value-of select="'GeoAPI'"/> </xsl:template>
   <xsl:template match=  "d:literal[@role = 'SIS']"    mode="class.value"> <xsl:value-of select="'SIS'"   /> </xsl:template>

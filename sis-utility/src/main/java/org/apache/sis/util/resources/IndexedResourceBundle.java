@@ -22,7 +22,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.MessageFormat;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.MissingResourceException;
@@ -30,8 +29,6 @@ import java.util.NoSuchElementException;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import net.jcip.annotations.ThreadSafe;
 
 import org.opengis.util.InternationalString;
@@ -41,8 +38,6 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
-
-import static org.apache.sis.util.Arrays.resize;
 
 // Related to JDK7
 import org.apache.sis.internal.util.JDK7;
@@ -79,15 +74,6 @@ public class IndexedResourceBundle extends ResourceBundle {
      * of {@code IndexedResourceBundle}.
      */
     private final String filename;
-
-    /**
-     * The key names. This is usually not needed, but may be created from the {@code Keys}
-     * inner class in some occasions.
-     *
-     * @see #getKeyNames()
-     * @see #getKeyName(int)
-     */
-    private transient String[] keys;
 
     /**
      * The array of resources. Keys are an array index. For example, the value for key "14" is
@@ -175,54 +161,22 @@ public class IndexedResourceBundle extends ResourceBundle {
     }
 
     /**
-     * Returns the inner {@code Keys} class which declare the key constants.
+     * Returns a handler for the constants declared in the inner {@code Keys} class.
      * Subclasses defined in the {@code org.apache.sis.util.resources} package
      * override this method for efficiency. However the default implementation
      * should work for other cases (we don't want to expose too much internal API).
      *
-     * @return The inner {@code Keys} class.
-     * @throws ClassNotFoundException If the inner class has not been found.
+     * @return A handler for the constants declared in the inner {@code Keys} class.
      */
-    Class<?> getKeysClass() throws ClassNotFoundException {
+    KeyConstants getKeyConstants() {
+        Class<?> keysClass = KeyConstants.class;
         for (final Class<?> inner : getClass().getClasses()) {
             if ("Keys".equals(inner.getSimpleName())) {
-                return inner;
+                keysClass = inner;
+                break;
             }
         }
-        throw new ClassNotFoundException();
-    }
-
-    /**
-     * Returns the internal array of key names. <strong>Do not modify the returned array.</strong>
-     * This method should usually not be invoked, in order to avoid loading the inner Keys class.
-     * The keys names are used only in rare situation, like {@link #list(Writer)} or in log records.
-     */
-    private synchronized String[] getKeyNames() {
-        if (keys == null) {
-            String[] names;
-            int length = 0;
-            try {
-                final Field[] fields = getKeysClass().getFields();
-                names = new String[fields.length];
-                for (final Field field : fields) {
-                    if (Modifier.isStatic(field.getModifiers()) && field.getType() == Integer.TYPE) {
-                        final int index = (Integer) field.get(null);
-                        if (index >= length) {
-                            length = index + 1;
-                            if (length > names.length) {
-                                // Usually don't happen, except for incomplete bundles.
-                                names = Arrays.copyOf(names, length*2);
-                            }
-                        }
-                        names[index] = field.getName();
-                    }
-                }
-            } catch (Exception e) {
-                names = CharSequences.EMPTY_ARRAY;
-            }
-            keys = resize(names, length);
-        }
-        return keys;
+        return new KeyConstants(keysClass);
     }
 
     /**
@@ -232,7 +186,7 @@ public class IndexedResourceBundle extends ResourceBundle {
      */
     @Override
     public final Enumeration<String> getKeys() {
-        return new KeyEnum(getKeyNames());
+        return new KeyEnum(getKeyConstants().getKeyNames());
     }
 
     /**
@@ -272,22 +226,6 @@ public class IndexedResourceBundle extends ResourceBundle {
     }
 
     /**
-     * Returns the name of the key at the given index. If there is no name at that given
-     * index, format the index as a decimal number. Those decimal numbers are parsed by
-     * our {@link #handleGetObject(String)} implementation.
-     */
-    private String getKeyNameAt(final int index) {
-        final String[] keys = getKeyNames();
-        if (index < keys.length) {
-            final String key = keys[index];
-            if (key != null) {
-                return key;
-            }
-        }
-        return String.valueOf(index);
-    }
-
-    /**
      * Lists resources to the specified stream. If a resource has more than one line, only
      * the first line will be written. This method is used mostly for debugging purposes.
      *
@@ -297,7 +235,7 @@ public class IndexedResourceBundle extends ResourceBundle {
     @Debug
     public final void list(final Appendable out) throws IOException {
         int keyLength = 0;
-        final String[] keys = getKeyNames();
+        final String[] keys = getKeyConstants().getKeyNames();
         for (final String key : keys) {
             if (key != null) {
                 keyLength = Math.max(keyLength, key.length());
@@ -429,7 +367,7 @@ public class IndexedResourceBundle extends ResourceBundle {
              * LogRecords, for easier debugging if the message has not been properly formatted.
              */
             try {
-                keyID = (Integer) getKeysClass().getField(key).get(null);
+                keyID = getKeyConstants().getKeyValue(key);
             } catch (Exception e) {
                 Logging.recoverableException(getClass(), "handleGetObject", e);
                 return null; // This is okay as of 'handleGetObject' contract.
@@ -668,7 +606,7 @@ public class IndexedResourceBundle extends ResourceBundle {
      * @return The log record.
      */
     public final LogRecord getLogRecord(final Level level, final int key) {
-        final LogRecord record = new LogRecord(level, getKeyNameAt(key));
+        final LogRecord record = new LogRecord(level, getKeyConstants().getKeyName(key));
         record.setResourceBundleName(getClass().getName());
         record.setResourceBundle(this);
         return record;
