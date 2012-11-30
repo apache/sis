@@ -238,12 +238,12 @@ public final class ArgumentChecks extends Static {
 
     /**
      * Ensures that the given floating point value is not
-     * {@linkplain Float#NaN NaN} and is greater than or equals to zero. Note that
+     * {@linkplain Float#isNaN(float) NaN} and is greater than or equals to zero. Note that
      * {@linkplain Float#POSITIVE_INFINITY positive infinity} is considered a valid value.
      *
      * @param  name   The name of the argument to be checked, used only if an exception is thrown.
      * @param  value  The user argument to check.
-     * @throws IllegalArgumentException if the given value is {@linkplain Float#NaN NaN} or negative.
+     * @throws IllegalArgumentException if the given value is NaN or negative.
      *
      * @see #ensureStrictlyPositive(String, float)
      */
@@ -259,12 +259,12 @@ public final class ArgumentChecks extends Static {
 
     /**
      * Ensures that the given floating point value is not
-     * {@linkplain Double#NaN NaN} and is greater than or equals to zero. Note that
+     * {@linkplain Double#isNaN(double) NaN} and is greater than or equals to zero. Note that
      * {@linkplain Double#POSITIVE_INFINITY positive infinity} is considered a valid value.
      *
      * @param  name   The name of the argument to be checked, used only if an exception is thrown.
      * @param  value  The user argument to check.
-     * @throws IllegalArgumentException if the given value is {@linkplain Double#NaN NaN} or negative.
+     * @throws IllegalArgumentException if the given value is NaN or negative.
      *
      * @see #ensureStrictlyPositive(String, double)
      */
@@ -316,13 +316,12 @@ public final class ArgumentChecks extends Static {
 
     /**
      * Ensures that the given floating point value is not
-     * {@linkplain Float#NaN NaN} and is greater than zero. Note that
+     * {@linkplain Float#isNaN(float) NaN} and is greater than zero. Note that
      * {@linkplain Float#POSITIVE_INFINITY positive infinity} is considered a valid value.
      *
      * @param  name   The name of the argument to be checked, used only if an exception is thrown.
      * @param  value  The user argument to check.
-     * @throws IllegalArgumentException if the given value is {@linkplain Float#NaN NaN},
-     *         zero or negative.
+     * @throws IllegalArgumentException if the given value is NaN, zero or negative.
      *
      * @see #ensurePositive(String, float)
      */
@@ -338,13 +337,12 @@ public final class ArgumentChecks extends Static {
 
     /**
      * Ensures that the given floating point value is not
-     * {@linkplain Double#NaN NaN} and is greater than zero. Note that
+     * {@linkplain Double#isNaN(double) NaN} and is greater than zero. Note that
      * {@linkplain Double#POSITIVE_INFINITY positive infinity} is considered a valid value.
      *
      * @param  name   The name of the argument to be checked, used only if an exception is thrown.
      * @param  value  The user argument to check.
-     * @throws IllegalArgumentException if the given value is {@linkplain Double#NaN NaN},
-     *         zero or negative.
+     * @throws IllegalArgumentException if the given value is NaN, zero or negative.
      *
      * @see #ensurePositive(String, double)
      */
@@ -355,6 +353,40 @@ public final class ArgumentChecks extends Static {
             throw new IllegalArgumentException(Double.isNaN(value) ?
                     Errors.format(Errors.Keys.NotANumber_1, name)  :
                     Errors.format(Errors.Keys.ValueNotGreaterThanZero_2, name, value));
+        }
+    }
+
+    /**
+     * Ensures that the given floating point value is not
+     * {@linkplain Float#isNaN(float) NaN} neither {@linkplain Float#isInfinite(float)}.
+     * The value can be negative, zero or positive.
+     *
+     * @param  name   The name of the argument to be checked, used only if an exception is thrown.
+     * @param  value  The user argument to check.
+     * @throws IllegalArgumentException if the given value is NaN or infinite.
+     */
+    public static void ensureFinite(final String name, final float value) {
+        final boolean isNaN;
+        if ((isNaN = Float.isNaN(value)) == true || Float.isInfinite(value)) {
+            throw new IllegalArgumentException(Errors.format(isNaN ?
+                    Errors.Keys.NotANumber_1 : Errors.Keys.InfiniteArgumentValue_1, name));
+        }
+    }
+
+    /**
+     * Ensures that the given floating point value is not
+     * {@linkplain Double#isNaN(double) NaN} neither {@linkplain Double#isInfinite(double)}.
+     * The value can be negative, zero or positive.
+     *
+     * @param  name   The name of the argument to be checked, used only if an exception is thrown.
+     * @param  value  The user argument to check.
+     * @throws IllegalArgumentException if the given value is NaN or infinite.
+     */
+    public static void ensureFinite(final String name, final double value) {
+        final boolean isNaN;
+        if ((isNaN = Double.isNaN(value)) == true || Double.isInfinite(value)) {
+            throw new IllegalArgumentException(Errors.format(isNaN ?
+                    Errors.Keys.NotANumber_1 : Errors.Keys.InfiniteArgumentValue_1, name));
         }
     }
 
@@ -403,8 +435,7 @@ public final class ArgumentChecks extends Static {
      * @param  min   The minimal value, inclusive.
      * @param  max   The maximal value, inclusive.
      * @param  value The value to be tested.
-     * @throws IllegalArgumentException if the given value is {@linkplain Float#NaN NaN}
-     *         or not in the given range.
+     * @throws IllegalArgumentException if the given value is NaN or not in the given range.
      */
     public static void ensureBetween(final String name, final float min, final float max, final float value)
             throws IllegalArgumentException
@@ -423,8 +454,7 @@ public final class ArgumentChecks extends Static {
      * @param  min   The minimal value, inclusive.
      * @param  max   The maximal value, inclusive.
      * @param  value The value to be tested.
-     * @throws IllegalArgumentException if the given value is {@linkplain Float#NaN NaN}
-     *         or not in the given range.
+     * @throws IllegalArgumentException if the given value is NaN or not in the given range.
      */
     public static void ensureBetween(final String name, final double min, final double max, final double value)
             throws IllegalArgumentException

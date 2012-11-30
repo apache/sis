@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.util;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.ExecutorService;
 import org.apache.sis.util.Static;
@@ -67,6 +68,14 @@ final class Threads extends Static {
         }
     };
 
+
+
+    /* -------------------------------------------------------------------------------------
+     * Every non-final static variables below this point are initialized by other classes,
+     * like DaemonThread or Executors - this class will never initialize those variables by
+     * itself. All initialization shall be performed in a synchronized (Thread.class) block.
+     * ------------------------------------------------------------------------------------- */
+
     /**
      * The tail of a chain of {@code DaemonThread}s created by the {@code sis-utility} module.
      * Other modules need to maintain their own chain, if any. See the {@link DaemonThread}
@@ -115,5 +124,16 @@ final class Threads extends Static {
             }
         }
         DaemonThread.killAll(lastCreatedDaemon, stopWaitingAt);
+    }
+
+    /**
+     * Returns the names of dead threads, or {@code null} if none. The returned list should
+     * always be null. A non-empty list would be a symptom for a severe problem, probably
+     * requiring an application reboot.
+     *
+     * @return The name of dead threads, or {@code null} if none.
+     */
+    static synchronized List<String> listDeadThreads() {
+        return DaemonThread.listDeadThreads(lastCreatedDaemon);
     }
 }

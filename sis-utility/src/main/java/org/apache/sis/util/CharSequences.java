@@ -39,6 +39,39 @@ import static org.apache.sis.internal.util.JDK7.highSurrogate;
  * when appropriate. Consequently those methods should behave correctly with characters outside
  * the <cite>Basic Multilingual Plane</cite> (BMP).
  *
+ * {@section Policy on space characters}
+ * Java defines two methods for testing if a character is a white space:
+ * {@link Character#isWhitespace(int)} and {@link Character#isSpaceChar(int)}.
+ * Those two methods differ in the way they handle {@linkplain Characters#NO_BREAK_SPACE
+ * no-break spaces}, tabulations and line feeds. The general policy in the SIS library is:
+ *
+ * <ul>
+ *   <li>Use {@code isWhitespace(…)} when separating entities (words, numbers, tokens, <i>etc.</i>)
+ *       in a list. Using that method, characters separated by a no-break space are considered as
+ *       part of the same entity.</li>
+ *   <li>Use {@code isSpaceChar(…)} when parsing a single entity, for example a single word.
+ *       Using this method, no-break spaces are considered as part of the entity while line
+ *       feeds or tabulations are entity boundaries.</li>
+ * </ul>
+ *
+ * <blockquote><font size="-1"><b>Example:</b> Numbers formatted in the French locale use no-break
+ * spaces as group separators. When parsing a list of numbers, ordinary spaces around the numbers
+ * may need to be ignored, but no-break spaces shall be considered as part of the numbers.
+ * Consequently {@code isWhitespace(…)} is appropriate for skipping spaces <em>between</em> the numbers.
+ * But if there is spaces to skip <em>inside</em> a single number, then {@code isSpaceChar(…)} is a
+ * good choice for accepting no-break spaces and for stopping the parse operation at tabulations or
+ * line feed character. A tabulation or line feed between two characters is very likely to separate
+ * two distinct values.</font></blockquote>
+ *
+ * In practice, the {@link java.text.Format} implementations in the SIS library typically use
+ * {@code isSpaceChar(…)} while most of the rest of the SIS library, including this
+ * {@code CharSequences} class, consistently uses {@code isWhitespace(…)}.
+ *
+ * <p>Note that the {@link String#trim()} method doesn't follow any of those policies and should
+ * generally be avoided. That {@code trim()} method removes every ISO control characters without
+ * distinction about whether the characters are space or not, and ignore all Unicode spaces.
+ * The {@link #trimWhitespaces(String)} method defined in this class can be used as an alternative.</p>
+ *
  * {@section Handling of null values}
  * Most methods in this class accept a {@code null} {@code CharSequence} argument. In such cases
  * the method return value is either a {@code null} {@code CharSequence}, an empty array, or a
@@ -164,7 +197,7 @@ public final class CharSequences extends Static {
      * @param  text The character sequence from which to get the count, or {@code null}.
      * @return The number of Unicode code points, or 0 if the argument is {@code null}.
      *
-     * @see Character#codePointCount(CharSequence, int, int)
+     * @see #codePointCount(CharSequence, int, int)
      */
     public static int codePointCount(final CharSequence text) {
         if (text == null)                  return 0;
@@ -178,6 +211,40 @@ public final class CharSequences extends Static {
             }
         }
         return Character.codePointCount(text, 0, text.length());
+    }
+
+    /**
+     * Returns the number of Unicode code points in the given characters sub-sequence,
+     * or 0 if {@code null}. Unpaired surrogates within the text count as one code
+     * point each.
+     *
+     * <p>This method performs the same work than the standard
+     * {@link Character#codePointCount(CharSequence, int, int)} method, except that it tries
+     * to delegate to the optimized methods from the {@link String}, {@link StringBuilder},
+     * {@link StringBuffer} or {@link CharBuffer} classes if possible.</p>
+     *
+     * @param  text      The character sequence from which to get the count, or {@code null}.
+     * @param  fromIndex The index from which to start the computation.
+     * @param  toIndex   The index after the last character to take in account.
+     * @return The number of Unicode code points, or 0 if the argument is {@code null}.
+     *
+     * @see Character#codePointCount(CharSequence, int, int)
+     * @see String#codePointCount(int, int)
+     * @see StringBuilder#codePointCount(int, int)
+     */
+    public static int codePointCount(final CharSequence text, final int fromIndex, final int toIndex) {
+        if (text == null)                  return 0;
+        if (text instanceof String)        return ((String)        text).codePointCount(fromIndex, toIndex);
+        if (text instanceof StringBuilder) return ((StringBuilder) text).codePointCount(fromIndex, toIndex);
+        if (text instanceof StringBuffer)  return ((StringBuffer)  text).codePointCount(fromIndex, toIndex);
+        if (text instanceof CharBuffer) {
+            final CharBuffer buffer = (CharBuffer) text;
+            if (buffer.hasArray() && !buffer.isReadOnly()) {
+                final int position = buffer.position();
+                return Character.codePointCount(buffer.array(), position + fromIndex, position + toIndex);
+            }
+        }
+        return Character.codePointCount(text, fromIndex, toIndex);
     }
 
     /**
@@ -419,6 +486,81 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
     }
 
     /**
+     * Returns the index of the first character after all leading whitespace characters
+     * in the given range. If the given range contains only space characters, then this method
+     * returns the index of the first character after the given range, which is always equals
+     * or greater than {@code toIndex}. Note that this character may not exist if {@code toIndex}
+     * is equals to the text length.
+     *
+     * <p>Special cases:</p>
+     * <ul>
+     *   <li>If {@code fromIndex} is greater than {@code toIndex},
+     *       then this method unconditionally returns {@code fromIndex}.</li>
+     *   <li>If the given range contains only space characters and the character at {@code toIndex-1}
+     *       is the high surrogate of a valid supplementary code point, then this method returns
+     *       {@code toIndex+1} since that value is the index of the next code point.</li>
+     *   <li>If {@code fromIndex} is negative or {@code toIndex} is greater than the text length,
+     *       then the behavior of this method is undefined.</li>
+     * </ul>
+     *
+     * Space characters are identified by the {@link Character#isWhitespace(int)} method.
+     *
+     * @param  text      The string in which to perform the search (can not be null).
+     * @param  fromIndex The index from which to start the search (can not be negative).
+     * @param  toIndex   The index after the last character where to perform the search.
+     * @return The index within the text of the first occurrence of a non-space character, starting
+     *         at the specified index, or a value equals or greater than {@code toIndex} if none.
+     *
+     * @see #skipTrailingWhitespaces(CharSequence, int, int)
+     * @see #trimWhitespaces(CharSequence)
+     */
+    public static int skipLeadingWhitespaces(final CharSequence text, int fromIndex, final int toIndex) {
+        while (fromIndex < toIndex) {
+            final int c = Character.codePointAt(text, fromIndex);
+            if (!Character.isWhitespace(c)) break;
+            fromIndex += Character.charCount(c);
+        }
+        return fromIndex;
+    }
+
+    /**
+     * Returns the index of the last character before all trailing whitespace characters
+     * in the given range. If the given range contains only space characters, then this method
+     * returns the index of the first character in the given range, which is always equals or
+     * lower than {@code fromIndex}.
+     *
+     * <p>Special cases:</p>
+     * <ul>
+     *   <li>If {@code toIndex} is lower than {@code toIndex},
+     *       then this method unconditionally returns {@code toIndex}.</li>
+     *   <li>If the given range contains only space characters and the character at {@code fromIndex}
+     *       is the low surrogate of a valid supplementary code point, then this method returns
+     *       {@code fromIndex-1} since that value is the index of the code point.</li>
+     *   <li>If {@code fromIndex} is negative or {@code toIndex} is greater than the text length,
+     *       then the behavior of this method is undefined.</li>
+     * </ul>
+     *
+     * Space characters are identified by the {@link Character#isWhitespace(int)} method.
+     *
+     * @param  text      The string in which to perform the search (can not be null).
+     * @param  fromIndex The index from which to start the search (can not be negative).
+     * @param  toIndex   The index after the last character where to perform the search.
+     * @return The index within the text of the last occurrence of a non-space character, starting
+     *         at the specified index, or a value equals or lower than {@code fromIndex} if none.
+     *
+     * @see #skipLeadingWhitespaces(CharSequence, int, int)
+     * @see #trimWhitespaces(CharSequence)
+     */
+    public static int skipTrailingWhitespaces(final CharSequence text, final int fromIndex, int toIndex) {
+        while (toIndex > fromIndex) {
+            final int c = Character.codePointBefore(text, toIndex);
+            if (!Character.isWhitespace(c)) break;
+            toIndex -= Character.charCount(c);
+        }
+        return toIndex;
+    }
+
+    /**
      * Splits a text around the given character. The array returned by this method contains all
      * subsequences of the given text that is terminated by the given character or is terminated
      * by the end of the text. The subsequences in the array are in the order in which they occur
@@ -434,7 +576,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      *   <li>The separator is a simple character instead than a regular expression.</li>
      *   <li>If the {@code separator} argument is {@code '\n'} or {@code '\r'}, then this method
      *       splits around any of {@code "\r"}, {@code "\n"} or {@code "\r\n"} characters sequences.
-     *   <li>The leading and trailing spaces of each subsequences are {@linkplain #trimWhitespaces trimmed}.</li>
+     *   <li>The leading and trailing spaces of each subsequences are trimmed.</li>
      * </ul>
      *
      * @param  text The text to split, or {@code null}.
@@ -456,7 +598,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
             }
             return strings;
         }
-        // 'excludeEmpty' must use the same criterion than trimWhitespaces(...).
+        // 'excludeEmpty' must use the same criterion than trimWhitespaces(…).
         final boolean excludeEmpty = isWhitespace(separator);
         CharSequence[] strings = new CharSequence[4];
         final int length = text.length();
@@ -593,7 +735,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
         final CharSequence[] tokens = split(values, separator);
         final double[] parsed = new double[tokens.length];
         for (int i=0; i<tokens.length; i++) {
-            final String token = tokens[i].toString().trim();
+            final String token = trimWhitespaces(tokens[i]).toString();
             parsed[i] = token.isEmpty() ? Double.NaN : Double.parseDouble(token);
         }
         return parsed;
@@ -616,7 +758,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
         final CharSequence[] tokens = split(values, separator);
         final float[] parsed = new float[tokens.length];
         for (int i=0; i<tokens.length; i++) {
-            final String token = tokens[i].toString().trim();
+            final String token = trimWhitespaces(tokens[i]).toString();
             parsed[i] = token.isEmpty() ? Float.NaN : Float.parseFloat(token);
         }
         return parsed;
@@ -639,7 +781,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
         final CharSequence[] tokens = split(values, separator);
         final long[] parsed = new long[tokens.length];
         for (int i=0; i<tokens.length; i++) {
-            parsed[i] = Long.parseLong(tokens[i].toString().trim(), radix);
+            parsed[i] = Long.parseLong(trimWhitespaces(tokens[i]).toString(), radix);
         }
         return parsed;
     }
@@ -661,7 +803,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
         final CharSequence[] tokens = split(values, separator);
         final int[] parsed = new int[tokens.length];
         for (int i=0; i<tokens.length; i++) {
-            parsed[i] = Integer.parseInt(tokens[i].toString().trim(), radix);
+            parsed[i] = Integer.parseInt(trimWhitespaces(tokens[i]).toString(), radix);
         }
         return parsed;
     }
@@ -683,7 +825,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
         final CharSequence[] tokens = split(values, separator);
         final short[] parsed = new short[tokens.length];
         for (int i=0; i<tokens.length; i++) {
-            parsed[i] = Short.parseShort(tokens[i].toString().trim(), radix);
+            parsed[i] = Short.parseShort(trimWhitespaces(tokens[i]).toString(), radix);
         }
         return parsed;
     }
@@ -705,7 +847,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
         final CharSequence[] tokens = split(values, separator);
         final byte[] parsed = new byte[tokens.length];
         for (int i=0; i<tokens.length; i++) {
-            parsed[i] = Byte.parseByte(tokens[i].toString().trim(), radix);
+            parsed[i] = Byte.parseByte(trimWhitespaces(tokens[i]).toString(), radix);
         }
         return parsed;
     }
@@ -778,20 +920,41 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
     }
 
     /**
-     * Returns a text with leading and trailing white spaces omitted. White spaces are identified
-     * by the {@link Character#isWhitespace(int)} method.
+     * Returns a string with leading and trailing whitespace characters omitted.
+     * This method is similar in purpose to {@link String#trim()}, except that the later considers
+     * every {@linkplain Character#isISOControl(int) ISO control codes} below 32 to be a whitespace.
+     * That {@code String.trim()} behavior has the side effect of removing the heading of ANSI escape
+     * sequences (a.k.a. X3.64), and to ignore Unicode spaces. This {@code trimWhitespaces(…)} method
+     * is built on the more accurate {@link Character#isWhitespace(int)} method instead.
      *
-     * <p>This method is similar in purpose to {@link String#trim()}, except that the later considers
-     * every ASCII control codes below 32 to be a whitespace. This have the side effect of removing
-     * ANSI escape sequences (a.k.a. X3.64) as well. Users should invoke this
-     * {@code CharSequences.trimWhitespaces} method instead if they need to preserve
-     * those ANSI escape sequences.</p>
+     * <p>This method performs the same work than {@link #trimWhitespaces(CharSequence)},
+     * but is overloaded for the {@code String} type because of its frequent use.</p>
      *
-     * @param  text The text from which to remove leading and trailing white spaces, or {@code null}.
-     * @return A characters sequence with leading and trailing white spaces removed,
+     * @param  text The text from which to remove leading and trailing whitespaces, or {@code null}.
+     * @return A string with leading and trailing whitespaces removed, or {@code null} is the given
+     *         text was null.
+     */
+    public static String trimWhitespaces(String text) {
+        if (text != null) {
+            final int length = text.length();
+            final int lower = skipLeadingWhitespaces(text, 0, length);
+            text = text.substring(lower, skipTrailingWhitespaces(text, lower, length));
+        }
+        return text;
+    }
+
+    /**
+     * Returns a text with leading and trailing whitespace characters omitted.
+     * Space characters are identified by the {@link Character#isWhitespace(int)} method.
+     *
+     * <p>This method is the generic version of {@link #trimWhitespaces(String)}.</p>
+     *
+     * @param  text The text from which to remove leading and trailing whitespaces, or {@code null}.
+     * @return A characters sequence with leading and trailing whitespaces removed,
      *         or {@code null} is the given text was null.
      *
-     * @see String#trim()
+     * @see #skipLeadingWhitespaces(CharSequence, int, int)
+     * @see #skipTrailingWhitespaces(CharSequence, int, int)
      */
     public static CharSequence trimWhitespaces(CharSequence text) {
         if (text != null) {
@@ -801,13 +964,16 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
     }
 
     /**
-     * Returns a sub-sequence with leading and trailing white spaces omitted.
-     * White spaces are identified by the {@link Character#isWhitespace(int)} method.
+     * Returns a sub-sequence with leading and trailing whitespace characters omitted.
+     * Space characters are identified by the {@link Character#isWhitespace(int)} method.
      *
-     * <p>Invoking this method is functionally equivalent to invoking
-     * <code>{@linkplain #trimWhitespaces(CharSequence) trimWhitespaces}(text.subSequence(lower,
-     * upper))</code>, except that only one call to {@link CharSequence#subSequence(int, int)}
-     * is performed instead of two.</p>
+     * <p>Invoking this method is functionally equivalent to the following code snippet,
+     * except that the {@link CharSequence#subSequence(int, int) subSequence} method is
+     * invoked only once instead of two times:</p>
+     *
+     * {@preformat java
+     *     text = trimWhitespaces(text.subSequence(lower, upper));
+     * }
      *
      * @param  text  The text from which to remove leading and trailing white spaces.
      * @param  lower Index of the first character to consider for inclusion in the sub-sequence.
@@ -816,18 +982,15 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      * @throws NullPointerException If {@code text} is {@code null}.
      * @throws IndexOutOfBoundsException If {@code lower} or {@code upper} is out of bounds.
      */
-    private static CharSequence trimWhitespaces(final CharSequence text, int lower, int upper) {
-        while (upper != 0) {
-            final int c = codePointBefore(text, upper);
-            if (!isWhitespace(c)) break;
-            upper -= charCount(c);
+    public static CharSequence trimWhitespaces(CharSequence text, int lower, int upper) {
+        final int length = text.length();
+        ArgumentChecks.ensureValidIndexRange(length, lower, upper);
+        lower = skipLeadingWhitespaces (text, lower, upper);
+        upper = skipTrailingWhitespaces(text, lower, upper);
+        if (lower != 0 || upper != length) { // Safety in case subSequence doesn't make the check.
+            text = text.subSequence(lower, upper);
         }
-        while (lower < upper) {
-            final int c = codePointAt(text, lower);
-            if (!isWhitespace(c)) break;
-            lower += charCount(c);
-        }
-        return text.subSequence(lower, upper);
+        return text;
     }
 
     /**

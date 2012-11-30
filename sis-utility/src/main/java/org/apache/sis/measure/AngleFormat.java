@@ -1010,8 +1010,7 @@ scan:   for (int i=0; i<length;) {
 
     /**
      * Formats an angle, latitude or longitude value as an attributed character iterator.
-     * Callers can iterator over the returned iterator and queries the attribute values as
-     * in the following example:
+     * Callers can iterate and queries the attribute values as in the following example:
      *
      * {@preformat java
      *     AttributedCharacterIterator it = angleFormat.formatToCharacterIterator(myAngle);
@@ -1114,7 +1113,7 @@ scan:   for (int i=0; i<length;) {
                     c = source.codePointAt(index);
                     index += Character.charCount(c);
                 }
-                while (Character.isSpaceChar(c));
+                while (Character.isSpaceChar(c)); // Method shall be consistent with skipSpaces(…)
             }
             if (++field > SECONDS_FIELD) {
                 field = PREFIX_FIELD;
@@ -1133,7 +1132,7 @@ scan:   for (int i=0; i<length;) {
                 c = source.codePointAt(start);
                 start += Character.charCount(c);
             }
-            while (Character.isSpaceChar(c));
+            while (Character.isSpaceChar(c)); // Method shall be consistent with skipSpaces(…)
             switch (c) {
                 case '°' :            pos.setIndex(start); return DEGREES_FIELD;
                 case '′' : case '\'': pos.setIndex(start); return MINUTES_FIELD;
@@ -1145,13 +1144,20 @@ scan:   for (int i=0; i<length;) {
 
     /**
      * Returns the index of the first non-space character in the given string.
+     * This method performs the same work than {@code CharSequences.skipLeadingWhitespaces},
+     * except that it tests for spaces using the {@link Character#isSpaceChar(int)} method
+     * instead than {@link Character#isWhitespace(int)}. The reason is that we really want
+     * to skip no-break spaces, since they are often used inside a single entity (e.g. the
+     * group separator in numbers formatted using the French locale).  Furthermore we do
+     * not want to skip tabulations or line feeds, since they are unlikely to be part of
+     * the angle to parse.
      *
      * @param  source The string being parsed.
      * @param  index  Index of the first {@code source} character to read.
+     * @param  length The length of {@code source}.
      * @return Index of the first non-space character, or the end of string if none.
      */
-    private static int skipSpaces(final String source, int index) {
-        final int length = source.length();
+    private static int skipSpaces(final String source, int index, final int length) {
         while (index < length) {
             final int c = source.codePointAt(index);
             if (!Character.isSpaceChar(c)) break;
@@ -1217,7 +1223,7 @@ scan:   for (int i=0; i<length;) {
                 pos.setIndex(indexStart);
                 return null;
             }
-            index = skipSpaces(source, pos.getIndex());
+            index = skipSpaces(source, pos.getIndex(), length);
             pos.setIndex(index);
             /*
              * Parse the degrees field. If there is no separator between degrees, minutes
@@ -1278,7 +1284,7 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
                  */
                 case DEGREES_FIELD: {
                     final int indexStartField = pos.getIndex();
-                    index = skipSpaces(source, indexStartField);
+                    index = skipSpaces(source, indexStartField, length);
                     if (!spaceAsSeparator && index != indexStartField) {
                         break BigBoss;
                     }
@@ -1364,7 +1370,7 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
                         degrees = NaN;
                     }
                     final int indexStartField = pos.getIndex();
-                    index = skipSpaces(source, indexStartField);
+                    index = skipSpaces(source, indexStartField, length);
                     if (!spaceAsSeparator && index != indexStartField) {
                         break BigBoss;
                     }
@@ -1513,7 +1519,7 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
                 case EAST : pos.setIndex(index); return new Longitude( degrees);
                 case WEST : pos.setIndex(index); return new Longitude(-degrees);
             }
-            if (!Character.isSpaceChar(c)) {
+            if (!Character.isSpaceChar(c)) { // Method shall be consistent with skipSpaces(…)
                 break;
             }
         }
@@ -1536,7 +1542,8 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
         final ParsePosition pos = new ParsePosition(0);
         final Angle angle = parse(source, pos, true);
         final int offset = pos.getIndex();
-        if (skipSpaces(source, offset) != source.length()) {
+        final int length = source.length();
+        if (skipSpaces(source, offset, length) < length) {
             throw new LocalizedParseException(locale, Angle.class, source, pos);
         }
         return angle;
