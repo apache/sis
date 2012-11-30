@@ -226,5 +226,64 @@ public class MyClass {
         où peuvent être manipulés tous types d’identifiants (pas seulement <acronym>XML</acronym>) associés à un objet.
       </para>
     </section>
+
+    <section>
+      <title>Représentation de valeurs manquantes</title>
+      <para>
+        Lorsqu’un attribut n’est pas défini, la méthode correspondante de GeoAPI retourne généralement <literal>null</literal>.
+        Toutefois les choses se compliquent lorsque l’attribut manquant est une valeur considérée comme obligatoire par le standard <acronym>ISO</acronym> 19115.
+        Le standard <acronym>ISO</acronym> 19139 autorise l’omission d’attributs obligatoires à la condition d’indiquer pourquoi la valeur est manquante.
+        Les raisons peuvent être que l’attribut ne s’applique pas (<constant role="OGC">inapplicable</constant>),
+        que la valeur existe probablement mais n’est pas connue (<constant role="OGC">unknown</constant>),
+        que la valeur pourrait ne pas exister (<constant role="OGC">missing</constant>),
+        qu’elle ne peut pas être divulguée (<constant role="OGC">withheld</constant>), <foreignphrase>etc.</foreignphrase>
+        La transmission de cette information nécessite l’utilisation d’un objet non-nul même lorsque la valeur est manquante.
+        <acronym>SIS</acronym> procède en retournant un objet qui, en plus d’implémenter l’interface GeoAPI attendue,
+        implémente aussi l’interface <classname role="SIS">org.apache.xml.NilObject</classname>.
+        Cette interface marque les instances dont toutes les méthodes retournent une collection vide,
+        un tableau vide, <literal>null</literal>, <literal>NaN</literal>, <literal>0</literal> ou <literal>false</literal>,
+        dans cet ordre de préférence selon ce que les types de retours des méthodes permettent.
+        Chaque instance implémentant <classname role="SIS">NilObject</classname> fournit une méthode
+        <classname role="SIS">getNilReason()</classname> indiquant pourquoi l’objet est nul.
+      </para>
+      <para>
+        Dans l’exemple suivant, la partie gauche montre un élément <classname role="OGC">CI_Citation</classname>
+        contenant un élément <classname role="OGC">CI_Series</classname>, alors que dans la partie droite la série est inconnue.
+        Si l’élément <classname role="OGC">CI_Series</classname> avait été complètement omis
+        (ce qui est illégal selon les standards <acronym>ISO</acronym> mais toléré par <acronym>SIS</acronym>),
+        alors la méthode <function role="GeoAPI">Citation.getSeries()</function> retournerait <literal>null</literal> en Java.
+        Mais en présence d’un attribut <literal role="OGC">nilReason</literal>, l’implémentation <acronym>SIS</acronym>
+        de <function role="SIS">getSeries()</function> retournera plutôt un objet implémentant à la fois les interfaces
+        <classname role="GeoAPI">Series</classname> et <classname role="SIS">NilReason</classname>,
+        et dont la méthode <function role="SIS">getNilReason()</function> retournera la constante <constant role="SIS">UNKNOWN</constant>.
+      </para>
+      <example>
+        <title>Élément obligatoire marqué comme inconnu dans une méta-donnée</title>
+        <informaltable frame="none">
+          <tgroup cols="2">
+            <colspec colwidth="50%"/>
+            <colspec colwidth="50%"/>
+            <tbody>
+              <row>
+                <entry>
+                  <programlisting language="xml">&lt;gmd:CI_Citation&gt;
+  &lt;gmd:series&gt;
+    &lt;gmd:CI_Series&gt;
+      &lt;!-- Some content here --&gt;
+    &lt;/gmd:CI_Series&gt;
+  &lt;/gmd:series&gt;
+&lt;/gmd:CI_Citation&gt;</programlisting>
+                </entry>
+                <entry>
+                  <programlisting language="xml">&lt;gmd:CI_Citation&gt;
+  &lt;gmd:series nilReason="unknown"/&gt;
+&lt;/gmd:CI_Citation&gt;</programlisting>
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </example>
+    </section>
   </section>
 </chapter>
