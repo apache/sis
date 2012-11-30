@@ -18,7 +18,9 @@ package org.apache.sis.internal.util;
 
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.test.DependsOn;
 
+import static java.lang.String.valueOf;
 import static org.junit.Assert.*;
 import static org.apache.sis.internal.util.X364.*;
 
@@ -31,6 +33,7 @@ import static org.apache.sis.internal.util.X364.*;
  * @version 0.3
  * @module
  */
+@DependsOn(org.apache.sis.util.CharSequencesTest.class)
 public final strictfp class X364Test extends TestCase {
     /**
      * Tests the {@link X364#plain(String)} method.
@@ -40,13 +43,13 @@ public final strictfp class X364Test extends TestCase {
         String colored, plain;
         colored = "Some plain text";
         plain   = "Some plain text";
-        assertEquals(plain, plain(colored));
-        assertEquals(plain.length(), lengthOfPlain(colored));
+        assertEquals(plain,          valueOf(plain(colored, 0, colored.length())));
+        assertEquals(plain.length(), lengthOfPlain(colored, 0, colored.length()));
 
         plain   = "With blue in the middle";
         colored = "With " + FOREGROUND_BLUE.sequence() +
                   "blue"  + FOREGROUND_DEFAULT.sequence() + " in the middle";
-        assertEquals(plain, plain(colored));
-        assertEquals(plain.length(), lengthOfPlain(colored));
+        assertEquals(plain,          valueOf(plain(colored, 0, colored.length())));
+        assertEquals(plain.length(), lengthOfPlain(colored, 0, colored.length()));
     }
 }

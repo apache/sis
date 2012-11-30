@@ -43,6 +43,7 @@ import org.junit.runners.Suite;
   org.apache.sis.util.resources.IndexedResourceBundleTest.class,
   org.apache.sis.util.logging.PerformanceLevelTest.class,
   org.apache.sis.math.MathFunctionsTest.class,
+  org.apache.sis.math.StatisticsTest.class,
 
   // Collections.
   org.apache.sis.internal.util.ReferenceQueueConsumerTest.class,
@@ -51,6 +52,7 @@ import org.junit.runners.Suite;
   org.apache.sis.util.collection.CacheTest.class,
   org.apache.sis.util.collection.DerivedSetTest.class,
   org.apache.sis.util.collection.DerivedMapTest.class,
+  org.apache.sis.util.collection.TableColumnTest.class,
   org.apache.sis.util.collection.DefaultTreeTableTest.class,
 
   // GeoAPI most basic types.
@@ -70,6 +72,7 @@ import org.junit.runners.Suite;
 
   // XML most basic types.
   org.apache.sis.xml.XLinkTest.class,
+  org.apache.sis.xml.NilReasonTest.class,
   org.apache.sis.internal.jaxb.IdentifierMapAdapterTest.class,
   org.apache.sis.internal.jaxb.IdentifierMapWithSpecialCasesTest.class
 })

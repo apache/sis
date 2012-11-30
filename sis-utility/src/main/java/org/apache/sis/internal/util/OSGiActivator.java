@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.util;
 
+import javax.management.JMException;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleActivator;
 
@@ -52,9 +53,13 @@ public final class OSGiActivator implements BundleActivator {
      * @param  context The execution context of the bundle being stopped.
      * @throws InterruptedException If an other thread invoked {@link #interrupt()} while
      *         we were waiting for the {@code sis-utility} threads to die.
+     * @throws JMException If an error occurred during unregistration of the supervisor MBean.
      */
     @Override
-    public void stop(final BundleContext context) throws InterruptedException {
+    public void stop(final BundleContext context) throws InterruptedException, JMException {
         Threads.shutdown(4000);
+        if (Supervisor.ENABLED) {
+            Supervisor.unregister();
+        }
     }
 }

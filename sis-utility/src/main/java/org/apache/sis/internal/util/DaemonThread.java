@@ -117,7 +117,7 @@ abstract class DaemonThread extends Thread {
      * <p><strong>This method is for internal use by Apache SIS shutdown hooks only.</strong>
      * Users should never invoke this method explicitely.</p>
      *
-     * @param  first The first thread in the chain of threads to kill.
+     * @param  thread The first thread in the chain of threads to kill.
      * @param  stopWaitingAt A {@link System#nanoTime()} value telling when to stop waiting.
      *         This is used for preventing shutdown process to block an indefinite amount of time.
      * @throws InterruptedException If an other thread invoked {@link #interrupt()} while
@@ -125,15 +125,16 @@ abstract class DaemonThread extends Thread {
      *
      * @see Threads#shutdown(long)
      */
-    static void killAll(final DaemonThread first, final long stopWaitingAt) throws InterruptedException {
-        for (DaemonThread thread=first; thread!=null; thread=thread.previous) {
-            thread.killRequested = true;
-            thread.interrupt();
+    static void killAll(DaemonThread thread, final long stopWaitingAt) throws InterruptedException {
+        for (DaemonThread t=thread; t!=null; t=t.previous) {
+            t.killRequested = true;
+            t.interrupt();
         }
-        for (DaemonThread thread=first; thread!=null; thread=thread.previous) {
+        while (thread != null) {
             final long delay = stopWaitingAt - System.nanoTime();
             if (delay <= 0) break;
             thread.join(delay / 1000000); // Convert nanoseconds to milliseconds.
+            thread = thread.previous;
         }
     }
 
@@ -142,18 +143,24 @@ abstract class DaemonThread extends Thread {
      * always be null. A non-empty list would be a symptom for a severe problem, probably
      * requiring an application reboot.
      *
-     * @param  first The first thread in the chain of threads to verify.
+     * <p><strong>This method is for internal use by Apache SIS only.</strong>
+     * Users should never invoke this method explicitely.</p>
+     *
+     * @param  thread The first thread in the chain of threads to verify.
      * @return The name of dead threads, or {@code null} if none.
+     *
+     * @see Threads#listDeadThreads()
      */
-    static List<String> listDeadThreads(final DaemonThread first) {
+    static List<String> listDeadThreads(DaemonThread thread) {
         List<String> list = null;
-        for (DaemonThread thread=first; thread!=null; thread=thread.previous) {
+        while (thread != null) {
             if (!thread.isAlive()) {
                 if (list == null) {
                     list = new ArrayList<String>();
                 }
                 list.add(thread.getName());
             }
+            thread = thread.previous;
         }
         return list;
     }

@@ -30,6 +30,7 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.Arrays.resize;
+import static org.apache.sis.util.CharSequences.trimWhitespaces;
 import static org.apache.sis.util.collection.Collections.hashMapCapacity;
 
 
@@ -229,18 +230,18 @@ public final class Locales extends Static {
         final String language, country, variant;
         int ci = code.indexOf('_');
         if (ci < 0) {
-            language = code.trim();
+            language = trimWhitespaces(code);
             country  = "";
             variant  = "";
         } else {
-            language = code.substring(0, ci).trim();
+            language = (String) trimWhitespaces(code, 0, ci);
             int vi = code.indexOf('_', ++ci);
             if (vi < 0) {
-                country = code.substring(ci).trim();
+                country = (String) trimWhitespaces(code, ci, code.length());
                 variant = "";
             } else {
-                country = code.substring(ci, vi).trim();
-                variant = code.substring(++vi).trim();
+                country = (String) trimWhitespaces(code, ci, vi);
+                variant = (String) trimWhitespaces(code, ++vi, code.length());
                 if (code.indexOf('_', vi) >= 0) {
                     throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalLanguageCode_1, code));
                 }

@@ -17,11 +17,16 @@
 package org.apache.sis.internal.util;
 
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.StringBuilders;
 
 
 /**
- * Escape codes from ANSI X3.64 standard (aka ECMA-48 and ISO/IEC 6429).
+ * A limited set of color and font attributes assignable to characters at formatting time.
+ * Those attributes are used by SIS formatters for providing some syntax coloring,
+ * for example in the <code>org.apache.sis.io.wkt</code> package.
+ *
+ * <p>This enumeration is restricted to a subset of the <cite>ANSI escape codes</cite> (a.k.a.
+ * ECMA-48, ISO/IEC 6429 and X3.64 standards) because SIS uses them mostly for syntax coloring in
+ * console outputs. However those attributes can also occasionally be used for HTML rendering.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.4)
@@ -131,9 +136,9 @@ public enum X364 {
     }
 
     /**
-     * Returns the X3.64 escape sequence.
+     * Returns the ANSI escape sequence.
      *
-     * @return The X3.64 escape sequence.
+     * @return The ANSI escape sequence.
      */
     public String sequence() {
         if (sequence == null) {
@@ -147,86 +152,22 @@ public enum X364 {
     }
 
     /**
-     * Replaces escape codes in the given string by HTML {@code <font>} instructions.
-     * If no HTML instruction is associated to the given escape code, then the escape
-     * sequence is removed.
-     *
-     * @param  text The text with X3.64 sequences.
-     * @return The text with HTML {@code <font>} instructions.
-     */
-    public static String toHTML(final String text) {
-        final StringBuilder buffer = new StringBuilder(text);
-        StringBuilders.replace(buffer, "&", "&amp;");
-        StringBuilders.replace(buffer, "<", "&lt;");
-        StringBuilders.replace(buffer, ">", "&gt;");
-        boolean fontApplied = false;
-        StringBuilder tmp = null;
-        for (int i=buffer.indexOf(START); i>=0; i=buffer.indexOf(START, i)) {
-            int lower  = i + START.length();
-            int upper  = lower;
-            int length = buffer.length();
-            while (upper < length) {
-                if (buffer.charAt(upper++) == END) {
-                    break;
-                }
-            }
-            final int code;
-            try {
-                code = Integer.parseInt(buffer.substring(lower, upper-1));
-            } catch (NumberFormatException e) {
-                buffer.delete(i, upper);
-                continue;
-            }
-            final String color;
-            switch (code) {
-                case 31: color="red";     break;
-                case 32: color="green";   break;
-                case 33: color="olive";   break; // "yellow" is too bright.
-                case 34: color="blue";    break;
-                case 35: color="magenta"; break;
-                case 36: color="teal";    break; // "cyan" is not in HTML 4, while "teal" is.
-                case 37: color="gray";    break;
-                case 39: // Fall through
-                case 0:  color=null; break;
-                default: {
-                    buffer.delete(i, upper);
-                    continue;
-                }
-            }
-            if (tmp == null) {
-                tmp = new StringBuilder(24);
-            }
-            if (fontApplied) {
-                tmp.append("</font>");
-                fontApplied = false;
-            }
-            if (color != null) {
-                tmp.append("<font color=\"").append(color).append("\">");
-                fontApplied = true;
-            }
-            buffer.replace(i, upper, tmp.toString());
-            tmp.setLength(0);
-        }
-        final String result = buffer.toString();
-        return result.equals(text) ? text : result;
-    }
-
-    /**
      * Removes all escape codes from the given string.
      *
-     * @param  text The string which may contains escape codes.
+     * @param  text      The string which may contains escape codes.
+     * @param  fromIndex The index from which to start the process.
+     * @param  toIndex   The index after the last character to process.
      * @return Text without the escape codes, or the given {@code text} reference if
      *         it didn't contained any escape codes.
      */
-    public static String plain(final String text) {
-        int i = text.indexOf(START);
+    public static CharSequence plain(final CharSequence text, int fromIndex, final int toIndex) {
+        int i = CharSequences.indexOf(text, START, fromIndex, toIndex);
         if (i >= 0) {
             StringBuilder buffer = null;
-            int last = 0;
 search:     do {
                 final int start = i;
                 i += START.length();
-                final int end = text.indexOf(END, i);
+                final int end = CharSequences.indexOf(text, END, i, toIndex);
                 if (end < 0) {
                     break;
                 }
@@ -237,13 +178,13 @@ search:     do {
                     }
                 }
                 if (buffer == null) {
-                    buffer = new StringBuilder(text.length() - last);
+                    buffer = new StringBuilder(toIndex - fromIndex);
                 }
-                buffer.append(text, last, start);
-                last = ++i; // The ++ is for skipping the END character.
-            } while ((i = text.indexOf(START, i)) >= 0);
+                buffer.append(text, fromIndex, start);
+                fromIndex = ++i; // The ++ is for skipping the END character.
+            } while ((i = CharSequences.indexOf(text, START, i, toIndex)) >= 0);
             if (buffer != null) {
-                return buffer.append(text, last, text.length()).toString();
+                return buffer.append(text, fromIndex, toIndex);
             }
         }
         return text;
@@ -255,20 +196,22 @@ search:     do {
      * CharSequences.codePointCount}({@linkplain #plain plain}(text))</code> without the
      * cost of creating a temporary string.
      *
-     * @param  text The string which may contains escape codes.
+     * @param  text      The string which may contains escape codes.
+     * @param  fromIndex The index from which to start the computation.
+     * @param  toIndex   The index after the last character to take in account.
      * @return The length of the given string without escape codes.
      */
-    public static int lengthOfPlain(final String text) {
-        int i = text.indexOf(START);
+    public static int lengthOfPlain(final CharSequence text, final int fromIndex, final int toIndex) {
+        int i = CharSequences.indexOf(text, START, fromIndex, toIndex);
         if (i < 0) {
-            return text.codePointCount(0, text.length());
+            return CharSequences.codePointCount(text, fromIndex, toIndex);
         }
-        int last   = 0;
+        int last   = fromIndex;
         int length = 0;
 search: do {
             final int start = i;
             i += START.length();
-            final int end = text.indexOf(END, i);
+            final int end = CharSequences.indexOf(text, END, i, toIndex);
             if (end < 0) {
                 break;
             }
@@ -278,16 +221,16 @@ search: do {
                     continue search; // Not an X.364 sequence.
                 }
             }
-            length += text.codePointCount(last, start);
+            length += CharSequences.codePointCount(text, last, start);
             last = ++i; // The ++ is for skipping the END character.
-        } while ((i = text.indexOf(START, i)) >= 0);
-        length += text.codePointCount(last, text.length());
-        assert CharSequences.codePointCount(plain(text)) == length : text;
+        } while ((i = CharSequences.indexOf(text, START, i, toIndex)) >= 0);
+        length += CharSequences.codePointCount(text, last, toIndex);
+        assert CharSequences.codePointCount(plain(text, fromIndex, toIndex)) == length : text.subSequence(fromIndex, toIndex);
         return length;
     }
 
     /**
-     * Returns {@code true} if we think that the operating system supports X3.64 sequences.
+     * Returns {@code true} if we think that the operating system supports ANSI sequences.
      * This method performs a very naive and approximative check. Result is just a hint and
      * may be wrong.
      *
@@ -296,10 +239,10 @@ search: do {
      * error stream} instead than the {@linkplain System#out standard output stream}, in which
      * case the console information is not applicable.</p>
      *
-     * @return {@code true} if we think that the operating system supports X3.64.
+     * @return {@code true} if we think that the operating system supports ANSI codes.
      *         This method may conservatively returns {@code false} in case of doubt.
      */
-    public static boolean isSupported() {
+    public static boolean isAnsiSupported() {
         String terminal;
         try {
             terminal = System.getenv("COLORTERM");
