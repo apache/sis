@@ -41,9 +41,32 @@ public final class Errors extends IndexedResourceBundle {
      * @version 0.3
      * @module
      */
-    public static final class Keys {
+    public static final class Keys extends KeyConstants {
+        /**
+         * The unique instance of key constants handler.
+         */
+        static final Keys INSTANCE = new Keys();
+
+        /**
+         * For {@link #INSTANCE} creation only.
+         */
         private Keys() {
         }
+
+        /**
+         * Can not compute the derivative.
+         */
+        public static final int CanNotComputeDerivative = 44;
+
+        /**
+         * Can not clone an object of type ‘{0}’.
+         */
+        public static final int CloneNotSupported_1 = 42;
+
+        /**
+         * Thread “{0}” is dead.
+         */
+        public static final int DeadThread_1 = 43;
 
         /**
          * Value “{0}” is duplicated.
@@ -125,6 +148,11 @@ public final class Errors extends IndexedResourceBundle {
          * Index {0} is out of bounds.
          */
         public static final int IndexOutOfBounds_1 = 4;
+
+        /**
+         * Argument ‘{0}’ can not take an infinite value.
+         */
+        public static final int InfiniteArgumentValue_1 = 45;
 
         /**
          * A different value is already associated to the “{0}” key.
@@ -267,12 +295,11 @@ public final class Errors extends IndexedResourceBundle {
     }
 
     /**
-     * Returns the {@code Keys} class.
+     * Returns the handle for the {@code Keys} constants.
      */
     @Override
-    final Class<?> getKeysClass() throws ClassNotFoundException {
-        assert super.getKeysClass() == Keys.class;
-        return Keys.class;
+    final KeyConstants getKeyConstants() {
+        return Keys.INSTANCE;
     }
 
     /**
@@ -375,9 +402,10 @@ public final class Errors extends IndexedResourceBundle {
     private static final class International extends ResourceInternationalString {
         private static final long serialVersionUID = -229348959712294902L;
 
-        International(int key)              {super(key);}
-        International(int key, Object args) {super(key, args);}
-        @Override IndexedResourceBundle getBundle(Locale locale) {
+        International(int key)                   {super(key);}
+        International(int key, Object args)      {super(key, args);}
+        @Override KeyConstants getKeyConstants() {return Keys.INSTANCE;}
+        @Override IndexedResourceBundle getBundle(final Locale locale) {
             return getResources(locale);
         }
     }

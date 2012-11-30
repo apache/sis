@@ -20,10 +20,11 @@ import java.util.List;
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestStep;
+import org.apache.sis.test.DependsOn;
 
-import static org.junit.Assert.*;
+import static org.apache.sis.test.Assert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
-import static org.apache.sis.util.collection.TreeTables.*;
+import static org.apache.sis.util.collection.TableColumn.*;
 
 
 /**
@@ -35,6 +36,7 @@ import static org.apache.sis.util.collection.TreeTables.*;
  * @version 0.3
  * @module
  */
+@DependsOn(TableColumnTest.class)
 public final strictfp class DefaultTreeTableTest extends TestCase {
     /**
      * Tests the creation of an {@link DefaultTreeTable} with initially no root node.
@@ -112,7 +114,8 @@ public final strictfp class DefaultTreeTableTest extends TestCase {
      * Tests the displacement of nodes, in particular ensures that the parent is updated.
      *
      * <p>This method is part of a chain.
-     * The previous method is {@link #testNodeCreation(DefaultTreeTable)}.</p>
+     * The previous method is {@link #testNodeCreation(DefaultTreeTable)} and
+     * the next method is {@link #testSerialization(TreeTable)}.</p>
      *
      * @param root The root node where to move children.
      */
@@ -139,12 +142,53 @@ public final strictfp class DefaultTreeTableTest extends TestCase {
     }
 
     /**
+     * Tests {@link DefaultTreeTable#clone()}.
+     * This will also indirectly tests {@link DefaultTreeTable#equals(Object)}.
+     *
+     * <p>This method is part of a chain.
+     * The previous method is {@link #testNodeDisplacement(TreeTable.Node)}.</p>
+     *
+     * @throws CloneNotSupportedException Should never happen.
+     */
+    @TestStep
+    private void testClone(final DefaultTreeTable table) throws CloneNotSupportedException {
+        final TreeTable newTable = table.clone();
+        assertNotSame("clone", table, newTable);
+        assertEquals("newTable.equals(table)", table, newTable);
+        assertEquals("hashCode", table.hashCode(), newTable.hashCode());
+        newTable.getRoot().getChildren().get(1).setValue(NAME, "New name");
+        assertFalse("newTable.equals(table)", newTable.equals(table));
+    }
+
+    /**
+     * Tests {@link DefaultTreeTable} serialization.
+     *
+     * <p>This method is part of a chain.
+     * The previous method is {@link #testNodeDisplacement(TreeTable.Node)}.</p>
+     */
+    @TestStep
+    private void testSerialization(final TreeTable table) {
+        final TreeTable newTable = assertSerializedEquals(table);
+        newTable.getRoot().getChildren().get(1).setValue(NAME, "New name");
+        assertFalse("newTable.equals(table)", newTable.equals(table));
+    }
+
+    /**
      * Tests the creation of a tree table with a few nodes, and tests the displacement of a node
-     * from one branch to another. This test is actually a chain of {@link TestStep} methods.
+     * from one branch to another. Finally tests the serialization of that table and the comparison
+     * with the original object.
+     *
+     * <p>This test is actually a chain of {@link TestStep} methods.</p>
+     *
+     * @throws CloneNotSupportedException If the {@link DefaultTreeTable#clone()} method failed.
      */
     @Test
-    public void testTreeTableCreation() {
-        testNodeDisplacement(testNodeCreation(testTableCreation()));
+    public void testTreeTableCreation() throws CloneNotSupportedException {
+        final DefaultTreeTable table = testTableCreation();
+        final TreeTable.Node   root  = testNodeCreation(table);
+        testNodeDisplacement(root);
+        testClone(table);
+        testSerialization(table);
     }
 
     /**

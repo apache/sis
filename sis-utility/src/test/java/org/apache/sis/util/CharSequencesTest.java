@@ -209,7 +209,10 @@ public final strictfp class CharSequencesTest extends TestCase {
      */
     @Test
     public void testTrimWhitespaces() {
-        assertEquals("A text.", trimWhitespaces("  A text. "));
+        assertEquals("A text.", trimWhitespaces(               "  A text. "));
+        assertEquals("A text.", trimWhitespaces((CharSequence) "  A text. "));
+        assertEquals("",        trimWhitespaces(               "          "));
+        assertEquals("",        trimWhitespaces((CharSequence) "          "));
     }
 
     /**
@@ -324,7 +327,7 @@ public final strictfp class CharSequencesTest extends TestCase {
     public void testIsUpperCase() {
         assertTrue ("ABC", isUpperCase("ABC"));
         assertFalse("AbC", isUpperCase("AbC"));
-        assertFalse("A2C", isUpperCase("A2C")); // TODO: actually an unspecified behavior; we can change that.
+        assertFalse("A2C", isUpperCase("A2C"));
     }
 
     /**

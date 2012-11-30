@@ -23,6 +23,8 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.Static;
 
+import static org.apache.sis.util.CharSequences.trimWhitespaces;
+
 
 /**
  * Utility methods working on {@link Citation} objects. The public facade of those methods is
@@ -79,13 +81,13 @@ public final class Citations extends Static {
             do {
                 if (candidate != null) {
                     // The "null" locale argument is required for getting the unlocalized version.
-                    final String asString = candidate.toString(null);
-                    if (titleMatches(c1, asString)) {
+                    final String unlocalized = candidate.toString(null);
+                    if (titleMatches(c1, unlocalized)) {
                         return true;
                     }
-                    final String asLocalized = candidate.toString();
-                    if (asLocalized != asString // Slight optimization for a common case.
-                            && titleMatches(c1, asLocalized))
+                    final String localized = candidate.toString();
+                    if (!Objects.equals(localized, unlocalized) // Slight optimization for a common case.
+                            && titleMatches(c1, localized))
                     {
                         return true;
                     }
@@ -114,19 +116,19 @@ public final class Citations extends Static {
      */
     public static boolean titleMatches(final Citation citation, String title) {
         if (citation != null && title != null) {
-            title = title.trim();
+            title = trimWhitespaces(title);
             InternationalString candidate = citation.getTitle();
             Iterator<? extends InternationalString> iterator = null;
             do {
                 if (candidate != null) {
                     // The "null" locale argument is required for getting the unlocalized version.
-                    final String asString = candidate.toString(null);
-                    if (asString != null && asString.trim().equalsIgnoreCase(title)) {
+                    final String unlocalized = trimWhitespaces(candidate.toString(null));
+                    if (unlocalized != null && unlocalized.equalsIgnoreCase(title)) {
                         return true;
                     }
-                    final String asLocalized = candidate.toString();
-                    if (asLocalized != asString // Slight optimization for a common case.
-                            && asLocalized != null && asLocalized.trim().equalsIgnoreCase(title))
+                    final String localized = trimWhitespaces(candidate).toString();
+                    if (localized != unlocalized // Slight optimization for a common case.
+                            && (localized != null) && localized.equalsIgnoreCase(title))
                     {
                         return true;
                     }
@@ -203,7 +205,7 @@ public final class Citations extends Static {
      */
     public static boolean identifierMatches(final Citation citation, String identifier) {
         if (citation != null && identifier != null) {
-            identifier = identifier.trim();
+            identifier = trimWhitespaces(identifier);
             final Iterator<? extends Identifier> identifiers = iterator(citation.getIdentifiers());
             if (identifiers == null) {
                 return titleMatches(citation, identifier);
@@ -212,7 +214,7 @@ public final class Citations extends Static {
                 final Identifier id = identifiers.next();
                 if (id != null) {
                     final String code = id.getCode();
-                    if (code != null && identifier.equalsIgnoreCase(code.trim())) {
+                    if (code != null && identifier.equalsIgnoreCase(trimWhitespaces(code))) {
                         return true;
                     }
                 }
@@ -237,9 +239,8 @@ public final class Citations extends Static {
             if (it != null) while (it.hasNext()) {
                 final Identifier id = it.next();
                 if (id != null) {
-                    String candidate = id.getCode();
+                    final String candidate = trimWhitespaces(id.getCode());
                     if (candidate != null) {
-                        candidate = candidate.trim();
                         final int length = candidate.length();
                         if (length != 0) {
                             if (identifier == null || length < identifier.length()) {

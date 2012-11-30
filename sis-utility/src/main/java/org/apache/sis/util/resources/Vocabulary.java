@@ -41,14 +41,57 @@ public final class Vocabulary extends IndexedResourceBundle {
      * @version 0.3
      * @module
      */
-    public static final class Keys {
+    public static final class Keys extends KeyConstants {
+        /**
+         * The unique instance of key constants handler.
+         */
+        static final Keys INSTANCE = new Keys();
+
+        /**
+         * For {@link #INSTANCE} creation only.
+         */
         private Keys() {
         }
+
+        /**
+         * Maximum value
+         */
+        public static final int MaximumValue = 5;
+
+        /**
+         * Mean value
+         */
+        public static final int MeanValue = 6;
+
+        /**
+         * Minimum value
+         */
+        public static final int MinimumValue = 4;
 
         /**
          * Name
          */
         public static final int Name = 0;
+
+        /**
+         * Number of ‘NaN’
+         */
+        public static final int NumberOfNaN = 3;
+
+        /**
+         * Number of values
+         */
+        public static final int NumberOfValues = 2;
+
+        /**
+         * Root Mean Square
+         */
+        public static final int RootMeanSquare = 7;
+
+        /**
+         * Standard deviation
+         */
+        public static final int StandardDeviation = 8;
 
         /**
          * Type
@@ -66,12 +109,11 @@ public final class Vocabulary extends IndexedResourceBundle {
     }
 
     /**
-     * Returns the {@code Keys} class.
+     * Returns the handle for the {@code Keys} constants.
      */
     @Override
-    final Class<?> getKeysClass() throws ClassNotFoundException {
-        assert super.getKeysClass() == Keys.class;
-        return Keys.class;
+    final KeyConstants getKeyConstants() {
+        return Keys.INSTANCE;
     }
 
     /**
@@ -81,8 +123,8 @@ public final class Vocabulary extends IndexedResourceBundle {
      * @return Resources in the given locale.
      * @throws MissingResourceException if resources can't be found.
      */
-    public static Messages getResources(final Locale locale) throws MissingResourceException {
-        return getBundle(Messages.class, locale);
+    public static Vocabulary getResources(final Locale locale) throws MissingResourceException {
+        return getBundle(Vocabulary.class, locale);
     }
 
     /**
@@ -102,9 +144,10 @@ public final class Vocabulary extends IndexedResourceBundle {
     private static final class International extends ResourceInternationalString {
         private static final long serialVersionUID = 8360132666298806838L;
 
-        International(int key)              {super(key);}
-        International(int key, Object args) {super(key, args);}
-        @Override IndexedResourceBundle getBundle(Locale locale) {
+        International(int key)                   {super(key);}
+        International(int key, Object args)      {super(key, args);}
+        @Override KeyConstants getKeyConstants() {return Keys.INSTANCE;}
+        @Override IndexedResourceBundle getBundle(final Locale locale) {
             return getResources(locale);
         }
     }
