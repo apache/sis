@@ -27,6 +27,10 @@ import com.sun.tools.doclets.formats.html.ConfigurationImpl;
  * The first word after the tag must be the format name ("java", "math", "wkt" or "text").
  * The remaining is the text to format.
  *
+ * <p>This taglet will automatically replace {@code &}, {@code <} and {@code >} by their HTML entities.
+ * The only exception is {@code &#64;}, which is converted to the original {@code @} character because
+ * we can't use that character directly inside this taglet.</p>
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
  * @version 0.3
@@ -37,10 +41,10 @@ public final class Preformat extends InlineTaglet {
      * Special characters to replace by HTML entities.
      */
     private static final String[] SPECIAL_CHARS = new String[] {
-        "&", "&amp;",
-        "<", "&lt;",
-        ">", "&gt;",
-        "↑", "&uarr;"
+        "&#64;", "@", // Because we can't use @ directly in {@preformat}.
+        "&",     "&amp;",
+        "<",     "&lt;",
+        ">",     "&gt;"
     };
 
     /**
