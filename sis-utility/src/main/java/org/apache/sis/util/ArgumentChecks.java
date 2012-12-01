@@ -27,24 +27,45 @@ import org.apache.sis.util.resources.Errors;
  * Every methods in this class can throw one of the following exceptions:
  *
  * <table class="sis">
- * <tr><th>Exception</th><th class="sep">Thrown by</th></tr>
- * <tr><td>{@link NullArgumentException}</td>
- * <td class="sep">{@link #ensureNonNull(String, Object) ensureNonNull},
- * {@link #ensureNonEmpty(String, CharSequence) ensureNonEmpty}</td></tr>
- *
- * <tr><td>{@link IllegalArgumentException}</td>
- * <td class="sep">{@link #ensureNonEmpty(String, CharSequence) ensureNonEmpty},
- * {@link #ensurePositive(String, int) ensurePositive},
- * {@link #ensureStrictlyPositive(String, int) ensureStrictlyPositive},
- * {@link #ensureBetween(String, int, int, int) ensureBetween},
- * {@link #ensureCanCast(String, Class, Object) ensureCanCast}</td></tr>
- *
- * <tr><td>{@link IndexOutOfBoundsException}</td>
- * <td class="sep">{@link #ensureValidIndex(int, int) ensureValidIndex}</td></tr>
- *
- * <tr><td>{@link MismatchedDimensionException}</td>
- * <td class="sep">{@link #ensureDimensionMatches(String, int, DirectPosition) ensureDimensionMatches}</td></tr>
+ * <tr>
+ *   <th>Exception</th>
+ *   <th class="sep">Thrown by</th>
+ * </tr><tr>
+ *   <td>{@link NullArgumentException}</td>
+ *   <td class="sep">
+ *     {@link #ensureNonNull(String, Object) ensureNonNull},
+ *     {@link #ensureNonEmpty(String, CharSequence) ensureNonEmpty}.
+ *   </td>
+ * </tr><tr>
+ *   <td>{@link IllegalArgumentException}</td>
+ *   <td class="sep">
+ *     {@link #ensureNonEmpty(String, CharSequence) ensureNonEmpty},
+ *     {@link #ensurePositive(String, int) ensurePositive},
+ *     {@link #ensureStrictlyPositive(String, int) ensureStrictlyPositive},
+ *     {@link #ensureBetween(String, int, int, int) ensureBetween},
+ *     {@link #ensureCanCast(String, Class, Object) ensureCanCast}.
+ *   </td>
+ * </tr><tr>
+ *   <td>{@link IndexOutOfBoundsException}</td>
+ *   <td class="sep">
+ *     {@link #ensureValidIndex(int, int) ensureValidIndex}.
+ *   </td>
+ * </tr><tr>
+ *   <td>{@link MismatchedDimensionException}</td>
+ *   <td class="sep">
+ *     {@link #ensureDimensionMatches(String, int, DirectPosition) ensureDimensionMatches}.
+ *   </td>
+ * </tr>
  * </table>
+ *
+ * More specialized {@code ensureXXX(…)} methods are provided in the following classes:
+ * <ul>
+ *   <li>{@link org.apache.sis.measure.Units}:
+ *       {@link org.apache.sis.measure.Units#ensureAngular  ensureAngular},
+ *       {@link org.apache.sis.measure.Units#ensureLinear   ensureLinear},
+ *       {@link org.apache.sis.measure.Units#ensureTemporal ensureTemporal},
+ *       {@link org.apache.sis.measure.Units#ensureScale    ensureScale}.</li>
+ * </ul>
  *
  * {@section Method Arguments}
  * By convention, the value to check is always the last parameter given to every methods
