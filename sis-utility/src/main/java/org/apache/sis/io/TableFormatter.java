@@ -380,7 +380,7 @@ public class TableFormatter extends FilteredAppendable implements Flushable {
     public void setCellAlignment(final byte alignment) {
         if (alignment < ALIGN_LEFT || alignment > ALIGN_RIGHT) {
             throw new IllegalArgumentException(Errors.format(
-                    Errors.Keys.IllegalArgument_1, "alignment"));
+                    Errors.Keys.IllegalArgumentValue_2, "alignment", alignment));
         }
         this.alignment = alignment;
     }

@@ -59,9 +59,10 @@ import org.junit.runners.Suite;
   org.apache.sis.util.type.TypesTest.class,
   org.apache.sis.util.type.SimpleInternationalStringTest.class,
   org.apache.sis.util.type.DefaultInternationalStringTest.class,
-
-  // Formatting
   org.apache.sis.internal.util.LocalizedParseExceptionTest.class,
+
+  // Measurements and formatting.
+  org.apache.sis.measure.UnitsTest.class,
   org.apache.sis.measure.FormattedCharacterIteratorTest.class,
   org.apache.sis.measure.AngleFormatTest.class,
   org.apache.sis.measure.AngleTest.class,
