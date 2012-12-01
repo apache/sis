@@ -34,6 +34,13 @@ package org.apache.sis.util;
  * <tr><td>{@link Classes}</td>
  *     <td>Methods working on {@link Class} instances.</td></tr>
  *
+ * <tr><th colspan="2" class="hsep">Mathematics and units of measurement</th></tr>
+ * <tr><td>{@link org.apache.sis.math.MathFunctions}</td>
+ *     <td>Additions to the {@link java.lang.Math} methods.</td></tr>
+ * <tr><td>{@link org.apache.sis.measure.Units}</td>
+ *     <td>Get a {@linkplain javax.measure.unit.Unit unit} from a symbol or EPSG code,
+ *         and test if a unit is angular, linear or temporal.</td></tr>
+ *
  * <tr><th colspan="2" class="hsep">Structures (trees, collections, arrays, parameters)</th></tr>
  * <tr><td>{@link org.apache.sis.util.collection.Collections}</td>
  *     <td>Additions to the JDK {@link java.util.Collections} methods.</td></tr>
