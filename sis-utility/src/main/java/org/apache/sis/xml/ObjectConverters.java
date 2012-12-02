@@ -43,9 +43,9 @@ import static org.apache.sis.util.CharSequences.trimWhitespaces;
  * {@preformat java
  *     class URLFixer extends ObjectConverters {
  *         &#64;Override
- *         public URL toURL(URI uri) throws MalformedURLException {
+ *         public URL toURL(MarshalContext context, URI uri) throws MalformedURLException {
  *             try {
- *                 return super.toURL(uri);
+ *                 return super.toURL(context, uri);
  *             } catch (MalformedURLException e) {
  *                 if (uri.equals(KNOWN_ERRONEOUS_URI) {
  *                     return FIXED_URL;
@@ -92,6 +92,7 @@ public class ObjectConverters {
      * javadoc</a>.</p>
      *
      * @param  <T> The compile-time type of the {@code sourceType} argument.
+     * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
      * @param  value The value that can't be converted.
      * @param  sourceType The base type of the value to convert. This is determined by the argument
      *         type of the method that caught the exception. For example the source type is always
@@ -102,7 +103,9 @@ public class ObjectConverters {
      *         or {@code false} (the default) if the exception should be propagated, thus causing
      *         the (un)marshalling to fail.
      */
-    protected <T> boolean exceptionOccured(T value, Class<T> sourceType, Class<?> targetType, Exception exception) {
+    protected <T> boolean exceptionOccured(MarshalContext context, T value,
+            Class<T> sourceType, Class<?> targetType, Exception exception)
+    {
         return false;
     }
 
@@ -112,17 +115,18 @@ public class ObjectConverters {
      * character and the country code (again either as 2 or 3 letters), optionally followed
      * by {@code '_'} and the variant.
      *
+     * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
      * @param  value The string to convert to a locale, or {@code null}.
      * @return The converted locale, or {@code null} if the given value was null or empty, or
      *         if an exception was thrown and {@code exceptionOccured(…)} returned {@code true}.
      * @throws IllegalArgumentException If the given string can not be converted to a locale.
      */
-    public Locale toLocale(String value) throws IllegalArgumentException {
+    public Locale toLocale(final MarshalContext context, String value) throws IllegalArgumentException {
         value = trimWhitespaces(value);
         if (value != null && !value.isEmpty()) try {
             return Locales.parse(value);
         } catch (IllegalArgumentException e) {
-            if (!exceptionOccured(value, String.class, Locale.class, e)) {
+            if (!exceptionOccured(context, value, String.class, Locale.class, e)) {
                 throw e;
             }
         }
@@ -138,6 +142,7 @@ public class ObjectConverters {
      *     return Units.valueOf(value);
      * }
      *
+     * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
      * @param  value The string to convert to a unit, or {@code null}.
      * @return The converted unit, or {@code null} if the given value was null or empty, or
      *         if an exception was thrown and {@code exceptionOccured(…)} returned {@code true}.
@@ -145,12 +150,12 @@ public class ObjectConverters {
      *
      * @see Units#valueOf(String)
      */
-    public Unit<?> toUnit(String value) throws IllegalArgumentException {
+    public Unit<?> toUnit(final MarshalContext context, String value) throws IllegalArgumentException {
         value = trimWhitespaces(value);
         if (value != null && !value.isEmpty()) try {
             return Units.valueOf(value);
         } catch (IllegalArgumentException e) {
-            if (!exceptionOccured(value, String.class, Unit.class, e)) {
+            if (!exceptionOccured(context, value, String.class, Unit.class, e)) {
                 throw e;
             }
         }
@@ -166,6 +171,7 @@ public class ObjectConverters {
      *     return UUID.fromString(value);
      * }
      *
+     * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
      * @param  value The string to convert to a UUID, or {@code null}.
      * @return The converted UUID, or {@code null} if the given value was null or empty, or
      *         if an exception was thrown and {@code exceptionOccured(…)} returned {@code true}.
@@ -173,12 +179,12 @@ public class ObjectConverters {
      *
      * @see UUID#fromString(String)
      */
-    public UUID toUUID(String value) throws IllegalArgumentException {
+    public UUID toUUID(final MarshalContext context, String value) throws IllegalArgumentException {
         value = trimWhitespaces(value);
         if (value != null && !value.isEmpty()) try {
             return UUID.fromString(value);
         } catch (IllegalArgumentException e) {
-            if (!exceptionOccured(value, String.class, UUID.class, e)) {
+            if (!exceptionOccured(context, value, String.class, UUID.class, e)) {
                 throw e;
             }
         }
@@ -194,6 +200,7 @@ public class ObjectConverters {
      *     return new URI(value);
      * }
      *
+     * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
      * @param  value The string to convert to a URI, or {@code null}.
      * @return The converted URI, or {@code null} if the given value was null or empty, or if
      *         an exception was thrown and {@code exceptionOccured(…)} returned {@code true}.
@@ -201,12 +208,12 @@ public class ObjectConverters {
      *
      * @see URI#URI(String)
      */
-    public URI toURI(String value) throws URISyntaxException {
+    public URI toURI(final MarshalContext context, String value) throws URISyntaxException {
         value = trimWhitespaces(value);
         if (value != null && !value.isEmpty()) try {
             return new URI(value);
         } catch (URISyntaxException e) {
-            if (!exceptionOccured(value, String.class, URI.class, e)) {
+            if (!exceptionOccured(context, value, String.class, URI.class, e)) {
                 throw e;
             }
         }
@@ -222,6 +229,7 @@ public class ObjectConverters {
      *     return value.toURI();
      * }
      *
+     * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
      * @param  value The URL to convert to a URI, or {@code null}.
      * @return The converted URI, or {@code null} if the given value was null or if an
      *         exception was thrown and {@code exceptionOccured(…)} returned {@code true}.
@@ -229,11 +237,11 @@ public class ObjectConverters {
      *
      * @see URL#toURI()
      */
-    public URI toURI(final URL value) throws URISyntaxException {
+    public URI toURI(final MarshalContext context, final URL value) throws URISyntaxException {
         if (value != null) try {
             return value.toURI();
         } catch (URISyntaxException e) {
-            if (!exceptionOccured(value, URL.class, URI.class, e)) {
+            if (!exceptionOccured(context, value, URL.class, URI.class, e)) {
                 throw e;
             }
         }
@@ -249,6 +257,7 @@ public class ObjectConverters {
      *     return value.toURL();
      * }
      *
+     * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
      * @param  value The URI to convert to a URL, or {@code null}.
      * @return The converted URL, or {@code null} if the given value was null or if an
      *         exception was thrown and {@code exceptionOccured(…)} returned {@code true}.
@@ -256,11 +265,11 @@ public class ObjectConverters {
      *
      * @see URI#toURL()
      */
-    public URL toURL(final URI value) throws MalformedURLException {
+    public URL toURL(final MarshalContext context, final URI value) throws MalformedURLException {
         if (value != null) try {
             return value.toURL();
         } catch (MalformedURLException | IllegalArgumentException e) {
-            if (!exceptionOccured(value, URI.class, URL.class, e)) {
+            if (!exceptionOccured(context, value, URI.class, URL.class, e)) {
                 throw e;
             }
         }
@@ -276,6 +285,7 @@ public class ObjectConverters {
      *     return NilReason.valueOf(value);
      * }
      *
+     * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
      * @param  value The string to convert to a nil reason, or {@code null}.
      * @return The converted nil reason, or {@code null} if the given value was null or empty, or
      *         if an exception was thrown and {@code exceptionOccured(…)} returned {@code true}.
@@ -283,12 +293,12 @@ public class ObjectConverters {
      *
      * @see NilReason#valueOf(String)
      */
-    public NilReason toNilReason(String value) throws URISyntaxException {
+    public NilReason toNilReason(final MarshalContext context, String value) throws URISyntaxException {
         value = trimWhitespaces(value);
         if (value != null && !value.isEmpty()) try {
             return NilReason.valueOf(value);
         } catch (URISyntaxException e) {
-            if (!exceptionOccured(value, String.class, URI.class, e)) {
+            if (!exceptionOccured(context, value, String.class, URI.class, e)) {
                 throw e;
             }
         }
