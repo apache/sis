@@ -31,7 +31,7 @@ import java.util.Objects;
 /**
  * A map of identifiers which handles some identifiers in a special way.
  * The identifiers for the following authorities are handled in a special way.
- * See usages of {@link #isSpecialCase(Citation)} for spotting the code where
+ * See usages of {@link #specialCase(Object)} for spotting the code where
  * a special handling is applied.
  *
  * <ul>

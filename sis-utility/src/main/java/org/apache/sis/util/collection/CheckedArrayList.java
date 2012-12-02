@@ -109,15 +109,20 @@ public class CheckedArrayList<E> extends ArrayList<E> implements CheckedContaine
 
     /**
      * Ensures that the given element can be added to this list.
-     * The default implementation ensures that the object is assignable to the type specified
-     * at construction time. Subclasses can override this method if they need to perform
-     * additional checks.
+     * The default implementation ensures that the object is {@code null} or assignable
+     * to the type specified at construction time. Subclasses can override this method
+     * if they need to perform additional checks.
+     *
+     * {@section Synchronization}
+     * This method is invoked <em>before</em> to get the synchronization {@linkplain #getLock() lock}.
+     * This is different than the {@link #checkWritePermission()} method, which is invoked inside the
+     * synchronized block.
      *
      * @param  element the object to check, or {@code null}.
      * @throws IllegalArgumentException if the specified element can not be added to this list.
      */
     protected void ensureValid(final E element) throws IllegalArgumentException {
-        if (element!=null && !type.isInstance(element)) {
+        if (element != null && !type.isInstance(element)) {
             throw new IllegalArgumentException(Errors.format(
                     Errors.Keys.IllegalArgumentClass_3, "element", element.getClass(), type));
         }
