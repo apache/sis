@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>ObjectIdentification</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  </head>
+  <body>
+    <h1>Class ObjectIdentification</h1>
+    <p>The <code>org.apache.sis.internal.jaxb.gco</code> package conceptually defines two complementary objects:
+        <code>ObjectIdentification</code> and <code>ObjectReference</code>. However only the later is defined by
+        a Java class, because the former is implicitly defined by the classes in the public API of SIS.
+        This page contains the information that we would have put in <code>ObjectIdentification</code> Javadoc
+        is such class existed.</p>
+
+    <h2>Overview</h2>
+    <p>The <code>gco:ObjectIdentification</code> XML attribute group is implicitly included
+       by all metadata types defined in the <code>org.apache.sis.metadata.iso</code> packages.
+       The attributes of interest defined in this group are <code>id</code> and <code>uuid</code>.</p>
+
+    <p>This <code>gco:ObjectIdentification</code> group is complementary to <code>gco:ObjectReference</code>,
+       which defines the <code>xlink</code> and <code>uuidref</code> attributes to be supported by all metadata
+       wrappers in the private <code>org.apache.sis.internal.jaxb.metadata</code> package and sub-packages.</p>
+
+    <h2>Difference between <code>gml:id</code> and <code>gmd:uuid</code></h2>
+    <p>The <a href="https://www.seegrid.csiro.au/wiki/bin/view/AppSchemas/GmlIdentifiers">GML identifiers</a> page said:</p>
+    <ul>
+      <li><code>id</code> is a standard <strong>GML</strong> attribute available on every object-with-identity.
+          It has type=<code>"xs:ID"</code> - i.e. it is a fragment identifier, unique within document scope only,
+          for internal cross-references. It is not useful by itself as a persistent unique identifier.</li>
+
+      <li><code>uuid</code> is an optional attribute available on every object-with-identity, provided in
+          the <strong>GMD</strong> schemas that implement ISO 19115 in XML. May be used as a persistent
+          unique identifier, but only available within GMD context.</li>
+    </ul>
+
+    <p>However according the <a href="http://schemas.opengis.net/iso/19139/20070417/gco/gcoBase.xsd">OGC schema</a>,
+       those identifiers seem to be defined in the GCO schema.</p>
+  </body>
+</html>

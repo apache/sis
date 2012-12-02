@@ -47,9 +47,10 @@ import static org.apache.sis.util.collection.Collections.hashMapCapacity;
  * two identifiers, this is considered acceptable.</p>
  *
  * {@section Handling of duplicated authorities}
- * The collection shall not contains more than one identifier for the same
- * {@linkplain Identifier#getAuthority() authority}. Nevertheless if such duplication
- * is found, then this map implementation applies the following rules:
+ * The collection shall not contain more than one identifier for the same
+ * {@linkplain Identifier#getAuthority() authority}. However duplications may happen if the user
+ * has direct access to the list, for example through {@link Citation#getIdentifiers()}. If such
+ * duplication is found, then this map implementation applies the following rules:
  *
  * <ul>
  *   <li>All getter methods (including the iterators and the values returned by the {@code put}
@@ -57,16 +58,21 @@ import static org.apache.sis.util.collection.Collections.hashMapCapacity;
  *       occurrence of each authority. Any subsequent occurrences of the same authorities are
  *       silently ignored.</li>
  *   <li>All setter methods <em>may</em> affect <em>all</em> identifiers previously associated to
- *       the given authority, not just the first occurrence. We do that in order to ensure that
- *       the effect of setter methods are visible to subsequent calls to getter methods. Whatever
- *       all occurrences or only the first one will be affected is implementation dependent.</li>
+ *       the given authority, not just the first occurrence. The only guarantee is that the list
+ *       is update in such a way that the effect of setter methods are visible to subsequent calls
+ *       to getter methods.</li>
  * </ul>
  *
  * {@section Handling of null identifiers}
- * The collection of identifiers shall not contains any null element. However, in order to
- * make the code more robust, any null element are skipped. Note however that it may cause some
- * inconsistency, for example {@link #isEmpty()} could returns {@code false} while the more
- * accurate {@link #size()} method returns 0.
+ * The collection of identifiers shall not contains any null element. This is normally ensured by
+ * the {@link org.apache.sis.metadata.ModifiableMetadata} internal collection implementations.
+ * This class performs opportunist null checks as an additional safety. However because we perform
+ * those checks only in opportunist ways, the following inconsistencies remain:
+ *
+ * <ul>
+ *   <li>{@link #isEmpty()} may return {@code false} when the more accurate {@link #size()}
+ *       method returns 0.</li>
+ * </ul>
  *
  * {@section Thread safety}
  * This class is thread safe if the underlying identifier collection is thread safe.
@@ -345,7 +351,7 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
         }
 
         /**
-         * Same implementation than {@link IdentifierMap#clear()}.
+         * Same implementation than {@link IdentifierMapAdapter#clear()}.
          */
         @Override
         public void clear() throws UnsupportedOperationException {
@@ -353,7 +359,7 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
         }
 
         /**
-         * Same implementation than {@link IdentifierMap#isEmpty()}.
+         * Same implementation than {@link IdentifierMapAdapter#isEmpty()}.
          */
         @Override
         public boolean isEmpty() {

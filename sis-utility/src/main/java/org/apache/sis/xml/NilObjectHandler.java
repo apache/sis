@@ -17,16 +17,14 @@
 package org.apache.sis.xml;
 
 import java.util.Map;
-import java.util.Arrays;
+import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
-
 import org.opengis.metadata.Identifier;
-
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ComparisonMode;
@@ -67,7 +65,13 @@ final class NilObjectHandler implements InvocationHandler {
      * or modify identifiers.
      */
     NilObjectHandler(final Identifier[] identifiers) {
-        attribute = IdentifierMapAdapter.create(new ArrayList<Identifier>(Arrays.asList(identifiers)));
+        final List<Identifier> asList = new ArrayList<Identifier>(identifiers.length);
+        for (final Identifier identifier : identifiers) {
+            if (identifier != null) {
+                asList.add(identifier);
+            }
+        }
+        attribute = IdentifierMapAdapter.create(asList);
     }
 
     /**
