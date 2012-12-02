@@ -339,13 +339,16 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
     }
 
     /**
-     * Implementation of {@link #put(Object, Object)} and {@link #remove(Object)} operations.
+     * Implementation of {@link #put(Object, Object)} and {@link #remove(Object)} operations
+     *
+     * @param putIfAbsent If {@code true} and a value is found for the given key,
+     *        returns the old value without modifying the map.
      */
     @SuppressWarnings("unchecked")
-    private synchronized V intern(final Object key, final V value) {
+    private synchronized V intern(final Object key, final V value, final boolean putIfAbsent) {
         assert isValid();
         /*
-         * If 'obj' is already contained in this WeakValueHashMap, we need to clear it.
+         * If 'value' is already contained in this WeakValueHashMap, we need to clear it.
          */
         V oldValue = null;
         Entry[] table = this.table;
@@ -354,6 +357,9 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
         for (Entry e = table[index]; e != null; e = (Entry) e.next) {
             if (keyEquals(key, e.key)) {
                 oldValue = e.get();
+                if (putIfAbsent) {
+                    return oldValue;
+                }
                 e.dispose();
                 table = this.table; // May have changed.
                 index = hash % table.length;
@@ -379,7 +385,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
      *
      * @param  key key with which the specified value is to be associated.
      * @param  value value to be associated with the specified key.
-     * @return previous value associated with specified key, or {@code null}
+     * @return The previous value associated with specified key, or {@code null}
      *         if there was no mapping for key.
      *
      * @throws NullArgumentException if the key or the value is {@code null}.
@@ -388,7 +394,25 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
     public V put(final K key, final V value) throws NullArgumentException {
         ArgumentChecks.ensureNonNull("key",   key);
         ArgumentChecks.ensureNonNull("value", value);
-        return intern(key, value);
+        return intern(key, value, false);
+    }
+
+    /**
+     * Associates the specified value with the specified key only if no value is currently
+     * associated to that key. If a value already exists for the given key, then this method
+     * returns the current value without changing the map.
+     *
+     * @param  key key with which the specified value is to be associated.
+     * @param  value value to be associated with the specified key.
+     * @return {@code null} if the given value has been associated to the given key,
+     *         or the current (unchanged) value if a mapping already exists for that key.
+     *
+     * @throws NullArgumentException if the key or the value is {@code null}.
+     */
+    public V putIfAbsent(final K key, final V value) throws NullArgumentException {
+        ArgumentChecks.ensureNonNull("key",   key);
+        ArgumentChecks.ensureNonNull("value", value);
+        return intern(key, value, true);
     }
 
     /**
@@ -400,7 +424,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
      */
     @Override
     public V remove(final Object key) {
-        return intern(key, null);
+        return intern(key, null, false);
     }
 
     /**

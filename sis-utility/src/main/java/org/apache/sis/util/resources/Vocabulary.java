@@ -54,6 +54,16 @@ public final class Vocabulary extends IndexedResourceBundle {
         }
 
         /**
+         * Angle
+         */
+        public static final int Angle = 9;
+
+        /**
+         * Degrees
+         */
+        public static final int Degrees = 10;
+
+        /**
          * Maximum value
          */
         public static final int MaximumValue = 5;
@@ -67,6 +77,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Minimum value
          */
         public static final int MinimumValue = 4;
+
+        /**
+         * Minutes
+         */
+        public static final int Minutes = 11;
 
         /**
          * Name
@@ -87,6 +102,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Root Mean Square
          */
         public static final int RootMeanSquare = 7;
+
+        /**
+         * Seconds
+         */
+        public static final int Seconds = 12;
 
         /**
          * Standard deviation
