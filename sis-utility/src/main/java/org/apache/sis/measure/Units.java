@@ -396,8 +396,8 @@ public final class Units extends Static {
      * handled especially is implementation-dependent and may change in future SIS versions.
      *
      * {@section Parsing authority codes}
-     * As a special case, if the given {@code uom} arguments is of the form {@code "EPSG:xxx"}
-     * (ignoring case and whitespaces), then {@code "xxx"} is parsed as an integer and forwarded
+     * As a special case, if the given {@code uom} arguments is of the form {@code "EPSG:####"}
+     * (ignoring case and whitespaces), then {@code "####"} is parsed as an integer and forwarded
      * to the {@link #valueOfEPSG(int)} method.
      *
      * {@section NetCDF unit symbols}
