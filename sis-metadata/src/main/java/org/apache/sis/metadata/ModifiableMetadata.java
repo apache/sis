@@ -26,6 +26,7 @@ import org.opengis.util.CodeList;
 import org.apache.sis.util.collection.CheckedHashSet;
 import org.apache.sis.util.collection.CheckedArrayList;
 
+import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.collection.Collections.isNullOrEmpty;
 import static org.apache.sis.util.collection.Collections.hashMapCapacity;
 
@@ -373,6 +374,12 @@ public abstract class ModifiableMetadata {
         protected void checkWritePermission() throws UnsupportedOperationException {
             ModifiableMetadata.this.checkWritePermission();
         }
+
+        @Override
+        protected void ensureValid(final E element) throws IllegalArgumentException {
+            ensureNonNull("element", element);
+            super.ensureValid(element);
+        }
     }
 
     /**
@@ -398,6 +405,12 @@ public abstract class ModifiableMetadata {
         @Override
         protected void checkWritePermission() throws UnsupportedOperationException {
             ModifiableMetadata.this.checkWritePermission();
+        }
+
+        @Override
+        protected void ensureValid(final E element) throws IllegalArgumentException {
+            ensureNonNull("element", element);
+            super.ensureValid(element);
         }
     }
 
