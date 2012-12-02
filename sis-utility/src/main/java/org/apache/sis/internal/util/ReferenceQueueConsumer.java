@@ -39,7 +39,7 @@ import org.apache.sis.util.logging.Logging;
  *             assert ReferenceQueueConsumer.DEFAULT.isAlive();
  *         }
  *
- *         @Override
+ *         &#64;Override
  *         public void dispose() {
  *             // Perform here some cleaning work that must be done when the referent has
  *             // been garbage-collected. Remember that get() returns null from this point.
