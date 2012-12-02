@@ -54,7 +54,7 @@ public abstract class MarshalContext {
      * Returns the schema version of the XML document being (un)marshalled.
      * The {@code prefix} argument can be any of the following values (case-sensitive):
      *
-     * <table>
+     * <table class="sis">
      *   <tr>
      *     <th>Prefix</th>
      *     <th>Standard</th>
@@ -75,10 +75,9 @@ public abstract class MarshalContext {
      * Returns the locale to use for (un)marshalling, or {@code null} if no locale were explicitly
      * specified. The locale returned by this method can be used for choosing a language in an
      * {@link org.opengis.util.InternationalString}.
-     *
-     * <p>Note that the locale may varies in different fragments of the same XML document.
+     * This locale may vary in different fragments of the same XML document.
      * In particular children of {@link org.opengis.metadata.Metadata} inherit the locale
-     * specified by the {@link org.opengis.metadata.Metadata#getLanguage()} attribute.</p>
+     * specified by the {@link org.opengis.metadata.Metadata#getLanguage()} attribute.
      *
      * @return The locale for the XML fragment being (un)marshalled, or {@code null} is unspecified.
      */
