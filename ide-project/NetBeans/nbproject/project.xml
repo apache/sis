@@ -4,7 +4,6 @@
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/j2se-project/3">
             <name>Apache SIS for JDK7</name>
-            <explicit-platform explicit-source-supported="true"/>
             <source-roots>
                 <root id="src.local-src.dir" name="Local sources (unversioned)"/>
                 <root id="src.webapp.dir" name="Web application"/>
