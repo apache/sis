@@ -19,6 +19,7 @@ package org.apache.sis.util;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
+import org.apache.sis.test.TestCase;
 
 import org.junit.*;
 import static org.junit.Assert.*;
@@ -32,7 +33,7 @@ import static org.junit.Assert.*;
  * @version 0.3
  * @module
  */
-public final strictfp class UtilitiesTest {
+public final strictfp class UtilitiesTest extends TestCase {
     /**
      * Tests {@link Utilities#deepEquals(Object, Object, ComparisonMode)}.
      */

@@ -106,7 +106,7 @@ Implementations of metadata derived from ISO 19115. This module provides both an
     </dependency>
     <dependency>
       <groupId>org.opengis</groupId>
-      <artifactId>geoapi</artifactId>
+      <artifactId>geoapi-pending</artifactId>
     </dependency>
     <dependency>
       <groupId>org.opengis</groupId>

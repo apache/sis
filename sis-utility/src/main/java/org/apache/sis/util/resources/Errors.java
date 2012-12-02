@@ -100,14 +100,15 @@ public final class Errors extends IndexedResourceBundle {
         public static final int IllegalArgumentClass_3 = 2;
 
         /**
+         * Argument ‘{0}’ can not take the “{1}” value, because the ‘{2}’ field can not take the “{3}”
+         * value.
+         */
+        public static final int IllegalArgumentField_4 = 15;
+
+        /**
          * Argument ‘{0}’ can not take the “{1}” value.
          */
         public static final int IllegalArgumentValue_2 = 14;
-
-        /**
-         * Illegal value for argument ‘{0}’.
-         */
-        public static final int IllegalArgument_1 = 15;
 
         /**
          * Illegal bits pattern: {0}.
@@ -188,6 +189,26 @@ public final class Errors extends IndexedResourceBundle {
          * No “{0}” node found.
          */
         public static final int NodeNotFound_1 = 39;
+
+        /**
+         * “{0}” is not an angular unit.
+         */
+        public static final int NonAngularUnit_1 = 46;
+
+        /**
+         * “{0}” is not a linear unit.
+         */
+        public static final int NonLinearUnit_1 = 47;
+
+        /**
+         * “{0}” is not a scale unit.
+         */
+        public static final int NonScaleUnit_1 = 48;
+
+        /**
+         * “{0}” is not a time unit.
+         */
+        public static final int NonTemporalUnit_1 = 49;
 
         /**
          * Argument ‘{0}’ shall not be NaN (Not-a-Number).
