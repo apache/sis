@@ -28,13 +28,14 @@ import java.io.Serializable;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.IdentifierMap;
+import org.apache.sis.xml.IdentifierSpace;
+import org.apache.sis.xml.IdentifierAlreadyBoundException;
+
+import static org.apache.sis.util.collection.Collections.hashMapCapacity;
 
 // Related to JDK7
 import java.util.Objects;
-
-import static org.apache.sis.util.collection.Collections.hashMapCapacity;
 
 
 /**
@@ -104,16 +105,6 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
      * A view over the entries, created only when first needed.
      */
     private transient Set<Entry<Citation,String>> entries;
-
-    /**
-     * Creates an identifier map for the given collection of identifiers.
-     *
-     * @param  identifiers The identifiers to wrap in a map view.
-     * @return The map of identifiers as a wrapper over the given collection.
-     */
-    public static IdentifierMap create(final Collection<Identifier> identifiers) {
-        return new IdentifierMapWithSpecialCases(identifiers);
-    }
 
     /**
      * Creates a new map which will be a view over the given identifiers.
@@ -200,6 +191,25 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
     }
 
     /**
+     * Returns the code of the first identifier associated with the given authority only if
+     * if is <strong>not</strong> a specialized identifier. Otherwise returns {@code null}.
+     *
+     * <p>This is a helper method for {@link IdentifierMapWithSpecialCases#put(Citation, String)},
+     * in order to be able to return the old value if that value was a {@link String} rather than
+     * the specialized type. We do not return the string for the specialized case in order to avoid
+     * the cost of invoking {@code toString()} on the specialized object (some may be costly). Such
+     * call would be useless because {@code IdentifierMapWithSpecialCase} discard the value of this
+     * method when it found a specialized type.</p>
+     */
+    final String getUnspecialized(final Citation authority) {
+        final Identifier identifier = getIdentifier(authority);
+        if (identifier != null && !(identifier instanceof SpecializedIdentifier<?>)) {
+            return identifier.getCode();
+        }
+        return null;
+    }
+
+    /**
      * Returns the code of the first identifier associated with the given
      * {@linkplain Identifier#getAuthority() authority}, or {@code null}
      * if no identifier was found.
@@ -219,8 +229,8 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
     }
 
     /**
-     * Removes all identifiers associated with the given
-     * {@linkplain Identifier#getAuthority() authority}.
+     * Removes all identifiers associated with the given {@linkplain Identifier#getAuthority() authority}.
+     * The default implementation delegates to {@link #put(Citation, String)} with a {@code null} value.
      *
      * @param  authority The authority to search, which should be an instance of {@link Citation}.
      * @return The code of the identifier for the given authority, or {@code null} if none.
@@ -238,11 +248,15 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
      * first entry, so it can be find by the {@code get} method.
      *
      * @param  authority The authority for which to set the code.
-     * @param  code The new code for the given authority.
+     * @param  code The new code for the given authority, or {@code null} for removing the entry.
      * @return The previous code for the given authority, or {@code null} if none.
+     * @throws IdentifierAlreadyBoundException If this map expects unique identifiers for the
+     *         given authority, and the given value is already associated to another object.
      */
     @Override
-    public String put(final Citation authority, final String code) throws UnsupportedOperationException {
+    public String put(final Citation authority, final String code)
+            throws IdentifierAlreadyBoundException, UnsupportedOperationException
+    {
         ArgumentChecks.ensureNonNull("authority", authority);
         String old = null;
         final Iterator<? extends Identifier> it = identifiers.iterator();
@@ -275,7 +289,9 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
      * Sets the identifier associated with the given authority, and returns the previous value.
      */
     @Override
-    public <T> T putSpecialized(final IdentifierSpace<T> authority, final T value) throws UnsupportedOperationException {
+    public <T> T putSpecialized(final IdentifierSpace<T> authority, final T value)
+            throws IdentifierAlreadyBoundException, UnsupportedOperationException
+    {
         ArgumentChecks.ensureNonNull("authority", authority);
         T old = null;
         final Iterator<? extends Identifier> it = identifiers.iterator();

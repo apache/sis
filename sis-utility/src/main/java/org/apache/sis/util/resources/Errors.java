@@ -89,6 +89,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int ForbiddenAttribute_2 = 21;
 
         /**
+         * Identifier “{0}” is already associated to another object.
+         */
+        public static final int IdentifierAlreadyBound_1 = 50;
+
+        /**
          * Argument ‘{0}’ can not be an instance of ‘{1}’.
          */
         public static final int IllegalArgumentClass_2 = 17;
