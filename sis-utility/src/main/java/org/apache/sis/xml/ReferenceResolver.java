@@ -128,24 +128,27 @@ public class ReferenceResolver {
     }
 
     /**
-     * Returns an object of the given type for the given {@code nilReason} attributes. The default
-     * implementation returns an immutable object which implement the {@link NilObject} interface
-     * and the given {@code type}. The {@link NilObject#getNilReason()} method will return the
-     * given reason, and all other methods (except the ones inherited from the {@link Object}
-     * class) will return {@code null} or an empty collection as appropriate.
+     * Returns {@code true} if the marshaller can use a {@code xlink:href} reference to the given
+     * metadata instead than writing the full element. This method is invoked when a metadata to be
+     * marshalled has a {@link XLink} identifier. Because those metadata may be defined externally,
+     * SIS can not know if the metadata shall be fully marshalled or not.
+     * Such information needs to be provided by the application.
+     *
+     * <p>The default implementation conservatively returns {@code false} in every cases.
+     * Subclasses can override this method if they know whether the receiver will be able
+     * to resolve such references.</p>
      *
      * @param  <T>     The compile-time type of the {@code type} argument.
      * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
-     * @param  type    The type of object to be unmarshalled as an <strong>interface</strong>.
+     * @param  type    The type of object to be marshalled as an <strong>interface</strong>.
      *                 This is usually a <a href="http://www.geoapi.org">GeoAPI</a> interface.
-     * @param  nilReason The {@code nilReason} attribute.
-     * @return An object of the given type for the given {@code nilReason} attribute, or {@code null} if none.
+     * @param  object  The object to be marshalled.
+     * @param  link    The reference of the object to be marshalled.
+     * @return {@code true} if the marshaller can use the {@code xlink:href} attribute
+     *         instead than marshalling the given metadata.
      */
-    @SuppressWarnings("unchecked")
-    public <T> T resolve(final MarshalContext context, final Class<T> type, final NilReason nilReason) {
-        ensureNonNull("type", type);
-        ensureNonNull("nilReason", nilReason);
-        return nilReason.createNilObject(type);
+    public <T> boolean canSubstituteByReference(final MarshalContext context, final Class<T> type, final T object, final XLink link) {
+        return false;
     }
 
     /**
@@ -155,7 +158,9 @@ public class ReferenceResolver {
      * SIS can not know if the metadata shall be fully marshalled or not.
      * Such information needs to be provided by the application.
      *
-     * <p>The default implementation conservatively returns {@code false} in every cases.</p>
+     * <p>The default implementation conservatively returns {@code false} in every cases.
+     * Subclasses can override this method if they know whether the receiver will be able
+     * to resolve such references.</p>
      *
      * @param  <T>     The compile-time type of the {@code type} argument.
      * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
