@@ -33,25 +33,26 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * At unmarshalling time, this class replaces (if possible) a reference by the full object definition.
  *
  * <p>Subclasses can override the methods defined in this class in order to search in their
- * own catalog. See the {@link XML#LINKER} javadoc for an example of registering a custom
- * {@code ObjectResolver} to a unmarshaller.</p>
+ * own catalog. See the {@link XML#RESOLVER} javadoc for an example of registering a custom
+ * {@code ReferenceResolver} to a unmarshaller.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.18)
  * @version 0.3
  * @module
  */
-public class ObjectResolver {
+public class ReferenceResolver {
     /**
      * The default and thread-safe instance. This instance is used at unmarshalling time
-     * when no {@code ObjectResolver} was explicitly set by the {@link XML#LINKER} property.
+     * when no {@code ReferenceResolver} was explicitly set by the {@link XML#RESOLVER}
+     * property.
      */
-    public static final ObjectResolver DEFAULT = new ObjectResolver();
+    public static final ReferenceResolver DEFAULT = new ReferenceResolver();
 
     /**
-     * Creates a default {@code ObjectResolver}. This constructor is for subclasses only.
+     * Creates a default {@code ReferenceResolver}. This constructor is for subclasses only.
      */
-    protected ObjectResolver() {
+    protected ReferenceResolver() {
     }
 
     /**
@@ -83,7 +84,7 @@ public class ObjectResolver {
         if (NilObjectHandler.isIgnoredInterface(type)) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "type", type));
         }
-        return (T) Proxy.newProxyInstance(ObjectResolver.class.getClassLoader(),
+        return (T) Proxy.newProxyInstance(ReferenceResolver.class.getClassLoader(),
                 new Class<?>[] {type, IdentifiedObject.class, NilObject.class, LenientComparable.class},
                 new NilObjectHandler(identifiers));
     }
@@ -165,7 +166,7 @@ public class ObjectResolver {
      * @return {@code true} if the marshaller can use the {@code uuidref} attribute
      *         instead than marshalling the given metadata.
      */
-    public <T> boolean canUseReference(final MarshalContext context, final Class<T> type, final T object, final UUID uuid) {
+    public <T> boolean canSubstituteByReference(final MarshalContext context, final Class<T> type, final T object, final UUID uuid) {
         return false;
     }
 }
