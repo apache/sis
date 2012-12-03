@@ -56,7 +56,7 @@ public final strictfp class IdentifierMapWithSpecialCasesTest extends Identifier
      */
     @Override
     IdentifierMapAdapter create(final Collection<Identifier> identifiers) {
-        return new IdentifierMapWithSpecialCases(identifiers);
+        return new IdentifierMapWithSpecialCases(identifiers, null);
     }
 
     /**

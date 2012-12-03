@@ -82,59 +82,71 @@ public strictfp class IdentifierMapAdapterTest extends TestCase {
     public void testGetAndPut() {
         final List<Identifier> identifiers = new ArrayList<>();
         final Map<Citation,String> map = create(identifiers);
-        assertTrue(map.isEmpty());
-        assertEquals(0, map.size());
-
+        assertTrue  ("Newly created map shall be empty.", map.isEmpty());
+        assertEquals("Newly created map shall be empty.", 0, map.size());
+        /*
+         * Add two entries, then verify the map content.
+         */
         identifiers.add(new IdentifierMapEntry(ID,   "myID"));
         identifiers.add(new IdentifierMapEntry(UUID, "myUUID"));
-        assertFalse (map.isEmpty());
-        assertEquals(2, map.size());
-        assertEquals(2, identifiers.size());
-        assertTrue  (map.containsKey(ID));
-        assertTrue  (map.containsKey(UUID));
-        assertFalse (map.containsKey(HREF));
-        assertEquals("myID",   map.get(ID));
-        assertEquals("myUUID", map.get(UUID));
-        assertNull  (          map.get(HREF));
-        assertTrue  (map.containsValue("myID"));
-        assertTrue  (map.containsValue("myUUID"));
-        assertFalse (map.containsValue("myHREF"));
+        assertFalse ("After add, map shall not be empty.", map.isEmpty());
+        assertEquals("After add, map shall not be empty.", 2, map.size());
+        assertEquals("After add, map shall not be empty.", 2, identifiers.size());
+        assertTrue  ("Shall contain the entry we added.",        map.containsKey(ID));
+        assertTrue  ("Shall contain the entry we added.",        map.containsKey(UUID));
+        assertFalse ("Shall not contain entry we didn't added.", map.containsKey(HREF));
+        assertTrue  ("Shall contain the entry we added.",        map.containsValue("myID"));
+        assertTrue  ("Shall contain the entry we added.",        map.containsValue("myUUID"));
+        assertFalse ("Shall not contain entry we didn't added.", map.containsValue("myHREF"));
+        assertEquals("Shall contain the entry we added.",        "myID",   map.get(ID));
+        assertEquals("Shall contain the entry we added.",        "myUUID", map.get(UUID));
+        assertNull  ("Shall not contain entry we didn't added.",           map.get(HREF));
         assertMapEquals("{gml:id=“myID”, gco:uuid=“myUUID”}", map);
-
-        assertEquals("myUUID", map.put(UUID, "myNewUUID"));
-        assertFalse (map.containsValue("myUUID"));
-        assertTrue  (map.containsValue("myNewUUID"));
+        /*
+         * Alter one entry (no new entry added).
+         */
+        assertEquals("Shall get the old value.",       "myUUID", map.put(UUID, "myNewUUID"));
+        assertFalse ("Shall not contain anymore the old value.", map.containsValue("myUUID"));
+        assertTrue  ("Shall contain the new value.",             map.containsValue("myNewUUID"));
         assertMapEquals("{gml:id=“myID”, gco:uuid=“myNewUUID”}", map);
-        assertEquals(2, map.size());
-        assertEquals(2, identifiers.size());
-
-        assertNull  (map.put(HREF, "myHREF"));
-        assertTrue  (map.containsValue("myHREF"));
-        assertTrue  (map.containsKey(HREF));
+        assertEquals("Map size shall be unchanged.", 2, map.size());
+        assertEquals("Map size shall be unchanged.", 2, identifiers.size());
+        /*
+         * Add a third identifier.
+         */
+        assertNull  ("Shall not contain entry we didn't added.", map.put(HREF, "myHREF"));
+        assertTrue  ("Shall contain the entry we added.",        map.containsValue("myHREF"));
+        assertTrue  ("Shall contain the entry we added.",        map.containsKey(HREF));
         assertMapEquals("{gml:id=“myID”, gco:uuid=“myNewUUID”, xlink:href=“myHREF”}", map);
-        assertEquals(3, map.size());
-        assertEquals(3, identifiers.size());
-
-        assertEquals("myNewUUID", map.remove(UUID));
-        assertFalse (map.containsValue("myNewUUID"));
-        assertFalse (map.containsKey(UUID));
+        assertEquals("Map size shall be updated.", 3, map.size());
+        assertEquals("Map size shall be updated.", 3, identifiers.size());
+        /*
+         * Remove an identifier using the Map.remove(…) API.
+         */
+        assertEquals("Shall get the old value.",   "myNewUUID", map.remove(UUID));
+        assertFalse ("Shall not contain the entry we removed.", map.containsValue("myNewUUID"));
+        assertFalse ("Shall not contain the entry we removed.", map.containsKey(UUID));
         assertMapEquals("{gml:id=“myID”, xlink:href=“myHREF”}", map);
-        assertEquals(2, map.size());
-        assertEquals(2, identifiers.size());
-
+        assertEquals("Map size shall be updated.", 2, map.size());
+        assertEquals("Map size shall be updated.", 2, identifiers.size());
+        /*
+         * Remove an identifier using the Set.remove(…) API on values.
+         */
         assertTrue  (map.values().remove(toHRefString("myHREF")));
-        assertFalse (map.containsValue("myHREF"));
-        assertFalse (map.containsKey(HREF));
+        assertFalse ("Shall not contain the entry we removed.", map.containsValue("myHREF"));
+        assertFalse ("Shall not contain the entry we removed.", map.containsKey(HREF));
         assertMapEquals("{gml:id=“myID”}", map);
-        assertEquals(1, map.size());
-        assertEquals(1, identifiers.size());
-
+        assertEquals("Map size shall be updated.", 1, map.size());
+        assertEquals("Map size shall be updated.", 1, identifiers.size());
+        /*
+         * Remove an identifier using the Set.remove(…) API on keys.
+         */
         assertTrue  (map.keySet().remove(ID));
-        assertFalse (map.containsValue("myID"));
-        assertFalse (map.containsKey(ID));
+        assertFalse ("Shall not contain the entry we removed.", map.containsValue("myID"));
+        assertFalse ("Shall not contain the entry we removed.", map.containsKey(ID));
         assertMapEquals("{}", map);
-        assertEquals(0, map.size());
-        assertEquals(0, identifiers.size());
+        assertEquals("Map size shall be updated.", 0, map.size());
+        assertEquals("Map size shall be updated.", 0, identifiers.size());
     }
 
     /**

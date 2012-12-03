@@ -139,7 +139,7 @@ public final class SpecializedIdentifier<T> implements Identifier, Serializable 
      * This is considered a non-fatal error, because the parse method can fallback
      * on the generic {@link IdentifierMapEntry} in such cases.
      */
-    private static void parseFailure(final Exception e) {
+    static void parseFailure(final Exception e) {
         // IdentifierMap.put(Citation,String) is the public facade.
         Logging.recoverableException(IdentifierMap.class, "put", e);
     }
