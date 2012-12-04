@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.UUID;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.xml.IdentifierMap;
@@ -49,7 +50,7 @@ public final strictfp class IdentifierMapWithSpecialCasesTest extends Identifier
     private static final String TO_REPLACE = "xlink:href=“";
 
     /**
-     * Creates the {@link IdentifierMapAdapter} instance to test for the given identifiers.
+     * Creates the {@link IdentifierMapWithSpecialCases} instance to test for the given identifiers.
      *
      * @param  identifiers The identifiers to wrap in an {@code IdentifierMapAdapter}.
      * @return The {@code IdentifierMapAdapter} to test.
@@ -60,8 +61,9 @@ public final strictfp class IdentifierMapWithSpecialCasesTest extends Identifier
     }
 
     /**
-     * Replaces the {@code xlink:href} value by the {@link XLink#toString()} value
-     * before to compare with the map content.
+     * Replaces the {@code xlink:href} value by the {@link XLink#toString()} value before
+     * to compare with the map content. This is needed because the "special case rules"
+     * cause the {@code "href"} identifier to be replaced by {@code "xlink:href"}.
      */
     @Override
     void assertMapEquals(String expected, final Map<Citation,String> map) {
@@ -91,19 +93,42 @@ public final strictfp class IdentifierMapWithSpecialCasesTest extends Identifier
      * Tests explicitely the special handling of {@code href} values.
      */
     @Test
-    public void testSpecialCases() {
+    public void testHRefSubstitution() {
         final List<Identifier> identifiers = new ArrayList<>();
         final IdentifierMap map = create(identifiers);
-        map.put(IdentifierSpace.HREF, "myHREF");
-        assertEquals("myHREF", map.get(IdentifierSpace.HREF));
+        assertNull(map.put(IdentifierSpace.HREF, "myHREF"));
+        assertEquals("Shall contain the entry we added.", "myHREF", map.get(IdentifierSpace.HREF));
 
         // Check the XLink object
         final XLink link = map.getSpecialized(IdentifierSpace.XLINK);
-        assertEquals("myHREF", String.valueOf(link.getHRef()));
-        assertEquals(link.toString(), getSingleton(identifiers).getCode());
+        assertEquals("Added href shall be stored as XLink attribute.", "myHREF", String.valueOf(link.getHRef()));
+        assertEquals("Identifier list shall contain the XLink.", link.toString(), getSingleton(identifiers).getCode());
 
         // Modidfy the XLink object directly
         link.setHRef(URI.create("myNewHREF"));
-        assertEquals("myNewHREF", map.get(IdentifierSpace.HREF));
+        assertEquals("Change in XLink shall be reflected in href.", "myNewHREF", map.get(IdentifierSpace.HREF));
+    }
+
+    /**
+     * Tests the binding of UUID.
+     */
+    @Test
+    public void testUUIDs() {
+        final String object = "IdentifiedObject";
+        final List<Identifier> identifiers = new ArrayList<>();
+        final IdentifierMap map = new IdentifierMapWithSpecialCases(identifiers, object);
+        final UUID id1 = UUID.fromString("434f3107-c6d2-4c8c-bb25-553f68641c5c");
+        final UUID id2 = UUID.fromString("42924124-032a-4dfe-b06e-113e3cb81cf0");
+
+        // Add first UUID.
+        assertNull("Shall not contain UUID before put.", UUIDs.lookup(id1));
+        assertNull(map.putSpecialized(IdentifierSpace.UUID, id1));
+        assertSame("Object sholl be associated to UUID.", object, UUIDs.lookup(id1));
+
+        // Replace UUID by a new one.
+        assertNull("Shall not contain UUID before put.", UUIDs.lookup(id2));
+        assertSame(id1, map.putSpecialized(IdentifierSpace.UUID, id2));
+        assertNull("Shall not contain the removed UUID.", UUIDs.lookup(id1));
+        assertSame("Object sholl be associated to UUID.", object, UUIDs.lookup(id2));
     }
 }
