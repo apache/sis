@@ -44,7 +44,8 @@ import static org.apache.sis.xml.IdentifierSpace.*;
 public strictfp class IdentifierMapAdapterTest extends TestCase {
     /**
      * Creates the {@link IdentifierMapAdapter} instance to test for the given identifiers.
-     * Subclasses will override this method.
+     * This {@code IdentifierMapAdapterTest} class creates {@link IdentifierMapAdapter} instances.
+     * Subclasses will override this method in order to create instances of the class to test.
      *
      * @param  identifiers The identifiers to wrap in an {@code IdentifierMapAdapter}.
      * @return The {@code IdentifierMapAdapter} to test.
@@ -56,6 +57,8 @@ public strictfp class IdentifierMapAdapterTest extends TestCase {
     /**
      * Asserts that the content of the given map is equals to the given content, represented
      * as a string. Subclasses can override this method in order to alter the expected string.
+     * This is needed when, using the "special case rules", {@code "href"} have been replaced
+     * be {@code "xlink:href"}.
      *
      * @param  expected The expected content.
      * @return The map to compare with the expected content.
@@ -87,8 +90,8 @@ public strictfp class IdentifierMapAdapterTest extends TestCase {
         /*
          * Add two entries, then verify the map content.
          */
-        identifiers.add(new IdentifierMapEntry(ID,   "myID"));
-        identifiers.add(new IdentifierMapEntry(UUID, "myUUID"));
+        assertTrue(identifiers.add(new IdentifierMapEntry(ID,   "myID")));
+        assertTrue(identifiers.add(new IdentifierMapEntry(UUID, "myUUID")));
         assertFalse ("After add, map shall not be empty.", map.isEmpty());
         assertEquals("After add, map shall not be empty.", 2, map.size());
         assertEquals("After add, map shall not be empty.", 2, identifiers.size());
@@ -160,9 +163,9 @@ public strictfp class IdentifierMapAdapterTest extends TestCase {
         final java.util.UUID myUUID = fromString("a1eb6e53-93db-4942-84a6-d9e7fb9db2c7");
         final URI myURI = URI.create("http://mylink");
 
-        map.putSpecialized(ID,   myID);
-        map.putSpecialized(UUID, myUUID);
-        map.putSpecialized(HREF, myURI);
+        assertNull(map.putSpecialized(ID,   myID));
+        assertNull(map.putSpecialized(UUID, myUUID));
+        assertNull(map.putSpecialized(HREF, myURI));
         assertMapEquals("{gml:id=“myID”,"
                 + " gco:uuid=“a1eb6e53-93db-4942-84a6-d9e7fb9db2c7”,"
                 + " xlink:href=“http://mylink”}", map);
@@ -183,9 +186,9 @@ public strictfp class IdentifierMapAdapterTest extends TestCase {
         final List<Identifier> identifiers = new ArrayList<>();
         final IdentifierMap map = create(identifiers);
 
-        map.put(ID,   "myID");
-        map.put(UUID, "a1eb6e53-93db-4942-84a6-d9e7fb9db2c7");
-        map.put(HREF, "http://mylink");
+        assertNull(map.put(ID,   "myID"));
+        assertNull(map.put(UUID, "a1eb6e53-93db-4942-84a6-d9e7fb9db2c7"));
+        assertNull(map.put(HREF, "http://mylink"));
         assertMapEquals("{gml:id=“myID”,"
                 + " gco:uuid=“a1eb6e53-93db-4942-84a6-d9e7fb9db2c7”,"
                 + " xlink:href=“http://mylink”}", map);
@@ -204,9 +207,9 @@ public strictfp class IdentifierMapAdapterTest extends TestCase {
     @Test
     public void testDuplicatedAuthorities() {
         final List<Identifier> identifiers = new ArrayList<>();
-        identifiers.add(new IdentifierMapEntry(ID,   "myID1"));
-        identifiers.add(new IdentifierMapEntry(UUID, "myUUID"));
-        identifiers.add(new IdentifierMapEntry(ID,   "myID2"));
+        assertTrue(identifiers.add(new IdentifierMapEntry(ID,   "myID1")));
+        assertTrue(identifiers.add(new IdentifierMapEntry(UUID, "myUUID")));
+        assertTrue(identifiers.add(new IdentifierMapEntry(ID,   "myID2")));
 
         final IdentifierMap map = create(identifiers);
         assertEquals("Duplicated authorities shall be filtered.", 2, map.size());
@@ -237,8 +240,8 @@ public strictfp class IdentifierMapAdapterTest extends TestCase {
 
         final List<Identifier> identifiers = new ArrayList<>();
         final Map<Citation,String> map = create(identifiers);
-        identifiers.add(new IdentifierMapEntry(ID,   "myID"));
-        identifiers.add(new IdentifierMapEntry(UUID, "myUUID"));
+        assertTrue(identifiers.add(new IdentifierMapEntry(ID,   "myID")));
+        assertTrue(identifiers.add(new IdentifierMapEntry(UUID, "myUUID")));
 
         final Map<Citation,String> copy = assertSerializedEquals(map);
         assertNotSame(map, copy);
