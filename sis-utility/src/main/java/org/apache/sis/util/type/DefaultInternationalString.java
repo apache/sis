@@ -256,10 +256,17 @@ public class DefaultInternationalString extends AbstractInternationalString impl
      * {@section Handling of <code>null</code> argument value}
      * A {@code null} argument value can be given to this method for
      * requesting a "unlocalized" string - typically some programmatic strings like
-     * {@linkplain org.opengis.annotation.UML#identifier() UML identifiers}. While such
-     * identifiers often look like English words, they are not considered as the
-     * {@linkplain Locale#ENGLISH English locale}. In order to produce a value close
-     * to the common practice, this method handles {@code null} argument value as below:
+     * {@linkplain org.opengis.annotation.UML#identifier() UML identifiers}.
+     * While such identifiers often look like English words, they are not considered
+     * as the {@linkplain Locale#ENGLISH English locale}. For example:
+     *
+     * <ul>
+     *   <li>Numbers are formatted using {@code Number.toString()} rather than {@link java.text.NumberFormat}.</li>
+     *   <li>Dates are formatted according the ISO standard rather than the English locale.</li>
+     * </ul>
+     *
+     * In order to produce a value close to the common practice,
+     * this method handles {@code null} argument value as below:
      *
      * <ul>
      *   <li>If a string has been explicitly {@linkplain #add(Locale, String) added} for the
