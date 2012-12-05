@@ -42,7 +42,7 @@
  * </ul>
  *
  * Classes prefixed by two letters, like {@code "GO_Decimal"}, are also wrappers around the actual
- * object to be marshalled. See the {@link org.geotoolkit.internal.jaxb.metadata} package for more
+ * object to be marshalled. See the {@link org.apache.sis.internal.jaxb.metadata} package for more
  * explanation about wrappers. Note that the two-letters prefixes used in this package (not to be
  * confused with the three-letters prefixes used in XML documents) are not defined by OGC/ISO
  * specifications; they are used only for consistency with current practice in
