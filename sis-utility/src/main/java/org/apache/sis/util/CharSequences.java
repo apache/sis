@@ -1267,7 +1267,8 @@ searchWordBreak:    while (true) {
      * @return The acronym, or {@code null} if the given text was null.
      */
     public static CharSequence camelCaseToAcronym(CharSequence text) {
-        if (text != null && !isUpperCase(text = trimWhitespaces(text))) {
+        text = trimWhitespaces(text);
+        if (text != null && !isUpperCase(text, 0, text.length())) {
             final int length = text.length();
             final StringBuilder buffer = new StringBuilder(8); // Acronyms are usually short.
             boolean wantChar = true;
@@ -1463,14 +1464,7 @@ cmp:    while (ia < lga) {
      *
      * @see String#toUpperCase()
      */
-    static boolean isUpperCase(final CharSequence text) {
-        return isUpperCase(text, 0, text.length());
-    }
-
-    /**
-     * Same as {@link #isUpperCase(CharSequence)}, but on a sub-sequence.
-     */
-    private static boolean isUpperCase(final CharSequence text, int lower, final int upper) {
+    static boolean isUpperCase(final CharSequence text, int lower, final int upper) {
         while (lower < upper) {
             final int c = codePointAt(text, lower);
             if (!Character.isUpperCase(c)) {

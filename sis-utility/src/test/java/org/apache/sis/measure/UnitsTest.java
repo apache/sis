@@ -260,8 +260,6 @@ public final strictfp class UnitsTest extends TestCase {
 
     /**
      * Tests {@link Units#valueOfEPSG(int)}.
-     *
-     * @since 3.20
      */
     @Test
     public void testValueOfEPSG() {

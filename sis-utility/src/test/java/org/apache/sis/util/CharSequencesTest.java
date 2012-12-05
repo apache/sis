@@ -325,9 +325,9 @@ public final strictfp class CharSequencesTest extends TestCase {
      */
     @Test
     public void testIsUpperCase() {
-        assertTrue ("ABC", isUpperCase("ABC"));
-        assertFalse("AbC", isUpperCase("AbC"));
-        assertFalse("A2C", isUpperCase("A2C"));
+        assertTrue ("ABC", isUpperCase("ABC", 0, 3));
+        assertFalse("AbC", isUpperCase("AbC", 0, 3));
+        assertFalse("A2C", isUpperCase("A2C", 0, 3));
     }
 
     /**
