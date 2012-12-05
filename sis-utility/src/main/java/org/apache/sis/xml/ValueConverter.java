@@ -30,9 +30,9 @@ import static org.apache.sis.util.CharSequences.trimWhitespaces;
 
 
 /**
- * Performs conversions of objects encountered during XML (un)marshalling. Each method in this
- * class is a converter and can be invoked at (un)marshalling time. The default implementation
- * is straightforward and documented in the javadoc of each method.
+ * Performs conversions of XML element or attribute values encountered during XML (un)marshalling.
+ * Each method in this class is a converter and can be invoked at (un)marshalling time.
+ * The default implementation is straightforward and documented in the javadoc of each method.
  *
  * <p>This class provides a way to handle the errors which may exist in some XML documents.
  * For example a URL in the document may be malformed, causing a {@link MalformedURLException}
@@ -41,7 +41,7 @@ import static org.apache.sis.util.CharSequences.trimWhitespaces;
  * are known to be erroneous by fixed versions of those URLs. Example:</p>
  *
  * {@preformat java
- *     class URLFixer extends ObjectConverters {
+ *     class URLFixer extends ValueConverter {
  *         &#64;Override
  *         public URL toURL(MarshalContext context, URI uri) throws MalformedURLException {
  *             try {
@@ -57,27 +57,27 @@ import static org.apache.sis.util.CharSequences.trimWhitespaces;
  *     }
  * }
  *
- * See the {@link XML#CONVERTERS} javadoc for an example of registering a custom
- * {@code ObjectConverters} to a (un)marshaller.
+ * See the {@link XML#CONVERTER} javadoc for an example of registering a custom
+ * {@code ValueConverter} to a (un)marshaller.
  *
  * @author Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.07)
  * @version 0.3
  * @module
  */
-public class ObjectConverters {
+public class ValueConverter {
     /**
      * The default, thread-safe and immutable instance. This instance defines the
-     * converters used during every (un)marshalling if no {@code ObjectConverters}
+     * converters used during every (un)marshalling if no {@code ValueConverter}
      * was explicitly set.
      */
-    public static final ObjectConverters DEFAULT = new ObjectConverters();
+    public static final ValueConverter DEFAULT = new ValueConverter();
 
     /**
-     * Creates a default {@code ObjectConverters}. This is for subclasses only,
+     * Creates a default {@code ValueConverter}. This is for subclasses only,
      * since new instances are useful only if at least one method is overridden.
      */
-    protected ObjectConverters() {
+    protected ValueConverter() {
     }
 
     /**
@@ -87,7 +87,7 @@ public class ObjectConverters {
      *
      * <p>This method provides a single hook that subclasses can override in order to provide their
      * own error handling for every methods defined in this class, like the example documented in
-     * the {@link XML#CONVERTERS} javadoc. Subclasses also have the possibility to override individual
+     * the {@link XML#CONVERTER} javadoc. Subclasses also have the possibility to override individual
      * {@code toXXX(…)} methods, like the example provided in this <a href="#skip-navbar_top">class
      * javadoc</a>.</p>
      *
