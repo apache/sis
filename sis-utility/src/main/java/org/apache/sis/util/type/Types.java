@@ -61,11 +61,12 @@ public final class Types extends Static {
 
     /**
      * Returns the ISO name for the given class, or {@code null} if none.
+     * This method can be used for GeoAPI interfaces or {@link CodeList}.
      * Examples:
      *
      * <ul>
      *   <li><code>getStandardName({@linkplain org.opengis.metadata.citation.Citation}.class)</code>   returns {@code "CI_Citation"}.</li>
-     *   <li><code>getStandardName({@linkplain org.opengis.referencing.cs.AxisDirection}.class)</code> returns {@code "CS_AxisDirection"}. </li>
+     *   <li><code>getStandardName({@linkplain org.opengis.referencing.cs.AxisDirection}.class)</code> returns {@code "CS_AxisDirection"}.</li>
      * </ul>
      *
      * @param  type The GeoAPI interface from which to get the ISO name, or {@code null}.
@@ -75,7 +76,10 @@ public final class Types extends Static {
         if (type != null) {
             final UML uml = type.getAnnotation(UML.class);
             if (uml != null) {
-                return uml.identifier();
+                final String id = uml.identifier();
+                if (id != null && !id.isEmpty()) {
+                    return id;
+                }
             }
         }
         return null;
