@@ -406,6 +406,24 @@ Apache SIS is a toolkit for describing location information, including points,
           <outputEncoding>${website.encoding}</outputEncoding>
         </configuration>
       </plugin>
+
+      <!-- Dependencies requires for the SIS FindBugs configuration file.
+           This dependency should be declared in the <reporting> section,
+           but Maven 3.0.4 does not support dependency declaration there.
+           Note that the version number is duplicated in the <reporting>
+           section, because <reporting> ignores <pluginManagement>. -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>findbugs-maven-plugin</artifactId>
+        <version>2.5.2</version>
+        <dependencies>
+          <dependency>
+            <groupId>org.apache.sis</groupId>
+            <artifactId>sis-build-helper</artifactId>
+            <version>${project.version}</version>
+          </dependency>
+        </dependencies>
+      </plugin>
     </plugins>
 
     <!-- Following plugins are used only by some specific modules. -->
@@ -527,14 +545,17 @@ Apache SIS is a toolkit for describing location information, including points,
         <version>1.0-alpha-3</version>
       </plugin>
 
-      <!-- FindBugs Report -->
+      <!-- FindBugs Report. Checkstyle configuration instructions apply also to FindBugs:
+           http://maven.apache.org/plugins/maven-checkstyle-plugin/examples/multi-module-config.html
+      -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>findbugs-maven-plugin</artifactId>
-        <version>2.5.2</version>
+        <version>2.5.2</version> <!-- See also the same plugin in the <build> section. -->
         <configuration>
           <threshold>Normal</threshold>
           <effort>Default</effort>
+          <excludeFilterFile>org/apache/sis/findbugs-exclude.xml</excludeFilterFile>
        </configuration>
       </plugin>
     </plugins>
