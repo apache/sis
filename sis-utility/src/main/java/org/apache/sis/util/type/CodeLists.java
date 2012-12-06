@@ -30,11 +30,18 @@ import org.apache.sis.util.logging.Logging;
 
 
 /**
- * Utility methods working on {@link CodeList}.
- * This class defines a SIS {@link #valueOf(Class, String)} method which can be used instead
- * of the GeoAPI {@code CodeList.valueOf(Class, String)} when more tolerant search is wanted.
- * The main difference between the two methods is that the GeoAPI method is strict while the
- * SIS method ignores cases, whitespaces and the {@code '_'} character.
+ * Static methods working on {@link CodeList}.
+ * This class provides:
+ *
+ * <ul>
+ *   <li>{@link #getListName(CodeList)} and {@link #getCodeName(CodeList)}
+ *       for fetching ISO name if possible, or Java name as a fallback.</li>
+ *   <li>{@link #getCodeTitle(CodeList, Locale)} for fetching human-readable names.</li>
+ *   <li>A SIS {@link #valueOf(Class, String)} method which can be used instead of the GeoAPI
+ *       {@link CodeList#valueOf(Class, String)} when more tolerant search is wanted.
+ *       The main difference between the two methods is that the GeoAPI method is strict
+ *       while the SIS method ignores cases, whitespaces and the {@code '_'} character.</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.02)
@@ -96,26 +103,26 @@ public final class CodeLists extends Static {
     }
 
     /**
-     * Returns a unlocalized description of the given code.
-     * This method builds a description using heuristics rules, which should give reasonable
+     * Returns a unlocalized title for the given code.
+     * This method builds a title using heuristics rules, which should give reasonable
      * results without the need of resource bundles. For better results, consider using
-     * {@link #getDescription(CodeList, Locale)} instead.
+     * {@link #getCodeTitle(CodeList, Locale)} instead.
      *
-     * <p>The current heuristic implementation is to iterate over {@linkplain CodeList#names() all
-     * code names}, select the longest one excluding the {@linkplain CodeList#name() field name}
-     * if possible, then {@linkplain CharSequences#camelCaseToSentence(CharSequence) make a sentence}
+     * <p>The current heuristic implementation iterates over {@linkplain CodeList#names() all
+     * code names}, selects the longest one excluding the {@linkplain CodeList#name() field name}
+     * if possible, then {@linkplain CharSequences#camelCaseToSentence(CharSequence) makes a sentence}
      * from that name. Examples:</p>
      *
      * <ul>
-     *   <li><code>getDescription({@linkplain org.opengis.referencing.cs.AxisDirection#NORTH})</code> returns {@code "North"}.</li>
-     *   <li><code>getDescription({@linkplain org.opengis.metadata.identification.CharacterSet#UTF_8})</code> returns {@code "UTF-8"}.</li>
-     *   <li><code>getDescription({@linkplain org.opengis.metadata.content.ImagingCondition#BLURRED_IMAGE})</code> returns {@code "Blurred image"}.</li>
+     *   <li><code>getCodeTitle({@linkplain org.opengis.referencing.cs.AxisDirection#NORTH})</code> returns {@code "North"}.</li>
+     *   <li><code>getCodeTitle({@linkplain org.opengis.metadata.identification.CharacterSet#UTF_8})</code> returns {@code "UTF-8"}.</li>
+     *   <li><code>getCodeTitle({@linkplain org.opengis.metadata.content.ImagingCondition#BLURRED_IMAGE})</code> returns {@code "Blurred image"}.</li>
      * </ul>
      *
-     * @param  code The code from which to get a description, or {@code null}.
-     * @return A unlocalized description for the given code, or {@code null} if the given code is null.
+     * @param  code The code from which to get a title, or {@code null}.
+     * @return A unlocalized title for the given code, or {@code null} if the given code is null.
      */
-    public static String getDescription(final CodeList<?> code) {
+    public static String getCodeTitle(final CodeList<?> code) {
         if (code == null) {
             return null;
         }
@@ -133,7 +140,7 @@ public final class CodeLists extends Static {
     }
 
     /**
-     * Returns the localized name of the given code.
+     * Returns the localized title of the given code.
      * Special cases:
      *
      * <ul>
@@ -141,15 +148,19 @@ public final class CodeLists extends Static {
      *   <li>If {@code locale} is {@code null}, then this method uses {@link Locale#US}
      *       as a close approximation of "unlocalized" strings since OGC standards are
      *       defined in English.</li>
+     *   <li>If there is no resources for the given code in the given language, then this method
+     *       fallback on other languages as described in {@link ResourceBundle} javadoc.</li>
      *   <li>If there is no localized resources for the given code, then this method fallback
-     *       on {@link #getDescription(CodeList)}.</li>
+     *       on {@link #getCodeTitle(CodeList)}.</li>
      * </ul>
      *
      * @param  code   The code for which to get the localized name, or {@code null}.
      * @param  locale The local, or {@code null} if none.
-     * @return The localized sentence, or {@code null} if the given code is null.
+     * @return The localized title, or {@code null} if the given code is null.
+     *
+     * @see #getDescription(CodeList, Locale)
      */
-    public static String getDescription(final CodeList<?> code, Locale locale) {
+    public static String getCodeTitle(final CodeList<?> code, Locale locale) {
         if (code == null) {
             return null;
         }
@@ -166,9 +177,49 @@ public final class CodeLists extends Static {
         try {
             return ResourceBundle.getBundle("org.opengis.metadata.CodeLists", locale).getString(key);
         } catch (MissingResourceException e) {
-            Logging.recoverableException(CodeLists.class, "localize", e);
-            return getDescription(code);
+            Logging.recoverableException(CodeLists.class, "getCodeTitle", e);
+            return getCodeTitle(code);
         }
+    }
+
+    /**
+     * Returns the localized description of the given code, or {@code null} if none.
+     * Special cases:
+     *
+     * <ul>
+     *   <li>If {@code code} is {@code null}, then this method returns {@code null}.</li>
+     *   <li>If {@code locale} is {@code null}, then this method uses the
+     *       {@linkplain Locale#getDefault() default locale} - there is no such thing
+     *       like "unlocalized" description.</li>
+     *   <li>If there is no resources for the given code in the given language, then this method
+     *       fallback on other languages as described in {@link ResourceBundle} javadoc.</li>
+     *   <li>If there is no localized resources for the given code, then this method returns
+     *       {@code null} - there is no fallback.</li>
+     * </ul>
+     *
+     * For a description of the code list as a whole instead than a particular code,
+     * see {@link Types#getDescription(Class, Locale)}.
+     *
+     * @param  code   The code for which to get the localized description, or {@code null}.
+     * @param  locale The desired local, or {@code null} for the default locale.
+     * @return The localized description, or {@code null} if the given code is null.
+     *
+     * @see #getCodeTitle(CodeList, Locale)
+     * @see Types#getDescription(Class, Locale)
+     */
+    public static String getDescription(final CodeList<?> code, Locale locale) {
+        if (code != null) {
+            if (locale == null) {
+                locale = Locale.getDefault();
+            }
+            final String key = getListName(code) + '.' + getCodeName(code);
+            try {
+                return ResourceBundle.getBundle("org.opengis.metadata.Descriptions", locale).getString(key);
+            } catch (MissingResourceException e) {
+                Logging.recoverableException(CodeLists.class, "getDescription", e);
+            }
+        }
+        return null;
     }
 
     /**
@@ -202,12 +253,18 @@ public final class CodeLists extends Static {
 
     /**
      * Returns the code of the given type that matches the given name, or returns a new one if none
-     * match it. This method performs the same work than the GeoAPI method, except that it is more
-     * tolerant on string comparisons (see the <a href="#skip-navbar_top">class javadoc</a>).
+     * match it. This method performs the same work than the GeoAPI method, except that this method
+     * is more tolerant on string comparisons when looking for an existing code:
      *
-     * @param <T> The compile-time type given as the {@code codeType} parameter.
-     * @param codeType The type of code list.
-     * @param name The name of the code to obtain, or {@code null}.
+     * <ul>
+     *   <li>Name comparisons are case-insensitive.</li>
+     *   <li>Only {@linkplain Character#isLetterOrDigit(int) letter and digit} characters are compared.
+     *       Spaces and punctuation characters like {@code '_'} and {@code '-'} are ignored.</li>
+     * </ul>
+     *
+     * @param <T>       The compile-time type given as the {@code codeType} parameter.
+     * @param codeType  The type of code list.
+     * @param name      The name of the code to obtain, or {@code null}.
      * @return A code matching the given name, or {@code null} if the name is null.
      *
      * @see CodeList#valueOf(Class, String)
@@ -221,10 +278,10 @@ public final class CodeLists extends Static {
      * {@link #valueOf(Class, String)} method. If no existing code matches, then this method
      * creates a new code if {@code canCreate} is {@code true}, or returns {@code null} otherwise.
      *
-     * @param <T> The compile-time type given as the {@code codeType} parameter.
-     * @param codeType The type of code list.
-     * @param name The name of the code to obtain, or {@code null}.
-     * @param canCreate {@code true} if this method is allowed to create new code.
+     * @param <T>        The compile-time type given as the {@code codeType} parameter.
+     * @param codeType   The type of code list.
+     * @param name       The name of the code to obtain, or {@code null}.
+     * @param canCreate  {@code true} if this method is allowed to create new code.
      * @return A code matching the given name, or {@code null} if the name is null
      *         or if no matching code is found and {@code canCreate} is {@code false}.
      *

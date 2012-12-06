@@ -16,7 +16,9 @@
  */
 package org.apache.sis.util.type;
 
+import java.util.Locale;
 import org.opengis.metadata.citation.Citation;
+import org.opengis.metadata.identification.CharacterSet;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.test.TestCase;
@@ -54,5 +56,16 @@ public final strictfp class TypesTest extends TestCase {
         assertEquals(Citation     .class, Types.forStandardName("CI_Citation")); // Value should be cached.
         assertEquals(AxisDirection.class, Types.forStandardName("CS_AxisDirection"));
         assertNull  (                     Types.forStandardName("MD_Dummy"));
+    }
+
+    /**
+     * Tests the {@link Types#getDescription(Class, Locale)} method.
+     */
+    @Test
+    public void testGetDescription() {
+        assertEquals("Name of the character coding standard used in the resource.",
+                Types.getDescription(CharacterSet.class, Locale.ENGLISH));
+        assertEquals("Jeu de caractères.",
+                Types.getDescription(CharacterSet.class, Locale.FRENCH));
     }
 }

@@ -341,6 +341,16 @@ public final strictfp class CharSequencesTest extends TestCase {
     }
 
     /**
+     * Tests the {@link CharSequences#equalsLettersAndDigits(CharSequence, CharSequence)} method.
+     */
+    @Test
+    public void testEqualsLettersAndDigits() {
+        assertTrue (equalsLettersAndDigits(" UTF-8 ", "utf8"));
+        assertTrue (equalsLettersAndDigits("UTF-8", " utf 8"));
+        assertFalse(equalsLettersAndDigits("UTF-8", " utf 16"));
+    }
+
+    /**
      * Tests the {@link CharSequences#equals(CharSequence, CharSequence)} method.
      */
     @Test
