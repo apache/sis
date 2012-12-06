@@ -17,6 +17,7 @@
 package org.apache.sis.util.type;
 
 import org.opengis.util.CodeList;
+import org.apache.sis.util.CharSequences;
 
 
 /**
@@ -60,68 +61,10 @@ final class CodeListFilter implements CodeList.Filter {
     @Override
     public boolean accept(final CodeList<?> code) {
         for (final String name : code.names()) {
-            if (matches(name, codename)) {
+            if (CharSequences.equalsLettersAndDigits(name, codename)) {
                 return true;
             }
         }
         return false;
-    }
-
-    /**
-     * Returns {@code true} if the given strings are equal, ignoring case, whitespaces and the
-     * {@code '_'} character.
-     *
-     * @param  candidate The first string to compare.
-     * @param  search The second string to compare.
-     * @return {@code true} if the two strings are equal.
-     */
-    private static boolean matches(final String candidate, final String search) {
-        final int length = candidate.length();
-        final int searchLength = search.length();
-        int searchIndex=0, n;
-        for (int i=0; i<length; i+=n) {
-            int c = candidate.codePointAt(i);
-            n = Character.charCount(c);
-            if (isSignificant(c)) {
-                // Fetch the next significant character from the expected string.
-                int s;
-                do {
-                    if (searchIndex >= searchLength) {
-                        return false; // The name has more significant characters than expected.
-                    }
-                    s = search.codePointAt(searchIndex);
-                    searchIndex += Character.charCount(s);
-                } while (!isSignificant(s));
-
-                // Compare the characters in the same way than String.equalsIgnoreCase(String).
-                if (c != s) {
-                    c = Character.toUpperCase(c);
-                    s = Character.toUpperCase(s);
-                    if (c != s) {
-                        c = Character.toLowerCase(c);
-                        s = Character.toLowerCase(s);
-                        if (c != s) {
-                            return false;
-                        }
-                    }
-                }
-            }
-        }
-        while (searchIndex < searchLength) {
-            final int s = search.charAt(searchIndex);
-            if (isSignificant(s)) {
-                return false; // The name has less significant characters than expected.
-            }
-            searchIndex += Character.charCount(s);
-        }
-        return true;
-    }
-
-    /**
-     * Returns {@code true} if the given character should be taken in account when comparing two
-     * strings. Current implementation ignores whitespace and the {@code '_'} character.
-     */
-    private static boolean isSignificant(final int c) {
-        return !Character.isWhitespace(c) && !Character.isIdentifierIgnorable(c) && c != '_';
     }
 }

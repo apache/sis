@@ -58,6 +58,7 @@ import org.junit.runners.Suite;
 
   // GeoAPI most basic types.
   org.apache.sis.util.type.TypesTest.class,
+  org.apache.sis.util.type.CodeListsTest.class,
   org.apache.sis.util.type.SimpleInternationalStringTest.class,
   org.apache.sis.util.type.DefaultInternationalStringTest.class,
   org.apache.sis.internal.util.LocalizedParseExceptionTest.class,

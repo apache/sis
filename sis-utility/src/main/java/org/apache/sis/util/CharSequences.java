@@ -1530,6 +1530,57 @@ cmp:    while (ia < lga) {
     }
 
     /**
+     * Returns {@code true} if the given texts are equal, ignoring case and any character which
+     * is not a {@linkplain Character#isLetterOrDigit(int) letter or digit}. In particular,
+     * spaces and punctuation characters like {@code '_'} and {@code '-'} are ignored.
+     * This method is sometime used for comparing identifiers in a lenient way.
+     *
+     * @param  s1 The first string to compare, or {@code null}.
+     * @param  s2 The second string to compare, or {@code null}.
+     * @return {@code true} if the two given texts are equal, comparing only letters and digits
+     *         in a case-insensitive way, or if both arguments are {@code null}.
+     */
+    public static boolean equalsLettersAndDigits(final CharSequence s1, final CharSequence s2) {
+        if (s1 == s2) {
+            return true;
+        }
+        if (s1 == null || s2 == null) {
+            return false;
+        }
+        final int lg1 = s1.length();
+        final int lg2 = s2.length();
+        int i2 = 0, n;
+        for (int i1=0; i1<lg1; i1+=n) {
+            int c1 = codePointAt(s1, i1);
+            n = charCount(c1);
+            if (isLetterOrDigit(c1)) {
+                // Fetch the next significant character from the second string.
+                int c2;
+                do {
+                    if (i2 >= lg2) {
+                        return false; // The first string has more significant characters than expected.
+                    }
+                    c2 = codePointAt(s2, i2);
+                    i2 += charCount(c2);
+                } while (!isLetterOrDigit(c2));
+
+                // Compare the characters in the same way than String.equalsIgnoreCase(String).
+                if (c1 != c2 && !equalsIgnoreCase(c1, c2)) {
+                    return false;
+                }
+            }
+        }
+        while (i2 < lg2) {
+            final int s = codePointAt(s2, i2);
+            if (isLetterOrDigit(s)) {
+                return false; // The first string has less significant characters than expected.
+            }
+            i2 += charCount(s);
+        }
+        return true;
+    }
+
+    /**
      * Returns {@code true} if the two given texts are equal. This method delegates to
      * {@link String#contentEquals(CharSequence)} if possible. This method never invoke
      * {@link CharSequence#toString()} in order to avoid a potentially large copy of data.

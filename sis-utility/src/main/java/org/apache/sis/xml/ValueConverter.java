@@ -20,6 +20,7 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URISyntaxException;
 import java.net.MalformedURLException;
+import java.util.MissingResourceException;
 import java.util.Locale;
 import java.util.UUID;
 import javax.measure.unit.Unit;
@@ -107,6 +108,96 @@ public class ValueConverter {
             Class<T> sourceType, Class<?> targetType, Exception exception)
     {
         return false;
+    }
+
+    /**
+     * Converts the given locale to a language code. For strict ISO 19139 compliance, the language
+     * code shall be a 3-letters ISO code as returned by {@link Locale#getISO3Language()}.
+     * However those codes may not be available for every locales.
+     *
+     * <p>The default implementation performs the following step:</p>
+     * <ul>
+     *   <li>Try {@code value.getISO3Language()}:<ul>
+     *     <li>On success, return that value if non-empty, or {@code null} otherwise.</li>
+     *     <li>If an exception has been thrown, then:<ul>
+     *       <li>If {@link #exceptionOccured exceptionOccured(…)} return {@code true}, then
+     *           returns {@code value.getLanguage()} if non-empty or {@code null} otherwise.</li>
+     *       <li>If {@code exceptionOccured(…)} returned {@code false} (which is the default
+     *           behavior), then let the exception propagate.</li>
+     *     </ul></li>
+     *   </ul></li>
+     * </ul>
+     *
+     * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
+     * @param  value The locale to convert to a language code, or {@code null}.
+     * @return The language code, or {@code null} if the given value was null or does not contains
+     *         a language code.
+     * @throws MissingResourceException If there is no ISO 3-letters language code for the given locale.
+     *
+     * @see Locale#getISO3Language()
+     * @see Locale#getLanguage()
+     */
+    public String toLanguageCode(final MarshalContext context, final Locale value) throws MissingResourceException {
+        if (value != null) {
+            String code;
+            try {
+                code = value.getISO3Language();
+            } catch (MissingResourceException e) {
+                if (!exceptionOccured(context, value, Locale.class, String.class, e)) {
+                    throw e;
+                }
+                code = value.getLanguage();
+            }
+            if (!code.isEmpty()) {
+                return code;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Converts the given locale to a country code. For strict ISO 19139 compliance, the country
+     * code shall be a 3-letters ISO code as returned by {@link Locale#getISO3Country()}.
+     * However those codes may not be available for every locales.
+     *
+     * <p>The default implementation performs the following step:</p>
+     * <ul>
+     *   <li>Try {@code value.getISO3Country()}:<ul>
+     *     <li>On success, return that value if non-empty, or {@code null} otherwise.</li>
+     *     <li>If an exception has been thrown, then:<ul>
+     *       <li>If {@link #exceptionOccured exceptionOccured(…)} return {@code true}, then
+     *           returns {@code value.getCountry()} if non-empty or {@code null} otherwise.</li>
+     *       <li>If {@code exceptionOccured(…)} returned {@code false} (which is the default
+     *           behavior), then let the exception propagate.</li>
+     *     </ul></li>
+     *   </ul></li>
+     * </ul>
+     *
+     * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
+     * @param  value The locale to convert to a country code, or {@code null}.
+     * @return The country code, or {@code null} if the given value was null or does not contains
+     *         a country code.
+     * @throws MissingResourceException If there is no ISO 3-letters country code for the given locale.
+     *
+     * @see Locale#getISO3Country()
+     * @see Locale#getCountry()
+     */
+    public String toCountryCode(final MarshalContext context, final Locale value) throws MissingResourceException {
+        if (value != null) {
+            String code;
+            try {
+                code = value.getISO3Country();
+            } catch (MissingResourceException e) {
+                if (!exceptionOccured(context, value, Locale.class, String.class, e)) {
+                    throw e;
+                }
+                code = value.getCountry();
+            }
+            if (!code.isEmpty()) {
+                return code;
+            }
+        }
+        return null;
     }
 
     /**

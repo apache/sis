@@ -18,7 +18,9 @@ package org.apache.sis.util.type;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Properties;
+import java.util.ResourceBundle;
 import java.util.MissingResourceException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,11 +29,12 @@ import org.opengis.annotation.UML;
 import org.opengis.util.CodeList;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.Static;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.collection.BackingStoreException;
 
 
 /**
- * Convenience methods working on GeoAPI types.
+ * Static methods working on GeoAPI types.
  * The methods in this class can be used for:
  *
  * <ul>
@@ -69,8 +72,8 @@ public final class Types extends Static {
      *   <li><code>getStandardName({@linkplain org.opengis.referencing.cs.AxisDirection}.class)</code> returns {@code "CS_AxisDirection"}.</li>
      * </ul>
      *
-     * @param  type The GeoAPI interface from which to get the ISO name, or {@code null}.
-     * @return The ISO name for the given interface, or {@code null} if none or if the given type is {@code null}.
+     * @param  type The GeoAPI interface or code list from which to get the ISO name, or {@code null}.
+     * @return The ISO name for the given type, or {@code null} if none or if the type is {@code null}.
      */
     public static String getStandardName(final Class<?> type) {
         if (type != null) {
@@ -133,6 +136,45 @@ public final class Types extends Static {
         }
         typeForNames.put(identifier, type);
         return type;
+    }
+
+    /**
+     * Returns a localized description for the given class, or {@code null} if none.
+     * This method can be used for GeoAPI interfaces or {@link CodeList}.
+     * Special cases:
+     *
+     * <ul>
+     *   <li>If {@code code} is {@code null}, then this method returns {@code null}.</li>
+     *   <li>If {@code locale} is {@code null}, then this method uses the
+     *       {@linkplain Locale#getDefault() default locale} - there is no such thing
+     *       like "unlocalized" description.</li>
+     *   <li>If there is no resources for the given type in the given language, then this method
+     *       fallback on other languages as described in {@link ResourceBundle} javadoc.</li>
+     *   <li>If there is no localized resources for the given type, then this method returns
+     *       {@code null} - there is no fallback.</li>
+     * </ul>
+     *
+     * @param  type The GeoAPI interface or code list from which to get the description, or {@code null}.
+     * @param  locale The desired local, or {@code null} for the default locale.
+     * @return The ISO name for the given type, or {@code null} if none or if the type is {@code null}.
+     *
+     * @see CodeLists#getDescription(CodeList, Locale)
+     */
+    public static String getDescription(final Class<?> type, Locale locale) {
+        if (type != null) {
+            final String name = getStandardName(type);
+            if (name != null) {
+                if (locale == null) {
+                    locale = Locale.getDefault();
+                }
+                try {
+                    return ResourceBundle.getBundle("org.opengis.metadata.Descriptions", locale).getString(name);
+                } catch (MissingResourceException e) {
+                    Logging.recoverableException(Types.class, "getDescription", e);
+                }
+            }
+        }
+        return null;
     }
 
     /**

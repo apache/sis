@@ -23,7 +23,6 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
 import org.opengis.util.CodeList;
-import org.apache.sis.util.Locales;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.type.CodeLists;
 import org.apache.sis.internal.jaxb.MarshalContext;
@@ -98,9 +97,9 @@ public final class CodeListProxy {
      * The optional {@code codeSpace} attribute in the XML element. The default value is
      * {@code null}. If a value is provided in this field, then {@link #value} should be
      * set as well.
-     * <p>
-     * This attribute is set to the 3 letters language code of the {@link #value} attribute,
-     * as returned by {@link Locale#getISO3Language()}.
+     *
+     * <p>This attribute is set to the 3-letters language code of the {@link #value} attribute,
+     * as returned by {@link Locale#getISO3Language()}.</p>
      */
     @XmlAttribute
     public String codeSpace;
@@ -140,13 +139,15 @@ public final class CodeListProxy {
      * @param catalog       The file which defines the code list (for example {@code "ML_gmxCodelists.xml"}), without its path.
      * @param codeList      The {@code codeList} attribute, to be concatenated after the catalog name and the {@code "#"} symbol.
      * @param codeListValue The {@code codeListValue} attribute, to be declared in the attribute.
-     * @param value         The value in English language (because this constructor does not set the {@link #codeSpace} attribute).
+     * @param codeSpace     The 3-letters language code of the {@code value} attribute, or {@code null} if none.
+     * @param value         The value in the language specified by the {@code codeSpace} attribute, or {@code null} if none.
      */
     public CodeListProxy(final MarshalContext context, final String catalog,
-            final String codeList, final String codeListValue, final String value)
+            final String codeList, final String codeListValue, final String codeSpace, final String value)
     {
         this.codeList      = schema(context, catalog, codeList);
         this.codeListValue = codeListValue;
+        this.codeSpace     = codeSpace;
         this.value         = value;
     }
 
@@ -163,10 +164,10 @@ public final class CodeListProxy {
         codeList = schema(context, "gmxCodelists.xml", classID);
         /*
          * Get the localized name of the field identifier, if possible.
-         * This code partially duplicates CodeList.getDescription(CodeList, Locale).
+         * This code partially duplicates CodeList.getCodeTitle(CodeList, Locale).
          * This duplication exists because this constructor stores more information in
          * an opportunist way. If this constructor is updated, please consider updating
-         * the CodeList.getDescription(CodeList, Locale) method accordingly.
+         * the CodeList.getCodeTitle(CodeList, Locale) method accordingly.
          */
         final Locale locale = context.getLocale();
         if (locale != null) {
@@ -178,12 +179,12 @@ public final class CodeListProxy {
             }
         }
         if (value != null) {
-            codeSpace = Locales.getLanguageCode(locale);
+            codeSpace = MarshalContext.converter(context).toLanguageCode(context, locale);
         } else {
             // Fallback when no value is defined for the code list. Build a value from the
             // most descriptive name (excluding the field name), which is usually the UML
             // name except for CharacterSet in which case it is a string like "UTF-8".
-            value = CodeLists.getDescription(code);
+            value = CodeLists.getCodeTitle(code);
         }
         codeListValue = fieldID;
     }
