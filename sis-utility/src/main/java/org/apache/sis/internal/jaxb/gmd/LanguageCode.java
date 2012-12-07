@@ -21,7 +21,6 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 
 import org.apache.sis.internal.jaxb.MarshalContext;
-import org.apache.sis.internal.jaxb.code.CodeListProxy;
 import org.apache.sis.internal.jaxb.gco.GO_CharacterString;
 import org.apache.sis.internal.jaxb.gco.CharSequenceAdapter;
 

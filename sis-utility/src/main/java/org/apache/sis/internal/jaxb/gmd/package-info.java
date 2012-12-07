@@ -18,7 +18,7 @@
 /**
  * Miscellaneous objects and adapters defined in the {@code "gmd"} namespace.
  * This package does not include the adapters for ISO 19115 classes and code
- * lists, which are defined in their own package.
+ * lists (except base classes), which are defined in their own package.
  *
  * @author  Cédric Briançon (Geomatys)
  * @since   0.3 (derived from geotk-2.5)
@@ -28,7 +28,9 @@
  * @see javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter
  */
 @XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GMD, xmlns = {
-    @XmlNs(prefix = "gmd", namespaceURI = Namespaces.GMD)
+    @XmlNs(prefix = "gmi", namespaceURI = Namespaces.GMI),
+    @XmlNs(prefix = "gmd", namespaceURI = Namespaces.GMD),
+    @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO)
 })
 @XmlAccessorType(XmlAccessType.NONE)
 package org.apache.sis.internal.jaxb.gmd;

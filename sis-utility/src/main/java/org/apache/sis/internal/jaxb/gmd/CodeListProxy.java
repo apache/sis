@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.jaxb.code;
+package org.apache.sis.internal.jaxb.gmd;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -128,7 +128,7 @@ public final class CodeListProxy {
      *
      * @see <a href="http://jira.codehaus.org/browse/GEO-199">GEO-199</a>
      */
-    public CodeListProxy(final String value) {
+    CodeListProxy(final String value) {
         this.value = value;
     }
 
@@ -142,7 +142,7 @@ public final class CodeListProxy {
      * @param codeSpace     The 3-letters language code of the {@code value} attribute, or {@code null} if none.
      * @param value         The value in the language specified by the {@code codeSpace} attribute, or {@code null} if none.
      */
-    public CodeListProxy(final MarshalContext context, final String catalog,
+    CodeListProxy(final MarshalContext context, final String catalog,
             final String codeList, final String codeListValue, final String codeSpace, final String value)
     {
         this.codeList      = schema(context, catalog, codeList);
@@ -152,13 +152,13 @@ public final class CodeListProxy {
     }
 
     /**
-     * Builds a proxy instance of {@link CodeList}. This constructors stores
-     * the values that will be used for marshalling.
+     * Builds a proxy instance of {@link CodeList}.
+     * This constructors stores the values that will be used for marshalling.
      *
      * @param context The current (un)marshalling context, or {@code null} if none.
      * @param code    The code list to wrap.
      */
-    public CodeListProxy(final MarshalContext context, final CodeList<?> code) {
+    CodeListProxy(final MarshalContext context, final CodeList<?> code) {
         final String classID = CodeLists.getListName(code);
         final String fieldID = CodeLists.getCodeName(code);
         codeList = schema(context, "gmxCodelists.xml", classID);
