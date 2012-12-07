@@ -1126,7 +1126,7 @@ searchWordBreak:    while (true) {
     }
 
     /**
-     * Given a string in camel cases (typically a Java identifier), returns a string formatted
+     * Given a string in camel cases (typically an identifier), returns a string formatted
      * like an English sentence. This heuristic method performs the following steps:
      *
      * <ol>
@@ -1257,8 +1257,8 @@ searchWordBreak:    while (true) {
      * case, then the text is returned unchanged on the assumption that it is already an acronym.
      * Otherwise this method returns a string containing the first character of each word, where
      * the words are separated by the camel case convention, the {@code '_'} character, or any
-     * character which is not a {@linkplain Character#isJavaIdentifierPart(int) java identifier
-     * part} (including spaces).
+     * character which is not a {@linkplain Character#isUnicodeIdentifierPart(int) Unicode
+     * identifier part} (including spaces).
      *
      * <p><b>Examples:</b> given {@code "northEast"}, this method returns {@code "NE"}.
      * Given {@code "Open Geospatial Consortium"}, this method returns {@code "OGC"}.</p>
@@ -1275,11 +1275,11 @@ searchWordBreak:    while (true) {
             for (int i=0; i<length;) {
                 final int c = codePointAt(text, i);
                 if (wantChar) {
-                    if (isJavaIdentifierStart(c)) {
+                    if (isUnicodeIdentifierStart(c)) {
                         buffer.appendCodePoint(c);
                         wantChar = false;
                     }
-                } else if (!isJavaIdentifierPart(c) || c == '_') {
+                } else if (!isUnicodeIdentifierPart(c) || c == '_') {
                     wantChar = true;
                 } else if (Character.isUpperCase(c)) {
                     // Test for mixed-case (e.g. "northEast").
@@ -1408,7 +1408,7 @@ cmp:    while (ia < lga) {
      * <p>This method is used for identifying character strings that are likely to be code
      * like {@code "UTF-8"} or {@code "ISO-LATIN-1"}.</p>
      *
-     * @see #isJavaIdentifier(CharSequence)
+     * @see #isUnicodeIdentifier(CharSequence)
      */
     private static boolean isCode(final CharSequence identifier) {
         for (int i=identifier.length(); --i>=0;) {
@@ -1423,28 +1423,28 @@ cmp:    while (ia < lga) {
     }
 
     /**
-     * Returns {@code true} if the given identifier is a legal Java identifier.
+     * Returns {@code true} if the given identifier is a legal Unicode identifier.
      * This method returns {@code true} if the identifier length is greater than zero,
-     * the first character is a {@linkplain Character#isJavaIdentifierStart(int) Java
-     * identifier start} and all remaining characters (if any) are
-     * {@linkplain Character#isJavaIdentifierPart(int) Java identifier parts}.
+     * the first character is a {@linkplain Character#isUnicodeIdentifierStart(int)
+     * Unicode identifier start} and all remaining characters (if any) are
+     * {@linkplain Character#isUnicodeIdentifierPart(int) Unicode identifier parts}.
      *
      * @param identifier The character sequence to test.
-     * @return {@code true} if the given character sequence is a legal Java identifier.
+     * @return {@code true} if the given character sequence is a legal Unicode identifier.
      * @throws NullPointerException if the argument is null.
      */
-    public static boolean isJavaIdentifier(final CharSequence identifier) {
+    public static boolean isUnicodeIdentifier(final CharSequence identifier) {
         final int length = identifier.length();
         if (length == 0) {
             return false;
         }
         int c = codePointAt(identifier, 0);
-        if (!isJavaIdentifierStart(c)) {
+        if (!isUnicodeIdentifierStart(c)) {
             return false;
         }
         for (int i=0; (i += charCount(c)) < length;) {
             c = codePointAt(identifier, i);
-            if (!isJavaIdentifierPart(c)) {
+            if (!isUnicodeIdentifierPart(c)) {
                 return false;
             }
         }
@@ -1471,6 +1471,71 @@ cmp:    while (ia < lga) {
                 return false;
             }
             lower += charCount(c);
+        }
+        return true;
+    }
+
+    /**
+     * Returns {@code true} if the given texts are equal, optionally ignoring case and filtered-out
+     * characters. This method is sometime used for comparing identifiers in a lenient way.
+     *
+     * <p><b>Example:</b> the following call compares the two strings ignoring case and any
+     * characters which are not {@linkplain Character#isLetterOrDigit(int) letter or digit}.
+     * In particular, spaces and punctuation characters like {@code '_'} and {@code '-'} are
+     * ignored:</p>
+     *
+     * {@preformat java
+     *     assert equals("WGS84", "WGS_84", Characters.Filter.LETTERS_AND_DIGITS, true) == true;
+     * }
+     *
+     * @param  s1 The first string to compare, or {@code null}.
+     * @param  s2 The second string to compare, or {@code null}.
+     * @param  filter The subset of characters to compare, or {@code null} for comparing all characters.
+     * @param  ignoreCase {@code true} for comparing cases, or {@code false} for requiring exact match.
+     * @return {@code true} if or if both arguments are {@code null} or if the two given texts are equal,
+     *         optionally ignoring case and filtered-out characters.
+     */
+    public static boolean equalsFiltered(final CharSequence s1, final CharSequence s2,
+            final Characters.Filter filter, final boolean ignoreCase)
+    {
+        if (s1 == s2) {
+            return true;
+        }
+        if (s1 == null || s2 == null) {
+            return false;
+        }
+        if (filter == null) {
+            return ignoreCase ? equalsIgnoreCase(s1, s2) : equals(s1, s2);
+        }
+        final int lg1 = s1.length();
+        final int lg2 = s2.length();
+        int i2 = 0, n;
+        for (int i1=0; i1<lg1; i1+=n) {
+            int c1 = codePointAt(s1, i1);
+            n = charCount(c1);
+            if (filter.contains(c1)) {
+                // Fetch the next significant character from the second string.
+                int c2;
+                do {
+                    if (i2 >= lg2) {
+                        return false; // The first string has more significant characters than expected.
+                    }
+                    c2 = codePointAt(s2, i2);
+                    i2 += charCount(c2);
+                } while (!filter.contains(c2));
+
+                // Compare the characters in the same way than String.equalsIgnoreCase(String).
+                if (c1 != c2 && !(ignoreCase && equalsIgnoreCase(c1, c2))) {
+                    return false;
+                }
+            }
+        }
+        while (i2 < lg2) {
+            final int s = codePointAt(s2, i2);
+            if (filter.contains(s)) {
+                return false; // The first string has less significant characters than expected.
+            }
+            i2 += charCount(s);
         }
         return true;
     }
@@ -1527,57 +1592,6 @@ cmp:    while (ia < lga) {
             i2 += charCount(c2);
         }
         return i1 == i2;
-    }
-
-    /**
-     * Returns {@code true} if the given texts are equal, ignoring case and any character which
-     * is not a {@linkplain Character#isLetterOrDigit(int) letter or digit}. In particular,
-     * spaces and punctuation characters like {@code '_'} and {@code '-'} are ignored.
-     * This method is sometime used for comparing identifiers in a lenient way.
-     *
-     * @param  s1 The first string to compare, or {@code null}.
-     * @param  s2 The second string to compare, or {@code null}.
-     * @return {@code true} if the two given texts are equal, comparing only letters and digits
-     *         in a case-insensitive way, or if both arguments are {@code null}.
-     */
-    public static boolean equalsLettersAndDigits(final CharSequence s1, final CharSequence s2) {
-        if (s1 == s2) {
-            return true;
-        }
-        if (s1 == null || s2 == null) {
-            return false;
-        }
-        final int lg1 = s1.length();
-        final int lg2 = s2.length();
-        int i2 = 0, n;
-        for (int i1=0; i1<lg1; i1+=n) {
-            int c1 = codePointAt(s1, i1);
-            n = charCount(c1);
-            if (isLetterOrDigit(c1)) {
-                // Fetch the next significant character from the second string.
-                int c2;
-                do {
-                    if (i2 >= lg2) {
-                        return false; // The first string has more significant characters than expected.
-                    }
-                    c2 = codePointAt(s2, i2);
-                    i2 += charCount(c2);
-                } while (!isLetterOrDigit(c2));
-
-                // Compare the characters in the same way than String.equalsIgnoreCase(String).
-                if (c1 != c2 && !equalsIgnoreCase(c1, c2)) {
-                    return false;
-                }
-            }
-        }
-        while (i2 < lg2) {
-            final int s = codePointAt(s2, i2);
-            if (isLetterOrDigit(s)) {
-                return false; // The first string has less significant characters than expected.
-            }
-            i2 += charCount(s);
-        }
-        return true;
     }
 
     /**
@@ -1784,9 +1798,9 @@ cmp:    while (ia < lga) {
      *
      * <ul>
      *   <li>If <var>c</var> is a
-     *       {@linkplain Character#isJavaIdentifierStart(int) Java identifier start},
+     *       {@linkplain Character#isUnicodeIdentifierStart(int) Unicode identifier start},
      *       then any following characters that are
-     *       {@linkplain Character#isJavaIdentifierPart(int) Java identifier part}.</li>
+     *       {@linkplain Character#isUnicodeIdentifierPart(int) Unicode identifier part}.</li>
      *   <li>Otherwise any character for which {@link Character#getType(int)} returns
      *       the same value than for <var>c</var>.</li>
      * </ul>
@@ -1815,8 +1829,8 @@ cmp:    while (ia < lga) {
         /*
          * Advance over all characters "of the same type".
          */
-        if (isJavaIdentifierStart(c)) {
-            while (upper<length && isJavaIdentifierPart(c = codePointAt(text, upper))) {
+        if (isUnicodeIdentifierStart(c)) {
+            while (upper<length && isUnicodeIdentifierPart(c = codePointAt(text, upper))) {
                 upper += charCount(c);
             }
         } else {
