@@ -88,8 +88,8 @@ public final class Country extends GO_CharacterString {
      * Creates a new wrapper for the given locale.
      *
      * @param context The current (un)marshalling context, or {@code null} if none.
-     * @param locale  The value to marshall, or {@code null}.
-     * @paral anchors If non-null, marshall the locale as a {@code <gco:CharacterString>} instead
+     * @param locale  The value to marshal, or {@code null}.
+     * @paral anchors If non-null, marshal the locale as a {@code <gco:CharacterString>} instead
      *                than {@code <Country>}, using the given anchors if any.
      * @return The country to marshal, or {@code null} if the given locale was null
      *         or if its {@link Locale#getCountry()} attribute is the empty string.

@@ -31,7 +31,7 @@ import org.apache.sis.util.type.SimpleInternationalString;
 
 /**
  * JAXB wrapper for ISO-19139 {@code <PT_FreeText>} element mapped to {@link InternationalString}.
- * It will be used in order to marshall and unmarshall international strings localized in several
+ * It will be used in order to marshal and unmarshal international strings localized in several
  * language, using the {@link DefaultInternationalString} implementation class. Example:
  *
  * {@preformat xml

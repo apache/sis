@@ -17,7 +17,7 @@
 
 /**
  * JAXB adapters for code {@linkplain org.opengis.util.CodeList code lists}.
- * Every time JAXB will try to marshall or unmarshall a code list, an adapter will replace the
+ * Every time JAXB will try to marshal or unmarshal a code list, an adapter will replace the
  * code list value (which would otherwise be written directly by JAXB) by an element like below:
  *
  * <ul>
