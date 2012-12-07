@@ -37,7 +37,10 @@ import static org.apache.sis.util.CharSequences.*;
  * @version 0.3
  * @module
  */
-@DependsOn(ArraysTest.class)
+@DependsOn({
+    ArraysTest.class,
+    CharactersTest.class
+})
 public final strictfp class CharSequencesTest extends TestCase {
     /**
      * Tests {@link CharSequences#spaces(int)}.
@@ -312,12 +315,12 @@ public final strictfp class CharSequencesTest extends TestCase {
     }
 
     /**
-     * Tests the {@link CharSequences#isJavaIdentifier(CharSequence)} method.
+     * Tests the {@link CharSequences#isUnicodeIdentifier(CharSequence)} method.
      */
     @Test
-    public void testIsJavaIdentifier() {
-        assertTrue ("A123", isJavaIdentifier("A123"));
-        assertFalse("123A", isJavaIdentifier("123A"));
+    public void testIsUnicodeIdentifier() {
+        assertTrue ("A123", isUnicodeIdentifier("A123"));
+        assertFalse("123A", isUnicodeIdentifier("123A"));
     }
 
     /**
@@ -341,13 +344,16 @@ public final strictfp class CharSequencesTest extends TestCase {
     }
 
     /**
-     * Tests the {@link CharSequences#equalsLettersAndDigits(CharSequence, CharSequence)} method.
+     * Tests the {@link CharSequences#equalsFiltered(CharSequence, CharSequence, Characters.Filter, boolean)} method.
      */
     @Test
-    public void testEqualsLettersAndDigits() {
-        assertTrue (equalsLettersAndDigits(" UTF-8 ", "utf8"));
-        assertTrue (equalsLettersAndDigits("UTF-8", " utf 8"));
-        assertFalse(equalsLettersAndDigits("UTF-8", " utf 16"));
+    public void testEqualsFiltered() {
+        assertTrue (equalsFiltered(" UTF-8 ", "utf8",  Characters.Filter.LETTERS_AND_DIGITS, true));
+        assertFalse(equalsFiltered(" UTF-8 ", "utf8",  Characters.Filter.LETTERS_AND_DIGITS, false));
+        assertTrue (equalsFiltered("UTF-8", " utf 8",  Characters.Filter.LETTERS_AND_DIGITS, true));
+        assertFalse(equalsFiltered("UTF-8", " utf 16", Characters.Filter.LETTERS_AND_DIGITS, true));
+        assertTrue (equalsFiltered("WGS84", "WGS_84",  Characters.Filter.LETTERS_AND_DIGITS, true));
+        assertFalse(equalsFiltered("WGS84", "WGS_84",  Characters.Filter.UNICODE_IDENTIFIER, true));
     }
 
     /**

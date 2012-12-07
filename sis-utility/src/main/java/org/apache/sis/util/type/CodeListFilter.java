@@ -18,6 +18,7 @@ package org.apache.sis.util.type;
 
 import org.opengis.util.CodeList;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.Characters.Filter;
 
 
 /**
@@ -56,12 +57,12 @@ final class CodeListFilter implements CodeList.Filter {
     }
 
     /**
-     * Returns {@code true} if the given code match the the name we are looking for.
+     * Returns {@code true} if the given code matches the name we are looking for.
      */
     @Override
     public boolean accept(final CodeList<?> code) {
         for (final String name : code.names()) {
-            if (CharSequences.equalsLettersAndDigits(name, codename)) {
+            if (CharSequences.equalsFiltered(name, codename, Filter.LETTERS_AND_DIGITS, true)) {
                 return true;
             }
         }
