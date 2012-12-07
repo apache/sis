@@ -38,7 +38,7 @@ import javax.xml.bind.annotation.XmlElement;
  * unmarshalling. More specifically, the name suggests that the format should be:</p>
  *
  * {@preformat xml
- *   <gco:CharacterString>Geotoolkit.org, projet OpenSource</gco:CharacterString>
+ *   <gco:CharacterString>Apache SIS, projet OpenSource</gco:CharacterString>
  *   <gmd:PT_FreeText>
  *     <gmd:textGroup>
  *       <gmd:LocalisedCharacterString locale="#locale-eng">Apache SIS, OpenSource Project</gmd:LocalisedCharacterString>
@@ -51,7 +51,7 @@ import javax.xml.bind.annotation.XmlElement;
  * But the actual official format is:
  *
  * {@preformat xml
- *   <gco:CharacterString>Geotoolkit.org, projet OpenSource</gco:CharacterString>
+ *   <gco:CharacterString>Apache SIS, projet OpenSource</gco:CharacterString>
  *   <gmd:PT_FreeText>
  *     <gmd:textGroup>
  *       <gmd:LocalisedCharacterString locale="#locale-eng">Apache SIS, OpenSource Project</gmd:LocalisedCharacterString>

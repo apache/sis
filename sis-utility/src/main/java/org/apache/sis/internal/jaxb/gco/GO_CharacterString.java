@@ -57,7 +57,7 @@ public class GO_CharacterString {
     /**
      * Builds an wrapper for the given text.
      *
-     * @param text The string to marshall, or {@code null} if none.
+     * @param text The string to marshal, or {@code null} if none.
      */
     protected GO_CharacterString(final CharSequence text) {
         this.text = text;
