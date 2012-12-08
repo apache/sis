@@ -129,7 +129,7 @@ div.block ol {
 div.block li > ul,
 div.block li > ol {
   margin-top:    0pt;
-  margin-bottom: 0pt;
+  margin-bottom: 6pt;
 }
 
 div.block ul {
