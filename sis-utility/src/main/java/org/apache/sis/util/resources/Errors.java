@@ -84,6 +84,21 @@ public final class Errors extends IndexedResourceBundle {
         public static final int EmptyArgument_1 = 1;
 
         /**
+         * The dictionary shall contains at least one entry.
+         */
+        public static final int EmptyDictionary = 54;
+
+        /**
+         * Property named “{0}” shall not be empty.
+         */
+        public static final int EmptyProperty_1 = 55;
+
+        /**
+         * Argument ‘{0}’ shall not contain more than {1} elements. A number of {2} is excessive.
+         */
+        public static final int ExcessiveArgumentSize_3 = 52;
+
+        /**
          * Attribute “{0}” is not allowed for an object of type ‘{1}’.
          */
         public static final int ForbiddenAttribute_2 = 21;
@@ -159,6 +174,16 @@ public final class Errors extends IndexedResourceBundle {
          * Argument ‘{0}’ can not take an infinite value.
          */
         public static final int InfiniteArgumentValue_1 = 45;
+
+        /**
+         * Infinite recursivity.
+         */
+        public static final int InfiniteRecursivity = 51;
+
+        /**
+         * Argument ‘{0}’ shall contain at least {1} elements. A number of {2} is insufficient.
+         */
+        public static final int InsufficientArgumentSize_3 = 53;
 
         /**
          * A different value is already associated to the “{0}” key.
