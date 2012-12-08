@@ -31,20 +31,6 @@ import org.apache.sis.util.Version;
  */
 public abstract class MarshalContext {
     /**
-     * A constant for GML version 3.0.
-     *
-     * @see #getVersion(String)
-     */
-    public static final Version GML_3_0 = new Version("3.0");
-
-    /**
-     * A constant for GML version 3.2.
-     *
-     * @see #getVersion(String)
-     */
-    public static final Version GML_3_2 = new Version("3.2");
-
-    /**
      * Creates a new (un)marshalling context.
      */
     protected MarshalContext() {
@@ -61,8 +47,7 @@ public abstract class MarshalContext {
      *     <th>Typical values</th>
      *   </tr>
      *   <tr>
-     *     <td>gml</td><td>Geographic Markup Language</td>
-     *     <td>{@link #GML_3_0}, {@link #GML_3_2}</td>
+     *     <td>gml</td> <td>Geographic Markup Language</td> <td>{@code 3.0}, {@code 3.2}</td>
      *   </tr>
      * </table>
      *

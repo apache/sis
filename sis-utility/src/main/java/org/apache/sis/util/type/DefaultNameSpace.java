@@ -43,7 +43,6 @@ import java.util.Objects;
  *
  * <p>{@code DefaultNameSpace} can be instantiated by any of the following methods:</p>
  * <ul>
- *   <li>{@link DefaultNameFactory#createNameSpace(GenericName)}</li>
  *   <li>{@link DefaultNameFactory#createNameSpace(GenericName, Map)}</li>
  * </ul>
  *
