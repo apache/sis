@@ -220,7 +220,7 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
     /**
      * Constructs a generic name from a qualified name.
      * This method splits the given name around a separator inferred from the given scope, or the
-     * {@value org.apache.sis.util.typeDefaultNameSpace#DEFAULT_SEPARATOR} separator if the given
+     * {@value org.apache.sis.util.type.DefaultNameSpace#DEFAULT_SEPARATOR} separator if the given
      * scope is null.
      *
      * @param  scope The {@linkplain AbstractName#scope() scope} of the generic name to
@@ -291,10 +291,10 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
      * <ul>
      *   <li>{@link GenericName}, to be casted and returned as-is.</li>
      *   <li>{@link CharSequence} (usually a {@link String} or an {@link InternationalString}), to
-     *       be parsed as a generic name using the {@linkplain DefaultNameSpace#DEFAULT_SEPARATOR
-     *       default separator}.</li>
+     *       be parsed as a generic name using the
+     *       {@value org.apache.sis.util.type.DefaultNameSpace#DEFAULT_SEPARATOR} separator.</li>
      *   <li>{@link Identifier}, its {@linkplain Identifier#getCode() code} to be parsed as a generic name
-     *       using the {@value org.apache.sis.util.typeDefaultNameSpace#DEFAULT_SEPARATOR} separator.</li>
+     *       using the {@value org.apache.sis.util.type.DefaultNameSpace#DEFAULT_SEPARATOR} separator.</li>
      * </ul>
      *
      * @param  value The object to cast into an array of generic names.

@@ -126,6 +126,12 @@ div.block ol {
   margin-bottom: 9pt;
 }
 
+div.block li > ul,
+div.block li > ol {
+  margin-top:    0pt;
+  margin-bottom: 0pt;
+}
+
 div.block ul {
   list-style-type: square;
 }
