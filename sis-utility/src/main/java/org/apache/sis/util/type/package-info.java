@@ -17,8 +17,8 @@
 
 /**
  * Implementation of GeoAPI types from the {@link org.opengis.util} package.
- * All those types except {@code InternationalString} are derived from the ISO 19103 specification.
- * The main content of this package are:
+ * All those types except {@code Factory} and {@code InternationalString} are
+ * derived from the ISO 19103 specification. The main content of this package are:
  *
  * <ul>
  *   <li>Implementations of {@link org.opengis.util.InternationalString}:
@@ -38,9 +38,9 @@
  * </ul>
  *
  * {@section Relationship between naming types}
- * Names may be {@linkplain org.apache.sis.naming.AbstractName#toFullyQualifiedName()
+ * Names may be {@linkplain org.apache.sis.util.type.AbstractName#toFullyQualifiedName()
  * fully qualified} (like {@code "org.opengis.util.Record"}), or they may be relative to a
- * {@linkplain org.apache.sis.naming.AbstractName#scope() scope} (like {@code "util.Record"}
+ * {@linkplain org.apache.sis.util.type.AbstractName#scope() scope} (like {@code "util.Record"}
  * in the {@code "org.opengis"} scope). The illustration below shows all possible constructions
  * for {@code "org.opengis.util.Record"}:
  *
@@ -51,29 +51,29 @@
  *     <th>.</th><th>util</th>
  *     <th>.</th><th>Record</th>
  *     <th width="50"></th>
- *     <th>{@link org.apache.sis.naming.AbstractName#scope() scope()}</th>
- *     <th>{@link org.apache.sis.naming.AbstractName#getParsedNames() getParsedNames()}</th>
+ *     <th>{@link org.apache.sis.util.type.AbstractName#scope() scope()}</th>
+ *     <th>{@link org.apache.sis.util.type.AbstractName#getParsedNames() getParsedNames()}</th>
  *     <th width="50"></th>
  *     <th>Type</th>
  *   </tr>
  *
  *   <tr align="center">
- *     <td bgcolor="palegoldenrod" colspan="1"><font size="-1">{@linkplain org.apache.sis.naming.AbstractName#head() head}</font></td><td></td>
- *     <td bgcolor="palegoldenrod" colspan="5"><font size="-1">{@linkplain org.apache.sis.naming.DefaultScopedName#tail() tail}</font></td>
+ *     <td bgcolor="palegoldenrod" colspan="1"><font size="-1">{@linkplain org.apache.sis.util.type.AbstractName#head() head}</font></td><td></td>
+ *     <td bgcolor="palegoldenrod" colspan="5"><font size="-1">{@linkplain org.apache.sis.util.type.DefaultScopedName#tail() tail}</font></td>
  *     <td rowspan="2"></td>
- *     <td rowspan="2" bgcolor="beige" align="left">{@linkplain org.apache.sis.naming.DefaultNameSpace#isGlobal() global}</td>
+ *     <td rowspan="2" bgcolor="beige" align="left">{@linkplain org.apache.sis.util.type.DefaultNameSpace#isGlobal() global}</td>
  *     <td rowspan="2" bgcolor="beige" align="right">{@literal {"org", "opengis", "util", "Record"}}</td>
  *     <td rowspan="2"></td>
- *     <td rowspan="2">{@link org.apache.sis.naming.DefaultScopedName ScopedName}</td>
+ *     <td rowspan="2">{@link org.apache.sis.util.type.DefaultScopedName ScopedName}</td>
  *   </tr>
  *   <tr align="center">
- *     <td bgcolor="wheat" colspan="5"><font size="-1">{@linkplain org.apache.sis.naming.DefaultScopedName#path() path}</font></td><td></td>
- *     <td bgcolor="wheat" colspan="1"><font size="-1">{@linkplain org.apache.sis.naming.AbstractName#tip() tip}</font></td>
+ *     <td bgcolor="wheat" colspan="5"><font size="-1">{@linkplain org.apache.sis.util.type.DefaultScopedName#path() path}</font></td><td></td>
+ *     <td bgcolor="wheat" colspan="1"><font size="-1">{@linkplain org.apache.sis.util.type.AbstractName#tip() tip}</font></td>
  *   </tr>
  *
  *   <tr><td colspan="9" height="2"></td></tr>
  *   <tr align="center">
- *     <td bgcolor="palegoldenrod" colspan="1" rowspan="2"><font size="-1">{@linkplain org.apache.sis.naming.AbstractName#scope() scope}</font></td><td rowspan="2"></td>
+ *     <td bgcolor="palegoldenrod" colspan="1" rowspan="2"><font size="-1">{@linkplain org.apache.sis.util.type.AbstractName#scope() scope}</font></td><td rowspan="2"></td>
  *     <td bgcolor="palegoldenrod" colspan="1"><font size="-1">head</font></td><td></td>
  *     <td bgcolor="palegoldenrod" colspan="3"><font size="-1">tail</font></td>
  *     <td rowspan="2"></td>
@@ -111,7 +111,7 @@
  *     <td rowspan="2" bgcolor="beige" align="left">{@literal "org.opengis.util"}</td>
  *     <td rowspan="2" bgcolor="beige" align="right">{@literal {"Record"}}</td>
  *     <td rowspan="2"></td>
- *     <td rowspan="2">{@link org.apache.sis.naming.DefaultLocalName LocalName}</td>
+ *     <td rowspan="2">{@link org.apache.sis.util.type.DefaultLocalName LocalName}</td>
  *   </tr>
  *   <tr align="center">
  *     <td bgcolor="wheat" colspan="1"><font size="-1">tip</font></td>
