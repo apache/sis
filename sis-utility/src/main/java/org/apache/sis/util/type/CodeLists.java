@@ -85,9 +85,9 @@ public final class CodeLists extends Static {
      * Examples:
      *
      * <ul>
-     *   <li>{@code getCodeName(AxisDirection#NORTH)} returns {@code "north"}.</li>
-     *   <li>{@code getCodeName(CharacterSet#UTF_8)} returns {@code "utf8"}.</li>
-     *   <li>{@code getCodeName(ImagingCondition#BLURRED_IMAGE)} returns {@code "blurredImage"}.</li>
+     *   <li>{@code getCodeName(AxisDirection.NORTH)} returns {@code "north"}.</li>
+     *   <li>{@code getCodeName(CharacterSet.UTF_8)} returns {@code "utf8"}.</li>
+     *   <li>{@code getCodeName(ImagingCondition.BLURRED_IMAGE)} returns {@code "blurredImage"}.</li>
      * </ul>
      *
      * @param  code The code for which to get the name, or {@code null}.
@@ -114,9 +114,9 @@ public final class CodeLists extends Static {
      * from that name. Examples:</p>
      *
      * <ul>
-     *   <li>{@code getCodeTitle(AxisDirection#NORTH)} returns {@code "North"}.</li>
-     *   <li>{@code getCodeTitle(CharacterSet#UTF_8)} returns {@code "UTF-8"}.</li>
-     *   <li>{@code getCodeTitle(ImagingCondition#BLURRED_IMAGE)} returns {@code "Blurred image"}.</li>
+     *   <li>{@code getCodeTitle(AxisDirection.NORTH)} returns {@code "North"}.</li>
+     *   <li>{@code getCodeTitle(CharacterSet.UTF_8)} returns {@code "UTF-8"}.</li>
+     *   <li>{@code getCodeTitle(ImagingCondition.BLURRED_IMAGE)} returns {@code "Blurred image"}.</li>
      * </ul>
      *
      * @param  code The code from which to get a title, or {@code null}.

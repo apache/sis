@@ -26,7 +26,7 @@ package org.apache.sis.util;
  * {@section Conditions for equality}
  * <ul>
  *   <li>{@link org.apache.sis.metadata.iso.MetadataEntity} subclasses
- *     <ul class="verbose">
+ *     <ol>
  *       <li>{@link ComparisonMode#STRICT STRICT} – Objects must be of the same class
  *           and all attributes must be equal, including {@code xlink} and others
  *           {@linkplain org.apache.sis.metadata.iso.MetadataEntity#getIdentifiers() identifiers}.</li>
@@ -39,10 +39,10 @@ package org.apache.sis.util;
  *       <li>{@link ComparisonMode#APPROXIMATIVE APPROXIMATIVE} – The same attributes than the above
  *           {@code IGNORE_METADATA} mode are compared, but a slight (implementation dependant)
  *           difference is tolerated in floating point numbers.</li>
- *     </ul>
+ *     </ol>
  *   </li>
  *   <li>{@link org.apache.sis.referencing.AbstractIdentifiedObject} subclasses
- *     <ul class="verbose">
+ *     <ol>
  *       <li>{@link ComparisonMode#STRICT STRICT} – Objects must be of the same class
  *           and all attributes must be equal.</li>
  *       <li>{@link ComparisonMode#BY_CONTRACT BY_CONTRACT} – The same attributes than the above
@@ -60,11 +60,11 @@ package org.apache.sis.util;
  *       <li>{@link ComparisonMode#APPROXIMATIVE APPROXIMATIVE} – The same attributes than the above
  *           {@code IGNORE_METADATA} mode are compared, but a slight (implementation dependant)
  *           difference is tolerated in floating point numbers.</li>
- *     </ul>
+ *     </ol>
  *   </li>
  *   <li>{@link org.apache.sis.referencing.operation.transform.AbstractMathTransform} subclasses
  *       except {@link org.apache.sis.referencing.operation.transform.LinearTransform}
- *     <ul class="verbose">
+ *     <ol>
  *       <li>{@link ComparisonMode#STRICT STRICT} – Objects must be of the same class and all
  *           attributes must be equal, including the
  *           {@linkplain org.apache.sis.referencing.operation.transform.AbstractMathTransform#getParameterValues() parameter values}.</li>
@@ -80,11 +80,11 @@ package org.apache.sis.util;
  *       <li>{@link ComparisonMode#APPROXIMATIVE APPROXIMATIVE} – The same attributes than the above
  *           {@code IGNORE_METADATA} mode are compared, but a slight (implementation dependant)
  *           difference is tolerated in floating point numbers.</li>
- *     </ul>
+ *     </ol>
  *   </li>
  *   <li>{@link org.apache.sis.referencing.operation.matrix.XMatrix} and
  *       {@link org.apache.sis.referencing.operation.transform.LinearTransform} implementations
- *     <ul class="verbose">
+ *     <ol>
  *       <li>{@link ComparisonMode#STRICT STRICT} – Objects must be of the same class, matrixes
  *           must have the same size and all matrix elements must be equal.</li>
  *       <li>{@link ComparisonMode#BY_CONTRACT BY_CONTRACT} – Matrixes must have the same size
@@ -95,7 +95,7 @@ package org.apache.sis.util;
  *       <li>{@link ComparisonMode#APPROXIMATIVE APPROXIMATIVE} – The same attributes than the above
  *           {@code BY_CONTRACT} mode are compared, but a slight (implementation dependant)
  *           difference is tolerated in floating point numbers.</li>
- *     </ul>
+ *     </ol>
  *   </li>
  * </ul>
  *
@@ -123,6 +123,11 @@ public interface LenientComparable {
      *   <li>{@link ComparisonMode#DEBUG DEBUG} –
      *        special mode for figuring out why two objects expected to be equal are not.</li>
      * </ol>
+     *
+     * Note that {@code this.equals(other, mode)} is <strong>not</strong> guaranteed to be equals
+     * to {@code other.equals(this, mode)}.  In particular, the {@code BY_CONTRACT} level and all
+     * levels below it will typically compare only the properties known to {@code this} instance,
+     * ignoring any properties that may be known only by the {@code other} instance.
      *
      * @param  other The object to compare to {@code this}.
      * @param  mode The strictness level of the comparison.

@@ -43,6 +43,28 @@ import static org.apache.sis.util.type.DefaultNameSpace.DEFAULT_SEPARATOR_STRING
 
 /**
  * A factory for creating {@link AbstractName} objects.
+ * This factory provides the following methods for creating name instances:
+ *
+ * <ul>
+ *   <li>{@link #createTypeName(NameSpace, CharSequence)}</li>
+ *   <li>{@link #createMemberName(NameSpace, CharSequence, TypeName)}</li>
+ *   <li>{@link #createLocalName(NameSpace, CharSequence)}</li>
+ *   <li>{@link #createGenericName(NameSpace, CharSequence[])} – for local or scoped names</li>
+ * </ul>
+ *
+ * The following methods for creating miscellaneous name-related objects:
+ *
+ * <ul>
+ *   <li>{@link #createNameSpace(GenericName, Map)}</li>
+ *   <li>{@link #createInternationalString(Map)}</li>
+ * </ul>
+ *
+ * And the following methods for performing some analysis:
+ *
+ * <ul>
+ *   <li>{@link #parseGenericName(NameSpace, CharSequence)}</li>
+ *   <li>{@link #toArray(Object)} – SIS extension, not in GeoAPI interface</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.1)

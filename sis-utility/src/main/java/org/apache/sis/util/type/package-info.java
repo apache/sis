@@ -31,8 +31,10 @@
  *   <li>Implementations of {@link org.opengis.util.GenericName}:
  *     <ul>
  *       <li>{@link org.apache.sis.util.type.DefaultLocalName} for identifier within a namespace.</li>
- *       <li>{@link org.apache.sis.util.type.DefaultScopedName} for a composite of a <cite>head</cite>
- *           name and a <cite>tail</cite> name.</li>
+ *       <li>{@link org.apache.sis.util.type.DefaultScopedName} for a composite of a <cite>head</cite> name and a <cite>tail</cite> name.</li>
+ *       <li>{@link org.apache.sis.util.type.DefaultMemberName} for identifying a member of a record.</li>
+ *       <li>{@link org.apache.sis.util.type.DefaultTypeName} for identifying an attribute type associated to a member.</li>
+ *       <li>{@link org.apache.sis.util.type.DefaultNameSpace} for identifying the domain in which above names are defined.</li>
  *     </ul>
  *   </li>
  * </ul>
