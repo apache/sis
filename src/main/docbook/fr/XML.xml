@@ -238,7 +238,7 @@
                   <programlisting language="xml">&lt;MD_MetaData&gt;
   &lt;identificationInfo&gt;
     &lt;MD_DataIdentification id="mon_id"&gt;
-      &lt;!-- placer ici une définition de l'objet --&gt;
+      &lt;!-- insérer ici des propriétés filles --&gt;
     &lt;/MD_DataIdentification&gt;
   &lt;/identificationInfo&gt;
 &lt;/MD_MetaData&gt;</programlisting>
@@ -295,7 +295,8 @@ public class MyClass {
 }</programlisting>
       </example>
       <para>
-        Bien que ce mécanisme aie été définit dans le but de mieux supporter les représentations de méta-données en <acronym>XML</acronym>,
+        Bien que ce mécanisme aie été définit dans le but de mieux supporter les représentations des
+        attributs <acronym>XML</acronym> du groupe <classname role="OGC">gco:ObjectIdentification</classname>,
         il permet aussi de manière opportuniste de manipuler d’autres types d’identifiants.
         Par exemple les attributs <function role="GeoAPI">ISBN</function> et <function role="GeoAPI">ISSN</function>
         de <classname role="GeoAPI">Citation</classname> peuvent être manipulés de cette manière.
@@ -345,7 +346,7 @@ public class MyClass {
                   <programlisting language="xml">&lt;CI_Citation&gt;
   &lt;series&gt;
     &lt;CI_Series&gt;
-      &lt;!-- Some content here --&gt;
+      &lt;!-- insérer ici des propriétés filles --&gt;
     &lt;/CI_Series&gt;
   &lt;/series&gt;
 &lt;/CI_Citation&gt;</programlisting>

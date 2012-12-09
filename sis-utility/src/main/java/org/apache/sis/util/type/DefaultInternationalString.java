@@ -254,18 +254,12 @@ public class DefaultInternationalString extends AbstractInternationalString impl
      * The {@code null} locale (which stand for unlocalized message) is tried last.
      *
      * {@section Handling of <code>null</code> argument value}
-     * A {@code null} argument value can be given to this method for
-     * requesting a "unlocalized" string - typically some programmatic strings like
-     * {@linkplain org.opengis.annotation.UML#identifier() UML identifiers}.
-     * While such identifiers often look like English words, they are not considered
-     * as the {@linkplain Locale#ENGLISH English locale}. For example:
-     *
-     * <ul>
-     *   <li>Numbers are formatted using {@code Number.toString()} rather than {@link java.text.NumberFormat}.</li>
-     *   <li>Dates are formatted according the ISO standard rather than the English locale.</li>
-     * </ul>
-     *
-     * In order to produce a value close to the common practice,
+     * A {@code null} argument value can be given to this method for requesting a "unlocalized" string,
+     * typically some programmatic strings like {@linkplain org.opengis.annotation.UML#identifier() UML
+     * identifiers}. While such identifiers often look like English words, the {@code null} locale is
+     * not considered synonymous to the {@linkplain Locale#ENGLISH English locale} since the values may
+     * differ in the way numbers and dates are formatted (e.g. using the ISO 8601 standard for dates
+     * instead than English conventions). In order to produce a value close to the common practice,
      * this method handles {@code null} argument value as below:
      *
      * <ul>
@@ -277,7 +271,7 @@ public class DefaultInternationalString extends AbstractInternationalString impl
      *   <li>If no English string was found, this method looks for a string for the
      *       {@linkplain Locale#getDefault() system default locale}.</li>
      *   <li>If none of the above steps found a string, then this method returns
-     *       an arbitrary string (this behavior may change in future SIS implementation).</li>
+     *       an arbitrary string.</li>
      * </ul>
      *
      * @param  locale The locale to look for, or {@code null}.
