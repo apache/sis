@@ -19,6 +19,7 @@ package org.apache.sis.util;
 import java.util.Set;
 import java.util.Iterator;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.lang.reflect.Type;
 import java.lang.reflect.Field;
@@ -30,6 +31,7 @@ import java.lang.reflect.ParameterizedType;
 import static java.util.Arrays.copyOf;
 import static org.apache.sis.util.Arrays.resize;
 import static org.apache.sis.util.Arrays.contains;
+import static org.apache.sis.util.collection.Collections.hashMapCapacity;
 
 
 /**
@@ -55,6 +57,11 @@ import static org.apache.sis.util.Arrays.contains;
  * @module
  */
 public final class Classes extends Static {
+    /**
+     * An empty array of classes.
+     */
+    private static final Class<?>[] EMPTY_ARRAY = new Class<?>[0];
+
     /**
      * Methods to be rejected by {@link #isGetter(Method)}. They are mostly methods inherited
      * from {@link Object}. Only no-argument methods having a non-void return value need to be
@@ -109,7 +116,7 @@ public final class Classes extends Static {
                 do element = element.getComponentType();
                 while (element!=null && ++dimension != 0);
             } else if (element != Void.TYPE) {
-                final StringBuilder buffer = new StringBuilder(16);
+                final StringBuilder buffer = new StringBuilder();
                 do buffer.insert(0, '[');
                 while (--dimension != 0);
                 if (element.isPrimitive()) {
@@ -297,28 +304,39 @@ public final class Classes extends Static {
      *         interface), or an empty set if none. Callers can freely modify the returned set.
      */
     public static Set<Class<?>> getAllInterfaces(Class<?> type) {
-        final Set<Class<?>> interfaces = new LinkedHashSet<>();
+        Set<Class<?>> interfaces = null;
         while (type != null) {
-            getAllInterfaces(type, interfaces);
+            interfaces = getAllInterfaces(type, interfaces);
             type = type.getSuperclass();
         }
-        return interfaces;
+        return (interfaces != null) ? interfaces : Collections.<Class<?>>emptySet();
     }
 
     /**
-     * Adds to the given collection every interfaces implemented by the given class or interface.
+     * Adds to the given set every interfaces implemented by the given class or interface.
+     *
+     * @param  type  The type for which to add the interfaces in the given set.
+     * @param  addTo The set where to add interfaces, or {@code null} if not yet created.
+     * @return The given set (may be {@code null}), or a new set if the given set was null
+     *         and at least one interface has been found.
      */
-    private static void getAllInterfaces(final Class<?> type, final Set<Class<?>> interfaces) {
-        for (final Class<?> i : type.getInterfaces()) {
-            if (interfaces.add(i)) {
-                getAllInterfaces(i, interfaces);
+    private static Set<Class<?>> getAllInterfaces(final Class<?> type, Set<Class<?>> addTo) {
+        final Class<?>[] interfaces = type.getInterfaces();
+        for (int i=0; i<interfaces.length; i++) {
+            final Class<?> candidate = interfaces[i];
+            if (addTo == null) {
+                addTo = new LinkedHashSet<>(hashMapCapacity(interfaces.length - i));
+            }
+            if (addTo.add(candidate)) {
+                getAllInterfaces(candidate, addTo);
             }
         }
+        return addTo;
     }
 
     /**
      * Returns the interfaces implemented by the given class and assignable to the given base
-     * interface, or {@code null} if none. If more than one interface extends the given base,
+     * interface, or an empty array if none. If more than one interface extends the given base,
      * then the most specialized interfaces are returned. For example if the given class
      * implements both the {@link Set} and {@link Collection} interfaces, then the returned
      * array contains only the {@code Set} interface.
@@ -328,15 +346,14 @@ public final class Classes extends Static {
      * containing {@code List.class}.
      *
      * @param  <T>  The type of the {@code baseInterface} class argument.
-     * @param  type A class for which the implemented interface is desired.
-     * @param  baseInterface The base type of the interface to search.
-     * @return The leaf interfaces matching the given criterion, or {@code null} if none.
-     *         If non-null, than the array is guaranteed to contain at least one element.
+     * @param  type A class for which the implemented interfaces are desired.
+     * @param  baseInterface The base type of the interfaces to search.
+     * @return The leaf interfaces matching the given criterion, or an empty array if none.
      */
     @SuppressWarnings("unchecked")
     public static <T> Class<? extends T>[] getLeafInterfaces(Class<?> type, final Class<T> baseInterface) {
         int count = 0;
-        Class<?>[] types = null;
+        Class<?>[] types = EMPTY_ARRAY;
         while (type != null) {
             final Class<?>[] candidates = type.getInterfaces();
 next:       for (final Class<?> candidate : candidates) {
@@ -356,7 +373,7 @@ next:       for (final Class<?> candidate : candidates) {
                             continue next;
                         }
                     }
-                    if (types == null) {
+                    if (types == EMPTY_ARRAY) {
                         types = candidates;
                     }
                     if (count >= types.length) {
@@ -484,7 +501,7 @@ next:       for (final Class<?> candidate : candidates) {
         interfaces.retainAll(buffer);
         for (Iterator<Class<?>> it=interfaces.iterator(); it.hasNext();) {
             final Class<?> candidate = it.next();
-            buffer.clear();
+            buffer.clear(); // Safe because the buffer can not be Collections.EMPTY_SET at this point.
             getAllInterfaces(candidate, buffer);
             if (interfaces.removeAll(buffer)) {
                 it = interfaces.iterator();
@@ -494,11 +511,13 @@ next:       for (final Class<?> candidate : candidates) {
     }
 
     /**
-     * Returns {@code true} if the two specified objects implements exactly the same set of
-     * interfaces. Only interfaces assignable to {@code base} are compared. Declaration order
-     * doesn't matter. For example in ISO 19111, different interfaces exist for different coordinate
-     * system geometries ({@code CartesianCS}, {@code PolarCS}, etc.). We can check if two
-     * CS implementations has the same geometry with the following code:
+     * Returns {@code true} if the two specified objects implements exactly the same set
+     * of interfaces. Only interfaces assignable to {@code baseInterface} are compared.
+     * Declaration order doesn't matter.
+     *
+     * For example in ISO 19111, different interfaces exist for different coordinate system (CS)
+     * geometries ({@code CartesianCS}, {@code PolarCS}, etc.). One can check if two implementations
+     * have the same geometry with the following code:
      *
      * {@preformat java
      *     if (implementSameInterfaces(cs1, cs2, CoordinateSystem.class)) {
@@ -508,39 +527,27 @@ next:       for (final Class<?> candidate : candidates) {
      *
      * @param object1 The first object to check for interfaces.
      * @param object2 The second object to check for interfaces.
-     * @param base    The parent of all interfaces to check.
-     * @return        {@code true} if both objects implement the same set of interfaces,
-     *                considering only sub-interfaces of {@code base}.
+     * @param baseInterface The parent of all interfaces to check.
+     * @return {@code true} if both objects implement the same set of interfaces,
+     *         considering only sub-interfaces of {@code baseInterface}.
      */
-    public static boolean implementSameInterfaces(final Class<?> object1, final Class<?> object2, final Class<?> base) {
+    public static boolean implementSameInterfaces(final Class<?> object1, final Class<?> object2, final Class<?> baseInterface) {
         if (object1 == object2) {
             return true;
         }
         if (object1 == null || object2 == null) {
             return false;
         }
-        final Class<?>[] c1 = object1.getInterfaces();
-        final Class<?>[] c2 = object2.getInterfaces();
+        final Class<?>[] c1 = getLeafInterfaces(object1, baseInterface);
+        final Class<?>[] c2 = getLeafInterfaces(object2, baseInterface);
         /*
-         * Trim all interfaces that are not assignable to 'base' in the 'c2' array.
-         * Doing this once will avoid to redo the same test many time in the inner
-         * loops j=[0..n].
+         * For each interface in the 'c1' array, check if
+         * this interface exists also in the 'c2' array.
          */
-        int n = 0;
-        for (int i=0; i<c2.length; i++) {
-            final Class<?> c = c2[i];
-            if (base.isAssignableFrom(c)) {
-                c2[n++] = c;
-            }
-        }
-        /*
-         * For each interface assignable to 'base' in the 'c1' array, check if
-         * this interface exists also in the 'c2' array. Order doesn't matter.
-         */
-compare:for (int i=0; i<c1.length; i++) {
-            final Class<?> c = c1[i];
-            if (base.isAssignableFrom(c)) {
-                for (int j=0; j<n; j++) {
+        int n = (c2 != null) ? c2.length : 0;
+        if (c1 != null) {
+compare:    for (final Class<?> c : c1) {
+                for (int j=n; --j>=0;) {
                     if (c == c2[j]) {
                         System.arraycopy(c2, j+1, c2, j, --n-j);
                         continue compare;
