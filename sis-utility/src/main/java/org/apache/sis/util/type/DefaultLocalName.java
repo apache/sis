@@ -194,7 +194,7 @@ public class DefaultLocalName extends AbstractName implements LocalName {
     }
 
     /**
-     * Returns a local-dependent string representation of this locale name.
+     * Returns a local-dependent string representation of this local name.
      */
     @Override
     public synchronized InternationalString toInternationalString() {
