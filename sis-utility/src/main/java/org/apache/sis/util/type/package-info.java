@@ -125,4 +125,23 @@
  * @version 0.3
  * @module
  */
+@XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GCO, xmlns = {
+    @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO)
+})
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlJavaTypeAdapters({
+    @XmlJavaTypeAdapter(GO_GenericName.class),
+    @XmlJavaTypeAdapter(LocalNameAdapter.class),
+    @XmlJavaTypeAdapter(ScopedNameAdapter.class)
+})
 package org.apache.sis.util.type;
+
+import javax.xml.bind.annotation.XmlNs;
+import javax.xml.bind.annotation.XmlNsForm;
+import javax.xml.bind.annotation.XmlSchema;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
+import org.apache.sis.xml.Namespaces;
+import org.apache.sis.internal.jaxb.gco.*;
