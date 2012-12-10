@@ -18,6 +18,7 @@ package org.apache.sis.util.type;
 
 import java.util.List;
 import java.util.Iterator;
+import java.util.ConcurrentModificationException;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import net.jcip.annotations.Immutable;
@@ -142,7 +143,9 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
             tip.fullyQualified = fullyQualified = this;
         }
         locals[i++] = tip;
-        assert (i == size); // Paranoiac check.
+        if (i != size) { // Paranoiac check.
+            throw new ConcurrentModificationException(Errors.format(Errors.Keys.UnexpectedChange_1, "names"));
+        }
         parsedNames = UnmodifiableArrayList.wrap(locals);
     }
 
@@ -204,7 +207,9 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
                 name = it.next();
             }
         }
-        assert (index == locals.length); // Paranoiac check.
+        if (index != locals.length) { // Paranoiac check.
+            throw new ConcurrentModificationException(Errors.format(Errors.Keys.UnexpectedChange_1, "tail"));
+        }
         parsedNames = UnmodifiableArrayList.wrap(locals);
         if (tail instanceof LocalName) {
             this.path = path;

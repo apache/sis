@@ -271,6 +271,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int UnexpectedArgumentDimension_3 = 5;
 
         /**
+         * Unexpected change in ‘{0}’.
+         */
+        public static final int UnexpectedChange_1 = 56;
+
+        /**
          * More characters were expected at the end of “{0}”.
          */
         public static final int UnexpectedEndOfString_1 = 30;
