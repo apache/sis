@@ -35,7 +35,7 @@ import org.apache.sis.test.DependsOn;
  */
 @RunWith(JUnit4.class)
 @DependsOn(AbstractNameTest.class)
-public final strictfp class GeoapiTest extends NameTest {
+public final strictfp class DefaultNameFactoryTest extends NameTest {
     /**
      * The factory to test.
      */
@@ -44,7 +44,7 @@ public final strictfp class GeoapiTest extends NameTest {
     /**
      * Creates a new test suite using the singleton factory instance.
      */
-    public GeoapiTest() {
+    public DefaultNameFactoryTest() {
         super(factory);
     }
 

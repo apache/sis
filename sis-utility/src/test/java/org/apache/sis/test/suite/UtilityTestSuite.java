@@ -63,7 +63,7 @@ import org.junit.runners.Suite;
   org.apache.sis.util.type.DefaultInternationalStringTest.class,
   org.apache.sis.internal.util.LocalizedParseExceptionTest.class,
   org.apache.sis.util.type.AbstractNameTest.class,
-  org.apache.sis.util.type.GeoapiTest.class,
+  org.apache.sis.util.type.DefaultNameFactoryTest.class,
 
   // Measurements and formatting.
   org.apache.sis.measure.UnitsTest.class,
