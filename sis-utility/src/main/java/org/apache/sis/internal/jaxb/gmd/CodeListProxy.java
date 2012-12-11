@@ -61,6 +61,13 @@ public final class CodeListProxy {
     /**
      * Returns the URL to a given code list in the given XML file. This method concatenates
      * the base schema URL with the given directory, file and identifier.
+     * Some examples of strings returned by this method are:
+     *
+     * <ul>
+     *   <li>{@code "http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/ML_gmxCodelists.xml#LanguageCode"}</li>
+     *   <li>{@code "http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode"}</li>
+     *   <li>{@code "http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode"}</li>
+     * </ul>
      *
      * @param  schema     The schema, typically as a result of a call to
      *                    {@link MarshalContext#schema(MarshalContext, String, String)}.
