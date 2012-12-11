@@ -125,13 +125,20 @@ final class LocalisedCharacterString {
 
     /**
      * Returns a string representation of this object for debugging purpose.
+     * Example:
+     *
+     * {@preformat
+     *   LocalisedCharacterString[#locale-fra, “Un texte”]
+     * }
+     *
+     * @see TextGroup#toString()
      */
     @Override
     public String toString() {
-        final StringBuilder buffer = new StringBuilder(getClass().getSimpleName())
-                .append('[').append(getLocale());
+        final StringBuilder buffer = new StringBuilder(80)
+                .append(getClass().getSimpleName()).append('[').append(getLocale());
         if (text != null) {
-            buffer.append(", \"").append(text).append('"');
+            buffer.append(", “").append(text).append('”');
         }
         return buffer.append(']').toString();
     }

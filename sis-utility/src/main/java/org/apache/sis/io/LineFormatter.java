@@ -137,7 +137,7 @@ public class LineFormatter extends FilteredAppendable implements Flushable {
      * stream before the non-ignorable one. Otherwise if whitespaces are followed by a line
      * separator, then they are discarded.
      */
-    private final StringBuilder buffer = new StringBuilder(16);
+    private final StringBuilder buffer = new StringBuilder();
 
     /**
      * The number of Java characters (not Unicode code points) in {@link #buffer},

@@ -199,7 +199,7 @@ public class Angle implements Comparable<Angle>, Formattable, Serializable {
      */
     @Override
     public String toString() {
-        StringBuffer buffer = new StringBuffer(16);
+        StringBuffer buffer = new StringBuffer();
         double m = Math.abs(θ);
         final boolean isSmall = m <= (1 / 3600E+3); // 1E-3 arc-second.
         if (isSmall || m > maximum()) {
@@ -281,7 +281,7 @@ public class Angle implements Comparable<Angle>, Formattable, Serializable {
             if (precision > 0) {
                 format.setMaximumWidth(precision);
             }
-            value = format.format(this, new StringBuffer(16), null).toString();
+            value = format.format(this, new StringBuffer(), null).toString();
         }
         org.apache.sis.internal.util.Utilities.formatTo(formatter, flags, width, value);
     }

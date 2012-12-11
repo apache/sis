@@ -839,7 +839,7 @@ public class XLink implements Serializable {
      */
     @Override
     public synchronized String toString() {
-        final StringBuilder buffer = new StringBuilder(32);
+        final StringBuilder buffer = new StringBuilder(64);
         buffer.append(Classes.getShortClassName(this)).append('[');
         append(buffer, "type",    getType());
         append(buffer, "href",    getHRef());

@@ -544,17 +544,15 @@ next:       for (final Class<?> candidate : candidates) {
          * For each interface in the 'c1' array, check if
          * this interface exists also in the 'c2' array.
          */
-        int n = (c2 != null) ? c2.length : 0;
-        if (c1 != null) {
-compare:    for (final Class<?> c : c1) {
-                for (int j=n; --j>=0;) {
-                    if (c == c2[j]) {
-                        System.arraycopy(c2, j+1, c2, j, --n-j);
-                        continue compare;
-                    }
+        int n = c2.length;
+cmp:    for (final Class<?> c : c1) {
+            for (int j=n; --j>=0;) {
+                if (c == c2[j]) {
+                    System.arraycopy(c2, j+1, c2, j, --n-j);
+                    continue cmp;
                 }
-                return false; // Interface not found in 'c2'.
             }
+            return false; // Interface not found in 'c2'.
         }
         return n == 0; // If n>0, at least one interface was not found in 'c1'.
     }

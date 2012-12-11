@@ -536,10 +536,19 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
      * Overrides the string representation in order to use only the authority title as keys.
      * We do that because the string representations of {@code DefaultCitation} objects are
      * very big.
+     *
+     * <p>String examples:</p>
+     * <ul>
+     *   <li>{gml:id=“myID”}</li>
+     *   <li>{gco:uuid=“42924124-032a-4dfe-b06e-113e3cb81cf0”}</li>
+     *   <li>{xlink:href=“http://www.mydomain.org/myHREF”}</li>
+     * </ul>
+     *
+     * @see SpecializedIdentifier#toString()
      */
     @Override
     public String toString() {
-	final StringBuilder buffer = new StringBuilder(100).append('{');
+	final StringBuilder buffer = new StringBuilder(50).append('{');
 	for (final Entry<Citation,String> entry : entrySet()) {
 	    if (buffer.length() != 1) {
                 buffer.append(", ");

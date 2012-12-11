@@ -559,7 +559,7 @@ scan:   for (int i=0; i<length;) {
      */
     private String toPattern(final char[] symbols, final int decimalSeparator) {
         char symbol = 0;
-        final StringBuilder buffer = new StringBuilder(12);
+        final StringBuilder buffer = new StringBuilder();
         for (int field=DEGREES_FIELD; field<=FRACTION_FIELD; field++) {
             final String previousSuffix;
             int width;
@@ -781,7 +781,7 @@ scan:   for (int i=0; i<length;) {
      * @return The formatted string.
      */
     public final String format(final double angle) {
-        return format(angle, new StringBuffer(20), null).toString();
+        return format(angle, new StringBuffer(), null).toString();
     }
 
     /**
@@ -1053,7 +1053,7 @@ scan:   for (int i=0; i<length;) {
      */
     @Override
     public AttributedCharacterIterator formatToCharacterIterator(final Object value) {
-        final StringBuffer buffer = new StringBuffer(20);
+        final StringBuffer buffer = new StringBuffer();
         final FormattedCharacterIterator it = new FormattedCharacterIterator(buffer);
         try {
             characterIterator = it;

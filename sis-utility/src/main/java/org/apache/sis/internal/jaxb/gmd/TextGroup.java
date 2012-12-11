@@ -110,10 +110,12 @@ final class TextGroup {
 
     /**
      * Returns a string representation of this text group for debugging purpose.
+     *
+     * @see LocalisedCharacterString#toString()
      */
     @Override
     public String toString() {
-        final StringBuilder buffer = new StringBuilder(getClass().getSimpleName());
+        final StringBuilder buffer = new StringBuilder(160).append(getClass().getSimpleName());
         if (localized != null) {
             final String lineSeparator = System.lineSeparator();
             for (LocalisedCharacterString string : localized) {
