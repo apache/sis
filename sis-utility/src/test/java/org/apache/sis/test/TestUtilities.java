@@ -68,6 +68,11 @@ public final strictfp class TestUtilities extends Static {
     };
 
     /**
+     * The thread group for every threads created for testing purpose.
+     */
+    public static final ThreadGroup THREADS = new ThreadGroup("SIS-Tests");
+
+    /**
      * Do not allow instantiation of this class.
      */
     private TestUtilities() {

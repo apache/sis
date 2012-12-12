@@ -12,8 +12,8 @@
     can be built by the NetBeans IDE.
   -->
   <target name="-pre-jar">
-    <copy todir="${build.classes.dir}/org/apache/sis/util/type">
-      <fileset dir="${project.root}/sis-utility/src/main/resources/org/apache/sis/util/type">
+    <copy todir="${build.classes.dir}/org/apache/sis/util/iso">
+      <fileset dir="${project.root}/sis-utility/src/main/resources/org/apache/sis/util/iso">
         <include name="class-index.properties"/>
       </fileset>
     </copy>

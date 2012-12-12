@@ -22,7 +22,6 @@ import java.util.Arrays;
 import java.util.Locale;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
-import java.util.MissingResourceException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
@@ -196,24 +195,6 @@ public final class Locales extends Static {
             languages[i++] = unique(new Locale(code));
         }
         return languages;
-    }
-
-    /**
-     * Returns the {@linkplain Locale#getISO3Language() 3-letters ISO language code} if available,
-     * or the {@linkplain Locale#getLanguage() 2-letters code} otherwise.
-     *
-     * @param  locale The locale for which we want the language.
-     * @return The language code, 3 letters if possible or 2 letters otherwise.
-     *
-     * @see Locale#getISO3Language()
-     */
-    public static String getLanguageCode(final Locale locale) {
-        try {
-            return locale.getISO3Language();
-        } catch (MissingResourceException e) {
-            Logging.recoverableException(Locales.class, "getLanguage", e);
-            return locale.getLanguage();
-        }
     }
 
     /**

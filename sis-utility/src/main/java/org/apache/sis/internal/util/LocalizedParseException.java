@@ -86,7 +86,7 @@ public final class LocalizedParseException extends ParseException implements Loc
      *
      * @param locale      The locale for {@link #getLocalizedMessage()}.
      * @param key         The resource key as one of the {@link Errors.Keys} constant.
-     * @param  text       The full text that {@code Format} failed to parse.
+     * @param text        The full text that {@code Format} failed to parse.
      * @param errorOffset The position where the error is found while parsing.
      */
     public LocalizedParseException(final Locale locale, final int key, final CharSequence text, final int errorOffset) {
@@ -98,7 +98,7 @@ public final class LocalizedParseException extends ParseException implements Loc
      * information. This convenience constructor creates a message of the kind "<cite>Can not
      * parse string "text" as an object of type 'type'</cite>".
      *
-     * @param  locale The locale for {@link ParseException#getLocalizedMessage()}.
+     * @param  locale The locale for {@link #getLocalizedMessage()}.
      * @param  type   The type of objects parsed by the {@link java.text.Format}.
      * @param  text   The full text that {@code Format} failed to parse.
      * @param  pos    Index of the {@linkplain ParsePosition#getIndex() first parsed character},

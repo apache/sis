@@ -67,9 +67,9 @@ import org.apache.sis.internal.util.Objects;
  * </table></blockquote>
  *
  * When {@code xlink} attributes are found at unmarshalling time instead of an object definition,
- * those attributes are given to the {@link ObjectLinker#resolve(Class, XLink)} method. Users can
- * override that method in order to fetch an instance in some catalog for the given {@code xlink}
- * values.
+ * those attributes are given to the {@link ReferenceResolver#resolve(MarshalContext, Class, XLink)}
+ * method. Users can override that method in order to fetch an instance in some catalog for the given
+ * {@code xlink} values.
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -839,7 +839,7 @@ public class XLink implements Serializable {
      */
     @Override
     public synchronized String toString() {
-        final StringBuilder buffer = new StringBuilder(32);
+        final StringBuilder buffer = new StringBuilder(64);
         buffer.append(Classes.getShortClassName(this)).append('[');
         append(buffer, "type",    getType());
         append(buffer, "href",    getHRef());

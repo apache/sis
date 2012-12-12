@@ -43,6 +43,7 @@ import org.apache.sis.util.resources.Errors;
  *     {@link #ensurePositive(String, int) ensurePositive},
  *     {@link #ensureStrictlyPositive(String, int) ensureStrictlyPositive},
  *     {@link #ensureBetween(String, int, int, int) ensureBetween},
+ *     {@link #ensureSizeBetween(String, int, int, int) ensureBetween},
  *     {@link #ensureCanCast(String, Class, Object) ensureCanCast}.
  *   </td>
  * </tr><tr>
@@ -89,7 +90,7 @@ public final class ArgumentChecks extends Static {
      * Makes sure that an argument is non-null. If the given {@code object} is null, then a
      * {@link NullArgumentException} is thrown with a localized message containing the given name.
      *
-     * @param  name The name of the argument to be checked. Used only in case an exception is thrown.
+     * @param  name The name of the argument to be checked. Used only if an exception is thrown.
      * @param  object The user argument to check against null value.
      * @throws NullArgumentException if {@code object} is null.
      */
@@ -102,21 +103,19 @@ public final class ArgumentChecks extends Static {
     }
 
     /**
-     * Makes sure that an array element is non-null. If {@code array[index]} is null, then a
-     * {@link NullArgumentException} is thrown with a localized message containing the given name.
+     * Makes sure that an array element is non-null. If {@code element} is null, then a
+     * {@link NullArgumentException} is thrown with a localized message containing the
+     * given name and index.
      *
-     * @param  name The name of the argument to be checked. Used only in case an exception is thrown.
-     * @param  index Index of the element to check.
-     * @param  array The user argument to check against null element.
-     * @throws NullArgumentException if {@code array} or {@code array[index]} is null.
+     * @param  name    The name of the argument to be checked. Used only if an exception is thrown.
+     * @param  index   The Index of the element to check in an array or a list. Used only if an exception is thrown.
+     * @param  element The array or list element to check against null null.
+     * @throws NullArgumentException if {@code element} is null.
      */
-    public static void ensureNonNull(final String name, final int index, final Object[] array)
+    public static void ensureNonNullElement(final String name, final int index, final Object element)
             throws NullArgumentException
     {
-        if (array == null) {
-            throw new NullArgumentException(Errors.format(Errors.Keys.NullArgument_1, name));
-        }
-        if (array[index] == null) {
+        if (element == null) {
             throw new NullArgumentException(Errors.format(
                     Errors.Keys.NullArgument_1, name + '[' + index + ']'));
         }
@@ -128,7 +127,7 @@ public final class ArgumentChecks extends Static {
      * a {@linkplain CharSequence#length() length} equals to 0, then an {@link IllegalArgumentException}
      * is thrown.
      *
-     * @param  name The name of the argument to be checked. Used only in case an exception is thrown.
+     * @param  name The name of the argument to be checked. Used only if an exception is thrown.
      * @param  text The user argument to check against null value and empty sequences.
      * @throws NullArgumentException if {@code text} is null.
      * @throws IllegalArgumentException if {@code text} is empty.
@@ -210,7 +209,7 @@ public final class ArgumentChecks extends Static {
      * @throws IndexOutOfBoundsException If the given [{@code lower} … {@code upper}]
      *         range is out of the sequence index range.
      *
-     * @see #ensureBetween(String, int, int, int)
+     * @see #ensureSizeBetween(String, int, int, int)
      */
     public static void ensureValidIndexRange(final int length, final int lower, final int upper) throws IndexOutOfBoundsException {
         if (lower < 0 || upper < lower || upper > length) {
@@ -413,13 +412,25 @@ public final class ArgumentChecks extends Static {
 
     /**
      * Ensures that the given integer value is between the given bounds, inclusive.
+     * This is a general-purpose method for checking integer arguments.
+     * Note that the following specialized methods are provided for common kinds
+     * of integer range checks:
      *
-     * @param  name  The name of the argument to be checked. Used only in case an exception is thrown.
+     * <ul>
+     *   <li>{@link #ensureSizeBetween(String, int, int, int) ensureSizeBetween(…)}
+     *       if the {@code value} argument is a collection size or an array length.</li>
+     *   <li>{@link #ensureValidIndex(int, int) ensureValidIndex(…)} if the {@code value}
+     *       argument is an index in a list or an array.</li>
+     * </ul>
+     *
+     * @param  name  The name of the argument to be checked. Used only if an exception is thrown.
      * @param  min   The minimal value, inclusive.
      * @param  max   The maximal value, inclusive.
-     * @param  value The value to be tested.
+     * @param  value The user argument to check.
      * @throws IllegalArgumentException if the given value is not in the given range.
      *
+     * @see #ensureSizeBetween(String, int, int, int)
+     * @see #ensureValidIndex(int, int)
      * @see #ensureValidIndexRange(int, int, int)
      */
     public static void ensureBetween(final String name, final int min, final int max, final int value)
@@ -434,10 +445,10 @@ public final class ArgumentChecks extends Static {
     /**
      * Ensures that the given long value is between the given bounds, inclusive.
      *
-     * @param  name  The name of the argument to be checked. Used only in case an exception is thrown.
+     * @param  name  The name of the argument to be checked. Used only if an exception is thrown.
      * @param  min   The minimal value, inclusive.
      * @param  max   The maximal value, inclusive.
-     * @param  value The value to be tested.
+     * @param  value The user argument to check.
      * @throws IllegalArgumentException if the given value is not in the given range.
      */
     public static void ensureBetween(final String name, final long min, final long max, final long value)
@@ -452,10 +463,10 @@ public final class ArgumentChecks extends Static {
     /**
      * Ensures that the given floating point value is between the given bounds, inclusive.
      *
-     * @param  name  The name of the argument to be checked. Used only in case an exception is thrown.
+     * @param  name  The name of the argument to be checked. Used only if an exception is thrown.
      * @param  min   The minimal value, inclusive.
      * @param  max   The maximal value, inclusive.
-     * @param  value The value to be tested.
+     * @param  value The user argument to check.
      * @throws IllegalArgumentException if the given value is NaN or not in the given range.
      */
     public static void ensureBetween(final String name, final float min, final float max, final float value)
@@ -471,10 +482,10 @@ public final class ArgumentChecks extends Static {
     /**
      * Ensures that the given floating point value is between the given bounds, inclusive.
      *
-     * @param  name  The name of the argument to be checked. Used only in case an exception is thrown.
+     * @param  name  The name of the argument to be checked. Used only if an exception is thrown.
      * @param  min   The minimal value, inclusive.
      * @param  max   The maximal value, inclusive.
-     * @param  value The value to be tested.
+     * @param  value The user argument to check.
      * @throws IllegalArgumentException if the given value is NaN or not in the given range.
      */
     public static void ensureBetween(final String name, final double min, final double max, final double value)
@@ -488,10 +499,42 @@ public final class ArgumentChecks extends Static {
     }
 
     /**
+     * Ensures that the given collection size of array length is between the given bounds, inclusive.
+     * This method performs the same check than {@link #ensureBetween(String, int, int, int)
+     * ensureBetween(…)}, but the error message is different in case of failure.
+     *
+     * @param  name  The name of the argument to be checked. Used only if an exception is thrown.
+     * @param  min   The minimal size (inclusive), or 0 if none.
+     * @param  max   The maximal size (inclusive), or {@link Integer#MAX_VALUE} if none.
+     * @param  size  The user collection size or array length to be checked.
+     * @throws IllegalArgumentException if the given value is not in the given range.
+     *
+     * @see #ensureBetween(String, int, int, int)
+     * @see #ensureValidIndexRange(int, int, int)
+     */
+    public static void ensureSizeBetween(final String name, final int min, final int max, final int size)
+            throws IllegalArgumentException
+    {
+        final String message;
+        if (size < min) {
+            if (min == 1) {
+                message = Errors.format(Errors.Keys.EmptyArgument_1, name);
+            } else {
+                message = Errors.format(Errors.Keys.InsufficientArgumentSize_3, name, min, size);
+            }
+        } else if (size > max) {
+            message = Errors.format(Errors.Keys.ExcessiveArgumentSize_3, name, max, size);
+        } else {
+            return;
+        }
+        throw new IllegalArgumentException(message);
+    }
+
+    /**
      * Ensures that the given direct position has the expected number of dimensions.
      * This method does nothing if the given direct position is null.
      *
-     * @param  name     The name of the argument to be checked. Used only in case an exception is thrown.
+     * @param  name     The name of the argument to be checked. Used only if an exception is thrown.
      * @param  expected The expected number of dimensions.
      * @param  position The direct position to check for its dimension, or {@code null}.
      * @throws MismatchedDimensionException If the given direct position is non-null and does
