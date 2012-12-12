@@ -260,7 +260,7 @@ System.out.println("Le nom standard de la méthode " + method.getName() + " est 
       </example>
 
       <para>
-        La classe <classname role="SIS">org.apache.sis.util.type.Types</classname> fournit la méthode de commodité
+        La classe <classname role="SIS">org.apache.sis.util.iso.Types</classname> fournit la méthode de commodité
         <function role="SIS">getStandardName(Class)</function> pour effectuer cette opération.
       </para>
 
@@ -288,7 +288,7 @@ System.out.println("L’interface GeoAPI du type ISO " + isoName + " est " + typ
       </example>
 
       <para>
-        La classe <classname role="SIS">org.apache.sis.util.type.Types</classname> fournit la méthode de commodité
+        La classe <classname role="SIS">org.apache.sis.util.iso.Types</classname> fournit la méthode de commodité
         <function role="SIS">forStandardName(String)</function> pour effectuer cette opération.
       </para>
     </section>

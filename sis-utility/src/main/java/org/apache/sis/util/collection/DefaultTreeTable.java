@@ -163,8 +163,8 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
             default: map = new LinkedHashMap<TableColumn<?>,Integer>(hashMapCapacity(columns.length)); break;
         }
         for (int i=0; i<columns.length; i++) {
-            ArgumentChecks.ensureNonNull("columns", i, columns);
             final TableColumn<?> column = columns[i];
+            ArgumentChecks.ensureNonNullElement("columns", i, column);
             final Integer pos = i;
             if (map == null) {
                 map = Collections.<TableColumn<?>,Integer>singletonMap(column, pos);

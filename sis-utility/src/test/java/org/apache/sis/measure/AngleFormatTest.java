@@ -210,7 +210,7 @@ public final strictfp class AngleFormatTest extends TestCase {
     public void testFieldPosition() {
         final Latitude latitude = new Latitude(FormattedCharacterIteratorTest.LATITUDE_VALUE);
         final AngleFormat f = new AngleFormat("DD°MM′SS.s″", Locale.CANADA);
-        final StringBuffer buffer = new StringBuffer(12);
+        final StringBuffer buffer = new StringBuffer();
         for (int i=AngleFormat.DEGREES_FIELD; i<=AngleFormat.HEMISPHERE_FIELD; i++) {
             final AngleFormat.Field field;
             final int start, limit;

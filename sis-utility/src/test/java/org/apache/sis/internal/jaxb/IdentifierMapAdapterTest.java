@@ -44,7 +44,8 @@ import static org.apache.sis.xml.IdentifierSpace.*;
 public strictfp class IdentifierMapAdapterTest extends TestCase {
     /**
      * Creates the {@link IdentifierMapAdapter} instance to test for the given identifiers.
-     * Subclasses will override this method.
+     * This {@code IdentifierMapAdapterTest} class creates {@link IdentifierMapAdapter} instances.
+     * Subclasses will override this method in order to create instances of the class to test.
      *
      * @param  identifiers The identifiers to wrap in an {@code IdentifierMapAdapter}.
      * @return The {@code IdentifierMapAdapter} to test.
@@ -56,6 +57,8 @@ public strictfp class IdentifierMapAdapterTest extends TestCase {
     /**
      * Asserts that the content of the given map is equals to the given content, represented
      * as a string. Subclasses can override this method in order to alter the expected string.
+     * This is needed when, using the "special case rules", {@code "href"} have been replaced
+     * be {@code "xlink:href"}.
      *
      * @param  expected The expected content.
      * @return The map to compare with the expected content.
@@ -82,59 +85,71 @@ public strictfp class IdentifierMapAdapterTest extends TestCase {
     public void testGetAndPut() {
         final List<Identifier> identifiers = new ArrayList<Identifier>();
         final Map<Citation,String> map = create(identifiers);
-        assertTrue(map.isEmpty());
-        assertEquals(0, map.size());
-
-        identifiers.add(new IdentifierMapEntry(ID,   "myID"));
-        identifiers.add(new IdentifierMapEntry(UUID, "myUUID"));
-        assertFalse (map.isEmpty());
-        assertEquals(2, map.size());
-        assertEquals(2, identifiers.size());
-        assertTrue  (map.containsKey(ID));
-        assertTrue  (map.containsKey(UUID));
-        assertFalse (map.containsKey(HREF));
-        assertEquals("myID",   map.get(ID));
-        assertEquals("myUUID", map.get(UUID));
-        assertNull  (          map.get(HREF));
-        assertTrue  (map.containsValue("myID"));
-        assertTrue  (map.containsValue("myUUID"));
-        assertFalse (map.containsValue("myHREF"));
+        assertTrue  ("Newly created map shall be empty.", map.isEmpty());
+        assertEquals("Newly created map shall be empty.", 0, map.size());
+        /*
+         * Add two entries, then verify the map content.
+         */
+        assertTrue(identifiers.add(new IdentifierMapEntry(ID,   "myID")));
+        assertTrue(identifiers.add(new IdentifierMapEntry(UUID, "myUUID")));
+        assertFalse ("After add, map shall not be empty.", map.isEmpty());
+        assertEquals("After add, map shall not be empty.", 2, map.size());
+        assertEquals("After add, map shall not be empty.", 2, identifiers.size());
+        assertTrue  ("Shall contain the entry we added.",        map.containsKey(ID));
+        assertTrue  ("Shall contain the entry we added.",        map.containsKey(UUID));
+        assertFalse ("Shall not contain entry we didn't added.", map.containsKey(HREF));
+        assertTrue  ("Shall contain the entry we added.",        map.containsValue("myID"));
+        assertTrue  ("Shall contain the entry we added.",        map.containsValue("myUUID"));
+        assertFalse ("Shall not contain entry we didn't added.", map.containsValue("myHREF"));
+        assertEquals("Shall contain the entry we added.",        "myID",   map.get(ID));
+        assertEquals("Shall contain the entry we added.",        "myUUID", map.get(UUID));
+        assertNull  ("Shall not contain entry we didn't added.",           map.get(HREF));
         assertMapEquals("{gml:id=“myID”, gco:uuid=“myUUID”}", map);
-
-        assertEquals("myUUID", map.put(UUID, "myNewUUID"));
-        assertFalse (map.containsValue("myUUID"));
-        assertTrue  (map.containsValue("myNewUUID"));
+        /*
+         * Alter one entry (no new entry added).
+         */
+        assertEquals("Shall get the old value.",       "myUUID", map.put(UUID, "myNewUUID"));
+        assertFalse ("Shall not contain anymore the old value.", map.containsValue("myUUID"));
+        assertTrue  ("Shall contain the new value.",             map.containsValue("myNewUUID"));
         assertMapEquals("{gml:id=“myID”, gco:uuid=“myNewUUID”}", map);
-        assertEquals(2, map.size());
-        assertEquals(2, identifiers.size());
-
-        assertNull  (map.put(HREF, "myHREF"));
-        assertTrue  (map.containsValue("myHREF"));
-        assertTrue  (map.containsKey(HREF));
+        assertEquals("Map size shall be unchanged.", 2, map.size());
+        assertEquals("Map size shall be unchanged.", 2, identifiers.size());
+        /*
+         * Add a third identifier.
+         */
+        assertNull  ("Shall not contain entry we didn't added.", map.put(HREF, "myHREF"));
+        assertTrue  ("Shall contain the entry we added.",        map.containsValue("myHREF"));
+        assertTrue  ("Shall contain the entry we added.",        map.containsKey(HREF));
         assertMapEquals("{gml:id=“myID”, gco:uuid=“myNewUUID”, xlink:href=“myHREF”}", map);
-        assertEquals(3, map.size());
-        assertEquals(3, identifiers.size());
-
-        assertEquals("myNewUUID", map.remove(UUID));
-        assertFalse (map.containsValue("myNewUUID"));
-        assertFalse (map.containsKey(UUID));
+        assertEquals("Map size shall be updated.", 3, map.size());
+        assertEquals("Map size shall be updated.", 3, identifiers.size());
+        /*
+         * Remove an identifier using the Map.remove(…) API.
+         */
+        assertEquals("Shall get the old value.",   "myNewUUID", map.remove(UUID));
+        assertFalse ("Shall not contain the entry we removed.", map.containsValue("myNewUUID"));
+        assertFalse ("Shall not contain the entry we removed.", map.containsKey(UUID));
         assertMapEquals("{gml:id=“myID”, xlink:href=“myHREF”}", map);
-        assertEquals(2, map.size());
-        assertEquals(2, identifiers.size());
-
+        assertEquals("Map size shall be updated.", 2, map.size());
+        assertEquals("Map size shall be updated.", 2, identifiers.size());
+        /*
+         * Remove an identifier using the Set.remove(…) API on values.
+         */
         assertTrue  (map.values().remove(toHRefString("myHREF")));
-        assertFalse (map.containsValue("myHREF"));
-        assertFalse (map.containsKey(HREF));
+        assertFalse ("Shall not contain the entry we removed.", map.containsValue("myHREF"));
+        assertFalse ("Shall not contain the entry we removed.", map.containsKey(HREF));
         assertMapEquals("{gml:id=“myID”}", map);
-        assertEquals(1, map.size());
-        assertEquals(1, identifiers.size());
-
+        assertEquals("Map size shall be updated.", 1, map.size());
+        assertEquals("Map size shall be updated.", 1, identifiers.size());
+        /*
+         * Remove an identifier using the Set.remove(…) API on keys.
+         */
         assertTrue  (map.keySet().remove(ID));
-        assertFalse (map.containsValue("myID"));
-        assertFalse (map.containsKey(ID));
+        assertFalse ("Shall not contain the entry we removed.", map.containsValue("myID"));
+        assertFalse ("Shall not contain the entry we removed.", map.containsKey(ID));
         assertMapEquals("{}", map);
-        assertEquals(0, map.size());
-        assertEquals(0, identifiers.size());
+        assertEquals("Map size shall be updated.", 0, map.size());
+        assertEquals("Map size shall be updated.", 0, identifiers.size());
     }
 
     /**
@@ -148,9 +163,9 @@ public strictfp class IdentifierMapAdapterTest extends TestCase {
         final java.util.UUID myUUID = fromString("a1eb6e53-93db-4942-84a6-d9e7fb9db2c7");
         final URI myURI = URI.create("http://mylink");
 
-        map.putSpecialized(ID,   myID);
-        map.putSpecialized(UUID, myUUID);
-        map.putSpecialized(HREF, myURI);
+        assertNull(map.putSpecialized(ID,   myID));
+        assertNull(map.putSpecialized(UUID, myUUID));
+        assertNull(map.putSpecialized(HREF, myURI));
         assertMapEquals("{gml:id=“myID”,"
                 + " gco:uuid=“a1eb6e53-93db-4942-84a6-d9e7fb9db2c7”,"
                 + " xlink:href=“http://mylink”}", map);
@@ -171,9 +186,9 @@ public strictfp class IdentifierMapAdapterTest extends TestCase {
         final List<Identifier> identifiers = new ArrayList<Identifier>();
         final IdentifierMap map = create(identifiers);
 
-        map.put(ID,   "myID");
-        map.put(UUID, "a1eb6e53-93db-4942-84a6-d9e7fb9db2c7");
-        map.put(HREF, "http://mylink");
+        assertNull(map.put(ID,   "myID"));
+        assertNull(map.put(UUID, "a1eb6e53-93db-4942-84a6-d9e7fb9db2c7"));
+        assertNull(map.put(HREF, "http://mylink"));
         assertMapEquals("{gml:id=“myID”,"
                 + " gco:uuid=“a1eb6e53-93db-4942-84a6-d9e7fb9db2c7”,"
                 + " xlink:href=“http://mylink”}", map);
@@ -192,9 +207,9 @@ public strictfp class IdentifierMapAdapterTest extends TestCase {
     @Test
     public void testDuplicatedAuthorities() {
         final List<Identifier> identifiers = new ArrayList<Identifier>();
-        identifiers.add(new IdentifierMapEntry(ID,   "myID1"));
-        identifiers.add(new IdentifierMapEntry(UUID, "myUUID"));
-        identifiers.add(new IdentifierMapEntry(ID,   "myID2"));
+        assertTrue(identifiers.add(new IdentifierMapEntry(ID,   "myID1")));
+        assertTrue(identifiers.add(new IdentifierMapEntry(UUID, "myUUID")));
+        assertTrue(identifiers.add(new IdentifierMapEntry(ID,   "myID2")));
 
         final IdentifierMap map = create(identifiers);
         assertEquals("Duplicated authorities shall be filtered.", 2, map.size());
@@ -225,8 +240,8 @@ public strictfp class IdentifierMapAdapterTest extends TestCase {
 
         final List<Identifier> identifiers = new ArrayList<Identifier>();
         final Map<Citation,String> map = create(identifiers);
-        identifiers.add(new IdentifierMapEntry(ID,   "myID"));
-        identifiers.add(new IdentifierMapEntry(UUID, "myUUID"));
+        assertTrue(identifiers.add(new IdentifierMapEntry(ID,   "myID")));
+        assertTrue(identifiers.add(new IdentifierMapEntry(UUID, "myUUID")));
 
         final Map<Citation,String> copy = assertSerializedEquals(map);
         assertNotSame(map, copy);

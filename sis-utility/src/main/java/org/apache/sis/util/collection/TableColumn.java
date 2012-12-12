@@ -21,7 +21,7 @@ import java.util.Collections;
 import java.io.Serializable;
 import java.io.InvalidObjectException;
 import org.opengis.util.InternationalString;
-import org.apache.sis.util.type.Types;
+import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Vocabulary;
 

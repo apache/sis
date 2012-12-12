@@ -548,7 +548,7 @@ public final class Logging extends Static {
          * because in a client-server architecture, we want the locale on the server-side instead
          * than the locale on the client side.
          */
-        final StringBuilder buffer = new StringBuilder(Classes.getShortClassName(error));
+        final StringBuilder buffer = new StringBuilder(256).append(Classes.getShortClassName(error));
         String message = error.getMessage(); // Targeted to system administrators.
         if (message != null) {
             buffer.append(": ").append(message);

@@ -21,7 +21,7 @@ import java.nio.CharBuffer;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.util.type.SimpleInternationalString;
+import org.apache.sis.util.iso.SimpleInternationalString;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -37,7 +37,10 @@ import static org.apache.sis.util.CharSequences.*;
  * @version 0.3
  * @module
  */
-@DependsOn(ArraysTest.class)
+@DependsOn({
+    ArraysTest.class,
+    CharactersTest.class
+})
 public final strictfp class CharSequencesTest extends TestCase {
     /**
      * Tests {@link CharSequences#spaces(int)}.
@@ -312,12 +315,12 @@ public final strictfp class CharSequencesTest extends TestCase {
     }
 
     /**
-     * Tests the {@link CharSequences#isJavaIdentifier(CharSequence)} method.
+     * Tests the {@link CharSequences#isUnicodeIdentifier(CharSequence)} method.
      */
     @Test
-    public void testIsJavaIdentifier() {
-        assertTrue ("A123", isJavaIdentifier("A123"));
-        assertFalse("123A", isJavaIdentifier("123A"));
+    public void testIsUnicodeIdentifier() {
+        assertTrue ("A123", isUnicodeIdentifier("A123"));
+        assertFalse("123A", isUnicodeIdentifier("123A"));
     }
 
     /**
@@ -325,9 +328,9 @@ public final strictfp class CharSequencesTest extends TestCase {
      */
     @Test
     public void testIsUpperCase() {
-        assertTrue ("ABC", isUpperCase("ABC"));
-        assertFalse("AbC", isUpperCase("AbC"));
-        assertFalse("A2C", isUpperCase("A2C"));
+        assertTrue ("ABC", isUpperCase("ABC", 0, 3));
+        assertFalse("AbC", isUpperCase("AbC", 0, 3));
+        assertFalse("A2C", isUpperCase("A2C", 0, 3));
     }
 
     /**
@@ -338,6 +341,19 @@ public final strictfp class CharSequencesTest extends TestCase {
         assertTrue (equalsIgnoreCase("Test", "TEST"));
         assertTrue (equalsIgnoreCase("Test", new StringBuilder("TEST")));
         assertFalse(equalsIgnoreCase("Test1", "Test2"));
+    }
+
+    /**
+     * Tests the {@link CharSequences#equalsFiltered(CharSequence, CharSequence, Characters.Filter, boolean)} method.
+     */
+    @Test
+    public void testEqualsFiltered() {
+        assertTrue (equalsFiltered(" UTF-8 ", "utf8",  Characters.Filter.LETTERS_AND_DIGITS, true));
+        assertFalse(equalsFiltered(" UTF-8 ", "utf8",  Characters.Filter.LETTERS_AND_DIGITS, false));
+        assertTrue (equalsFiltered("UTF-8", " utf 8",  Characters.Filter.LETTERS_AND_DIGITS, true));
+        assertFalse(equalsFiltered("UTF-8", " utf 16", Characters.Filter.LETTERS_AND_DIGITS, true));
+        assertTrue (equalsFiltered("WGS84", "WGS_84",  Characters.Filter.LETTERS_AND_DIGITS, true));
+        assertFalse(equalsFiltered("WGS84", "WGS_84",  Characters.Filter.UNICODE_IDENTIFIER, true));
     }
 
     /**

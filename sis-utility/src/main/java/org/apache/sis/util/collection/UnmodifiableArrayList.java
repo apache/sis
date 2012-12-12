@@ -140,6 +140,23 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
     }
 
     /**
+     * Returns the size of the array backing this list. This is the length of the array
+     * given to the constructor. It is equal to {@link #size()} except if this instance
+     * is a {@linkplain #subList(int,int) sublist}, in which case the value returned by
+     * this method is greater than {@code size()}.
+     *
+     * <p>This method can be used as a hint for choosing a {@code UnmodifiableArrayList}
+     * instance to keep when there is a choice between many equal instances. Note that a
+     * greater value is not necessarily more memory consuming, since the backing array
+     * may be shared by many sublists.</p>
+     *
+     * @return The length of the backing array.
+     */
+    public final int arraySize() {
+        return array.length;
+    }
+
+    /**
      * Returns the element at the specified index.
      */
     @Override

@@ -29,7 +29,7 @@ import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.citation.Series;
 import org.opengis.util.InternationalString;
 
-import org.apache.sis.util.type.SimpleInternationalString;
+import org.apache.sis.util.iso.SimpleInternationalString;
 
 
 /**
