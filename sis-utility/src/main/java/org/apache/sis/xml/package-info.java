@@ -53,7 +53,7 @@
  * <p>The most common namespace URLs are defined in the {@link org.apache.sis.xml.Namespaces} class.
  * The parsing of some objects like {@link java.net.URL} and {@link java.util.UUID},
  * together with the behavior in case of parsing error, can be specified by the
- * {@link org.apache.sis.xml.ObjectConverters} class.</p>
+ * {@link org.apache.sis.xml.ValueConverter} class.</p>
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)

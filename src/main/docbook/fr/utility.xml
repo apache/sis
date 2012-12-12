@@ -20,7 +20,9 @@
       Mais cette politique nécessite que chaque interface ou classe de base définisse entièrement dans sa Javadoc les critères ou calculs
       que doivent employer les méthodes <function>equals(Object)</function> et <function>hashCode()</function> dans toutes les implémentations.
       Cette approche est choisie notamment par <classname>java.util.Collection</classname> et ses interfaces filles.
-      Elle se fait toutefois au détriment de la possibilité de prendre en compte des attributs supplémentaires dans les interfaces filles,
+      La transposition de cette approche aux centaines d’interfaces de GeoAPI serait toutefois une entreprise ardue,
+      qui risquerait d’être assez peu suivie par les diverses implémentations.
+      En outre, elle se fait au détriment de la possibilité de prendre en compte des attributs supplémentaires dans les interfaces filles
       si cette possibilité n’a pas été spécifiée dans l’interface parente.
       Cette contrainte découle des points suivants du contrat des méthodes <function>equals(Object)</function> et <function>hashCode()</function>:
     </para>
@@ -35,7 +37,7 @@
       Pour contourner cette difficulté, une approche alternative consiste à exiger que les objets comparés par la méthode
       <function>Object.equals(Object)</function> soient exactement de la même classe, c’est-à-dire que <literal>A.getClass() == B.getClass()</literal>.
       Cette approche est parfois considérée contraire aux principes de la programmation orientée objets.
-      Dans la pratique, pour des applications relativement complexes, ça dépend du contexte dans lequel les objets sont comparés:
+      Dans la pratique, pour des applications relativement complexes, l’importance accordée à ces principes dépend du contexte dans lequel les objets sont comparés:
       si les objets sont ajoutés à un <classname>HashSet</classname> ou utilisés comme clés dans un <classname>HashMap</classname>,
       alors nous avons besoin d’un strict respect du contrat de <function>equals(Object)</function> et <function>hashCode()</function>.
       Mais si le développeur compare les objets lui-même, par exemple pour vérifier si des informations qui l’intéresse ont changées,
@@ -70,9 +72,13 @@
     </itemizedlist>
     <para>
       Le mode par défaut, utilisé par les toutes les méthodes <function>equals(Object)</function> de <acronym>SIS</acronym>,
-      est <constant role="SIS">STRICT</constant>. Ce mode est choisi à la fois pour une utilisation plus sécuritaire avec <classname>HashMap</classname>,
-      et aussi parce que définir rigoureusement le contrat des méthodes <function>equals(Object)</function> et <function>hashCode()</function>
-      dans les centaines d’interfaces de GeoAPI semble une entreprise peu réaliste, qui risque d’être assez peu suivit par les diverses implémentations.
+      est <constant role="SIS">STRICT</constant>. Ce mode est choisi pour une utilisation sécuritaire — notamment avec <classname>HashMap</classname> —
+      sans nécessiter de définitions rigoureuses des méthodes <function>equals(Object)</function> et <function>hashCode()</function> dans toutes les interfaces.
+      Avec ce mode, l’ordre des objets (<literal>A.equals(B)</literal> ou <literal>B.equals(A)</literal>) n’a pas d’importance.
+      C’est toutefois le seul mode à offrir cette garantie. Dans l’expression <literal>A.equals(B)</literal>,
+      le mode <constant role="SIS">BY_CONTRACT</constant> (et donc par extension tous les autres modes qui en dépendent)
+      ne comparera que les propriétés connues de <literal>A</literal>, sans se soucier de savoir si <literal>B</literal>
+      en connaît davantage.
     </para>
   </section>
 
@@ -164,6 +170,31 @@
         peuvent nécessiter des grilles de transformation de coordonnées, ce qui accroît l’intérêt de partager une instance unique
         pour des raisons d’économie de mémoire.
       </para>
+    </section>
+
+    <section>
+      <title>Convention locale nulle</title>
+      <para>
+        La plupart des méthodes <acronym>SIS</acronym> recevant ou retournant une valeur de type <classname>Locale</classname>
+        acceptent la valeur <constant>null</constant>. Cette valeur est interprétée comme signifiant de ne pas localiser le texte.
+        La notion de <quote>texte non-localisé</quote> est un peu fausse, puisqu’il faut bien choisir une convention de format.
+        Mais cette convention, bien que très proche de l’anglais, sera généralement légèrement différente.
+        Par exemple:
+      </para>
+      <itemizedlist>
+        <listitem>
+          Les identifiants sont écrits tels qu’ils apparaissent dans les diagrammes <acronym>UML</acronym>,
+          par exemple <quote>blurredImage</quote> au lieu de <quote>Blurred image</quote>.
+        </listitem>
+        <listitem>
+          Les dates sont écrites selon le format <acronym>ISO</acronym> 8601,
+          qui ne correspond pas aux conventions anglaises.
+        </listitem>
+        <listitem>
+          Les nombres sont écrits à l’aide de leurs méthodes <function>toString()</function> plutôt qu’à l’aide d’un <classname>java.text.NumberFormat</classname>.
+          Il en résulte des différences dans le nombre de chiffres significatifs, l’utilisation de la notation exponentielle et l’absence de séparateur des milliers.
+        </listitem>
+      </itemizedlist>
     </section>
 
     <section>

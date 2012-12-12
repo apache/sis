@@ -18,12 +18,12 @@ package org.apache.sis.util;
 
 
 /**
- * Specifies the degree of strictness when comparing two {@link LenientComparable} objects
+ * Specifies the level of strictness when comparing two {@link LenientComparable} objects
  * for equality. This enumeration allows users to specify which kind of differences can be
  * tolerated between two objects: differences in implementation class, differences in
  * some kinds of property, or slight difference in numerical values.
  *
- * <p>This enumeration is <em>ordered</em> from stricter to more lenient degrees:</p>
+ * <p>This enumeration is <em>ordered</em> from stricter to more lenient levels:</p>
  *
  * <ol>
  *   <li>{@link #STRICT}          – All attributes of the compared objects shall be strictly equal.</li>
@@ -31,13 +31,13 @@ package org.apache.sis.util;
  *   <li>{@link #IGNORE_METADATA} – Only the attributes relevant to the object functionality are compared.</li>
  *   <li>{@link #APPROXIMATIVE}   – Only the attributes relevant to the object functionality are compared,
  *                                  with some tolerance threshold on numerical values.</li>
- *   <li>{@link #DEBUG}:          – Special mode for figuring out why two objects expected to be equal are not.</li>
+ *   <li>{@link #DEBUG}           – Special mode for figuring out why two objects expected to be equal are not.</li>
  * </ol>
  *
- * If two objects are equal at some degree of strictness <var>E</var>, then they should also
- * be equal at all degrees listed below <var>E</var> in the above list. For example if two objects
- * are equal at the degree {@link #BY_CONTRACT}, then they should also be equal at the degree
- * {@link #IGNORE_METADATA} but not necessarily at the degree {@link #STRICT}.
+ * If two objects are equal at some level of strictness <var>E</var>, then they should also
+ * be equal at all levels listed below <var>E</var> in the above list. For example if two objects
+ * are equal at the {@link #BY_CONTRACT} level, then they should also be equal at the
+ * {@link #IGNORE_METADATA} level but not necessarily at the {@link #STRICT} level.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.18)

@@ -120,42 +120,88 @@
     </para>
     <para>
       Le standard <acronym>ISO</acronym> 19139 dispose le contenu de ces objets d’une manière inhabituelle:
-      pour chaque attribut dont le type est lui-même une autre classe du standard <acronym>ISO</acronym> 19139,
-      l’attribut est enveloppé dans un élément qui représente son type plutôt que d’être écrit directement.
-      Par exemple dans un objet de type <classname role="OGC">gmd:CI_Citation</classname>,
-      l’attribut <function role="OGC">gmd:citedResponsibleParty</function>
-      est enveloppé dans un élément <classname role="OGC">gmd:CI_ResponsibleParty</classname>.
+      pour chaque propriété dont le type de la valeur est lui-même une autre classe du standard <acronym>ISO</acronym> 19139,
+      la valeur est enveloppée dans un élément qui représente son type plutôt que d’être écrite directement.
+      Par exemple dans un objet de type <classname role="OGC">CI_Citation</classname>,
+      la valeur de la propriété <function role="OGC">citedResponsibleParty</function>
+      est enveloppée dans un élément <classname role="OGC">CI_ResponsibleParty</classname>.
       Cette pratique double la profondeur de l’arborescence, en introduisant une duplication
-      à tous les niveaux pour chaque attribut, comme dans l’exemple suivant:
+      à tous les niveaux pour chaque valeur, comme dans l’exemple suivant:
     </para>
     <example>
       <title>Redondance dans la représentation <acronym>XML</acronym> d’une méta-donnée</title>
-      <programlisting language="xml">&lt;gmd:MD_Metadata&gt;
-  &lt;gmd:identificationInfo&gt;
-    &lt;gmd:MD_DataIdentification&gt;
-      &lt;gmd:citation&gt;
-        &lt;gmd:CI_Citation&gt;
-          &lt;gmd:citedResponsibleParty&gt;
-            &lt;gmd:CI_ResponsibleParty&gt;
-              &lt;gmd:contactInfo&gt;
-                &lt;gmd:CI_Contact&gt;
-                  &lt;gmd:onlineResource&gt;
-                    &lt;gmd:CI_OnlineResource&gt;
-                      &lt;gmd:linkage&gt;
-                        &lt;gmd:URL&gt;http://www.opengeospatial.org&lt;/gmd:URL&gt;
-                      &lt;/gmd:linkage&gt;
-                    &lt;/gmd:CI_OnlineResource&gt;
-                  &lt;/gmd:onlineResource&gt;
-                &lt;/gmd:CI_Contact&gt;
-              &lt;/gmd:contactInfo&gt;
-            &lt;/gmd:CI_ResponsibleParty&gt;
-          &lt;/gmd:citedResponsibleParty&gt;
-        &lt;/gmd:CI_Citation&gt;
-      &lt;/gmd:citation&gt;
-    &lt;/gmd:MD_DataIdentification&gt;
-  &lt;/gmd:identificationInfo&gt;
-&lt;/gmd:MD_Metadata&gt;</programlisting>
+      <programlisting language="xml">&lt;MD_Metadata&gt;
+  &lt;identificationInfo&gt;
+    &lt;MD_DataIdentification&gt;
+      &lt;citation&gt;
+        &lt;CI_Citation&gt;
+          &lt;citedResponsibleParty&gt;
+            &lt;CI_ResponsibleParty&gt;
+              &lt;contactInfo&gt;
+                &lt;CI_Contact&gt;
+                  &lt;onlineResource&gt;
+                    &lt;CI_OnlineResource&gt;
+                      &lt;linkage&gt;
+                        &lt;URL&gt;http://www.opengeospatial.org&lt;/URL&gt;
+                      &lt;/linkage&gt;
+                    &lt;/CI_OnlineResource&gt;
+                  &lt;/onlineResource&gt;
+                &lt;/CI_Contact&gt;
+              &lt;/contactInfo&gt;
+            &lt;/CI_ResponsibleParty&gt;
+          &lt;/citedResponsibleParty&gt;
+        &lt;/CI_Citation&gt;
+      &lt;/citation&gt;
+    &lt;/MD_DataIdentification&gt;
+  &lt;/identificationInfo&gt;
+&lt;/MD_Metadata&gt;</programlisting>
     </example>
+    <para>
+      L’exemple précédent, comme tous les documents conformes à <acronym>ISO</acronym> 19139,
+      est constitué d’une alternance systématique de deux types d’éléments <acronym>XML</acronym>.
+      Il y a d’abord le nom de la propriété, qui commence toujours par une lettre minuscule (en ignorant les préfixes).
+      Dans les <acronym>API</acronym> Java, chaque propriété correspond à une méthode de la classe englobante.
+      Par exemple dans l’exemple ci-haut, <classname role="OGC">gmd:identificationInfo</classname>
+      correspond à la méthode <function role="GeoAPI">Metadata.getIdentificationInfo()</function>.
+      Contrairement aux <acronym>API</acronym> Java toutefois, les documents <acronym>XML</acronym>
+      ne placent pas les propriétés filles directement en dessous.
+      À la place, ces éléments n’acceptent que les informations suivantes:
+    </para>
+    <itemizedlist>
+      <listitem>
+        Un élément, décrit dans le paragraphe suivant, qui englobera les propriétés filles.
+      </listitem>
+      <listitem>
+        Un groupe d’attributs (notamment <literal role="OGC">gmd:idref</literal>, <literal role="OGC">gco:uuidref</literal> et <literal>xlink:href</literal>)
+        que les schémas <acronym>XSD</acronym> de l’<acronym>OGC</acronym> nomment collectivement <classname role="OGC">gco:ObjectReference</classname>.
+      </listitem>
+    </itemizedlist>
+    <para>
+      Sous chaque propriété se trouve le type de la valeur, sauf si elle a été remplacée par une référence (la sous-section suivante approfondira ce sujet).
+      Le type de la valeur est un élément <acronym>XML</acronym> dont le nom commence toujours par une lettre majuscule, en ignorant les préfixes.
+      Dans l’exemple ci-haut nous avions <classname role="OGC">MD_DataIdentification</classname>, qui correspond à l’interface Java <classname role="GeoAPI">DataIdentification</classname>.
+      C’est cet élément <acronym>XML</acronym> qui contient les propriétés filles. Cet élément accepte aussi un groupe d’attributs
+      (notamment <literal role="OGC">gmd:id</literal> et <literal role="OGC">gco:uuid</literal>)
+      que les schémas <acronym>XSD</acronym> de l’<acronym>OGC</acronym> nomment collectivement <classname role="OGC">gco:ObjectIdentification</classname>.
+      Ces attributs n’ont pas de méthodes Java dédiées, mais sont accessibles indirectement via l’interface <classname role="SIS">IdentifiedObject</classname>
+      décrite dans la sous-section suivante.
+    </para>
+    <sidebar>
+      <title>Convention de nommage dans les schémas <acronym>XSD</acronym></title>
+      <para>
+        Les schémas <acronym>XSD</acronym> de l’<acronym>OGC</acronym> définissent pour chaque élément du premier groupe
+        un type dont le nom se termine par “<classname role="OGC">_PropertyType</classname>”.
+        Pour le second groupe, chaque élément a un type dont le nom se termine par “<classname role="OGC">_Type</classname>”.
+      </para>
+    </sidebar>
+    <para>
+      Afin de réduire la complexité des bibliothèques, GeoAPI et Apache <acronym>SIS</acronym> n’exposent publiquement
+      qu’une vision unifiée de ces deux types d’éléments. L’<acronym>API</acronym> public correspond essentiellement au
+      deuxième groupe. Toutefois, lors de l’écriture d’un document <acronym>XML</acronym>, des éléments du premier groupe
+      doivent être temporairement recréés. Les classes qui y correspondent sont définies dans des paquets internes de
+      <acronym>SIS</acronym>. Ces classes peuvent être ignorées, sauf si le développeur souhaite implémenter ses propres
+      classes dont les instances devront être lus et écrits par <acronym>JAXB</acronym>.
+    </para>
     <sidebar>
       <title>Stratégie d’implémentation dans Apache <acronym>SIS</acronym></title>
       <para>
@@ -164,7 +210,7 @@
         Ces adaptateurs sont de toute façon nécessaires pour permettre à <acronym>JAXB</acronym>
         d’obtenir les classes <acronym>SIS</acronym> implémentant les interfaces de GeoAPI.
         De manière opportuniste, <acronym>SIS</acronym> en fait à la fois des adaptateurs <acronym>JAXB</acronym>
-        et des objets englobants le “vrai” objet à lire ou écrire.
+        et des objets enveloppants le “vrai” objet à lire ou écrire.
         Cette utilisation double permet d’éviter d’avoir à doubler le nombre de classes
         (déjà très élevé) présents dans les paquets internes.
       </para>
@@ -177,6 +223,37 @@
         <literal role="OGC">gco:uuid</literal> ou <literal>xlink:href</literal>.
         Si un de ces attributs est présent, l’élément englobé peut être complètement omis;
         il sera remplacé au moment de la lecture par l’élément référencé par l’attribut.
+        Dans l’exemple suivant, la partie gauche définie un élément associé à l’identifiant “<literal>mon_id</literal>”,
+        alors que la partie droite référence cet élément:
+      </para>
+      <example>
+        <title>Association d’un identifiant à un élément <acronym>XML</acronym></title>
+        <informaltable frame="none">
+          <tgroup cols="2">
+            <colspec colwidth="50%"/>
+            <colspec colwidth="50%"/>
+            <tbody>
+              <row>
+                <entry>
+                  <programlisting language="xml">&lt;MD_MetaData&gt;
+  &lt;identificationInfo&gt;
+    &lt;MD_DataIdentification id="mon_id"&gt;
+      &lt;!-- insérer ici des propriétés filles --&gt;
+    &lt;/MD_DataIdentification&gt;
+  &lt;/identificationInfo&gt;
+&lt;/MD_MetaData&gt;</programlisting>
+                </entry>
+                <entry>
+                  <programlisting language="xml">&lt;MD_MetaData&gt;
+  &lt;identificationInfo idref="mon_id"/&gt;
+&lt;/MD_MetaData&gt;</programlisting>
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </example>
+      <para>
         Le choix de l’attribut à utiliser dépend de la portée de l’élément référencé:
       </para>
       <itemizedlist>
@@ -218,7 +295,8 @@ public class MyClass {
 }</programlisting>
       </example>
       <para>
-        Bien que ce mécanisme aie été définit dans le but de mieux supporter les représentations de méta-données en <acronym>XML</acronym>,
+        Bien que ce mécanisme aie été définit dans le but de mieux supporter les représentations des
+        attributs <acronym>XML</acronym> du groupe <classname role="OGC">gco:ObjectIdentification</classname>,
         il permet aussi de manière opportuniste de manipuler d’autres types d’identifiants.
         Par exemple les attributs <function role="GeoAPI">ISBN</function> et <function role="GeoAPI">ISSN</function>
         de <classname role="GeoAPI">Citation</classname> peuvent être manipulés de cette manière.
@@ -265,18 +343,18 @@ public class MyClass {
             <tbody>
               <row>
                 <entry>
-                  <programlisting language="xml">&lt;gmd:CI_Citation&gt;
-  &lt;gmd:series&gt;
-    &lt;gmd:CI_Series&gt;
-      &lt;!-- Some content here --&gt;
-    &lt;/gmd:CI_Series&gt;
-  &lt;/gmd:series&gt;
-&lt;/gmd:CI_Citation&gt;</programlisting>
+                  <programlisting language="xml">&lt;CI_Citation&gt;
+  &lt;series&gt;
+    &lt;CI_Series&gt;
+      &lt;!-- insérer ici des propriétés filles --&gt;
+    &lt;/CI_Series&gt;
+  &lt;/series&gt;
+&lt;/CI_Citation&gt;</programlisting>
                 </entry>
                 <entry>
-                  <programlisting language="xml">&lt;gmd:CI_Citation&gt;
-  &lt;gmd:series nilReason="unknown"/&gt;
-&lt;/gmd:CI_Citation&gt;</programlisting>
+                  <programlisting language="xml">&lt;CI_Citation&gt;
+  &lt;series nilReason="unknown"/&gt;
+&lt;/CI_Citation&gt;</programlisting>
                 </entry>
               </row>
             </tbody>

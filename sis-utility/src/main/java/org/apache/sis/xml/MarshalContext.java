@@ -31,20 +31,6 @@ import org.apache.sis.util.Version;
  */
 public abstract class MarshalContext {
     /**
-     * A constant for GML version 3.0.
-     *
-     * @see #getVersion(String)
-     */
-    public static final Version GML_3_0 = new Version("3.0");
-
-    /**
-     * A constant for GML version 3.2.
-     *
-     * @see #getVersion(String)
-     */
-    public static final Version GML_3_2 = new Version("3.2");
-
-    /**
      * Creates a new (un)marshalling context.
      */
     protected MarshalContext() {
@@ -61,8 +47,7 @@ public abstract class MarshalContext {
      *     <th>Typical values</th>
      *   </tr>
      *   <tr>
-     *     <td>gml</td><td>Geographic Markup Language</td>
-     *     <td>{@link #GML_3_0}, {@link #GML_3_2}</td>
+     *     <td>gml</td> <td>Geographic Markup Language</td> <td>{@code 3.0}, {@code 3.2}</td>
      *   </tr>
      * </table>
      *
@@ -78,6 +63,23 @@ public abstract class MarshalContext {
      * This locale may vary in different fragments of the same XML document.
      * In particular children of {@link org.opengis.metadata.Metadata} inherit the locale
      * specified by the {@link org.opengis.metadata.Metadata#getLanguage()} attribute.
+     *
+     * {@section Null locale}
+     * Null locales are typically interpreted as a request for locale-independent strings in SIS.
+     * The meaning of "locale-independent" is implementation specific -
+     * this is usually very close to the English locale, but not necessarily
+     * (e.g. dates formatted according ISO standard instead then English locale).
+     * If the locale is {@code null}, then callers shall select a default locale as documented
+     * in the {@link org.apache.sis.util.iso.DefaultInternationalString#toString(Locale)} javadoc.
+     * As a matter of rule:
+     *
+     * <ul>
+     *   <li>If the locale is given to an {@code InternationalString.toString(Locale)} method,
+     *       keep the {@code null} value since the international string is already expected to
+     *       returns a "unlocalized" string in such case.</li>
+     *   <li>Otherwise, if a {@code Locale} instance is really needed, use {@link Locale#US}
+     *       as an approximation of "unlocalized" string.</li>
+     * </ul>
      *
      * @return The locale for the XML fragment being (un)marshalled, or {@code null} is unspecified.
      */

@@ -19,6 +19,7 @@ package org.apache.sis.internal.jaxb;
 import java.util.UUID;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.collection.WeakValueHashMap;
+import org.apache.sis.xml.IdentifierAlreadyBoundException;
 
 
 /**
@@ -60,14 +61,33 @@ public final class UUIDs extends Static {
     /**
      * Keep a weak references to the given object for the given UUID.
      * If an object is already mapped to the given UUID, then the mapping is <strong>not</strong>
-     * modified and the currently mapped object is returned. The returned object may or may not be
-     * equals to the object given in argument to this method.
+     * modified. An exception is thrown instead.
      *
      * @param  uuid   The UUID to associate to the object.
      * @param  object The object to associate to the UUID.
-     * @return If an object is already mapped to the given UUID, that object. Otherwise {@code null}.
+     * @throws IdentifierAlreadyBoundException If the given identifier is already associated to another object.
      */
-    public static Object store(final UUID uuid, final Object object) {
-        return OBJECTS.putIfAbsent(uuid, object);
+    static void bind(final UUID uuid, final Object object) throws IdentifierAlreadyBoundException {
+        final Object old = OBJECTS.putIfAbsent(uuid, object);
+        if (old != null && old != object) {
+            throw new IdentifierAlreadyBoundException(null, uuid);
+        }
+    }
+
+    /**
+     * Removes the entry associated to the given UUID.
+     * If the given UUID is associated to another object than the given one,
+     * then this method does nothing.
+     *
+     * @param uuid   The UUID of the entry to remove from the map.
+     * @param object The object to remove from the map.
+     */
+    static void unbind(final UUID uuid, final Object object) {
+        synchronized (OBJECTS) {
+            final Object old = OBJECTS.remove(uuid);
+            if (old != null && old != object) { // Same work than ConcurrentMap.remove(Object, Object);
+                OBJECTS.put(uuid, old);
+            }
+        }
     }
 }

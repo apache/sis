@@ -65,7 +65,7 @@ import org.opengis.metadata.citation.Citation;
  *
  * @see IdentifierSpace
  * @see org.apache.sis.metadata.iso.MetadataEntity
- * @see ObjectLinker#newIdentifiedObject(Class, Identifier[])
+ * @see ReferenceResolver#newIdentifiedObject(MarshalContext, Class, Identifier[])
  */
 public interface IdentifiedObject {
     /**

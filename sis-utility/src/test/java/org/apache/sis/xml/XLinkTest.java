@@ -18,7 +18,7 @@ package org.apache.sis.xml;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import org.apache.sis.util.type.SimpleInternationalString;
+import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 

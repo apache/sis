@@ -139,7 +139,7 @@ public final class SpecializedIdentifier<T> implements Identifier, Serializable 
      * This is considered a non-fatal error, because the parse method can fallback
      * on the generic {@link IdentifierMapEntry} in such cases.
      */
-    private static void parseFailure(final Exception e) {
+    static void parseFailure(final Exception e) {
         // IdentifierMap.put(Citation,String) is the public facade.
         Logging.recoverableException(IdentifierMap.class, "put", e);
     }
@@ -197,10 +197,13 @@ public final class SpecializedIdentifier<T> implements Identifier, Serializable 
 
     /**
      * Returns a string representation of this identifier.
+     * Example: {@code Identifier[gco:uuid=“42924124-032a-4dfe-b06e-113e3cb81cf0”]}.
+     *
+     * @see IdentifierMapAdapter#toString()
      */
     @Override
     public String toString() {
-        final StringBuilder buffer = new StringBuilder("Identifier[");
+        final StringBuilder buffer = new StringBuilder(60).append("Identifier[");
         format(buffer, authority, getCode());
         return buffer.append(']').toString();
     }
