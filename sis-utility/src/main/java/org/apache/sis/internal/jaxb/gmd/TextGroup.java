@@ -110,18 +110,30 @@ final class TextGroup {
 
     /**
      * Returns a string representation of this text group for debugging purpose.
+     * Example:
+     *
+     * {@preformat
+     *   TextGroup
+     *   ├─ LocalisedCharacterString[#locale-eng, “A text”]
+     *   └─ LocalisedCharacterString[#locale-fra, “Un texte”]
+     * }
      *
      * @see LocalisedCharacterString#toString()
      */
     @Override
     public String toString() {
-        final StringBuilder buffer = new StringBuilder(160).append(getClass().getSimpleName());
+        final String lineSeparator = System.lineSeparator();
+        final StringBuilder buffer = new StringBuilder(160).append(getClass().getSimpleName()).append(lineSeparator);
         if (localized != null) {
-            final String lineSeparator = System.lineSeparator();
+            int corner = 0;
             for (LocalisedCharacterString string : localized) {
-                buffer.append(lineSeparator).append("  ").append(string);
+                corner = buffer.length();
+                buffer.append("├─ ").append(string).append(lineSeparator);
+            }
+            if (corner != 0) {
+                buffer.setCharAt(corner, '└');
             }
         }
-        return buffer.append(']').toString();
+        return buffer.toString();
     }
 }

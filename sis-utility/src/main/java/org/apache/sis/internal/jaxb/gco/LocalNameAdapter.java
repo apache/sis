@@ -51,14 +51,14 @@ public final class LocalNameAdapter extends XmlAdapter<String,LocalName> {
 
     /**
      * Fetches the name factory. The returned factory shall be an instance
-     * of {@link DefaultNameFactory}, not a subclass, because we are going
+     * of {@code DefaultNameFactory}, not a subclass, because we are going
      * to cast the created {@code GenericName} to {@code AbstractName} for
      * XML marshalling and we know that {@code DefaultNameFactory} creates
      * the expected type. A subclass could create other types, so we are
      * better to avoid them.
      */
     static NameFactory getNameFactory() {
-        throw new UnsupportedOperationException(); // TODO
+        return org.apache.sis.internal.util.DefaultFactories.NAMES;
     }
 
     /**
