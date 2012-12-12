@@ -180,7 +180,8 @@ public final class CodeListProxy {
         if (locale != null) {
             final String key = classID + '.' + fieldID;
             try {
-                value = ResourceBundle.getBundle("org.opengis.metadata.CodeLists", locale).getString(key);
+                value = ResourceBundle.getBundle("org.opengis.metadata.CodeLists",
+                        locale, CodeList.class.getClassLoader()).getString(key);
             } catch (MissingResourceException e) {
                 Logging.recoverableException(CodeListAdapter.class, "marshal", e);
             }

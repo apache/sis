@@ -175,7 +175,7 @@ public final class CodeLists extends Static {
          */
         final String key = getListName(code) + '.' + getCodeName(code);
         try {
-            return ResourceBundle.getBundle("org.opengis.metadata.CodeLists", locale).getString(key);
+            return ResourceBundle.getBundle("org.opengis.metadata.CodeLists", locale, Types.CLASSLOADER).getString(key);
         } catch (MissingResourceException e) {
             Logging.recoverableException(CodeLists.class, "getCodeTitle", e);
             return getCodeTitle(code);
@@ -207,19 +207,8 @@ public final class CodeLists extends Static {
      * @see #getCodeTitle(CodeList, Locale)
      * @see Types#getDescription(Class, Locale)
      */
-    public static String getDescription(final CodeList<?> code, Locale locale) {
-        if (code != null) {
-            if (locale == null) {
-                locale = Locale.getDefault();
-            }
-            final String key = getListName(code) + '.' + getCodeName(code);
-            try {
-                return ResourceBundle.getBundle("org.opengis.metadata.Descriptions", locale).getString(key);
-            } catch (MissingResourceException e) {
-                Logging.recoverableException(CodeLists.class, "getDescription", e);
-            }
-        }
-        return null;
+    public static String getDescription(final CodeList<?> code, final Locale locale) {
+        return (code != null) ? Types.getDescription(getListName(code) + '.' + getCodeName(code), locale) : null;
     }
 
     /**

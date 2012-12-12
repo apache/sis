@@ -38,7 +38,7 @@ import java.util.Objects;
  * resource bundle is loaded at runtime for the client's language by looking for a class or a
  * properties file with the right suffix, for example {@code "_en"} for English or {@code "_fr"}
  * for French. This mechanism is explained in J2SE javadoc for the
- * {@link ResourceBundle#getBundle(String,Locale,ClassLoader) getBundle} static method.
+ * {@link ResourceBundle#getBundle(String, Locale, ClassLoader) getBundle(…)} static method.
  *
  * {@section Example}
  * If a file named "{@code MyResources.properties}" exists in the package {@code org.mypackage}
@@ -91,16 +91,6 @@ public class ResourceInternationalString extends AbstractInternationalString imp
     private final transient ClassLoader loader;
 
     /**
-     * Creates a new international string from the specified resource bundle and key.
-     *
-     * @param resources The name of the resource bundle, as a fully qualified class name.
-     * @param key The key for the resource to fetch.
-     */
-    public ResourceInternationalString(final String resources, final String key) {
-        this(resources, key, null);
-    }
-
-    /**
      * Creates a new international string from the specified resource bundle, key and class loader.
      *
      * @param resources The name of the resource bundle, as a fully qualified class name.
@@ -125,7 +115,7 @@ public class ResourceInternationalString extends AbstractInternationalString imp
      * @param  locale The locale for which to get the resource bundle.
      * @return The resource bundle for the given locale.
      *
-     * @see ResourceBundle#getBundle(String,Locale)
+     * @see ResourceBundle#getBundle(String, Locale)
      */
     protected ResourceBundle getBundle(final Locale locale) {
         return (loader == null) ? ResourceBundle.getBundle(resources, locale) :

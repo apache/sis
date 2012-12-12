@@ -55,6 +55,11 @@ import org.apache.sis.internal.util.DefaultFactories;
  */
 public final class Types extends Static {
     /**
+     * The class loader to use for fetching GeoAPI resources.
+     */
+    static final ClassLoader CLASSLOADER = UML.class.getClassLoader();
+
+    /**
      * The types for ISO 19115 UML identifiers. The keys are UML identifiers. Values
      * are either class names as {@link String} objects, or the {@link Class} instances.
      *
@@ -166,18 +171,26 @@ public final class Types extends Static {
      *
      * @see CodeLists#getDescription(CodeList, Locale)
      */
-    public static String getDescription(final Class<?> type, Locale locale) {
-        if (type != null) {
-            final String name = getStandardName(type);
-            if (name != null) {
-                if (locale == null) {
-                    locale = Locale.getDefault();
-                }
-                try {
-                    return ResourceBundle.getBundle("org.opengis.metadata.Descriptions", locale).getString(name);
-                } catch (MissingResourceException e) {
-                    Logging.recoverableException(Types.class, "getDescription", e);
-                }
+    public static String getDescription(final Class<?> type, final Locale locale) {
+        return getDescription(getStandardName(type), locale);
+    }
+
+    /**
+     * Returns the descriptions for the given key in the given locale.
+     *
+     * @param  key     The ISO identifier of a class, or a class property, or a code list value.
+     * @param  locale  The locale in which to get the description.
+     * @return The description, or {@code null} if none.
+     */
+    static String getDescription(final String key, Locale locale) {
+        if (key != null) {
+            if (locale == null) {
+                locale = Locale.getDefault();
+            }
+            try {
+                return ResourceBundle.getBundle("org.opengis.metadata.Descriptions", locale, CLASSLOADER).getString(key);
+            } catch (MissingResourceException e) {
+                Logging.recoverableException(Types.class, "getDescription", e);
             }
         }
         return null;
