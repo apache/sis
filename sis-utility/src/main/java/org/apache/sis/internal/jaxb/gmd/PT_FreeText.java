@@ -25,8 +25,8 @@ import javax.xml.bind.annotation.XmlElementWrapper;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.jaxb.MarshalContext;
 import org.apache.sis.internal.jaxb.gco.GO_CharacterString;
-import org.apache.sis.util.type.DefaultInternationalString;
-import org.apache.sis.util.type.SimpleInternationalString;
+import org.apache.sis.util.iso.DefaultInternationalString;
+import org.apache.sis.util.iso.SimpleInternationalString;
 
 
 /**

@@ -21,7 +21,7 @@ import java.nio.CharBuffer;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.util.type.SimpleInternationalString;
+import org.apache.sis.util.iso.SimpleInternationalString;
 import org.junit.Test;
 
 import static org.junit.Assert.*;

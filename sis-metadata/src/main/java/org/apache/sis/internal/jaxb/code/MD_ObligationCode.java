@@ -18,7 +18,7 @@ package org.apache.sis.internal.jaxb.code;
 
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import org.opengis.metadata.Obligation;
-import org.apache.sis.util.type.CodeLists;
+import org.apache.sis.util.iso.CodeLists;
 
 
 /**

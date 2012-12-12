@@ -18,7 +18,7 @@ package org.apache.sis.internal.jaxb.gmd;
 
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import org.opengis.util.CodeList;
-import org.apache.sis.util.type.CodeLists;
+import org.apache.sis.util.iso.CodeLists;
 import org.apache.sis.internal.jaxb.MarshalContext;
 
 

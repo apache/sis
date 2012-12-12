@@ -26,14 +26,14 @@ import java.util.MissingResourceException;
 import net.jcip.annotations.Immutable;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.type.AbstractInternationalString;
+import org.apache.sis.util.iso.AbstractInternationalString;
 
 // Related to JDK7
 import java.util.Objects;
 
 
 /**
- * A copy of {@link org.apache.sis.util.type.ResourceInternationalString} specialized for
+ * A copy of {@link org.apache.sis.util.iso.ResourceInternationalString} specialized for
  * {@link IndexedResourceBundle}. Compared to the public class, this specialization works
  * with integer resource keys and accepts arguments.
  *

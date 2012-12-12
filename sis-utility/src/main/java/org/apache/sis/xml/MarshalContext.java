@@ -70,7 +70,7 @@ public abstract class MarshalContext {
      * this is usually very close to the English locale, but not necessarily
      * (e.g. dates formatted according ISO standard instead then English locale).
      * If the locale is {@code null}, then callers shall select a default locale as documented
-     * in the {@link org.apache.sis.util.type.DefaultInternationalString#toString(Locale)} javadoc.
+     * in the {@link org.apache.sis.util.iso.DefaultInternationalString#toString(Locale)} javadoc.
      * As a matter of rule:
      *
      * <ul>

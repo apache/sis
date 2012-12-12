@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.util.type;
+package org.apache.sis.util.iso;
 
 import java.util.Map;
 import java.util.List;
@@ -36,7 +36,7 @@ import org.apache.sis.util.NullArgumentException;
 import org.apache.sis.util.collection.WeakHashSet;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-import static org.apache.sis.util.type.DefaultNameSpace.DEFAULT_SEPARATOR_STRING;
+import static org.apache.sis.util.iso.DefaultNameSpace.DEFAULT_SEPARATOR_STRING;
 
 
 /**
@@ -242,7 +242,7 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
     /**
      * Constructs a generic name from a qualified name.
      * This method splits the given name around a separator inferred from the given scope, or the
-     * {@value org.apache.sis.util.type.DefaultNameSpace#DEFAULT_SEPARATOR} separator if the given
+     * {@value org.apache.sis.util.iso.DefaultNameSpace#DEFAULT_SEPARATOR} separator if the given
      * scope is null.
      *
      * @param  scope The {@linkplain AbstractName#scope() scope} of the generic name to

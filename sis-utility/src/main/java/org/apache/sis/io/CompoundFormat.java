@@ -122,7 +122,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      * <ul>
      *   <li>Format {@link Number}s using {@code toString()} instead than {@code NumberFormat}.</li>
      *   <li>Format {@link InternationalString}s using {@code toString(null)}. This has the desired
-     *       behavior at least with the {@linkplain org.apache.sis.util.type.DefaultInternationalString#toString(Locale)
+     *       behavior at least with the {@linkplain org.apache.sis.util.iso.DefaultInternationalString#toString(Locale)
      *       SIS implementation}.</li>
      * </ul>
      *

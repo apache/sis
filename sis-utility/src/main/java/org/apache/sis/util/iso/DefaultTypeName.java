@@ -14,11 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.util.type;
+package org.apache.sis.util.iso;
 
 import javax.xml.bind.annotation.XmlRootElement;
 import net.jcip.annotations.Immutable;
-
 import org.opengis.util.TypeName;
 import org.opengis.util.NameSpace;
 

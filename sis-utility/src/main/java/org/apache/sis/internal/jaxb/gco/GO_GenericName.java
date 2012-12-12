@@ -24,10 +24,10 @@ import org.opengis.util.LocalName;
 import org.opengis.util.MemberName;
 import org.opengis.util.GenericName;
 
-import org.apache.sis.util.type.AbstractName;
-import org.apache.sis.util.type.DefaultTypeName;
-import org.apache.sis.util.type.DefaultMemberName;
-import org.apache.sis.util.type.DefaultScopedName;
+import org.apache.sis.util.iso.AbstractName;
+import org.apache.sis.util.iso.DefaultTypeName;
+import org.apache.sis.util.iso.DefaultMemberName;
+import org.apache.sis.util.iso.DefaultScopedName;
 import org.apache.sis.util.resources.Errors;
 
 

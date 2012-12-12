@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.util.type;
+package org.apache.sis.util.iso;
 
 import java.util.Arrays;
 import org.opengis.util.GenericName;
@@ -23,7 +23,7 @@ import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
 import static org.opengis.test.Validators.*;
-import static org.apache.sis.util.type.DefaultNameSpace.DEFAULT_SEPARATOR_STRING;
+import static org.apache.sis.util.iso.DefaultNameSpace.DEFAULT_SEPARATOR_STRING;
 
 
 /**
