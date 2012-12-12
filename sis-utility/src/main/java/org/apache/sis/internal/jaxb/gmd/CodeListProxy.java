@@ -24,7 +24,7 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
 import org.opengis.util.CodeList;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.iso.CodeLists;
+import org.apache.sis.util.iso.Types;
 import org.apache.sis.internal.jaxb.MarshalContext;
 
 
@@ -166,15 +166,15 @@ public final class CodeListProxy {
      * @param code    The code list to wrap.
      */
     CodeListProxy(final MarshalContext context, final CodeList<?> code) {
-        final String classID = CodeLists.getListName(code);
-        final String fieldID = CodeLists.getCodeName(code);
+        final String classID = Types.getListName(code);
+        final String fieldID = Types.getCodeName(code);
         codeList = schema(context, "gmxCodelists.xml", classID);
         /*
          * Get the localized name of the field identifier, if possible.
-         * This code partially duplicates CodeList.getCodeTitle(CodeList, Locale).
+         * This code partially duplicates Types.getCodeTitle(CodeList, Locale).
          * This duplication exists because this constructor stores more information in
          * an opportunist way. If this constructor is updated, please consider updating
-         * the CodeList.getCodeTitle(CodeList, Locale) method accordingly.
+         * the Types.getCodeTitle(CodeList, Locale) method accordingly.
          */
         final Locale locale = context.getLocale();
         if (locale != null) {
@@ -192,7 +192,7 @@ public final class CodeListProxy {
             // Fallback when no value is defined for the code list. Build a value from the
             // most descriptive name (excluding the field name), which is usually the UML
             // name except for CharacterSet in which case it is a string like "UTF-8".
-            value = CodeLists.getCodeTitle(code);
+            value = Types.getCodeTitle(code);
         }
         codeListValue = fieldID;
     }
