@@ -60,7 +60,7 @@ public final class XML extends Static {
      * UML identifiers}. While such identifiers often look like English words, they are not
      * considered as the {@linkplain Locale#ENGLISH English} localization.
      * The algorithm attempting to find a "unlocalized" string is defined in the
-     * {@link org.apache.sis.util.type.DefaultInternationalString#toString(Locale)} javadoc.
+     * {@link org.apache.sis.util.iso.DefaultInternationalString#toString(Locale)} javadoc.
      *
      * {@section Special case}
      * If the object to be marshalled is an instance of

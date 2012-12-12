@@ -18,7 +18,7 @@ package org.apache.sis.internal.util;
 
 import org.opengis.util.NameFactory;
 import org.apache.sis.util.Static;
-import org.apache.sis.util.type.DefaultNameFactory;
+import org.apache.sis.util.iso.DefaultNameFactory;
 
 
 /**

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.util.type;
+package org.apache.sis.util.iso;
 
 import org.opengis.util.CodeList;
 import org.apache.sis.util.CharSequences;

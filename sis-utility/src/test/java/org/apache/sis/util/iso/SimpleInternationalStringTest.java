@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.util.type;
+package org.apache.sis.util.iso;
 
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.opengis.test.Validators.validate;
 import static org.apache.sis.test.Assert.*;
-import static org.apache.sis.util.type.DefaultInternationalStringTest.MESSAGE;
+import static org.apache.sis.util.iso.DefaultInternationalStringTest.MESSAGE;
 
 
 /**

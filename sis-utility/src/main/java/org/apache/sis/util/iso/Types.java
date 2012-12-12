@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.util.type;
+package org.apache.sis.util.iso;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -238,9 +238,9 @@ public final class Types extends Static {
      *   <li>{@link GenericName}, to be casted and returned as-is.</li>
      *   <li>{@link CharSequence} (usually a {@link String} or an {@link InternationalString}),
      *       to be parsed as a generic name using the
-     *       {@value org.apache.sis.util.type.DefaultNameSpace#DEFAULT_SEPARATOR} separator.</li>
+     *       {@value org.apache.sis.util.iso.DefaultNameSpace#DEFAULT_SEPARATOR} separator.</li>
      *   <li>{@link Identifier}, its {@linkplain Identifier#getCode() code} to be parsed as a generic name
-     *       using the {@value org.apache.sis.util.type.DefaultNameSpace#DEFAULT_SEPARATOR} separator.</li>
+     *       using the {@value org.apache.sis.util.iso.DefaultNameSpace#DEFAULT_SEPARATOR} separator.</li>
      * </ul>
      *
      * If {@code value} is an array or a collection containing {@code null} elements,

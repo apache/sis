@@ -24,7 +24,7 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
 import org.opengis.util.CodeList;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.type.CodeLists;
+import org.apache.sis.util.iso.CodeLists;
 import org.apache.sis.internal.jaxb.MarshalContext;
 
 
