@@ -18,6 +18,7 @@ package org.apache.sis.util.type;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Collection;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.ResourceBundle;
@@ -27,10 +28,15 @@ import java.io.InputStream;
 
 import org.opengis.annotation.UML;
 import org.opengis.util.CodeList;
+import org.opengis.util.NameFactory;
+import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
+import org.opengis.metadata.Identifier;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.internal.util.DefaultFactories;
 
 
 /**
@@ -186,6 +192,8 @@ public final class Types extends Static {
      * @param  string The characters sequence to convert, or {@code null}.
      * @return The given sequence as an international string,
      *         or {@code null} if the given sequence was null.
+     *
+     * @see DefaultNameFactory#createInternationalString(Map)
      */
     public static InternationalString toInternationalString(final CharSequence string) {
         if (string == null || string instanceof InternationalString) {
@@ -217,5 +225,95 @@ public final class Types extends Static {
             copy[i] = toInternationalString(strings[i]);
         }
         return copy;
+    }
+
+    /**
+     * Converts the given value to an array of generic names. If the given value is an instance of
+     * {@link GenericName}, {@link String} or any other type enumerated below, then it is converted
+     * and returned in an array of length 1. If the given value is an array or a collection, then an
+     * array of same length is returned where each element has been converted.
+     *
+     * <p>Allowed types or element types are:</p>
+     * <ul>
+     *   <li>{@link GenericName}, to be casted and returned as-is.</li>
+     *   <li>{@link CharSequence} (usually a {@link String} or an {@link InternationalString}),
+     *       to be parsed as a generic name using the
+     *       {@value org.apache.sis.util.type.DefaultNameSpace#DEFAULT_SEPARATOR} separator.</li>
+     *   <li>{@link Identifier}, its {@linkplain Identifier#getCode() code} to be parsed as a generic name
+     *       using the {@value org.apache.sis.util.type.DefaultNameSpace#DEFAULT_SEPARATOR} separator.</li>
+     * </ul>
+     *
+     * If {@code value} is an array or a collection containing {@code null} elements,
+     * then the corresponding element in the returned array will also be {@code null}.
+     *
+     * @param  value The object to cast into an array of generic names, or {@code null}.
+     * @param  factory The factory to use for creating names, or {@code null} for the default.
+     * @return The generic names, or {@code null} if the given {@code value} was null.
+     *         Note that it may be the {@code value} reference itself casted to {@code GenericName[]}.
+     * @throws ClassCastException if {@code value} can't be casted.
+     */
+    public static GenericName[] toGenericNames(Object value, NameFactory factory) throws ClassCastException {
+        if (value == null) {
+            return null;
+        }
+        if (factory == null) {
+            factory = DefaultFactories.NAMES;
+        }
+        GenericName name = toGenericName(value, factory);
+        if (name != null) {
+            return new GenericName[] {
+                name
+            };
+        }
+        /*
+         * Above code checked for a singleton. Now check for a collection or an array.
+         */
+        final Object[] values;
+        if (value instanceof Object[]) {
+            values = (Object[]) value;
+            if (values instanceof GenericName[]) {
+                return (GenericName[]) values;
+            }
+        } else if (value instanceof Collection<?>) {
+            values = ((Collection<?>) value).toArray();
+        } else {
+            throw new ClassCastException(Errors.format(Errors.Keys.IllegalArgumentClass_2,
+                    "value", value.getClass()));
+        }
+        final GenericName[] names = new GenericName[values.length];
+        for (int i=0; i<values.length; i++) {
+            value = values[i];
+            if (value != null) {
+                name = toGenericName(value, factory);
+                if (name == null) {
+                    throw new ClassCastException(Errors.format(Errors.Keys.IllegalArgumentClass_2,
+                            "value[" + i + ']', value.getClass()));
+                }
+                names[i] = name;
+            }
+        }
+        return names;
+    }
+
+    /**
+     * Creates a generic name from the given value. The value may be an instance of
+     * {@link GenericName}, {@link Identifier} or {@link CharSequence}. If the given
+     * object is not recognized, then this method returns {@code null}.
+     *
+     * @param  value The object to convert.
+     * @param  factory The factory to use for creating names.
+     * @return The converted object, or {@code null} if {@code value} is not convertible.
+     */
+    private static GenericName toGenericName(final Object value, final NameFactory factory) {
+        if (value instanceof GenericName) {
+            return (GenericName) value;
+        }
+        if (value instanceof Identifier) {
+            return factory.parseGenericName(null, ((Identifier) value).getCode());
+        }
+        if (value instanceof CharSequence) {
+            return factory.parseGenericName(null, (CharSequence) value);
+        }
+        return null;
     }
 }
