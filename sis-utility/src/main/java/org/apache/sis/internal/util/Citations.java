@@ -23,7 +23,9 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.Static;
 
+import static org.apache.sis.util.CharSequences.equalsFiltered;
 import static org.apache.sis.util.CharSequences.trimWhitespaces;
+import static org.apache.sis.util.Characters.Filter.LETTERS_AND_DIGITS;
 
 
 /**
@@ -56,15 +58,16 @@ public final class Citations extends Static {
      * @param  collection The collection from which to get the iterator, or {@code null}.
      * @return The iterator over the given collection elements, or {@code null}.
      */
-    public static <E> Iterator<E> iterator(final Collection<E> collection) {
+    private static <E> Iterator<E> iterator(final Collection<E> collection) {
         return (collection != null && !collection.isEmpty()) ? collection.iterator() : null;
     }
 
     /**
      * Returns {@code true} if at least one {@linkplain Citation#getTitle() title} or
-     * {@linkplain Citation#getAlternateTitles alternate title} in {@code c1} is equal
-     * to a title or alternate title in {@code c2}. The comparison is case-insensitive
-     * and ignores leading and trailing spaces. The titles ordering is not significant.
+     * {@linkplain Citation#getAlternateTitles() alternate title} in {@code c1} is leniently
+     * equal to a title or alternate title in {@code c2}. The comparison is case-insensitive
+     * and ignores every character which is not a {@linkplain Character#isLetterOrDigit(int)
+     * letter or a digit}. The titles ordering is not significant.
      *
      * @param  c1 The first citation to compare, or {@code null}.
      * @param  c2 the second citation to compare, or {@code null}.
@@ -105,30 +108,29 @@ public final class Citations extends Static {
 
     /**
      * Returns {@code true} if the {@linkplain Citation#getTitle() title} or any
-     * {@linkplain Citation#getAlternateTitles alternate title} in the given citation
-     * matches the given string. The comparison is case-insensitive and ignores leading
-     * and trailing spaces.
+     * {@linkplain Citation#getAlternateTitles() alternate title} in the given citation
+     * matches the given string. The comparison is case-insensitive and ignores every character
+     * which is not a {@linkplain Character#isLetterOrDigit(int) letter or a digit}.
      *
      * @param  citation The citation to check for, or {@code null}.
      * @param  title The title or alternate title to compare, or {@code null}.
      * @return {@code true} if both arguments are non-null, and the title or alternate
      *         title matches the given string.
      */
-    public static boolean titleMatches(final Citation citation, String title) {
+    public static boolean titleMatches(final Citation citation, final CharSequence title) {
         if (citation != null && title != null) {
-            title = trimWhitespaces(title);
             InternationalString candidate = citation.getTitle();
             Iterator<? extends InternationalString> iterator = null;
             do {
                 if (candidate != null) {
                     // The "null" locale argument is required for getting the unlocalized version.
-                    final String unlocalized = trimWhitespaces(candidate.toString(null));
-                    if (unlocalized != null && unlocalized.equalsIgnoreCase(title)) {
+                    final String unlocalized = candidate.toString(null);
+                    if (equalsFiltered(unlocalized, title, LETTERS_AND_DIGITS, true)) {
                         return true;
                     }
-                    final String localized = trimWhitespaces(candidate).toString();
-                    if (localized != unlocalized // Slight optimization for a common case.
-                            && (localized != null) && localized.equalsIgnoreCase(title))
+                    final String localized = candidate.toString();
+                    if (!Objects.equals(localized, unlocalized) // Slight optimization for a common case.
+                            && equalsFiltered(localized, title, LETTERS_AND_DIGITS, true))
                     {
                         return true;
                     }
@@ -147,7 +149,8 @@ public final class Citations extends Static {
     /**
      * Returns {@code true} if at least one {@linkplain Citation#getIdentifiers() identifier} in
      * {@code c1} is equal to an identifier in {@code c2}. The comparison is case-insensitive
-     * and ignores leading and trailing spaces. The identifier ordering is not significant.
+     * and ignores every character which is not a {@linkplain Character#isLetterOrDigit(int)
+     * letter or a digit}. The identifier ordering is not significant.
      *
      * <p>If (and <em>only</em> if) the citations do not contains any identifier, then this method
      * fallback on titles comparison using the {@link #titleMatches(Citation,Citation) titleMatches}
@@ -190,8 +193,8 @@ public final class Citations extends Static {
 
     /**
      * Returns {@code true} if any {@linkplain Citation#getIdentifiers() identifiers} in the given
-     * citation matches the given string. The comparison is case-insensitive and ignores leading
-     * and trailing spaces.
+     * citation matches the given string. The comparison is case-insensitive and ignores every
+     * character which is not a {@linkplain Character#isLetterOrDigit(int) letter or a digit}.
      *
      * <p>If (and <em>only</em> if) the citation does not contain any identifier, then this method
      * fallback on titles comparison using the {@link #titleMatches(Citation,String) titleMatches}
@@ -203,20 +206,16 @@ public final class Citations extends Static {
      * @return {@code true} if both arguments are non-null, and the title or alternate title
      *         matches the given string.
      */
-    public static boolean identifierMatches(final Citation citation, String identifier) {
+    public static boolean identifierMatches(final Citation citation, final CharSequence identifier) {
         if (citation != null && identifier != null) {
-            identifier = trimWhitespaces(identifier);
             final Iterator<? extends Identifier> identifiers = iterator(citation.getIdentifiers());
             if (identifiers == null) {
                 return titleMatches(citation, identifier);
             }
             while (identifiers.hasNext()) {
                 final Identifier id = identifiers.next();
-                if (id != null) {
-                    final String code = id.getCode();
-                    if (code != null && identifier.equalsIgnoreCase(trimWhitespaces(code))) {
-                        return true;
-                    }
+                if (id != null && equalsFiltered(identifier, id.getCode(), LETTERS_AND_DIGITS, true)) {
+                    return true;
                 }
             }
         }

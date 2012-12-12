@@ -16,6 +16,8 @@
  */
 package org.apache.sis.util;
 
+import org.apache.sis.util.resources.Errors;
+
 
 /**
  * Static methods working on {@code char} values, and some character constants.
@@ -224,5 +226,196 @@ public final class Characters extends Static {
             }
         }
         return c;
+    }
+
+
+
+
+    /**
+     * Subsets of Unicode characters identified by their general category.
+     * The categories are identified by constants defined in the {@link Character} class, like
+     * {@link Character#LOWERCASE_LETTER     LOWERCASE_LETTER},
+     * {@link Character#UPPERCASE_LETTER     UPPERCASE_LETTER},
+     * {@link Character#DECIMAL_DIGIT_NUMBER DECIMAL_DIGIT_NUMBER} and
+     * {@link Character#SPACE_SEPARATOR      SPACE_SEPARATOR}.
+     *
+     * <p>An instance of this class can be obtained from an enumeration of character types
+     * using the {@link #forTypes(byte[])} method, or using one of the constants predefined
+     * in this class. Then, Unicode characters can be tested for inclusion in the subset by
+     * calling the {@link #contains(int)} method.</p>
+     *
+     * @author  Martin Desruisseaux (Geomatys)
+     * @since   0.3
+     * @version 0.3
+     * @module
+     *
+     * @see java.lang.Character.Subset
+     * @see Character#getType(int)
+     */
+    public static class Filter extends Character.Subset {
+        /*
+         * This class can not easily be Serializable, because the parent class is not Serializable
+         * and does not define a no-argument constructor.  We could workaround with a writeReplace
+         * method - waiting to see if there is a real need for that.
+         */
+
+        /**
+         * The subset of all characters for which {@link Character#isLetterOrDigit(int)}
+         * returns {@code true}. This subset includes the following general categories:
+         * {@link Character#LOWERCASE_LETTER},
+         * {@link Character#UPPERCASE_LETTER     UPPERCASE_LETTER},
+         * {@link Character#TITLECASE_LETTER     TITLECASE_LETTER},
+         * {@link Character#MODIFIER_LETTER      MODIFIER_LETTER},
+         * {@link Character#OTHER_LETTER         OTHER_LETTER} and
+         * {@link Character#DECIMAL_DIGIT_NUMBER DECIMAL_DIGIT_NUMBER}.
+         */
+        public static final Filter LETTERS_AND_DIGITS = new LettersAndDigits();
+
+        /**
+         * The subset of all characters for which {@link Character#isUnicodeIdentifierPart(int)}
+         * returns {@code true}, excluding {@linkplain Character#isIdentifierIgnorable(int)
+         * ignorable} characters. This subset includes all the {@link #LETTERS_AND_DIGITS}
+         * categories with the addition of the following ones:
+         * {@link Character#LETTER_NUMBER},
+         * {@link Character#CONNECTOR_PUNCTUATION CONNECTOR_PUNCTUATION},
+         * {@link Character#NON_SPACING_MARK NON_SPACING_MARK} and
+         * {@link Character#COMBINING_SPACING_MARK COMBINING_SPACING_MARK}.
+         */
+        public static final Filter UNICODE_IDENTIFIER = new UnicodeIdentifier();
+
+        /**
+         * A bitmask of character types in this subset.
+         */
+        private final long types;
+
+        /**
+         * Creates a new subset of the given name.
+         *
+         * @param name  The subset name.
+         * @param types A bitmask of character types.
+         */
+        Filter(final String name, final long types) {
+            super(name);
+            this.types = types;
+        }
+
+        /**
+         * Returns {@code true} if this subset contains the given Unicode character.
+         *
+         * @param  codePoint The Unicode character, as a code point value.
+         * @return {@code true} if this subset contains the given character.
+         */
+        public boolean contains(final int codePoint) {
+            return containsType(Character.getType(codePoint));
+        }
+
+        /**
+         * Returns {@code true} if this subset contains the characters of the given type.
+         * The given type shall be one of the {@link Character} constants like
+         * {@link Character#LOWERCASE_LETTER     LOWERCASE_LETTER},
+         * {@link Character#UPPERCASE_LETTER     UPPERCASE_LETTER},
+         * {@link Character#DECIMAL_DIGIT_NUMBER DECIMAL_DIGIT_NUMBER} or
+         * {@link Character#SPACE_SEPARATOR      SPACE_SEPARATOR}.
+         *
+         * @param  type One of the {@link Character} constants.
+         * @return {@code true} if this subset contains the characters of the given type.
+         *
+         * @see Character#getType(int)
+         */
+        public final boolean containsType(final int type) {
+            return (type >= 0) && (type < Long.SIZE) && (types & (1L << type)) != 0;
+        }
+
+        /**
+         * Returns a subset representing the union of all Unicode characters of the given types.
+         *
+         * @param  types The character types, as {@link Character} constants.
+         * @return The subset of Unicode characters of the given type.
+         *
+         * @see Character#LOWERCASE_LETTER
+         * @see Character#UPPERCASE_LETTER
+         * @see Character#DECIMAL_DIGIT_NUMBER
+         * @see Character#SPACE_SEPARATOR
+         */
+        public static Filter forTypes(final byte... types) {
+            long mask = 0;
+            for (int i=0; i<types.length; i++) {
+                final int type = types[i];
+                if (type < 0 || type >= Long.SIZE) {
+                    throw new IllegalArgumentException(Errors.format(
+                            Errors.Keys.IllegalArgumentValue_2, "types[" + i + ']', type));
+                }
+                mask |= (1L << type);
+            }
+predefined: for (int i=0; ; i++) {
+                final Filter candidate;
+                switch (i) {
+                    case 0:  candidate = LETTERS_AND_DIGITS; break;
+                    case 1:  candidate = UNICODE_IDENTIFIER; break;
+                    default: break predefined;
+                }
+                if (mask == candidate.types) {
+                    return candidate;
+                }
+            }
+            return new Filter("Filter", mask);
+        }
+    }
+
+    /**
+     * Implementation of the {@link Filter#LETTERS_AND_DIGITS} constant.
+     */
+    private static final class LettersAndDigits extends Filter {
+        /**
+         * Creates the {@link Filter#LETTERS_AND_DIGITS} singleton instance.
+         */
+        LettersAndDigits() {
+            super("LETTERS_AND_DIGITS",
+                      (1L << Character.LOWERCASE_LETTER)
+                    | (1L << Character.UPPERCASE_LETTER)
+                    | (1L << Character.TITLECASE_LETTER)
+                    | (1L << Character.MODIFIER_LETTER)
+                    | (1L << Character.OTHER_LETTER)
+                    | (1L << Character.DECIMAL_DIGIT_NUMBER));
+        }
+
+        /**
+         * Returns {@code true} if this subset contains the given Unicode character.
+         */
+        @Override
+        public boolean contains(final int codePoint) {
+            return Character.isLetterOrDigit(codePoint);
+        }
+    }
+
+    /**
+     * Implementation of the {@link Filter#UNICODE_IDENTIFIER} constant.
+     */
+    private static final class UnicodeIdentifier extends Filter {
+        /**
+         * Creates the {@link Filter#LETTERS_AND_DIGITS} singleton instance.
+         */
+        UnicodeIdentifier() {
+            super("UNICODE_IDENTIFIER",
+                      (1L << Character.LOWERCASE_LETTER)
+                    | (1L << Character.UPPERCASE_LETTER)
+                    | (1L << Character.TITLECASE_LETTER)
+                    | (1L << Character.MODIFIER_LETTER)
+                    | (1L << Character.OTHER_LETTER)
+                    | (1L << Character.DECIMAL_DIGIT_NUMBER)
+                    | (1L << Character.LETTER_NUMBER)
+                    | (1L << Character.CONNECTOR_PUNCTUATION)
+                    | (1L << Character.NON_SPACING_MARK)
+                    | (1L << Character.COMBINING_SPACING_MARK));
+        }
+
+        /**
+         * Returns {@code true} if this subset contains the given Unicode character.
+         */
+        @Override
+        public boolean contains(final int codePoint) {
+            return Character.isUnicodeIdentifierPart(codePoint) &&
+                  !Character.isIdentifierIgnorable(codePoint);
+        }
     }
 }

@@ -77,6 +77,6 @@
  *
  * @see java.util.ResourceBundle
  * @see java.text.MessageFormat
- * @see org.apache.sis.util.type.ResourceInternationalString
+ * @see org.apache.sis.util.iso.ResourceInternationalString
  */
 package org.apache.sis.util.resources;

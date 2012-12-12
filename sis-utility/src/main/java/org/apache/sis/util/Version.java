@@ -81,6 +81,7 @@ public class Version implements CharSequence, Comparable<Version>, Serializable 
      * @param version The version as a string.
      */
     public Version(final String version) {
+        ArgumentChecks.ensureNonNull("version", version);
         this.version = CharSequences.trimWhitespaces(version);
     }
 

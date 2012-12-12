@@ -117,6 +117,13 @@ public final strictfp class CacheTest extends TestCase {
             Throwable failure;
 
             /**
+             * Creates a new thread.
+             */
+            OtherThread() {
+                super(TestUtilities.THREADS, "CacheTest.testThreadBlocking()");
+            }
+
+            /**
              * Reads the value added by the main thread, then adds an other value.
              * The first operation shall block while the main thread holds the lock.
              */
@@ -209,6 +216,13 @@ public final strictfp class CacheTest extends TestCase {
             int addCount;
 
             /**
+             * Creates a new thread.
+             */
+            WriterThread(final int i) {
+                super(TestUtilities.THREADS, "CacheTest.stress() #" + i);
+            }
+
+            /**
              * Put random values in the map.
              */
             @Override public void run() {
@@ -237,7 +251,7 @@ public final strictfp class CacheTest extends TestCase {
             }
         }
         final WriterThread[] threads = new WriterThread[50];
-        for (int i=0; i<threads.length; i++) threads[i] = new WriterThread();
+        for (int i=0; i<threads.length; i++) threads[i] = new WriterThread(i);
         for (int i=0; i<threads.length; i++) threads[i].start();
         for (int i=0; i<threads.length; i++) threads[i].join();
         TestUtilities.rethrownIfNotNull(failures.get());

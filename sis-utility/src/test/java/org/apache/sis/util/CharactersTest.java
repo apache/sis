@@ -92,4 +92,52 @@ public final strictfp class CharactersTest extends TestCase {
         assertEquals(c, toNormalScript(c));
         assertFalse(isSubScript(c));
     }
+
+    /**
+     * Tests the pre-defined {@link Characters.Filter} constants.
+     */
+    @Test
+    public void testPredefinedFilters() {
+        assertTrue (Filter.UNICODE_IDENTIFIER.contains('a'));
+        assertTrue (Filter.LETTERS_AND_DIGITS.contains('a'));
+        assertTrue (Filter.UNICODE_IDENTIFIER.contains('_'));
+        assertFalse(Filter.LETTERS_AND_DIGITS.contains('_'));
+        assertFalse(Filter.UNICODE_IDENTIFIER.contains(' '));
+        assertFalse(Filter.LETTERS_AND_DIGITS.contains(' '));
+    }
+
+    /**
+     * Tests the {@link Characters.Filter#forTypes(byte[])} method.
+     */
+    @Test
+    public void testFilterForTypes() {
+        final Filter filter = Filter.forTypes(Character.SPACE_SEPARATOR, Character.DECIMAL_DIGIT_NUMBER);
+        assertTrue (filter.contains('0'));
+        assertTrue (filter.contains(' '));
+        assertFalse(filter.contains('A'));
+    }
+
+    /**
+     * Scans the full {@code char} range in order to check for {@link Character.Filter} consistency.
+     */
+    @Test
+    public void scanCharacterRange() {
+        for (int c=Character.MIN_VALUE; c<=Character.MAX_VALUE; c++) {
+            final int type = Character.getType(c);
+predefined: for (int i=0; ; i++) {
+                final Characters.Filter filter;
+                switch (i) {
+                    case 0:  filter = Filter.UNICODE_IDENTIFIER; break;
+                    case 1:  filter = Filter.LETTERS_AND_DIGITS; break;
+                    default: break predefined;
+                }
+                final boolean cc = filter.contains(c);
+                final boolean ct = filter.containsType(type);
+                if (cc != ct) {
+                    fail(filter + ".contains('" + (char) c + "') == " + cc + " but "
+                            + filter + ".containsType(" + type + ") == " + ct);
+                }
+            }
+        }
+    }
 }
