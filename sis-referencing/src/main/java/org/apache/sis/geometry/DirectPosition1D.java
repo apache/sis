@@ -213,7 +213,7 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
     }
 
     /**
-     * Returns a hash value for this coordinate.
+     * {@inheritDoc}
      */
     @Override
     public int hashCode() {

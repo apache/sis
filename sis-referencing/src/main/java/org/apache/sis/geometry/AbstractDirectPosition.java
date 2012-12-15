@@ -153,45 +153,22 @@ public abstract class AbstractDirectPosition implements DirectPosition {
      * are the {@linkplain #getOrdinate(int) ordinate} values at index 0, 1, 2, <i>etc.</i>:
      *
      * {@preformat wkt
-     *   POINT(x₀, x₁, x₂, …)
+     *   POINT(x₀ x₁ x₂ …)
      * }
      *
-     * The output of this method can be parsed by the by the {@link GeneralDirectPosition} constructor.
+     * The string returned by this method can be parsed by the {@link GeneralDirectPosition} constructor.
      *
      * @return This position as a {@code POINT} in <cite>Well Known Text</cite> (WKT) format.
      */
     @Override
     public String toString() {
-        return toString(this);
-    }
-
-    /**
-     * Formats a {@code POINT} element from a given direct position.
-     * This method formats the given position in the <cite>Well Known Text</cite> (WKT) format.
-     * The returned string is like below, where {@code x₀}, {@code x₁}, {@code x₂}, <i>etc.</i>
-     * are the {@linkplain #getOrdinate(int) ordinate} values at index 0, 1, 2, <i>etc.</i>:
-     *
-     * {@preformat wkt
-     *   POINT(x₀, x₁, x₂, …)
-     * }
-     *
-     * The output of this method can be parsed by the by the {@link GeneralDirectPosition} constructor.
-     *
-     * @param  position The position to format.
-     * @return The position as a {@code POINT} in <cite>Well Known Text</cite> (WKT) format.
-     *
-     * @see GeneralDirectPosition#GeneralDirectPosition(String)
-     * @see org.apache.sis.measure.CoordinateFormat
-     * @see org.apache.sis.io.wkt
-     */
-    public static String toString(final DirectPosition position) {
         final StringBuilder buffer = new StringBuilder(32).append("POINT(");
-        final int dimension = position.getDimension();
+        final int dimension = getDimension();
         for (int i=0; i<dimension; i++) {
             if (i != 0) {
                 buffer.append(' ');
             }
-            trimFractionalPart(buffer.append(position.getOrdinate(i)));
+            trimFractionalPart(buffer.append(getOrdinate(i)));
         }
         return buffer.append(')').toString();
     }
@@ -289,7 +266,10 @@ parse:  while (i < length) {
     }
 
     /**
-     * Returns a hash value for this coordinate.
+     * Returns a hash value for this coordinate. This method returns a value compliant
+     * with the contract documented in the {@link DirectPosition#hashCode()} javadoc.
+     * Consequently, it should be possible to mix different {@code DirectPosition}
+     * implementations in the same hash map.
      *
      * @return A hash code value for this position.
      */
@@ -309,16 +289,23 @@ parse:  while (i < length) {
     }
 
     /**
-     * Returns {@code true} if the specified object is also a
-     * {@linkplain DirectPosition direct position} with equal
-     * {@linkplain #getCoordinate() coordinate} array and equal
+     * Returns {@code true} if the specified object is also a {@code DirectPosition}
+     * with equal {@linkplain #getCoordinate() coordinate} and equal
      * {@linkplain #getCoordinateReferenceSystem CRS}.
+     *
+     * This method performs the comparison as documented in the {@link DirectPosition#equals(Object)}
+     * javadoc. In particular, the given object is not required to be of the same implementation class.
+     * Consequently, it should be possible to mix different {@code DirectPosition} implementations in
+     * the same hash map.
      *
      * @param object The object to compare with this position.
      * @return {@code true} if the given object is equal to this position.
      */
     @Override
     public boolean equals(final Object object) {
+        if (object == this) {
+            return true;
+        }
         if (object instanceof DirectPosition) {
             final DirectPosition that = (DirectPosition) object;
             final int dimension = getDimension();

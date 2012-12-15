@@ -23,7 +23,9 @@ import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.util.resources.Errors;
+
 import static java.lang.Double.doubleToLongBits;
+import static org.apache.sis.util.StringBuilders.trimFractionalPart;
 
 
 /**
@@ -278,11 +280,14 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
      *   POINT(x y)
      * }
      *
-     * The output of this method can be parsed by the by the {@link GeneralDirectPosition} constructor.
+     * The string returned by this method can be parsed by the {@link #DirectPosition2D(String)} constructor.
      */
     @Override
     public String toString() {
-        return AbstractDirectPosition.toString(this);
+        final StringBuilder buffer = new StringBuilder(32);
+        trimFractionalPart(buffer.append("POINT(").append(x));
+        trimFractionalPart(buffer.append(' ').append(y));
+        return buffer.append(')').toString();
     }
 
     /**
