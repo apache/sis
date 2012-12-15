@@ -301,57 +301,6 @@ public final class CharSequences extends Static {
     }
 
     /**
-     * Returns the index within the given character sequence of the first occurrence of the
-     * specified character, starting the search at the specified index. If the character is
-     * not found, then this method returns -1.
-     *
-     * <p>There is no restriction on the value of {@code fromIndex}. If negative or greater
-     * than {@code toIndex}, then the behavior of this method is as if the search started
-     * from 0 or {@code toIndex} respectively. This is consistent with the behavior documented
-     * in {@link String#indexOf(int, int)}.</p>
-     *
-     * @param  text      The character sequence in which to perform the search, or {@code null}.
-     * @param  toSearch  The Unicode code point of the character to search.
-     * @param  fromIndex The index to start the search from.
-     * @param  toIndex   The index after the last character where to perform the search.
-     * @return The index of the first occurrence of the given character in the text, or -1
-     *         if no occurrence has been found or if the {@code text} argument is null.
-     *
-     * @see String#indexOf(int, int)
-     */
-    public static int indexOf(final CharSequence text, final int toSearch, int fromIndex, int toIndex) {
-        if (text != null) {
-            final int length = text.length();
-            if (toIndex > length) {
-                toIndex = length;
-            }
-            if (text instanceof String && toIndex == length) {
-                // String provides a faster implementation.
-                return ((String) text).indexOf(toSearch, fromIndex);
-            }
-            if (fromIndex < 0) {
-                fromIndex = 0;
-            }
-            char head  = (char) toSearch;
-            char tail  = (char) 0;
-            if (head != toSearch) { // Outside BMP plane?
-                head = highSurrogate(toSearch);
-                tail = lowSurrogate (toSearch);
-                toIndex--;
-            }
-            while (fromIndex < toIndex) {
-                if (text.charAt(fromIndex) == head) {
-                    if (tail == 0 || text.charAt(fromIndex+1) == tail) {
-                        return fromIndex;
-                    }
-                }
-                fromIndex++;
-            }
-        }
-        return -1;
-    }
-
-    /**
      * Returns the index within the given strings of the first occurrence of the specified part,
      * starting at the specified index. This method is equivalent to the following method call,
      * except that this method works on arbitrary {@link CharSequence} objects instead than
@@ -408,6 +357,107 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
                     }
                 }
                 return fromIndex;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Returns the index within the given character sequence of the first occurrence of the
+     * specified character, starting the search at the specified index. If the character is
+     * not found, then this method returns -1.
+     *
+     * <p>There is no restriction on the value of {@code fromIndex}. If negative or greater
+     * than {@code toIndex}, then the behavior of this method is as if the search started
+     * from 0 or {@code toIndex} respectively. This is consistent with the behavior documented
+     * in {@link String#indexOf(int, int)}.</p>
+     *
+     * @param  text      The character sequence in which to perform the search, or {@code null}.
+     * @param  toSearch  The Unicode code point of the character to search.
+     * @param  fromIndex The index to start the search from.
+     * @param  toIndex   The index after the last character where to perform the search.
+     * @return The index of the first occurrence of the given character in the specified sub-sequence,
+     *         or -1 if no occurrence has been found or if the {@code text} argument is null.
+     *
+     * @see String#indexOf(int, int)
+     */
+    public static int indexOf(final CharSequence text, final int toSearch, int fromIndex, int toIndex) {
+        if (text != null) {
+            final int length = text.length();
+            if (toIndex >= length) {
+                if (text instanceof String) {
+                    // String provides a faster implementation.
+                    return ((String) text).indexOf(toSearch, fromIndex);
+                }
+                toIndex = length;
+            }
+            if (fromIndex < 0) {
+                fromIndex = 0;
+            }
+            char head = (char) toSearch;
+            char tail = (char) 0;
+            if (head != toSearch) { // Outside BMP plane?
+                head = highSurrogate(toSearch);
+                tail = lowSurrogate (toSearch);
+                toIndex--;
+            }
+            while (fromIndex < toIndex) {
+                if (text.charAt(fromIndex) == head) {
+                    if (tail == 0 || text.charAt(fromIndex+1) == tail) {
+                        return fromIndex;
+                    }
+                }
+                fromIndex++;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Returns the index within the given character sequence of the last occurrence of the
+     * specified character, searching backward in the given index range.
+     * If the character is not found, then this method returns -1.
+     *
+     * <p>There is no restriction on the value of {@code toIndex}. If greater than the text length
+     * or less than {@code fromIndex}, then the behavior of this method is as if the search started
+     * from {@code length} or {@code fromIndex} respectively. This is consistent with the behavior
+     * documented in {@link String#lastIndexOf(int, int)}.</p>
+     *
+     * @param  text      The character sequence in which to perform the search, or {@code null}.
+     * @param  toSearch  The Unicode code point of the character to search.
+     * @param  fromIndex The index of the first character in the range where to perform the search.
+     * @param  toIndex   The index after the last character in the range where to perform the search.
+     * @return The index of the last occurrence of the given character in the specified sub-sequence,
+     *         or -1 if no occurrence has been found or if the {@code text} argument is null.
+     *
+     * @see String#lastIndexOf(int, int)
+     */
+    public static int lastIndexOf(final CharSequence text, final int toSearch, int fromIndex, int toIndex) {
+        if (text != null) {
+            if (fromIndex <= 0) {
+                if (text instanceof String) {
+                    // String provides a faster implementation.
+                    return ((String) text).lastIndexOf(toSearch, toIndex - 1);
+                }
+                fromIndex = 0;
+            }
+            final int length = text.length();
+            if (toIndex > length) {
+                toIndex = length;
+            }
+            char tail = (char) toSearch;
+            char head = (char) 0;
+            if (tail != toSearch) { // Outside BMP plane?
+                tail = lowSurrogate (toSearch);
+                head = highSurrogate(toSearch);
+                fromIndex++;
+            }
+            while (toIndex > fromIndex) {
+                if (text.charAt(--toIndex) == tail) {
+                    if (head == 0 || text.charAt(--toIndex) == head) {
+                        return toIndex;
+                    }
+                }
             }
         }
         return -1;
@@ -482,11 +532,10 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
     }
 
     /**
-     * Returns the index of the first character after all leading whitespace characters
-     * in the given range. If the given range contains only space characters, then this method
-     * returns the index of the first character after the given range, which is always equals
-     * or greater than {@code toIndex}. Note that this character may not exist if {@code toIndex}
-     * is equals to the text length.
+     * Returns the index of the first non-white character in the given range.
+     * If the given range contains only space characters, then this method returns the index of the
+     * first character after the given range, which is always equals or greater than {@code toIndex}.
+     * Note that this character may not exist if {@code toIndex} is equals to the text length.
      *
      * <p>Special cases:</p>
      * <ul>
@@ -494,7 +543,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      *       then this method unconditionally returns {@code fromIndex}.</li>
      *   <li>If the given range contains only space characters and the character at {@code toIndex-1}
      *       is the high surrogate of a valid supplementary code point, then this method returns
-     *       {@code toIndex+1} since that value is the index of the next code point.</li>
+     *       {@code toIndex+1}, which is the index of the next code point.</li>
      *   <li>If {@code fromIndex} is negative or {@code toIndex} is greater than the text length,
      *       then the behavior of this method is undefined.</li>
      * </ul>
@@ -520,10 +569,9 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
     }
 
     /**
-     * Returns the index of the last character before all trailing whitespace characters
-     * in the given range. If the given range contains only space characters, then this method
-     * returns the index of the first character in the given range, which is always equals or
-     * lower than {@code fromIndex}.
+     * Returns the index <em>after</em> the last non-white character in the given range.
+     * If the given range contains only space characters, then this method returns the index of the
+     * first character in the given range, which is always equals or lower than {@code fromIndex}.
      *
      * <p>Special cases:</p>
      * <ul>
@@ -531,7 +579,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      *       then this method unconditionally returns {@code toIndex}.</li>
      *   <li>If the given range contains only space characters and the character at {@code fromIndex}
      *       is the low surrogate of a valid supplementary code point, then this method returns
-     *       {@code fromIndex-1} since that value is the index of the code point.</li>
+     *       {@code fromIndex-1}, which is the index of the code point.</li>
      *   <li>If {@code fromIndex} is negative or {@code toIndex} is greater than the text length,
      *       then the behavior of this method is undefined.</li>
      * </ul>
