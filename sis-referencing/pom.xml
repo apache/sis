@@ -33,10 +33,31 @@
 
   <artifactId>sis-referencing</artifactId>
   <packaging>bundle</packaging>
-  <name>Apache SIS core</name>
+  <name>Apache SIS referencing</name>
   <url>http://incubator.apache.org/sis/</url>
 
+
+  <!-- ===========================================================
+           Dependencies
+       =========================================================== -->
   <dependencies>
+    <dependency>
+      <groupId>org.apache.sis</groupId>
+      <artifactId>sis-utility</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.opengis</groupId>
+      <artifactId>geoapi-pending</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.opengis</groupId>
+      <artifactId>geoapi-conformance</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>net.jcip</groupId>
+      <artifactId>jcip-annotations</artifactId>
+    </dependency>
     <dependency>
       <groupId>org.geonames</groupId>
       <artifactId>georss-rome</artifactId>
