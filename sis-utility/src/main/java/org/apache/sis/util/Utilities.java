@@ -43,33 +43,74 @@ public final class Utilities extends Static {
     }
 
     /**
-     * Returns {@code true} if the given floats are equals. Positive and negative zero are
-     * considered different, while a {@link Float#NaN NaN} value is considered equal to all
-     * other NaN values.
+     * Compares the specified objects for equality, ignoring metadata.
+     * If this method returns {@code true}, then:
      *
-     * @param o1 The first value to compare.
-     * @param o2 The second value to compare.
-     * @return {@code true} if both values are equal.
+     * <ul>
+     *   <li>If the two given objects are
+     *       {@linkplain org.apache.sis.referencing.operation.transform.AbstractMathTransform math transforms},
+     *       then transforming a set of coordinate values using one transform will produce the same
+     *       results than transforming the same coordinates with the other transform.</li>
      *
-     * @see Float#equals(Object)
+     *   <li>If the two given objects are
+     *       {@linkplain org.apache.sis.referencing.crs.AbstractCRS Coordinate Reference Systems} (CRS), then a call to
+     *       <code>{@linkplain org.apache.sis.referencing.CRS#findMathTransform findMathTransform}(crs1, crs2)</code>
+     *       will return an identity transform.</li>
+     * </ul>
+     *
+     * If a more lenient comparison allowing slight differences in numerical values is wanted,
+     * then {@link #equalsApproximatively(Object, Object)} can be used instead.
+     *
+     * {@section Implementation note}
+     * This is a convenience method for the following method call:
+     *
+     * {@preformat java
+     *     return deepEquals(object1, object2, ComparisonMode.IGNORE_METADATA);
+     * }
+     *
+     * @param  object1 The first object to compare (may be null).
+     * @param  object2 The second object to compare (may be null).
+     * @return {@code true} if both objects are equal, ignoring metadata.
+     *
+     * @see #deepEquals(Object, Object, ComparisonMode)
+     * @see ComparisonMode#IGNORE_METADATA
      */
-    public static boolean equals(final float o1, final float o2) {
-        return Float.floatToIntBits(o1) == Float.floatToIntBits(o2);
+    public static boolean equalsIgnoreMetadata(final Object object1, final Object object2) {
+        return deepEquals(object1, object2, ComparisonMode.IGNORE_METADATA);
     }
 
     /**
-     * Returns {@code true} if the given doubles are equals. Positive and negative zero are
-     * considered different, while a {@link Double#NaN NaN} value is considered equal to all
-     * other NaN values.
+     * Compares the specified objects for equality, ignoring metadata and slight differences
+     * in numerical values. If this method returns {@code true}, then:
      *
-     * @param o1 The first value to compare.
-     * @param o2 The second value to compare.
-     * @return {@code true} if both values are equal.
+     * <ul>
+     *   <li>If the two given objects are
+     *       {@linkplain org.apache.sis.referencing.operation.transform.AbstractMathTransform math transforms},
+     *       then transforming a set of coordinate values using one transform will produce <em>approximatively</em>
+     *       the same results than transforming the same coordinates with the other transform.</li>
      *
-     * @see Double#equals(Object)
+     *   <li>If the two given objects are
+     *       {@linkplain org.apache.sis.referencing.crs.AbstractCRS Coordinate Reference Systems} (CRS), then a call to
+     *       <code>{@linkplain org.apache.sis.referencing.CRS#findMathTransform findMathTransform}(crs1, crs2)</code>
+     *       will return a transform close to the identity transform.</li>
+     * </ul>
+     *
+     * {@section Implementation note}
+     * This is a convenience method for the following method call:
+     *
+     * {@preformat java
+     *     return deepEquals(object1, object2, ComparisonMode.APPROXIMATIVE);
+     * }
+     *
+     * @param  object1 The first object to compare (may be null).
+     * @param  object2 The second object to compare (may be null).
+     * @return {@code true} if both objects are approximatively equal.
+     *
+     * @see #deepEquals(Object, Object, ComparisonMode)
+     * @see ComparisonMode#APPROXIMATIVE
      */
-    public static boolean equals(final double o1, final double o2) {
-        return Double.doubleToLongBits(o1) == Double.doubleToLongBits(o2);
+    public static boolean equalsApproximatively(final Object object1, final Object object2) {
+        return deepEquals(object1, object2, ComparisonMode.APPROXIMATIVE);
     }
 
     /**
@@ -86,7 +127,8 @@ public final class Utilities extends Static {
      * @param  mode    The strictness level of the comparison.
      * @return {@code true} if both objects are equal for the given level of strictness.
      *
-     * @see org.apache.sis.referencing.CRS#equalsIgnoreMetadata(Object, Object)
+     * @see #equalsIgnoreMetadata(Object, Object)
+     * @see #equalsApproximatively(Object, Object)
      */
     public static boolean deepEquals(final Object object1, final Object object2, final ComparisonMode mode) {
         if (object1 == object2) {
