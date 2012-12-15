@@ -213,6 +213,7 @@ public abstract class AbstractDirectPosition implements DirectPosition {
          */
         if (c == '(' || c == '[') {
             i += Character.charCount(c);
+            i = CharSequences.skipLeadingWhitespaces(wkt, i, length);
             final char close = (c == '(') ? ')' : ']';
             final int pos = CharSequences.lastIndexOf(wkt, close, i, length);
             if (pos != --length) {
@@ -223,10 +224,11 @@ public abstract class AbstractDirectPosition implements DirectPosition {
                     args = new Object[] {wkt, close};
                 } else {
                     key  = Errors.Keys.UnparsableStringForClass_3;
-                    args = new Object[] {"POINT", wkt, wkt.subSequence(pos+1, length+1)};
+                    args = new Object[] {"POINT", wkt, CharSequences.trimWhitespaces(wkt, pos+1, length+1)};
                 }
                 throw new IllegalArgumentException(Errors.format(key, args));
             }
+            c = Character.codePointAt(wkt, i);
         }
         /*
          * Index i is either at the beginning of a number or at the closing parenthesis.

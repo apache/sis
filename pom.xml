@@ -341,6 +341,13 @@ Apache SIS is a toolkit for describing location information, including points,
             </manifestEntries>
           </archive>
         </configuration>
+        <executions>
+         <execution>
+           <goals>
+             <goal>test-jar</goal>
+           </goals>
+         </execution>
+       </executions>
       </plugin>
 
       <!-- Package as OSGi bundle -->
