@@ -50,7 +50,7 @@ import org.apache.sis.internal.util.DefaultFactories;
  *   <li>{@link #toInternationalString(CharSequence)} and {@link #toGenericName(Object, NameFactory)}
  *       for creating name-related objects from various objects.</li>
  *   <li>{@link #getStandardName(Class)}, {@link #getListName(CodeList)} and {@link #getCodeName(CodeList)}
- *       for fetching ISO names if possible, or Java names as a fallback.</li>
+ *       for fetching ISO names if possible.</li>
  *   <li>{@link #getCodeTitle(CodeList, Locale)}, {@link #getDescription(CodeList, Locale)} and
  *       {@link #getDescription(Class, Locale)} for fetching human-readable descriptions.</li>
  *   <li>{@link #forStandardName(String)} and {@link #forCodeName(Class, String, boolean)} for
@@ -65,12 +65,15 @@ import org.apache.sis.internal.util.DefaultFactories;
 public final class Types extends Static {
     /**
      * The class loader to use for fetching GeoAPI resources.
+     * Since the resources are bundled in the GeoAPI JAR file,
+     * we use the instance that loaded GeoAPI for more determinist behavior.
      */
     private static final ClassLoader CLASSLOADER = UML.class.getClassLoader();
 
     /**
      * The types for ISO 19115 UML identifiers. The keys are UML identifiers. Values
      * are either class names as {@link String} objects, or the {@link Class} instances.
+     * This map will be built only when first needed.
      *
      * @see #forName(String)
      */
@@ -88,12 +91,19 @@ public final class Types extends Static {
      * Examples:
      *
      * <ul>
-     *   <li><code>getStandardName({@linkplain org.opengis.metadata.citation.Citation}.class)</code>   returns {@code "CI_Citation"}.</li>
-     *   <li><code>getStandardName({@linkplain org.opengis.referencing.cs.AxisDirection}.class)</code> returns {@code "CS_AxisDirection"}.</li>
+     *   <li><code>getStandardName({@linkplain org.opengis.metadata.citation.Citation}.class)</code>
+     *       (an interface) returns {@code "CI_Citation"}.</li>
+     *   <li><code>getStandardName({@linkplain org.opengis.referencing.cs.AxisDirection}.class)</code>
+     *       (a code list) returns {@code "CS_AxisDirection"}.</li>
      * </ul>
      *
+     * This method looks for the {@link UML} annotation on the given type. It does not search for
+     * parent classes or interfaces if the given type is not directly annotated (i.e. {@code @UML}
+     * annotations are not inherited). If no annotation is found, then this method does not fallback
+     * on the Java name since, as the name implies, this method is about standard names.
+     *
      * @param  type The GeoAPI interface or code list from which to get the ISO name, or {@code null}.
-     * @return The ISO name for the given type, or {@code null} if none or if the type is {@code null}.
+     * @return The ISO name for the given type, or {@code null} if none or if the given type is {@code null}.
      *
      * @see #forStandardName(String)
      */
