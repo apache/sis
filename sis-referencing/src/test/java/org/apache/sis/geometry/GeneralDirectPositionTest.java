@@ -20,7 +20,7 @@ import java.util.Arrays;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.apache.sis.test.Assert.*;
 
 
 /**
@@ -94,5 +94,14 @@ public final strictfp class GeneralDirectPositionTest extends TestCase {
         assertEquals ("Expected the same CRS and ordinates.", p1, p2);
         assertTrue   ("Expected the same ordinates.", Arrays.equals(p1.ordinates, p2.ordinates));
         assertNotSame("the ordinates array should have been cloned.", p1.ordinates, p2.ordinates);
+    }
+
+    /**
+     * Tests serialization.
+     */
+    @Test
+    public void testSerialize() {
+        final GeneralDirectPosition p = new GeneralDirectPosition(12, -20, 4, 9);
+        assertNotSame(p, assertSerializedEquals(p));
     }
 }
