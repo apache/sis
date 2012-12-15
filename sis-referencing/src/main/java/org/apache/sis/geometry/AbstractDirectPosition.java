@@ -56,7 +56,7 @@ public abstract class AbstractDirectPosition implements DirectPosition {
      * {@linkplain org.opengis.geometry.coordinate.Position position}.
      */
     @Override
-    public DirectPosition getDirectPosition() {
+    public final DirectPosition getDirectPosition() {
         return this;
     }
 
@@ -200,7 +200,7 @@ public abstract class AbstractDirectPosition implements DirectPosition {
      * Parses the given WKT.
      *
      * @param  wkt The WKT to parse.
-     * @return The ordinates, or {@code null) if none.
+     * @return The ordinates, or {@code null} if none.
      * @throws NumberFormatException If a number can not be parsed.
      * @throws IllegalArgumentException If the parenthesis are not balanced.
      */
@@ -295,20 +295,13 @@ parse:  while (i < length) {
      */
     @Override
     public int hashCode() {
-        return hashCode(this);
-    }
-
-    /**
-     * Returns a hash value for the given coordinate.
-     */
-    static int hashCode(final DirectPosition position) {
-        final int dimension = position.getDimension();
+        final int dimension = getDimension();
         int code = 1;
         for (int i=0; i<dimension; i++) {
-            final long bits = doubleToLongBits(position.getOrdinate(i));
+            final long bits = doubleToLongBits(getOrdinate(i));
             code = 31 * code + (((int) bits) ^ (int) (bits >>> 32));
         }
-        final CoordinateReferenceSystem crs = position.getCoordinateReferenceSystem();
+        final CoordinateReferenceSystem crs = getCoordinateReferenceSystem();
         if (crs != null) {
             code += crs.hashCode();
         }
