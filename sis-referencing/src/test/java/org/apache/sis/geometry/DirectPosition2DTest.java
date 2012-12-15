@@ -21,7 +21,7 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.apache.sis.test.Assert.*;
 
 
 /**
@@ -63,10 +63,12 @@ public final strictfp class DirectPosition2DTest extends TestCase {
         DirectPosition p2 = new GeneralDirectPosition(48.543261561072285, -123.47009555832284);
         assertTrue(p1.equals(p2));
         assertTrue(p2.equals(p1));
+        assertEquals(p2.hashCode(), p1.hashCode());
 
         p1.setOrdinate(0, p1.getOrdinate(0) + 1);
         assertFalse(p1.equals(p2));
         assertFalse(p2.equals(p1));
+        assertFalse(p2.hashCode() == p1.hashCode());
     }
 
     /**
@@ -79,5 +81,14 @@ public final strictfp class DirectPosition2DTest extends TestCase {
         assertEquals("Expected the same CRS and ordinates.", p1, p2);
         assertEquals("Expected the same ordinates.", 10.0, p2.x, 0.0);
         assertEquals("Expected the same ordinates.", 30.0, p2.y, 0.0);
+    }
+
+    /**
+     * Tests serialization.
+     */
+    @Test
+    public void testSerialize() {
+        final GeneralDirectPosition p = new GeneralDirectPosition(12, -20, 4, 9);
+        assertNotSame(p, assertSerializedEquals(p));
     }
 }
