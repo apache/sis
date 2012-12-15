@@ -267,7 +267,7 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
     }
 
     /**
-     * Returns a hash value for this coordinate.
+     * {@inheritDoc}
      */
     @Override
     public int hashCode() {
