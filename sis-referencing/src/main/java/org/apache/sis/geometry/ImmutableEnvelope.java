@@ -16,11 +16,17 @@
  */
 package org.apache.sis.geometry;
 
+/*
+ * Do not add dependency to java.awt.Rectangle2D in this class, because not every platforms
+ * support Java2D (e.g. Android),  or applications that do not need it may want to avoid to
+ * force installation of the Java2D module (e.g. JavaFX/SWT).
+ */
 import java.io.Serializable;
 import net.jcip.annotations.Immutable;
-
 import org.opengis.geometry.Envelope;
+import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
+import org.opengis.geometry.MismatchedReferenceSystemException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 
@@ -44,6 +50,31 @@ public final class ImmutableEnvelope extends ArrayEnvelope implements Serializab
     private static final long serialVersionUID = 5593936512712449234L;
 
     /**
+     * Constructs an envelope defined by two direct positions.
+     * The envelope CRS will be the CRS of the given positions.
+     *
+     * @param  lowerCorner The lower corner.
+     * @param  upperCorner The upper corner.
+     * @throws MismatchedDimensionException If the two positions do not have the same dimension.
+     * @throws MismatchedReferenceSystemException If the CRS of the two position are not equal.
+     */
+    public ImmutableEnvelope(final DirectPosition lowerCorner, final DirectPosition upperCorner)
+            throws MismatchedDimensionException, MismatchedReferenceSystemException
+    {
+        super(lowerCorner, upperCorner);
+    }
+
+    /**
+     * Constructs a new envelope with the same data than the specified geographic bounding box.
+     * The coordinate reference system is set to {@code "CRS:84"}.
+     *
+     * @param box The bounding box to copy.
+     */
+    public ImmutableEnvelope(final GeographicBoundingBox box) {
+        super(box);
+    }
+
+    /**
      * Creates an immutable envelope with the values of the given envelope.
      * This constructor can be used when the given envelope is known to not
      * be an instance of {@code ImmutableEnvelope}. In case of doubt,
@@ -58,16 +89,6 @@ public final class ImmutableEnvelope extends ArrayEnvelope implements Serializab
     }
 
     /**
-     * Constructs a new envelope with the same data than the specified geographic bounding box.
-     * The coordinate reference system is set to {@code "CRS:84"}.
-     *
-     * @param box The bounding box to copy.
-     */
-    public ImmutableEnvelope(final GeographicBoundingBox box) {
-        super(box);
-    }
-
-    /**
      * Creates an immutable envelope with the ordinate values of the given envelope but
      * a different CRS. This method does <strong>not</strong> reproject the given envelope.
      * It just assign the given CRS to this envelope without any check, except for the CRS
@@ -76,12 +97,12 @@ public final class ImmutableEnvelope extends ArrayEnvelope implements Serializab
      * <p>The main purpose of this method is to assign a non-null CRS when the envelope to
      * copy has a null CRS.</p>
      *
-     * @param crs      The CRS to assign to this envelope, or {@code null}.
      * @param envelope The envelope from which to copy ordinate values.
+     * @param crs      The CRS to assign to this envelope, or {@code null}.
      * @throws MismatchedDimensionException If the dimension of the given CRS is not equals
      *         to the dimension of the given envelope.
      */
-    public ImmutableEnvelope(final CoordinateReferenceSystem crs, final Envelope envelope)
+    public ImmutableEnvelope(final Envelope envelope, final CoordinateReferenceSystem crs)
             throws MismatchedDimensionException
     {
         super(envelope);
@@ -102,13 +123,13 @@ public final class ImmutableEnvelope extends ArrayEnvelope implements Serializab
      * See the javadoc of the {@link GeneralEnvelope#GeneralEnvelope(String) GeneralEnvelope}
      * constructor for more information.
      *
-     * @param  crs The coordinate reference system, or {@code null} if none.
      * @param  wkt The {@code BOX}, {@code POLYGON} or other kind of element to parse.
+     * @param  crs The coordinate reference system, or {@code null} if none.
      * @throws IllegalArgumentException If the given string can not be parsed.
      * @throws MismatchedDimensionException If the dimension of the given CRS is not equals
      *         to the dimension of the parsed envelope.
      */
-    public ImmutableEnvelope(final CoordinateReferenceSystem crs, final String wkt)
+    public ImmutableEnvelope(final String wkt, final CoordinateReferenceSystem crs)
             throws IllegalArgumentException, MismatchedDimensionException
     {
         super(wkt);
@@ -125,6 +146,7 @@ public final class ImmutableEnvelope extends ArrayEnvelope implements Serializab
      * @param  envelope The envelope to cast, or {@code null}.
      * @return The values of the given envelope as an {@code ImmutableEnvelope} instance.
      *
+     * @see AbstractEnvelope#castOrCopy(Envelope)
      * @see GeneralEnvelope#castOrCopy(Envelope)
      */
     public static ImmutableEnvelope castOrCopy(final Envelope envelope) {

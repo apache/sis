@@ -16,6 +16,11 @@
  */
 package org.apache.sis.geometry;
 
+/*
+ * Do not add dependency to java.awt.Rectangle2D in this class, because not every platforms
+ * support Java2D (e.g. Android),  or applications that do not need it may want to avoid to
+ * force installation of the Java2D module (e.g. JavaFX/SWT).
+ */
 import java.io.Serializable;
 import javax.measure.unit.Unit;
 import javax.measure.converter.ConversionException;
@@ -141,16 +146,17 @@ public abstract class AbstractEnvelope implements Envelope {
     /**
      * Returns the common CRS of specified points.
      *
-     * @param  lower The first position.
-     * @param  upper The second position.
+     * @param  lowerCorner The first position.
+     * @param  upperCorner The second position.
      * @return Their common CRS, or {@code null} if none.
-     * @throws MismatchedReferenceSystemException if the two positions don't use the same CRS.
+     * @throws MismatchedReferenceSystemException if the two positions don't use equal CRS.
      */
-    static CoordinateReferenceSystem getCoordinateReferenceSystem(final DirectPosition lower,
-            final DirectPosition upper) throws MismatchedReferenceSystemException
+    static CoordinateReferenceSystem getCommonCRS(final DirectPosition lowerCorner,
+                                                  final DirectPosition upperCorner)
+            throws MismatchedReferenceSystemException
     {
-        final CoordinateReferenceSystem crs1 = lower.getCoordinateReferenceSystem();
-        final CoordinateReferenceSystem crs2 = upper.getCoordinateReferenceSystem();
+        final CoordinateReferenceSystem crs1 = lowerCorner.getCoordinateReferenceSystem();
+        final CoordinateReferenceSystem crs2 = upperCorner.getCoordinateReferenceSystem();
         if (crs1 == null) {
             return crs2;
         } else {
@@ -607,31 +613,31 @@ public abstract class AbstractEnvelope implements Envelope {
         AbstractDirectPosition.ensureDimensionMatch("envelope", envelope.getDimension(), dimension);
         assert equalsIgnoreMetadata(getCoordinateReferenceSystem(),
                 envelope.getCoordinateReferenceSystem(), true) : envelope;
-        final DirectPosition lower = envelope.getLowerCorner();
-        final DirectPosition upper = envelope.getUpperCorner();
+        final DirectPosition lowerCorner = envelope.getLowerCorner();
+        final DirectPosition upperCorner = envelope.getUpperCorner();
         for (int i=0; i<dimension; i++) {
-            final double min0 = getLower(i);
-            final double max0 = getUpper(i);
-            final double min1 = lower.getOrdinate(i);
-            final double max1 = upper.getOrdinate(i);
-            final boolean minCondition, maxCondition;
+            final double lower0 = getLower(i);
+            final double upper0 = getUpper(i);
+            final double lower1 = lowerCorner.getOrdinate(i);
+            final double upper1 = upperCorner.getOrdinate(i);
+            final boolean lowerCondition, upperCondition;
             if (edgesInclusive) {
-                minCondition = (min1 >= min0);
-                maxCondition = (max1 <= max0);
+                lowerCondition = (lower1 >= lower0);
+                upperCondition = (upper1 <= upper0);
             } else {
-                minCondition = (min1 > min0);
-                maxCondition = (max1 < max0);
+                lowerCondition = (lower1 > lower0);
+                upperCondition = (upper1 < upper0);
             }
-            if (minCondition & maxCondition) {
-                /*           maxCnd          maxCnd
+            if (lowerCondition & upperCondition) {
+                /*         upperCnd          upperCnd
                  *  ┌─────────────┐          ────┐  ┌────                      ┌─┐
                  *  │  ┌───────┐  │    or    ──┐ │  │ ┌──    excluding    ───┐ │ │ ┌───
                  *  │  └───────┘  │          ──┘ │  │ └──                 ───┘ │ │ └───
                  *  └─────────────┘          ────┘  └────                      └─┘
-                 *  minCnd                          minCnd
+                 *  lowerCnd                        lowerCnd
                  */
-                // (max1-min1) is negative if the small rectangle in above pictures spans the anti-meridian.
-                if (!isNegativeUnsafe(max1 - min1) || isNegativeUnsafe(max0 - min0)) {
+                // (upper1-lower1) is negative if the small rectangle in above pictures spans the anti-meridian.
+                if (!isNegativeUnsafe(upper1 - lower1) || isNegativeUnsafe(upper0 - lower0)) {
                     // Not the excluded case, go to next dimension.
                     continue;
                 }
@@ -639,25 +645,25 @@ public abstract class AbstractEnvelope implements Envelope {
                 // does, we don't contain the given envelope except in the special case
                 // where the envelope spanning is equals or greater than the axis spanning
                 // (including the case where this envelope expands to infinities).
-                if ((min0 == Double.NEGATIVE_INFINITY && max0 == Double.POSITIVE_INFINITY) ||
-                    (max0 - min0 >= getSpan(getAxis(getCoordinateReferenceSystem(), i))))
+                if ((lower0 == Double.NEGATIVE_INFINITY && upper0 == Double.POSITIVE_INFINITY) ||
+                    (upper0 - lower0 >= getSpan(getAxis(getCoordinateReferenceSystem(), i))))
                 {
                     continue;
                 }
-            } else if (minCondition != maxCondition) {
-                /*       maxCnd                     !maxCnd
+            } else if (lowerCondition != upperCondition) {
+                /*     upperCnd                     !upperCnd
                  *  ──────────┐  ┌─────              ─────┐  ┌─────────
                  *    ┌────┐  │  │           or           │  │  ┌────┐
                  *    └────┘  │  │                        │  │  └────┘
                  *  ──────────┘  └─────              ─────┘  └─────────
-                 *               !minCnd                     minCnd */
-                if (isNegative(max0 - min0)) {
-                    if (isPositive(max1 - min1)) {
+                 *               !lowerCnd                   lowerCnd */
+                if (isNegative(upper0 - lower0)) {
+                    if (isPositive(upper1 - lower1)) {
                         continue;
                     }
                     // Special case for the [0…-0] range, if inclusive.
-                    if (edgesInclusive && Double.doubleToRawLongBits(min0) == 0L &&
-                            Double.doubleToRawLongBits(max0) == SIGN_BIT_MASK)
+                    if (edgesInclusive && Double.doubleToRawLongBits(lower0) == 0L &&
+                            Double.doubleToRawLongBits(upper0) == SIGN_BIT_MASK)
                     {
                         continue;
                     }
@@ -697,30 +703,30 @@ public abstract class AbstractEnvelope implements Envelope {
         AbstractDirectPosition.ensureDimensionMatch("envelope", envelope.getDimension(), dimension);
         assert equalsIgnoreMetadata(getCoordinateReferenceSystem(),
                 envelope.getCoordinateReferenceSystem(), true) : envelope;
-        final DirectPosition lower = envelope.getLowerCorner();
-        final DirectPosition upper = envelope.getUpperCorner();
+        final DirectPosition lowerCorner = envelope.getLowerCorner();
+        final DirectPosition upperCorner = envelope.getUpperCorner();
         for (int i=0; i<dimension; i++) {
-            final double min0 = getLower(i);
-            final double max0 = getUpper(i);
-            final double min1 = lower.getOrdinate(i);
-            final double max1 = upper.getOrdinate(i);
-            final boolean minCondition, maxCondition;
+            final double lower0 = getLower(i);
+            final double upper0 = getUpper(i);
+            final double lower1 = lowerCorner.getOrdinate(i);
+            final double upper1 = upperCorner.getOrdinate(i);
+            final boolean lowerCondition, upperCondition;
             if (edgesInclusive) {
-                minCondition = (min1 <= max0);
-                maxCondition = (max1 >= min0);
+                lowerCondition = (lower1 <= upper0);
+                upperCondition = (upper1 >= lower0);
             } else {
-                minCondition = (min1 < max0);
-                maxCondition = (max1 > min0);
+                lowerCondition = (lower1 < upper0);
+                upperCondition = (upper1 > lower0);
             }
-            if (maxCondition & minCondition) {
+            if (upperCondition & lowerCondition) {
                 /*     ┌──────────┐
                  *     │  ┌───────┼──┐
                  *     │  └───────┼──┘
                  *     └──────────┘ (this is the most standard case) */
                 continue;
             }
-            final boolean sp0 = isNegative(max0 - min0);
-            final boolean sp1 = isNegative(max1 - min1);
+            final boolean sp0 = isNegative(upper0 - lower0);
+            final boolean sp1 = isNegative(upper1 - lower1);
             if (sp0 | sp1) {
                 /*
                  * If both envelopes span the anti-meridian (sp0 & sp1), we have an unconditional
@@ -731,7 +737,7 @@ public abstract class AbstractEnvelope implements Envelope {
                  *     ────┼───┐  ┌───┼────      or          ┌─┼──────┼─┐
                  *     ────┼───┘  └───┼────                  └─┼──────┼─┘
                  *         └──────────┘                   ─────┘      └───── */
-                if ((sp0 & sp1) | (maxCondition | minCondition)) {
+                if ((sp0 & sp1) | (upperCondition | lowerCondition)) {
                     continue;
                 }
             }
@@ -808,8 +814,8 @@ public abstract class AbstractEnvelope implements Envelope {
         {
             return false;
         }
-        final DirectPosition lower = other.getLowerCorner();
-        final DirectPosition upper = other.getUpperCorner();
+        final DirectPosition lowerCorner = other.getLowerCorner();
+        final DirectPosition upperCorner = other.getUpperCorner();
         for (int i=0; i<dimension; i++) {
             double ε = eps;
             if (epsIsRelative) {
@@ -818,8 +824,8 @@ public abstract class AbstractEnvelope implements Envelope {
                     ε *= span;
                 }
             }
-            if (!epsilonEqual(getLower(i), lower.getOrdinate(i), ε) ||
-                !epsilonEqual(getUpper(i), upper.getOrdinate(i), ε))
+            if (!epsilonEqual(getLower(i), lowerCorner.getOrdinate(i), ε) ||
+                !epsilonEqual(getUpper(i), upperCorner.getOrdinate(i), ε))
             {
                 return false;
             }
@@ -921,19 +927,19 @@ public abstract class AbstractEnvelope implements Envelope {
      * @see org.apache.sis.io.wkt
      */
     static String toString(final Envelope envelope) {
-        final int dimension = envelope.getDimension();
-        final DirectPosition lower = envelope.getLowerCorner();
-        final DirectPosition upper = envelope.getUpperCorner();
-        final StringBuilder buffer = new StringBuilder(64).append("BOX").append(dimension).append("D(");
+        final int            dimension   = envelope.getDimension();
+        final DirectPosition lowerCorner = envelope.getLowerCorner();
+        final DirectPosition upperCorner = envelope.getUpperCorner();
+        final StringBuilder  buffer = new StringBuilder(64).append("BOX").append(dimension).append("D(");
         for (int i=0; i<dimension; i++) {
             if (i != 0) {
                 buffer.append(' ');
             }
-            trimFractionalPart(buffer.append(lower.getOrdinate(i)));
+            trimFractionalPart(buffer.append(lowerCorner.getOrdinate(i)));
         }
         buffer.append(',');
         for (int i=0; i<dimension; i++) {
-            trimFractionalPart(buffer.append(' ').append(upper.getOrdinate(i)));
+            trimFractionalPart(buffer.append(' ').append(upperCorner.getOrdinate(i)));
         }
         return buffer.append(')').toString();
     }

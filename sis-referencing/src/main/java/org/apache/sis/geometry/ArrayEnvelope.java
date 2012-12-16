@@ -16,12 +16,18 @@
  */
 package org.apache.sis.geometry;
 
+/*
+ * Do not add dependency to java.awt.Rectangle2D in this class, because not every platforms
+ * support Java2D (e.g. Android),  or applications that do not need it may want to avoid to
+ * force installation of the Java2D module (e.g. JavaFX/SWT).
+ */
 import java.util.Arrays;
 import java.util.Objects;
 import java.io.Serializable;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
+import org.opengis.geometry.MismatchedReferenceSystemException;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -64,6 +70,48 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
     CoordinateReferenceSystem crs;
 
     /**
+     * Constructs an envelope defined by two direct positions.
+     * If at least one corner is associated to a CRS, then the new envelope will also
+     * be associated to that CRS.
+     *
+     * @param  lowerCorner The lower corner.
+     * @param  upperCorner The upper corner.
+     * @throws MismatchedDimensionException If the two positions do not have the same dimension.
+     * @throws MismatchedReferenceSystemException If the CRS of the two position are not equal.
+     */
+    public ArrayEnvelope(final DirectPosition lowerCorner, final DirectPosition upperCorner)
+            throws MismatchedDimensionException, MismatchedReferenceSystemException
+    {
+        ensureNonNull("lowerCorner", lowerCorner);
+        ensureNonNull("upperCorner", upperCorner);
+        final int dimension = lowerCorner.getDimension();
+        ensureSameDimension(dimension, upperCorner.getDimension());
+        ordinates = new double[dimension * 2];
+        for (int i=0; i<dimension; i++) {
+            ordinates[i            ] = lowerCorner.getOrdinate(i);
+            ordinates[i + dimension] = upperCorner.getOrdinate(i);
+        }
+        crs = getCommonCRS(lowerCorner, upperCorner);
+        AbstractDirectPosition.ensureDimensionMatch(crs, dimension);
+    }
+
+    /**
+     * Constructs an envelope defined by two sequences of ordinate values.
+     * The Coordinate Reference System is initially {@code null}.
+     *
+     * @param  lowerCorner Lower ordinate values.
+     * @param  upperCorner Upper ordinate values.
+     * @throws MismatchedDimensionException If the two sequences do not have the same length.
+     */
+    public ArrayEnvelope(final double[] lowerCorner, final double[] upperCorner) throws MismatchedDimensionException {
+        ensureNonNull("lowerCorner", lowerCorner);
+        ensureNonNull("upperCorner", upperCorner);
+        ensureSameDimension(lowerCorner.length, upperCorner.length);
+        ordinates = Arrays.copyOf(lowerCorner, lowerCorner.length + upperCorner.length);
+        System.arraycopy(upperCorner, 0, ordinates, lowerCorner.length, upperCorner.length);
+    }
+
+    /**
      * Constructs an empty envelope of the specified dimension. All ordinates
      * are initialized to 0 and the coordinate reference system is undefined.
      *
@@ -83,21 +131,6 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
         ensureNonNull("crs", crs);
         ordinates = new double[crs.getCoordinateSystem().getDimension() * 2];
         this.crs = crs;
-    }
-
-    /**
-     * Constructs a envelope defined by two positions.
-     *
-     * @param  lowerCorner Lower ordinate values.
-     * @param  upperCorner Upper ordinate values.
-     * @throws MismatchedDimensionException if the two positions do not have the same dimension.
-     */
-    public ArrayEnvelope(final double[] lowerCorner, final double[] upperCorner) throws MismatchedDimensionException {
-        ensureNonNull("lowerCorner", lowerCorner);
-        ensureNonNull("upperCorner", upperCorner);
-        ensureSameDimension(lowerCorner.length, upperCorner.length);
-        ordinates = Arrays.copyOf(lowerCorner, lowerCorner.length + upperCorner.length);
-        System.arraycopy(upperCorner, 0, ordinates, lowerCorner.length, upperCorner.length);
     }
 
     /**

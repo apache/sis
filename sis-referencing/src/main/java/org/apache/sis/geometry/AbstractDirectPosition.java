@@ -16,6 +16,11 @@
  */
 package org.apache.sis.geometry;
 
+/*
+ * Do not add dependency to java.awt.geom.Point2D in this class, because not all platforms
+ * support Java2D (e.g. Android), or applications that do not need it may want to avoid to
+ * to force installation of the Java2D module (e.g. JavaFX/SWT).
+ */
 import java.util.Arrays;
 import java.util.Objects;
 import org.opengis.geometry.DirectPosition;
@@ -40,7 +45,7 @@ import static org.apache.sis.util.StringBuilders.trimFractionalPart;
  * or {@link Cloneable} interfaces. The internal representation, and the choice to be cloneable or
  * serializable, is left to subclasses.</p>
  *
- * @author Martin Desruisseaux (IRD, Geomatys)
+ * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.4)
  * @version 0.3
  * @module
@@ -114,6 +119,7 @@ public abstract class AbstractDirectPosition implements DirectPosition {
 
     /**
      * Ensures that the given CRS, if non-null, has the expected number of dimensions.
+     * This method presumes that the argument name is {@code "crs"}.
      *
      * @param  crs The coordinate reference system to check, or {@code null}.
      * @param  expected The expected number of dimensions.
@@ -125,8 +131,8 @@ public abstract class AbstractDirectPosition implements DirectPosition {
         if (crs != null) {
             final int dimension = crs.getCoordinateSystem().getDimension();
             if (dimension != expected) {
-                throw new MismatchedDimensionException(Errors.format(Errors.Keys.MismatchedDimension_3,
-                          crs.getName().getCode(), dimension, expected));
+                throw new MismatchedDimensionException(Errors.format(
+                        Errors.Keys.MismatchedDimension_3, "crs", dimension, expected));
             }
         }
     }

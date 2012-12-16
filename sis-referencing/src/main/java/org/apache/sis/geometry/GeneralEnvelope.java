@@ -16,6 +16,11 @@
  */
 package org.apache.sis.geometry;
 
+/*
+ * Do not add dependency to java.awt.Rectangle2D in this class, because not every platforms
+ * support Java2D (e.g. Android),  or applications that do not need it may want to avoid to
+ * force installation of the Java2D module (e.g. JavaFX/SWT).
+ */
 import java.util.Arrays;
 import java.io.Serializable;
 import java.lang.reflect.Field;
@@ -23,6 +28,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
+import org.opengis.geometry.MismatchedReferenceSystemException;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.util.resources.Errors;
 
@@ -49,7 +55,7 @@ import static org.apache.sis.math.MathFunctions.isSameSign;
  * <p>A {@code GeneralEnvelope} can be created in various ways:</p>
  * <ul>
  *   <li>{@linkplain #GeneralEnvelope(int) From a given number of dimension}, with all ordinates initialized to 0.</li>
- *   <li>{@linkplain #GeneralEnvelope(GeneralDirectPosition, GeneralDirectPosition) From two coordinate points}.</li>
+ *   <li>{@linkplain #GeneralEnvelope(double[], double[]) From two coordinate points}.</li>
  *   <li>{@linkplain #GeneralEnvelope(Envelope) From a an other envelope} (copy constructor).</li>
  *   <li>{@linkplain #GeneralEnvelope(GeographicBoundingBox) From a geographic bounding box}.</li>
  *   <li>{@linkplain #GeneralEnvelope(String) From a string} representing a {@code BBOX} in <cite>Well Known Text</cite> (WKT) format.</li>
@@ -61,7 +67,7 @@ import static org.apache.sis.math.MathFunctions.isSameSign;
  * envelopes crossing the anti-meridian, like the red box below (the green box is the usual case).
  * The default implementation of methods listed in the right column can handle such cases.
  *
- * <center><table><tr><td>
+ * <center><table class="compact"><tr><td>
  *   <img src="doc-files/AntiMeridian.png">
  * </td><td>
  * Supported methods:
@@ -71,9 +77,9 @@ import static org.apache.sis.math.MathFunctions.isSameSign;
  *   <li>{@link #getMedian(int)}</li>
  *   <li>{@link #getSpan(int)}</li>
  *   <li>{@link #isEmpty()}</li>
- *   <li>{@link #contains(DirectPosition)}</li>
- *   <li>{@link #contains(Envelope, boolean)}</li>
- *   <li>{@link #intersects(Envelope, boolean)}</li>
+ *   <li>{@link #contains(DirectPosition) contains(DirectPosition)}</li>
+ *   <li>{@link #contains(Envelope, boolean) contains(Envelope, boolean)}</li>
+ *   <li>{@link #intersects(Envelope, boolean) intersects(Envelope, boolean)}</li>
  *   <li>{@link #intersect(Envelope)}</li>
  *   <li>{@link #add(Envelope)}</li>
  *   <li>{@link #add(DirectPosition)}</li>
@@ -102,6 +108,34 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
     private static volatile Field ordinatesField;
 
     /**
+     * Constructs an envelope defined by two direct positions.
+     * If at least one corner is associated to a CRS, then the new envelope will also
+     * be associated to that CRS.
+     *
+     * @param  lowerCorner The lower corner.
+     * @param  upperCorner The upper corner.
+     * @throws MismatchedDimensionException If the two positions do not have the same dimension.
+     * @throws MismatchedReferenceSystemException If the CRS of the two position are not equal.
+     */
+    public GeneralEnvelope(final DirectPosition lowerCorner, final DirectPosition upperCorner)
+            throws MismatchedDimensionException, MismatchedReferenceSystemException
+    {
+        super(lowerCorner, upperCorner);
+    }
+
+    /**
+     * Constructs an envelope defined by two sequences of ordinate values.
+     * The Coordinate Reference System is initially {@code null}.
+     *
+     * @param  lowerCorner Lower ordinate values.
+     * @param  upperCorner Upper ordinate values.
+     * @throws MismatchedDimensionException If the two sequences do not have the same length.
+     */
+    public GeneralEnvelope(final double[] lowerCorner, final double[] upperCorner) throws MismatchedDimensionException {
+        super(lowerCorner, upperCorner);
+    }
+
+    /**
      * Constructs an empty envelope of the specified dimension. All ordinates
      * are initialized to 0 and the coordinate reference system is undefined.
      *
@@ -122,22 +156,11 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
     }
 
     /**
-     * Constructs a envelope defined by two positions.
-     *
-     * @param  lowerCorner Lower ordinate values.
-     * @param  upperCorner Upper ordinate values.
-     * @throws MismatchedDimensionException if the two positions do not have the same dimension.
-     */
-    public GeneralEnvelope(final double[] lowerCorner, final double[] upperCorner) throws MismatchedDimensionException {
-        super(lowerCorner, upperCorner);
-    }
-
-    /**
      * Constructs a new envelope with the same data than the specified envelope.
      *
      * @param envelope The envelope to copy.
      *
-     * @see Envelope2D#Envelope2D(Envelope)
+     * @see #castOrCopy(Envelope)
      */
     public GeneralEnvelope(final Envelope envelope) {
         super(envelope);
@@ -148,8 +171,6 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * The coordinate reference system is set to {@code "CRS:84"}.
      *
      * @param box The bounding box to copy.
-     *
-     * @see Envelope2D#Envelope2D(GeographicBoundingBox)
      */
     public GeneralEnvelope(final GeographicBoundingBox box) {
         super(box);
@@ -209,6 +230,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * @return The values of the given envelope as a {@code GeneralEnvelope} instance.
      *
      * @see AbstractEnvelope#castOrCopy(Envelope)
+     * @see ImmutableEnvelope#castOrCopy(Envelope)
      */
     public static GeneralEnvelope castOrCopy(final Envelope envelope) {
         if (envelope == null || envelope instanceof GeneralEnvelope) {
