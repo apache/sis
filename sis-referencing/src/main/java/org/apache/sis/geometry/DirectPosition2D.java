@@ -279,7 +279,8 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
      *   POINT(x y)
      * }
      *
-     * The string returned by this method can be parsed by the {@link #DirectPosition2D(String)} constructor.
+     * The string returned by this method can be {@linkplain #DirectPosition2D(String) parsed}
+     * by the {@code DirectPosition2D} constructor.
      */
     @Override
     public String toString() {

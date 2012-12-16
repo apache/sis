@@ -171,6 +171,28 @@ public final strictfp class MathFunctionsTest extends TestCase {
     }
 
     /**
+     * Tests the {@link MathFunctions#epsilonEqual(float, float, float)} and
+     * {@link MathFunctions#epsilonEqual(double, double, double)} methods.
+     */
+    @Test
+    public void testEpsilonEqual() {
+        assertTrue (epsilonEqual(10.0, 12.0, 2.0));
+        assertFalse(epsilonEqual(10.0, 12.0, 1.0));
+        assertTrue (epsilonEqual(Double.NaN, Double.NaN, 1.0));
+        assertTrue (epsilonEqual(Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, 1.0));
+        assertTrue (epsilonEqual(Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, 1.0));
+        assertFalse(epsilonEqual(Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, 1.0));
+
+        // Same tests using the 'float' version.
+        assertTrue (epsilonEqual(10f, 12f, 2f));
+        assertFalse(epsilonEqual(10f, 12f, 1f));
+        assertTrue (epsilonEqual(Float.NaN, Float.NaN, 1f));
+        assertTrue (epsilonEqual(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY, 1f));
+        assertTrue (epsilonEqual(Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY, 1f));
+        assertFalse(epsilonEqual(Float.POSITIVE_INFINITY, Float.NEGATIVE_INFINITY, 1f));
+    }
+
+    /**
      * Tests the {@link MathFunctions#toNanFloat(int)} method. This will indirectly test the
      * converse {@link MathFunctions#toNanOrdinal(float)} method through Java assertions.
      */
