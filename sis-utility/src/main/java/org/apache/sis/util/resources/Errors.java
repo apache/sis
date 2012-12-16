@@ -276,6 +276,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int NullArgument_1 = 0;
 
         /**
+         * Array length is {0}, while we expected an even length.
+         */
+        public static final int OddArrayLength_1 = 61;
+
+        /**
          * Recursive call while creating an object for the “{0}” key.
          */
         public static final int RecursiveCreateCallForKey_1 = 18;

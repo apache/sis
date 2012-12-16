@@ -74,53 +74,15 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
     }
 
     /**
-     * Constructs one-dimensional envelope defined by a range of values.
+     * Constructs an empty envelope with the specified coordinate reference system.
+     * All ordinate values are initialized to 0.
      *
-     * @param lower The lower value.
-     * @param upper The upper value.
+     * @param crs The coordinate reference system.
      */
-    public ArrayEnvelope(final double lower, final double upper) {
-        ordinates = new double[] {lower, upper};
-    }
-
-    /**
-     * Builds a two-dimensional envelope with the specified bounds.
-     * The argument order follows the convention used by the <cite>Well Known Text</cite>
-     * format for the {@code BBOX} element: all ordinates for the lower corner first,
-     * followed by all ordinates for the upper corner.
-     *
-     * @param xmin The lower value for the first ordinate.
-     * @param ymin The lower value for the second ordinate.
-     * @param xmax The upper value for the first ordinate.
-     * @param ymax The upper value for the second ordinate.
-     */
-    public ArrayEnvelope(final double xmin, final double ymin,
-                         final double xmax, final double ymax)
-    {
-        ordinates = new double[] {
-            xmin, ymin, xmax, ymax
-        };
-    }
-
-    /**
-     * Builds a three-dimensional envelope with the specified bounds.
-     * The argument order follows the convention used by the <cite>Well Known Text</cite>
-     * format for the {@code BBOX} element: all ordinates for the lower corner first,
-     * followed by all ordinates for the upper corner.
-     *
-     * @param xmin The lower value for the first ordinate.
-     * @param ymin The lower value for the second ordinate.
-     * @param zmin The lower value for the third ordinate.
-     * @param xmax The upper value for the first ordinate.
-     * @param ymax The upper value for the second ordinate.
-     * @param zmax The upper value for the third ordinate.
-     */
-    public ArrayEnvelope(final double xmin, final double ymin, final double zmin,
-                         final double xmax, final double ymax, final double zmax)
-    {
-        ordinates = new double[] {
-            xmin, ymin, zmin, xmax, ymax, zmax
-        };
+    public ArrayEnvelope(final CoordinateReferenceSystem crs) {
+        ensureNonNull("crs", crs);
+        ordinates = new double[crs.getCoordinateSystem().getDimension() * 2];
+        this.crs = crs;
     }
 
     /**
@@ -130,7 +92,7 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
      * @param  upperCorner Upper ordinate values.
      * @throws MismatchedDimensionException if the two positions do not have the same dimension.
      */
-    public ArrayEnvelope(final double[] lowerCorner, final double[] upperCorner) {
+    public ArrayEnvelope(final double[] lowerCorner, final double[] upperCorner) throws MismatchedDimensionException {
         ensureNonNull("lowerCorner", lowerCorner);
         ensureNonNull("upperCorner", upperCorner);
         ensureSameDimension(lowerCorner.length, upperCorner.length);
@@ -323,7 +285,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
      * @return The dimensionality of this envelope.
      */
     @Override
-    public int getDimension() {
+    public final int getDimension() {
         return ordinates.length >>> 1;
     }
 
@@ -335,7 +297,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
      * @return The envelope CRS, or {@code null} if unknown.
      */
     @Override
-    public CoordinateReferenceSystem getCoordinateReferenceSystem() {
+    public final CoordinateReferenceSystem getCoordinateReferenceSystem() {
         assert crs == null || crs.getCoordinateSystem().getDimension() == getDimension();
         return crs;
     }

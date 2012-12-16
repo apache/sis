@@ -120,7 +120,7 @@ public abstract class AbstractEnvelope implements Envelope {
         if (envelope == null || envelope instanceof AbstractEnvelope) {
             return (AbstractEnvelope) envelope;
         }
-        return null; // TODO new GeneralEnvelope(envelope);
+        return new GeneralEnvelope(envelope);
     }
 
     /**
