@@ -507,7 +507,7 @@ public abstract class AbstractEnvelope implements Envelope {
      *
      * <ul>
      *   <li>If {@code isNull() == true}, then {@code isEmpty() == true}</li>
-     *   <li>If {@code #isEmpty() == false}, then {@code isNull() == false}</li>
+     *   <li>If {@code isEmpty() == false}, then {@code isNull() == false}</li>
      *   <li>The converse of the above-cited rules are not always true.</li>
      * </ul>
      *
@@ -765,117 +765,6 @@ public abstract class AbstractEnvelope implements Envelope {
     }
 
     /**
-     * Formats this envelope in the <cite>Well Known Text</cite> (WKT) format.
-     * The output is of the form "{@code BOX}<var>n</var>{@code D(}{@linkplain #getLowerCorner()
-     * lower corner}{@code ,}{@linkplain #getUpperCorner() upper corner}{@code )}"
-     * where <var>n</var> is the {@linkplain #getDimension() number of dimensions}.
-     * Example:
-     *
-     * {@preformat wkt
-     *   BOX3D(-90 -180 0, 90 180 1)
-     * }
-     *
-     * The string returned by this method can be {@linkplain GeneralEnvelope#GeneralEnvelope(String) parsed}
-     * by the {@code GeneralEnvelope} constructor.
-     *
-     * @return This envelope as a {@code BOX2D} or {@code BOX3D} (most typical dimensions) in WKT format.
-     */
-    @Override
-    public String toString() {
-        return toString(this);
-    }
-
-    /**
-     * Implementation of the public {@link #toString()} and {@link Envelopes#toWKT(Envelope)} methods
-     * for formatting a {@code BOX} element from an envelope in <cite>Well Known Text</cite> (WKT) format.
-     *
-     * @param  envelope The envelope to format.
-     * @return The envelope as a {@code BOX2D} or {@code BOX3D} (most typical dimensions) in WKT format.
-     *
-     * @see GeneralEnvelope#GeneralEnvelope(String)
-     * @see org.apache.sis.measure.CoordinateFormat
-     * @see org.apache.sis.io.wkt
-     */
-    static String toString(final Envelope envelope) {
-        final int dimension = envelope.getDimension();
-        final DirectPosition lower = envelope.getLowerCorner();
-        final DirectPosition upper = envelope.getUpperCorner();
-        final StringBuilder buffer = new StringBuilder(64).append("BOX").append(dimension).append("D(");
-        for (int i=0; i<dimension; i++) {
-            if (i != 0) {
-                buffer.append(' ');
-            }
-            trimFractionalPart(buffer.append(lower.getOrdinate(i)));
-        }
-        buffer.append(',');
-        for (int i=0; i<dimension; i++) {
-            trimFractionalPart(buffer.append(' ').append(upper.getOrdinate(i)));
-        }
-        return buffer.append(')').toString();
-    }
-
-    /**
-     * Returns a hash value for this envelope.
-     */
-    @Override
-    public int hashCode() {
-        final int dimension = getDimension();
-        int code = 1;
-        boolean p = true;
-        do {
-            for (int i=0; i<dimension; i++) {
-                final long bits = doubleToLongBits(p ? getLower(i) : getUpper(i));
-                code = 31 * code + (((int) bits) ^ (int) (bits >>> 32));
-            }
-        } while ((p = !p) == false);
-        final CoordinateReferenceSystem crs = getCoordinateReferenceSystem();
-        if (crs != null) {
-            code += crs.hashCode();
-        }
-        return code;
-    }
-
-    /**
-     * Returns {@code true} if the specified object is an envelope of the same class
-     * with equals coordinates and {@linkplain #getCoordinateReferenceSystem() CRS}.
-     *
-     * {@note This implementation requires that the provided <code>object</code> argument
-     * is of the same class than this envelope. We do not relax this rule since not every
-     * implementations in the SIS code base follow the same contract.}
-     *
-     * @param object The object to compare with this envelope.
-     * @return {@code true} if the given object is equal to this envelope.
-     */
-    @Override
-    public boolean equals(final Object object) {
-        if (object == this) {
-            return true;
-        }
-        if (object != null && object.getClass() == getClass()) {
-            final AbstractEnvelope that = (AbstractEnvelope) object;
-            final int dimension = getDimension();
-            if (dimension == that.getDimension()) {
-                for (int i=0; i<dimension; i++) {
-                    if (doubleToLongBits(getLower(i)) != doubleToLongBits(that.getLower(i)) ||
-                        doubleToLongBits(getUpper(i)) != doubleToLongBits(that.getUpper(i)))
-                    {
-                        assert !equals(that, 0.0, false) : this;
-                        return false;
-                    }
-                }
-                if (Objects.equals(this.getCoordinateReferenceSystem(),
-                                   that.getCoordinateReferenceSystem()))
-                {
-                    assert hashCode() == that.hashCode() : this;
-                    assert equals(that, 0.0, false) : this;
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    /**
      * Compares to the specified envelope for equality up to the specified tolerance value.
      * The tolerance value {@code eps} can be either relative to the {@linkplain #getSpan(int)
      * envelope span} along each dimension or can be an absolute value (as for example some
@@ -936,6 +825,117 @@ public abstract class AbstractEnvelope implements Envelope {
             }
         }
         return true;
+    }
+
+    /**
+     * Returns {@code true} if the specified object is an envelope of the same class
+     * with equals coordinates and {@linkplain #getCoordinateReferenceSystem() CRS}.
+     *
+     * {@note This implementation requires that the provided <code>object</code> argument
+     * is of the same class than this envelope. We do not relax this rule since not every
+     * implementations in the SIS code base follow the same contract.}
+     *
+     * @param object The object to compare with this envelope.
+     * @return {@code true} if the given object is equal to this envelope.
+     */
+    @Override
+    public boolean equals(final Object object) {
+        if (object == this) {
+            return true;
+        }
+        if (object != null && object.getClass() == getClass()) {
+            final AbstractEnvelope that = (AbstractEnvelope) object;
+            final int dimension = getDimension();
+            if (dimension == that.getDimension()) {
+                for (int i=0; i<dimension; i++) {
+                    if (doubleToLongBits(getLower(i)) != doubleToLongBits(that.getLower(i)) ||
+                        doubleToLongBits(getUpper(i)) != doubleToLongBits(that.getUpper(i)))
+                    {
+                        assert !equals(that, 0.0, false) : this;
+                        return false;
+                    }
+                }
+                if (Objects.equals(this.getCoordinateReferenceSystem(),
+                                   that.getCoordinateReferenceSystem()))
+                {
+                    assert hashCode() == that.hashCode() : this;
+                    assert equals(that, 0.0, false) : this;
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns a hash value for this envelope.
+     */
+    @Override
+    public int hashCode() {
+        final int dimension = getDimension();
+        int code = 1;
+        boolean p = true;
+        do {
+            for (int i=0; i<dimension; i++) {
+                final long bits = doubleToLongBits(p ? getLower(i) : getUpper(i));
+                code = 31 * code + (((int) bits) ^ (int) (bits >>> 32));
+            }
+        } while ((p = !p) == false);
+        final CoordinateReferenceSystem crs = getCoordinateReferenceSystem();
+        if (crs != null) {
+            code += crs.hashCode();
+        }
+        return code;
+    }
+
+    /**
+     * Formats this envelope in the <cite>Well Known Text</cite> (WKT) format.
+     * The output is of the form "{@code BOX}<var>n</var>{@code D(}{@linkplain #getLowerCorner()
+     * lower corner}{@code ,}{@linkplain #getUpperCorner() upper corner}{@code )}"
+     * where <var>n</var> is the {@linkplain #getDimension() number of dimensions}.
+     * Example:
+     *
+     * {@preformat wkt
+     *   BOX3D(-90 -180 0, 90 180 1)
+     * }
+     *
+     * The string returned by this method can be {@linkplain GeneralEnvelope#GeneralEnvelope(String) parsed}
+     * by the {@code GeneralEnvelope} constructor.
+     *
+     * @return This envelope as a {@code BOX2D} or {@code BOX3D} (most typical dimensions) in WKT format.
+     */
+    @Override
+    public String toString() {
+        return toString(this);
+    }
+
+    /**
+     * Implementation of the public {@link #toString()} and {@link Envelopes#toWKT(Envelope)} methods
+     * for formatting a {@code BOX} element from an envelope in <cite>Well Known Text</cite> (WKT) format.
+     *
+     * @param  envelope The envelope to format.
+     * @return The envelope as a {@code BOX2D} or {@code BOX3D} (most typical dimensions) in WKT format.
+     *
+     * @see GeneralEnvelope#GeneralEnvelope(String)
+     * @see org.apache.sis.measure.CoordinateFormat
+     * @see org.apache.sis.io.wkt
+     */
+    static String toString(final Envelope envelope) {
+        final int dimension = envelope.getDimension();
+        final DirectPosition lower = envelope.getLowerCorner();
+        final DirectPosition upper = envelope.getUpperCorner();
+        final StringBuilder buffer = new StringBuilder(64).append("BOX").append(dimension).append("D(");
+        for (int i=0; i<dimension; i++) {
+            if (i != 0) {
+                buffer.append(' ');
+            }
+            trimFractionalPart(buffer.append(lower.getOrdinate(i)));
+        }
+        buffer.append(',');
+        for (int i=0; i<dimension; i++) {
+            trimFractionalPart(buffer.append(' ').append(upper.getOrdinate(i)));
+        }
+        return buffer.append(')').toString();
     }
 
     /**
