@@ -22,7 +22,7 @@
  * the CRS to a fixed number of dimensions only. The table below summarizes the most common
  * objects, and list the Java2D classes that are conceptually equivalent.
  *
- * <table class="SIS">
+ * <table class="sis">
  *   <tr>
  *     <th>Purpose</th>
  *     <th>Any dimension</th>
