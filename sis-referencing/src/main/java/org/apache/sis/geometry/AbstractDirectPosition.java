@@ -36,8 +36,9 @@ import static org.apache.sis.util.StringBuilders.trimFractionalPart;
  * This base class provides default implementations for {@link #toString()},
  * {@link #equals(Object)} and {@link #hashCode()} methods.
  *
- * <p>This class do not holds any state. The decision to implement {@link java.io.Serializable}
- * or {@link Cloneable} interfaces is left to implementors.</p>
+ * <p>This base class does not hold any state and does not implement the {@link java.io.Serializable}
+ * or {@link org.geotoolkit.util.Cloneable} interfaces. The internal representation, and the choice
+ * to be cloneable or serializable, is left to subclasses.</p>
  *
  * @author Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.4)
@@ -156,7 +157,8 @@ public abstract class AbstractDirectPosition implements DirectPosition {
      *   POINT(x₀ x₁ x₂ …)
      * }
      *
-     * The string returned by this method can be parsed by the {@link GeneralDirectPosition} constructor.
+     * The string returned by this method can be {@linkplain GeneralDirectPosition#GeneralDirectPosition(String) parsed}
+     * by the {@code GeneralDirectPosition} constructor.
      *
      * @return This position as a {@code POINT} in <cite>Well Known Text</cite> (WKT) format.
      */
@@ -247,6 +249,10 @@ parse:  while (i < length) {
                 }
                 c = Character.codePointAt(wkt, i);
             } while (!Character.isSpaceChar(c));
+            /*
+             * Parsing the number may throw a NumberFormatException. But the later is an
+             * IllegalArgumentException subclass, so we are compliant with the contract.
+             */
             final double value = Double.parseDouble(wkt.subSequence(start, i).toString());
             if (dimension == ordinates.length) {
                 ordinates = Arrays.copyOf(ordinates, dimension*2);
