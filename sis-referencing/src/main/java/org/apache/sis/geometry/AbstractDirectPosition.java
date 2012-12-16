@@ -27,6 +27,7 @@ import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.geometry.MismatchedReferenceSystemException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.cs.CoordinateSystem;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
@@ -129,10 +130,13 @@ public abstract class AbstractDirectPosition implements DirectPosition {
             final int expected) throws MismatchedDimensionException
     {
         if (crs != null) {
-            final int dimension = crs.getCoordinateSystem().getDimension();
-            if (dimension != expected) {
-                throw new MismatchedDimensionException(Errors.format(
-                        Errors.Keys.MismatchedDimension_3, "crs", dimension, expected));
+            final CoordinateSystem cs = crs.getCoordinateSystem();
+            if (cs != null) { // Should never be null, but let be safe.
+                final int dimension = cs.getDimension();
+                if (dimension != expected) {
+                    throw new MismatchedDimensionException(Errors.format(
+                            Errors.Keys.MismatchedDimension_3, "crs", dimension, expected));
+                }
             }
         }
     }
@@ -163,7 +167,7 @@ public abstract class AbstractDirectPosition implements DirectPosition {
      *   POINT(x₀ x₁ x₂ …)
      * }
      *
-     * The string returned by this method can be {@linkplain GeneralDirectPosition#GeneralDirectPosition(String) parsed}
+     * The string returned by this method can be {@linkplain GeneralDirectPosition#GeneralDirectPosition(CharSequence) parsed}
      * by the {@code GeneralDirectPosition} constructor.
      *
      * @return This position as a {@code POINT} in <cite>Well Known Text</cite> (WKT) format.

@@ -58,7 +58,8 @@ import static org.apache.sis.math.MathFunctions.isSameSign;
  *   <li>{@linkplain #GeneralEnvelope(double[], double[]) From two coordinate points}.</li>
  *   <li>{@linkplain #GeneralEnvelope(Envelope) From a an other envelope} (copy constructor).</li>
  *   <li>{@linkplain #GeneralEnvelope(GeographicBoundingBox) From a geographic bounding box}.</li>
- *   <li>{@linkplain #GeneralEnvelope(String) From a string} representing a {@code BBOX} in <cite>Well Known Text</cite> (WKT) format.</li>
+ *   <li>{@linkplain #GeneralEnvelope(CharSequence) From a character sequence}
+ *       representing a {@code BBOX} in <cite>Well Known Text</cite> (WKT) format.</li>
  * </ul>
  *
  * {@section Spanning the anti-meridian of a Geographic CRS}
@@ -216,7 +217,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * @see Envelopes#parseWKT(String)
      * @see Envelopes#toWKT(Envelope)
      */
-    public GeneralEnvelope(final String wkt) throws IllegalArgumentException {
+    public GeneralEnvelope(final CharSequence wkt) throws IllegalArgumentException {
         super(wkt);
     }
 

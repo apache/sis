@@ -129,7 +129,7 @@ public final class ImmutableEnvelope extends ArrayEnvelope implements Serializab
      * @throws MismatchedDimensionException If the dimension of the given CRS is not equals
      *         to the dimension of the parsed envelope.
      */
-    public ImmutableEnvelope(final String wkt, final CoordinateReferenceSystem crs)
+    public ImmutableEnvelope(final CharSequence wkt, final CoordinateReferenceSystem crs)
             throws IllegalArgumentException, MismatchedDimensionException
     {
         super(wkt);
