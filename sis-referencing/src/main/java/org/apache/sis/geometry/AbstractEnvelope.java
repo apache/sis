@@ -46,8 +46,8 @@ import java.util.Objects;
 /**
  * Base class for {@link Envelope} implementations.
  * This base class does not hold any state and does not implement the {@link java.io.Serializable}
- * or {@link org.geotoolkit.util.Cloneable} interfaces. The internal representation, and the choice
- * to be cloneable or serializable, is left to subclasses.
+ * or {@link Cloneable} interfaces. The internal representation, and the choice to be cloneable or
+ * serializable, is left to subclasses.
  *
  * <p>Implementors needs to define at least the following methods:</p>
  * <ul>
@@ -209,8 +209,8 @@ public abstract class AbstractEnvelope implements Envelope {
     /**
      * Returns {@code true} if the given value is negative, without checks for {@code NaN}.
      * This method should be invoked only when the number is known to not be {@code NaN},
-     * otherwise the safer {@link org.geotoolkit.math.XMath#isNegative(double)} method shall
-     * be used instead. Note that the check for {@code NaN} doesn't need to be explicit.
+     * otherwise the safer {@link org.apache.sis.math.MathFunctions#isNegative(double)} method
+     * shall be used instead. Note that the check for {@code NaN} doesn't need to be explicit.
      * For example in the following code, {@code NaN} values were implicitly checked by
      * the {@code (a < b)} comparison:
      *

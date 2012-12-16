@@ -152,7 +152,7 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
      * @throws MismatchedDimensionException If the given point is not two-dimensional.
      *
      * @see #toString()
-     * @see org.geotoolkit.measure.CoordinateFormat
+     * @see org.apache.sis.measure.CoordinateFormat
      */
     public DirectPosition2D(final String wkt) throws IllegalArgumentException {
         final double[] ordinates = AbstractDirectPosition.parse(wkt);

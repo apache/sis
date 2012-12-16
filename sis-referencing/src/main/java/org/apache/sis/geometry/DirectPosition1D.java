@@ -90,7 +90,7 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
      * @throws MismatchedDimensionException If the given point is not one-dimensional.
      *
      * @see #toString()
-     * @see org.geotoolkit.measure.CoordinateFormat
+     * @see org.apache.sis.measure.CoordinateFormat
      */
     public DirectPosition1D(final String wkt) throws IllegalArgumentException {
         final double[] ordinates = parse(wkt);
