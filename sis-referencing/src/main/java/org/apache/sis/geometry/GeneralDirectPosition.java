@@ -120,7 +120,7 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
      * @param  wkt The {@code POINT} or other kind of element to parse.
      * @throws IllegalArgumentException If the given string can not be parsed.
      *
-     * @see #toString(DirectPosition)
+     * @see #toString()
      * @see org.apache.sis.measure.CoordinateFormat
      */
     public GeneralDirectPosition(final String wkt) throws IllegalArgumentException {

@@ -32,7 +32,7 @@ import static org.apache.sis.util.StringBuilders.trimFractionalPart;
 
 
 /**
- * Base class for {@linkplain DirectPosition direct position} implementations.
+ * Base class for {@link DirectPosition} implementations.
  * This base class provides default implementations for {@link #toString()},
  * {@link #equals(Object)} and {@link #hashCode()} methods.
  *
@@ -66,7 +66,7 @@ public abstract class AbstractDirectPosition implements DirectPosition {
      *
      * <p>If this position and the given position have a non-null CRS, then the default implementation
      * requires the CRS to be {@linkplain Utilities#equalsIgnoreMetadata equals (ignoring metadata)},
-     * otherwise a {@link MismatchedReferenceSystemException} is thrown. However subclass may choose
+     * otherwise a {@code MismatchedReferenceSystemException} is thrown. However subclass may choose
      * to assign the CRS of this position to the CRS of the given position.</p>
      *
      * @param  position The new position, or {@code null}.
@@ -150,7 +150,7 @@ public abstract class AbstractDirectPosition implements DirectPosition {
     /**
      * Formats this position in the <cite>Well Known Text</cite> (WKT) format.
      * The returned string is like below, where {@code x₀}, {@code x₁}, {@code x₂}, <i>etc.</i>
-     * are the {@linkplain #getOrdinate(int) ordinate} values at index 0, 1, 2, <i>etc.</i>:
+     * are the ordinate values at index 0, 1, 2, <i>etc.</i>:
      *
      * {@preformat wkt
      *   POINT(x₀ x₁ x₂ …)
@@ -292,8 +292,7 @@ parse:  while (i < length) {
 
     /**
      * Returns {@code true} if the specified object is also a {@code DirectPosition}
-     * with equal {@linkplain #getCoordinate() coordinate} and equal
-     * {@linkplain #getCoordinateReferenceSystem CRS}.
+     * with equal coordinate and equal CRS.
      *
      * This method performs the comparison as documented in the {@link DirectPosition#equals(Object)}
      * javadoc. In particular, the given object is not required to be of the same implementation class.

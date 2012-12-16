@@ -42,17 +42,16 @@ import static org.apache.sis.util.StringBuilders.trimFractionalPart;
  *        For example there is no clear "x" or "y" classification for North-East direction.}
  *
  * {@section Caution when used in collections}
- * <strong>Do not mix instances of this class with ordinary {@link Point2D} instances in a
- * {@link java.util.HashSet} or as {@link java.util.HashMap} keys.</strong>
- * It is not possible to meet both {@link Point2D#hashCode} and {@link DirectPosition#hashCode}
- * contracts, and this class chooses to implements the later. Consequently, {@link #hashCode()}
- * is inconsistent with {@link Point2D#equals(Object)} but is consistent with
+ * Do not mix instances of this class with ordinary {@link Point2D} instances
+ * in a {@code HashSet} or as {@code HashMap} keys.
+ * It is not possible to meet both {@link Point2D#hashCode()} and {@link DirectPosition#hashCode()}
+ * contracts, and this class chooses to implements the later. Consequently, the {@link #hashCode()}
+ * method of this class is inconsistent with {@link Point2D#equals(Object)} but is consistent with
  * {@link DirectPosition#equals(Object)}.
  *
  * <p>In other words, it is safe to add instances of {@code DirectPosition2D} in a
  * {@code HashSet<DirectPosition>}, but it is unsafe to add them in a {@code HashSet<Point2D>}.
- * Collections that do not rely on {@link Object#hashCode()}, like {@link java.util.ArrayList},
- * are safe in all cases.</p>
+ * Collections that do not rely on hash codes, like {@code ArrayList}, are safe in all cases.</p>
  *
  * @author Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.0)
@@ -152,7 +151,7 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
      * @throws IllegalArgumentException If the given string can not be parsed.
      * @throws MismatchedDimensionException If the given point is not two-dimensional.
      *
-     * @see AbstractDirectPosition#toString(DirectPosition)
+     * @see #toString()
      * @see org.geotoolkit.measure.CoordinateFormat
      */
     public DirectPosition2D(final String wkt) throws IllegalArgumentException {
@@ -310,7 +309,7 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
 
     /**
      * Compares this point with the specified object for equality. If the given object implements
-     * the {@link DirectPosition} interface, then the comparison is performed as specified in the
+     * the {@code DirectPosition} interface, then the comparison is performed as specified in the
      * {@link DirectPosition#equals(Object)} contract. Otherwise the comparison is performed as
      * specified in the {@link Point2D#equals(Object)} contract.
      *
