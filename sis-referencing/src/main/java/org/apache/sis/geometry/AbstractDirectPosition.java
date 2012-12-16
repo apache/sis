@@ -37,8 +37,8 @@ import static org.apache.sis.util.StringBuilders.trimFractionalPart;
  * {@link #equals(Object)} and {@link #hashCode()} methods.
  *
  * <p>This base class does not hold any state and does not implement the {@link java.io.Serializable}
- * or {@link org.geotoolkit.util.Cloneable} interfaces. The internal representation, and the choice
- * to be cloneable or serializable, is left to subclasses.</p>
+ * or {@link Cloneable} interfaces. The internal representation, and the choice to be cloneable or
+ * serializable, is left to subclasses.</p>
  *
  * @author Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.4)
