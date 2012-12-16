@@ -25,7 +25,13 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.util.resources.Errors;
 
 import static java.lang.Double.doubleToLongBits;
+import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.StringBuilders.trimFractionalPart;
+
+// Following imports are needed because we can't extend AbstractDirectPosition.
+// We want to write this class as if it was an AbstractDirectPosition subclass.
+import static org.apache.sis.geometry.AbstractDirectPosition.ensureDimensionMatch;
+import static org.apache.sis.geometry.AbstractDirectPosition.parse;
 
 
 /**
@@ -82,11 +88,12 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
     }
 
     /**
-     * Constructs a position with the specified coordinate reference system.
+     * Constructs a position initialized to (0,0) with the specified coordinate reference system.
      *
      * @param crs The coordinate reference system, or {@code null}.
      */
     public DirectPosition2D(final CoordinateReferenceSystem crs) {
+        ensureDimensionMatch(crs, 2);
         this.crs = crs;
     }
 
@@ -112,32 +119,30 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
      * The actual axis orientations are determined by the specified CRS.
      * See the <a href="#skip-navbar_top">class javadoc</a> for details.
      *
+     * @param x   The first ordinate value (not necessarily horizontal).
+     * @param y   The second ordinate value (not necessarily vertical).
      * @param crs The coordinate reference system, or {@code null}.
-     * @param x The first ordinate value (not necessarily horizontal).
-     * @param y The second ordinate value (not necessarily vertical).
      */
-    public DirectPosition2D(final CoordinateReferenceSystem crs,
-                            final double x, final double y)
-    {
+    public DirectPosition2D(final double x, final double y, final CoordinateReferenceSystem crs) {
         super(x, y);
-        AbstractDirectPosition.ensureDimensionMatch(crs, 2);
         this.crs = crs;
+        ensureDimensionMatch(crs, 2);
     }
 
     /**
-     * Constructs a position from the specified {@link Point2D}.
-     * If the given point implements also the {@code DirectPosition} interface, then this
-     * constructor will set the CRS of this {@code DirectPosition2D} to the CRS of the given point.
-     * Otherwise the CRS of this {@code DirectPosition2D} will be initially null.
+     * Constructs a position initialized to the same values than the specified point.
      *
-     * @param point The point to copy.
+     * @param  position The position to copy.
+     * @throws MismatchedDimensionException if the given position is not two-dimensional.
+     *
+     * @see #setLocation(Point2D)
      */
-    public DirectPosition2D(final Point2D point) {
-        super(point.getX(), point.getY());
-        if (point instanceof DirectPosition) {
-            crs = ((DirectPosition) point).getCoordinateReferenceSystem();
-            AbstractDirectPosition.ensureDimensionMatch(crs, 2);
-        }
+    public DirectPosition2D(final DirectPosition position) throws MismatchedDimensionException {
+        ensureNonNull("position", position);
+        ensureDimensionMatch("position", position.getDimension(), 2);
+        x   = position.getOrdinate(0);
+        y   = position.getOrdinate(1);
+        crs = position.getCoordinateReferenceSystem();
     }
 
     /**
@@ -156,13 +161,13 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
      * @see #toString()
      * @see org.apache.sis.measure.CoordinateFormat
      */
-    public DirectPosition2D(final String wkt) throws IllegalArgumentException {
-        final double[] ordinates = AbstractDirectPosition.parse(wkt);
+    public DirectPosition2D(final CharSequence wkt) throws IllegalArgumentException {
+        final double[] ordinates = parse(wkt);
         if (ordinates == null) {
             throw new IllegalArgumentException(Errors.format(
                     Errors.Keys.UnparsableStringForClass_2, "POINT", wkt));
         }
-        AbstractDirectPosition.ensureDimensionMatch("wkt", ordinates.length, 2);
+        ensureDimensionMatch("wkt", ordinates.length, 2);
         x = ordinates[0];
         y = ordinates[1];
     }
@@ -205,7 +210,7 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
      * @param crs The new coordinate reference system, or {@code null}.
      */
     public void setCoordinateReferenceSystem(final CoordinateReferenceSystem crs) {
-        AbstractDirectPosition.ensureDimensionMatch(crs, 2);
+        ensureDimensionMatch(crs, 2);
         this.crs = crs;
     }
 
@@ -259,18 +264,21 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
     }
 
     /**
-     * Sets this coordinate to the specified direct position. If the specified position
-     * contains a coordinate reference system (CRS), then the CRS for this position will
-     * be set to the CRS of the specified position.
+     * Sets this coordinate to the specified point. If the specified position is also a
+     * {@code DirectPosition} containing a non-null coordinate reference system (CRS),
+     * then the CRS for this position will be set to the CRS of the given point.
      *
-     * @param  position The new position for this point.
-     * @throws MismatchedDimensionException if this point doesn't have the expected dimension.
+     * @param position The new position for this point.
      */
-    public void setLocation(final DirectPosition position) throws MismatchedDimensionException {
-        AbstractDirectPosition.ensureDimensionMatch("position", position.getDimension(), 2);
-        setCoordinateReferenceSystem(position.getCoordinateReferenceSystem());
-        x = position.getOrdinate(0);
-        y = position.getOrdinate(1);
+    @Override
+    public void setLocation(final Point2D position) {
+        super.setLocation(position);
+        if (position instanceof DirectPosition) {
+            final CoordinateReferenceSystem candidate = ((DirectPosition) position).getCoordinateReferenceSystem();
+            if (candidate != null) {
+                setCoordinateReferenceSystem(candidate);
+            }
+        }
     }
 
     /**
@@ -281,7 +289,7 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
      *   POINT(x y)
      * }
      *
-     * The string returned by this method can be {@linkplain #DirectPosition2D(String) parsed}
+     * The string returned by this method can be {@linkplain #DirectPosition2D(CharSequence) parsed}
      * by the {@code DirectPosition2D} constructor.
      */
     @Override

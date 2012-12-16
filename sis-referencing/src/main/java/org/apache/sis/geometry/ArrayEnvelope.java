@@ -82,17 +82,15 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
     public ArrayEnvelope(final DirectPosition lowerCorner, final DirectPosition upperCorner)
             throws MismatchedDimensionException, MismatchedReferenceSystemException
     {
-        ensureNonNull("lowerCorner", lowerCorner);
-        ensureNonNull("upperCorner", upperCorner);
+        crs = getCommonCRS(lowerCorner, upperCorner); // This performs also an argument check.
         final int dimension = lowerCorner.getDimension();
+        AbstractDirectPosition.ensureDimensionMatch(crs, dimension);
         ensureSameDimension(dimension, upperCorner.getDimension());
         ordinates = new double[dimension * 2];
         for (int i=0; i<dimension; i++) {
             ordinates[i            ] = lowerCorner.getOrdinate(i);
             ordinates[i + dimension] = upperCorner.getOrdinate(i);
         }
-        crs = getCommonCRS(lowerCorner, upperCorner);
-        AbstractDirectPosition.ensureDimensionMatch(crs, dimension);
     }
 
     /**
@@ -148,9 +146,11 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
             crs = envelope.getCoordinateReferenceSystem();
             final int dimension = envelope.getDimension();
             ordinates = new double[dimension * 2];
+            final DirectPosition lowerCorner = envelope.getLowerCorner();
+            final DirectPosition upperCorner = envelope.getUpperCorner();
             for (int i=0; i<dimension; i++) {
-                ordinates[i]           = envelope.getMinimum(i);
-                ordinates[i+dimension] = envelope.getMaximum(i);
+                ordinates[i]           = lowerCorner.getOrdinate(i);
+                ordinates[i+dimension] = upperCorner.getOrdinate(i);
             }
         }
     }

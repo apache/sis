@@ -97,7 +97,7 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
      * @see #toString()
      * @see org.apache.sis.measure.CoordinateFormat
      */
-    public DirectPosition1D(final String wkt) throws IllegalArgumentException {
+    public DirectPosition1D(final CharSequence wkt) throws IllegalArgumentException {
         final double[] ordinates = parse(wkt);
         if (ordinates == null) {
             throw new IllegalArgumentException(Errors.format(

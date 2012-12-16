@@ -155,6 +155,8 @@ public abstract class AbstractEnvelope implements Envelope {
                                                   final DirectPosition upperCorner)
             throws MismatchedReferenceSystemException
     {
+        ensureNonNull("lowerCorner", lowerCorner);
+        ensureNonNull("upperCorner", upperCorner);
         final CoordinateReferenceSystem crs1 = lowerCorner.getCoordinateReferenceSystem();
         final CoordinateReferenceSystem crs2 = upperCorner.getCoordinateReferenceSystem();
         if (crs1 == null) {
@@ -905,7 +907,7 @@ public abstract class AbstractEnvelope implements Envelope {
      *   BOX3D(-90 -180 0, 90 180 1)
      * }
      *
-     * The string returned by this method can be {@linkplain GeneralEnvelope#GeneralEnvelope(String) parsed}
+     * The string returned by this method can be {@linkplain GeneralEnvelope#GeneralEnvelope(CharSequence) parsed}
      * by the {@code GeneralEnvelope} constructor.
      *
      * @return This envelope as a {@code BOX2D} or {@code BOX3D} (most typical dimensions) in WKT format.

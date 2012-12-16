@@ -128,7 +128,7 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
      * @see #toString()
      * @see org.apache.sis.measure.CoordinateFormat
      */
-    public GeneralDirectPosition(final String wkt) throws IllegalArgumentException {
+    public GeneralDirectPosition(final CharSequence wkt) throws IllegalArgumentException {
         if ((ordinates = parse(wkt)) == null) {
             throw new IllegalArgumentException(Errors.format(
                     Errors.Keys.UnparsableStringForClass_2, "POINT", wkt));
