@@ -666,9 +666,8 @@ public abstract class AbstractEnvelope implements Envelope {
             return false;
         }
         // The check for ArrayEnvelope.class is for avoiding never-ending callbacks.
-// TODO
-//        assert envelope.getClass() == ArrayEnvelope.class ||
-//               intersects(new ArrayEnvelope(envelope), edgesInclusive) : envelope;
+        assert envelope.getClass() == ArrayEnvelope.class ||
+               intersects(new ArrayEnvelope(envelope), edgesInclusive) : envelope;
         return true;
     }
 
@@ -737,9 +736,8 @@ public abstract class AbstractEnvelope implements Envelope {
                 }
             }
             // The check for ArrayEnvelope.class is for avoiding never-ending callbacks.
-// TODO
-//            assert envelope.getClass() == ArrayEnvelope.class || hasNaN(envelope) ||
-//                    !contains(new ArrayEnvelope(envelope), edgesInclusive) : envelope;
+            assert envelope.getClass() == ArrayEnvelope.class || hasNaN(envelope) ||
+                    !contains(new ArrayEnvelope(envelope), edgesInclusive) : envelope;
             return false;
         }
         return true;
