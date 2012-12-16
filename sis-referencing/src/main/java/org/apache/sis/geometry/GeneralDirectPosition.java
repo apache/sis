@@ -16,6 +16,11 @@
  */
 package org.apache.sis.geometry;
 
+/*
+ * Do not add dependency to java.awt.geom.Point2D in this class, because not all platforms
+ * support Java2D (e.g. Android), or applications that do not need it may want to avoid to
+ * to force installation of the Java2D module (e.g. JavaFX/SWT).
+ */
 import java.util.Arrays;
 import java.io.Serializable;
 import java.lang.reflect.Field;
@@ -39,7 +44,7 @@ import org.apache.sis.util.resources.Errors;
  * position is known to be always two-dimensional, then {@link DirectPosition2D} provides
  * a more efficient implementation.</p>
  *
- * @author Martin Desruisseaux (IRD, Geomatys)
+ * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-1.2)
  * @version 0.3
  * @module

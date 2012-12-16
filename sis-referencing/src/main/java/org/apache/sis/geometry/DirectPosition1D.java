@@ -16,6 +16,11 @@
  */
 package org.apache.sis.geometry;
 
+/*
+ * Do not add dependency to java.awt.geom.Point2D in this class, because not all platforms
+ * support Java2D (e.g. Android), or applications that do not need it may want to avoid to
+ * to force installation of the Java2D module (e.g. JavaFX/SWT).
+ */
 import java.io.Serializable;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.geometry.DirectPosition;
@@ -26,7 +31,7 @@ import org.apache.sis.util.resources.Errors;
 /**
  * Holds the coordinates for a one-dimensional position within some coordinate reference system.
  *
- * @author Martin Desruisseaux (IRD, Geomatys)
+ * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.0)
  * @version 0.3
  * @module

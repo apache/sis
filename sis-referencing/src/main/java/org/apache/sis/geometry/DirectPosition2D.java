@@ -29,13 +29,15 @@ import static org.apache.sis.util.StringBuilders.trimFractionalPart;
 
 
 /**
- * Holds the coordinates for a two-dimensional position within some coordinate reference system.
- * This class inherits {@linkplain #x x} and {@linkplain #y y} fields. But despite their names,
- * they don't need to be oriented toward {@linkplain AxisDirection#EAST East} and {@linkplain
- * AxisDirection#NORTH North}. The (<var>x</var>,<var>y</var>) axis can have any orientation and
- * should be understood as "<cite>ordinate 0</cite>" and "<cite>ordinate 1</cite>" values instead.
+ * Holds the coordinates for a two-dimensional position on top of {@link Point2D}.
+ * This implementation is provided for inter-operability between Java2D and GeoAPI.
+ *
+ * <p>This class inherits {@linkplain #x x} and {@linkplain #y y} fields.
+ * But despite their names, they don't need to be oriented toward {@linkplain AxisDirection#EAST East} and
+ * {@linkplain AxisDirection#NORTH North} respectively. The (<var>x</var>,<var>y</var>) axis can have any
+ * direction and should be understood as <cite>ordinate 0</cite> and <cite>ordinate 1</cite> values instead.
  * This is not specific to this implementation; in Java2D too, the visual axis orientation depend
- * on the {@linkplain java.awt.Graphics2D#getTransform() affine transform in the graphics context}.
+ * on the {@linkplain java.awt.Graphics2D#getTransform() affine transform in the graphics context}.</p>
  *
  * {@note The rational for avoiding axis orientation restriction is that other <code>DirectPosition</code>
  *        implementations do not have such restriction, and it would be hard to generalize.
@@ -53,7 +55,7 @@ import static org.apache.sis.util.StringBuilders.trimFractionalPart;
  * {@code HashSet<DirectPosition>}, but it is unsafe to add them in a {@code HashSet<Point2D>}.
  * Collections that do not rely on hash codes, like {@code ArrayList}, are safe in all cases.</p>
  *
- * @author Martin Desruisseaux (IRD, Geomatys)
+ * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.0)
  * @version 0.3
  * @module
