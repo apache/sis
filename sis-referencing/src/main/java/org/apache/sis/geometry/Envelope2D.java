@@ -16,7 +16,6 @@
  */
 package org.apache.sis.geometry;
 
-import java.util.Objects;
 import java.awt.geom.Rectangle2D;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
@@ -48,6 +47,9 @@ import static org.apache.sis.geometry.AbstractEnvelope.fixSpan;
 import static org.apache.sis.geometry.AbstractEnvelope.fixMedian;
 import static org.apache.sis.geometry.AbstractEnvelope.isWrapAround;
 import static org.apache.sis.geometry.AbstractEnvelope.isNegativeUnsafe;
+
+// Related to JDK7
+import java.util.Objects;
 
 
 /**

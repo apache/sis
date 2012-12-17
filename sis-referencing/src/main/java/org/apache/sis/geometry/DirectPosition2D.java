@@ -16,7 +16,6 @@
  */
 package org.apache.sis.geometry;
 
-import java.util.Objects;
 import java.awt.geom.Point2D;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
@@ -32,6 +31,9 @@ import static org.apache.sis.util.StringBuilders.trimFractionalPart;
 // We want to write this class as if it was an AbstractDirectPosition subclass.
 import static org.apache.sis.geometry.AbstractDirectPosition.ensureDimensionMatch;
 import static org.apache.sis.geometry.AbstractDirectPosition.parse;
+
+// Related to JDK7
+import java.util.Objects;
 
 
 /**

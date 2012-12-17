@@ -22,7 +22,6 @@ package org.apache.sis.geometry;
  * force installation of the Java2D module (e.g. JavaFX/SWT).
  */
 import java.util.Arrays;
-import java.util.Objects;
 import java.io.Serializable;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
@@ -40,6 +39,9 @@ import static org.apache.sis.util.Arrays.resize;
 import static org.apache.sis.util.ArgumentChecks.*;
 import static org.apache.sis.math.MathFunctions.isNegative;
 import static org.apache.sis.internal.referencing.Utilities.isPoleToPole;
+
+// Related to JDK7
+import java.util.Objects;
 
 
 /**

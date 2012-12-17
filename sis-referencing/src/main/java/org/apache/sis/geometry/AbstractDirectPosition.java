@@ -22,7 +22,6 @@ package org.apache.sis.geometry;
  * to force installation of the Java2D module (e.g. JavaFX/SWT).
  */
 import java.util.Arrays;
-import java.util.Objects;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.geometry.MismatchedReferenceSystemException;
@@ -35,6 +34,9 @@ import org.apache.sis.util.resources.Errors;
 import static java.lang.Double.doubleToLongBits;
 import static org.apache.sis.util.Arrays.resize;
 import static org.apache.sis.util.StringBuilders.trimFractionalPart;
+
+// Related to JDK7
+import java.util.Objects;
 
 
 /**
