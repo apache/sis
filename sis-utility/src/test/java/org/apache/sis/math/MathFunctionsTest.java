@@ -153,7 +153,7 @@ public final strictfp class MathFunctionsTest extends TestCase {
             final double y = atanh(x);
             switch (i) {
                 case -10: assertEquals(Double.NEGATIVE_INFINITY, y, EPS); break;
-                default:  assertEquals(x, Math.tanh(y),             EPS); break;
+                default:  assertEquals(x, StrictMath.tanh(y),       EPS); break;
                 case +10: assertEquals(Double.POSITIVE_INFINITY, y, EPS); break;
             }
         }
