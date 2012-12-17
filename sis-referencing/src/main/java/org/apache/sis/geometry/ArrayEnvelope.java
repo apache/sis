@@ -210,7 +210,7 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
         double[] maximum = new double[dimLimit];
         int dimension = 0;
         int c;
-scan:   for (int i=CharSequences.skipLeadingWhitespaces(wkt, 0, length); i<length; c+=Character.charCount(c)) {
+scan:   for (int i=CharSequences.skipLeadingWhitespaces(wkt, 0, length); i<length; i+=Character.charCount(c)) {
             c = Character.codePointAt(wkt, i);
             if (Character.isUnicodeIdentifierStart(c)) {
                 do {
