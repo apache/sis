@@ -301,11 +301,7 @@ parse:  while (i < length) {
             final long bits = doubleToLongBits(getOrdinate(i));
             code = 31 * code + (((int) bits) ^ (int) (bits >>> 32));
         }
-        final CoordinateReferenceSystem crs = getCoordinateReferenceSystem();
-        if (crs != null) {
-            code += crs.hashCode();
-        }
-        return code;
+        return code + Objects.hashCode(getCoordinateReferenceSystem());
     }
 
     /**
