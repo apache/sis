@@ -27,14 +27,12 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.awt.geom.Rectangle2D;
-import java.awt.geom.RectangularShape;
-import java.awt.image.RenderedImage;
 import javax.swing.tree.TreeNode;
 import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.SAXException;
-
+import org.apache.sis.util.Utilities;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.ComparisonMode;
 
 // Related to JDK7
 import java.util.Objects;
@@ -53,6 +51,52 @@ public strictfp class Assert extends org.opengis.test.Assert {
      * For subclass constructor only.
      */
     protected Assert() {
+    }
+
+    /**
+     * Asserts that the two given objects are not equal.
+     * This method tests all {@link ComparisonMode} except {@code DEBUG}.
+     *
+     * @param o1  The first object.
+     * @param o2  The second object.
+     */
+    public static void assertNotDeepEquals(final Object o1, final Object o2) {
+        assertNotSame("same", o1, o2);
+        assertFalse("equals",                      Objects  .equals    (o1, o2));
+        assertFalse("deepEquals",                  Objects  .deepEquals(o1, o2));
+        assertFalse("deepEquals(STRICT)",          Utilities.deepEquals(o1, o2, ComparisonMode.STRICT));
+        assertFalse("deepEquals(BY_CONTRACT)",     Utilities.deepEquals(o1, o2, ComparisonMode.BY_CONTRACT));
+        assertFalse("deepEquals(IGNORE_METADATA)", Utilities.deepEquals(o1, o2, ComparisonMode.IGNORE_METADATA));
+        assertFalse("deepEquals(APPROXIMATIVE)",   Utilities.deepEquals(o1, o2, ComparisonMode.APPROXIMATIVE));
+    }
+
+    /**
+     * Asserts that the two given objects are approximatively equal, while slightly different.
+     * More specifically, this method asserts that the given objects are equal according the
+     * {@link ComparisonMode#APPROXIMATIVE} criterion, but not equal according the
+     * {@link ComparisonMode#IGNORE_METADATA} criterion.
+     *
+     * @param expected  The expected object.
+     * @param actual    The actual object.
+     */
+    public static void assertAlmostEquals(final Object expected, final Object actual) {
+        assertFalse("Shall not be strictly equals",          Utilities.deepEquals(expected, actual, ComparisonMode.STRICT));
+        assertFalse("Shall be slightly different",           Utilities.deepEquals(expected, actual, ComparisonMode.IGNORE_METADATA));
+        assertTrue ("Shall be approximatively equals",       Utilities.deepEquals(expected, actual, ComparisonMode.DEBUG));
+        assertTrue ("DEBUG inconsistent with APPROXIMATIVE", Utilities.deepEquals(expected, actual, ComparisonMode.APPROXIMATIVE));
+    }
+
+    /**
+     * Asserts that the two given objects are equal ignoring metadata.
+     * See {@link ComparisonMode#IGNORE_METADATA} for more information.
+     *
+     * @param expected  The expected object.
+     * @param actual    The actual object.
+     */
+    public static void assertEqualsIgnoreMetadata(final Object expected, final Object actual) {
+        assertTrue("Shall be approximatively equals",       Utilities.deepEquals(expected, actual, ComparisonMode.DEBUG));
+        assertTrue("DEBUG inconsistent with APPROXIMATIVE", Utilities.deepEquals(expected, actual, ComparisonMode.APPROXIMATIVE));
+        assertTrue("Shall be equals, ignoring metadata",    Utilities.deepEquals(expected, actual, ComparisonMode.IGNORE_METADATA));
     }
 
     /**
@@ -244,98 +288,6 @@ public strictfp class Assert extends org.opengis.test.Assert {
         comparator.ignoreComments = true;
         comparator.ignoredAttributes.addAll(Arrays.asList(ignoredAttributes));
         comparator.compare();
-    }
-
-    /**
-     * Tests if the given {@code outer} shape contains the given {@code inner} rectangle.
-     * This method will also verify class consistency by invoking the {@code intersects}
-     * method, and by interchanging the arguments.
-     *
-     * <p>This method can be used for testing the {@code outer} implementation -
-     * it should not be needed for standard JDK implementations.</p>
-     *
-     * @param outer The shape which is expected to contains the given rectangle.
-     * @param inner The rectangle which should be contained by the shape.
-     */
-    public static void assertContains(final RectangularShape outer, final Rectangle2D inner) {
-        assertTrue("outer.contains(inner)",   outer.contains  (inner));
-        assertTrue("outer.intersects(inner)", outer.intersects(inner));
-        if (outer instanceof Rectangle2D) {
-            assertTrue ("inner.intersects(outer)", inner.intersects((Rectangle2D) outer));
-            assertFalse("inner.contains(outer)",   inner.contains  ((Rectangle2D) outer));
-        }
-        assertTrue("outer.contains(centerX, centerY)",
-                outer.contains(inner.getCenterX(), inner.getCenterY()));
-    }
-
-    /**
-     * Tests if the given {@code r1} shape is disjoint with the given {@code r2} rectangle.
-     * This method will also verify class consistency by invoking the {@code contains}
-     * method, and by interchanging the arguments.
-     *
-     * <p>This method can be used for testing the {@code r1} implementation - it should not
-     * be needed for standard implementations.</p>
-     *
-     * @param r1 The first shape to test.
-     * @param r2 The second rectangle to test.
-     */
-    public static void assertDisjoint(final RectangularShape r1, final Rectangle2D r2) {
-        assertFalse("r1.intersects(r2)", r1.intersects(r2));
-        assertFalse("r1.contains(r2)",   r1.contains(r2));
-        if (r1 instanceof Rectangle2D) {
-            assertFalse("r2.intersects(r1)", r2.intersects((Rectangle2D) r1));
-            assertFalse("r2.contains(r1)",   r2.contains  ((Rectangle2D) r1));
-        }
-        for (int i=0; i<9; i++) {
-            final double x, y;
-            switch (i % 3) {
-                case 0: x = r2.getMinX();    break;
-                case 1: x = r2.getCenterX(); break;
-                case 2: x = r2.getMaxX();    break;
-                default: throw new AssertionError(i);
-            }
-            switch (i / 3) {
-                case 0: y = r2.getMinY();    break;
-                case 1: y = r2.getCenterY(); break;
-                case 2: y = r2.getMaxY();    break;
-                default: throw new AssertionError(i);
-            }
-            assertFalse("r1.contains(" + x + ", " + y + ')', r1.contains(x, y));
-        }
-    }
-
-    /**
-     * Asserts that two rectangles have the same location and the same size.
-     *
-     * @param expected The expected rectangle.
-     * @param actual   The rectangle to compare with the expected one.
-     * @param tolx     The tolerance threshold on location along the <var>x</var> axis.
-     * @param toly     The tolerance threshold on location along the <var>y</var> axis.
-     */
-    public static void assertRectangleEquals(final RectangularShape expected,
-            final RectangularShape actual, final double tolx, final double toly)
-    {
-        assertEquals("Min X",    expected.getMinX(),    actual.getMinX(),    tolx);
-        assertEquals("Min Y",    expected.getMinY(),    actual.getMinY(),    toly);
-        assertEquals("Max X",    expected.getMaxX(),    actual.getMaxX(),    tolx);
-        assertEquals("Max Y",    expected.getMaxY(),    actual.getMaxY(),    toly);
-        assertEquals("Center X", expected.getCenterX(), actual.getCenterX(), tolx);
-        assertEquals("Center Y", expected.getCenterY(), actual.getCenterY(), toly);
-        assertEquals("Width",    expected.getWidth(),   actual.getWidth(),   tolx*2);
-        assertEquals("Height",   expected.getHeight(),  actual.getHeight(),  toly*2);
-    }
-
-    /**
-     * Asserts that two images have the same origin and the same size.
-     *
-     * @param expected The image having the expected size.
-     * @param actual   The image to compare with the expected one.
-     */
-    public static void assertBoundEquals(final RenderedImage expected, final RenderedImage actual) {
-        assertEquals("Min X",  expected.getMinX(),   actual.getMinX());
-        assertEquals("Min Y",  expected.getMinY(),   actual.getMinY());
-        assertEquals("Width",  expected.getWidth(),  actual.getWidth());
-        assertEquals("Height", expected.getHeight(), actual.getHeight());
     }
 
     /**
