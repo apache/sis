@@ -108,12 +108,12 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
     private static volatile Field ordinatesField;
 
     /**
-     * Constructs an envelope defined by two direct positions.
+     * Constructs an envelope defined by two corners given as direct positions.
      * If at least one corner is associated to a CRS, then the new envelope will also
      * be associated to that CRS.
      *
-     * @param  lowerCorner The lower corner.
-     * @param  upperCorner The upper corner.
+     * @param  lowerCorner The limits in the direction of decreasing ordinate values for each dimension.
+     * @param  upperCorner The limits in the direction of increasing ordinate values for each dimension.
      * @throws MismatchedDimensionException If the two positions do not have the same dimension.
      * @throws MismatchedReferenceSystemException If the CRS of the two position are not equal.
      */
@@ -124,11 +124,11 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
     }
 
     /**
-     * Constructs an envelope defined by two sequences of ordinate values.
+     * Constructs an envelope defined by two corners given as sequences of ordinate values.
      * The Coordinate Reference System is initially {@code null}.
      *
-     * @param  lowerCorner Lower ordinate values.
-     * @param  upperCorner Upper ordinate values.
+     * @param  lowerCorner The limits in the direction of decreasing ordinate values for each dimension.
+     * @param  upperCorner The limits in the direction of increasing ordinate values for each dimension.
      * @throws MismatchedDimensionException If the two sequences do not have the same length.
      */
     public GeneralEnvelope(final double[] lowerCorner, final double[] upperCorner) throws MismatchedDimensionException {
