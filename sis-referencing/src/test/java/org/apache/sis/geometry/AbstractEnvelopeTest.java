@@ -19,6 +19,7 @@ package org.apache.sis.geometry;
 import java.awt.geom.Rectangle2D;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
+import org.opengis.referencing.crs.GeographicCRS;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Ignore;
@@ -51,6 +52,13 @@ public final strictfp class AbstractEnvelopeTest extends TestCase {
     private static final int GENERAL=0, IMMUTABLE=1, RECTANGLE=2, LAST=3;
 
     /**
+     * The coordinate reference system used for the tests.
+     *
+     * @todo Need to be assigned when we will have ported the CRS implementations.
+     */
+    static final GeographicCRS WGS84 = null;
+
+    /**
      * Creates an envelope of the given type. The type shall be one of the
      * {@link #GENERAL}, {@link #IMMUTABLE} or {@link #RECTANGLE} constants.
      */
@@ -61,15 +69,16 @@ public final strictfp class AbstractEnvelopeTest extends TestCase {
         switch (type) {
             case GENERAL: {
                 final GeneralEnvelope envelope = new GeneralEnvelope(2);
+                envelope.setCoordinateReferenceSystem(WGS84);
                 envelope.setRange(0, xmin, xmax);
                 envelope.setRange(1, ymin, ymax);
                 return envelope;
             }
             case IMMUTABLE: {
-                return new ImmutableEnvelope(new double[] {xmin, ymin}, new double[] {xmax, ymax}, null);
+                return new ImmutableEnvelope(new double[] {xmin, ymin}, new double[] {xmax, ymax}, WGS84);
             }
             case RECTANGLE: {
-                return new Envelope2D(xmin, ymin, xmax - xmin, ymax - ymin, null);
+                return new Envelope2D(xmin, ymin, xmax - xmin, ymax - ymin, WGS84);
             }
             default: throw new IllegalArgumentException(String.valueOf(type));
         }

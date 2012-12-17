@@ -26,6 +26,7 @@ import org.junit.Test;
 import static java.lang.Double.NaN;
 import static org.apache.sis.referencing.Assert.*;
 import static org.apache.sis.math.MathFunctions.isNegative;
+import static org.apache.sis.geometry.AbstractEnvelopeTest.WGS84;
 
 
 /**
@@ -57,6 +58,7 @@ public final strictfp class GeneralEnvelopeTest extends TestCase {
      */
     private static GeneralEnvelope create(final double xmin, final double ymin, final double xmax, final double ymax) {
         final GeneralEnvelope envelope = new GeneralEnvelope(2);
+        envelope.setCoordinateReferenceSystem(WGS84);
         envelope.setEnvelope(xmin, ymin, xmax, ymax);
         return envelope;
     }
@@ -485,5 +487,16 @@ public final strictfp class GeneralEnvelopeTest extends TestCase {
         assertFalse("Ordinates array should have been cloned.", e1.equals(e2));
         e2.setRange(0, -40, +61);
         assertEquals(e1, e2);
+    }
+
+    /**
+     * Tests {@code GeneralEnvelope} serialization.
+     */
+    @Test
+    public void testSerialization() {
+        final GeneralEnvelope envelope = new GeneralEnvelope(
+                new double[] {-20, -10},
+                new double[] { 20,  10});
+        assertNotSame(envelope, assertSerializedEquals(envelope));
     }
 }
