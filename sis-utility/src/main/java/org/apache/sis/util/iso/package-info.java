@@ -48,7 +48,7 @@
  * in the {@code "org.opengis"} scope). The illustration below shows all possible constructions
  * for {@code "org.opengis.util.Record"}:
  *
- * <blockquote><table border="1" cellpadding="15"><tr><td><table border="0" cellspacing="0">
+ * <blockquote><table class="compact"><tr><td><table class="compact">
  *   <tr>
  *     <th align="right">org</th>
  *     <th>.</th><th>opengis</th>
@@ -66,7 +66,7 @@
  *     <td bgcolor="palegoldenrod" colspan="5"><font size="-1">{@linkplain org.apache.sis.util.iso.DefaultScopedName#tail() tail}</font></td>
  *     <td rowspan="2"></td>
  *     <td rowspan="2" bgcolor="beige" align="left">{@linkplain org.apache.sis.util.iso.DefaultNameSpace#isGlobal() global}</td>
- *     <td rowspan="2" bgcolor="beige" align="right">{@literal {"org", "opengis", "util", "Record"}}</td>
+ *     <td rowspan="2" bgcolor="beige" align="right">{@code {"org", "opengis", "util", "Record"}}</td>
  *     <td rowspan="2"></td>
  *     <td rowspan="2">{@link org.apache.sis.util.iso.DefaultScopedName ScopedName}</td>
  *   </tr>
@@ -81,8 +81,8 @@
  *     <td bgcolor="palegoldenrod" colspan="1"><font size="-1">head</font></td><td></td>
  *     <td bgcolor="palegoldenrod" colspan="3"><font size="-1">tail</font></td>
  *     <td rowspan="2"></td>
- *     <td rowspan="2" bgcolor="beige" align="left">{@literal "org"}</td>
- *     <td rowspan="2" bgcolor="beige" align="right">{@literal {"opengis", "util", "Record"}}</td>
+ *     <td rowspan="2" bgcolor="beige" align="left">{@code "org"}</td>
+ *     <td rowspan="2" bgcolor="beige" align="right">{@code {"opengis", "util", "Record"}}</td>
  *     <td rowspan="2"></td>
  *     <td rowspan="2">{@code ScopedName}</td>
  *   </tr>
@@ -97,8 +97,8 @@
  *     <td bgcolor="palegoldenrod" colspan="1"><font size="-1">head</font></td><td></td>
  *     <td bgcolor="palegoldenrod" colspan="1"><font size="-1">tail</font></td>
  *     <td rowspan="2"></td>
- *     <td rowspan="2" bgcolor="beige" align="left">{@literal "org.opengis"}</td>
- *     <td rowspan="2" bgcolor="beige" align="right">{@literal {"util", "Record"}}</td>
+ *     <td rowspan="2" bgcolor="beige" align="left">{@code "org.opengis"}</td>
+ *     <td rowspan="2" bgcolor="beige" align="right">{@code {"util", "Record"}}</td>
  *     <td rowspan="2"></td>
  *     <td rowspan="2">{@code ScopedName}</td>
  *   </tr>
@@ -112,8 +112,8 @@
  *     <td bgcolor="palegoldenrod" colspan="5" rowspan="2"><font size="-1">scope</font></td><td rowspan="2"></td>
  *     <td bgcolor="palegoldenrod" colspan="1"><font size="-1">head</font></td>
  *     <td rowspan="2"></td>
- *     <td rowspan="2" bgcolor="beige" align="left">{@literal "org.opengis.util"}</td>
- *     <td rowspan="2" bgcolor="beige" align="right">{@literal {"Record"}}</td>
+ *     <td rowspan="2" bgcolor="beige" align="left">{@code "org.opengis.util"}</td>
+ *     <td rowspan="2" bgcolor="beige" align="right">{@code {"Record"}}</td>
  *     <td rowspan="2"></td>
  *     <td rowspan="2">{@link org.apache.sis.util.iso.DefaultLocalName LocalName}</td>
  *   </tr>

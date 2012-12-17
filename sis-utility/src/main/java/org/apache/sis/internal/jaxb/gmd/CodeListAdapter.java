@@ -18,7 +18,7 @@ package org.apache.sis.internal.jaxb.gmd;
 
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import org.opengis.util.CodeList;
-import org.apache.sis.util.iso.CodeLists;
+import org.apache.sis.util.iso.Types;
 import org.apache.sis.internal.jaxb.MarshalContext;
 
 
@@ -117,7 +117,7 @@ public abstract class CodeListAdapter<ValueType extends CodeListAdapter<ValueTyp
         if (adapter == null) {
             return null;
         }
-        return CodeLists.valueOf(getCodeListClass(), adapter.proxy.identifier());
+        return Types.forCodeName(getCodeListClass(), adapter.proxy.identifier(), true);
     }
 
     /**
@@ -132,7 +132,7 @@ public abstract class CodeListAdapter<ValueType extends CodeListAdapter<ValueTyp
         if (value == null) {
             return null;
         }
-        return wrap(isEnum() ? new CodeListProxy(CodeLists.getCodeName(value))
+        return wrap(isEnum() ? new CodeListProxy(Types.getCodeName(value))
                              : new CodeListProxy(MarshalContext.current(), value));
     }
 

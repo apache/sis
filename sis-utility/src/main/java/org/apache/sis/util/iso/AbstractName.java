@@ -34,7 +34,7 @@ import org.apache.sis.internal.util.Objects;
 
 
 /**
- * A sequence of identifiers rooted within the context of a {@linkplain DefaultNameSpace namespace}.
+ * Base class for sequence of identifiers rooted within the context of a {@linkplain DefaultNameSpace namespace}.
  * Names are <em>immutable</em>. They may be {@linkplain #toFullyQualifiedName() fully qualified}
  * like {@code "org.opengis.util.Record"}, or they may be relative to a {@linkplain #scope() scope}
  * like {@code "util.Record"} in the {@code "org.opengis"} scope.

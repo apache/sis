@@ -32,6 +32,25 @@ import org.apache.sis.util.CharSequences;
  */
 public final class Utilities extends Static {
     /**
+     * Bit mask to isolate the sign bit of non-{@linkplain Double#isNaN(double) NaN} values in a
+     * {@code double}. For any real value, the following code evaluate to 0 if the given value is
+     * positive:
+     *
+     * {@preformat java
+     *     Double.doubleToRawLongBits(value) & SIGN_BIT_MASK;
+     * }
+     *
+     * Note that this idiom differentiates positive zero from negative zero.
+     * It should be used only when such difference matter.
+     *
+     * @see org.apache.sis.math.MathFunctions#isPositive(double)
+     * @see org.apache.sis.math.MathFunctions#isNegative(double)
+     * @see org.apache.sis.math.MathFunctions#isSameSign(double, double)
+     * @see org.apache.sis.math.MathFunctions#xorSign(double, double)
+     */
+    public static final long SIGN_BIT_MASK = Long.MIN_VALUE;
+
+    /**
      * Do not allow instantiation of this class.
      */
     private Utilities() {
