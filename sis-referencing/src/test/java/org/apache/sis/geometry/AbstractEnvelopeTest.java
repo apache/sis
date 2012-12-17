@@ -66,7 +66,7 @@ public final strictfp class AbstractEnvelopeTest extends TestCase {
                 return envelope;
             }
             case IMMUTABLE: {
-                // TODO return new ImmutableEnvelope(xmin, xmax, ymin, ymax, null);
+                return new ImmutableEnvelope(new double[] {xmin, ymin}, new double[] {xmax, ymax}, null);
             }
             case RECTANGLE: {
                 return new Envelope2D(xmin, ymin, xmax - xmin, ymax - ymin, null);

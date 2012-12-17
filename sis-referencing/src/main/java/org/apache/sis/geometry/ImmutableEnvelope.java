@@ -65,6 +65,23 @@ public final class ImmutableEnvelope extends ArrayEnvelope implements Serializab
     }
 
     /**
+     * Constructs an envelope defined by two sequences of ordinate values.
+     *
+     * @param  lowerCorner Lower ordinate values.
+     * @param  upperCorner Upper ordinate values.
+     * @param  crs         The CRS to assign to this envelope, or {@code null}.
+     * @throws MismatchedDimensionException If the two sequences do not have the same length, or
+     *         if the dimension of the given CRS is not equals to the dimension of the given corners.
+     */
+    public ImmutableEnvelope(final double[] lowerCorner, final double[] upperCorner,
+            final CoordinateReferenceSystem crs) throws MismatchedDimensionException
+    {
+        super(lowerCorner, upperCorner);
+        this.crs = crs;
+        AbstractDirectPosition.ensureDimensionMatch(crs, getDimension());
+    }
+
+    /**
      * Constructs a new envelope with the same data than the specified geographic bounding box.
      * The coordinate reference system is set to {@code "CRS:84"}.
      *
@@ -97,8 +114,8 @@ public final class ImmutableEnvelope extends ArrayEnvelope implements Serializab
      * <p>The main purpose of this method is to assign a non-null CRS when the envelope to
      * copy has a null CRS.</p>
      *
-     * @param envelope The envelope from which to copy ordinate values.
-     * @param crs      The CRS to assign to this envelope, or {@code null}.
+     * @param  envelope The envelope from which to copy ordinate values.
+     * @param  crs      The CRS to assign to this envelope, or {@code null}.
      * @throws MismatchedDimensionException If the dimension of the given CRS is not equals
      *         to the dimension of the given envelope.
      */
