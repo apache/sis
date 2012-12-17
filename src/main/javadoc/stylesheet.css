@@ -17,7 +17,7 @@ table.sis {
   border-width:     1pt;
   border-spacing:   0pt;
   margin:           12pt 0 12pt 0;
-  padding:          0;
+  padding:          0pt;
   width:            auto;
 }
 
@@ -56,10 +56,13 @@ table.sis tr td.sep {
 
 /*
  * Table without vertical space between rows and a little bit of space between columns.
- * Other properties are left to their default values. In particular, there is no border.
+ * This table has no border.
  */
 table.compact {
+  width:          auto;
+  border:         none;
   border-spacing: 0pt;
+  padding:        0pt;
 }
 
 table.compact tr td {

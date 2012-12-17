@@ -24,8 +24,9 @@ import java.text.Format;
 import java.text.ParseException;
 import java.io.Serializable;
 import net.jcip.annotations.Immutable;
-import org.apache.sis.util.Utilities;
 import org.apache.sis.math.MathFunctions;
+
+import static java.lang.Double.doubleToLongBits;
 
 
 /**
@@ -156,7 +157,7 @@ public class Angle implements Comparable<Angle>, Formattable, Serializable {
             return true;
         }
         if (object != null && getClass() == object.getClass()) {
-            return Utilities.equals(θ, ((Angle) object).θ);
+            return doubleToLongBits(θ) == doubleToLongBits(((Angle) object).θ);
         }
         return false;
     }

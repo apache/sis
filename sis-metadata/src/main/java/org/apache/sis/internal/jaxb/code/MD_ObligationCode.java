@@ -18,7 +18,7 @@ package org.apache.sis.internal.jaxb.code;
 
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import org.opengis.metadata.Obligation;
-import org.apache.sis.util.iso.CodeLists;
+import org.apache.sis.util.iso.Types;
 
 
 /**
@@ -40,7 +40,7 @@ public final class MD_ObligationCode extends XmlAdapter<String, Obligation> {
      */
     @Override
     public Obligation unmarshal(String value) {
-        return CodeLists.valueOf(Obligation.class, value);
+        return Types.forCodeName(Obligation.class, value, true);
     }
 
     /**

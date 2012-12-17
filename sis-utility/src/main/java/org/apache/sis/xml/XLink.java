@@ -44,7 +44,7 @@ import org.apache.sis.internal.util.Objects;
  * of whether a value is required (R) or optional (O)
  * (Source: <a href="http://www.w3.org/TR/xlink/">W3C</a>):
  *
- * <blockquote><table class="sis">
+ * <table class="sis">
  * <tr>
  *   <th> </th>
  *   <th width="14%">{@link XLink.Type#SIMPLE simple}</th>
@@ -64,7 +64,7 @@ import org.apache.sis.internal.util.Objects;
  *   <tr align="center"><td><b>{@link #getLabel() label}</b></td>     <td> </td><td> </td><td>O</td><td> </td><td>O</td><td> </td></tr>
  *   <tr align="center"><td><b>{@link #getFrom() from}</b></td>       <td> </td><td> </td><td> </td><td>O</td><td> </td><td> </td></tr>
  *   <tr align="center"><td><b>{@link #getTo() to}</b></td>           <td> </td><td> </td><td> </td><td>O</td><td> </td><td> </td></tr>
- * </table></blockquote>
+ * </table>
  *
  * When {@code xlink} attributes are found at unmarshalling time instead of an object definition,
  * those attributes are given to the {@link ReferenceResolver#resolve(MarshalContext, Class, XLink)}

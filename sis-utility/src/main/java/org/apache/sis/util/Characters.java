@@ -107,7 +107,7 @@ public final class Characters extends Static {
      * @param  c The character to test.
      * @return {@code true} if the given character is a superscript.
      */
-    public static boolean isSuperScript(final char c) {
+    public static boolean isSuperScript(final int c) {
         switch (c) {
             case '¹':      // Legacy values in "Latin-1 supplement" space: 00B9, 00B2 and 00B3.
             case '²':      // Those values are outside the normal [2070 … 207F] range.
@@ -130,7 +130,7 @@ public final class Characters extends Static {
      * @param  c The character to test.
      * @return {@code true} if the given character is a subscript.
      */
-    public static boolean isSubScript(final char c) {
+    public static boolean isSubScript(final int c) {
         return (c>='₀' && c<='₎');
     }
 

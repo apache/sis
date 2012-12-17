@@ -196,6 +196,21 @@ public final class Errors extends IndexedResourceBundle {
         public static final int MandatoryAttribute_2 = 22;
 
         /**
+         * The coordinate reference system must be the same for all objects.
+         */
+        public static final int MismatchedCRS = 57;
+
+        /**
+         * Mismatched object dimension: {0}D and {1}D.
+         */
+        public static final int MismatchedDimension_2 = 60;
+
+        /**
+         * Argument ‘{0}’ has {1} dimension{1,choice,1#|2#s}, while {2} was expected.
+         */
+        public static final int MismatchedDimension_3 = 58;
+
+        /**
          * Argument ‘{0}’ shall not be negative. The given value was {1}.
          */
         public static final int NegativeArgument_2 = 8;
@@ -226,6 +241,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int NonAngularUnit_1 = 46;
 
         /**
+         * Missing a ‘{1}’ parenthesis in “{0}”.
+         */
+        public static final int NonEquilibratedParenthesis_2 = 59;
+
+        /**
          * “{0}” is not a linear unit.
          */
         public static final int NonLinearUnit_1 = 47;
@@ -254,6 +274,11 @@ public final class Errors extends IndexedResourceBundle {
          * Argument ‘{0}’ shall not be null.
          */
         public static final int NullArgument_1 = 0;
+
+        /**
+         * Array length is {0}, while we expected an even length.
+         */
+        public static final int OddArrayLength_1 = 61;
 
         /**
          * Recursive call while creating an object for the “{0}” key.
