@@ -71,7 +71,7 @@ import java.util.Objects;
  * envelopes crossing the anti-meridian, like the red box below (the green box is the usual case).
  * The default implementation of methods listed in the right column can handle such cases.
  *
- * <center><table class="compact"><tr><td>
+ * <table class="compact" align="center"><tr><td>
  *   <img src="doc-files/AntiMeridian.png">
  * </td><td>
  * Supported methods:
@@ -84,7 +84,7 @@ import java.util.Objects;
  *   <li>{@link #contains(Envelope, boolean)}</li>
  *   <li>{@link #intersects(Envelope, boolean)}</li>
  * </ul>
- * </td></tr></table></center>
+ * </td></tr></table>
  *
  * {@section Note on positive and negative zeros}
  * The IEEE 754 standard defines two different values for positive zero and negative zero.

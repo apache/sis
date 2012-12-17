@@ -10,8 +10,7 @@
  * a light background color and a header with a darker background color. The header
  * also have a little bit more space, and a border is drawn around the table.
  */
-.contentContainer .description table.sis,
-.contentContainer .details     table.sis,
+.contentContainer .block table.sis,
 .contentContainer ul.blockList ul.blockList li.blockList table.sis
 {
   background-color: #F4F8FF;
@@ -20,12 +19,11 @@
   border-width:     1pt;
   border-spacing:   0pt;
   margin:           12pt 0 12pt 0;
-  padding:          0;
+  padding:          0pt;
   width:            auto;
 }
 
-.contentContainer .description table.sis tr th,
-.contentContainer .details     table.sis tr th
+.contentContainer .block table.sis tr th
 {
   background-color:    #B9DCFF;
   border-bottom-color: Black;
@@ -34,8 +32,7 @@
   padding:             3pt;
 }
 
-.contentContainer .description table.sis tr td,
-.contentContainer .details     table.sis tr td,
+.contentContainer .block table.sis tr td,
 .contentContainer ul.blockList li.blockList table.sis td
 {
   padding:        1.5pt 9pt;
@@ -45,23 +42,20 @@
 /*
  * Optionally add a line or column separator.
  */
-.contentContainer .description table.sis tr th.hsep,
-.contentContainer .details     table.sis tr th.hsep
+.contentContainer .block table.sis tr th.hsep
 {
   border-top-width: 1pt;
   border-top-style: solid;
 }
 
-.contentContainer .description table.sis tr th.sep,
-.contentContainer .details     table.sis tr th.sep
+.contentContainer .block table.sis tr th.sep
 {
   border-left-width: 1pt;
   border-left-style: solid;
   border-left-color: #819AB2;
 }
 
-.contentContainer .description table.sis tr td.sep,
-.contentContainer .details     table.sis tr td.sep
+.contentContainer .block table.sis tr td.sep
 {
   border-left-width: 1pt;
   border-left-style: solid;
@@ -70,16 +64,17 @@
 
 /*
  * Table without vertical space between rows and a little bit of space between columns.
- * Other properties are left to their default values. In particular, there is no border.
+ * This table has no border.
  */
-.contentContainer .description table.compact,
-.contentContainer .details     table.compact
+.contentContainer .block table.compact
 {
+  width:          auto;
+  border:         none;
   border-spacing: 0pt;
+  padding:        0pt;
 }
 
-.contentContainer .description table.compact tr td,
-.contentContainer .details     table.compact tr td
+.contentContainer .block table.compact tr td
 {
   padding-top:    0pt;
   padding-bottom: 0pt;
@@ -87,16 +82,14 @@
   padding-left:   3pt;
 }
 
-.contentContainer .description table.compact tr td.onright,
-.contentContainer .details     table.compact tr td.onright
+.contentContainer .block table.compact tr td.onright
 {
   padding-right: 1pt;
   text-align:    right;
   font-weight:   normal;
 }
 
-.contentContainer .description table.compact tr td.onleft,
-.contentContainer .details     table.compact tr td.onleft
+.contentContainer .block table.compact tr td.onleft
 {
   padding-left: 1pt;
   text-align:   left;

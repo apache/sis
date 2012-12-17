@@ -68,7 +68,7 @@ import static org.apache.sis.math.MathFunctions.isSameSign;
  * envelopes crossing the anti-meridian, like the red box below (the green box is the usual case).
  * The default implementation of methods listed in the right column can handle such cases.
  *
- * <center><table class="compact"><tr><td>
+ * <table class="compact" align="center"><tr><td>
  *   <img src="doc-files/AntiMeridian.png">
  * </td><td>
  * Supported methods:
@@ -85,7 +85,7 @@ import static org.apache.sis.math.MathFunctions.isSameSign;
  *   <li>{@link #add(Envelope)}</li>
  *   <li>{@link #add(DirectPosition)}</li>
  * </ul>
- * </td></tr></table></center>
+ * </td></tr></table>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)

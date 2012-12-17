@@ -69,7 +69,7 @@ import static org.apache.sis.geometry.AbstractEnvelope.isNegativeUnsafe;
  * {@linkplain #height height} field values. The default implementation of methods listed in the
  * right column can handle such cases.
  *
- * <center><table class="compact"><tr><td>
+ * <table class="compact" align="center"><tr><td>
  *   <img src="doc-files/AntiMeridian.png">
  * </td><td>
  * Supported methods:
@@ -87,7 +87,7 @@ import static org.apache.sis.geometry.AbstractEnvelope.isNegativeUnsafe;
  *   <li>{@link #add(Rectangle2D)}</li>
  *   <li>{@link #add(double,double)}</li>
  * </ul>
- * </td></tr></table></center>
+ * </td></tr></table>
  *
  * The {@link #getMinX()}, {@link #getMinY()}, {@link #getMaxX()}, {@link #getMaxY()},
  * {@link #getCenterX()}, {@link #getCenterY()}, {@link #getWidth()} and {@link #getHeight()}
