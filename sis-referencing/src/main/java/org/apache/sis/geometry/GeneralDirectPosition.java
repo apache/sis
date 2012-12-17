@@ -29,6 +29,9 @@ import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.util.resources.Errors;
 
+// JDK7 related
+import org.apache.sis.internal.util.Objects;
+
 
 /**
  * Holds the coordinates for a position within some coordinate reference system.
@@ -92,16 +95,23 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
 
     /**
      * Constructs a position with the specified ordinates.
-     * The {@code ordinates} array will be copied.
+     * This constructor assigns the given array directly (without clone) to the {@link #ordinates} field.
+     * Consequently, callers shall not recycle the same array for creating many instances.
      *
-     * @param ordinates The ordinate values to copy.
+     * {@note The array is not cloned because this is usually not needed, especially in the context
+     *        of variable argument lengths since the array is often created implicitly. Furthermore
+     *        the <code>ordinates</code> field is public, so cloning the array would not protect
+     *        the state of this object anyway.}
+     *
+     * @param ordinates The ordinate values. This array is <strong>not</strong> cloned.
      */
     public GeneralDirectPosition(final double... ordinates) {
-        this.ordinates = ordinates.clone();
+        this.ordinates = ordinates;
     }
 
     /**
      * Constructs a position initialized to the same values than the specified point.
+     * This is a copy constructor.
      *
      * @param point The position to copy.
      */
@@ -276,10 +286,7 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
      */
     @Override
     public int hashCode() {
-        int code = Arrays.hashCode(ordinates);
-        if (crs != null) {
-            code += crs.hashCode();
-        }
+        final int code = Arrays.hashCode(ordinates) + Objects.hashCode(getCoordinateReferenceSystem());
         assert code == super.hashCode();
         return code;
     }

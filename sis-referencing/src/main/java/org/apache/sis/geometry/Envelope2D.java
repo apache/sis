@@ -282,8 +282,9 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Cloneabl
     }
 
     /**
-     * A coordinate position consisting of all the starting ordinates for each
-     * dimension for all points within the {@code Envelope}.
+     * The limits in the direction of decreasing ordinate values for the two dimensions.
+     * This is typically a coordinate position consisting of the minimal ordinates for
+     * the two dimensions for all points within the {@code Envelope}.
      *
      * {@note The <cite>Web Coverage Service</cite> (WCS) 1.1 specification uses an extended
      * interpretation of the bounding box definition. In a WCS 1.1 data structure, the lower
@@ -301,8 +302,9 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Cloneabl
     }
 
     /**
-     * A coordinate position consisting of all the ending ordinates for each
-     * dimension for all points within the {@code Envelope}.
+     * The limits in the direction of increasing ordinate values for the two dimensions.
+     * This is typically a coordinate position consisting of the maximal ordinates for
+     * the two dimensions for all points within the {@code Envelope}.
      *
      * {@note The <cite>Web Coverage Service</cite> (WCS) 1.1 specification uses an extended
      * interpretation of the bounding box definition. In a WCS 1.1 data structure, the upper
