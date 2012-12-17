@@ -51,7 +51,7 @@ import org.apache.sis.internal.util.Objects;
  * Parses and formats angles according a specified pattern. The pattern is a string
  * containing any characters, with a special meaning for the following characters:
  *
- * <blockquote><table class="sis">
+ * <table class="sis">
  *   <tr><th>Symbol</th><th>Meaning</th></tr>
  *   <tr><td>{@code D}</td><td>The integer part of degrees</td></tr>
  *   <tr><td>{@code d}</td><td>The fractional part of degrees</td></tr>
@@ -61,7 +61,7 @@ import org.apache.sis.internal.util.Objects;
  *   <tr><td>{@code s}</td><td>The fractional part of seconds</td></tr>
  *   <tr><td>{@code #}</td><td>Fraction digits shown only if non-zero</td></tr>
  *   <tr><td>{@code .}</td><td>The decimal separator</td></tr>
- * </table></blockquote>
+ * </table>
  *
  * Upper-case letters {@code D}, {@code M} and {@code S} stand for the integer parts of degrees,
  * minutes and seconds respectively. They shall appear in this order. For example {@code M'D} is
@@ -87,7 +87,7 @@ import org.apache.sis.internal.util.Objects;
  *
  * <p>The following table gives some pattern examples:</p>
  *
- * <blockquote><table class="sis">
+ * <table class="sis">
  *   <tr><th>Pattern           </th>  <th>Example   </th></tr>
  *   <tr><td>{@code DD°MM′SS″ }</td>  <td>48°30′00″ </td></tr>
  *   <tr><td>{@code DD°MM′    }</td>  <td>48°30′    </td></tr>
@@ -95,7 +95,7 @@ import org.apache.sis.internal.util.Objects;
  *   <tr><td>{@code DD.###    }</td>  <td>48.5      </td></tr>
  *   <tr><td>{@code DDMM      }</td>  <td>4830      </td></tr>
  *   <tr><td>{@code DDMMSS    }</td>  <td>483000    </td></tr>
- * </table></blockquote>
+ * </table>
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @since   0.3 (derived from geotk-1.0)

@@ -17,7 +17,6 @@
 package org.apache.sis.math;
 
 import java.io.Serializable;
-import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ArgumentChecks;
 
 import static java.lang.Math.*;
@@ -505,10 +504,10 @@ public class Statistics implements Cloneable, Serializable {
         if (object != null && getClass() == object.getClass()) {
             final Statistics cast = (Statistics) object;
             return count == cast.count && countNaN == cast.countNaN
-                    && Utilities.equals(minimum,   cast.minimum)
-                    && Utilities.equals(maximum,   cast.maximum)
-                    && Utilities.equals(sum,       cast.sum)
-                    && Utilities.equals(squareSum, cast.squareSum);
+                    && doubleToLongBits(minimum)   == doubleToLongBits(cast.minimum)
+                    && doubleToLongBits(maximum)   == doubleToLongBits(cast.maximum)
+                    && doubleToLongBits(sum)       == doubleToLongBits(cast.sum)
+                    && doubleToLongBits(squareSum) == doubleToLongBits(cast.squareSum);
         }
         return false;
     }

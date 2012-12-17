@@ -32,7 +32,7 @@ package org.apache.sis.xml;
  * shows a {@code CI_Citation} fragment with an ordinary {@code CI_Series} element on the left side,
  * and an unknown {@code CI_Series} element on the right side:</p>
  *
- * <blockquote><table class="sis" border="1"><tr>
+ * <table class="sis"><tr>
  *   <th>Normal {@code Series} element</th>
  *   <th>Unknown {@code Series} element</th>
  * </tr><tr><td>
@@ -51,7 +51,7 @@ package org.apache.sis.xml;
  *     <gmd:series nilReason="unknown"/>
  *   </gmd:CI_Citation>
  * }
- * </td></tr></table></blockquote>
+ * </td></tr></table>
  *
  * If the {@code CI_Series} element was completely omitted, then {@link org.opengis.metadata.citation.Citation#getSeries()}
  * method would return {@code null} in Apache SIS implementation. But since a {@code nilReason} is provided,

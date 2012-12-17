@@ -22,7 +22,6 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Locale;
 import net.jcip.annotations.Immutable;
-import org.opengis.util.InternationalString;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
@@ -31,12 +30,12 @@ import org.apache.sis.internal.util.Objects;
 
 
 /**
- * An {@linkplain InternationalString international string} consisting of a single string
- * for all {@linkplain Locale locales}. For such a particular case, this implementation is
- * more effective than other implementations provided in this package.
+ * An international string consisting of a single string for all locales.
+ * For such a particular case, this implementation is more effective than
+ * other implementations provided in this package.
  *
  * {@section Instantiation}
- * If the characters sequence to wrap is known to be a {@link String} instance, then
+ * If the characters sequence to wrap is known to be a {@code String} instance, then
  * the {@link #SimpleInternationalString(String)} constructor is okay. Otherwise use
  * the {@link Types#toInternationalString(CharSequence)} method.
  *
@@ -54,7 +53,7 @@ public class SimpleInternationalString extends AbstractInternationalString imple
 
     /**
      * Creates a new instance from the given string. If the type of the text
-     * to wrap is the more generic {@link CharSequence} interface, then use
+     * to wrap is the more generic {@code CharSequence} interface, then use
      * the {@link Types#toInternationalString(CharSequence)} method instead.
      *
      * @param text The string for all locales.

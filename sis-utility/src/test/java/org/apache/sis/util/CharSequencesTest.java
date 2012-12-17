@@ -100,6 +100,39 @@ public final strictfp class CharSequencesTest extends TestCase {
     }
 
     /**
+     * Tests the {@link CharSequences#indexOf(CharSequence, int, int)} and
+     * {@link CharSequences#lastIndexOf(CharSequence, int, int)} methods.
+     * We test two time with different kind of character sequences, in order
+     * to test the {@link String} optimization case.
+     */
+    @Test
+    public void testIndexOfChar() {
+        for (int i=0; i<2; i++) {
+            CharSequence string = "An ordinary sentence.";
+            switch (i) {
+                case 0:  /* Test directly on the String instance. */  break;
+                case 1:  string = new StringBuilder((String) string); break;
+                default: throw new AssertionError(i);
+            }
+            final int length = string.length();
+            assertEquals(-1,           indexOf(string, 'x', 0, length));
+            assertEquals(-1,       lastIndexOf(string, 'x', 0, length));
+            assertEquals( 0,           indexOf(string, 'A', 0, length));
+            assertEquals( 0,       lastIndexOf(string, 'A', 0, length));
+            assertEquals(-1,           indexOf(string, 'A', 1, length));
+            assertEquals(-1,       lastIndexOf(string, 'A', 1, length));
+            assertEquals(length-1,     indexOf(string, '.', 0, length));
+            assertEquals(length-1, lastIndexOf(string, '.', 0, length));
+            assertEquals(-1,           indexOf(string, '.', 0, length-1));
+            assertEquals(-1,       lastIndexOf(string, '.', 0, length-1));
+            assertEquals(10,           indexOf(string, 'y', 0, length));
+            assertEquals(10,       lastIndexOf(string, 'y', 0, length));
+            assertEquals(13,           indexOf(string, 'e', 0, length));
+            assertEquals(19,       lastIndexOf(string, 'e', 0, length));
+        }
+    }
+
+    /**
      * Tests the {@link CharSequences#indexOfLineStart(CharSequence, int, int)} method.
      */
     @Test
@@ -118,6 +151,7 @@ public final strictfp class CharSequencesTest extends TestCase {
      * Tests {@link CharSequences#split(CharSequence, char)}.
      */
     @Test
+    @DependsOnMethod("testIndexOfChar")
     public void testSplit() {
         assertArrayEquals(new String[] {"lundi", "mardi", "", "mercredi"}, split("lundi , mardi,,mercredi ", ','));
         assertArrayEquals(new String[] {"lundi", "mardi", "", "mercredi"}, split("lundi \n mardi\r\n\nmercredi ", '\n'));
@@ -127,6 +161,7 @@ public final strictfp class CharSequencesTest extends TestCase {
      * Tests the {@link CharSequences#splitOnEOL(CharSequence)} method.
      */
     @Test
+    @DependsOnMethod("testIndexOfChar")
     public void testSplitOnEOL() {
         final CharSequence[] splitted = splitOnEOL("\nOne\r\nTwo\rThree \rFour\n Five\n\r Six \n");
         assertArrayEquals(new String[] {
