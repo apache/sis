@@ -22,7 +22,6 @@ import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.MissingResourceException;
 import net.jcip.annotations.Immutable;
-import org.opengis.util.InternationalString;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
@@ -31,9 +30,9 @@ import java.util.Objects;
 
 
 /**
- * An {@linkplain InternationalString international string} backed by a {@linkplain ResourceBundle
- * resource bundle}. A resource bundle can be a Java class or a {@linkplain Properties properties}
- * file, one for each language. The constructor expects the fully qualified class name of the base
+ * An international string backed by a {@linkplain ResourceBundle resource bundle}.
+ * A resource bundle can be a Java class or a {@linkplain Properties properties} file,
+ * one for each language. The constructor expects the fully qualified class name of the base
  * resource bundle (the one used when no resource was found in the client's language). The appropriate
  * resource bundle is loaded at runtime for the client's language by looking for a class or a
  * properties file with the right suffix, for example {@code "_en"} for English or {@code "_fr"}

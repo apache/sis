@@ -61,7 +61,6 @@ import static org.apache.sis.util.iso.DefaultNameSpace.DEFAULT_SEPARATOR_STRING;
  *
  * <ul>
  *   <li>{@link #parseGenericName(NameSpace, CharSequence)}</li>
- *   <li>{@link #toArray(Object)} – SIS extension, not in GeoAPI interface</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
