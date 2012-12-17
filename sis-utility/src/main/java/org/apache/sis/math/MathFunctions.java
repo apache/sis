@@ -29,6 +29,7 @@ import static java.lang.Double.doubleToRawLongBits;
 import static org.apache.sis.util.Arrays.resize;
 import static org.apache.sis.util.Arrays.isSorted;
 import static org.apache.sis.util.Arrays.EMPTY_INT;
+import static org.apache.sis.internal.util.Utilities.SIGN_BIT_MASK;
 
 
 /**
@@ -80,25 +81,6 @@ public final class MathFunctions extends Static {
         // Do not add more elements, unless we verified that 1/x is accurate.
         // Last time we tried, it was not accurate anymore starting at 1E+23.
     };
-
-    /**
-     * Bit mask to isolate the sign bit of non-{@linkplain Double#isNaN(double) NaN} values in a
-     * {@code double}. For any real value, the following code evaluate to 0 if the given value is
-     * positive:
-     *
-     * {@preformat java
-     *     Double.doubleToRawLongBits(value) & SIGN_BIT_MASK;
-     * }
-     *
-     * Note that this idiom differentiates positive zero from negative zero.
-     * It should be used only when such difference matter.
-     *
-     * @see #isPositive(double)
-     * @see #isNegative(double)
-     * @see #isSameSign(double, double)
-     * @see #xorSign(double, double)
-     */
-    private static final long SIGN_BIT_MASK = Long.MIN_VALUE;
 
     /**
      * The minimal ordinal value for {@code NaN} numbers created by {@link #toNanFloat(int)}.
@@ -559,6 +541,50 @@ public final class MathFunctions extends Static {
         if (x > 0) return (byte) +1;
         if (x < 0) return (byte) -1;
         else       return (byte)  0;
+    }
+
+    /**
+     * Returns {@code true} if the given values are {@linkplain Float#equals(Object) equal}
+     * or if their difference is not greater than the given threshold. More specifically:
+     *
+     * <ul>
+     *   <li>If both values are {@linkplain Float#POSITIVE_INFINITY positive infinity}, or
+     *       if both values are {@linkplain Float#NEGATIVE_INFINITY negative infinity},
+     *       then this method returns {@code true}.</li>
+     *   <li>If both values {@linkplain Float#isNaN(float) are NaN}, then this method returns {@code true}.
+     *       Note that this method does not differentiate the various NaN values.</li>
+     *   <li>Otherwise, this method returns the result of the {@code abs(v1 - v2) <= ε} comparison.</li>
+     * </ul>
+     *
+     * @param  v1 The first value to compare.
+     * @param  v2 The second value to compare.
+     * @param  ε  The tolerance threshold, which must be positive.
+     * @return {@code true} If both values are equal given the tolerance threshold.
+     */
+    public static boolean epsilonEqual(final float v1, final float v2, final float ε) {
+        return (Math.abs(v1 - v2) <= ε) || Float.floatToIntBits(v1) == Float.floatToIntBits(v2);
+    }
+
+    /**
+     * Returns {@code true} if the given values are {@linkplain Double#equals(Object) equal}
+     * or if their difference is not greater than the given threshold. More specifically:
+     *
+     * <ul>
+     *   <li>If both values are {@linkplain Double#POSITIVE_INFINITY positive infinity}, or
+     *       if both values are {@linkplain Double#NEGATIVE_INFINITY negative infinity},
+     *       then this method returns {@code true}.</li>
+     *   <li>If both values {@linkplain Double#isNaN(double) are NaN}, then this method returns {@code true}.
+     *       Note that this method does not differentiate the various NaN values.</li>
+     *   <li>Otherwise, this method returns the result of the {@code abs(v1 - v2) <= ε} comparison.</li>
+     * </ul>
+     *
+     * @param  v1 The first value to compare.
+     * @param  v2 The second value to compare.
+     * @param  ε  The tolerance threshold, which must be positive.
+     * @return {@code true} If both values are equal given the tolerance threshold.
+     */
+    public static boolean epsilonEqual(final double v1, final double v2, final double ε) {
+        return (Math.abs(v1 - v2) <= ε) || Double.doubleToLongBits(v1) == Double.doubleToLongBits(v2);
     }
 
     /**

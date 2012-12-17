@@ -38,9 +38,9 @@ import org.apache.sis.internal.util.Objects;
 
 
 /**
- * An {@linkplain InternationalString international string} using a {@linkplain Map map}
- * of strings for different {@linkplain Locale locales}. Strings for new locales can be
- * {@linkplain #add(Locale, String) added}, but existing strings can not be removed or modified.
+ * An international string using a {@linkplain Map map} of strings for different locales.
+ * Strings for new locales can be {@linkplain #add(Locale, String) added},
+ * but existing strings can not be removed or modified.
  * This behavior is a compromise between making constructions easier, and being suitable for
  * use in immutable objects.
  *
@@ -79,7 +79,7 @@ public class DefaultInternationalString extends AbstractInternationalString impl
      * Creates an international string initialized with the given string.
      * Additional localized strings can been added using one of {@link #add add(…)} methods.
      * The string specified to this constructor is the one that will be returned if no localized
-     * string is found for the {@link Locale} argument in a call to {@link #toString(Locale)}.
+     * string is found for the {@code Locale} argument in a call to {@link #toString(Locale)}.
      *
      * @param string The string in no specific locale, or {@code null} if none.
      */
@@ -152,9 +152,8 @@ public class DefaultInternationalString extends AbstractInternationalString impl
 
     /**
      * Adds a string for the given property key. This is a convenience method for constructing an
-     * {@code DefaultInternationalString} during iteration through the
-     * {@linkplain java.util.Map.Entry entries} in a {@link Map}. It infers the {@link Locale}
-     * from the property {@code key}, using the following steps:
+     * {@code DefaultInternationalString} during iteration through the entries in a {@link Map}.
+     * It infers the {@code Locale} from the property {@code key}, using the following steps:
      *
      * <ul>
      *   <li>If the {@code key} does not start with the specified {@code prefix}, then
