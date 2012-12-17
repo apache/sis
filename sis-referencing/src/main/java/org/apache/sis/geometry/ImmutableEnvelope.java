@@ -50,11 +50,11 @@ public final class ImmutableEnvelope extends ArrayEnvelope implements Serializab
     private static final long serialVersionUID = 5593936512712449234L;
 
     /**
-     * Constructs an envelope defined by two direct positions.
+     * Constructs an envelope defined by two corners given as direct positions.
      * The envelope CRS will be the CRS of the given positions.
      *
-     * @param  lowerCorner The lower corner.
-     * @param  upperCorner The upper corner.
+     * @param  lowerCorner The limits in the direction of decreasing ordinate values for each dimension.
+     * @param  upperCorner The limits in the direction of increasing ordinate values for each dimension.
      * @throws MismatchedDimensionException If the two positions do not have the same dimension.
      * @throws MismatchedReferenceSystemException If the CRS of the two position are not equal.
      */
@@ -65,10 +65,10 @@ public final class ImmutableEnvelope extends ArrayEnvelope implements Serializab
     }
 
     /**
-     * Constructs an envelope defined by two sequences of ordinate values.
+     * Constructs an envelope defined by two corners given as sequences of ordinate values.
      *
-     * @param  lowerCorner Lower ordinate values.
-     * @param  upperCorner Upper ordinate values.
+     * @param  lowerCorner The limits in the direction of decreasing ordinate values for each dimension.
+     * @param  upperCorner The limits in the direction of increasing ordinate values for each dimension.
      * @param  crs         The CRS to assign to this envelope, or {@code null}.
      * @throws MismatchedDimensionException If the two sequences do not have the same length, or
      *         if the dimension of the given CRS is not equals to the dimension of the given corners.
