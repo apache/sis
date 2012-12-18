@@ -20,6 +20,7 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
+import static org.opengis.test.Validators.*;
 import static org.apache.sis.referencing.Assert.*;
 import static org.apache.sis.geometry.AbstractEnvelopeTest.WGS84;
 
@@ -41,9 +42,11 @@ public final strictfp class ImmutableEnvelopeTest extends TestCase {
      */
     @Test
     public void testSerialization() {
-        final ImmutableEnvelope envelope = new ImmutableEnvelope(
+        final ImmutableEnvelope e1 = new ImmutableEnvelope(
                 new double[] {-20, -10},
                 new double[] { 20,  10}, WGS84);
-        assertNotSame(envelope, assertSerializedEquals(envelope));
+        final ImmutableEnvelope e2 = assertSerializedEquals(e1);
+        assertNotSame(e1, e2);
+        validate(e2);
     }
 }
