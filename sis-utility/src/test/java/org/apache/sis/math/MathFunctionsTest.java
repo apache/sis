@@ -84,6 +84,15 @@ public final strictfp class MathFunctionsTest extends TestCase {
     }
 
     /**
+     * Tests {@link MathFunctions#isSimplePrecision(double[])}.
+     */
+    @Test
+    public void testIsSimplePrecision() {
+        assertTrue (isSimplePrecision(2, 0.5, 0.25, Double.NaN, Double.POSITIVE_INFINITY));
+        assertFalse(isSimplePrecision(2, 0.5, 1.0 / 3));
+    }
+
+    /**
      * Tests {@link MathFunctions#fractionDigitsForDelta(double, boolean)}.
      */
     @Test
