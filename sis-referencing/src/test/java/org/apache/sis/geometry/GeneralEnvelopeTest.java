@@ -434,7 +434,7 @@ public final strictfp class GeneralEnvelopeTest extends TestCase {
         assertFalse(e1.getLowerCorner().equals(e1.getUpperCorner()));
         /*
          * Creates a new envelope initialized with the same
-         * coordinate values. The two envelope should be equals.
+         * coordinate values. The two envelope shall be equal.
          */
         final GeneralEnvelope e2 = new GeneralEnvelope(e1);
         assertPositionEquals(e1.getLowerCorner(), e2.getLowerCorner());
@@ -447,7 +447,7 @@ public final strictfp class GeneralEnvelopeTest extends TestCase {
         assertTrue   (e1.equals(e2, EPS, false));
         assertEquals (e1.hashCode(), e2.hashCode());
         /*
-         * Offset slightly some coordinate value. Should not be equals anymore,
+         * Offset slightly some coordinate value. Should not be equal anymore,
          * except when comparing with a tolerance value.
          */
         e2.setRange(2, e2.getLower(2) + 3E-5, e2.getUpper(2) - 3E-5);

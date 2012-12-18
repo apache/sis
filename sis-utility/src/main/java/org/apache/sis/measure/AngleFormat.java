@@ -169,7 +169,7 @@ public class AngleFormat extends Format implements Localized {
 
     /**
      * Symbols for degrees (0), minutes (1), seconds (2) and optional fraction digits (3).
-     * The index of each symbol shall be equals to the corresponding {@code *_FIELD} constant.
+     * The index of each symbol shall be equal to the corresponding {@code *_FIELD} constant.
      */
     private static final char[] SYMBOLS = {'D', 'M', 'S', '#'};
 
