@@ -27,6 +27,8 @@ import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.util.resources.Errors;
 
+import static org.apache.sis.math.MathFunctions.isSimplePrecision;
+
 
 /**
  * Holds the coordinates for a one-dimensional position within some coordinate reference system.
@@ -202,6 +204,22 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
         ensureDimensionMatch("position", position.getDimension(), 1);
         setCoordinateReferenceSystem(position.getCoordinateReferenceSystem());
         ordinate = position.getOrdinate(0);
+    }
+
+    /**
+     * Formats this position in the <cite>Well Known Text</cite> (WKT) format.
+     * The output is like below:
+     *
+     * {@preformat wkt
+     *   POINT(ordinate)
+     * }
+     *
+     * The string returned by this method can be {@linkplain #DirectPosition1D(CharSequence) parsed}
+     * by the {@code DirectPosition1D} constructor.
+     */
+    @Override
+    public String toString() {
+        return toString(this, isSimplePrecision(ordinate));
     }
 
     /**

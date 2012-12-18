@@ -28,6 +28,7 @@ import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.math.MathFunctions;
 
 // JDK7 related
 import java.util.Objects;
@@ -260,6 +261,14 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
                 ordinates[i] = position.getOrdinate(i);
             }
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String toString() {
+        return toString(this, MathFunctions.isSimplePrecision(ordinates));
     }
 
     /**

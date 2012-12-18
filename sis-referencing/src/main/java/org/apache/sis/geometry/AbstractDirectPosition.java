@@ -176,15 +176,39 @@ public abstract class AbstractDirectPosition implements DirectPosition {
      */
     @Override
     public String toString() {
-        final StringBuilder buffer = new StringBuilder(32).append("POINT(");
-        final int dimension = getDimension();
-        for (int i=0; i<dimension; i++) {
-            if (i != 0) {
-                buffer.append(' ');
+        return toString(this, false);
+    }
+
+    /**
+     * Implementation of the public {@link #toString()} and {@link Envelope2D#toString()} methods
+     * for formatting a {@code POINT} element from a direct position in <cite>Well Known Text</cite>
+     * (WKT) format.
+     *
+     * @param  position The position to format.
+     * @param  isSimplePrecision {@code true} if every ordinate values can be casted to {@code float}.
+     * @return The point as a {@code POINT} in WKT format.
+     */
+    static String toString(final DirectPosition position, final boolean isSimplePrecision) {
+        final StringBuilder buffer = new StringBuilder(32).append("POINT");
+        final int dimension = position.getDimension();
+        if (dimension == 0) {
+            buffer.append("()");
+        } else {
+            char separator = '(';
+            for (int i=0; i<dimension; i++) {
+                buffer.append(separator);
+                final double ordinate = position.getOrdinate(i);
+                if (isSimplePrecision) {
+                    buffer.append((float) ordinate);
+                } else {
+                    buffer.append(ordinate);
+                }
+                trimFractionalPart(buffer);
+                separator = ' ';
             }
-            trimFractionalPart(buffer.append(getOrdinate(i)));
+            buffer.append(')');
         }
-        return buffer.append(')').toString();
+        return buffer.toString();
     }
 
     /**

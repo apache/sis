@@ -982,6 +982,6 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Cloneabl
      */
     @Override
     public String toString() {
-        return AbstractEnvelope.toString(this);
+        return AbstractEnvelope.toString(this, false);
     }
 }

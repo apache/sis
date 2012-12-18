@@ -914,7 +914,7 @@ public abstract class AbstractEnvelope implements Envelope {
      */
     @Override
     public String toString() {
-        return toString(this);
+        return toString(this, false);
     }
 
     /**
@@ -922,28 +922,37 @@ public abstract class AbstractEnvelope implements Envelope {
      * for formatting a {@code BOX} element from an envelope in <cite>Well Known Text</cite> (WKT) format.
      *
      * @param  envelope The envelope to format.
+     * @param  isSimplePrecision {@code true} if every lower and upper corner values can be casted to {@code float}.
      * @return The envelope as a {@code BOX2D} or {@code BOX3D} (most typical dimensions) in WKT format.
      *
      * @see GeneralEnvelope#GeneralEnvelope(String)
      * @see org.apache.sis.measure.CoordinateFormat
      * @see org.apache.sis.io.wkt
      */
-    static String toString(final Envelope envelope) {
-        final int            dimension   = envelope.getDimension();
-        final DirectPosition lowerCorner = envelope.getLowerCorner();
-        final DirectPosition upperCorner = envelope.getUpperCorner();
-        final StringBuilder  buffer = new StringBuilder(64).append("BOX").append(dimension).append("D(");
-        for (int i=0; i<dimension; i++) {
-            if (i != 0) {
-                buffer.append(' ');
-            }
-            trimFractionalPart(buffer.append(lowerCorner.getOrdinate(i)));
+    static String toString(final Envelope envelope, final boolean isSimplePrecision) {
+        final int dimension = envelope.getDimension();
+        final StringBuilder buffer = new StringBuilder(64).append("BOX").append(dimension).append('D');
+        if (dimension == 0) {
+            buffer.append("()");
+        } else {
+            final DirectPosition lowerCorner = envelope.getLowerCorner();
+            final DirectPosition upperCorner = envelope.getUpperCorner();
+            boolean isUpper = false;
+            do { // Executed exactly twice.
+                for (int i=0; i<dimension; i++) {
+                    buffer.append(i == 0 && !isUpper ? '(' : ' ');
+                    final double ordinate = (isUpper ? upperCorner : lowerCorner).getOrdinate(i);
+                    if (isSimplePrecision) {
+                        buffer.append((float) ordinate);
+                    } else {
+                        buffer.append(ordinate);
+                    }
+                    trimFractionalPart(buffer);
+                }
+                buffer.append(isUpper ? ')' : ',');
+            } while ((isUpper = !isUpper) == true);
         }
-        buffer.append(',');
-        for (int i=0; i<dimension; i++) {
-            trimFractionalPart(buffer.append(' ').append(upperCorner.getOrdinate(i)));
-        }
-        return buffer.append(')').toString();
+        return buffer.toString();
     }
 
     /**
