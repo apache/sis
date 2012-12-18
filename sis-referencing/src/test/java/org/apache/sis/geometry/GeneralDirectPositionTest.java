@@ -18,6 +18,7 @@ package org.apache.sis.geometry;
 
 import java.util.Arrays;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
@@ -32,6 +33,7 @@ import static org.opengis.test.Validators.*;
  * @version 0.3
  * @module
  */
+@DependsOn(AbstractDirectPositionTest.class)
 public final strictfp class GeneralDirectPositionTest extends TestCase {
     /**
      * Tests the {@link GeneralDirectPosition#toString()} method.

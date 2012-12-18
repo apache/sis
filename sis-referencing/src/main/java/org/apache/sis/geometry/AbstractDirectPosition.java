@@ -161,6 +161,25 @@ public abstract class AbstractDirectPosition implements DirectPosition {
     }
 
     /**
+     * Returns {@code true} if every values in the given {@code double} array could be casted
+     * to the {@code float} type without precision lost. This method treats all {@code NaN} values
+     * as equal.
+     *
+     * @param  values The value to test for their precision.
+     * @return {@code true} if every values can be casted to the {@code float} type without precision lost.
+     *
+     * @see #toString(DirectPosition, boolean)
+     */
+    static boolean isSimplePrecision(final double... values) {
+        for (final double value : values) {
+            if (Double.doubleToLongBits(value) != Double.doubleToLongBits((float) value)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Formats this position in the <cite>Well Known Text</cite> (WKT) format.
      * The returned string is like below, where {@code x₀}, {@code x₁}, {@code x₂}, <i>etc.</i>
      * are the ordinate values at index 0, 1, 2, <i>etc.</i>:
@@ -187,6 +206,8 @@ public abstract class AbstractDirectPosition implements DirectPosition {
      * @param  position The position to format.
      * @param  isSimplePrecision {@code true} if every ordinate values can be casted to {@code float}.
      * @return The point as a {@code POINT} in WKT format.
+     *
+     * @see #isSimplePrecision(double[])
      */
     static String toString(final DirectPosition position, final boolean isSimplePrecision) {
         final StringBuilder buffer = new StringBuilder(32).append("POINT");

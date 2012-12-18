@@ -27,8 +27,6 @@ import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.util.resources.Errors;
 
-import static org.apache.sis.math.MathFunctions.isSimplePrecision;
-
 
 /**
  * Holds the coordinates for a one-dimensional position within some coordinate reference system.
@@ -219,7 +217,7 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
      */
     @Override
     public String toString() {
-        return toString(this, isSimplePrecision(ordinate));
+        return toString(this, ordinate == (float) ordinate);
     }
 
     /**

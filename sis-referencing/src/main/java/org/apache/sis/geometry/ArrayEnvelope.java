@@ -38,7 +38,6 @@ import org.apache.sis.referencing.CRS;
 import static org.apache.sis.util.Arrays.resize;
 import static org.apache.sis.util.ArgumentChecks.*;
 import static org.apache.sis.math.MathFunctions.isNegative;
-import static org.apache.sis.math.MathFunctions.isSimplePrecision;
 import static org.apache.sis.internal.referencing.Utilities.isPoleToPole;
 
 // Related to JDK7
@@ -481,6 +480,6 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
      */
     @Override
     public String toString() {
-        return toString(this, isSimplePrecision(ordinates));
+        return toString(this, AbstractDirectPosition.isSimplePrecision(ordinates));
     }
 }

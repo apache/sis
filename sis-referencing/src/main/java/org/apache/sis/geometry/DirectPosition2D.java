@@ -25,7 +25,6 @@ import org.apache.sis.util.resources.Errors;
 
 import static java.lang.Double.doubleToLongBits;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-import static org.apache.sis.math.MathFunctions.isSimplePrecision;
 
 // Following imports are needed because we can't extend AbstractDirectPosition.
 // We want to write this class as if it was an AbstractDirectPosition subclass.
@@ -296,7 +295,7 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
      */
     @Override
     public String toString() {
-        return AbstractDirectPosition.toString(this, isSimplePrecision(x, y));
+        return AbstractDirectPosition.toString(this, AbstractDirectPosition.isSimplePrecision(x, y));
     }
 
     /**

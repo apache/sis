@@ -197,23 +197,6 @@ public final class MathFunctions extends Static {
     }
 
     /**
-     * Returns {@code true} if every values in the given {@code double} array could be casted
-     * to the {@code float} type without precision lost. This method treats all {@code NaN} values
-     * as equal.
-     *
-     * @param  values The value to test for their precision.
-     * @return {@code true} if every values can be casted to the {@code float} type without precision lost.
-     */
-    public static boolean isSimplePrecision(final double... values) {
-        for (final double value : values) {
-            if (Double.doubleToLongBits(value) != Double.doubleToLongBits((float) value)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
      * Returns the number of fraction digits needed for formatting in base 10 numbers of the given
      * accuracy. If the {@code strict} argument is {@code true}, then for any given {@code accuracy}
      * this method returns a value <var>n</var> such as the difference between adjacent numbers
