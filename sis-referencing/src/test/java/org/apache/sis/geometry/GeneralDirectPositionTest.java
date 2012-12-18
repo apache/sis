@@ -21,6 +21,7 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
+import static org.opengis.test.Validators.*;
 
 
 /**
@@ -37,7 +38,9 @@ public final strictfp class GeneralDirectPositionTest extends TestCase {
      */
     @Test
     public void testWktFormatting() {
-        assertEquals("POINT(6 10 2)", new GeneralDirectPosition(6, 10, 2).toString());
+        final GeneralDirectPosition position = new GeneralDirectPosition(6, 10, 2);
+        assertEquals("POINT(6 10 2)", position.toString());
+        validate(position);
     }
 
     /**
@@ -94,6 +97,7 @@ public final strictfp class GeneralDirectPositionTest extends TestCase {
         assertEquals ("Expected the same CRS and ordinates.", p1, p2);
         assertTrue   ("Expected the same ordinates.", Arrays.equals(p1.ordinates, p2.ordinates));
         assertNotSame("the ordinates array should have been cloned.", p1.ordinates, p2.ordinates);
+        validate(p2);
     }
 
     /**
@@ -101,7 +105,9 @@ public final strictfp class GeneralDirectPositionTest extends TestCase {
      */
     @Test
     public void testSerialize() {
-        final GeneralDirectPosition p = new GeneralDirectPosition(12, -20, 4, 9);
-        assertNotSame(p, assertSerializedEquals(p));
+        final GeneralDirectPosition p1 = new GeneralDirectPosition(12, -20, 4, 9);
+        final GeneralDirectPosition p2 = assertSerializedEquals(p1);
+        assertNotSame(p1, p2);
+        validate(p2);
     }
 }

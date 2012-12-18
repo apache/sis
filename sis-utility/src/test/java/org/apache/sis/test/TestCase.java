@@ -66,6 +66,22 @@ import static org.apache.sis.test.TestConfiguration.OUTPUT_ENCODING_KEY;
 @RunWith(TestRunner.class)
 public abstract strictfp class TestCase {
     /**
+     * A flag for code that are pending next GeoAPI release before to be enabled.
+     * This flag is always set to {@code false}, except occasionally just before
+     * a GeoAPI release for testing purpose. It shall be used as below:
+     *
+     * {@preformat java
+     *     if (PENDING_NEXT_GEOAPI_RELEASE) {
+     *         // Do some stuff here.
+     *     }
+     * }
+     *
+     * The intend is to make easier to identify test cases that fail with the current version
+     * of the {@code geoapi-conformance} module, but should pass with the development snapshot.
+     */
+    public static final boolean PENDING_NEXT_GEOAPI_RELEASE = false;
+
+    /**
      * If non-null, the output writer where to print debugging information.
      * This field is non-null if the {@value org.apache.sis.test.TestConfiguration#VERBOSE_OUTPUT_KEY}
      * system property is set to {@code true}. This writer will use the system default encoding, unless
