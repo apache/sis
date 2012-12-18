@@ -517,6 +517,79 @@ public class MyApplication {
     }
 }</programlisting>
     </example>
+
+    <section>
+      <title>Fournir sa propre implémentation</title>
+      <para>
+        Implémenter soi-même GeoAPI n’est pas si difficile si on se contente de besoins bien précis.
+        Un développeur peut se concentrer sur une poignée d’interfaces parmi les centaines de disponibles,
+        tout en disposant des autres interfaces comme autant de points d’extensions à éventuellement implémenter
+        au gré des besoins.
+      </para>
+      <para>
+        Le modèle conceptuel représenté par les interfaces est complexe. Mais cette complexité peut être réduite
+        en combinant certaines interfaces. Par exemple plusieurs bibliothèques, même réputées, ne font pas la distinction
+        entre <quote>Système de coordonnées</quote> et <quote>Système de référence des coordonnées</quote>.
+        Un développeur qui lui non-plus ne souhaite pas faire cette distinction peut implémenter ces deux interfaces par la même classe.
+        Il peut en résulter une implémentation dont la hiérarchie de classes est plus simple que la hierarchie des interfaces de GeoAPI.
+        Le module <literal role="GeoAPI">geoapi-examples</literal>, discuté plus loin, fournit de telles combinaisons.
+        Le tableau suivant énumère quelques combinaisons possibles:
+      </para>
+      <table frame="none">
+        <title>Exemples d’interfaces pouvant être combinées par une même classe à l’implémentation</title>
+        <tgroup cols="3">
+          <thead>
+            <row>
+              <entry>Interface principale</entry>
+              <entry>Interface auxiliaire</entry>
+              <entry>Usage</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry><classname role="GeoAPI">CoordinateReferenceSystem</classname></entry>
+              <entry><classname role="GeoAPI">CoordinateSystem</classname></entry>
+              <entry>Description d’un système de référence spatial (<acronym>CRS</acronym>).</entry>
+            </row>
+            <row>
+              <entry><classname role="GeoAPI">GeodeticDatum</classname></entry>
+              <entry><classname role="GeoAPI">Ellipsoid</classname></entry>
+              <entry>Description d’un référentiel geodétique.</entry>
+            </row>
+            <row>
+              <entry><classname role="GeoAPI">CoordinateOperation</classname></entry>
+              <entry><classname role="GeoAPI">MathTransform</classname></entry>
+              <entry>Opération de transformation de coordonnées.</entry>
+            </row>
+            <row>
+              <entry><classname role="GeoAPI">IdentifiedObject</classname></entry>
+              <entry><classname role="GeoAPI">ReferenceIdentifier</classname></entry>
+              <entry>Objet (typiquement un <acronym>CRS</acronym>) que l’on peut identifier par un code.</entry>
+            </row>
+            <row>
+              <entry><classname role="GeoAPI">Citation</classname></entry>
+              <entry><classname role="GeoAPI">InternationalString</classname></entry>
+              <entry>Référence bibliographique composée d’un simple titre.</entry>
+            </row>
+            <row>
+              <entry><classname role="GeoAPI">GeographicBoundingBox</classname></entry>
+              <entry><classname role="GeoAPI">Extent</classname></entry>
+              <entry>Étendue spatiale en degrés de longitude et de latitude.</entry>
+            </row>
+            <row>
+              <entry><classname role="GeoAPI">ParameterValue</classname></entry>
+              <entry><classname role="GeoAPI">ParameterDescriptor</classname></entry>
+              <entry>Description d’un paramètre (nom, type) associée à sa valeur.</entry>
+            </row>
+            <row>
+              <entry><classname role="GeoAPI">ParameterValueGroup</classname></entry>
+              <entry><classname role="GeoAPI">ParameterDescriptorGroup</classname></entry>
+              <entry>Description d’un ensemble de paramètres associés à leurs valeurs.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </section>
   </section>
 
 
@@ -712,11 +785,91 @@ public class MyTest {
           Toutes les classes de tests portent un nom se terminant en "<literal>Test</literal>".
           En outre, une classe <literal role="GeoAPI">org.opengis.test.TestSuite</literal> englobe l’ensemble
           de toutes les classes de tests définies dans le module <literal role="GeoAPI">geoapi-conformance</literal>.
-          La façon la plus simple d’exécuter l’ensemble de ces tests est donc de créer une sous-classe de
+          Une façon d’exécuter l’ensemble de ces tests est donc de créer une sous-classe de
           <literal role="GeoAPI">TestSuite</literal>, éventuellement y placer un bloc statique effectuant
           une configuration des validateurs comme dans l’exemple précédent, et d’hériter les tests définis dans GeoAPI.
         </para>
+        <para>
+          Apache SIS hérite des classes <literal role="GeoAPI">*Test</literal> de GeoAPI au cas-par-cas,
+          dans les modules appropriées. La classe <literal role="GeoAPI">TestSuite</literal> sera plutôt
+          utilisée dans un test d’intégration englobant l’ensemble des modules de SIS.
+          L’exemple ci-dessous donne un exemple de test de GeoAPI personnalisé.
+          La <link xlink:href="http://www.geoapi.org/geoapi-conformance/apidocs/org/opengis/test/referencing/ParameterizedTransformTest.html">Javadoc
+          de la classe parente</link> documente en détails les tests effectués.
+          Dans cet exemple, un seul test est modifié et tous les autres tests sont hérités tels quels
+          (il n’est pas nécessaire de les répéter dans la sous-classe).
+          Toutefois, cet exemple ajoute une vérification supplémentaire, annotée <literal>@After</literal>,
+          qui sera exécutée après chacun des tests.
+        </para>
+        <example>
+          <title>Hériter des tests de GeoAPI</title>
+          <programlisting language="java">import org.junit.*;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+import org.opengis.test.referencing.ParameterizedTransformTest;
+import static org.junit.Assert.*;
+
+@RunWith(JUnit4.class)
+public class MyTest extends ParameterizedTransformTest {
+    /**
+     * Spécifie aux tests de GeoAPI notre propre fabrique de transformations de coordonnées.
+     * GeoAPI testera les objets construits par cette fabrique.
+     */
+    public MyTest() {
+        super(new MyMathTransformFactory());
+    }
+
+    /**
+     * Modifie le comportement d’un test. Cet exemple assouplit un peu les exigences de ce test,
+     * en acceptant des erreurs jusqu’à 10 centimètres plutôt que la valeur par défaut de 1 cm.
+     * Ce changement ne s’applique qu’à cette méthode est n’affecte pas les autres tests hérités.
+     */
+    @Test
+    @Override
+    public void testLambertAzimuthalEqualArea() throws FactoryException, TransformException {
+        tolerance = 0.1; // Tolérance de 10 cm.
+        super.testLambertAzimuthalEqualArea();
+    }
+
+    /**
+     * Vérification supplémentaire effectuée après chaque test, hérité ou non.
+     * Dans cet exemple, nous vérifions que la transformation qui a été testée
+     * travaillait bien dans des espaces bi-dimensionnels.
+     */
+    @After
+    public void ensureAllTransformAreMath2D() {
+        assertTrue(transform instanceof MathTransform2D);
+    }
+}</programlisting>
+        </example>
       </section>
+    </section>
+    <section>
+      <title>Les modules d’exemples</title>
+      <para>
+        Le module <literal role="GeoAPI">geoapi-examples</literal> fournit des exemples d’implémentations simples.
+        Plusieurs de ces classes implémentent plus d’une interface à la fois afin de proposer un modèle conceptuel plus simple.
+        La <link xlink:href="http://www.geoapi.org/geoapi-examples/apidocs/overview-summary.html">Javadoc de ce module</link>
+        énumère les paquets et classes clés avec les combinaisons effectuées.
+        Ce module illustre non-seulement comment GeoAPI peut-être implémenté, mais aussi comment l’implémentation
+        peut être testée en utilisant <literal role="GeoAPI">geoapi-conformance</literal>.
+      </para>
+      <para>
+        Bien que sa mission première soit de servir d’inspiration aux implémenteurs,
+        <literal role="GeoAPI">geoapi-examples</literal> a tout-de-même été conçu de manière à être utilisable
+        par des applications ayant des besoins très simples. Tous les exemples étant dans le domaine publique,
+        les développeurs sont invités à adapter librement des copies de ces classes si nécessaires.
+        Toutefois si des modifications sont apportées hors du cadre du projet GeoAPI, le bon usage veut que les copies
+        modifiées soient placées dans un paquet portant un autre nom que <literal role="GeoAPI">org.opengis</literal>.
+      </para>
+      <para>
+        Pour des besoins un peu plus poussés, les développeurs sont invités à examiner les modules
+        <literal role="GeoAPI">geoapi-proj4</literal> et <literal role="GeoAPI">geoapi-netcdf</literal>.
+        Ces deux modules fournissent des exemples d’adaptateurs permettant d’utiliser, via les interfaces de GeoAPI,
+        une partie des fonctionnalités de bibliothèques externes (Proj.4 et NetCDF).
+        L’avantage de passer par ces interfaces est de disposer d’un modèle unifié pour exploiter deux API très différents,
+        tout en se gardant la possibilité de basculer plus facilement à une autre bibliothèque si désiré.
+      </para>
     </section>
   </section>
 </chapter>
