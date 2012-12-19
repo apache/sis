@@ -2,6 +2,7 @@
 <!ENTITY geoapi-release "3.0.0">
 <!ENTITY sis-release    "0.3-jdk7-SNAPSHOT">
 <!ENTITY gml-version    "3.3">
+<!ENTITY sis-javadoc    "../apidocs">
 <!ENTITY geoapi-javadoc "http://www.geoapi.org/snapshot/javadoc">
 <!ENTITY javase-docs    "http://docs.oracle.com/javase/7/docs">
 <!ENTITY xmlns-gco      "http://www.isotc211.org/2005/gco">

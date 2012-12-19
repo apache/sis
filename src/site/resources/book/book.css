@@ -84,6 +84,10 @@ div.informalexample {
   font-size:    smaller;
 }
 
+div.mediaobject {
+  text-align: center;
+}
+
 /*
  * Tables.
  */
@@ -181,6 +185,11 @@ span.hl-doccomment {
 /*
  * Miscellaneous.
  */
+span.mathphrase {
+  font-style: italic;
+  font-family: Times,serif;
+}
+
 span.deprecated {
   text-decoration: line-through;
 }
