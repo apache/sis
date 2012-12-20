@@ -356,6 +356,20 @@ public final strictfp class GeneralEnvelopeTest extends TestCase {
     }
 
     /**
+     * Tests modifying the corner of an envelope.
+     */
+    @Test
+    public void testCornerModifications() {
+        final GeneralEnvelope e = create(2, -2, 3, -3);
+        e.getLowerCorner().setOrdinate(0,  1);
+        e.getUpperCorner().setOrdinate(1, -1);
+        assertEquals( 1.0, e.getLower(0), 0.0);
+        assertEquals(-2.0, e.getLower(1), 0.0);
+        assertEquals( 3.0, e.getUpper(0), 0.0);
+        assertEquals(-1.0, e.getUpper(1), 0.0);
+    }
+
+    /**
      * Tests the {@link GeneralEnvelope#GeneralEnvelope(String)} constructor.
      */
     @Test
