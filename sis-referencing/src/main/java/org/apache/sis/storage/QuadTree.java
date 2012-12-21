@@ -549,7 +549,7 @@ public class QuadTree {
    * 
    * @return root node of the quad tree.
    */
-  public QuadTreeNode getRoot() {
+  final QuadTreeNode getRoot() {
     return this.root;
   }
 
