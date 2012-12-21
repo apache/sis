@@ -374,7 +374,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
             protected void setParentOf(final TreeTable.Node node, final int mode) throws IllegalArgumentException {
                 if (!(node instanceof Node)) {
                     throw new IllegalArgumentException(Errors.format(
-                            Errors.Keys.IllegalArgumentClass_3, "node", node.getClass(), Node.class));
+                            Errors.Keys.IllegalArgumentClass_3, "node", Node.class, node.getClass()));
                 }
                 final TreeTable.Node p;
                 switch (mode) {
