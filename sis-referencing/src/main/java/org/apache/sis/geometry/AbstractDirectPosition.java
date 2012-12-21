@@ -37,6 +37,8 @@ import static org.apache.sis.util.StringBuilders.trimFractionalPart;
 
 // Related to JDK7
 import java.util.Objects;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.opengis.referencing.cs.RangeMeaning;
 
 
 /**
@@ -67,6 +69,21 @@ public abstract class AbstractDirectPosition implements DirectPosition {
     @Override
     public final DirectPosition getDirectPosition() {
         return this;
+    }
+
+    /**
+     * Returns a sequence of numbers that hold the coordinate of this position in its
+     * reference system.
+     *
+     * @return The coordinates.
+     */
+    @Override
+    public double[] getCoordinate() {
+        final double[] ordinates = new double[getDimension()];
+        for (int i=0; i<ordinates.length; i++) {
+            ordinates[i] = getOrdinate(i);
+        }
+        return ordinates;
     }
 
     /**
@@ -106,18 +123,55 @@ public abstract class AbstractDirectPosition implements DirectPosition {
     }
 
     /**
-     * Returns a sequence of numbers that hold the coordinate of this position in its
-     * reference system.
+     * Ensures that the position is contained in the coordinate system domain.
+     * For each dimension, this method compares the ordinate values against the
+     * limits of the coordinate system axis for that dimension.
+     * If some ordinates are out of range, then there is a choice depending on the
+     * {@linkplain CoordinateSystemAxis#getRangeMeaning() axis range meaning}:
      *
-     * @return The coordinates.
+     * <ul>
+     *   <li>If {@link RangeMeaning#EXACT} (typically <em>latitudes</em> ordinates), then values
+     *       greater than the {@linkplain CoordinateSystemAxis#getMaximumValue() axis maximal value}
+     *       are replaced by the axis maximum, and values smaller than the
+     *       {@linkplain CoordinateSystemAxis#getMinimumValue() axis minimal value}
+     *       are replaced by the axis minimum.</li>
+     *
+     *   <li>If {@link RangeMeaning#WRAPAROUND} (typically <em>longitudes</em> ordinates), then
+     *       a multiple of the axis range (e.g. 360° for longitudes) is added or subtracted.</li>
+     * </ul>
+     *
+     * @return {@code true} if this position has been modified as a result of this method call,
+     *         or {@code false} if no change has been done.
      */
-    @Override
-    public double[] getCoordinate() {
-        final double[] ordinates = new double[getDimension()];
-        for (int i=0; i<ordinates.length; i++) {
-            ordinates[i] = getOrdinate(i);
+    public boolean normalize() {
+        boolean changed = false;
+        final CoordinateReferenceSystem crs = getCoordinateReferenceSystem();
+        if (crs != null) {
+            final int dimension = getDimension();
+            final CoordinateSystem cs = crs.getCoordinateSystem();
+            for (int i=0; i<dimension; i++) {
+                double ordinate = getOrdinate(i);
+                final CoordinateSystemAxis axis = cs.getAxis(i);
+                final double  minimum = axis.getMinimumValue();
+                final double  maximum = axis.getMaximumValue();
+                final RangeMeaning rm = axis.getRangeMeaning();
+                if (RangeMeaning.EXACT.equals(rm)) {
+                         if (ordinate < minimum) ordinate = minimum;
+                    else if (ordinate > maximum) ordinate = maximum;
+                    else continue;
+                } else if (RangeMeaning.WRAPAROUND.equals(rm)) {
+                    final double csSpan = maximum - minimum;
+                    final double shift  = Math.floor((ordinate - minimum) / csSpan) * csSpan;
+                    if (shift == 0) {
+                        continue;
+                    }
+                    ordinate -= shift;
+                }
+                setOrdinate(i, ordinate);
+                changed = true;
+            }
         }
-        return ordinates;
+        return changed;
     }
 
     /**
