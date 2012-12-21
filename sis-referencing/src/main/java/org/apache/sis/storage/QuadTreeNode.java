@@ -21,7 +21,7 @@ package org.apache.sis.storage;
  * Implementation of quad tree node.
  * 
  */
-public class QuadTreeNode {
+final class QuadTreeNode {
 
   private QuadTreeData[] data;
   private QuadTreeNode nw;
