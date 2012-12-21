@@ -312,7 +312,7 @@ public class LineFormatter extends FilteredAppendable implements Flushable {
      */
     private void endOfLine() throws IOException {
         buffer.setLength(printableLength); // Reduce the amount of work for StringBuilder.deleteCharAt(int).
-        deleteSoftHyphen();
+        deleteSoftHyphen(printableLength - 1);
         transfer(printableLength);
         printableLength  = 0;
         codePointCount   = 0;
@@ -323,9 +323,13 @@ public class LineFormatter extends FilteredAppendable implements Flushable {
     /**
      * Removes the soft hyphen characters from the given buffer. This is invoked
      * when the buffer is about to be written without being split on two lines.
+     *
+     * @param i Index after the last character to check. This is either {@link printableLength}
+     *          for checking all characters, or {@code printableLength-1} for preserving the last
+     *          soft hyphen on the line (while removing all others).
      */
-    private void deleteSoftHyphen() {
-        for (int i=printableLength; --i >= 0;) {
+    private void deleteSoftHyphen(int i) {
+        while (--i >= 0) {
             if (buffer.charAt(i) == Characters.SOFT_HYPHEN) {
                 buffer.deleteCharAt(i);
                 printableLength--;
@@ -392,7 +396,7 @@ public class LineFormatter extends FilteredAppendable implements Flushable {
          */
         if (Character.isWhitespace(c)) {
             if (printableLength != 0) {
-                deleteSoftHyphen();
+                deleteSoftHyphen(printableLength);
                 transfer(printableLength);
                 printableLength = 0;
             }

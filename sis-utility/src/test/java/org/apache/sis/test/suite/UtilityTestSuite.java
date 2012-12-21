@@ -72,6 +72,10 @@ import org.junit.runners.Suite;
     org.apache.sis.measure.AngleTest.class,
     org.apache.sis.internal.util.X364Test.class,
     org.apache.sis.io.LineFormatterTest.class,
+    org.apache.sis.io.LeftMarginTest.class,
+    org.apache.sis.io.TabulationExpansionTest.class,
+    org.apache.sis.io.WordWrapTest.class,
+    org.apache.sis.io.WordWrapWithLineSeparatorTest.class,
     org.apache.sis.io.TableFormatterTest.class,
     org.apache.sis.util.collection.TreeTableFormatTest.class,
 
