@@ -21,7 +21,7 @@ package org.apache.sis.storage;
  * Enum to represent the 4 quadrants of a quad tree node.
  * 
  */
-public enum Quadrant {
+enum Quadrant {
 
   NW(0), NE(1), SW(2), SE(3);
   private final int index;
