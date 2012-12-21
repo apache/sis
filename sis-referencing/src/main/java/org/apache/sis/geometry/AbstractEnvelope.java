@@ -87,6 +87,12 @@ import java.util.Objects;
  * </ul>
  * </td></tr></table>
  *
+ * {@section Choosing the range of longitude values}
+ * Geographic CRS typically have longitude values in the [-180 … +180]° range, but the [0 … 360]°
+ * range is also occasionally used. Users of this class need to ensure that this envelope CRS is
+ * associated to axes having the desired {@linkplain CoordinateSystemAxis#getMinimumValue() minimum}
+ * and {@linkplain CoordinateSystemAxis#getMaximumValue() maximum value}.
+ *
  * {@section Note on positive and negative zeros}
  * The IEEE 754 standard defines two different values for positive zero and negative zero.
  * When used with SIS envelopes and keeping in mind the above discussion, those zeros have

@@ -356,6 +356,64 @@ public final strictfp class GeneralEnvelopeTest extends TestCase {
     }
 
     /**
+     * Tests the {@link GeneralEnvelope#normalize()} method.
+     */
+    @Test
+    @Ignore("The tested envelope needs to be associated to CRS:84")
+    public void testNormalize() {
+        GeneralEnvelope e = create(-100, -100, +100, +100);
+        assertTrue(e.normalize());
+        assertEnvelopeEquals(e, -100, -90, +100, +90);
+
+        e = create(185, 10, 190, 20);
+        assertTrue(e.normalize());
+        assertEnvelopeEquals(e, -175, 10, -170, 20);
+
+        e = create(175, 10, 185, 20);
+        assertTrue(e.normalize());
+        assertEnvelopeEquals(e, 175, 10, -175, 20);
+
+        e = create(0, 10, 360, 20);
+        assertTrue(e.normalize());
+        assertEquals("Expect positive zero", Double.doubleToLongBits(+0.0), Double.doubleToLongBits(e.getLower(0)));
+        assertEquals("Expect negative zero", Double.doubleToLongBits(-0.0), Double.doubleToLongBits(e.getUpper(0)));
+    }
+
+    /**
+     * Tests the {@link GeneralEnvelope#normalize()} method
+     * with an envelope having more then 360° of longitude.
+     */
+    @Test
+    @Ignore("The tested envelope needs to be associated to CRS:84")
+    public void testNormalizeWorld() {
+        GeneralEnvelope e = create(-195, -90, +170, +90); // -195° is equivalent to 165°
+        assertTrue(e.normalize());
+        assertEnvelopeEquals(e, -180, -90, +180, +90);
+    }
+
+    /**
+     * Tests the {@link GeneralEnvelope#simplify()}.
+     */
+    @Test
+    @Ignore("The tested envelope needs to be associated to CRS:84")
+    public void testSimplify() {
+        // Normal envelope: no change expected.
+        GeneralEnvelope e = create(-100, -10, +100, +10);
+        assertFalse(e.simplify());
+        assertEnvelopeEquals(e, -100, -10, +100, +10);
+
+        // Anti-meridian spanning: should substitute [-180 … 180]°
+        e = create(30, -10, -60, 10);
+        assertTrue(e.simplify());
+        assertEnvelopeEquals(e, -180, -10, 180, 10);
+
+        // Anti-meridian spanning using positive and negative zero.
+        e = create(0.0, -10, -0.0, 10);
+        assertTrue(e.simplify());
+        assertEnvelopeEquals(e, -180, -10, 180, 10);
+    }
+
+    /**
      * Tests modifying the corner of an envelope.
      */
     @Test

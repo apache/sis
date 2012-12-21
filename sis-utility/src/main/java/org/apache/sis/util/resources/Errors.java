@@ -151,6 +151,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int IllegalLanguageCode_1 = 12;
 
         /**
+         * The [{0} … {1}] range of ordinate values is not valid for the “{2}” axis.
+         */
+        public static final int IllegalOrdinateRange_3 = 63;
+
+        /**
          * Property ‘{0}’ can be associated to an instance of ‘{1}’.
          */
         public static final int IllegalPropertyClass_2 = 62;
