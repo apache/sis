@@ -200,7 +200,7 @@ public final class MathFunctions extends Static {
      * Returns the number of fraction digits needed for formatting in base 10 numbers of the given
      * accuracy. If the {@code strict} argument is {@code true}, then for any given {@code accuracy}
      * this method returns a value <var>n</var> such as the difference between adjacent numbers
-     * formatted in base 10 with <var>n</var> fraction digits will always be equals or smaller
+     * formatted in base 10 with <var>n</var> fraction digits will always be equal or smaller
      * than {@code accuracy}. Examples:
      *
      * <ul>

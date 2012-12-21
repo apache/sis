@@ -263,6 +263,14 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
     }
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String toString() {
+        return toString(this, isSimplePrecision(ordinates));
+    }
+
+    /**
      * Returns a deep copy of this position.
      */
     @Override

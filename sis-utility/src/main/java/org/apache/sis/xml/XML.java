@@ -109,6 +109,7 @@ public final class XML extends Static {
      * </table>
      */
     public static final String SCHEMAS = "org.apache.sis.xml.schemas";
+    // If more keys are documented, update the Pooled.SCHEMAS_KEY array.
 
     /**
      * Specifies the GML version to be marshalled or unmarshalled. The GML version may affect the
