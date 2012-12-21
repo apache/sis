@@ -168,10 +168,10 @@ public final class ArgumentChecks extends Static {
                 final Object[] args;
                 if (name != null) {
                     key = Errors.Keys.IllegalArgumentClass_3;
-                    args = new Object[] {name, valueClass, expectedType};
+                    args = new Object[] {name, expectedType, valueClass};
                 } else {
                     key = Errors.Keys.IllegalClass_2;
-                    args = new Object[] {valueClass, expectedType};
+                    args = new Object[] {expectedType, valueClass};
                 }
                 throw new IllegalArgumentException(Errors.format(key, args));
             }
@@ -441,7 +441,7 @@ public final class ArgumentChecks extends Static {
     {
         if (value < min || value > max) {
             throw new IllegalArgumentException(Errors.format(
-                    Errors.Keys.ValueOutOfRange_4, name, value, min, max));
+                    Errors.Keys.ValueOutOfRange_4, name, min, max, value));
         }
     }
 
@@ -459,7 +459,7 @@ public final class ArgumentChecks extends Static {
     {
         if (value < min || value > max) {
             throw new IllegalArgumentException(Errors.format(
-                    Errors.Keys.ValueOutOfRange_4, name, value, min, max));
+                    Errors.Keys.ValueOutOfRange_4, name, min, max, value));
         }
     }
 
@@ -478,7 +478,7 @@ public final class ArgumentChecks extends Static {
         if (!(value >= min && value <= max)) { // Use '!' for catching NaN.
             throw new IllegalArgumentException(Float.isNaN(value) ?
                     Errors.format(Errors.Keys.NotANumber_1, name) :
-                    Errors.format(Errors.Keys.ValueOutOfRange_4, name, value, min, max));
+                    Errors.format(Errors.Keys.ValueOutOfRange_4, name, min, max, value));
         }
     }
 
@@ -497,7 +497,7 @@ public final class ArgumentChecks extends Static {
         if (!(value >= min && value <= max)) { // Use '!' for catching NaN.
             throw new IllegalArgumentException(Double.isNaN(value) ?
                     Errors.format(Errors.Keys.NotANumber_1, name)  :
-                    Errors.format(Errors.Keys.ValueOutOfRange_4, name, value, min, max));
+                    Errors.format(Errors.Keys.ValueOutOfRange_4, name, min, max, value));
         }
     }
 
@@ -552,7 +552,7 @@ public final class ArgumentChecks extends Static {
                 final int dimension = cs.getDimension();
                 if (dimension != expected) {
                     throw new MismatchedDimensionException(Errors.format(
-                            Errors.Keys.MismatchedDimension_3, name, dimension, expected));
+                            Errors.Keys.MismatchedDimension_3, name, expected, dimension));
                 }
             }
         }
@@ -575,7 +575,7 @@ public final class ArgumentChecks extends Static {
             final int dimension = vector.length;
             if (dimension != expected) {
                 throw new MismatchedDimensionException(Errors.format(
-                        Errors.Keys.MismatchedDimension_3, name, dimension, expected));
+                        Errors.Keys.MismatchedDimension_3, name, expected, dimension));
             }
         }
     }
@@ -597,7 +597,7 @@ public final class ArgumentChecks extends Static {
             final int dimension = position.getDimension();
             if (dimension != expected) {
                 throw new MismatchedDimensionException(Errors.format(
-                        Errors.Keys.MismatchedDimension_3, name, dimension, expected));
+                        Errors.Keys.MismatchedDimension_3, name, expected, dimension));
             }
         }
     }
@@ -619,7 +619,7 @@ public final class ArgumentChecks extends Static {
             final int dimension = envelope.getDimension();
             if (dimension != expected) {
                 throw new MismatchedDimensionException(Errors.format(
-                        Errors.Keys.MismatchedDimension_3, name, dimension, expected));
+                        Errors.Keys.MismatchedDimension_3, name, expected, dimension));
             }
         }
     }

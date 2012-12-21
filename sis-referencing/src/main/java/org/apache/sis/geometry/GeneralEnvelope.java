@@ -297,11 +297,11 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
             throw new IllegalArgumentException(Errors.format(
                     Errors.Keys.OddArrayLength_1, ordinates.length));
         }
-        final int dimension  = ordinates.length >>> 1;
-        final int check = this.ordinates.length >>> 1;
-        if (dimension != check) {
+        final int dimension = ordinates.length >>> 1;
+        final int expected  = this.ordinates.length >>> 1;
+        if (dimension != expected) {
             throw new MismatchedDimensionException(Errors.format(
-                    Errors.Keys.MismatchedDimension_3, "ordinates", dimension, check));
+                    Errors.Keys.MismatchedDimension_3, "ordinates", expected, dimension));
         }
         System.arraycopy(ordinates, 0, this.ordinates, 0, ordinates.length);
     }
@@ -848,9 +848,8 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
                     ordinates[j] = axis.getMaximumValue();
                     changed = true;
                 } else {
-                    throw new IllegalStateException(Errors.format(
-                            Errors.Keys.IllegalOrdinateRange_3, lower, upper,
-                            (axis != null) ? axis.getName() : i));
+                    throw new IllegalStateException(Errors.format(Errors.Keys.IllegalOrdinateRange_3,
+                            (axis != null) ? axis.getName() : i, lower, upper));
                 }
             }
         }

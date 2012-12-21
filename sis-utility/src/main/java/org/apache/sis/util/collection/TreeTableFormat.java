@@ -365,7 +365,7 @@ scan:   for (int i=0; i<length; i++) {
         }
         if (prefix == null) {
             throw new IllegalArgumentException(Errors.format(
-                    Errors.Keys.IllegalFormatPatternForClass_2, pattern, TreeTable.class));
+                    Errors.Keys.IllegalFormatPatternForClass_2, TreeTable.class, pattern));
         }
         /*
          * Finally store the result. The parsing pattern must be first because the call to
