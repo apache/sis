@@ -25,7 +25,6 @@ import org.apache.sis.util.resources.Errors;
 
 import static java.lang.Double.doubleToLongBits;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-import static org.apache.sis.util.StringBuilders.trimFractionalPart;
 
 // Following imports are needed because we can't extend AbstractDirectPosition.
 // We want to write this class as if it was an AbstractDirectPosition subclass.
@@ -296,10 +295,7 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
      */
     @Override
     public String toString() {
-        final StringBuilder buffer = new StringBuilder(32);
-        trimFractionalPart(buffer.append("POINT(").append(x));
-        trimFractionalPart(buffer.append(' ').append(y));
-        return buffer.append(')').toString();
+        return AbstractDirectPosition.toString(this, AbstractDirectPosition.isSimplePrecision(x, y));
     }
 
     /**

@@ -26,6 +26,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import static java.lang.Double.NaN;
+import static org.opengis.test.Validators.*;
 import static org.apache.sis.referencing.Assert.*;
 
 
@@ -66,22 +67,30 @@ public final strictfp class AbstractEnvelopeTest extends TestCase {
             final double xmin, final double xmax,
             final double ymin, final double ymax)
     {
+        final Envelope envelope;
         switch (type) {
             case GENERAL: {
-                final GeneralEnvelope envelope = new GeneralEnvelope(2);
-                envelope.setCoordinateReferenceSystem(WGS84);
-                envelope.setRange(0, xmin, xmax);
-                envelope.setRange(1, ymin, ymax);
-                return envelope;
+                final GeneralEnvelope ge = new GeneralEnvelope(2);
+                ge.setCoordinateReferenceSystem(WGS84);
+                ge.setRange(0, xmin, xmax);
+                ge.setRange(1, ymin, ymax);
+                envelope = ge;
+                break;
             }
             case IMMUTABLE: {
-                return new ImmutableEnvelope(new double[] {xmin, ymin}, new double[] {xmax, ymax}, WGS84);
+                envelope = new ImmutableEnvelope(new double[] {xmin, ymin}, new double[] {xmax, ymax}, WGS84);
+                break;
             }
             case RECTANGLE: {
-                return new Envelope2D(xmin, ymin, xmax - xmin, ymax - ymin, WGS84);
+                envelope = new Envelope2D(xmin, ymin, xmax - xmin, ymax - ymin, WGS84);
+                break;
             }
             default: throw new IllegalArgumentException(String.valueOf(type));
         }
+        if (PENDING_NEXT_GEOAPI_RELEASE) {
+            validate(envelope);
+        }
+        return envelope;
     }
 
     /**

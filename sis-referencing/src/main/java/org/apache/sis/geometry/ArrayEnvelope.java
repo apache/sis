@@ -473,4 +473,12 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
         }
         return false;
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String toString() {
+        return toString(this, AbstractDirectPosition.isSimplePrecision(ordinates));
+    }
 }

@@ -262,17 +262,18 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * Sets the envelope range along the specified dimension.
      *
      * @param  dimension The dimension to set.
-     * @param  minimum   The minimum value along the specified dimension.
-     * @param  maximum   The maximum value along the specified dimension.
+     * @param  lower     The limit in the direction of decreasing ordinate values.
+     * @param  upper     The limit in the direction of increasing ordinate values.
      * @throws IndexOutOfBoundsException If the given index is out of bounds.
      */
-    public void setRange(final int dimension, final double minimum, final double maximum)
+    @Override
+    public void setRange(final int dimension, final double lower, final double upper)
             throws IndexOutOfBoundsException
     {
         final int d = ordinates.length >>> 1;
         ensureValidIndex(d, dimension);
-        ordinates[dimension + d] = maximum;
-        ordinates[dimension]     = minimum;
+        ordinates[dimension + d] = upper;
+        ordinates[dimension]     = lower;
     }
 
     /**
