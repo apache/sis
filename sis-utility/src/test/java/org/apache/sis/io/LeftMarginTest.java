@@ -24,37 +24,33 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests various aspects of {@link LineFormatter}.
- * This base class tests {@code LineFormatter} when used for changing the line separator,
- * which is a problematic involved in every tests. Subclasses will test other aspects.
+ * Tests {@link LineFormatter} implementation when used for inserting a margin before every line.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
  * @version 0.3
  * @module
+ *
+ * @see LineFormatter#onLineBegin(boolean)
  */
-@DependsOn({
-  org.apache.sis.util.CharSequencesTest.class,
-  org.apache.sis.internal.util.X364Test.class
-})
-public strictfp class LineFormatterTest extends FormatterTestCase {
-    /**
-     * Creates a new test. Subclasses shall override the {@link #createLineFormatter()} method
-     * in order to create the instance to test.
-     */
-    public LineFormatterTest() {
-    }
-
+@DependsOn(LineFormatterTest.class)
+public final strictfp class LeftMarginTest extends LineFormatterTest {
     /**
      * Creates and configure the {@link LineFormatter} to test.
      */
     @Before
+    @Override
     public void createLineFormatter() {
-        formatter = new LineFormatter(formatter, " ", false);
+        formatter = new LineFormatter(formatter) {
+            @Override
+            protected void onLineBegin(boolean isContinuation) throws IOException {
+                out.append("    ");
+            }
+        };
     }
 
     /**
-     * Runs the test.
+     * Runs the test using an extract from Arthur RIMBAUD (1854-1891), "Le bateau ivre".
      *
      * @param  lineSeparator The line separator to use in the test strings.
      * @throws IOException Should never happen, since we are writing in a {@link StringBuilder}.
@@ -62,15 +58,15 @@ public strictfp class LineFormatterTest extends FormatterTestCase {
     @Override
     void run(final String lineSeparator) throws IOException {
         final Appendable f = formatter;
-        if (f instanceof LineFormatter) {
-            assertEquals("getLineSeparator", " ", ((LineFormatter) f).getLineSeparator());
-        }
-        assertSame(f, f.append("Le vrai" + lineSeparator + "policitien, "));
-        assertSame(f, f.append("c'est celui\r\nqui\r")); // Line separator broken on two method calls.
-        assertSame(f, f.append("\narrive à garder " + lineSeparator));
-        assertSame(f, f.append("son\ridéal   " + lineSeparator + 't'));
-        assertSame(f, f.append("out en perdant"));
-        assertSame(f, f.append(lineSeparator + "ses illusions."));
-        assertOutputEquals("Le vrai policitien, c'est celui qui arrive à garder son idéal tout en perdant ses illusions.");
+        assertSame(f, f.append("Comme je descendais des Fleuves impassibles,\r"
+                             + "Je ne me sentis plus guidé par les haleurs :\n"));
+        assertSame(f, f.append("Des Peaux-Rouges criards les avaient pris pour cibles,\r\n"));
+        assertSame(f, f.append("Les ayant cloués nus "));
+        assertSame(f, f.append("aux poteaux de couleurs." + lineSeparator));
+
+        assertOutputEquals("    Comme je descendais des Fleuves impassibles,"           + '\r'
+                         + "    Je ne me sentis plus guidé par les haleurs :"           + '\n'
+                         + "    Des Peaux-Rouges criards les avaient pris pour cibles," + "\r\n"
+                         + "    Les ayant cloués nus aux poteaux de couleurs."          + lineSeparator);
     }
 }

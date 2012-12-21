@@ -24,33 +24,24 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests various aspects of {@link LineFormatter}.
- * This base class tests {@code LineFormatter} when used for changing the line separator,
- * which is a problematic involved in every tests. Subclasses will test other aspects.
+ * Tests {@link LineFormatter} implementation when used for expanding tabulations to spaces.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
  * @version 0.3
  * @module
+ *
+ * @see LineFormatter#setTabulationExpanded(boolean)
  */
-@DependsOn({
-  org.apache.sis.util.CharSequencesTest.class,
-  org.apache.sis.internal.util.X364Test.class
-})
-public strictfp class LineFormatterTest extends FormatterTestCase {
-    /**
-     * Creates a new test. Subclasses shall override the {@link #createLineFormatter()} method
-     * in order to create the instance to test.
-     */
-    public LineFormatterTest() {
-    }
-
+@DependsOn(LineFormatterTest.class)
+public final strictfp class TabulationExpansionTest extends LineFormatterTest {
     /**
      * Creates and configure the {@link LineFormatter} to test.
      */
     @Before
+    @Override
     public void createLineFormatter() {
-        formatter = new LineFormatter(formatter, " ", false);
+        formatter = new LineFormatter(formatter, null, true);
     }
 
     /**
@@ -63,14 +54,13 @@ public strictfp class LineFormatterTest extends FormatterTestCase {
     void run(final String lineSeparator) throws IOException {
         final Appendable f = formatter;
         if (f instanceof LineFormatter) {
-            assertEquals("getLineSeparator", " ", ((LineFormatter) f).getLineSeparator());
+            assertEquals("getTabWidth", 8, ((LineFormatter) f).getTabulationWidth());
         }
-        assertSame(f, f.append("Le vrai" + lineSeparator + "policitien, "));
-        assertSame(f, f.append("c'est celui\r\nqui\r")); // Line separator broken on two method calls.
-        assertSame(f, f.append("\narrive à garder " + lineSeparator));
-        assertSame(f, f.append("son\ridéal   " + lineSeparator + 't'));
-        assertSame(f, f.append("out en perdant"));
-        assertSame(f, f.append(lineSeparator + "ses illusions."));
-        assertOutputEquals("Le vrai policitien, c'est celui qui arrive à garder son idéal tout en perdant ses illusions.");
+        assertSame(f, f.append("12\t8"   + lineSeparator));
+        assertSame(f, f.append("1234\t8" + lineSeparator));
+        assertSame(f, f.append("A tabulation\tin the middle."));
+        assertOutputEquals("12      8" + lineSeparator
+                         + "1234    8" + lineSeparator
+                         + "A tabulation    in the middle.");
     }
 }
