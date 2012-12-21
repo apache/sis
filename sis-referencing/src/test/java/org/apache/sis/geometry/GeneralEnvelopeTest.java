@@ -24,6 +24,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import static java.lang.Double.NaN;
+import static org.opengis.test.Validators.*;
 import static org.apache.sis.referencing.Assert.*;
 import static org.apache.sis.math.MathFunctions.isNegative;
 import static org.apache.sis.geometry.AbstractEnvelopeTest.WGS84;
@@ -60,6 +61,9 @@ public final strictfp class GeneralEnvelopeTest extends TestCase {
         final GeneralEnvelope envelope = new GeneralEnvelope(2);
         envelope.setCoordinateReferenceSystem(WGS84);
         envelope.setEnvelope(xmin, ymin, xmax, ymax);
+        if (PENDING_NEXT_GEOAPI_RELEASE) {
+            validate(envelope);
+        }
         return envelope;
     }
 
@@ -352,6 +356,20 @@ public final strictfp class GeneralEnvelopeTest extends TestCase {
     }
 
     /**
+     * Tests modifying the corner of an envelope.
+     */
+    @Test
+    public void testCornerModifications() {
+        final GeneralEnvelope e = create(2, -2, 3, -3);
+        e.getLowerCorner().setOrdinate(0,  1);
+        e.getUpperCorner().setOrdinate(1, -1);
+        assertEquals( 1.0, e.getLower(0), 0.0);
+        assertEquals(-2.0, e.getLower(1), 0.0);
+        assertEquals( 3.0, e.getUpper(0), 0.0);
+        assertEquals(-1.0, e.getUpper(1), 0.0);
+    }
+
+    /**
      * Tests the {@link GeneralEnvelope#GeneralEnvelope(String)} constructor.
      */
     @Test
@@ -362,6 +380,7 @@ public final strictfp class GeneralEnvelopeTest extends TestCase {
         assertEquals( 180, envelope.getUpper(0), STRICT);
         assertEquals( -90, envelope.getLower(1), STRICT);
         assertEquals(  90, envelope.getUpper(1), STRICT);
+        validate(envelope);
 
         envelope = new GeneralEnvelope("BOX3D(-180 -90 10, 180 90 30)");
         assertEquals(3, envelope.getDimension());
@@ -371,12 +390,14 @@ public final strictfp class GeneralEnvelopeTest extends TestCase {
         assertEquals(  90, envelope.getUpper(1), STRICT);
         assertEquals(  10, envelope.getLower(2), STRICT);
         assertEquals(  30, envelope.getUpper(2), STRICT);
+        validate(envelope);
 
         envelope = new GeneralEnvelope("POLYGON((-80 -30,-100 40,80 40,100 -40,-80 -30))");
         assertEquals(-100, envelope.getLower(0), STRICT);
         assertEquals( 100, envelope.getUpper(0), STRICT);
         assertEquals( -40, envelope.getLower(1), STRICT);
         assertEquals(  40, envelope.getUpper(1), STRICT);
+        validate(envelope);
 
         assertEquals("BOX2D(6 10, 6 10)",     new GeneralEnvelope("POINT(6 10)").toString());
         assertEquals("BOX3D(6 10 3, 6 10 3)", new GeneralEnvelope("POINT M [ 6 10 3 ] ").toString());
@@ -427,7 +448,7 @@ public final strictfp class GeneralEnvelopeTest extends TestCase {
         assertFalse(e1.getLowerCorner().equals(e1.getUpperCorner()));
         /*
          * Creates a new envelope initialized with the same
-         * coordinate values. The two envelope should be equals.
+         * coordinate values. The two envelope shall be equal.
          */
         final GeneralEnvelope e2 = new GeneralEnvelope(e1);
         assertPositionEquals(e1.getLowerCorner(), e2.getLowerCorner());
@@ -440,7 +461,7 @@ public final strictfp class GeneralEnvelopeTest extends TestCase {
         assertTrue   (e1.equals(e2, EPS, false));
         assertEquals (e1.hashCode(), e2.hashCode());
         /*
-         * Offset slightly some coordinate value. Should not be equals anymore,
+         * Offset slightly some coordinate value. Should not be equal anymore,
          * except when comparing with a tolerance value.
          */
         e2.setRange(2, e2.getLower(2) + 3E-5, e2.getUpper(2) - 3E-5);
@@ -481,6 +502,7 @@ public final strictfp class GeneralEnvelopeTest extends TestCase {
         e1.setRange(0, -40, +60);
         e1.setRange(1, -20, +30);
         final GeneralEnvelope e2 = e1.clone();
+        validate(e2);
         assertNotSame("Expected a new instance.",           e1, e2);
         assertEquals ("The two instances should be equal.", e1, e2);
         e1.setRange(0, -40, +61);
@@ -494,9 +516,11 @@ public final strictfp class GeneralEnvelopeTest extends TestCase {
      */
     @Test
     public void testSerialization() {
-        final GeneralEnvelope envelope = new GeneralEnvelope(
+        final GeneralEnvelope e1 = new GeneralEnvelope(
                 new double[] {-20, -10},
                 new double[] { 20,  10});
-        assertNotSame(envelope, assertSerializedEquals(envelope));
+        final GeneralEnvelope e2 = assertSerializedEquals(e1);
+        assertNotSame(e1, e2);
+        validate(e2);
     }
 }

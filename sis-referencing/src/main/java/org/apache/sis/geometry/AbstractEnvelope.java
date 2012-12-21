@@ -28,6 +28,7 @@ import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.geometry.MismatchedReferenceSystemException;
+import org.opengis.geometry.UnmodifiableGeometryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.CoordinateSystem;
@@ -233,9 +234,12 @@ public abstract class AbstractEnvelope implements Envelope {
     }
 
     /**
-     * A coordinate position consisting of all the {@linkplain #getLower(int) lower ordinates}.
-     * The default implementation returns a unmodifiable direct position backed by this envelope,
+     * A coordinate position consisting of all the lower ordinate values.
+     * The default implementation returns a view over the {@link #getLower(int)} method,
      * so changes in this envelope will be immediately reflected in the returned direct position.
+     * If the particular case of the {@code GeneralEnvelope} subclass, the returned position
+     * supports also {@linkplain DirectPosition#setOrdinate(int, double) write operations},
+     * so changes in the position are reflected back in the envelope.
      *
      * {@note The <cite>Web Coverage Service</cite> (WCS) 1.1 specification uses an extended
      * interpretation of the bounding box definition. In a WCS 1.1 data structure, the lower
@@ -245,7 +249,7 @@ public abstract class AbstractEnvelope implements Envelope {
      * longitude greater than the upper corner longitude. Such extended interpretation applies
      * mostly to axes having <code>WRAPAROUND</code> range meaning.}
      *
-     * @return The lower corner, typically (but not necessarily) containing minimal ordinate values.
+     * @return A view over the lower corner, typically (but not necessarily) containing minimal ordinate values.
      */
     @Override
     public DirectPosition getLowerCorner() {
@@ -255,9 +259,12 @@ public abstract class AbstractEnvelope implements Envelope {
     }
 
     /**
-     * A coordinate position consisting of all the {@linkplain #getUpper(int) upper ordinates}.
-     * The default implementation returns a unmodifiable direct position backed by this envelope,
+     * A coordinate position consisting of all the upper ordinate values.
+     * The default implementation returns a view over the {@link #getUpper(int)} method,
      * so changes in this envelope will be immediately reflected in the returned direct position.
+     * If the particular case of the {@code GeneralEnvelope} subclass, the returned position
+     * supports also {@linkplain DirectPosition#setOrdinate(int, double) write operations},
+     * so changes in the position are reflected back in the envelope.
      *
      * {@note The <cite>Web Coverage Service</cite> (WCS) 1.1 specification uses an extended
      * interpretation of the bounding box definition. In a WCS 1.1 data structure, the upper
@@ -267,7 +274,7 @@ public abstract class AbstractEnvelope implements Envelope {
      * longitude less than the lower corner longitude. Such extended interpretation applies
      * mostly to axes having <code>WRAPAROUND</code> range meaning.}
      *
-     * @return The upper corner, typically (but not necessarily) containing maximal ordinate values.
+     * @return A view over the upper corner, typically (but not necessarily) containing maximal ordinate values.
      */
     @Override
     public DirectPosition getUpperCorner() {
@@ -277,8 +284,8 @@ public abstract class AbstractEnvelope implements Envelope {
     }
 
     /**
-     * A coordinate position consisting of all the {@linkplain #getMedian(int) middle ordinates}.
-     * The default implementation returns a unmodifiable direct position backed by this envelope,
+     * A coordinate position consisting of all the median ordinate values.
+     * The default implementation returns a view over the {@link #getMedian(int)} method,
      * so changes in this envelope will be immediately reflected in the returned direct position.
      *
      * @return The median coordinates.
@@ -914,7 +921,7 @@ public abstract class AbstractEnvelope implements Envelope {
      */
     @Override
     public String toString() {
-        return toString(this);
+        return toString(this, false);
     }
 
     /**
@@ -922,28 +929,37 @@ public abstract class AbstractEnvelope implements Envelope {
      * for formatting a {@code BOX} element from an envelope in <cite>Well Known Text</cite> (WKT) format.
      *
      * @param  envelope The envelope to format.
+     * @param  isSimplePrecision {@code true} if every lower and upper corner values can be casted to {@code float}.
      * @return The envelope as a {@code BOX2D} or {@code BOX3D} (most typical dimensions) in WKT format.
      *
      * @see GeneralEnvelope#GeneralEnvelope(String)
      * @see org.apache.sis.measure.CoordinateFormat
      * @see org.apache.sis.io.wkt
      */
-    static String toString(final Envelope envelope) {
-        final int            dimension   = envelope.getDimension();
-        final DirectPosition lowerCorner = envelope.getLowerCorner();
-        final DirectPosition upperCorner = envelope.getUpperCorner();
-        final StringBuilder  buffer = new StringBuilder(64).append("BOX").append(dimension).append("D(");
-        for (int i=0; i<dimension; i++) {
-            if (i != 0) {
-                buffer.append(' ');
-            }
-            trimFractionalPart(buffer.append(lowerCorner.getOrdinate(i)));
+    static String toString(final Envelope envelope, final boolean isSimplePrecision) {
+        final int dimension = envelope.getDimension();
+        final StringBuilder buffer = new StringBuilder(64).append("BOX").append(dimension).append('D');
+        if (dimension == 0) {
+            buffer.append("()");
+        } else {
+            final DirectPosition lowerCorner = envelope.getLowerCorner();
+            final DirectPosition upperCorner = envelope.getUpperCorner();
+            boolean isUpper = false;
+            do { // Executed exactly twice.
+                for (int i=0; i<dimension; i++) {
+                    buffer.append(i == 0 && !isUpper ? '(' : ' ');
+                    final double ordinate = (isUpper ? upperCorner : lowerCorner).getOrdinate(i);
+                    if (isSimplePrecision) {
+                        buffer.append((float) ordinate);
+                    } else {
+                        buffer.append(ordinate);
+                    }
+                    trimFractionalPart(buffer);
+                }
+                buffer.append(isUpper ? ')' : ',');
+            } while ((isUpper = !isUpper) == true);
         }
-        buffer.append(',');
-        for (int i=0; i<dimension; i++) {
-            trimFractionalPart(buffer.append(' ').append(upperCorner.getOrdinate(i)));
-        }
-        return buffer.append(')').toString();
+        return buffer.toString();
     }
 
     /**
@@ -970,11 +986,6 @@ public abstract class AbstractEnvelope implements Envelope {
         @Override public final int getDimension() {
             return AbstractEnvelope.this.getDimension();
         }
-
-        /** Sets the ordinate value along the specified dimension. */
-        @Override public final void setOrdinate(int dimension, double value) {
-            throw new UnsupportedOperationException();
-        }
     }
 
     /**
@@ -985,6 +996,11 @@ public abstract class AbstractEnvelope implements Envelope {
 
         @Override public double getOrdinate(final int dimension) throws IndexOutOfBoundsException {
             return getLower(dimension);
+        }
+
+        /** Sets the ordinate value along the specified dimension. */
+        @Override public void setOrdinate(final int dimension, final double value) {
+            setRange(dimension, value, getUpper(dimension));
         }
     }
 
@@ -997,6 +1013,11 @@ public abstract class AbstractEnvelope implements Envelope {
         @Override public double getOrdinate(final int dimension) throws IndexOutOfBoundsException {
             return getUpper(dimension);
         }
+
+        /** Sets the ordinate value along the specified dimension. */
+        @Override public void setOrdinate(final int dimension, final double value) {
+            setRange(dimension, getLower(dimension), value);
+        }
     }
 
     /**
@@ -1008,5 +1029,30 @@ public abstract class AbstractEnvelope implements Envelope {
         @Override public double getOrdinate(final int dimension) throws IndexOutOfBoundsException {
             return getMedian(dimension);
         }
+
+        /** Unsupported operation. */
+        @Override public void setOrdinate(int dimension, double value) {
+            throw new UnmodifiableGeometryException(Errors.format(Errors.Keys.UnmodifiableObject_1, getClass()));
+        }
+    }
+
+    /**
+     * Invoked by {@link LowerCorner} and {@link UpperCorner} when a coordinate is modified.
+     * The default implementation throws an {@link UnmodifiableGeometryException} in every cases.
+     * This method is overridden and made public by {@link GeneralGeometry}.
+     *
+     * <p>The declaration in this {@code AbstractEnvelope} class is not public on purpose,
+     * since this class intentionally have no public setter methods. This is necessary for
+     * preserving the immutable aspect of {@link ImmutableEnvelope} subclass among others.</p>
+     *
+     * @param  dimension The dimension to set.
+     * @param  lower     The limit in the direction of decreasing ordinate values.
+     * @param  upper     The limit in the direction of increasing ordinate values.
+     * @throws IndexOutOfBoundsException If the given index is out of bounds.
+     */
+    void setRange(final int dimension, final double lower, final double upper)
+            throws IndexOutOfBoundsException
+    {
+        throw new UnmodifiableGeometryException(Errors.format(Errors.Keys.UnmodifiableObject_1, getClass()));
     }
 }

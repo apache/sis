@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book [
+  <!ENTITY % book.entities SYSTEM "../book.entities">
+  %book.entities;
+]>
+<chapter xmlns="http://docbook.org/ns/docbook" version="5.0"
+      xmlns:xlink = "http://www.w3.org/1999/xlink">
+
+  <title>Géométries</title>
+  <para>
+    Ce chapitre introduit quelques aspects de la norme <acronym>ISO</acronym> 19107 (<foreignphrase>Spatial schema</foreignphrase>)
+    et les classes de Apache <acronym>SIS</acronym> qui les implémentent.
+  </para>
+
+  <section>
+    <title>Classes de base</title>
+    <para>
+      Chaque objet géométrique est considéré comme un ensemble infini de points.
+      En tant qu’ensemble, leurs opérations les plus fondamentales sont de même nature que les opérations standards des collections du Java.
+      On pourrait donc voir une géométrie comme une sorte de <classname>java.util.Set</classname> dont les éléments seraient des points,
+      à ceci près que le nombre d’éléments contenus dans cet ensemble est infini (à l’exception des géométries représentant un simple point).
+      Pour mieux représenter ce concept, la norme <acronym>ISO</acronym> et GeoAPI définissent une interface <classname role="OGC">TransfiniteSet</classname>
+      que l’on peut voir comme un <classname>Set</classname> de taille infini. Bien qu’un lien de parenté existe conceptuellement entre ces interfaces,
+      GeoAPI ne définit pas <classname role="GeoAPI">TransfiniteSet</classname> comme une sous-interface de <classname>java.util.Collection</classname>
+      car la définition de certaines méthodes telles que <function>size()</function> et <function>iterator()</function> serait problématique.
+      On y retrouve toutefois des méthodes très similaires telles que <function role="GeoAPI">contains(…)</function> et <function role="GeoAPI">intersects(…)</function>.
+    </para>
+    <para>
+      La classe parente de toutes les géométries est appelée <classname role="OGC">GM_Object</classname> dans la norme <acronym>ISO</acronym> 19107.
+      Les interfaces de GeoAPI utilisent plutôt le nom <classname role="GeoAPI">Geometry</classname>, car l’omission du préfixe <literal role="OGC">GM_</literal>
+      (comme le veut la convention dans GeoAPI) aurait laissé un nom trop proche de la classe <classname>Object</classname> du Java.
+      Toutes les géométries sont des spécialisations de <classname role="GeoAPI">TransfiniteSet</classname>.
+    </para>
+    <section>
+      <title>Points et positions directes</title>
+      <para>
+        <acronym>ISO</acronym> 19107 définit deux types de structures pour représenter un point:
+        <classname role="OGC">GM_Point</classname> et <classname role="OGC">DirectPosition</classname>.
+        Le premier type est une véritable géométrie et peut donc être relativement lourd, selon les implémentations.
+        Le second type n’est pas considéré formellement comme une géométrie;
+        il n’étend ni <classname role="OGC">GM_Object</classname> ni <classname role="OGC">TransfiniteSet</classname>.
+        Il ne définit pratiquement pas d’opérations autres que le stockage d’une séquence de nombres représentant une coordonnée.
+        Il peut donc être un objet plus léger.
+      </para>
+      <para>
+        Afin de permettre à l’<acronym>API</acronym> de travailler indifféremment avec ces deux types de positions,
+        <acronym>ISO</acronym> 19107 définit <classname role="OGC">Position</classname> comme une <quote>union</quote>
+        de <classname role="OGC">DirectPosition</classname> et <classname role="OGC">GM_Point</classname>.
+        Il s’agit d’une union au sens du C/C++. Pour le langage Java, GeoAPI obtient le même effet en définissant
+        <classname role="GeoAPI">Position</classname> comme l’interface parente de
+        <classname role="GeoAPI">DirectPosition</classname> et <classname role="GeoAPI">Point</classname>.
+        Dans la pratique, la grande majorité des <acronym>API</acronym> de Apache <acronym>SIS</acronym>
+        travaillent sur des <classname role="GeoAPI">DirectPosition</classname>, ou occasionnellement des
+        <classname role="GeoAPI">Position</classname> quand il semble utile d’autoriser aussi des points géométriques.
+      </para>
+    </section>
+    <section>
+      <title>Enveloppes</title>
+      <para>
+        Les enveloppes stockent les valeurs minimales et maximales des coordonnées d’une géométrie.
+        Les enveloppes <emphasis>ne sont pas</emphasis> elles-mêmes des géométries; ce ne sont pas des ensembles
+        infinis de points (<classname role="OGC">TransfiniteSet</classname>). Il n’y a aucune garantie
+        que toutes les positions contenues dans les limites d’une enveloppe soient géographiquement valides.
+        Il faut voir les enveloppes comme une information sur les valeurs extrêmes que peuvent prendre les
+        coordonnées d’une géométrie en faisant comme si chaque dimension était indépendante des autres,
+        rien de plus. Nous assimilons néanmoins les enveloppes à des rectangles, cubes ou hyper-cubes
+        (selon le nombre de dimensions) afin de faciliter la discussion, mais en gardant à l’esprit leur
+        nature non-géométrique.
+        <informalexample><para>
+          <emphasis role="bold">Exemple:</emphasis>
+          Nous pouvons tester si une position est à l’intérieur des limites de l’enveloppe.
+          Un résultat positif ne garantie pas que la position est à l’intérieur de la géométrie délimitée par l’enveloppe,
+          mais un résultat négatif garantie qu’elle est à l’extérieur. De même on peut effectuer des tests d’intersections.
+          En revanche appliquer une rotation n’a pas beaucoup de sens pour une enveloppe, car le résultat peut être très différent
+          de celui que nous aurions obtenu en effectuant une rotation de la géométrie originale, puis en recalculant son enveloppe.
+        </para></informalexample>
+      </para>
+      <para>
+        Une enveloppe peut être représentée par deux positions correspondant à deux coins opposés
+        d’un rectangle, cube ou hyper-cube. On prend souvent comme premier coin celui dont toutes
+        les ordonnées ont la valeur minimale (<function role="OGC">lowerCorner</function>), et comme second
+        coin celui dont toutes les ordonnées ont la valeur maximale (<function role="OGC">upperCorner</function>).
+        Lors d’un affichage utilisant un système de coordonnées classique (valeurs de l’axe des <mathphrase>y</mathphrase> augmentant vers le haut),
+        ces deux positions apparaissent respectivement dans le coin inférieur gauche et dans le coin supérieur droit d’un rectangle.
+        Attention toutefois aux différents systèmes de coordonnées, qui peuvent faire varier les positions de ces coins à l’écran.
+        Les expressions <foreignphrase>lower corner</foreignphrase> et <foreignphrase>upper corner</foreignphrase>
+        doivent être comprises au sens mathématique plutôt que visuel.
+      </para>
+      <section>
+        <title>Enveloppes traversant l’antiméridien</title>
+        <para>
+          Les minimums et maximums sont les valeurs les plus souvent assignées aux <function role="OGC">lowerCorner</function>
+          et <function role="OGC">upperCorner</function>. Mais les choses se compliquent dans le cas d’une enveloppe traversant
+          l’antiméridien (-180° ou 180° de longitude). Par exemple, une enveloppe de 10° de largeur peut commencer à 175° de longitude et
+          se terminer à -175°. Dans ce cas, la valeur de longitude assignée au <function role="OGC">lowerCorner</function> est
+          supérieure à celle qui est assignée à l’<function role="OGC">upperCorner</function>.
+          Apache <acronym>SIS</acronym> emploie donc une définition légèrement différente de ces deux coins:
+        </para>
+        <itemizedlist>
+          <listitem><emphasis role="bold"><function role="SIS">lowerCorner</function>:</emphasis>
+            le point de départ lorsque l’on parcourt l’intérieur de l’enveloppe dans la direction des valeurs croissantes.
+          </listitem>
+          <listitem><emphasis role="bold"><function role="SIS">upperCorner</function>:</emphasis>
+            le point d’arrivé lorsque l’on a parcouru l’intérieur de l’enveloppe dans la direction des valeurs croissantes.
+          </listitem>
+        </itemizedlist>
+        <para>
+          Lorsque l’enveloppe ne traverse par l’antiméridien, ces deux définitions sont équivalentes à la sélection
+          des valeurs minimales et maximales respectivement. C’est le cas du rectangle vert dans la figure ci-dessous.
+          Lorsque l’enveloppe traverse l’antiméridien, les coins <function role="SIS">lowerCorner</function>
+          et <function role="SIS">upperCorner</function> apparaissent encore en bas et en haut du rectangle
+          (en supposant un système de coordonnées classique), donc leurs noms restent appropriés d’un point de vue visuel.
+          Mais les positions gauche et droite sont interchangées.
+          Ce cas est représenté par le rectangle rouge dans la figure ci-dessous.
+        </para>
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="&sis-javadoc;/org/apache/sis/geometry/doc-files/AntiMeridian.png" format="PNG"/>
+          </imageobject>
+          <caption>
+            Exemples d’enveloppes avec et sans croisement de l’antiméridien.
+          </caption>
+        </mediaobject>
+        <para>
+          Les notions d’inclusion et d’intersection s’interprètent toutefois de manière légèrement différente dans ces deux cas.
+          Dans le cas habituel où l’on ne traverse par l’antiméridien, le rectangle vert délimite bien une région d’inclusion.
+          Les régions exclues de ce rectangle se propagent à l’infini dans toutes les directions.
+          En d’autres mots, la région d’inclusion n’est pas répétée tous les 360°.
+          Mais dans le cas du rectangle rouge, l’information fournie par l’enveloppe délimite plutôt la région d’exclusion qui
+          se trouve entre les deux bords du rectangle. La région d’inclusion se propage à l’infini des côtés gauche et droit.
+          Nous pourrions stipuler que toute longitude inférieure à -180° ou supérieure à 180° est considérée exclue,
+          mais ça serait une décision arbitraire qui ne serait pas un reflet symétrique du cas habituel (rectangle vert).
+          Un développeur pourrait vouloir utiliser ces valeurs, par exemple dans une mosaïque où la carte du monde
+          est répétée plusieurs fois horizontalement sans pour autant les confondre.
+          Si un développeur souhaite effectuer des opérations comme si les régions d’inclusions ou d’exclusions étaient
+          répétées tous les 360°, alors il doit lui-même ramener ses valeurs de longitudes entre -180° et 180° au préalable.
+          Toutes les fonctions <function role="SIS">add(…)</function>, <function role="SIS">contains(…)</function>,
+          <function role="SIS">intersect(…)</function>, <foreignphrase>etc.</foreignphrase> de toutes les enveloppes
+          définies dans le paquet <literal role="SIS">org.apache.sis.geometry</literal> effectuent leurs calculs selon cette convention.
+        </para>
+        <sidebar>
+          <title>Généralisation à d’autres types d’axes</title>
+          <para>
+            Cette section nomme spécifiquement la longitude car il constitue le cas le plus courant d’axe cyclique.
+            Mais dans les enveloppes de Apache <acronym>SIS</acronym>, il n’est fait nul part mention explicite du cas de la longitude, ni de son cycle de 360°.
+            Les caractéristiques de la plage de valeurs de chaque axe (ses extremums, unités, type de cycle, <foreignphrase>etc.</foreignphrase>)
+            sont des attributs des objets <classname role="GeoAPI">CoordinateSystemAxis</classname>,
+            indirectement associés aux enveloppes via le système de référence des coordonnées.
+            Apache <acronym>SIS</acronym> inspecte ces attributs pour déterminer de quelle façon il doit effectuer ses opérations.
+            Ainsi, tout axe associé au code <constant role="GeoAPI">RangeMeaning.WRAPAROUND</constant> bénéficiera du même traitement que la longitude.
+            Cela pourrait être par exemple un axe du temps dans des données climatologiques
+            (une “année” représentant la température moyenne de tous les mois de janvier, suivit de la moyenne de tous les mois de février,
+            <foreignphrase>etc.</foreignphrase>).
+            Cette généralisation s’applique aussi aux axes de longitudes définis par une plage de 0° à 360° plutôt que de -180° à 180°.
+          </para>
+        </sidebar>
+        <para>
+          Une dernière note: le Java (ou de manière plus générale, la norme <acronym>IEEE</acronym> 754) définit deux valeurs distinctes de zéro:
+          un zéro positif et un zéro négatif. Ces deux valeurs sont considérées égales lorsqu’on les compares avec l’opérateur <literal>==</literal> du Java.
+          Mais dans les enveloppes de <acronym>SIS</acronym>, ils peuvent mener à des résultats opposés pour les axes ayant <constant role="GeoAPI">RangeMeaning.WRAPAROUND</constant>.
+          Une enveloppe dont la plage est [0…0], [-0…-0] ou [-0…+0] sera bien considérée comme une enveloppe vide,
+          mais la page [+0…-0] sera au contraire considérée comme incluant la totalité des valeurs, jusqu’à l’infini.
+          Ce comportement est conforme à la définition de <function role="SIS">lowerCorner</function> et <function role="SIS">upperCorner</function>
+          qui considère +0 comme le point de départ, et -0 comme le point d’arrivé après avoir fait le tour des valeurs possibles.
+          Un tel comportement ne se produit que pour la paire de valeurs +0 et -0, et seulement dans cet ordre.
+          Pour toutes les autres valeurs réelles, si la condition <literal>lower</literal> <literal>==</literal> <literal>upper</literal>
+          est vrai, alors il est garanti que l’enveloppe est vide.
+        </para>
+      </section>
+    </section>
+  </section>
+</chapter>

@@ -287,6 +287,9 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Cloneabl
      * This is typically a coordinate position consisting of the minimal ordinates for
      * the two dimensions for all points within the {@code Envelope}.
      *
+     * <p>The object returned by this method is a copy. Change in the returned position
+     * will not affect this envelope, and conversely.</p>
+     *
      * {@note The <cite>Web Coverage Service</cite> (WCS) 1.1 specification uses an extended
      * interpretation of the bounding box definition. In a WCS 1.1 data structure, the lower
      * corner defines the edges region in the directions of <em>decreasing</em> coordinate
@@ -295,7 +298,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Cloneabl
      * longitude greater than the upper corner longitude. Such extended interpretation applies
      * mostly to axes having <code>WRAPAROUND</code> range meaning.}
      *
-     * @return The lower corner, typically (but not necessarily) containing minimal ordinate values.
+     * @return A copy of the lower corner, typically (but not necessarily) containing minimal ordinate values.
      */
     @Override
     public DirectPosition2D getLowerCorner() {
@@ -307,6 +310,9 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Cloneabl
      * This is typically a coordinate position consisting of the maximal ordinates for
      * the two dimensions for all points within the {@code Envelope}.
      *
+     * <p>The object returned by this method is a copy. Change in the returned position
+     * will not affect this envelope, and conversely.</p>
+     *
      * {@note The <cite>Web Coverage Service</cite> (WCS) 1.1 specification uses an extended
      * interpretation of the bounding box definition. In a WCS 1.1 data structure, the upper
      * corner defines the edges region in the directions of <em>increasing</em> coordinate
@@ -315,7 +321,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Cloneabl
      * longitude less than the lower corner longitude. Such extended interpretation applies
      * mostly to axes having <code>WRAPAROUND</code> range meaning.}
      *
-     * @return The upper corner, typically (but not necessarily) containing maximal ordinate values.
+     * @return A copy of the upper corner, typically (but not necessarily) containing maximal ordinate values.
      */
     @Override
     public DirectPosition2D getUpperCorner() {
@@ -499,8 +505,6 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Cloneabl
      * {@link java.lang.Double#NaN NaN}, then the envelope is considered empty.
      * This is different than the default {@link java.awt.geom.Rectangle2D.Double#isEmpty()}
      * implementation, which doesn't check for {@code NaN} values.
-     *
-     * @since 3.20
      */
     @Override
     public boolean isEmpty() {
@@ -521,8 +525,6 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Cloneabl
      * @param  py The second ordinate value of the point to text.
      * @return {@code true} if the specified coordinate is inside the boundary
      *         of this envelope; {@code false} otherwise.
-     *
-     * @since 3.20
      */
     @Override
     public boolean contains(final double px, final double py) {
@@ -549,8 +551,6 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Cloneabl
      *
      * @param  rect The rectangle to test for inclusion.
      * @return {@code true} if this envelope completely encloses the specified rectangle.
-     *
-     * @since 3.20
      */
     @Override
     public boolean contains(final Rectangle2D rect) {
@@ -576,8 +576,6 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Cloneabl
      * @param  rw The width of the rectangle to test for inclusion. May be negative if the rectangle spans the anti-meridian.
      * @param  rh The height of the rectangle to test for inclusion. May be negative.
      * @return {@code true} if this envelope completely encloses the specified one.
-     *
-     * @since 3.20
      */
     @Override
     public boolean contains(final double rx, final double ry, final double rw, final double rh) {
@@ -622,8 +620,6 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Cloneabl
      *
      * @param  rect The rectangle to test for intersection.
      * @return {@code true} if this envelope intersects the specified rectangle.
-     *
-     * @since 3.20
      */
     @Override
     public boolean intersects(final Rectangle2D rect) {
@@ -982,6 +978,6 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Cloneabl
      */
     @Override
     public String toString() {
-        return AbstractEnvelope.toString(this);
+        return AbstractEnvelope.toString(this, false);
     }
 }

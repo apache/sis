@@ -205,6 +205,22 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
     }
 
     /**
+     * Formats this position in the <cite>Well Known Text</cite> (WKT) format.
+     * The output is like below:
+     *
+     * {@preformat wkt
+     *   POINT(ordinate)
+     * }
+     *
+     * The string returned by this method can be {@linkplain #DirectPosition1D(CharSequence) parsed}
+     * by the {@code DirectPosition1D} constructor.
+     */
+    @Override
+    public String toString() {
+        return toString(this, ordinate == (float) ordinate);
+    }
+
+    /**
      * Returns a copy of this position.
      */
     @Override

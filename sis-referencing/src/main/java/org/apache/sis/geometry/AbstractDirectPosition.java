@@ -161,6 +161,25 @@ public abstract class AbstractDirectPosition implements DirectPosition {
     }
 
     /**
+     * Returns {@code true} if every values in the given {@code double} array could be casted
+     * to the {@code float} type without precision lost. This method treats all {@code NaN} values
+     * as equal.
+     *
+     * @param  values The value to test for their precision.
+     * @return {@code true} if every values can be casted to the {@code float} type without precision lost.
+     *
+     * @see #toString(DirectPosition, boolean)
+     */
+    static boolean isSimplePrecision(final double... values) {
+        for (final double value : values) {
+            if (Double.doubleToLongBits(value) != Double.doubleToLongBits((float) value)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Formats this position in the <cite>Well Known Text</cite> (WKT) format.
      * The returned string is like below, where {@code x₀}, {@code x₁}, {@code x₂}, <i>etc.</i>
      * are the ordinate values at index 0, 1, 2, <i>etc.</i>:
@@ -176,15 +195,41 @@ public abstract class AbstractDirectPosition implements DirectPosition {
      */
     @Override
     public String toString() {
-        final StringBuilder buffer = new StringBuilder(32).append("POINT(");
-        final int dimension = getDimension();
-        for (int i=0; i<dimension; i++) {
-            if (i != 0) {
-                buffer.append(' ');
+        return toString(this, false);
+    }
+
+    /**
+     * Implementation of the public {@link #toString()} and {@link Envelope2D#toString()} methods
+     * for formatting a {@code POINT} element from a direct position in <cite>Well Known Text</cite>
+     * (WKT) format.
+     *
+     * @param  position The position to format.
+     * @param  isSimplePrecision {@code true} if every ordinate values can be casted to {@code float}.
+     * @return The point as a {@code POINT} in WKT format.
+     *
+     * @see #isSimplePrecision(double[])
+     */
+    static String toString(final DirectPosition position, final boolean isSimplePrecision) {
+        final StringBuilder buffer = new StringBuilder(32).append("POINT");
+        final int dimension = position.getDimension();
+        if (dimension == 0) {
+            buffer.append("()");
+        } else {
+            char separator = '(';
+            for (int i=0; i<dimension; i++) {
+                buffer.append(separator);
+                final double ordinate = position.getOrdinate(i);
+                if (isSimplePrecision) {
+                    buffer.append((float) ordinate);
+                } else {
+                    buffer.append(ordinate);
+                }
+                trimFractionalPart(buffer);
+                separator = ' ';
             }
-            trimFractionalPart(buffer.append(getOrdinate(i)));
+            buffer.append(')');
         }
-        return buffer.append(')').toString();
+        return buffer.toString();
     }
 
     /**

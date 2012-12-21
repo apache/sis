@@ -124,7 +124,7 @@ public interface LenientComparable {
      *        special mode for figuring out why two objects expected to be equal are not.</li>
      * </ol>
      *
-     * Note that {@code this.equals(other, mode)} is <strong>not</strong> guaranteed to be equals
+     * Note that {@code this.equals(other, mode)} is <strong>not</strong> guaranteed to be equal
      * to {@code other.equals(this, mode)}.  In particular, the {@code BY_CONTRACT} level and all
      * levels below it will typically compare only the properties known to {@code this} instance,
      * ignoring any properties that may be known only by the {@code other} instance.
