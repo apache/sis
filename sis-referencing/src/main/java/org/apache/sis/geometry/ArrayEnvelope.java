@@ -86,7 +86,7 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
     {
         crs = getCommonCRS(lowerCorner, upperCorner); // This performs also an argument check.
         final int dimension = lowerCorner.getDimension();
-        AbstractDirectPosition.ensureDimensionMatch(crs, dimension);
+        ensureDimensionMatches("crs", dimension, crs);
         ensureSameDimension(dimension, upperCorner.getDimension());
         ordinates = new double[dimension * 2];
         for (int i=0; i<dimension; i++) {

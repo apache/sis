@@ -27,6 +27,8 @@ import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.util.resources.Errors;
 
+import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
+
 
 /**
  * Holds the coordinates for a one-dimensional position within some coordinate reference system.
@@ -68,7 +70,7 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
      * @param crs The coordinate reference system.
      */
     public DirectPosition1D(final CoordinateReferenceSystem crs) {
-        ensureDimensionMatch(crs, 1);
+        ensureDimensionMatches("crs", 1, crs);
         this.crs = crs;
     }
 
@@ -103,7 +105,7 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
             throw new IllegalArgumentException(Errors.format(
                     Errors.Keys.UnparsableStringForClass_2, "POINT", wkt));
         }
-        ensureDimensionMatch("wkt", ordinates.length, 1);
+        ensureDimensionMatches("wkt", 1, ordinates);
         ordinate = ordinates[0];
     }
 
@@ -136,7 +138,7 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
      * @param crs The new coordinate reference system, or {@code null}.
      */
     public void setCoordinateReferenceSystem(final CoordinateReferenceSystem crs) {
-        ensureDimensionMatch(crs, 1);
+        ensureDimensionMatches("crs", 1, crs);
         this.crs = crs;
     }
 
@@ -199,7 +201,7 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
      */
     @Override
     public void setLocation(final DirectPosition position) throws MismatchedDimensionException {
-        ensureDimensionMatch("position", position.getDimension(), 1);
+        ensureDimensionMatches("position", 1, position);
         setCoordinateReferenceSystem(position.getCoordinateReferenceSystem());
         ordinate = position.getOrdinate(0);
     }

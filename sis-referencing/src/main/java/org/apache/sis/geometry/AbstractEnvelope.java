@@ -40,6 +40,7 @@ import org.apache.sis.util.resources.Errors;
 import static java.lang.Double.doubleToLongBits;
 import static org.apache.sis.internal.util.Utilities.SIGN_BIT_MASK;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
 import static org.apache.sis.util.StringBuilders.trimFractionalPart;
 import static org.apache.sis.math.MathFunctions.epsilonEqual;
 import static org.apache.sis.math.MathFunctions.isNegative;
@@ -569,7 +570,7 @@ public abstract class AbstractEnvelope implements Envelope {
     public boolean contains(final DirectPosition position) throws MismatchedDimensionException {
         ensureNonNull("position", position);
         final int dimension = getDimension();
-        AbstractDirectPosition.ensureDimensionMatch("point", position.getDimension(), dimension);
+        ensureDimensionMatches("point", dimension, position);
         assert equalsIgnoreMetadata(getCoordinateReferenceSystem(),
                 position.getCoordinateReferenceSystem(), true) : position;
         for (int i=0; i<dimension; i++) {
@@ -625,7 +626,7 @@ public abstract class AbstractEnvelope implements Envelope {
     public boolean contains(final Envelope envelope, final boolean edgesInclusive) throws MismatchedDimensionException {
         ensureNonNull("envelope", envelope);
         final int dimension = getDimension();
-        AbstractDirectPosition.ensureDimensionMatch("envelope", envelope.getDimension(), dimension);
+        ensureDimensionMatches("envelope", dimension, envelope);
         assert equalsIgnoreMetadata(getCoordinateReferenceSystem(),
                 envelope.getCoordinateReferenceSystem(), true) : envelope;
         final DirectPosition lowerCorner = envelope.getLowerCorner();
@@ -715,7 +716,7 @@ public abstract class AbstractEnvelope implements Envelope {
     public boolean intersects(final Envelope envelope, final boolean edgesInclusive) throws MismatchedDimensionException {
         ensureNonNull("envelope", envelope);
         final int dimension = getDimension();
-        AbstractDirectPosition.ensureDimensionMatch("envelope", envelope.getDimension(), dimension);
+        ensureDimensionMatches("envelope", dimension, envelope);
         assert equalsIgnoreMetadata(getCoordinateReferenceSystem(),
                 envelope.getCoordinateReferenceSystem(), true) : envelope;
         final DirectPosition lowerCorner = envelope.getLowerCorner();

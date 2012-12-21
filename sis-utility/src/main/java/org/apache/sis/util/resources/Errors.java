@@ -153,7 +153,7 @@ public final class Errors extends IndexedResourceBundle {
         /**
          * The [{0} … {1}] range of ordinate values is not valid for the “{2}” axis.
          */
-        public static final int IllegalOrdinateRange_3 = 63;
+        public static final int IllegalOrdinateRange_3 = 5;
 
         /**
          * Property ‘{0}’ can be associated to an instance of ‘{1}’.
@@ -299,11 +299,6 @@ public final class Errors extends IndexedResourceBundle {
          * A decimal separator is required.
          */
         public static final int RequireDecimalSeparator = 33;
-
-        /**
-         * Argument ‘{0}’ has {1} dimensions, while {2} was expected.
-         */
-        public static final int UnexpectedArgumentDimension_3 = 5;
 
         /**
          * Unexpected change in ‘{0}’.

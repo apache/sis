@@ -258,7 +258,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
     public void setCoordinateReferenceSystem(final CoordinateReferenceSystem crs)
             throws MismatchedDimensionException
     {
-        AbstractDirectPosition.ensureDimensionMatch(crs, getDimension());
+        ensureDimensionMatches("crs", getDimension(), crs);
         this.crs = crs;
     }
 
@@ -318,7 +318,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
     public void setEnvelope(final Envelope envelope) throws MismatchedDimensionException {
         ensureNonNull("envelope", envelope);
         final int dimension = ordinates.length >>> 1;
-        AbstractDirectPosition.ensureDimensionMatch("envelope", envelope.getDimension(), dimension);
+        ensureDimensionMatches("envelope", dimension, envelope);
         if (envelope instanceof ArrayEnvelope) {
             System.arraycopy(((ArrayEnvelope) envelope).ordinates, 0, ordinates, 0, ordinates.length);
         } else {
@@ -408,7 +408,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
     public void add(final DirectPosition position) throws MismatchedDimensionException {
         ensureNonNull("position", position);
         final int dim = ordinates.length >>> 1;
-        AbstractDirectPosition.ensureDimensionMatch("position", position.getDimension(), dim);
+        ensureDimensionMatches("position", dim, position);
         assert equalsIgnoreMetadata(crs, position.getCoordinateReferenceSystem(), true) : position;
         for (int i=0; i<dim; i++) {
             final double value = position.getOrdinate(i);
@@ -478,7 +478,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
     public void add(final Envelope envelope) throws MismatchedDimensionException {
         ensureNonNull("envelope", envelope);
         final int dim = ordinates.length >>> 1;
-        AbstractDirectPosition.ensureDimensionMatch("envelope", envelope.getDimension(), dim);
+        ensureDimensionMatches("envelope", dim, envelope);
         assert equalsIgnoreMetadata(crs, envelope.getCoordinateReferenceSystem(), true) : envelope;
         final DirectPosition lower = envelope.getLowerCorner();
         final DirectPosition upper = envelope.getUpperCorner();
@@ -597,7 +597,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
     public void intersect(final Envelope envelope) throws MismatchedDimensionException {
         ensureNonNull("envelope", envelope);
         final int dim = ordinates.length >>> 1;
-        AbstractDirectPosition.ensureDimensionMatch("envelope", envelope.getDimension(), dim);
+        ensureDimensionMatches("envelope", dim, envelope);
         assert equalsIgnoreMetadata(crs, envelope.getCoordinateReferenceSystem(), true) : envelope;
         final DirectPosition lower = envelope.getLowerCorner();
         final DirectPosition upper = envelope.getUpperCorner();
