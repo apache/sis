@@ -22,6 +22,7 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
+import static org.opengis.test.Validators.*;
 
 
 /**
@@ -39,7 +40,9 @@ public final strictfp class DirectPosition1DTest extends TestCase {
      */
     @Test
     public void testWktFormatting() {
-        assertEquals("POINT(8.5)", new DirectPosition1D(8.5).toString());
+        final DirectPosition1D position = new DirectPosition1D(8.5);
+        assertEquals("POINT(8.5)", position.toString());
+        validate(position);
     }
 
     /**
@@ -47,7 +50,9 @@ public final strictfp class DirectPosition1DTest extends TestCase {
      */
     @Test
     public void testWktParsing() {
-        assertEquals("POINT(8)", new DirectPosition1D("POINT(8)").toString());
+        final DirectPosition1D position = new DirectPosition1D("POINT(8)");
+        assertEquals("POINT(8)", position.toString());
+        validate(position);
     }
 
     /**
@@ -80,6 +85,7 @@ public final strictfp class DirectPosition1DTest extends TestCase {
         final DirectPosition1D p2 = p1.clone();
         assertEquals("Expected the same CRS and ordinates.", p1, p2);
         assertEquals("Expected the same ordinates.", 20.0, p2.ordinate, 0.0);
+        validate(p2);
     }
 
     /**
@@ -87,7 +93,9 @@ public final strictfp class DirectPosition1DTest extends TestCase {
      */
     @Test
     public void testSerialize() {
-        final GeneralDirectPosition p = new GeneralDirectPosition(12, -20, 4, 9);
-        assertNotSame(p, assertSerializedEquals(p));
+        final DirectPosition1D p1 = new DirectPosition1D(12);
+        final DirectPosition1D p2 = assertSerializedEquals(p1);
+        assertNotSame(p1, p2);
+        validate(p2);
     }
 }

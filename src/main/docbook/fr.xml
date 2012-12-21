@@ -32,5 +32,6 @@
   <xi:include href="fr/geoapi.xml"/>
   <xi:include href="fr/XML.xml"/>
   <xi:include href="fr/utility.xml"/>
+  <xi:include href="fr/geometry.xml"/>
 
 </book>
