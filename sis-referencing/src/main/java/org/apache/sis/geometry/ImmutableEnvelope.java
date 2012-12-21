@@ -30,6 +30,8 @@ import org.opengis.geometry.MismatchedReferenceSystemException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 
+import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
+
 
 /**
  * Immutable representation of an {@linkplain Envelope envelope}.
@@ -78,7 +80,7 @@ public final class ImmutableEnvelope extends ArrayEnvelope implements Serializab
     {
         super(lowerCorner, upperCorner);
         this.crs = crs;
-        AbstractDirectPosition.ensureDimensionMatch(crs, getDimension());
+        ensureDimensionMatches("crs", getDimension(), crs);
     }
 
     /**
@@ -124,7 +126,7 @@ public final class ImmutableEnvelope extends ArrayEnvelope implements Serializab
     {
         super(envelope);
         this.crs = crs;
-        AbstractDirectPosition.ensureDimensionMatch(crs, getDimension());
+        ensureDimensionMatches("crs", getDimension(), crs);
     }
 
     /**
@@ -151,7 +153,7 @@ public final class ImmutableEnvelope extends ArrayEnvelope implements Serializab
     {
         super(wkt);
         this.crs = crs;
-        AbstractDirectPosition.ensureDimensionMatch(crs, getDimension());
+        ensureDimensionMatches("crs", getDimension(), crs);
     }
 
     /**
