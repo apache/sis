@@ -25,15 +25,14 @@ import java.io.IOException;
 import java.text.Format;
 import java.text.ParsePosition;
 import java.text.ParseException;
-import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.sis.io.LineFormatter;
 import org.apache.sis.io.TableFormatter;
+import org.apache.sis.io.TabularFormat;
 import org.apache.sis.io.CompoundFormat;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.StringBuilders;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.LocalizedParseException;
@@ -67,18 +66,23 @@ import static org.apache.sis.util.Characters.NO_BREAK_SPACE;
  *
  * This representation can be printed to the {@linkplain java.io.Console#writer() console output}
  * (for example) if the stream uses a monospaced font and supports Unicode characters.
+ *
+ * {@section Customization}
  * Some formatting characteristics (indentation width, column where to draw the vertical line
  * below nodes) can be modified by calls to the setter methods defined in this formatter.
+ * In particular, the dots joining the node labels to their values can be specified by the
+ * {@linkplain #setColumnSeparatorPattern(String) column separator pattern}.
+ * The default pattern is {@code "?……[…] "}, which means "<cite>If the next value is non-null,
+ * then insert the {@code "……"} string, repeat the {@code '…'} character as many time as needed
+ * (may be zero), and finally insert a space</cite>".
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.0)
  * @version 0.3
  * @module
- *
- * @see org.apache.sis.io.TableFormatter
  */
 @NotThreadSafe
-public class TreeTableFormat extends CompoundFormat<TreeTable> {
+public class TreeTableFormat extends TabularFormat<TreeTable> {
     /**
      * For cross-version compatibility.
      */
@@ -114,45 +118,6 @@ public class TreeTableFormat extends CompoundFormat<TreeTable> {
     private int verticalLinePosition;
 
     /**
-     * The string to write before and after the {@link #columnSeparator},
-     * or an empty string if none.
-     */
-    String separatorPrefix, separatorSuffix;
-
-    /**
-     * The column separator to use at formatting time if there is more than one column.
-     * This character will be repeated as many time as needed.
-     *
-     * @see #getColumnSeparatorPattern()
-     * @see #setColumnSeparatorPattern(String)
-     */
-    char columnSeparator;
-
-    /**
-     * {@code true} if the trailing {@code null} values shall be omitted at formatting time.
-     */
-    boolean omitTrailingNulls;
-
-    /**
-     * {@code true} if the user defined the parsing pattern explicitely.
-     */
-    boolean isParsePatternDefined;
-
-    /**
-     * The pattern used at parsing time for finding the column separators, or {@code null}
-     * if not yet constructed. This field is serialized because it may be a user-specified pattern.
-     */
-    private Pattern parsePattern;
-
-    /**
-     * The line separator to use for formatting the tree.
-     *
-     * @see #getLineSeparator()
-     * @see #setLineSeparator(String)
-     */
-    String lineSeparator;
-
-    /**
      * The tree symbols to write in the left margin, or {@code null} if not yet computed.
      * The default symbols are as below:
      *
@@ -181,7 +146,6 @@ public class TreeTableFormat extends CompoundFormat<TreeTable> {
         columnSeparator   = '…';
         separatorSuffix   = " ";
         omitTrailingNulls = true;
-        lineSeparator     = System.lineSeparator();
     }
 
     /**
@@ -237,171 +201,6 @@ public class TreeTableFormat extends CompoundFormat<TreeTable> {
             }
             columnIndices = DefaultTreeTable.createColumnIndices(columns);
         }
-    }
-
-    /**
-     * Returns the pattern of characters used in column separators. Those characters will be used
-     * only if more than one column is formatted. See {@link #setColumnSeparatorPattern(String)}
-     * for a description of the pattern syntax.
-     *
-     * <p>The default pattern is {@code "?……[…] "}, which means "<cite>If the next value is
-     * non-null, then insert the {@code "……"} string, repeat the {@code '…'} character as many
-     * time as needed (may be zero), and finally insert a space</cite>".</p>
-     *
-     * @return The pattern of the current column separator.
-     */
-    public String getColumnSeparatorPattern() {
-        final StringBuilder buffer = new StringBuilder(8);
-        buffer.append(separatorPrefix).append('\uFFFF').append(separatorSuffix);
-        StringBuilders.replace(buffer, "\\", "\\\\");
-        StringBuilders.replace(buffer, "?",  "\\?");
-        StringBuilders.replace(buffer, "[",  "\\[");
-        StringBuilders.replace(buffer, "]",  "\\]");
-        StringBuilders.replace(buffer, "/",  "\\/");
-        if (omitTrailingNulls) {
-            buffer.insert(0, '?');
-        }
-        final int insertAt = buffer.indexOf("\uFFFF");
-        buffer.replace(insertAt, insertAt+1, "[\uFFFF]").setCharAt(insertAt+1, columnSeparator);
-        if (isParsePatternDefined) {
-            buffer.append('/').append(parsePattern.pattern());
-        }
-        return buffer.toString();
-    }
-
-    /**
-     * Sets the pattern of the characters to insert between the columns. The pattern shall contain
-     * exactly one occurrence of the {@code "[ ]"} pair of bracket, with exactly one character
-     * between them. This character will be repeated as many time as needed for columns alignment.
-     *
-     * <p>The formatting pattern can optionally be followed by a regular expression to be used at
-     * parsing time. If omitted, the parsing pattern will be inferred from the formatting pattern.
-     * If specified, then the {@link #parse(CharSequence, ParsePosition) parse} method will invoke
-     * the {@link Matcher#find()} method for determining the column boundaries.</p>
-     *
-     * <p>The characters listed below have special meaning in the pattern.
-     * Other characters are appended <cite>as-is</cite> between the columns.</p>
-     *
-     * <table class="sis">
-     *   <tr><th>Character(s)</th> <th>Meaning</th></tr>
-     *   <tr><td>{@code '?'}</td>  <td>Omit the column separator for trailing null values.</td></tr>
-     *   <tr><td>{@code "[ ]"}</td><td>Repeat the character between bracket as needed.</td></tr>
-     *   <tr><td>{@code '/'}</td>  <td>Separate the formatting pattern from the parsing pattern.</td></tr>
-     *   <tr><td>{@code '\\'}</td> <td>Escape any of the characters listed in this table.</td></tr>
-     * </table>
-     *
-     * Restrictions:
-     * <ul>
-     *   <li>If present, {@code '?'} shall be the first character in the pattern.</li>
-     *   <li>The repeated character (specified inside the pair of brackets) is mandatory.</li>
-     *   <li>In the current implementation, the repeated character must be in the
-     *       {@linkplain Character#isBmpCodePoint(int) Basic Multilanguage Plane}.</li>
-     *   <li>If {@code '/'} is present, anything on its right must be compliant
-     *       with the {@link Pattern} syntax.</li>
-     * </ul>
-     *
-     * @param  pattern The pattern of the new column separator.
-     * @throws IllegalArgumentException If the given pattern is illegal.
-     */
-    public void setColumnSeparatorPattern(final String pattern) throws IllegalArgumentException {
-        ArgumentChecks.ensureNonEmpty("pattern", pattern);
-        final int length = pattern.length();
-        final StringBuilder buffer = new StringBuilder(length);
-        boolean escape  = false;
-        boolean trim    = false;
-        String  prefix  = null;
-        String  regex   = null;
-        int separatorIndex = -1;
-scan:   for (int i=0; i<length; i++) {
-            final char c = pattern.charAt(i);
-            switch (c) {
-                case '\uFFFF': { // This "character" is reserved.
-                    prefix = null;
-                    break scan; // This will cause IllegalArgumentException to be thrown.
-                }
-                case '\\': {
-                    if (i != separatorIndex) {
-                        if (escape) break;
-                        escape = true;
-                    }
-                    continue;
-                }
-                case '?': {
-                    if (i != 0) {
-                        prefix = null;
-                        break scan;
-                    }
-                    trim = true;
-                    continue;
-                }
-                case '[': {
-                    if (escape) break;
-                    if (i != separatorIndex) {
-                        if (separatorIndex >= 0) {
-                            prefix = null;
-                            break scan; // This will cause IllegalArgumentException to be thrown.
-                        }
-                        separatorIndex = i+1;
-                    }
-                    continue;
-                }
-                case ']': {
-                    if (escape) break;
-                    switch (i - separatorIndex) {
-                        case 0:  continue;
-                        case 1:  prefix = buffer.toString(); buffer.setLength(0); continue;
-                        default: prefix = null; break scan;
-                    }
-                }
-                case '/': {
-                    if (escape) break;
-                    regex = pattern.substring(i+1);
-                    break scan;
-                }
-            }
-            if (i != separatorIndex) {
-                buffer.append(c);
-            }
-        }
-        if (prefix == null) {
-            throw new IllegalArgumentException(Errors.format(
-                    Errors.Keys.IllegalFormatPatternForClass_2, TreeTable.class, pattern));
-        }
-        /*
-         * Finally store the result. The parsing pattern must be first because the call to
-         * Pattern.compile(regex) may thrown PatternSyntaxException. In such case, we want
-         * it to happen before we modified anything else.
-         */
-        if (regex != null) {
-            parsePattern = Pattern.compile(regex);
-            isParsePatternDefined = true;
-        } else {
-            parsePattern = null;
-            isParsePatternDefined = false;
-        }
-        omitTrailingNulls = trim;
-        separatorPrefix   = prefix;
-        separatorSuffix   = buffer.toString();
-        columnSeparator   = pattern.charAt(separatorIndex);
-    }
-
-    /**
-     * Returns the current line separator. The default value is system-dependent.
-     *
-     * @return The current line separator.
-     */
-    public String getLineSeparator() {
-        return lineSeparator;
-    }
-
-    /**
-     * Sets the line separator.
-     *
-     * @param separator The new line separator.
-     */
-    public void setLineSeparator(final String separator) {
-        ArgumentChecks.ensureNonEmpty("separator", separator);
-        lineSeparator = separator;
     }
 
     /**
@@ -508,13 +307,7 @@ scan:   for (int i=0; i<length; i++) {
      */
     @Override
     public TreeTable parse(final CharSequence text, final ParsePosition pos) throws ParseException {
-        if (parsePattern == null) {
-            parsePattern = Pattern.compile(
-                    Pattern.quote(separatorPrefix)
-                  + Pattern.quote(String.valueOf(columnSeparator)) + '*'
-                  + Pattern.quote(separatorSuffix));
-        }
-        final Matcher matcher = parsePattern.matcher(text);
+        final Matcher matcher   = getColumnSeparatorMatcher(text);
         final int length        = text.length();
         int indexOfLineStart    = pos.getIndex();
         int indentationLevel    = 0;                // Current index in the 'indentations' array.
@@ -711,17 +504,23 @@ scan:   for (int i=0; i<length; i++) {
     }
 
     /**
+     * Writes the column separator to the given appendable. This is a helper method for the
+     * {@link Writer} inner class,  defined here because it uses many protected fields from
+     * the superclass.  Accessing those fields from the inner class generate many synthetic
+     * methods, so we are better to define only one method here doing the work.
+     */
+    final void writeColumnSeparator(final Appendable out) throws IOException {
+        // We have a TableFormatter instance if and only if there is 2 or more columns.
+        ((TableFormatter) out.append(separatorPrefix)).nextColumn(columnSeparator);
+        out.append(separatorSuffix);
+    }
+
+    /**
      * Creates string representation of the node values. Tabulations are replaced by spaces,
      * and line feeds are replaced by the Pilcrow character. This is necessary in order to
      * avoid conflict with the characters expected by {@link TableFormatter}.
      */
     private final class Writer extends LineFormatter {
-        /**
-         * For each indentation level, {@code true} if the previous levels are writing the last node.
-         * This array will growth as needed.
-         */
-        private boolean[] isLast;
-
         /**
          * The columns to write.
          */
@@ -738,14 +537,20 @@ scan:   for (int i=0; i<length; i++) {
         private final Object[] values;
 
         /**
+         * For each indentation level, {@code true} if the previous levels are writing the last node.
+         * This array will growth as needed.
+         */
+        private boolean[] isLast;
+
+        /**
          * Creates a new instance which will write in the given appendable.
          */
         Writer(final Appendable out, final TableColumn<?>[] columns) {
             super(columns.length >= 2 ? new TableFormatter(out, "") : out);
-            this.columns  = columns;
-            this.formats  = getFormats(columns, false);
-            this.values   = new Object[columns.length];
-            this.isLast   = new boolean[8];
+            this.columns = columns;
+            this.formats = getFormats(columns, false);
+            this.values  = new Object[columns.length];
+            this.isLast  = new boolean[8];
             setTabulationExpanded(true);
             setLineSeparator(" ¶ ");
         }
@@ -802,9 +607,7 @@ scan:   for (int i=0; i<length; i++) {
             }
             for (int i=0; i<=n; i++) {
                 if (i != 0) {
-                    // We have a TableFormatter instance if and only if there is 2 or more columns.
-                    ((TableFormatter) out.append(separatorPrefix)).nextColumn(columnSeparator);
-                    out.append(separatorSuffix);
+                    writeColumnSeparator(out);
                 }
                 formatValue(formats[i], values[i]);
                 clear();

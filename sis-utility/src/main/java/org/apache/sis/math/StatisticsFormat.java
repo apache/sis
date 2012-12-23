@@ -16,8 +16,8 @@
  */
 package org.apache.sis.math;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.ArrayList;
 import java.io.IOException;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -28,7 +28,7 @@ import java.text.ParsePosition;
 import java.text.ParseException;
 
 import org.apache.sis.io.TableFormatter;
-import org.apache.sis.io.CompoundFormat;
+import org.apache.sis.io.TabularFormat;
 import org.apache.sis.util.resources.Vocabulary;
 
 import static java.lang.Math.*;
@@ -36,16 +36,24 @@ import static java.lang.Math.*;
 
 /**
  * Formats a {@link Statistics} object.
- * This is a package-private class for now - if we want to make it public, we may need to make it
- * a full-featured {@link java.text.Format} implementation.
+ * By default, newly created {@code StatisticsFormat} instances will format statistical values
+ * in a tabular format using spaces as the column separator. This default configuration matches
+ * the {@link Statistics#toString()} format.
+ *
+ * {@section Limitations}
+ * The current implementation can only format statistics - parsing is not yet implemented.
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @since   0.3 (derived from geotk-1.0)
  * @version 0.3
  * @module
  */
-@SuppressWarnings("serial")
-final class StatisticsFormat extends CompoundFormat<Statistics> {
+public class StatisticsFormat extends TabularFormat<Statistics> {
+    /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = -7393669354879347985L;
+
     /**
      * Number of additional digits, to be added to the number of digits computed from the
      * range and the number of sample values. This is an arbitrary parameter.
@@ -65,12 +73,6 @@ final class StatisticsFormat extends CompoundFormat<Statistics> {
      * @see Statistics#standardDeviation(boolean)
      */
     private boolean allPopulation;
-
-    /**
-     * The column separator, typically as a semicolon or tabulation character.
-     * If 0, then the values will be written in a tabular format using {@link TableFormatter}.
-     */
-    private char columnSeparator;
 
     /**
      * Returns an instance for the current system default locale.
@@ -117,6 +119,33 @@ final class StatisticsFormat extends CompoundFormat<Statistics> {
     }
 
     /**
+     * Returns {@code true} if this formatter shall consider that the statistics where computed
+     * using the totality of the populations under study. This information impacts the standard
+     * deviation values to be formatted.
+     *
+     * @return {@code true} if the statistics to format where computed using the totality of
+     *         the populations under study.
+     *
+     * @see Statistics#standardDeviation(boolean)
+     */
+    public boolean isForAllPopulation() {
+        return allPopulation;
+    }
+
+    /**
+     * Sets whether this formatter shall consider that the statistics where computed using
+     * the totality of the populations under study. The default value is {@code false}.
+     *
+     * @param allPopulation {@code true} if the statistics to format where computed
+     *        using the totality of the populations under study.
+     *
+     * @see Statistics#standardDeviation(boolean)
+     */
+    public void setForAllPopulation(final boolean allPopulation) {
+        this.allPopulation = allPopulation;
+    }
+
+    /**
      * Not yet implemented.
      */
     @Override
@@ -126,7 +155,8 @@ final class StatisticsFormat extends CompoundFormat<Statistics> {
 
     /**
      * The resource keys of the rows to formats. Array index must be consistent with
-     * the switch statements inside the {@link #format(Statistics)} method.
+     * the switch statements inside the {@link #format(Statistics)} method (we define
+     * this static field close to the format methods for this purpose).
      */
     private static final int[] KEYS = {
         Vocabulary.Keys.NumberOfValues,
@@ -142,6 +172,10 @@ final class StatisticsFormat extends CompoundFormat<Statistics> {
      * Formats a localized string representation of the given statistics.
      * If statistics on {@linkplain Statistics#differences() differences}
      * are associated to the given object, they will be formatted too.
+     *
+     * @param  stats       The statistics to format.
+     * @param  toAppendTo  Where to format the object.
+     * @throws IOException If an error occurred while writing in the given appender.
      */
     @Override
     public void format(Statistics stats, final Appendable toAppendTo) throws IOException {
@@ -158,8 +192,7 @@ final class StatisticsFormat extends CompoundFormat<Statistics> {
      * for the statistics on {@linkplain Statistics#differences() differences} - if
      * such statistics are wanted, they must be included in the given array.
      */
-    private void format(final Statistics[] stats, Appendable toAppendTo) throws IOException {
-        final String lineSeparator = System.lineSeparator();
+    private void format(final Statistics[] stats, final Appendable toAppendTo) throws IOException {
         /*
          * Verify if we can omit the count of NaN values.
          */
@@ -170,17 +203,7 @@ final class StatisticsFormat extends CompoundFormat<Statistics> {
                 break;
             }
         }
-        /*
-         * This formatter can optionally use a column separator, typically a semi-colon.
-         * If no column separator was specified (which is the usual case), then we will
-         * format the values in a tabular format.
-         */
-        TableFormatter table = null;
-        char separator = columnSeparator;
-        if (separator == 0) {
-            toAppendTo = table = new TableFormatter(toAppendTo, " ");
-            separator = '\t'; // Will be handled especially by TableFormatter.
-        }
+        final TableFormatter table = new TableFormatter(toAppendTo, separatorSuffix);
         final Vocabulary resources = Vocabulary.getResources(labelLocale);
         /*
          * Initialize the NumberFormat for formatting integers without scientific notation.
@@ -209,10 +232,8 @@ final class StatisticsFormat extends CompoundFormat<Statistics> {
                 case 2: needsConfigure = true; break;
                 case 3: needsConfigure = (stats[0].differences() != null); break;
             }
-            if (table != null) {
-                table.setCellAlignment(TableFormatter.ALIGN_LEFT);
-            }
-            toAppendTo.append(resources.getString(KEYS[i])).append(':');
+            table.setCellAlignment(TableFormatter.ALIGN_LEFT);
+            table.append(resources.getString(KEYS[i])).append(':');
             for (final Statistics s : stats) {
                 final Number value;
                 switch (i) {
@@ -228,19 +249,17 @@ final class StatisticsFormat extends CompoundFormat<Statistics> {
                 if (needsConfigure) {
                     configure(format, s);
                 }
-                toAppendTo.append(separator).append(format.format(value));
-                if (table != null) {
-                    table.setCellAlignment(TableFormatter.ALIGN_RIGHT);
-                }
+                table.append(separatorPrefix);
+                table.nextColumn(columnSeparator);
+                table.append(format.format(value));
+                table.setCellAlignment(TableFormatter.ALIGN_RIGHT);
             }
-            toAppendTo.append(lineSeparator);
+            table.append(lineSeparator);
         }
         /*
          * TableFormatter needs to be explicitly flushed in order to format the values.
          */
-        if (table != null) {
-            table.flush();
-        }
+        table.flush();
     }
 
     /**
