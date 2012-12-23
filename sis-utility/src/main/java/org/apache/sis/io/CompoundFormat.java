@@ -39,9 +39,6 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.internal.util.LocalizedParseException;
 
-// Related to JDK7
-import java.util.Objects;
-
 
 /**
  * Base class of {@link Format} implementations which delegate part of their work to other
@@ -412,31 +409,11 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
         return clone;
     }
 
-    /**
-     * Compares this format with the given object for equality.
-     *
-     * @param  other The other object to compare with this.
-     * @return {@code true} if the other object is a format of the same class than this
-     *         and having the same configuration.
+    /*
+     * Do not override equals(Object) and hashCode(). They are unlikely to be needed since we
+     * do not expect CompoundFormats to be used as keys in HashMap, especially since they are
+     * mutable. Furthermore it is difficult to check for equality since the values in the
+     * 'formats' map are created only when needed and we don't know how subclasses will
+     * configure them.
      */
-    @Override
-    public boolean equals(final Object other) {
-        if (other == this) {
-            return true;
-        }
-        if (other != null && getClass() == other.getClass()) {
-            final CompoundFormat<?> that = (CompoundFormat<?>) other;
-            return Objects.equals(locale,   that.locale) &&
-                   Objects.equals(timezone, that.timezone);
-        }
-        return false;
-    }
-
-    /**
-     * Returns a hash code value for this format.
-     */
-    @Override
-    public int hashCode() {
-        return Objects.hash(locale, timezone);
-    }
 }

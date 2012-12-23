@@ -185,4 +185,15 @@ public abstract class FormatterTestCase extends TestCase {
     public void testSequencesWithUnicode() throws IOException {
         run("\u2028");
     }
+
+    /**
+     * Tests a few {@link java.io.Writer#write(String)} calls,
+     * with Unix line terminators in the sequences.
+     *
+     * @throws IOException Should never happen.
+     */
+    public void testSequencesToWriter() throws IOException {
+        formatter = IO.asWriter(formatter);
+        run("\n");
+    }
 }
