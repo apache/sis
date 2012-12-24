@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 import org.apache.sis.math.Statistics;
-import org.apache.sis.io.TableFormatter;
+import org.apache.sis.math.StatisticsFormat;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
@@ -181,11 +181,12 @@ public final strictfp class CacheTest extends TestCase {
      * Validates the entries created by the {@link #stress()} test. The check performed in
      * this method shall obviously be consistent with the values created by {@code stress()}.
      *
+     * @param  name  The name of the value being measured.
      * @param  cache The cache to validate.
      * @return Statistics on the key values of the given map.
      */
-    private static Statistics validateStressEntries(final Map<Integer,Integer> cache) {
-        final Statistics statistics = new Statistics();
+    private static Statistics validateStressEntries(final String name, final Map<Integer,Integer> cache) {
+        final Statistics statistics = new Statistics(name);
         for (final Map.Entry<Integer,Integer> entry : cache.entrySet()) {
             final int key = entry.getKey();
             final int value = entry.getValue();
@@ -258,7 +259,7 @@ public final strictfp class CacheTest extends TestCase {
         /*
          * Verifies the values.
          */
-        final Statistics beforeGC = validateStressEntries(cache);
+        final Statistics beforeGC = validateStressEntries("Before GC", cache);
         assertTrue("Should not have more entries than what we put in.", cache.size() <= count);
         assertFalse("Some entries should be retained by strong references.", cache.isEmpty());
         /*
@@ -304,20 +305,14 @@ public final strictfp class CacheTest extends TestCase {
          * information in case of failure.
          */
         System.gc();
-        final Statistics afterGC = validateStressEntries(cache);
+        final Statistics afterGC = validateStressEntries("After GC", cache);
         if (out != null) {
-            final TableFormatter table = new TableFormatter(out, " │ ");
-            table.setMultiLinesCells(true);
-            table.append("Statistics on the keys before garbage collection:");
-            table.nextColumn();
-            table.append("Statistics on the keys after garbage collection.\n" +
-                         "The minimum and the mean values should be greater.");
-            table.nextLine();
-            table.append(beforeGC.toString());
-            table.nextColumn();
-            table.append(afterGC.toString());
+            out.println("Statistics on the keys before and after garbage collection.");
+            out.println("The minimum and the mean values should be greater after GC.");
+            final StatisticsFormat format = StatisticsFormat.getInstance();
+            format.setBorderWidth(1);
             try {
-                table.flush();
+                format.format(new Statistics[] {beforeGC, afterGC}, out);
             } catch (IOException e) {
                 throw new AssertionError(e);
             }

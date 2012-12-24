@@ -142,9 +142,8 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
     public TreeTableFormat(final Locale locale, final TimeZone timezone) {
         super(locale, timezone);
         indentation       = 4;
-        separatorPrefix   = "……";
-        columnSeparator   = '…';
-        separatorSuffix   = " ";
+        beforeFill        = "……";
+        fillCharacter     = '…';
         omitTrailingNulls = true;
     }
 
@@ -511,8 +510,8 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
      */
     final void writeColumnSeparator(final Appendable out) throws IOException {
         // We have a TableFormatter instance if and only if there is 2 or more columns.
-        ((TableFormatter) out.append(separatorPrefix)).nextColumn(columnSeparator);
-        out.append(separatorSuffix);
+        ((TableFormatter) out.append(beforeFill)).nextColumn(fillCharacter);
+        out.append(columnSeparator);
     }
 
     /**

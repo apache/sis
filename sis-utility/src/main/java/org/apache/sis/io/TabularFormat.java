@@ -38,8 +38,8 @@ import org.apache.sis.util.resources.Errors;
  *   <li>{@link #setColumnSeparatorPattern(String)}</li>
  * </ul>
  *
- * For implementors, this base class takes care of splitting a column separator pattern into its
- * components ({@link #columnSeparator}, {@link #separatorPrefix} and {@link #separatorSuffix})
+ * For implementors, this base class takes care of splitting a column separator pattern into
+ * its components ({@link #beforeFill}, {@link #fillCharacter} and {@link #columnSeparator})
  * for easier usage in {@code format(…)} method implementations. Subclasses can use those fields
  * like below:
  *
@@ -50,16 +50,16 @@ import org.apache.sis.util.resources.Errors;
  * {@preformat java
  *     TableFormatter table = new TableFormatter(out, "");
  *     // ... do some work, then add a column separator:
- *     table.append(separatorPrefix);
- *     table.nextColumn(columnSeparator);
- *     table.append(separatorSuffix);
+ *     table.append(beforeFill);
+ *     table.nextColumn(fillCharacter);
+ *     table.append(columnSeparator);
  * }
  * </td><td>
  * {@preformat java
- *     TableFormatter table = new TableFormatter(out, separatorSuffix);
+ *     TableFormatter table = new TableFormatter(out, columnSeparator);
  *     // ... do some work, then add a column separator:
- *     table.append(separatorPrefix);
- *     table.nextColumn(columnSeparator);
+ *     table.append(beforeFill);
+ *     table.nextColumn(fillCharacter);
  * }
  * </td></tr></table>
  *
@@ -89,27 +89,27 @@ public abstract class TabularFormat<T> extends CompoundFormat<T> {
     protected String lineSeparator;
 
     /**
-     * The column separator to use at formatting time if there is more than one column.
-     * This is the character between the "{@code [ ]}" pair of brackets in the pattern
-     * given to the {@link #setColumnSeparatorPattern(String)} method.
-     *
-     * Subclasses will typically use this value in calls to {@link TableFormatter#nextColumn(char)}.
-     */
-    protected char columnSeparator;
-
-    /**
-     * The string to write before the {@link #columnSeparator}, or an empty string if none.
-     * This is the sequence of characters before the "{@code [ ]}" pair of brackets in the
-     * pattern given to the {@link #setColumnSeparatorPattern(String)} method.
-     */
-    protected String separatorPrefix;
-
-    /**
-     * The string to write after the {@link #columnSeparator}, or an empty string if none.
+     * The string to write after the {@link #fillCharacter}, or an empty string if none.
      * This is the sequence of characters after the "{@code [ ]}" pair of brackets in the
      * pattern given to the {@link #setColumnSeparatorPattern(String)} method.
      */
-    protected String separatorSuffix;
+    protected String columnSeparator;
+
+    /**
+     * The character to repeat after the content of a cell for alignment with the next column.
+     * This is the character between the "{@code [ ]}" pair of brackets in the pattern given
+     * to the {@link #setColumnSeparatorPattern(String)} method.
+     *
+     * Subclasses will typically use this value in calls to {@link TableFormatter#nextColumn(char)}.
+     */
+    protected char fillCharacter;
+
+    /**
+     * The string to write before the {@link #fillCharacter}, or an empty string if none.
+     * This is the sequence of characters before the "{@code [ ]}" pair of brackets in the
+     * pattern given to the {@link #setColumnSeparatorPattern(String)} method.
+     */
+    protected String beforeFill;
 
     /**
      * {@code true} if the trailing {@code null} values shall be omitted at formatting time.
@@ -137,9 +137,9 @@ public abstract class TabularFormat<T> extends CompoundFormat<T> {
      */
     public TabularFormat(final Locale locale, final TimeZone timezone) {
         super(locale, timezone);
-        separatorPrefix = "";
-        columnSeparator = ' ';
-        separatorSuffix = " ";
+        beforeFill      = "";
+        fillCharacter   = ' ';
+        columnSeparator = " ";
         lineSeparator   = System.lineSeparator();
     }
 
@@ -171,7 +171,7 @@ public abstract class TabularFormat<T> extends CompoundFormat<T> {
      */
     public String getColumnSeparatorPattern() {
         final StringBuilder buffer = new StringBuilder(8);
-        buffer.append(separatorPrefix).append('\uFFFF').append(separatorSuffix);
+        buffer.append(beforeFill).append('\uFFFF').append(columnSeparator);
         StringBuilders.replace(buffer, "\\", "\\\\");
         StringBuilders.replace(buffer, "?",  "\\?");
         StringBuilders.replace(buffer, "[",  "\\[");
@@ -181,7 +181,7 @@ public abstract class TabularFormat<T> extends CompoundFormat<T> {
             buffer.insert(0, '?');
         }
         final int insertAt = buffer.indexOf("\uFFFF");
-        buffer.replace(insertAt, insertAt+1, "[\uFFFF]").setCharAt(insertAt+1, columnSeparator);
+        buffer.replace(insertAt, insertAt+1, "[\uFFFF]").setCharAt(insertAt+1, fillCharacter);
         if (isParsePatternDefined) {
             buffer.append('/').append(parsePattern.pattern());
         }
@@ -304,9 +304,9 @@ scan:   for (int i=0; i<length; i++) {
             isParsePatternDefined = false;
         }
         omitTrailingNulls = trim;
-        separatorPrefix   = prefix;
-        separatorSuffix   = buffer.toString();
-        columnSeparator   = pattern.charAt(separatorIndex);
+        beforeFill        = prefix;
+        columnSeparator   = buffer.toString();
+        fillCharacter     = pattern.charAt(separatorIndex);
     }
 
     /**
@@ -318,11 +318,11 @@ scan:   for (int i=0; i<length; i++) {
      */
     protected Matcher getColumnSeparatorMatcher(final CharSequence text) {
         if (parsePattern == null) {
-            final StringBuilder pattern = new StringBuilder(separatorPrefix).append(columnSeparator);
+            final StringBuilder pattern = new StringBuilder(beforeFill).append(fillCharacter);
             String tmp = pattern.toString();
             pattern.setLength(0);
             pattern.append(Pattern.quote(tmp)).append('*');
-            tmp = separatorSuffix;
+            tmp = columnSeparator;
             if (tmp.length() != 0) {
                 pattern.append(Pattern.quote(tmp));
             }

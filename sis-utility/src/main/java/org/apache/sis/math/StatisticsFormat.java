@@ -26,12 +26,15 @@ import java.text.NumberFormat;
 import java.text.DecimalFormat;
 import java.text.ParsePosition;
 import java.text.ParseException;
-
+import org.opengis.util.InternationalString;
 import org.apache.sis.io.TableFormatter;
 import org.apache.sis.io.TabularFormat;
 import org.apache.sis.util.resources.Vocabulary;
 
 import static java.lang.Math.*;
+import java.text.FieldPosition;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.collection.BackingStoreException;
 
 
 /**
@@ -61,15 +64,25 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
     private static final int ADDITIONAL_DIGITS = 2;
 
     /**
-     * The locale for row labels. This is usually the same than the format locale,
-     * but not necessarily.
+     * The locale for row and column headers.
+     * This is usually the same than the format locale, but not necessarily.
      */
-    private final Locale labelLocale;
+    private final Locale headerLocale;
+
+    /**
+     * The "width" of the border to drawn around the table, in number of lines.
+     *
+     * @see #getBorderWidth()
+     * @see #setBorderWidth(int)
+     */
+    private byte borderWidth;
 
     /**
      * {@code true} if the sample values given to {@code Statistics.add(…)} methods were the
      * totality of the population under study, or {@code false} if they were only a sampling.
      *
+     * @see #isForAllPopulation()
+     * @see #setForAllPopulation(boolean)
      * @see Statistics#standardDeviation(boolean)
      */
     private boolean allPopulation;
@@ -86,28 +99,26 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
     }
 
     /**
-     * Constructs a new format for the given locales.
-     * The timezone is used only if the values added to the {@link Statistics} are dates.
+     * Returns an instance for the given locale.
      *
-     * @param locale      The locale, or {@code null} for unlocalized format.
-     * @param labelLocale The locale for row labels. Usually, but not necessarily, same as {@code locale}.
-     * @param timezone    The timezone, or {@code null} for UTC.
+     * @param  locale The locale for which to get a {@code StatisticsFormat} instance.
+     * @return A statistics format instance for the given locale.
      */
-    private StatisticsFormat(final Locale locale, final Locale labelLocale, final TimeZone timezone) {
-        super(locale, timezone);
-        this.labelLocale = labelLocale;
+    public static StatisticsFormat getInstance(final Locale locale) {
+        return new StatisticsFormat(locale, locale, null);
     }
 
     /**
-     * Constructs a new format for the given locale.
+     * Constructs a new format for the given numeric and header locales.
      * The timezone is used only if the values added to the {@link Statistics} are dates.
      *
-     * @param locale   The locale, or {@code null} for unlocalized format.
-     * @param timezone The timezone, or {@code null} for UTC.
+     * @param locale       The locale for numeric values, or {@code null} for unlocalized format.
+     * @param headerLocale The locale for row and column headers. Usually same as {@code locale}.
+     * @param timezone     The timezone, or {@code null} for UTC.
      */
-    public StatisticsFormat(final Locale locale, final TimeZone timezone) {
+    public StatisticsFormat(final Locale locale, final Locale headerLocale, final TimeZone timezone) {
         super(locale, timezone);
-        labelLocale = locale;
+        this.headerLocale = headerLocale;
     }
 
     /**
@@ -146,6 +157,33 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
     }
 
     /**
+     * Returns the "width" of the border to drawn around the table, in number of lines.
+     * The default width is 0, which stands for no border.
+     *
+     * @return The border "width" in number of lines.
+     */
+    public int getBorderWidth() {
+        return borderWidth;
+    }
+
+    /**
+     * Sets the "width" of the border to drawn around the table, in number of lines.
+     * The value can be any of the following:
+     *
+     * <ul>
+     *  <li>0 (the default) for no border</li>
+     *  <li>1 for single line ({@code │},{@code ─})</li>
+     *  <li>2 for double lines ({@code ║},{@code ═})</li>
+     * </ul>
+     *
+     * @param borderWidth The border width, in number of lines.
+     */
+    public void setBorderWidth(final int borderWidth) {
+        ArgumentChecks.ensureBetween("borderWidth", 0, 2, borderWidth);
+        this.borderWidth = (byte) borderWidth;
+    }
+
+    /**
      * Not yet implemented.
      */
     @Override
@@ -154,19 +192,31 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
     }
 
     /**
-     * The resource keys of the rows to formats. Array index must be consistent with
-     * the switch statements inside the {@link #format(Statistics)} method (we define
-     * this static field close to the format methods for this purpose).
+     * Formats the given statistics. This method will delegates to one of the following methods,
+     * depending on the type of the given object:
+     *
+     * <ul>
+     *   <li>{@link #format(Statistics, Appendable)}</li>
+     *   <li>{@link #format(Statistics[], Appendable)}</li>
+     * </ul>
+     *
+     * @param  object      The object to format.
+     * @param  toAppendTo  Where to format the object.
+     * @param  pos         Ignored in current implementation.
+     * @return             The given buffer, returned for convenience.
      */
-    private static final int[] KEYS = {
-        Vocabulary.Keys.NumberOfValues,
-        Vocabulary.Keys.NumberOfNaN,
-        Vocabulary.Keys.MinimumValue,
-        Vocabulary.Keys.MaximumValue,
-        Vocabulary.Keys.MeanValue,
-        Vocabulary.Keys.RootMeanSquare,
-        Vocabulary.Keys.StandardDeviation
-    };
+    @Override
+    public StringBuffer format(final Object object, final StringBuffer toAppendTo, final FieldPosition pos) {
+        if (object instanceof Statistics[]) try {
+            format((Statistics[]) object, toAppendTo);
+            return toAppendTo;
+        } catch (IOException e) {
+            // Same exception handling than in the super-class.
+            throw new BackingStoreException(e);
+        } else {
+            return super.format(object, toAppendTo, pos);
+        }
+    }
 
     /**
      * Formats a localized string representation of the given statistics.
@@ -174,7 +224,7 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
      * are associated to the given object, they will be formatted too.
      *
      * @param  stats       The statistics to format.
-     * @param  toAppendTo  Where to format the object.
+     * @param  toAppendTo  Where to format the statistics.
      * @throws IOException If an error occurred while writing in the given appender.
      */
     @Override
@@ -191,20 +241,56 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
      * Formats the given statistics in a tabular format. This method does not check
      * for the statistics on {@linkplain Statistics#differences() differences} - if
      * such statistics are wanted, they must be included in the given array.
+     *
+     * @param  stats       The statistics to format.
+     * @param  toAppendTo  Where to format the statistics.
+     * @throws IOException If an error occurred while writing in the given appender.
      */
-    private void format(final Statistics[] stats, final Appendable toAppendTo) throws IOException {
+    public void format(final Statistics[] stats, final Appendable toAppendTo) throws IOException {
         /*
-         * Verify if we can omit the count of NaN values.
+         * Inspect the given statistics in order to determine if we shall omit the headers,
+         * and if we shall omit the count of NaN values.
          */
+        final String[] headers = new String[stats.length];
+        boolean showHeaders  = false;
         boolean showNaNCount = false;
-        for (final Statistics s : stats) {
-            if (s.countNaN() != 0) {
-                showNaNCount = true;
-                break;
+        for (int i=0; i<stats.length; i++) {
+            final Statistics s = stats[i];
+            showNaNCount |= (s.countNaN() != 0);
+            final InternationalString header = s.name();
+            if (header != null) {
+                headers[i] = header.toString(headerLocale);
+                showHeaders |= (headers[i] != null);
             }
         }
-        final TableFormatter table = new TableFormatter(toAppendTo, separatorSuffix);
-        final Vocabulary resources = Vocabulary.getResources(labelLocale);
+        char horizontalLine = 0;
+        String separator = columnSeparator;
+        switch (borderWidth) {
+            case 1: horizontalLine = '─'; separator += "│ "; break;
+            case 2: horizontalLine = '═'; separator += "║ "; break;
+        }
+        final TableFormatter table = new TableFormatter(toAppendTo, separator);
+        final Vocabulary resources = Vocabulary.getResources(headerLocale);
+        /*
+         * If there is a header for at least one statistics, write the full headers row.
+         */
+        if (horizontalLine != 0) {
+            table.nextLine(horizontalLine);
+        }
+        if (showHeaders) {
+            table.nextColumn();
+            for (final String header : headers) {
+                if (header != null) {
+                    table.append(header);
+                    table.setCellAlignment(TableFormatter.ALIGN_CENTER);
+                }
+                table.nextColumn();
+            }
+            table.append(lineSeparator);
+            if (horizontalLine != 0) {
+                table.nextLine(horizontalLine);
+            }
+        }
         /*
          * Initialize the NumberFormat for formatting integers without scientific notation.
          * This is necessary since the format may have been modified by a previous execution
@@ -249,18 +335,36 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
                 if (needsConfigure) {
                     configure(format, s);
                 }
-                table.append(separatorPrefix);
-                table.nextColumn(columnSeparator);
+                table.append(beforeFill);
+                table.nextColumn(fillCharacter);
                 table.append(format.format(value));
                 table.setCellAlignment(TableFormatter.ALIGN_RIGHT);
             }
             table.append(lineSeparator);
+        }
+        if (horizontalLine != 0) {
+            table.nextLine(horizontalLine);
         }
         /*
          * TableFormatter needs to be explicitly flushed in order to format the values.
          */
         table.flush();
     }
+
+    /**
+     * The resource keys of the rows to formats. Array index must be consistent with the
+     * switch statements inside the {@link #format(Statistics[], Appendable)} method
+     * (we define this static field close to the format methods for this purpose).
+     */
+    private static final int[] KEYS = {
+        Vocabulary.Keys.NumberOfValues,
+        Vocabulary.Keys.NumberOfNaN,
+        Vocabulary.Keys.MinimumValue,
+        Vocabulary.Keys.MaximumValue,
+        Vocabulary.Keys.MeanValue,
+        Vocabulary.Keys.RootMeanSquare,
+        Vocabulary.Keys.StandardDeviation
+    };
 
     /**
      * Configures the given formatter for writing a set of data described by the given statistics.
