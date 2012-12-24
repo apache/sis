@@ -243,7 +243,7 @@ public class LineAppender extends Appender implements Flushable {
     /**
      * Returns {@code true} if this formatter expands tabulations into spaces.
      * The default value is {@code false}, which means that {@code '\t'} characters
-     * are sent to the {@linkplain #out underlying appendable} <i>as-is</i>.
+     * are sent to the underlying appendable <i>as-is</i>.
      *
      * @return {@code true} if this formatter expands tabulations into spaces,
      *         or {@code false} if {@code '\t'} characters are forwarded <i>as-is</i>.
@@ -263,7 +263,7 @@ public class LineAppender extends Appender implements Flushable {
     }
 
     /**
-     * Returns the line separator to be sent to the {@linkplain #out underlying appendable},
+     * Returns the line separator to be sent to the underlying appendable,
      * or {@code null} if EOL sequences are forwarded unchanged.
      *
      * @return The current line separator, or {@code null} if EOL are forwarded <i>as-is</i>.
@@ -273,7 +273,7 @@ public class LineAppender extends Appender implements Flushable {
     }
 
     /**
-     * Changes the line separator to be sent to the {@linkplain #out underlying appendable}.
+     * Changes the line separator to be sent to the underlying appendable.
      * This is the string to insert in place of every occurrences of {@code "\r"}, {@code "\n"},
      * {@code "\r\n"} or other {@linkplain Characters#isLineOrParagraphSeparator(int) line separators}.
      * If {@code null} (the default), then the line separators given to the {@code append}
