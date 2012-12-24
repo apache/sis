@@ -24,8 +24,8 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests various aspects of {@link LineFormatter}.
- * This base class tests {@code LineFormatter} when used for changing the line separator,
+ * Tests various aspects of {@link LineAppender}.
+ * This base class tests {@code LineAppender} when used for changing the line separator,
  * which is a problematic involved in every tests. Subclasses will test other aspects.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -37,20 +37,20 @@ import static org.junit.Assert.*;
   org.apache.sis.util.CharSequencesTest.class,
   org.apache.sis.internal.util.X364Test.class
 })
-public strictfp class LineFormatterTest extends FormatterTestCase {
+public strictfp class LineAppenderTest extends AppenderTestCase {
     /**
-     * Creates a new test. Subclasses shall override the {@link #createLineFormatter()} method
+     * Creates a new test. Subclasses shall override the {@link #createLineAppender()} method
      * in order to create the instance to test.
      */
-    public LineFormatterTest() {
+    public LineAppenderTest() {
     }
 
     /**
-     * Creates and configure the {@link LineFormatter} to test.
+     * Creates and configure the {@link LineAppender} to test.
      */
     @Before
-    public void createLineFormatter() {
-        formatter = new LineFormatter(formatter, " ", false);
+    public void createLineAppender() {
+        appender = new LineAppender(appender, " ", false);
     }
 
     /**
@@ -61,9 +61,9 @@ public strictfp class LineFormatterTest extends FormatterTestCase {
      */
     @Override
     void run(final String lineSeparator) throws IOException {
-        final Appendable f = formatter;
-        if (f instanceof LineFormatter) {
-            assertEquals("getLineSeparator", " ", ((LineFormatter) f).getLineSeparator());
+        final Appendable f = appender;
+        if (f instanceof LineAppender) {
+            assertEquals("getLineSeparator", " ", ((LineAppender) f).getLineSeparator());
         }
         assertSame(f, f.append("Le vrai" + lineSeparator + "policitien, "));
         assertSame(f, f.append("c'est celui\r\nqui\r")); // Line separator broken on two method calls.

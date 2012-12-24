@@ -44,7 +44,7 @@ import static org.apache.sis.util.Characters.isLineOrParagraphSeparator;
  *
  * {@preformat java
  *     StringBuilder  buffer = new StringBuilder();
- *     TableFormatter table  = new TableFormatter(buffer);
+ *     TableAppender table  = new TableAppender(buffer);
  *     table.nextLine('═');
  *     table.append("English\tFrench\tr.e.d.\n");
  *     table.nextLine('-');
@@ -77,7 +77,7 @@ import static org.apache.sis.util.Characters.isLineOrParagraphSeparator;
  * @see org.apache.sis.util.tree.TreeTableFormat
  */
 @Decorator(Appendable.class)
-public class TableFormatter extends FilteredAppendable implements Flushable {
+public class TableAppender extends Appender implements Flushable {
     /**
      * A possible value for cell alignment. This specifies that the text is aligned
      * to the left indent and extra whitespace should be placed on the right.
@@ -215,7 +215,7 @@ public class TableFormatter extends FilteredAppendable implements Flushable {
      * The default is a vertical double line for the left and right table borders, and a single
      * line between the columns.
      */
-    public TableFormatter() {
+    public TableAppender() {
         this(new StringBuilder(256));
         ownOut = true;
     }
@@ -225,7 +225,7 @@ public class TableFormatter extends FilteredAppendable implements Flushable {
      *
      * @param separator String to write between columns.
      */
-    public TableFormatter(final String separator) {
+    public TableAppender(final String separator) {
         this(new StringBuilder(256), separator);
         ownOut = true;
     }
@@ -237,7 +237,7 @@ public class TableFormatter extends FilteredAppendable implements Flushable {
      *
      * @param out The underlying stream or buffer to write to.
      */
-    public TableFormatter(final Appendable out) {
+    public TableAppender(final Appendable out) {
         super(out);
         leftBorder      =  "║ ";
         rightBorder     = " ║" ;
@@ -250,7 +250,7 @@ public class TableFormatter extends FilteredAppendable implements Flushable {
      * @param out The underlying stream or buffer to write to.
      * @param separator String to write between columns.
      */
-    public TableFormatter(final Appendable out, final String separator) {
+    public TableAppender(final Appendable out, final String separator) {
         super(out);
         /*
          * Following methods use Character.isWhitespace(…) instead of Character.isSpaceChar(…).
@@ -420,7 +420,7 @@ public class TableFormatter extends FilteredAppendable implements Flushable {
      * @param  c Character to write.
      */
     @Override
-    public TableFormatter append(final char c) {
+    public TableAppender append(final char c) {
         final int cp = toCodePoint(c);
         if (!multiLinesCells) {
             if (cp == '\t') {
@@ -453,7 +453,7 @@ public class TableFormatter extends FilteredAppendable implements Flushable {
      * @return A reference to this {@code Appendable}.
      */
     @Override
-    public TableFormatter append(CharSequence sequence) {
+    public TableAppender append(CharSequence sequence) {
         if (sequence == null) {
             sequence = "null";
         }
@@ -470,7 +470,7 @@ public class TableFormatter extends FilteredAppendable implements Flushable {
      */
     @Override
     @SuppressWarnings("fallthrough")
-    public TableFormatter append(final CharSequence sequence, int start, int end) {
+    public TableAppender append(final CharSequence sequence, int start, int end) {
         ArgumentChecks.ensureValidIndexRange(sequence.length(), start, end);
         if (lineSeparator == null) {
             lineSeparator = lineSeparator(sequence, start, end);
@@ -622,7 +622,7 @@ public class TableFormatter extends FilteredAppendable implements Flushable {
         cells.clear();
         currentRow    = 0;
         currentColumn = 0;
-        if (!(out instanceof TableFormatter)) {
+        if (!(out instanceof TableAppender)) {
             /*
              * Flush only if this table is not included in an outer (bigger) table.
              * This is because flushing the outer table would break its formatting.
@@ -632,10 +632,10 @@ public class TableFormatter extends FilteredAppendable implements Flushable {
     }
 
     /**
-     * Returns the content of this {@code TableFormatter} as a string if possible.
+     * Returns the content of this {@code TableAppender} as a string if possible.
      *
      * <ul>
-     *   <li>If this {@code TableFormatter} has been created without explicit {@link Appendable},
+     *   <li>If this {@code TableAppender} has been created without explicit {@link Appendable},
      *       then this method always returns the current table content formatted as a string.</li>
      *   <li>Otherwise, if {@link #out} implements {@link CharSequence} or is directly or
      *       indirectly a wrapper around a {@code CharSequence}, returns its {@code toString()}
@@ -659,7 +659,7 @@ public class TableFormatter extends FilteredAppendable implements Flushable {
     }
 
     /**
-     * Writes the table without clearing the {@code TableFormatter} content.
+     * Writes the table without clearing the {@code TableAppender} content.
      * Invoking this method many time would result in the same table being
      * repeated.
      */
@@ -771,7 +771,7 @@ public class TableFormatter extends FilteredAppendable implements Flushable {
                         out.append(leftBorder);
                     }
                     final Appendable tabExpander = (cellText.indexOf('\t') >= 0)
-                            ? new LineFormatter(out, Integer.MAX_VALUE, true) : out;
+                            ? new LineAppender(out, Integer.MAX_VALUE, true) : out;
                     switch (cell.alignment) {
                         default: {
                             throw new AssertionError(cell.alignment);

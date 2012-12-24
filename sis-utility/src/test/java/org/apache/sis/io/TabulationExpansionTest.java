@@ -24,24 +24,24 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests {@link LineFormatter} implementation when used for expanding tabulations to spaces.
+ * Tests {@link LineAppender} implementation when used for expanding tabulations to spaces.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
  * @version 0.3
  * @module
  *
- * @see LineFormatter#setTabulationExpanded(boolean)
+ * @see LineAppender#setTabulationExpanded(boolean)
  */
-@DependsOn(LineFormatterTest.class)
-public final strictfp class TabulationExpansionTest extends LineFormatterTest {
+@DependsOn(LineAppenderTest.class)
+public final strictfp class TabulationExpansionTest extends LineAppenderTest {
     /**
-     * Creates and configure the {@link LineFormatter} to test.
+     * Creates and configure the {@link LineAppender} to test.
      */
     @Before
     @Override
-    public void createLineFormatter() {
-        formatter = new LineFormatter(formatter, null, true);
+    public void createLineAppender() {
+        appender = new LineAppender(appender, null, true);
     }
 
     /**
@@ -52,9 +52,9 @@ public final strictfp class TabulationExpansionTest extends LineFormatterTest {
      */
     @Override
     void run(final String lineSeparator) throws IOException {
-        final Appendable f = formatter;
-        if (f instanceof LineFormatter) {
-            assertEquals("getTabWidth", 8, ((LineFormatter) f).getTabulationWidth());
+        final Appendable f = appender;
+        if (f instanceof LineAppender) {
+            assertEquals("getTabWidth", 8, ((LineAppender) f).getTabulationWidth());
         }
         assertSame(f, f.append("12\t8"   + lineSeparator));
         assertSame(f, f.append("1234\t8" + lineSeparator));

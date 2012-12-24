@@ -48,7 +48,7 @@ import org.apache.sis.util.resources.Errors;
  *   <th>Table with a border</th>
  * </tr><tr><td>
  * {@preformat java
- *     TableFormatter table = new TableFormatter(out, "");
+ *     TableAppender table = new TableAppender(out, "");
  *     // ... do some work, then add a column separator:
  *     table.append(beforeFill);
  *     table.nextColumn(fillCharacter);
@@ -56,7 +56,7 @@ import org.apache.sis.util.resources.Errors;
  * }
  * </td><td>
  * {@preformat java
- *     TableFormatter table = new TableFormatter(out, columnSeparator);
+ *     TableAppender table = new TableAppender(out, columnSeparator);
  *     // ... do some work, then add a column separator:
  *     table.append(beforeFill);
  *     table.nextColumn(fillCharacter);
@@ -70,7 +70,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @param <T> The base type of objects parsed and formatted by this class.
  *
- * @see TableFormatter
+ * @see TableAppender
  */
 @NotThreadSafe
 public abstract class TabularFormat<T> extends CompoundFormat<T> {
@@ -100,7 +100,7 @@ public abstract class TabularFormat<T> extends CompoundFormat<T> {
      * This is the character between the "{@code [ ]}" pair of brackets in the pattern given
      * to the {@link #setColumnSeparatorPattern(String)} method.
      *
-     * Subclasses will typically use this value in calls to {@link TableFormatter#nextColumn(char)}.
+     * Subclasses will typically use this value in calls to {@link TableAppender#nextColumn(char)}.
      */
     protected char fillCharacter;
 

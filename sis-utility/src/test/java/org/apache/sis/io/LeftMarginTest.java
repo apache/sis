@@ -24,24 +24,24 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests {@link LineFormatter} implementation when used for inserting a margin before every line.
+ * Tests {@link LineAppender} implementation when used for inserting a margin before every line.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
  * @version 0.3
  * @module
  *
- * @see LineFormatter#onLineBegin(boolean)
+ * @see LineAppender#onLineBegin(boolean)
  */
-@DependsOn(LineFormatterTest.class)
-public final strictfp class LeftMarginTest extends LineFormatterTest {
+@DependsOn(LineAppenderTest.class)
+public final strictfp class LeftMarginTest extends LineAppenderTest {
     /**
-     * Creates and configure the {@link LineFormatter} to test.
+     * Creates and configure the {@link LineAppender} to test.
      */
     @Before
     @Override
-    public void createLineFormatter() {
-        formatter = new LineFormatter(formatter) {
+    public void createLineAppender() {
+        appender = new LineAppender(appender) {
             @Override
             protected void onLineBegin(boolean isContinuation) throws IOException {
                 out.append("    ");
@@ -57,7 +57,7 @@ public final strictfp class LeftMarginTest extends LineFormatterTest {
      */
     @Override
     void run(final String lineSeparator) throws IOException {
-        final Appendable f = formatter;
+        final Appendable f = appender;
         assertSame(f, f.append("Comme je descendais des Fleuves impassibles,\r"
                              + "Je ne me sentis plus guidé par les haleurs :\n"));
         assertSame(f, f.append("Des Peaux-Rouges criards les avaient pris pour cibles,\r\n"));

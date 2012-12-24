@@ -27,7 +27,7 @@ import java.text.DecimalFormat;
 import java.text.ParsePosition;
 import java.text.ParseException;
 import org.opengis.util.InternationalString;
-import org.apache.sis.io.TableFormatter;
+import org.apache.sis.io.TableAppender;
 import org.apache.sis.io.TabularFormat;
 import org.apache.sis.util.resources.Vocabulary;
 
@@ -269,7 +269,7 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
             case 1: horizontalLine = '─'; separator += "│ "; break;
             case 2: horizontalLine = '═'; separator += "║ "; break;
         }
-        final TableFormatter table = new TableFormatter(toAppendTo, separator);
+        final TableAppender table = new TableAppender(toAppendTo, separator);
         final Vocabulary resources = Vocabulary.getResources(headerLocale);
         /*
          * If there is a header for at least one statistics, write the full headers row.
@@ -282,7 +282,7 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
             for (final String header : headers) {
                 if (header != null) {
                     table.append(header);
-                    table.setCellAlignment(TableFormatter.ALIGN_CENTER);
+                    table.setCellAlignment(TableAppender.ALIGN_CENTER);
                 }
                 table.nextColumn();
             }
@@ -318,7 +318,7 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
                 case 2: needsConfigure = true; break;
                 case 3: needsConfigure = (stats[0].differences() != null); break;
             }
-            table.setCellAlignment(TableFormatter.ALIGN_LEFT);
+            table.setCellAlignment(TableAppender.ALIGN_LEFT);
             table.append(resources.getString(KEYS[i])).append(':');
             for (final Statistics s : stats) {
                 final Number value;
@@ -338,7 +338,7 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
                 table.append(beforeFill);
                 table.nextColumn(fillCharacter);
                 table.append(format.format(value));
-                table.setCellAlignment(TableFormatter.ALIGN_RIGHT);
+                table.setCellAlignment(TableAppender.ALIGN_RIGHT);
             }
             table.append(lineSeparator);
         }
@@ -346,7 +346,7 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
             table.nextLine(horizontalLine);
         }
         /*
-         * TableFormatter needs to be explicitly flushed in order to format the values.
+         * TableAppender needs to be explicitly flushed in order to format the values.
          */
         table.flush();
     }
