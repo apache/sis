@@ -46,6 +46,7 @@ import org.junit.runners.Suite;
     org.apache.sis.util.logging.PerformanceLevelTest.class,
     org.apache.sis.math.MathFunctionsTest.class,
     org.apache.sis.math.StatisticsTest.class,
+    org.apache.sis.math.StatisticsFormatTest.class,
 
     // Collections.
     org.apache.sis.internal.util.ReferenceQueueConsumerTest.class,
