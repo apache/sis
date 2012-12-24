@@ -60,7 +60,7 @@ import org.apache.sis.internal.util.X364;
  * @module
  */
 @Decorator(Appendable.class)
-public class LineFormatter extends FilteredAppendable implements Flushable {
+public class LineAppender extends Appender implements Flushable {
     /**
      * The line separator, or {@code null} if not yet determined. If {@code null}, then the
      * {@link #append(CharSequence, int, int)} method will try to infer it from the submitted text.
@@ -157,7 +157,7 @@ public class LineFormatter extends FilteredAppendable implements Flushable {
      *
      * @param out The underlying stream or buffer to write to.
      */
-    public LineFormatter(final Appendable out) {
+    public LineAppender(final Appendable out) {
         super(out);
         maximalLineLength = Integer.MAX_VALUE;
     }
@@ -171,7 +171,7 @@ public class LineFormatter extends FilteredAppendable implements Flushable {
      * @param isTabulationExpanded  {@code true} for expanding tabulations into spaces,
      *                              or {@code false} for sending {@code '\t'} characters as-is.
      */
-    public LineFormatter(final Appendable out, final String lineSeparator, final boolean isTabulationExpanded) {
+    public LineAppender(final Appendable out, final String lineSeparator, final boolean isTabulationExpanded) {
         super(out);
         maximalLineLength = Integer.MAX_VALUE;
         this.lineSeparator        = lineSeparator;
@@ -188,7 +188,7 @@ public class LineFormatter extends FilteredAppendable implements Flushable {
      * @param isTabulationExpanded  {@code true} for expanding tabulations into spaces,
      *                              or {@code false} for forwarding {@code '\t'} characters as-is.
      */
-    public LineFormatter(final Appendable out, final int maximalLineLength, final boolean isTabulationExpanded) {
+    public LineAppender(final Appendable out, final int maximalLineLength, final boolean isTabulationExpanded) {
         super(out);
         ArgumentChecks.ensureStrictlyPositive("maximalLineLength", maximalLineLength);
         this.maximalLineLength    = maximalLineLength;
@@ -530,7 +530,7 @@ searchHyp:  for (int i=buffer.length(); i>0;) {
     }
 
     /**
-     * Resets the {@code LineFormatter} internal state as if a new line was beginning.
+     * Resets the {@code LineAppender} internal state as if a new line was beginning.
      * Trailing whitespaces not yet sent to the {@linkplain #out underlying appendable}
      * are discarded, and the column position (for tabulation expansion calculation) is
      * reset to 0. This method does not write any line separator.
@@ -546,7 +546,7 @@ searchHyp:  for (int i=buffer.length(); i>0;) {
     /**
      * Sends all pending characters to the underlying appendable, including trailing whitespaces.
      * Note that this method should preferably be invoked at the end of a word, sentence or line,
-     * since invoking this method may prevent {@code LineFormatter} to properly wrap the current
+     * since invoking this method may prevent {@code LineAppender} to properly wrap the current
      * line if the current position is in the middle of a word.
      *
      * <p>Invoking this method also flushes the underlying stream, if {@linkplain Flushable flushable}.

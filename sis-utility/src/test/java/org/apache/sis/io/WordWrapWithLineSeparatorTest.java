@@ -21,9 +21,9 @@ import org.apache.sis.test.DependsOn;
 
 
 /**
- * Tests {@link LineFormatter} implementation when used for wrapping lines to 80 characters,
- * chained with another {@code LineFormatter}. Such chaining should not be needed since a
- * single {@code LineFormatter} can handle many operations. But if such situation happens
+ * Tests {@link LineAppender} implementation when used for wrapping lines to 80 characters,
+ * chained with another {@code LineAppender}. Such chaining should not be needed since a
+ * single {@code LineAppender} can handle many operations. But if such situation happens
  * anyway, we want it to work.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -34,12 +34,12 @@ import org.apache.sis.test.DependsOn;
 @DependsOn(WordWrapTest.class)
 public final strictfp class WordWrapWithLineSeparatorTest extends WordWrapTest {
     /**
-     * Creates and configure the {@link LineFormatter} to test.
+     * Creates and configure the {@link LineAppender} to test.
      */
     @Before
     @Override
-    public void createLineFormatter() {
-        formatter = new LineFormatter(new LineFormatter(formatter, "\r", false), 10, false);
+    public void createLineAppender() {
+        appender = new LineAppender(new LineAppender(appender, "\r", false), 10, false);
     }
 
     /**

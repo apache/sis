@@ -27,8 +27,8 @@ import java.text.ParsePosition;
 import java.text.ParseException;
 import java.util.regex.Matcher;
 import net.jcip.annotations.NotThreadSafe;
-import org.apache.sis.io.LineFormatter;
-import org.apache.sis.io.TableFormatter;
+import org.apache.sis.io.LineAppender;
+import org.apache.sis.io.TableAppender;
 import org.apache.sis.io.TabularFormat;
 import org.apache.sis.io.CompoundFormat;
 import org.apache.sis.util.Workaround;
@@ -509,17 +509,17 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
      * methods, so we are better to define only one method here doing the work.
      */
     final void writeColumnSeparator(final Appendable out) throws IOException {
-        // We have a TableFormatter instance if and only if there is 2 or more columns.
-        ((TableFormatter) out.append(beforeFill)).nextColumn(fillCharacter);
+        // We have a TableAppender instance if and only if there is 2 or more columns.
+        ((TableAppender) out.append(beforeFill)).nextColumn(fillCharacter);
         out.append(columnSeparator);
     }
 
     /**
      * Creates string representation of the node values. Tabulations are replaced by spaces,
      * and line feeds are replaced by the Pilcrow character. This is necessary in order to
-     * avoid conflict with the characters expected by {@link TableFormatter}.
+     * avoid conflict with the characters expected by {@link TableAppender}.
      */
-    private final class Writer extends LineFormatter {
+    private final class Writer extends LineAppender {
         /**
          * The columns to write.
          */
@@ -545,7 +545,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
          * Creates a new instance which will write in the given appendable.
          */
         Writer(final Appendable out, final TableColumn<?>[] columns) {
-            super(columns.length >= 2 ? new TableFormatter(out, "") : out);
+            super(columns.length >= 2 ? new TableAppender(out, "") : out);
             this.columns = columns;
             this.formats = getFormats(columns, false);
             this.values  = new Object[columns.length];
