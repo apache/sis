@@ -22,14 +22,14 @@ import java.io.IOException;
 /**
  * Delegates calls to {@code append(CharSequence, int, int)} to a sequence of calls
  * to {@code append(char)}. This is used in order to explore more code paths in
- * {@link FilteredAppendable} implementations.
+ * {@link Appender} implementations.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
  * @version 0.3
  * @module
  */
-final class SingleCharAppendable extends FilteredAppendable {
+final class SingleCharAppendable extends Appender {
     /**
      * Constructs a {@code SingleCharAppendable} object delegating to the given {@code Appendable}.
      *

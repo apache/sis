@@ -692,6 +692,8 @@ testNextNumber:         while (true) { // Simulate a "goto" statement (usually n
      * @param  number The number for which to find the next prime.
      * @return The given number if it is a prime number, or the next prime number otherwise.
      * @throws IllegalArgumentException If the given value is outside the supported range.
+     *
+     * @see java.math.BigInteger#isProbablePrime(int)
      */
     public static int nextPrimeNumber(final int number) throws IllegalArgumentException {
         ArgumentChecks.ensureBetween("number", 2, HIGHEST_SUPPORTED_PRIME_NUMBER, number);

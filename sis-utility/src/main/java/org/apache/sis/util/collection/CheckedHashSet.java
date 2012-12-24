@@ -123,7 +123,7 @@ public class CheckedHashSet<E> extends LinkedHashSet<E> implements CheckedContai
     protected void ensureValid(final E element) throws IllegalArgumentException {
         if (element != null && !type.isInstance(element)) {
             throw new IllegalArgumentException(Errors.format(
-                    Errors.Keys.IllegalArgumentClass_3, "element", element.getClass(), type));
+                    Errors.Keys.IllegalArgumentClass_3, "element", type, element.getClass()));
         }
     }
 

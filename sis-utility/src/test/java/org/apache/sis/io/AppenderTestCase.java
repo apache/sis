@@ -25,42 +25,66 @@ import static org.apache.sis.test.Assert.*;
 
 
 /**
- * Base class for the testing {@code *Formatter} implementation.
+ * Base class for the testing {@code *Appender} implementation.
+ * This is public because JUnit requires it, but should be considered as an implementation details.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
  * @version 0.3
  * @module
  */
-public abstract class FormatterTestCase extends TestCase {
+public abstract class AppenderTestCase extends TestCase {
     /**
      * The buffer where to write test data.
      */
     private final StringBuilder buffer;
 
     /**
-     * The formatter to test. Subclasses should initialize this field as below:
+     * The appender to test. Subclasses should initialize this field as below:
      *
      * {@preformat java
-     *   formatter = MyFormatter(formatter);
+     *   appender = MyAppender(appender);
      * }
      */
-    Appendable formatter;
+    Appendable appender;
 
     /**
      * Creates a new test case.
      */
-    FormatterTestCase() {
+    AppenderTestCase() {
         buffer = new StringBuilder(128);
-        formatter = buffer;
+        appender = buffer;
     }
 
     /**
-     * Uses a formatter which will redirect every {@link Appendable#append(CharSequence)}
+     * Run the test. This method is where the test is actually performed.
+     * Implementations shall write in the {@link #appender}, then test
+     * the result with {@link #assertOutputEquals(String)}.
+     *
+     * @param  lineSeparator The line separator to use.
+     * @throws IOException Should never happen.
+     */
+    abstract void run(final String lineSeparator) throws IOException;
+
+    /**
+     * Ensures that the buffer content is equals to the given string.
+     *
+     * @param  expected The expected content.
+     * @throws IOException Should never happen.
+     */
+    final void assertOutputEquals(final String expected) throws IOException {
+        IO.flush(appender);
+        final String actual = buffer.toString();
+        assertMultilinesEquals("Ignoring line separators.", expected, actual);
+        assertEquals          ("Checking line separators.", expected, actual);
+    }
+
+    /**
+     * Uses a appender which will redirect every {@link Appendable#append(CharSequence)}
      * calls to a sequence of {@link Appendable#append(char)} calls.
      */
     private void useSingleChars() {
-        formatter = new SingleCharAppendable(formatter);
+        appender = new SingleCharAppendable(appender);
     }
 
     /**
@@ -163,23 +187,13 @@ public abstract class FormatterTestCase extends TestCase {
     }
 
     /**
-     * Run the test.
+     * Tests a few {@link java.io.Writer#write(String)} calls,
+     * with Unix line terminators in the sequences.
      *
-     * @param  lineSeparator The line separator to use.
      * @throws IOException Should never happen.
      */
-    abstract void run(final String lineSeparator) throws IOException;
-
-    /**
-     * Ensures that the buffer content is equals to the given string.
-     *
-     * @param expected The expected content.
-     * @throws IOException Should never happen.
-     */
-    final void assertOutputEquals(final String expected) throws IOException {
-        IO.flush(formatter);
-        final String actual = buffer.toString();
-        assertMultilinesEquals("Ignoring line separators.", expected, actual);
-        assertEquals          ("Checking line separators.", expected, actual);
+    public void testSequencesToWriter() throws IOException {
+        appender = IO.asWriter(appender);
+        run("\n");
     }
 }

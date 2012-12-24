@@ -34,7 +34,7 @@ import static org.junit.Assert.*;
  * @module
  */
 @Decorator(Appendable.class)
-public class EchoAppendable extends FilteredAppendable {
+public class EchoAppendable extends Appender {
     /**
      * The echo writer.
      */

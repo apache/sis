@@ -16,8 +16,8 @@
  */
 package org.apache.sis.math;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.ArrayList;
 import java.io.IOException;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -26,29 +26,37 @@ import java.text.NumberFormat;
 import java.text.DecimalFormat;
 import java.text.ParsePosition;
 import java.text.ParseException;
-
-import org.apache.sis.io.TableFormatter;
-import org.apache.sis.io.CompoundFormat;
+import org.opengis.util.InternationalString;
+import org.apache.sis.io.TableAppender;
+import org.apache.sis.io.TabularFormat;
 import org.apache.sis.util.resources.Vocabulary;
 
 import static java.lang.Math.*;
-
-// Related to JDK7
-import org.apache.sis.internal.util.JDK7;
+import java.text.FieldPosition;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.collection.BackingStoreException;
 
 
 /**
  * Formats a {@link Statistics} object.
- * This is a package-private class for now - if we want to make it public, we may need to make it
- * a full-featured {@link java.text.Format} implementation.
+ * By default, newly created {@code StatisticsFormat} instances will format statistical values
+ * in a tabular format using spaces as the column separator. This default configuration matches
+ * the {@link Statistics#toString()} format.
+ *
+ * {@section Limitations}
+ * The current implementation can only format statistics - parsing is not yet implemented.
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @since   0.3 (derived from geotk-1.0)
  * @version 0.3
  * @module
  */
-@SuppressWarnings("serial")
-final class StatisticsFormat extends CompoundFormat<Statistics> {
+public class StatisticsFormat extends TabularFormat<Statistics> {
+    /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = -7393669354879347985L;
+
     /**
      * Number of additional digits, to be added to the number of digits computed from the
      * range and the number of sample values. This is an arbitrary parameter.
@@ -56,24 +64,28 @@ final class StatisticsFormat extends CompoundFormat<Statistics> {
     private static final int ADDITIONAL_DIGITS = 2;
 
     /**
-     * The locale for row labels. This is usually the same than the format locale,
-     * but not necessarily.
+     * The locale for row and column headers.
+     * This is usually the same than the format locale, but not necessarily.
      */
-    private final Locale labelLocale;
+    private final Locale headerLocale;
+
+    /**
+     * The "width" of the border to drawn around the table, in number of lines.
+     *
+     * @see #getBorderWidth()
+     * @see #setBorderWidth(int)
+     */
+    private byte borderWidth;
 
     /**
      * {@code true} if the sample values given to {@code Statistics.add(…)} methods were the
      * totality of the population under study, or {@code false} if they were only a sampling.
      *
+     * @see #isForAllPopulation()
+     * @see #setForAllPopulation(boolean)
      * @see Statistics#standardDeviation(boolean)
      */
     private boolean allPopulation;
-
-    /**
-     * The column separator, typically as a semicolon or tabulation character.
-     * If 0, then the values will be written in a tabular format using {@link TableFormatter}.
-     */
-    private char columnSeparator;
 
     /**
      * Returns an instance for the current system default locale.
@@ -81,33 +93,30 @@ final class StatisticsFormat extends CompoundFormat<Statistics> {
      * @return A statistics format instance for the current default locale.
      */
     public static StatisticsFormat getInstance() {
-        return new StatisticsFormat(
-                Locale.getDefault(), null);
+        return getInstance(Locale.getDefault());
     }
 
     /**
-     * Constructs a new format for the given locales.
-     * The timezone is used only if the values added to the {@link Statistics} are dates.
+     * Returns an instance for the given locale.
      *
-     * @param locale      The locale, or {@code null} for unlocalized format.
-     * @param labelLocale The locale for row labels. Usually, but not necessarily, same as {@code locale}.
-     * @param timezone    The timezone, or {@code null} for UTC.
+     * @param  locale The locale for which to get a {@code StatisticsFormat} instance.
+     * @return A statistics format instance for the given locale.
      */
-    private StatisticsFormat(final Locale locale, final Locale labelLocale, final TimeZone timezone) {
-        super(locale, timezone);
-        this.labelLocale = labelLocale;
+    public static StatisticsFormat getInstance(final Locale locale) {
+        return new StatisticsFormat(locale, locale, null);
     }
 
     /**
-     * Constructs a new format for the given locale.
+     * Constructs a new format for the given numeric and header locales.
      * The timezone is used only if the values added to the {@link Statistics} are dates.
      *
-     * @param locale   The locale, or {@code null} for unlocalized format.
-     * @param timezone The timezone, or {@code null} for UTC.
+     * @param locale       The locale for numeric values, or {@code null} for unlocalized format.
+     * @param headerLocale The locale for row and column headers. Usually same as {@code locale}.
+     * @param timezone     The timezone, or {@code null} for UTC.
      */
-    public StatisticsFormat(final Locale locale, final TimeZone timezone) {
+    public StatisticsFormat(final Locale locale, final Locale headerLocale, final TimeZone timezone) {
         super(locale, timezone);
-        labelLocale = locale;
+        this.headerLocale = headerLocale;
     }
 
     /**
@@ -119,6 +128,60 @@ final class StatisticsFormat extends CompoundFormat<Statistics> {
     }
 
     /**
+     * Returns {@code true} if this formatter shall consider that the statistics where computed
+     * using the totality of the populations under study. This information impacts the standard
+     * deviation values to be formatted.
+     *
+     * @return {@code true} if the statistics to format where computed using the totality of
+     *         the populations under study.
+     *
+     * @see Statistics#standardDeviation(boolean)
+     */
+    public boolean isForAllPopulation() {
+        return allPopulation;
+    }
+
+    /**
+     * Sets whether this formatter shall consider that the statistics where computed using
+     * the totality of the populations under study. The default value is {@code false}.
+     *
+     * @param allPopulation {@code true} if the statistics to format where computed
+     *        using the totality of the populations under study.
+     *
+     * @see Statistics#standardDeviation(boolean)
+     */
+    public void setForAllPopulation(final boolean allPopulation) {
+        this.allPopulation = allPopulation;
+    }
+
+    /**
+     * Returns the "width" of the border to drawn around the table, in number of lines.
+     * The default width is 0, which stands for no border.
+     *
+     * @return The border "width" in number of lines.
+     */
+    public int getBorderWidth() {
+        return borderWidth;
+    }
+
+    /**
+     * Sets the "width" of the border to drawn around the table, in number of lines.
+     * The value can be any of the following:
+     *
+     * <ul>
+     *  <li>0 (the default) for no border</li>
+     *  <li>1 for single line ({@code │},{@code ─})</li>
+     *  <li>2 for double lines ({@code ║},{@code ═})</li>
+     * </ul>
+     *
+     * @param borderWidth The border width, in number of lines.
+     */
+    public void setBorderWidth(final int borderWidth) {
+        ArgumentChecks.ensureBetween("borderWidth", 0, 2, borderWidth);
+        this.borderWidth = (byte) borderWidth;
+    }
+
+    /**
      * Not yet implemented.
      */
     @Override
@@ -127,23 +190,40 @@ final class StatisticsFormat extends CompoundFormat<Statistics> {
     }
 
     /**
-     * The resource keys of the rows to formats. Array index must be consistent with
-     * the switch statements inside the {@link #format(Statistics)} method.
+     * Formats the given statistics. This method will delegates to one of the following methods,
+     * depending on the type of the given object:
+     *
+     * <ul>
+     *   <li>{@link #format(Statistics, Appendable)}</li>
+     *   <li>{@link #format(Statistics[], Appendable)}</li>
+     * </ul>
+     *
+     * @param  object      The object to format.
+     * @param  toAppendTo  Where to format the object.
+     * @param  pos         Ignored in current implementation.
+     * @return             The given buffer, returned for convenience.
      */
-    private static final int[] KEYS = {
-        Vocabulary.Keys.NumberOfValues,
-        Vocabulary.Keys.NumberOfNaN,
-        Vocabulary.Keys.MinimumValue,
-        Vocabulary.Keys.MaximumValue,
-        Vocabulary.Keys.MeanValue,
-        Vocabulary.Keys.RootMeanSquare,
-        Vocabulary.Keys.StandardDeviation
-    };
+    @Override
+    public StringBuffer format(final Object object, final StringBuffer toAppendTo, final FieldPosition pos) {
+        if (object instanceof Statistics[]) try {
+            format((Statistics[]) object, toAppendTo);
+            return toAppendTo;
+        } catch (IOException e) {
+            // Same exception handling than in the super-class.
+            throw new BackingStoreException(e);
+        } else {
+            return super.format(object, toAppendTo, pos);
+        }
+    }
 
     /**
      * Formats a localized string representation of the given statistics.
      * If statistics on {@linkplain Statistics#differences() differences}
      * are associated to the given object, they will be formatted too.
+     *
+     * @param  stats       The statistics to format.
+     * @param  toAppendTo  Where to format the statistics.
+     * @throws IOException If an error occurred while writing in the given appender.
      */
     @Override
     public void format(Statistics stats, final Appendable toAppendTo) throws IOException {
@@ -159,31 +239,56 @@ final class StatisticsFormat extends CompoundFormat<Statistics> {
      * Formats the given statistics in a tabular format. This method does not check
      * for the statistics on {@linkplain Statistics#differences() differences} - if
      * such statistics are wanted, they must be included in the given array.
+     *
+     * @param  stats       The statistics to format.
+     * @param  toAppendTo  Where to format the statistics.
+     * @throws IOException If an error occurred while writing in the given appender.
      */
-    private void format(final Statistics[] stats, Appendable toAppendTo) throws IOException {
-        final String lineSeparator = JDK7.lineSeparator();
+    public void format(final Statistics[] stats, final Appendable toAppendTo) throws IOException {
         /*
-         * Verify if we can omit the count of NaN values.
+         * Inspect the given statistics in order to determine if we shall omit the headers,
+         * and if we shall omit the count of NaN values.
          */
+        final String[] headers = new String[stats.length];
+        boolean showHeaders  = false;
         boolean showNaNCount = false;
-        for (final Statistics s : stats) {
-            if (s.countNaN() != 0) {
-                showNaNCount = true;
-                break;
+        for (int i=0; i<stats.length; i++) {
+            final Statistics s = stats[i];
+            showNaNCount |= (s.countNaN() != 0);
+            final InternationalString header = s.name();
+            if (header != null) {
+                headers[i] = header.toString(headerLocale);
+                showHeaders |= (headers[i] != null);
             }
         }
-        /*
-         * This formatter can optionally use a column separator, typically a semi-colon.
-         * If no column separator was specified (which is the usual case), then we will
-         * format the values in a tabular format.
-         */
-        TableFormatter table = null;
-        char separator = columnSeparator;
-        if (separator == 0) {
-            toAppendTo = table = new TableFormatter(toAppendTo, " ");
-            separator = '\t'; // Will be handled especially by TableFormatter.
+        char horizontalLine = 0;
+        String separator = columnSeparator;
+        switch (borderWidth) {
+            case 1: horizontalLine = '─'; separator += "│ "; break;
+            case 2: horizontalLine = '═'; separator += "║ "; break;
         }
-        final Vocabulary resources = Vocabulary.getResources(labelLocale);
+        final TableAppender table = new TableAppender(toAppendTo, separator);
+        final Vocabulary resources = Vocabulary.getResources(headerLocale);
+        /*
+         * If there is a header for at least one statistics, write the full headers row.
+         */
+        if (horizontalLine != 0) {
+            table.nextLine(horizontalLine);
+        }
+        if (showHeaders) {
+            table.nextColumn();
+            for (final String header : headers) {
+                if (header != null) {
+                    table.append(header);
+                    table.setCellAlignment(TableAppender.ALIGN_CENTER);
+                }
+                table.nextColumn();
+            }
+            table.append(lineSeparator);
+            if (horizontalLine != 0) {
+                table.nextLine(horizontalLine);
+            }
+        }
         /*
          * Initialize the NumberFormat for formatting integers without scientific notation.
          * This is necessary since the format may have been modified by a previous execution
@@ -211,10 +316,8 @@ final class StatisticsFormat extends CompoundFormat<Statistics> {
                 case 2: needsConfigure = true; break;
                 case 3: needsConfigure = (stats[0].differences() != null); break;
             }
-            if (table != null) {
-                table.setCellAlignment(TableFormatter.ALIGN_LEFT);
-            }
-            toAppendTo.append(resources.getString(KEYS[i])).append(':');
+            table.setCellAlignment(TableAppender.ALIGN_LEFT);
+            table.append(resources.getString(KEYS[i])).append(':');
             for (final Statistics s : stats) {
                 final Number value;
                 switch (i) {
@@ -230,20 +333,36 @@ final class StatisticsFormat extends CompoundFormat<Statistics> {
                 if (needsConfigure) {
                     configure(format, s);
                 }
-                toAppendTo.append(separator).append(format.format(value));
-                if (table != null) {
-                    table.setCellAlignment(TableFormatter.ALIGN_RIGHT);
-                }
+                table.append(beforeFill);
+                table.nextColumn(fillCharacter);
+                table.append(format.format(value));
+                table.setCellAlignment(TableAppender.ALIGN_RIGHT);
             }
-            toAppendTo.append(lineSeparator);
+            table.append(lineSeparator);
+        }
+        if (horizontalLine != 0) {
+            table.nextLine(horizontalLine);
         }
         /*
-         * TableFormatter needs to be explicitly flushed in order to format the values.
+         * TableAppender needs to be explicitly flushed in order to format the values.
          */
-        if (table != null) {
-            table.flush();
-        }
+        table.flush();
     }
+
+    /**
+     * The resource keys of the rows to formats. Array index must be consistent with the
+     * switch statements inside the {@link #format(Statistics[], Appendable)} method
+     * (we define this static field close to the format methods for this purpose).
+     */
+    private static final int[] KEYS = {
+        Vocabulary.Keys.NumberOfValues,
+        Vocabulary.Keys.NumberOfNaN,
+        Vocabulary.Keys.MinimumValue,
+        Vocabulary.Keys.MaximumValue,
+        Vocabulary.Keys.MeanValue,
+        Vocabulary.Keys.RootMeanSquare,
+        Vocabulary.Keys.StandardDeviation
+    };
 
     /**
      * Configures the given formatter for writing a set of data described by the given statistics.
