@@ -46,6 +46,7 @@ import org.junit.runners.Suite;
     org.apache.sis.util.logging.PerformanceLevelTest.class,
     org.apache.sis.math.MathFunctionsTest.class,
     org.apache.sis.math.StatisticsTest.class,
+    org.apache.sis.math.StatisticsFormatTest.class,
 
     // Collections.
     org.apache.sis.internal.util.ReferenceQueueConsumerTest.class,
@@ -71,8 +72,12 @@ import org.junit.runners.Suite;
     org.apache.sis.measure.AngleFormatTest.class,
     org.apache.sis.measure.AngleTest.class,
     org.apache.sis.internal.util.X364Test.class,
-    org.apache.sis.io.LineFormatterTest.class,
-    org.apache.sis.io.TableFormatterTest.class,
+    org.apache.sis.io.LineAppenderTest.class,
+    org.apache.sis.io.LeftMarginTest.class,
+    org.apache.sis.io.TabulationExpansionTest.class,
+    org.apache.sis.io.WordWrapTest.class,
+    org.apache.sis.io.WordWrapWithLineSeparatorTest.class,
+    org.apache.sis.io.TableAppenderTest.class,
     org.apache.sis.util.collection.TreeTableFormatTest.class,
 
     // XML most basic types.

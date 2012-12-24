@@ -38,13 +38,13 @@ import org.apache.sis.internal.util.JDK7;
  *   <li>No synchronization is performed.</li>
  * </ul>
  *
- * If needed, this {@code FilteredAppendable} can be viewed as a synchronized
+ * If needed, this {@code Appender} can be viewed as a synchronized
  * {@link java.io.Writer} by invoking the {@link IO#asWriter(Appendable)} method.
  *
  * {@section Flushing and closing the stream}
  * Subclasses implement the {@link java.io.Flushable} interface only if they
  * hold data in an internal buffer before to send them to the wrapped {@code Appendable}.
- * This is the case of {@link TableFormatter} and {@link LineFormatter} for instance.
+ * This is the case of {@link TableAppender} and {@link LineAppender} for instance.
  * For unconditionally flushing or closing an {@code Appendable} and its underlying stream,
  * see {@link IO#flush(Appendable)} and {@link IO#close(Appendable)}.
  *
@@ -56,7 +56,7 @@ import org.apache.sis.internal.util.JDK7;
  * @see java.io.FilterWriter
  */
 @Decorator(Appendable.class)
-abstract class FilteredAppendable implements Appendable {
+abstract class Appender implements Appendable {
     /**
      * The underlying character output stream or buffer.
      */
@@ -69,11 +69,11 @@ abstract class FilteredAppendable implements Appendable {
     private char highSurrogate;
 
     /**
-     * Creates a new filtered formatter which will send its output to the given stream or buffer.
+     * Creates a new appender which will send its output to the given stream or buffer.
      *
      * @param out The underlying character output stream or buffer.
      */
-    protected FilteredAppendable(final Appendable out) {
+    protected Appender(final Appendable out) {
         ArgumentChecks.ensureNonNull("out", out);
         this.out = out;
     }

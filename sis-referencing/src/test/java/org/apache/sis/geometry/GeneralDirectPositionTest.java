@@ -19,10 +19,12 @@ package org.apache.sis.geometry;
 import java.util.Arrays;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
 import static org.opengis.test.Validators.*;
+import static org.apache.sis.geometry.AbstractEnvelopeTest.WGS84;
 
 
 /**
@@ -35,6 +37,19 @@ import static org.opengis.test.Validators.*;
  */
 @DependsOn(AbstractDirectPositionTest.class)
 public final strictfp class GeneralDirectPositionTest extends TestCase {
+    /**
+     * Tests the {@link GeneralDirectPosition#normalize()} method.
+     */
+    @Test
+    @Ignore("The tested position needs to be associated to CRS:84")
+    public void testNormalize() {
+        final GeneralDirectPosition position = new GeneralDirectPosition(WGS84);
+        position.setCoordinate(300, -100);
+        assertTrue(position.normalize());
+        assertEquals(-90.0, position.getOrdinate(1), 0.0);
+        assertEquals(-60.0, position.getOrdinate(0), 0.0);
+    }
+
     /**
      * Tests the {@link GeneralDirectPosition#toString()} method.
      */

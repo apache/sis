@@ -16,6 +16,9 @@
  */
 package org.apache.sis.util;
 
+import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 
@@ -165,10 +168,10 @@ public final class ArgumentChecks extends Static {
                 final Object[] args;
                 if (name != null) {
                     key = Errors.Keys.IllegalArgumentClass_3;
-                    args = new Object[] {name, valueClass, expectedType};
+                    args = new Object[] {name, expectedType, valueClass};
                 } else {
                     key = Errors.Keys.IllegalClass_2;
-                    args = new Object[] {valueClass, expectedType};
+                    args = new Object[] {expectedType, valueClass};
                 }
                 throw new IllegalArgumentException(Errors.format(key, args));
             }
@@ -438,7 +441,7 @@ public final class ArgumentChecks extends Static {
     {
         if (value < min || value > max) {
             throw new IllegalArgumentException(Errors.format(
-                    Errors.Keys.ValueOutOfRange_4, name, value, min, max));
+                    Errors.Keys.ValueOutOfRange_4, name, min, max, value));
         }
     }
 
@@ -456,7 +459,7 @@ public final class ArgumentChecks extends Static {
     {
         if (value < min || value > max) {
             throw new IllegalArgumentException(Errors.format(
-                    Errors.Keys.ValueOutOfRange_4, name, value, min, max));
+                    Errors.Keys.ValueOutOfRange_4, name, min, max, value));
         }
     }
 
@@ -475,7 +478,7 @@ public final class ArgumentChecks extends Static {
         if (!(value >= min && value <= max)) { // Use '!' for catching NaN.
             throw new IllegalArgumentException(Float.isNaN(value) ?
                     Errors.format(Errors.Keys.NotANumber_1, name) :
-                    Errors.format(Errors.Keys.ValueOutOfRange_4, name, value, min, max));
+                    Errors.format(Errors.Keys.ValueOutOfRange_4, name, min, max, value));
         }
     }
 
@@ -494,7 +497,7 @@ public final class ArgumentChecks extends Static {
         if (!(value >= min && value <= max)) { // Use '!' for catching NaN.
             throw new IllegalArgumentException(Double.isNaN(value) ?
                     Errors.format(Errors.Keys.NotANumber_1, name)  :
-                    Errors.format(Errors.Keys.ValueOutOfRange_4, name, value, min, max));
+                    Errors.format(Errors.Keys.ValueOutOfRange_4, name, min, max, value));
         }
     }
 
@@ -531,7 +534,54 @@ public final class ArgumentChecks extends Static {
     }
 
     /**
-     * Ensures that the given direct position has the expected number of dimensions.
+     * Ensures that the given CRS, if non-null, has the expected number of dimensions.
+     * This method does nothing if the given coordinate reference system is null.
+     *
+     * @param  name     The name of the argument to be checked. Used only if an exception is thrown.
+     * @param  expected The expected number of dimensions.
+     * @param  crs      The coordinate reference system to check for its dimension, or {@code null}.
+     * @throws MismatchedDimensionException If the given coordinate reference system is non-null
+     *         and does not have the expected number of dimensions.
+     */
+    public static void ensureDimensionMatches(final String name, final int expected,
+            final CoordinateReferenceSystem crs) throws MismatchedDimensionException
+    {
+        if (crs != null) {
+            final CoordinateSystem cs = crs.getCoordinateSystem();
+            if (cs != null) { // Should never be null, but let be safe.
+                final int dimension = cs.getDimension();
+                if (dimension != expected) {
+                    throw new MismatchedDimensionException(Errors.format(
+                            Errors.Keys.MismatchedDimension_3, name, expected, dimension));
+                }
+            }
+        }
+    }
+
+    /**
+     * Ensures that the given vector, if non-null, has the expected number of dimensions
+     * (taken as its length). This method does nothing if the given vector is null.
+     *
+     * @param  name     The name of the argument to be checked. Used only if an exception is thrown.
+     * @param  expected The expected number of dimensions.
+     * @param  vector   The vector to check for its number of dimensions, or {@code null}.
+     * @throws MismatchedDimensionException If the given vector is non-null and does not have the
+     *         expected number of dimensions (taken as its length).
+     */
+    public static void ensureDimensionMatches(final String name, final int expected, final double[] vector)
+            throws MismatchedDimensionException
+    {
+        if (vector != null) {
+            final int dimension = vector.length;
+            if (dimension != expected) {
+                throw new MismatchedDimensionException(Errors.format(
+                        Errors.Keys.MismatchedDimension_3, name, expected, dimension));
+            }
+        }
+    }
+
+    /**
+     * Ensures that the given direct position, if non-null, has the expected number of dimensions.
      * This method does nothing if the given direct position is null.
      *
      * @param  name     The name of the argument to be checked. Used only if an exception is thrown.
@@ -547,7 +597,29 @@ public final class ArgumentChecks extends Static {
             final int dimension = position.getDimension();
             if (dimension != expected) {
                 throw new MismatchedDimensionException(Errors.format(
-                        Errors.Keys.UnexpectedArgumentDimension_3, name, dimension, expected));
+                        Errors.Keys.MismatchedDimension_3, name, expected, dimension));
+            }
+        }
+    }
+
+    /**
+     * Ensures that the given envelope, if non-null, has the expected number of dimensions.
+     * This method does nothing if the given envelope is null.
+     *
+     * @param  name     The name of the argument to be checked. Used only if an exception is thrown.
+     * @param  expected The expected number of dimensions.
+     * @param  envelope The envelope to check for its dimension, or {@code null}.
+     * @throws MismatchedDimensionException If the given envelope is non-null and does
+     *         not have the expected number of dimensions.
+     */
+    public static void ensureDimensionMatches(final String name, final int expected, final Envelope envelope)
+            throws MismatchedDimensionException
+    {
+        if (envelope != null) {
+            final int dimension = envelope.getDimension();
+            if (dimension != expected) {
+                throw new MismatchedDimensionException(Errors.format(
+                        Errors.Keys.MismatchedDimension_3, name, expected, dimension));
             }
         }
     }

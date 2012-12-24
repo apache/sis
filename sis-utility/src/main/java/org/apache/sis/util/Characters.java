@@ -33,7 +33,7 @@ import org.apache.sis.util.resources.Errors;
 public final class Characters extends Static {
     /**
      * Hyphen character ('\u2010', Unicode {@code 2010}).
-     * This code tells to {@link org.apache.sis.io.LineFormatter}
+     * This code tells to {@link org.apache.sis.io.LineAppender}
      * that a line break is allowed to be inserted after this character.
      *
      * <p>For non-breaking hyphen, use the Unicode {@code 2011} character.</p>

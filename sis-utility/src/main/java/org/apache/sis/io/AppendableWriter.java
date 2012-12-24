@@ -55,8 +55,8 @@ final class AppendableWriter extends Writer {
      * are often synchronized on themselves.
      */
     private static Object getLock(Appendable out) {
-        while (out instanceof FilteredAppendable) {
-            out = ((FilteredAppendable) out).out;
+        while (out instanceof Appender) {
+            out = ((Appender) out).out;
         }
         // StringWriter performs its synchronizations on its StringBuffer.
         if (out instanceof StringWriter) {
@@ -139,7 +139,7 @@ final class AppendableWriter extends Writer {
     }
 
     /**
-     * If {@link #out} implements {@link Flushable}, or is a {@link FilteredAppendable} wrapper
+     * If {@link #out} implements {@link Flushable}, or is a {@link Appender} wrapper
      * around a flushable object, delegates to that object. Otherwise do nothing.
      */
     @Override
@@ -150,7 +150,7 @@ final class AppendableWriter extends Writer {
     }
 
     /**
-     * If {@link #out} implements {@link Closeable}, or is a {@link FilteredAppendable} wrapper
+     * If {@link #out} implements {@link Closeable}, or is a {@link Appender} wrapper
      * around a closeable object, delegates to that object. Otherwise just flush (if possible).
      */
     @Override

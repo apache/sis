@@ -155,17 +155,34 @@
           </para>
         </sidebar>
         <para>
-          Une dernière note: le Java (ou de manière plus générale, la norme <acronym>IEEE</acronym> 754) définit deux valeurs distinctes de zéro:
-          un zéro positif et un zéro négatif. Ces deux valeurs sont considérées égales lorsqu’on les compares avec l’opérateur <literal>==</literal> du Java.
-          Mais dans les enveloppes de <acronym>SIS</acronym>, ils peuvent mener à des résultats opposés pour les axes ayant <constant role="GeoAPI">RangeMeaning.WRAPAROUND</constant>.
-          Une enveloppe dont la plage est [0…0], [-0…-0] ou [-0…+0] sera bien considérée comme une enveloppe vide,
-          mais la page [+0…-0] sera au contraire considérée comme incluant la totalité des valeurs, jusqu’à l’infini.
-          Ce comportement est conforme à la définition de <function role="SIS">lowerCorner</function> et <function role="SIS">upperCorner</function>
-          qui considère +0 comme le point de départ, et -0 comme le point d’arrivé après avoir fait le tour des valeurs possibles.
-          Un tel comportement ne se produit que pour la paire de valeurs +0 et -0, et seulement dans cet ordre.
-          Pour toutes les autres valeurs réelles, si la condition <literal>lower</literal> <literal>==</literal> <literal>upper</literal>
-          est vrai, alors il est garanti que l’enveloppe est vide.
+          Pour que les fonctions telles que <function role="SIS">add(…)</function> fonctionnent correctement,
+          tous les objets impliqués doivent utiliser le même système de référence des coordonnées, y compris
+          la même plage de valeurs. Ainsi, une enveloppe exprimant les longitudes dans la plage [-180 … +180]°
+          n’est pas compatible avec une enveloppe exprimant les longitudes dans la plage [0 … 360]°.
+          Les conversions, si nécessaires, sont à la charge de l’utilisateur
+          (la classe <classname role="SIS">Envelopes</classname> fournit des méthodes de commodités pour ce faire).
+          En outre, les coordonnées de l’enveloppe doivent être comprises dans les limites du système de coordonnées,
+          sauf si le développeur souhaite volontairement considérer (par exemple) 300° de longitude
+          comme un position distincte de -60°. La classe <classname role="SIS">GeneralEnvelope</classname>
+          fournit une méthode <function role="SIS">normalize()</function> pour ramener les coordonnées
+          dans les limites attendues, au prix parfois de valeurs <quote><foreignphrase>lower</foreignphrase></quote>
+          supérieures à la valeur <quote><foreignphrase>upper</foreignphrase></quote>.
         </para>
+        <sidebar>
+          <title>Le cas particulier de la plage [+0 … -0]</title>
+          <para>
+            le Java (ou de manière plus générale, la norme <acronym>IEEE</acronym> 754) définit deux valeurs distinctes de zéro:
+            un zéro positif et un zéro négatif. Ces deux valeurs sont considérées égales lorsqu’on les compares avec l’opérateur <literal>==</literal> du Java.
+            Mais dans les enveloppes de <acronym>SIS</acronym>, ils peuvent mener à des résultats opposés pour les axes ayant <constant role="GeoAPI">RangeMeaning.WRAPAROUND</constant>.
+            Une enveloppe dont la plage est [0 … 0], [-0 … -0] ou [-0 … +0] sera bien considérée comme une enveloppe vide,
+            mais la page [+0 … -0] sera au contraire considérée comme incluant la totalité des valeurs, jusqu’à l’infini.
+            Ce comportement est conforme à la définition de <function role="SIS">lowerCorner</function> et <function role="SIS">upperCorner</function>
+            qui considère +0 comme le point de départ, et -0 comme le point d’arrivé après avoir fait le tour des valeurs possibles.
+            Un tel comportement ne se produit que pour la paire de valeurs +0 et -0, et seulement dans cet ordre.
+            Pour toutes les autres valeurs réelles, si la condition <literal>lower</literal> <literal>==</literal> <literal>upper</literal>
+            est vrai, alors il est garanti que l’enveloppe est vide.
+          </para>
+        </sidebar>
       </section>
     </section>
   </section>
