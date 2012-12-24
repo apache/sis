@@ -36,6 +36,7 @@ import static java.lang.Double.doubleToLongBits;
 import static org.apache.sis.math.MathFunctions.isPositive;
 import static org.apache.sis.math.MathFunctions.isNegative;
 import static org.apache.sis.math.MathFunctions.isSameSign;
+import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
 import static org.apache.sis.internal.referencing.Utilities.isPoleToPole;
 
 // Following imports are needed because we can't extend AbstractEnvelope.
@@ -151,7 +152,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Cloneabl
          */
         this(lowerCorner.getOrdinate(0), lowerCorner.getOrdinate(1),
              upperCorner.getOrdinate(0), upperCorner.getOrdinate(1));
-        AbstractDirectPosition.ensureDimensionMatch(crs, 2);
+        ensureDimensionMatches("crs", 2, crs);
         this.crs = crs;
     }
 
@@ -223,7 +224,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Cloneabl
             throws MismatchedDimensionException
     {
         super(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight()); // Really 'super', not 'this'.
-        AbstractDirectPosition.ensureDimensionMatch(crs, 2);
+        ensureDimensionMatches("crs", 2, crs);
         this.crs = crs;
     }
 
@@ -246,7 +247,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Cloneabl
             final CoordinateReferenceSystem crs) throws MismatchedDimensionException
     {
         super(x, y, width, height); // Really 'super', not 'this'.
-        AbstractDirectPosition.ensureDimensionMatch(crs, 2);
+        ensureDimensionMatches("crs", 2, crs);
         this.crs = crs;
     }
 
@@ -269,7 +270,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Cloneabl
      * @param crs The new coordinate reference system, or {@code null}.
      */
     public void setCoordinateReferenceSystem(final CoordinateReferenceSystem crs) {
-        AbstractDirectPosition.ensureDimensionMatch(crs, 2);
+        ensureDimensionMatches("crs", 2, crs);
         this.crs = crs;
     }
 

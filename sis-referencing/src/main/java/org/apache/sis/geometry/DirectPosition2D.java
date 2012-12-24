@@ -25,11 +25,7 @@ import org.apache.sis.util.resources.Errors;
 
 import static java.lang.Double.doubleToLongBits;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-
-// Following imports are needed because we can't extend AbstractDirectPosition.
-// We want to write this class as if it was an AbstractDirectPosition subclass.
-import static org.apache.sis.geometry.AbstractDirectPosition.ensureDimensionMatch;
-import static org.apache.sis.geometry.AbstractDirectPosition.parse;
+import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
 
 // Related to JDK7
 import org.apache.sis.internal.util.Objects;
@@ -94,7 +90,7 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
      * @param crs The coordinate reference system, or {@code null}.
      */
     public DirectPosition2D(final CoordinateReferenceSystem crs) {
-        ensureDimensionMatch(crs, 2);
+        ensureDimensionMatches("crs", 2, crs);
         this.crs = crs;
     }
 
@@ -127,7 +123,7 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
     public DirectPosition2D(final double x, final double y, final CoordinateReferenceSystem crs) {
         super(x, y);
         this.crs = crs;
-        ensureDimensionMatch(crs, 2);
+        ensureDimensionMatches("crs", 2, crs);
     }
 
     /**
@@ -140,7 +136,7 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
      */
     public DirectPosition2D(final DirectPosition position) throws MismatchedDimensionException {
         ensureNonNull("position", position);
-        ensureDimensionMatch("position", position.getDimension(), 2);
+        ensureDimensionMatches("position", 2, position);
         x   = position.getOrdinate(0);
         y   = position.getOrdinate(1);
         crs = position.getCoordinateReferenceSystem();
@@ -163,12 +159,12 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
      * @see org.apache.sis.measure.CoordinateFormat
      */
     public DirectPosition2D(final CharSequence wkt) throws IllegalArgumentException {
-        final double[] ordinates = parse(wkt);
+        final double[] ordinates = AbstractDirectPosition.parse(wkt);
         if (ordinates == null) {
             throw new IllegalArgumentException(Errors.format(
                     Errors.Keys.UnparsableStringForClass_2, "POINT", wkt));
         }
-        ensureDimensionMatch("wkt", ordinates.length, 2);
+        ensureDimensionMatches("wkt", 2, ordinates);
         x = ordinates[0];
         y = ordinates[1];
     }
@@ -211,7 +207,7 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
      * @param crs The new coordinate reference system, or {@code null}.
      */
     public void setCoordinateReferenceSystem(final CoordinateReferenceSystem crs) {
-        ensureDimensionMatch(crs, 2);
+        ensureDimensionMatches("crs", 2, crs);
         this.crs = crs;
     }
 

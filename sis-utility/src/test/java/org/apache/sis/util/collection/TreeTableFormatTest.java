@@ -36,7 +36,7 @@ import static org.apache.sis.util.collection.TableColumn.*;
  */
 @DependsOn({
     DefaultTreeTableTest.class,
-    org.apache.sis.io.TableFormatterTest.class
+    org.apache.sis.io.TableAppenderTest.class
 })
 public final strictfp class TreeTableFormatTest extends TestCase {
     /**

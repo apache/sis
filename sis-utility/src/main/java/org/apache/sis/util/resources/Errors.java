@@ -24,6 +24,14 @@ import org.opengis.util.InternationalString;
 /**
  * Locale-dependent resources for error messages.
  *
+ * {@section Argument order convention}
+ * This resource bundle applies the same convention than JUnit: for every {@code format(…)} method,
+ * the first arguments provide information about the context in which the error occurred (e.g. the
+ * name of a method argument or the range of valid values), while the erroneous values that caused
+ * the error are last. Note that being the last programmatic parameter does not means that the value
+ * will appears last in the formatted text, since every localized message can reorder the parameters
+ * as they want.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.2)
  * @version 0.3
@@ -114,7 +122,7 @@ public final class Errors extends IndexedResourceBundle {
         public static final int IllegalArgumentClass_2 = 17;
 
         /**
-         * Argument ‘{0}’ can not be an instance of ‘{1}’. Expected an instance of ‘{2}’ or derived
+         * Argument ‘{0}’ can not be an instance of ‘{2}’. Expected an instance of ‘{1}’ or derived
          * type.
          */
         public static final int IllegalArgumentClass_3 = 2;
@@ -136,12 +144,12 @@ public final class Errors extends IndexedResourceBundle {
         public static final int IllegalBitsPattern_1 = 16;
 
         /**
-         * Class ‘{0}’ is illegal. It must be ‘{1}’ or a derived class.
+         * Class ‘{1}’ is illegal. It must be ‘{0}’ or a derived class.
          */
         public static final int IllegalClass_2 = 3;
 
         /**
-         * The “{0}” pattern can not be applied to formating of objects of type ‘{1}’.
+         * The “{1}” pattern can not be applied to formating of objects of type ‘{0}’.
          */
         public static final int IllegalFormatPatternForClass_2 = 29;
 
@@ -149,6 +157,11 @@ public final class Errors extends IndexedResourceBundle {
          * The “{0}” language is not recognized.
          */
         public static final int IllegalLanguageCode_1 = 12;
+
+        /**
+         * The [{0} … {1}] range of ordinate values is not valid for the “{2}” axis.
+         */
+        public static final int IllegalOrdinateRange_3 = 5;
 
         /**
          * Property ‘{0}’ can be associated to an instance of ‘{1}’.
@@ -211,7 +224,7 @@ public final class Errors extends IndexedResourceBundle {
         public static final int MismatchedDimension_2 = 60;
 
         /**
-         * Argument ‘{0}’ has {1} dimension{1,choice,1#|2#s}, while {2} was expected.
+         * Argument ‘{0}’ has {2} dimension{2,choice,1#|2#s}, while {1} was expected.
          */
         public static final int MismatchedDimension_3 = 58;
 
@@ -296,11 +309,6 @@ public final class Errors extends IndexedResourceBundle {
         public static final int RequireDecimalSeparator = 33;
 
         /**
-         * Argument ‘{0}’ has {1} dimensions, while {2} was expected.
-         */
-        public static final int UnexpectedArgumentDimension_3 = 5;
-
-        /**
          * Unexpected change in ‘{0}’.
          */
         public static final int UnexpectedChange_1 = 56;
@@ -366,7 +374,7 @@ public final class Errors extends IndexedResourceBundle {
         public static final int ValueNotGreaterThanZero_2 = 7;
 
         /**
-         * Value ‘{0}’={1} is invalid. Expected a value in the [{2} … {3}] range.
+         * Value ‘{0}’={3} is invalid. Expected a value in the [{1} … {2}] range.
          */
         public static final int ValueOutOfRange_4 = 6;
     }
