@@ -17,7 +17,6 @@
 package org.apache.sis.math;
 
 import java.util.Random;
-import java.util.Locale;
 import java.io.IOException;
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
@@ -47,7 +46,7 @@ public final strictfp class StatisticsTest extends TestCase {
      */
     @Test
     public void testInitialState() {
-        final Statistics statistics = new Statistics();
+        final Statistics statistics = new Statistics(null);
         assertEquals(0,  statistics.count());
         assertEquals(0,  statistics.countNaN());
         assertTrue(isNaN(statistics.minimum()));
@@ -65,7 +64,7 @@ public final strictfp class StatisticsTest extends TestCase {
     @Test
     public void testGaussian() {
         final Random random = new Random(317780561);
-        final Statistics statistics = new Statistics();
+        final Statistics statistics = new Statistics(null);
         for (int i=0; i<10000; i++) {
             statistics.add(random.nextGaussian());
         }
@@ -90,7 +89,7 @@ public final strictfp class StatisticsTest extends TestCase {
 
         // Now tests.
         final Random random = new Random(309080660);
-        final Statistics statistics = new Statistics();
+        final Statistics statistics = new Statistics(null);
         for (int i=0; i<10000; i++) {
             statistics.add(random.nextDouble()*range + lower);
         }
@@ -117,7 +116,7 @@ public final strictfp class StatisticsTest extends TestCase {
 
         // Now tests.
         final Random random = new Random(309080660);
-        final Statistics statistics = new Statistics();
+        final Statistics statistics = new Statistics(null);
         for (int i=0; i<10000; i++) {
             statistics.add(random.nextInt(range) + lower);
         }
@@ -158,7 +157,7 @@ public final strictfp class StatisticsTest extends TestCase {
             1E+20, 0
         };
         final Random random = new Random(223386491);
-        final Statistics statistics = new Statistics();
+        final Statistics statistics = new Statistics(null);
         for (int k=0; k<offsetAndTolerancePairs.length; k++) {
             final double offset = offsetAndTolerancePairs[k];
             final double tolerance = offsetAndTolerancePairs[++k];
@@ -184,10 +183,10 @@ public final strictfp class StatisticsTest extends TestCase {
     @Test
     public void testConcatenation() {
         final Random random = new Random(429323868);
-        final Statistics global = new Statistics();
-        final Statistics byBlock = new Statistics();
+        final Statistics global = new Statistics(null);
+        final Statistics byBlock = new Statistics(null);
         for (int i=0; i<10; i++) {
-            final Statistics block = new Statistics();
+            final Statistics block = new Statistics(null);
             for (int j=0; j<1000; j++) {
                 final double value;
                 if (random.nextInt(800) == 0) {
@@ -222,7 +221,7 @@ public final strictfp class StatisticsTest extends TestCase {
      */
     @Test
     public void testSerialization() throws IOException {
-        final Statistics statistics = new Statistics();
+        final Statistics statistics = new Statistics(null);
         statistics.add(40);
         statistics.add(10);
         statistics.add(NaN);
@@ -237,32 +236,5 @@ public final strictfp class StatisticsTest extends TestCase {
         assertEquals(26.457513110645905, after.rms(),                    EPS);
         assertEquals(12.472191289246473, after.standardDeviation(true),  EPS);
         assertEquals(15.275252316519468, after.standardDeviation(false), EPS);
-    }
-
-    /**
-     * Tests the formatting of {@link Statistics}.
-     * Actually, we will instantiate the {@link StatisticsFormat} directly in order to fix the
-     * locale to a hard-coded value. But except for the localization, the result should be nearly
-     * identical to a call to the {@link Statistics#toString()} method.
-     */
-    @Test
-    public void testFormatting() {
-        final Statistics statistics = Statistics.forSeries(2);
-        statistics.add(10);
-        statistics.add(15);
-        statistics.add(22);
-        statistics.add(17);
-        statistics.add(12);
-        statistics.add( 3);
-
-        final StatisticsFormat format = new StatisticsFormat(Locale.US, null);
-        final String text = format.format(statistics);
-        assertMultilinesEquals(
-                "Number of values:       6     5      4\n" +
-                "Minimum value:       3.00 -9.00 -12.00\n" +
-                "Maximum value:      22.00  7.00   2.00\n" +
-                "Mean value:         13.17 -1.40  -3.50\n" +
-                "Root Mean Square:   14.44  6.40   6.40\n" +
-                "Standard deviation:  6.49  6.99   6.19\n", text);
     }
 }

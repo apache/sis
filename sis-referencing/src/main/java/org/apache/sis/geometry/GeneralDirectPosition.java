@@ -29,6 +29,8 @@ import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.util.resources.Errors;
 
+import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
+
 // JDK7 related
 import org.apache.sis.internal.util.Objects;
 
@@ -118,7 +120,7 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
     public GeneralDirectPosition(final DirectPosition point) {
         ordinates = point.getCoordinate(); // Should already be cloned.
         crs = point.getCoordinateReferenceSystem();
-        ensureDimensionMatch(crs, ordinates.length);
+        ensureDimensionMatches("crs", ordinates.length, crs);
     }
 
     /**
@@ -178,7 +180,7 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
     public void setCoordinateReferenceSystem(final CoordinateReferenceSystem crs)
             throws MismatchedDimensionException
     {
-        ensureDimensionMatch(crs, getDimension());
+        ensureDimensionMatches("crs", getDimension(), crs);
         this.crs = crs;
     }
 
@@ -208,7 +210,7 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
         if (ordinates == null) {
             Arrays.fill(this.ordinates, Double.NaN);
         } else {
-            ensureDimensionMatch("ordinates", ordinates.length, this.ordinates.length);
+            ensureDimensionMatches("ordinates", this.ordinates.length, ordinates);
             System.arraycopy(ordinates, 0, this.ordinates, 0, ordinates.length);
         }
     }
@@ -254,7 +256,7 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
         if (position == null) {
             Arrays.fill(ordinates, Double.NaN);
         } else {
-            ensureDimensionMatch("position", position.getDimension(), ordinates.length);
+            ensureDimensionMatches("position", ordinates.length, position);
             setCoordinateReferenceSystem(position.getCoordinateReferenceSystem());
             for (int i=0; i<ordinates.length; i++) {
                 ordinates[i] = position.getOrdinate(i);

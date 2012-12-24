@@ -22,12 +22,12 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-// Related to JDK7
+// Related to JK7
 import org.apache.sis.internal.util.JDK7;
 
 
 /**
- * Tests the {@link TableFormatter} implementations.
+ * Tests the {@link TableAppender} implementations.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
@@ -37,20 +37,20 @@ import org.apache.sis.internal.util.JDK7;
 @DependsOn({
   org.apache.sis.util.CharSequencesTest.class,
   org.apache.sis.internal.util.X364Test.class,
-  LineFormatterTest.class})
-public final strictfp class TableFormatterTest extends FormatterTestCase {
+  LineAppenderTest.class})
+public final strictfp class TableAppenderTest extends AppenderTestCase {
     /**
-     * The table formatter to test. May not be same instance than {@link #formatter},
+     * The table appender to test. May not be same instance than {@link #appender},
      * because the super-class will wraps it in a {@link SingleCharAppendable} in
      * some occasions.
      */
-    private final TableFormatter table;
+    private final TableAppender table;
 
     /**
      * Creates a new test case.
      */
-    public TableFormatterTest() {
-        formatter = table = new TableFormatter(formatter);
+    public TableAppenderTest() {
+        appender = table = new TableAppender(appender);
     }
 
     /**
@@ -58,7 +58,7 @@ public final strictfp class TableFormatterTest extends FormatterTestCase {
      */
     @Override
     void run(String lineSeparator) throws IOException {
-        final Appendable out = formatter;
+        final Appendable out = appender;
         table.nextLine('═');
 
         // r.e.d. = Equatorial diameter Measured relative to the Earth.
@@ -81,7 +81,7 @@ public final strictfp class TableFormatterTest extends FormatterTestCase {
         table.nextLine('═');
         /*
          * If our test case is using the wrapper which will send the data once character at time,
-         * our TableFormatter implementation will not be able to detect the line separator and
+         * our TableAppender implementation will not be able to detect the line separator and
          * will fallback on the default one. So we set the line separator to the one actually used
          * not because this is the class contract (quite the opposite, this is a limitation in our
          * implementation), but simply in order to allow the test to pass.
@@ -105,22 +105,22 @@ public final strictfp class TableFormatterTest extends FormatterTestCase {
     }
 
     /**
-     * Tests the {@link TableFormatter#toString()} method.
+     * Tests the {@link TableAppender#toString()} method.
      * The intend of this test is also to ensure that we can use the API
      * more easily, without having to deal with {@link IOException}.
      */
     @Test
     public void testToString() { // NO throws IOException
         /*
-         * First, ensure that TableFormatter.toString() does not
+         * First, ensure that TableAppender.toString() does not
          * mess with the content of user-supplied Appendable.
          */
         testToString(table, "");
         /*
-         * When TableFormatter is created with its own internal buffer,
-         * then TableFormatter.toString() is allowed to format the table.
+         * When TableAppender is created with its own internal buffer,
+         * then TableAppender.toString() is allowed to format the table.
          */
-        testToString(new TableFormatter(),
+        testToString(new TableAppender(),
                 "╔═════════╤═════════╤════════╗\n"
               + "║ English │ French  │ r.e.d. ║\n"
               + "╟─────────┼─────────┼────────╢\n"
@@ -136,7 +136,7 @@ public final strictfp class TableFormatterTest extends FormatterTestCase {
      * @param table    Where to format the table.
      * @param expected The expected string representation of the formatted table.
      */
-    private static void testToString(final TableFormatter table, final String expected) {
+    private static void testToString(final TableAppender table, final String expected) {
         table.nextLine('═');
         table.append("English\tFrench\tr.e.d.\n").writeHorizontalSeparator();
         table.append("Mercury\tMercure\t0.382\n")

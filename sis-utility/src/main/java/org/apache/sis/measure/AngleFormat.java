@@ -460,7 +460,7 @@ scan:   for (int i=0; i<length;) {
                 }
                 if (parseFinished || (field != expectedField && field != FRACTION_FIELD)) {
                     throw new IllegalArgumentException(Errors.format(
-                            Errors.Keys.IllegalFormatPatternForClass_2, pattern, Angle.class));
+                            Errors.Keys.IllegalFormatPatternForClass_2, Angle.class, pattern));
                 }
                 if (isIntegerField) {
                     /*
@@ -493,7 +493,7 @@ scan:   for (int i=0; i<length;) {
                         final int b = pattern.codePointAt(endPreviousField);
                         if (b != decimalSeparator || endPreviousField + Character.charCount(b) != i) {
                             throw new IllegalArgumentException(Errors.format(
-                                    Errors.Keys.IllegalFormatPatternForClass_2, pattern, Angle.class));
+                                    Errors.Keys.IllegalFormatPatternForClass_2, Angle.class, pattern));
                         }
                     }
                     int width = 1;
@@ -531,7 +531,7 @@ scan:   for (int i=0; i<length;) {
                 default: {
                     // Happen if no symbol has been recognized in the pattern.
                     throw new IllegalArgumentException(Errors.format(
-                            Errors.Keys.IllegalFormatPatternForClass_2, pattern, Angle.class));
+                            Errors.Keys.IllegalFormatPatternForClass_2, Angle.class, pattern));
                 }
             }
         }
@@ -981,7 +981,7 @@ scan:   for (int i=0; i<length;) {
         }
         ArgumentChecks.ensureNonNull("value", value);
         throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentClass_3,
-                "value", value.getClass(), Angle.class));
+                "value", Angle.class, value.getClass()));
     }
 
     /**
@@ -1102,11 +1102,10 @@ scan:   for (int i=0; i<length;) {
                 default: throw new AssertionError(field);
             }
             if (toSkip != null) {
-                final int toSkipLength = toSkip.length();
                 int c;
                 do {
-                    if (source.regionMatches(index, toSkip, 0, toSkipLength)) {
-                        pos.setIndex(index + toSkipLength);
+                    if (source.startsWith(toSkip, index)) {
+                        pos.setIndex(index + toSkip.length());
                         return field;
                     }
                     if (index >= length) break;

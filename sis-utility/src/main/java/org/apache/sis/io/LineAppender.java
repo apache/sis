@@ -24,7 +24,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.internal.util.X364;
 
-// Related to JDK7
+// Related to JK7
 import org.apache.sis.internal.util.JDK7;
 
 
@@ -63,7 +63,7 @@ import org.apache.sis.internal.util.JDK7;
  * @module
  */
 @Decorator(Appendable.class)
-public class LineFormatter extends FilteredAppendable implements Flushable {
+public class LineAppender extends Appender implements Flushable {
     /**
      * The line separator, or {@code null} if not yet determined. If {@code null}, then the
      * {@link #append(CharSequence, int, int)} method will try to infer it from the submitted text.
@@ -160,7 +160,7 @@ public class LineFormatter extends FilteredAppendable implements Flushable {
      *
      * @param out The underlying stream or buffer to write to.
      */
-    public LineFormatter(final Appendable out) {
+    public LineAppender(final Appendable out) {
         super(out);
         maximalLineLength = Integer.MAX_VALUE;
     }
@@ -174,7 +174,7 @@ public class LineFormatter extends FilteredAppendable implements Flushable {
      * @param isTabulationExpanded  {@code true} for expanding tabulations into spaces,
      *                              or {@code false} for sending {@code '\t'} characters as-is.
      */
-    public LineFormatter(final Appendable out, final String lineSeparator, final boolean isTabulationExpanded) {
+    public LineAppender(final Appendable out, final String lineSeparator, final boolean isTabulationExpanded) {
         super(out);
         maximalLineLength = Integer.MAX_VALUE;
         this.lineSeparator        = lineSeparator;
@@ -191,7 +191,7 @@ public class LineFormatter extends FilteredAppendable implements Flushable {
      * @param isTabulationExpanded  {@code true} for expanding tabulations into spaces,
      *                              or {@code false} for forwarding {@code '\t'} characters as-is.
      */
-    public LineFormatter(final Appendable out, final int maximalLineLength, final boolean isTabulationExpanded) {
+    public LineAppender(final Appendable out, final int maximalLineLength, final boolean isTabulationExpanded) {
         super(out);
         ArgumentChecks.ensureStrictlyPositive("maximalLineLength", maximalLineLength);
         this.maximalLineLength    = maximalLineLength;
@@ -266,7 +266,7 @@ public class LineFormatter extends FilteredAppendable implements Flushable {
     }
 
     /**
-     * Returns the line separator to be sent to the underlying appendable,
+     * Returns the line separator to be sent to the {@linkplain #out underlying appendable},
      * or {@code null} if EOL sequences are forwarded unchanged.
      *
      * @return The current line separator, or {@code null} if EOL are forwarded <i>as-is</i>.
@@ -276,7 +276,7 @@ public class LineFormatter extends FilteredAppendable implements Flushable {
     }
 
     /**
-     * Changes the line separator to be sent to the underlying appendable.
+     * Changes the line separator to be sent to the {@linkplain #out underlying appendable}.
      * This is the string to insert in place of every occurrences of {@code "\r"}, {@code "\n"},
      * {@code "\r\n"} or other {@linkplain Characters#isLineOrParagraphSeparator(int) line separators}.
      * If {@code null} (the default), then the line separators given to the {@code append}
@@ -315,7 +315,7 @@ public class LineFormatter extends FilteredAppendable implements Flushable {
      */
     private void endOfLine() throws IOException {
         buffer.setLength(printableLength); // Reduce the amount of work for StringBuilder.deleteCharAt(int).
-        deleteSoftHyphen();
+        deleteSoftHyphen(printableLength - 1);
         transfer(printableLength);
         printableLength  = 0;
         codePointCount   = 0;
@@ -326,9 +326,13 @@ public class LineFormatter extends FilteredAppendable implements Flushable {
     /**
      * Removes the soft hyphen characters from the given buffer. This is invoked
      * when the buffer is about to be written without being split on two lines.
+     *
+     * @param i Index after the last character to check. This is either {@link printableLength}
+     *          for checking all characters, or {@code printableLength-1} for preserving the last
+     *          soft hyphen on the line (while removing all others).
      */
-    private void deleteSoftHyphen() {
-        for (int i=printableLength; --i >= 0;) {
+    private void deleteSoftHyphen(int i) {
+        while (--i >= 0) {
             if (buffer.charAt(i) == Characters.SOFT_HYPHEN) {
                 buffer.deleteCharAt(i);
                 printableLength--;
@@ -395,7 +399,7 @@ public class LineFormatter extends FilteredAppendable implements Flushable {
          */
         if (Character.isWhitespace(c)) {
             if (printableLength != 0) {
-                deleteSoftHyphen();
+                deleteSoftHyphen(printableLength);
                 transfer(printableLength);
                 printableLength = 0;
             }
@@ -529,7 +533,7 @@ searchHyp:  for (int i=buffer.length(); i>0;) {
     }
 
     /**
-     * Resets the {@code LineFormatter} internal state as if a new line was beginning.
+     * Resets the {@code LineAppender} internal state as if a new line was beginning.
      * Trailing whitespaces not yet sent to the {@linkplain #out underlying appendable}
      * are discarded, and the column position (for tabulation expansion calculation) is
      * reset to 0. This method does not write any line separator.
@@ -545,7 +549,7 @@ searchHyp:  for (int i=buffer.length(); i>0;) {
     /**
      * Sends all pending characters to the underlying appendable, including trailing whitespaces.
      * Note that this method should preferably be invoked at the end of a word, sentence or line,
-     * since invoking this method may prevent {@code LineFormatter} to properly wrap the current
+     * since invoking this method may prevent {@code LineAppender} to properly wrap the current
      * line if the current position is in the middle of a word.
      *
      * <p>Invoking this method also flushes the underlying stream, if {@linkplain Flushable flushable}.

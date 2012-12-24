@@ -17,12 +17,17 @@
 package org.apache.sis.math;
 
 import java.io.Serializable;
+import org.opengis.util.InternationalString;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.iso.Types;
 
 import static java.lang.Math.*;
 import static java.lang.Double.NaN;
 import static java.lang.Double.isNaN;
 import static java.lang.Double.doubleToLongBits;
+
+// Related to JDK7
+import org.apache.sis.internal.util.Objects;
 
 
 /**
@@ -57,7 +62,7 @@ import static java.lang.Double.doubleToLongBits;
  * is defined. A simple usage is:
  *
  * {@preformat java
- *     Statistics stats = new Statistics();
+ *     Statistics stats = new Statistics("y");
  *     for (int i=0; i<numberOfValues; i++) {
  *         stats.add(f(i));
  *     }
@@ -70,7 +75,7 @@ import static java.lang.Double.doubleToLongBits;
  * {@preformat java
  *     final double x₀ = ...; // Put here the x value at i=0
  *     final double Δx = ...; // Put here the interval between x values
- *     Statistics stats = Statistics.forSeries(2);
+ *     Statistics stats = Statistics.forSeries("y", "∂y/∂x", "∂²y/∂x²");
  *     for (int i=0; i<numberOfValues; i++) {
  *         stats.add(f(x₀ + i*Δx));
  *     }
@@ -88,6 +93,15 @@ public class Statistics implements Cloneable, Serializable {
      * Serial number for compatibility with different versions.
      */
     private static final long serialVersionUID = -22884277805533726L;
+
+    /**
+     * The name of the phenomenon for which this object is collecting statistics.
+     * If non-null, then this name will be shown as column header in the table formatted
+     * by {@link StatisticsFormat}.
+     *
+     * @see #name()
+     */
+    private final InternationalString name;
 
     /**
      * The minimal value given to the {@link #add(double)} method.
@@ -138,10 +152,15 @@ public class Statistics implements Cloneable, Serializable {
      * and all other statistical values are initialized to {@link Double#NaN}.
      *
      * <p>Instances created by this constructor do not compute differences between sample values.
-     * If differences or discrete derivatives are wanted, use the {@link #forSeries(int)} method
-     * instead.</p>
+     * If differences or discrete derivatives are wanted, use the {@link #forSeries forSeries(…)}
+     * method instead.</p>
+     *
+     * @param name The phenomenon for which this object is collecting statistics, or {@code null}
+     *             if none. If non-null, then this name will be shown as column header in the table
+     *             formatted by {@link StatisticsFormat}.
      */
-    public Statistics() {
+    public Statistics(final CharSequence name) {
+        this.name = Types.toInternationalString(name);
     }
 
     /**
@@ -159,31 +178,50 @@ public class Statistics implements Cloneable, Serializable {
      *     statistics.differences().scale(1/Δx);
      * }
      *
-     * The {@code order} argument can be interpreted as below:
+     * The maximal "derivative" order is determined by the length of the {@code differenceNames} array:
      *
      * <ul>
-     *   <li>0 if no differences are needed;</li>
+     *   <li>0 if no differences are needed (equivalent to direct instantiation of a new
+     *       {@code Statistics} object).</li>
      *   <li>1 for computing the statistics on the differences between consecutive samples
      *       (proportional to the statistics on the first discrete derivatives) in addition
-     *       to the sample statistics;</li>
+     *       to the sample statistics.</li>
      *   <li>2 for computing also the statistics on the differences between consecutive differences
      *       (proportional to the statistics on the second discrete derivatives) in addition to the
-     *       above;</li>
+     *       above.</li>
      *   <li><i>etc</i>.</li>
      * </ul>
      *
-     * @param  order The discrete derivative order, as a value equals or greater than 0.
+     *
+     *
+     * @param  name  The phenomenon for which this object is collecting statistics, or {@code null}
+     *               if none. If non-null, then this name will be shown as column header in the table
+     *               formatted by {@link StatisticsFormat}.
+     * @param  differenceNames The names of the statistics on differences.
+     *         The given array can not be null, but can contain null elements.
      * @return The newly constructed, initially empty, set of statistics.
      *
      * @see #differences()
      */
-    public static Statistics forSeries(int order) {
-        ArgumentChecks.ensurePositive("order", order);
-        Statistics stats = new Statistics();
-        while (--order >= 0) {
-            stats = new WithDelta(stats);
+    public static Statistics forSeries(final CharSequence name, final CharSequence... differenceNames) {
+        ArgumentChecks.ensureNonNull("differenceNames", differenceNames);
+        Statistics stats = null;
+        for (int i=differenceNames.length; --i >= -1;) {
+            final CharSequence n = (i >= 0) ? differenceNames[i] : name;
+            stats = (stats == null) ? new Statistics(n) : new WithDelta(n, stats);
         }
         return stats;
+    }
+
+    /**
+     * Returns the name of the phenomenon for which this object is collecting statistics.
+     * If non-null, then this name will be shown as column header in the table formatted
+     * by {@link StatisticsFormat}.
+     *
+     * @return The phenomenon for which this object is collecting statistics, or {@code null} if none.
+     */
+    public InternationalString name() {
+        return name;
     }
 
     /**
@@ -286,7 +324,8 @@ public class Statistics implements Cloneable, Serializable {
      * {@code add(…)} had been first multiplied by the given factor.
      *
      * <p>This method is useful for computing discrete derivatives from the differences between
-     * sample values. See {@link #differences()} or {@link #forSeries(int)} for more information.</p>
+     * sample values. See {@link #differences()} or {@link #forSeries forSeries(…)} for more
+     * information.</p>
      *
      * @param factor The factor by which to multiply the statistics.
      */
@@ -431,15 +470,15 @@ public class Statistics implements Cloneable, Serializable {
      *     // Do not invoke scale(1/Δx) again.
      * }
      *
-     * This method is supported only if this {@code Statistics} instance has been created by a
-     * call to the {@link #forSeries(int)} method with an {@code order} argument greater than zero.
-     * More generally, calls to this method can be chained up to {@code order} time for
+     * This method returns a non-null value only if this {@code Statistics} instance has been created by a
+     * call to the {@link #forSeries forSeries(…)} method with a non-empty {@code differenceNames} array.
+     * More generally, calls to this method can be chained up to {@code differenceNames.length} times for
      * fetching second or higher order derivatives, as in the above example.
      *
      * @return The statistics on the differences between consecutive sample values,
      *         or {@code null} if not calculated by this object.
      *
-     * @see #forSeries(int)
+     * @see #forSeries(CharSequence, CharSequence[])
      * @see #scale(double)
      */
     public Statistics differences() {
@@ -460,6 +499,8 @@ public class Statistics implements Cloneable, Serializable {
      * }
      *
      * @return A string representation of this statistics object.
+     *
+     * @see StatisticsFormat
      */
     @Override
     public String toString() {
@@ -503,7 +544,8 @@ public class Statistics implements Cloneable, Serializable {
     public boolean equals(final Object object) {
         if (object != null && getClass() == object.getClass()) {
             final Statistics cast = (Statistics) object;
-            return count == cast.count && countNaN == cast.countNaN
+            return Objects.equals(name, cast.name)
+                    && count == cast.count && countNaN == cast.countNaN
                     && doubleToLongBits(minimum)   == doubleToLongBits(cast.minimum)
                     && doubleToLongBits(maximum)   == doubleToLongBits(cast.maximum)
                     && doubleToLongBits(sum)       == doubleToLongBits(cast.sum)
@@ -565,9 +607,11 @@ public class Statistics implements Cloneable, Serializable {
          * consecutive sample values. Other kinds of {@link Statistics} object could be
          * chained as well.
          *
+         * @param name  The phenomenon for which this object is collecting statistics, or {@code null}.
          * @param delta The object where to stores delta statistics.
          */
-        public WithDelta(final Statistics delta) {
+        WithDelta(final CharSequence name, final Statistics delta) {
+            super(name);
             this.delta = delta;
             delta.decrementCountNaN(); // Do not count the first NaN, which will always be the first value.
         }

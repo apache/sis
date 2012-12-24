@@ -26,7 +26,9 @@ import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.geometry.MismatchedReferenceSystemException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.cs.RangeMeaning;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
@@ -34,6 +36,7 @@ import org.apache.sis.util.resources.Errors;
 import static java.lang.Double.doubleToLongBits;
 import static org.apache.sis.util.Arrays.resize;
 import static org.apache.sis.util.StringBuilders.trimFractionalPart;
+import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
 
 // Related to JDK7
 import org.apache.sis.internal.util.Objects;
@@ -70,6 +73,21 @@ public abstract class AbstractDirectPosition implements DirectPosition {
     }
 
     /**
+     * Returns a sequence of numbers that hold the coordinate of this position in its
+     * reference system.
+     *
+     * @return The coordinates.
+     */
+    @Override
+    public double[] getCoordinate() {
+        final double[] ordinates = new double[getDimension()];
+        for (int i=0; i<ordinates.length; i++) {
+            ordinates[i] = getOrdinate(i);
+        }
+        return ordinates;
+    }
+
+    /**
      * Sets this direct position to the given position. If the given position is
      * {@code null}, then all ordinate values are set to {@link Double#NaN NaN}.
      *
@@ -87,7 +105,7 @@ public abstract class AbstractDirectPosition implements DirectPosition {
     {
         final int dimension = getDimension();
         if (position != null) {
-            ensureDimensionMatch("position", position.getDimension(), dimension);
+            ensureDimensionMatches("position", dimension, position);
             final CoordinateReferenceSystem crs = getCoordinateReferenceSystem();
             if (crs != null) {
                 final CoordinateReferenceSystem other = position.getCoordinateReferenceSystem();
@@ -106,58 +124,55 @@ public abstract class AbstractDirectPosition implements DirectPosition {
     }
 
     /**
-     * Returns a sequence of numbers that hold the coordinate of this position in its
-     * reference system.
+     * Ensures that the position is contained in the coordinate system domain.
+     * For each dimension, this method compares the ordinate values against the
+     * limits of the coordinate system axis for that dimension.
+     * If some ordinates are out of range, then there is a choice depending on the
+     * {@linkplain CoordinateSystemAxis#getRangeMeaning() axis range meaning}:
      *
-     * @return The coordinates.
-     */
-    @Override
-    public double[] getCoordinate() {
-        final double[] ordinates = new double[getDimension()];
-        for (int i=0; i<ordinates.length; i++) {
-            ordinates[i] = getOrdinate(i);
-        }
-        return ordinates;
-    }
-
-    /**
-     * Ensures that the given CRS, if non-null, has the expected number of dimensions.
-     * This method presumes that the argument name is {@code "crs"}.
+     * <ul>
+     *   <li>If {@link RangeMeaning#EXACT} (typically <em>latitudes</em> ordinates), then values
+     *       greater than the {@linkplain CoordinateSystemAxis#getMaximumValue() axis maximal value}
+     *       are replaced by the axis maximum, and values smaller than the
+     *       {@linkplain CoordinateSystemAxis#getMinimumValue() axis minimal value}
+     *       are replaced by the axis minimum.</li>
      *
-     * @param  crs The coordinate reference system to check, or {@code null}.
-     * @param  expected The expected number of dimensions.
-     * @throws MismatchedDimensionException if the CRS dimension is not valid.
+     *   <li>If {@link RangeMeaning#WRAPAROUND} (typically <em>longitudes</em> ordinates), then
+     *       a multiple of the axis range (e.g. 360° for longitudes) is added or subtracted.</li>
+     * </ul>
+     *
+     * @return {@code true} if this position has been modified as a result of this method call,
+     *         or {@code false} if no change has been done.
      */
-    static void ensureDimensionMatch(final CoordinateReferenceSystem crs,
-            final int expected) throws MismatchedDimensionException
-    {
+    public boolean normalize() {
+        boolean changed = false;
+        final CoordinateReferenceSystem crs = getCoordinateReferenceSystem();
         if (crs != null) {
+            final int dimension = getDimension();
             final CoordinateSystem cs = crs.getCoordinateSystem();
-            if (cs != null) { // Should never be null, but let be safe.
-                final int dimension = cs.getDimension();
-                if (dimension != expected) {
-                    throw new MismatchedDimensionException(Errors.format(
-                            Errors.Keys.MismatchedDimension_3, "crs", dimension, expected));
+            for (int i=0; i<dimension; i++) {
+                double ordinate = getOrdinate(i);
+                final CoordinateSystemAxis axis = cs.getAxis(i);
+                final double  minimum = axis.getMinimumValue();
+                final double  maximum = axis.getMaximumValue();
+                final RangeMeaning rm = axis.getRangeMeaning();
+                if (RangeMeaning.EXACT.equals(rm)) {
+                         if (ordinate < minimum) ordinate = minimum;
+                    else if (ordinate > maximum) ordinate = maximum;
+                    else continue;
+                } else if (RangeMeaning.WRAPAROUND.equals(rm)) {
+                    final double csSpan = maximum - minimum;
+                    final double shift  = Math.floor((ordinate - minimum) / csSpan) * csSpan;
+                    if (shift == 0) {
+                        continue;
+                    }
+                    ordinate -= shift;
                 }
+                setOrdinate(i, ordinate);
+                changed = true;
             }
         }
-    }
-
-    /**
-     * Ensures that the given number of dimensions is equals to the expected value.
-     *
-     * @param  name The name of the argument to check.
-     * @param  dimension The object dimension.
-     * @param  expectedDimension The Expected dimension for the object.
-     * @throws MismatchedDimensionException if the object doesn't have the expected dimension.
-     */
-    static void ensureDimensionMatch(final String name, final int dimension,
-            final int expectedDimension) throws MismatchedDimensionException
-    {
-        if (dimension != expectedDimension) {
-            throw new MismatchedDimensionException(Errors.format(Errors.Keys.MismatchedDimension_3,
-                        name, dimension, expectedDimension));
-        }
+        return changed;
     }
 
     /**
