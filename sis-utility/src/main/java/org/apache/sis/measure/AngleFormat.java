@@ -1102,11 +1102,10 @@ scan:   for (int i=0; i<length;) {
                 default: throw new AssertionError(field);
             }
             if (toSkip != null) {
-                final int toSkipLength = toSkip.length();
                 int c;
                 do {
-                    if (source.regionMatches(index, toSkip, 0, toSkipLength)) {
-                        pos.setIndex(index + toSkipLength);
+                    if (source.startsWith(toSkip, index)) {
+                        pos.setIndex(index + toSkip.length());
                         return field;
                     }
                     if (index >= length) break;
