@@ -24,17 +24,17 @@ import java.util.TimeZone;
 import java.text.Format;
 import java.text.NumberFormat;
 import java.text.DecimalFormat;
+import java.text.FieldPosition;
 import java.text.ParsePosition;
 import java.text.ParseException;
 import org.opengis.util.InternationalString;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.io.TabularFormat;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.collection.BackingStoreException;
 
 import static java.lang.Math.*;
-import java.text.FieldPosition;
-import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.collection.BackingStoreException;
 
 
 /**
