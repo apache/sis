@@ -1698,7 +1698,7 @@ cmp:    while (ia < lga) {
     public static boolean regionMatches(final CharSequence text, final int fromIndex, final CharSequence part) {
         if (text instanceof String && part instanceof String) {
             // It is okay to delegate to String implementation since we do not ignore cases.
-            return ((String) text).regionMatches(fromIndex, (String) part, 0, part.length());
+            return ((String) text).startsWith((String) part, fromIndex);
         }
         final int length;
         if (fromIndex < 0 || fromIndex + (length = part.length()) > text.length()) {
