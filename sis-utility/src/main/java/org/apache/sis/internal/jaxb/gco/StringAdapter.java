@@ -35,24 +35,9 @@ import org.apache.sis.internal.jaxb.MarshalContext;
  */
 public final class StringAdapter extends XmlAdapter<GO_CharacterString, String> {
     /**
-     * The adapter on which to delegate the marshalling processes.
-     */
-    private final CharSequenceAdapter adapter;
-
-    /**
      * Empty constructor for JAXB.
      */
     private StringAdapter() {
-        adapter = new CharSequenceAdapter();
-    }
-
-    /**
-     * Creates a new adapter which will use the anchor map from the given adapter.
-     *
-     * @param adapter The adaptor on which to delegate the work.
-     */
-    public StringAdapter(final CharSequenceAdapter adapter) {
-        this.adapter = adapter;
     }
 
     /**
@@ -60,41 +45,46 @@ public final class StringAdapter extends XmlAdapter<GO_CharacterString, String> 
      * sequence is an instance of {@link InternationalString}, then the locale from
      * the current unmashalling context is used in order to get a string.
      *
-     * @param text The text for which to get a string representation, or {@code null}.
+     * @param  value The wrapper for the value, or {@code null}.
      * @return The string representation of the given text, or {@code null}.
      */
-    public static String toString(final CharSequence text) {
-        if (text != null) {
-            if (text instanceof InternationalString) {
-                final MarshalContext context = MarshalContext.current();
-                return ((InternationalString) text).toString(context != null ? context.getLocale() : null);
+    public static String toString(final GO_CharacterString value) {
+        if (value != null) {
+            final CharSequence text = value.toCharSequence();
+            if (text != null) {
+                if (text instanceof InternationalString) {
+                    final MarshalContext context = MarshalContext.current();
+                    return ((InternationalString) text).toString(context != null ? context.getLocale() : null);
+                }
+                return text.toString();
             }
-            return text.toString();
         }
         return null;
     }
 
     /**
      * Converts a string read from a XML stream to the object containing the value.
-     * JAXB calls automatically this method at unmarshalling time.
+     * JAXB calls automatically this method at unmarshalling time. If the character
+     * sequence is an instance of {@link InternationalString}, then the locale from
+     * the current unmashalling context is used in order to get a string.
      *
-     * @param value The adapter for this metadata value.
-     * @return A {@link String} which represents the metadata value.
+     * @param  value The wrapper for the value, or {@code null}.
+     * @return The unwrapped {@link String} value, or {@code null}.
      */
     @Override
     public String unmarshal(final GO_CharacterString value) {
-        return toString(adapter.unmarshal(value));
+        return toString(value);
     }
 
     /**
      * Converts a {@linkplain String string} to the object to be marshalled in a XML file or stream.
      * JAXB calls automatically this method at marshalling time.
      *
-     * @param value The string value.
-     * @return The adapter for this string.
+     * @param  value The string value, or {@code null}.
+     * @return The wrapper for the given string, or {@code null}.
      */
     @Override
     public GO_CharacterString marshal(final String value) {
-        return adapter.marshal(value);
+        return CharSequenceAdapter.wrap(value, value);
     }
 }
