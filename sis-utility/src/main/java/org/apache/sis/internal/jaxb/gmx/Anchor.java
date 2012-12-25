@@ -29,7 +29,7 @@ import java.util.Objects;
 
 /**
  * The {@code Anchor} element, which is included in {@code CharacterString} elements.
- * This class extends {@link InternationalString} in an opportunist way, in order to allow
+ * This class implements {@link InternationalString} in an opportunist way, in order to allow
  * direct usage with public API expecting {@link CharSequence} or {@link InternationalString}
  * object.
  *
