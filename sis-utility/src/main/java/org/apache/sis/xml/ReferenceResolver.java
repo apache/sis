@@ -22,6 +22,7 @@ import org.opengis.metadata.Identifier;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.internal.jaxb.UUIDs;
+import org.apache.sis.internal.jaxb.gmx.Anchor;
 
 import static org.apache.sis.util.ArgumentChecks.*;
 
@@ -43,9 +44,8 @@ import static org.apache.sis.util.ArgumentChecks.*;
  */
 public class ReferenceResolver {
     /**
-     * The default and thread-safe instance. This instance is used at unmarshalling time
-     * when no {@code ReferenceResolver} was explicitly set by the {@link XML#RESOLVER}
-     * property.
+     * The default and thread-safe instance. This instance is used at unmarshalling time when
+     * no {@code ReferenceResolver} was explicitly set by the {@link XML#RESOLVER} property.
      */
     public static final ReferenceResolver DEFAULT = new ReferenceResolver();
 
@@ -128,6 +128,30 @@ public class ReferenceResolver {
     }
 
     /**
+     * Returns {@code true} if the marshaller can use a reference to the given metadata
+     * instead than writing the full element. This method is invoked when a metadata to
+     * be marshalled has a UUID identifier. Because those metadata may be defined externally,
+     * SIS can not know if the metadata shall be fully marshalled or not.
+     * Such information needs to be provided by the application.
+     *
+     * <p>The default implementation conservatively returns {@code false} in every cases.
+     * Subclasses can override this method if they know whether the receiver will be able
+     * to resolve such references.</p>
+     *
+     * @param  <T>     The compile-time type of the {@code type} argument.
+     * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
+     * @param  type    The type of object to be marshalled as an <strong>interface</strong>.
+     *                 This is usually a <a href="http://www.geoapi.org">GeoAPI</a> interface.
+     * @param  object  The object to be marshalled.
+     * @param  uuid    The unique identifier of the object to be marshalled.
+     * @return {@code true} if the marshaller can use the {@code uuidref} attribute
+     *         instead than marshalling the given metadata.
+     */
+    public <T> boolean canSubstituteByReference(final MarshalContext context, final Class<T> type, final T object, final UUID uuid) {
+        return false;
+    }
+
+    /**
      * Returns {@code true} if the marshaller can use a {@code xlink:href} reference to the given
      * metadata instead than writing the full element. This method is invoked when a metadata to be
      * marshalled has a {@link XLink} identifier. Because those metadata may be defined externally,
@@ -152,26 +176,39 @@ public class ReferenceResolver {
     }
 
     /**
-     * Returns {@code true} if the marshaller can use a reference to the given metadata
-     * instead than writing the full element. This method is invoked when a metadata to
-     * be marshalled has a UUID identifier. Because those metadata may be defined externally,
-     * SIS can not know if the metadata shall be fully marshalled or not.
-     * Such information needs to be provided by the application.
+     * Returns the {@code <gmx:Anchor>} to use for the given text, or {@code null} if none.
+     * Anchors can appear in ISO 19139 documents where we would normally expect a character
+     * sequence. For example:
      *
-     * <p>The default implementation conservatively returns {@code false} in every cases.
-     * Subclasses can override this method if they know whether the receiver will be able
-     * to resolve such references.</p>
+     * <table class="sis">
+     * <tr>
+     *   <th>As {@code <gco:CharacterString>}</th>
+     *   <th>As {@code <gmx:Anchor>}</th>
+     * </tr><tr>
+     * <td>{@preformat xml
+     *   <gmd:country>
+     *     <gco:CharacterString>France</gco:CharacterString>
+     *   </gmd:country>
+     * }</td>
+     * <td>{@preformat xml
+     *   <gmd:country>
+     *     <gmx:Anchor xlink:href="SDN:C320:2:FR">France</gmx:Anchor>
+     *   </gmd:country>
+     * }</td>
+     * </tr>
+     * </table>
      *
-     * @param  <T>     The compile-time type of the {@code type} argument.
+     * Subclasses can override this method if they can provide a mapping from some text
+     * values to anchors.
+     *
      * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
-     * @param  type    The type of object to be marshalled as an <strong>interface</strong>.
-     *                 This is usually a <a href="http://www.geoapi.org">GeoAPI</a> interface.
-     * @param  object  The object to be marshalled.
-     * @param  uuid    The unique identifier of the object to be marshalled.
-     * @return {@code true} if the marshaller can use the {@code uuidref} attribute
-     *         instead than marshalling the given metadata.
+     * @param  object  The object for which an anchor is requested. Often same than {@code text},
+     *                 but can also be the {@link java.net.URI} or {@link java.util.Locale} instance
+     *                 for which {@code text} is a string representation.
+     * @param  text    The textual representation of the object for which to get the anchor.
+     * @return The anchor for the given text, or {@code null} if none.
      */
-    public <T> boolean canSubstituteByReference(final MarshalContext context, final Class<T> type, final T object, final UUID uuid) {
-        return false;
+    public XLink anchor(final MarshalContext context, final Object object, final CharSequence text) {
+        return (text instanceof Anchor) ? (Anchor) text : null;
     }
 }

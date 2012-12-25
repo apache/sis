@@ -34,50 +34,38 @@ import org.apache.sis.internal.jaxb.MarshalContext;
  */
 public final class URIAdapter extends XmlAdapter<GO_CharacterString, URI> {
     /**
-     * The adapter on which to delegate the marshalling processes.
-     */
-    private final CharSequenceAdapter adapter;
-
-    /**
      * Empty constructor for JAXB.
      */
     private URIAdapter() {
-        adapter = new CharSequenceAdapter();
-    }
-
-    /**
-     * Creates a new adapter which will use the anchor map from the given adapter.
-     *
-     * @param adapter The adaptor on which to delegate the work.
-     */
-    public URIAdapter(final CharSequenceAdapter adapter) {
-        this.adapter = adapter;
     }
 
     /**
      * Converts a URI read from a XML stream to the object containing the value.
      * JAXB calls automatically this method at unmarshalling time.
      *
-     * @param  value The adapter for this metadata value.
-     * @return An {@link URI} which represents the metadata value.
+     * @param  value The wrapper for the URI value, or {@code null}.
+     * @return An {@link URI} which represents the URI value, or {@code null}.
      * @throws URISyntaxException If the string is not a valid URI.
      */
     @Override
     public URI unmarshal(final GO_CharacterString value) throws URISyntaxException {
-        final String text = StringAdapter.toString(adapter.unmarshal(value));
-        final MarshalContext context = MarshalContext.current();
-        return (text != null) ? MarshalContext.converter(context).toURI(context, text) : null;
+        final String text = StringAdapter.toString(value);
+        if (text != null) {
+            final MarshalContext context = MarshalContext.current();
+            return MarshalContext.converter(context).toURI(context, text);
+        }
+        return null;
     }
 
     /**
      * Converts a {@link URI} to the object to be marshalled in a XML file or stream.
      * JAXB calls automatically this method at marshalling time.
      *
-     * @param  value The URI value.
-     * @return The adapter for the given URI.
+     * @param  value The URI value, or {@code null}.
+     * @return The wrapper for the given URI, or {@code null}.
      */
     @Override
     public GO_CharacterString marshal(final URI value) {
-        return (value != null) ? adapter.marshal(value.toString()) : null;
+        return (value != null) ? CharSequenceAdapter.wrap(value, value.toString()) : null;
     }
 }

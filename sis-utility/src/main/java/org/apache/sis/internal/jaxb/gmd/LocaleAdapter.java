@@ -20,7 +20,6 @@ import java.util.Locale;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import org.apache.sis.internal.jaxb.MarshalContext;
 import org.apache.sis.internal.jaxb.gco.StringAdapter;
-import org.apache.sis.internal.jaxb.gco.CharSequenceAdapter;
 
 
 /**
@@ -44,24 +43,9 @@ import org.apache.sis.internal.jaxb.gco.CharSequenceAdapter;
  */
 public final class LocaleAdapter extends XmlAdapter<LanguageCode, Locale> {
     /**
-     * The adapter on which to delegate the marshalling processes.
-     */
-    private final CharSequenceAdapter adapter;
-
-    /**
      * Empty constructor for JAXB.
      */
     private LocaleAdapter() {
-        adapter = new CharSequenceAdapter();
-    }
-
-    /**
-     * Creates a new adapter which will use the anchor map from the given adapter.
-     *
-     * @param adapter The adaptor on which to delegate the work.
-     */
-    public LocaleAdapter(final CharSequenceAdapter adapter) {
-        this.adapter = adapter;
     }
 
     /**
@@ -78,7 +62,7 @@ public final class LocaleAdapter extends XmlAdapter<LanguageCode, Locale> {
         if (candidate != null) {
             return candidate;
         }
-        final String text = StringAdapter.toString(adapter.unmarshal(value));
+        final String text = StringAdapter.toString(value);
         return (text != null) ? MarshalContext.converter(context).toLocale(context, text) : null;
     }
 
@@ -91,8 +75,6 @@ public final class LocaleAdapter extends XmlAdapter<LanguageCode, Locale> {
      */
     @Override
     public LanguageCode marshal(final Locale value) {
-        final MarshalContext context = MarshalContext.current();
-        return LanguageCode.create(context, value,
-                MarshalContext.isFlagSet(context, MarshalContext.SUBSTITUTE_LANGUAGE) ? adapter : null);
+        return LanguageCode.create(MarshalContext.current(), value);
     }
 }

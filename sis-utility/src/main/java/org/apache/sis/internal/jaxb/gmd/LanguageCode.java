@@ -62,7 +62,7 @@ public final class LanguageCode extends GO_CharacterString {
 
     /**
      * Builds a {@code <gco:CharacterString>} element.
-     * For private use by {@link #create(MarshalContext, Locale, CharSequenceAdapter)} only.
+     * For private use by {@link #create(MarshalContext, Locale)} only.
      */
     private LanguageCode(final GO_CharacterString code) {
         super(code);
@@ -70,7 +70,7 @@ public final class LanguageCode extends GO_CharacterString {
 
     /**
      * Builds a {@code <LanguageCode>} element.
-     * For private use by {@link #create(MarshalContext, Locale, CharSequenceAdapter)} only.
+     * For private use by {@link #create(MarshalContext, Locale)} only.
      *
      * @param context       The current (un)marshalling context, or {@code null} if none.
      * @param codeListValue The {@code codeListValue} attribute in the XML element.
@@ -86,16 +86,18 @@ public final class LanguageCode extends GO_CharacterString {
      *
      * @param context The current (un)marshalling context, or {@code null} if none.
      * @param locale  The value to marshal, or {@code null}.
-     * @paral anchors If non-null, marshal the locale as a {@code <gco:CharacterString>} instead
-     *                than {@code <LanguageCode>}, using the given anchors if any.
      * @return The language to marshal, or {@code null} if the given locale was null
      *         or if its {@link Locale#getLanguage()} attribute is the empty string.
      */
-    static LanguageCode create(final MarshalContext context, final Locale locale, final CharSequenceAdapter anchors) {
+    static LanguageCode create(final MarshalContext context, final Locale locale) {
         if (locale != null) {
             final String codeListValue = MarshalContext.converter(context).toLanguageCode(context, locale);
-            if (anchors != null && !codeListValue.isEmpty()) {
-                final GO_CharacterString string = anchors.marshal(codeListValue);
+            if (!codeListValue.isEmpty() && MarshalContext.isFlagSet(context, MarshalContext.SUBSTITUTE_LANGUAGE)) {
+                /*
+                 * Marshal the locale as a <gco:CharacterString> instead than <LanguageCode>,
+                 * using the user-supplied anchors if any.
+                 */
+                final GO_CharacterString string = CharSequenceAdapter.wrap(locale, codeListValue);
                 if (string != null) {
                     return new LanguageCode(string);
                 }

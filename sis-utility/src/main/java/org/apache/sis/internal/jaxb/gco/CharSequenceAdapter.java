@@ -16,12 +16,11 @@
  */
 package org.apache.sis.internal.jaxb.gco;
 
-import java.net.URI;
-import java.util.Map;
-import java.util.HashMap;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import org.opengis.util.InternationalString;
-import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.CharSequences;
+import org.apache.sis.xml.XLink;
+import org.apache.sis.xml.ReferenceResolver;
 import org.apache.sis.internal.jaxb.MarshalContext;
 import org.apache.sis.internal.jaxb.gmx.Anchor;
 import org.apache.sis.internal.jaxb.gmd.PT_FreeText;
@@ -29,21 +28,14 @@ import org.apache.sis.internal.jaxb.gmd.PT_FreeText;
 
 /**
  * JAXB adapter in order to wrap the string value with a {@code <gco:CharacterString>} element,
- * for ISO-19139 compliance. A {@link CharSequenceAdapter} can also substitute text by anchors.
- * At the difference of most adapters provided in {@code org.apache.sis.internal.jaxb} packages,
- * this adapter is <em>configurable</em>. It must be created explicitly with a map of bindings
- * between labels and URNs, and the configured adapter must be given to the mashaller as below:
+ * for ISO-19139 compliance. A {@link CharSequenceAdapter} can handle the following types:
  *
- * {@preformat java
- *     CharSequenceAdapter adapter = new CharSequenceAdapter();
- *     adapter.addLinkage(...);
- *     marshaller.setAdapter(adapter);
- *     marshaller.setAdapter(new StringAdapter(adapter));
- *     marshaller.setAdapter(new InternationalStringAdapter(adapter));
- * }
- *
- * This class can also handles {@link InternationalString}, which will be mapped to
- * {@link PT_FreeText} elements.
+ * <ul>
+ *   <li>{@link InternationalString}, which will be mapped to {@link PT_FreeText} elements.</li>
+ *   <li>{@link String} (actually any character sequences other than {@code InternationalString}).</li>
+ *   <li>{@link Anchor}, which can be substituted to any of the above if the {@link ReferenceResolver}
+ *       in the current marshalling context maps the given text to a {@code xlink}.</li>
+ * </ul>
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)
@@ -57,118 +49,45 @@ import org.apache.sis.internal.jaxb.gmd.PT_FreeText;
  */
 public final class CharSequenceAdapter extends XmlAdapter<GO_CharacterString, CharSequence> {
     /**
-     * Binds string labels with URNs or anchors. Values can be either {@link URI} or
-     * {@link Anchor} instances. The map is initially null and will be created
-     * when first needed.
-     *
-     * @see #addLinkage(String, URI)
-     * @see #addLinkage(Anchor)
+     * Constructor for JAXB only.
      */
-    private Map<String,Object> anchors;
-
-    /**
-     * Creates a uninitialized adapter.
-     */
-    public CharSequenceAdapter() {
+    private CharSequenceAdapter() {
     }
 
     /**
-     * Adds a label associated to the given URN.
-     *
-     * @param  label The label associated to the URN.
-     * @param  linkage The URN.
-     * @throws IllegalStateException If a URN is already associated to the given label.
-     */
-    public void addLinkage(final String label, final URI linkage) throws IllegalStateException {
-        add(label, linkage);
-    }
-
-    /**
-     * Adds an anchor (label associated to an URN).
-     *
-     * @param  anchor The anchor to add.
-     * @throws IllegalStateException If a URN is already associated to the anchor value.
-     */
-    public void addLinkage(final Anchor anchor) throws IllegalStateException {
-        add(anchor.toString(), anchor);
-    }
-
-    /**
-     * Implementation of {@code addLinkage} methods.
-     */
-    private synchronized void add(final String label, final Object linkage) throws IllegalStateException {
-        if (anchors == null) {
-            anchors = new HashMap<>();
-        }
-        final Object old = anchors.put(label, linkage);
-        if (old != null) {
-            anchors.put(label, old);
-            if (!old.equals(linkage)) {
-                throw new IllegalStateException(Errors.format(Errors.Keys.ValueAlreadyDefined_1, label));
-            }
-        }
-    }
-
-    /**
-     * Converts a string read from a XML stream to the object containing
-     * the value. JAXB calls automatically this method at unmarshalling time.
+     * Converts a string read from a XML stream to the object containing the value.
+     * JAXB calls automatically this method at unmarshalling time.
      *
      * @param value The adapter for this metadata value.
      * @return A {@link CharSequence} which represents the metadata value.
      */
     @Override
     public CharSequence unmarshal(final GO_CharacterString value) {
-        if (value != null) {
-            if (value instanceof PT_FreeText) {
-                final PT_FreeText freeText = (PT_FreeText) value;
-                String defaultValue = freeText.toString(); // May be null.
-                if (defaultValue != null && freeText.contains(defaultValue)) {
-                    /*
-                     * If the <gco:CharacterString> value is repeated in one of the
-                     * <gmd:LocalisedCharacterString> elements, keep only the localized
-                     * version  (because it specifies the locale, while the unlocalized
-                     * string saids nothing on that matter).
-                     */
-                    defaultValue = null;
-                }
-                /*
-                 * Create the international string with all locales found in the <gml:textGroup>
-                 * element. If the <gml:textGroup> element is missing or empty, then we will use
-                 * an instance of SimpleInternationalString instead than the more heavy
-                 * DefaultInternationalString.
-                 */
-                return freeText.toInternationalString(defaultValue);
-            }
-            /*
-             * Case where the value is an ordinary GO_CharacterString (not a PT_FreeText).
-             */
-            CharSequence text = value.text;
-            if (text != null) {
-                if (text instanceof String) {
-                    text = ((String) text).trim();
-                }
-                if (text.length() != 0 || text instanceof Anchor) { // Anchor may contain attributes.
-                    return text;
-                }
-            }
-        }
-        return null;
+        return (value != null) ? value.toCharSequence() : null;
     }
 
     /**
      * Converts a {@linkplain CharSequence character sequence} to the object to be marshalled
      * in a XML file or stream. JAXB calls automatically this method at marshalling time.
      *
-     * @param value The string value.
-     * @return The wrapper for the given string.
+     * @param  value The string value.
+     * @return The wrapper for the given character sequence.
      */
     @Override
-    public GO_CharacterString marshal(CharSequence value) {
+    public GO_CharacterString marshal(final CharSequence value) {
+        return wrap(value);
+    }
+
+    /**
+     * Converts a {@linkplain CharSequence character sequence} to the object to be marshalled
+     * in a XML file or stream.
+     *
+     * @param  value The character representation of the object being marshalled.
+     * @return The wrapper for the given character sequence.
+     */
+    public static GO_CharacterString wrap(CharSequence value) {
         if (value instanceof String) {
-            value = ((String) value).trim();
-        }
-        if (value == null || value.length() == 0) {
-            return null;
+            return wrap(value, (String) value); // Slightly more efficient variant of this method.
         }
         /*
          * <gmd:someElement xsi:type="gmd:PT_FreeText_PropertyType">
@@ -185,24 +104,27 @@ public final class CharSequenceAdapter extends XmlAdapter<GO_CharacterString, Ch
             }
         }
         /*
+         * Invoking (indirectly) CharSequence.subSequence(…) may change the kind of object.
+         * We know that Anchor is safe, and that most InternationalString implementations
+         * lost the localized strings. This is why we trim the white spaces only here.
+         */
+        value = CharSequences.trimWhitespaces(value);
+        if (value == null || value.length() == 0) {
+            return null;
+        }
+        /*
          * Substitute <gco:CharacterString> by <gmx:Anchor> if a linkage is found.
          */
         if (!(value instanceof Anchor)) {
-            synchronized (this) {
-                if (anchors != null) {
-                    String key = value.toString();
-                    if (key != null) {
-                        key = key.trim();
-                        if (!key.isEmpty()) {
-                            final Object linkage = anchors.get(key);
-                            if (linkage != null) {
-                                if (linkage instanceof URI) {
-                                    value = new Anchor((URI) linkage, key);
-                                } else {
-                                    value = (Anchor) linkage;
-                                }
-                            }
-                        }
+            final String key = CharSequences.trimWhitespaces(value.toString());
+            if (key != null && !key.isEmpty()) {
+                final MarshalContext context = MarshalContext.current();
+                final XLink linkage = MarshalContext.resolver(context).anchor(context, value, key);
+                if (linkage != null) {
+                    if (linkage instanceof Anchor) {
+                        value = (Anchor) linkage;
+                    } else {
+                        value = new Anchor(linkage, key);
                     }
                 }
             }
@@ -217,6 +139,33 @@ public final class CharSequenceAdapter extends XmlAdapter<GO_CharacterString, Ch
          * │ </gmd:someElement>                               │ </gmd:someElement>             │
          * └──────────────────────────────────────────────────┴────────────────────────────────┘
          */
+        return new GO_CharacterString(value);
+    }
+
+    /**
+     * Converts the string representation of an object to be marshalled in a XML file or stream.
+     * This method is a copy of {@link #wrap(CharSequence)} simplified for the case when we know
+     * that the character sequence being marshalled is a string.
+     *
+     * @param  object The object being marshalled (e.g. {@code URI} or {@code Locale}).
+     * @param  string The string representation of the object being marshalled.
+     * @return The wrapper for the given character sequence.
+     */
+    public static GO_CharacterString wrap(final Object object, String string) {
+        string = CharSequences.trimWhitespaces(string);
+        if (string == null || string.isEmpty()) {
+            return null;
+        }
+        CharSequence value = string;
+        final MarshalContext context = MarshalContext.current();
+        final XLink linkage = MarshalContext.resolver(context).anchor(context, object, string);
+        if (linkage != null) {
+            if (linkage instanceof Anchor) {
+                value = (Anchor) linkage;
+            } else {
+                value = new Anchor(linkage, string);
+            }
+        }
         return new GO_CharacterString(value);
     }
 }

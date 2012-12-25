@@ -36,41 +36,28 @@ import org.apache.sis.util.iso.SimpleInternationalString;
  */
 public final class InternationalStringAdapter extends XmlAdapter<GO_CharacterString, InternationalString> {
     /**
-     * The adapter on which to delegate the marshalling processes.
-     */
-    private final CharSequenceAdapter adapter;
-
-    /**
      * Empty constructor for JAXB.
      */
     private InternationalStringAdapter() {
-        adapter = new CharSequenceAdapter();
-    }
-
-    /**
-     * Creates a new adapter which will use the anchor map from the given adapter.
-     *
-     * @param adapter The adaptor on which to delegate the work.
-     */
-    public InternationalStringAdapter(final CharSequenceAdapter adapter) {
-        this.adapter = adapter;
     }
 
     /**
      * Converts an object read from a XML stream to an {@link InternationalString} implementation.
      * JAXB invokes automatically this method at unmarshalling time.
      *
-     * @param value The adapter for the string value.
-     * @return An {@link InternationalString} for the string value.
+     * @param  value The wrapper for the value, or {@code null}.
+     * @return The unwrapped {@link String} value, or {@code null}.
      */
     @Override
     public InternationalString unmarshal(final GO_CharacterString value) {
-        final CharSequence text = adapter.unmarshal(value);
-        if (text != null) {
-            if (text instanceof InternationalString) {
-                return (InternationalString) text;
+        if (value != null) {
+            final CharSequence text = value.toCharSequence();
+            if (text != null) {
+                if (text instanceof InternationalString) {
+                    return (InternationalString) text;
+                }
+                return new SimpleInternationalString(text.toString());
             }
-            return new SimpleInternationalString(text.toString());
         }
         return null;
     }
@@ -79,11 +66,11 @@ public final class InternationalStringAdapter extends XmlAdapter<GO_CharacterStr
      * Converts an {@link InternationalString} to an object to format into a XML stream.
      * JAXB invokes automatically this method at marshalling time.
      *
-     * @param  value The string value.
-     * @return The adapter for the string.
+     * @param  value The string value, or {@code null}.
+     * @return The wrapper for the given string, or {@code null}.
      */
     @Override
     public GO_CharacterString marshal(final InternationalString value) {
-        return adapter.marshal(value);
+        return CharSequenceAdapter.wrap(value);
     }
 }
