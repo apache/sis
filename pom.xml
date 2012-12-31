@@ -330,6 +330,7 @@ Apache SIS is a toolkit for describing location information, including points,
             <index>false</index>
             <manifest>
               <addClasspath>true</addClasspath>
+              <mainClass>org.apache.sis.util.About</mainClass>
               <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
             </manifest>
             <manifestEntries>

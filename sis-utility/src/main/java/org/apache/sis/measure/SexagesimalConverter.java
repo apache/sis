@@ -197,7 +197,7 @@ class SexagesimalConverter extends UnitConverter {
                     if (min >= 0) deg++; else deg--;
                     min = 0;
                 } else {
-                    throw illegalField(angle, min, Vocabulary.Keys.Minutes);
+                    throw illegalField(angle, min, Vocabulary.Keys.AngularMinutes);
                 }
             }
             if (sec <= -60 || sec >= 60) { // Do not enter for NaN
@@ -205,7 +205,7 @@ class SexagesimalConverter extends UnitConverter {
                     if (sec >= 0) min++; else min--;
                     sec = 0;
                 } else {
-                    throw illegalField(angle, sec, Vocabulary.Keys.Seconds);
+                    throw illegalField(angle, sec, Vocabulary.Keys.AngularSeconds);
                 }
             }
             return (sec/60 + min)/60 + deg;
