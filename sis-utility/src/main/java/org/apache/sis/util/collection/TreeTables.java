@@ -28,6 +28,7 @@ import org.apache.sis.util.Static;
 import org.apache.sis.util.ArgumentChecks;
 
 import static org.apache.sis.util.Arrays.resize;
+import static org.apache.sis.util.Arrays.insert;
 
 
 /**
@@ -68,26 +69,27 @@ import static org.apache.sis.util.Arrays.resize;
  * }
  * </td></tr></table>
  * {@preformat java
- * import static org.apache.sis.util.collection.TableColumn.NAME;          // The column to merge
- * import static org.apache.sis.util.collection.TableColumn.VALUE_AS_TEXT; // The column which must be empty
+ *   import static org.apache.sis.util.collection.TableColumn.NAME;          // The column to merge
+ *   import static org.apache.sis.util.collection.TableColumn.VALUE_AS_TEXT; // The column which must be empty
  *
- * public class MyClass {
- *     private static TreeTable.Node concatenateSingletons(final TreeTable.Node node) {
- *         final List<TreeTable.Node> children = node.getChildren();
- *         final int size = children.size();
- *         for (int i=0; i<size; i++) {
- *             children.set(i, concatenateSingletons(children.get(i)));
- *         }
- *         if (size == 1) {
- *             final TreeTable.Node child = children.get(0);
- *             if (node.getValue(VALUE_AS_TEXT) == null) {
- *                 children.remove(0);
- *                 child.setValue(NAME, node.getValue(NAME) + File.separator + child.getValue(NAME));
- *                 return child;
- *             }
- *         }
- *         return node;
- *     }
+ *   public class MyClass {
+ *       private static TreeTable.Node concatenateSingletons(final TreeTable.Node node) {
+ *           final List<TreeTable.Node> children = node.getChildren();
+ *           final int size = children.size();
+ *           for (int i=0; i<size; i++) {
+ *               children.set(i, concatenateSingletons(children.get(i)));
+ *           }
+ *           if (size == 1) {
+ *               final TreeTable.Node child = children.get(0);
+ *               if (node.getValue(VALUE_AS_TEXT) == null) {
+ *                   children.remove(0);
+ *                   child.setValue(NAME, node.getValue(NAME) + File.separator + child.getValue(NAME));
+ *                   return child;
+ *               }
+ *           }
+ *           return node;
+ *       }
+ *   }
  * }
  *
  * There is no pre-defined method for this task because there is too many parameters that
@@ -271,14 +273,30 @@ public final class TreeTables extends Static {
      * This helper method is sometime useful for quick tests or debugging purposes.
      * For more extensive use, consider using {@link TreeTableFormat} instead.
      *
-     * @param  text The string representation to parse.
+     * @param  text   The string representation to parse.
+     * @param  nodes  The columns where to store the node labels. This is often {@link TableColumn#NAME}.
+     * @param  values Optional columns where to store the values, if any.
      * @return A tree parsed from the given string.
      * @throws ParseException If an error occurred while parsing the tree.
      */
-    public static TreeTable parse(final String text) throws ParseException {
-        ArgumentChecks.ensureNonNull("text", text);
-        synchronized (TreeTableFormat.INSTANCE) {
-            return TreeTableFormat.INSTANCE.parseObject(text);
+    public static TreeTable parse(final String text, final TableColumn<?> nodes,
+            final TableColumn<?>... values) throws ParseException
+    {
+        ArgumentChecks.ensureNonNull("text",  text);
+        ArgumentChecks.ensureNonNull("nodes", nodes);
+        TableColumn<?>[] columns = null; // Default to singleton(NAME).
+        if (values.length != 0 || nodes != TableColumn.NAME) {
+            columns = insert(values, 0, 1);
+            columns[0] = nodes;
+        }
+        final TreeTableFormat format = TreeTableFormat.INSTANCE;
+        synchronized (format) {
+            try {
+                format.setColumns(columns);
+                return format.parseObject(text);
+            } finally {
+                format.setColumns((TableColumn<?>[]) null);
+            }
         }
     }
 }

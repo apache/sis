@@ -80,7 +80,7 @@ public final strictfp class TreeTablesTest extends TestCase {
                 "│       ├───data\n" +
                 "│       │   └───mercator\n" +
                 "│       └───document\n" +
-                "└───lib\n");
+                "└───lib\n", NAME);
         ((DefaultTreeTable) table).setRoot(concatenateSingletons(table.getRoot()));
         assertMultilinesEquals(
                 "root\n" +
