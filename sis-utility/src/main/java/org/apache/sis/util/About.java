@@ -355,14 +355,14 @@ fill:   for (int i=0; ; i++) {
                     newSection = LIBRARIES;
                     if (sections.contains(LIBRARIES)) {
                         nameKey = Vocabulary.Keys.JavaExtensions;
-                        value = classpath(getProperty("java.ext.dirs"), true);
+                        value = classpath(getProperty("java.ext.dirs"), null, true, null);
                     }
                     break;
                 }
                 case 12: {
                     if (sections.contains(LIBRARIES)) {
                         nameKey = Vocabulary.Keys.Classpath;
-                        value = classpath(getProperty("java.class.path"), false);
+                        value = classpath(getProperty("java.class.path"), null, false, null);
                     }
                     break;
                 }
@@ -433,12 +433,12 @@ pathTree:   for (int j=0; ; j++) {
                         directory = node.newChild();
                         directory.setValue(NAME, parenthesis(resources.getString(homeKey)));
                     }
-                    CharSequence description = entry.getValue();
-                    if (description == null) {
-                        description = parenthesis(resources.getString(entry.getKey().isDirectory() ?
+                    CharSequence title = entry.getValue();
+                    if (title == null) {
+                        title = parenthesis(resources.getString(entry.getKey().isDirectory() ?
                                 Vocabulary.Keys.Directory : Vocabulary.Keys.Untitled).toLowerCase(locale));
                     }
-                    TreeTables.nodeForPath(directory, NAME, file).setValue(VALUE_AS_TEXT, description);
+                    TreeTables.nodeForPath(directory, NAME, file).setValue(VALUE_AS_TEXT, title);
                     it.remove();
                 }
                 if (directory != null) {
@@ -454,21 +454,32 @@ pathTree:   for (int j=0; ; j++) {
     /**
      * Returns a map of all JAR files or class directories found in the given paths,
      * associated to a description obtained from their {@code META-INF/MANIFEST.MF}.
+     * The {@code paths} argument may contains many path separated by one of the
+     * following separators:
      *
-     * @param paths The paths, separated by {@link File#pathSeparatorChar}.
-     * @param asDirectories {@code true} if the paths shall contain directories,
-     *        or {@code false} if it shall contain JAR files.
+     * <ul>
+     *   <li>If {@code directory} is null, then {@code paths} is assumed to be a
+     *       system property value using the {@link File#pathSeparatorChar}.</li>
+     *   <li>If {@code directory} is non-null, then {@code paths} is assumed to be
+     *       a {@code MANIFEST.MF} attribute using space as the path separator.</li>
+     * </ul>
+     *
+     * @param paths         The paths using the separator described above.
+     * @param directory     The directory of {@code MANIFEST.MF} classpath, or {@code null}.
+     * @param asDirectories {@code true} if the paths are directories, or {@code false} for JAR files.
+     * @param files         Where to add the paths, or {@code null} if not yet created.
      */
-    private static Map<File,CharSequence> classpath(final String paths, final boolean asDirectories) {
+    private static Map<File,CharSequence> classpath(final String paths, final File directory,
+            final boolean asDirectories, Map<File,CharSequence> files)
+    {
         if (paths == null) {
-            return null;
+            return files;
         }
-        final Map<File,CharSequence> files = new LinkedHashMap<>();
-        for (final CharSequence path : CharSequences.split(paths, File.pathSeparatorChar)) {
-            final File file = new File(path.toString());
+        for (final CharSequence path : CharSequences.split(paths, (directory == null) ? File.pathSeparatorChar : ' ')) {
+            final File file = new File(directory, path.toString());
             if (file.exists()) {
                 if (!asDirectories) {
-                    files.put(file, null);
+                    files = put(files, file);
                 } else {
                     // If we are scanning extensions, then the path are directories
                     // rather than files. So we need to scan the directory content.
@@ -477,32 +488,41 @@ pathTree:   for (int j=0; ; j++) {
                     if (list != null) {
                         Arrays.sort(list);
                         for (final File ext : list) {
-                            files.put(ext, null);
+                            files = put(files, ext);
                         }
                     }
                 }
             }
         }
+        if (files == null) {
+            return null;
+        }
         /*
-         * At this point, we have collected all JAR files.
-         * Now set the description from the MANIFEST.MF file.
+         * At this point, we have collected all JAR files. Now set the description from the
+         * MANIFEST.MF file and scan recursively for the classpath declared in the manifest.
          */
         IOException error = null;
         for (final Map.Entry<File,CharSequence> entry : files.entrySet()) {
+            CharSequence title = entry.getValue();
+            if (title != null) {
+                continue; // This file has already been processed by a recursive method invocation.
+            }
             final File file = entry.getKey();
-            if (file.isFile()) {
-                CharSequence name = null;
+            if (file.isFile() && file.canRead()) {
                 try (final JarFile jar = new JarFile(file)) {
                     final Manifest manifest = jar.getManifest();
                     if (manifest != null) {
                         final Attributes attributes = manifest.getMainAttributes();
                         if (attributes != null) {
-                            name = concatenate(attributes.getValue(Attributes.Name.IMPLEMENTATION_TITLE),
+                            title = concatenate(attributes.getValue(Attributes.Name.IMPLEMENTATION_TITLE),
                                     attributes.getValue(Attributes.Name.IMPLEMENTATION_VERSION), false);
-                            if (name == null) {
-                                name = concatenate(attributes.getValue(Attributes.Name.SPECIFICATION_TITLE),
+                            if (title == null) {
+                                title = concatenate(attributes.getValue(Attributes.Name.SPECIFICATION_TITLE),
                                         attributes.getValue(Attributes.Name.SPECIFICATION_VERSION), false);
                             }
+                            entry.setValue(title);
+                            files = classpath(attributes.getValue(Attributes.Name.CLASS_PATH),
+                                    file.getParentFile(), false, files);
                         }
                     }
                 } catch (IOException e) {
@@ -511,13 +531,30 @@ pathTree:   for (int j=0; ; j++) {
                     } else {
                         error.addSuppressed(e);
                     }
-                    continue;
                 }
-                entry.setValue(name);
             }
         }
         if (error != null) {
             Logging.unexpectedException(About.class, "configuration", error);
+        }
+        return files;
+    }
+
+    /**
+     * Puts the given file in the given map. IF a value was already associated to the given file,
+     * then that value is preserved.
+     *
+     * @param  files The map in which to add the file, or {@code null} if not yet created.
+     * @param  file  The file to add in the map.
+     * @return The given map, or a new map if the given map was null.
+     */
+    private static Map<File,CharSequence> put(Map<File,CharSequence> files, final File file) {
+        if (files == null) {
+            files = new LinkedHashMap<>();
+        }
+        final CharSequence old = files.put(file, null);
+        if (old != null) {
+            files.put(file, old);
         }
         return files;
     }
