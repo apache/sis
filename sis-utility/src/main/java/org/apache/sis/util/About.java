@@ -143,11 +143,15 @@ public enum About {
      * version number):
      *
      * {@preformat java
-     *     java -jar sis-utility.jar
+     *     java -jar target/binaries/sis-utility.jar
      * }
      *
-     * By default this command prints all information except the {@link #LIBRARIES} section,
-     * which is verbose. Available options are:
+     * "{@code target/binaries}" is the default location where SIS JAR files are grouped together
+     * with their dependencies after a Maven build. This directory can be replaced by any path to
+     * a directory providing the required dependencies.
+     *
+     * <p>By default the above command prints all information except the {@link #LIBRARIES} section,
+     * because the later is considered too verbose. Available options are:</p>
      *
      * <ul>
      *   <li>{@code --version}: prints only Apache SIS version number.</li>
