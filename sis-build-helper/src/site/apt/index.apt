@@ -66,7 +66,7 @@ Building Apache SIS
     <plugin>
       <groupId>org.apache.sis</groupId>
       <artifactId>sis-build-helper</artifactId>
-      <version>${project.version}</version>
+      <version>${sis.plugin.version}</version>
       <executions>
         <execution>
           <goals>
@@ -112,7 +112,7 @@ mvn org.apache.sis:sis-build-helper:compile-resources
       <plugin>
         <groupId>org.apache.sis</groupId>
         <artifactId>sis-build-helper</artifactId>
-        <version>0.3-jdk7-SNAPSHOT</version>
+        <version>${sis.plugin.version}</version>
         <executions>
           <execution>
             <goals>
