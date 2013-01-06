@@ -80,8 +80,7 @@ abstract class WeakEntry<E> extends WeakReference<E> implements Disposable {
      * Constructs a new weak reference.
      */
     WeakEntry(final E obj, final WeakEntry<E> next, final int hash) {
-        super(obj, ReferenceQueueConsumer.DEFAULT.queue);
-        assert ReferenceQueueConsumer.DEFAULT.isAlive();
+        super(obj, ReferenceQueueConsumer.QUEUE);
         this.next = next;
         this.hash = hash;
     }
