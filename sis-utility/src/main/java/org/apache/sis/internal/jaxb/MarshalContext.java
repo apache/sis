@@ -29,7 +29,10 @@ import org.apache.sis.util.collection.UnmodifiableArrayList;
 
 /**
  * Thread-local status of a marshalling or unmarshalling process.
- * Contains also static methods for managing the collections to be marshalled.
+ * All non-static methods in this class except {@link #finish()} are implementation of public API.
+ * All static methods are internal API. Those methods expect a {@code MarshalContext} instance as
+ * their first argument. They should be though as if they were normal member methods, except that
+ * they accept {@code null} instance if no (un)marshalling is in progress.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.07)
@@ -45,16 +48,22 @@ public final class MarshalContext extends org.apache.sis.xml.MarshalContext {
 
     /**
      * The bit flag for enabling substitution of language codes by character strings.
+     *
+     * @see org.apache.sis.xml.XML#STRING_SUBSTITUTES
      */
     public static final int SUBSTITUTE_LANGUAGE = 2;
 
     /**
      * The bit flag for enabling substitution of country codes by character strings.
+     *
+     * @see org.apache.sis.xml.XML#STRING_SUBSTITUTES
      */
     public static final int SUBSTITUTE_COUNTRY = 4;
 
     /**
-     * The thread-local context.
+     * The thread-local context. Elements are created in the constructor, and removed in a
+     * {@code finally} block by the {@link #finish()} method. This {@code ThreadLocal} shall
+     * not contain any value when no (un)marshalling is in progress.
      */
     private static final ThreadLocal<MarshalContext> CURRENT = new ThreadLocal<MarshalContext>();
 
@@ -162,6 +171,45 @@ public final class MarshalContext extends org.apache.sis.xml.MarshalContext {
     }
 
     /**
+     * Returns the schema version of the XML document being (un)marshalled.
+     * See the super-class javadoc for the list of prefix that we shall support.
+     */
+    @Override
+    public final Version getVersion(final String prefix) {
+        if (prefix.equals("gml")) {
+            return versionGML;
+        }
+        // Future SIS versions may add more cases here.
+        return null;
+    }
+
+    /**
+     * Returns the locale to use for marshalling, or {@code null} if no locale were explicitly
+     * specified. A {@code null} value means that some locale-neutral language should be used
+     * if available, or an implementation-default locale (typically English) otherwise.
+     */
+    @Override
+    public final Locale getLocale() {
+        return locale;
+    }
+
+    /**
+     * Returns the timezone, or {@code null} if none were explicitely defined.
+     * In the later case, an implementation-default (typically UTC) timezone is used.
+     */
+    @Override
+    public final TimeZone getTimeZone() {
+        return timezone;
+    }
+
+    /*
+     * ---- END OF PUBLIC API --------------------------------------------------------------
+     *
+     * Following are internal API. They are provided as static methods with a MarshalContext
+     * argument rather than normal member methods in order to accept null context.
+     */
+
+    /**
      * Returns the context of the XML (un)marshalling currently progressing in the current thread,
      * or {@code null} if none.
      *
@@ -174,13 +222,13 @@ public final class MarshalContext extends org.apache.sis.xml.MarshalContext {
     /**
      * Returns {@code true} if the given flag is set.
      *
+     * @param  context The current context, or {@code null} if none.
      * @param  flag One of {@link #MARSHALING}, {@link #SUBSTITUTE_LANGUAGE},
      *         {@link #SUBSTITUTE_COUNTRY} or other bit masks.
      * @return {@code true} if the given flag is set.
      */
-    public static boolean isFlagSet(final int flag) {
-        final MarshalContext current = current();
-        return (current != null) && (current.bitMasks & flag) != 0;
+    public static boolean isFlagSet(final MarshalContext context, final int flag) {
+        return (context != null) && (context.bitMasks & flag) != 0;
     }
 
     /**
@@ -189,12 +237,12 @@ public final class MarshalContext extends org.apache.sis.xml.MarshalContext {
      *
      * {@note This method is static for the convenience of performing the check for null context.}
      *
-     * @param  current The current context, or {@code null} if none.
+     * @param  context The current context, or {@code null} if none.
      * @return The current value converter (never null).
      */
-    public static ValueConverter converter(final MarshalContext current) {
-        if (current != null) {
-            final ValueConverter converter = current.converter;
+    public static ValueConverter converter(final MarshalContext context) {
+        if (context != null) {
+            final ValueConverter converter = context.converter;
             if (converter != null) {
                 return converter;
             }
@@ -208,12 +256,12 @@ public final class MarshalContext extends org.apache.sis.xml.MarshalContext {
      *
      * {@note This method is static for the convenience of performing the check for null context.}
      *
-     * @param  current The current context, or {@code null} if none.
+     * @param  context The current context, or {@code null} if none.
      * @return The current reference resolver (never null).
      */
-    public static ReferenceResolver resolver(final MarshalContext current) {
-        if (current != null) {
-            final ReferenceResolver resolver = current.resolver;
+    public static ReferenceResolver resolver(final MarshalContext context) {
+        if (context != null) {
+            final ReferenceResolver resolver = context.resolver;
             if (resolver != null) {
                 return resolver;
             }
@@ -227,15 +275,15 @@ public final class MarshalContext extends org.apache.sis.xml.MarshalContext {
      *
      * {@note This method is static for the convenience of performing the check for null context.}
      *
-     * @param  current The current context, or {@code null} if none.
+     * @param  context The current context, or {@code null} if none.
      * @param  key One of the value documented in the "<cite>Map key</cite>" column of
      *         {@link org.apache.sis.xml.XML#SCHEMAS}.
      * @param  defaultSchema The value to return if no schema is found for the given key.
      * @return The base URL of the schema, or {@code null} if none were specified.
      */
-    public static String schema(final MarshalContext current, final String key, final String defaultSchema) {
-        if (current != null) {
-            final Map<String,String> schemas = current.schemas;
+    public static String schema(final MarshalContext context, final String key, final String defaultSchema) {
+        if (context != null) {
+            final Map<String,String> schemas = context.schemas;
             if (schemas != null) {
                 final String schema = schemas.get(key);
                 if (schema != null) {
@@ -253,76 +301,20 @@ public final class MarshalContext extends org.apache.sis.xml.MarshalContext {
      *
      * {@note This method is static for the convenience of performing the check for null context.}
      *
-     * @param  current The current context, or {@code null} if none.
+     * @param  context The current context, or {@code null} if none.
      * @param  version The version to compare to.
      * @return {@code true} if the GML version is equals or newer than the specified version.
      *
      * @see #getVersion(String)
      */
-    public static boolean isGMLVersion(final MarshalContext current, final Version version) {
-        if (current != null) {
-            final Version versionGML = current.versionGML;
+    public static boolean isGMLVersion(final MarshalContext context, final Version version) {
+        if (context != null) {
+            final Version versionGML = context.versionGML;
             if (versionGML != null) {
                 return versionGML.compareTo(version) >= 0;
             }
         }
         return true;
-    }
-
-    /**
-     * Returns the schema version of the XML document being (un)marshalled.
-     * See the super-class javadoc for the list of prefix that we shall support.
-     */
-    @Override
-    public final Version getVersion(final String prefix) {
-        if (prefix.equals("gml")) {
-            return versionGML;
-        }
-        // Future SIS versions may add more cases here.
-        return null;
-    }
-
-    /**
-     * Returns the timezone, or {@code null} if none were explicitely defined.
-     * In the later case, an implementation-default (typically UTC) timezone is used.
-     */
-    @Override
-    public final TimeZone getTimeZone() {
-        return timezone;
-    }
-
-    /**
-     * Returns the locale to use for marshalling, or {@code null} if no locale were explicitly
-     * specified. A {@code null} value means that some locale-neutral language should be used
-     * if available, or an implementation-default locale (typically English) otherwise.
-     */
-    @Override
-    public final Locale getLocale() {
-        return locale;
-    }
-
-    /**
-     * Sets the locale to the given value. The old locales are remembered and will
-     * be restored by the next call to {@link #pullLocale()}.
-     *
-     * @param locale The locale to set, or {@code null}.
-     */
-    public static void push(final Locale locale) {
-        final MarshalContext current = new MarshalContext(current());
-        if (locale != null) {
-            current.locale = locale;
-        }
-    }
-
-    /**
-     * Restores the locale (or any other setting) which was used prior the call to
-     * {@link #push(Locale)}.
-     */
-    public static void pull() {
-        final MarshalContext current = current();
-        if (current != null) {
-            current.finish();
-        }
     }
 
     /**
@@ -333,7 +325,7 @@ public final class MarshalContext extends org.apache.sis.xml.MarshalContext {
      * @return The identifiers to marshal, or {@code null} if none.
      */
     public static Collection<Identifier> filterIdentifiers(Collection<Identifier> identifiers) {
-        if (identifiers != null && isFlagSet(MARSHALING)) {
+        if (identifiers != null && isFlagSet(current(), MARSHALING)) {
             int count = identifiers.size();
             if (count != 0) {
                 final Identifier[] copy = identifiers.toArray(new Identifier[count]);
@@ -347,6 +339,44 @@ public final class MarshalContext extends org.apache.sis.xml.MarshalContext {
             }
         }
         return identifiers;
+    }
+
+    /**
+     * Sets the locale to the given value. The old locales are remembered and will
+     * be restored by the next call to {@link #pull()}. This method can be invoked
+     * when marshalling object that need to marshall their children in a different
+     * locale, like below:
+     *
+     * {@preformat java
+     *     private void beforeMarshal(Marshaller marshaller) {
+     *         MarshalContext.push(language);
+     *     }
+     *
+     *     private void afterMarshal(Marshaller marshaller) {
+     *         MarshalContext.pull();
+     *     }
+     * }
+     *
+     * @param locale The locale to set, or {@code null}.
+     */
+    public static void push(final Locale locale) {
+        final MarshalContext context = new MarshalContext(current());
+        if (locale != null) {
+            context.locale = locale;
+        }
+    }
+
+    /**
+     * Restores the locale (or any other setting) which was used prior the call
+     * to {@link #push(Locale)}. It is not necessary to invoke this method in a
+     * {@code finally} block if the parent {@code MarshalContext} is itself
+     * disposed in a {@code finally} block.
+     */
+    public static void pull() {
+        final MarshalContext current = current();
+        if (current != null) {
+            current.finish();
+        }
     }
 
     /**

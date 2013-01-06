@@ -103,7 +103,7 @@ public interface TreeTable {
      * <tr><td><ul>
      *   <li>{@link #getParent()}</li>
      *   <li>{@link #getChildren()}</li>
-     *   <li>{@link #getUserObject()}</li>
+     *   <li>{@link #newChild()}</li>
      * </ul></td>
      * <td><ul>
      *   <li>{@link #getValue(TableColumn)}</li>
@@ -111,6 +111,9 @@ public interface TreeTable {
      *   <li>{@link #isEditable(TableColumn)}</li>
      * </ul></td></tr>
      * </table>
+     *
+     * In addition, each {@code Node} can be associated to an arbitrary object by the
+     * {@link #getUserObject()} method. This object is not used directly by the tree tables.
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
      * @since   0.3 (derived from geotk-3.19)
@@ -146,6 +149,16 @@ public interface TreeTable {
          * @category tree
          */
         List<Node> getChildren();
+
+        /**
+         * Creates a new child with the same columns than the other children, and add it to
+         * the {@linkplain #getChildren() children list}. The new child is typically added at
+         * the end of the list, but this is not mandatory: implementations can add the child
+         * at whatever position they see fit.
+         *
+         * @return The new child.
+         */
+        Node newChild();
 
         /**
          * Returns the value in the given column, or {@code null} if none.

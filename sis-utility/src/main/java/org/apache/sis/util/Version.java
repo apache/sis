@@ -146,7 +146,7 @@ public class Version implements CharSequence, Comparable<Version>, Serializable 
         }
         Comparable<?> candidate = parsed[index];
         if (candidate == null) {
-            final String value = components[index].trim();
+            final String value = CharSequences.trimWhitespaces(components[index]);
             try {
                 candidate = Integer.valueOf(value);
             } catch (NumberFormatException e) {

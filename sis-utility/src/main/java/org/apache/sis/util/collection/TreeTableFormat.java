@@ -92,6 +92,12 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
     private static final long serialVersionUID = -4476366905386037025L;
 
     /**
+     * Shared {@code TreeTableFormat} instance for {@link TreeTable#toString()} implementation.
+     * Usage of this instance shall be done in a synchronized block.
+     */
+    static final TreeTableFormat INSTANCE = new TreeTableFormat(null, null);
+
+    /**
      * The table columns to format, or {@code null} for formatting all of them.
      * This map shall not be modified after creation, because it may be shared
      * by many tables.

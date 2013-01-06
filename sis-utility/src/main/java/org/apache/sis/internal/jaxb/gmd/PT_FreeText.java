@@ -76,7 +76,7 @@ public final class PT_FreeText extends GO_CharacterString {
     /**
      * Empty constructor used only by JAXB.
      */
-    public PT_FreeText() {
+    private PT_FreeText() {
     }
 
     /**
@@ -147,7 +147,7 @@ public final class PT_FreeText extends GO_CharacterString {
      * @param  search The text to search (usually the {@link #text} value).
      * @return {@code true} if the given text has been found.
      */
-    public boolean contains(final String search) {
+    private boolean contains(final String search) {
         final TextGroup[] textGroup = this.textGroup;
         if (textGroup != null) {
             for (final TextGroup group : textGroup) {
@@ -167,14 +167,26 @@ public final class PT_FreeText extends GO_CharacterString {
     }
 
     /**
-     * Returns the international string for this {@code PT_FreeText}.
-     *
-     * @param  defaultValue The unlocalized string to give to {@link DefaultInternationalString},
-     *         or {@code null} if none.
-     * @return The international string, or {@code null} if none.
-     *         This is usually the {@link #text} value.
+     * Returns the content of this {@code <gco:CharacterString>} as an {@code InternationalString}.
      */
-    public InternationalString toInternationalString(final String defaultValue) {
+    @Override
+    public CharSequence toCharSequence() {
+        String defaultValue = toString(); // May be null.
+        if (defaultValue != null && contains(defaultValue)) {
+            /*
+             * If the <gco:CharacterString> value is repeated in one of the
+             * <gmd:LocalisedCharacterString> elements, keep only the localized
+             * version  (because it specifies the locale, while the unlocalized
+             * string saids nothing on that matter).
+             */
+            defaultValue = null;
+        }
+        /*
+         * Create the international string with all locales found in the <gml:textGroup>
+         * element. If the <gml:textGroup> element is missing or empty, then we will use
+         * an instance of SimpleInternationalString instead than the more heavy
+         * DefaultInternationalString.
+         */
         DefaultInternationalString i18n = null;
         final TextGroup[] textGroup = this.textGroup;
         if (textGroup != null) {
