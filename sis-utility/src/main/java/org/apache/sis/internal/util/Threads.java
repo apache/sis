@@ -29,9 +29,9 @@ import org.apache.sis.util.logging.Logging;
  * threads created by SIS together under the same parent tree node.
  *
  * {@section Note on dependencies}
- * This class shall not depend on {@link Executors} or {@link ReferenceQueueConsumer}, because
- * initialization of those classes create new threads or threaded executor. But it is okay to
- * have dependencies the other way around.
+ * This class shall not depend on {@link ReferenceQueueConsumer} or {@link DelayedExecutor},
+ * because initialization of those classes create new threads. However it is okay to have
+ * dependencies the other way around.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.03)
@@ -84,11 +84,17 @@ final class Threads extends Static {
     static DaemonThread lastCreatedDaemon;
 
     /**
-     * Executor to shutdown. This is a copy of the {@link Executors#DAEMON_TASKS} field,
-     * copied here only when the {@link Executors} class is loaded and initialized. We
-     * do that way for avoiding dependency from {@code Threads} to {@code Executors}.
+     * Executor to shutdown. This is a copy of the {@code <removed class>} executor static final
+     * field, copied here only when the {@code <removed class>} class is loaded and initialized.
+     * We proceed that way for avoiding dependency from {@code Threads} to {@code <removed class>}.
+     *
+     * <p>This field has been temporarily fixed to {@code null} since we removed executor as of
+     * <a href="https://issues.apache.org/jira/browse/SIS-76">SIS-76</a>. However we may revert
+     * to a modifiable field in a future version if we choose to use executor again. In the main
+     * time, we declare this field as {@code final} for allowing the Javac compiler to omit all
+     * compiled code inside {@code if (executor != null)} block.</p>
      */
-    static ExecutorService executor;
+    private static final ExecutorService executor = null;
 
     /**
      * Do not allows instantiation of this class.

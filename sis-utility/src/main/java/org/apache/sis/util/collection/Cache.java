@@ -30,13 +30,13 @@ import java.lang.ref.WeakReference;
 import java.lang.ref.SoftReference;
 import net.jcip.annotations.GuardedBy;
 import net.jcip.annotations.ThreadSafe;
-
 import org.apache.sis.util.Disposable;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.util.DelayedRunnable;
 import org.apache.sis.internal.util.ReferenceQueueConsumer;
 
-import static org.apache.sis.internal.util.Executors.executeDaemonTask;
+import static org.apache.sis.internal.util.DelayedExecutor.executeDaemonTask;
 
 
 /**
@@ -400,7 +400,7 @@ public class Cache<K,V> extends AbstractMap<K,V> {
      * looks for older strong references to replace by weak references so that the total cost
      * stay below the cost limit.
      */
-    private final class Strong implements Runnable {
+    private final class Strong extends DelayedRunnable.Immediate {
         private final K key;
         private final V value;
 
@@ -438,7 +438,7 @@ public class Cache<K,V> extends AbstractMap<K,V> {
      */
     public Handler<V> lock(final K key) {
         final Work handler = new Work(key);
-        handler.lock();
+        handler.lock.lock();
         Object value;
         try {
             do {
@@ -454,7 +454,7 @@ public class Cache<K,V> extends AbstractMap<K,V> {
                      * values). We are done. But before to leave, lock again for canceling the
                      * effect of unlock in the finally clause (we want the lock to still active).
                      */
-                    handler.lock();
+                    handler.lock.lock();
                     return handler;
                 }
                 /*
@@ -487,13 +487,13 @@ public class Cache<K,V> extends AbstractMap<K,V> {
                  * handler.
                  */
                 if (map.replace(key, ref, handler)) {
-                    handler.lock();
+                    handler.lock.lock();
                     return handler;
                 }
                 // The map content changed. Try again.
             } while (true);
         } finally {
-            handler.unlock();
+            handler.lock.unlock();
         }
         /*
          * From this point, we abandon our handler.
@@ -508,7 +508,7 @@ public class Cache<K,V> extends AbstractMap<K,V> {
              */
             @SuppressWarnings("unchecked")
             final Work work = (Work) value;
-            if (work.isHeldByCurrentThread()) {
+            if (work.lock.isHeldByCurrentThread()) {
                 throw new IllegalStateException(Errors.format(Errors.Keys.RecursiveCreateCallForKey_1, key));
             }
             return work.new Wait();
@@ -620,8 +620,12 @@ public class Cache<K,V> extends AbstractMap<K,V> {
      * A handler implementation used for telling to other threads that the current thread is
      * computing a value.
      */
-    @SuppressWarnings("serial") // Actually not intended to be serialized.
-    final class Work extends ReentrantLock implements Handler<V>, Runnable {
+    final class Work extends DelayedRunnable.Immediate implements Handler<V> {
+        /**
+         * The synchronization lock.
+         */
+        final ReentrantLock lock;
+
         /**
          * The key to use for storing the result in the map.
          */
@@ -637,6 +641,7 @@ public class Cache<K,V> extends AbstractMap<K,V> {
          * Creates a new handler which will store the result in the given map at the given key.
          */
         Work(final K key) {
+            lock = new ReentrantLock();
             this.key = key;
         }
 
@@ -645,13 +650,13 @@ public class Cache<K,V> extends AbstractMap<K,V> {
          * method should be invoked only from an other thread than the one doing the calculation.
          */
         final V get() {
-            if (isHeldByCurrentThread()) {
+            if (lock.isHeldByCurrentThread()) {
                 throw new IllegalStateException();
             }
             final V v;
-            lock();
+            lock.lock();
             v = value;
-            unlock();
+            lock.unlock();
             return v;
         }
 
@@ -686,7 +691,7 @@ public class Cache<K,V> extends AbstractMap<K,V> {
                     done = map.remove(key, this);
                 }
             } finally {
-                unlock();
+                lock.unlock();
             }
             if (done) {
                 executeDaemonTask(this);
@@ -788,7 +793,7 @@ public class Cache<K,V> extends AbstractMap<K,V> {
 
         /** Creates a references to be stored in the given map under the given key. */
         Soft(final ConcurrentMap<K,Object> map, final K key, final V value) {
-            super(value, ReferenceQueueConsumer.DEFAULT.queue);
+            super(value, ReferenceQueueConsumer.QUEUE);
             this.map = map;
             this.key = key;
         }
@@ -811,7 +816,7 @@ public class Cache<K,V> extends AbstractMap<K,V> {
 
         /** Creates a references to be stored in the given map under the given key. */
         Weak(final ConcurrentMap<K,Object> map, final K key, final V value) {
-            super(value, ReferenceQueueConsumer.DEFAULT.queue);
+            super(value, ReferenceQueueConsumer.QUEUE);
             this.map = map;
             this.key = key;
         }
