@@ -94,18 +94,22 @@ Miscellaneous utilities.
 
 
   <!-- ===========================================================
-           Compile properties files into resources UTF files
+           Build configuration
        =========================================================== -->
   <build>
     <plugins>
+
+      <!-- Compile properties files into resources UTF files. -->
       <plugin>
         <groupId>org.apache.sis</groupId>
         <artifactId>sis-build-helper</artifactId>
-        <version>${project.version}</version>
+        <version>${sis.plugin.version}</version>
         <executions>
           <execution>
             <goals>
               <goal>compile-resources</goal>
+              <!-- The "collect-jars" goal declared in the JDK7 branch is omitted
+                   in the JDK6 branch, because much more costly on JDK6 platforms. -->
             </goals>
           </execution>
         </executions>

@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.LinkedHashMap;
 import java.util.Collections;
 import java.io.Serializable;
-import java.text.Format;
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
@@ -50,19 +49,18 @@ import org.apache.sis.internal.util.Objects;
  *
  *         public TreeTable createTable() {
  *             DefaultTreeTable table = new DefaultTreeTable(CITY_NAME, LATITUDE, LONGITUDE);
- *             TreeTable.Node   city  = new DefaultTreeTable.Node(table);
+ *             TreeTable.Node   city  = table.getRoot();
  *             city.setValue(CITY_NAME, "Rimouski");
  *             city.setValue(LATITUDE,   48.470417);
  *             city.setValue(LONGITUDE, -68.521385);
- *             table.setRoot(city);
  *             return table;
  *         }
  *     }
  * }
  *
- * {@code DefaultTreeTable} accepts arbitrary {@link TreeTable.Node} implementations.
- * However it is likely to be safer and more memory efficient when used together with
- * the implementation provided in the {@link Node} inner class.
+ * The {@code setRoot(…)} method accepts arbitrary {@link TreeTable.Node} implementations.
+ * However it is likely to be safer and more memory efficient when used together with the
+ * implementation provided in the {@link Node} inner class.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
@@ -75,11 +73,6 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = 1951201018202846555L;
-
-    /**
-     * Shared {@code TreeTableFormat} instance for {@link #toString()} implementation.
-     */
-    private static Format format;
 
     /**
      * The root node, or {@code null} if not yet specified.
@@ -103,8 +96,8 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
      * map shall be read-only since many {@code Node} instances may share it.
      *
      * {@note This field and the {@link #columns} field could be computed from each other.
-     *        We serialize this field because children nodes will typically hold a reference
-     *        to that map, and we want to preserve the references tree.}
+     *        But we serialize this field anyway because children nodes will typically hold
+     *        a reference to that map, and we want to preserve the references tree.}
      *
      * @see DefaultTreeTable.Node#columnIndices
      */
@@ -120,9 +113,6 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
     /**
      * Creates a new tree table with the given columns. The given array shall not be null or
      * empty, and shall not contain null or duplicated elements.
-     *
-     * <p>The {@linkplain #getRoot() root} node is initially {@code null}. Callers can initialize
-     * it after construction time by a call to the {@link #setRoot(TreeTable.Node)} method.</p>
      *
      * @param columns The list of table columns.
      */
@@ -202,13 +192,11 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
      * Returns the root node. This method returns the node specified at
      * {@linkplain #DefaultTreeTable(Node) construction time} or to the
      * last call of the {@link #setRoot(TreeTable.Node)} method.
-     *
-     * @throws IllegalStateException If the root node has not yet been specified.
      */
     @Override
     public TreeTable.Node getRoot() {
         if (root == null) {
-            throw new IllegalStateException(Errors.format(Errors.Keys.NodeNotFound_1, "root"));
+            root = new Node(this);
         }
         return root;
     }
@@ -287,7 +275,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
 
     /**
      * Returns a string representation of this tree table.
-     * The default implementation delegates to {@link #toString(TreeTable)}.
+     * The default implementation performs the same work than {@link TreeTables#toString(TreeTable)}.
      * This is okay for debugging or occasional usages. However for more extensive usages,
      * developers are encouraged to create and configure their own {@link TreeTableFormat}
      * instance.
@@ -296,25 +284,9 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
      */
     @Override
     public String toString() {
-        return toString(this);
-    }
-
-    /**
-     * Returns a string representation of the given tree table.
-     * The default implementation uses a shared instance of {@link TreeTableFormat}.
-     * This is okay for debugging or occasional usages. However for more extensive usages,
-     * developers are encouraged to create and configure their own {@code TreeTableFormat}
-     * instance.
-     *
-     * @param  table The tree table to format.
-     * @return A string representation of the given tree table.
-     */
-    public static synchronized String toString(final TreeTable table) {
-        ArgumentChecks.ensureNonNull("table", table);
-        if (format == null) {
-            format = new TreeTableFormat(null, null);
+        synchronized (TreeTableFormat.INSTANCE) {
+            return TreeTableFormat.INSTANCE.format(this);
         }
-        return format.format(table);
     }
 
 
@@ -530,6 +502,24 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
                 children = new Children(this);
             }
             return children;
+        }
+
+        /**
+         * Adds a new child in the {@linkplain #getChildren() children list}.
+         * The default implementation delegates to {@link #Node(Node)}, which
+         * has the following implications:
+         *
+         * <ul>
+         *   <li>The new node inherits the columns of this node, on the assumption that
+         *       they are the same set of columns than other children nodes.</li>
+         *   <li>The new node is appended at the end of the children list.</li>
+         * </ul>
+         *
+         * Subclasses may override this method with different behavior.
+         */
+        @Override
+        public Node newChild() {
+            return new Node(this);
         }
 
         /**

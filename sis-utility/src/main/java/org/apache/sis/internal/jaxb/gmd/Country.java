@@ -64,7 +64,7 @@ public final class Country extends GO_CharacterString {
 
     /**
      * Builds a {@code <gco:CharacterString>} element.
-     * For private use by {@link #create(MarshalContext, Locale, CharSequenceAdapter)} only.
+     * For private use by {@link #create(MarshalContext, Locale)} only.
      */
     private Country(final GO_CharacterString code) {
         super(code);
@@ -88,16 +88,18 @@ public final class Country extends GO_CharacterString {
      *
      * @param context The current (un)marshalling context, or {@code null} if none.
      * @param locale  The value to marshal, or {@code null}.
-     * @paral anchors If non-null, marshal the locale as a {@code <gco:CharacterString>} instead
-     *                than {@code <Country>}, using the given anchors if any.
      * @return The country to marshal, or {@code null} if the given locale was null
      *         or if its {@link Locale#getCountry()} attribute is the empty string.
      */
-    static Country create(final MarshalContext context, final Locale locale, final CharSequenceAdapter anchors) {
+    static Country create(final MarshalContext context, final Locale locale) {
         if (locale != null) {
             final String codeListValue = MarshalContext.converter(context).toCountryCode(context, locale);
-            if (anchors != null && !codeListValue.isEmpty()) {
-                final GO_CharacterString string = anchors.marshal(codeListValue);
+            if (!codeListValue.isEmpty() && MarshalContext.isFlagSet(context, MarshalContext.SUBSTITUTE_COUNTRY)) {
+                /*
+                 * Marshal the locale as a <gco:CharacterString> instead than <Country>,
+                 * using the user-supplied anchors if any.
+                 */
+                final GO_CharacterString string = CharSequenceAdapter.wrap(locale, codeListValue);
                 if (string != null) {
                     return new Country(string);
                 }

@@ -29,19 +29,20 @@ import org.apache.sis.internal.util.Objects;
 
 /**
  * The {@code Anchor} element, which is included in {@code CharacterString} elements.
- * This class extends {@link InternationalString} in an opportunist way, in order to allow
- * direct usage with public API expecting {@link CharSequence} or {@link InternationalString}
- * object.
+ * In XML documents,  anchors are values with {@code XLink} attributes used in places
+ * where we would normally expect a character sequence. Since Java properties of type
+ * {@code CharSequence} can not return {@code XLink},  we workaround that restriction
+ * by providing this {@code Anchor} class as a {@code XLink} subtype implementing the
+ * {@link InternationalString} interface, so it can be used with the above-cited Java
+ * properties.
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.5)
  * @version 0.3
  * @module
- *
- * @see <a href="http://www.xml.com/pub/a/2000/09/xlink/part2.html">XLink introduction</a>
  */
-@XmlType(name = "AnchorType")
+@XmlType(name = "Anchor_Type")
 public final class Anchor extends XLink implements InternationalString {
     /**
      * Defined as a matter of principle (this class is not expected to be serialized).
@@ -49,7 +50,7 @@ public final class Anchor extends XLink implements InternationalString {
     private static final long serialVersionUID = -6101324942683322597L;
 
     /**
-     * Often a short textual description of the URN target.
+     * Often a short textual description of the URI target.
      * This is the value returned by {@link #toString()}.
      */
     @XmlValue
@@ -63,10 +64,21 @@ public final class Anchor extends XLink implements InternationalString {
     }
 
     /**
-     * Creates an {@code Anchor} initialized to the given value.
+     * Creates an {@code Anchor} initialized to the given {@code xlink} value.
      *
-     * @param href  A URN to an external resources or an identifier.
-     * @param value Often a short textual description of the URN target.
+     * @param xlink The {@code xlink} from which to copy the attributes.
+     * @param value Often a short textual description of the URI target.
+     */
+    public Anchor(final XLink xlink, final String value) {
+        super(xlink);
+        this.value = value;
+    }
+
+    /**
+     * Creates an {@code Anchor} initialized to the given {@code href} value.
+     *
+     * @param href  A URI to an external resources or an identifier.
+     * @param value Often a short textual description of the URI target.
      */
     public Anchor(final URI href, final String value) {
         setHRef(href);
@@ -74,8 +86,8 @@ public final class Anchor extends XLink implements InternationalString {
     }
 
     /**
-     * Returns the text as a string, or {@code null} if none.
-     * The null value is expected by {@link GO_CharacterString#toString()}.
+     * Returns the text as a string, or {@code null} if none. The null value is needed for proper
+     * working of {@link org.apache.sis.internal.jaxb.gco.GO_CharacterString#toString()} method.
      */
     @Override
     public String toString() {
@@ -108,10 +120,21 @@ public final class Anchor extends XLink implements InternationalString {
 
     /**
      * Returns the sequence of characters in the given range of index.
+     * The returned object still an anchor with the same attribute values.
+     * It is caller responsibility to determine if those attributes are still
+     * appropriate for the sub-sequence.
      */
     @Override
     public CharSequence subSequence(final int start, final int end) {
-        return (value != null ? value : "").subSequence(start, end);
+        String original = value;
+        if (original == null) {
+            original = "";
+        }
+        final String substring = original.substring(start, end);
+        if (substring == original) {
+            return this;
+        }
+        return new Anchor(this, substring);
     }
 
     /**
