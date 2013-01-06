@@ -17,6 +17,7 @@
 package org.apache.sis.internal.util;
 
 import java.util.List;
+import org.apache.sis.util.collection.TreeTable;
 
 
 /**
@@ -28,6 +29,17 @@ import java.util.List;
  * @module
  */
 public interface SupervisorMBean {
+    /**
+     * Returns information about the current configuration.
+     * This method tries to focus on the information that are the most relevant to SIS.
+     * Those information are grouped in sections: a "Versions" section containing the
+     * Apache SIS version, Java version and operation system version; a "Classpath"
+     * section containing bootstrap, extension and user classpath, <i>etc</i>.
+     *
+     * @return Configuration information, as a tree for grouping some configuration by sections.
+     */
+    TreeTable configuration();
+
     /**
      * If there is something wrong with the current Apache SIS status,
      * returns descriptions of the problems. Otherwise returns {@code null}.

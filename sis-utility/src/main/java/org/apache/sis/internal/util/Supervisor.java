@@ -32,9 +32,11 @@ import javax.management.JMException;
 import javax.management.NotCompliantMBeanException;
 import java.lang.management.ManagementFactory;
 
+import org.apache.sis.util.About;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.collection.TreeTable;
 
 
 /**
@@ -126,22 +128,6 @@ public final class Supervisor extends StandardMBean implements SupervisorMBean, 
     }
 
     /**
-     * If there is something wrong with the current Apache Supervisor status,
-     * returns descriptions of the problems. Otherwise returns {@code null}.
-     */
-    @Override
-    public List<String> warnings() {
-        final List<String> warnings = Threads.listDeadThreads();
-        if (warnings != null) {
-            final Errors resources = Errors.getResources(locale);
-            for (int i=warnings.size(); --i>=0;) {
-                warnings.set(i, resources.getString(Errors.Keys.DeadThread_1, warnings.get(i)));
-            }
-        }
-        return warnings;
-    }
-
-    /**
      * Returns the operations impact, which is {@code INFO}.
      */
     @Override
@@ -195,5 +181,32 @@ public final class Supervisor extends StandardMBean implements SupervisorMBean, 
     private String getDescription(final String resourceKey) {
         return ResourceBundle.getBundle("org.apache.sis.internal.util.Descriptions",
                 locale, Supervisor.class.getClassLoader()).getString(resourceKey);
+    }
+
+    // -----------------------------------------------------------------------
+    //               Implementation of SupervisorMBean interface
+    // -----------------------------------------------------------------------
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public TreeTable configuration() {
+        return About.configuration(locale);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<String> warnings() {
+        final List<String> warnings = Threads.listDeadThreads();
+        if (warnings != null) {
+            final Errors resources = Errors.getResources(locale);
+            for (int i=warnings.size(); --i>=0;) {
+                warnings.set(i, resources.getString(Errors.Keys.DeadThread_1, warnings.get(i)));
+            }
+        }
+        return warnings;
     }
 }
