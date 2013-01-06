@@ -18,7 +18,6 @@ package org.apache.sis.internal.util;
 
 import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
-
 import org.apache.sis.util.Disposable;
 import org.apache.sis.util.logging.Logging;
 
@@ -35,8 +34,7 @@ import org.apache.sis.util.logging.Logging;
  * {@preformat java
  *     final class MyReference extends WeakReference<MyType> implements Disposable {
  *         MyReference(MyType referent) {
- *             super(referent, ReferenceQueueConsumer.DEFAULT.queue);
- *             assert ReferenceQueueConsumer.DEFAULT.isAlive();
+ *             super(referent, ReferenceQueueConsumer.QUEUE);
  *         }
  *
  *         &#64;Override
@@ -47,36 +45,34 @@ import org.apache.sis.util.logging.Logging;
  *     }
  * }
  *
- * @param <T> The type of objects being referenced.
- *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
  * @version 0.3
  * @module
  */
-public final class ReferenceQueueConsumer<T> extends DaemonThread {
-    /**
-     * The singleton instance of the {@code ReferenceQueueConsumer} thread.
-     */
-    public static final ReferenceQueueConsumer<Object> DEFAULT;
-    static {
-        synchronized (Threads.class) {
-            Threads.lastCreatedDaemon = DEFAULT = new ReferenceQueueConsumer<Object>(Threads.lastCreatedDaemon);
-        }
-        if (Supervisor.ENABLED) {
-            Supervisor.register();
-        }
-        // Call to Thread.start() must be outside the constructor
-        // (Reference: Goetz et al.: "Java Concurrency in Practice").
-        DEFAULT.start();
-    }
-
+public final class ReferenceQueueConsumer extends DaemonThread {
     /**
      * List of references collected by the garbage collector. This reference shall be given to
      * {@link Reference} constructors as documented in the class javadoc. Those {@code Reference}
      * sub-classes <strong>must</strong> implement the {@link Disposable} interface.
      */
-    public final ReferenceQueue<T> queue = new ReferenceQueue<T>();
+    public static final ReferenceQueue<Object> QUEUE = new ReferenceQueue<Object>();
+
+    /**
+     * Creates the singleton instance of the {@code ReferenceQueueConsumer} thread.
+     */
+    static {
+        synchronized (Threads.class) {
+            final ReferenceQueueConsumer thread;
+            Threads.lastCreatedDaemon = thread = new ReferenceQueueConsumer(Threads.lastCreatedDaemon);
+            // Call to Thread.start() must be outside the constructor
+            // (Reference: Goetz et al.: "Java Concurrency in Practice").
+            thread.start();
+        }
+        if (Supervisor.ENABLED) {
+            Supervisor.register();
+        }
+    }
 
     /**
      * Constructs a new thread as a daemon thread. This thread will be sleeping most of the time.
@@ -87,7 +83,7 @@ public final class ReferenceQueueConsumer<T> extends DaemonThread {
      *        the benefit of the rest of the system, since they make more resources available sooner.}
      */
     private ReferenceQueueConsumer(final DaemonThread lastCreatedDaemon) {
-        super(Threads.DAEMONS, "ReferenceQueueConsumer", lastCreatedDaemon);
+        super("ReferenceQueueConsumer", lastCreatedDaemon);
         setPriority(Thread.MAX_PRIORITY - 2);
     }
 
@@ -102,8 +98,8 @@ public final class ReferenceQueueConsumer<T> extends DaemonThread {
          * observed at shutdown time. If the field become null, assume that a shutdown is
          * under way and let the thread terminate.
          */
-        ReferenceQueue<T> queue;
-        while ((queue = this.queue) != null) {
+        ReferenceQueue<Object> queue;
+        while ((queue = QUEUE) != null) {
             try {
                 /*
                  * Block until a reference is enqueued. The reference should never be null
@@ -112,7 +108,7 @@ public final class ReferenceQueueConsumer<T> extends DaemonThread {
                  * may be in the middle of a shutdown. Continue anyway as long as we didn't
                  * received the kill event.
                  */
-                final Reference<? extends T> ref = queue.remove();
+                final Reference<?> ref = queue.remove();
                 if (ref != null) {
                     /*
                      * If the reference does not implement the Disposeable interface, we want

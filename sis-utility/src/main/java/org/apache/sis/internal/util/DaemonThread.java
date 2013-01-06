@@ -47,9 +47,8 @@ abstract class DaemonThread extends Thread {
     /**
      * The previous element in a chain of {@code DaemonThread}s. We maintain a linked list of
      * {@code DaemonThread} to be killed when {@link #killAll(DaemonThread)} will be invoked.
-     * We do not rely on the thread listed by the {@link Threads#RESOURCE_DISPOSERS} group
-     * because in an OSGi context, we need to handle separately the threads created by each
-     * SIS module.
+     * We do not rely on the thread listed by the {@link Threads#DAEMONS} group because in an
+     * OSGi context, we need to handle separately the threads created by each SIS module.
      */
     private final DaemonThread previous;
 
@@ -76,20 +75,19 @@ abstract class DaemonThread extends Thread {
      *         static {
      *             synchronized (MyInternalClass.class) {
      *                 MyInternalClass.lastCreatedDaemon = myDaemonThread = new MyDaemonThread(
-     *                         Threads.RESOURCE_DISPOSERS, "MyThread", MyInternalClass.lastCreatedDaemon);
+     *                         "MyThread", MyInternalClass.lastCreatedDaemon);
      *         }
      *     }
      * }
      *
      * See {@link ReferenceQueueConsumer} for a real example.
      *
-     * @param group The thread group.
-     * @param name  The thread name.
+     * @param name The thread name.
      * @param lastCreatedDaemon The previous element in a chain of {@code DaemonThread}s,
      *        or {@code null}. Each SIS module shall maintain its own chain, if any.
      */
-    protected DaemonThread(final ThreadGroup group, final String name, final DaemonThread lastCreatedDaemon) {
-        super(group, name);
+    protected DaemonThread(final String name, final DaemonThread lastCreatedDaemon) {
+        super(Threads.DAEMONS, name);
         previous = lastCreatedDaemon;
         setDaemon(true);
     }

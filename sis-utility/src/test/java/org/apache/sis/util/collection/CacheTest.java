@@ -273,7 +273,7 @@ public final strictfp class CacheTest extends TestCase {
             TestUtilities.printSeparator("CacheTest.stress() - testing concurrent accesses");
             out.print("There is "); out.print(threads.length); out.print(" threads, each of them"
                     + " fetching or creating "); out.print(count); out.println(" values.");
-            out.println("Number of times a cached value has been reused, for each thread:");
+            out.println("Number of times a new value has been created, for each thread:");
             for (int i=0; i<threads.length;) {
                 final String n = String.valueOf(threads[i++].addCount);
                 out.print(CharSequences.spaces(6 - n.length()));
