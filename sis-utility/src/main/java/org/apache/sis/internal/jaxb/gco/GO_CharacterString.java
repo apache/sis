@@ -46,7 +46,7 @@ public class GO_CharacterString {
      * The text or anchor value, or {@code null} if none. May be an instance
      * of {@link Anchor}, which needs to be handled in a special way.
      */
-    CharSequence text;
+    private CharSequence text;
 
     /**
      * Empty constructor for JAXB and subclasses.
@@ -121,8 +121,23 @@ public class GO_CharacterString {
     }
 
     /**
+     * Returns the content of this {@code <gco:CharacterString>} as a {@code String},
+     * an {@code InternationalString} or an {@code Anchor}. This method is overridden
+     * by {@code PT_FreeText} in order to handle the international string case.
+     *
+     * @return The character sequence for this {@code <gco:CharacterString>}.
+     */
+    public CharSequence toCharSequence() {
+        final CharSequence text = CharSequences.trimWhitespaces(this.text);
+        if (text != null && (text.length() != 0 || text instanceof Anchor)) { // Anchor may contain attributes.
+            return text;
+        }
+        return null;
+    }
+
+    /**
      * Returns the text as a string, or {@code null} if none.
-     * The null value is expected by various {@code unmarshal} methods.
+     * The null value is expected by various {@code PT_FreeText}.
      *
      * {@note Returning <code>null</code> is unusual and not a recommended practice.
      * But precedents exist (for example Swing <code>DefaultMutableTreeNode</code>)

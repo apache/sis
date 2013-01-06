@@ -100,7 +100,8 @@ import org.apache.sis.util.resources.Vocabulary;
 public class TableColumn<V> implements CheckedContainer<V> {
     /**
      * Frequently-used constant for a column of object names.
-     * The values are typically instances of {@link String} or {@link InternationalString},
+     * The column {@linkplain #getHeader() header} is "<cite>Name</cite>" (eventually localized) and
+     * the column elements are typically instances of {@link String} or {@link InternationalString},
      * depending on whether the data provide localization support or not.
      */
     public static final TableColumn<CharSequence> NAME = new Constant<CharSequence>("NAME",
@@ -108,10 +109,29 @@ public class TableColumn<V> implements CheckedContainer<V> {
 
     /**
      * Frequently-used constant for a column of object types.
+     * The column {@linkplain #getHeader() header} is "<cite>Type</cite>" (eventually localized).
      */
     @SuppressWarnings("unchecked")
     public static final TableColumn<Class<?>> TYPE = new Constant<Class<?>>("TYPE",
             (Class) Class.class, Vocabulary.Keys.Type);
+
+    /**
+     * Frequently-used constant for a column of object textual values.
+     * The column {@linkplain #getHeader() header} is "<cite>Value</cite>" (eventually localized) and
+     * the column elements are typically instances of {@link String} or {@link InternationalString},
+     * depending on whether the data provide localization support or not.
+     */
+    @SuppressWarnings("unchecked")
+    public static final TableColumn<CharSequence> VALUE_AS_TEXT = new Constant<CharSequence>("VALUE_AS_TEXT",
+            CharSequence.class, Vocabulary.Keys.Value);
+
+    /**
+     * Frequently-used constant for a column of object numerical values.
+     * The column {@linkplain #getHeader() header} is "<cite>Value</cite>" (eventually localized).
+     */
+    @SuppressWarnings("unchecked")
+    public static final TableColumn<Number> VALUE_AS_NUMBER = new Constant<Number>("VALUE_AS_NUMBER",
+            Number.class, Vocabulary.Keys.Value);
 
     /**
      * A map containing only the {@link #NAME} column.

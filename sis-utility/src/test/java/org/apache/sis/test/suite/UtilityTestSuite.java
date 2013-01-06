@@ -57,6 +57,7 @@ import org.junit.runners.Suite;
     org.apache.sis.util.collection.DerivedMapTest.class,
     org.apache.sis.util.collection.TableColumnTest.class,
     org.apache.sis.util.collection.DefaultTreeTableTest.class,
+    org.apache.sis.util.collection.TreeTablesTest.class,
 
     // GeoAPI most basic types.
     org.apache.sis.util.iso.TypesTest.class,

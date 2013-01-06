@@ -8,6 +8,14 @@ Building Apache SIS
   resource files or formatting the Javadoc. While any project could use it, this module is
   primarily for internal use by Apache SIS and may change in any future version.
 
+  Content:
+
+  * Javadoc taglets
+
+  * Localized resources compiler
+
+  * JAR files collector
+
 
 * Javadoc taglets
 
@@ -58,7 +66,7 @@ Building Apache SIS
     <plugin>
       <groupId>org.apache.sis</groupId>
       <artifactId>sis-build-helper</artifactId>
-      <version>${project.version}</version>
+      <version>${sis.plugin.version}</version>
       <executions>
         <execution>
           <goals>
@@ -74,8 +82,45 @@ Building Apache SIS
   The resources compilation is part of the build process and does not need to be run explicitly.
   However, if necessary the resources compiler can be invoked alone by the following command line
   in the module containing the resources to recompile. This is sometime useful for regenerating
-  the constants in the <<<Keys>>> inner class.
+  the constants in the <<<Keys>>> inner class in a feaster way than building the project.
 
 +-----------------------------------------------------
 mvn org.apache.sis:sis-build-helper:compile-resources
++-----------------------------------------------------
+
+
+* JAR files collector
+
+  Links or copies all JAR files (including dependencies) in the <<<target/binaries>>> directory of the parent project.
+  This plugin performs a work similar to the standard Maven assembly plugin work, with the following differences:
+
+  * In multi-modules projects, this plugin does not create anything in the <<<target>>> directory of sub-modules.
+    Instead, this plugin groups everything in the <<<target/binaries>>> directory of the parent module.
+
+  * This plugin does not create any ZIP file. It only links or copies JAR files.
+    The JDK7 and above versions of this plugin use hard links on platforms that support them,
+    so execution of this plugin should be very cheap and consume few disk space.
+
+  * Dependencies already present in the <<<target/binaries>>> directory are presumed stables and
+    are not overwritten. Only artefacts produced by the Maven build are unconditionally overwritten.
+
+  This plugin can be activated by the following fragment in the parent <<<pom.xml>>> file:
+
++-----------------------------------------------------
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.sis</groupId>
+        <artifactId>sis-build-helper</artifactId>
+        <version>${sis.plugin.version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>collect-jars</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 +-----------------------------------------------------

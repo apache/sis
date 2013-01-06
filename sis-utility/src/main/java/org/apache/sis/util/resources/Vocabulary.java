@@ -61,7 +61,82 @@ public final class Vocabulary extends IndexedResourceBundle {
         /**
          * Degrees
          */
-        public static final int Degrees = 10;
+        public static final int AngularDegrees = 10;
+
+        /**
+         * Minutes
+         */
+        public static final int AngularMinutes = 11;
+
+        /**
+         * Seconds
+         */
+        public static final int AngularSeconds = 12;
+
+        /**
+         * Character encoding
+         */
+        public static final int CharacterEncoding = 17;
+
+        /**
+         * Classpath
+         */
+        public static final int Classpath = 29;
+
+        /**
+         * {0} code
+         */
+        public static final int Code_1 = 21;
+
+        /**
+         * Current date and time
+         */
+        public static final int CurrentDateTime = 25;
+
+        /**
+         * Current directory
+         */
+        public static final int CurrentDirectory = 33;
+
+        /**
+         * Daylight time
+         */
+        public static final int DaylightTime = 24;
+
+        /**
+         * Directory
+         */
+        public static final int Directory = 36;
+
+        /**
+         * Java extensions
+         */
+        public static final int JavaExtensions = 26;
+
+        /**
+         * Java home directory
+         */
+        public static final int JavaHome = 30;
+
+        /**
+         * Libraries
+         */
+        public static final int Libraries = 35;
+
+        /**
+         * Local configuration
+         */
+        public static final int LocalConfiguration = 14;
+
+        /**
+         * Locale
+         */
+        public static final int Locale = 18;
+
+        /**
+         * Localization
+         */
+        public static final int Localization = 19;
 
         /**
          * Maximum value
@@ -79,11 +154,6 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final int MinimumValue = 4;
 
         /**
-         * Minutes
-         */
-        public static final int Minutes = 11;
-
-        /**
          * Name
          */
         public static final int Name = 0;
@@ -99,14 +169,39 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final int NumberOfValues = 2;
 
         /**
+         * Offset
+         */
+        public static final int Offset = 22;
+
+        /**
+         * Operating system
+         */
+        public static final int OperatingSystem = 16;
+
+        /**
+         * Others
+         */
+        public static final int Others = 34;
+
+        /**
+         * Paths
+         */
+        public static final int Paths = 27;
+
+        /**
+         * Root
+         */
+        public static final int Root = 28;
+
+        /**
          * Root Mean Square
          */
         public static final int RootMeanSquare = 7;
 
         /**
-         * Seconds
+         * Scale
          */
-        public static final int Seconds = 12;
+        public static final int Scale = 23;
 
         /**
          * Standard deviation
@@ -114,9 +209,39 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final int StandardDeviation = 8;
 
         /**
+         * Temporary files
+         */
+        public static final int TemporaryFiles = 31;
+
+        /**
+         * Timezone
+         */
+        public static final int Timezone = 20;
+
+        /**
          * Type
          */
         public static final int Type = 1;
+
+        /**
+         * Untitled
+         */
+        public static final int Untitled = 37;
+
+        /**
+         * User home directory
+         */
+        public static final int UserHome = 32;
+
+        /**
+         * Value
+         */
+        public static final int Value = 13;
+
+        /**
+         * Versions
+         */
+        public static final int Versions = 15;
     }
 
     /**

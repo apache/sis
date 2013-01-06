@@ -55,13 +55,6 @@ public final strictfp class DefaultTreeTableTest extends TestCase {
         assertEquals("Index of first column:",  Integer.valueOf(0), table.columnIndices.get(NAME));
         assertEquals("Index of second column:", Integer.valueOf(1), table.columnIndices.get(TYPE));
         assertArrayEquals(new TableColumn<?>[] {NAME, TYPE}, table.getColumns().toArray());
-        try {
-            assertNull(table.getRoot());
-            fail("Expected an IllegalStateException.");
-        } catch (IllegalStateException e) {
-            // This is the expected exception.
-            assertTrue(e.getMessage().contains("root"));
-        }
         return table;
     }
 
@@ -89,7 +82,7 @@ public final strictfp class DefaultTreeTableTest extends TestCase {
          * Create a first child node, which should be added automatically
          * to the root list of children.
          */
-        final DefaultTreeTable.Node node1 = new DefaultTreeTable.Node(root);
+        final DefaultTreeTable.Node node1 = root.newChild();
         assertSame("Internal table sharing:",  table.columnIndices, node1.columnIndices);
         assertTrue("Initial children list:",   node1.getChildren().isEmpty());
         assertSame("Specified parent:",        root, node1.getParent());
