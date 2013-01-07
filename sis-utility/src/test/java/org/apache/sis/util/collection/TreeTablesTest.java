@@ -40,7 +40,7 @@ import static org.apache.sis.util.collection.TableColumn.*;
  * @module
  */
 @DependsOn({
-    DefaultTreeTableTest.class,
+    DefaultTreeTableTest.class
 })
 public final strictfp class TreeTablesTest extends TestCase {
     /**
