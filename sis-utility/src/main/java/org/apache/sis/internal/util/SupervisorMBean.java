@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.util;
 
-import java.util.List;
 import org.apache.sis.util.collection.TreeTable;
 
 
@@ -46,5 +45,5 @@ public interface SupervisorMBean {
      *
      * @return A description of a problems in the library, or {@code null} if none.
      */
-    List<String> warnings();
+    String[] warnings();
 }
