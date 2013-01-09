@@ -132,6 +132,13 @@ abstract class Pooled {
     private int bitMasks;
 
     /**
+     * The {@link System#nanoTime()} value of the last call to {@link #reset()}.
+     * This is used for disposing (un)marshallers that have not been used for a while,
+     * since {@code reset()} is invoked just before to push a (un)marshaller in the pool.
+     */
+    volatile long resetTime;
+
+    /**
      * Default constructor.
      *
      * @param internal {@code true} if the JAXB implementation is the one bundled in JDK 6,
@@ -153,7 +160,9 @@ abstract class Pooled {
     }
 
     /**
-     * Resets the (un)marshaller to its initial state.
+     * Releases resources and resets the (un)marshaller to its initial state.
+     * This method is invoked by {@link MarshallerPool} just before to push a
+     * (un)marshaller in the pool after its usage.
      *
      * @throws JAXBException If an error occurred while restoring a property.
      */
@@ -169,6 +178,7 @@ abstract class Pooled {
         locale     = null;
         timezone   = null;
         bitMasks   = initialBitMasks();
+        resetTime  = System.nanoTime();
     }
 
     /**

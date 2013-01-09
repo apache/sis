@@ -18,14 +18,17 @@ package org.apache.sis.xml;
 
 import java.util.Map;
 import java.util.Deque;
-import java.util.LinkedList;
 import java.util.Collections;
+import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import net.jcip.annotations.ThreadSafe;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.internal.util.DelayedExecutor;
+import org.apache.sis.internal.util.DelayedRunnable;
 import org.apache.sis.internal.jaxb.AdapterReplacement;
 
 
@@ -51,15 +54,15 @@ import org.apache.sis.internal.jaxb.AdapterReplacement;
  * @module
  *
  * @see XML
- *
- * @todo Need a timeout for disposing marshallers that have been unused for a while.
  */
 @ThreadSafe
 public class MarshallerPool {
     /**
-     * Maximal amount of marshallers and unmarshallers to keep.
+     * Amount of nanoseconds to wait before to remove unused (un)marshallers.
+     * This is a very approximative value: actual timeout will not be shorter,
+     * but may be twice longer.
      */
-    private static final int CAPACITY = 16;
+    private static final long TIMEOUT = 15000000000L; // 15 seconds.
 
     /**
      * The key to be used in the map given to the constructors for specifying the root namespace.
@@ -85,16 +88,38 @@ public class MarshallerPool {
     private final Object mapper;
 
     /**
-     * The pool of marshaller. This pool is initially empty
-     * and will be filled with elements as needed.
+     * The pool of marshaller. This pool is initially empty and will be filled with elements as needed.
+     * Marshallers (if any) shall be fetched using the {@link Deque#poll()} method and, after use,
+     * given back to the pool using the {@link Deque#push(Object)} method.
+     *
+     * <p>This queue must be a thread-safe implementation, since it will not be invoked in
+     * synchronized block.</p>
+     *
+     * @see #acquireMarshaller()
+     * @see #release(Marshaller)
      */
-    private final Deque<Marshaller> marshallers = new LinkedList<>();
+    private final Deque<Marshaller> marshallers;
 
     /**
-     * The pool of unmarshaller. This pool is initially empty
-     * and will be filled with elements as needed.
+     * The pool of unmarshaller. This pool is initially empty and will be filled with elements as needed.
+     * Unmarshallers (if any) shall be fetched using the {@link Deque#poll()} method and, after use,
+     * given back to the pool using the {@link Deque#push(Object)} method.
+     *
+     * <p>This queue must be a thread-safe implementation, since it will not be invoked in
+     * synchronized block.</p>
+     *
+     * @see #acquireUnmarshaller()
+     * @see #release(Unmarshaller)
      */
-    private final Deque<Unmarshaller> unmarshallers = new LinkedList<>();
+    private final Deque<Unmarshaller> unmarshallers;
+
+    /**
+     * {@code true} if a task has been scheduled for removing expired (un)marshallers,
+     * or {@code false} if no removal task is currently scheduled.
+     *
+     * @see #scheduleRemoval()
+     */
+    private final AtomicBoolean isRemovalScheduled;
 
     /**
      * Creates a new factory for the given class to be bound, with a default empty namespace.
@@ -120,11 +145,14 @@ public class MarshallerPool {
 
     /**
      * Creates a new factory for the given packages, with a default empty namespace.
-     * The separator character for the packages is the colon.
+     * The separator character for the packages is the colon. Example:
      *
-     * @param  packages         The packages in which JAXB will search for annotated classes to be bound,
-     *                          for example {@code "org.apache.sis.metadata.iso:org.apache.sis.metadata.iso.citation"}.
-     * @throws JAXBException    If the JAXB context can not be created.
+     * {@preformat text
+     *     "org.apache.sis.metadata.iso:org.apache.sis.metadata.iso.citation"
+     * }
+     *
+     * @param  packages      The colon-separated list of packages in which JAXB will search for annotated classes.
+     * @throws JAXBException If the JAXB context can not be created.
      */
     public MarshallerPool(final String packages) throws JAXBException {
         this(Collections.<String,String>emptyMap(), packages);
@@ -136,8 +164,7 @@ public class MarshallerPool {
      * in this class like {@link #ROOT_NAMESPACE_KEY}.
      *
      * @param  properties    The set of properties to be given to the pool.
-     * @param  packages      The packages in which JAXB will search for annotated classes to be bound,
-     *                       for example {@code "org.apache.sis.metadata.iso:org.apache.sis.metadata.iso.citation"}.
+     * @param  packages      The colon-separated list of packages in which JAXB will search for annotated classes.
      * @throws JAXBException If the JAXB context can not be created.
      */
     public MarshallerPool(final Map<String,String> properties, final String packages) throws JAXBException {
@@ -173,50 +200,112 @@ public class MarshallerPool {
         }
         /*
          * Instantiates the OGCNamespacePrefixMapper appropriate for the implementation
-         * we just detected.
+         * we just detected. Note that we may get NoClassDefFoundError instead than the
+         * usual ClassNotFoundException if the class was found but its parent class has
+         * not been found.
          */
         try {
             mapper = Class.forName(type).getConstructor(String.class).newInstance(rootNamespace);
         } catch (ReflectiveOperationException | NoClassDefFoundError exception) {
-            // The NoClassDefFoundError is because of our trick using "geotk-provided".
             throw new JAXBException("Unsupported JAXB implementation.", exception);
         }
-    }
-
-    /**
-     * Returns the marshaller or unmarshaller to use from the given queue.
-     * If the queue is empty, returns {@code null}.
-     */
-    private static <T> T acquire(final Deque<T> queue) {
-        synchronized (queue) {
-            return queue.pollLast();
-        }
+        marshallers        = new ConcurrentLinkedDeque<>();
+        unmarshallers      = new ConcurrentLinkedDeque<>();
+        isRemovalScheduled = new AtomicBoolean();
     }
 
     /**
      * Marks the given marshaller or unmarshaller available for further reuse.
+     * This method:
+     *
+     * <ul>
+     *   <li>{@link Pooled#reset() Resets} the (un)marshaller to its initial state.</li>
+     *   <li>{@linkplain Deque#push(Object) Pushes} the (un)marshaller in the given queue.</li>
+     *   <li>Registers a delayed task for disposing expired (un)marshallers after the timeout.</li>
+     * </ul>
      */
-    private static <T> void release(final Deque<T> queue, final T marshaller) {
+    private <T> void release(final Deque<T> queue, final T marshaller) {
         try {
             ((Pooled) marshaller).reset();
         } catch (JAXBException exception) {
-            // Not expected to happen because the we are supposed
+            // Not expected to happen because we are supposed
             // to reset the properties to their initial values.
             Logging.unexpectedException(MarshallerPool.class, "release", exception);
             return;
         }
-        synchronized (queue) {
-            queue.addLast(marshaller);
-            while (queue.size() > CAPACITY) {
-                // Remove the least recently used marshallers.
-                queue.removeFirst();
-            }
+        queue.push(marshaller);
+        scheduleRemoval();
+    }
+
+    /**
+     * Schedule a new task for removing expired (un)marshallers if no such task is currently
+     * registered. If a task is already registered, then this method does nothing. Note that
+     * this task will actually wait for a longer time than the {@link #TIMEOUT} value before
+     * to execute, in order to increase the chances to process many (un)marshallers at once.
+     */
+    private void scheduleRemoval() {
+        if (isRemovalScheduled.compareAndSet(false, true)) {
+            DelayedExecutor.schedule(new DelayedRunnable(System.nanoTime() + 2*TIMEOUT) {
+                @Override public void run() {
+                    removeExpired();
+                }
+            });
         }
     }
 
     /**
+     * Invoked from the task scheduled by {@link #scheduleRemoval()} for removing expired
+     * (un)marshallers. If some (un)marshallers remain after execution of this task, then
+     * this method will reschedule a new task for checking again later.
+     */
+    final void removeExpired() {
+        isRemovalScheduled.set(false);
+        final long now = System.nanoTime();
+        if (!removeExpired(marshallers, now) | // Really |, not ||
+            !removeExpired(unmarshallers, now))
+        {
+            scheduleRemoval();
+        }
+    }
+
+    /**
+     * Removes expired (un)marshallers from the given queue.
+     *
+     * @param  <T>   Either {@code Marshaller} or {@code Unmarshaller} type.
+     * @param  queue The queue from which to remove expired (un)marshallers.
+     * @param  now   Current value of {@link System#nanoTime()}.
+     * @return {@code true} if the queue became empty as a result of this method call.
+     */
+    private static <T> boolean removeExpired(final Deque<T> queue, final long now) {
+        T next;
+        while ((next = queue.peekLast()) != null) {
+            /*
+             * The above line fetched the oldest (un)marshaller without removing it.
+             * If the timeout is not yet elapsed, do not remove that (un)marshaller.
+             * Since marshallers are enqueued in chronological order, the next ones
+             * should be yet more recent, so it is not worth to continue the search.
+             */
+            if (now - ((Pooled) next).resetTime < TIMEOUT) {
+                return false;
+            }
+            /*
+             * Now remove the (un)marshaller and check again the timeout. This second
+             * check is because the oldest (un)marshaller may have changed concurrently
+             * (depending on the queue implementation, which depends on the target JDK).
+             * If such case, restore the (un)marshaller on the queue.
+             */
+            next = queue.pollLast();
+            if (now - ((Pooled) next).resetTime < TIMEOUT) {
+                queue.addLast(next);
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Returns a JAXB marshaller from the pool. If there is no marshaller currently available
-     * in the pool, then this method will {@linkplain #createMarshaller create} a new one.
+     * in the pool, then this method will {@linkplain #createMarshaller() create} a new one.
      *
      * <p>This method shall be used as below:</p>
      *
@@ -234,7 +323,7 @@ public class MarshallerPool {
      * @throws JAXBException If an error occurred while creating and configuring a marshaller.
      */
     public Marshaller acquireMarshaller() throws JAXBException {
-        Marshaller marshaller = acquire(marshallers);
+        Marshaller marshaller = marshallers.poll();
         if (marshaller == null) {
             marshaller = new PooledMarshaller(createMarshaller(), internal);
         }
@@ -243,7 +332,7 @@ public class MarshallerPool {
 
     /**
      * Returns a JAXB unmarshaller from the pool. If there is no unmarshaller currently available
-     * in the pool, then this method will {@linkplain #createUnmarshaller create} a new one.
+     * in the pool, then this method will {@linkplain #createUnmarshaller() create} a new one.
      *
      * <p>This method shall be used as below:</p>
      *
@@ -261,7 +350,7 @@ public class MarshallerPool {
      * @throws JAXBException If an error occurred while creating and configuring the unmarshaller.
      */
     public Unmarshaller acquireUnmarshaller() throws JAXBException {
-        Unmarshaller unmarshaller = acquire(unmarshallers);
+        Unmarshaller unmarshaller = unmarshallers.poll();
         if (unmarshaller == null) {
             unmarshaller = new PooledUnmarshaller(createUnmarshaller(), internal);
         }
