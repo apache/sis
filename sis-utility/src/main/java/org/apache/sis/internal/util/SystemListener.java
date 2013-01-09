@@ -63,6 +63,10 @@ public abstract class SystemListener implements EventListener {
      * a paranoiac check.`
      *
      * @param listener The listener to remove.
+     *
+     * @todo Not yet used. Given that the intend of this method is to remove all listeners
+     *       registered by a specific module, a possible approach would be to remove all
+     *       listeners associated to that through some module identifier.
      */
     public static synchronized void remove(final SystemListener listener) {
         SystemListener[] list = listeners;
