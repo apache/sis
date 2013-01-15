@@ -59,7 +59,8 @@ public interface IdentifierSpace<T> extends Citation {
      * Its type is {@code "xs:ID"} - i.e. it is a fragment identifier, unique within document scope only,
      * for internal cross-references. It is not useful by itself as a persistent unique identifier.
      *
-     * <p>The XML {@linkplain #getName() attribute name} is {@code "gml:id"}.</p>
+     * <p>The XML {@linkplain #getName() attribute name} is {@code "gml:id"}.
+     * The XML attribute name of the reference to an identified object is {@code "xlink:href"}.</p>
      *
      * @see javax.xml.bind.annotation.XmlID
      */
@@ -70,7 +71,8 @@ public interface IdentifierSpace<T> extends Citation {
      * that implement ISO 19115 in XML. May be used as a persistent unique identifier, but only
      * available within GMD context.
      *
-     * <p>The XML {@linkplain #getName() attribute name} is {@code "gco:uuid"}.</p>
+     * <p>The XML {@linkplain #getName() attribute name} is {@code "gco:uuid"}.
+     * The XML attribute name of the reference to an identified object is {@code "gco:uuidref"}.</p>
      *
      * @see UUID
      */
