@@ -29,6 +29,7 @@ import org.apache.sis.util.ArgumentChecks;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Quentin Boileau (Geomatys)
+ * @author  Guilhem Legal (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
  * @version 0.3
  * @module
@@ -67,6 +68,13 @@ public final class Namespaces extends Static {
      * @category ISO
      */
     public static final String GMI = "http://www.isotc211.org/2005/gmi";
+
+    /**
+     * The <code>{@value}</code> URL.
+     *
+     * @category ISO
+     */
+    public static final String GTS = "http://www.isotc211.org/2005/gts";
 
     /**
      * The <code>{@value}</code> URL.
