@@ -234,7 +234,7 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
      */
     @Override
     public synchronized boolean remove(final Object element) {
-        return intern(elementType.cast(element), REMOVE) != null;
+        return intern(element, REMOVE) != null;
     }
 
     /**
@@ -242,14 +242,13 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
      * contain any object equals to {@code element}, then this method returns {@code null}.
      * Null values are considered never present.
      *
-     * @param  <T> The type of the element to get. Can be {@code null}.
      * @param  element The element to get.
      * @return An element equals to the given one if already presents in the set,
      *         or {@code null} otherwise.
      *
      * @see #unique(Object)
      */
-    public synchronized <T extends E> T get(final T element) {
+    public synchronized E get(final Object element) {
         return intern(element, GET);
     }
 
@@ -289,28 +288,10 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
      *         or the given {@code object} otherwise.
      */
     public synchronized <T extends E> T unique(final T element) {
-        return intern(element, INTERN);
-    }
-
-    /**
-     * Iteratively call {@link #unique(Object)} for an array of objects.
-     * This method is equivalents to the following code:
-     *
-     * {@preformat java
-     *     for (int i=0; i<elements.length; i++) {
-     *         elements[i] = unique(elements[i]);
-     *     }
-     * }
-     *
-     * @param elements
-     *          On input, the objects to add to this set if not already present. On output,
-     *          elements that are equal, but where every reference to an instance already
-     *          presents in this set has been replaced by a reference to the existing instance.
-     */
-    public synchronized void uniques(final E[] elements) {
-        for (int i=0; i<elements.length; i++) {
-            elements[i] = intern(elements[i], INTERN);
-        }
+        // There is no way to make sure that this operation is really safe.
+        // We have to trust the Object.equals(Object) method to be strict
+        // about the type of compared objects.
+        return (T) intern(element, INTERN);
     }
 
     // Arguments for the {@link #intern} method.
@@ -320,23 +301,10 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
     /** The "intern" operation.  */  private static final int INTERN = +2;
 
     /**
-     * Returns an object equals to {@code obj} if such an object already exist in this
-     * {@code WeakHashSet}. Otherwise, add {@code obj} to this {@code WeakHashSet}.
-     * This method is equivalents to the following code:
-     *
-     * {@preformat java
-     *     if (object!=null) {
-     *         final Object current = get(object);
-     *         if (current != null) {
-     *             return current;
-     *         } else {
-     *             add(object);
-     *         }
-     *     }
-     *     return object;
-     * }
+     * Implementation of the {@link #add(Object)}, {@link #remove(Object)}, {@link #get(Object)},
+     * {@link #contains(Object)} and {@link #intern(Object)} methods.
      */
-    private <T> T intern(final T obj, final int operation) {
+    private E intern(final Object obj, final int operation) {
         assert isValid();
         if (obj != null) {
             /*
@@ -352,10 +320,7 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
                     if (operation == REMOVE) {
                         e.dispose();
                     }
-                    // There is no way to make sure that this operation is really safe.
-                    // We have to trust the Object.equals(Object) method to be strict
-                    // about the type of compared objects.
-                    return (T) candidate;
+                    return candidate;
                 }
                 // Do not remove the null element; lets ReferenceQueue do its job
                 // (it was a bug to remove element here as an "optimization")
@@ -371,11 +336,15 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
                     }
                     lastTimeNormalCapacity = System.nanoTime();
                 }
-                table[index] = new Entry(elementType.cast(obj), table[index], hash);
+                final E element = elementType.cast(obj);
+                table[index] = new Entry(element, table[index], hash);
+                assert isValid();
+                if (operation == INTERN) {
+                    return element;
+                }
             }
         }
-        assert isValid();
-        return (operation == INTERN) ? obj : null;
+        return null;
     }
 
     /**
