@@ -72,7 +72,7 @@ final class NilObjectHandler implements InvocationHandler {
                 asList.add(identifier);
             }
         }
-        attribute = new IdentifierMapWithSpecialCases(asList, null);
+        attribute = new IdentifierMapWithSpecialCases(asList);
     }
 
     /**
