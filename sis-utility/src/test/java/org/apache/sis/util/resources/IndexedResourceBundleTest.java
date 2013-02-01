@@ -40,7 +40,7 @@ import static org.apache.sis.test.Assert.*;
  * @since   0.3 (derived from geotk-2.2)
  * @version 0.3
  */
-@DependsOn(org.apache.sis.util.ArraysTest.class)
+@DependsOn(org.apache.sis.util.ArraysExtTest.class)
 public final strictfp class IndexedResourceBundleTest extends TestCase {
     /**
      * The resource bundle in process of being tested. Shall be reset to {@code null} after every

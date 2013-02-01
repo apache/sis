@@ -16,6 +16,7 @@
  */
 package org.apache.sis.util.logging;
 
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.ServiceLoader;
 import java.util.logging.Level;
@@ -28,8 +29,6 @@ import org.apache.sis.util.Static;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Classes;
-
-import static java.util.Arrays.binarySearch;
 
 
 /**
@@ -250,7 +249,7 @@ public final class Logging extends Static {
                 Logging[] children = logging.children;
                 offset = base.indexOf('.', offset);
                 final String name = (offset >= 0) ? base.substring(0, offset) : base;
-                int i = binarySearch(children, name, COMPARATOR);
+                int i = Arrays.binarySearch(children, name, COMPARATOR);
                 if (i < 0) {
                     // No exact match found.
                     if (!create) {

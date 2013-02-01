@@ -16,10 +16,9 @@
  */
 package org.apache.sis.internal.util;
 
+import java.util.Arrays;
 import java.util.EventListener;
 import org.apache.sis.util.ArraysExt;
-
-import static java.util.Arrays.copyOf;
 
 
 /**
@@ -51,7 +50,7 @@ public abstract class SystemListener implements EventListener {
         if (list == null) {
             list = new SystemListener[1];
         } else {
-            list = copyOf(list, list.length + 1);
+            list = Arrays.copyOf(list, list.length + 1);
         }
         list[list.length - 1] = listener;
         listeners = list;
