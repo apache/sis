@@ -23,7 +23,7 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests the {@link Arrays} utility methods.
+ * Tests the {@link ArraysExt} utility methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
@@ -31,9 +31,9 @@ import static org.junit.Assert.*;
  * @version 0.3
  * @module
  */
-public final strictfp class ArraysTest extends TestCase {
+public final strictfp class ArraysExtTest extends TestCase {
     /**
-     * Tests {@link Arrays#removeDuplicated(Object[])}.
+     * Tests {@link ArraysExt#removeDuplicated(Object[])}.
      */
     @Test
     public void testRemoveDuplicated() {
@@ -43,7 +43,7 @@ public final strictfp class ArraysTest extends TestCase {
     }
 
     /**
-     * Tests {@link Arrays#reverse(int[])}.
+     * Tests {@link ArraysExt#reverse(int[])}.
      * The test uses an array of even length, then an array of odd length.
      */
     @Test
@@ -58,7 +58,7 @@ public final strictfp class ArraysTest extends TestCase {
     }
 
     /**
-     * Tests {@link Arrays#unionOfSorted(int[], int[])}.
+     * Tests {@link ArraysExt#unionOfSorted(int[], int[])}.
      */
     @Test
     public void testUnionOfSorted() {

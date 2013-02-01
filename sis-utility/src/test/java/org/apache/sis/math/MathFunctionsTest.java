@@ -34,7 +34,7 @@ import static org.apache.sis.util.ArraysExt.isSorted;
  * @version 0.3
  * @module
  */
-@DependsOn(org.apache.sis.util.ArraysTest.class)
+@DependsOn(org.apache.sis.util.ArraysExtTest.class)
 public final strictfp class MathFunctionsTest extends TestCase {
     /**
      * Small number for floating point comparisons.
