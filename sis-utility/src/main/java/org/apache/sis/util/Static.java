@@ -42,7 +42,7 @@ package org.apache.sis.util;
  *         and test if a unit is angular, linear or temporal.</td></tr>
  *
  * <tr><th colspan="2" class="hsep">Structures (trees, collections, arrays, parameters)</th></tr>
- * <tr><td>{@link org.apache.sis.util.collection.Collections}</td>
+ * <tr><td>{@link org.apache.sis.util.collection.CollectionsExt}</td>
  *     <td>Additions to the JDK {@link java.util.Collections} methods.</td></tr>
  * <tr><td>{@link ArraysExt}</td>
  *     <td>Insert or remove elements in the middle of arrays.</td></tr>

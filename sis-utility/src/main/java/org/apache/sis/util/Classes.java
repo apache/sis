@@ -29,7 +29,7 @@ import java.lang.reflect.WildcardType;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
 
-import static org.apache.sis.util.collection.Collections.hashMapCapacity;
+import static org.apache.sis.util.collection.CollectionsExt.hashMapCapacity;
 
 
 /**
