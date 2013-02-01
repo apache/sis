@@ -199,13 +199,21 @@ public final class Supervisor extends StandardMBean implements SupervisorMBean, 
      * {@inheritDoc}
      */
     @Override
-    public List<String> warnings() {
-        final List<String> warnings = Threads.listDeadThreads();
-        if (warnings != null) {
-            final Errors resources = Errors.getResources(locale);
-            for (int i=warnings.size(); --i>=0;) {
-                warnings.set(i, resources.getString(Errors.Keys.DeadThread_1, warnings.get(i)));
-            }
+    public String[] warnings() {
+        final DaemonThread lastCreatedDaemon;
+        synchronized (Threads.class) {
+            lastCreatedDaemon = Threads.lastCreatedDaemon;
+        }
+        final List<Thread> threads = DaemonThread.listStalledThreads(lastCreatedDaemon);
+        if (threads == null) {
+            return null;
+        }
+        final String[] warnings = new String[threads.size()];
+        final Errors resources = Errors.getResources(locale);
+        for (int i=0; i<warnings.length; i++) {
+            final Thread thread = threads.get(i);
+            warnings[i] = resources.getString(thread.isAlive() ?
+                    Errors.Keys.StalledThread_1 : Errors.Keys.DeadThread_1, thread.getName());
         }
         return warnings;
     }

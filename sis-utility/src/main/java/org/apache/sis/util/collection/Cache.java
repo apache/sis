@@ -207,7 +207,7 @@ public class Cache<K,V> extends AbstractMap<K,V> {
     public Cache(int initialCapacity, final long costLimit, final boolean soft) {
         ArgumentChecks.ensureStrictlyPositive("initialCapacity", initialCapacity);
         ArgumentChecks.ensurePositive("costLimit", costLimit);
-        initialCapacity = Collections.hashMapCapacity(initialCapacity);
+        initialCapacity = CollectionsExt.hashMapCapacity(initialCapacity);
         this.map        = new ConcurrentHashMap<K,Object>(initialCapacity);
         this.costs      = new LinkedHashMap<K,Integer>((int) Math.min(initialCapacity, costLimit), 0.75f, true);
         this.costLimit  = costLimit;

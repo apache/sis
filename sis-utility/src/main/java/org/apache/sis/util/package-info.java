@@ -29,7 +29,7 @@
  *         {@link org.apache.sis.util.Numbers},
  *         {@link org.apache.sis.util.Classes}.</li>
  *     <li>Arrays:
- *         {@link org.apache.sis.util.Arrays}.</li>
+ *         {@link org.apache.sis.util.ArraysExt}.</li>
  *     <li>Other standard Java types:
  *         {@link org.apache.sis.util.Exceptions}.</li>
  *   </ul></li>

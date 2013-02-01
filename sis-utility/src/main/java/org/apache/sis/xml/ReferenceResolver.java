@@ -21,7 +21,6 @@ import java.lang.reflect.Proxy;
 import org.opengis.metadata.Identifier;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.LenientComparable;
-import org.apache.sis.internal.jaxb.UUIDs;
 import org.apache.sis.internal.jaxb.gmx.Anchor;
 
 import static org.apache.sis.util.ArgumentChecks.*;
@@ -91,9 +90,7 @@ public class ReferenceResolver {
 
     /**
      * Returns an object of the given type for the given {@code uuid} attribute, or {@code null}
-     * if none. The default implementation looks in an internal map for previously unmarshalled
-     * object having the given UUID. If no existing instance is found, then this method returns
-     * {@code null}.
+     * if none. The default implementation returns {@code null} in all cases.
      *
      * @param  <T>     The compile-time type of the {@code type} argument.
      * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
@@ -106,8 +103,7 @@ public class ReferenceResolver {
     public <T> T resolve(final MarshalContext context, final Class<T> type, final UUID uuid) {
         ensureNonNull("type", type);
         ensureNonNull("uuid", uuid);
-        final Object object = UUIDs.lookup(uuid);
-        return type.isInstance(object) ? (T) object : null;
+        return null;
     }
 
     /**

@@ -23,7 +23,7 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests the {@link Arrays} utility methods.
+ * Tests the {@link ArraysExt} utility methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
@@ -31,40 +31,40 @@ import static org.junit.Assert.*;
  * @version 0.3
  * @module
  */
-public final strictfp class ArraysTest extends TestCase {
+public final strictfp class ArraysExtTest extends TestCase {
     /**
-     * Tests {@link Arrays#removeDuplicated(Object[])}.
+     * Tests {@link ArraysExt#removeDuplicated(Object[])}.
      */
     @Test
     public void testRemoveDuplicated() {
         final Integer[] array = new Integer[] {2, 8, 4, 8, 1, 2, 8};
         assertArrayEquals(new Integer[] {2, 8, 4, 1},
-                Arrays.resize(array, Arrays.removeDuplicated(array)));
+                ArraysExt.resize(array, ArraysExt.removeDuplicated(array)));
     }
 
     /**
-     * Tests {@link Arrays#reverse(int[])}.
+     * Tests {@link ArraysExt#reverse(int[])}.
      * The test uses an array of even length, then an array of odd length.
      */
     @Test
     public void testReverse() {
         int[] array = new int[] {2, 4, 8, 10};
-        Arrays.reverse(array);
+        ArraysExt.reverse(array);
         assertArrayEquals(new int[] {10, 8, 4, 2}, array);
 
         array = new int[] {2, 4, 8, 10, 11};
-        Arrays.reverse(array);
+        ArraysExt.reverse(array);
         assertArrayEquals(new int[] {11, 10, 8, 4, 2}, array);
     }
 
     /**
-     * Tests {@link Arrays#unionOfSorted(int[], int[])}.
+     * Tests {@link ArraysExt#unionOfSorted(int[], int[])}.
      */
     @Test
     public void testUnionOfSorted() {
         final int[] array1 = new int[] {2, 4, 6, 9, 12};
         final int[] array2 = new int[] {1, 2, 3, 12, 13, 18, 22};
-        final int[] union = Arrays.unionOfSorted(array1, array2);
+        final int[] union = ArraysExt.unionOfSorted(array1, array2);
         assertArrayEquals(new int[] {1, 2, 3, 4, 6, 9, 12, 13, 18, 22}, union);
     }
 }

@@ -19,6 +19,8 @@ package org.apache.sis.internal.util;
 import javax.management.JMException;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleActivator;
+import org.osgi.framework.BundleEvent;
+import org.osgi.framework.BundleListener;
 
 
 /**
@@ -30,7 +32,7 @@ import org.osgi.framework.BundleActivator;
  * @version 0.3
  * @module
  */
-public final class OSGiActivator implements BundleActivator {
+public final class OSGiActivator implements BundleActivator, BundleListener {
     /**
      * Creates a new bundle activator.
      */
@@ -44,6 +46,7 @@ public final class OSGiActivator implements BundleActivator {
      */
     @Override
     public void start(final BundleContext context) {
+        context.addBundleListener(this);
     }
 
     /**
@@ -51,15 +54,27 @@ public final class OSGiActivator implements BundleActivator {
      * This method shutdowns the {@code sis-utility} threads.
      *
      * @param  context The execution context of the bundle being stopped.
-     * @throws InterruptedException If an other thread invoked {@link #interrupt()} while
-     *         we were waiting for the {@code sis-utility} threads to die.
      * @throws JMException If an error occurred during unregistration of the supervisor MBean.
      */
     @Override
-    public void stop(final BundleContext context) throws InterruptedException, JMException {
-        Threads.shutdown(4000);
-        if (Supervisor.ENABLED) {
-            Supervisor.unregister();
+    public void stop(final BundleContext context) throws JMException {
+        context.removeBundleListener(this);
+        Shutdown.stop(getClass());
+    }
+
+    /**
+     * Invoked when an other module has been installed or un-installed.
+     * This method notifies the Apache SIS library that the classpath may have changed.
+     *
+     * @param event The event that describe the life-cycle change.
+     */
+    @Override
+    public void bundleChanged(final BundleEvent event) {
+        switch (event.getType()) {
+            case BundleEvent.STARTED:
+            case BundleEvent.STOPPED: {
+                SystemListener.fireClasspathChanged();
+            }
         }
     }
 }
