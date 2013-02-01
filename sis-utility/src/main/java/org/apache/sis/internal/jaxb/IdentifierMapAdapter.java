@@ -30,9 +30,8 @@ import org.opengis.metadata.citation.Citation;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
-import org.apache.sis.xml.IdentifierAlreadyBoundException;
 
-import static org.apache.sis.util.collection.Collections.hashMapCapacity;
+import static org.apache.sis.util.collection.CollectionsExt.hashMapCapacity;
 
 // Related to JDK7
 import org.apache.sis.internal.util.Objects;
@@ -250,12 +249,10 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
      * @param  authority The authority for which to set the code.
      * @param  code The new code for the given authority, or {@code null} for removing the entry.
      * @return The previous code for the given authority, or {@code null} if none.
-     * @throws IdentifierAlreadyBoundException If this map expects unique identifiers for the
-     *         given authority, and the given value is already associated to another object.
      */
     @Override
     public String put(final Citation authority, final String code)
-            throws IdentifierAlreadyBoundException, UnsupportedOperationException
+            throws UnsupportedOperationException
     {
         ArgumentChecks.ensureNonNull("authority", authority);
         String old = null;
@@ -290,7 +287,7 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
      */
     @Override
     public <T> T putSpecialized(final IdentifierSpace<T> authority, final T value)
-            throws IdentifierAlreadyBoundException, UnsupportedOperationException
+            throws UnsupportedOperationException
     {
         ArgumentChecks.ensureNonNull("authority", authority);
         T old = null;

@@ -38,7 +38,7 @@ import static org.apache.sis.util.CharSequences.*;
  * @module
  */
 @DependsOn({
-    ArraysTest.class,
+    ArraysExtTest.class,
     CharactersTest.class
 })
 public final strictfp class CharSequencesTest extends TestCase {

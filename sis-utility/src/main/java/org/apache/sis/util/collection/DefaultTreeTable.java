@@ -27,8 +27,8 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Cloner;
 
 import static org.apache.sis.util.CharSequences.trimWhitespaces;
-import static org.apache.sis.util.collection.Collections.isNullOrEmpty;
-import static org.apache.sis.util.collection.Collections.hashMapCapacity;
+import static org.apache.sis.util.collection.CollectionsExt.isNullOrEmpty;
+import static org.apache.sis.util.collection.CollectionsExt.hashMapCapacity;
 
 // Related to JDK7
 import org.apache.sis.internal.util.Objects;

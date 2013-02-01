@@ -34,7 +34,7 @@ import org.junit.runners.Suite;
     org.apache.sis.internal.test.XMLComparatorTest.class,
 
     // Most basic functions of SIS library.
-    org.apache.sis.util.ArraysTest.class,
+    org.apache.sis.util.ArraysExtTest.class,
     org.apache.sis.util.CharactersTest.class,
     org.apache.sis.util.CharSequencesTest.class,
     org.apache.sis.util.StringBuildersTest.class,

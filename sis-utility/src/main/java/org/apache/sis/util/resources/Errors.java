@@ -309,6 +309,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int RequireDecimalSeparator = 33;
 
         /**
+         * Thread “{0}” seems stalled.
+         */
+        public static final int StalledThread_1 = 63;
+
+        /**
          * Unexpected change in ‘{0}’.
          */
         public static final int UnexpectedChange_1 = 56;

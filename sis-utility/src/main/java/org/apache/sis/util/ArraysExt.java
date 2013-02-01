@@ -16,24 +16,24 @@
  */
 package org.apache.sis.util;
 
+import java.util.Arrays;
 import java.util.Comparator;
 import java.lang.reflect.Array;
-import static java.util.Arrays.copyOf;
 
 // Related to JDK7
 import org.apache.sis.internal.util.Objects;
 
 
 /**
- * Static methods for simple operations on arrays and array elements. This class provides methods
- * for inserting and deleting elements in an array, as well as resizing the array. Some worthy
- * methods are:
+ * Static methods for simple operations on arrays and array elements.
+ * This is an extension to the standard {@link Arrays} utility class.
+ * Some worthy methods are:
  *
  * <ul>
  *   <li>The {@link #resize(Object[], int) resize} methods, which are very similar to the
- *       {@link java.util.Arrays#copyOf(Object[], int) Arrays.copyOf} methods except that
- *       they accept {@code null} arrays and do not copy anything if the given array already
- *       has the requested length.</li>
+ *       {@link Arrays#copyOf(Object[], int) Arrays.copyOf} methods except that they accept
+ *       {@code null} arrays and do not copy anything if the given array already has the
+ *       requested length.</li>
  *   <li>The {@link #insert(Object[], int, Object[], int, int) insert} and {@link #remove(Object[],
  *       int, int) remove} methods for adding and removing elements in the middle of an array.</li>
  *   <li>The {@link #isSorted(Object[], Comparator, boolean) isSorted} methods for verifying
@@ -72,9 +72,9 @@ import org.apache.sis.internal.util.Objects;
  * @version 0.3
  * @module
  *
- * @see java.util.Arrays
+ * @see Arrays
  */
-public final class Arrays extends Static {
+public final class ArraysExt extends Static {
     /**
      * An empty array of {@code double} primitive type.
      * Such arrays are immutable and can be safely shared.
@@ -126,7 +126,7 @@ public final class Arrays extends Static {
     /**
      * Do not allow instantiation of this class.
      */
-    private Arrays() {
+    private ArraysExt() {
     }
 
     /**
@@ -145,7 +145,7 @@ public final class Arrays extends Static {
      *
      *   <li>If the given {@code length} is equal to the length of the given {@code array},
      *       then {@code array} is returned unchanged. <strong>No copy</strong> is performed.
-     *       This behavior is different than the {@link java.util.Arrays#copyOf} one.</li>
+     *       This behavior is different than the {@link Arrays#copyOf(Object[], int)} one.</li>
      * </ul>
      *
      * Note that if the given array is {@code null}, then this method unconditionally returns
@@ -158,10 +158,10 @@ public final class Arrays extends Static {
      *         array is {@code null} or already have the requested length.
      * @throws NegativeArraySizeException If {@code length} is negative.
      *
-     * @see java.util.Arrays#copyOf(Object[], int)
+     * @see Arrays#copyOf(Object[], int)
      */
     public static <E> E[] resize(final E[] array, final int length) throws NegativeArraySizeException {
-        return (array == null || array.length == length) ? array : copyOf(array, length);
+        return (array == null || array.length == length) ? array : Arrays.copyOf(array, length);
     }
 
     /**
@@ -177,7 +177,7 @@ public final class Arrays extends Static {
      *         array is {@code null} or already have the requested length.
      * @throws NegativeArraySizeException If {@code length} is negative.
      *
-     * @see java.util.Arrays#copyOf(double[], int)
+     * @see Arrays#copyOf(double[], int)
      */
     public static double[] resize(final double[] array, final int length) throws NegativeArraySizeException {
         if (array != null) {
@@ -185,7 +185,7 @@ public final class Arrays extends Static {
                 return EMPTY_DOUBLE;
             }
             if (array.length != length) {
-                return copyOf(array, length);
+                return Arrays.copyOf(array, length);
             }
         }
         return array;
@@ -204,7 +204,7 @@ public final class Arrays extends Static {
      *         array is {@code null} or already have the requested length.
      * @throws NegativeArraySizeException If {@code length} is negative.
      *
-     * @see java.util.Arrays#copyOf(float[], int)
+     * @see Arrays#copyOf(float[], int)
      */
     public static float[] resize(final float[] array, final int length) throws NegativeArraySizeException {
         if (array != null) {
@@ -212,7 +212,7 @@ public final class Arrays extends Static {
                 return EMPTY_FLOAT;
             }
             if (array.length != length) {
-                return copyOf(array, length);
+                return Arrays.copyOf(array, length);
             }
         }
         return array;
@@ -231,7 +231,7 @@ public final class Arrays extends Static {
      *         array is {@code null} or already have the requested length.
      * @throws NegativeArraySizeException If {@code length} is negative.
      *
-     * @see java.util.Arrays#copyOf(long[], int)
+     * @see Arrays#copyOf(long[], int)
      */
     public static long[] resize(final long[] array, final int length) throws NegativeArraySizeException {
         if (array != null) {
@@ -239,7 +239,7 @@ public final class Arrays extends Static {
                 return EMPTY_LONG;
             }
             if (array.length != length) {
-                return copyOf(array, length);
+                return Arrays.copyOf(array, length);
             }
         }
         return array;
@@ -258,7 +258,7 @@ public final class Arrays extends Static {
      *         array is {@code null} or already have the requested length.
      * @throws NegativeArraySizeException If {@code length} is negative.
      *
-     * @see java.util.Arrays#copyOf(int[], int)
+     * @see Arrays#copyOf(int[], int)
      */
     public static int[] resize(final int[] array, final int length) throws NegativeArraySizeException {
         if (array != null) {
@@ -266,7 +266,7 @@ public final class Arrays extends Static {
                 return EMPTY_INT;
             }
             if (array.length != length) {
-                return copyOf(array, length);
+                return Arrays.copyOf(array, length);
             }
         }
         return array;
@@ -285,7 +285,7 @@ public final class Arrays extends Static {
      *         array is {@code null} or already have the requested length.
      * @throws NegativeArraySizeException If {@code length} is negative.
      *
-     * @see java.util.Arrays#copyOf(short[], int)
+     * @see Arrays#copyOf(short[], int)
      */
     public static short[] resize(final short[] array, final int length) throws NegativeArraySizeException {
         if (array != null) {
@@ -293,7 +293,7 @@ public final class Arrays extends Static {
                 return EMPTY_SHORT;
             }
             if (array.length != length) {
-                return copyOf(array, length);
+                return Arrays.copyOf(array, length);
             }
         }
         return array;
@@ -312,7 +312,7 @@ public final class Arrays extends Static {
      *         array is {@code null} or already have the requested length.
      * @throws NegativeArraySizeException If {@code length} is negative.
      *
-     * @see java.util.Arrays#copyOf(byte[], int)
+     * @see Arrays#copyOf(byte[], int)
      */
     public static byte[] resize(final byte[] array, final int length) throws NegativeArraySizeException {
         if (array != null) {
@@ -320,7 +320,7 @@ public final class Arrays extends Static {
                 return EMPTY_BYTE;
             }
             if (array.length != length) {
-                return copyOf(array, length);
+                return Arrays.copyOf(array, length);
             }
         }
         return array;
@@ -339,7 +339,7 @@ public final class Arrays extends Static {
      *         array is {@code null} or already have the requested length.
      * @throws NegativeArraySizeException If {@code length} is negative.
      *
-     * @see java.util.Arrays#copyOf(char[], int)
+     * @see Arrays#copyOf(char[], int)
      */
     public static char[] resize(final char[] array, final int length) throws NegativeArraySizeException {
         if (array != null) {
@@ -347,7 +347,7 @@ public final class Arrays extends Static {
                 return EMPTY_CHAR;
             }
             if (array.length != length) {
-                return copyOf(array, length);
+                return Arrays.copyOf(array, length);
             }
         }
         return array;
@@ -366,7 +366,7 @@ public final class Arrays extends Static {
      *         array is {@code null} or already have the requested length.
      * @throws NegativeArraySizeException If {@code length} is negative.
      *
-     * @see java.util.Arrays#copyOf(boolean[], int)
+     * @see Arrays#copyOf(boolean[], int)
      */
     public static boolean[] resize(final boolean[] array, final int length) throws NegativeArraySizeException {
         if (array != null) {
@@ -374,7 +374,7 @@ public final class Arrays extends Static {
                 return EMPTY_BOOLEAN;
             }
             if (array.length != length) {
-                return copyOf(array, length);
+                return Arrays.copyOf(array, length);
             }
         }
         return array;
@@ -1301,7 +1301,7 @@ public final class Arrays extends Static {
      */
     public static <T> T[] append(final T[] array, final T element) throws NullArgumentException{
         ArgumentChecks.ensureNonNull("array", array);
-        final T[] copy = copyOf(array, array.length + 1);
+        final T[] copy = Arrays.copyOf(array, array.length + 1);
         copy[array.length] = element;
         return copy;
     }
@@ -1818,7 +1818,7 @@ public final class Arrays extends Static {
                         if (array.length == length) {
                             return array;
                         }
-                        result = copyOf(array, length);
+                        result = Arrays.copyOf(array, length);
                     } else {
                         System.arraycopy(array, 0, result, offset, array.length);
                     }
@@ -1836,8 +1836,7 @@ public final class Arrays extends Static {
      *
      * {@section Recommended assertions}
      * Callers are encouraged to place the following assertions before calls to this method,
-     * using the {@link #isSorted(int[], boolean)} and {@link java.util.Arrays#toString(int[])}
-     * methods:
+     * using the {@link #isSorted(int[], boolean)} and {@link Arrays#toString(int[])} methods:
      *
      * {@preformat java
      *   assert isSorted(array1, true) : toString(array1);
