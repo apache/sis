@@ -29,12 +29,12 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.RangeMeaning;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 
 import static java.lang.Double.doubleToLongBits;
-import static org.apache.sis.util.Arrays.resize;
 import static org.apache.sis.util.StringBuilders.trimFractionalPart;
 import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
 
@@ -342,7 +342,7 @@ parse:  while (i < length) {
                 c = Character.codePointAt(wkt, i);
             }
         }
-        return resize(ordinates, dimension);
+        return ArraysExt.resize(ordinates, dimension);
     }
 
     /**

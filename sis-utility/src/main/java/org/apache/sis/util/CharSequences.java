@@ -16,12 +16,10 @@
  */
 package org.apache.sis.util;
 
+import java.util.Arrays;
 import java.nio.CharBuffer;
 
 import static java.lang.Character.*;
-import static java.util.Arrays.fill;
-import static java.util.Arrays.copyOf;
-import static org.apache.sis.util.Arrays.resize;
 import static org.apache.sis.util.StringBuilders.replace;
 
 
@@ -101,7 +99,7 @@ public final class CharSequences extends Static {
         // this strategy and build the char[] array on the fly.
         final int last = SPACES.length - 1;
         final char[] spaces = new char[last+1];
-        fill(spaces, ' ');
+        Arrays.fill(spaces, ' ');
         SPACES[last] = new String(spaces).intern();
     }
 
@@ -168,7 +166,7 @@ public final class CharSequences extends Static {
 
             @Override public String toString() {
                 final char[] array = new char[length];
-                fill(array, ' ');
+                Arrays.fill(array, ' ');
                 return new String(array);
             }
         };
@@ -651,7 +649,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
             final CharSequence item = trimWhitespaces(text, last, i);
             if (!excludeEmpty || item.length() != 0) {
                 if (count == strings.length) {
-                    strings = copyOf(strings, count << 1);
+                    strings = Arrays.copyOf(strings, count << 1);
                 }
                 strings[count++] = item;
             }
@@ -661,11 +659,11 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
         final CharSequence item = trimWhitespaces(text, last, length);
         if (!excludeEmpty || item.length() != 0) {
             if (count == strings.length) {
-                strings = copyOf(strings, count + 1);
+                strings = Arrays.copyOf(strings, count + 1);
             }
             strings[count++] = item;
         }
-        return resize(strings, count);
+        return ArraysExt.resize(strings, count);
     }
 
     /**
@@ -747,7 +745,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
                 }
             }
             if (count >= splitted.length) {
-                splitted = copyOf(splitted, count*2);
+                splitted = Arrays.copyOf(splitted, count*2);
             }
             splitted[count++] = text.subSequence(last, splitAt);
             last = splitAt + skip;
@@ -756,10 +754,10 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
          * Add the remaining string and we are done.
          */
         if (count >= splitted.length) {
-            splitted = copyOf(splitted, count+1);
+            splitted = Arrays.copyOf(splitted, count+1);
         }
         splitted[count++] = text.subSequence(last, text.length());
-        return resize(splitted, count);
+        return ArraysExt.resize(splitted, count);
     }
 
     /**

@@ -32,7 +32,7 @@ import static org.junit.Assert.*;
  * @version 0.3
  * @module
  */
-@DependsOn(Arrays.class)
+@DependsOn(ArraysExt.class)
 public final strictfp class LocalesTest extends TestCase {
     /**
      * Tests the {@link Locales#getAvailableLanguages()} method.
@@ -40,8 +40,8 @@ public final strictfp class LocalesTest extends TestCase {
     @Test
     public void testGetAvailableLanguages() {
         final Locale[] locales = Locales.ALL.getAvailableLanguages();
-        assertTrue ("Expected English locale.",         Arrays.contains(locales, Locale.ENGLISH));
-        assertFalse("US is a country, not a language.", Arrays.contains(locales, Locale.US));
+        assertTrue ("Expected English locale.",         ArraysExt.contains(locales, Locale.ENGLISH));
+        assertFalse("US is a country, not a language.", ArraysExt.contains(locales, Locale.US));
     }
 
     /**
@@ -50,11 +50,11 @@ public final strictfp class LocalesTest extends TestCase {
     @Test
     public void testGetAvailableLocales() {
         final Locale[] locales = Locales.SIS.getAvailableLocales();
-        assertTrue(Arrays.contains(locales, Locale.ENGLISH));
-        assertTrue(Arrays.contains(locales, Locale.US));
-        assertTrue(Arrays.contains(locales, Locale.CANADA));
-        assertTrue(Arrays.contains(locales, Locale.FRANCE));
-        assertTrue(Arrays.contains(locales, Locale.CANADA_FRENCH));
+        assertTrue(ArraysExt.contains(locales, Locale.ENGLISH));
+        assertTrue(ArraysExt.contains(locales, Locale.US));
+        assertTrue(ArraysExt.contains(locales, Locale.CANADA));
+        assertTrue(ArraysExt.contains(locales, Locale.FRANCE));
+        assertTrue(ArraysExt.contains(locales, Locale.CANADA_FRENCH));
     }
 
     /**

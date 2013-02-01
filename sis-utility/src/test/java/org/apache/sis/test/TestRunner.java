@@ -37,7 +37,8 @@ import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
 
-import static org.apache.sis.util.Arrays.resize;
+import org.apache.sis.util.ArraysExt;
+
 import static org.apache.sis.util.collection.Collections.isNullOrEmpty;
 import static org.apache.sis.util.collection.Collections.hashMapCapacity;
 
@@ -247,7 +248,7 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
         if (count == 0) {
             throw new NoTestsRemainException();
         }
-        filteredChildren = resize(children, count);
+        filteredChildren = ArraysExt.resize(children, count);
     }
 
     /**

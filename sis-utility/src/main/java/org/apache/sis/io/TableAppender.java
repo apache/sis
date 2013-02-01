@@ -21,13 +21,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.io.Flushable;
 import java.io.IOException;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Decorator;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.X364;
 
-import static org.apache.sis.util.Arrays.EMPTY_INT;
 import static org.apache.sis.util.Characters.isLineOrParagraphSeparator;
 
 
@@ -169,7 +169,7 @@ public class TableAppender extends Appender implements Flushable {
      * Maximum width for each columns. This array length must
      * be equal to the number of columns in this table.
      */
-    private int[] maximalColumnWidths = EMPTY_INT;
+    private int[] maximalColumnWidths = ArraysExt.EMPTY_INT;
 
     /**
      * The line separator. We will use the first line separator found in the

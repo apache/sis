@@ -25,11 +25,11 @@ import java.util.logging.LogRecord;
 
 import org.apache.sis.util.Configuration;
 import org.apache.sis.util.Static;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Classes;
 
 import static java.util.Arrays.binarySearch;
-import static org.apache.sis.util.Arrays.insert;
 
 
 /**
@@ -259,7 +259,7 @@ public final class Logging extends Static {
                         break;
                     }
                     i = ~i;
-                    children = insert(children, i, 1);
+                    children = ArraysExt.insert(children, i, 1);
                     children[i] = new Logging(logging, name);
                     logging.children = children;
                 }
