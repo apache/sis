@@ -30,12 +30,12 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
 /**
- * A {@linkplain java.util.Collections#checkedSet(Set, Class) checked} and
- * {@linkplain java.util.Collections#synchronizedSet(Set) synchronized} {@link LinkedHashSet}.
+ * A {@linkplain Collections#checkedSet(Set, Class) checked} and
+ * {@linkplain Collections#synchronizedSet(Set) synchronized} {@link LinkedHashSet}.
  * The type checks are performed at run-time in addition to the compile-time checks.
  *
  * <p>Using this class is similar to wrapping a {@link LinkedHashSet} using the methods provided
- * in the standard {@link java.util.Collections} class, except for the following advantages:</p>
+ * in the standard {@link Collections} class, except for the following advantages:</p>
  *
  * <ul>
  *   <li>Avoid the two levels of indirection (for type check and synchronization).</li>
@@ -60,8 +60,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @version 0.3
  * @module
  *
- * @see java.util.Collections#checkedSet(Set, Class)
- * @see java.util.Collections#synchronizedSet(Set)
+ * @see Collections#checkedSet(Set, Class)
+ * @see Collections#synchronizedSet(Set)
  */
 @ThreadSafe
 public class CheckedHashSet<E> extends LinkedHashSet<E> implements CheckedContainer<E>, Cloneable {

@@ -31,7 +31,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
 
-import static org.apache.sis.util.collection.Collections.hashMapCapacity;
+import static org.apache.sis.util.collection.CollectionsExt.hashMapCapacity;
 
 // Related to JDK7
 import java.util.Objects;

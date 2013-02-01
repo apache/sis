@@ -31,9 +31,8 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 import org.apache.sis.util.Version;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.collection.CollectionsExt;
 import org.apache.sis.internal.jaxb.MarshalContext;
-
-import static org.apache.sis.util.collection.Collections.unmodifiableOrCopy;
 
 
 /**
@@ -265,7 +264,7 @@ abstract class Pooled {
                                 copy.put(key, (String) schema);
                             }
                         }
-                        copy = unmodifiableOrCopy(copy);
+                        copy = CollectionsExt.unmodifiableOrCopy(copy);
                     }
                     schemas = copy;
                     return;

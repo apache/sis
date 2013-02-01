@@ -22,20 +22,11 @@ import org.apache.sis.util.Static;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverter;
 
-import static java.util.Collections.list;
-import static java.util.Collections.emptySet;
-import static java.util.Collections.emptyMap;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singleton;
-import static java.util.Collections.singletonMap;
-import static java.util.Collections.singletonList;
-import static java.util.Collections.unmodifiableSet;
-import static java.util.Collections.unmodifiableMap;
-
 
 /**
  * Static methods working on {@link Collection} objects.
- * This is an extension to the Java {@link java.util.Collections} utility class providing:
+ * This is an extension to the standard {@link Collections} utility class.
+ * Some worthy methods are:
  *
  * <ul>
  *   <li>Null-safe {@link #isNullOrEmpty(Collection) isNullOrEmpty} method,
@@ -46,7 +37,7 @@ import static java.util.Collections.unmodifiableMap;
  *   <li>{@link #modifiableCopy(Collection) modifiableCopy} method for taking a snapshot of an arbitrary
  *       implementation into an unsynchronized, modifiable, in-memory object.</li>
  *   <li>{@link #unmodifiableOrCopy(Set) unmodifiableOrCopy} methods, which may be slightly more
- *       compact than the standard {@link java.util.Collections#unmodifiableSet(Set)} equivalent
+ *       compact than the standard {@link Collections#unmodifiableSet(Set)} equivalent
  *       when the unmodifiable collection is not required to be a view over the original collection.</li>
  * </ul>
  *
@@ -55,11 +46,11 @@ import static java.util.Collections.unmodifiableMap;
  * @version 0.3
  * @module
  */
-public final class Collections extends Static {
+public final class CollectionsExt extends Static {
     /**
      * Do not allow instantiation of this class.
      */
-    private Collections() {
+    private CollectionsExt() {
     }
 
     /**
@@ -101,8 +92,8 @@ public final class Collections extends Static {
      * @param <E> The type of elements in the empty collection.
      * @return An empty collection.
      *
-     * @see java.util.Collections#emptyList()
-     * @see java.util.Collections#emptySet()
+     * @see Collections#emptyList()
+     * @see Collections#emptySet()
      */
     @SuppressWarnings({"unchecked","rawtype"})
     public static <E> Queue<E> emptyQueue() {
@@ -118,8 +109,8 @@ public final class Collections extends Static {
      * @param <E> The type of elements in the empty collection.
      * @return An empty collection.
      *
-     * @see java.util.Collections#emptyList()
-     * @see java.util.Collections#emptySet()
+     * @see Collections#emptyList()
+     * @see Collections#emptySet()
      */
     @SuppressWarnings({"unchecked","rawtype"})
     public static <E> SortedSet<E> emptySortedSet() {
@@ -229,7 +220,7 @@ public final class Collections extends Static {
      * @param  array The array to copy in a set. May be {@code null}.
      * @return A set containing the array elements, or {@code null} if the given array was null.
      *
-     * @see java.util.Collections#unmodifiableSet(Set)
+     * @see Collections#unmodifiableSet(Set)
      *
      * @category converter
      */
@@ -239,15 +230,15 @@ public final class Collections extends Static {
             return null;
         }
         switch (array.length) {
-            case 0:  return emptySet();
-            case 1:  return singleton(array[0]);
-            default: return unmodifiableSet(new LinkedHashSet<>(Arrays.asList(array)));
+            case 0:  return Collections.emptySet();
+            case 1:  return Collections.singleton(array[0]);
+            default: return Collections.unmodifiableSet(new LinkedHashSet<>(Arrays.asList(array)));
         }
     }
 
     /**
      * Returns a unmodifiable version of the given set.
-     * This method is different than the standard {@link java.util.Collections#unmodifiableSet(Set)}
+     * This method is different than the standard {@link Collections#unmodifiableSet(Set)}
      * in that it tries to returns a more efficient object when there is zero or one element.
      * Such small set occurs frequently in Apache SIS, especially for
      * {@link org.apache.sis.referencing.AbstractIdentifiedObject} names or identifiers.
@@ -255,7 +246,7 @@ public final class Collections extends Static {
      * <p><em>The set returned by this method may or may not be a view of the given set</em>.
      * Consequently this method shall be used <strong>only</strong> if the given set will
      * <strong>not</strong> be modified after this method call. In case of doubt, use the
-     * standard {@link java.util.Collections#unmodifiableSet(Set)} method instead.</p>
+     * standard {@link Collections#unmodifiableSet(Set)} method instead.</p>
      *
      * @param  <E>  The type of elements in the set.
      * @param  set  The set to make unmodifiable, or {@code null}.
@@ -267,15 +258,15 @@ public final class Collections extends Static {
         if (set != null) {
             switch (set.size()) {
                 case 0: {
-                    set = emptySet();
+                    set = Collections.emptySet();
                     break;
                 }
                 case 1: {
-                    set = singleton(set.iterator().next());
+                    set = Collections.singleton(set.iterator().next());
                     break;
                 }
                 default: {
-                    set = unmodifiableSet(set);
+                    set = Collections.unmodifiableSet(set);
                     break;
                 }
             }
@@ -285,14 +276,14 @@ public final class Collections extends Static {
 
     /**
      * Returns a unmodifiable version of the given map.
-     * This method is different than the standard {@link java.util.Collections#unmodifiableMap(Map)}
+     * This method is different than the standard {@link Collections#unmodifiableMap(Map)}
      * in that it tries to returns a more efficient object when there is zero or one entry.
      * Such small maps occur frequently in Apache SIS.
      *
      * <p><em>The map returned by this method may or may not be a view of the given map</em>.
      * Consequently this method shall be used <strong>only</strong> if the given map will
      * <strong>not</strong> be modified after this method call. In case of doubt, use the
-     * standard {@link java.util.Collections#unmodifiableMap(Map)} method instead.</p>
+     * standard {@link Collections#unmodifiableMap(Map)} method instead.</p>
      *
      * @param  <K>  The type of keys in the map.
      * @param  <V>  The type of values in the map.
@@ -305,16 +296,16 @@ public final class Collections extends Static {
         if (map != null) {
             switch (map.size()) {
                 case 0: {
-                    map = emptyMap();
+                    map = Collections.emptyMap();
                     break;
                 }
                 case 1: {
                     final Map.Entry<K,V> entry = map.entrySet().iterator().next();
-                    map = singletonMap(entry.getKey(), entry.getValue());
+                    map = Collections.singletonMap(entry.getKey(), entry.getValue());
                     break;
                 }
                 default: {
-                    map = unmodifiableMap(map);
+                    map = Collections.unmodifiableMap(map);
                     break;
                 }
             }
@@ -422,11 +413,11 @@ public final class Collections extends Static {
      * Returns the given value as a collection. Special cases:
      *
      * <ul>
-     *   <li>If the value is null, then this method returns an {@linkplain java.util.Collections#emptyList() empty list}.</li>
+     *   <li>If the value is null, then this method returns an {@linkplain Collections#emptyList() empty list}.</li>
      *   <li>If the value is an instance of {@link Collection}, then it is returned unchanged.</li>
      *   <li>If the value is an array of objects, then it is returned {@linkplain Arrays#asList(Object[]) as a list}.</li>
      *   <li>If the value is an instance of {@link Iterable}, {@link Iterator} or {@link Enumeration}, copies the values in a new list.</li>
-     *   <li>Otherwise the value is returned as a {@linkplain java.util.Collections#singletonList(Object) singleton list}.</li>
+     *   <li>Otherwise the value is returned as a {@linkplain Collections#singletonList(Object) singleton list}.</li>
      * </ul>
      *
      * <p>Note that in the {@link Iterator} and {@link Enumeration} cases, the given value object
@@ -446,7 +437,7 @@ public final class Collections extends Static {
      */
     public static Collection<?> toCollection(final Object value) {
         if (value == null) {
-            return emptyList();
+            return Collections.emptyList();
         }
         if (value instanceof Collection<?>) {
             return (Collection<?>) value;
@@ -470,9 +461,9 @@ public final class Collections extends Static {
             return list;
         }
         if (value instanceof Enumeration<?>) {
-            return list((Enumeration<?>) value);
+            return Collections.list((Enumeration<?>) value);
         }
-        return singletonList(value);
+        return Collections.singletonList(value);
     }
 
     /**
@@ -628,7 +619,7 @@ public final class Collections extends Static {
     }
 
     /**
-     * Returns a comparator for map entries having comparable {@linkplain java.util.Map.Entry#getValue() values}.
+     * Returns a comparator for map entries having comparable {@linkplain Map.Entry#getValue() values}.
      * For any pair of entries {@code e1} and {@code e2}, this method performs the comparison as below:
      *
      * {@preformat java
@@ -651,12 +642,12 @@ public final class Collections extends Static {
     }
 
     /**
-     * Returns the capacity to be given to the {@link java.util.HashMap#HashMap(int) HashMap}
+     * Returns the capacity to be given to the {@link HashMap#HashMap(int) HashMap}
      * constructor for holding the given number of elements. This method computes the capacity
      * for the default <cite>load factor</cite>, which is 0.75.
      *
-     * <p>The same calculation can be used for {@link java.util.LinkedHashMap} and
-     * {@link java.util.HashSet} as well, which are built on top of {@code HashMap}.</p>
+     * <p>The same calculation can be used for {@link LinkedHashMap} and
+     * {@link HashSet} as well, which are built on top of {@code HashMap}.</p>
      *
      * @param count The number of elements to be put into the hash map or hash set.
      * @return The minimal initial capacity to be given to the hash map constructor.
