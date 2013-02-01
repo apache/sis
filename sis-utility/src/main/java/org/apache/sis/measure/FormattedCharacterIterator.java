@@ -26,10 +26,9 @@ import java.util.Set;
 import java.text.Format;
 import java.text.AttributedCharacterIterator;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.collection.CollectionsExt;
 import org.apache.sis.internal.util.SurjectiveConverter;
 import org.apache.sis.internal.simple.SimpleCharacterIterator;
-
-import static org.apache.sis.util.collection.Collections.derivedMap;
 
 
 /**
@@ -397,7 +396,7 @@ final class FormattedCharacterIterator extends SimpleCharacterIterator implement
     @Override
     public Map<Attribute, Object> getAttributes() {
         final int index = getIndex();
-        return derivedMap(attributes, new Filter(attributes, index), new Selector(index));
+        return CollectionsExt.derivedMap(attributes, new Filter(attributes, index), new Selector(index));
     }
 
     /**

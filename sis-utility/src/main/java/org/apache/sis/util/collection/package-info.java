@@ -44,8 +44,8 @@
  *     a hook for making the collections read-only and allow the caller to specify the synchronization
  *     lock of his choice.
  *   </li><li>
- *     {@linkplain org.apache.sis.util.collection.Collections#derivedMap Derived Map} and
- *     {@linkplain org.apache.sis.util.collection.Collections#derivedSet derived Set} are wrapper collections
+ *     {@linkplain org.apache.sis.util.collection.CollectionsExt#derivedMap Derived Map} and
+ *     {@linkplain org.apache.sis.util.collection.CollectionsExt#derivedSet derived Set} are wrapper collections
  *     in which the keys or the values are derived on-the-fly from the content of an other collection.
  *     The can also be used for creating filtered views.
  *   </li><li>

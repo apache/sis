@@ -31,12 +31,12 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
 /**
- * A {@linkplain java.util.Collections#checkedMap(Map, Class, Class) checked} and
- * {@linkplain java.util.Collections#synchronizedMap(Map) synchronized} {@link LinkedHashMap}.
+ * A {@linkplain Collections#checkedMap(Map, Class, Class) checked} and
+ * {@linkplain Collections#synchronizedMap(Map) synchronized} {@link LinkedHashMap}.
  * The type checks are performed at run-time in addition to the compile-time checks.
  *
  * <p>Using this class is similar to wrapping a {@link LinkedHashMap} using the methods provided
- * in the standard {@link java.util.Collections} class, except for the following advantages:</p>
+ * in the standard {@link Collections} class, except for the following advantages:</p>
  *
  * <ul>
  *   <li>Avoid the two levels of indirection (for type check and synchronization).</li>
@@ -61,8 +61,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @version 0.3
  * @module
  *
- * @see java.util.Collections#checkedMap(Map, Class, Class)
- * @see java.util.Collections#synchronizedMap(Map)
+ * @see Collections#checkedMap(Map, Class, Class)
+ * @see Collections#synchronizedMap(Map)
  */
 @ThreadSafe
 public class CheckedHashMap<K,V> extends LinkedHashMap<K,V> implements Cloneable {

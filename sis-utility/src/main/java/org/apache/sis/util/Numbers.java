@@ -28,9 +28,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import org.apache.sis.util.resources.Errors;
-
-import static org.apache.sis.util.collection.Collections.emptyQueue;
-import static org.apache.sis.util.collection.Collections.emptySortedSet;
+import org.apache.sis.util.collection.CollectionsExt;
 
 
 /**
@@ -642,8 +640,8 @@ public final class Numbers extends Static {
         } else if (type != null && type != Object.class) {
             if (type == Map      .class) return (T) Collections.EMPTY_MAP;
             if (type == List     .class) return (T) Collections.EMPTY_LIST;
-            if (type == Queue    .class) return (T) emptyQueue();
-            if (type == SortedSet.class) return (T) emptySortedSet();
+            if (type == Queue    .class) return (T) CollectionsExt.emptyQueue();
+            if (type == SortedSet.class) return (T) CollectionsExt.emptySortedSet();
             if (type.isAssignableFrom(Set.class)) {
                 return (T) Collections.EMPTY_SET;
             }
