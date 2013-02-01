@@ -17,6 +17,7 @@
 package org.apache.sis.util;
 
 import java.util.Set;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
@@ -28,9 +29,6 @@ import java.lang.reflect.WildcardType;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
 
-import static java.util.Arrays.copyOf;
-import static org.apache.sis.util.Arrays.resize;
-import static org.apache.sis.util.Arrays.contains;
 import static org.apache.sis.util.collection.Collections.hashMapCapacity;
 
 
@@ -377,14 +375,14 @@ next:       for (final Class<?> candidate : candidates) {
                         types = candidates;
                     }
                     if (count >= types.length) {
-                        types = copyOf(types, types.length + candidates.length);
+                        types = Arrays.copyOf(types, types.length + candidates.length);
                     }
                     types[count++] = candidate;
                 }
             }
             type = type.getSuperclass();
         }
-        return (Class[]) resize(types, count);
+        return (Class[]) ArraysExt.resize(types, count);
     }
 
     /**
@@ -669,6 +667,6 @@ cmp:    for (final Class<?> c : c1) {
                method.getParameterTypes().length == 0 &&
               !method.isSynthetic() &&
               !method.isAnnotationPresent(Deprecated.class) &&
-              !contains(EXCLUDES, method.getName());
+              !ArraysExt.contains(EXCLUDES, method.getName());
     }
 }

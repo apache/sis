@@ -25,10 +25,8 @@ import java.nio.file.Path;
 import java.text.ParseException;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.Static;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
-
-import static org.apache.sis.util.Arrays.resize;
-import static org.apache.sis.util.Arrays.insert;
 
 
 /**
@@ -208,7 +206,7 @@ public final class TreeTables extends Static {
                 filtered[count++] = (TableColumn<? super String>) column;
             }
         }
-        filtered = resize(filtered, count);
+        filtered = ArraysExt.resize(filtered, count);
         return valuesAsStrings(table.getRoot(), filtered, locale, new HashMap<String,String>());
     }
 
@@ -286,7 +284,7 @@ public final class TreeTables extends Static {
         ArgumentChecks.ensureNonNull("nodes", nodes);
         TableColumn<?>[] columns = null; // Default to singleton(NAME).
         if (values.length != 0 || nodes != TableColumn.NAME) {
-            columns = insert(values, 0, 1);
+            columns = ArraysExt.insert(values, 0, 1);
             columns[0] = nodes;
         }
         final TreeTableFormat format = TreeTableFormat.INSTANCE;

@@ -28,7 +28,6 @@ import java.lang.reflect.Modifier;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 
-import static org.apache.sis.util.Arrays.resize;
 import static org.apache.sis.util.CharSequences.trimWhitespaces;
 import static org.apache.sis.util.collection.Collections.hashMapCapacity;
 
@@ -141,7 +140,7 @@ public final class Locales extends Static {
                 locales[count++] = unique(locale);
             }
         }
-        locales = resize(locales, count);
+        locales = ArraysExt.resize(locales, count);
         return locales;
     }
 

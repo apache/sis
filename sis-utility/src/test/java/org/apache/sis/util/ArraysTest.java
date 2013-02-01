@@ -39,7 +39,7 @@ public final strictfp class ArraysTest extends TestCase {
     public void testRemoveDuplicated() {
         final Integer[] array = new Integer[] {2, 8, 4, 8, 1, 2, 8};
         assertArrayEquals(new Integer[] {2, 8, 4, 1},
-                Arrays.resize(array, Arrays.removeDuplicated(array)));
+                ArraysExt.resize(array, ArraysExt.removeDuplicated(array)));
     }
 
     /**
@@ -49,11 +49,11 @@ public final strictfp class ArraysTest extends TestCase {
     @Test
     public void testReverse() {
         int[] array = new int[] {2, 4, 8, 10};
-        Arrays.reverse(array);
+        ArraysExt.reverse(array);
         assertArrayEquals(new int[] {10, 8, 4, 2}, array);
 
         array = new int[] {2, 4, 8, 10, 11};
-        Arrays.reverse(array);
+        ArraysExt.reverse(array);
         assertArrayEquals(new int[] {11, 10, 8, 4, 2}, array);
     }
 
@@ -64,7 +64,7 @@ public final strictfp class ArraysTest extends TestCase {
     public void testUnionOfSorted() {
         final int[] array1 = new int[] {2, 4, 6, 9, 12};
         final int[] array2 = new int[] {1, 2, 3, 12, 13, 18, 22};
-        final int[] union = Arrays.unionOfSorted(array1, array2);
+        final int[] union = ArraysExt.unionOfSorted(array1, array2);
         assertArrayEquals(new int[] {1, 2, 3, 4, 6, 9, 12, 13, 18, 22}, union);
     }
 }

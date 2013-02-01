@@ -17,7 +17,7 @@
 package org.apache.sis.internal.util;
 
 import java.util.EventListener;
-import org.apache.sis.util.Arrays;
+import org.apache.sis.util.ArraysExt;
 
 import static java.util.Arrays.copyOf;
 
@@ -46,7 +46,7 @@ public abstract class SystemListener implements EventListener {
      * @param listener The listener to add. Can not be {@code null}.
      */
     public static synchronized void add(final SystemListener listener) {
-        assert (listener != null) && !Arrays.contains(listeners, listener);
+        assert (listener != null) && !ArraysExt.contains(listeners, listener);
         SystemListener[] list = listeners;
         if (list == null) {
             list = new SystemListener[1];
@@ -73,7 +73,7 @@ public abstract class SystemListener implements EventListener {
         if (list != null) {
             for (int i=list.length; --i>=0;) {
                 if (list[i] == listener) {
-                    list = Arrays.remove(list, i, 1);
+                    list = ArraysExt.remove(list, i, 1);
                 }
             }
             listeners = list;

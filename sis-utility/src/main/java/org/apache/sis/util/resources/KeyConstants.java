@@ -19,9 +19,8 @@ package org.apache.sis.util.resources;
 import java.util.Arrays;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
-
-import static org.apache.sis.util.Arrays.resize;
 
 
 /**
@@ -92,7 +91,7 @@ class KeyConstants {
             } catch (ReflectiveOperationException e) {
                 names = CharSequences.EMPTY_ARRAY;
             }
-            keys = resize(names, length);
+            keys = ArraysExt.resize(names, length);
         }
         return keys;
     }

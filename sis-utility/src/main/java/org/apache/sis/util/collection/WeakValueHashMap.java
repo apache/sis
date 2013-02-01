@@ -27,12 +27,12 @@ import java.lang.ref.WeakReference;
 import net.jcip.annotations.ThreadSafe;
 
 import org.apache.sis.util.Debug;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.NullArgumentException;
 
-import static org.apache.sis.util.Arrays.resize;
 import static org.apache.sis.util.collection.WeakEntry.*;
 
 // Related to JDK7
@@ -465,7 +465,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
                         }
                     }
                 }
-                return resize(elements, index);
+                return ArraysExt.resize(elements, index);
             }
         }
 

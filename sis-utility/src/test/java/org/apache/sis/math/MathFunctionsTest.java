@@ -23,7 +23,7 @@ import org.apache.sis.test.DependsOnMethod;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.math.MathFunctions.*;
-import static org.apache.sis.util.Arrays.isSorted;
+import static org.apache.sis.util.ArraysExt.isSorted;
 
 
 /**
