@@ -31,7 +31,7 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.util.Locales;
 import org.apache.sis.util.resources.Errors;
 
-import static org.apache.sis.util.collection.Collections.isNullOrEmpty;
+import static org.apache.sis.util.collection.CollectionsExt.isNullOrEmpty;
 
 // Related to JDK7
 import org.apache.sis.internal.util.Objects;

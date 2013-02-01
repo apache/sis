@@ -28,7 +28,7 @@
   <parent>
     <groupId>org.apache</groupId>
     <artifactId>apache</artifactId>
-    <version>12</version>
+    <version>13</version>
   </parent>
 
 
@@ -347,12 +347,12 @@ Apache SIS is a toolkit for describing location information, including points,
           </archive>
         </configuration>
         <executions>
-         <execution>
-           <goals>
-             <goal>test-jar</goal>
-           </goals>
-         </execution>
-       </executions>
+          <execution>
+            <goals>
+              <goal>test-jar</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
 
       <!-- Package as OSGi bundle -->

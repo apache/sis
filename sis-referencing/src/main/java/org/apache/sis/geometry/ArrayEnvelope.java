@@ -31,11 +31,11 @@ import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.util.FactoryException;
-import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.referencing.CRS;
 
-import static org.apache.sis.util.Arrays.resize;
 import static org.apache.sis.util.ArgumentChecks.*;
 import static org.apache.sis.math.MathFunctions.isNegative;
 import static org.apache.sis.internal.referencing.Utilities.isPoleToPole;
@@ -280,7 +280,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
         }
         if (levelParenth != 0) fail(wkt, ')');
         if (levelBracket != 0) fail(wkt, ']');
-        ordinates = resize(minimum, maxDimension << 1);
+        ordinates = ArraysExt.resize(minimum, maxDimension << 1);
         System.arraycopy(maximum, 0, ordinates, maxDimension, maxDimension);
     }
 

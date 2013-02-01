@@ -27,8 +27,8 @@ import org.apache.sis.util.collection.CheckedHashSet;
 import org.apache.sis.util.collection.CheckedArrayList;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-import static org.apache.sis.util.collection.Collections.isNullOrEmpty;
-import static org.apache.sis.util.collection.Collections.hashMapCapacity;
+import static org.apache.sis.util.collection.CollectionsExt.isNullOrEmpty;
+import static org.apache.sis.util.collection.CollectionsExt.hashMapCapacity;
 
 
 /**

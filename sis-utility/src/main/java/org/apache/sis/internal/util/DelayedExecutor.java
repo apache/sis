@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.util;
 
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.BlockingQueue;
 import org.apache.sis.util.logging.Logging;
@@ -181,5 +182,29 @@ public final class DelayedExecutor extends DaemonThread {
             }
         }
         // Do not log anything at this point, since the loggers may be shutdown now.
+    }
+
+    /**
+     * Returns {@code true} if this thread seems to be stalled. This method checks the head
+     * of the queue. If the delay for that head has expired and the head is not removed in
+     * the next 5 seconds, then we will presume that the thread is stalled or dead.
+     */
+    @Override
+    protected boolean isStalled() {
+        final DelayedRunnable waiting = QUEUE.peek();
+        if (waiting != null && waiting.getDelay(TimeUnit.NANOSECONDS) <= 0) try {
+            for (int i=0; i<50; i++) {
+                if (!isAlive()) break;
+                Thread.sleep(100);
+                if (QUEUE.peek() != waiting) {
+                    return false;
+                }
+            }
+            return true;
+        } catch (InterruptedException e) {
+            // Someone doesn't want to let us wait. Since we didn't had the time to
+            // determine if the thread is stalled, conservatively return 'false'.
+        }
+        return false;
     }
 }

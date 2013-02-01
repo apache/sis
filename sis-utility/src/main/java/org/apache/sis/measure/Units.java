@@ -31,7 +31,7 @@ import javax.measure.quantity.Quantity;
 import javax.measure.converter.UnitConverter;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Workaround;
-import org.apache.sis.util.Arrays;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
@@ -448,7 +448,7 @@ public final class Units extends Static {
             s = Math.max(uom.lastIndexOf(' '), uom.lastIndexOf('_'));
             if (s >= 1) {
                 final String suffix = (String) trimWhitespaces(uom, s+1, length);
-                if (Arrays.containsIgnoreCase(DEGREE_SUFFIXES, suffix) || (isTemperature = isCelsius(suffix))) {
+                if (ArraysExt.containsIgnoreCase(DEGREE_SUFFIXES, suffix) || (isTemperature = isCelsius(suffix))) {
                     prefix = (String) trimWhitespaces(uom, 0, s); // Remove the suffix only if we recognized it.
                 }
             }
