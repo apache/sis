@@ -18,6 +18,7 @@ package org.apache.sis.internal.util;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Locale;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.util.InternationalString;
@@ -86,8 +87,7 @@ public final class Citations extends Static {
             Iterator<? extends InternationalString> iterator = null;
             do {
                 if (candidate != null) {
-                    // The "null" locale argument is required for getting the unlocalized version.
-                    final String unlocalized = candidate.toString(null);
+                    final String unlocalized = candidate.toString(Locale.ROOT);
                     if (titleMatches(c1, unlocalized)) {
                         return true;
                     }
@@ -126,8 +126,7 @@ public final class Citations extends Static {
             Iterator<? extends InternationalString> iterator = null;
             do {
                 if (candidate != null) {
-                    // The "null" locale argument is required for getting the unlocalized version.
-                    final String unlocalized = candidate.toString(null);
+                    final String unlocalized = candidate.toString(Locale.ROOT);
                     if (equalsFiltered(unlocalized, title, LETTERS_AND_DIGITS, true)) {
                         return true;
                     }

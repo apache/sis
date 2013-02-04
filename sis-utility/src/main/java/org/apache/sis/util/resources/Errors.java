@@ -294,6 +294,16 @@ public final class Errors extends IndexedResourceBundle {
         public static final int NullArgument_1 = 0;
 
         /**
+         * Null key is not allowed in this dictionary.
+         */
+        public static final int NullMapKey = 64;
+
+        /**
+         * Null values are not allowed in this dictionary.
+         */
+        public static final int NullMapValue = 65;
+
+        /**
          * Array length is {0}, while we expected an even length.
          */
         public static final int OddArrayLength_1 = 61;

@@ -35,6 +35,7 @@ import org.opengis.util.InternationalString;
 
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.Localized;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
@@ -57,7 +58,7 @@ import org.apache.sis.util.logging.Logging;
  * @module
  */
 @ThreadSafe
-public class IndexedResourceBundle extends ResourceBundle {
+public class IndexedResourceBundle extends ResourceBundle implements Localized {
     /**
      * Maximum string length for text inserted into another text. This parameter is used by
      * {@link #summarize}. Resource strings are never cut to this length. However, text replacing
@@ -309,10 +310,10 @@ public class IndexedResourceBundle extends ResourceBundle {
                     }
                 }
                 /*
-                 * Now, logs the message. This message is not localized.  Note that
-                 * Locale.getDisplayName() may return different string on different
-                 * Java implementation, but it doesn't matter here since we use the
-                 * result only for logging purpose.
+                 * Now, logs the message. This message is provided only in English.
+                 * Note that Locale.getDisplayName() may return different string on
+                 * different Java implementation, but it doesn't matter here since
+                 * we use the result only for logging purpose.
                  */
                 String language = null;
                 final Locale rl = getLocale(); // Sometime null with IBM's JDK.

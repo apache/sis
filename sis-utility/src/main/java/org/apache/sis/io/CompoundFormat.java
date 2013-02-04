@@ -30,7 +30,6 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import net.jcip.annotations.NotThreadSafe;
-import org.opengis.util.InternationalString;
 
 import org.apache.sis.measure.Angle;
 import org.apache.sis.measure.AngleFormat;
@@ -82,8 +81,8 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
     private static final long serialVersionUID = -7094915750367581487L;
 
     /**
-     * The locale given at construction time, or {@code null} for unlocalized format.
-     * See {@link #getLocale()} for more information on {@code null} locale.
+     * The locale given at construction time, or {@link Locale#ROOT} (never {@code null}) for
+     * unlocalized format. See {@link #getLocale()} for more information on {@code ROOT} locale.
      */
     protected final Locale locale;
 
@@ -99,31 +98,30 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
     private transient Map<Class<?>,Format> formats;
 
     /**
-     * Creates a new format for the given locale. The given locale can be {@code null} if this
-     * format shall parse and format "unlocalized" strings. See {@link #getLocale()} for more
-     * information on {@code null} locale.
+     * Creates a new format for the given locale. The given locale can be {@code null} or
+     * {@link Locale#ROOT} if this format shall parse and format "unlocalized" strings.
+     * See {@link #getLocale()} for more information on {@code ROOT} locale.
      *
-     * @param locale   The locale, or {@code null} for unlocalized format.
+     * @param locale   The locale to use for numbers, dates and angles formatting,
+     *                 or {@code null} for the {@linkplain Locale#ROOT root locale}.
      * @param timezone The timezone, or {@code null} for UTC.
      */
     protected CompoundFormat(final Locale locale, final TimeZone timezone) {
-        this.locale   = locale;
+        this.locale   = (locale != null) ? locale : Locale.ROOT;
         this.timezone = timezone;
     }
 
     /**
-     * Returns the locale given at construction time. The returned locale may be {@code null}
+     * Returns the locale given at construction time. The returned value may be {@link Locale#ROOT}
      * if this format does not apply any localization. The definition of "unlocalized string"
      * is implementation-dependent, but some typical examples are:
      *
      * <ul>
      *   <li>Format {@link Number}s using {@code toString()} instead than {@code NumberFormat}.</li>
-     *   <li>Format {@link InternationalString}s using {@code toString(null)}. This has the desired
-     *       behavior at least with the {@linkplain org.apache.sis.util.iso.DefaultInternationalString#toString(Locale)
-     *       SIS implementation}.</li>
+     *   <li>Format {@link Date}s using the ISO pattern instead than the English one.</li>
      * </ul>
      *
-     * @return The locale used for this format, or {@code null} for unlocalized format.
+     * @return The locale used for this format, or {@link Locale#ROOT} for unlocalized format.
      */
     @Override
     public Locale getLocale() {
@@ -373,22 +371,22 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
          * DefaultFormat.getInstance(…) will indirectly perform this kind of comparison.
          */
         if (Number.class.isAssignableFrom(valueType)) {
-            if (locale == null) {
+            if (Locale.ROOT.equals(locale)) {
                 return DefaultFormat.getInstance(valueType);
             } else if (valueType == Number.class) {
                 return NumberFormat.getInstance(locale);
             }
         } else if (valueType == Date.class) {
             final DateFormat format;
-            if (locale != null) {
+            if (!Locale.ROOT.equals(locale)) {
                 format = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM, locale);
             } else {
-                format = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.US);
+                format = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.ROOT);
             }
             format.setTimeZone(timezone != null ? timezone : TimeZone.getTimeZone("UTC"));
             return format;
         } else if (valueType == Angle.class) {
-            return AngleFormat.getInstance(locale != null ? locale : Locale.US);
+            return AngleFormat.getInstance(locale);
         }
         return null;
     }

@@ -30,8 +30,8 @@ import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Workaround;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.NullArgumentException;
+import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.collection.WeakEntry.*;
 
@@ -386,8 +386,10 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
      */
     @Override
     public V put(final K key, final V value) throws NullArgumentException {
-        ArgumentChecks.ensureNonNull("key",   key);
-        ArgumentChecks.ensureNonNull("value", value);
+        if (key == null || value == null) {
+            throw new NullArgumentException(Errors.format(key == null
+                    ? Errors.Keys.NullMapKey : Errors.Keys.NullMapValue));
+        }
         return intern(key, value);
     }
 
