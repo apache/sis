@@ -184,7 +184,7 @@ public final class Namespaces extends Static {
         if (prefix != null) {
             return prefix;
         }
-        namespace = namespace.toLowerCase(Locale.US);
+        namespace = namespace.toLowerCase(Locale.ROOT);
         for (final String baseURL : GENERIC_URLS) {
             if (namespace.startsWith(baseURL)) {
                 final int startAt = baseURL.length();

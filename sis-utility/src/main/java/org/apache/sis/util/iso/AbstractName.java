@@ -234,8 +234,8 @@ public abstract class AbstractName implements GenericName, Serializable {
             }
             asString = buffer.toString();
         }
-        // Note: there is no need to invoke InternationalString.toString(null) for the
-        // unlocalized version, because our International inner class is implemented in
+        // Note: there is no need to invoke InternationalString.toString(Locale.ROOT) for
+        // the unlocalized version, because our International inner class is implemented in
         // such a way that InternationalString.toString() returns AbstractName.toString().
         return asString.toString();
     }

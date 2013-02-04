@@ -19,6 +19,7 @@ package org.apache.sis.util.iso;
 import java.util.Map;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Locale;
 import java.io.Serializable;
 import java.io.ObjectStreamException;
 import net.jcip.annotations.Immutable;
@@ -344,7 +345,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
      */
     private static String key(final CharSequence name) {
         return (name instanceof InternationalString) ?
-                ((InternationalString) name).toString(null) : name.toString();
+                ((InternationalString) name).toString(Locale.ROOT) : name.toString();
     }
 
     /**

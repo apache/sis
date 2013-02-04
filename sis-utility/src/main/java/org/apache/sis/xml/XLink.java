@@ -301,7 +301,7 @@ public class XLink implements Serializable {
          * Returns the attribute name for this type.
          */
         final String identifier() {
-            return name().toLowerCase(Locale.US);
+            return name().toLowerCase(Locale.ROOT);
         }
     }
 
