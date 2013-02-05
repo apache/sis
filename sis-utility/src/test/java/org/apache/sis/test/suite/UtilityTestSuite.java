@@ -42,6 +42,7 @@ import org.junit.runners.Suite;
     org.apache.sis.util.ClassesTest.class,
     org.apache.sis.util.VersionTest.class,
     org.apache.sis.util.LocalesTest.class,
+    org.apache.sis.util.resources.LoaderTest.class,
     org.apache.sis.util.resources.IndexedResourceBundleTest.class,
     org.apache.sis.util.logging.PerformanceLevelTest.class,
     org.apache.sis.math.MathFunctionsTest.class,
