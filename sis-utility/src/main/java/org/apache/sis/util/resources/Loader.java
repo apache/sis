@@ -16,6 +16,7 @@
  */
 package org.apache.sis.util.resources;
 
+import java.net.URL;
 import java.util.List;
 import java.util.Locale;
 import java.util.Collections;
@@ -105,25 +106,16 @@ final class Loader extends ResourceBundle.Control {
          * bundle only if the file is found.
          */
         final String classname = classe.getSimpleName();
-        String filename = toResourceName(toBundleName(classname, locale), EXTENSION);
-        if (classe.getResource(filename) == null) {
-            if (!Locale.ENGLISH.equals(locale)) {
-                return null;
-            }
-            // We have no explicit resources for English. We use the default one for that.
-            filename = toResourceName(classname, EXTENSION);
-            if (classe.getResource(filename) == null) {
-                return null;
-            }
-        }
+        final URL resources = classe.getResource(toResourceName(toBundleName(classname, locale), EXTENSION));
         /*
-         * If the file exists, instantiate now the resource bundle. Note that the constructor
-         * will not loads the data immediately, which is why we don't pass it the above URL.
+         * Instantiate now the resource bundle. The resources URL may be null, in which case the
+         * bundle will inherit the strings from the parent bundle. In every cases, the strings
+         * will be loaded only when first needed.
          *
          * Note: Do not call Constructor.setAccessible(true) - this is not allowed in Applet.
          */
         try {
-            return (ResourceBundle) classe.getDeclaredConstructor(String.class).newInstance(filename);
+            return (ResourceBundle) classe.getDeclaredConstructor(URL.class).newInstance(resources);
         } catch (NoSuchMethodException | InvocationTargetException e) {
             InstantiationException exception = new InstantiationException(Exceptions.getLocalizedMessage(e, locale));
             exception.initCause(e);

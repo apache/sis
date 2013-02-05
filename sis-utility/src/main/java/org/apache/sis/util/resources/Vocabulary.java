@@ -16,6 +16,7 @@
  */
 package org.apache.sis.util.resources;
 
+import java.net.URL;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import org.opengis.util.InternationalString;
@@ -247,10 +248,11 @@ public final class Vocabulary extends IndexedResourceBundle {
     /**
      * Constructs a new resource bundle loading data from the given UTF file.
      *
-     * @param filename The file or the JAR entry containing resources.
+     * @param resources The path of the binary file containing resources, or {@code null} if
+     *        there is no resources. The resources may be a file or an entry in a JAR file.
      */
-    Vocabulary(final String filename) {
-        super(filename);
+    Vocabulary(final URL resources) {
+        super(resources);
     }
 
     /**
