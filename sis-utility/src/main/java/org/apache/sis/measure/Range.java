@@ -19,6 +19,9 @@ package org.apache.sis.measure;
 import java.io.Serializable;
 import net.jcip.annotations.Immutable;
 import org.apache.sis.util.collection.CheckedContainer;
+import org.apache.sis.util.resources.Errors;
+
+import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
 /**
@@ -76,9 +79,7 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
      * @param minValue     The minimal value (inclusive), or {@code null} if none.
      * @param maxValue     The maximal value (inclusive), or {@code null} if none.
      */
-    public Range(final Class<T> elementType, final T minValue,
-            final T maxValue) throws IllegalArgumentException
-    {
+    public Range(final Class<T> elementType, final T minValue, final T maxValue) {
         this(elementType, minValue, true, maxValue, true);
     }
 
@@ -93,17 +94,43 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
      */
     public Range(final Class<T> elementType,
             final T minValue, final boolean isMinIncluded,
-            final T maxValue, final boolean isMaxIncluded) throws IllegalArgumentException
+            final T maxValue, final boolean isMaxIncluded)
     {
-        if(!checkConstructorArgs(elementType, minValue, maxValue))
-        {
-            throw new IllegalArgumentException();
-        }
+        ensureNonNull("elementType", elementType);
+        /*
+         * The 'isMin/Maxincluded' flags must be forced to 'false' if 'minValue' or 'maxValue'
+         * are null. This is required for proper working of algorithms implemented in this class.
+         */
         this.elementType   = elementType;
         this.minValue      = minValue;
         this.isMinIncluded = isMinIncluded && (minValue != null);
         this.maxValue      = maxValue;
         this.isMaxIncluded = isMaxIncluded && (maxValue != null);
+        ensureValidType();
+        if (minValue != null) ensureCompatibleType(minValue.getClass());
+        if (maxValue != null) ensureCompatibleType(maxValue.getClass());
+    }
+
+    /**
+     * Ensures that the given type is compatible with the type expected by this range.
+     */
+    private void ensureCompatibleType(final Class<?> type) throws IllegalArgumentException {
+        if (!elementType.isAssignableFrom(type)) {
+            throw new IllegalArgumentException(Errors.format(
+                    Errors.Keys.IllegalClass_2, elementType, type));
+        }
+    }
+
+    /**
+     * Ensures that {@link #elementType} is compatible with the type expected by this range class.
+     * This method is invoked at construction time for validating the type argument. This method
+     * is overridden by {@link NumberRange} and {@link DateRange} for more specific check.
+     */
+    void ensureValidType() throws IllegalArgumentException {
+        if (!Comparable.class.isAssignableFrom(elementType)) {
+            throw new IllegalArgumentException(Errors.format(
+                    Errors.Keys.IllegalClass_2, Comparable.class, elementType));
+        }
     }
 
     /**
@@ -428,38 +455,6 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
         hash = 13 * hash + (this.isMinIncluded ? 1 : 0);
         hash = 13 * hash + (this.isMaxIncluded ? 1 : 0);
         return hash;
-    }
-
-    private static <T> boolean checkConstructorArgs(final Class<T> elementType,
-            final T minValue, final T maxValue)
-    {
-        boolean retVal = true;
-        if (minValue != null)
-        {
-            boolean minimumOk = minValue.getClass() == elementType;
-            retVal &= minimumOk;
-        }
-
-        if (maxValue != null)
-        {
-            boolean maximumOk = maxValue.getClass() == elementType;
-            retVal &= maximumOk;
-        }
-
-        if (minValue == null && maxValue == null)
-        {
-            Class[] interfaces = elementType.getInterfaces();
-            boolean comparableFound = false;
-            for (Class<?> interf : interfaces)
-            {
-                if (interf == Comparable.class)
-                {
-                    comparableFound = true;
-                }
-            }
-            retVal &= comparableFound;
-        }
-        return retVal;
     }
 
     private boolean checkMethodArgs(final Range<T> value) {
