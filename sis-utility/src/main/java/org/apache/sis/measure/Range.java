@@ -57,12 +57,40 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
      */
     private final Class<T> elementType;
 
-    private final T minimumValue;
-    private final T maximumValue;
-    private final boolean isMinimumIncluded;
-    private final boolean isMaximumIncluded;
+    /**
+     * The minimal and maximal values.
+     */
+    final T minValue, maxValue;
+
+    /**
+     * Whether the minimal or maximum value is included.
+     */
+    private final boolean isMinIncluded, isMaxIncluded;
+
     private static String INVALID_TYPE_ERROR = "Type to be compared does not match the Range type.";
 
+    /**
+     * Creates a new range bounded by the given inclusive values.
+     *
+     * @param elementType  The class of the range elements.
+     * @param minValue     The minimal value (inclusive), or {@code null} if none.
+     * @param maxValue     The maximal value (inclusive), or {@code null} if none.
+     */
+    public Range(final Class<T> elementType, final T minValue,
+            final T maxValue) throws IllegalArgumentException
+    {
+        this(elementType, minValue, true, maxValue, true);
+    }
+
+    /**
+     * Creates a new range bounded by the given values.
+     *
+     * @param elementType    The base type of the range elements.
+     * @param minValue       The minimal value, or {@code null} if none.
+     * @param isMinIncluded  {@code true} if the minimal value is inclusive, or {@code false} if exclusive.
+     * @param maxValue       The maximal value, or {@code null} if none.
+     * @param isMaxIncluded  {@code true} if the maximal value is inclusive, or {@code false} if exclusive.
+     */
     public Range(final Class<T> elementType,
             final T minValue, final boolean isMinIncluded,
             final T maxValue, final boolean isMaxIncluded) throws IllegalArgumentException
@@ -71,26 +99,11 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
         {
             throw new IllegalArgumentException();
         }
-        this.elementType = elementType;
-        this.minimumValue = minValue;
-        this.isMinimumIncluded = isMinIncluded;
-        this.maximumValue = maxValue;
-        this.isMaximumIncluded = isMaxIncluded;
-    }
-
-    public Range(final Class<T> elementType, final T minValue,
-            final T maxValue) throws IllegalArgumentException
-    {
-        if(!checkConstructorArgs(elementType, minValue, maxValue))
-        {
-            throw new IllegalArgumentException();
-        }
-
-        this.elementType = elementType;
-        this.minimumValue = minValue;
-        this.isMinimumIncluded = true;
-        this.maximumValue = maxValue;
-        this.isMaximumIncluded = true;
+        this.elementType   = elementType;
+        this.minValue      = minValue;
+        this.isMinIncluded = isMinIncluded && (minValue != null);
+        this.maxValue      = maxValue;
+        this.isMaxIncluded = isMaxIncluded && (maxValue != null);
     }
 
     /**
@@ -102,10 +115,54 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
         return elementType;
     }
 
+    /**
+     * Returns the minimal value, or {@code null} if this range has no lower limit.
+     * If non-null, the returned value is either inclusive or exclusive depending on
+     * the boolean returned by {@link #isMinIncluded()}.
+     *
+     * @return The minimal value, or {@code null} if this range is unbounded on the lower side.
+     */
+    public T getMinValue() {
+        return minValue;
+    }
+
+    /**
+     * Returns {@code true} if the {@linkplain #getMinValue() minimal value} is inclusive,
+     * or {@code false} is exclusive. Note that {@code null} values are always considered
+     * exclusive.
+     *
+     * @return {@code true} if the minimal value is inclusive, or {@code false} if exclusive.
+     */
+    public boolean isMinIncluded() {
+        return isMinIncluded;
+    }
+
+    /**
+     * Returns the maximal value, or {@code null} if this range has no upper limit.
+     * If non-null, the returned value is either inclusive or exclusive depending on
+     * the boolean returned by {@link #isMaxIncluded()}.
+     *
+     * @return The maximal value, or {@code null} if this range is unbounded on the upper side.
+     */
+    public T getMaxValue() {
+        return maxValue;
+    }
+
+    /**
+     * Returns {@code true} if the {@linkplain #getMaxValue() maximal value} is inclusive,
+     * or {@code false} is exclusive. Note that {@code null} values are always considered
+     * exclusive.
+     *
+     * @return {@code true} if the maximal value is inclusive, or {@code false} if exclusive.
+     */
+    public boolean isMaxIncluded() {
+        return isMaxIncluded;
+    }
+
     public boolean contains(final T value) throws IllegalArgumentException
     {
 
-        boolean unbounded = (minimumValue == null && maximumValue == null);
+        boolean unbounded = (minValue == null && maxValue == null);
         //safety check
         if (value == null)
         {
@@ -132,24 +189,24 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
         }
 
         int minimumValueCheck = 1;
-        if (minimumValue != null)
+        if (minValue != null)
         {
-            minimumValueCheck = value.compareTo(minimumValue);
+            minimumValueCheck = value.compareTo(minValue);
         }
         int maximumValueCheck = -1;
-        if (maximumValue != null)
+        if (maxValue != null)
         {
-            maximumValueCheck = value.compareTo(maximumValue);
+            maximumValueCheck = value.compareTo(maxValue);
         }
 
         //set unbounded on lower end
-        if (minimumValue == null && maximumValueCheck <= 0)
+        if (minValue == null && maximumValueCheck <= 0)
         {
-            if (isMaximumIncluded && minimumValueCheck > 0)
+            if (isMaxIncluded && minimumValueCheck > 0)
             {
                 return true;
             }
-            else if (!isMaximumIncluded)
+            else if (!isMaxIncluded)
             {
                 return true;
             }
@@ -157,13 +214,13 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
         }
 
         //set unbounded on upper end
-        if (maximumValue == null && minimumValueCheck >= 0)
+        if (maxValue == null && minimumValueCheck >= 0)
         {
-            if (isMinimumIncluded && minimumValueCheck > 0)
+            if (isMinIncluded && minimumValueCheck > 0)
             {
                 return true;
             }
-            else if (!isMinimumIncluded)
+            else if (!isMinIncluded)
             {
                 return true;
             }
@@ -173,17 +230,17 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
         if (minimumValueCheck >= 0 && maximumValueCheck <= 0)
         {
             //both min and max are included
-            if (isMinimumIncluded && isMaximumIncluded)
+            if (isMinIncluded && isMaxIncluded)
             {
                 return true;
             }
             //only min is included
-            else if (!isMinimumIncluded && minimumValueCheck > 0)
+            else if (!isMinIncluded && minimumValueCheck > 0)
             {
                 return true;
             }
             //only max is included
-            else if (!isMaximumIncluded && maximumValueCheck < 0)
+            else if (!isMaxIncluded && maximumValueCheck < 0)
             {
                 return true;
             }
@@ -236,22 +293,22 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
         //the smallest of either and the largest of either and create
         //a new Range with them.
         T rangeMin, rangeMax;
-        if (value.getMinValue().compareTo(minimumValue) <= 0)
+        if (value.getMinValue().compareTo(minValue) <= 0)
         {
             rangeMin = value.getMinValue();
         }
         else
         {
-            rangeMin = minimumValue;
+            rangeMin = minValue;
         }
 
-        if (value.getMaxValue().compareTo(maximumValue) >= 0)
+        if (value.getMaxValue().compareTo(maxValue) >= 0)
         {
             rangeMax = value.getMaxValue();
         }
         else
         {
-            rangeMax = maximumValue;
+            rangeMax = maxValue;
         }
         return new Range<>(this.elementType, rangeMin, rangeMax );
     }
@@ -266,7 +323,7 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
         //return empty set if the Ranges don't intersect
         if (!this.intersects(value))
         {
-            return new Range<>(elementType, maximumValue, minimumValue);
+            return new Range<>(elementType, maxValue, minValue);
         }
 
         //if they are equal, return the passed in value
@@ -283,7 +340,7 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
         }
         else
         {
-            rangeMin = minimumValue;
+            rangeMin = minValue;
         }
 
         if (this.contains(value.getMaxValue()))
@@ -292,7 +349,7 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
         }
         else
         {
-            rangeMax = maximumValue;
+            rangeMax = maxValue;
         }
 
         return new Range<>(this.elementType, rangeMin, rangeMax );
@@ -313,16 +370,16 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
 
     public boolean isEmpty()
     {
-        if (isMinimumIncluded && isMaximumIncluded)
+        if (isMinIncluded && isMaxIncluded)
         {
-            if (minimumValue.compareTo(maximumValue) > 0)
+            if (minValue.compareTo(maxValue) > 0)
             {
                 return true;
             }
         }
         else
         {
-            if (minimumValue.compareTo(maximumValue) >= 0)
+            if (minValue.compareTo(maxValue) >= 0)
             {
                 return true;
             }
@@ -354,10 +411,10 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
             return retVal;
         }
 
-        retVal &= this.maximumValue == value.getMaxValue();
-        retVal &= this.minimumValue == value.getMinValue();
-        retVal &= this.isMaximumIncluded == value.isMaxIncluded();
-        retVal &= this.isMinimumIncluded == value.isMinIncluded();
+        retVal &= this.maxValue == value.getMaxValue();
+        retVal &= this.minValue == value.getMinValue();
+        retVal &= this.isMaxIncluded == value.isMaxIncluded();
+        retVal &= this.isMinIncluded == value.isMinIncluded();
         return retVal;
     }
 
@@ -365,34 +422,13 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
     public int hashCode()
     {
         int hash = 7;
-        hash = 13 * hash + (this.minimumValue != null ? this.minimumValue.hashCode() : 0);
-        hash = 13 * hash + (this.maximumValue != null ? this.maximumValue.hashCode() : 0);
+        hash = 13 * hash + (this.minValue != null ? this.minValue.hashCode() : 0);
+        hash = 13 * hash + (this.maxValue != null ? this.maxValue.hashCode() : 0);
         hash = 13 * hash + (this.elementType != null ? this.elementType.hashCode() : 0);
-        hash = 13 * hash + (this.isMinimumIncluded ? 1 : 0);
-        hash = 13 * hash + (this.isMaximumIncluded ? 1 : 0);
+        hash = 13 * hash + (this.isMinIncluded ? 1 : 0);
+        hash = 13 * hash + (this.isMaxIncluded ? 1 : 0);
         return hash;
     }
-
-    public boolean isMinIncluded()
-    {
-        return isMinimumIncluded;
-    }
-
-    public boolean isMaxIncluded()
-    {
-        return isMaximumIncluded;
-    }
-
-    public T getMinValue()
-    {
-        return minimumValue;
-    }
-
-    public T getMaxValue()
-    {
-        return maximumValue;
-    }
-
 
     private static <T> boolean checkConstructorArgs(final Class<T> elementType,
             final T minValue, final T maxValue)
