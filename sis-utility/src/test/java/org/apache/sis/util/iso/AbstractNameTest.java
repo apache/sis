@@ -29,7 +29,7 @@ import static org.apache.sis.util.iso.DefaultNameSpace.DEFAULT_SEPARATOR_STRING;
 /**
  * Tests the {@link DefaultLocalName} and {@link DefaultScopedName} implementations.
  * This test suite instantiate the objects directly, without using {@link DefaultNameFactory}.
- * For tests using the name factory, see {@link NameFactoryTest}.
+ * For tests using the name factory, see {@link DefaultNameFactoryTest}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from goetk-3.00)

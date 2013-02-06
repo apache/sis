@@ -32,7 +32,7 @@ import static org.junit.Assert.*;
 /**
  * Tests the {@link DerivedMap}. For the purpose of this test, this class implements an
  * {@link ObjectConverter} for which input values are multiplied by 100, except value
- * {@value #EXCLUDED} which is converted to {@code null} (meaning: excluded from the
+ * {@code EXCLUDED} which is converted to {@code null} (meaning: excluded from the
  * converted map).
  *
  * @author  Martin Desruisseaux (Geomatys)

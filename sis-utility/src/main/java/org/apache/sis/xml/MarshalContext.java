@@ -72,8 +72,8 @@ public abstract class MarshalContext {
      * formatted according ISO standard instead than the rules of the English locale.
      *
      * {@section Handling of <code>null</code> locale}
-     * A {@code null} value means that the locale is unspecified. Caller is free to
-     * use the root locale, the system default or any other locale.
+     * A {@code null} value means that the locale is unspecified. Callers are encouraged
+     * to use the root locale as the default value, but some flexibility is allowed.
      *
      * @return The locale for the XML fragment being (un)marshalled, or {@code null} is unspecified.
      *
@@ -83,7 +83,11 @@ public abstract class MarshalContext {
 
     /**
      * Returns the timezone to use for (un)marshalling, or {@code null} if none were explicitely
-     * specified. If {@code null}, then the caller is free to use the timezone of its choice.
+     * specified.
+     *
+     * {@section Handling of <code>null</code> timezone}
+     * A {@code null} value means that the timezone is unspecified. Callers are encouraged
+     * to use the UTC timezone as the default value, but some flexibility is allowed.
      *
      * @return The timezone for the XML fragment being (un)marshalled, or {@code null} if unspecified.
      */

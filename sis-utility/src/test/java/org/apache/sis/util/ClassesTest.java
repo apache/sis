@@ -16,6 +16,7 @@
  */
 package org.apache.sis.util;
 
+import java.lang.reflect.Field;
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
 
@@ -184,7 +185,7 @@ public final strictfp class ClassesTest extends TestCase {
     }
 
     /**
-     * Tests the {@link #boundOfParameterizedAttribute} method.
+     * Tests the {@link Classes#boundOfParameterizedAttribute(Field)} method.
      *
      * @throws NoSuchFieldException  Should never occur.
      * @throws NoSuchMethodException Should never occur.
