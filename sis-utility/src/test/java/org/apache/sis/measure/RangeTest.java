@@ -17,257 +17,313 @@
 package org.apache.sis.measure;
 
 import org.apache.sis.test.TestCase;
-import static org.junit.Assert.*;
 import org.junit.Test;
 
+import static org.junit.Assert.*;
+
+
 /**
- * Tests the @link Range class
+ * Tests the {@link Range} class.
  *
  * @author Joe White
  */
 public final strictfp class RangeTest extends TestCase {
-
+    /**
+     * Tests the creation of {@link Range} objects under normal conditions.
+     */
     @Test
-    public void testCtor()
-    {
-        Range intRange = new Range(Integer.class, new Integer(3), new Integer(5));
-        assertTrue(intRange.isMaxIncluded());
-        assertTrue(intRange.isMinIncluded());
-        assertFalse(intRange.isEmpty());
+    public void testConstructor() {
+        Range<Integer> range = new Range<>(Integer.class, 3, 5);
+        assertEquals(Integer.valueOf(3), range.getMinValue());
+        assertEquals(Integer.valueOf(5), range.getMaxValue());
+        assertTrue  (range.isMaxIncluded());
+        assertTrue  (range.isMinIncluded());
+        assertFalse (range.isEmpty());
 
-        Range intRange1 = new Range(Integer.class, 3, false, 5, true);
-        assertTrue(intRange1.isMaxIncluded());
-        assertFalse(intRange1.isMinIncluded());
-        assertFalse(intRange1.isEmpty());
+        range = new Range<>(Integer.class, 3, false, 5, true);
+        assertEquals(Integer.valueOf(3), range.getMinValue());
+        assertEquals(Integer.valueOf(5), range.getMaxValue());
+        assertTrue  (range.isMaxIncluded());
+        assertFalse (range.isMinIncluded());
+        assertFalse (range.isEmpty());
 
-        Range intRange2 = new Range(Integer.class, 2, true, 7, false);
-        assertFalse(intRange2.isMaxIncluded());
-        assertTrue(intRange2.isMinIncluded());
-        assertFalse(intRange2.isEmpty());
+        range = new Range<>(Integer.class, 2, true, 7, false);
+        assertEquals(Integer.valueOf(2), range.getMinValue());
+        assertEquals(Integer.valueOf(7), range.getMaxValue());
+        assertFalse (range.isMaxIncluded());
+        assertTrue  (range.isMinIncluded());
+        assertFalse (range.isEmpty());
 
-        Range intRange3 = new Range(Integer.class, 3, false, 10, false);
-        assertFalse(intRange3.isMaxIncluded());
-        assertFalse(intRange3.isMinIncluded());
-        assertFalse(intRange3.isEmpty());
+        range = new Range<>(Integer.class, 3, false, 10, false);
+        assertEquals(Integer.valueOf( 3), range.getMinValue());
+        assertEquals(Integer.valueOf(10), range.getMaxValue());
+        assertFalse (range.isMaxIncluded());
+        assertFalse (range.isMinIncluded());
+        assertFalse (range.isEmpty());
 
-        Range intRange4 = new Range(Integer.class, 10, 2);
-        assertTrue(intRange4.isEmpty());
+        range = new Range<>(Integer.class, 10, 2);
+        assertEquals(Integer.valueOf(10), range.getMinValue());
+        assertEquals(Integer.valueOf( 2), range.getMaxValue());
+        assertTrue (range.isEmpty());
     }
 
-    @Test (expected=IllegalArgumentException.class)
-    public void testCtorErrors00()
-    {
-        Range doubleRange = new Range(Double.class, "error", "blast");
+    /**
+     * Tests the detection of illegal arguments at {@link Range} creation time.
+     * Note that such error should never happen when parameterized types are used.
+     * The check performed by the constructor is a safety in case the user bypass
+     * the parameterized type check by using the raw type instead.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public void testConstructorErrors00() {
+        new Range(Double.class, "error", "blast");
     }
 
-    @Test (expected=IllegalArgumentException.class)
-    public void testCtorErrors01()
-    {
-        Range stringRange = new Range(String.class, 123.233, 8740.09);
+    /**
+     * Tests the detection of illegal arguments at {@link Range} creation time.
+     * Note that such error should never happen when parameterized types are used.
+     * The check performed by the constructor is a safety in case the user bypass
+     * the parameterized type check by using the raw type instead.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public void testConstructorErrors01() {
+        new Range(String.class, 123.233, 8740.09);
     }
 
+    /**
+     * Tests the {@link Range#contains(Comparable)} method.
+     */
     @Test
-    public void testContains()
-    {
-        Range intRange = new Range(Integer.class, new Integer(3), new Integer(5));
-        assertTrue(intRange.contains(4));
-        assertFalse(intRange.contains(6));
-        assertFalse(intRange.contains(2));
-        assertTrue(intRange.contains(3));
-        assertTrue(intRange.contains(5));
+    public void testContains() {
+        final Range<Integer> range = new Range<>(Integer.class, 3, 5);
+        assertTrue (range.contains(4));
+        assertFalse(range.contains(6));
+        assertFalse(range.contains(2));
+        assertTrue (range.contains(3));
+        assertTrue (range.contains(5));
     }
 
-
+    /**
+     * Tests the {@link Range#contains(Comparable)} method with an exclusive minimal value.
+     */
     @Test
-    public void testContainsNotInclusiveMinimum()
-    {
-        Range intRange = new Range(Integer.class, new Integer(2), false, new Integer(5), true);
-        assertTrue(intRange.contains(4));
-        assertFalse(intRange.contains(6));
-        assertFalse(intRange.contains(2));
-        assertTrue(intRange.contains(3));
-        assertTrue(intRange.contains(5));
+    public void testContainsNotInclusiveMinimum() {
+        final Range<Integer> range = new Range<>(Integer.class, 2, false, 5, true);
+        assertTrue (range.contains(4));
+        assertFalse(range.contains(6));
+        assertFalse(range.contains(2));
+        assertTrue (range.contains(3));
+        assertTrue (range.contains(5));
 
     }
 
+    /**
+     * Tests the {@link Range#contains(Comparable)} method with an exclusive maximal value.
+     */
     @Test
-    public void testContainsNotInclusiveMaximum()
-    {
-        Range intRange = new Range(Integer.class, new Integer(3), true, new Integer(6), false);
-        assertTrue(intRange.contains(4));
-        assertFalse(intRange.contains(6));
-        assertFalse(intRange.contains(2));
-        assertTrue(intRange.contains(3));
-        assertTrue(intRange.contains(5));
+    public void testContainsNotInclusiveMaximum() {
+        final Range<Integer> range = new Range<>(Integer.class, 3, true, 6, false);
+        assertTrue (range.contains(4));
+        assertFalse(range.contains(6));
+        assertFalse(range.contains(2));
+        assertTrue (range.contains(3));
+        assertTrue (range.contains(5));
     }
 
+    /**
+     * Tests the {@link Range#contains(Comparable)} method without lower bound.
+     */
     @Test
-    public void testContainsNoLowerBound()
-    {
-        Range intRange = new Range(Integer.class, null, new Integer(5));
-        assertTrue(intRange.contains(-555));
-        assertTrue(intRange.contains(5));
-        assertFalse(intRange.contains(6));
+    public void testContainsNoLowerBound() {
+        final Range<Integer> range = new Range<>(Integer.class, null, 5);
+        assertTrue (range.contains(-555));
+        assertTrue (range.contains(5));
+        assertFalse(range.contains(6));
     }
 
+    /**
+     * Tests the {@link Range#contains(Comparable)} method without upper bound.
+     */
     @Test
-    public void testContainsNoUpperBound()
-    {
-        Range intRange = new Range(Integer.class, new Integer(3), null);
-        assertFalse(intRange.contains(1));
-        assertTrue(intRange.contains(3));
-        assertTrue(intRange.contains(10000));
+    public void testContainsNoUpperBound() {
+        final Range<Integer> range = new Range<>(Integer.class, 3, null);
+        assertFalse(range.contains(1));
+        assertTrue (range.contains(3));
+        assertTrue (range.contains(10000));
     }
 
+    /**
+     * Tests the {@link Range#contains(Comparable)} method without lower or upper bounds.
+     */
     @Test
-    public void testContainsNoBounds()
-    {
-        Range intRange = new Range(Integer.class, null, null);
-        assertTrue(intRange.contains(-55555));
-        assertTrue(intRange.contains(100000));
+    public void testContainsNoBounds() {
+        final Range<Integer> range = new Range<>(Integer.class, null, null);
+        assertTrue(range.contains(-55555));
+        assertTrue(range.contains(100000));
     }
 
+    /**
+     * Tests the {@link Range#contains(Range)} method.
+     */
     @Test
-    public void testContainsRange()
-    {
-        Range intRange = new Range(Integer.class, -10, 10);
-        Range testRange = new Range(Integer.class, -5, 5);
+    public void testContainsRange() {
+        final Range<Integer> range  = new Range<>(Integer.class, -10, 10);
+        final Range<Integer> inside = new Range<>(Integer.class,  -5,  5);
 
-        assertTrue(intRange.contains(testRange));
-        assertFalse(testRange.contains(intRange));
+        assertTrue(range.contains(inside));
+        assertFalse(inside.contains(range));
     }
 
+    /**
+     * Tests the {@link Range#contains(Range)} method without lower bound.
+     */
     @Test
-    public void testContainsRangeNoLowerBound()
-    {
-        Range intRange = new Range(Integer.class, null, new Integer(500));
-        Range testRange = new Range(Integer.class, -2500, 305);
+    public void testContainsRangeNoLowerBound() {
+        final Range<Integer> range  = new Range<>(Integer.class,  null, 500);
+        final Range<Integer> inside = new Range<>(Integer.class, -2500, 305);
 
-        assertTrue(intRange.contains(testRange));
-        assertFalse(testRange.contains(intRange));
+        assertTrue (range.contains(inside));
+        assertFalse(inside.contains(range));
     }
 
+    /**
+     * Tests the {@link Range#contains(Range)} method without upper bound.
+     */
     @Test
-    public void testContainsRangeNoUpperBound()
-    {
-        Range intRange = new Range(Integer.class, new Integer(-2500), null);
-        Range testRange = new Range(Integer.class, 17, 305);
+    public void testContainsRangeNoUpperBound() {
+        final Range<Integer> range  = new Range<>(Integer.class, -2500, null);
+        final Range<Integer> inside = new Range<>(Integer.class,    17,  305);
 
-        assertTrue(intRange.contains(testRange));
-        assertFalse(testRange.contains(intRange));
+        assertTrue(range.contains(inside));
+        assertFalse(inside.contains(range));
     }
 
-    @Test (expected = IllegalArgumentException.class)
-    public void testIncompatibleTypeRangeContains()
-    {
-        Range intRange = new Range(Integer.class, new Integer(0), new Integer(10));
-        Range doubleRange = new Range(Double.class, new Double(2.0), new Double(5.0));
+    /**
+     * Tests the {@link Range#contains(Range)} method with a range of incompatible type.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testIncompatibleTypeRangeContains() {
+        final Range<Integer> intRange = new Range<>(Integer.class, 0, 10);
+        final Range doubleRange = new Range<>(Double.class, 2.0, 5.0);
 
         intRange.contains(doubleRange);
     }
 
-    @Test (expected = IllegalArgumentException.class)
-    public void testIncompatibleTypeContains()
-    {
-        Range intRange = new Range(Integer.class, new Integer(0), new Integer(10));
-        Range doubleRange = new Range(Double.class, new Double(2.0), new Double(5.0));
+    /**
+     * Tests the {@link Range#contains(Range)} method with a range of incompatible type.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testIncompatibleTypeContains() {
+        final Range<Integer> intRange = new Range<>(Integer.class, 0, 10);
+        final Range doubleRange = new Range<>(Double.class, 2.0, 5.0);
 
         intRange.contains(doubleRange);
     }
 
+    /**
+     * Tests the {@link Range#intersects(Range)} method.
+     */
     @Test
-    public void testIntersects()
-    {
-        Range range1 = new Range(Character.class, 'a', 'g');
-        Range range2 = new Range(Character.class, 'c', 'm');
+    public void testIntersects() {
+        final Range<Character> range1 = new Range<>(Character.class, 'a', 'g');
+        final Range<Character> range2 = new Range<>(Character.class, 'c', 'm');
+        final Range<Character> range3 = new Range<>(Character.class, 'o', 'z');
 
-        assertTrue(range1.intersects(range2));
-        assertTrue(range2.intersects(range1));
-
-        Range range3 = new Range(Character.class, 'o', 'z');
+        assertTrue (range1.intersects(range2));
+        assertTrue (range2.intersects(range1));
         assertFalse(range1.intersects(range3));
         assertFalse(range3.intersects(range1));
     }
 
-    @Test (expected=IllegalArgumentException.class)
-    public void testIntersectsIncompatibleTypes()
-    {
-        Range range1 = new Range(Character.class, 'a', 'g');
-        Range range2 = new Range(Integer.class, 5, 7);
+    /**
+     * Tests the {@link Range#intersects(Range)} method with a range of incompatible type.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testIntersectsIncompatibleTypes() {
+        final Range<Character> range1 = new Range<>(Character.class, 'a', 'g');
+        final Range range2 = new Range<>(Integer.class, 5, 7);
 
-        boolean ok = range1.intersects(range2);
-
+        range1.intersects(range2);
     }
 
+    /**
+     * Tests the {@link Range#intersection(Range)} method.
+     */
     @Test
-    public void testIntersection()
-    {
-        Range range1 = new Range(Integer.class, 1, 5);
-        Range range2 = new Range(Integer.class, 4, 6);
+    public void testIntersection() {
+        final Range<Integer> range1 = new Range<>(Integer.class, 1, 5);
+        final Range<Integer> range2 = new Range<>(Integer.class, 4, 6);
 
-        Range intersection1 = range1.intersect(range2);
-        assertTrue(intersection1.getElementClass() == Integer.class);
-        assertTrue((Integer)intersection1.getMinValue() == 4);
-        assertTrue((Integer)intersection1.getMaxValue() == 5);
+        final Range<Integer> intersection = range1.intersect(range2);
+        assertEquals(Integer.class, intersection.getElementClass());
+        assertEquals(Integer.valueOf(4), intersection.getMinValue());
+        assertEquals(Integer.valueOf(5), intersection.getMaxValue());
     }
 
+    /**
+     * Tests the {@link Range#intersection(Range)} method with arguments resulting in empty range.
+     */
     @Test
-    public void testIntersectionOfNonIntersectingRanges()
-    {
-        Range range1 = new Range(Integer.class, 1, 5);
-        Range range2 = new Range(Integer.class, 8, 10);
+    public void testIntersectionOfNonIntersectingRanges() {
+        final Range<Integer> range1 = new Range<>(Integer.class, 1,  5);
+        final Range<Integer> range2 = new Range<>(Integer.class, 8, 10);
 
-        Range intersection1 = range1.intersect(range2);
-        assertTrue(intersection1.getElementClass() == Integer.class);
-        assertTrue(intersection1.isEmpty());
+        final Range<Integer>  intersection = range1.intersect(range2);
+        assertEquals(Integer.class, intersection.getElementClass());
+        assertTrue(intersection.isEmpty());
     }
 
+    /**
+     * Tests the {@link Range#union(Range)} method.
+     */
     @Test
-    public void testUnion()
-    {
-        Range range1 = new Range(Character.class, 'a', 'f');
-        Range range2 = new Range(Character.class, 'd', 'h');
+    public void testUnion() {
+        final Range<Character> range1 = new Range<>(Character.class, 'a', 'f');
+        final Range<Character> range2 = new Range<>(Character.class, 'd', 'h');
 
-        Range unionRange = range1.union(range2);
+        final Range<Character> union = range1.union(range2);
+        assertFalse(union.isEmpty());
+        assertEquals(Character.valueOf('a'), union.getMinValue());
+        assertEquals(Character.valueOf('h'), union.getMaxValue());
+    }
+
+    /**
+     * Tests the {@link Range#union(Range)} method with disjoint ranges.
+     */
+    @Test
+    public void testDisjointUnion() {
+        final Range<Character> range1 = new Range<>(Character.class, 'a', 'f');
+        final Range<Character> range2 = new Range<>(Character.class, 'm', 'v');
+
+        final Range<Character> unionRange = range1.union(range2);
         assertFalse(unionRange.isEmpty());
-        assertTrue((Character)unionRange.getMinValue() == 'a');
-        assertTrue((Character)unionRange.getMaxValue() == 'h');
+        assertEquals(Character.valueOf('a'), unionRange.getMinValue());
+        assertEquals(Character.valueOf('v'), unionRange.getMaxValue());
     }
 
+    /**
+     * Tests the {@link Range#equals(Object)} method.
+     */
     @Test
-    public void testDisjointUnion()
-    {
-        Range range1 = new Range(Character.class, 'a', 'f');
-        Range range2 = new Range(Character.class, 'm', 'v');
-
-        Range unionRange = range1.union(range2);
-        assertFalse(unionRange.isEmpty());
-        assertTrue((Character)unionRange.getMinValue() == 'a');
-        assertTrue((Character)unionRange.getMaxValue() == 'v');
-    }
-
-    @Test
-    public void testEquality()
-    {
-        //positive test - success case
-        Range range1 = new Range(Character.class, 'a', 'f');
-        Range range2 = new Range(Character.class, 'a', 'f');
+    public void testEquality() {
+        // Positive test - success case
+        final Range<Character> range1 = new Range<>(Character.class, 'a', 'f');
+        final Range<Character> range2 = new Range<>(Character.class, 'a', 'f');
         assertTrue(range1.equals(range2));
 
-        //positive test - failure case
-        Range range3 = new Range(Character.class, 'a', 'g');
+        // Positive test - failure case
+        final Range<Character> range3 = new Range<>(Character.class, 'a', 'g');
         assertFalse(range1.equals(range3));
 
-        //failure due to type incompatibility
-        Range range4 = new Range(String.class, "a", "g");
+        // Failure due to type incompatibility
+        final Range<String> range4 = new Range<>(String.class, "a", "g");
         assertFalse(range3.equals(range4));
 
-        Range range5 = new Range(Character.class, 'g', 'a');
-        Range range6 = new Range(Character.class, 'g', 'a');
+        final Range<Character> range5 = new Range<>(Character.class, 'g', 'a');
+        final Range<Character> range6 = new Range<>(Character.class, 'g', 'a');
         assertTrue(range5.isEmpty());
         assertTrue(range6.isEmpty());
         assertTrue(range5.equals(range6));
-
-
     }
 }
