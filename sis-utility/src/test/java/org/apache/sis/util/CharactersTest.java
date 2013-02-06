@@ -107,7 +107,7 @@ public final strictfp class CharactersTest extends TestCase {
     }
 
     /**
-     * Tests the {@link Characters.Filter#forTypes(byte[])} method.
+     * Tests the {@link org.apache.sis.util.Characters.Filter#forTypes(byte[])} method.
      */
     @Test
     public void testFilterForTypes() {

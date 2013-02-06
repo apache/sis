@@ -63,7 +63,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
      * retained (i.e. the array is <strong>not</strong> cloned). Consequently the given array
      * shall not be modified after construction if this list is intended to be immutable.
      *
-     * <p>This constructor is for sub-classing only. Users should invoke the {@link #wrap(E[])}
+     * <p>This constructor is for sub-classing only. Users should invoke the {@link #wrap(Object[])}
      * static method instead.</p>
      *
      * @param array The array to wrap.
@@ -255,7 +255,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
      * @return A view of the specified range within this list.
      * @throws IndexOutOfBoundsException If the lower or upper value are out of bounds.
      *
-     * @see #wrap(E[], int, int)
+     * @see #wrap(Object[], int, int)
      */
     @Override
     public UnmodifiableArrayList<E> subList(final int lower, final int upper)

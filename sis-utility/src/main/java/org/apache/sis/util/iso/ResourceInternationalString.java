@@ -107,9 +107,8 @@ public class ResourceInternationalString extends AbstractInternationalString imp
 
     /**
      * Returns the resource bundle for the given locale. The default implementation fetches the
-     * bundle from the name given at {@linkplain #ResourceInternationalString(String,String)
-     * construction time}. Subclasses can override this method if they need to fetch the
-     * bundle in an other way.
+     * bundle from the name given at {@linkplain #ResourceInternationalString construction time}.
+     * Subclasses can override this method if they need to fetch the bundle in an other way.
      *
      * @param  locale The locale for which to get the resource bundle.
      * @return The resource bundle for the given locale.
