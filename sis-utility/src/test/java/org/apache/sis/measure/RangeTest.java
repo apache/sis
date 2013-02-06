@@ -256,7 +256,7 @@ public final strictfp class RangeTest extends TestCase {
         final Range<Integer> range2 = new Range<>(Integer.class, 4, 6);
 
         final Range<Integer> intersection = range1.intersect(range2);
-        assertEquals(Integer.class, intersection.getElementClass());
+        assertEquals(Integer.class, intersection.getElementType());
         assertEquals(Integer.valueOf(4), intersection.getMinValue());
         assertEquals(Integer.valueOf(5), intersection.getMaxValue());
     }
@@ -270,7 +270,7 @@ public final strictfp class RangeTest extends TestCase {
         final Range<Integer> range2 = new Range<>(Integer.class, 8, 10);
 
         final Range<Integer>  intersection = range1.intersect(range2);
-        assertEquals(Integer.class, intersection.getElementClass());
+        assertEquals(Integer.class, intersection.getElementType());
         assertTrue(intersection.isEmpty());
     }
 

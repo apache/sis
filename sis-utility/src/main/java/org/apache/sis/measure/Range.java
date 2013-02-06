@@ -16,6 +16,10 @@
  */
 package org.apache.sis.measure;
 
+import java.io.Serializable;
+import net.jcip.annotations.Immutable;
+import org.apache.sis.util.collection.CheckedContainer;
+
 
 /**
  * A set of minimum and maximum values of a certain class, allowing
@@ -39,43 +43,63 @@ package org.apache.sis.measure;
  *
  * @see RangeFormat
  */
-public class Range<T extends Comparable<? super T>> {
+@Immutable
+public class Range<T extends Comparable<? super T>> implements CheckedContainer<T>, Serializable {
+    /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = -5393896130562660517L;
+
+    /**
+     * The base type of elements in this range.
+     *
+     * @see #getElementType()
+     */
+    private final Class<T> elementType;
 
     private final T minimumValue;
     private final T maximumValue;
-    private final Class<T> rangeType;
     private final boolean isMinimumIncluded;
     private final boolean isMaximumIncluded;
     private static String INVALID_TYPE_ERROR = "Type to be compared does not match the Range type.";
 
-    public Range(final Class<T> elementClass,
+    public Range(final Class<T> elementType,
             final T minValue, final boolean isMinIncluded,
             final T maxValue, final boolean isMaxIncluded) throws IllegalArgumentException
     {
-        if(!checkConstructorArgs(elementClass, minValue, maxValue))
+        if(!checkConstructorArgs(elementType, minValue, maxValue))
         {
             throw new IllegalArgumentException();
         }
-        rangeType = elementClass;
-        minimumValue = minValue;
-        isMinimumIncluded = isMinIncluded;
-        maximumValue = maxValue;
-        isMaximumIncluded = isMaxIncluded;
+        this.elementType = elementType;
+        this.minimumValue = minValue;
+        this.isMinimumIncluded = isMinIncluded;
+        this.maximumValue = maxValue;
+        this.isMaximumIncluded = isMaxIncluded;
     }
 
-    public Range(final Class<T> elementClass, final T minValue,
+    public Range(final Class<T> elementType, final T minValue,
             final T maxValue) throws IllegalArgumentException
     {
-        if(!checkConstructorArgs(elementClass, minValue, maxValue))
+        if(!checkConstructorArgs(elementType, minValue, maxValue))
         {
             throw new IllegalArgumentException();
         }
 
-        rangeType = elementClass;
-        minimumValue = minValue;
-        isMinimumIncluded = true;
-        maximumValue = maxValue;
-        isMaximumIncluded = true;
+        this.elementType = elementType;
+        this.minimumValue = minValue;
+        this.isMinimumIncluded = true;
+        this.maximumValue = maxValue;
+        this.isMaximumIncluded = true;
+    }
+
+    /**
+     * Returns the base type of elements in this range.
+     * This is the type specified at construction time.
+     */
+    @Override
+    public Class<T> getElementType() {
+        return elementType;
     }
 
     public boolean contains(final T value) throws IllegalArgumentException
@@ -96,7 +120,7 @@ public class Range<T extends Comparable<? super T>> {
         }
 
         //first check
-        if (value.getClass() != rangeType)
+        if (value.getClass() != elementType)
         {
             throw new IllegalArgumentException(INVALID_TYPE_ERROR);
         }
@@ -229,7 +253,7 @@ public class Range<T extends Comparable<? super T>> {
         {
             rangeMax = maximumValue;
         }
-        return new Range<>(this.rangeType, rangeMin, rangeMax );
+        return new Range<>(this.elementType, rangeMin, rangeMax );
     }
 
     public Range<T> intersect(final Range<T> value) throws IllegalArgumentException
@@ -242,7 +266,7 @@ public class Range<T extends Comparable<? super T>> {
         //return empty set if the Ranges don't intersect
         if (!this.intersects(value))
         {
-            return new Range<>(rangeType, maximumValue, minimumValue);
+            return new Range<>(elementType, maximumValue, minimumValue);
         }
 
         //if they are equal, return the passed in value
@@ -271,7 +295,7 @@ public class Range<T extends Comparable<? super T>> {
             rangeMax = maximumValue;
         }
 
-        return new Range<>(this.rangeType, rangeMin, rangeMax );
+        return new Range<>(this.elementType, rangeMin, rangeMax );
 
     }
 
@@ -324,7 +348,7 @@ public class Range<T extends Comparable<? super T>> {
         }
 
         boolean retVal = true;
-        retVal &= this.rangeType == value.getElementClass();
+        retVal &= this.elementType == value.getElementType();
         if (value.isEmpty() && this.isEmpty())
         {
             return retVal;
@@ -343,7 +367,7 @@ public class Range<T extends Comparable<? super T>> {
         int hash = 7;
         hash = 13 * hash + (this.minimumValue != null ? this.minimumValue.hashCode() : 0);
         hash = 13 * hash + (this.maximumValue != null ? this.maximumValue.hashCode() : 0);
-        hash = 13 * hash + (this.rangeType != null ? this.rangeType.hashCode() : 0);
+        hash = 13 * hash + (this.elementType != null ? this.elementType.hashCode() : 0);
         hash = 13 * hash + (this.isMinimumIncluded ? 1 : 0);
         hash = 13 * hash + (this.isMaximumIncluded ? 1 : 0);
         return hash;
@@ -359,11 +383,6 @@ public class Range<T extends Comparable<? super T>> {
         return isMaximumIncluded;
     }
 
-    public Class<T> getElementClass()
-    {
-        return rangeType;
-    }
-
     public T getMinValue()
     {
         return minimumValue;
@@ -375,25 +394,25 @@ public class Range<T extends Comparable<? super T>> {
     }
 
 
-    private static <T> boolean checkConstructorArgs(final Class<T> elementClass,
+    private static <T> boolean checkConstructorArgs(final Class<T> elementType,
             final T minValue, final T maxValue)
     {
         boolean retVal = true;
         if (minValue != null)
         {
-            boolean minimumOk = minValue.getClass() == elementClass;
+            boolean minimumOk = minValue.getClass() == elementType;
             retVal &= minimumOk;
         }
 
         if (maxValue != null)
         {
-            boolean maximumOk = maxValue.getClass() == elementClass;
+            boolean maximumOk = maxValue.getClass() == elementType;
             retVal &= maximumOk;
         }
 
         if (minValue == null && maxValue == null)
         {
-            Class[] interfaces = elementClass.getInterfaces();
+            Class[] interfaces = elementType.getInterfaces();
             boolean comparableFound = false;
             for (Class<?> interf : interfaces)
             {
@@ -412,7 +431,7 @@ public class Range<T extends Comparable<? super T>> {
         {
             return false;
         }
-        else if (  value.getElementClass() != rangeType)
+        else if (  value.getElementType() != elementType)
         {
             return false;
         }
