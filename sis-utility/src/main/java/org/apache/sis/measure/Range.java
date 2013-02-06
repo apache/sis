@@ -16,32 +16,41 @@
  */
 package org.apache.sis.measure;
 
+
 /**
- * A range is a set of minimum and maximum values of a certain class, allowing
+ * A set of minimum and maximum values of a certain class, allowing
  * a user to determine if a value of the same class is contained inside the range.
  * The minimum and maximum values do not have to be included in the range, and
  * can be null.  If the minimum or maximum values are null, the range is said to
  * be unbounded on that extreme. If both the minimum and maximum are null,
  * the range is completely unbounded and all values of that class are contained
- * within the range.
+ * within the range. Null values are always considered <em>exclusive</em>,
+ * since iterations over the values will never reach the infinite bound.
  *
- * To be a member of a Range, the class type defining the Range must implement
- * the Comparable interface.
+ * <p>To be a member of a {@code Range}, the class type defining the range must implement
+ * the {@link Comparable} interface.</p>
  *
- * @author Joe White
+ * @param <T> The type of range elements, typically a {@link Number} subclass or {@link java.util.Date}.
+ *
+ * @author  Joe White
+ * @since   0.3
+ * @version 0.3
+ * @module
+ *
+ * @see RangeFormat
  */
-public class Range
-{
+public class Range<T extends Comparable<? super T>> {
 
-    private Comparable minimumValue;
-    private Comparable maximumValue;
-    private Class rangeType;
-    private boolean isMinimumIncluded;
-    private boolean isMaximumIncluded;
+    private final T minimumValue;
+    private final T maximumValue;
+    private final Class<T> rangeType;
+    private final boolean isMinimumIncluded;
+    private final boolean isMaximumIncluded;
     private static String INVALID_TYPE_ERROR = "Type to be compared does not match the Range type.";
 
-    public Range(Class elementClass, Comparable minValue, boolean isMinIncluded,
-          Comparable maxValue, boolean isMaxIncluded) throws IllegalArgumentException
+    public Range(final Class<T> elementClass,
+            final T minValue, final boolean isMinIncluded,
+            final T maxValue, final boolean isMaxIncluded) throws IllegalArgumentException
     {
         if(!checkConstructorArgs(elementClass, minValue, maxValue))
         {
@@ -54,8 +63,8 @@ public class Range
         isMaximumIncluded = isMaxIncluded;
     }
 
-    public Range(Class elementClass, Comparable minValue,
-            Comparable maxValue) throws IllegalArgumentException
+    public Range(final Class<T> elementClass, final T minValue,
+            final T maxValue) throws IllegalArgumentException
     {
         if(!checkConstructorArgs(elementClass, minValue, maxValue))
         {
@@ -69,7 +78,7 @@ public class Range
         isMaximumIncluded = true;
     }
 
-    public boolean contains(Comparable value) throws IllegalArgumentException
+    public boolean contains(final T value) throws IllegalArgumentException
     {
 
         boolean unbounded = (minimumValue == null && maximumValue == null);
@@ -166,7 +175,7 @@ public class Range
     }
 
 
-    public boolean contains(Range value) throws IllegalArgumentException
+    public boolean contains(final Range<T> value) throws IllegalArgumentException
     {
         if (!checkMethodArgs(value))
         {
@@ -176,7 +185,7 @@ public class Range
     }
 
 
-    public boolean intersects(Range value) throws IllegalArgumentException
+    public boolean intersects(final Range<T> value) throws IllegalArgumentException
     {
         if (!checkMethodArgs(value))
         {
@@ -186,7 +195,7 @@ public class Range
         return this.contains(value.getMinValue()) || this.contains(value.getMaxValue());
     }
 
-    public Range union(Range value) throws IllegalArgumentException
+    public Range<T> union(final Range<T> value) throws IllegalArgumentException
     {
         if (!checkMethodArgs(value))
         {
@@ -202,7 +211,7 @@ public class Range
         //get the min and max value of both sets, compare them, then take
         //the smallest of either and the largest of either and create
         //a new Range with them.
-        Comparable rangeMin, rangeMax;
+        T rangeMin, rangeMax;
         if (value.getMinValue().compareTo(minimumValue) <= 0)
         {
             rangeMin = value.getMinValue();
@@ -220,10 +229,10 @@ public class Range
         {
             rangeMax = maximumValue;
         }
-        return new Range(this.rangeType, rangeMin, rangeMax );
+        return new Range<>(this.rangeType, rangeMin, rangeMax );
     }
 
-    public Range intersect(Range value) throws IllegalArgumentException
+    public Range<T> intersect(final Range<T> value) throws IllegalArgumentException
     {
         if (!checkMethodArgs(value))
         {
@@ -233,7 +242,7 @@ public class Range
         //return empty set if the Ranges don't intersect
         if (!this.intersects(value))
         {
-            return new Range(rangeType, maximumValue, minimumValue);
+            return new Range<>(rangeType, maximumValue, minimumValue);
         }
 
         //if they are equal, return the passed in value
@@ -243,7 +252,7 @@ public class Range
         }
 
         //we knkow they intersect, the question is where.
-        Comparable rangeMin, rangeMax;
+        T rangeMin, rangeMax;
         if (this.contains(value.getMinValue()))
         {
             rangeMin = value.getMinValue();
@@ -262,18 +271,18 @@ public class Range
             rangeMax = maximumValue;
         }
 
-        return new Range(this.rangeType, rangeMin, rangeMax );
+        return new Range<>(this.rangeType, rangeMin, rangeMax );
 
     }
 
     //TODO: implement this
-    public Range[] subtract(Range value) throws IllegalArgumentException
+    public Range<T>[] subtract(final Range<T> value) throws IllegalArgumentException
     {
         if (!checkMethodArgs(value))
         {
             throw new IllegalArgumentException(INVALID_TYPE_ERROR);
         }
-        Range[] ranges = new Range[1];
+        Range<T>[] ranges = new Range[1];
         ranges[0] = null;
         return ranges;
     }
@@ -308,7 +317,7 @@ public class Range
         }
 
 
-        Range value = (Range)object;
+        Range<?> value = (Range<?>) object;
         if (value == null)
         {
             return false;
@@ -350,24 +359,24 @@ public class Range
         return isMaximumIncluded;
     }
 
-    public Class getElementClass()
+    public Class<T> getElementClass()
     {
         return rangeType;
     }
 
-    public Comparable getMinValue()
+    public T getMinValue()
     {
         return minimumValue;
     }
 
-    public Comparable getMaxValue()
+    public T getMaxValue()
     {
         return maximumValue;
     }
 
 
-    private boolean checkConstructorArgs(Class elementClass, Comparable minValue,
-            Comparable maxValue)
+    private static <T> boolean checkConstructorArgs(final Class<T> elementClass,
+            final T minValue, final T maxValue)
     {
         boolean retVal = true;
         if (minValue != null)
@@ -386,7 +395,7 @@ public class Range
         {
             Class[] interfaces = elementClass.getInterfaces();
             boolean comparableFound = false;
-            for (Class interf : interfaces)
+            for (Class<?> interf : interfaces)
             {
                 if (interf == Comparable.class)
                 {
@@ -398,8 +407,7 @@ public class Range
         return retVal;
     }
 
-    private boolean checkMethodArgs(Range value)
-    {
+    private boolean checkMethodArgs(final Range<T> value) {
         if (value == null)
         {
             return false;
