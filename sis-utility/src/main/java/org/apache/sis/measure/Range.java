@@ -159,6 +159,26 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
         return isMaxIncluded;
     }
 
+    /**
+     * Returns {@code true} if this range is empty. A range is empty if the
+     * {@linkplain #getMinValue() minimum value} is smaller than the
+     * {@linkplain #getMaxValue() maximum value}, or if they are equal while
+     * at least one of them is exclusive.
+     *
+     * @return {@code true} if this range is empty.
+     */
+    public boolean isEmpty() {
+        if (minValue == null || maxValue == null) {
+            return false; // Unbounded: can't be empty.
+        }
+        final int c = minValue.compareTo(maxValue);
+        if (c < 0) {
+            return false; // Minimum is smaller than maximum.
+        }
+        // If min and max are equal, then the range is empty if at least one of them is exclusive.
+        return (c != 0) || !isMinIncluded || !isMaxIncluded;
+    }
+
     public boolean contains(final T value) throws IllegalArgumentException
     {
 
@@ -366,26 +386,6 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
         Range<T>[] ranges = new Range[1];
         ranges[0] = null;
         return ranges;
-    }
-
-    public boolean isEmpty()
-    {
-        if (isMinIncluded && isMaxIncluded)
-        {
-            if (minValue.compareTo(maxValue) > 0)
-            {
-                return true;
-            }
-        }
-        else
-        {
-            if (minValue.compareTo(maxValue) >= 0)
-            {
-                return true;
-            }
-
-        }
-        return false;
     }
 
     @Override
