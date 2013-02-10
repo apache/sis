@@ -34,8 +34,15 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * within the range. Null values are always considered <em>exclusive</em>,
  * since iterations over the values will never reach the infinite bound.
  *
- * <p>To be a member of a {@code Range}, the class type defining the range must implement
- * the {@link Comparable} interface.</p>
+ * {@section Type of range elements}
+ * To be a member of a {@code Range}, the {@code <T>} type defining the range must implement the
+ * {@link Comparable} interface. Some methods like {@link #contains(Comparable)}, which would
+ * normally expect an argument of type {@code T}, accept the base type {@code Comparable<?>} in
+ * order to allow widening conversions by the {@link NumberRange} subclass. Passing an argument of
+ * non-convertible type to any method will cause an {@link IllegalArgumentException} to be thrown.
+ *
+ * {@note This class should never throw <code>ClassCastException</code>, unless there is a bug
+ *        in the <code>Range</code> class or subclasses implementation.}
  *
  * @param <T> The type of range elements, typically a {@link Number} subclass or {@link java.util.Date}.
  *
@@ -217,8 +224,34 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
         return (c != 0) || !isMinIncluded || !isMaxIncluded;
     }
 
-    public boolean contains(final T value) throws IllegalArgumentException
-    {
+    /**
+     * Returns {@code true} if this range contains the given value. A range never contains the
+     * {@code null} value. This is consistent with the <a href="#skip-navbar_top">class javadoc</a>
+     * stating that null {@linkplain #getMinValue() minimum} or {@linkplain #getMaxValue() maximum}
+     * values are exclusive.
+     *
+     * @param  value The value to check for inclusion in this range.
+     * @return {@code true} if the given value is included in this range.
+     * @throws IllegalArgumentException is the given value can not be converted to a valid type
+     *         through widening conversion.
+     */
+    @SuppressWarnings("unchecked")
+    public boolean contains(final Comparable<?> value) throws IllegalArgumentException {
+        if (value == null) {
+            return false;
+        }
+        ensureCompatibleType(value.getClass());
+        return containsNC((T) value);
+    }
+
+    /**
+     * Implementation of {@link #contains(Comparable)} to be invoked directly by subclasses.
+     * "NC" stands for "No Conversion" - this method does not try to convert the value to a
+     * compatible type.
+     *
+     * @param value The value to test for inclusion. Can not be null.
+     */
+    final boolean containsNC(final T value) {
         /*
          * Implementation note: when testing for inclusion or intersection in a range
          * (or in a rectangle, cube, etc.), it is often easier to test when we do not
@@ -232,9 +265,6 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
          * 'compareTo' method. Intead than using those user implementations, we always
          * use the implementations provided by min/maxValue.
          */
-        if (value == null) {
-            return false;
-        }
         if (minValue != null) {
             final int c = minValue.compareTo(value);
             if (isMinIncluded ? (c > 0) : (c >= 0)) {
@@ -250,11 +280,48 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
         return true;
     }
 
+    /**
+     * Returns {@code true} if the supplied range is fully contained within this range.
+     *
+     * @param  range The range to check for inclusion in this range.
+     * @return {@code true} if the given range is included in this range.
+     * @throws IllegalArgumentException is the bounds of the given range can not be converted to
+     *         a valid type through widening conversion, or if the units of measurement are not
+     *         convertible.
+     */
+    public boolean contains(final Range<?> range) throws IllegalArgumentException {
+        return containsNC(ensureCompatible(range));
+    }
 
-    public boolean contains(final Range<T> value) throws IllegalArgumentException
-    {
-        ensureCompatible(value);
-        return this.contains(value.getMinValue()) && this.contains(value.getMaxValue());
+    /**
+     * Implementation of {@link #contains(Range)} to be invoked directly by subclasses.
+     * "NC" stands for "No Conversion" - this method does not try to convert the bounds
+     * to a compatible type.
+     */
+    final boolean containsNC(final Range<? extends T> range) {
+        /*
+         * We could implement this method as below:
+         *
+         *     return contains(range.minValue) && contains(range.maxValue);
+         *
+         * However the above code performs more comparisons than necessary,
+         * since it implicitly performs the following redundant checks:
+         *
+         *     (range.minValue < maxValue) redundant with (range.maxValue < maxValue)
+         *     (range.maxValue > minValue) redundant with (range.minValue > minValue)
+         *
+         * We can implement this method with less comparisons as below:
+         *
+         *     return minValue.compareTo(range.minValue) <= 0 &&
+         *            maxValue.compareTo(range.maxValue) >= 0;
+         *
+         * However we still have a little bit of additional checks to perform for the
+         * inclusion status of both ranges.  Since the same checks will be needed for
+         * intersection methods,  we factor out the comparisons in 'compareMinTo' and
+         * 'compareMaxTo' methods.
+         */
+        return (compareMinTo(range.minValue, range.isMinIncluded ? 0 : -1) <= 0) &&
+               (compareMaxTo(range.maxValue, range.isMaxIncluded ? 0 : +1) >= 0);
     }
 
 
@@ -346,6 +413,85 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
         Range<T>[] ranges = new Range[1];
         ranges[0] = null;
         return ranges;
+    }
+
+    /**
+     * Compares the {@linkplain #getMinValue() minimum value} of this range with the given bound of
+     * another range. Since the given value is either the minimal or maximal value of another range,
+     * it may be inclusive or exclusive. The later is specified by {@code position} as below:
+     *
+     * <ul>
+     *   <li> 0 if {@code value} is inclusive.</li>
+     *   <li>-1 if {@code value} is exclusive and lower than the inclusive values of the other range.</li>
+     *   <li>+1 if {@code value} is exclusive and higher than the inclusive values of the other range.</li>
+     * </ul>
+     *
+     * Note that the non-zero position shall be exactly -1 or +1, not arbitrary negative or positive.
+     *
+     * @param  value    A bound value of the other range to be compared to the minimal value of this range.
+     * @param  position The position of {@code value} relative to the inclusive values of the other range.
+     * @return Position (-, + or 0) of the inclusive values of this range compared to the other range.
+     *
+     * @see #containsNC(Range)
+     */
+    final int compareMinTo(final T value, int position) {
+        /*
+         * Check for infinite values.  If the given value is infinite, it can be either positive or
+         * negative infinity, which we can infer from the 'position' argument. Note that 'position'
+         * can not be 0 in such case, since infinities are always exclusive in this class.
+         */
+        if (minValue == null) {
+            return (value == null) ? 0 : -1;
+        }
+        if (value == null) {
+            return -position;
+        }
+        /*
+         * Compare the two finite values. If they are not equal, we are done regardless the
+         * inclusion states, because the difference between included and excluded values is
+         * considered smaller than any quantity we can represent.
+         */
+        final int c = minValue.compareTo(value);
+        if (c != 0) {
+            return c;
+        }
+        /*
+         * The two values are equal. If the 'minValue' of this range is inclusive, then the given
+         * 'value' is directly at the "right" place (the beginning of the interior of this range),
+         * so the 'position' argument gives directly the position of the "true minValue" relative
+         * to the interior of the other range.
+         *
+         * But if 'minValue' is exclusive, then the "true minValue" of this range is one position
+         * to the right  (where "position" is a counter for an infinitely small quantity, similar
+         * to 'dx' in calculus). The effect is to return 0 if the given 'value' is also exclusive
+         * and lower than the interior of the other range (position == -1),  and a positive value
+         * in all other cases.
+         */
+        if (!isMinIncluded) {
+            position++;
+        }
+        return position;
+    }
+
+    /**
+     * Compares the {@linkplain #getMaxValue() maximum value} of this range with the given bound of
+     * another range. See the comment in {@link #compareMinTo(Comparable, int)} for more details.
+     */
+    final int compareMaxTo(final T value, int position) {
+        if (maxValue == null) {
+            return (value == null) ? 0 : +1;
+        }
+        if (value == null) {
+            return -position;
+        }
+        final int c = maxValue.compareTo(value);
+        if (c != 0) {
+            return c;
+        }
+        if (!isMaxIncluded) {
+            position--;
+        }
+        return position;
     }
 
     @Override
