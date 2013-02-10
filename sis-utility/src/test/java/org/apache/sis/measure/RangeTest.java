@@ -19,7 +19,7 @@ package org.apache.sis.measure;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.apache.sis.test.Assert.*;
 
 
 /**
@@ -325,5 +325,14 @@ public final strictfp class RangeTest extends TestCase {
         assertTrue(range5.isEmpty());
         assertTrue(range6.isEmpty());
         assertTrue(range5.equals(range6));
+    }
+
+    /**
+     * Tests serialization.
+     */
+    @Test
+    public void testSerialization() {
+        final Range<Integer> range  = new Range<>(Integer.class, -10, 10);
+        assertNotSame(range, assertSerializedEquals(range));
     }
 }

@@ -76,7 +76,7 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
      *
      * @see #getElementType()
      */
-    private final Class<T> elementType;
+    final Class<T> elementType;
 
     /**
      * The minimal and maximal values.
