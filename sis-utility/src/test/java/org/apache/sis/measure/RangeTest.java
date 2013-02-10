@@ -282,7 +282,7 @@ public final strictfp class RangeTest extends TestCase {
         final Range<Character> range1 = new Range<>(Character.class, 'a', 'f');
         final Range<Character> range2 = new Range<>(Character.class, 'd', 'h');
 
-        final Range<Character> union = range1.union(range2);
+        final Range<?> union = range1.union(range2);
         assertFalse(union.isEmpty());
         assertEquals(Character.valueOf('a'), union.getMinValue());
         assertEquals(Character.valueOf('h'), union.getMaxValue());
@@ -296,7 +296,7 @@ public final strictfp class RangeTest extends TestCase {
         final Range<Character> range1 = new Range<>(Character.class, 'a', 'f');
         final Range<Character> range2 = new Range<>(Character.class, 'm', 'v');
 
-        final Range<Character> unionRange = range1.union(range2);
+        final Range<?> unionRange = range1.union(range2);
         assertFalse(unionRange.isEmpty());
         assertEquals(Character.valueOf('a'), unionRange.getMinValue());
         assertEquals(Character.valueOf('v'), unionRange.getMaxValue());
