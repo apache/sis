@@ -127,6 +127,15 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
     }
 
     /**
+     * Returns an initially empty array of the given length. To be overridden
+     * by subclasses in order to create arrays of more specific type.
+     */
+    @SuppressWarnings({"unchecked","rawtypes"}) // Generic array creation.
+    Range<T>[] newArray(final int length) {
+        return new Range[length];
+    }
+
+    /**
      * Ensures that the given range uses the same element class than this range,
      * then return the casted argument value.
      *
@@ -429,13 +438,59 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
         return union;
     }
 
-    //TODO: implement this
-    public Range<T>[] subtract(final Range<T> value) throws IllegalArgumentException
-    {
-        ensureCompatible(value);
-        Range<T>[] ranges = new Range[1];
-        ranges[0] = null;
-        return ranges;
+    /**
+     * Returns the range of values that are in this range but not in the given range.
+     * This method returns an array of length 0, 1 or 2:
+     *
+     * <ul>
+     *   <li>If the given range contains fully this range, returns an array of length 0.</li>
+     *   <li>If the given range is in the middle of this range, then the subtraction results in
+     *       two disjoint ranges which will be returned as two elements in the array.</li>
+     *   <li>Otherwise returns an array of length 1.</li>
+     * </ul>
+     *
+     * @param  range The range to subtract.
+     * @return This range without the given range.
+     * @throws IllegalArgumentException is the given range can not be converted to a valid type
+     *         through widening conversion, or if the units of measurement are not convertible.
+     */
+    public Range<?>[] subtract(final Range<?> range) throws IllegalArgumentException {
+        return subtractNC(ensureCompatible(range));
+    }
+
+    /**
+     * Implementation of {@link #subtract(Range)} to be invoked directly by subclasses.
+     * "NC" stands for "No Cast" - this method do not try to cast the value to a compatible type.
+     */
+    final Range<T>[] subtractNC(final Range<? extends T> range) throws IllegalArgumentException {
+        final Range<T> subtract;
+        if (!intersects(range)) {
+            subtract = this;
+        } else {
+            final boolean clipMin = compareMinTo(range.minValue, range.isMinIncluded ? 0 : -1) >= 0;
+            final boolean clipMax = compareMaxTo(range.maxValue, range.isMaxIncluded ? 0 : +1) <= 0;
+            if (clipMin) {
+                if (clipMax) {
+                    // The given range contains fully this range.
+                    assert range.contains(this) : range;
+                    return newArray(0);
+                }
+                subtract = create(range.maxValue, !range.isMaxIncluded, maxValue, isMaxIncluded);
+            } else {
+                if (!clipMax) {
+                    final Range<T>[] array = newArray(2);
+                    array[0] = create(minValue, isMinIncluded, range.minValue, !range.isMinIncluded);
+                    array[1] = create(range.maxValue, !range.isMaxIncluded, maxValue, isMaxIncluded);
+                    return array;
+                }
+                subtract = create(minValue, isMinIncluded, range.minValue, !range.isMinIncluded);
+            }
+        }
+        assert contains(subtract) : subtract;
+        assert !subtract.intersects(range) : subtract;
+        final Range<T>[] array = newArray(1);
+        array[0] = subtract;
+        return array;
     }
 
     /**
