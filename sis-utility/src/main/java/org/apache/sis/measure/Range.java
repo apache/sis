@@ -117,6 +117,16 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
     }
 
     /**
+     * Creates a new range using the same element class than this range. This method will
+     * be overridden by subclasses in order to create a range of a more specific type.
+     */
+    Range<T> create(final T minValue, final boolean isMinIncluded,
+                    final T maxValue, final boolean isMaxIncluded)
+    {
+        return new Range<>(elementType, minValue, isMinIncluded, maxValue, isMaxIncluded);
+    }
+
+    /**
      * Ensures that the given range uses the same element class than this range,
      * then return the casted argument value.
      *
@@ -324,12 +334,69 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
                (compareMaxTo(range.maxValue, range.isMaxIncluded ? 0 : +1) >= 0);
     }
 
+    /**
+     * Returns {@code true} if this range intersects the given range.
+     *
+     * @param  range The range to check for intersection with this range.
+     * @return {@code true} if the given range intersects this range.
+     * @throws IllegalArgumentException is the given range can not be converted to a valid type
+     *         through widening conversion, or if the units of measurement are not convertible.
+     */
+    public boolean intersects(final Range<?> range) throws IllegalArgumentException {
+        return intersectsNC(ensureCompatible(range));
+    }
 
-    public boolean intersects(final Range<T> value) throws IllegalArgumentException
+    /**
+     * Implementation of {@link #intersects(Range)} to be invoked directly by subclasses.
+     * "NC" stands for "No Conversion" - this method does not try to convert the bounds
+     * to a compatible type.
+     */
+    final boolean intersectsNC(final Range<? extends T> range) {
+        return (compareMinTo(range.maxValue, range.isMaxIncluded ? 0 : +1) <= 0) &&
+               (compareMaxTo(range.minValue, range.isMinIncluded ? 0 : -1) >= 0);
+    }
+
+    /**
+     * Returns the intersection between this range and the given range.
+     *
+     * @param  range The range to intersect.
+     * @return The intersection of this range with the given range.
+     * @throws IllegalArgumentException is the given range can not be converted to a valid type
+     *         through widening conversion, or if the units of measurement are not convertible.
+     */
+    public Range<?> intersect(final Range<?> range) throws IllegalArgumentException {
+        return intersectNC(ensureCompatible(range));
+    }
+
+    /**
+     * Implementation of {@link #intersect(Range)} to be invoked directly by subclasses.
+     * "NC" stands for "No Conversion" - this method does not try to convert the bounds
+     * to a compatible type.
+     */
+    final Range<? extends T> intersectNC(final Range<? extends T> range)
+            throws IllegalArgumentException
     {
-        ensureCompatible(value);
-
-        return this.contains(value.getMinValue()) || this.contains(value.getMaxValue());
+        /*
+         * For two ranges [L₁ … H₁] and [L₂ … H₂], the intersection is given by
+         * ([max(L₁, L₂) … min(H₁, H₂)]). Only two comparisons is needed.
+         *
+         * There is a small complication since we shall also handle the inclusive states.
+         * so instead than extracting the minimal and maximal values directly, we will
+         * find which range contains the highest minimal value, and which range contains
+         * the smallest maximal value. If we find the same range in both case (which can
+         * be either 'this' or 'range), return that range. Otherwise we need to create a
+         * new one.
+         */
+        final Range<? extends T> intersect, min, max;
+        min = compareMinTo(range.minValue, range.isMinIncluded ? 0 : -1) < 0 ? range : this;
+        max = compareMaxTo(range.maxValue, range.isMaxIncluded ? 0 : +1) > 0 ? range : this;
+        if (min == max) {
+            intersect = min;
+        } else {
+            intersect = create(min.minValue, min.isMinIncluded, max.maxValue, max.isMaxIncluded);
+        }
+        assert intersect.isEmpty() == !intersects(range) : intersect;
+        return intersect;
     }
 
     public Range<T> union(final Range<T> value) throws IllegalArgumentException
@@ -364,46 +431,6 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
             rangeMax = maxValue;
         }
         return new Range<>(this.elementType, rangeMin, rangeMax );
-    }
-
-    public Range<T> intersect(final Range<T> value) throws IllegalArgumentException
-    {
-        ensureCompatible(value);
-
-        //return empty set if the Ranges don't intersect
-        if (!this.intersects(value))
-        {
-            return new Range<>(elementType, maxValue, minValue);
-        }
-
-        //if they are equal, return the passed in value
-        if (this.equals(value))
-        {
-            return value;
-        }
-
-        //we knkow they intersect, the question is where.
-        T rangeMin, rangeMax;
-        if (this.contains(value.getMinValue()))
-        {
-            rangeMin = value.getMinValue();
-        }
-        else
-        {
-            rangeMin = minValue;
-        }
-
-        if (this.contains(value.getMaxValue()))
-        {
-            rangeMax = value.getMaxValue();
-        }
-        else
-        {
-            rangeMax = maxValue;
-        }
-
-        return new Range<>(this.elementType, rangeMin, rangeMax );
-
     }
 
     //TODO: implement this
