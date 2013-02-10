@@ -57,6 +57,7 @@ import java.util.Objects;
  * @param <T> The type of range elements, typically a {@link Number} subclass or {@link java.util.Date}.
  *
  * @author  Joe White
+ * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
  * @version 0.3
  * @module
