@@ -70,8 +70,6 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
      */
     private final boolean isMinIncluded, isMaxIncluded;
 
-    private static String INVALID_TYPE_ERROR = "Type to be compared does not match the Range type.";
-
     /**
      * Creates a new range bounded by the given inclusive values.
      *
@@ -109,6 +107,19 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
         ensureValidType();
         if (minValue != null) ensureCompatibleType(minValue.getClass());
         if (maxValue != null) ensureCompatibleType(maxValue.getClass());
+    }
+
+    /**
+     * Ensures that the given range uses the same element class than this range,
+     * then return the casted argument value.
+     *
+     * @param range The range to test for compatibility.
+     */
+    @SuppressWarnings("unchecked")
+    private Range<? extends T> ensureCompatible(final Range<?> range) throws IllegalArgumentException {
+        ensureNonNull("range", range);
+        ensureCompatibleType(range.elementType);
+        return (Range<? extends T>) range;
     }
 
     /**
@@ -223,12 +234,6 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
             }
         }
 
-        //first check
-        if (value.getClass() != elementType)
-        {
-            throw new IllegalArgumentException(INVALID_TYPE_ERROR);
-        }
-
         //set unbounded on both ends
         if (unbounded)
         {
@@ -305,30 +310,21 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
 
     public boolean contains(final Range<T> value) throws IllegalArgumentException
     {
-        if (!checkMethodArgs(value))
-        {
-            throw new IllegalArgumentException(INVALID_TYPE_ERROR);
-        }
+        ensureCompatible(value);
         return this.contains(value.getMinValue()) && this.contains(value.getMaxValue());
     }
 
 
     public boolean intersects(final Range<T> value) throws IllegalArgumentException
     {
-        if (!checkMethodArgs(value))
-        {
-            throw new IllegalArgumentException(INVALID_TYPE_ERROR);
-        }
+        ensureCompatible(value);
 
         return this.contains(value.getMinValue()) || this.contains(value.getMaxValue());
     }
 
     public Range<T> union(final Range<T> value) throws IllegalArgumentException
     {
-        if (!checkMethodArgs(value))
-        {
-            throw new IllegalArgumentException(INVALID_TYPE_ERROR);
-        }
+        ensureCompatible(value);
 
         //if they are both the same, return either one
         if (this.equals(value))
@@ -362,10 +358,7 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
 
     public Range<T> intersect(final Range<T> value) throws IllegalArgumentException
     {
-        if (!checkMethodArgs(value))
-        {
-            throw new IllegalArgumentException(INVALID_TYPE_ERROR);
-        }
+        ensureCompatible(value);
 
         //return empty set if the Ranges don't intersect
         if (!this.intersects(value))
@@ -406,10 +399,7 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
     //TODO: implement this
     public Range<T>[] subtract(final Range<T> value) throws IllegalArgumentException
     {
-        if (!checkMethodArgs(value))
-        {
-            throw new IllegalArgumentException(INVALID_TYPE_ERROR);
-        }
+        ensureCompatible(value);
         Range<T>[] ranges = new Range[1];
         ranges[0] = null;
         return ranges;
@@ -455,18 +445,5 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
         hash = 13 * hash + (this.isMinIncluded ? 1 : 0);
         hash = 13 * hash + (this.isMaxIncluded ? 1 : 0);
         return hash;
-    }
-
-    private boolean checkMethodArgs(final Range<T> value) {
-        if (value == null)
-        {
-            return false;
-        }
-        else if (  value.getElementType() != elementType)
-        {
-            return false;
-        }
-        return true;
-
     }
 }
