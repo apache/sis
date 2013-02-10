@@ -23,6 +23,9 @@ import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
+// Related to JDK7
+import java.util.Objects;
+
 
 /**
  * A set of minimum and maximum values of a certain class, allowing
@@ -572,45 +575,44 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
         return position;
     }
 
+    /**
+     * Compares this range with the given object for equality.
+     *
+     * @param  object The object to compare with this range for equality.
+     * @return {@code true} if the given object is equal to this range.
+     */
     @Override
-    public boolean equals(Object object)
-    {
-        //make sure it's not null
-        if (object == null)
-        {
-            return false;
+    public boolean equals(final Object object) {
+        if (object == this) {
+            return true;
         }
-
-
-        Range<?> value = (Range<?>) object;
-        if (value == null)
-        {
-            return false;
+        if (object != null && object.getClass() == getClass()) {
+            final Range<?> other = (Range<?>) object;
+            if (Objects.equals(elementType, other.elementType)) {
+                if (isEmpty()) {
+                    return other.isEmpty();
+                }
+                return Objects.equals(minValue, other.minValue) &&
+                       Objects.equals(maxValue, other.maxValue) &&
+                       isMinIncluded == other.isMinIncluded &&
+                       isMaxIncluded == other.isMaxIncluded;
+            }
         }
-
-        boolean retVal = true;
-        retVal &= this.elementType == value.getElementType();
-        if (value.isEmpty() && this.isEmpty())
-        {
-            return retVal;
-        }
-
-        retVal &= this.maxValue == value.getMaxValue();
-        retVal &= this.minValue == value.getMinValue();
-        retVal &= this.isMaxIncluded == value.isMaxIncluded();
-        retVal &= this.isMinIncluded == value.isMinIncluded();
-        return retVal;
+        return false;
     }
 
+    /**
+     * Returns a hash code value for this range.
+     */
     @Override
-    public int hashCode()
-    {
-        int hash = 7;
-        hash = 13 * hash + (this.minValue != null ? this.minValue.hashCode() : 0);
-        hash = 13 * hash + (this.maxValue != null ? this.maxValue.hashCode() : 0);
-        hash = 13 * hash + (this.elementType != null ? this.elementType.hashCode() : 0);
-        hash = 13 * hash + (this.isMinIncluded ? 1 : 0);
-        hash = 13 * hash + (this.isMaxIncluded ? 1 : 0);
-        return hash;
+    public int hashCode() {
+        int hash = elementType.hashCode();
+        if (!isEmpty()) {
+            hash = 13 * hash + Objects.hashCode(minValue);
+            hash = 13 * hash + Objects.hashCode(maxValue);
+            hash += isMinIncluded ?   17 :   37;
+            hash += isMaxIncluded ? 1231 : 1237;
+        }
+        return hash ^ (int) serialVersionUID;
     }
 }
