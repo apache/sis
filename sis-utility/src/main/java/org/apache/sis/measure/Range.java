@@ -17,9 +17,11 @@
 package org.apache.sis.measure;
 
 import java.io.Serializable;
+import javax.measure.unit.Unit;
 import net.jcip.annotations.Immutable;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.Numbers;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
@@ -46,6 +48,11 @@ import java.util.Objects;
  *
  * {@note This class should never throw <code>ClassCastException</code>, unless there is a bug
  *        in the <code>Range</code> class or subclasses implementation.}
+ *
+ * {@section String representation}
+ * The {@linkplain #toString() string representation} of a {@code Range} is defined
+ * in a locale-insensitive way. In order to format a range using the current locale,
+ * or for parsing a range, use {@link RangeFormat}.
  *
  * @param <T> The type of range elements, typically a {@link Number} subclass or {@link java.util.Date}.
  *
@@ -136,6 +143,13 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
     @SuppressWarnings({"unchecked","rawtypes"}) // Generic array creation.
     Range<T>[] newArray(final int length) {
         return new Range[length];
+    }
+
+    /**
+     * To be overridden by {@link MeasurementRange} only.
+     */
+    Unit<?> getUnits() {
+        return null;
     }
 
     /**
@@ -614,5 +628,78 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
             hash += isMaxIncluded ? 1231 : 1237;
         }
         return hash ^ (int) serialVersionUID;
+    }
+
+    /**
+     * Returns {@code true} if the given number is formatted with only one character.
+     * We will use less space if the minimum and maximum values are formatted using
+     * only one digit. This method assumes that we have verified that the element type
+     * is an integer type before to invoke this method.
+     */
+    private static boolean isCompact(final Comparable<?> value, final boolean ifNull) {
+        if (value == null) {
+            return ifNull;
+        }
+        final long n = ((Number) value).longValue();
+        return n >= 0 && n < 10;
+    }
+
+    /**
+     * Returns a string representation of this range. The string representation is defined
+     * as below:
+     *
+     * <ul>
+     *   <li>If the range is empty, then this method returns {@code "[]"}.</li>
+     *   <li>Otherwise if the minimal value is equals to the maximal values, then
+     *       the string representation of that value is returned directly.</li>
+     *   <li>Otherwise the string representation of the minimal and maximal values
+     *       are formatted like {@code [min … max]} for inclusive bounds or
+     *       {@code (min … max)} for exclusive bounds, or a mix of both styles.
+     *       The ∞ symbol is used in place of {@code min} or {@code max} for
+     *       unbounded ranges.</li>
+     * </ul>
+     *
+     * If this range is a {@link MeasurementRange}, then the unit of measurement is
+     * appended to the above string representation.
+     *
+     * @see RangeFormat
+     */
+    @Override
+    public String toString() {
+        if (isEmpty()) {
+            return "[]";
+        }
+        if (minValue != null && minValue.equals(maxValue)) {
+            String value = minValue.toString();
+            final Unit<?> units = getUnits();
+            if (units != null) {
+                value = value + ' ' + units;
+            }
+            return value;
+        }
+        final StringBuilder buffer = new StringBuilder(20);
+        buffer.append(isMinIncluded ? '[' : '(');
+        if (minValue == null) {
+            buffer.append("−∞");
+        } else {
+            buffer.append(minValue);
+        }
+        // Compact representation for integers, more space for real numbers.
+        if (Numbers.isInteger(elementType) && isCompact(minValue, false) && isCompact(maxValue, true)) {
+            buffer.append('…');
+        } else {
+            buffer.append(" … ");
+        }
+        if (maxValue == null) {
+            buffer.append('∞');
+        } else {
+            buffer.append(maxValue);
+        }
+        buffer.append(isMaxIncluded ? ']' : ')');
+        final Unit<?> units = getUnits();
+        if (units != null) {
+            buffer.append(' ').append(units);
+        }
+        return buffer.toString();
     }
 }
