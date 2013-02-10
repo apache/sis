@@ -205,7 +205,7 @@ public final strictfp class RangeTest extends TestCase {
     @Test(expected = IllegalArgumentException.class)
     public void testIncompatibleTypeRangeContains() {
         final Range<Integer> intRange = new Range<>(Integer.class, 0, 10);
-        final Range doubleRange = new Range<>(Double.class, 2.0, 5.0);
+        final Range<Double> doubleRange = new Range<>(Double.class, 2.0, 5.0);
 
         intRange.contains(doubleRange);
     }
@@ -216,7 +216,7 @@ public final strictfp class RangeTest extends TestCase {
     @Test(expected = IllegalArgumentException.class)
     public void testIncompatibleTypeContains() {
         final Range<Integer> intRange = new Range<>(Integer.class, 0, 10);
-        final Range doubleRange = new Range<>(Double.class, 2.0, 5.0);
+        final Range<Double> doubleRange = new Range<>(Double.class, 2.0, 5.0);
 
         intRange.contains(doubleRange);
     }
@@ -242,7 +242,7 @@ public final strictfp class RangeTest extends TestCase {
     @Test(expected = IllegalArgumentException.class)
     public void testIntersectsIncompatibleTypes() {
         final Range<Character> range1 = new Range<>(Character.class, 'a', 'g');
-        final Range range2 = new Range<>(Integer.class, 5, 7);
+        final Range<Integer>   range2 = new Range<>(Integer.class, 5, 7);
 
         range1.intersects(range2);
     }
@@ -255,7 +255,7 @@ public final strictfp class RangeTest extends TestCase {
         final Range<Integer> range1 = new Range<>(Integer.class, 1, 5);
         final Range<Integer> range2 = new Range<>(Integer.class, 4, 6);
 
-        final Range<Integer> intersection = range1.intersect(range2);
+        final Range<?> intersection = range1.intersect(range2);
         assertEquals(Integer.class, intersection.getElementType());
         assertEquals(Integer.valueOf(4), intersection.getMinValue());
         assertEquals(Integer.valueOf(5), intersection.getMaxValue());
@@ -269,7 +269,7 @@ public final strictfp class RangeTest extends TestCase {
         final Range<Integer> range1 = new Range<>(Integer.class, 1,  5);
         final Range<Integer> range2 = new Range<>(Integer.class, 8, 10);
 
-        final Range<Integer>  intersection = range1.intersect(range2);
+        final Range<?> intersection = range1.intersect(range2);
         assertEquals(Integer.class, intersection.getElementType());
         assertTrue(intersection.isEmpty());
     }
