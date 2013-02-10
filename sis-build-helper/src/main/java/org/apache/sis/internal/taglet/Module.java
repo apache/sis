@@ -36,7 +36,7 @@ public final class Module implements Taglet {
     /**
      * SIS version to be referenced by this taglet.
      */
-    private static final String VERSION = "0.3-geoapi3.0-SNAPSHOT";
+    private static final String VERSION = "0.3-android-SNAPSHOT";
 
     /**
      * Register this taglet.
