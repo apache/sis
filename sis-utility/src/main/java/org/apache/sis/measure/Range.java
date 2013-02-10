@@ -219,92 +219,35 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
 
     public boolean contains(final T value) throws IllegalArgumentException
     {
-
-        boolean unbounded = (minValue == null && maxValue == null);
-        //safety check
-        if (value == null)
-        {
-            if (unbounded)
-            {
-                return true;
-            }
-            else
-            {
+        /*
+         * Implementation note: when testing for inclusion or intersection in a range
+         * (or in a rectangle, cube, etc.), it is often easier to test when we do not
+         * have inclusion than to test for inclusion. So we test when to return false
+         * and if no such test pass, we can return true.
+         *
+         * We consistently use min/maxValue.compareTo(value) in this class rather than
+         * the opposite argument order (namely value.compareTo(min/maxValue)) in the
+         * hope to reduce the risk of inconsistent behavior if usera pass different
+         * sub-classes for the 'value' argument with different implementations of the
+         * 'compareTo' method. Intead than using those user implementations, we always
+         * use the implementations provided by min/maxValue.
+         */
+        if (value == null) {
+            return false;
+        }
+        if (minValue != null) {
+            final int c = minValue.compareTo(value);
+            if (isMinIncluded ? (c > 0) : (c >= 0)) {
                 return false;
             }
         }
-
-        //set unbounded on both ends
-        if (unbounded)
-        {
-            return true;
-        }
-
-        int minimumValueCheck = 1;
-        if (minValue != null)
-        {
-            minimumValueCheck = value.compareTo(minValue);
-        }
-        int maximumValueCheck = -1;
-        if (maxValue != null)
-        {
-            maximumValueCheck = value.compareTo(maxValue);
-        }
-
-        //set unbounded on lower end
-        if (minValue == null && maximumValueCheck <= 0)
-        {
-            if (isMaxIncluded && minimumValueCheck > 0)
-            {
-                return true;
-            }
-            else if (!isMaxIncluded)
-            {
-                return true;
-            }
-
-        }
-
-        //set unbounded on upper end
-        if (maxValue == null && minimumValueCheck >= 0)
-        {
-            if (isMinIncluded && minimumValueCheck > 0)
-            {
-                return true;
-            }
-            else if (!isMinIncluded)
-            {
-                return true;
+        if (maxValue != null) {
+            final int c = maxValue.compareTo(value);
+            if (isMaxIncluded ? (c < 0) : (c <= 0)) {
+                return false;
             }
         }
-
-        //set bounded on both ends
-        if (minimumValueCheck >= 0 && maximumValueCheck <= 0)
-        {
-            //both min and max are included
-            if (isMinIncluded && isMaxIncluded)
-            {
-                return true;
-            }
-            //only min is included
-            else if (!isMinIncluded && minimumValueCheck > 0)
-            {
-                return true;
-            }
-            //only max is included
-            else if (!isMaxIncluded && maximumValueCheck < 0)
-            {
-                return true;
-            }
-            //neither is included
-            else
-            {
-                return (minimumValueCheck > 0 && maximumValueCheck < 0);
-            }
-
-        }
-        return false;
-
+        return true;
     }
 
 
