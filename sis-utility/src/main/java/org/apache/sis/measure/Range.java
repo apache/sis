@@ -399,38 +399,34 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
         return intersect;
     }
 
-    public Range<T> union(final Range<T> value) throws IllegalArgumentException
-    {
-        ensureCompatible(value);
+    /**
+     * Returns the union of this range with the given range.
+     *
+     * @param  range The range to add to this range.
+     * @return The union of this range with the given range.
+     * @throws IllegalArgumentException is the given range can not be converted to a valid type
+     *         through widening conversion, or if the units of measurement are not convertible.
+     */
+    public Range<?> union(final Range<?> range) throws IllegalArgumentException {
+        return unionNC(ensureCompatible(range));
+    }
 
-        //if they are both the same, return either one
-        if (this.equals(value))
-        {
-            return value;
+    /**
+     * Implementation of {@link #union(Range)} to be invoked directly by subclasses.
+     * "NC" stands for "No Cast" - this method do not try to cast the value to a compatible type.
+     */
+    final Range<?> unionNC(final Range<? extends T> range) throws IllegalArgumentException {
+        final Range<? extends T> union, min, max;
+        min = compareMinTo(range.minValue, range.isMinIncluded ? 0 : -1) > 0 ? range : this;
+        max = compareMaxTo(range.maxValue, range.isMaxIncluded ? 0 : +1) < 0 ? range : this;
+        if (min == max) {
+            union = min;
+        } else {
+            union = create(min.minValue, min.isMinIncluded, max.maxValue, max.isMaxIncluded);
         }
-
-        //get the min and max value of both sets, compare them, then take
-        //the smallest of either and the largest of either and create
-        //a new Range with them.
-        T rangeMin, rangeMax;
-        if (value.getMinValue().compareTo(minValue) <= 0)
-        {
-            rangeMin = value.getMinValue();
-        }
-        else
-        {
-            rangeMin = minValue;
-        }
-
-        if (value.getMaxValue().compareTo(maxValue) >= 0)
-        {
-            rangeMax = value.getMaxValue();
-        }
-        else
-        {
-            rangeMax = maxValue;
-        }
-        return new Range<>(this.elementType, rangeMin, rangeMax );
+        assert union.contains(min) : min;
+        assert union.contains(max) : max;
+        return union;
     }
 
     //TODO: implement this
