@@ -86,7 +86,22 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
     /**
      * Whether the minimal or maximum value is included.
      */
-    private final boolean isMinIncluded, isMaxIncluded;
+    final boolean isMinIncluded, isMaxIncluded;
+
+    /**
+     * Constructs a range with the same type and the same values than the specified range.
+     * This is a copy constructor.
+     *
+     * @param range The range to copy.
+     */
+    public Range(final Range<T> range) {
+        elementType   = range.elementType;
+        minValue      = range.minValue;
+        isMinIncluded = range.isMinIncluded;
+        maxValue      = range.maxValue;
+        isMaxIncluded = range.isMaxIncluded;
+        ensureValidType();
+    }
 
     /**
      * Creates a new range bounded by the given inclusive values.
