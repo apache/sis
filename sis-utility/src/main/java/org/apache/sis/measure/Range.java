@@ -58,6 +58,7 @@ import java.util.Objects;
  *
  * @author  Joe White
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Jody Garnett (for parameterized type suggestion)
  * @since   0.3
  * @version 0.3
  * @module
