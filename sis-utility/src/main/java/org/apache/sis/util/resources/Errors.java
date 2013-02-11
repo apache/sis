@@ -175,6 +175,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int IllegalRange_2 = 11;
 
         /**
+         * Units “{0}” and “{1}” are incompatible.
+         */
+        public static final int IncompatibleUnits_2 = 67;
+
+        /**
          * Value “{1}” of attribute ‘{0}’ is inconsistent with other attributes.
          */
         public static final int InconsistentAttribute_2 = 27;
