@@ -73,6 +73,7 @@ import org.junit.runners.Suite;
     org.apache.sis.measure.UnitsTest.class,
     org.apache.sis.measure.RangeTest.class,
     org.apache.sis.measure.NumberRangeTest.class,
+    org.apache.sis.measure.MeasurementRangeTest.class,
     org.apache.sis.measure.FormattedCharacterIteratorTest.class,
     org.apache.sis.measure.AngleFormatTest.class,
     org.apache.sis.measure.AngleTest.class,

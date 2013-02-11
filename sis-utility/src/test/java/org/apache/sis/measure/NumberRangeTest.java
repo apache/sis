@@ -23,7 +23,7 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests the {@link NumberRange}.
+ * Tests the {@link NumberRange} class.
  *
  * @author  Martin Desruisseaux (IRD)
  * @since   0.3 (derived from geotk-2.4)
