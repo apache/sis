@@ -290,6 +290,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int NotAPrimitiveWrapper_1 = 10;
 
         /**
+         * Class ‘{0}’ is not a comparable.
+         */
+        public static final int NotComparableClass_1 = 66;
+
+        /**
          * Argument ‘{0}’ shall not be null.
          */
         public static final int NullArgument_1 = 0;

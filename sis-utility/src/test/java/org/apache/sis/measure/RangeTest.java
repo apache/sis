@@ -25,7 +25,10 @@ import static org.apache.sis.test.Assert.*;
 /**
  * Tests the {@link Range} class.
  *
- * @author Joe White
+ * @author  Joe White
+ * @since   0.3
+ * @version 0.3
+ * @module
  */
 public final strictfp class RangeTest extends TestCase {
     /**
