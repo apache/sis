@@ -148,9 +148,50 @@ public class RangeFormat extends Format {
     }
 
     /**
-     * The symbols used for parsing and formatting a range.
+     * The character opening a range in which the minimal value is inclusive.
+     * The default value is {@code '['}.
      */
-    private RangeSymbols symbols;
+    private final char openInclusive;
+
+    /**
+     * The character opening a range in which the minimal value is exclusive.
+     * The default value is {@code '('}. Note that the {@code ']'} character
+     * is also sometime used.
+     */
+    private final char openExclusive;
+
+    /**
+     * An alternative character opening a range in which the minimal value is exclusive.
+     * This character is not used for formatting (only {@link #openExclusive} is used),
+     * but is accepted during parsing. The default value is {@code ']'}.
+     */
+    private final char openExclusiveAlt;
+
+    /**
+     * The character closing a range in which the maximal value is inclusive.
+     * The default value is {@code ']'}.
+     */
+    private final char closeInclusive;
+
+    /**
+     * The character closing a range in which the maximal value is exclusive.
+     * The default value is {@code ')'}. Note that the {@code '['} character
+     * is also sometime used.
+     */
+    private final char closeExclusive;
+
+    /**
+     * An alternative character closing a range in which the maximal value is exclusive.
+     * This character is not used for formatting (only {@link #closeExclusive} is used),
+     * but is accepted during parsing. The default value is {@code '['}.
+     */
+    private final char closeExclusiveAlt;
+
+    /**
+     * The string to use as a separator between minimal and maximal value, not including
+     * whitespaces. The default value is {@code "…"} (Unicode 2026).
+     */
+    private final String separator;
 
     /**
      * Symbols used by this format, inferred from {@link DecimalFormatSymbols}.
@@ -253,27 +294,29 @@ public class RangeFormat extends Format {
         } else {
             ds = DecimalFormatSymbols.getInstance(locale);
         }
-        minusSign = ds.getMinusSign();
-        infinity  = ds.getInfinity();
-        symbols   = new RangeSymbols();
+        minusSign         = ds.getMinusSign();
+        infinity          = ds.getInfinity();
+        openInclusive     = '['; // Future SIS version may determine those characters from the locale.
+        openExclusive     = '('; // We may also provide an 'applyPattern(String)' method for setting those char.
+        openExclusiveAlt  = ']';
+        closeInclusive    = ']';
+        closeExclusive    = ')';
+        closeExclusiveAlt = '[';
+        separator         = "…";
     }
 
     /**
-     * Returns the symbols used for parsing and formatting ranges.
-     *
-     * @return The symbols used by this format.
+     * Returns {@code true} if the given character is any of the opening bracket characters.
      */
-    public RangeSymbols getSymbols() {
-        return symbols.clone();
+    private boolean isOpen(final int c) {
+        return (c == openInclusive) || (c == openExclusive) || (c == openExclusiveAlt);
     }
 
     /**
-     * Sets the symbols to use for parsing and formatting ranges.
-     *
-     * @param symbols The new symbols to use for this format.
+     * Returns {@code true} if the given character is any of the closing bracket characters.
      */
-    public void setSymbols(final RangeSymbols symbols) {
-        this.symbols = symbols.clone();
+    private boolean isClose(final int c) {
+        return (c == closeInclusive) || (c == closeExclusive) || (c == closeExclusiveAlt);
     }
 
     /**
@@ -388,7 +431,7 @@ public class RangeFormat extends Format {
      *
      * @param  range      The {@link Range} object to format.
      * @param  toAppendTo Where the text is to be appended.
-     * @param pos        Identifies a field in the formatted text, or {@code null} if none.
+     * @param  pos        Identifies a field in the formatted text, or {@code null} if none.
      * @return The string buffer passed in as {@code toAppendTo}, with formatted text appended.
      * @throws IllegalArgumentException If this formatter can not format the given object.
      */
@@ -416,16 +459,15 @@ public class RangeFormat extends Format {
          * Special case for an empty range. This is typically formatted as "[]". The field
          * position is unconditionally set to the empty substring inside the brackets.
          */
-        final RangeSymbols s = symbols;
         int fieldPos = getField(pos);
         if (range.isEmpty()) {
-            toAppendTo.append(s.openInclusive);
+            toAppendTo.append(openInclusive);
             if (fieldPos >= MIN_VALUE_FIELD && fieldPos <= UNIT_FIELD) {
                 final int p = toAppendTo.length();
                 pos.setBeginIndex(p); // First index, inclusive.
                 pos.setEndIndex  (p); // Last index, exclusive
             }
-            toAppendTo.append(s.closeInclusive);
+            toAppendTo.append(closeInclusive);
             return;
         }
         /*
@@ -445,7 +487,7 @@ public class RangeFormat extends Format {
             field = MAX_VALUE_FIELD;
         } else {
             field = MIN_VALUE_FIELD;
-            toAppendTo.append(range.isMinIncluded() ? s.openInclusive : s.openExclusive);
+            toAppendTo.append(range.isMinIncluded() ? openInclusive : openExclusive);
         }
         for (; field <= UNIT_FIELD; field++) {
             final Object value;
@@ -490,12 +532,12 @@ public class RangeFormat extends Format {
             }
             switch (field) {
                 case MIN_VALUE_FIELD: {
-                    toAppendTo.append(' ').append(s.separator).append(' ');
+                    toAppendTo.append(' ').append(separator).append(' ');
                     break;
                 }
                 case MAX_VALUE_FIELD: {
                     if (!isSingleton) {
-                        toAppendTo.append(range.isMaxIncluded() ? s.closeInclusive : s.closeExclusive);
+                        toAppendTo.append(range.isMaxIncluded() ? closeInclusive : closeExclusive);
                     }
                     break;
                 }
@@ -635,33 +677,35 @@ public class RangeFormat extends Format {
             throws UnconvertibleObjectException
     {
         final int length = source.length();
-        int index = pos.getIndex();
         /*
          * Skip leading whitespace and find the first non-blank character.  It is usually
          * an opening bracket, except if minimal and maximal values are the same in which
          * case the brackets may be omitted.
          */
-        char c;
-        do if (index >= length) {
-            pos.setErrorIndex(length);
-            return null;
-        } while ((Character.isWhitespace(c = source.charAt(index++))));
+        int index, c;
+        for (index = pos.getIndex(); ; index += Character.charCount(c)) {
+            if (index >= length) {
+                pos.setErrorIndex(length);
+                return null;
+            }
+            c = source.codePointAt(index);
+            if (!Character.isWhitespace(c)) break;
+        }
         /*
          * Get the minimal and maximal values, and whatever they are inclusive or exclusive.
          */
-        final RangeSymbols s = symbols;
         final Object minValue, maxValue;
         final boolean isMinIncluded, isMaxIncluded;
-        if (!s.isOpen(c)) {
+        if (!isOpen(c)) {
             /*
              * No bracket. Assume that we have a single value for the range.
              */
-            pos.setIndex(index - 1);
+            pos.setIndex(index);
             final Object value = elementFormat.parseObject(source, pos);
             if (value == null) {
                 return null;
             }
-            pos.setErrorIndex(index - 1); // In case of failure during the conversion.
+            pos.setErrorIndex(index); // In case of failure during the conversion.
             minValue = maxValue = convert(value);
             isMinIncluded = isMaxIncluded = true;
             index = pos.getIndex();
@@ -670,16 +714,20 @@ public class RangeFormat extends Format {
              * We found an opening bracket. Skip the whitespaces. If the next
              * character is a closing bracket, then we have an empty range.
              */
-            isMinIncluded = (c == s.openInclusive);
-            do if (index >= length) {
-                pos.setErrorIndex(length);
-                return null;
-            } while ((Character.isWhitespace(c = source.charAt(index++))));
-            if (s.isClose(c)) {
-                pos.setIndex(index);
-                pos.setErrorIndex(index - 1); // In case of failure during the conversion.
+            isMinIncluded = (c == openInclusive);
+            do {
+                index += Character.charCount(c);
+                if (index >= length) {
+                    pos.setErrorIndex(length);
+                    return null;
+                }
+                c = source.codePointAt(index);
+            } while (Character.isWhitespace(c));
+            if (isClose(c)) {
+                pos.setErrorIndex(index);  // In case of failure during the conversion.
                 minValue = maxValue = convert(0);
                 isMaxIncluded = false;
+                index += Character.charCount(c);
             } else {
                 /*
                  * At this point, we have determined that the range is non-empty and there
@@ -687,18 +735,19 @@ public class RangeFormat extends Format {
                  * fail to parse, check if it was the infinity value (note that infinity
                  * should have been parsed successfully if the format is DecimalFormat).
                  */
-                pos.setIndex(index - 1);
+                pos.setIndex(index);
+                int savedIndex = index;
                 Object value = elementFormat.parseObject(source, pos);
                 if (value == null) {
-                    if (c != minusSign) {
-                        index--;
+                    if (c == minusSign) {
+                        index += Character.charCount(c);
                     }
                     if (!source.regionMatches(index, infinity, 0, infinity.length())) {
                         return null;
                     }
                     pos.setIndex(index += infinity.length());
                 }
-                pos.setErrorIndex(index - 1); // In case of failure during the conversion.
+                pos.setErrorIndex(savedIndex); // In case of failure during the conversion.
                 minValue = convert(value);
                 /*
                  * Parsing of minimal value succeed and its type is valid. Now look for the
@@ -707,46 +756,57 @@ public class RangeFormat extends Format {
                  * brackets in such case (see the "No bracket" case above), but we make the
                  * parser tolerant to the case where the brackets are present.
                  */
-                index = pos.getIndex();
-                do if (index >= length) {
-                    pos.setErrorIndex(length);
-                    return null;
-                } while ((Character.isWhitespace(c = source.charAt(index++))));
-                final String separator = s.separator;
-                if (source.regionMatches(index-1, separator, 0, separator.length())) {
-                    index += separator.length() - 1;
-                    do if (index >= length) {
+                for (index = pos.getIndex(); ; index += Character.charCount(c)) {
+                    if (index >= length) {
                         pos.setErrorIndex(length);
                         return null;
-                    } while ((Character.isWhitespace(c = source.charAt(index++))));
-                    pos.setIndex(index - 1);
+                    }
+                    c = source.codePointAt(index);
+                    if (!Character.isWhitespace(c)) break;
+                }
+                final String separator = this.separator;
+                if (source.regionMatches(index, separator, 0, separator.length())) {
+                    index += separator.length();
+                    for (;; index += Character.charCount(c)) {
+                        if (index >= length) {
+                            pos.setErrorIndex(length);
+                            return null;
+                        }
+                        c = source.codePointAt(index);
+                        if (!Character.isWhitespace(c)) break;
+                    }
+                    pos.setIndex(index);
                     value = elementFormat.parseObject(source, pos);
                     if (value == null) {
-                        if (!source.regionMatches(--index, infinity, 0, infinity.length())) {
+                        if (!source.regionMatches(index, infinity, 0, infinity.length())) {
                             return null;
                         }
                         pos.setIndex(index += infinity.length());
                     }
-                    pos.setErrorIndex(index - 1); // In case of failure during the conversion.
+                    pos.setErrorIndex(index); // In case of failure during the conversion.
                     maxValue = convert(value);
                     /*
                      * Skip one last time the whitespaces. The check for the closing bracket
                      * (which is mandatory) is performed outside the "if" block since it is
                      * common to the two "if ... else" cases.
                      */
-                    index = pos.getIndex();
-                    do if (index >= length) {
-                        pos.setErrorIndex(length);
-                        return null;
-                    } while ((Character.isWhitespace(c = source.charAt(index++))));
+                    for (index = pos.getIndex(); ; index += Character.charCount(c)) {
+                        if (index >= length) {
+                           pos.setErrorIndex(length);
+                            return null;
+                        }
+                        c = source.charAt(index);
+                        if (!Character.isWhitespace(c)) break;
+                    }
                 } else {
                     maxValue = minValue;
                 }
-                if (!s.isClose(c)) {
-                    pos.setErrorIndex(index - 1);
+                if (!isClose(c)) {
+                    pos.setErrorIndex(index);
                     return null;
                 }
-                isMaxIncluded = (c == s.closeInclusive);
+                index += Character.charCount(c);
+                isMaxIncluded = (c == closeInclusive);
             }
             pos.setIndex(index);
         }
@@ -757,8 +817,9 @@ public class RangeFormat extends Format {
         Unit<?> unit = null;
         if (unitFormat != null) {
             while (index < length) {
-                if (Character.isWhitespace(source.charAt(index))) {
-                    index++;
+                c = source.codePointAt(index);
+                if (Character.isWhitespace(c)) {
+                    index += Character.charCount(c);
                     continue;
                 }
                 // At this point we found a character that could be
