@@ -546,7 +546,7 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
      *
      * @see #containsNC(Range)
      */
-    final int compareMinTo(final T value, int position) {
+    private int compareMinTo(final T value, int position) {
         /*
          * Check for infinite values.  If the given value is infinite, it can be either positive or
          * negative infinity, which we can infer from the 'position' argument. Note that 'position'
@@ -589,7 +589,7 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
      * Compares the {@linkplain #getMaxValue() maximum value} of this range with the given bound of
      * another range. See the comment in {@link #compareMinTo(Comparable, int)} for more details.
      */
-    final int compareMaxTo(final T value, int position) {
+    private int compareMaxTo(final T value, int position) {
         if (maxValue == null) {
             return (value == null) ? 0 : +1;
         }

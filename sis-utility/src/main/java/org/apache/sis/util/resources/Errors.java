@@ -240,6 +240,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int NegativeArgument_2 = 8;
 
         /**
+         * No unit of measurement has been specified.
+         */
+        public static final int NoUnit = 68;
+
+        /**
          * Node “{0}” can not be a child of itself.
          */
         public static final int NodeChildOfItself_1 = 37;
@@ -388,6 +393,11 @@ public final class Errors extends IndexedResourceBundle {
          * The ‘{0}’ operation is unsupported.
          */
         public static final int UnsupportedOperation_1 = 20;
+
+        /**
+         * The ‘{0}’ type is unsupported.
+         */
+        public static final int UnsupportedType_1 = 69;
 
         /**
          * A value is already defined for “{0}”.

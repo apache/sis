@@ -17,6 +17,7 @@
 package org.apache.sis.measure;
 
 import org.junit.Test;
+import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 
 import static org.junit.Assert.*;
@@ -31,7 +32,7 @@ import static org.junit.Assert.*;
  * @module
  */
 @DependsOn(RangeTest.class)
-public final strictfp class NumberRangeTest {
+public final strictfp class NumberRangeTest extends TestCase {
     /**
      * Tests the bounds values of a range of integers.
      */

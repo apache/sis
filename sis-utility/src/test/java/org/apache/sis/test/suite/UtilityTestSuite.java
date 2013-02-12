@@ -72,6 +72,7 @@ import org.junit.runners.Suite;
     // Measurements and formatting.
     org.apache.sis.measure.UnitsTest.class,
     org.apache.sis.measure.RangeTest.class,
+    org.apache.sis.measure.DateRangeTest.class,
     org.apache.sis.measure.NumberRangeTest.class,
     org.apache.sis.measure.MeasurementRangeTest.class,
     org.apache.sis.measure.FormattedCharacterIteratorTest.class,

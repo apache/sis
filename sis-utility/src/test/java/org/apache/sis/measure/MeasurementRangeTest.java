@@ -19,6 +19,7 @@ package org.apache.sis.measure;
 import javax.measure.unit.SI;
 import javax.measure.converter.ConversionException;
 import org.junit.Test;
+import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 
 import static org.apache.sis.test.Assert.*;
@@ -33,7 +34,7 @@ import static org.apache.sis.test.Assert.*;
  * @module
  */
 @DependsOn(NumberRangeTest.class)
-public final strictfp class MeasurementRangeTest {
+public final strictfp class MeasurementRangeTest extends TestCase {
     /**
      * Tests unit conversions.
      *
