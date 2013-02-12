@@ -44,11 +44,11 @@ public abstract class AbstractInternationalString implements InternationalString
      * The string in the {@linkplain Locale#getDefault() system default} locale, or {@code null}
      * if this string has not yet been determined. This is the default string returned by
      * {@link #toString()} and others methods from the {@link CharSequence} interface.
-     * <P>
-     * This field is not serialized because serialization is often used for data transmission
+     *
+     * <p>This field is not serialized because serialization is often used for data transmission
      * between a server and a client, and the client may not use the same locale than the server.
-     * We want the locale to be examined again on the client side.
-     * <P>
+     * We want the locale to be examined again on the client side.</p>
+     *
      * This field is read and written by {@link SimpleInternationalString}.
      */
     transient String defaultValue;
@@ -127,15 +127,33 @@ public abstract class AbstractInternationalString implements InternationalString
 
     /**
      * Returns this string in the given locale. If no string is available in the given locale,
-     * then some default locale is used. The default locale is implementation-dependent.
-     * It may or may not be the {@linkplain Locale#getDefault() system default}.
+     * then some fallback locale is used. The fallback locale is implementation-dependent, and
+     * is not necessarily the same than the default locale used by the {@link #toString()} method.
      *
-     * @param  locale The desired locale for the string to be returned,
-     *         or {@code null} for a string in the implementation default locale.
-     * @return The string in the given locale if available, or in the default locale otherwise.
+     * {@section Handling of <code>Locale.ROOT</code> argument value}
+     * {@link Locale#ROOT} can be given to this method for requesting a "unlocalized" string,
+     * typically some programmatic values like enumerations or identifiers. While identifiers
+     * often look like English words, {@code Locale.ROOT} is not considered synonymous to
+     * {@link Locale#ENGLISH} because the values may differ in the way numbers and dates are
+     * formatted (e.g. using the ISO 8601 standard for dates instead than English conventions).
+     *
+     * {@section Handling of <code>null</code> argument value}
+     * The {@code Locale.ROOT} constant is new in Java 6. Some other libraries designed for Java 5
+     * use the {@code null} value for "unlocalized" strings. Apache SIS accepts {@code null} value
+     * for inter-operability with those libraries. However the behavior is implementation dependent:
+     * some subclasses will take {@code null} as a synonymous of the system default locale, while
+     * other subclasses will take {@code null} as a synonymous of the root locale. In order to
+     * ensure determinist behavior, client code are encouraged to specify only non-null values.
+     *
+     * @param  locale The desired locale for the string to be returned.
+     * @return The string in the given locale if available, or in an
+     *         implementation-dependent fallback locale otherwise.
+     *
+     * @see Locale#getDefault()
+     * @see Locale#ROOT
      */
     @Override
-    public abstract String toString(final Locale locale);
+    public abstract String toString(Locale locale);
 
     /**
      * Returns this string in the default locale. Invoking this method is equivalent to invoking

@@ -102,7 +102,7 @@ public class Angle implements Comparable<Angle>, Formattable, Serializable {
         } catch (ParseException exception) {
             /*
              * Use Exception.getMessage() instead than getLocalizedMessage() because the later
-             * is formatted in the AngleFormat locale, which is hard-coded to Locale.US in our
+             * is formatted in the AngleFormat locale, which is hard-coded to Locale.ROOT in our
              * 'getAngleFormat()' implementation. The getMessage() method uses the system locale,
              * which is what we actually want.
              */
@@ -240,7 +240,7 @@ public class Angle implements Comparable<Angle>, Formattable, Serializable {
     private static Format getAngleFormat() {
         assert Thread.holdsLock(Angle.class);
         if (format == null) {
-            format = AngleFormat.getInstance(Locale.US);
+            format = AngleFormat.getInstance(Locale.ROOT);
         }
         return format;
     }

@@ -110,13 +110,14 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
      * Constructs a new format for the given numeric and header locales.
      * The timezone is used only if the values added to the {@link Statistics} are dates.
      *
-     * @param locale       The locale for numeric values, or {@code null} for unlocalized format.
+     * @param locale       The locale to use for numbers, dates and angles formatting,
+     *                     or {@code null} for the {@linkplain Locale#ROOT root locale}.
      * @param headerLocale The locale for row and column headers. Usually same as {@code locale}.
      * @param timezone     The timezone, or {@code null} for UTC.
      */
     public StatisticsFormat(final Locale locale, final Locale headerLocale, final TimeZone timezone) {
         super(locale, timezone);
-        this.headerLocale = headerLocale;
+        this.headerLocale = (headerLocale != null) ? headerLocale : Locale.ROOT;
     }
 
     /**

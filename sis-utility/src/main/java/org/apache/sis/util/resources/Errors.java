@@ -16,6 +16,7 @@
  */
 package org.apache.sis.util.resources;
 
+import java.net.URL;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import org.opengis.util.InternationalString;
@@ -174,6 +175,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int IllegalRange_2 = 11;
 
         /**
+         * Units “{0}” and “{1}” are incompatible.
+         */
+        public static final int IncompatibleUnits_2 = 67;
+
+        /**
          * Value “{1}” of attribute ‘{0}’ is inconsistent with other attributes.
          */
         public static final int InconsistentAttribute_2 = 27;
@@ -234,6 +240,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int NegativeArgument_2 = 8;
 
         /**
+         * No unit of measurement has been specified.
+         */
+        public static final int NoUnit = 68;
+
+        /**
          * Node “{0}” can not be a child of itself.
          */
         public static final int NodeChildOfItself_1 = 37;
@@ -289,9 +300,24 @@ public final class Errors extends IndexedResourceBundle {
         public static final int NotAPrimitiveWrapper_1 = 10;
 
         /**
+         * Class ‘{0}’ is not a comparable.
+         */
+        public static final int NotComparableClass_1 = 66;
+
+        /**
          * Argument ‘{0}’ shall not be null.
          */
         public static final int NullArgument_1 = 0;
+
+        /**
+         * Null key is not allowed in this dictionary.
+         */
+        public static final int NullMapKey = 64;
+
+        /**
+         * Null values are not allowed in this dictionary.
+         */
+        public static final int NullMapValue = 65;
 
         /**
          * Array length is {0}, while we expected an even length.
@@ -369,6 +395,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int UnsupportedOperation_1 = 20;
 
         /**
+         * The ‘{0}’ type is unsupported.
+         */
+        public static final int UnsupportedType_1 = 69;
+
+        /**
          * A value is already defined for “{0}”.
          */
         public static final int ValueAlreadyDefined_1 = 13;
@@ -387,10 +418,11 @@ public final class Errors extends IndexedResourceBundle {
     /**
      * Constructs a new resource bundle loading data from the given UTF file.
      *
-     * @param filename The file or the JAR entry containing resources.
+     * @param resources The path of the binary file containing resources, or {@code null} if
+     *        there is no resources. The resources may be a file or an entry in a JAR file.
      */
-    Errors(final String filename) {
-        super(filename);
+    Errors(final URL resources) {
+        super(resources);
     }
 
     /**

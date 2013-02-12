@@ -173,10 +173,10 @@
     </section>
 
     <section>
-      <title>Convention locale nulle</title>
+      <title>Convention <constant>Locale.ROOT</constant></title>
       <para>
-        La plupart des méthodes <acronym>SIS</acronym> recevant ou retournant une valeur de type <classname>Locale</classname>
-        acceptent la valeur <constant>null</constant>. Cette valeur est interprétée comme signifiant de ne pas localiser le texte.
+        Toutes les méthodes <acronym>SIS</acronym> recevant ou retournant une valeur de type <classname>Locale</classname>
+        acceptent la valeur <constant>Locale.ROOT</constant>. Cette valeur est interprétée comme signifiant de ne pas localiser le texte.
         La notion de <quote>texte non-localisé</quote> est un peu fausse, puisqu’il faut bien choisir une convention de format.
         Mais cette convention, bien que très proche de l’anglais, sera généralement légèrement différente.
         Par exemple:

@@ -35,9 +35,13 @@ public interface Localized {
      *
      * <ul>
      *   <li>A synonymous of the {@linkplain Locale#getDefault() system default locale};</li>
-     *   <li>or an "unlocalized" service, for example formatting numbers using
-     *       {@link Double#toString(double)} instead than {@link java.text.NumberFormat}.</li>
+     *   <li>A synonymous of {@link Locale#ROOT} for an "unlocalized" service. For example the
+     *       service may format numbers using {@link Double#toString(double)} instead than
+     *       {@link java.text.NumberFormat}.</li>
      * </ul>
+     *
+     * Implementations are encouraged to return a non-null value in every cases.
+     * Nevertheless client codes should be prepared to receive null values.
      *
      * @return The locale, or {@code null} if not explicitly defined.
      *

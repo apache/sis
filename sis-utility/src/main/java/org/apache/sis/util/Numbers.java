@@ -516,14 +516,21 @@ public final class Numbers extends Static {
      * </ul>
      *
      * {@note This method is intentionally restricted to primitive types. Other types
-     *        like <code>BigDecimal</code> are not the purpose of this method. See the
-     *        <code>ConverterRegistry</code> class for a more generic method.}
+     *        like <code>BigDecimal</code> are not the purpose of this method.
+     *        See <code>ObjectConverter</code> for more generic methods.}
      *
-     * @param <N> The class to cast to.
-     * @param n The number to cast.
-     * @param c The destination type.
+     * This method does not verify if the given type is wide enough for the given value,
+     * because the type has typically been calculated by {@link #widestClass(Class, Class)}
+     * or {@link #narrowestClass(Number)}. If nevertheless the given type is not wide enough,
+     * then the behavior depends on the implementation of the corresponding
+     * {@code Number.fooValue()} method - typically, the value is just rounded or truncated.
+     *
+     * @param  <N> The class to cast to.
+     * @param  n The number to cast.
+     * @param  c The destination type.
      * @return The number casted to the given type.
-     * @throws IllegalArgumentException If the given type is unknown.
+     * @throws IllegalArgumentException If the given type is not one of the primitive
+     *         wrappers for numeric types.
      */
     @SuppressWarnings("unchecked")
     public static <N extends Number> N cast(final Number n, final Class<N> c)
