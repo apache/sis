@@ -32,7 +32,7 @@ import org.apache.sis.util.resources.Errors;
  * @param <T> The type of range elements as a subclass of {@link Number}.
  *
  * @author  Martin Desruisseaux (IRD)
- * @author  Jody Garnett (for parameterized type suggestion)
+ * @author  Jody Garnett (for parameterized type inspiration)
  * @since   0.3 (derived from geotk-2.4)
  * @version 0.3
  * @module

@@ -251,7 +251,7 @@ public final strictfp class RangeTest extends TestCase {
     }
 
     /**
-     * Tests the {@link Range#intersection(Range)} method.
+     * Tests the {@link Range#intersect(Range)} method.
      */
     @Test
     public void testIntersection() {
@@ -265,7 +265,7 @@ public final strictfp class RangeTest extends TestCase {
     }
 
     /**
-     * Tests the {@link Range#intersection(Range)} method with arguments resulting in empty range.
+     * Tests the {@link Range#intersect(Range)} method with arguments resulting in empty range.
      */
     @Test
     public void testIntersectionOfNonIntersectingRanges() {

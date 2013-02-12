@@ -32,7 +32,7 @@ import static org.junit.Assert.*;
 /**
  * Tests the {@link DerivedMap}. For the purpose of this test, this class implements an
  * {@link ObjectConverter} for which input values are multiplied by 100, except value
- * {@code EXCLUDED} which is converted to {@code null} (meaning: excluded from the
+ * {@value #EXCLUDED} which is converted to {@code null} (meaning: excluded from the
  * converted map).
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -45,7 +45,7 @@ public final strictfp class DerivedMapTest extends TestCase implements ObjectCon
     /**
      * The value to replace by {@code null}.
      */
-    private static final int EXCLUDED = 17;
+    protected static final int EXCLUDED = 17; // non-private for javadoc purpose.
 
     /**
      * Fills test values in the given maps.
@@ -117,7 +117,7 @@ public final strictfp class DerivedMapTest extends TestCase implements ObjectCon
     @Override public Class<Integer> getTargetClass() {return Integer.class;}
 
     /**
-     * Multiply the given value by 10, except value {@value #EXCLUDED}.
+     * Multiplies the given value by 10, except value {@value #EXCLUDED}.
      *
      * @param  value The value to multiply.
      * @return The multiplied value, or {@code null}.
