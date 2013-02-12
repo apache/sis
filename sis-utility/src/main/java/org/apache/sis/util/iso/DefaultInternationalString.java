@@ -29,6 +29,7 @@ import java.util.Locale;
 import net.jcip.annotations.ThreadSafe;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.Locales;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.collection.CollectionsExt.isNullOrEmpty;
@@ -85,7 +86,7 @@ public class DefaultInternationalString extends AbstractInternationalString impl
      */
     public DefaultInternationalString(final String string) {
         if (string != null) {
-            localeMap = Collections.singletonMap(null, string);
+            localeMap = Collections.singletonMap(Locale.ROOT, string);
         } else {
             localeMap = Collections.emptyMap();
         }
@@ -111,43 +112,48 @@ public class DefaultInternationalString extends AbstractInternationalString impl
                 // If HashMap is replaced by an other type, please revisit 'getLocales()'.
             }
         }
+        final boolean nullMapKey = localeMap.containsKey(null);
+        if (nullMapKey || localeMap.containsValue(null)) {
+            throw new IllegalArgumentException(Errors.format(nullMapKey
+                    ? Errors.Keys.NullMapKey : Errors.Keys.NullMapValue));
+        }
     }
 
     /**
      * Adds a string for the given locale.
      *
-     * @param  locale The locale for the {@code string} value, or {@code null}.
+     * @param  locale The locale for the {@code string} value.
      * @param  string The localized string.
      * @throws IllegalArgumentException if a different string value was already set for
      *         the given locale.
      */
     public synchronized void add(final Locale locale, final String string) throws IllegalArgumentException {
-        if (string != null) {
-            switch (localeMap.size()) {
-                case 0: {
-                    localeMap = Collections.singletonMap(locale, string);
-                    localeSet = null;
-                    defaultValue = null; // Will be recomputed when first needed.
-                    return;
-                }
-                case 1: {
-                    // If HashMap is replaced by an other type, please revisit 'getLocales()'.
-                    localeMap = new LinkedHashMap<Locale,String>(localeMap);
-                    localeSet = null;
-                    break;
-                }
+        ArgumentChecks.ensureNonNull("locale", locale);
+        ArgumentChecks.ensureNonNull("string", string);
+        switch (localeMap.size()) {
+            case 0: {
+                localeMap = Collections.singletonMap(locale, string);
+                localeSet = null;
+                defaultValue = null; // Will be recomputed when first needed.
+                return;
             }
-            final String old = localeMap.put(locale, string);
-            if (old != null) {
-                localeMap.put(locale, old);
-                if (string.equals(old)) {
-                    return;
-                }
-                throw new IllegalArgumentException(Errors.format(
-                        Errors.Keys.ValueAlreadyDefined_1, locale));
+            case 1: {
+                // If HashMap is replaced by an other type, please revisit 'getLocales()'.
+                localeMap = new LinkedHashMap<Locale,String>(localeMap);
+                localeSet = null;
+                break;
             }
-            defaultValue = null; // Will be recomputed when first needed.
         }
+        final String old = localeMap.put(locale, string);
+        if (old != null) {
+            localeMap.put(locale, old);
+            if (string.equals(old)) {
+                return;
+            }
+            throw new IllegalArgumentException(Errors.format(
+                    Errors.Keys.ValueAlreadyDefined_1, locale));
+        }
+        defaultValue = null; // Will be recomputed when first needed.
     }
 
     /**
@@ -250,60 +256,69 @@ public class DefaultInternationalString extends AbstractInternationalString impl
      * part. If no string are found, then this method searches for a locale without the
      * {@linkplain Locale#getCountry() country} part. For example if the {@code "fr_CA"} locale
      * was requested but not found, then this method looks for the {@code "fr"} locale.
-     * The {@code null} locale (which stand for unlocalized message) is tried last.
+     * The {@linkplain Locale#ROOT root locale} is tried last.
      *
-     * {@section Handling of <code>null</code> argument value}
-     * A {@code null} argument value can be given to this method for requesting a "unlocalized" string,
-     * typically some programmatic strings like {@linkplain org.opengis.annotation.UML#identifier() UML
-     * identifiers}. While such identifiers often look like English words, the {@code null} locale is
-     * not considered synonymous to the {@linkplain Locale#ENGLISH English locale} since the values may
-     * differ in the way numbers and dates are formatted (e.g. using the ISO 8601 standard for dates
-     * instead than English conventions). In order to produce a value close to the common practice,
-     * this method handles {@code null} argument value as below:
+     * {@section Handling of <code>Locale.ROOT</code> argument value}
+     * {@link Locale#ROOT} can be given to this method for requesting a "unlocalized" string,
+     * typically some programmatic values like enumerations or identifiers.
+     * While identifiers often look like English words, {@code Locale.ROOT} is not considered
+     * synonymous to {@link Locale#ENGLISH} because the values may differ in the way numbers and
+     * dates are formatted (e.g. using the ISO 8601 standard for dates instead than English conventions).
+     * In order to produce a value close to the common practice, this method handles {@code Locale.ROOT}
+     * as below:
      *
      * <ul>
-     *   <li>If a string has been explicitly {@linkplain #add(Locale, String) added} for the
-     *       {@code null} locale, then that string is returned.</li>
+     *   <li>If a string has been explicitly {@linkplain #add(Locale, String) added} for
+     *       {@code Locale.ROOT}, then that string is returned.</li>
      *   <li>Otherwise, acknowledging that UML identifiers in OGC/ISO specifications are primarily
-     *       expressed in the English language, this method looks for an English string as an
-     *       approximation of a "unlocalized" string.</li>
-     *   <li>If no English string was found, this method looks for a string for the
+     *       expressed in the English language, this method looks for strings associated to
+     *       {@link Locale#US} as an approximation of "unlocalized" strings.</li>
+     *   <li>If no English string was found, then this method looks for a string for the
      *       {@linkplain Locale#getDefault() system default locale}.</li>
      *   <li>If none of the above steps found a string, then this method returns
      *       an arbitrary string.</li>
      * </ul>
      *
-     * @param  locale The locale to look for, or {@code null}.
-     * @return The string in the specified locale, or in a default locale.
+     * {@section Handling of <code>null</code> argument value}
+     * In the default implementation, the {@code null} locale is handled as a synonymous of
+     * {@code Locale.ROOT}. However subclasses are free to use a different fallback. Client
+     * code are encouraged to specify only non-null values for more determinist behavior.
+     *
+     * @param  locale The desired locale for the string to be returned.
+     * @return The string in the given locale if available, or in an
+     *         implementation-dependent fallback locale otherwise.
      */
     @Override
     public synchronized String toString(final Locale locale) {
         String text = getString(locale);
         if (text == null) {
             /*
-             * No string for the requested locale. Try the string in the 'null' locale first, then
-             * the string in the system-default last.  Note: in a previous version we were looking
-             * for the system default first, but it produced unexpected results in many cases. The
-             * i18n string is often constructed with an English sentence for the "null" locale (the
-             * unlocalized text) without explicit entry for the English locale since the "null" one
-             * is supposed to be the default according javadoc. If we were looking for the default
-             * locale on a system having French as the default, the effect would be to return a
-             * sentence in French when the user asked for a sentence in English (or any language
-             * not explicitly declared). Generally the "unlocalized" text is in English, so it is
-             * a better bet as a fallback.
+             * No localized string for the requested locale.
+             * Try fallbacks in the following order:
+             *
+             *  1) Locale.ROOT
+             *  2) Locale.US, as an approximation of "unlocalized" strings.
+             *  3) Locale.getDefault()
+             *
+             * Locale.getDefault() must be last because the i18n string is often constructed with
+             * an English sentence for the 'ROOT' locale (the unlocalized text), without explicit
+             * entry for the English locale since the 'ROOT' locale is the fallback. If we were
+             * looking for the default locale first on a system having French as the default locale,
+             * we would get a sentence in French when the user asked for a sentence in English or
+             * any language not explicitly declared.
              */
-            text = localeMap.get(null);
+            text = localeMap.get(Locale.ROOT);
             if (text == null) {
-                Locale def = Locale.US; // The default language for "unlocalized" string.
-                if (locale != def) { // Avoid requesting the same locale twice (optimization).
-                    text = getString(def);
+                Locale fallback = Locale.US; // The fallback language for "unlocalized" string.
+                if (fallback != locale) { // Avoid requesting the same locale twice (optimization).
+                    text = getString(fallback);
                     if (text != null) {
                         return text;
                     }
                 }
-                def = Locale.getDefault();
-                if (locale != def && def != Locale.US) {
-                    text = getString(def);
+                fallback = Locale.getDefault();
+                if (fallback != locale && fallback != Locale.US) {
+                    text = getString(fallback);
                     if (text != null) {
                         return text;
                     }

@@ -239,7 +239,7 @@ public class AngleFormat extends Format implements Localized {
     }
 
     /**
-     * The locale specified at construction time.
+     * The locale specified at construction time (never null).
      */
     private final Locale locale;
 
@@ -361,6 +361,7 @@ public class AngleFormat extends Format implements Localized {
      * @param  locale The locale to use.
      */
     public AngleFormat(final Locale locale) {
+        ArgumentChecks.ensureNonNull("locale", locale);
         this.locale = locale;
         degreesFieldWidth     = 1;
         minutesFieldWidth     = 2;
@@ -392,6 +393,7 @@ public class AngleFormat extends Format implements Localized {
      * @throws IllegalArgumentException If the specified pattern is illegal.
      */
     public AngleFormat(final String pattern, final Locale locale) throws IllegalArgumentException {
+        ArgumentChecks.ensureNonNull("locale", locale);
         this.locale = locale;
         applyPattern(pattern, SYMBOLS, '.');
     }
@@ -911,7 +913,7 @@ scan:   for (int i=0; i<length;) {
              * heavy formatToCharacterIterator(…). Otherwise the usual format(…) method fits well.
              */
             final int startPosition = toAppendTo.length();
-            if (characterIterator instanceof FormattedCharacterIterator) {
+            if (characterIterator != null) {
                 final FormattedCharacterIterator it = (FormattedCharacterIterator) characterIterator;
                 it.append(numberFormat.formatToCharacterIterator(value), toAppendTo);
                 if (suffix != null) {
@@ -1001,7 +1003,7 @@ scan:   for (int i=0; i<length;) {
             pos.setBeginIndex(startPosition);
             pos.setEndIndex(toAppendTo.length());
         }
-        if (characterIterator instanceof FormattedCharacterIterator) {
+        if (characterIterator != null) {
             ((FormattedCharacterIterator) characterIterator).addFieldLimit(
                     Field.HEMISPHERE, suffix, startPosition);
         }
@@ -1609,9 +1611,9 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
 
     /**
      * Returns this formatter locale. This is the locale specified at construction time if any,
-     * or the default locale at construction time otherwise.
+     * or the {@linkplain Locale#getDefault() default locale} at construction time otherwise.
      *
-     * @return This formatter locale.
+     * @return This formatter locale (never {@code null}).
      */
     @Override
     public Locale getLocale() {

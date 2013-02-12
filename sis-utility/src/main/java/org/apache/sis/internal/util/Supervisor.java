@@ -34,6 +34,7 @@ import java.lang.management.ManagementFactory;
 
 import org.apache.sis.util.About;
 import org.apache.sis.util.Localized;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.TreeTable;
@@ -116,6 +117,7 @@ public final class Supervisor extends StandardMBean implements SupervisorMBean, 
      */
     public Supervisor(final Locale locale) throws NotCompliantMBeanException {
         super(SupervisorMBean.class);
+        ArgumentChecks.ensureNonNull("locale", locale);
         this.locale = locale;
     }
 

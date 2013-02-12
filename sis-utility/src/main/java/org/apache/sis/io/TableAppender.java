@@ -77,7 +77,7 @@ import org.apache.sis.internal.util.JDK7;
  * @version 0.3
  * @module
  *
- * @see org.apache.sis.util.tree.TreeTableFormat
+ * @see org.apache.sis.util.collection.TreeTableFormat
  */
 @Decorator(Appendable.class)
 public class TableAppender extends Appender implements Flushable {
