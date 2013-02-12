@@ -74,7 +74,6 @@ package org.apache.sis.xml;
  * @module
  *
  * @see NilReason#createNilObject(Class)
- * @see ReferenceResolver#resolve(MarshalContext, Class, NilReason)
  * @see org.apache.sis.util.Numbers#valueOfNil(Class)
  */
 public interface NilObject {

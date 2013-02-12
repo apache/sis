@@ -107,9 +107,8 @@ public class ResourceInternationalString extends AbstractInternationalString imp
 
     /**
      * Returns the resource bundle for the given locale. The default implementation fetches the
-     * bundle from the name given at {@linkplain #ResourceInternationalString(String,String)
-     * construction time}. Subclasses can override this method if they need to fetch the
-     * bundle in an other way.
+     * bundle from the name given at {@linkplain #ResourceInternationalString construction time}.
+     * Subclasses can override this method if they need to fetch the bundle in an other way.
      *
      * @param  locale The locale for which to get the resource bundle.
      * @return The resource bundle for the given locale.
@@ -123,21 +122,22 @@ public class ResourceInternationalString extends AbstractInternationalString imp
 
     /**
      * Returns a string in the specified locale. If there is no string for the specified
-     * {@code locale}, then this method search for a string in an other locale as
+     * {@code locale}, then this method searches for a string in an other locale as
      * specified in the {@link ResourceBundle} class description.
      *
-     * @param  locale The locale to look for, or {@code null} for an unlocalized version.
-     * @return The string in the specified locale, or in a default locale.
+     * {@section Handling of <code>null</code> argument value}
+     * In the default implementation, the {@code null} locale is handled as a synonymous of
+     * {@code Locale.ROOT}. However subclasses are free to use a different fallback. Client
+     * code are encouraged to specify only non-null values for more determinist behavior.
+     *
+     * @param  locale The desired locale for the string to be returned.
+     * @return The string in the specified locale, or in a fallback locale.
      * @throws MissingResourceException is the key given to the constructor is invalid.
      */
     @Override
     public String toString(Locale locale) throws MissingResourceException {
         if (locale == null) {
-            // The English locale (NOT the system default) is often used
-            // as the real identifier in OGC IdentifiedObject naming. If
-            // a user wants a string in the system default locale, he
-            // should invokes the 'toString()' method instead.
-            locale = Locale.ENGLISH;
+            locale = Locale.ROOT; // For consistency with DefaultInternationalString.
         }
         return getBundle(locale).getString(key);
     }

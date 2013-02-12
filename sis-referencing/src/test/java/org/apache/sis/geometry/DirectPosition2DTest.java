@@ -46,7 +46,7 @@ public final strictfp class DirectPosition2DTest extends TestCase {
     }
 
     /**
-     * Tests the {@link DirectPosition2D#DirectPosition2D(String)} constructor.
+     * Tests the {@link DirectPosition2D#DirectPosition2D(CharSequence)} constructor.
      */
     @Test
     public void testWktParsing() {

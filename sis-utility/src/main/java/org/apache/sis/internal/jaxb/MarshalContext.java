@@ -185,8 +185,7 @@ public final class MarshalContext extends org.apache.sis.xml.MarshalContext {
 
     /**
      * Returns the locale to use for marshalling, or {@code null} if no locale were explicitly
-     * specified. A {@code null} value means that some locale-neutral language should be used
-     * if available, or an implementation-default locale (typically English) otherwise.
+     * specified.
      */
     @Override
     public final Locale getLocale() {
@@ -194,8 +193,8 @@ public final class MarshalContext extends org.apache.sis.xml.MarshalContext {
     }
 
     /**
-     * Returns the timezone, or {@code null} if none were explicitely defined.
-     * In the later case, an implementation-default (typically UTC) timezone is used.
+     * Returns the timezone to use for marshalling, or {@code null} if none were explicitely
+     * specified.
      */
     @Override
     public final TimeZone getTimeZone() {

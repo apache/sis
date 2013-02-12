@@ -81,6 +81,8 @@ public final strictfp class TypesTest extends TestCase {
     @Test
     public void testGetDescription() {
         assertEquals("Name of the character coding standard used in the resource.",
+                Types.getDescription(CharacterSet.class, Locale.ROOT));
+        assertEquals("Name of the character coding standard used in the resource.",
                 Types.getDescription(CharacterSet.class, Locale.ENGLISH));
         assertEquals("Jeu de caractères.",
                 Types.getDescription(CharacterSet.class, Locale.FRENCH));
@@ -91,6 +93,8 @@ public final strictfp class TypesTest extends TestCase {
      */
     @Test
     public void testGetCodeDescription() {
+        assertEquals("ISO/IEC 8859-1, Information technology - 8-bit single byte coded graphic character sets - Part 1 : Latin alphabet No.1.",
+                Types.getDescription(CharacterSet.ISO_8859_1, Locale.ROOT));
         assertEquals("ISO/IEC 8859-1, Information technology - 8-bit single byte coded graphic character sets - Part 1 : Latin alphabet No.1.",
                 Types.getDescription(CharacterSet.ISO_8859_1, Locale.ENGLISH));
         assertEquals("ISO/IEC 8859-1, alphabet latin 1.",
@@ -132,6 +136,7 @@ public final strictfp class TypesTest extends TestCase {
      */
     @Test
     public void testGetLocalizedCodeTitle() {
+        assertEquals("Download",       Types.getCodeTitle(OnLineFunction.DOWNLOAD, Locale.ROOT));
         assertEquals("Download",       Types.getCodeTitle(OnLineFunction.DOWNLOAD, Locale.ENGLISH));
         assertEquals("Téléchargement", Types.getCodeTitle(OnLineFunction.DOWNLOAD, Locale.FRENCH));
     }

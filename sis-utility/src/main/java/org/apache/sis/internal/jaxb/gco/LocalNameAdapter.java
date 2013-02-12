@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.jaxb.gco;
 
+import java.util.Locale;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import org.opengis.util.LocalName;
 import org.opengis.util.NameFactory;
@@ -70,7 +71,7 @@ public final class LocalNameAdapter extends XmlAdapter<String,LocalName> {
      */
     @Override
     public String marshal(final LocalName value) {
-        return (value == null) ? null : value.toInternationalString().toString(null);
+        return (value == null) ? null : value.toInternationalString().toString(Locale.ROOT);
     }
 
     /**
