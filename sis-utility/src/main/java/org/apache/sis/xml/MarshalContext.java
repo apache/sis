@@ -60,35 +60,34 @@ public abstract class MarshalContext {
      * Returns the locale to use for (un)marshalling, or {@code null} if no locale were explicitly
      * specified. The locale returned by this method can be used for choosing a language in an
      * {@link org.opengis.util.InternationalString}.
-     * This locale may vary in different fragments of the same XML document.
+     *
+     * <p>This locale may vary in different fragments of the same XML document.
      * In particular children of {@link org.opengis.metadata.Metadata} inherit the locale
-     * specified by the {@link org.opengis.metadata.Metadata#getLanguage()} attribute.
+     * specified by the {@link org.opengis.metadata.Metadata#getLanguage()} attribute.</p>
      *
-     * {@section Null locale}
-     * Null locales are typically interpreted as a request for locale-independent strings in SIS.
-     * The meaning of "locale-independent" is implementation specific -
-     * this is usually very close to the English locale, but not necessarily
-     * (e.g. dates formatted according ISO standard instead then English locale).
-     * If the locale is {@code null}, then callers shall select a default locale as documented
-     * in the {@link org.apache.sis.util.iso.DefaultInternationalString#toString(Locale)} javadoc.
-     * As a matter of rule:
+     * {@section Handling of <code>Locale.ROOT</code>}
+     * {@link Locale#ROOT} is interpreted as a request for locale-neutral strings.
+     * The meaning of "locale-neutral" is implementation specific - this is usually
+     * very close to the English locale, but not necessarily. For examples dates are
+     * formatted according ISO standard instead than the rules of the English locale.
      *
-     * <ul>
-     *   <li>If the locale is given to an {@code InternationalString.toString(Locale)} method,
-     *       keep the {@code null} value since the international string is already expected to
-     *       returns a "unlocalized" string in such case.</li>
-     *   <li>Otherwise, if a {@code Locale} instance is really needed, use {@link Locale#US}
-     *       as an approximation of "unlocalized" string.</li>
-     * </ul>
+     * {@section Handling of <code>null</code> locale}
+     * A {@code null} value means that the locale is unspecified. Callers are encouraged
+     * to use the root locale as the default value, but some flexibility is allowed.
      *
      * @return The locale for the XML fragment being (un)marshalled, or {@code null} is unspecified.
+     *
+     * @see org.apache.sis.util.iso.DefaultInternationalString#toString(Locale)
      */
     public abstract Locale getLocale();
 
     /**
      * Returns the timezone to use for (un)marshalling, or {@code null} if none were explicitely
-     * specified. If {@code null}, then an implementation-default (typically UTC) timezone is
-     * assumed.
+     * specified.
+     *
+     * {@section Handling of <code>null</code> timezone}
+     * A {@code null} value means that the timezone is unspecified. Callers are encouraged
+     * to use the UTC timezone as the default value, but some flexibility is allowed.
      *
      * @return The timezone for the XML fragment being (un)marshalled, or {@code null} if unspecified.
      */

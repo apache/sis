@@ -61,7 +61,7 @@ public final strictfp class GeneralDirectPositionTest extends TestCase {
     }
 
     /**
-     * Tests the {@link GeneralDirectPosition#GeneralDirectPosition(String)} constructor.
+     * Tests the {@link GeneralDirectPosition#GeneralDirectPosition(CharSequence)} constructor.
      */
     @Test
     public void testWktParsing() {

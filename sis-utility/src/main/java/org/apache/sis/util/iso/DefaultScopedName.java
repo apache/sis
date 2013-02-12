@@ -103,8 +103,8 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
     /**
      * Constructs a scoped name from the specified list of strings.
      * If any of the given names is an instance of {@link InternationalString}, then its
-     * {@link InternationalString#toString(java.util.Locale) toString(null)} method will
-     * be invoked for fetching an unlocalized name.
+     * {@link InternationalString#toString(java.util.Locale) toString(Locale.ROOT)}
+     * method will be invoked for fetching an unlocalized name.
      * Otherwise the {@link CharSequence#toString()} method will be used.
      *
      * @param scope The scope of this name, or {@code null} for the global scope.

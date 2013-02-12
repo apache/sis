@@ -97,7 +97,7 @@ public class ValueConverter {
      * @param  value The value that can't be converted.
      * @param  sourceType The base type of the value to convert. This is determined by the argument
      *         type of the method that caught the exception. For example the source type is always
-     *         {@code URI.class} if the exception has been caught by the {@link #toURL(URI)} method.
+     *         {@code URI.class} if the exception has been caught by the {@link #toURL(MarshalContext, URI)} method.
      * @param  targetType The expected type of the converted object.
      * @param  exception The exception that occurred during the conversion attempt.
      * @return {@code true} if the (un)marshalling process should continue despite this error,

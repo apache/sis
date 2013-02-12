@@ -41,11 +41,13 @@ public final strictfp class TableColumnTest extends TestCase {
     @Test
     public void testConstantHeader() {
         InternationalString i18n = NAME.getHeader();
+        assertEquals("Name", i18n.toString(Locale.ROOT));
         assertEquals("Name", i18n.toString(Locale.ENGLISH));
         assertEquals("Nom",  i18n.toString(Locale.FRENCH));
         assertSame("Test caching", i18n, NAME.getHeader());
 
         i18n = TYPE.getHeader();
+        assertEquals("Type", i18n.toString(Locale.ROOT));
         assertEquals("Type", i18n.toString(Locale.ENGLISH));
         assertEquals("Type", i18n.toString(Locale.FRENCH));
         assertSame("Test caching", i18n, TYPE.getHeader());

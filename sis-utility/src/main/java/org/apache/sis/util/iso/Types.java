@@ -217,9 +217,8 @@ public final class Types extends Static {
      *
      * <ul>
      *   <li>If {@code code} is {@code null}, then this method returns {@code null}.</li>
-     *   <li>If {@code locale} is {@code null}, then this method uses {@link Locale#US}
-     *       as a close approximation of "unlocalized" strings since OGC standards are
-     *       defined in English.</li>
+     *   <li>If {@code locale} is {@code null}, then this method uses {@link Locale#ROOT}
+     *       for "unlocalized" (typically English) strings.</li>
      *   <li>If there is no resources for the given code in the given language, then this method
      *       fallback on other languages as described in {@link ResourceBundle} javadoc.</li>
      *   <li>If there is no localized resources for the given code, then this method fallback
@@ -237,7 +236,7 @@ public final class Types extends Static {
             return null;
         }
         if (locale == null) {
-            locale = Locale.US;
+            locale = Locale.ROOT;
         }
         /*
          * The code below is a duplicated - in a different way - of CodeListProxy(CodeList)

@@ -128,7 +128,7 @@ public final class CollectionsExt extends Static {
      * <p>The {@link Set#add(Object) Set.add(E)} method is supported only if the given converter
      * is {@linkplain org.apache.sis.math.FunctionProperty#INVERTIBLE invertible}.
      * An invertible converter is not mandatory for other {@code Set} operations.
-     * However {@link Set#contains(Object) contains} and {@link #remove(Object) remove}
+     * However {@link Set#contains(Object) contains} and {@link Set#remove(Object) remove}
      * operations are likely to be faster if the inverse converter is available.</p>
      *
      * <p>The derived set may contain fewer elements than the original set if some elements
@@ -618,7 +618,7 @@ public final class CollectionsExt extends Static {
     }
 
     /**
-     * Returns a comparator for map entries having comparable {@linkplain Map.Entry#getValue() values}.
+     * Returns a comparator for map entries having comparable {@linkplain java.util.Map.Entry#getValue() values}.
      * For any pair of entries {@code e1} and {@code e2}, this method performs the comparison as below:
      *
      * {@preformat java
