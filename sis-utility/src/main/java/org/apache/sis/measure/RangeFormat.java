@@ -21,13 +21,14 @@ import java.util.Locale;
 import java.util.TimeZone;
 import java.text.Format;
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.text.NumberFormat;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.text.AttributedCharacterIterator;
 import java.text.FieldPosition;
 import java.text.ParseException;
 import java.text.ParsePosition;
-import java.text.SimpleDateFormat;
 import javax.measure.unit.Unit;
 import javax.measure.unit.UnitFormat;
 import org.apache.sis.util.Numbers;
@@ -38,14 +39,18 @@ import org.apache.sis.util.resources.Errors;
 
 /**
  * Parses and formats {@linkplain Range ranges} of the given type. The kind of ranges created
- * by the {@code parse} method is determined by the class of range components:
+ * by the {@code parse} method is determined by the class of range elements:
  *
  * <ul>
- *   <li>If the components type is assignable to {@link Date}, then the {@code parse} method
+ *   <li>If the elements type is assignable to {@link Date}, then the {@code parse} method
  *       will create {@link DateRange} objects.</li>
- *   <li>If the components type is assignable to {@link Number}, then the {@code parse} method
- *       will create {@link MeasurementRange} objects if the text to parse contains a
- *       {@linkplain Unit unit} of measure, or {@link NumberRange} otherwise.</li>
+ *   <li>If the elements type is assignable to {@link Number}, then:
+ *     <ul>
+ *       <li>If the text to parse contains a {@linkplain Unit unit} of measure, then
+ *           the {@code parse} method will create {@link MeasurementRange} objects.</li>
+ *       <li>Otherwise the {@code parse} method will create {@link NumberRange} objects.</li>
+ *     </ul>
+ *   </li>
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -66,42 +71,81 @@ public class RangeFormat extends Format {
 
     /**
      * The constant value for {@link FieldPosition} which designate the minimal value.
-     * This constant can be combined with one of the {@code *_FIELD} constants defined
-     * in {@link NumberFormat} or {@link DateFormat} classes for fetching the position
-     * of a formatted field. For example in order to get the position where the fraction
-     * digits of the {@linkplain Range#getMinValue() minimal value} begin, use:
      *
-     * {@preformat java
-     *     FieldPosition pos = new FieldPosition(NumberFormat.FRACTION_FIELD | RangeFormat.MIN_VALUE_FIELD);
-     *     rangeFormat.format(range, buffer, pos);
-     *     int beginIndex = pos.getBeginIndex();
-     * }
+     * @see Field#MIN_VALUE
      */
-    public static final int MIN_VALUE_FIELD = 0;
-    // Note: the implementation in this class requires that MIN_VALUE_FIELD is 0.
+    private static final int MIN_VALUE_FIELD = 0;
 
     /**
      * The constant value for {@link FieldPosition} which designate the maximal value.
-     * This constant can be combined with one of the {@code *_FIELD} constants defined
-     * in {@link NumberFormat} or {@link DateFormat} classes for fetching the position
-     * of a formatted field. For example in order to get the position where the fraction
-     * digits of the {@linkplain Range#getMaxValue() maximal value} begin, use:
      *
-     * {@preformat java
-     *     FieldPosition pos = new FieldPosition(NumberFormat.FRACTION_FIELD | RangeFormat.MAX_VALUE_FIELD);
-     *     rangeFormat.format(range, buffer, pos);
-     *     int beginIndex = pos.getBeginIndex();
-     * }
+     * @see Field#MAX_VALUE
      */
-    public static final int MAX_VALUE_FIELD = 0x40000000;
-    // Note: do not use the sign bit, since the JDK uses -1 for "no field ID".
-    // The maximal value used by the formats (as of JDK 1.6) is 17.
+    private static final int MAX_VALUE_FIELD = 1;
 
     /**
      * The constant value for {@link FieldPosition} which designate the units of measurement.
-     * This field can <strong>not</strong> be combined with other field masks.
+     *
+     * @see Field#UNIT
      */
-    public static final int UNIT_FIELD = 0x20000000;
+    private static final int UNIT_FIELD = 2;
+
+    /**
+     * Defines constants that are used as attribute keys in the iterator returned from
+     * {@link RangeFormat#formatToCharacterIterator(Object)}.
+     *
+     * @author  Martin Desruisseaux (Geomatys)
+     * @since   0.3
+     * @version 0.3
+     * @module
+     */
+    public static final class Field extends FormatField {
+        /**
+         * For cross-version compatibility.
+         */
+        private static final long serialVersionUID = 2286464612919602208L;
+
+        /**
+         * Creates a new field of the given name. The given name shall
+         * be identical to the name of the public static constant.
+         */
+        private Field(final String name, final int fieldID) {
+            super(name, fieldID);
+        }
+
+        /**
+         * Identifies the minimal value field in a range.
+         * When formatting a string, this value may be specified to the {@link FieldPosition}
+         * constructor in order to get the bounding index where the minimal value has been written.
+         */
+        public static final Field MIN_VALUE = new Field("MIN_VALUE", MIN_VALUE_FIELD);
+
+        /**
+         * Identifies the maximal value field in a range.
+         * When formatting a string, this value may be specified to the {@link FieldPosition}
+         * constructor in order to get the bounding index where the maximal value has been written.
+         */
+        public static final Field MAX_VALUE = new Field("MAX_VALUE", MAX_VALUE_FIELD);
+
+        /**
+         * Identifies the unit field in a range, if any.
+         * When formatting a string, this value may be specified to the {@link FieldPosition}
+         * constructor in order to get the bounding index where the unit has been written.
+         */
+        public static final Field UNIT = new Field("UNIT", UNIT_FIELD);
+
+        /**
+         * Returns the field constant for the given numeric identifier.
+         */
+        static Field forCode(final int field) {
+            switch (field) {
+                case MIN_VALUE_FIELD: return MIN_VALUE;
+                case MAX_VALUE_FIELD: return MAX_VALUE;
+                case UNIT_FIELD:      return UNIT;
+                default: throw new AssertionError(field);
+            }
+        }
+    }
 
     /**
      * The symbols used for parsing and formatting a range.
@@ -124,9 +168,11 @@ public class RangeFormat extends Format {
      * to be created by the parse method:
      *
      * <ul>
-     *   <li>{@link NumberRange} if the element class is assignable to {@link Number}.</li>
-     *   <li>{@link DateRange}   if the element class is assignable to {@link Date}.</li>
+     *   <li>{@link NumberRange} if the element type is assignable to {@link Number} or {@link Angle}.</li>
+     *   <li>{@link DateRange}   if the element type is assignable to {@link Date}.</li>
      * </ul>
+     *
+     * @see Range#getElementType()
      */
     protected final Class<?> elementType;
 
@@ -135,9 +181,9 @@ public class RangeFormat extends Format {
      * The format is determined from the {@linkplain #elementType element type}:
      *
      * <ul>
-     *   <li>{@link AngleFormat}  if the element class is assignable to {@link Angle}.</li>
-     *   <li>{@link NumberFormat} if the element class is assignable to {@link Number}.</li>
-     *   <li>{@link DateFormat}   if the element class is assignable to {@link Date}.</li>
+     *   <li>{@link AngleFormat}  if the element type is assignable to {@link Angle}.</li>
+     *   <li>{@link NumberFormat} if the element type is assignable to {@link Number}.</li>
+     *   <li>{@link DateFormat}   if the element type is assignable to {@link Date}.</li>
      * </ul>
      */
     protected final Format elementFormat;
@@ -147,25 +193,6 @@ public class RangeFormat extends Format {
      * only if {@link #elementType} is assignable to {@link Number} but not to {@link Angle}.
      */
     protected final UnitFormat unitFormat;
-
-    /**
-     * Constructs a new {@code RangeFormat} for the default locale.
-     *
-     * @return A range format in the default locale.
-     */
-    public static RangeFormat getInstance() {
-        return new RangeFormat();
-    }
-
-    /**
-     * Constructs a new {@code RangeFormat} for the specified locale.
-     *
-     * @param  locale The locale.
-     * @return A range format in the given locale.
-     */
-    public static RangeFormat getInstance(final Locale locale) {
-        return new RangeFormat(locale);
-    }
 
     /**
      * Creates a new format for parsing and formatting {@linkplain NumberRange number ranges}
@@ -256,6 +283,10 @@ public class RangeFormat extends Format {
      * @param  localized {@code true} for returning the localized pattern, or {@code false}
      *         for the unlocalized one.
      * @return The pattern, or {@code null} if the {@link #elementFormat} doesn't use pattern.
+     *
+     * @see DecimalFormat#toPattern()
+     * @see SimpleDateFormat#toPattern()
+     * @see AngleFormat#toPattern()
      */
     public String getElementPattern(final boolean localized) {
         final Format format = elementFormat;
@@ -280,6 +311,10 @@ public class RangeFormat extends Format {
      * @param  pattern The new pattern.
      * @param  localized {@code true} if the given pattern is localized.
      * @throws IllegalStateException If the {@link #elementFormat} does not use pattern.
+     *
+     * @see DecimalFormat#applyPattern(String)
+     * @see SimpleDateFormat#applyPattern(String)
+     * @see AngleFormat#applyPattern(String)
      */
     public void setElementPattern(final String pattern, final boolean localized) {
         final Format format = elementFormat;
@@ -305,125 +340,208 @@ public class RangeFormat extends Format {
     }
 
     /**
-     * Formats a {@link Range} and appends the resulting text to a given string buffer. The default
-     * implementation formats the range using the same rules than {@link Range#toString()}, except
-     * that the values (numbers, angles or dates) are formatted using the {@link Format} object
-     * appropriate for the locale given at construction time.
+     * Returns the {@code *_FIELD} constant for the given field position, or -1 if none.
+     */
+    private static int getField(final FieldPosition position) {
+        if (position != null) {
+            final Format.Field field = position.getFieldAttribute();
+            if (field instanceof Field) {
+                return ((Field) field).field;
+            }
+            return position.getField();
+        }
+        return -1;
+    }
+
+    /**
+     * Casts the given object to a {@code Range}, or throws an {@code IllegalArgumentException}
+     * if the given object is not a {@code Range} instance.
+     */
+    private static Range<?> cast(final Object range) throws IllegalArgumentException {
+        if (range instanceof Range<?>) {
+            return (Range<?>) range;
+        }
+        final String message;
+        if (range == null) {
+            message = Errors.format(Errors.Keys.NullArgument_1, "range");
+        } else {
+            message = Errors.format(Errors.Keys.IllegalArgumentClass_3, "range", Range.class, range.getClass());
+        }
+        throw new IllegalArgumentException(message);
+    }
+
+    /**
+     * Formats a {@link Range} and appends the resulting text to a given string buffer.
+     * This method formats then given range as below:
+     *
+     * <ul>
+     *   <li>If the range is empty, then this method appends {@code "[]"}.</li>
+     *   <li>Otherwise if the minimal value is equals to the maximal value, then
+     *       that value is formatted alone.</li>
+     *   <li>Otherwise the minimal and maximal values are formatted like {@code [min … max]} for
+     *       inclusive bounds or {@code (min … max)} for exclusive bounds, or a mix of both styles.
+     *       The ∞ symbol is used in place of {@code min} or {@code max} for unbounded ranges.</li>
+     * </ul>
+     *
+     * If the given range is a {@link MeasurementRange}, then the unit of measurement is
+     * appended to the above string representation.
      *
      * @param  range      The {@link Range} object to format.
      * @param  toAppendTo Where the text is to be appended.
-     * @param  pos        Identifies a field in the formatted text.
+     * @param pos        Identifies a field in the formatted text, or {@code null} if none.
      * @return The string buffer passed in as {@code toAppendTo}, with formatted text appended.
      * @throws IllegalArgumentException If this formatter can not format the given object.
      */
     @Override
     public StringBuffer format(final Object range, final StringBuffer toAppendTo, final FieldPosition pos) {
-        if (!(range instanceof Range<?>)) {
-            final String message;
-            if (range == null) {
-                message = Errors.format(Errors.Keys.NullArgument_1, "range");
-            } else {
-                message = Errors.format(Errors.Keys.IllegalArgumentClass_3, "range", Range.class, range.getClass());
-            }
-            throw new IllegalArgumentException(message);
-        }
+        format(cast(range), toAppendTo, pos, null);
+        return toAppendTo;
+    }
+
+    /**
+     * Implementation of the format methods.
+     *
+     * @param range      The range to format.
+     * @param toAppendTo Where the text is to be appended.
+     * @param pos        Identifies a field in the formatted text, or {@code null} if none.
+     * @param characterIterator The character iterator for which the attributes need to be set,
+     *        or null if none. This is actually an instance of {@link FormattedCharacterIterator},
+     *        but we use the interface here for avoiding too early class loading.
+     */
+    @SuppressWarnings("fallthrough")
+    private void format(final Range<?> range, final StringBuffer toAppendTo, final FieldPosition pos,
+            final AttributedCharacterIterator characterIterator)
+    {
         /*
          * Special case for an empty range. This is typically formatted as "[]". The field
          * position is unconditionally set to the empty substring inside the brackets.
          */
-        final Range<?> r = (Range<?>) range;
         final RangeSymbols s = symbols;
-        if (r.isEmpty()) {
+        int fieldPos = getField(pos);
+        if (range.isEmpty()) {
             toAppendTo.append(s.openInclusive);
-            final int p = toAppendTo.length();
-            pos.setBeginIndex(p); // First index, inclusive.
-            pos.setEndIndex  (p); // Last index, exclusive
-            return toAppendTo.append(s.closeInclusive);
+            if (fieldPos >= MIN_VALUE_FIELD && fieldPos <= UNIT_FIELD) {
+                final int p = toAppendTo.length();
+                pos.setBeginIndex(p); // First index, inclusive.
+                pos.setEndIndex  (p); // Last index, exclusive
+            }
+            toAppendTo.append(s.closeInclusive);
+            return;
         }
         /*
-         * Prepares the FieldPosition for the minimal and the maximal values. We need to
-         * ensure that those two FieldPositions have their MAX_VALUE_FIELD bit cleared.
-         * We opportunistically reuse the FieldPosition provided by the user if suitable
-         * (this approach assumes that MIN_VALUE_FIELD is zero).
+         * Format a non-empty range by looping over all possible fields.
+         *
+         * Secial case: if minimal and maximal values are the same,
+         * formats only the maximal value.
          */
-        final FieldPosition minPos, maxPos;
-        final int fieldID = pos.getField();
-        if ((fieldID & MAX_VALUE_FIELD) == 0) {
-            minPos = pos; // User is interested in minimal value.
-            maxPos = new FieldPosition(fieldID);
+        final Comparable<?> minValue = range.getMinValue();
+        final Comparable<?> maxValue = range.getMaxValue();
+        final boolean isSingleton = (minValue != null) && minValue.equals(maxValue);
+        int field;
+        if (isSingleton) {
+            if (fieldPos == MIN_VALUE_FIELD) {
+                fieldPos = MAX_VALUE_FIELD;
+            }
+            field = MAX_VALUE_FIELD;
         } else {
-            minPos = new FieldPosition(fieldID & ~MAX_VALUE_FIELD);
-            maxPos = minPos; // Will overwrite the value of minPos.
+            field = MIN_VALUE_FIELD;
+            toAppendTo.append(range.isMinIncluded() ? s.openInclusive : s.openExclusive);
         }
-        final Comparable<?> minValue = r.getMinValue();
-        final Comparable<?> maxValue = r.getMaxValue();
-        if (minValue != null && minValue.equals(maxValue)) {
-            /*
-             * Special case: minimal and maximal values are the same.  Formats only the minimal
-             * value. If the user asked for the position of the maximal value, then the indexes
-             * of the minimal value (which is also the maximal value) will be copied at the end
-             * of this method (this work because maxPos == minPos in such case).
-             */
-            elementFormat.format(minValue, toAppendTo, minPos);
-        } else {
-            /*
-             * General case: format the minimal and maximal values between brackets.
-             * Units of measurement are added in the range is actually a MeasurementRange.
-             */
-            toAppendTo.append(r.isMinIncluded() ? s.openInclusive : s.openExclusive);
-            if (minValue == null) {
-                toAppendTo.append(minusSign);
-                minPos.setBeginIndex(toAppendTo.length());
-                toAppendTo.append(infinity);
-                minPos.setEndIndex(toAppendTo.length());
-            } else {
-                elementFormat.format(minValue, toAppendTo, minPos);
+        for (; field <= UNIT_FIELD; field++) {
+            final Object value;
+            switch (field) {
+                case MIN_VALUE_FIELD: value = minValue; break;
+                case MAX_VALUE_FIELD: value = maxValue; break;
+                case UNIT_FIELD:      value = range.getUnits(); break;
+                default: throw new AssertionError(field);
             }
-            toAppendTo.append(' ').append(s.separator).append(' ');
-            if (maxValue == null) {
-                maxPos.setBeginIndex(toAppendTo.length());
-                toAppendTo.append(infinity);
-                maxPos.setEndIndex(toAppendTo.length());
-            } else {
-                elementFormat.format(maxValue, toAppendTo, maxPos);
-            }
-            toAppendTo.append(r.isMaxIncluded() ? s.closeInclusive : s.closeExclusive);
-        }
-        /*
-         * If the user asked for the position of the minimal value, then 'pos' is already defined
-         * correctly because 'minPos == pos'. If the user asked for the position of the maximal
-         * value, then we need to copy the indexes from the 'maxPos' instance.
-         */
-        if (pos != minPos) {
-            pos.setBeginIndex(maxPos.getBeginIndex());
-            pos.setEndIndex  (maxPos.getEndIndex());
-        }
-        /*
-         * Formats the unit, if there is any. Note that the above lines processed UNIT_FIELD as
-         * if it was MIN_VALUE_FIELD with some code not recognized by the formatter, so we need
-         * to overwrite those indexes below in such case.
-         */
-        final boolean isUnitField = (pos.getField() == UNIT_FIELD);
-        if (unitFormat != null && range instanceof MeasurementRange<?>) {
-            final Unit<?> units = ((MeasurementRange<?>) range).getUnits();
-            if (units != null) {
-                toAppendTo.append(' ');
-                if (isUnitField) {
-                    pos.setBeginIndex(toAppendTo.length());
+            int startPosition = toAppendTo.length();
+            if (value == null) {
+                switch (field) {
+                    case MIN_VALUE_FIELD: toAppendTo.append(minusSign); // Fall through
+                    case MAX_VALUE_FIELD: toAppendTo.append(infinity); break;
                 }
-                unitFormat.format(units, toAppendTo, pos);
-                if (isUnitField) {
-                    pos.setEndIndex(toAppendTo.length());
+            } else {
+                final Format format;
+                if (field == UNIT_FIELD) {
+                    startPosition = toAppendTo.append(' ').length();
+                    format = unitFormat;
+                } else {
+                    format = elementFormat;
                 }
-                return toAppendTo;
+                if (characterIterator != null) {
+                    ((FormattedCharacterIterator) characterIterator)
+                            .append(format.formatToCharacterIterator(value), toAppendTo);
+                } else {
+                    format.format(value, toAppendTo, new FieldPosition(-1));
+                }
+            }
+            /*
+             * At this point, the field has been formatted. Now store the field index,
+             * then append the separator between this field and the next one.
+             */
+            if (characterIterator != null) {
+                ((FormattedCharacterIterator) characterIterator)
+                        .addFieldLimit(Field.forCode(field), value, startPosition);
+            }
+            if (field == fieldPos) {
+                pos.setBeginIndex(startPosition);
+                pos.setEndIndex(toAppendTo.length());
+            }
+            switch (field) {
+                case MIN_VALUE_FIELD: {
+                    toAppendTo.append(' ').append(s.separator).append(' ');
+                    break;
+                }
+                case MAX_VALUE_FIELD: {
+                    if (!isSingleton) {
+                        toAppendTo.append(range.isMaxIncluded() ? s.closeInclusive : s.closeExclusive);
+                    }
+                    break;
+                }
             }
         }
-        if (isUnitField) {
-            final int length = toAppendTo.length();
-            pos.setBeginIndex(length);
-            pos.setEndIndex  (length);
-        }
-        return toAppendTo;
+    }
+
+    /**
+     * Formats a range as an attributed character iterator.
+     * Callers can iterate and queries the attribute values as in the following example:
+     *
+     * {@preformat java
+     *     AttributedCharacterIterator it = rangeFormat.formatToCharacterIterator(myRange);
+     *     for (char c=it.first(); c!=AttributedCharacterIterator.DONE; c=c.next()) {
+     *         // 'c' is a character from the formatted string.
+     *         if (it.getAttribute(RangeFormat.Field.MIN_VALUE) != null) {
+     *             // If we enter this block, then the character 'c' is part of the minimal value,
+     *             // This field extends from it.getRunStart(MIN_VALUE) to it.getRunLimit(MIN_VALUE).
+     *         }
+     *     }
+     * }
+     *
+     * Alternatively, if the current {@linkplain AttributedCharacterIterator#getIndex() iterator
+     * index} is before the start of the minimum value field, then the starting position of that
+     * field can be obtained directly by {@code it.getRunLimit(MIN_VALUE)}. If the current iterator
+     * index is inside the minimum value field, then the above method call will rather returns the
+     * end of that field. The same strategy works for other all fields too.
+     *
+     * <p>The returned character iterator contains all {@link java.text.NumberFormat.Field},
+     * {@link java.text.DateFormat.Field} or {@link org.apache.sis.measure.AngleFormat.Field}
+     * attributes in addition to the {@link Field} ones. Consequently the same character may
+     * have more than one attribute.</p>
+     *
+     * <p>In Apache SIS implementation, the returned character iterator also implements the
+     * {@link CharSequence} interface for convenience.</p>
+     *
+     * @param  range {@link Range} object to format.
+     * @return A character iterator together with the attributes describing the formatted value.
+     * @throws IllegalArgumentException if {@code value} if not an instance of {@link Range}.
+     */
+    @Override
+    public AttributedCharacterIterator formatToCharacterIterator(final Object range) {
+        final StringBuffer buffer = new StringBuffer();
+        final FormattedCharacterIterator it = new FormattedCharacterIterator(buffer);
+        format(cast(range), buffer, null, it);
+        return it;
     }
 
     /**

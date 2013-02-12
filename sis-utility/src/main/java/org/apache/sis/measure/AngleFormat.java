@@ -913,7 +913,7 @@ scan:   for (int i=0; i<length;) {
              * heavy formatToCharacterIterator(…). Otherwise the usual format(…) method fits well.
              */
             final int startPosition = toAppendTo.length();
-            if (characterIterator instanceof FormattedCharacterIterator) {
+            if (characterIterator != null) {
                 final FormattedCharacterIterator it = (FormattedCharacterIterator) characterIterator;
                 it.append(numberFormat.formatToCharacterIterator(value), toAppendTo);
                 if (suffix != null) {
@@ -1003,7 +1003,7 @@ scan:   for (int i=0; i<length;) {
             pos.setBeginIndex(startPosition);
             pos.setEndIndex(toAppendTo.length());
         }
-        if (characterIterator instanceof FormattedCharacterIterator) {
+        if (characterIterator != null) {
             ((FormattedCharacterIterator) characterIterator).addFieldLimit(
                     Field.HEMISPHERE, suffix, startPosition);
         }

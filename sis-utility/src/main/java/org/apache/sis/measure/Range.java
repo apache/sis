@@ -662,12 +662,12 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
     }
 
     /**
-     * Returns a string representation of this range. The string representation is defined
-     * as below:
+     * Returns a string representation of this range.
+     * The string representation is defined as below:
      *
      * <ul>
      *   <li>If the range is empty, then this method returns {@code "[]"}.</li>
-     *   <li>Otherwise if the minimal value is equals to the maximal values, then
+     *   <li>Otherwise if the minimal value is equals to the maximal value, then
      *       the string representation of that value is returned directly.</li>
      *   <li>Otherwise the string representation of the minimal and maximal values
      *       are formatted like {@code [min … max]} for inclusive bounds or
