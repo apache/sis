@@ -19,11 +19,12 @@ package org.apache.sis.measure;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.text.Format;
 import java.text.DateFormat;
-import java.text.NumberFormat;
 import java.text.FieldPosition;
 import java.text.ParsePosition;
 import java.text.ParseException;
+import java.text.AttributedCharacterIterator;
 import javax.measure.unit.SI;
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
@@ -93,24 +94,24 @@ public final strictfp class RangeFormatTest extends TestCase {
     }
 
     /**
-     * Tests the {@link RangeFormat#format} method with numbers.
+     * Tests the {@link RangeFormat#format(Object, StringBuffer, FieldPosition)} method with numbers.
      */
     @Test
-    public void testFormatNumber() {
+    public void testFormatNumbers() {
         format = new RangeFormat(Locale.CANADA);
-        minPos = new FieldPosition(RangeFormat.MIN_VALUE_FIELD | NumberFormat.INTEGER_FIELD);
-        maxPos = new FieldPosition(RangeFormat.MAX_VALUE_FIELD | NumberFormat.INTEGER_FIELD);
+        minPos = new FieldPosition(RangeFormat.Field.MIN_VALUE);
+        maxPos = new FieldPosition(RangeFormat.Field.MAX_VALUE);
 
         // Closed range
         assertEquals("[-10 … 20]", format(NumberRange.create(-10, 20)));
-        assertEquals("minPos.beginIndex", 2, minPos.getBeginIndex());
+        assertEquals("minPos.beginIndex", 1, minPos.getBeginIndex());
         assertEquals("minPos.endIndex",   4, minPos.getEndIndex());
         assertEquals("maxPos.beginIndex", 7, maxPos.getBeginIndex());
         assertEquals("maxPos.endIndex",   9, maxPos.getEndIndex());
 
         // Open range
         assertEquals("(-3 … 4)", format(NumberRange.create(-3, false, 4, false)));
-        assertEquals("minPos.beginIndex", 2, minPos.getBeginIndex());
+        assertEquals("minPos.beginIndex", 1, minPos.getBeginIndex());
         assertEquals("minPos.endIndex",   3, minPos.getEndIndex());
         assertEquals("maxPos.beginIndex", 6, maxPos.getBeginIndex());
         assertEquals("maxPos.endIndex",   7, maxPos.getEndIndex());
@@ -145,7 +146,7 @@ public final strictfp class RangeFormatTest extends TestCase {
 
         // Negative infinity
         assertEquals("(-∞ … 30]", format(NumberRange.create(Double.NEGATIVE_INFINITY, 30)));
-        assertEquals("minPos.beginIndex", 2, minPos.getBeginIndex());
+        assertEquals("minPos.beginIndex", 1, minPos.getBeginIndex());
         assertEquals("minPos.endIndex",   3, minPos.getEndIndex());
         assertEquals("maxPos.beginIndex", 6, maxPos.getBeginIndex());
         assertEquals("maxPos.endIndex",   8, maxPos.getEndIndex());
@@ -159,7 +160,7 @@ public final strictfp class RangeFormatTest extends TestCase {
 
         // Positive infinities
         assertEquals("(-∞ … ∞)", format(NumberRange.create(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY)));
-        assertEquals("minPos.beginIndex", 2, minPos.getBeginIndex());
+        assertEquals("minPos.beginIndex", 1, minPos.getBeginIndex());
         assertEquals("minPos.endIndex",   3, minPos.getEndIndex());
         assertEquals("maxPos.beginIndex", 6, maxPos.getBeginIndex());
         assertEquals("maxPos.endIndex",   7, maxPos.getEndIndex());
@@ -173,19 +174,19 @@ public final strictfp class RangeFormatTest extends TestCase {
 
         // Negative infinity with integers
         assertEquals("(-∞ … 40]", format(new NumberRange<>(Integer.class, null, 40)));
-        assertEquals("minPos.beginIndex", 2, minPos.getBeginIndex());
+        assertEquals("minPos.beginIndex", 1, minPos.getBeginIndex());
         assertEquals("minPos.endIndex",   3, minPos.getEndIndex());
         assertEquals("maxPos.beginIndex", 6, maxPos.getBeginIndex());
         assertEquals("maxPos.endIndex",   8, maxPos.getEndIndex());
 
         // Measurement
         assertEquals("[-10 … 20] m", format(MeasurementRange.create(-10, 20, SI.METRE)));
-        assertEquals("minPos.beginIndex", 2, minPos.getBeginIndex());
+        assertEquals("minPos.beginIndex", 1, minPos.getBeginIndex());
         assertEquals("minPos.endIndex",   4, minPos.getEndIndex());
         assertEquals("maxPos.beginIndex", 7, maxPos.getBeginIndex());
         assertEquals("maxPos.endIndex",   9, maxPos.getEndIndex());
 
-        maxPos = new FieldPosition(RangeFormat.UNIT_FIELD);
+        maxPos = new FieldPosition(RangeFormat.Field.UNIT);
         assertEquals("[-1 … 2] km", format(MeasurementRange.create(-1, 2, SI.KILOMETRE)));
         assertEquals("unitPos.beginIndex", 9, maxPos.getBeginIndex());
         assertEquals("unitPos.endIndex",  11, maxPos.getEndIndex());
@@ -197,7 +198,7 @@ public final strictfp class RangeFormatTest extends TestCase {
      * type itself.
      */
     @Test
-    public void testParseInteger() {
+    public void testParseIntegers() {
         format   = new RangeFormat(Locale.CANADA, Integer.class);
         parsePos = new ParsePosition(0);
 
@@ -217,7 +218,7 @@ public final strictfp class RangeFormatTest extends TestCase {
      * type itself.
      */
     @Test
-    public void testParseDouble() {
+    public void testParseDoubles() {
         format   = new RangeFormat(Locale.CANADA, Double.class);
         parsePos = new ParsePosition(0);
 
@@ -264,13 +265,26 @@ public final strictfp class RangeFormatTest extends TestCase {
     }
 
     /**
-     * Tests formatting and parsing with dates.
+     * Stores the field indices of the years in the {@link #minPos} and {@link #maxPos} fields.
+     */
+    private static void findYears(final AttributedCharacterIterator it,
+            final RangeFormat.Field field, final FieldPosition pos)
+    {
+        it.setIndex(it.getRunLimit(field));
+        it.setIndex(it.getRunLimit(DateFormat.Field.YEAR));
+        pos.setBeginIndex(it.getIndex());
+        it.setIndex(it.getRunLimit(DateFormat.Field.YEAR));
+        pos.setEndIndex(it.getIndex());
+    }
+
+    /**
+     * Tests the {@link RangeFormat#formatToCharacterIterator(Object)} method with dates.
      */
     @Test
-    public void testDateRange() {
+    public void testFormatDatesToCharacterIterator() {
         format   = new RangeFormat(Locale.FRANCE, TimeZone.getTimeZone("UTC"));
-        minPos   = new FieldPosition(RangeFormat.MIN_VALUE_FIELD | DateFormat.YEAR_FIELD);
-        maxPos   = new FieldPosition(RangeFormat.MAX_VALUE_FIELD | DateFormat.YEAR_FIELD);
+        minPos   = new FieldPosition(RangeFormat.Field.MIN_VALUE);
+        maxPos   = new FieldPosition(RangeFormat.Field.MAX_VALUE);
         parsePos = new ParsePosition(0);
 
         final long HOUR = 60L * 60 * 1000;
@@ -278,27 +292,35 @@ public final strictfp class RangeFormatTest extends TestCase {
         final long YEAR = round(365.25 * DAY);
 
         DateRange range = new DateRange(new Date(15*DAY + 18*HOUR), new Date(20*YEAR + 15*DAY + 9*HOUR));
-        String text =  format(range);
+        AttributedCharacterIterator it = format.formatToCharacterIterator(range);
+        String text = it.toString();
+        findYears(it, RangeFormat.Field.MIN_VALUE, minPos);
+        findYears(it, RangeFormat.Field.MAX_VALUE, maxPos);
         assertEquals("[16/01/70 18:00 … 16/01/90 09:00]", text);
+        assertEquals( 7, minPos.getBeginIndex());
+        assertEquals( 9, minPos.getEndIndex());
+        assertEquals(24, maxPos.getBeginIndex());
+        assertEquals(26, maxPos.getEndIndex());
         assertEquals(range, parse(text));
-        /*
-         * Following is for a visual check of the default toString() method,
-         * but is not part of the test suite because it may vary.
-         */
-        if (false) {
-            System.out.println(range);
-        }
         /*
          * Try again with the infinity symbol in one bounds.
          */
         range = new DateRange((Date) null, new Date(20*YEAR));
-        text  = format(range);
+        it    = format.formatToCharacterIterator(range);
+        text  = it.toString();
+        findYears(it, RangeFormat.Field.MAX_VALUE, maxPos);
         assertEquals("(-∞ … 01/01/90 00:00]", text);
+        assertEquals(12, maxPos.getBeginIndex());
+        assertEquals(14, maxPos.getEndIndex());
         assertEquals(range, parse(text));
 
         range = new DateRange(new Date(20*YEAR), (Date) null);
-        text  = format(range);
+        it    = format.formatToCharacterIterator(range);
+        text  = it.toString();
+        findYears(it, RangeFormat.Field.MIN_VALUE, minPos);
         assertEquals("[01/01/90 00:00 … ∞)", text);
+        assertEquals(7, minPos.getBeginIndex());
+        assertEquals(9, minPos.getEndIndex());
         assertEquals(range, parse(text));
     }
 }
