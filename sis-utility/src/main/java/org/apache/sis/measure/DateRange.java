@@ -111,19 +111,6 @@ public class DateRange extends Range<Date> {
     }
 
     /**
-     * Ensures that {@link #elementType} is compatible with the type expected by this range class.
-     * Invoked for argument checking by the super-class constructor.
-     */
-    @Override
-    final void ensureValidType() throws IllegalArgumentException {
-        // No need to call super.checkElementClass() because Date implements Comparable.
-        if (!Date.class.isAssignableFrom(elementType)) {
-            throw new IllegalArgumentException(Errors.format(
-                    Errors.Keys.IllegalClass_2, Date.class, elementType));
-        }
-    }
-
-    /**
      * Casts the given {@code Range} object to a {@code DateRange}. This method shall be invoked
      * only in context where we have verified that the range element type is compatible.
      * This verification is performed by {@link Range#ensureCompatible(Range)} method.
@@ -174,7 +161,7 @@ public class DateRange extends Range<Date> {
      * {@inheritDoc}
      */
     @Override
-    public DateRange union(final Range<?> range) throws IllegalArgumentException {
+    public DateRange union(final Range<Date> range) {
         return cast(super.union(range));
     }
 
@@ -182,7 +169,7 @@ public class DateRange extends Range<Date> {
      * {@inheritDoc}
      */
     @Override
-    public DateRange intersect(final Range<?> range) throws IllegalArgumentException {
+    public DateRange intersect(final Range<Date> range) {
         return cast(super.intersect(range));
     }
 
@@ -190,7 +177,7 @@ public class DateRange extends Range<Date> {
      * {@inheritDoc}
      */
     @Override
-    public DateRange[] subtract(final Range<?> range) throws IllegalArgumentException {
+    public DateRange[] subtract(final Range<Date> range) {
         return (DateRange[]) super.subtract(range);
         // Should never throw ClassCastException because super.subtract(Range) invokes newArray(int)
         // and create(...), which are overridden in this class with DateRange return type.
