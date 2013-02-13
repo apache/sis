@@ -101,7 +101,7 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
         isMinIncluded = range.isMinIncluded;
         maxValue      = range.maxValue;
         isMaxIncluded = range.isMaxIncluded;
-        ensureValidType();
+        validate();
     }
 
     /**
@@ -112,7 +112,12 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
      * @param maxValue     The maximal value (inclusive), or {@code null} if none.
      */
     public Range(final Class<T> elementType, final T minValue, final T maxValue) {
-        this(elementType, minValue, true, maxValue, true);
+        this.elementType   = elementType;
+        this.minValue      = minValue;
+        this.isMinIncluded = (minValue != null);
+        this.maxValue      = maxValue;
+        this.isMaxIncluded = (maxValue != null);
+        validate();
     }
 
     /**
@@ -128,7 +133,6 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
             final T minValue, final boolean isMinIncluded,
             final T maxValue, final boolean isMaxIncluded)
     {
-        ensureNonNull("elementType", elementType);
         /*
          * The 'isMin/Maxincluded' flags must be forced to 'false' if 'minValue' or 'maxValue'
          * are null. This is required for proper working of algorithms implemented in this class.
@@ -138,13 +142,11 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
         this.isMinIncluded = isMinIncluded && (minValue != null);
         this.maxValue      = maxValue;
         this.isMaxIncluded = isMaxIncluded && (maxValue != null);
-        ensureValidType();
-        if (minValue != null) ensureCompatibleType(minValue.getClass());
-        if (maxValue != null) ensureCompatibleType(maxValue.getClass());
+        validate();
     }
 
     /**
-     * Creates a new range using the same element class than this range. This method will
+     * Creates a new range using the same element type than this range. This method will
      * be overridden by subclasses in order to create a range of a more specific type.
      */
     Range<T> create(final T minValue, final boolean isMinIncluded,
@@ -170,7 +172,7 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
     }
 
     /**
-     * Ensures that the given range uses the same element class than this range,
+     * Ensures that the given range uses the same element type than this range,
      * then return the casted argument value.
      *
      * @param range The range to test for compatibility.
@@ -202,6 +204,16 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
             throw new IllegalArgumentException(Errors.format(
                     Errors.Keys.IllegalClass_2, Comparable.class, elementType));
         }
+    }
+
+    /**
+     * Invoked by the constructors in order to ensure that the argument are of valid types.
+     */
+    private void validate() {
+        ensureNonNull("elementType", elementType);
+        ensureValidType();
+        if (minValue != null) ensureCompatibleType(minValue.getClass());
+        if (maxValue != null) ensureCompatibleType(maxValue.getClass());
     }
 
     /**
