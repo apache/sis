@@ -155,7 +155,7 @@ public class MeasurementRange<T extends Number & Comparable<? super T>> extends 
     /**
      * Constructs a range of {@link Number} objects.
      *
-     * @param type          The element class, usually one of {@link Byte}, {@link Short},
+     * @param type          The element type, usually one of {@link Byte}, {@link Short},
      *                      {@link Integer}, {@link Long}, {@link Float} or {@link Double}.
      * @param minimum       The minimum value.
      * @param maximum       The maximum value.
@@ -169,7 +169,7 @@ public class MeasurementRange<T extends Number & Comparable<? super T>> extends 
     /**
      * Constructs a range of {@link Number} objects.
      *
-     * @param type          The element class, usually one of {@link Byte}, {@link Short},
+     * @param type          The element type, usually one of {@link Byte}, {@link Short},
      *                      {@link Integer}, {@link Long}, {@link Float} or {@link Double}.
      * @param minimum       The minimum value.
      * @param isMinIncluded Defines whether the minimum value is included in the Range.
@@ -190,10 +190,10 @@ public class MeasurementRange<T extends Number & Comparable<? super T>> extends 
      * Constructs a range with the same values than the specified range,
      * casted to the specified type.
      *
-     * @param type The element class, usually one of {@link Byte}, {@link Short},
-     *             {@link Integer}, {@link Long}, {@link Float} or {@link Double}.
+     * @param type  The element type, usually one of {@link Byte}, {@link Short},
+     *              {@link Integer}, {@link Long}, {@link Float} or {@link Double}.
      * @param range The range to copy. The elements must be {@link Number} instances.
-     * @param units   The units of measurement, or {@code null} if unknown.
+     * @param units The units of measurement, or {@code null} if unknown.
      */
     private MeasurementRange(Class<T> type, Range<? extends Number> range, final Unit<?> units) {
         super(type, range);
@@ -201,7 +201,7 @@ public class MeasurementRange<T extends Number & Comparable<? super T>> extends 
     }
 
     /**
-     * Creates a new range using the same element class than this range.
+     * Creates a new range using the same element type than this range.
      */
     @Override
     MeasurementRange<T> create(final T minValue, final boolean isMinIncluded,

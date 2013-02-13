@@ -267,7 +267,7 @@ public class RangeFormat extends Format {
 
     /**
      * Creates a new format for parsing and formatting {@linkplain Range ranges} of
-     * the given element class using the given locale. The element class is typically
+     * the given element type using the given locale. The element type is typically
      * {@code Date.class} or some subclass of {@code Number.class}.
      *
      * @param  locale The locale for parsing and formatting range components.

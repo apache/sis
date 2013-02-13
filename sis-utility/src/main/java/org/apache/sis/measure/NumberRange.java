@@ -298,7 +298,7 @@ public class NumberRange<T extends Number & Comparable<? super T>> extends Range
         if (range instanceof NumberRange<?>) {
             return (NumberRange<N>) range;
         }
-        // The constructor will ensure that the range element class is a subclass of Number.
+        // The constructor will ensure that the range element type is a subclass of Number.
         return new NumberRange<>(range);
     }
 
@@ -315,7 +315,7 @@ public class NumberRange<T extends Number & Comparable<? super T>> extends Range
     /**
      * Constructs an inclusive range of {@link Number} objects.
      *
-     * @param  type     The element class, usually one of {@link Byte}, {@link Short},
+     * @param  type     The element type, usually one of {@link Byte}, {@link Short},
      *                  {@link Integer}, {@link Long}, {@link Float} or {@link Double}.
      * @param  minValue The minimum value, inclusive, or {@code null} if none.
      * @param  maxValue The maximum value, <strong>inclusive</strong>, or {@code null} if none.
@@ -327,7 +327,7 @@ public class NumberRange<T extends Number & Comparable<? super T>> extends Range
     /**
      * Constructs a range of {@link Number} objects.
      *
-     * @param type           The element class, usually one of {@link Byte}, {@link Short},
+     * @param type           The element type, usually one of {@link Byte}, {@link Short},
      *                       {@link Integer}, {@link Long}, {@link Float} or {@link Double}.
      * @param minValue       The minimal value, or {@code null} if none.
      * @param isMinIncluded  {@code true} if the minimal value is inclusive, or {@code false} if exclusive.
@@ -345,7 +345,7 @@ public class NumberRange<T extends Number & Comparable<? super T>> extends Range
      * Constructs a range with the same values than the specified range,
      * casted to the specified type.
      *
-     * @param  type  The element class, usually one of {@link Byte}, {@link Short},
+     * @param  type  The element type, usually one of {@link Byte}, {@link Short},
      *               {@link Integer}, {@link Long}, {@link Float} or {@link Double}.
      * @param  range The range to copy. The elements must be {@link Number} instances.
      * @throws IllegalArgumentException If the given type is not one of the primitive
@@ -359,7 +359,7 @@ public class NumberRange<T extends Number & Comparable<? super T>> extends Range
     }
 
     /**
-     * Creates a new range using the same element class than this range. This method will
+     * Creates a new range using the same element type than this range. This method will
      * be overridden by subclasses in order to create a range of a more specific type.
      */
     @Override

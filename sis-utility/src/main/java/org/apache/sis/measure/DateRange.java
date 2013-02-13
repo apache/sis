@@ -125,7 +125,7 @@ public class DateRange extends Range<Date> {
 
     /**
      * Casts the given {@code Range} object to a {@code DateRange}. This method shall be invoked
-     * only in context where we have verified that the range element class is compatible.
+     * only in context where we have verified that the range element type is compatible.
      * This verification is performed by {@link Range#ensureCompatible(Range)} method.
      */
     private static DateRange cast(final Range<?> range) {
