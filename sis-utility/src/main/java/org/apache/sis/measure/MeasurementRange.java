@@ -31,6 +31,12 @@ import java.util.Objects;
  * A range of numbers associated with a unit of measurement. Unit conversions are applied as
  * needed by {@linkplain #union union} and {@linkplain #intersect intersection} operations.
  *
+ * {@section Construction}
+ * This class provides convenience {@code create(…)} static methods for every floating point
+ * primitive types. Usage of {@code MeasurementRange} with integer types is possible, but no
+ * convenience methods is provided for integers because they are usually not representative
+ * of the nature of physical measurements.
+ *
  * @param <T> The type of range elements as a subclass of {@link Number}.
  *
  * @author  Martin Desruisseaux (IRD)
@@ -195,17 +201,17 @@ public class MeasurementRange<T extends Number & Comparable<? super T>> extends 
      * @param range The range to copy. The elements must be {@link Number} instances.
      * @param units The units of measurement, or {@code null} if unknown.
      */
-    private MeasurementRange(Class<T> type, Range<? extends Number> range, final Unit<?> units) {
+    private MeasurementRange(final Class<T> type, final Range<? extends Number> range, final Unit<?> units) {
         super(type, range);
         this.units = units;
     }
 
     /**
-     * Creates a new range using the same element type than this range.
+     * Creates a new range using the same element type and the same units than this range.
      */
     @Override
-    MeasurementRange<T> create(final T minValue, final boolean isMinIncluded,
-                               final T maxValue, final boolean isMaxIncluded)
+    Range<T> create(final T minValue, final boolean isMinIncluded,
+                    final T maxValue, final boolean isMaxIncluded)
     {
         return new MeasurementRange<>(elementType, minValue, isMinIncluded, maxValue, isMaxIncluded, units);
     }
@@ -228,7 +234,7 @@ public class MeasurementRange<T extends Number & Comparable<? super T>> extends 
      * @param  targetUnits the target units, or {@code null} for keeping the units unchanged.
      * @return The converted range, or {@code this} if no conversion is needed.
      * @throws ConversionException if the target units are not compatible with
-     *         this {@linkplain #getUnits range units}.
+     *         this {@linkplain #getUnits() range units}.
      */
     public MeasurementRange<T> convertTo(final Unit<?> targetUnits) throws ConversionException {
         return convertAndCast(elementType, targetUnits);
@@ -238,8 +244,32 @@ public class MeasurementRange<T extends Number & Comparable<? super T>> extends 
      * {@inheritDoc}
      */
     @Override
-    public <N extends Number & Comparable<? super N>> MeasurementRange<N> castTo(Class<N> type) {
-        return convertAndCast(this, type);
+    @SuppressWarnings("unchecked")
+    public <N extends Number & Comparable<? super N>> MeasurementRange<N> castTo(final Class<N> type) {
+        if (elementType == type) {
+            return (MeasurementRange<N>) this;
+        } else {
+            return new MeasurementRange<>(type, this, units);
+        }
+    }
+
+    /**
+     * If the given range is an instance of {@code MeasurementRange}, converts that
+     * range to the units of this range. Otherwise returns the given range unchanged.
+     *
+     * @param  range The range to convert.
+     * @return The converted range.
+     * @throws IllegalArgumentException if the given target unit is not compatible with
+     *         the unit of this range.
+     */
+    private Range<T> convert(final Range<T> range) throws IllegalArgumentException {
+        if (range instanceof MeasurementRange<?>) try {
+            return ((MeasurementRange<T>) range).convertAndCast(elementType, units);
+        } catch (ConversionException e) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.IncompatibleUnits_2,
+                    ((MeasurementRange<?>) range).units, units), e);
+        }
+        return range;
     }
 
     /**
@@ -253,17 +283,14 @@ public class MeasurementRange<T extends Number & Comparable<? super T>> extends 
      */
     @Override
     <N extends Number & Comparable<? super N>>
-    MeasurementRange<N> convertAndCast(final Range<? extends Number> range, final Class<N> type)
+    NumberRange<N> convertAndCast(final NumberRange<?> range, final Class<N> type)
             throws IllegalArgumentException
     {
-        if (range instanceof MeasurementRange<?>) {
-            final MeasurementRange<?> casted = (MeasurementRange<?>) range;
-            try {
-                return casted.convertAndCast(type, units);
-            } catch (ConversionException e) {
-                throw new IllegalArgumentException(Errors.format(
-                        Errors.Keys.IncompatibleUnits_2, casted.units, units), e);
-            }
+        if (range instanceof MeasurementRange<?>) try {
+            return ((MeasurementRange<?>) range).convertAndCast(type, units);
+        } catch (ConversionException e) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.IncompatibleUnits_2,
+                    ((MeasurementRange<?>) range).units, units), e);
         }
         return new MeasurementRange<>(type, range, units);
     }
@@ -275,42 +302,39 @@ public class MeasurementRange<T extends Number & Comparable<? super T>> extends 
      *             {@link Integer}, {@link Long}, {@link Float} or {@link Double}.
      * @param  targetUnit the target units, or {@code null} for no change.
      * @return The casted range, or {@code this}.
-     * @throws ConversionException if the target units are not compatible with
-     *         this {@linkplain #getUnits range units}.
+     * @throws ConversionException if the given target unit is not compatible with
+     *         the unit of this range.
      */
     @SuppressWarnings("unchecked")
     private <N extends Number & Comparable<? super N>> MeasurementRange<N>
-            convertAndCast(final Class<N> type, final Unit<?> targetUnits) throws ConversionException
+            convertAndCast(final Class<N> type, Unit<?> targetUnits) throws ConversionException
     {
         if (targetUnits == null || targetUnits.equals(units)) {
-            if (type.equals(elementType)) {
+            if (elementType == type) {
                 return (MeasurementRange<N>) this;
-            } else {
-                return new MeasurementRange<>(type, this, units);
+            }
+            targetUnits = units;
+        } else if (units != null) {
+            final UnitConverter converter = units.getConverterToAny(targetUnits);
+            if (!converter.equals(UnitConverter.IDENTITY)) {
+                boolean minInc = isMinIncluded;
+                boolean maxInc = isMaxIncluded;
+                double minimum = converter.convert(getMinimum());
+                double maximum = converter.convert(getMaximum());
+                if (minimum > maximum) {
+                    final double  td = minimum; minimum = maximum; maximum = td;
+                    final boolean tb = minInc;  minInc  = maxInc;  maxInc  = tb;
+                }
+                if (Numbers.isInteger(type)) {
+                    minInc &= (minimum == (minimum = Math.floor(minimum)));
+                    maxInc &= (maximum == (maximum = Math.ceil (maximum)));
+                }
+                return new MeasurementRange<>(type,
+                        Numbers.cast(minimum, type), minInc,
+                        Numbers.cast(maximum, type), maxInc, targetUnits);
             }
         }
-        if (units == null) {
-            return new MeasurementRange<>(type, this, targetUnits);
-        }
-        final UnitConverter converter = units.getConverterToAny(targetUnits);
-        if (converter.equals(UnitConverter.IDENTITY)) {
-            return new MeasurementRange<>(type, this, targetUnits);
-        }
-        boolean isMinIncluded = isMinIncluded();
-        boolean isMaxIncluded = isMaxIncluded();
-        Double minimum = converter.convert(getMinimum());
-        Double maximum = converter.convert(getMaximum());
-        if (minimum.compareTo(maximum) > 0) {
-            final Double td = minimum;
-            minimum = maximum;
-            maximum = td;
-            final boolean tb = isMinIncluded;
-            isMinIncluded = isMaxIncluded;
-            isMaxIncluded = tb;
-        }
-        return new MeasurementRange<>(type,
-                Numbers.cast(minimum, type), isMinIncluded,
-                Numbers.cast(maximum, type), isMaxIncluded, targetUnits);
+        return new MeasurementRange<>(type, this, targetUnits);
     }
 
     /**
@@ -318,39 +342,56 @@ public class MeasurementRange<T extends Number & Comparable<? super T>> extends 
      */
     @Override
     @SuppressWarnings({"unchecked","rawtypes"}) // Generic array creation.
-    MeasurementRange<T>[] newArray(final int length) {
+    final Range<T>[] newArray(final int length) {
         return new MeasurementRange[length];
     }
 
     /**
      * {@inheritDoc}
+     * If the given range is an instance of {@code MeasurementRange}, then this method converts
+     * the value of the other range to the unit of measurement of this range before to perform
+     * the operation.
+     *
+     * @throws IllegalArgumentException is the given range is an instance of
+     *         {@code MeasurementRange} using incommensurable units of measurement.
      */
     @Override
-    public MeasurementRange<?> union(final Range<?> range) throws IllegalArgumentException {
-        return (MeasurementRange<?>) super.union(range);
+    public MeasurementRange<T> union(final Range<T> range) throws IllegalArgumentException {
+        return (MeasurementRange<T>) super.union(convert(range));
         // Should never throw ClassCastException because super.union(Range) invokes create(...),
-        // which is overridden in this class with MeasurementRange return type.
+        // convertAndCast(…) which is overridden in this class to create MeasurementRange.
     }
 
     /**
      * {@inheritDoc}
+     * If the given range is an instance of {@code MeasurementRange}, then this method converts
+     * the value of the other range to the unit of measurement of this range before to perform
+     * the operation.
+     *
+     * @throws IllegalArgumentException is the given range is an instance of
+     *         {@code MeasurementRange} using incommensurable units of measurement.
      */
     @Override
-    public MeasurementRange<?> intersect(final Range<?> range) throws IllegalArgumentException {
-        return (MeasurementRange<?>) super.intersect(range);
+    public MeasurementRange<T> intersect(final Range<T> range) throws IllegalArgumentException {
+        return (MeasurementRange<T>) super.intersect(convert(range));
         // Should never throw ClassCastException because super.intersect(Range) invokes
-        // convertAndCast(...),  which is overridden in this class with MeasurementRange
-        // return type.
+        // convertAndCast(…) which is overridden in this class to create MeasurementRange.
     }
 
     /**
      * {@inheritDoc}
+     * If the given range is an instance of {@code MeasurementRange}, then this method converts
+     * the value of the other range to the unit of measurement of this range before to perform
+     * the operation.
+     *
+     * @throws IllegalArgumentException is the given range is an instance of
+     *         {@code MeasurementRange} using incommensurable units of measurement.
      */
     @Override
-    public MeasurementRange<?>[] subtract(final Range<?> range) throws IllegalArgumentException {
-        return (MeasurementRange<?>[]) super.subtract(range);
+    public MeasurementRange<T>[] subtract(final Range<T> range) throws IllegalArgumentException {
+        return (MeasurementRange<T>[]) super.subtract(convert(range));
         // Should never throw ClassCastException because super.subtract(Range) invokes newArray(int)
-        // and create(...), which are overridden in this class with MeasurementRange return type.
+        // convertAndCast(…) which is overridden in this class to create MeasurementRange.
     }
 
     /**
