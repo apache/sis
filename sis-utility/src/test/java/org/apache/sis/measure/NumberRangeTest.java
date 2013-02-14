@@ -39,19 +39,19 @@ public final strictfp class NumberRangeTest extends TestCase {
     @Test
     public void testIntegerBounds() {
         final NumberRange<Integer> range = NumberRange.create(10, 20);
-        assertEquals(10, range.getMinimum(     ), 0);
-        assertEquals(10, range.getMinimum(true ), 0);
-        assertEquals( 9, range.getMinimum(false), 0);
-        assertEquals(20, range.getMaximum(     ), 0);
-        assertEquals(20, range.getMaximum(true ), 0);
-        assertEquals(21, range.getMaximum(false), 0);
+        assertEquals(10, range.getMinDouble(     ), 0);
+        assertEquals(10, range.getMinDouble(true ), 0);
+        assertEquals( 9, range.getMinDouble(false), 0);
+        assertEquals(20, range.getMaxDouble(     ), 0);
+        assertEquals(20, range.getMaxDouble(true ), 0);
+        assertEquals(21, range.getMaxDouble(false), 0);
     }
 
     /**
-     * Tests union and intersection without units and type change.
+     * Tests union and intersection with {@link Integer} values.
      */
     @Test
-    public void testIntegerIntersect() {
+    public void testWithIntegers() {
         NumberRange<Integer> r1 = NumberRange.create(10, 20);
         NumberRange<Integer> r2 = NumberRange.create(15, 30);
         assertTrue (r1.equals(r1));
@@ -64,10 +64,10 @@ public final strictfp class NumberRangeTest extends TestCase {
     }
 
     /**
-     * Tests union and intersection with type change.
+     * Tests union and intersection with {@link Double} values.
      */
     @Test
-    public void testDoubleIntersect() {
+    public void testWithDoubles() {
         NumberRange<Double> r1 = NumberRange.create(10.0, 20.0);
         NumberRange<Double> r2 = NumberRange.create(15.0, 30.0);
         assertEquals(Double.class, r1.getElementType());
@@ -77,39 +77,39 @@ public final strictfp class NumberRangeTest extends TestCase {
     }
 
     /**
-     * Tests union and intersection with type change.
+     * Tests union and intersection involving a cast from integer to double values.
      */
     @Test
-    public void testIntegerDoubleIntersect() {
+    public void testIntegerWithDoubleArguments() {
         NumberRange<Integer> r1 = NumberRange.create(10, 20);
         NumberRange<Double>  r2 = NumberRange.create(15.0, 30.0);
         assertEquals(Integer.class, r1.getElementType());
         assertEquals(Double .class, r2.getElementType());
-        assertEquals(NumberRange.create(10.0, 30.0), r1.union(r2));
-        assertEquals(NumberRange.create(15, 20), r1.intersect(r2));
+        assertEquals(NumberRange.create(10.0, 30.0), r1.unionAny(r2));
+        assertEquals(NumberRange.create(15, 20), r1.intersectAny(r2));
 
         r2 = NumberRange.create(15.5, 30.0);
-        assertEquals(NumberRange.create(15.5f, 20.0f), r1.intersect(r2));
+        assertEquals(NumberRange.create(15.5f, 20.0f), r1.intersectAny(r2));
     }
 
     /**
-     * Tests union and intersection with type change.
+     * Tests union and intersection involving a cast from integer to double values.
      */
     @Test
-    public void testDoubleIntegerIntersect() {
+    public void testDoubleWithIntegerArguments() {
         NumberRange<Double>  r1 = NumberRange.create(10.0, 20.0);
         NumberRange<Integer> r2 = NumberRange.create(15, 30);
         assertEquals(Double .class, r1.getElementType());
         assertEquals(Integer.class, r2.getElementType());
-        assertEquals(NumberRange.create(10.0, 30.0), r1.union(r2));
-        assertEquals(NumberRange.create(15, 20), r1.intersect(r2));
+        assertEquals(NumberRange.create(10.0, 30.0), r1.unionAny(r2));
+        assertEquals(NumberRange.create(15, 20), r1.intersectAny(r2));
 
         r1 = NumberRange.create(10.0, 20.5);
-        assertEquals(NumberRange.create(15.0f, 20.5f), r1.intersect(r2));
+        assertEquals(NumberRange.create(15.0f, 20.5f), r1.intersectAny(r2));
     }
 
     /**
-     * Tests the {@link NumberRange#createBestFit} method.
+     * Tests the {@link NumberRange#createBestFit(Number, boolean, Number, boolean)} method.
      */
     @Test
     public void testCreateBestFit() {

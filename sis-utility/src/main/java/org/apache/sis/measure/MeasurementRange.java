@@ -28,10 +28,22 @@ import org.apache.sis.internal.util.Objects;
 
 
 /**
- * A range of numbers associated with a unit of measurement. Unit conversions are applied as
- * needed by {@linkplain #union union} and {@linkplain #intersect intersection} operations.
+ * A range of numbers associated with a unit of measurement. All operations performed by this
+ * class ({@linkplain #union union}, {@linkplain #intersect intersection}, <i>etc.</i>) are
+ * performed in the unit of measurement of {@code this} range object - values of the range
+ * object given in argument are converted if needed before an operation is applied.
  *
- * @param <T> The type of range elements as a subclass of {@link Number}.
+ * <p>Other methods defined in this class:</p>
+ * <ul>
+ *   <li>Convenience {@code create(…)} static methods for every floating point primitive types.
+ *       Usage of {@code MeasurementRange} with integer types is possible, but no convenience
+ *       method is provided for integers because they are usually not representative of the
+ *       nature of physical measurements.</li>
+ *   <li>{@link #convertTo(Unit)} for converting the unit of measurement.</li>
+ *   <li>{@link #castTo(Class)} for casting the range values to an other type.</li>
+ * </ul>
+ *
+ * @param <E> The type of range elements as a subclass of {@link Number}.
  *
  * @author  Martin Desruisseaux (IRD)
  * @since   0.3 (derived from geotk-2.4)
@@ -39,29 +51,31 @@ import org.apache.sis.internal.util.Objects;
  * @module
  */
 @Immutable
-public class MeasurementRange<T extends Number & Comparable<? super T>> extends NumberRange<T> {
+public class MeasurementRange<E extends Number & Comparable<? super E>> extends NumberRange<E> {
     /**
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = 3980319420337513745L;
 
     /**
-     * The units of measurement, or {@code null} if unknown.
+     * The unit of measurement, or {@code null} if unknown.
+     *
+     * @see #unit()
      */
-    private final Unit<?> units;
+    private final Unit<?> unit;
 
     /**
      * Constructs an inclusive range of {@code float} values.
      *
      * @param  minValue The minimal value, inclusive, or {@link Float#NEGATIVE_INFINITY} if none..
      * @param  maxValue The maximal value, <strong>inclusive</strong>, or {@link Float#POSITIVE_INFINITY} if none.
-     * @param  units    The units of measurement, or {@code null} if unknown.
+     * @param  unit     The unit of measurement, or {@code null} if unknown.
      * @return The new range of numeric values for the given bounds and unit of measurement.
      */
-    public static MeasurementRange<Float> create(float minValue, float maxValue, Unit<?> units) {
+    public static MeasurementRange<Float> create(float minValue, float maxValue, Unit<?> unit) {
         return new MeasurementRange<Float>(Float.class,
                 valueOf("minValue", minValue, Float.NEGATIVE_INFINITY),
-                valueOf("maxValue", maxValue, Float.POSITIVE_INFINITY), units);
+                valueOf("maxValue", maxValue, Float.POSITIVE_INFINITY), unit);
     }
 
     /**
@@ -71,15 +85,15 @@ public class MeasurementRange<T extends Number & Comparable<? super T>> extends 
      * @param  isMinIncluded  {@code true} if the minimal value is inclusive, or {@code false} if exclusive.
      * @param  maxValue       The maximal value, or {@link Float#POSITIVE_INFINITY} if none.
      * @param  isMaxIncluded  {@code true} if the maximal value is inclusive, or {@code false} if exclusive.
-     * @param  units          The units of measurement, or {@code null} if unknown.
+     * @param  unit           The unit of measurement, or {@code null} if unknown.
      * @return The new range of numeric values for the given bounds and unit of measurement.
      */
     public static MeasurementRange<Float> create(float minValue, boolean isMinIncluded,
-                                                 float maxValue, boolean isMaxIncluded, Unit<?> units)
+                                                 float maxValue, boolean isMaxIncluded, Unit<?> unit)
     {
         return new MeasurementRange<Float>(Float.class,
                 valueOf("minValue", minValue, Float.NEGATIVE_INFINITY), isMinIncluded,
-                valueOf("maxValue", maxValue, Float.POSITIVE_INFINITY), isMaxIncluded, units);
+                valueOf("maxValue", maxValue, Float.POSITIVE_INFINITY), isMaxIncluded, unit);
     }
 
     /**
@@ -87,13 +101,13 @@ public class MeasurementRange<T extends Number & Comparable<? super T>> extends 
      *
      * @param  minValue The minimal value, inclusive, or {@link Double#NEGATIVE_INFINITY} if none..
      * @param  maxValue The maximal value, <strong>inclusive</strong>, or {@link Double#POSITIVE_INFINITY} if none.
-     * @param  units    The units of measurement, or {@code null} if unknown.
+     * @param  unit     The unit of measurement, or {@code null} if unknown.
      * @return The new range of numeric values for the given bounds and unit of measurement.
      */
-    public static MeasurementRange<Double> create(double minValue, double maxValue, Unit<?> units) {
+    public static MeasurementRange<Double> create(double minValue, double maxValue, Unit<?> unit) {
         return new MeasurementRange<Double>(Double.class,
                 valueOf("minValue", minValue, Double.NEGATIVE_INFINITY),
-                valueOf("maxValue", maxValue, Double.POSITIVE_INFINITY), units);
+                valueOf("maxValue", maxValue, Double.POSITIVE_INFINITY), unit);
     }
 
     /**
@@ -103,148 +117,169 @@ public class MeasurementRange<T extends Number & Comparable<? super T>> extends 
      * @param  isMinIncluded  {@code true} if the minimal value is inclusive, or {@code false} if exclusive.
      * @param  maxValue       The maximal value, or {@link Double#POSITIVE_INFINITY} if none.
      * @param  isMaxIncluded  {@code true} if the maximal value is inclusive, or {@code false} if exclusive.
-     * @param  units          The units of measurement, or {@code null} if unknown.
+     * @param  unit           The unit of measurement, or {@code null} if unknown.
      * @return The new range of numeric values for the given bounds and unit of measurement.
      */
     public static MeasurementRange<Double> create(double minValue, boolean isMinIncluded,
-                                                  double maxValue, boolean isMaxIncluded, Unit<?> units)
+                                                  double maxValue, boolean isMaxIncluded, Unit<?> unit)
     {
         return new MeasurementRange<Double>(Double.class,
                 valueOf("minValue", minValue, Double.NEGATIVE_INFINITY), isMinIncluded,
-                valueOf("maxValue", maxValue, Double.POSITIVE_INFINITY), isMaxIncluded, units);
+                valueOf("maxValue", maxValue, Double.POSITIVE_INFINITY), isMaxIncluded, unit);
     }
 
     /**
      * Constructs a range using the smallest type of {@link Number} that can hold the given values.
      * This method performs the same work than {@link NumberRange#createBestFit
-     * NumberRange.createBestFit(…)} with an additional {@code units} argument.
+     * NumberRange.createBestFit(…)} with an additional {@code unit} argument.
      *
-     * @param  minimum        The minimum value, or {@code null} for negative infinity.
-     * @param  isMinIncluded  Defines whether the minimum value is included in the range.
-     * @param  maximum        The maximum value, or {@code null} for positive infinity.
-     * @param  isMaxIncluded  Defines whether the maximum value is included in the range.
-     * @param  units          The units of measurement, or {@code null} if unknown.
-     * @return The new range, or {@code null} if both {@code minimum} and {@code maximum}
-     *         are {@code null}.
+     * @param  minValue       The minimal value, or {@code null} if none.
+     * @param  isMinIncluded  {@code true} if the minimal value is inclusive, or {@code false} if exclusive.
+     * @param  maxValue       The maximal value, or {@code null} if none.
+     * @param  isMaxIncluded  {@code true} if the maximal value is inclusive, or {@code false} if exclusive.
+     * @param  unit           The unit of measurement, or {@code null} if unknown.
+     * @return The new range, or {@code null} if both {@code minValue} and {@code maxValue} are {@code null}.
      *
      * @see NumberRange#createBestFit(Number, boolean, Number, boolean)
      */
     @SuppressWarnings({"rawtypes","unchecked"})
-    public static MeasurementRange<?> createBestFit(final Number minimum, final boolean isMinIncluded,
-            final Number maximum, final boolean isMaxIncluded, final Unit<?> units)
+    public static MeasurementRange<?> createBestFit(final Number minValue, final boolean isMinIncluded,
+            final Number maxValue, final boolean isMaxIncluded, final Unit<?> unit)
     {
         final Class<? extends Number> type = Numbers.widestClass(
-                Numbers.narrowestClass(minimum), Numbers.narrowestClass(maximum));
+                Numbers.narrowestClass(minValue), Numbers.narrowestClass(maxValue));
         return (type == null) ? null :
-            new MeasurementRange(type, Numbers.cast(minimum, type), isMinIncluded,
-                                       Numbers.cast(maximum, type), isMaxIncluded, units);
+            new MeasurementRange(type, Numbers.cast(minValue, type), isMinIncluded,
+                                       Numbers.cast(maxValue, type), isMaxIncluded, unit);
     }
 
     /**
-     * Constructs a range with the same values than the specified range and the given units.
+     * Constructs a range with the same values than the specified range and the given unit.
      * This is a copy constructor, with the addition of a unit of measurement.
      *
      * @param range The range to copy. The elements must be {@link Number} instances.
-     * @param units The units of measurement, or {@code null} if unknown.
+     * @param unit  The unit of measurement, or {@code null} if unknown.
      */
-    public MeasurementRange(final Range<T> range, final Unit<?> units) {
+    public MeasurementRange(final Range<E> range, final Unit<?> unit) {
         super(range);
-        this.units = units;
+        this.unit = unit;
     }
 
     /**
      * Constructs a range of {@link Number} objects.
      *
-     * @param type          The element class, usually one of {@link Byte}, {@link Short},
-     *                      {@link Integer}, {@link Long}, {@link Float} or {@link Double}.
-     * @param minimum       The minimum value.
-     * @param maximum       The maximum value.
-     * @param units         The units of measurement, or {@code null} if unknown.
+     * @param type     The element type, usually one of {@link Float} or {@link Double}.
+     * @param minValue The minimum value, inclusive, or {@code null} if none.
+     * @param maxValue The maximum value, <strong>inclusive</strong>, or {@code null} if none.
+     * @param unit     The unit of measurement, or {@code null} if unknown.
      */
-    public MeasurementRange(final Class<T> type, final T minimum, final T maximum, final Unit<?> units) {
-        super(type, minimum, maximum);
-        this.units = units;
+    public MeasurementRange(final Class<E> type, final E minValue, final E maxValue, final Unit<?> unit) {
+        super(type, minValue, maxValue);
+        this.unit = unit;
     }
 
     /**
      * Constructs a range of {@link Number} objects.
      *
-     * @param type          The element class, usually one of {@link Byte}, {@link Short},
-     *                      {@link Integer}, {@link Long}, {@link Float} or {@link Double}.
-     * @param minimum       The minimum value.
-     * @param isMinIncluded Defines whether the minimum value is included in the Range.
-     * @param maximum       The maximum value.
-     * @param isMaxIncluded Defines whether the maximum value is included in the Range.
-     * @param units         The units of measurement, or {@code null} if unknown.
+     * @param type          The element type, usually one of {@link Float} or {@link Double}.
+     * @param minValue      The minimal value, or {@code null} if none.
+     * @param isMinIncluded {@code true} if the minimal value is inclusive, or {@code false} if exclusive.
+     * @param maxValue      The maximal value, or {@code null} if none.
+     * @param isMaxIncluded {@code true} if the maximal value is inclusive, or {@code false} if exclusive.
+     * @param unit          The unit of measurement, or {@code null} if unknown.
      */
-    public MeasurementRange(final Class<T> type,
-                            final T minimum, final boolean isMinIncluded,
-                            final T maximum, final boolean isMaxIncluded,
-                            final Unit<?> units)
+    public MeasurementRange(final Class<E> type,
+                            final E minValue, final boolean isMinIncluded,
+                            final E maxValue, final boolean isMaxIncluded,
+                            final Unit<?> unit)
     {
-        super(type, minimum, isMinIncluded, maximum, isMaxIncluded);
-        this.units = units;
+        super(type, minValue, isMinIncluded, maxValue, isMaxIncluded);
+        this.unit = unit;
     }
 
     /**
      * Constructs a range with the same values than the specified range,
      * casted to the specified type.
      *
-     * @param type The element class, usually one of {@link Byte}, {@link Short},
-     *             {@link Integer}, {@link Long}, {@link Float} or {@link Double}.
+     * @param type  The element type, usually one of {@link Byte}, {@link Short},
+     *              {@link Integer}, {@link Long}, {@link Float} or {@link Double}.
      * @param range The range to copy. The elements must be {@link Number} instances.
-     * @param units   The units of measurement, or {@code null} if unknown.
+     * @param unit  The unit of measurement, or {@code null} if unknown.
      */
-    private MeasurementRange(Class<T> type, Range<? extends Number> range, final Unit<?> units) {
+    private MeasurementRange(final Class<E> type, final Range<? extends Number> range, final Unit<?> unit) {
         super(type, range);
-        this.units = units;
+        this.unit = unit;
     }
 
     /**
-     * Creates a new range using the same element class than this range.
+     * Creates a new range using the same element type and the same unit than this range.
      */
     @Override
-    MeasurementRange<T> create(final T minValue, final boolean isMinIncluded,
-                               final T maxValue, final boolean isMaxIncluded)
+    Range<E> create(final E minValue, final boolean isMinIncluded,
+                    final E maxValue, final boolean isMaxIncluded)
     {
-        return new MeasurementRange<T>(elementType, minValue, isMinIncluded, maxValue, isMaxIncluded, units);
+        return new MeasurementRange<E>(elementType, minValue, isMinIncluded, maxValue, isMaxIncluded, unit);
     }
 
     /**
-     * Returns the units of measurement, or {@code null} if unknown.
+     * Returns the unit of measurement, or {@code null} if unknown.
      *
-     * @return The units of measurement, or {@code null}.
+     * @return The unit of measurement, or {@code null}.
      */
     @Override
-    public Unit<?> getUnits() {
-        return units;
+    public Unit<?> unit() {
+        return unit;
     }
 
     /**
-     * Converts this range to the specified units. If this measurement range has null units,
-     * then the specified target units are simply assigned to the returned range with no
+     * Converts this range to the specified unit. If this measurement range has null unit,
+     * then the specified target unit are simply assigned to the returned range with no
      * other changes.
      *
-     * @param  targetUnits the target units, or {@code null} for keeping the units unchanged.
+     * @param  targetUnit the target unit, or {@code null} for keeping the unit unchanged.
      * @return The converted range, or {@code this} if no conversion is needed.
-     * @throws ConversionException if the target units are not compatible with
-     *         this {@linkplain #getUnits range units}.
+     * @throws ConversionException if the target unit are not compatible with
+     *         this {@linkplain #unit() range unit}.
      */
-    public MeasurementRange<T> convertTo(final Unit<?> targetUnits) throws ConversionException {
-        return convertAndCast(elementType, targetUnits);
+    public MeasurementRange<E> convertTo(final Unit<?> targetUnit) throws ConversionException {
+        return convertAndCast(elementType, targetUnit);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public <N extends Number & Comparable<? super N>> MeasurementRange<N> castTo(Class<N> type) {
-        return convertAndCast(this, type);
+    @SuppressWarnings("unchecked")
+    public <N extends Number & Comparable<? super N>> MeasurementRange<N> castTo(final Class<N> type) {
+        if (elementType == type) {
+            return (MeasurementRange<N>) this;
+        } else {
+            return new MeasurementRange<N>(type, this, unit);
+        }
+    }
+
+    /**
+     * If the given range is an instance of {@code MeasurementRange}, converts that
+     * range to the unit of this range. Otherwise returns the given range unchanged.
+     *
+     * @param  range The range to convert.
+     * @return The converted range.
+     * @throws IllegalArgumentException if the given target unit is not compatible with
+     *         the unit of this range.
+     */
+    private <N extends E> Range<N> convert(final Range<N> range) throws IllegalArgumentException {
+        if (range instanceof MeasurementRange<?>) try {
+            return ((MeasurementRange<N>) range).convertAndCast(range.elementType, unit);
+        } catch (ConversionException e) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.IncompatibleUnits_2,
+                    ((MeasurementRange<?>) range).unit, unit), e);
+        }
+        return range;
     }
 
     /**
      * Casts the specified range to the specified type. If this class is associated to a unit of
-     * measurement, then this method convert the {@code range} units to the same units than this
+     * measurement, then this method convert the {@code range} unit to the same unit than this
      * instance.
      *
      * @param type The class to cast to. Must be one of {@link Byte}, {@link Short},
@@ -253,64 +288,60 @@ public class MeasurementRange<T extends Number & Comparable<? super T>> extends 
      */
     @Override
     <N extends Number & Comparable<? super N>>
-    MeasurementRange<N> convertAndCast(final Range<? extends Number> range, final Class<N> type)
+    NumberRange<N> convertAndCast(final NumberRange<?> range, final Class<N> type)
             throws IllegalArgumentException
     {
-        if (range instanceof MeasurementRange<?>) {
-            final MeasurementRange<?> casted = (MeasurementRange<?>) range;
-            try {
-                return casted.convertAndCast(type, units);
-            } catch (ConversionException e) {
-                throw new IllegalArgumentException(Errors.format(
-                        Errors.Keys.IncompatibleUnits_2, casted.units, units), e);
-            }
+        if (range instanceof MeasurementRange<?>) try {
+            return ((MeasurementRange<?>) range).convertAndCast(type, unit);
+        } catch (ConversionException e) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.IncompatibleUnits_2,
+                    ((MeasurementRange<?>) range).unit, unit), e);
         }
-        return new MeasurementRange<N>(type, range, units);
+        return new MeasurementRange<N>(type, range, unit);
     }
 
     /**
-     * Casts this range to the specified type and converts to the specified units.
+     * Casts this range to the specified type and converts to the specified unit.
+     * This method is invoked on the {@code other} instance in expressions like
+     * {@code this.operation(other)}.
      *
      * @param  type The class to cast to. Must be one of {@link Byte}, {@link Short},
      *             {@link Integer}, {@link Long}, {@link Float} or {@link Double}.
-     * @param  targetUnit the target units, or {@code null} for no change.
+     * @param  targetUnit the target unit, or {@code null} for no change.
      * @return The casted range, or {@code this}.
-     * @throws ConversionException if the target units are not compatible with
-     *         this {@linkplain #getUnits range units}.
+     * @throws ConversionException if the given target unit is not compatible with
+     *         the unit of this range.
      */
     @SuppressWarnings("unchecked")
     private <N extends Number & Comparable<? super N>> MeasurementRange<N>
-            convertAndCast(final Class<N> type, final Unit<?> targetUnits) throws ConversionException
+            convertAndCast(final Class<N> type, Unit<?> targetUnit) throws ConversionException
     {
-        if (targetUnits == null || targetUnits.equals(units)) {
-            if (type.equals(elementType)) {
+        if (targetUnit == null || targetUnit.equals(unit)) {
+            if (elementType == type) {
                 return (MeasurementRange<N>) this;
-            } else {
-                return new MeasurementRange<N>(type, this, units);
+            }
+            targetUnit = unit;
+        } else if (unit != null) {
+            final UnitConverter converter = unit.getConverterToAny(targetUnit);
+            if (!converter.equals(UnitConverter.IDENTITY)) {
+                boolean minInc = isMinIncluded;
+                boolean maxInc = isMaxIncluded;
+                double minimum = converter.convert(getMinDouble());
+                double maximum = converter.convert(getMaxDouble());
+                if (minimum > maximum) {
+                    final double  td = minimum; minimum = maximum; maximum = td;
+                    final boolean tb = minInc;  minInc  = maxInc;  maxInc  = tb;
+                }
+                if (Numbers.isInteger(type)) {
+                    minInc &= (minimum == (minimum = Math.floor(minimum)));
+                    maxInc &= (maximum == (maximum = Math.ceil (maximum)));
+                }
+                return new MeasurementRange<N>(type,
+                        Numbers.cast(minimum, type), minInc,
+                        Numbers.cast(maximum, type), maxInc, targetUnit);
             }
         }
-        if (units == null) {
-            return new MeasurementRange<N>(type, this, targetUnits);
-        }
-        final UnitConverter converter = units.getConverterToAny(targetUnits);
-        if (converter.equals(UnitConverter.IDENTITY)) {
-            return new MeasurementRange<N>(type, this, targetUnits);
-        }
-        boolean isMinIncluded = isMinIncluded();
-        boolean isMaxIncluded = isMaxIncluded();
-        Double minimum = converter.convert(getMinimum());
-        Double maximum = converter.convert(getMaximum());
-        if (minimum.compareTo(maximum) > 0) {
-            final Double td = minimum;
-            minimum = maximum;
-            maximum = td;
-            final boolean tb = isMinIncluded;
-            isMinIncluded = isMaxIncluded;
-            isMaxIncluded = tb;
-        }
-        return new MeasurementRange<N>(type,
-                Numbers.cast(minimum, type), isMinIncluded,
-                Numbers.cast(maximum, type), isMaxIncluded, targetUnits);
+        return new MeasurementRange<N>(type, this, targetUnit);
     }
 
     /**
@@ -318,39 +349,78 @@ public class MeasurementRange<T extends Number & Comparable<? super T>> extends 
      */
     @Override
     @SuppressWarnings({"unchecked","rawtypes"}) // Generic array creation.
-    MeasurementRange<T>[] newArray(final int length) {
+    final Range<E>[] newArray(final int length) {
         return new MeasurementRange[length];
     }
 
     /**
      * {@inheritDoc}
+     * If the given range is an instance of {@code MeasurementRange}, then this method converts
+     * the value of the other range to the unit of measurement of this range before to perform
+     * the operation.
+     *
+     * @throws IllegalArgumentException is the given range is an instance of
+     *         {@code MeasurementRange} using incommensurable unit of measurement.
      */
     @Override
-    public MeasurementRange<?> union(final Range<?> range) throws IllegalArgumentException {
-        return (MeasurementRange<?>) super.union(range);
-        // Should never throw ClassCastException because super.union(Range) invokes create(...),
-        // which is overridden in this class with MeasurementRange return type.
+    public boolean contains(final Range<? extends E> range) throws IllegalArgumentException {
+        return super.contains(convert(range));
     }
 
     /**
      * {@inheritDoc}
+     * If the given range is an instance of {@code MeasurementRange}, then this method converts
+     * the value of the other range to the unit of measurement of this range before to perform
+     * the operation.
+     *
+     * @throws IllegalArgumentException is the given range is an instance of
+     *         {@code MeasurementRange} using incommensurable unit of measurement.
      */
     @Override
-    public MeasurementRange<?> intersect(final Range<?> range) throws IllegalArgumentException {
-        return (MeasurementRange<?>) super.intersect(range);
-        // Should never throw ClassCastException because super.intersect(Range) invokes
-        // convertAndCast(...),  which is overridden in this class with MeasurementRange
-        // return type.
+    public boolean intersects(final Range<? extends E> range) throws IllegalArgumentException {
+        return super.intersects(convert(range));
     }
 
     /**
      * {@inheritDoc}
+     * If the given range is an instance of {@code MeasurementRange}, then this method converts
+     * the value of the other range to the unit of measurement of this range before to perform
+     * the operation.
+     *
+     * @throws IllegalArgumentException is the given range is an instance of
+     *         {@code MeasurementRange} using incommensurable unit of measurement.
      */
     @Override
-    public MeasurementRange<?>[] subtract(final Range<?> range) throws IllegalArgumentException {
-        return (MeasurementRange<?>[]) super.subtract(range);
-        // Should never throw ClassCastException because super.subtract(Range) invokes newArray(int)
-        // and create(...), which are overridden in this class with MeasurementRange return type.
+    public Range<E> intersect(final Range<E> range) throws IllegalArgumentException {
+        return super.intersect(convert(range));
+    }
+
+    /**
+     * {@inheritDoc}
+     * If the given range is an instance of {@code MeasurementRange}, then this method converts
+     * the value of the other range to the unit of measurement of this range before to perform
+     * the operation.
+     *
+     * @throws IllegalArgumentException is the given range is an instance of
+     *         {@code MeasurementRange} using incommensurable unit of measurement.
+     */
+    @Override
+    public Range<E> union(final Range<E> range) throws IllegalArgumentException {
+        return super.union(convert(range));
+    }
+
+    /**
+     * {@inheritDoc}
+     * If the given range is an instance of {@code MeasurementRange}, then this method converts
+     * the value of the other range to the unit of measurement of this range before to perform
+     * the operation.
+     *
+     * @throws IllegalArgumentException is the given range is an instance of
+     *         {@code MeasurementRange} using incommensurable unit of measurement.
+     */
+    @Override
+    public Range<E>[] subtract(final Range<E> range) throws IllegalArgumentException {
+        return super.subtract(convert(range));
     }
 
     /**
@@ -360,8 +430,7 @@ public class MeasurementRange<T extends Number & Comparable<? super T>> extends 
     public boolean equals(final Object object) {
         if (super.equals(object)) {
             if (object instanceof MeasurementRange<?>) {
-                final MeasurementRange<?> that = (MeasurementRange<?>) object;
-                return Objects.equals(this.units, that.units);
+                return Objects.equals(unit, ((MeasurementRange<?>) object).unit);
             }
             return true;
         }

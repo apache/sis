@@ -18,18 +18,40 @@ package org.apache.sis.measure;
 
 import net.jcip.annotations.Immutable;
 import org.apache.sis.util.Numbers;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
 
 /**
- * A range of numbers. {@linkplain #union Union} and {@linkplain #intersect intersection}
- * are computed as usual, except that widening conversions will be applied as needed.
+ * A range of numbers capable of widening conversions when performing range operations.
+ * {@code NumberRange} has no unit of measurement. For a range of physical measurements
+ * with unit of measure, see {@link MeasurementRange}.
  *
- * <p>{@code NumberRange} has no units. For a range of physical measurements with units of
- * measure, see {@link MeasurementRange}.</p>
+ * <p>Most operations in this class are defined in two versions:</p>
+ * <ul>
+ *   <li>Methods inherited from the {@code Range} parent class
+ *      ({@link #contains(Range) contains}, {@link #intersect(Range) intersect},
+ *       {@link #intersects(Range) intersects}, {@link #union(Range) union} and
+ *       {@link #subtract(Range) subtract}) requires argument or range elements
+ *       of type {@code <E>}. No type conversion is performed.</li>
  *
- * @param <T> The type of range elements as a subclass of {@link Number}.
+ *   <li>Methods defined in this class with the {@code Any} suffix
+ *      ({@link #containsAny(NumberRange) containsAny}, {@link #intersectAny(NumberRange) intersectAny},
+ *       {@link #intersectsAny(NumberRange) intersectsAny}, {@link #unionAny(NumberRange) unionAny} and
+ *       {@link #subtractAny(NumberRange) subtractAny}) are more lenient on the argument or range element
+ *       type {@code <E>}. Widening conversions are performed as needed.</li>
+ * </ul>
+ *
+ * The methods from the parent class are preferable when the ranges are known to contain elements
+ * of the same type, since they avoid the cost of type checks and conversions. The method in this
+ * class are convenient when the parameterized type is unknown ({@code <?>}).
+ *
+ * <p>Other methods defined in this class:</p>
+ * <ul>
+ *   <li>Convenience {@code create(…)} static methods for every numeric primitive types.</li>
+ *   <li>{@link #castTo(Class)} for casting the range values to an other type.</li>
+ * </ul>
+ *
+ * @param <E> The type of range elements as a subclass of {@link Number}.
  *
  * @author  Martin Desruisseaux (IRD)
  * @author  Jody Garnett (for parameterized type inspiration)
@@ -40,13 +62,7 @@ import org.apache.sis.util.resources.Errors;
  * @see RangeFormat
  */
 @Immutable
-public class NumberRange<T extends Number & Comparable<? super T>> extends Range<T> {
-    //
-    // IMPLEMENTATION NOTE: This class is full of @SuppressWarnings("unchecked") annotations.
-    // Nevertheless we should never get ClassCastException - if we get some, this would be a
-    // bug in this implementation. Users may get IllegalArgumentException however.
-    //
-
+public class NumberRange<E extends Number & Comparable<? super E>> extends Range<E> {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -253,18 +269,19 @@ public class NumberRange<T extends Number & Comparable<? super T>> extends Range
     /**
      * Constructs a range using the smallest type of {@link Number} that can hold the
      * given values. The given numbers don't need to be of the same type since they will
-     * be {@linkplain Numbers#cast(Number, Class) casted} as needed. More specifically:
+     * be {@linkplain Numbers#cast(Number, Class) casted} as needed. More specifically
+     * this method returns:
      *
      * <ul>
-     *   <li>If the values are between {@value java.lang.Byte#MIN_VALUE} and
-     *       {@value java.lang.Byte#MAX_VALUE} inclusive, then the given values are converted
-     *       to {@link Byte} objects and a {@code NumberRange} is created from them.</li>
-     *   <li>Otherwise if the values are between {@value java.lang.Short#MIN_VALUE} and
-     *       {@value java.lang.Short#MAX_VALUE} inclusive, then the given values are converted
-     *       to {@link Short} objects and a {@code NumberRange} is created from them.</li>
-     *   <li>Otherwise the {@link Integer} type is tested in the same way, then the
-     *       {@link Long} type, and finally the {@link Float} type.</li>
-     *   <li>If none of the above types is suitable, then the {@link Double} type is used.</li>
+     *   <li>{@code NumberRange<Byte>} if the given values are integers between
+     *       {@value java.lang.Byte#MIN_VALUE} and {@value java.lang.Byte#MAX_VALUE} inclusive.</li>
+     *   <li>{@code NumberRange<Short>} if the given values are integers between
+     *       {@value java.lang.Short#MIN_VALUE} and {@value java.lang.Short#MAX_VALUE} inclusive.</li>
+     *   <li>{@code NumberRange<Integer>} if the given values are integers between
+     *       {@value java.lang.Integer#MIN_VALUE} and {@value java.lang.Integer#MAX_VALUE} inclusive.</li>
+     *   <li>{@code NumberRange<Long>} if the given values are integers in the range of {@code long} values.</li>
+     *   <li>{@code NumberRange<Float>} if the given values can be casted to {@code float} values without data lost.</li>
+     *   <li>{@code NumberRange<Double>} If none of the above types is suitable.</li>
      * </ul>
      *
      * @param  minValue       The minimal value, or {@code null} if none.
@@ -285,20 +302,20 @@ public class NumberRange<T extends Number & Comparable<? super T>> extends Range
     }
 
     /**
-     * Wraps the specified {@link Range} in a {@code NumberRange} object. If the specified
+     * Returns the specified {@link Range} as a {@code NumberRange} object. If the specified
      * range is already an instance of {@code NumberRange}, then it is returned unchanged.
      * Otherwise a new number range is created using the {@linkplain #NumberRange(Range)
      * copy constructor}.
      *
      * @param  <N> The type of elements in the given range.
-     * @param  range The range to wrap.
+     * @param  range The range to cast or copy.
      * @return The same range than {@code range} as a {@code NumberRange} object.
      */
-    public static <N extends Number & Comparable<? super N>> NumberRange<N> wrap(final Range<N> range) {
+    public static <N extends Number & Comparable<? super N>> NumberRange<N> castOrCopy(final Range<N> range) {
         if (range instanceof NumberRange<?>) {
             return (NumberRange<N>) range;
         }
-        // The constructor will ensure that the range element class is a subclass of Number.
+        // The constructor will ensure that the range element type is a subclass of Number.
         return new NumberRange<N>(range);
     }
 
@@ -308,35 +325,35 @@ public class NumberRange<T extends Number & Comparable<? super T>> extends Range
      *
      * @param range The range to copy. The elements must be {@link Number} instances.
      */
-    public NumberRange(final Range<T> range) {
+    public NumberRange(final Range<E> range) {
         super(range);
     }
 
     /**
      * Constructs an inclusive range of {@link Number} objects.
      *
-     * @param  type     The element class, usually one of {@link Byte}, {@link Short},
+     * @param  type     The element type, usually one of {@link Byte}, {@link Short},
      *                  {@link Integer}, {@link Long}, {@link Float} or {@link Double}.
      * @param  minValue The minimum value, inclusive, or {@code null} if none.
      * @param  maxValue The maximum value, <strong>inclusive</strong>, or {@code null} if none.
      */
-    public NumberRange(final Class<T> type, final T minValue, final T maxValue) {
+    public NumberRange(final Class<E> type, final E minValue, final E maxValue) {
         super(type, minValue, maxValue);
     }
 
     /**
      * Constructs a range of {@link Number} objects.
      *
-     * @param type           The element class, usually one of {@link Byte}, {@link Short},
+     * @param type           The element type, usually one of {@link Byte}, {@link Short},
      *                       {@link Integer}, {@link Long}, {@link Float} or {@link Double}.
      * @param minValue       The minimal value, or {@code null} if none.
      * @param isMinIncluded  {@code true} if the minimal value is inclusive, or {@code false} if exclusive.
      * @param maxValue       The maximal value, or {@code null} if none.
      * @param isMaxIncluded  {@code true} if the maximal value is inclusive, or {@code false} if exclusive.
      */
-    public NumberRange(final Class<T> type,
-                       final T minValue, final boolean isMinIncluded,
-                       final T maxValue, final boolean isMaxIncluded)
+    public NumberRange(final Class<E> type,
+                       final E minValue, final boolean isMinIncluded,
+                       final E maxValue, final boolean isMaxIncluded)
     {
         super(type, minValue, isMinIncluded, maxValue, isMaxIncluded);
     }
@@ -345,13 +362,13 @@ public class NumberRange<T extends Number & Comparable<? super T>> extends Range
      * Constructs a range with the same values than the specified range,
      * casted to the specified type.
      *
-     * @param  type  The element class, usually one of {@link Byte}, {@link Short},
+     * @param  type  The element type, usually one of {@link Byte}, {@link Short},
      *               {@link Integer}, {@link Long}, {@link Float} or {@link Double}.
      * @param  range The range to copy. The elements must be {@link Number} instances.
      * @throws IllegalArgumentException If the given type is not one of the primitive
      *         wrappers for numeric types.
      */
-    NumberRange(final Class<T> type, final Range<? extends Number> range)
+    NumberRange(final Class<E> type, final Range<? extends Number> range)
             throws IllegalArgumentException
     {
         super(type, Numbers.cast(range.minValue, type), range.isMinIncluded,
@@ -359,56 +376,20 @@ public class NumberRange<T extends Number & Comparable<? super T>> extends Range
     }
 
     /**
-     * Creates a new range using the same element class than this range. This method will
+     * Creates a new range using the same element type than this range. This method will
      * be overridden by subclasses in order to create a range of a more specific type.
      */
     @Override
-    NumberRange<T> create(final T minValue, final boolean isMinIncluded,
-                          final T maxValue, final boolean isMaxIncluded)
+    Range<E> create(final E minValue, final boolean isMinIncluded,
+                    final E maxValue, final boolean isMaxIncluded)
     {
-        return new NumberRange<T>(elementType, minValue, isMinIncluded, maxValue, isMaxIncluded);
-    }
-
-    /**
-     * Ensures that {@link #elementType} is compatible with the type expected by this range class.
-     * Invoked for argument checking by the super-class constructor.
-     */
-    @Override
-    final void ensureValidType() throws IllegalArgumentException {
-        ensureNumberClass(elementType);
-        super.ensureValidType(); // Check that the type implements also Comparable.
-    }
-
-    /**
-     * Ensures that the given class is {@link Number} or a subclass.
-     */
-    private static void ensureNumberClass(final Class<?> type) throws IllegalArgumentException {
-        if (!Number.class.isAssignableFrom(type)) {
-            throw new IllegalArgumentException(Errors.format(
-                    Errors.Keys.IllegalClass_2, Number.class, type));
-        }
-    }
-
-    /**
-     * Returns the type of minimum and maximum values.
-     */
-    @SuppressWarnings("unchecked")
-    private static Class<? extends Number> getElementType(final Range<?> range) {
-        ArgumentChecks.ensureNonNull("range", range);
-        final Class<?> type = range.elementType;
-        ensureNumberClass(type);
-        /*
-         * Safe because we checked in the above line. We could have used Class.asSubclass(Class)
-         * instead but we want an IllegalArgumentException in case of failure rather than a
-         * ClassCastException.
-         */
-        return (Class<? extends Number>) type;
+        return new NumberRange<E>(elementType, minValue, isMinIncluded, maxValue, isMaxIncluded);
     }
 
     /**
      * Casts the specified range to the specified type.  If this class is associated to a unit of
-     * measurement, then this method converts the {@code range} units to the same units than this
-     * instance.  This method is overridden by {@link MeasurementRange} only in the way described
+     * measurement, then this method converts the {@code range} unit to the same unit than this
+     * instance. This method is overridden by {@link MeasurementRange} only in the way described
      * above.
      *
      * @param  type The class to cast to. Must be one of {@link Byte}, {@link Short},
@@ -417,14 +398,13 @@ public class NumberRange<T extends Number & Comparable<? super T>> extends Range
      * @throws IllegalArgumentException If the given type is not one of the primitive
      *         wrappers for numeric types.
      */
-    @SuppressWarnings({"unchecked","rawtypes"})
+    @SuppressWarnings("unchecked")
     <N extends Number & Comparable<? super N>>
-    NumberRange<N> convertAndCast(final Range<? extends Number> range, final Class<N> type)
+    NumberRange<N> convertAndCast(final NumberRange<?> range, final Class<N> type)
             throws IllegalArgumentException
     {
-        if (type.equals(range.getElementType())) {
-            // Safe because we checked in the line just above.
-            return (NumberRange<N>) wrap((Range) range);
+        if (range.elementType == type) {
+            return (NumberRange<N>) range;
         }
         return new NumberRange<N>(type, range);
     }
@@ -441,10 +421,14 @@ public class NumberRange<T extends Number & Comparable<? super T>> extends Range
      * @throws IllegalArgumentException If the given type is not one of the primitive
      *         wrappers for numeric types.
      */
+    @SuppressWarnings("unchecked")
     public <N extends Number & Comparable<? super N>> NumberRange<N> castTo(final Class<N> type)
             throws IllegalArgumentException
     {
-        return convertAndCast(this, type);
+        if (elementType == type) {
+            return (NumberRange<N>) this;
+        }
+        return new NumberRange<N>(type, this);
     }
 
     /**
@@ -452,126 +436,8 @@ public class NumberRange<T extends Number & Comparable<? super T>> extends Range
      */
     @Override
     @SuppressWarnings({"unchecked","rawtypes"}) // Generic array creation.
-    NumberRange<T>[] newArray(final int length) {
+    Range<E>[] newArray(final int length) {
         return new NumberRange[length];
-    }
-
-    /**
-     * Returns {@code true} if the specified value is within this range.
-     * This method delegates to {@link #contains(Comparable)}.
-     *
-     * @param  value The value to check for inclusion.
-     * @return {@code true} if the given value is within this range.
-     * @throws IllegalArgumentException if the given value is not comparable.
-     */
-    public final boolean contains(final Number value) throws IllegalArgumentException {
-        if (value != null && !(value instanceof Comparable<?>)) {
-            throw new IllegalArgumentException(Errors.format(
-                    Errors.Keys.NotComparableClass_1, value.getClass()));
-        }
-        return contains((Comparable<?>) value);
-    }
-
-    /**
-     * Returns {@code true} if the specified value is within this range.
-     * The given value must be a subclass of {@link Number}.
-     *
-     * @throws IllegalArgumentException If the given type is not one of the primitive
-     *         wrappers for numeric types.
-     */
-    @Override
-    @SuppressWarnings({"unchecked","rawtypes"})
-    public boolean contains(Comparable<?> value) throws IllegalArgumentException {
-        if (value == null) {
-            return false;
-        }
-        ArgumentChecks.ensureCanCast("value", Number.class, value);
-        /*
-         * Suppress warning because we checked the class in the line just above, so we are safe.
-         * We could have used Class.cast(Object) but we want an IllegalArgumentException with a
-         * localized message.
-         */
-        Number number = (Number) value;
-        final Class<? extends Number> type = Numbers.widestClass(elementType, number.getClass());
-        number = Numbers.cast(number, type);
-        /*
-         * The 'type' bounds should actually be <? extends Number & Comparable> since the method
-         * signature expect a Comparable and we have additionally casted to a Number.  However I
-         * have not found a way to express that safely in a local variable with Java 6.
-         */
-        return castTo((Class) type).containsNC((Comparable<?>) number);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    @SuppressWarnings({"unchecked","rawtypes"})
-    public boolean contains(Range<?> range) throws IllegalArgumentException {
-        final Class<? extends Number> type = Numbers.widestClass(elementType, getElementType(range));
-        /*
-         * The type bounds is actually <? extends Number & Comparable> but I'm unable to express
-         * it as local variable as of Java 6. So we have to bypass the compiler check, but those
-         * casts are actually safes - including the (Range) cast - because getElementType(range)
-         * would have throw an exception otherwise.
-         */
-        range = convertAndCast((Range) range, (Class) type);
-        return castTo((Class) type).containsNC(range);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    @SuppressWarnings({"unchecked","rawtypes"})
-    public boolean intersects(Range<?> range) throws IllegalArgumentException {
-        final Class<? extends Number> type = Numbers.widestClass(elementType, getElementType(range));
-        range = convertAndCast((Range) range, (Class) type); // Same comment than contains(Range).
-        return castTo((Class) type).intersectsNC(range);
-    }
-
-    /**
-     * {@inheritDoc}
-     * Widening conversions will be applied as needed.
-     */
-    @Override
-    @SuppressWarnings({"unchecked","rawtypes"})
-    public NumberRange<?> union(Range<?> range) throws IllegalArgumentException {
-        final Class<? extends Number> type = Numbers.widestClass(elementType, getElementType(range));
-        range = convertAndCast((Range) range, (Class) type); // Same comment than contains(Range).
-        return (NumberRange) castTo((Class) type).unionNC(range);
-    }
-
-    /**
-     * {@inheritDoc}
-     * Widening conversions will be applied as needed.
-     */
-    @Override
-    @SuppressWarnings({"unchecked","rawtypes"})
-    public NumberRange<?> intersect(Range<?> range) throws IllegalArgumentException {
-        final Class<? extends Number> rangeType = getElementType(range);
-        Class<? extends Number> type = Numbers.widestClass(elementType, rangeType);
-        range = castTo((Class) type).intersectNC(convertAndCast((Range) range, (Class) type));
-        /*
-         * Use a finer type capable to holds the result (since the intersection
-         * may have reduced the range), but not finer than the finest type of
-         * the ranges used in the intersection calculation.
-         */
-        type = Numbers.narrowestClass(elementType, rangeType);
-        type = Numbers.widestClass(type, Numbers.narrowestClass((Number) range.minValue));
-        type = Numbers.widestClass(type, Numbers.narrowestClass((Number) range.maxValue));
-        return convertAndCast((Range) range, (Class) type);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    @SuppressWarnings({"unchecked","rawtypes"})
-    public NumberRange<?>[] subtract(Range<?> range) throws IllegalArgumentException {
-        Class<? extends Number> type = Numbers.widestClass(elementType, getElementType(range));
-        return (NumberRange[]) castTo((Class) type)
-                .subtractNC(convertAndCast((Range) range, (Class) type));
     }
 
     /**
@@ -581,13 +447,13 @@ public class NumberRange<T extends Number & Comparable<? super T>> extends Range
      * @return The minimum value.
      */
     @SuppressWarnings("unchecked")
-    public double getMinimum() {
+    public double getMinDouble() {
         final Number value = (Number) getMinValue();
         return (value != null) ? value.doubleValue() : Double.NEGATIVE_INFINITY;
     }
 
     /**
-     * Returns the {@linkplain #getMinimum() minimum value} with the specified inclusive or
+     * Returns the {@linkplain #getMinDouble() minimum value} with the specified inclusive or
      * exclusive state. If this range is unbounded, then {@link Double#NEGATIVE_INFINITY} is
      * returned.
      *
@@ -595,8 +461,8 @@ public class NumberRange<T extends Number & Comparable<? super T>> extends Range
      *         or {@code false} for the minimum value exclusive.
      * @return The minimum value, inclusive or exclusive as requested.
      */
-    public double getMinimum(final boolean inclusive) {
-        double value = getMinimum();
+    public double getMinDouble(final boolean inclusive) {
+        double value = getMinDouble();
         if (inclusive != isMinIncluded()) {
             value = next(getElementType(), value, inclusive);
         }
@@ -610,13 +476,13 @@ public class NumberRange<T extends Number & Comparable<? super T>> extends Range
      * @return The maximum value.
      */
     @SuppressWarnings("unchecked")
-    public double getMaximum() {
+    public double getMaxDouble() {
         final Number value = (Number) getMaxValue();
         return (value != null) ? value.doubleValue() : Double.POSITIVE_INFINITY;
     }
 
     /**
-     * Returns the {@linkplain #getMaximum() maximum value} with the specified inclusive or
+     * Returns the {@linkplain #getMaxDouble() maximum value} with the specified inclusive or
      * exclusive state. If this range is unbounded, then {@link Double#POSITIVE_INFINITY} is
      * returned.
      *
@@ -624,8 +490,8 @@ public class NumberRange<T extends Number & Comparable<? super T>> extends Range
      *         or {@code false} for the maximum value exclusive.
      * @return The maximum value, inclusive or exclusive as requested.
      */
-    public double getMaximum(final boolean inclusive) {
-        double value = getMaximum();
+    public double getMaxDouble(final boolean inclusive) {
+        double value = getMaxDouble();
         if (inclusive != isMaxIncluded()) {
             value = next(getElementType(), value, !inclusive);
         }
@@ -659,5 +525,132 @@ public class NumberRange<T extends Number & Comparable<? super T>> extends Range
             value = -value;
         }
         return value;
+    }
+
+    /**
+     * Returns {@code true} if this range contains the given value.
+     * This method converts {@code this} or the given argument to the widest numeric type,
+     * then performs the same work than {@link #contains(Comparable)}.
+     *
+     * @param  value The value to check for inclusion in this range.
+     * @return {@code true} if the given value is included in this range.
+     * @throws IllegalArgumentException if the given range can not be converted to a valid type
+     *         through widening conversion.
+     */
+    public boolean containsAny(Number value) throws IllegalArgumentException {
+        if (value == null) {
+            return false;
+        }
+        final Class<? extends Number> type = Numbers.widestClass(elementType, value.getClass());
+        value = Numbers.cast(value, type);
+        if (minValue != null) {
+            @SuppressWarnings("unchecked")
+            final int c = ((Comparable) Numbers.cast(minValue, type)).compareTo(value);
+            if (isMinIncluded ? (c > 0) : (c >= 0)) {
+                return false;
+            }
+        }
+        if (maxValue != null) {
+            @SuppressWarnings("unchecked")
+            final int c = ((Comparable) Numbers.cast(maxValue, type)).compareTo(value);
+            if (isMaxIncluded ? (c < 0) : (c <= 0)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Returns {@code true} if the supplied range is fully contained within this range.
+     * This method converts {@code this} or the given argument to the widest numeric type,
+     * then delegates to {@link #contains(Range)}.
+     *
+     * @param  range The range to check for inclusion in this range.
+     * @return {@code true} if the given range is included in this range.
+     * @throws IllegalArgumentException if the given range can not be converted to a valid type
+     *         through widening conversion, or if the units of measurement are not convertible.
+     */
+    @SuppressWarnings({"unchecked","rawtypes"})
+    public boolean containsAny(final NumberRange<?> range) throws IllegalArgumentException {
+        /*
+         * The type bounds is actually <? extends Number & Comparable> but I'm unable to express
+         * it as local variable as of Java 7. So we have to bypass the compiler check, but those
+         * casts are actually safes.
+         */
+        final Class type = Numbers.widestClass(elementType, range.elementType);
+        return castTo(type).contains(convertAndCast(range, type));
+    }
+
+    /**
+     * Returns {@code true} if the supplied range is fully contained within this range.
+     * This method converts {@code this} or the given argument to the widest numeric type,
+     * then delegates to {@link #intersects(Range)}.
+     *
+     * @param  range The range to check for inclusion in this range.
+     * @return {@code true} if the given range is included in this range.
+     * @throws IllegalArgumentException if the given range can not be converted to a valid type
+     *         through widening conversion, or if the units of measurement are not convertible.
+     */
+    @SuppressWarnings({"unchecked","rawtypes"})
+    public boolean intersectsAny(final NumberRange<?> range) throws IllegalArgumentException {
+        final Class type = Numbers.widestClass(elementType, range.elementType);
+        return castTo(type).intersects(convertAndCast(range, type));
+    }
+
+    /**
+     * Returns the union of this range with the given range.
+     * This method converts {@code this} or the given argument to the widest numeric type,
+     * then delegates to {@link #intersect(Range)}.
+     *
+     * @param  range The range to add to this range.
+     * @return The union of this range with the given range.
+     * @throws IllegalArgumentException if the given range can not be converted to a valid type
+     *         through widening conversion, or if the units of measurement are not convertible.
+     */
+    @SuppressWarnings({"unchecked","rawtypes"})
+    public NumberRange<?> intersectAny(final NumberRange<?> range) throws IllegalArgumentException {
+        Class type = Numbers.widestClass(elementType, range.elementType);
+        final NumberRange<?> intersect = castOrCopy(castTo(type).intersect(convertAndCast(range, type)));
+        /*
+         * Use a finer type capable to holds the result (since the intersection
+         * may have reduced the range), but not finer than the finest type of
+         * the ranges used in the intersection calculation.
+         */
+        type = Numbers.narrowestClass(elementType, range.elementType);
+        type = Numbers.widestClass(type, Numbers.narrowestClass((Number) intersect.minValue));
+        type = Numbers.widestClass(type, Numbers.narrowestClass((Number) intersect.maxValue));
+        return intersect.castTo(type);
+    }
+
+    /**
+     * Returns the union of this range with the given range.
+     * This method converts {@code this} or the given argument to the widest numeric type,
+     * then delegates to {@link #union(Range)}.
+     *
+     * @param  range The range to add to this range.
+     * @return The union of this range with the given range.
+     * @throws IllegalArgumentException if the given range can not be converted to a valid type
+     *         through widening conversion, or if the units of measurement are not convertible.
+     */
+    @SuppressWarnings({"unchecked","rawtypes"})
+    public NumberRange<?> unionAny(final NumberRange<?> range) throws IllegalArgumentException {
+        final Class type = Numbers.widestClass(elementType, range.elementType);
+        return castOrCopy(castTo(type).union(convertAndCast(range, type)));
+    }
+
+    /**
+     * Returns the range of values that are in this range but not in the given range.
+     * This method converts {@code this} or the given argument to the widest numeric type,
+     * then delegates to {@link #subtract(Range)}.
+     *
+     * @param  range The range to subtract.
+     * @return This range without the given range, as an array of length 0, 1 or 2.
+     * @throws IllegalArgumentException if the given range can not be converted to a valid type
+     *         through widening conversion, or if the units of measurement are not convertible.
+     */
+    @SuppressWarnings({"unchecked","rawtypes"})
+    public NumberRange<?>[] subtractAny(final NumberRange<?> range) throws IllegalArgumentException {
+        final Class type = Numbers.widestClass(elementType, range.elementType);
+        return (NumberRange[]) castTo(type).subtract(convertAndCast(range, type));
     }
 }

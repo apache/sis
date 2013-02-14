@@ -41,6 +41,13 @@ import java.sql.SQLException;
  *     }
  * }
  *
+ * {@section Relationship with <code>java.io.UncheckedIOException</code>}
+ * JDK8 provides a {@link java.io.UncheckedIOException} which partially overlaps
+ * the purpose of this {@code BackingStoreException}. While Apache SIS still uses
+ * {@code BackingStoreException} as a general mechanism for any kind of checked
+ * exceptions, client code targeting JDK8 would be well advised to catch both kind
+ * of exceptions for robustness.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.3)
  * @version 0.3

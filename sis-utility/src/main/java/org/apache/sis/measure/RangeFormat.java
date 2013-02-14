@@ -84,7 +84,7 @@ public class RangeFormat extends Format {
     private static final int MAX_VALUE_FIELD = 1;
 
     /**
-     * The constant value for {@link FieldPosition} which designate the units of measurement.
+     * The constant value for {@link FieldPosition} which designate the unit of measurement.
      *
      * @see Field#UNIT
      */
@@ -230,7 +230,7 @@ public class RangeFormat extends Format {
     protected final Format elementFormat;
 
     /**
-     * The format for units of measurement, or {@code null} if none. This is non-null if and
+     * The format for unit of measurement, or {@code null} if none. This is non-null if and
      * only if {@link #elementType} is assignable to {@link Number} but not to {@link Angle}.
      */
     protected final UnitFormat unitFormat;
@@ -267,7 +267,7 @@ public class RangeFormat extends Format {
 
     /**
      * Creates a new format for parsing and formatting {@linkplain Range ranges} of
-     * the given element class using the given locale. The element class is typically
+     * the given element type using the given locale. The element type is typically
      * {@code Date.class} or some subclass of {@code Number.class}.
      *
      * @param  locale The locale for parsing and formatting range components.
@@ -494,7 +494,7 @@ public class RangeFormat extends Format {
             switch (field) {
                 case MIN_VALUE_FIELD: value = minValue; break;
                 case MAX_VALUE_FIELD: value = maxValue; break;
-                case UNIT_FIELD:      value = range.getUnits(); break;
+                case UNIT_FIELD:      value = range.unit(); break;
                 default: throw new AssertionError(field);
             }
             int startPosition = toAppendTo.length();
@@ -812,7 +812,7 @@ public class RangeFormat extends Format {
         }
         /*
          * Parses the unit, if any. The units are always optional: if we can not parse
-         * them, then we will consider that the parsing stopped before the units.
+         * them, then we will consider that the parsing stopped before the unit.
          */
         Unit<?> unit = null;
         if (unitFormat != null) {
