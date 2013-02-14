@@ -39,12 +39,12 @@ public final strictfp class NumberRangeTest extends TestCase {
     @Test
     public void testIntegerBounds() {
         final NumberRange<Integer> range = NumberRange.create(10, 20);
-        assertEquals(10, range.getMinimum(     ), 0);
-        assertEquals(10, range.getMinimum(true ), 0);
-        assertEquals( 9, range.getMinimum(false), 0);
-        assertEquals(20, range.getMaximum(     ), 0);
-        assertEquals(20, range.getMaximum(true ), 0);
-        assertEquals(21, range.getMaximum(false), 0);
+        assertEquals(10, range.getMinDouble(     ), 0);
+        assertEquals(10, range.getMinDouble(true ), 0);
+        assertEquals( 9, range.getMinDouble(false), 0);
+        assertEquals(20, range.getMaxDouble(     ), 0);
+        assertEquals(20, range.getMaxDouble(true ), 0);
+        assertEquals(21, range.getMaxDouble(false), 0);
     }
 
     /**

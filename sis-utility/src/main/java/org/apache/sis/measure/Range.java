@@ -176,7 +176,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
     /**
      * To be overridden by {@link MeasurementRange} only.
      */
-    Unit<?> getUnits() {
+    Unit<?> unit() {
         return null;
     }
 
@@ -621,9 +621,9 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
         }
         if (minValue != null && minValue.equals(maxValue)) {
             String value = minValue.toString();
-            final Unit<?> units = getUnits();
-            if (units != null) {
-                value = value + ' ' + units;
+            final Unit<?> unit = unit();
+            if (unit != null) {
+                value = value + ' ' + unit;
             }
             return value;
         }
@@ -646,9 +646,9 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
             buffer.append(maxValue);
         }
         buffer.append(isMaxIncluded ? ']' : ')');
-        final Unit<?> units = getUnits();
-        if (units != null) {
-            buffer.append(' ').append(units);
+        final Unit<?> unit = unit();
+        if (unit != null) {
+            buffer.append(' ').append(unit);
         }
         return buffer.toString();
     }

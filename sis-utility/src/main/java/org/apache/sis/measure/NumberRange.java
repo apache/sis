@@ -23,8 +23,8 @@ import org.apache.sis.util.resources.Errors;
 
 /**
  * A range of numbers capable of widening conversions when performing range operations.
- * {@code NumberRange} has no units. For a range of physical measurements with units of
- * measure, see {@link MeasurementRange}.
+ * {@code NumberRange} has no unit of measurement. For a range of physical measurements
+ * with unit of measure, see {@link MeasurementRange}.
  *
  * <p>Most operations in this class are defined in two versions:</p>
  * <ul>
@@ -388,8 +388,8 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
 
     /**
      * Casts the specified range to the specified type.  If this class is associated to a unit of
-     * measurement, then this method converts the {@code range} units to the same units than this
-     * instance.  This method is overridden by {@link MeasurementRange} only in the way described
+     * measurement, then this method converts the {@code range} unit to the same unit than this
+     * instance. This method is overridden by {@link MeasurementRange} only in the way described
      * above.
      *
      * @param  type The class to cast to. Must be one of {@link Byte}, {@link Short},
@@ -447,13 +447,13 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      * @return The minimum value.
      */
     @SuppressWarnings("unchecked")
-    public double getMinimum() {
+    public double getMinDouble() {
         final Number value = (Number) getMinValue();
         return (value != null) ? value.doubleValue() : Double.NEGATIVE_INFINITY;
     }
 
     /**
-     * Returns the {@linkplain #getMinimum() minimum value} with the specified inclusive or
+     * Returns the {@linkplain #getMinDouble() minimum value} with the specified inclusive or
      * exclusive state. If this range is unbounded, then {@link Double#NEGATIVE_INFINITY} is
      * returned.
      *
@@ -461,8 +461,8 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      *         or {@code false} for the minimum value exclusive.
      * @return The minimum value, inclusive or exclusive as requested.
      */
-    public double getMinimum(final boolean inclusive) {
-        double value = getMinimum();
+    public double getMinDouble(final boolean inclusive) {
+        double value = getMinDouble();
         if (inclusive != isMinIncluded()) {
             value = next(getElementType(), value, inclusive);
         }
@@ -476,13 +476,13 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      * @return The maximum value.
      */
     @SuppressWarnings("unchecked")
-    public double getMaximum() {
+    public double getMaxDouble() {
         final Number value = (Number) getMaxValue();
         return (value != null) ? value.doubleValue() : Double.POSITIVE_INFINITY;
     }
 
     /**
-     * Returns the {@linkplain #getMaximum() maximum value} with the specified inclusive or
+     * Returns the {@linkplain #getMaxDouble() maximum value} with the specified inclusive or
      * exclusive state. If this range is unbounded, then {@link Double#POSITIVE_INFINITY} is
      * returned.
      *
@@ -490,8 +490,8 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      *         or {@code false} for the maximum value exclusive.
      * @return The maximum value, inclusive or exclusive as requested.
      */
-    public double getMaximum(final boolean inclusive) {
-        double value = getMaximum();
+    public double getMaxDouble(final boolean inclusive) {
+        double value = getMaxDouble();
         if (inclusive != isMaxIncluded()) {
             value = next(getElementType(), value, !inclusive);
         }

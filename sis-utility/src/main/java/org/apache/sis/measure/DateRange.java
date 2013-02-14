@@ -73,10 +73,10 @@ public class DateRange extends Range<Date> {
      * @param  range The range to convert.
      * @param  origin The date to use as the origin.
      * @throws ConversionException if the given range doesn't have a
-     *         {@linkplain MeasurementRange#getUnits unit} compatible with milliseconds.
+     *         {@linkplain MeasurementRange#unit unit} compatible with milliseconds.
      */
     public DateRange(final MeasurementRange<?> range, final Date origin) throws ConversionException {
-        this(range, getConverter(range.getUnits()), origin.getTime());
+        this(range, getConverter(range.unit()), origin.getTime());
     }
 
     /**
@@ -87,8 +87,8 @@ public class DateRange extends Range<Date> {
             throws ConversionException
     {
         super(Date.class,
-              new Date(origin + Math.round(converter.convert(range.getMinimum()))), range.isMinIncluded(),
-              new Date(origin + Math.round(converter.convert(range.getMaximum()))), range.isMaxIncluded());
+              new Date(origin + Math.round(converter.convert(range.getMinDouble()))), range.isMinIncluded(),
+              new Date(origin + Math.round(converter.convert(range.getMaxDouble()))), range.isMaxIncluded());
     }
 
     /**
