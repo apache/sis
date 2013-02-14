@@ -32,13 +32,13 @@ import org.apache.sis.util.resources.Errors;
  *      ({@link #contains(Range) contains}, {@link #intersect(Range) intersect},
  *       {@link #intersects(Range) intersects}, {@link #union(Range) union} and
  *       {@link #subtract(Range) subtract}) requires argument or range elements
- *       of type {@code <T>}. No type conversion is performed.</li>
+ *       of type {@code <E>}. No type conversion is performed.</li>
  *
  *   <li>Methods defined in this class with the {@code Any} suffix
  *      ({@link #containsAny(NumberRange) containsAny}, {@link #intersectAny(NumberRange) intersectAny},
  *       {@link #intersectsAny(NumberRange) intersectsAny}, {@link #unionAny(NumberRange) unionAny} and
  *       {@link #subtractAny(NumberRange) subtractAny}) are more lenient on the argument or range element
- *       type {@code <T>}. Widening conversions are performed as needed.</li>
+ *       type {@code <E>}. Widening conversions are performed as needed.</li>
  * </ul>
  *
  * The methods from the parent class are preferable when the ranges are known to contain elements
@@ -51,7 +51,7 @@ import org.apache.sis.util.resources.Errors;
  *   <li>{@link #castTo(Class)} for casting the range values to an other type.</li>
  * </ul>
  *
- * @param <T> The type of range elements as a subclass of {@link Number}.
+ * @param <E> The type of range elements as a subclass of {@link Number}.
  *
  * @author  Martin Desruisseaux (IRD)
  * @author  Jody Garnett (for parameterized type inspiration)
@@ -62,7 +62,7 @@ import org.apache.sis.util.resources.Errors;
  * @see RangeFormat
  */
 @Immutable
-public class NumberRange<T extends Number & Comparable<? super T>> extends Range<T> {
+public class NumberRange<E extends Number & Comparable<? super E>> extends Range<E> {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -325,7 +325,7 @@ public class NumberRange<T extends Number & Comparable<? super T>> extends Range
      *
      * @param range The range to copy. The elements must be {@link Number} instances.
      */
-    public NumberRange(final Range<T> range) {
+    public NumberRange(final Range<E> range) {
         super(range);
     }
 
@@ -337,7 +337,7 @@ public class NumberRange<T extends Number & Comparable<? super T>> extends Range
      * @param  minValue The minimum value, inclusive, or {@code null} if none.
      * @param  maxValue The maximum value, <strong>inclusive</strong>, or {@code null} if none.
      */
-    public NumberRange(final Class<T> type, final T minValue, final T maxValue) {
+    public NumberRange(final Class<E> type, final E minValue, final E maxValue) {
         super(type, minValue, maxValue);
     }
 
@@ -351,9 +351,9 @@ public class NumberRange<T extends Number & Comparable<? super T>> extends Range
      * @param maxValue       The maximal value, or {@code null} if none.
      * @param isMaxIncluded  {@code true} if the maximal value is inclusive, or {@code false} if exclusive.
      */
-    public NumberRange(final Class<T> type,
-                       final T minValue, final boolean isMinIncluded,
-                       final T maxValue, final boolean isMaxIncluded)
+    public NumberRange(final Class<E> type,
+                       final E minValue, final boolean isMinIncluded,
+                       final E maxValue, final boolean isMaxIncluded)
     {
         super(type, minValue, isMinIncluded, maxValue, isMaxIncluded);
     }
@@ -368,7 +368,7 @@ public class NumberRange<T extends Number & Comparable<? super T>> extends Range
      * @throws IllegalArgumentException If the given type is not one of the primitive
      *         wrappers for numeric types.
      */
-    NumberRange(final Class<T> type, final Range<? extends Number> range)
+    NumberRange(final Class<E> type, final Range<? extends Number> range)
             throws IllegalArgumentException
     {
         super(type, Numbers.cast(range.minValue, type), range.isMinIncluded,
@@ -380,8 +380,8 @@ public class NumberRange<T extends Number & Comparable<? super T>> extends Range
      * be overridden by subclasses in order to create a range of a more specific type.
      */
     @Override
-    Range<T> create(final T minValue, final boolean isMinIncluded,
-                    final T maxValue, final boolean isMaxIncluded)
+    Range<E> create(final E minValue, final boolean isMinIncluded,
+                    final E maxValue, final boolean isMaxIncluded)
     {
         return new NumberRange<>(elementType, minValue, isMinIncluded, maxValue, isMaxIncluded);
     }
@@ -436,7 +436,7 @@ public class NumberRange<T extends Number & Comparable<? super T>> extends Range
      */
     @Override
     @SuppressWarnings({"unchecked","rawtypes"}) // Generic array creation.
-    Range<T>[] newArray(final int length) {
+    Range<E>[] newArray(final int length) {
         return new NumberRange[length];
     }
 
