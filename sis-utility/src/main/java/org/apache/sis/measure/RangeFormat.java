@@ -43,7 +43,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * <ul>
  *   <li>If the elements type is assignable to {@link Date}, then the {@code parse} method
- *       will create {@link DateRange} objects.</li>
+ *       will create {@code Range<Date>} objects.</li>
  *   <li>If the elements type is assignable to {@link Number}, then:
  *     <ul>
  *       <li>If the text to parse contains a {@linkplain Unit unit} of measure, then
@@ -59,7 +59,6 @@ import org.apache.sis.util.resources.Errors;
  * @module
  *
  * @see Range
- * @see DateRange
  * @see NumberRange
  * @see MeasurementRange
  */
@@ -209,8 +208,8 @@ public class RangeFormat extends Format {
      * to be created by the parse method:
      *
      * <ul>
-     *   <li>{@link NumberRange} if the element type is assignable to {@link Number} or {@link Angle}.</li>
-     *   <li>{@link DateRange}   if the element type is assignable to {@link Date}.</li>
+     *   <li>{@code NumberRange<?>} if the element type is assignable to {@link Number} or {@link Angle}.</li>
+     *   <li>{@code Range<Date>} if the element type is assignable to {@link Date}.</li>
      * </ul>
      *
      * @see Range#getElementType()
@@ -254,7 +253,7 @@ public class RangeFormat extends Format {
     }
 
     /**
-     * Creates a new format for parsing and formatting {@linkplain DateRange date ranges}
+     * Creates a new format for parsing and formatting {@code Range<Date>}
      * using the given locale and timezone.
      *
      * @param locale   The locale for parsing and formatting range components.
@@ -858,7 +857,7 @@ public class RangeFormat extends Format {
         } else if (Date.class.isAssignableFrom(elementType)) {
             final Date min = (Date) minValue;
             final Date max = (Date) maxValue;
-            return new DateRange(min, isMinIncluded, max, isMaxIncluded);
+            return new Range<>(Date.class, min, isMinIncluded, max, isMaxIncluded);
         } else {
             @SuppressWarnings({"unchecked","rawtypes"})
             final Class<? extends Comparable<?>> type = (Class) elementType;
