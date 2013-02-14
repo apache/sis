@@ -19,7 +19,6 @@ package org.apache.sis.measure;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
-import java.text.Format;
 import java.text.DateFormat;
 import java.text.FieldPosition;
 import java.text.ParsePosition;

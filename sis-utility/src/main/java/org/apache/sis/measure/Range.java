@@ -20,10 +20,8 @@ import java.io.Serializable;
 import javax.measure.unit.Unit;
 import net.jcip.annotations.Immutable;
 import org.apache.sis.util.collection.CheckedContainer;
-import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Numbers;
-
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 // Related to JDK7
 import org.apache.sis.internal.util.Objects;
@@ -39,22 +37,21 @@ import org.apache.sis.internal.util.Objects;
  * within the range. Null values are always considered <em>exclusive</em>,
  * since iterations over the values will never reach the infinite bound.
  *
- * {@section Type of range elements}
- * To be a member of a {@code Range}, the {@code <T>} type defining the range must implement the
- * {@link Comparable} interface. Some methods like {@link #contains(Comparable)}, which would
- * normally expect an argument of type {@code T}, accept the base type {@code Comparable<?>} in
- * order to allow widening conversions by the {@link NumberRange} subclass. Passing an argument of
- * non-convertible type to any method will cause an {@link IllegalArgumentException} to be thrown.
- *
- * {@note This class should never throw <code>ClassCastException</code>, unless there is a bug
- *        in the <code>Range</code> class or subclasses implementation.}
+ * {@section Type and value of range elements}
+ * To be a member of a {@code Range}, the {@code <E>} type defining the range must implement the
+ * {@link Comparable} interface. All argument values given to the methods of this class shall be
+ * or contain instances of the same {@code <E>} type. The type is enforced by parameterized type,
+ * but some subclasses may put additional constraints. For example {@link MeasurementRange} will
+ * additionally checks the units of measurement. Every methods defined in this class may throw
+ * an {@link IllegalArgumentException} if a given argument does not meet a constraint other than
+ * the type.
  *
  * {@section String representation}
  * The {@linkplain #toString() string representation} of a {@code Range} is defined
- * in a locale-insensitive way. In order to format a range using the current locale,
+ * in a locale-insensitive way. In order to format a range using a different locale,
  * or for parsing a range, use {@link RangeFormat}.
  *
- * @param <T> The type of range elements, typically a {@link Number} subclass or {@link java.util.Date}.
+ * @param <E> The type of range elements, typically a {@link Number} subclass or {@link java.util.Date}.
  *
  * @author  Joe White
  * @author  Martin Desruisseaux (Geomatys)
@@ -66,7 +63,7 @@ import org.apache.sis.internal.util.Objects;
  * @see RangeFormat
  */
 @Immutable
-public class Range<T extends Comparable<? super T>> implements CheckedContainer<T>, Serializable {
+public class Range<E extends Comparable<? super E>> implements CheckedContainer<E>, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -77,12 +74,12 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
      *
      * @see #getElementType()
      */
-    final Class<T> elementType;
+    final Class<E> elementType;
 
     /**
      * The minimal and maximal values.
      */
-    final T minValue, maxValue;
+    final E minValue, maxValue;
 
     /**
      * Whether the minimal or maximum value is included.
@@ -95,13 +92,13 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
      *
      * @param range The range to copy.
      */
-    public Range(final Range<T> range) {
+    public Range(final Range<E> range) {
         elementType   = range.elementType;
         minValue      = range.minValue;
         isMinIncluded = range.isMinIncluded;
         maxValue      = range.maxValue;
         isMaxIncluded = range.isMaxIncluded;
-        ensureValidType();
+        assert validate();
     }
 
     /**
@@ -111,8 +108,14 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
      * @param minValue     The minimal value (inclusive), or {@code null} if none.
      * @param maxValue     The maximal value (inclusive), or {@code null} if none.
      */
-    public Range(final Class<T> elementType, final T minValue, final T maxValue) {
-        this(elementType, minValue, true, maxValue, true);
+    public Range(final Class<E> elementType, final E minValue, final E maxValue) {
+        ArgumentChecks.ensureNonNull("elementType", elementType);
+        this.elementType   = elementType;
+        this.minValue      = minValue;
+        this.isMinIncluded = (minValue != null);
+        this.maxValue      = maxValue;
+        this.isMaxIncluded = (maxValue != null);
+        assert validate();
     }
 
     /**
@@ -124,11 +127,11 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
      * @param maxValue       The maximal value, or {@code null} if none.
      * @param isMaxIncluded  {@code true} if the maximal value is inclusive, or {@code false} if exclusive.
      */
-    public Range(final Class<T> elementType,
-            final T minValue, final boolean isMinIncluded,
-            final T maxValue, final boolean isMaxIncluded)
+    public Range(final Class<E> elementType,
+            final E minValue, final boolean isMinIncluded,
+            final E maxValue, final boolean isMaxIncluded)
     {
-        ensureNonNull("elementType", elementType);
+        ArgumentChecks.ensureNonNull("elementType", elementType);
         /*
          * The 'isMin/Maxincluded' flags must be forced to 'false' if 'minValue' or 'maxValue'
          * are null. This is required for proper working of algorithms implemented in this class.
@@ -138,70 +141,54 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
         this.isMinIncluded = isMinIncluded && (minValue != null);
         this.maxValue      = maxValue;
         this.isMaxIncluded = isMaxIncluded && (maxValue != null);
-        ensureValidType();
-        if (minValue != null) ensureCompatibleType(minValue.getClass());
-        if (maxValue != null) ensureCompatibleType(maxValue.getClass());
+        assert validate();
     }
 
     /**
-     * Creates a new range using the same element class than this range. This method will
+     * Creates a new range using the same element type than this range. This method will
      * be overridden by subclasses in order to create a range of a more specific type.
+     *
+     * {@note This method is invoked by all operations (union, intersection, <i>etc.</i>) that may
+     * create a new range. But despite this fact, the return type of those methods are nailed down
+     * to <code>Range</code> (i.e. subclasses shall not override the above-cited operations with
+     * covariant return type) because those operations may return the given argument directly,
+     * and we have no guarantees on the type of those arguments.}
      */
-    Range<T> create(final T minValue, final boolean isMinIncluded,
-                    final T maxValue, final boolean isMaxIncluded)
+    Range<E> create(final E minValue, final boolean isMinIncluded,
+                    final E maxValue, final boolean isMaxIncluded)
     {
-        return new Range<T>(elementType, minValue, isMinIncluded, maxValue, isMaxIncluded);
+        return new Range<E>(elementType, minValue, isMinIncluded, maxValue, isMaxIncluded);
     }
 
     /**
-     * Returns an initially empty array of the given length. To be overridden
-     * by subclasses in order to create arrays of more specific type.
+     * Returns an initially empty array of {@code getClass()} type and of the given length.
+     * This method is overridden by subclasses in order to create arrays of more specific type.
+     * This method is invoked by the {@link #subtract(Range)} method. It is okay to use the new
+     * array only if the ranges to store in that array are only {@code this} or new ranges created
+     * by the {@link #create(Comparable, boolean, Comparable, boolean)} method - otherwise we may
+     * get an {@link ArrayStoreException}.
      */
     @SuppressWarnings({"unchecked","rawtypes"}) // Generic array creation.
-    Range<T>[] newArray(final int length) {
+    Range<E>[] newArray(final int length) {
         return new Range[length];
     }
 
     /**
      * To be overridden by {@link MeasurementRange} only.
      */
-    Unit<?> getUnits() {
+    Unit<?> unit() {
         return null;
     }
 
     /**
-     * Ensures that the given range uses the same element class than this range,
-     * then return the casted argument value.
-     *
-     * @param range The range to test for compatibility.
+     * Invoked by the constructors in order to ensure that the argument are of valid types.
+     * This check is performed only when assertions are enabled. This test is not needed in
+     * normal execution if the users do not bypass the checks performed by generic types.
      */
-    @SuppressWarnings("unchecked")
-    private Range<? extends T> ensureCompatible(final Range<?> range) throws IllegalArgumentException {
-        ensureNonNull("range", range);
-        ensureCompatibleType(range.elementType);
-        return (Range<? extends T>) range;
-    }
-
-    /**
-     * Ensures that the given type is compatible with the type expected by this range.
-     */
-    private void ensureCompatibleType(final Class<?> type) throws IllegalArgumentException {
-        if (!elementType.isAssignableFrom(type)) {
-            throw new IllegalArgumentException(Errors.format(
-                    Errors.Keys.IllegalClass_2, elementType, type));
-        }
-    }
-
-    /**
-     * Ensures that {@link #elementType} is compatible with the type expected by this range class.
-     * This method is invoked at construction time for validating the type argument. This method
-     * is overridden by {@link NumberRange} and {@link DateRange} for more specific check.
-     */
-    void ensureValidType() throws IllegalArgumentException {
-        if (!Comparable.class.isAssignableFrom(elementType)) {
-            throw new IllegalArgumentException(Errors.format(
-                    Errors.Keys.IllegalClass_2, Comparable.class, elementType));
-        }
+    private boolean validate() {
+        ArgumentChecks.ensureCanCast("minValue", elementType, minValue);
+        ArgumentChecks.ensureCanCast("maxValue", elementType, maxValue);
+        return Comparable.class.isAssignableFrom(elementType);
     }
 
     /**
@@ -209,7 +196,7 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
      * This is the type specified at construction time.
      */
     @Override
-    public Class<T> getElementType() {
+    public Class<E> getElementType() {
         return elementType;
     }
 
@@ -220,7 +207,7 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
      *
      * @return The minimal value, or {@code null} if this range is unbounded on the lower side.
      */
-    public T getMinValue() {
+    public E getMinValue() {
         return minValue;
     }
 
@@ -242,7 +229,7 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
      *
      * @return The maximal value, or {@code null} if this range is unbounded on the upper side.
      */
-    public T getMaxValue() {
+    public E getMaxValue() {
         return maxValue;
     }
 
@@ -263,9 +250,12 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
      * {@linkplain #getMaxValue() maximum value}, or if they are equal while
      * at least one of them is exclusive.
      *
+     * {@note This method is final because often used by the internal implementation.
+     *        Making the method final ensures that the other methods behave consistently.}
+     *
      * @return {@code true} if this range is empty.
      */
-    public boolean isEmpty() {
+    public final boolean isEmpty() {
         if (minValue == null || maxValue == null) {
             return false; // Unbounded: can't be empty.
         }
@@ -285,26 +275,11 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
      *
      * @param  value The value to check for inclusion in this range.
      * @return {@code true} if the given value is included in this range.
-     * @throws IllegalArgumentException is the given value can not be converted to a valid type
-     *         through widening conversion.
      */
-    @SuppressWarnings("unchecked")
-    public boolean contains(final Comparable<?> value) throws IllegalArgumentException {
+    public boolean contains(final E value) {
         if (value == null) {
             return false;
         }
-        ensureCompatibleType(value.getClass());
-        return containsNC((T) value);
-    }
-
-    /**
-     * Implementation of {@link #contains(Comparable)} to be invoked directly by subclasses.
-     * "NC" stands for "No Conversion" - this method does not try to convert the value to a
-     * compatible type.
-     *
-     * @param value The value to test for inclusion. Can not be null.
-     */
-    final boolean containsNC(final T value) {
         /*
          * Implementation note: when testing for inclusion or intersection in a range
          * (or in a rectangle, cube, etc.), it is often easier to test when we do not
@@ -338,20 +313,10 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
      *
      * @param  range The range to check for inclusion in this range.
      * @return {@code true} if the given range is included in this range.
-     * @throws IllegalArgumentException is the bounds of the given range can not be converted to
-     *         a valid type through widening conversion, or if the units of measurement are not
-     *         convertible.
+     * @throws IllegalArgumentException is the given range is incompatible,
+     *         for example because of incommensurable units of measurement.
      */
-    public boolean contains(final Range<?> range) throws IllegalArgumentException {
-        return containsNC(ensureCompatible(range));
-    }
-
-    /**
-     * Implementation of {@link #contains(Range)} to be invoked directly by subclasses.
-     * "NC" stands for "No Conversion" - this method does not try to convert the bounds
-     * to a compatible type.
-     */
-    final boolean containsNC(final Range<? extends T> range) {
+    public boolean contains(final Range<? extends E> range) {
         /*
          * We could implement this method as below:
          *
@@ -382,19 +347,10 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
      *
      * @param  range The range to check for intersection with this range.
      * @return {@code true} if the given range intersects this range.
-     * @throws IllegalArgumentException is the given range can not be converted to a valid type
-     *         through widening conversion, or if the units of measurement are not convertible.
+     * @throws IllegalArgumentException is the given range is incompatible,
+     *         for example because of incommensurable units of measurement.
      */
-    public boolean intersects(final Range<?> range) throws IllegalArgumentException {
-        return intersectsNC(ensureCompatible(range));
-    }
-
-    /**
-     * Implementation of {@link #intersects(Range)} to be invoked directly by subclasses.
-     * "NC" stands for "No Conversion" - this method does not try to convert the bounds
-     * to a compatible type.
-     */
-    final boolean intersectsNC(final Range<? extends T> range) {
+    public boolean intersects(final Range<? extends E> range) {
         return (compareMinTo(range.maxValue, range.isMaxIncluded ? 0 : +1) <= 0) &&
                (compareMaxTo(range.minValue, range.isMinIncluded ? 0 : -1) >= 0);
     }
@@ -404,21 +360,10 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
      *
      * @param  range The range to intersect.
      * @return The intersection of this range with the given range.
-     * @throws IllegalArgumentException is the given range can not be converted to a valid type
-     *         through widening conversion, or if the units of measurement are not convertible.
+     * @throws IllegalArgumentException is the given range is incompatible,
+     *         for example because of incommensurable units of measurement.
      */
-    public Range<?> intersect(final Range<?> range) throws IllegalArgumentException {
-        return intersectNC(ensureCompatible(range));
-    }
-
-    /**
-     * Implementation of {@link #intersect(Range)} to be invoked directly by subclasses.
-     * "NC" stands for "No Conversion" - this method does not try to convert the bounds
-     * to a compatible type.
-     */
-    final Range<? extends T> intersectNC(final Range<? extends T> range)
-            throws IllegalArgumentException
-    {
+    public Range<E> intersect(final Range<E> range) {
         /*
          * For two ranges [L₁ … H₁] and [L₂ … H₂], the intersection is given by
          * ([max(L₁, L₂) … min(H₁, H₂)]). Only two comparisons is needed.
@@ -430,7 +375,7 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
          * be either 'this' or 'range), return that range. Otherwise we need to create a
          * new one.
          */
-        final Range<? extends T> intersect, min, max;
+        final Range<E> intersect, min, max;
         min = compareMinTo(range.minValue, range.isMinIncluded ? 0 : -1) < 0 ? range : this;
         max = compareMaxTo(range.maxValue, range.isMaxIncluded ? 0 : +1) > 0 ? range : this;
         if (min == max) {
@@ -447,19 +392,11 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
      *
      * @param  range The range to add to this range.
      * @return The union of this range with the given range.
-     * @throws IllegalArgumentException is the given range can not be converted to a valid type
-     *         through widening conversion, or if the units of measurement are not convertible.
+     * @throws IllegalArgumentException is the given range is incompatible,
+     *         for example because of incommensurable units of measurement.
      */
-    public Range<?> union(final Range<?> range) throws IllegalArgumentException {
-        return unionNC(ensureCompatible(range));
-    }
-
-    /**
-     * Implementation of {@link #union(Range)} to be invoked directly by subclasses.
-     * "NC" stands for "No Cast" - this method do not try to cast the value to a compatible type.
-     */
-    final Range<?> unionNC(final Range<? extends T> range) throws IllegalArgumentException {
-        final Range<? extends T> union, min, max;
+    public Range<E> union(final Range<E> range) {
+        final Range<E> union, min, max;
         min = compareMinTo(range.minValue, range.isMinIncluded ? 0 : -1) > 0 ? range : this;
         max = compareMaxTo(range.maxValue, range.isMaxIncluded ? 0 : +1) < 0 ? range : this;
         if (min == max) {
@@ -484,20 +421,16 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
      * </ul>
      *
      * @param  range The range to subtract.
-     * @return This range without the given range.
-     * @throws IllegalArgumentException is the given range can not be converted to a valid type
-     *         through widening conversion, or if the units of measurement are not convertible.
+     * @return This range without the given range, as an array of length 0, 1 or 2.
+     * @throws IllegalArgumentException is the given range is incompatible,
+     *         for example because of incommensurable units of measurement.
      */
-    public Range<?>[] subtract(final Range<?> range) throws IllegalArgumentException {
-        return subtractNC(ensureCompatible(range));
-    }
-
-    /**
-     * Implementation of {@link #subtract(Range)} to be invoked directly by subclasses.
-     * "NC" stands for "No Cast" - this method do not try to cast the value to a compatible type.
-     */
-    final Range<T>[] subtractNC(final Range<? extends T> range) throws IllegalArgumentException {
-        final Range<T> subtract;
+    public Range<E>[] subtract(final Range<E> range) {
+        /*
+         * Implementation note: never store the 'range' argument value in the array
+         * returned by 'newArray(int)', otherwise we may get an ArrayStoreException.
+         */
+        final Range<E> subtract;
         if (!intersects(range)) {
             subtract = this;
         } else {
@@ -512,7 +445,7 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
                 subtract = create(range.maxValue, !range.isMaxIncluded, maxValue, isMaxIncluded);
             } else {
                 if (!clipMax) {
-                    final Range<T>[] array = newArray(2);
+                    final Range<E>[] array = newArray(2);
                     array[0] = create(minValue, isMinIncluded, range.minValue, !range.isMinIncluded);
                     array[1] = create(range.maxValue, !range.isMaxIncluded, maxValue, isMaxIncluded);
                     return array;
@@ -522,7 +455,7 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
         }
         assert contains(subtract) : subtract;
         assert !subtract.intersects(range) : subtract;
-        final Range<T>[] array = newArray(1);
+        final Range<E>[] array = newArray(1);
         array[0] = subtract;
         return array;
     }
@@ -546,7 +479,7 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
      *
      * @see #containsNC(Range)
      */
-    private int compareMinTo(final T value, int position) {
+    private int compareMinTo(final E value, int position) {
         /*
          * Check for infinite values.  If the given value is infinite, it can be either positive or
          * negative infinity, which we can infer from the 'position' argument. Note that 'position'
@@ -589,7 +522,7 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
      * Compares the {@linkplain #getMaxValue() maximum value} of this range with the given bound of
      * another range. See the comment in {@link #compareMinTo(Comparable, int)} for more details.
      */
-    private int compareMaxTo(final T value, int position) {
+    private int compareMaxTo(final E value, int position) {
         if (maxValue == null) {
             return (value == null) ? 0 : +1;
         }
@@ -688,9 +621,9 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
         }
         if (minValue != null && minValue.equals(maxValue)) {
             String value = minValue.toString();
-            final Unit<?> units = getUnits();
-            if (units != null) {
-                value = value + ' ' + units;
+            final Unit<?> unit = unit();
+            if (unit != null) {
+                value = value + ' ' + unit;
             }
             return value;
         }
@@ -713,9 +646,9 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
             buffer.append(maxValue);
         }
         buffer.append(isMaxIncluded ? ']' : ')');
-        final Unit<?> units = getUnits();
-        if (units != null) {
-            buffer.append(' ').append(units);
+        final Unit<?> unit = unit();
+        if (unit != null) {
+            buffer.append(' ').append(unit);
         }
         return buffer.toString();
     }
