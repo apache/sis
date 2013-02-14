@@ -147,6 +147,12 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
     /**
      * Creates a new range using the same element type than this range. This method will
      * be overridden by subclasses in order to create a range of a more specific type.
+     *
+     * {@note This method is invoked by all operations (union, intersection, <i>etc.</i>) that may
+     * create a new range. But despite this fact, the return type of those methods are nailed down
+     * to <code>Range</code> (i.e. subclasses shall not override the above-cited operations with
+     * covariant return type) because those operations may return the given argument directly,
+     * and we have no guarantees on the type of those arguments.}
      */
     Range<T> create(final T minValue, final boolean isMinIncluded,
                     final T maxValue, final boolean isMaxIncluded)
@@ -155,8 +161,12 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
     }
 
     /**
-     * Returns an initially empty array of the given length. To be overridden
-     * by subclasses in order to create arrays of more specific type.
+     * Returns an initially empty array of {@code getClass()} type and of the given length.
+     * This method is overridden by subclasses in order to create arrays of more specific type.
+     * This method is invoked by the {@link #subtract(Range)} method. It is okay to use the new
+     * array only if the ranges to store in that array are only {@code this} or new ranges created
+     * by the {@link #create(Comparable, boolean, Comparable, boolean)} method - otherwise we may
+     * get an {@link ArrayStoreException}.
      */
     @SuppressWarnings({"unchecked","rawtypes"}) // Generic array creation.
     Range<T>[] newArray(final int length) {
@@ -416,6 +426,10 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
      *         for example because of incommensurable units of measurement.
      */
     public Range<T>[] subtract(final Range<T> range) {
+        /*
+         * Implementation note: never store the 'range' argument value in the array
+         * returned by 'newArray(int)', otherwise we may get an ArrayStoreException.
+         */
         final Range<T> subtract;
         if (!intersects(range)) {
             subtract = this;

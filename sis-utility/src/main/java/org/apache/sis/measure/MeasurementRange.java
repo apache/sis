@@ -28,14 +28,20 @@ import java.util.Objects;
 
 
 /**
- * A range of numbers associated with a unit of measurement. Unit conversions are applied as
- * needed by {@linkplain #union union} and {@linkplain #intersect intersection} operations.
+ * A range of numbers associated with a unit of measurement. All operations performed by this
+ * class ({@linkplain #union union}, {@linkplain #intersect intersection}, <i>etc.</i>) are
+ * performed in the units of measurement of {@code this} range object - values of the range
+ * object given in argument are converted if needed before an operation is applied.
  *
- * {@section Construction}
- * This class provides convenience {@code create(…)} static methods for every floating point
- * primitive types. Usage of {@code MeasurementRange} with integer types is possible, but no
- * convenience methods is provided for integers because they are usually not representative
- * of the nature of physical measurements.
+ * <p>Other methods defined in this class:</p>
+ * <ul>
+ *   <li>Convenience {@code create(…)} static methods for every floating point primitive types.
+ *       Usage of {@code MeasurementRange} with integer types is possible, but no convenience
+ *       method is provided for integers because they are usually not representative of the
+ *       nature of physical measurements.</li>
+ *   <li>{@link #convertTo(Unit)} for converting the units of measurement.</li>
+ *   <li>{@link #castTo(Class)} for casting the range values to an other type.</li>
+ * </ul>
  *
  * @param <T> The type of range elements as a subclass of {@link Number}.
  *
@@ -53,6 +59,8 @@ public class MeasurementRange<T extends Number & Comparable<? super T>> extends 
 
     /**
      * The units of measurement, or {@code null} if unknown.
+     *
+     * @see #getUnits()
      */
     private final Unit<?> units;
 
@@ -161,34 +169,32 @@ public class MeasurementRange<T extends Number & Comparable<? super T>> extends 
     /**
      * Constructs a range of {@link Number} objects.
      *
-     * @param type          The element type, usually one of {@link Byte}, {@link Short},
-     *                      {@link Integer}, {@link Long}, {@link Float} or {@link Double}.
-     * @param minimum       The minimum value.
-     * @param maximum       The maximum value.
+     * @param type     The element type, usually one of {@link Float} or {@link Double}.
+     * @param minValue The minimum value, inclusive, or {@code null} if none.
+     * @param maxValue The maximum value, <strong>inclusive</strong>, or {@code null} if none.
      * @param units         The units of measurement, or {@code null} if unknown.
      */
-    public MeasurementRange(final Class<T> type, final T minimum, final T maximum, final Unit<?> units) {
-        super(type, minimum, maximum);
+    public MeasurementRange(final Class<T> type, final T minValue, final T maxValue, final Unit<?> units) {
+        super(type, minValue, maxValue);
         this.units = units;
     }
 
     /**
      * Constructs a range of {@link Number} objects.
      *
-     * @param type          The element type, usually one of {@link Byte}, {@link Short},
-     *                      {@link Integer}, {@link Long}, {@link Float} or {@link Double}.
-     * @param minimum       The minimum value.
-     * @param isMinIncluded Defines whether the minimum value is included in the Range.
-     * @param maximum       The maximum value.
-     * @param isMaxIncluded Defines whether the maximum value is included in the Range.
+     * @param type          The element type, usually one of {@link Float} or {@link Double}.
+     * @param minValue      The minimal value, or {@code null} if none.
+     * @param isMinIncluded {@code true} if the minimal value is inclusive, or {@code false} if exclusive.
+     * @param maxValue      The maximal value, or {@code null} if none.
+     * @param isMaxIncluded {@code true} if the maximal value is inclusive, or {@code false} if exclusive.
      * @param units         The units of measurement, or {@code null} if unknown.
      */
     public MeasurementRange(final Class<T> type,
-                            final T minimum, final boolean isMinIncluded,
-                            final T maximum, final boolean isMaxIncluded,
+                            final T minValue, final boolean isMinIncluded,
+                            final T maxValue, final boolean isMaxIncluded,
                             final Unit<?> units)
     {
-        super(type, minimum, isMinIncluded, maximum, isMaxIncluded);
+        super(type, minValue, isMinIncluded, maxValue, isMaxIncluded);
         this.units = units;
     }
 
@@ -262,9 +268,9 @@ public class MeasurementRange<T extends Number & Comparable<? super T>> extends 
      * @throws IllegalArgumentException if the given target unit is not compatible with
      *         the unit of this range.
      */
-    private Range<T> convert(final Range<T> range) throws IllegalArgumentException {
+    private <N extends T> Range<N> convert(final Range<N> range) throws IllegalArgumentException {
         if (range instanceof MeasurementRange<?>) try {
-            return ((MeasurementRange<T>) range).convertAndCast(elementType, units);
+            return ((MeasurementRange<N>) range).convertAndCast(range.elementType, units);
         } catch (ConversionException e) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.IncompatibleUnits_2,
                     ((MeasurementRange<?>) range).units, units), e);
@@ -297,6 +303,8 @@ public class MeasurementRange<T extends Number & Comparable<? super T>> extends 
 
     /**
      * Casts this range to the specified type and converts to the specified units.
+     * This method is invoked on the {@code other} instance in expressions like
+     * {@code this.operation(other)}.
      *
      * @param  type The class to cast to. Must be one of {@link Byte}, {@link Short},
      *             {@link Integer}, {@link Long}, {@link Float} or {@link Double}.
@@ -356,10 +364,8 @@ public class MeasurementRange<T extends Number & Comparable<? super T>> extends 
      *         {@code MeasurementRange} using incommensurable units of measurement.
      */
     @Override
-    public MeasurementRange<T> union(final Range<T> range) throws IllegalArgumentException {
-        return (MeasurementRange<T>) super.union(convert(range));
-        // Should never throw ClassCastException because super.union(Range) invokes create(...),
-        // convertAndCast(…) which is overridden in this class to create MeasurementRange.
+    public boolean contains(final Range<? extends T> range) throws IllegalArgumentException {
+        return super.contains(convert(range));
     }
 
     /**
@@ -372,10 +378,8 @@ public class MeasurementRange<T extends Number & Comparable<? super T>> extends 
      *         {@code MeasurementRange} using incommensurable units of measurement.
      */
     @Override
-    public MeasurementRange<T> intersect(final Range<T> range) throws IllegalArgumentException {
-        return (MeasurementRange<T>) super.intersect(convert(range));
-        // Should never throw ClassCastException because super.intersect(Range) invokes
-        // convertAndCast(…) which is overridden in this class to create MeasurementRange.
+    public boolean intersects(final Range<? extends T> range) throws IllegalArgumentException {
+        return super.intersects(convert(range));
     }
 
     /**
@@ -388,10 +392,36 @@ public class MeasurementRange<T extends Number & Comparable<? super T>> extends 
      *         {@code MeasurementRange} using incommensurable units of measurement.
      */
     @Override
-    public MeasurementRange<T>[] subtract(final Range<T> range) throws IllegalArgumentException {
-        return (MeasurementRange<T>[]) super.subtract(convert(range));
-        // Should never throw ClassCastException because super.subtract(Range) invokes newArray(int)
-        // convertAndCast(…) which is overridden in this class to create MeasurementRange.
+    public Range<T> intersect(final Range<T> range) throws IllegalArgumentException {
+        return super.intersect(convert(range));
+    }
+
+    /**
+     * {@inheritDoc}
+     * If the given range is an instance of {@code MeasurementRange}, then this method converts
+     * the value of the other range to the unit of measurement of this range before to perform
+     * the operation.
+     *
+     * @throws IllegalArgumentException is the given range is an instance of
+     *         {@code MeasurementRange} using incommensurable units of measurement.
+     */
+    @Override
+    public Range<T> union(final Range<T> range) throws IllegalArgumentException {
+        return super.union(convert(range));
+    }
+
+    /**
+     * {@inheritDoc}
+     * If the given range is an instance of {@code MeasurementRange}, then this method converts
+     * the value of the other range to the unit of measurement of this range before to perform
+     * the operation.
+     *
+     * @throws IllegalArgumentException is the given range is an instance of
+     *         {@code MeasurementRange} using incommensurable units of measurement.
+     */
+    @Override
+    public Range<T>[] subtract(final Range<T> range) throws IllegalArgumentException {
+        return super.subtract(convert(range));
     }
 
     /**
@@ -401,8 +431,7 @@ public class MeasurementRange<T extends Number & Comparable<? super T>> extends 
     public boolean equals(final Object object) {
         if (super.equals(object)) {
             if (object instanceof MeasurementRange<?>) {
-                final MeasurementRange<?> that = (MeasurementRange<?>) object;
-                return Objects.equals(this.units, that.units);
+                return Objects.equals(units, ((MeasurementRange<?>) object).units);
             }
             return true;
         }
