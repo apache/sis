@@ -19,6 +19,7 @@ package org.apache.sis.measure;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
+import static org.junit.Assume.*;
 import static org.apache.sis.test.Assert.*;
 
 
@@ -75,10 +76,13 @@ public final strictfp class RangeTest extends TestCase {
      * Note that such error should never happen when parameterized types are used.
      * The check performed by the constructor is a safety in case the user bypass
      * the parameterized type check by using the raw type instead.
+     *
+     * <p>This test requires assertions to be enabled.</p>
      */
     @Test(expected = IllegalArgumentException.class)
     @SuppressWarnings({"unchecked", "rawtypes"})
     public void testConstructorErrors00() {
+        assumeTrue(Range.class.desiredAssertionStatus());
         new Range(Double.class, "error", "blast");
     }
 
@@ -87,10 +91,13 @@ public final strictfp class RangeTest extends TestCase {
      * Note that such error should never happen when parameterized types are used.
      * The check performed by the constructor is a safety in case the user bypass
      * the parameterized type check by using the raw type instead.
+     *
+     * <p>This test requires assertions to be enabled.</p>
      */
     @Test(expected = IllegalArgumentException.class)
     @SuppressWarnings({"unchecked", "rawtypes"})
     public void testConstructorErrors01() {
+        assumeTrue(Range.class.desiredAssertionStatus());
         new Range(String.class, 123.233, 8740.09);
     }
 
@@ -203,28 +210,6 @@ public final strictfp class RangeTest extends TestCase {
     }
 
     /**
-     * Tests the {@link Range#contains(Range)} method with a range of incompatible type.
-     */
-    @Test(expected = IllegalArgumentException.class)
-    public void testIncompatibleTypeRangeContains() {
-        final Range<Integer> intRange = new Range<Integer>(Integer.class, 0, 10);
-        final Range<Double> doubleRange = new Range<Double>(Double.class, 2.0, 5.0);
-
-        intRange.contains(doubleRange);
-    }
-
-    /**
-     * Tests the {@link Range#contains(Range)} method with a range of incompatible type.
-     */
-    @Test(expected = IllegalArgumentException.class)
-    public void testIncompatibleTypeContains() {
-        final Range<Integer> intRange = new Range<Integer>(Integer.class, 0, 10);
-        final Range<Double> doubleRange = new Range<Double>(Double.class, 2.0, 5.0);
-
-        intRange.contains(doubleRange);
-    }
-
-    /**
      * Tests the {@link Range#intersects(Range)} method.
      */
     @Test
@@ -237,17 +222,6 @@ public final strictfp class RangeTest extends TestCase {
         assertTrue (range2.intersects(range1));
         assertFalse(range1.intersects(range3));
         assertFalse(range3.intersects(range1));
-    }
-
-    /**
-     * Tests the {@link Range#intersects(Range)} method with a range of incompatible type.
-     */
-    @Test(expected = IllegalArgumentException.class)
-    public void testIntersectsIncompatibleTypes() {
-        final Range<Character> range1 = new Range<Character>(Character.class, 'a', 'g');
-        final Range<Integer>   range2 = new Range<Integer>(Integer.class, 5, 7);
-
-        range1.intersects(range2);
     }
 
     /**
@@ -303,6 +277,19 @@ public final strictfp class RangeTest extends TestCase {
         assertFalse(unionRange.isEmpty());
         assertEquals(Character.valueOf('a'), unionRange.getMinValue());
         assertEquals(Character.valueOf('v'), unionRange.getMaxValue());
+    }
+
+    /**
+     * Tests the {@link Range#subtract(Range)} method.
+     */
+    @Test
+    public void testSubtract() {
+        final Range<Integer> range1 = new Range<Integer>(Integer.class, 10, 40);
+        final Range<Integer> range2 = new Range<Integer>(Integer.class, 20, 25);
+        final Range<Integer>[] subtract = range1.subtract(range2);
+        assertEquals(2, subtract.length);
+        assertEquals(new Range<Integer>(Integer.class, 10, true,  20, false), subtract[0]);
+        assertEquals(new Range<Integer>(Integer.class, 25, false, 40, true),  subtract[1]);
     }
 
     /**

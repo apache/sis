@@ -36,12 +36,12 @@ import static org.apache.sis.test.Assert.*;
 @DependsOn(NumberRangeTest.class)
 public final strictfp class MeasurementRangeTest extends TestCase {
     /**
-     * Tests unit conversions.
+     * Tests unit conversions by the {@link MeasurementRange#convertTo(Unit)} method.
      *
      * @throws ConversionException Should not happen.
      */
     @Test
-    public void testConversion() throws ConversionException {
+    public void testConvertTo() throws ConversionException {
         final MeasurementRange<Float> range = MeasurementRange.create(1000f, 2000f, SI.METRE);
         assertSame(range, range.convertTo(SI.METRE));
         assertEquals(MeasurementRange.create(1f, 2f, SI.KILOMETRE), range.convertTo(SI.KILOMETRE));
@@ -51,15 +51,28 @@ public final strictfp class MeasurementRangeTest extends TestCase {
      * Tests union and intersection involving a unit conversion.
      */
     @Test
-    public void testIntersectWithConversion() {
-        NumberRange<Float> r1 = MeasurementRange.create(1000f, 2000f, SI.METRE);
-        NumberRange<Float> r2 = MeasurementRange.create(1.5f, 3f, SI.KILOMETRE);
+    public void testAutoConversions() {
+        final MeasurementRange<Float> r1 = MeasurementRange.create(1000f, 2000f, SI.METRE);
+        final MeasurementRange<Float> r2 = MeasurementRange.create(1.5f, 3f, SI.KILOMETRE);
         assertEquals(Float.class, r1.getElementType());
         assertEquals(Float.class, r2.getElementType());
         assertEquals(MeasurementRange.create(1000f, 3000f, SI.METRE ),    r1.union    (r2));
         assertEquals(MeasurementRange.create(1f,    3f,    SI.KILOMETRE), r2.union    (r1));
         assertEquals(MeasurementRange.create(1500f, 2000f, SI.METRE ),    r1.intersect(r2));
         assertEquals(MeasurementRange.create(1.5f,  2f,    SI.KILOMETRE), r2.intersect(r1));
+    }
+
+    /**
+     * Same tests than {@link #testAutoConversions()} but using the {@code *Any} methods.
+     */
+    @Test
+    public void testAutoConversionsOfAny() {
+        final MeasurementRange<?> r1 = MeasurementRange.create(1000f, 2000f, SI.METRE);
+        final MeasurementRange<?> r2 = MeasurementRange.create(1.5f, 3f, SI.KILOMETRE);
+        assertEquals(MeasurementRange.create(1000f, 3000f, SI.METRE ),    r1.unionAny    (r2));
+        assertEquals(MeasurementRange.create(1f,    3f,    SI.KILOMETRE), r2.unionAny    (r1));
+        assertEquals(MeasurementRange.create(1500f, 2000f, SI.METRE ),    r1.intersectAny(r2));
+        assertEquals(MeasurementRange.create(1.5f,  2f,    SI.KILOMETRE), r2.intersectAny(r1));
     }
 
     /**
