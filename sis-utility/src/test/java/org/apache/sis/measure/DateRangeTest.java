@@ -46,8 +46,8 @@ public final strictfp class DateRangeTest extends TestCase {
         final Date in1 = date("1998-05-12 11:00:00");
         final Date in2 = date("1998-06-08 14:00:00");
         final Date max = date("1998-07-01 19:00:00");
-        final Range<Date> r1 = new Range<>(Date.class, min, in2);
-        final Range<Date> r2 = new Range<>(Date.class, in1, max);
+        final Range<Date> r1 = new Range<>(Date.class, min, true, in2, true);
+        final Range<Date> r2 = new Range<>(Date.class, in1, true, max, true);
         final Range<Date> rt = r1.union(r2);
         assertEquals(min, rt.getMinValue());
         assertEquals(max, rt.getMaxValue());
@@ -55,8 +55,8 @@ public final strictfp class DateRangeTest extends TestCase {
         /*
          * Test a range fully included in the other range.
          */
-        final Range<Date> outer = new Range<>(Date.class, min, max);
-        final Range<Date> inner = new Range<>(Date.class, in1, in2);
+        final Range<Date> outer = new Range<>(Date.class, min, true, max, true);
+        final Range<Date> inner = new Range<>(Date.class, in1, true, in2, true);
         assertSame(outer, outer.union(inner));
         assertSame(outer, inner.union(outer));
     }
@@ -70,8 +70,8 @@ public final strictfp class DateRangeTest extends TestCase {
         final Date in1 = date("1998-05-12 11:00:00");
         final Date in2 = date("1998-06-08 14:00:00");
         final Date max = date("1998-07-01 19:00:00");
-        final Range<Date> r1 = new Range<>(Date.class, min, in2);
-        final Range<Date> r2 = new Range<>(Date.class, in1, max);
+        final Range<Date> r1 = new Range<>(Date.class, min, true, in2, true);
+        final Range<Date> r2 = new Range<>(Date.class, in1, true, max, true);
         final Range<Date> rt = r1.intersect(r2);
         assertEquals(in1, rt.getMinValue());
         assertEquals(in2, rt.getMaxValue());
@@ -79,8 +79,8 @@ public final strictfp class DateRangeTest extends TestCase {
         /*
          * Test a range fully included in the other range.
          */
-        final Range<Date> outer = new Range<>(Date.class, min, max);
-        final Range<Date> inner = new Range<>(Date.class, in1, in2);
+        final Range<Date> outer = new Range<>(Date.class, min, true, max, true);
+        final Range<Date> inner = new Range<>(Date.class, in1, true, in2, true);
         assertSame(inner, outer.intersect(inner));
         assertSame(inner, inner.intersect(outer));
     }
@@ -94,8 +94,8 @@ public final strictfp class DateRangeTest extends TestCase {
         final Date in1 = date("1998-05-12 11:00:00");
         final Date in2 = date("1998-06-08 14:00:00");
         final Date max = date("1998-07-01 19:00:00");
-        final Range<Date> outer = new Range<>(Date.class, min, max);
-        final Range<Date> inner = new Range<>(Date.class, in1, in2);
+        final Range<Date> outer = new Range<>(Date.class, min, true, max, true);
+        final Range<Date> inner = new Range<>(Date.class, in1, true, in2, true);
         final Range<Date>[] rt = outer.subtract(inner);
         assertEquals(2, rt.length);
         assertEquals(min, rt[0].getMinValue());

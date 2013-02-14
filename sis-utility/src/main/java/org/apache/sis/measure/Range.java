@@ -61,6 +61,7 @@ import java.util.Objects;
  * @module
  *
  * @see RangeFormat
+ * @see org.apache.sis.util.collection.RangeSet
  */
 @Immutable
 public class Range<E extends Comparable<? super E>> implements CheckedContainer<E>, Serializable {
@@ -98,23 +99,6 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
         isMinIncluded = range.isMinIncluded;
         maxValue      = range.maxValue;
         isMaxIncluded = range.isMaxIncluded;
-        assert validate();
-    }
-
-    /**
-     * Creates a new range bounded by the given inclusive values.
-     *
-     * @param elementType  The class of the range elements.
-     * @param minValue     The minimal value (inclusive), or {@code null} if none.
-     * @param maxValue     The maximal value (inclusive), or {@code null} if none.
-     */
-    public Range(final Class<E> elementType, final E minValue, final E maxValue) {
-        ArgumentChecks.ensureNonNull("elementType", elementType);
-        this.elementType   = elementType;
-        this.minValue      = minValue;
-        this.isMinIncluded = (minValue != null);
-        this.maxValue      = maxValue;
-        this.isMaxIncluded = (maxValue != null);
         assert validate();
     }
 
@@ -477,7 +461,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
      * @param  position The position of {@code value} relative to the inclusive values of the other range.
      * @return Position (-, + or 0) of the inclusive values of this range compared to the other range.
      *
-     * @see #containsNC(Range)
+     * @see #contains(Range)
      */
     private int compareMinTo(final E value, int position) {
         /*

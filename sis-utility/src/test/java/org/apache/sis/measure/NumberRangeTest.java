@@ -38,7 +38,7 @@ public final strictfp class NumberRangeTest extends TestCase {
      */
     @Test
     public void testIntegerBounds() {
-        final NumberRange<Integer> range = NumberRange.create(10, 20);
+        final NumberRange<Integer> range = NumberRange.create(10, true, 20, true);
         assertEquals(10, range.getMinDouble(     ), 0);
         assertEquals(10, range.getMinDouble(true ), 0);
         assertEquals( 9, range.getMinDouble(false), 0);
@@ -52,15 +52,15 @@ public final strictfp class NumberRangeTest extends TestCase {
      */
     @Test
     public void testWithIntegers() {
-        NumberRange<Integer> r1 = NumberRange.create(10, 20);
-        NumberRange<Integer> r2 = NumberRange.create(15, 30);
+        NumberRange<Integer> r1 = NumberRange.create(10, true, 20, true);
+        NumberRange<Integer> r2 = NumberRange.create(15, true, 30, true);
         assertTrue (r1.equals(r1));
         assertTrue (r2.equals(r2));
         assertFalse(r1.equals(r2));
         assertEquals(Integer.class, r1.getElementType());
         assertEquals(Integer.class, r2.getElementType());
-        assertEquals(NumberRange.create(10, 30), r1.union(r2));
-        assertEquals(NumberRange.create(15, 20), r1.intersect(r2));
+        assertEquals(NumberRange.create(10, true, 30, true), r1.union(r2));
+        assertEquals(NumberRange.create(15, true, 20, true), r1.intersect(r2));
     }
 
     /**
@@ -68,12 +68,12 @@ public final strictfp class NumberRangeTest extends TestCase {
      */
     @Test
     public void testWithDoubles() {
-        NumberRange<Double> r1 = NumberRange.create(10.0, 20.0);
-        NumberRange<Double> r2 = NumberRange.create(15.0, 30.0);
+        NumberRange<Double> r1 = NumberRange.create(10.0, true, 20.0, true);
+        NumberRange<Double> r2 = NumberRange.create(15.0, true, 30.0, true);
         assertEquals(Double.class, r1.getElementType());
         assertEquals(Double.class, r2.getElementType());
-        assertEquals(NumberRange.create(10.0, 30.0), r1.union(r2));
-        assertEquals(NumberRange.create(15.0, 20.0), r1.intersect(r2));
+        assertEquals(NumberRange.create(10.0, true, 30.0, true), r1.union(r2));
+        assertEquals(NumberRange.create(15.0, true, 20.0, true), r1.intersect(r2));
     }
 
     /**
@@ -81,15 +81,15 @@ public final strictfp class NumberRangeTest extends TestCase {
      */
     @Test
     public void testIntegerWithDoubleArguments() {
-        NumberRange<Integer> r1 = NumberRange.create(10, 20);
-        NumberRange<Double>  r2 = NumberRange.create(15.0, 30.0);
+        NumberRange<Integer> r1 = NumberRange.create(10,   true, 20,   true);
+        NumberRange<Double>  r2 = NumberRange.create(15.0, true, 30.0, true);
         assertEquals(Integer.class, r1.getElementType());
         assertEquals(Double .class, r2.getElementType());
-        assertEquals(NumberRange.create(10.0, 30.0), r1.unionAny(r2));
-        assertEquals(NumberRange.create(15, 20), r1.intersectAny(r2));
+        assertEquals(NumberRange.create(10.0, true, 30.0, true), r1.unionAny(r2));
+        assertEquals(NumberRange.create(15,   true, 20,   true), r1.intersectAny(r2));
 
-        r2 = NumberRange.create(15.5, 30.0);
-        assertEquals(NumberRange.create(15.5f, 20.0f), r1.intersectAny(r2));
+        r2 = NumberRange.create(15.5, true, 30.0, true);
+        assertEquals(NumberRange.create(15.5f, true, 20.0f, true), r1.intersectAny(r2));
     }
 
     /**
@@ -97,15 +97,15 @@ public final strictfp class NumberRangeTest extends TestCase {
      */
     @Test
     public void testDoubleWithIntegerArguments() {
-        NumberRange<Double>  r1 = NumberRange.create(10.0, 20.0);
-        NumberRange<Integer> r2 = NumberRange.create(15, 30);
+        NumberRange<Double>  r1 = NumberRange.create(10.0, true, 20.0, true);
+        NumberRange<Integer> r2 = NumberRange.create(15,   true, 30,   true);
         assertEquals(Double .class, r1.getElementType());
         assertEquals(Integer.class, r2.getElementType());
-        assertEquals(NumberRange.create(10.0, 30.0), r1.unionAny(r2));
-        assertEquals(NumberRange.create(15, 20), r1.intersectAny(r2));
+        assertEquals(NumberRange.create(10.0, true, 30.0, true), r1.unionAny(r2));
+        assertEquals(NumberRange.create(15,   true, 20,   true), r1.intersectAny(r2));
 
-        r1 = NumberRange.create(10.0, 20.5);
-        assertEquals(NumberRange.create(15.0f, 20.5f), r1.intersectAny(r2));
+        r1 = NumberRange.create(10.0, true, 20.5, true);
+        assertEquals(NumberRange.create(15.0f, true, 20.5f, true), r1.intersectAny(r2));
     }
 
     /**
@@ -113,7 +113,7 @@ public final strictfp class NumberRangeTest extends TestCase {
      */
     @Test
     public void testCreateBestFit() {
-        assertEquals(NumberRange.create((short) 2, (short) 200),
+        assertEquals(NumberRange.create((short) 2, true, (short) 200, true),
                 NumberRange.createBestFit(2, true, 200.0, true));
     }
 }
