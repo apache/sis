@@ -280,6 +280,19 @@ public final strictfp class RangeTest extends TestCase {
     }
 
     /**
+     * Tests the {@link Range#subtract(Range)} method.
+     */
+    @Test
+    public void testSubtract() {
+        final Range<Integer> range1 = new Range<>(Integer.class, 10, 40);
+        final Range<Integer> range2 = new Range<>(Integer.class, 20, 25);
+        final Range<Integer>[] subtract = range1.subtract(range2);
+        assertEquals(2, subtract.length);
+        assertEquals(new Range<>(Integer.class, 10, true,  20, false), subtract[0]);
+        assertEquals(new Range<>(Integer.class, 25, false, 40, true),  subtract[1]);
+    }
+
+    /**
      * Tests the {@link Range#equals(Object)} method.
      */
     @Test

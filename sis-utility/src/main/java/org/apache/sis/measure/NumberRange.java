@@ -28,22 +28,28 @@ import org.apache.sis.util.resources.Errors;
  *
  * <p>Most operations in this class are defined in two versions:</p>
  * <ul>
- *   <li><p>Methods inherited from the {@code Range} parent class
+ *   <li>Methods inherited from the {@code Range} parent class
  *      ({@link #contains(Range) contains}, {@link #intersect(Range) intersect},
  *       {@link #intersects(Range) intersects}, {@link #union(Range) union} and
  *       {@link #subtract(Range) subtract}) requires argument or range elements
- *       of type {@code <T>}. No type conversion is performed.</p></li>
+ *       of type {@code <T>}. No type conversion is performed.</li>
  *
- *   <li><p>Methods defined in this class with the {@code Any} suffix
+ *   <li>Methods defined in this class with the {@code Any} suffix
  *      ({@link #containsAny(NumberRange) containsAny}, {@link #intersectAny(NumberRange) intersectAny},
  *       {@link #intersectsAny(NumberRange) intersectsAny}, {@link #unionAny(NumberRange) unionAny} and
  *       {@link #subtractAny(NumberRange) subtractAny}) are more lenient on the argument or range element
- *       type {@code <T>}. Widening conversions are performed as needed.</p></li>
+ *       type {@code <T>}. Widening conversions are performed as needed.</li>
  * </ul>
  *
- * {@section Construction}
- * This class provides convenience {@code create(…)} static methods for every
- * numeric primitive types.
+ * The methods from the parent class are preferable when the ranges are known to contain elements
+ * of the same type, since they avoid the cost of type checks and conversions. The method in this
+ * class are convenient when the parameterized type is unknown ({@code <?>}).
+ *
+ * <p>Other methods defined in this class:</p>
+ * <ul>
+ *   <li>Convenience {@code create(…)} static methods for every numeric primitive types.</li>
+ *   <li>{@link #castTo(Class)} for casting the range values to an other type.</li>
+ * </ul>
  *
  * @param <T> The type of range elements as a subclass of {@link Number}.
  *
@@ -263,18 +269,19 @@ public class NumberRange<T extends Number & Comparable<? super T>> extends Range
     /**
      * Constructs a range using the smallest type of {@link Number} that can hold the
      * given values. The given numbers don't need to be of the same type since they will
-     * be {@linkplain Numbers#cast(Number, Class) casted} as needed. More specifically:
+     * be {@linkplain Numbers#cast(Number, Class) casted} as needed. More specifically
+     * this method returns:
      *
      * <ul>
-     *   <li>If the values are between {@value java.lang.Byte#MIN_VALUE} and
-     *       {@value java.lang.Byte#MAX_VALUE} inclusive, then the given values are converted
-     *       to {@link Byte} objects and a {@code NumberRange} is created from them.</li>
-     *   <li>Otherwise if the values are between {@value java.lang.Short#MIN_VALUE} and
-     *       {@value java.lang.Short#MAX_VALUE} inclusive, then the given values are converted
-     *       to {@link Short} objects and a {@code NumberRange} is created from them.</li>
-     *   <li>Otherwise the {@link Integer} type is tested in the same way, then the
-     *       {@link Long} type, and finally the {@link Float} type.</li>
-     *   <li>If none of the above types is suitable, then the {@link Double} type is used.</li>
+     *   <li>{@code NumberRange<Byte>} if the given values are integers between
+     *       {@value java.lang.Byte#MIN_VALUE} and {@value java.lang.Byte#MAX_VALUE} inclusive.</li>
+     *   <li>{@code NumberRange<Short>} if the given values are integers between
+     *       {@value java.lang.Short#MIN_VALUE} and {@value java.lang.Short#MAX_VALUE} inclusive.</li>
+     *   <li>{@code NumberRange<Integer>} if the given values are integers between
+     *       {@value java.lang.Integer#MIN_VALUE} and {@value java.lang.Integer#MAX_VALUE} inclusive.</li>
+     *   <li>{@code NumberRange<Long>} if the given values are integers in the range of {@code long} values.</li>
+     *   <li>{@code NumberRange<Float>} if the given values can be casted to {@code float} values without data lost.</li>
+     *   <li>{@code NumberRange<Double>} If none of the above types is suitable.</li>
      * </ul>
      *
      * @param  minValue       The minimal value, or {@code null} if none.
@@ -295,16 +302,16 @@ public class NumberRange<T extends Number & Comparable<? super T>> extends Range
     }
 
     /**
-     * Wraps the specified {@link Range} in a {@code NumberRange} object. If the specified
+     * Returns the specified {@link Range} as a {@code NumberRange} object. If the specified
      * range is already an instance of {@code NumberRange}, then it is returned unchanged.
      * Otherwise a new number range is created using the {@linkplain #NumberRange(Range)
      * copy constructor}.
      *
      * @param  <N> The type of elements in the given range.
-     * @param  range The range to wrap.
+     * @param  range The range to cast or copy.
      * @return The same range than {@code range} as a {@code NumberRange} object.
      */
-    public static <N extends Number & Comparable<? super N>> NumberRange<N> wrap(final Range<N> range) {
+    public static <N extends Number & Comparable<? super N>> NumberRange<N> castOrCopy(final Range<N> range) {
         if (range instanceof NumberRange<?>) {
             return (NumberRange<N>) range;
         }
@@ -603,7 +610,7 @@ public class NumberRange<T extends Number & Comparable<? super T>> extends Range
     @SuppressWarnings({"unchecked","rawtypes"})
     public NumberRange<?> intersectAny(final NumberRange<?> range) throws IllegalArgumentException {
         Class type = Numbers.widestClass(elementType, range.elementType);
-        final NumberRange<?> intersect = castTo(type).intersect(convertAndCast(range, type));
+        final NumberRange<?> intersect = castOrCopy(castTo(type).intersect(convertAndCast(range, type)));
         /*
          * Use a finer type capable to holds the result (since the intersection
          * may have reduced the range), but not finer than the finest type of
@@ -613,16 +620,6 @@ public class NumberRange<T extends Number & Comparable<? super T>> extends Range
         type = Numbers.widestClass(type, Numbers.narrowestClass((Number) intersect.minValue));
         type = Numbers.widestClass(type, Numbers.narrowestClass((Number) intersect.maxValue));
         return intersect.castTo(type);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public NumberRange<T> intersect(final Range<T> range) {
-        return (NumberRange<T>) super.intersect(range);
-        // Should never throw ClassCastException because super.intersect(Range) invokes
-        // convertAndCast(…),  which is overridden in this class to create NumberRange.
     }
 
     /**
@@ -638,17 +635,7 @@ public class NumberRange<T extends Number & Comparable<? super T>> extends Range
     @SuppressWarnings({"unchecked","rawtypes"})
     public NumberRange<?> unionAny(final NumberRange<?> range) throws IllegalArgumentException {
         final Class type = Numbers.widestClass(elementType, range.elementType);
-        return castTo(type).union(convertAndCast(range, type));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public NumberRange<T> union(final Range<T> range) {
-        return (NumberRange<T>) super.union(range);
-        // Should never throw ClassCastException because super.union(Range) invokes
-        // convertAndCast(…),  which is overridden in this class to create NumberRange.
+        return castOrCopy(castTo(type).union(convertAndCast(range, type)));
     }
 
     /**
@@ -664,16 +651,6 @@ public class NumberRange<T extends Number & Comparable<? super T>> extends Range
     @SuppressWarnings({"unchecked","rawtypes"})
     public NumberRange<?>[] subtractAny(final NumberRange<?> range) throws IllegalArgumentException {
         final Class type = Numbers.widestClass(elementType, range.elementType);
-        return castTo(type).subtract(convertAndCast(range, type));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public NumberRange<T>[] subtract(final Range<T> range) {
-        return (NumberRange<T>[]) super.subtract(range);
-        // Should never throw ClassCastException because super.subtract(Range) invokes
-        // convertAndCast(…),  which is overridden in this class to create NumberRange.
+        return (NumberRange[]) castTo(type).subtract(convertAndCast(range, type));
     }
 }
