@@ -38,9 +38,9 @@ import java.util.Objects;
  * since iterations over the values will never reach the infinite bound.
  *
  * {@section Type and value of range elements}
- * To be a member of a {@code Range}, the {@code <T>} type defining the range must implement the
+ * To be a member of a {@code Range}, the {@code <E>} type defining the range must implement the
  * {@link Comparable} interface. All argument values given to the methods of this class shall be
- * or contain instances of the same {@code <T>} type. The type is enforced by parameterized type,
+ * or contain instances of the same {@code <E>} type. The type is enforced by parameterized type,
  * but some subclasses may put additional constraints. For example {@link MeasurementRange} will
  * additionally checks the units of measurement. Every methods defined in this class may throw
  * an {@link IllegalArgumentException} if a given argument does not meet a constraint other than
@@ -51,7 +51,7 @@ import java.util.Objects;
  * in a locale-insensitive way. In order to format a range using a different locale,
  * or for parsing a range, use {@link RangeFormat}.
  *
- * @param <T> The type of range elements, typically a {@link Number} subclass or {@link java.util.Date}.
+ * @param <E> The type of range elements, typically a {@link Number} subclass or {@link java.util.Date}.
  *
  * @author  Joe White
  * @author  Martin Desruisseaux (Geomatys)
@@ -63,7 +63,7 @@ import java.util.Objects;
  * @see RangeFormat
  */
 @Immutable
-public class Range<T extends Comparable<? super T>> implements CheckedContainer<T>, Serializable {
+public class Range<E extends Comparable<? super E>> implements CheckedContainer<E>, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -74,12 +74,12 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
      *
      * @see #getElementType()
      */
-    final Class<T> elementType;
+    final Class<E> elementType;
 
     /**
      * The minimal and maximal values.
      */
-    final T minValue, maxValue;
+    final E minValue, maxValue;
 
     /**
      * Whether the minimal or maximum value is included.
@@ -92,7 +92,7 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
      *
      * @param range The range to copy.
      */
-    public Range(final Range<T> range) {
+    public Range(final Range<E> range) {
         elementType   = range.elementType;
         minValue      = range.minValue;
         isMinIncluded = range.isMinIncluded;
@@ -108,7 +108,7 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
      * @param minValue     The minimal value (inclusive), or {@code null} if none.
      * @param maxValue     The maximal value (inclusive), or {@code null} if none.
      */
-    public Range(final Class<T> elementType, final T minValue, final T maxValue) {
+    public Range(final Class<E> elementType, final E minValue, final E maxValue) {
         ArgumentChecks.ensureNonNull("elementType", elementType);
         this.elementType   = elementType;
         this.minValue      = minValue;
@@ -127,9 +127,9 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
      * @param maxValue       The maximal value, or {@code null} if none.
      * @param isMaxIncluded  {@code true} if the maximal value is inclusive, or {@code false} if exclusive.
      */
-    public Range(final Class<T> elementType,
-            final T minValue, final boolean isMinIncluded,
-            final T maxValue, final boolean isMaxIncluded)
+    public Range(final Class<E> elementType,
+            final E minValue, final boolean isMinIncluded,
+            final E maxValue, final boolean isMaxIncluded)
     {
         ArgumentChecks.ensureNonNull("elementType", elementType);
         /*
@@ -154,8 +154,8 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
      * covariant return type) because those operations may return the given argument directly,
      * and we have no guarantees on the type of those arguments.}
      */
-    Range<T> create(final T minValue, final boolean isMinIncluded,
-                    final T maxValue, final boolean isMaxIncluded)
+    Range<E> create(final E minValue, final boolean isMinIncluded,
+                    final E maxValue, final boolean isMaxIncluded)
     {
         return new Range<>(elementType, minValue, isMinIncluded, maxValue, isMaxIncluded);
     }
@@ -169,7 +169,7 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
      * get an {@link ArrayStoreException}.
      */
     @SuppressWarnings({"unchecked","rawtypes"}) // Generic array creation.
-    Range<T>[] newArray(final int length) {
+    Range<E>[] newArray(final int length) {
         return new Range[length];
     }
 
@@ -196,7 +196,7 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
      * This is the type specified at construction time.
      */
     @Override
-    public Class<T> getElementType() {
+    public Class<E> getElementType() {
         return elementType;
     }
 
@@ -207,7 +207,7 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
      *
      * @return The minimal value, or {@code null} if this range is unbounded on the lower side.
      */
-    public T getMinValue() {
+    public E getMinValue() {
         return minValue;
     }
 
@@ -229,7 +229,7 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
      *
      * @return The maximal value, or {@code null} if this range is unbounded on the upper side.
      */
-    public T getMaxValue() {
+    public E getMaxValue() {
         return maxValue;
     }
 
@@ -276,7 +276,7 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
      * @param  value The value to check for inclusion in this range.
      * @return {@code true} if the given value is included in this range.
      */
-    public boolean contains(final T value) {
+    public boolean contains(final E value) {
         if (value == null) {
             return false;
         }
@@ -316,7 +316,7 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
      * @throws IllegalArgumentException is the given range is incompatible,
      *         for example because of incommensurable units of measurement.
      */
-    public boolean contains(final Range<? extends T> range) {
+    public boolean contains(final Range<? extends E> range) {
         /*
          * We could implement this method as below:
          *
@@ -350,7 +350,7 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
      * @throws IllegalArgumentException is the given range is incompatible,
      *         for example because of incommensurable units of measurement.
      */
-    public boolean intersects(final Range<? extends T> range) {
+    public boolean intersects(final Range<? extends E> range) {
         return (compareMinTo(range.maxValue, range.isMaxIncluded ? 0 : +1) <= 0) &&
                (compareMaxTo(range.minValue, range.isMinIncluded ? 0 : -1) >= 0);
     }
@@ -363,7 +363,7 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
      * @throws IllegalArgumentException is the given range is incompatible,
      *         for example because of incommensurable units of measurement.
      */
-    public Range<T> intersect(final Range<T> range) {
+    public Range<E> intersect(final Range<E> range) {
         /*
          * For two ranges [L₁ … H₁] and [L₂ … H₂], the intersection is given by
          * ([max(L₁, L₂) … min(H₁, H₂)]). Only two comparisons is needed.
@@ -375,7 +375,7 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
          * be either 'this' or 'range), return that range. Otherwise we need to create a
          * new one.
          */
-        final Range<T> intersect, min, max;
+        final Range<E> intersect, min, max;
         min = compareMinTo(range.minValue, range.isMinIncluded ? 0 : -1) < 0 ? range : this;
         max = compareMaxTo(range.maxValue, range.isMaxIncluded ? 0 : +1) > 0 ? range : this;
         if (min == max) {
@@ -395,8 +395,8 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
      * @throws IllegalArgumentException is the given range is incompatible,
      *         for example because of incommensurable units of measurement.
      */
-    public Range<T> union(final Range<T> range) {
-        final Range<T> union, min, max;
+    public Range<E> union(final Range<E> range) {
+        final Range<E> union, min, max;
         min = compareMinTo(range.minValue, range.isMinIncluded ? 0 : -1) > 0 ? range : this;
         max = compareMaxTo(range.maxValue, range.isMaxIncluded ? 0 : +1) < 0 ? range : this;
         if (min == max) {
@@ -425,12 +425,12 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
      * @throws IllegalArgumentException is the given range is incompatible,
      *         for example because of incommensurable units of measurement.
      */
-    public Range<T>[] subtract(final Range<T> range) {
+    public Range<E>[] subtract(final Range<E> range) {
         /*
          * Implementation note: never store the 'range' argument value in the array
          * returned by 'newArray(int)', otherwise we may get an ArrayStoreException.
          */
-        final Range<T> subtract;
+        final Range<E> subtract;
         if (!intersects(range)) {
             subtract = this;
         } else {
@@ -445,7 +445,7 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
                 subtract = create(range.maxValue, !range.isMaxIncluded, maxValue, isMaxIncluded);
             } else {
                 if (!clipMax) {
-                    final Range<T>[] array = newArray(2);
+                    final Range<E>[] array = newArray(2);
                     array[0] = create(minValue, isMinIncluded, range.minValue, !range.isMinIncluded);
                     array[1] = create(range.maxValue, !range.isMaxIncluded, maxValue, isMaxIncluded);
                     return array;
@@ -455,7 +455,7 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
         }
         assert contains(subtract) : subtract;
         assert !subtract.intersects(range) : subtract;
-        final Range<T>[] array = newArray(1);
+        final Range<E>[] array = newArray(1);
         array[0] = subtract;
         return array;
     }
@@ -479,7 +479,7 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
      *
      * @see #containsNC(Range)
      */
-    private int compareMinTo(final T value, int position) {
+    private int compareMinTo(final E value, int position) {
         /*
          * Check for infinite values.  If the given value is infinite, it can be either positive or
          * negative infinity, which we can infer from the 'position' argument. Note that 'position'
@@ -522,7 +522,7 @@ public class Range<T extends Comparable<? super T>> implements CheckedContainer<
      * Compares the {@linkplain #getMaxValue() maximum value} of this range with the given bound of
      * another range. See the comment in {@link #compareMinTo(Comparable, int)} for more details.
      */
-    private int compareMaxTo(final T value, int position) {
+    private int compareMaxTo(final E value, int position) {
         if (maxValue == null) {
             return (value == null) ? 0 : +1;
         }

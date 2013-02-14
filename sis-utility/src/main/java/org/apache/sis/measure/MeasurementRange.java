@@ -43,7 +43,7 @@ import java.util.Objects;
  *   <li>{@link #castTo(Class)} for casting the range values to an other type.</li>
  * </ul>
  *
- * @param <T> The type of range elements as a subclass of {@link Number}.
+ * @param <E> The type of range elements as a subclass of {@link Number}.
  *
  * @author  Martin Desruisseaux (IRD)
  * @since   0.3 (derived from geotk-2.4)
@@ -51,7 +51,7 @@ import java.util.Objects;
  * @module
  */
 @Immutable
-public class MeasurementRange<T extends Number & Comparable<? super T>> extends NumberRange<T> {
+public class MeasurementRange<E extends Number & Comparable<? super E>> extends NumberRange<E> {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -161,7 +161,7 @@ public class MeasurementRange<T extends Number & Comparable<? super T>> extends 
      * @param range The range to copy. The elements must be {@link Number} instances.
      * @param units The units of measurement, or {@code null} if unknown.
      */
-    public MeasurementRange(final Range<T> range, final Unit<?> units) {
+    public MeasurementRange(final Range<E> range, final Unit<?> units) {
         super(range);
         this.units = units;
     }
@@ -174,7 +174,7 @@ public class MeasurementRange<T extends Number & Comparable<? super T>> extends 
      * @param maxValue The maximum value, <strong>inclusive</strong>, or {@code null} if none.
      * @param units         The units of measurement, or {@code null} if unknown.
      */
-    public MeasurementRange(final Class<T> type, final T minValue, final T maxValue, final Unit<?> units) {
+    public MeasurementRange(final Class<E> type, final E minValue, final E maxValue, final Unit<?> units) {
         super(type, minValue, maxValue);
         this.units = units;
     }
@@ -189,9 +189,9 @@ public class MeasurementRange<T extends Number & Comparable<? super T>> extends 
      * @param isMaxIncluded {@code true} if the maximal value is inclusive, or {@code false} if exclusive.
      * @param units         The units of measurement, or {@code null} if unknown.
      */
-    public MeasurementRange(final Class<T> type,
-                            final T minValue, final boolean isMinIncluded,
-                            final T maxValue, final boolean isMaxIncluded,
+    public MeasurementRange(final Class<E> type,
+                            final E minValue, final boolean isMinIncluded,
+                            final E maxValue, final boolean isMaxIncluded,
                             final Unit<?> units)
     {
         super(type, minValue, isMinIncluded, maxValue, isMaxIncluded);
@@ -207,7 +207,7 @@ public class MeasurementRange<T extends Number & Comparable<? super T>> extends 
      * @param range The range to copy. The elements must be {@link Number} instances.
      * @param units The units of measurement, or {@code null} if unknown.
      */
-    private MeasurementRange(final Class<T> type, final Range<? extends Number> range, final Unit<?> units) {
+    private MeasurementRange(final Class<E> type, final Range<? extends Number> range, final Unit<?> units) {
         super(type, range);
         this.units = units;
     }
@@ -216,8 +216,8 @@ public class MeasurementRange<T extends Number & Comparable<? super T>> extends 
      * Creates a new range using the same element type and the same units than this range.
      */
     @Override
-    Range<T> create(final T minValue, final boolean isMinIncluded,
-                    final T maxValue, final boolean isMaxIncluded)
+    Range<E> create(final E minValue, final boolean isMinIncluded,
+                    final E maxValue, final boolean isMaxIncluded)
     {
         return new MeasurementRange<>(elementType, minValue, isMinIncluded, maxValue, isMaxIncluded, units);
     }
@@ -242,7 +242,7 @@ public class MeasurementRange<T extends Number & Comparable<? super T>> extends 
      * @throws ConversionException if the target units are not compatible with
      *         this {@linkplain #getUnits() range units}.
      */
-    public MeasurementRange<T> convertTo(final Unit<?> targetUnits) throws ConversionException {
+    public MeasurementRange<E> convertTo(final Unit<?> targetUnits) throws ConversionException {
         return convertAndCast(elementType, targetUnits);
     }
 
@@ -268,7 +268,7 @@ public class MeasurementRange<T extends Number & Comparable<? super T>> extends 
      * @throws IllegalArgumentException if the given target unit is not compatible with
      *         the unit of this range.
      */
-    private <N extends T> Range<N> convert(final Range<N> range) throws IllegalArgumentException {
+    private <N extends E> Range<N> convert(final Range<N> range) throws IllegalArgumentException {
         if (range instanceof MeasurementRange<?>) try {
             return ((MeasurementRange<N>) range).convertAndCast(range.elementType, units);
         } catch (ConversionException e) {
@@ -350,7 +350,7 @@ public class MeasurementRange<T extends Number & Comparable<? super T>> extends 
      */
     @Override
     @SuppressWarnings({"unchecked","rawtypes"}) // Generic array creation.
-    final Range<T>[] newArray(final int length) {
+    final Range<E>[] newArray(final int length) {
         return new MeasurementRange[length];
     }
 
@@ -364,7 +364,7 @@ public class MeasurementRange<T extends Number & Comparable<? super T>> extends 
      *         {@code MeasurementRange} using incommensurable units of measurement.
      */
     @Override
-    public boolean contains(final Range<? extends T> range) throws IllegalArgumentException {
+    public boolean contains(final Range<? extends E> range) throws IllegalArgumentException {
         return super.contains(convert(range));
     }
 
@@ -378,7 +378,7 @@ public class MeasurementRange<T extends Number & Comparable<? super T>> extends 
      *         {@code MeasurementRange} using incommensurable units of measurement.
      */
     @Override
-    public boolean intersects(final Range<? extends T> range) throws IllegalArgumentException {
+    public boolean intersects(final Range<? extends E> range) throws IllegalArgumentException {
         return super.intersects(convert(range));
     }
 
@@ -392,7 +392,7 @@ public class MeasurementRange<T extends Number & Comparable<? super T>> extends 
      *         {@code MeasurementRange} using incommensurable units of measurement.
      */
     @Override
-    public Range<T> intersect(final Range<T> range) throws IllegalArgumentException {
+    public Range<E> intersect(final Range<E> range) throws IllegalArgumentException {
         return super.intersect(convert(range));
     }
 
@@ -406,7 +406,7 @@ public class MeasurementRange<T extends Number & Comparable<? super T>> extends 
      *         {@code MeasurementRange} using incommensurable units of measurement.
      */
     @Override
-    public Range<T> union(final Range<T> range) throws IllegalArgumentException {
+    public Range<E> union(final Range<E> range) throws IllegalArgumentException {
         return super.union(convert(range));
     }
 
@@ -420,7 +420,7 @@ public class MeasurementRange<T extends Number & Comparable<? super T>> extends 
      *         {@code MeasurementRange} using incommensurable units of measurement.
      */
     @Override
-    public Range<T>[] subtract(final Range<T> range) throws IllegalArgumentException {
+    public Range<E>[] subtract(final Range<E> range) throws IllegalArgumentException {
         return super.subtract(convert(range));
     }
 
