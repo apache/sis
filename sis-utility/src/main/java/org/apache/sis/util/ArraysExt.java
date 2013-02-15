@@ -1424,7 +1424,15 @@ public final class ArraysExt extends Static {
 
     /**
      * Returns {@code true} if all elements in the specified array are in increasing order.
-     * Null and empty arrays are considered as sorted.
+     * Special cases:
+     *
+     * <ul>
+     *   <li>Empty arrays are considered as sorted.</li>
+     *   <li>Null arrays are considered as unknown content and cause a {@code NullPointerException}
+     *       to be thrown.</li>
+     *   <li>{@code null} elements are considered unordered and may appear anywhere in the array;
+     *       they will be silently ignored.</li>
+     * </ul>
      *
      * @param <E>         The type of array elements.
      * @param array       The array to test for order.
@@ -1434,10 +1442,20 @@ public final class ArraysExt extends Static {
      * @return {@code true} if all elements in the given array are sorted in increasing order.
      */
     public static <E> boolean isSorted(final E[] array, final Comparator<? super E> comparator, final boolean strict) {
-        for (int i=1; i<array.length; i++) {
-            final int c = comparator.compare(array[i], array[i-1]);
-            if (strict ? c <= 0 : c < 0) {
-                return false;
+        for (int i=0; i<array.length; i++) {
+            E p = array[i];
+            if (p != null) {
+                while (++i < array.length) {
+                    final E e = array[i];
+                    if (e != null) {
+                        final int c = comparator.compare(e, p);
+                        if (strict ? c <= 0 : c < 0) {
+                            return false;
+                        }
+                        p = e;
+                    }
+                }
+                break;
             }
         }
         return true;
@@ -1445,11 +1463,53 @@ public final class ArraysExt extends Static {
 
     /**
      * Returns {@code true} if all elements in the specified array are in increasing order.
-     * Null and empty arrays are considered as sorted.
+     * Special cases:
      *
-     * {@section Handling of NaN values}
-     * Since {@code NaN} values are unordered, they may appears anywhere in the array;
-     * they will be ignored.
+     * <ul>
+     *   <li>Empty arrays are considered as sorted.</li>
+     *   <li>Null arrays are considered as unknown content and cause a {@code NullPointerException}
+     *       to be thrown.</li>
+     *   <li>{@code null} elements are considered unordered and may appear anywhere in the array;
+     *       they will be silently ignored.</li>
+     * </ul>
+     *
+     * @param <E>         The type of array elements.
+     * @param array       The array to test for order.
+     * @param strict      {@code true} if elements should be strictly sorted (i.e. equal
+     *                    elements are not allowed), or {@code false} otherwise.
+     * @return {@code true} if all elements in the given array are sorted in increasing order.
+     */
+    public static <E extends Comparable<? super E>> boolean isSorted(final E[] array, final boolean strict) {
+        for (int i=0; i<array.length; i++) {
+            E p = array[i];
+            if (p != null) {
+                while (++i < array.length) {
+                    final E e = array[i];
+                    if (e != null) {
+                        final int c = e.compareTo(p);
+                        if (strict ? c <= 0 : c < 0) {
+                            return false;
+                        }
+                        p = e;
+                    }
+                }
+                break;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Returns {@code true} if all elements in the specified array are in increasing order.
+     * Special cases:
+     *
+     * <ul>
+     *   <li>Empty arrays are considered as sorted.</li>
+     *   <li>Null arrays are considered as unknown content and cause a {@code NullPointerException}
+     *       to be thrown.</li>
+     *   <li>{@link Double#NaN NaN} elements are considered unordered and may appear anywhere
+     *       in the array; they will be silently ignored.</li>
+     * </ul>
      *
      * @param array  The array to test for order.
      * @param strict {@code true} if elements should be strictly sorted (i.e. equal elements
@@ -1457,15 +1517,19 @@ public final class ArraysExt extends Static {
      * @return {@code true} if all elements in the given array are sorted in increasing order.
      */
     public static boolean isSorted(final double[] array, final boolean strict) {
-        int previous = 0;
-        for (int i=1; i<array.length; i++) {
-            final double e = array[i];
-            final double p = array[previous];
-            if (strict ? e <= p : e < p) {
-                return false;
-            }
-            if (!Double.isNaN(e)) {
-                previous = i;
+        for (int i=0; i<array.length; i++) {
+            double p = array[i];
+            if (!Double.isNaN(p)) {
+                while (++i < array.length) {
+                    final double e = array[i];
+                    if (strict ? e <= p : e < p) {
+                        return false;
+                    }
+                    if (!Double.isNaN(e)) {
+                        p = e;
+                    }
+                }
+                break;
             }
         }
         return true;
@@ -1473,11 +1537,15 @@ public final class ArraysExt extends Static {
 
     /**
      * Returns {@code true} if all elements in the specified array are in increasing order.
-     * Null and empty arrays are considered as sorted.
+     * Special cases:
      *
-     * {@section Handling of NaN values}
-     * Since {@code NaN} values are unordered, they may appears anywhere in the array;
-     * they will be ignored.
+     * <ul>
+     *   <li>Empty arrays are considered as sorted.</li>
+     *   <li>Null arrays are considered as unknown content and cause a {@code NullPointerException}
+     *       to be thrown.</li>
+     *   <li>{@link Float#NaN NaN} elements are considered unordered and may appear anywhere
+     *       in the array; they will be silently ignored.</li>
+     * </ul>
      *
      * @param array  The array to test for order.
      * @param strict {@code true} if elements should be strictly sorted (i.e. equal elements
@@ -1485,15 +1553,19 @@ public final class ArraysExt extends Static {
      * @return {@code true} if all elements in the given array are sorted in increasing order.
      */
     public static boolean isSorted(final float[] array, final boolean strict) {
-        int previous = 0;
-        for (int i=1; i<array.length; i++) {
-            final float e = array[i];
-            final float p = array[previous];
-            if (strict ? e <= p : e < p) {
-                return false;
-            }
-            if (!Float.isNaN(e)) {
-                previous = i;
+        for (int i=0; i<array.length; i++) {
+            float p = array[i];
+            if (!Float.isNaN(p)) {
+                while (++i < array.length) {
+                    final float e = array[i];
+                    if (strict ? e <= p : e < p) {
+                        return false;
+                    }
+                    if (!Float.isNaN(e)) {
+                        p = e;
+                    }
+                }
+                break;
             }
         }
         return true;
@@ -1501,7 +1573,13 @@ public final class ArraysExt extends Static {
 
     /**
      * Returns {@code true} if all elements in the specified array are in increasing order.
-     * Null and empty arrays are considered as sorted.
+     * Special cases:
+     *
+     * <ul>
+     *   <li>Empty arrays are considered as sorted.</li>
+     *   <li>Null arrays are considered as unknown content and cause a {@code NullPointerException}
+     *       to be thrown.</li>
+     * </ul>
      *
      * @param array  The array to test for order.
      * @param strict {@code true} if elements should be strictly sorted (i.e. equal elements
@@ -1509,11 +1587,14 @@ public final class ArraysExt extends Static {
      * @return {@code true} if all elements in the given array are sorted in increasing order.
      */
     public static boolean isSorted(final long[] array, final boolean strict) {
-        for (int i=1; i<array.length; i++) {
-            final long e = array[i];
-            final long p = array[i-1];
-            if (strict ? e <= p : e < p) {
-                return false;
+        if (array.length != 0) {
+            long p = array[0];
+            for (int i=1; i<array.length; i++) {
+                final long e = array[i];
+                if (strict ? e <= p : e < p) {
+                    return false;
+                }
+                p = e;
             }
         }
         return true;
@@ -1521,7 +1602,13 @@ public final class ArraysExt extends Static {
 
     /**
      * Returns {@code true} if all elements in the specified array are in increasing order.
-     * Null and empty arrays are considered as sorted.
+     * Special cases:
+     *
+     * <ul>
+     *   <li>Empty arrays are considered as sorted.</li>
+     *   <li>Null arrays are considered as unknown content and cause a {@code NullPointerException}
+     *       to be thrown.</li>
+     * </ul>
      *
      * @param array  The array to test for order.
      * @param strict {@code true} if elements should be strictly sorted (i.e. equal elements
@@ -1529,11 +1616,14 @@ public final class ArraysExt extends Static {
      * @return {@code true} if all elements in the given array are sorted in increasing order.
      */
     public static boolean isSorted(final int[] array, final boolean strict) {
-        for (int i=1; i<array.length; i++) {
-            final int e = array[i];
-            final int p = array[i-1];
-            if (strict ? e <= p : e < p) {
-                return false;
+        if (array.length != 0) {
+            int p = array[0];
+            for (int i=1; i<array.length; i++) {
+                final int e = array[i];
+                if (strict ? e <= p : e < p) {
+                    return false;
+                }
+                p = e;
             }
         }
         return true;
@@ -1541,7 +1631,13 @@ public final class ArraysExt extends Static {
 
     /**
      * Returns {@code true} if all elements in the specified array are in increasing order.
-     * Null and empty arrays are considered as sorted.
+     * Special cases:
+     *
+     * <ul>
+     *   <li>Empty arrays are considered as sorted.</li>
+     *   <li>Null arrays are considered as unknown content and cause a {@code NullPointerException}
+     *       to be thrown.</li>
+     * </ul>
      *
      * @param array  The array to test for order.
      * @param strict {@code true} if elements should be strictly sorted (i.e. equal elements
@@ -1549,11 +1645,14 @@ public final class ArraysExt extends Static {
      * @return {@code true} if all elements in the given array are sorted in increasing order.
      */
     public static boolean isSorted(final short[] array, final boolean strict) {
-        for (int i=1; i<array.length; i++) {
-            final short e = array[i];
-            final short p = array[i-1];
-            if (strict ? e <= p : e < p) {
-                return false;
+        if (array.length != 0) {
+            short p = array[0];
+            for (int i=1; i<array.length; i++) {
+                final short e = array[i];
+                if (strict ? e <= p : e < p) {
+                    return false;
+                }
+                p = e;
             }
         }
         return true;
@@ -1561,7 +1660,13 @@ public final class ArraysExt extends Static {
 
     /**
      * Returns {@code true} if all elements in the specified array are in increasing order.
-     * Null and empty arrays are considered as sorted.
+     * Special cases:
+     *
+     * <ul>
+     *   <li>Empty arrays are considered as sorted.</li>
+     *   <li>Null arrays are considered as unknown content and cause a {@code NullPointerException}
+     *       to be thrown.</li>
+     * </ul>
      *
      * @param array  The array to test for order.
      * @param strict {@code true} if elements should be strictly sorted (i.e. equal elements
@@ -1569,11 +1674,14 @@ public final class ArraysExt extends Static {
      * @return {@code true} if all elements in the given array are sorted in increasing order.
      */
     public static boolean isSorted(final byte[] array, final boolean strict) {
-        for (int i=1; i<array.length; i++) {
-            final byte e = array[i];
-            final byte p = array[i-1];
-            if (strict ? e <= p : e < p) {
-                return false;
+        if (array.length != 0) {
+            byte p = array[0];
+            for (int i=1; i<array.length; i++) {
+                final byte e = array[i];
+                if (strict ? e <= p : e < p) {
+                    return false;
+                }
+                p = e;
             }
         }
         return true;
@@ -1581,7 +1689,13 @@ public final class ArraysExt extends Static {
 
     /**
      * Returns {@code true} if all elements in the specified array are in increasing order.
-     * Null and empty arrays are considered as sorted.
+     * Special cases:
+     *
+     * <ul>
+     *   <li>Empty arrays are considered as sorted.</li>
+     *   <li>Null arrays are considered as unknown content and cause a {@code NullPointerException}
+     *       to be thrown.</li>
+     * </ul>
      *
      * @param array  The array to test for order.
      * @param strict {@code true} if elements should be strictly sorted (i.e. equal elements
@@ -1589,11 +1703,14 @@ public final class ArraysExt extends Static {
      * @return {@code true} if all elements in the given array are sorted in increasing order.
      */
     public static boolean isSorted(final char[] array, final boolean strict) {
-        for (int i=1; i<array.length; i++) {
-            final char e = array[i];
-            final char p = array[i-1];
-            if (strict ? e <= p : e < p) {
-                return false;
+        if (array.length != 0) {
+            char p = array[0];
+            for (int i=1; i<array.length; i++) {
+                final char e = array[i];
+                if (strict ? e <= p : e < p) {
+                    return false;
+                }
+                p = e;
             }
         }
         return true;

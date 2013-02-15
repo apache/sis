@@ -67,4 +67,116 @@ public final strictfp class ArraysExtTest extends TestCase {
         final int[] union = ArraysExt.unionOfSorted(array1, array2);
         assertArrayEquals(new int[] {1, 2, 3, 4, 6, 9, 12, 13, 18, 22}, union);
     }
+
+    /**
+     * Tests {@link ArraysExt#isSorted(char[], boolean)}.
+     */
+    @Test
+    public void testIsSortedCharacters() {
+        final char[] array = new char[] {1, 4, 7, 9};
+        assertTrue (ArraysExt.isSorted(array, false));
+        assertTrue (ArraysExt.isSorted(array, true));  array[2] = 4;
+        assertTrue (ArraysExt.isSorted(array, false));
+        assertFalse(ArraysExt.isSorted(array, true));  array[2] = 3;
+        assertFalse(ArraysExt.isSorted(array, false));
+        assertFalse(ArraysExt.isSorted(array, true));
+    }
+
+    /**
+     * Tests {@link ArraysExt#isSorted(byte[], boolean)}.
+     */
+    @Test
+    public void testIsSortedBytes() {
+        final byte[] array = new byte[] {1, 4, 7, 9};
+        assertTrue (ArraysExt.isSorted(array, false));
+        assertTrue (ArraysExt.isSorted(array, true));  array[2] = 4;
+        assertTrue (ArraysExt.isSorted(array, false));
+        assertFalse(ArraysExt.isSorted(array, true));  array[2] = 3;
+        assertFalse(ArraysExt.isSorted(array, false));
+        assertFalse(ArraysExt.isSorted(array, true));
+    }
+
+    /**
+     * Tests {@link ArraysExt#isSorted(short[], boolean)}.
+     */
+    @Test
+    public void testIsSortedShorts() {
+        final short[] array = new short[] {1, 4, 7, 9};
+        assertTrue (ArraysExt.isSorted(array, false));
+        assertTrue (ArraysExt.isSorted(array, true));  array[2] = 4;
+        assertTrue (ArraysExt.isSorted(array, false));
+        assertFalse(ArraysExt.isSorted(array, true));  array[2] = 3;
+        assertFalse(ArraysExt.isSorted(array, false));
+        assertFalse(ArraysExt.isSorted(array, true));
+    }
+
+    /**
+     * Tests {@link ArraysExt#isSorted(int[], boolean)}.
+     */
+    @Test
+    public void testIsSortedIntegers() {
+        final int[] array = new int[] {1, 4, 7, 9};
+        assertTrue (ArraysExt.isSorted(array, false));
+        assertTrue (ArraysExt.isSorted(array, true));  array[2] = 4;
+        assertTrue (ArraysExt.isSorted(array, false));
+        assertFalse(ArraysExt.isSorted(array, true));  array[2] = 3;
+        assertFalse(ArraysExt.isSorted(array, false));
+        assertFalse(ArraysExt.isSorted(array, true));
+    }
+
+    /**
+     * Tests {@link ArraysExt#isSorted(long[], boolean)}.
+     */
+    @Test
+    public void testIsSortedLongs() {
+        final long[] array = new long[] {1, 4, 7, 9};
+        assertTrue (ArraysExt.isSorted(array, false));
+        assertTrue (ArraysExt.isSorted(array, true));  array[2] = 4;
+        assertTrue (ArraysExt.isSorted(array, false));
+        assertFalse(ArraysExt.isSorted(array, true));  array[2] = 3;
+        assertFalse(ArraysExt.isSorted(array, false));
+        assertFalse(ArraysExt.isSorted(array, true));
+    }
+
+    /**
+     * Tests {@link ArraysExt#isSorted(float[], boolean)}.
+     */
+    @Test
+    public void testIsSortedFloats() {
+        final float[] array = new float[] {1, Float.NaN, 4, Float.NaN, 7, 9};
+        assertTrue (ArraysExt.isSorted(array, false));
+        assertTrue (ArraysExt.isSorted(array, true));  array[3] = 4;
+        assertTrue (ArraysExt.isSorted(array, false));
+        assertFalse(ArraysExt.isSorted(array, true));  array[3] = 3;
+        assertFalse(ArraysExt.isSorted(array, false));
+        assertFalse(ArraysExt.isSorted(array, true));
+    }
+
+    /**
+     * Tests {@link ArraysExt#isSorted(double[], boolean)}.
+     */
+    @Test
+    public void testIsSortedDoubles() {
+        final double[] array = new double[] {1, Double.NaN, 4, Double.NaN, 7, 9};
+        assertTrue (ArraysExt.isSorted(array, false));
+        assertTrue (ArraysExt.isSorted(array, true));  array[3] = 4;
+        assertTrue (ArraysExt.isSorted(array, false));
+        assertFalse(ArraysExt.isSorted(array, true));  array[3] = 3;
+        assertFalse(ArraysExt.isSorted(array, false));
+        assertFalse(ArraysExt.isSorted(array, true));
+    }
+
+    /**
+     * Tests {@link ArraysExt#isSorted(Comparable[], boolean)}.
+     */
+    @Test
+    public void testIsSortedComparables() {
+        final Integer[] array = new Integer[] {1, null, 4, null, 7, 9};
+        assertTrue (ArraysExt.isSorted(array, false));
+        assertTrue (ArraysExt.isSorted(array, true));  array[3] = 4;
+        assertTrue (ArraysExt.isSorted(array, false));
+        assertFalse(ArraysExt.isSorted(array, true));  array[3] = 3;
+        assertFalse(ArraysExt.isSorted(array, false));
+        assertFalse(ArraysExt.isSorted(array, true));
+    }
 }
