@@ -293,6 +293,19 @@ public final strictfp class RangeTest extends TestCase {
     }
 
     /**
+     * Tests the {@link Range#toString()} method.
+     */
+    @Test
+    public void testToString() {
+        assertEquals("{}",        new Range<>(Integer.class, 10, false, 10, false).toString());
+        assertEquals("{10}",      new Range<>(Integer.class, 10, true,  10, true ).toString());
+        assertEquals("[10 … 20]", new Range<>(Integer.class, 10, true,  20, true ).toString());
+        assertEquals("(10 … 20)", new Range<>(Integer.class, 10, false, 20, false).toString());
+        assertEquals("[10 … 20)", new Range<>(Integer.class, 10, true,  20, false).toString());
+        assertEquals("(10 … 20]", new Range<>(Integer.class, 10, false, 20, true ).toString());
+    }
+
+    /**
      * Tests the {@link Range#equals(Object)} method.
      */
     @Test

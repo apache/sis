@@ -26,7 +26,9 @@ import org.apache.sis.util.resources.Errors;
  * {@code NumberRange} has no unit of measurement. For a range of physical measurements
  * with unit of measure, see {@link MeasurementRange}.
  *
- * <p>Most operations in this class are defined in two versions:</p>
+ * <p>{@code NumberRange} has some capability to convert different number types before to
+ * perform operations. In order to provide both this flexibility and the safety of generic
+ * types, most operations in this class are defined in two versions:</p>
  * <ul>
  *   <li>Methods inherited from the {@code Range} parent class
  *      ({@link #contains(Range) contains}, {@link #intersect(Range) intersect},
@@ -51,6 +53,14 @@ import org.apache.sis.util.resources.Errors;
  *   <li>{@link #castTo(Class)} for casting the range values to an other type.</li>
  * </ul>
  *
+ * {@section Relationship with standards}
+ * {@code NumberRange} is the SIS class closest to the
+ * <a href="http://en.wikipedia.org/wiki/Interval_%28mathematics%29">mathematical definition of interval</a>.
+ * It is closely related, while not identical, to the ISO 19123 (<cite>Coverage geometry and functions</cite>)
+ * definition of "ranges". At the difference of the parent {@link Range} class, which can be used only with
+ * {@linkplain org.opengis.coverage.DiscreteCoverage discrete coverages}, the {@code NumberRange} class can
+ * also be used with {@linkplain org.opengis.coverage.ContinuousCoverage continuous coverages}.
+ *
  * @param <E> The type of range elements as a subclass of {@link Number}.
  *
  * @author  Martin Desruisseaux (IRD)
@@ -61,6 +71,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @see RangeFormat
  * @see org.apache.sis.util.collection.RangeSet
+ * @see <a href="http://en.wikipedia.org/wiki/Interval_%28mathematics%29">Wikipedia: Interval</a>
  */
 @Immutable
 public class NumberRange<E extends Number & Comparable<? super E>> extends Range<E> {

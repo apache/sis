@@ -130,14 +130,14 @@ public final strictfp class RangeFormatTest extends TestCase {
         assertEquals("maxPos.endIndex",   8, maxPos.getEndIndex());
 
         // Single value
-        assertEquals("300", format(NumberRange.create(300, true, 300, true)));
-        assertEquals("minPos.beginIndex", 0, minPos.getBeginIndex());
-        assertEquals("minPos.endIndex",   3, minPos.getEndIndex());
-        assertEquals("maxPos.beginIndex", 0, maxPos.getBeginIndex());
-        assertEquals("maxPos.endIndex",   3, maxPos.getEndIndex());
+        assertEquals("{300}", format(NumberRange.create(300, true, 300, true)));
+        assertEquals("minPos.beginIndex", 1, minPos.getBeginIndex());
+        assertEquals("minPos.endIndex",   4, minPos.getEndIndex());
+        assertEquals("maxPos.beginIndex", 1, maxPos.getBeginIndex());
+        assertEquals("maxPos.endIndex",   4, maxPos.getEndIndex());
 
         // Empty range
-        assertEquals("[]", format(NumberRange.create(300, true, 300, false)));
+        assertEquals("{}", format(NumberRange.create(300, true, 300, false)));
         assertEquals("minPos.beginIndex", 1, minPos.getBeginIndex());
         assertEquals("minPos.endIndex",   1, minPos.getEndIndex());
         assertEquals("maxPos.beginIndex", 1, maxPos.getBeginIndex());

@@ -81,7 +81,7 @@ public final strictfp class MeasurementRangeTest extends TestCase {
     @Test
     public void testToString() {
         final MeasurementRange<Float> range = MeasurementRange.create(10f, true, 20f, true, SI.KILOMETRE);
-        assertEquals("[10.0 … 20.0] km", range.toString());
+        assertEquals("[10.0 … 20.0] km", range.toString());
     }
 
     /**
