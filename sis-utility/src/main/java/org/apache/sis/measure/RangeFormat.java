@@ -38,17 +38,51 @@ import org.apache.sis.util.resources.Errors;
 
 
 /**
- * Parses and formats {@linkplain Range ranges} of the given type. The kind of ranges created
- * by the {@code parse} method is determined by the class of range elements:
+ * Parses and formats {@linkplain Range ranges} in the given locale for the given type.
+ * This class complies to the format described in the <a href="http://en.wikipedia.org/wiki/ISO_31-11">ISO 31-11</a>
+ * standard, except that the minimal and maximal values are separated by the "{@code …}" character
+ * instead than coma. More specifically, the format is defined as below:
  *
  * <ul>
- *   <li>If the elements type is assignable to {@link Date}, then the {@code parse} method
+ *   <li>If the range {@linkplain Range#isEmpty() is empty}, then the range is represented by "{@code {}}".</li>
+ *   <li>Otherwise if the {@linkplain Range#getMinValue() minimal value} is equals to the
+ *       {@linkplain Range#getMaxValue() maximal value}, then that single value is formatted
+ *       inside braces as in "{@code {value}}".</li>
+ *   <li>Otherwise the minimal and maximal values are formatted inside bracket or parenthesis,
+ *       depending on whether each bound is inclusive or exclusive:
+ *     <ul>
+ *       <li>"{@code [min … max]}" if both bounds are inclusive;</li>
+ *       <li>"{@code (min … max)}" if both bounds are exclusive;</li>
+ *       <li>or a mix of both styles if a bound is inclusive while the other is exclusive.</li>
+ *     </ul>
+ *     The "{@code ∞}" symbol is used in place of {@code min} or {@code max} for unbounded ranges.</li>
+ * </ul>
+ *
+ * If the range to format is an instance of {@link MeasurementRange}, then the
+ * {@linkplain Unit unit of measurement} is appended except for empty ranges.
+ *
+ * {@section Lenient parsing}
+ * At parsing time, the above formatting rules are relaxed as below:
+ *
+ * <ul>
+ *   <li>Empty ranges can be represented by "{@code []}"or "{@code ()}" in addition to the
+ *       standard "{@code {}}".</li>
+ *   <li>The braces are optional for singleton values, i.e. "{@code value}" is accepted
+ *       as well as "{@code {value}}".</li>
+ * </ul>
+ *
+ * {@section Range type and type of range elements}
+ * The kind of ranges created by the {@link #parse(String) parse(…)} methods is determined
+ * by the class of range elements:
+ *
+ * <ul>
+ *   <li>If the elements type is assignable to {@link Date}, then the {@code parse(…)} methods
  *       will create {@code Range<Date>} objects.</li>
  *   <li>If the elements type is assignable to {@link Number}, then:
  *     <ul>
- *       <li>If the text to parse contains a {@linkplain Unit unit} of measure, then
- *           the {@code parse} method will create {@link MeasurementRange} objects.</li>
- *       <li>Otherwise the {@code parse} method will create {@link NumberRange} objects.</li>
+ *       <li>If the text to parse contains a {@linkplain Unit unit of measure}, then
+ *           the {@code parse(…)} methods will create {@link MeasurementRange} objects.</li>
+ *       <li>Otherwise the {@code parse(…)} methods will create {@link NumberRange} objects.</li>
  *     </ul>
  *   </li>
  * </ul>
@@ -58,9 +92,8 @@ import org.apache.sis.util.resources.Errors;
  * @version 0.3
  * @module
  *
- * @see Range
- * @see NumberRange
- * @see MeasurementRange
+ * @see Range#toString()
+ * @see <a href="http://en.wikipedia.org/wiki/ISO_31-11">Wikipedia: ISO 31-11</a>
  */
 public class RangeFormat extends Format {
     /**
@@ -147,6 +180,12 @@ public class RangeFormat extends Format {
     }
 
     /**
+     * The character opening an empty range or a range containing only one element.
+     * The default value is {@code '{'}.
+     */
+    private final char openSet;
+
+    /**
      * The character opening a range in which the minimal value is inclusive.
      * The default value is {@code '['}.
      */
@@ -165,6 +204,12 @@ public class RangeFormat extends Format {
      * but is accepted during parsing. The default value is {@code ']'}.
      */
     private final char openExclusiveAlt;
+
+    /**
+     * The character closing an empty range or a range containing only one element.
+     * The default value is {@code '}'}.
+     */
+    private final char closeSet;
 
     /**
      * The character closing a range in which the maximal value is inclusive.
@@ -295,9 +340,11 @@ public class RangeFormat extends Format {
         }
         minusSign         = ds.getMinusSign();
         infinity          = ds.getInfinity();
+        openSet           = '{';
         openInclusive     = '['; // Future SIS version may determine those characters from the locale.
         openExclusive     = '('; // We may also provide an 'applyPattern(String)' method for setting those char.
         openExclusiveAlt  = ']';
+        closeSet          = '}';
         closeInclusive    = ']';
         closeExclusive    = ')';
         closeExclusiveAlt = '[';
@@ -414,19 +461,7 @@ public class RangeFormat extends Format {
 
     /**
      * Formats a {@link Range} and appends the resulting text to a given string buffer.
-     * This method formats then given range as below:
-     *
-     * <ul>
-     *   <li>If the range is empty, then this method appends {@code "[]"}.</li>
-     *   <li>Otherwise if the minimal value is equals to the maximal value, then
-     *       that value is formatted alone.</li>
-     *   <li>Otherwise the minimal and maximal values are formatted like {@code [min … max]} for
-     *       inclusive bounds or {@code (min … max)} for exclusive bounds, or a mix of both styles.
-     *       The ∞ symbol is used in place of {@code min} or {@code max} for unbounded ranges.</li>
-     * </ul>
-     *
-     * If the given range is a {@link MeasurementRange}, then the unit of measurement is
-     * appended to the above string representation.
+     * See the <a href="#skip-navbar_top">class javadoc</a> for a description of the format.
      *
      * @param  range      The {@link Range} object to format.
      * @param  toAppendTo Where the text is to be appended.
@@ -455,18 +490,18 @@ public class RangeFormat extends Format {
             final AttributedCharacterIterator characterIterator)
     {
         /*
-         * Special case for an empty range. This is typically formatted as "[]". The field
+         * Special case for an empty range. This is typically formatted as "{}". The field
          * position is unconditionally set to the empty substring inside the brackets.
          */
         int fieldPos = getField(pos);
         if (range.isEmpty()) {
-            toAppendTo.append(openInclusive);
+            toAppendTo.append(openSet);
             if (fieldPos >= MIN_VALUE_FIELD && fieldPos <= UNIT_FIELD) {
                 final int p = toAppendTo.length();
                 pos.setBeginIndex(p); // First index, inclusive.
                 pos.setEndIndex  (p); // Last index, exclusive
             }
-            toAppendTo.append(closeInclusive);
+            toAppendTo.append(closeSet);
             return;
         }
         /*
@@ -478,16 +513,15 @@ public class RangeFormat extends Format {
         final Comparable<?> minValue = range.getMinValue();
         final Comparable<?> maxValue = range.getMaxValue();
         final boolean isSingleton = (minValue != null) && minValue.equals(maxValue);
-        int field;
+        int field = MIN_VALUE_FIELD;
         if (isSingleton) {
             if (fieldPos == MIN_VALUE_FIELD) {
                 fieldPos = MAX_VALUE_FIELD;
             }
             field = MAX_VALUE_FIELD;
-        } else {
-            field = MIN_VALUE_FIELD;
-            toAppendTo.append(range.isMinIncluded() ? openInclusive : openExclusive);
         }
+        toAppendTo.append(isSingleton ? openSet :
+                range.isMinIncluded() ? openInclusive : openExclusive);
         for (; field <= UNIT_FIELD; field++) {
             final Object value;
             switch (field) {
@@ -535,9 +569,8 @@ public class RangeFormat extends Format {
                     break;
                 }
                 case MAX_VALUE_FIELD: {
-                    if (!isSingleton) {
-                        toAppendTo.append(range.isMaxIncluded() ? closeInclusive : closeExclusive);
-                    }
+                    toAppendTo.append(isSingleton ? closeSet :
+                            range.isMaxIncluded() ? closeInclusive : closeExclusive);
                     break;
                 }
             }
@@ -690,31 +723,67 @@ public class RangeFormat extends Format {
             c = source.codePointAt(index);
             if (!Character.isWhitespace(c)) break;
         }
-        /*
-         * Get the minimal and maximal values, and whatever they are inclusive or exclusive.
-         */
         final Object minValue, maxValue;
         final boolean isMinIncluded, isMaxIncluded;
         if (!isOpen(c)) {
             /*
-             * No bracket. Assume that we have a single value for the range.
+             * No bracket, or curly bracket. We have eigher an empty range (as in "{}")
+             * or a single value for the range. The braces are optional for single value.
+             * In other words, this block parses all of the following cases:
+             *
+             *  - {}
+             *  - {value}
+             *  - value         (not standard, but accepted by this parser)
              */
-            pos.setIndex(index);
-            final Object value = elementFormat.parseObject(source, pos);
-            if (value == null) {
-                return null;
+            final boolean hasBraces = (c == openSet);
+            if (hasBraces) {
+                // Skip the opening brace and following whitespaces.
+                while ((index += Character.charCount(c)) < length) {
+                    c = source.codePointAt(index);
+                    if (!Character.isWhitespace(c)) break;
+                }
             }
-            pos.setErrorIndex(index); // In case of failure during the conversion.
-            minValue = maxValue = convert(value);
+            if (hasBraces && c == closeSet) {
+                // Empty range represented by {}
+                minValue = maxValue = valueOfNil();
+            } else {
+                // Singleton value, with or without braces.
+                pos.setIndex(index);
+                final Object value = elementFormat.parseObject(source, pos);
+                if (value == null) {
+                    return null;
+                }
+                pos.setErrorIndex(index); // In case of failure during the conversion.
+                minValue = maxValue = convert(value);
+                index = pos.getIndex();
+            }
+            if (hasBraces) {
+                // Skip whitespaces, then skip the closing brace.
+                // Absence of closing brace is considered an error.
+                for (;; index += Character.charCount(c)) {
+                    if (index < length) {
+                        c = source.codePointAt(index);
+                        if (Character.isWhitespace(c)) {
+                            continue;
+                        }
+                        if (c == closeSet) {
+                            break;
+                        }
+                    }
+                    pos.setErrorIndex(length);
+                    return null;
+                }
+            }
             isMinIncluded = isMaxIncluded = true;
-            index = pos.getIndex();
         } else {
             /*
              * We found an opening bracket. Skip the whitespaces. If the next
              * character is a closing bracket, then we have an empty range.
+             * The later case is an extension to the standard format, since
+             * empty ranges are usually represented by {} instead than [].
              */
             isMinIncluded = (c == openInclusive);
-            do {
+            do { // Skip whitespaces.
                 index += Character.charCount(c);
                 if (index >= length) {
                     pos.setErrorIndex(length);
@@ -724,7 +793,7 @@ public class RangeFormat extends Format {
             } while (Character.isWhitespace(c));
             if (isClose(c)) {
                 pos.setErrorIndex(index);  // In case of failure during the conversion.
-                minValue = maxValue = convert(0);
+                minValue = maxValue = valueOfNil();
                 isMaxIncluded = false;
                 index += Character.charCount(c);
             } else {
@@ -791,7 +860,7 @@ public class RangeFormat extends Format {
                      */
                     for (index = pos.getIndex(); ; index += Character.charCount(c)) {
                         if (index >= length) {
-                           pos.setErrorIndex(length);
+                            pos.setErrorIndex(length);
                             return null;
                         }
                         c = source.charAt(index);
@@ -882,5 +951,20 @@ public class RangeFormat extends Format {
         }
         throw new UnconvertibleObjectException(Errors.format(
                 Errors.Keys.IllegalClass_2, elementType, value.getClass()));
+    }
+
+    /**
+     * Returns a "nil" value. This is used for creating empty ranges.
+     */
+    private Object valueOfNil() {
+        Object value = Numbers.valueOfNil(elementType);
+        if (value == null) {
+            if (Date.class.isAssignableFrom(elementType)) {
+                value = new Date();
+            } else {
+                value = 0;
+            }
+        }
+        return convert(value);
     }
 }
