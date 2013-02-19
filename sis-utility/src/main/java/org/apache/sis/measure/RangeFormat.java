@@ -38,7 +38,7 @@ import org.apache.sis.util.resources.Errors;
 
 
 /**
- * Parses and formats {@linkplain Range ranges} in the given locale for the given type.
+ * Parses and formats {@link Range} instances according the given locale.
  * This class complies to the format described in the <a href="http://en.wikipedia.org/wiki/ISO_31-11">ISO 31-11</a>
  * standard, except that the minimal and maximal values are separated by the "{@code …}" character
  * instead than coma. More specifically, the format is defined as below:
@@ -73,14 +73,14 @@ import org.apache.sis.util.resources.Errors;
  *
  * {@section Range type and type of range elements}
  * The kind of ranges created by the {@link #parse(String) parse(…)} methods is determined
- * by the class of range elements:
+ * by the type of range elements:
  *
  * <ul>
  *   <li>If the elements type is assignable to {@link Date}, then the {@code parse(…)} methods
  *       will create {@code Range<Date>} objects.</li>
  *   <li>If the elements type is assignable to {@link Number}, then:
  *     <ul>
- *       <li>If the text to parse contains a {@linkplain Unit unit of measure}, then
+ *       <li>If the text to parse contains a {@linkplain Unit unit of measurement}, then
  *           the {@code parse(…)} methods will create {@link MeasurementRange} objects.</li>
  *       <li>Otherwise the {@code parse(…)} methods will create {@link NumberRange} objects.</li>
  *     </ul>
@@ -746,6 +746,7 @@ public class RangeFormat extends Format {
             if (hasBraces && c == closeSet) {
                 // Empty range represented by {}
                 minValue = maxValue = valueOfNil();
+                isMinIncluded = isMaxIncluded = false;
             } else {
                 // Singleton value, with or without braces.
                 pos.setIndex(index);
@@ -756,25 +757,25 @@ public class RangeFormat extends Format {
                 pos.setErrorIndex(index); // In case of failure during the conversion.
                 minValue = maxValue = convert(value);
                 index = pos.getIndex();
+                isMinIncluded = isMaxIncluded = true;
             }
             if (hasBraces) {
                 // Skip whitespaces, then skip the closing brace.
                 // Absence of closing brace is considered an error.
-                for (;; index += Character.charCount(c)) {
-                    if (index < length) {
-                        c = source.codePointAt(index);
-                        if (Character.isWhitespace(c)) {
-                            continue;
-                        }
-                        if (c == closeSet) {
-                            break;
-                        }
+                do {
+                    if (index >= length) {
+                        pos.setErrorIndex(length);
+                        return null;
                     }
-                    pos.setErrorIndex(length);
+                    c = source.codePointAt(index);
+                    index += Character.charCount(c);
+                } while (Character.isWhitespace(c));
+                if (c != closeSet) {
+                    pos.setErrorIndex(index - Character.charCount(c));
                     return null;
                 }
+                pos.setIndex(index);
             }
-            isMinIncluded = isMaxIncluded = true;
         } else {
             /*
              * We found an opening bracket. Skip the whitespaces. If the next
