@@ -40,10 +40,22 @@ import static org.apache.sis.test.Assert.*;
 @DependsOn(org.apache.sis.measure.RangeTest.class)
 public final strictfp class RangeSetTest extends TestCase {
     /**
+     * Asserts that the two given values are equals to the expected one.
+     * This method is used for testing {@link RangeSet#first()} and {@link RangeSet#last()}
+     * in same time than the values from the iterator.
+     */
+    private static void assertEqual(final Range<?> expected,
+            final Range<?> fromIterator, final Range<?> fromGetter)
+    {
+        assertEquals("Value from iterator", expected, fromIterator);
+        assertEquals("Value from getter",   expected, fromGetter);
+    }
+
+    /**
      * Tests {@link RangeSet#add(Range)} using integer values.
      */
     @Test
-    public void testIntegers() {
+    public void testRangeOfIntegers() {
         final RangeSet<Integer> ranges = RangeSet.create(Integer.class);
         assertTrue(ranges.isEmpty());
         /*
@@ -88,19 +100,19 @@ public final strictfp class RangeSetTest extends TestCase {
          * Verify the RangeSet content.
          */
         final Iterator<Range<Integer>> it = ranges.iterator();
-        assertEquals(NumberRange.create(-20, true, -10, false), it.next());
+        assertEqual (NumberRange.create(-20, true, -10, false), it.next(), ranges.first());
         assertEquals(NumberRange.create( -5, true,  25, false), it.next());
         assertEquals(NumberRange.create( 28, true,  35, false), it.next());
         assertEquals(NumberRange.create( 40, true,  50, false), it.next());
-        assertEquals(NumberRange.create( 60, true,  70, false), it.next());
+        assertEqual (NumberRange.create( 60, true,  70, false), it.next(), ranges.last());
         assertFalse(it.hasNext());
     }
 
     /**
-     * Tests {@link RangeSet} using date values.
+     * Tests {@link RangeSet#add(Range)} using date values.
      */
     @Test
-    public void testDates() {
+    public void testRangeOfDates() {
         final RangeSet<Date> ranges = RangeSet.create(Date.class);
         assertTrue(ranges.isEmpty());
         /*
@@ -123,16 +135,16 @@ public final strictfp class RangeSetTest extends TestCase {
          * Verify the RangeSet content.
          */
         final Iterator<Range<Date>> it = ranges.iterator();
-        assertEquals(new Range<>(Date.class, lastWeek,  true, other, false), it.next());
-        assertEquals(new Range<>(Date.class, yesterday, true, now,   false), it.next());
+        assertEqual(new Range<>(Date.class, lastWeek,  true, other, false), it.next(), ranges.first());
+        assertEqual(new Range<>(Date.class, yesterday, true, now,   false), it.next(), ranges.last());
         assertFalse(it.hasNext());
     }
 
     /**
-     * Tests {@link RangeSet} using string values.
+     * Tests {@link RangeSet#add(Range)} using string values.
      */
     @Test
-    public void testStrings() {
+    public void testRangeOfStrings() {
         final RangeSet<String> ranges = RangeSet.create(String.class);
         assertTrue(ranges.isEmpty());
         assertTrue(ranges.add("FAA", "FBB"));
@@ -153,9 +165,44 @@ public final strictfp class RangeSetTest extends TestCase {
          * Verify the RangeSet content.
          */
         final Iterator<Range<String>> it = ranges.iterator();
-        assertEquals(new Range<>(String.class, "FAA", true, "FCC", false), it.next());
-        assertEquals(new Range<>(String.class, "GAA", true, "GBB", false), it.next());
+        assertEqual(new Range<>(String.class, "FAA", true, "FCC", false), it.next(), ranges.first());
+        assertEqual(new Range<>(String.class, "GAA", true, "GBB", false), it.next(), ranges.last());
         assertFalse(it.hasNext());
+    }
+
+    /**
+     * Tests the {@link RangeSet#indexOfRange(Comparable)} method.
+     */
+    @Test
+    public void testIndexOfRange() {
+        final RangeSet<Integer> ranges = RangeSet.create(Integer.class);
+        assertTrue(ranges.add( 40,  50));
+        assertTrue(ranges.add( 28,  35));
+        assertTrue(ranges.add(-20, -10));
+        assertTrue(ranges.add( 60,  70));
+        assertTrue(ranges.add( -5,  25));
+        assertEquals( 0, ranges.indexOfRange(-15));
+        assertEquals( 1, ranges.indexOfRange( 20));
+        assertEquals( 2, ranges.indexOfRange( 28));
+        assertEquals( 3, ranges.indexOfRange( 49));
+        assertEquals( 4, ranges.indexOfRange( 69));
+        assertEquals(-1, ranges.indexOfRange( 70));
+        assertEquals(-1, ranges.indexOfRange( 26));
+        assertEquals(-1, ranges.indexOfRange(-30));
+    }
+
+    /**
+     * Tests {@link RangeSet#clone()}.
+     */
+    @Test
+    public void testClone() {
+        final RangeSet<Integer> ranges = RangeSet.create(Integer.class);
+        assertTrue(ranges.add(-20, -10));
+        assertTrue(ranges.add( 40,  50));
+        final RangeSet<Integer> clone = ranges.clone();
+        assertEquals("The clone shall be equals to the original set.", ranges, clone);
+        assertTrue(ranges.add(60, 70));
+        assertFalse("Modifying the original set shall not modify the clone.", ranges.equals(clone));
     }
 
     /**
@@ -178,7 +225,7 @@ public final strictfp class RangeSetTest extends TestCase {
      * @throws InterruptedException If the test has been interrupted.
      */
     @Performance
-    public void testPerformance() throws InterruptedException {
+    public void stress() throws InterruptedException {
         final Random r = new Random(5638743);
         for (int p=0; p<10; p++) {
             final long start = System.nanoTime();

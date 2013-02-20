@@ -157,9 +157,9 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * The type of elements in the ranges. If the element are numbers,
      * then the value is the wrapper type (not the primitive type).
      *
-     * @see #getElementType()
+     * @see Range#getElementType()
      */
-    final Class<E> elementType;
+    protected final Class<E> elementType;
 
     /**
      * The primitive type, as one of {@code DOUBLE}, {@code FLOAT}, {@code LONG}, {@code INTEGER},
@@ -212,7 +212,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * @param  elementType The type of the range elements.
      * @return A new range set for range elements of the given type.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked","rawtypes"})
     public static <E extends Comparable<? super E>> RangeSet<E> create(final Class<E> elementType) {
         ArgumentChecks.ensureNonNull("elementType", elementType);
         if (Number.class.isAssignableFrom(elementType)) {
@@ -222,11 +222,11 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
     }
 
     /**
-     * Returns the type of elements in this collection.
+     * Returns the type of elements in this collection, which is always {@code Range}.
      */
     @Override
     @SuppressWarnings("unchecked")
-    public Class<Range<E>> getElementType() {
+    public final Class<Range<E>> getElementType() {
         return (Class) Range.class;
     }
 
@@ -396,7 +396,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * is empty}, or delegates to {@link #add(Comparable, Comparable)} otherwise.</p>
      *
      * @param  range The range to add.
-     * @return {@code true} if this set changed (either in size or in values) as a result of this method call.
+     * @return {@code true} if this set changed as a result of this method call.
      * @throws IllegalArgumentException If the given range uses unsupported <cite>include</cite> or
      *         <cite>exclude</cite> attributes.
      */
@@ -417,7 +417,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      *
      * @param  minValue The minimal value, inclusive.
      * @param  maxValue The maximal value, exclusive.
-     * @return {@code true} if this set changed (either in size or in values) as a result of this method call.
+     * @return {@code true} if this set changed as a result of this method call.
      * @throws IllegalArgumentException if {@code minValue} is greater than {@code maxValue}.
      */
     public boolean add(final E minValue, final E maxValue) throws IllegalArgumentException {
@@ -519,11 +519,13 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * In other words, invoking this method may <strong>increase</strong> the
      * {@linkplain #size() size} of this set.
      *
-     * <p>The default implementation does nothing if the given range {@linkplain Range#isEmpty()
-     * is empty}, or delegates to {@link #remove(Comparable, Comparable)} otherwise.</p>
+     * <p>The default implementation does nothing if the given object is {@code null}, or is not an
+     * instance of {@code Range}, or {@linkplain Range#isEmpty() is empty}, or its element type is
+     * not equals to the element type of the ranges of this set. Otherwise this method delegates to
+     * {@link #remove(Comparable, Comparable)}.</p>
      *
      * @param  object The range to remove.
-     * @return {@code true} if this set changed (either in size or in values) as a result of this method call.
+     * @return {@code true} if this set changed as a result of this method call.
      * @throws IllegalArgumentException If the given range uses unsupported <cite>include</cite> or
      *         <cite>exclude</cite> attributes.
      */
@@ -547,7 +549,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      *
      * @param  minValue The minimal value, inclusive.
      * @param  maxValue The maximal value, exclusive.
-     * @return {@code true} if this set changed (either in size or in values) as a result of this method call.
+     * @return {@code true} if this set changed as a result of this method call.
      * @throws IllegalArgumentException if {@code minValue} is greater than {@code maxValue}.
      */
     public boolean remove(final E minValue, final E maxValue) throws IllegalArgumentException {
@@ -569,15 +571,13 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * exclusive. The returned values always increase with {@code index}.
      *
      * @param  index The range index, from 0 inclusive to {@link #size() size} exclusive.
-     * @return The minimum value for the range at the specified index.
+     * @return The minimum value for the range at the specified index, inclusive.
      * @throws IndexOutOfBoundsException if {@code index} is out of bounds.
      * @throws ClassCastException if range elements are not convertible to numbers.
      *
      * @see org.apache.sis.measure.NumberRange#getMinDouble()
      */
-    public final double getMinDouble(int index)
-            throws IndexOutOfBoundsException, ClassCastException
-    {
+    public double getMinDouble(int index) throws IndexOutOfBoundsException, ClassCastException {
         if ((index *= 2) >= length) {
             throw new IndexOutOfBoundsException();
         }
@@ -590,15 +590,13 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * exclusive. The returned values always increase with {@code index}.
      *
      * @param  index The range index, from 0 inclusive to {@link #size size} exclusive.
-     * @return The maximum value for the range at the specified index.
+     * @return The maximum value for the range at the specified index, exclusive.
      * @throws IndexOutOfBoundsException if {@code index} is out of bounds.
      * @throws ClassCastException if range elements are not convertible to numbers.
      *
      * @see org.apache.sis.measure.NumberRange#getMaxDouble()
      */
-    public final double getMaxDouble(int index)
-            throws IndexOutOfBoundsException, ClassCastException
-    {
+    public double getMaxDouble(int index) throws IndexOutOfBoundsException, ClassCastException {
         if ((index *= 2) >= length) {
             throw new IndexOutOfBoundsException();
         }
@@ -621,6 +619,9 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
             if ((index & 1) == 0) {
                 return -1;
             }
+        } else if ((index & 1) != 0) {
+            // The value is equals to a maximal value, which are exclusives.
+            return -1;
         }
         index /= 2; // Round toward 0 (odd index are maximum values).
         return index;
