@@ -30,15 +30,13 @@ import java.util.AbstractSet;
 import java.util.NoSuchElementException;
 import java.util.ConcurrentModificationException;
 import net.jcip.annotations.NotThreadSafe;
+import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Range;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.Numbers.*;
-
-// Related to JDK7
-import java.util.Objects;
 
 
 /**
@@ -161,7 +159,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      *
      * @see #getElementType()
      */
-    private final Class<E> elementType;
+    final Class<E> elementType;
 
     /**
      * The primitive type, as one of {@code DOUBLE}, {@code FLOAT}, {@code LONG}, {@code INTEGER},
@@ -194,15 +192,33 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
 
     /**
      * Constructs an initially empty set of ranges.
+     * This constructor is provided for sub-classing only.
+     * Client code should use the static {@link #create(Class)} method instead.
      *
      * @param elementType The type of the range elements.
      */
-    public RangeSet(final Class<E> elementType) {
+    protected RangeSet(final Class<E> elementType) {
         ArgumentChecks.ensureNonNull("elementType", elementType);
         // Following assertion may fail only if the user bypass the parameterized type checks.
         assert Comparable.class.isAssignableFrom(elementType) : elementType;
         this.elementType = elementType;
         elementCode = getEnumConstant(elementType);
+    }
+
+    /**
+     * Constructs an initially empty set of ranges.
+     *
+     * @param  <E> The type of range elements.
+     * @param  elementType The type of the range elements.
+     * @return A new range set for range elements of the given type.
+     */
+    @SuppressWarnings("unchecked")
+    public static <E extends Comparable<? super E>> RangeSet<E> create(final Class<E> elementType) {
+        ArgumentChecks.ensureNonNull("elementType", elementType);
+        if (Number.class.isAssignableFrom(elementType)) {
+            return new Numeric(elementType);
+        }
+        return new RangeSet<>(elementType);
     }
 
     /**
@@ -245,21 +261,16 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
     }
 
     /**
-     * Unconditionally copies the internal array in a new array of the given length.
-     * If the new length is less than the current {@linkplain #length}, then the last
-     * elements are lost.
-     *
-     * @param size The new array length (twice the number of elements).
+     * Unconditionally copies the internal array in a new array having just the required length.
      */
-    private void resize(final int size) {
-        if (size == 0) {
+    private void reallocate() {
+        if (length == 0) {
             array = null;
         } else {
             final Object oldArray = array;
-            array = Array.newInstance(oldArray.getClass().getComponentType(), size);
-            System.arraycopy(oldArray, 0, array, 0, Math.min(size, length));
+            array = Array.newInstance(oldArray.getClass().getComponentType(), length);
+            System.arraycopy(oldArray, 0, array, 0, length);
         }
-        length = size;
     }
 
     /**
@@ -270,7 +281,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
     public final void trimToSize() {
         // This method is final because equals(Object) and other methods rely on this behavior.
         if (array != null && Array.getLength(array) != length) {
-            resize(length); // Will set the array to null if length == 0.
+            reallocate(); // Will set the array to null if length == 0.
             assert isSorted();
         }
     }
@@ -792,30 +803,31 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * @return The new range for the given values.
      */
     protected Range<E> newRange(final E lower, final E upper) {
-        return new Range<>(elementType, lower, true, upper, true);
+        return new Range<>(elementType, lower, true, upper, false);
     }
 
     /**
-     * Returns a hash value for this set of ranges.
-     * This value need not remain consistent between
-     * different implementations of the same class.
+     * A {@link RangeSet} implementation for {@link NumberRange} elements.
+     *
+     * @see RangeSet#create(Class)
      */
-    @Override
-    public int hashCode() {
-        trimToSize();
-        final int code;
-        switch (elementCode) {
-            case DOUBLE:    code = Arrays.hashCode((double[]) array); break;
-            case FLOAT:     code = Arrays.hashCode((float[])  array); break;
-            case LONG:      code = Arrays.hashCode((long[])   array); break;
-            case INTEGER:   code = Arrays.hashCode((int[])    array); break;
-            case SHORT:     code = Arrays.hashCode((short[])  array); break;
-            case BYTE:      code = Arrays.hashCode((byte[])   array); break;
-            case CHARACTER: code = Arrays.hashCode((char[])   array); break;
-            default:        code = Arrays.hashCode((Object[]) array); break;
+    private static final class Numeric<E extends Number & Comparable<? super E>> extends RangeSet<E> {
+        private static final long serialVersionUID = 934107071458551753L;
+
+        Numeric(final Class<E> elementType) {
+            super(elementType);
         }
-        return code ^ elementType.hashCode();
+
+        @Override
+        protected Range<E> newRange(final E lower, final E upper) {
+            return new NumberRange<>(elementType, lower, true, upper, false);
+        }
     }
+
+    /*
+     * Do not override hash code - or if we do, we shall make sure than the
+     * hash code value is computed as documented in the Set interface.
+     */
 
     /**
      * Compares the specified object with this set of ranges for equality.
@@ -828,26 +840,27 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
         if (object == this) {
             return true;
         }
-        if (object != null && object.getClass() == getClass()) {
+        if (object instanceof RangeSet<?>) {
             final RangeSet<?> that = (RangeSet<?>) object;
-            if (length == that.length && Objects.equals(elementType, that.elementType)) {
-                this.trimToSize();
-                that.trimToSize();
-                final Object a1 = this.array;
-                final Object a2 = that.array;
-                switch (elementCode) {
-                    case DOUBLE:    return Arrays.equals((double[]) a1, (double[]) a2);
-                    case FLOAT:     return Arrays.equals((float []) a1, ( float[]) a2);
-                    case LONG:      return Arrays.equals((long  []) a1, (  long[]) a2);
-                    case INTEGER:   return Arrays.equals((int   []) a1, (   int[]) a2);
-                    case SHORT:     return Arrays.equals((short []) a1, ( short[]) a2);
-                    case BYTE:      return Arrays.equals((byte  []) a1, (  byte[]) a2);
-                    case CHARACTER: return Arrays.equals((char  []) a1, (  char[]) a2);
-                    default:        return Arrays.equals((Object[]) a1, (Object[]) a2);
-                }
+            if (length != that.length || elementType != that.elementType) {
+                return false;
+            }
+            this.trimToSize();
+            that.trimToSize();
+            final Object a1 = this.array;
+            final Object a2 = that.array;
+            switch (elementCode) {
+                case DOUBLE:    return Arrays.equals((double[]) a1, (double[]) a2);
+                case FLOAT:     return Arrays.equals((float []) a1, ( float[]) a2);
+                case LONG:      return Arrays.equals((long  []) a1, (  long[]) a2);
+                case INTEGER:   return Arrays.equals((int   []) a1, (   int[]) a2);
+                case SHORT:     return Arrays.equals((short []) a1, ( short[]) a2);
+                case BYTE:      return Arrays.equals((byte  []) a1, (  byte[]) a2);
+                case CHARACTER: return Arrays.equals((char  []) a1, (  char[]) a2);
+                default:        return Arrays.equals((Object[]) a1, (Object[]) a2);
             }
         }
-        return false;
+        return super.equals(object); // Allow comparison with other Set implementations.
     }
 
     /**
@@ -865,7 +878,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
             // Should not happen, since we are cloneable.
             throw new AssertionError(exception);
         }
-        set.resize(length);
+        set.reallocate();
         return set;
     }
 
