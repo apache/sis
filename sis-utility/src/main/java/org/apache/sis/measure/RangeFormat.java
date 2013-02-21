@@ -49,11 +49,11 @@ import org.apache.sis.util.resources.Errors;
  *       {@linkplain Range#getMaxValue() maximal value}, then that single value is formatted
  *       inside braces as in "{@code {value}}".</li>
  *   <li>Otherwise the minimal and maximal values are formatted inside bracket or parenthesis,
- *       depending on whether each bound is inclusive or exclusive:
+ *       depending on whether each endpoint is inclusive or exclusive:
  *     <ul>
- *       <li>"{@code [min … max]}" if both bounds are inclusive;</li>
- *       <li>"{@code (min … max)}" if both bounds are exclusive;</li>
- *       <li>or a mix of both styles if a bound is inclusive while the other is exclusive.</li>
+ *       <li>"{@code [min … max]}" if both endpoints are inclusive (<cite>closed interval</cite>);</li>
+ *       <li>"{@code (min … max)}" if both endpoints are exclusive (<cite>open interval</cite>);</li>
+ *       <li>or a mix of both styles if an endpoint is inclusive while the other is exclusive.</li>
  *     </ul>
  *     The "{@code ∞}" symbol is used in place of {@code min} or {@code max} for unbounded ranges.</li>
  * </ul>

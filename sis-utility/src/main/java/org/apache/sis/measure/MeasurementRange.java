@@ -75,7 +75,7 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
      * @param  maxValue       The maximal value, or {@link Float#POSITIVE_INFINITY} if none.
      * @param  isMaxIncluded  {@code true} if the maximal value is inclusive, or {@code false} if exclusive.
      * @param  unit           The unit of measurement, or {@code null} if unknown.
-     * @return The new range of numeric values for the given bounds and unit of measurement.
+     * @return The new range of numeric values for the given endpoints and unit of measurement.
      */
     public static MeasurementRange<Float> create(float minValue, boolean isMinIncluded,
                                                  float maxValue, boolean isMaxIncluded, Unit<?> unit)
@@ -93,7 +93,7 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
      * @param  maxValue       The maximal value, or {@link Double#POSITIVE_INFINITY} if none.
      * @param  isMaxIncluded  {@code true} if the maximal value is inclusive, or {@code false} if exclusive.
      * @param  unit           The unit of measurement, or {@code null} if unknown.
-     * @return The new range of numeric values for the given bounds and unit of measurement.
+     * @return The new range of numeric values for the given endpoints and unit of measurement.
      */
     public static MeasurementRange<Double> create(double minValue, boolean isMinIncluded,
                                                   double maxValue, boolean isMaxIncluded, Unit<?> unit)

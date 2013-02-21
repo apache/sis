@@ -306,7 +306,7 @@ public final strictfp class RangeFormatTest extends TestCase {
         assertEquals(26, maxPos.getEndIndex());
         assertEquals(range, parse(text));
         /*
-         * Try again with the infinity symbol in one bounds.
+         * Try again with the infinity symbol in one endpoint.
          */
         range = new Range<>(Date.class, (Date) null, true, new Date(20*YEAR), true);
         it    = format.formatToCharacterIterator(range);
