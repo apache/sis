@@ -18,12 +18,17 @@ package org.apache.sis.util.collection;
 
 import java.util.Date;
 import java.util.Iterator;
+import java.util.Comparator;
 import java.util.Random;
+import java.util.Arrays;
+import java.util.Collections;
+import java.io.PrintWriter;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.Performance;
+import org.apache.sis.test.TestUtilities;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
@@ -171,6 +176,26 @@ public final strictfp class RangeSetTest extends TestCase {
     }
 
     /**
+     * Tests {@link RangeSet#comparator()}.
+     */
+    @Test
+    public void testComparator() {
+        final Comparator<Range<Integer>> comparator = RangeSet.create(Integer.class, true, false).comparator();
+        @SuppressWarnings({"unchecked","rawtypes"}) // Generic array creation.
+        final Range<Integer>[] sorted = new Range[] {
+            NumberRange.create(-20, true, -10, false),
+            NumberRange.create( -5, true,  25, false),
+            NumberRange.create( 28, true,  35, false),
+            NumberRange.create( 40, true,  50, false),
+            NumberRange.create( 60, true,  70, false)
+        };
+        final Range<Integer>[] ranges = sorted.clone();
+        Collections.shuffle(Arrays.asList(ranges));
+        Arrays.sort(ranges, comparator);
+        assertArrayEquals(sorted, ranges);
+    }
+
+    /**
      * Tests the {@link RangeSet#indexOfRange(Comparable)} method.
      */
     @Test
@@ -226,7 +251,8 @@ public final strictfp class RangeSetTest extends TestCase {
      */
     @Performance
     public void stress() throws InterruptedException {
-        final Random r = new Random(5638743);
+        final PrintWriter out = TestCase.out;
+        final Random r = TestUtilities.createRandomNumberGenerator("RangeSetTest.stress()");
         for (int p=0; p<10; p++) {
             final long start = System.nanoTime();
             final RangeSet<Integer> set = RangeSet.create(Integer.class, true, false);
@@ -239,7 +265,9 @@ public final strictfp class RangeSetTest extends TestCase {
                     set.remove(lower, upper);
                 }
             }
-            out.println((System.nanoTime() - start) / 1E9 + "  " + set.size());
+            out.print((System.nanoTime() - start) / 1E9);
+            out.print(" seconds for a size of ");
+            out.println(set.size());
             Thread.sleep(1000);
         }
     }

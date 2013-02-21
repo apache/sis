@@ -20,6 +20,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.Iterator;
+import java.util.Random;
 import java.util.concurrent.Callable;
 import java.io.PrintWriter;
 import java.lang.reflect.UndeclaredThrowableException;
@@ -113,6 +114,24 @@ public final strictfp class TestUtilities extends Static {
                 out.print(X364.FOREGROUND_DEFAULT.sequence());
             }
         }
+    }
+
+    /**
+     * Returns a new random number generator with a random seed. This method logs the seed value
+     * to the {@link TestCase#out} stream, in order to allow reproducing a test in case of failure.
+     *
+     * @param  testMethod The name of the method which need a random number generator.
+     * @return A new random number generator initialized with a random seed.
+     */
+    public static Random createRandomNumberGenerator(final String testMethod) {
+        final long seed = Math.round(Math.random() * (1L << 48));
+        final PrintWriter out = TestCase.out;
+        out.print("Random number generator for ");
+        out.print(testMethod);
+        out.print(" created with seed ");
+        out.print(seed);
+        out.println('.');
+        return new Random(seed);
     }
 
     /**
