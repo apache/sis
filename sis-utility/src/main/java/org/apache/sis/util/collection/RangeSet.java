@@ -403,7 +403,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * @param value The value to search.
      * @param n The length of the array to consider.
      */
-    private int binarySearch(final E value, final int n) {
+    final int binarySearch(final E value, final int n) {
         switch (elementCode) {
             case DOUBLE:    return Arrays.binarySearch((double[]) array, 0, n, ((Double)    value).doubleValue());
             case FLOAT:     return Arrays.binarySearch((float []) array, 0, n, ((Float)     value).floatValue ());
@@ -567,11 +567,11 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * <p>The {@code isMinIncluded} and {@code isMaxIncluded} properties of the given range
      * shall be the complement of the ones given to the constructor of this {@code RangeSet}:</p>
      * <table class="sis">
-     *   <tr><th>Type of ranges added</th> <th>Type of removable ranges.</th></tr>
-     *   <tr><td>{@code [min … max]}</td>  <td>{@code (min … max)}</td></tr>
-     *   <tr><td>{@code (min … max)}</td>  <td>{@code [min … max]}</td></tr>
-     *   <tr><td>{@code [min … max)}</td>  <td>{@code (min … max]}</td></tr>
-     *   <tr><td>{@code (min … max]}</td>  <td>{@code [min … max)}</td></tr>
+     *   <tr><th>{@code add(…)} values</th> <th>{@code remove(…)} values</th></tr>
+     *   <tr><td>{@code [min … max]}</td>   <td>{@code (min … max)}</td></tr>
+     *   <tr><td>{@code (min … max)}</td>   <td>{@code [min … max]}</td></tr>
+     *   <tr><td>{@code [min … max)}</td>   <td>{@code (min … max]}</td></tr>
+     *   <tr><td>{@code (min … max]}</td>   <td>{@code [min … max)}</td></tr>
      * </table>
      *
      * <p>The default implementation does nothing if the given object is {@code null}, or is not an
@@ -722,7 +722,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
         if (length == 0) {
             throw new NoSuchElementException();
         }
-        return newRange(get(0), get(1));
+        return getRange(0);
     }
 
     /**
@@ -735,44 +735,400 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
         if (length == 0) {
             throw new NoSuchElementException();
         }
-        return newRange(get(length-2), get(length-1));
+        return getRange(length - 2);
+    }
+
+    /**
+     * Returns a view of the portion of this range set which is the intersection of
+     * this {@code RangeSet} with the given range. Changes in this {@code RangeSet}
+     * will be reflected in the returned view, and conversely.
+     *
+     * @param  subRange The range to intersect with this {@code RangeSet}.
+     * @return A view of the specified range within this range set.
+     */
+    public SortedSet<Range<E>> intersect(final Range<E> subRange) {
+        ArgumentChecks.ensureNonNull("subRange", subRange);
+        return new SubSet(subRange);
     }
 
     /**
      * Returns a view of the portion of this sorted set whose elements range
      * from {@code lower}, inclusive, to {@code upper}, exclusive.
+     * The default implementation is equivalent to the following pseudo-code
+     * (omitting argument checks):
+     *
+     * {@preformat java
+     *   return intersect(new Range<E>(elementType,
+     *           lower.minValue,  lower.isMinIncluded,
+     *           upper.minValue, !upper.isMinIncluded));
+     * }
+     *
+     * {@note This method takes the minimal value of the <code>upper</code> argument
+     *        rater than the maximal value because the upper endpoint is exclusive.}
      *
      * @param  lower Low endpoint (inclusive) of the sub set.
      * @param  upper High endpoint (exclusive) of the sub set.
      * @return A view of the specified range within this sorted set.
+     *
+     * @see #intersect(Range)
      */
     @Override
     public SortedSet<Range<E>> subSet(final Range<E> lower, final Range<E> upper) {
-        throw new UnsupportedOperationException("Not yet implemented");
+        ArgumentChecks.ensureNonNull("lower", lower);
+        ArgumentChecks.ensureNonNull("upper", upper);
+        final E maxValue = upper.getMinValue();
+        if (maxValue == null) {
+            throw new IllegalArgumentException(Errors.format(
+                    Errors.Keys.IllegalArgumentValue_2, "upper", upper));
+        }
+        return intersect(new Range<>(elementType,
+                lower.getMinValue(),  lower.isMinIncluded(),
+                maxValue, !upper.isMinIncluded()));
     }
 
     /**
      * Returns a view of the portion of this sorted set whose elements are
      * strictly less than {@code upper}.
+     * The default implementation is equivalent to the same pseudo-code than the one
+     * documented in the {@link #subSet(Range, Range)} method, except that the lower
+     * endpoint is {@code null}.
      *
      * @param  upper High endpoint (exclusive) of the headSet.
      * @return A view of the specified initial range of this sorted set.
+     *
+     * @see #intersect(Range)
      */
     @Override
     public SortedSet<Range<E>> headSet(final Range<E> upper) {
-        throw new UnsupportedOperationException("Not yet implemented");
+        ArgumentChecks.ensureNonNull("upper", upper);
+        final E maxValue = upper.getMinValue();
+        if (maxValue == null) {
+            throw new IllegalArgumentException(Errors.format(
+                    Errors.Keys.IllegalArgumentValue_2, "upper", upper));
+        }
+        return intersect(new Range<>(elementType, null, false, maxValue, !upper.isMinIncluded()));
     }
 
     /**
      * Returns a view of the portion of this sorted set whose elements are
      * greater than or equal to {@code lower}.
+     * The default implementation is equivalent to the same pseudo-code than the one
+     * documented in the {@link #subSet(Range, Range)} method, except that the upper
+     * endpoint is {@code null}.
      *
      * @param  lower Low endpoint (inclusive) of the tailSet.
      * @return A view of the specified final range of this sorted set.
+     *
+     * @see #intersect(Range)
      */
     @Override
     public SortedSet<Range<E>> tailSet(final Range<E> lower) {
-        throw new UnsupportedOperationException("Not yet implemented");
+        ArgumentChecks.ensureNonNull("lower", lower);
+        return intersect(new Range<>(elementType, lower.getMinValue(), lower.isMinIncluded(), null, false));
+    }
+
+    /**
+     * A view over a subset of {@link RangeSet}.
+     * Instances of this class are created by the {@link RangeSet#intersect(Range)} method.
+     *
+     * @author  Martin Desruisseaux (Geomatys)
+     * @since   0.3
+     * @version 0.3
+     * @module
+     *
+     * @see RangeSet#intersect(Range)
+     */
+    private final class SubSet extends AbstractSet<Range<E>> implements SortedSet<Range<E>> {
+        /**
+         * The minimal and maximal values of this subset,
+         */
+        private Range<E> subRange;
+
+        /**
+         * Index of {@link #minValue} and {@link #maxValue} in the array of the enclosing
+         * {@code RangeSet}. Those indices need to be recomputed every time the enclosing
+         * {@code RangeSet} has been modified.
+         *
+         * @see #updateBounds()
+         */
+        private transient int lower, upper;
+
+        /**
+         * Modification count of the enclosing {@link RangeSet}, used for detecting changes.
+         */
+        private transient int modCount;
+
+        /**
+         * Creates a new subset of the enclosing {@code RangeSet} between the given values.
+         *
+         * @param subRange The range to intersect with the enclosing {@code RangeSet}.
+         */
+        SubSet(final Range<E> subRange) {
+            this.subRange = subRange;
+            if (subRange.isEmpty()) {
+                throw new IllegalArgumentException(Errors.format(
+                        Errors.Keys.IllegalArgumentValue_2, "subRange", subRange));
+            }
+            modCount = RangeSet.this.modCount - 1;
+        }
+
+        /**
+         * Recomputes the {@link #lower} and {@link #upper} indices if they are outdated.
+         * If the indices are already up to date, then this method does nothing.
+         */
+        private void updateBounds() {
+            if (modCount != RangeSet.this.modCount) {
+                final E maxValue = subRange.getMaxValue();
+                int upper = length;
+                if (maxValue != null) {
+                    upper = binarySearch(maxValue, upper);
+                    if (upper < 0) {
+                        upper = ~upper;
+                    }
+                    /*
+                     * If 'upper' is even (i.e. is the index of a minimal value), keep that index
+                     * unchanged because this value is exclusive.  But if 'upper' is odd (i.e. is
+                     * the index of a maximal value), move to the minimal value of the next range.
+                     */
+                    upper = (upper + 1) & ~1;
+                }
+                final E minValue = subRange.getMinValue();
+                int lower = 0;
+                if (minValue != null) {
+                    lower = binarySearch(minValue, upper);
+                    if (lower < 0) {
+                        lower = ~lower;
+                    }
+                    lower &= ~1; // Force the index to even value.
+                }
+                this.lower = lower;
+                this.upper = upper;
+                modCount = RangeSet.this.modCount;
+            }
+        }
+
+        /**
+         * Returns the comparator, which is the same than the enclosing class.
+         */
+        @Override
+        public Comparator<Range<E>> comparator() {
+            return RangeSet.this.comparator();
+        }
+
+        /**
+         * Clears this subset by removing all elements in the range given to the constructor.
+         */
+        @Override
+        public void clear() {
+            RangeSet.this.remove(subRange);
+        }
+
+        /**
+         * Returns the number of ranges in this subset.
+         */
+        @Override
+        public int size() {
+            updateBounds();
+            return (upper - lower) / 2;
+        }
+
+        /**
+         * Adds a new range in the enclosing {@code RangeSet}, and updates this subset
+         * in order to contain that range.
+         */
+        @Override
+        public boolean add(final Range<E> range) {
+            final boolean changed = RangeSet.this.add(range);
+            /*
+             * Update the minimal and maximal values if this sub-set has been expanded as
+             * a result of this method call. Note that we don't need to remember that the
+             * indices need to be recomputed, because RangeSet.this.modCount has already
+             * been increased by the enclosing class.
+             */
+            subRange = subRange.union(range);
+            return changed;
+        }
+
+        /**
+         * Removes the given range or part of it from the enclosing {@code RangeSet}.
+         * Before to perform the removal, this method intersects the given range with
+         * the range of this subset.
+         */
+        @Override
+        public boolean remove(Object object) {
+            if (object instanceof Range<?>) {
+                @SuppressWarnings("unchecked") // Type will actally be checked on the line after.
+                final Range<E> range = (Range<E>) object;
+                if (range.getElementType() == elementType) {
+                    object = subRange.intersect(range);
+                }
+            }
+            return RangeSet.this.remove(object);
+        }
+
+        /**
+         * Tests if this subset contains the given range. Before to delegates to the enclosing
+         * class, this method filter-out the ranges that are not contained in the range given
+         * to the constructor of this subset.
+         */
+        @Override
+        public boolean contains(final Object object) {
+            if (object instanceof Range<?>) {
+                @SuppressWarnings("unchecked") // Type will actally be checked on the line after.
+                final Range<E> range = (Range<E>) object;
+                if (range.getElementType() == elementType) {
+                    if (!subRange.contains(range)) {
+                        return false;
+                    }
+                }
+            }
+            return RangeSet.this.contains(object);
+        }
+
+        /**
+         * Returns the first range in this subset,
+         * intersected with the range given to the constructor.
+         */
+        @Override
+        public Range<E> first() {
+            updateBounds();
+            if (lower == upper) {
+                throw new NoSuchElementException();
+            }
+            return subRange.intersect(getRange(lower));
+        }
+
+        /**
+         * Returns the last range in this subset,
+         * intersected with the range given to the constructor.
+         */
+        @Override
+        public Range<E> last() {
+            updateBounds();
+            if (lower == upper) {
+                throw new NoSuchElementException();
+            }
+            return subRange.intersect(getRange(upper - 2));
+        }
+
+        /**
+         * Delegates subset creation to the enclosing class.
+         * The new subset will not be bigger than this subset.
+         */
+        @Override
+        public SortedSet<Range<E>> subSet(Range<E> fromElement, Range<E> toElement) {
+            fromElement = subRange.intersect(fromElement);
+            toElement   = subRange.intersect(toElement);
+            return RangeSet.this.subSet(fromElement, toElement);
+        }
+
+        /**
+         * Delegates subset creation to the enclosing class.
+         * The new subset will not be bigger than this subset.
+         */
+        @Override
+        public SortedSet<Range<E>> headSet(Range<E> toElement) {
+            toElement = subRange.intersect(toElement);
+            return RangeSet.this.headSet(toElement);
+        }
+
+        /**
+         * Delegates subset creation to the enclosing class.
+         * The new subset will not be bigger than this subset.
+         */
+        @Override
+        public SortedSet<Range<E>> tailSet(Range<E> fromElement) {
+            fromElement = subRange.intersect(fromElement);
+            return RangeSet.this.tailSet(fromElement);
+        }
+
+        /**
+         * Returns an iterator over the elements in this subset.
+         */
+        @Override
+        public Iterator<Range<E>> iterator() {
+            updateBounds();
+            return new SubIter(subRange, lower, upper);
+        }
+    }
+
+    /**
+     * The iterator returned by {@link SubSet#iterator()}. This iterator is similar
+     * to the one returned by {@link RangeSet#iterator()}, except that:
+     *
+     * <ul>
+     *   <li>The iteration is restricted to a sub-region of the {@link RangeSet#array}.</li>
+     *   <li>The first and last ranges returned by the iterator are intercepted with
+     *       the range of the subset (other ranges should not need to be intercepted).</li>
+     *   <li>The range removed by {@link #remove()} is intercepted with the range of the
+     *       subset.</li>
+     * </ul>
+     *
+     * @author  Martin Desruisseaux (Geomatys)
+     * @since   0.3
+     * @version 0.3
+     * @module
+     */
+    private final class SubIter extends Iter {
+        /**
+         * A copy of the {@link SubSet#subRange} field value at the time of iterator creation.
+         */
+        private final Range<E> subRange;
+
+        /**
+         * Index of the first element in the {@link RangeSet#array} where to iterate.
+         */
+        private final int lower;
+
+        /**
+         * Creates a new iterator for the given portion of the {@link RangeSet#array}.
+         */
+        SubIter(final Range<E> subRange, final int lower, final int upper) {
+            super(upper);
+            this.subRange = subRange;
+            this.lower = lower;
+            position = lower;
+        }
+
+        /**
+         * Returns {@code true} if the iterator position is at the first or at the last range.
+         * This method is accurate only when invoked after {@code super.next()}.
+         */
+        private boolean isFirstOrLast() {
+            return position <= lower+2 || position >= upper;
+        }
+
+        /**
+         * Returns the next element in the iteration.
+         */
+        @Override
+        public Range<E> next() {
+            Range<E> range = super.next();
+            if (isFirstOrLast()) {
+                range = subRange.intersect(range);
+            }
+            return range;
+        }
+
+        /**
+         * Removes from the underlying collection the last element returned by the iterator.
+         */
+        @Override
+        public void remove() {
+            if (isFirstOrLast()) {
+                // Default implementation is faster.
+                super.remove();
+                return;
+            }
+            if (!canRemove) {
+                throw new IllegalStateException();
+            }
+            if (RangeSet.this.modCount != this.modCount) {
+                throw new ConcurrentModificationException();
+            }
+            RangeSet.this.remove(subRange.intersect(getRange(position - 2)));
+            canRemove = false;
+        }
     }
 
     /**
@@ -781,12 +1137,11 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      */
     @Override
     public Iterator<Range<E>> iterator() {
-        return new Iter();
+        return new Iter(length);
     }
 
-
     /**
-     * An iterator for iterating through ranges in a {@link RangeSet}.
+     * The iterator returned by {@link RangeSet#iterator()}.
      * All elements are {@link Range} objects.
      *
      * @author  Martin Desruisseaux (Geomatys)
@@ -794,28 +1149,41 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * @version 0.3
      * @module
      */
-    private final class Iter implements Iterator<Range<E>> {
+    private class Iter implements Iterator<Range<E>> {
         /**
          * Modification count at construction time.
          */
-        private int modCount = RangeSet.this.modCount;
+        int modCount;
 
         /**
-         * The array length.
+         * Index after the last element in the {@link RangeSet#array} where to iterate.
          */
-        private final int length = RangeSet.this.length;
+        final int upper;
 
         /**
          * Current position in {@link RangeSet#array}.
          */
-        private int position;
+        int position;
+
+        /**
+         * {@code true} if the {@link #remove()} method can be invoked.
+         */
+        boolean canRemove;
+
+        /**
+         * Creates a new iterator for the given portion of the {@link RangeSet#array}.
+         */
+        Iter(final int upper) {
+            this.upper = upper;
+            this.modCount = RangeSet.this.modCount;
+        }
 
         /**
          * Returns {@code true} if the iteration has more elements.
          */
         @Override
-        public boolean hasNext() {
-            return position < length;
+        public final boolean hasNext() {
+            return position < upper;
         }
 
         /**
@@ -823,36 +1191,45 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
          */
         @Override
         public Range<E> next() {
-            if (hasNext()) {
-                final E lower = get(position++);
-                final E upper = get(position++);
-                if (RangeSet.this.modCount != modCount) {
-                    // Check it last, in case a change occurred
-                    // while we was constructing the element.
-                    throw new ConcurrentModificationException();
-                }
-                return newRange(lower, upper);
+            if (!hasNext()) {
+                throw new NoSuchElementException();
             }
-            throw new NoSuchElementException();
+            final Range<E> range = getRange(position);
+            if (RangeSet.this.modCount != this.modCount) {
+                // Check it last, in case a change occurred
+                // while we were creating the range.
+                throw new ConcurrentModificationException();
+            }
+            position += 2;
+            canRemove = true;
+            return range;
         }
 
         /**
-         * Removes from the underlying collection the
-         * last element returned by the iterator.
+         * Removes from the underlying collection the last element returned by the iterator.
          */
         @Override
         public void remove() {
-            if (position != 0) {
-                if (RangeSet.this.modCount == modCount) {
-                    removeAt(position-2, position);
-                    modCount = RangeSet.this.modCount;
-                } else {
-                    throw new ConcurrentModificationException();
-                }
-            } else {
+            if (!canRemove) {
                 throw new IllegalStateException();
             }
+            if (RangeSet.this.modCount != this.modCount) {
+                throw new ConcurrentModificationException();
+            }
+            removeAt(position-2, position);
+            this.modCount = RangeSet.this.modCount;
+            canRemove = false;
         }
+    }
+
+    /**
+     * Returns the range at the given array index. The given index is relative to
+     * the interval {@link #array}, which is twice the index of range elements.
+     *
+     * @param index The range index, from 0 inclusive to {@link #length} exclusive.
+     */
+    final Range<E> getRange(final int index) {
+        return newRange(get(index), get(index+1));
     }
 
     /**
