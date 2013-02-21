@@ -24,10 +24,10 @@ import java.lang.annotation.Target;
 
 
 /**
- * Annotates methods that are used only for testing the performance of a class.
- * The annotated methods are not executed in normal SIS build. They are rather
- * executed manually before and after an implementation change, in order to test
- * the impact on performance.
+ * Annotates methods that can be used for testing the performance of a class.
+ * The annotated methods may or may not be executed in normal SIS builds.
+ * Some methods may be executed only manually before and after an implementation change,
+ * in order to test the impact on performance.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.17)

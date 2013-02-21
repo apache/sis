@@ -239,10 +239,7 @@ public final strictfp class RangeSetTest extends TestCase {
                     set.remove(lower, upper);
                 }
             }
-            if (out != null) {
-                final long end = System.nanoTime();
-                out.println((end - start) / 1E9 + "  " + set.size());
-            }
+            out.println((System.nanoTime() - start) / 1E9 + "  " + set.size());
             Thread.sleep(1000);
         }
     }
