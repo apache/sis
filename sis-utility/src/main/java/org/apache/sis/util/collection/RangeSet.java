@@ -40,25 +40,39 @@ import static org.apache.sis.util.Numbers.*;
 
 
 /**
- * An ordered set of ranges where overlapping ranges are merged.
- * When a range is {@linkplain #add(Range) added}, {@code RangeSet} first looks for an existing
- * range overlapping the specified range. If overlapping ranges are found, ranges are merged as
- * of {@link Range#union(Range)}. Consequently, adding ranges may in some circumstances
- * <strong>reduce</strong> the {@linkplain #size() size} of this set.
- * Conversely, {@linkplain #remove(Object) removing} ranges may <strong>increase</strong>
- * the size of this set as a result of executing the {@link Range#subtract(Range)} operation.
+ * An ordered set of disjoint ranges where overlapping ranges are merged.
+ * All {@code add} and {@code remove} operations defined in this class interact with the existing
+ * ranges, merging or splitting previously added ranges in order to ensure that every ranges in a
+ * {@code RangeSet} are always disjoint. More specifically:
  *
- * <p>For efficiency reasons, this set stores the range values in a Java array of primitive type if
+ * <ul>
+ *   <li>When a range is {@linkplain #add(Range) added}, {@code RangeSet} first looks for existing
+ *       ranges overlapping the specified range. If overlapping ranges are found, then those ranges
+ *       are merged as of {@link Range#union(Range)}. Consequently, adding ranges may in some
+ *       circumstances <strong>reduce</strong> the {@linkplain #size() size} of this set.</li>
+ *   <li>Conversely, when a range is {@linkplain #remove(Object) removed}, {@code RangeSet} first
+ *       looks if that range is in the middle of an existing range. If such range is found, then
+ *       the enclosing range is splitted as of {@link Range#subtract(Range)}. Consequently, removing
+ *       ranges may in some circumstances <strong>increase</strong> the size of this set.</li>
+ * </ul>
+ *
+ * {@section Inclusive or exclusive endpoints}
+ * {@code RangeSet} requires that {@link Range#isMinIncluded()} and {@link Range#isMaxIncluded()}
+ * return the same values for all instances added to this set. Those values need to be specified
+ * at construction time. If a user needs to store mixed kind of ranges, then he needs to subclass
+ * this {@code RangeSet} class and override the {@link #add(Range)}, {@link #remove(Object)} and
+ * {@link newRange(Comparable, Comparable)} methods.
+ *
+ * {@note Current implementation does not yet support open intervals. The intervals shall be either
+ * closed intervals, or half-open. This limitation exists because supporting open intervals implies
+ * that the internal array shall support duplicated values.}
+ *
+ * {@section Storage}
+ * For efficiency reasons, this set stores the range values in a Java array of primitive type if
  * possible. The instances given in argument to the {@link #add(Range)} method are not retained by
  * this class. Ranges are recreated during iterations by calls to the {@link #newRange(Comparable,
  * Comparable)} method. Subclasses can override that method if they need to customize the range
- * objects to be created.</p>
- *
- * {@section Current limitation}
- * The current implementation can store only ranges having inclusive minimal value and exclusive
- * maximal value. If a user needs to store other kind of ranges, then he needs to subclass this
- * {@code RangeSet} class and override the {@link #add(Range)}, {@link #remove(Object)} and
- * {@link newRange(Comparable, Comparable)} methods.
+ * objects to be created.
  *
  * @param <E> The type of range elements.
  *
@@ -169,10 +183,32 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
     private final byte elementCode;
 
     /**
+     * {@code true} if the minimal values of ranges in this set are inclusive, or {@code false}
+     * if exclusive. This value is specified at construction time and enforced when ranges are
+     * added or removed.
+     *
+     * @see Range#isMinIncluded()
+     */
+    protected final boolean isMinIncluded;
+
+    /**
+     * {@code true} if the maximal values of ranges in this set are inclusive, or {@code false}
+     * if exclusive. This value is specified at construction time and enforced when ranges are
+     * added or removed.
+     *
+     * @see Range#isMaxIncluded()
+     */
+    protected final boolean isMaxIncluded;
+
+    /**
      * The array of ranges. It may be either an array of Java primitive type like {@code int[]} or
      * {@code float[]}, or an array of {@link Comparable} elements. All elements at even indices
      * are minimal values, and all elements at odd indices are maximal values. Elements in this
      * array must be strictly increasing without duplicated values.
+     *
+     * {@note The restriction against duplicated values will need to be removed in a future
+     * version if we want to support open intervals. All binary searches in this class will
+     * need to take in account the possibility for duplicated values.}
      */
     private Object array;
 
@@ -195,34 +231,48 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * This constructor is provided for sub-classing only.
      * Client code should use the static {@link #create(Class)} method instead.
      *
-     * @param elementType The type of the range elements.
+     * @param elementType   The type of the range elements.
+     * @param isMinIncluded {@code true} if the minimal values are inclusive, or {@code false} if exclusive.
+     * @param isMaxIncluded {@code true} if the maximal values are inclusive, or {@code false} if exclusive.
      */
-    protected RangeSet(final Class<E> elementType) {
+    protected RangeSet(final Class<E> elementType, final boolean isMinIncluded, final boolean isMaxIncluded) {
         ArgumentChecks.ensureNonNull("elementType", elementType);
         // Following assertion may fail only if the user bypass the parameterized type checks.
         assert Comparable.class.isAssignableFrom(elementType) : elementType;
-        this.elementType = elementType;
-        elementCode = getEnumConstant(elementType);
+        this.elementType   = elementType;
+        this.elementCode   = getEnumConstant(elementType);
+        this.isMinIncluded = isMinIncluded;
+        this.isMaxIncluded = isMaxIncluded;
+        if (!isMinIncluded && !isMaxIncluded) {
+            // We do not localize this error message because it may disaspear
+            // in a future SIS version if we decide to support closed intervals.
+            throw new IllegalArgumentException("Open intervals are not yet supported.");
+        }
     }
 
     /**
      * Constructs an initially empty set of ranges.
      *
-     * @param  <E> The type of range elements.
-     * @param  elementType The type of the range elements.
+     * @param  <E>           The type of range elements.
+     * @param  elementType   The type of the range elements.
+     * @param  isMinIncluded {@code true} if the minimal values are inclusive, or {@code false} if exclusive.
+     * @param  isMaxIncluded {@code true} if the maximal values are inclusive, or {@code false} if exclusive.
      * @return A new range set for range elements of the given type.
      */
     @SuppressWarnings({"unchecked","rawtypes"})
-    public static <E extends Comparable<? super E>> RangeSet<E> create(final Class<E> elementType) {
+    public static <E extends Comparable<? super E>> RangeSet<E> create(final Class<E> elementType,
+            final boolean isMinIncluded, final boolean isMaxIncluded)
+    {
         ArgumentChecks.ensureNonNull("elementType", elementType);
         if (Number.class.isAssignableFrom(elementType)) {
-            return new Numeric(elementType);
+            return new Numeric(elementType, isMinIncluded, isMaxIncluded);
         }
-        return new RangeSet<>(elementType);
+        return new RangeSet<>(elementType, isMinIncluded, isMaxIncluded);
     }
 
     /**
-     * Returns the type of elements in this collection, which is always {@code Range}.
+     * Returns the type of elements in this <em>collection</em>, which is always {@code Range}.
+     * This is not the type of minimal and maximal values in range objects.
      */
     @Override
     @SuppressWarnings("unchecked")
@@ -333,15 +383,16 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      */
     @SuppressWarnings("unchecked")
     private boolean isSorted() {
+        final boolean strict = isMinIncluded | isMaxIncluded;
         switch (elementCode) {
-            case DOUBLE:    return ArraysExt.isSorted((double[]) array, true);
-            case FLOAT:     return ArraysExt.isSorted((float[])  array, true);
-            case LONG:      return ArraysExt.isSorted((long[])   array, true);
-            case INTEGER:   return ArraysExt.isSorted((int[])    array, true);
-            case SHORT:     return ArraysExt.isSorted((short[])  array, true);
-            case BYTE:      return ArraysExt.isSorted((byte[])   array, true);
-            case CHARACTER: return ArraysExt.isSorted((char[])   array, true);
-            default:        return ArraysExt.isSorted((E[])      array, true);
+            case DOUBLE:    return ArraysExt.isSorted((double[]) array, strict);
+            case FLOAT:     return ArraysExt.isSorted((float[])  array, strict);
+            case LONG:      return ArraysExt.isSorted((long[])   array, strict);
+            case INTEGER:   return ArraysExt.isSorted((int[])    array, strict);
+            case SHORT:     return ArraysExt.isSorted((short[])  array, strict);
+            case BYTE:      return ArraysExt.isSorted((byte[])   array, strict);
+            case CHARACTER: return ArraysExt.isSorted((char[])   array, strict);
+            default:        return ArraysExt.isSorted((E[])      array, strict);
         }
     }
 
@@ -376,29 +427,20 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
     }
 
     /**
-     * Ensures that the given range has supported <cite>include</cite> and
-     * <cite>exclude</cite> attributes.
-     */
-    private void ensureSupported(final Range<E> range) throws IllegalArgumentException {
-        if (!range.isMinIncluded() || range.isMaxIncluded()) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalRange_2,
-                    range.getMinValue(), range.getMaxValue()));
-        }
-    }
-
-    /**
      * Adds a range to this set. If the specified range overlaps existing ranges,
      * then the existing ranges will be merged as of {@link Range#union(Range)}.
      * In other words, invoking this method may <strong>reduce</strong> the
      * {@linkplain #size() size} of this set.
      *
-     * <p>The default implementation does nothing if the given range {@linkplain Range#isEmpty()
-     * is empty}, or delegates to {@link #add(Comparable, Comparable)} otherwise.</p>
+     * <p>The default implementation does nothing if the given range {@linkplain Range#isEmpty() is
+     * empty}. Otherwise this method ensures that the {@code isMinIncluded} and {@code isMaxIncluded}
+     * match the ones given to the constructor of this {@code RangeSet}, then delegates to
+     * {@link #add(Comparable, Comparable)}.</p>
      *
      * @param  range The range to add.
      * @return {@code true} if this set changed as a result of this method call.
-     * @throws IllegalArgumentException If the given range uses unsupported <cite>include</cite> or
-     *         <cite>exclude</cite> attributes.
+     * @throws IllegalArgumentException If the {@code isMinIncluded} or {@code isMaxIncluded}
+     *         property doesn't match the one given at this {@code RangeSet} constructor.
      */
     @Override
     public boolean add(final Range<E> range) throws IllegalArgumentException {
@@ -406,7 +448,10 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
         if (range.isEmpty()) {
             return false;
         }
-        ensureSupported(range);
+        if (range.isMinIncluded() != isMinIncluded || range.isMaxIncluded() != isMaxIncluded) {
+            throw new IllegalArgumentException(Errors.format(
+                    Errors.Keys.IllegalArgumentValue_2, "range", range));
+        }
         return add(range.getMinValue(), range.getMaxValue());
     }
 
@@ -415,8 +460,8 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * the existing ranges will be merged. This may result in smaller {@linkplain #size() size}
      * of this set.
      *
-     * @param  minValue The minimal value, inclusive.
-     * @param  maxValue The maximal value, exclusive.
+     * @param  minValue The minimal value.
+     * @param  maxValue The maximal value.
      * @return {@code true} if this set changed as a result of this method call.
      * @throws IllegalArgumentException if {@code minValue} is greater than {@code maxValue}.
      */
@@ -519,15 +564,26 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * In other words, invoking this method may <strong>increase</strong> the
      * {@linkplain #size() size} of this set.
      *
+     * <p>The {@code isMinIncluded} and {@code isMaxIncluded} properties of the given range
+     * shall be the complement of the ones given to the constructor of this {@code RangeSet}:</p>
+     * <table class="sis">
+     *   <tr><th>Type of ranges added</th> <th>Type of removable ranges.</th></tr>
+     *   <tr><td>{@code [min … max]}</td>  <td>{@code (min … max)}</td></tr>
+     *   <tr><td>{@code (min … max)}</td>  <td>{@code [min … max]}</td></tr>
+     *   <tr><td>{@code [min … max)}</td>  <td>{@code (min … max]}</td></tr>
+     *   <tr><td>{@code (min … max]}</td>  <td>{@code [min … max)}</td></tr>
+     * </table>
+     *
      * <p>The default implementation does nothing if the given object is {@code null}, or is not an
      * instance of {@code Range}, or {@linkplain Range#isEmpty() is empty}, or its element type is
-     * not equals to the element type of the ranges of this set. Otherwise this method delegates to
-     * {@link #remove(Comparable, Comparable)}.</p>
+     * not equals to the element type of the ranges of this set. Otherwise this method ensures that
+     * the {@code isMinIncluded} and {@code isMaxIncluded} are consistent with the ones given to the
+     * constructor of this {@code RangeSet}, then delegates to {@link #remove(Comparable, Comparable)}.</p>
      *
      * @param  object The range to remove.
      * @return {@code true} if this set changed as a result of this method call.
-     * @throws IllegalArgumentException If the given range uses unsupported <cite>include</cite> or
-     *         <cite>exclude</cite> attributes.
+     * @throws IllegalArgumentException If the {@code isMinIncluded} or {@code isMaxIncluded}
+     *         property is not the complement of the one given at this {@code RangeSet} constructor.
      */
     @Override
     public boolean remove(final Object object) {
@@ -535,7 +591,10 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
             @SuppressWarnings("unchecked") // Type will actally be checked on the line after.
             final Range<E> range = (Range<E>) object;
             if (range.getElementType() == elementType) {
-                ensureSupported(range);
+                if (range.isMinIncluded() == isMaxIncluded || range.isMaxIncluded() == isMinIncluded) {
+                    throw new IllegalArgumentException(Errors.format(
+                            Errors.Keys.IllegalArgumentValue_2, "object", range));
+                }
                 return remove(range.getMinValue(), range.getMaxValue());
             }
         }
@@ -547,8 +606,8 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * then the existing range may be splitted in two smaller ranges. This may result in greater
      * {@linkplain #size() size} of this set.
      *
-     * @param  minValue The minimal value, inclusive.
-     * @param  maxValue The maximal value, exclusive.
+     * @param  minValue The minimal value.
+     * @param  maxValue The maximal value.
      * @return {@code true} if this set changed as a result of this method call.
      * @throws IllegalArgumentException if {@code minValue} is greater than {@code maxValue}.
      */
@@ -557,8 +616,8 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
     }
 
     /**
-     * Returns the value at the specified index. Even index are lower bounds, while odd index
-     * are upper bounds. The index validity must have been checked before this method is invoked.
+     * Returns the value at the specified index. Even index are lower endpoints, while odd index
+     * are upper endpoints. The index validity must have been checked before this method is invoked.
      */
     final E get(final int index) {
         assert (index >= 0) && (index < length) : index;
@@ -619,8 +678,8 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
             if ((index & 1) == 0) {
                 return -1;
             }
-        } else if ((index & 1) != 0) {
-            // The value is equals to a maximal value, which are exclusives.
+        } else if (!((index & 1) == 0 ? isMinIncluded : isMaxIncluded)) {
+            // The value is equals to an excluded endpoint.
             return -1;
         }
         index /= 2; // Round toward 0 (odd index are maximum values).
@@ -804,7 +863,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * @return The new range for the given values.
      */
     protected Range<E> newRange(final E lower, final E upper) {
-        return new Range<>(elementType, lower, true, upper, false);
+        return new Range<>(elementType, lower, isMinIncluded, upper, isMaxIncluded);
     }
 
     /**
@@ -815,13 +874,13 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
     private static final class Numeric<E extends Number & Comparable<? super E>> extends RangeSet<E> {
         private static final long serialVersionUID = 934107071458551753L;
 
-        Numeric(final Class<E> elementType) {
-            super(elementType);
+        Numeric(final Class<E> elementType, final boolean isMinIncluded, final boolean isMaxIncluded) {
+            super(elementType, isMinIncluded, isMaxIncluded);
         }
 
         @Override
         protected Range<E> newRange(final E lower, final E upper) {
-            return new NumberRange<>(elementType, lower, true, upper, false);
+            return new NumberRange<>(elementType, lower, isMinIncluded, upper, isMaxIncluded);
         }
     }
 
@@ -842,8 +901,16 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
             return true;
         }
         if (object instanceof RangeSet<?>) {
+            /*
+             * Following code should produce a result identical to super.equals(Object)
+             * without the cost of creating potentially large number of Range elements.
+             */
             final RangeSet<?> that = (RangeSet<?>) object;
-            if (length != that.length || elementType != that.elementType) {
+            if (length        != that.length        ||
+                elementType   != that.elementType   ||
+                isMinIncluded != that.isMinIncluded ||
+                isMaxIncluded != that.isMaxIncluded)
+            {
                 return false;
             }
             this.trimToSize();
