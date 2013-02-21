@@ -179,57 +179,58 @@ public class RangeFormat extends Format {
         }
     }
 
+    // All "character" fields below are code point values.
     /**
      * The character opening an empty range or a range containing only one element.
      * The default value is {@code '{'}.
      */
-    private final char openSet;
+    private final int openSet;
 
     /**
      * The character opening a range in which the minimal value is inclusive.
      * The default value is {@code '['}.
      */
-    private final char openInclusive;
+    private final int openInclusive;
 
     /**
      * The character opening a range in which the minimal value is exclusive.
      * The default value is {@code '('}. Note that the {@code ']'} character
      * is also sometime used.
      */
-    private final char openExclusive;
+    private final int openExclusive;
 
     /**
      * An alternative character opening a range in which the minimal value is exclusive.
      * This character is not used for formatting (only {@link #openExclusive} is used),
      * but is accepted during parsing. The default value is {@code ']'}.
      */
-    private final char openExclusiveAlt;
+    private final int openExclusiveAlt;
 
     /**
      * The character closing an empty range or a range containing only one element.
      * The default value is {@code '}'}.
      */
-    private final char closeSet;
+    private final int closeSet;
 
     /**
      * The character closing a range in which the maximal value is inclusive.
      * The default value is {@code ']'}.
      */
-    private final char closeInclusive;
+    private final int closeInclusive;
 
     /**
      * The character closing a range in which the maximal value is exclusive.
      * The default value is {@code ')'}. Note that the {@code '['} character
      * is also sometime used.
      */
-    private final char closeExclusive;
+    private final int closeExclusive;
 
     /**
      * An alternative character closing a range in which the maximal value is exclusive.
      * This character is not used for formatting (only {@link #closeExclusive} is used),
      * but is accepted during parsing. The default value is {@code '['}.
      */
-    private final char closeExclusiveAlt;
+    private final int closeExclusiveAlt;
 
     /**
      * The string to use as a separator between minimal and maximal value, not including
@@ -495,13 +496,13 @@ public class RangeFormat extends Format {
          */
         int fieldPos = getField(pos);
         if (range.isEmpty()) {
-            toAppendTo.append(openSet);
+            toAppendTo.appendCodePoint(openSet);
             if (fieldPos >= MIN_VALUE_FIELD && fieldPos <= UNIT_FIELD) {
                 final int p = toAppendTo.length();
                 pos.setBeginIndex(p); // First index, inclusive.
                 pos.setEndIndex  (p); // Last index, exclusive
             }
-            toAppendTo.append(closeSet);
+            toAppendTo.appendCodePoint(closeSet);
             return;
         }
         /*
@@ -520,7 +521,7 @@ public class RangeFormat extends Format {
             }
             field = MAX_VALUE_FIELD;
         }
-        toAppendTo.append(isSingleton ? openSet :
+        toAppendTo.appendCodePoint(isSingleton ? openSet :
                 range.isMinIncluded() ? openInclusive : openExclusive);
         for (; field <= UNIT_FIELD; field++) {
             final Object value;
@@ -569,7 +570,7 @@ public class RangeFormat extends Format {
                     break;
                 }
                 case MAX_VALUE_FIELD: {
-                    toAppendTo.append(isSingleton ? closeSet :
+                    toAppendTo.appendCodePoint(isSingleton ? closeSet :
                             range.isMaxIncluded() ? closeInclusive : closeExclusive);
                     break;
                 }
