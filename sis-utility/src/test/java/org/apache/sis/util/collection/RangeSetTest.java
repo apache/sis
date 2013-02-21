@@ -56,7 +56,7 @@ public final strictfp class RangeSetTest extends TestCase {
      */
     @Test
     public void testRangeOfIntegers() {
-        final RangeSet<Integer> ranges = RangeSet.create(Integer.class);
+        final RangeSet<Integer> ranges = RangeSet.create(Integer.class, true, false);
         assertTrue(ranges.isEmpty());
         /*
          * Add a singleton element.
@@ -113,7 +113,7 @@ public final strictfp class RangeSetTest extends TestCase {
      */
     @Test
     public void testRangeOfDates() {
-        final RangeSet<Date> ranges = RangeSet.create(Date.class);
+        final RangeSet<Date> ranges = RangeSet.create(Date.class, true, false);
         assertTrue(ranges.isEmpty());
         /*
          * Add a singleton range.
@@ -145,7 +145,7 @@ public final strictfp class RangeSetTest extends TestCase {
      */
     @Test
     public void testRangeOfStrings() {
-        final RangeSet<String> ranges = RangeSet.create(String.class);
+        final RangeSet<String> ranges = RangeSet.create(String.class, true, false);
         assertTrue(ranges.isEmpty());
         assertTrue(ranges.add("FAA", "FBB"));
         assertEquals(1, ranges.size());
@@ -175,7 +175,7 @@ public final strictfp class RangeSetTest extends TestCase {
      */
     @Test
     public void testIndexOfRange() {
-        final RangeSet<Integer> ranges = RangeSet.create(Integer.class);
+        final RangeSet<Integer> ranges = RangeSet.create(Integer.class, true, false);
         assertTrue(ranges.add( 40,  50));
         assertTrue(ranges.add( 28,  35));
         assertTrue(ranges.add(-20, -10));
@@ -196,7 +196,7 @@ public final strictfp class RangeSetTest extends TestCase {
      */
     @Test
     public void testClone() {
-        final RangeSet<Integer> ranges = RangeSet.create(Integer.class);
+        final RangeSet<Integer> ranges = RangeSet.create(Integer.class, true, false);
         assertTrue(ranges.add(-20, -10));
         assertTrue(ranges.add( 40,  50));
         final RangeSet<Integer> clone = ranges.clone();
@@ -210,7 +210,7 @@ public final strictfp class RangeSetTest extends TestCase {
      */
     @Test
     public void testSerialization() {
-        final RangeSet<Double> ranges = RangeSet.create(Double.class);
+        final RangeSet<Double> ranges = RangeSet.create(Double.class, true, false);
         assertTrue(ranges.add(12.0, 12.5));
         assertTrue(ranges.add(18.0, 18.5));
         assertTrue(ranges.add(19.0, 20.0));
@@ -229,7 +229,7 @@ public final strictfp class RangeSetTest extends TestCase {
         final Random r = new Random(5638743);
         for (int p=0; p<10; p++) {
             final long start = System.nanoTime();
-            final RangeSet<Integer> set = RangeSet.create(Integer.class);
+            final RangeSet<Integer> set = RangeSet.create(Integer.class, true, false);
             for (int i=0; i<100000; i++) {
                 final int lower = r.nextInt(1000000) - 500;
                 final int upper = lower + r.nextInt(100) + 1;
