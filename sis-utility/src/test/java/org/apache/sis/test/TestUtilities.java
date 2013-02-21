@@ -79,14 +79,16 @@ public final strictfp class TestUtilities extends Static {
     }
 
     /**
-     * Prints the given title to {@link TestCase#out} in a box. This method is invoked for
-     * writing a clear visual separator between the verbose output of different test cases.
+     * If verbose output are enabled, prints the given title to {@link TestCase#out} in a box.
+     * This method is invoked for writing a clear visual separator between the verbose output
+     * of different test cases. This method does nothing if verbose output is not enabled,
+     * because only the output of failed tests should be printed in such case.
      *
      * @param title The title to write.
      */
     public static void printSeparator(final String title) {
-        final PrintWriter out = TestCase.out;
-        if (out != null) {
+        if (TestCase.verbose) {
+            final PrintWriter out = TestCase.out;
             final boolean isAnsiSupported = X364.isAnsiSupported();
             if (isAnsiSupported) {
                 out.print(X364.FOREGROUND_CYAN.sequence());
