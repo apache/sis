@@ -58,6 +58,21 @@ public final strictfp class RangeSetTest extends TestCase {
     }
 
     /**
+     * Verifies the value of {@link RangeSet#contains(Range, boolean)}.
+     *
+     * @param ranges  The range set to test.
+     * @param range   The range to check for inclusion.
+     * @param exact   The expected value in exact mode.
+     * @param lenient The expected value in non-exact mode.
+     */
+    private static <E extends Comparable<? super E>> void checkContains(final RangeSet<E> ranges,
+            final Range<E> range, final boolean exact, final boolean lenient)
+    {
+        assertEquals("RangeSet.contains(…, true)",  exact,  ranges.contains(range, true));
+        assertEquals("RangeSet.contains(…, false)", lenient, ranges.contains(range));
+    }
+
+    /**
      * Tests {@link RangeSet#add(Range)} using integer values.
      */
     @Test
@@ -69,30 +84,33 @@ public final strictfp class RangeSetTest extends TestCase {
          */
         assertTrue(ranges.add(10, 22));
         assertEquals(1, ranges.size());
-        assertTrue (ranges.contains(NumberRange.create(10, true, 22, false)));
-        assertFalse(ranges.contains(NumberRange.create(10, true, 20, false)));
+        checkContains(ranges, NumberRange.create(10, true, 22, false), true,  true);
+        checkContains(ranges, NumberRange.create(10, true, 20, false), false, true);
+        checkContains(ranges, NumberRange.create(10, true, 24, false), false, false);
+        checkContains(ranges, NumberRange.create( 8, true, 20, false), false, false);
         /*
          * Add a new element which should be merged with the previous one.
          */
         assertTrue(ranges.add(14, 25));
         assertEquals(1, ranges.size());
-        assertFalse(ranges.contains(NumberRange.create(10, true, 22, false)));
-        assertTrue (ranges.contains(NumberRange.create(10, true, 25, false)));
+        checkContains(ranges, NumberRange.create(10, true, 22, false), false, true);
+        checkContains(ranges, NumberRange.create(10, true, 25, false), true,  true);
+        checkContains(ranges, NumberRange.create(10, true, 25, true ), false, false);
         /*
          * Add a new element which is disjoint with other element.
          */
         assertTrue(ranges.add(-5, 5));
         assertEquals(2, ranges.size());
-        assertTrue(ranges.contains(NumberRange.create(10, true, 25, false)));
-        assertTrue(ranges.contains(NumberRange.create(-5, true,  5, false)));
+        checkContains(ranges, NumberRange.create(10, true, 25, false), true, true);
+        checkContains(ranges, NumberRange.create(-5, true,  5, false), true, true);
         /*
          * Merge the two ranges together.
          */
         assertTrue(ranges.add(NumberRange.create(5, true, 10, false)));
         assertEquals(1, ranges.size());
-        assertFalse(ranges.contains(NumberRange.create(10, true, 25, false)));
-        assertFalse(ranges.contains(NumberRange.create(-5, true,  5, false)));
-        assertTrue (ranges.contains(NumberRange.create(-5, true, 25, false)));
+        checkContains(ranges, NumberRange.create(10, true, 25, false), false, true);
+        checkContains(ranges, NumberRange.create(-5, true,  5, false), false, true);
+        checkContains(ranges, NumberRange.create(-5, true, 25, false), true,  true);
         /*
          * Add more ranges.
          */
@@ -129,7 +147,7 @@ public final strictfp class RangeSetTest extends TestCase {
         final Date yesterday = new Date(now.getTime() - day);
         assertTrue(ranges.add(yesterday, now));
         assertEquals(1, ranges.size());
-        assertTrue(ranges.contains(new Range<>(Date.class, yesterday, true, now, false)));
+        checkContains(ranges, new Range<>(Date.class, yesterday, true, now, false), true, true);
         /*
          * Add a disjoint range.
          */
@@ -155,13 +173,13 @@ public final strictfp class RangeSetTest extends TestCase {
         assertTrue(ranges.isEmpty());
         assertTrue(ranges.add("FAA", "FBB"));
         assertEquals(1, ranges.size());
-        assertTrue(ranges.contains(new Range<>(String.class, "FAA", true, "FBB", false)));
+        checkContains(ranges, new Range<>(String.class, "FAA", true, "FBB", false), true, true);
         /*
          * Merge the singleton range with the given range.
          */
         assertTrue(ranges.add("FAZ", "FCC"));
         assertEquals(1, ranges.size());
-        assertTrue(ranges.contains(new Range<>(String.class, "FAA", true, "FCC", false)));
+        checkContains(ranges, new Range<>(String.class, "FAA", true, "FCC", false), true, true);
         /*
          * Add a disjoint range.
          */

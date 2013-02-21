@@ -634,11 +634,19 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
     }
 
     /**
-     * Returns {@code true} if this set contains the specified element.
-     * This method searches for an exact match, i.e. this method doesn't
-     * check if the given range is contained in a larger range.
+     * Returns {@code true} if the given object is an instance of {@link Range} compatible
+     * with this set and contained inside one of the range elements of this set.
+     * If this method returns {@code true}, then:
      *
-     * @param object The object to compare to this set.
+     * <ul>
+     *   <li>Invoking {@link #add(Range)} is guaranteed to have no effect.</li>
+     *   <li>Invoking {@link #remove(Object)} is guaranteed to modify this set.</li>
+     * </ul>
+     *
+     * However if this method returns {@code false}, then no conclusion can be made about
+     * the {@code add(…)} and {@code remove(…)} behavior.
+     *
+     * @param  object The object to check for inclusion in this set.
      * @return {@code true} if the given object is contained in this set.
      */
     @Override
@@ -647,14 +655,70 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
             @SuppressWarnings("unchecked") // We are going to check just the line after.
             final Range<E> range = (Range<E>) object;
             if (range.getElementType() == elementType) {
-                if (range.isMinIncluded() && !range.isMaxIncluded()) {
-                    final int index = binarySearch(range.getMinValue(), length);
-                    if (index >= 0 && (index & 1) == 0) {
-                        final int c = getValue(index+1).compareTo(range.getMaxValue());
-                        return c == 0;
-                    }
+                return contains(range, false);
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns {@code true} if this set contains the specified element.
+     * If the {@code exact} argument is {@code true}, then this method
+     * searches for an exact match (i.e. this method doesn't check if the
+     * given range is contained in a larger range). Otherwise if the
+     * {@code exact} argument is {@code false}, then this method behaves
+     * as documented in the {@link #contains(Object)} method.
+     *
+     * @param  range The range to check for inclusion in this set.
+     * @param  exact {@code true} for searching for an exact match,
+     *         or {@code false} for searching for inclusion in any range.
+     * @return {@code true} if the given object is contained in this set.
+     */
+    public boolean contains(final Range<E> range, final boolean exact) {
+        ArgumentChecks.ensureNonNull("range", range);
+        if (exact) {
+            if (range.isMinIncluded() && !range.isMaxIncluded()) {
+                final int index = binarySearch(range.getMinValue(), length);
+                if (index >= 0 && (index & 1) == 0) {
+                    return getValue(index+1).compareTo(range.getMaxValue()) == 0;
                 }
             }
+        } else if (!range.isEmpty()) {
+            int upper = binarySearch(range.getMaxValue(), length);
+            if (upper < 0) {
+                upper = ~upper;
+                if ((upper & 1) == 0) {
+                    // The upper endpoint of the given range falls between
+                    // two ranges of this set, or is after all ranges.
+                    return false;
+                }
+            } else if ((upper & 1) != 0) {
+                // Upper endpoint of the given range matches exactly
+                // the upper endpoint of a range in this set.
+                if (!isMaxIncluded && range.isMaxIncluded()) {
+                    return false;
+                }
+            }
+            /*
+             * At this point, the upper endpoint has been determined to be included
+             * in a range of this set. Now check the lower endpoint.
+             */
+            int lower = binarySearch(range.getMinValue(), upper + 1);
+            if (lower < 0) {
+                lower = ~lower;
+                if ((lower & 1) == 0) {
+                    // The lower endpoint of the given range falls between
+                    // two ranges of this set.
+                    return false;
+                }
+            } else if ((lower & 1) == 0) {
+                // Lower endpoint of the given range matches exactly
+                // the lower endpoint of a range in this set.
+                if (!isMinIncluded && range.isMinIncluded()) {
+                    return false;
+                }
+            }
+            return (upper - lower) <= 1;
         }
         return false;
     }
@@ -785,7 +849,12 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      *
      * @see RangeSet#intersect(Range)
      */
-    private final class SubSet extends AbstractSet<Range<E>> implements SortedSet<Range<E>> {
+    private final class SubSet extends AbstractSet<Range<E>> implements SortedSet<Range<E>>, Serializable {
+        /**
+         * For cross-version compatibility.
+         */
+        private static final long serialVersionUID = 3093791428299754372L;
+
         /**
          * The minimal and maximal values of this subset,
          */
