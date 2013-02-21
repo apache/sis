@@ -32,10 +32,16 @@ import java.util.Objects;
  * a user to determine if a value of the same class is contained inside the range.
  * The minimum and maximum values do not have to be included in the range, and
  * can be null.  If the minimum or maximum values are null, the range is said to
- * be unbounded on that extreme. If both the minimum and maximum are null,
+ * be unbounded on that endpoint. If both the minimum and maximum are null,
  * the range is completely unbounded and all values of that class are contained
  * within the range. Null values are always considered <em>exclusive</em>,
- * since iterations over the values will never reach the infinite bound.
+ * since iterations over the values will never reach the infinite endpoint.
+ *
+ * <p>The minimal and maximal values (the <cite>endpoints</cite>) may be inclusive or exclusive.
+ * Numeric ranges where both endpoints are inclusive are called <cite>closed intervals</cite>
+ * and are represented by square brackets, for example "{@code [0 … 255]}".
+ * Numeric ranges where both endpoints are exclusive are called <cite>open intervals</cite>
+ * and are represented by parenthesis, for example "{@code (0 … 256)}".</p>
  *
  * {@section Type and value of range elements}
  * To be a member of a {@code Range}, the {@code <E>} type defining the range must implement the
@@ -116,7 +122,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
     }
 
     /**
-     * Creates a new range bounded by the given values.
+     * Creates a new range bounded by the given endpoint values.
      *
      * @param elementType    The base type of the range elements.
      * @param minValue       The minimal value, or {@code null} if none.
@@ -210,7 +216,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
 
     /**
      * Returns {@code true} if the {@linkplain #getMinValue() minimal value} is inclusive,
-     * or {@code false} is exclusive. Note that {@code null} values are always considered
+     * or {@code false} if exclusive. Note that {@code null} values are always considered
      * exclusive.
      *
      * @return {@code true} if the minimal value is inclusive, or {@code false} if exclusive.
@@ -232,7 +238,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
 
     /**
      * Returns {@code true} if the {@linkplain #getMaxValue() maximal value} is inclusive,
-     * or {@code false} is exclusive. Note that {@code null} values are always considered
+     * or {@code false} if exclusive. Note that {@code null} values are always considered
      * exclusive.
      *
      * @return {@code true} if the maximal value is inclusive, or {@code false} if exclusive.
@@ -458,7 +464,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
     }
 
     /**
-     * Compares the {@linkplain #getMinValue() minimum value} of this range with the given bound of
+     * Compares the {@linkplain #getMinValue() minimum value} of this range with the given endpoint of
      * another range. Since the given value is either the minimal or maximal value of another range,
      * it may be inclusive or exclusive. The later is specified by {@code position} as below:
      *
@@ -470,7 +476,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
      *
      * Note that the non-zero position shall be exactly -1 or +1, not arbitrary negative or positive.
      *
-     * @param  value    A bound value of the other range to be compared to the minimal value of this range.
+     * @param  value    An endpoint value of the other range to be compared to the minimal value of this range.
      * @param  position The position of {@code value} relative to the inclusive values of the other range.
      * @return Position (-, + or 0) of the inclusive values of this range compared to the other range.
      *
@@ -516,8 +522,8 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
     }
 
     /**
-     * Compares the {@linkplain #getMaxValue() maximum value} of this range with the given bound of
-     * another range. See the comment in {@link #compareMinTo(Comparable, int)} for more details.
+     * Compares the {@linkplain #getMaxValue() maximum value} of this range with the given endpoint
+     * of another range. See the comment in {@link #compareMinTo(Comparable, int)} for more details.
      */
     private int compareMaxTo(final E value, int position) {
         if (maxValue == null) {
@@ -602,8 +608,8 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
      *   <li>Otherwise if the minimal value is equals to the maximal value, then the string
      *       representation of that value is returned inside braces as in "{@code {value}}".</li>
      *   <li>Otherwise the string representation of the minimal and maximal values are formatted
-     *       like "{@code [min … max]}" for inclusive bounds or "{@code (min … max)}" for exclusive
-     *       bounds, or a mix of both styles. The "{@code ∞}" symbol is used in place of
+     *       like "{@code [min … max]}" for inclusive endpoints or "{@code (min … max)}" for exclusive
+     *       endpoints, or a mix of both styles. The "{@code ∞}" symbol is used in place of
      *       {@code min} or {@code max} for unbounded ranges.</li>
      * </ul>
      *

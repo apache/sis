@@ -34,10 +34,10 @@ import static org.junit.Assert.*;
 @DependsOn(RangeTest.class)
 public final strictfp class NumberRangeTest extends TestCase {
     /**
-     * Tests the bounds values of a range of integers.
+     * Tests the endpoint values of a range of integers.
      */
     @Test
-    public void testIntegerBounds() {
+    public void testIntegerEndpoints() {
         final NumberRange<Integer> range = NumberRange.create(10, true, 20, true);
         assertEquals(10, range.getMinDouble(     ), 0);
         assertEquals(10, range.getMinDouble(true ), 0);

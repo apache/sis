@@ -87,7 +87,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      * @param  isMinIncluded  {@code true} if the minimal value is inclusive, or {@code false} if exclusive.
      * @param  maxValue       The maximal value.
      * @param  isMaxIncluded  {@code true} if the maximal value is inclusive, or {@code false} if exclusive.
-     * @return The new range of numeric values for the given bounds.
+     * @return The new range of numeric values for the given endpoints.
      */
     public static NumberRange<Byte> create(final byte minValue, final boolean isMinIncluded,
                                            final byte maxValue, final boolean isMaxIncluded)
@@ -104,7 +104,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      * @param  isMinIncluded  {@code true} if the minimal value is inclusive, or {@code false} if exclusive.
      * @param  maxValue       The maximal value.
      * @param  isMaxIncluded  {@code true} if the maximal value is inclusive, or {@code false} if exclusive.
-     * @return The new range of numeric values for the given bounds.
+     * @return The new range of numeric values for the given endpoints.
      */
     public static NumberRange<Short> create(final short minValue, final boolean isMinIncluded,
                                             final short maxValue, final boolean isMaxIncluded)
@@ -121,7 +121,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      * @param  isMinIncluded  {@code true} if the minimal value is inclusive, or {@code false} if exclusive.
      * @param  maxValue       The maximal value.
      * @param  isMaxIncluded  {@code true} if the maximal value is inclusive, or {@code false} if exclusive.
-     * @return The new range of numeric values for the given bounds.
+     * @return The new range of numeric values for the given endpoints.
      */
     public static NumberRange<Integer> create(final int minValue, final boolean isMinIncluded,
                                               final int maxValue, final boolean isMaxIncluded)
@@ -138,7 +138,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      * @param  isMinIncluded  {@code true} if the minimal value is inclusive, or {@code false} if exclusive.
      * @param  maxValue       The maximal value.
      * @param  isMaxIncluded  {@code true} if the maximal value is inclusive, or {@code false} if exclusive.
-     * @return The new range of numeric values for the given bounds.
+     * @return The new range of numeric values for the given endpoints.
      */
     public static NumberRange<Long> create(final long minValue, final boolean isMinIncluded,
                                            final long maxValue, final boolean isMaxIncluded)
@@ -156,7 +156,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      * @param  isMinIncluded  {@code true} if the minimal value is inclusive, or {@code false} if exclusive.
      * @param  maxValue       The maximal value, or {@link Float#POSITIVE_INFINITY} if none.
      * @param  isMaxIncluded  {@code true} if the maximal value is inclusive, or {@code false} if exclusive.
-     * @return The new range of numeric values for the given bounds.
+     * @return The new range of numeric values for the given endpoints.
      */
     public static NumberRange<Float> create(final float minValue, final boolean isMinIncluded,
                                             final float maxValue, final boolean isMaxIncluded)
@@ -185,7 +185,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      * @param  isMinIncluded  {@code true} if the minimal value is inclusive, or {@code false} if exclusive.
      * @param  maxValue       The maximal value, or {@link Double#POSITIVE_INFINITY} if none.
      * @param  isMaxIncluded  {@code true} if the maximal value is inclusive, or {@code false} if exclusive.
-     * @return The new range of numeric values for the given bounds.
+     * @return The new range of numeric values for the given endpoints.
      */
     public static NumberRange<Double> create(final double minValue, final boolean isMinIncluded,
                                              final double maxValue, final boolean isMaxIncluded)

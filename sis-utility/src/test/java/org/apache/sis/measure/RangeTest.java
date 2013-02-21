@@ -142,10 +142,10 @@ public final strictfp class RangeTest extends TestCase {
     }
 
     /**
-     * Tests the {@link Range#contains(Comparable)} method without lower bound.
+     * Tests the {@link Range#contains(Comparable)} method without lower endpoint.
      */
     @Test
-    public void testContainsNoLowerBound() {
+    public void testContainsNoLowerEndpoint() {
         final Range<Integer> range = new Range<>(Integer.class, null, true, 5, true);
         assertTrue (range.contains(-555));
         assertTrue (range.contains(5));
@@ -153,10 +153,10 @@ public final strictfp class RangeTest extends TestCase {
     }
 
     /**
-     * Tests the {@link Range#contains(Comparable)} method without upper bound.
+     * Tests the {@link Range#contains(Comparable)} method without upper endpoint.
      */
     @Test
-    public void testContainsNoUpperBound() {
+    public void testContainsNoUpperEndpoint() {
         final Range<Integer> range = new Range<>(Integer.class, 3, true, null, true);
         assertFalse(range.contains(1));
         assertTrue (range.contains(3));
@@ -164,10 +164,10 @@ public final strictfp class RangeTest extends TestCase {
     }
 
     /**
-     * Tests the {@link Range#contains(Comparable)} method without lower or upper bounds.
+     * Tests the {@link Range#contains(Comparable)} method without lower or upper endpoints.
      */
     @Test
-    public void testContainsNoBounds() {
+    public void testContainsNoEndpoints() {
         final Range<Integer> range = new Range<>(Integer.class, null, true, null, true);
         assertTrue(range.contains(-55555));
         assertTrue(range.contains(100000));
@@ -186,10 +186,10 @@ public final strictfp class RangeTest extends TestCase {
     }
 
     /**
-     * Tests the {@link Range#contains(Range)} method without lower bound.
+     * Tests the {@link Range#contains(Range)} method without lower endpoint.
      */
     @Test
-    public void testContainsRangeNoLowerBound() {
+    public void testContainsRangeNoLowerEndpoint() {
         final Range<Integer> range  = new Range<>(Integer.class,  null, true, 500, true);
         final Range<Integer> inside = new Range<>(Integer.class, -2500, true, 305, true);
 
@@ -198,10 +198,10 @@ public final strictfp class RangeTest extends TestCase {
     }
 
     /**
-     * Tests the {@link Range#contains(Range)} method without upper bound.
+     * Tests the {@link Range#contains(Range)} method without upper endpoint.
      */
     @Test
-    public void testContainsRangeNoUpperBound() {
+    public void testContainsRangeNoUpperEndpoint() {
         final Range<Integer> range  = new Range<>(Integer.class, -2500, true, null, true);
         final Range<Integer> inside = new Range<>(Integer.class,    17, true,  305, true);
 
