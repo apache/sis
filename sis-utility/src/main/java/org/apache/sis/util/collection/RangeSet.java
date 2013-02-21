@@ -67,7 +67,25 @@ import static org.apache.sis.util.Numbers.*;
  * closed intervals, or half-open. This limitation exists because supporting open intervals implies
  * that the internal array shall support duplicated values.}
  *
- * {@section Storage}
+ * {@section Extensions to <code>SortedSet</code> API}
+ * This class contains some methods not found in standard {@link SortedSet} API:
+ * <ul>
+ *   <li>{@link java.util.List}-like methods, provided for performance reasons:
+ *     <ul>
+ *       <li>{@link #getMinDouble(int)} and {@link #getMaxDouble(int)}, which return the
+ *           {@code double} value of the end point in the range at the given index.</li>
+ *       <li>{@link #indexOfRange(Comparable)}, which returns the index of the range
+ *           containing the given value (if any).</li>
+ *     </ul></li>
+ *   <li>Other methods:
+ *     <ul>
+ *       <li>{@link #intersect(Range)}, which provides a more convenient way than
+ *           {@code subSet(…)}, {@code headSet(…)} and {@code tailSet(…)} for creating
+ *           views over subsets of a {@code RangeSet}.</li>
+ *     </ul></li>
+ * </ul>
+ *
+ * {@section Implementation note}
  * For efficiency reasons, this set stores the range values in a Java array of primitive type if
  * possible. The instances given in argument to the {@link #add(Range)} method are not retained by
  * this class. Ranges are recreated during iterations by calls to the {@link #newRange(Comparable,
@@ -548,8 +566,8 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
          * At this point, the index of the [minValue … maxValue] range is now [i0 … i1].
          * Remove everything between i0 and i1, excluding i0 and i1 themselves.
          */
-        assert get(i0).compareTo(maxValue) <= 0;
-        assert get(i1).compareTo(minValue) >= 0;
+        assert getValue(i0).compareTo(maxValue) <= 0;
+        assert getValue(i1).compareTo(minValue) >= 0;
         final int n = i1 - (++i0);
         if (n != 0) {
             removeAt(i0, i1);
@@ -616,77 +634,6 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
     }
 
     /**
-     * Returns the value at the specified index. Even index are lower endpoints, while odd index
-     * are upper endpoints. The index validity must have been checked before this method is invoked.
-     */
-    final E get(final int index) {
-        assert (index >= 0) && (index < length) : index;
-        return elementType.cast(Array.get(array, index));
-    }
-
-    /**
-     * Returns a {@linkplain Range#getMinValue() range minimum value} as a {@code double}.
-     * The {@code index} can be any value from 0 inclusive to the set {@link #size() size}
-     * exclusive. The returned values always increase with {@code index}.
-     *
-     * @param  index The range index, from 0 inclusive to {@link #size() size} exclusive.
-     * @return The minimum value for the range at the specified index, inclusive.
-     * @throws IndexOutOfBoundsException if {@code index} is out of bounds.
-     * @throws ClassCastException if range elements are not convertible to numbers.
-     *
-     * @see org.apache.sis.measure.NumberRange#getMinDouble()
-     */
-    public double getMinDouble(int index) throws IndexOutOfBoundsException, ClassCastException {
-        if ((index *= 2) >= length) {
-            throw new IndexOutOfBoundsException();
-        }
-        return Array.getDouble(array, index);
-    }
-
-    /**
-     * Returns a {@linkplain Range#getMaxValue() range maximum value} as a {@code double}.
-     * The {@code index} can be any value from 0 inclusive to the set's {@link #size size}
-     * exclusive. The returned values always increase with {@code index}.
-     *
-     * @param  index The range index, from 0 inclusive to {@link #size size} exclusive.
-     * @return The maximum value for the range at the specified index, exclusive.
-     * @throws IndexOutOfBoundsException if {@code index} is out of bounds.
-     * @throws ClassCastException if range elements are not convertible to numbers.
-     *
-     * @see org.apache.sis.measure.NumberRange#getMaxDouble()
-     */
-    public double getMaxDouble(int index) throws IndexOutOfBoundsException, ClassCastException {
-        if ((index *= 2) >= length) {
-            throw new IndexOutOfBoundsException();
-        }
-        return Array.getDouble(array, index + 1);
-    }
-
-    /**
-     * If the specified value is inside a range, returns the index of this range.
-     * Otherwise, returns {@code -1}.
-     *
-     * @param  value The value to search.
-     * @return The index of the range which contains this value, or -1 if there is no such range.
-     */
-    public int indexOfRange(final E value) {
-        int index = binarySearch(value, length);
-        if (index < 0) {
-            // Found an insertion point. Make sure that the insertion
-            // point is inside a range (i.e. before the maximum value).
-            index = ~index; // Tild sign, not minus.
-            if ((index & 1) == 0) {
-                return -1;
-            }
-        } else if (!((index & 1) == 0 ? isMinIncluded : isMaxIncluded)) {
-            // The value is equals to an excluded endpoint.
-            return -1;
-        }
-        index /= 2; // Round toward 0 (odd index are maximum values).
-        return index;
-    }
-
-    /**
      * Returns {@code true} if this set contains the specified element.
      * This method searches for an exact match, i.e. this method doesn't
      * check if the given range is contained in a larger range.
@@ -703,7 +650,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
                 if (range.isMinIncluded() && !range.isMaxIncluded()) {
                     final int index = binarySearch(range.getMinValue(), length);
                     if (index >= 0 && (index & 1) == 0) {
-                        final int c = get(index+1).compareTo(range.getMaxValue());
+                        final int c = getValue(index+1).compareTo(range.getMaxValue());
                         return c == 0;
                     }
                 }
@@ -1222,6 +1169,81 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
         }
     }
 
+    ///////////////////////////////////////////////////////////////////////////////
+    ////    List-like API - not usual Set API, but provided for efficiency.    ////
+    ///////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * If the specified value is inside a range, returns the index of this range.
+     * Otherwise, returns {@code -1}.
+     *
+     * @param  value The value to search.
+     * @return The index of the range which contains this value, or -1 if there is no such range.
+     */
+    public int indexOfRange(final E value) {
+        int index = binarySearch(value, length);
+        if (index < 0) {
+            // Found an insertion point. Make sure that the insertion
+            // point is inside a range (i.e. before the maximum value).
+            index = ~index; // Tild sign, not minus.
+            if ((index & 1) == 0) {
+                return -1;
+            }
+        } else if (!((index & 1) == 0 ? isMinIncluded : isMaxIncluded)) {
+            // The value is equals to an excluded endpoint.
+            return -1;
+        }
+        index /= 2; // Round toward 0 (odd index are maximum values).
+        return index;
+    }
+
+    /**
+     * Returns a {@linkplain Range#getMinValue() range minimum value} as a {@code double}.
+     * The {@code index} can be any value from 0 inclusive to the set {@link #size() size}
+     * exclusive. The returned values always increase with {@code index}.
+     *
+     * @param  index The range index, from 0 inclusive to {@link #size() size} exclusive.
+     * @return The minimum value for the range at the specified index, inclusive.
+     * @throws IndexOutOfBoundsException if {@code index} is out of bounds.
+     * @throws ClassCastException if range elements are not convertible to numbers.
+     *
+     * @see org.apache.sis.measure.NumberRange#getMinDouble()
+     */
+    public double getMinDouble(int index) throws IndexOutOfBoundsException, ClassCastException {
+        if ((index *= 2) >= length) {
+            throw new IndexOutOfBoundsException();
+        }
+        return Array.getDouble(array, index);
+    }
+
+    /**
+     * Returns a {@linkplain Range#getMaxValue() range maximum value} as a {@code double}.
+     * The {@code index} can be any value from 0 inclusive to the set's {@link #size size}
+     * exclusive. The returned values always increase with {@code index}.
+     *
+     * @param  index The range index, from 0 inclusive to {@link #size size} exclusive.
+     * @return The maximum value for the range at the specified index, exclusive.
+     * @throws IndexOutOfBoundsException if {@code index} is out of bounds.
+     * @throws ClassCastException if range elements are not convertible to numbers.
+     *
+     * @see org.apache.sis.measure.NumberRange#getMaxDouble()
+     */
+    public double getMaxDouble(int index) throws IndexOutOfBoundsException, ClassCastException {
+        if ((index *= 2) >= length) {
+            throw new IndexOutOfBoundsException();
+        }
+        return Array.getDouble(array, index + 1);
+    }
+
+    /**
+     * Returns the value at the specified index. Even index are lower endpoints, while odd index
+     * are upper endpoints. The index validity must have been checked before this method is invoked.
+     */
+    final E getValue(final int index) {
+        assert (index >= 0) && (index < length) : index;
+        return elementType.cast(Array.get(array, index));
+    }
+
     /**
      * Returns the range at the given array index. The given index is relative to
      * the interval {@link #array}, which is twice the index of range elements.
@@ -1229,7 +1251,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * @param index The range index, from 0 inclusive to {@link #length} exclusive.
      */
     final Range<E> getRange(final int index) {
-        return newRange(get(index), get(index+1));
+        return newRange(getValue(index), getValue(index+1));
     }
 
     /**
