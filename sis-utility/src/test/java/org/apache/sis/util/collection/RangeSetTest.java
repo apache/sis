@@ -22,6 +22,7 @@ import java.util.Comparator;
 import java.util.Random;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.SortedSet;
 import java.io.PrintWriter;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.NumberRange;
@@ -214,6 +215,43 @@ public final strictfp class RangeSetTest extends TestCase {
         assertEquals(-1, ranges.indexOfRange( 70));
         assertEquals(-1, ranges.indexOfRange( 26));
         assertEquals(-1, ranges.indexOfRange(-30));
+    }
+
+    /**
+     * Tests the {@link RangeSet#intersect(Range)} method. The {@code subSet(…)}, {@code headSet(…)}
+     * and {@code tailSet(…)} methods delegate their work to that {@code intersect(…)} method.
+     */
+    @Test
+    public void testIntersect() {
+        final RangeSet<Integer> ranges = RangeSet.create(Integer.class, true, false);
+        assertTrue(ranges.add(-20, -10));
+        assertTrue(ranges.add( -5,  25));
+        assertTrue(ranges.add( 28,  35));
+        assertTrue(ranges.add( 40,  50));
+        assertTrue(ranges.add( 60,  70));
+        final SortedSet<Range<Integer>> subset = ranges.intersect(NumberRange.create(5, true, 45, false));
+        /*
+         * Verify the content. Note that the first and last ranges
+         * are expected to be intersected with the [5 … 45) range.
+         */
+        assertEquals(5, ranges.size());
+        assertEquals(3, subset.size());
+        Iterator<Range<Integer>> it = subset.iterator();
+        assertEqual (NumberRange.create( 5, true, 25, false), it.next(), subset.first());
+        assertEquals(NumberRange.create(28, true, 35, false), it.next());
+        assertEqual (NumberRange.create(40, true, 45, false), it.next(), subset.last());
+        assertFalse(it.hasNext());
+        /*
+         * Add a range and verify the content in the sub-set.
+         * Verify also that the enclosing set changed.
+         */
+        assertTrue(subset.add(NumberRange.create(35, true, 48, false)));
+        assertEquals(4, ranges.size());
+        assertEquals(2, subset.size());
+        it = subset.iterator();
+        assertEqual(NumberRange.create( 5, true, 25, false), it.next(), subset.first());
+        assertEqual(NumberRange.create(28, true, 48, false), it.next(), subset.last());
+        assertFalse(it.hasNext());
     }
 
     /**
