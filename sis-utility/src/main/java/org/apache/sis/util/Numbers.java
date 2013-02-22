@@ -38,6 +38,8 @@ import org.apache.sis.util.collection.CollectionsExt;
  * @since   0.3 (derived from geotk-2.5)
  * @version 0.3
  * @module
+ *
+ * @see org.apache.sis.math.MathFunctions
  */
 public final class Numbers extends Static {
     /**

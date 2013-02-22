@@ -87,6 +87,7 @@ import org.junit.runners.Suite;
     org.apache.sis.io.WordWrapWithLineSeparatorTest.class,
     org.apache.sis.io.TableAppenderTest.class,
     org.apache.sis.util.collection.TreeTableFormatTest.class,
+    org.apache.sis.util.collection.RangeSetTest.class,
 
     // XML most basic types.
     org.apache.sis.xml.XLinkTest.class,

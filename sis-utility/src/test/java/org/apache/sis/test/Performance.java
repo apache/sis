@@ -14,28 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.sis.test;
+
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 
 /**
- * Measures (like {@link org.apache.sis.measure.Angle} and
- * {@link org.apache.sis.measure.Range}) and their formatters.
- * This package defines:
+ * Annotates methods that can be used for testing the performance of a class.
+ * The annotated methods may or may not be executed in normal SIS builds.
+ * Some methods may be executed only manually before and after an implementation change,
+ * in order to test the impact on performance.
  *
- * <ul>
- *   <li>{@link org.apache.sis.measure.Angle} and its subclasses
- *      ({@link org.apache.sis.measure.Longitude},
- *       {@link org.apache.sis.measure.Latitude})</li>
- *   <li>{@link org.apache.sis.measure.Range} and its subclasses
- *      ({@link org.apache.sis.measure.NumberRange},
- *       {@link org.apache.sis.measure.MeasurementRange})</li>
- *   <li>Formatters
- *      ({@link org.apache.sis.measure.AngleFormat},
- *       {@link org.apache.sis.measure.CoordinateFormat},
- *       {@link org.apache.sis.measure.RangeFormat})</li>
- * </ul>
- *
- * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.0)
+ * @author  Martin Desruisseaux (Geomatys)
+ * @since   0.3 (derived from geotk-3.17)
  * @version 0.3
  * @module
  */
-package org.apache.sis.measure;
+@Documented
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.SOURCE)
+public @interface Performance {
+}

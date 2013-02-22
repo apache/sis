@@ -17,7 +17,7 @@
 
 /**
  * Tools for SIS tests. This package defines a base class, {@link org.apache.sis.test.TestCase},
- * which is extended directly or indirectly by many (but not all) SIS tests.
+ * which is extended directly or indirectly by most (but not all) SIS tests.
  * This package defines also an {@link org.apache.sis.test.Assert} class which extend the GeoAPI
  * {@link org.opengis.test.Assert} (which itself extends the JUnit {@link org.junit.Assert} class)
  * with the addition of assertion methods commonly used in SIS tests.

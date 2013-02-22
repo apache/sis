@@ -49,6 +49,9 @@ import org.apache.sis.internal.util.Objects;
  * @since   0.3 (derived from geotk-2.4)
  * @version 0.3
  * @module
+ *
+ * @see RangeFormat
+ * @see org.apache.sis.util.collection.RangeSet
  */
 @Immutable
 public class MeasurementRange<E extends Number & Comparable<? super E>> extends NumberRange<E> {
@@ -65,20 +68,6 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
     private final Unit<?> unit;
 
     /**
-     * Constructs an inclusive range of {@code float} values.
-     *
-     * @param  minValue The minimal value, inclusive, or {@link Float#NEGATIVE_INFINITY} if none..
-     * @param  maxValue The maximal value, <strong>inclusive</strong>, or {@link Float#POSITIVE_INFINITY} if none.
-     * @param  unit     The unit of measurement, or {@code null} if unknown.
-     * @return The new range of numeric values for the given bounds and unit of measurement.
-     */
-    public static MeasurementRange<Float> create(float minValue, float maxValue, Unit<?> unit) {
-        return new MeasurementRange<Float>(Float.class,
-                valueOf("minValue", minValue, Float.NEGATIVE_INFINITY),
-                valueOf("maxValue", maxValue, Float.POSITIVE_INFINITY), unit);
-    }
-
-    /**
      * Constructs a range of {@code float} values.
      *
      * @param  minValue       The minimal value, or {@link Float#NEGATIVE_INFINITY} if none.
@@ -86,7 +75,7 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
      * @param  maxValue       The maximal value, or {@link Float#POSITIVE_INFINITY} if none.
      * @param  isMaxIncluded  {@code true} if the maximal value is inclusive, or {@code false} if exclusive.
      * @param  unit           The unit of measurement, or {@code null} if unknown.
-     * @return The new range of numeric values for the given bounds and unit of measurement.
+     * @return The new range of numeric values for the given endpoints and unit of measurement.
      */
     public static MeasurementRange<Float> create(float minValue, boolean isMinIncluded,
                                                  float maxValue, boolean isMaxIncluded, Unit<?> unit)
@@ -97,20 +86,6 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
     }
 
     /**
-     * Constructs an inclusive range of {@code double} values.
-     *
-     * @param  minValue The minimal value, inclusive, or {@link Double#NEGATIVE_INFINITY} if none..
-     * @param  maxValue The maximal value, <strong>inclusive</strong>, or {@link Double#POSITIVE_INFINITY} if none.
-     * @param  unit     The unit of measurement, or {@code null} if unknown.
-     * @return The new range of numeric values for the given bounds and unit of measurement.
-     */
-    public static MeasurementRange<Double> create(double minValue, double maxValue, Unit<?> unit) {
-        return new MeasurementRange<Double>(Double.class,
-                valueOf("minValue", minValue, Double.NEGATIVE_INFINITY),
-                valueOf("maxValue", maxValue, Double.POSITIVE_INFINITY), unit);
-    }
-
-    /**
      * Constructs a range of {@code double} values.
      *
      * @param  minValue       The minimal value, or {@link Double#NEGATIVE_INFINITY} if none.
@@ -118,7 +93,7 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
      * @param  maxValue       The maximal value, or {@link Double#POSITIVE_INFINITY} if none.
      * @param  isMaxIncluded  {@code true} if the maximal value is inclusive, or {@code false} if exclusive.
      * @param  unit           The unit of measurement, or {@code null} if unknown.
-     * @return The new range of numeric values for the given bounds and unit of measurement.
+     * @return The new range of numeric values for the given endpoints and unit of measurement.
      */
     public static MeasurementRange<Double> create(double minValue, boolean isMinIncluded,
                                                   double maxValue, boolean isMaxIncluded, Unit<?> unit)
@@ -162,19 +137,6 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
      */
     public MeasurementRange(final Range<E> range, final Unit<?> unit) {
         super(range);
-        this.unit = unit;
-    }
-
-    /**
-     * Constructs a range of {@link Number} objects.
-     *
-     * @param type     The element type, usually one of {@link Float} or {@link Double}.
-     * @param minValue The minimum value, inclusive, or {@code null} if none.
-     * @param maxValue The maximum value, <strong>inclusive</strong>, or {@code null} if none.
-     * @param unit     The unit of measurement, or {@code null} if unknown.
-     */
-    public MeasurementRange(final Class<E> type, final E minValue, final E maxValue, final Unit<?> unit) {
-        super(type, minValue, maxValue);
         this.unit = unit;
     }
 
