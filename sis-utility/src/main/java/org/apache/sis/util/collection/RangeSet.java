@@ -63,34 +63,41 @@ import static org.apache.sis.util.Numbers.*;
  * this {@code RangeSet} class and override the {@link #add(Range)}, {@link #remove(Object)} and
  * {@link newRange(Comparable, Comparable)} methods.
  *
- * {@note Current implementation does not yet support open intervals. The intervals shall be either
+ * {@note Current implementation does not yet support open intervals. The ranges shall be either
  * closed intervals, or half-open. This limitation exists because supporting open intervals implies
  * that the internal array shall support duplicated values.}
  *
  * {@section Extensions to <code>SortedSet</code> API}
- * This class contains some methods not found in standard {@link SortedSet} API:
+ * This class contains some methods not found in standard {@link SortedSet} API.
+ * Some of those methods look like {@link java.util.List} API, in that they work
+ * with the index of a {@code Range} instance in the sequence of ranges returned
+ * by the iterator.
+ *
  * <ul>
- *   <li>{@link java.util.List}-like methods, provided for performance reasons:
- *     <ul>
- *       <li>{@link #getMinDouble(int)} and {@link #getMaxDouble(int)}, which return the
- *           {@code double} value of the end point in the range at the given index.</li>
- *       <li>{@link #indexOfRange(Comparable)}, which returns the index of the range
- *           containing the given value (if any).</li>
- *     </ul></li>
- *   <li>Other methods:
- *     <ul>
- *       <li>{@link #intersect(Range)}, which provides a more convenient way than
- *           {@code subSet(…)}, {@code headSet(…)} and {@code tailSet(…)} for creating
- *           views over subsets of a {@code RangeSet}.</li>
- *     </ul></li>
+ *   <li>{@link #indexOfRange(Comparable)} returns the index of the range containing
+ *       the given value (if any).</li>
+ *   <li>{@link #getMinDouble(int)} and {@link #getMaxDouble(int)} return the endpoint values
+ *       in the range at the given index as a {@code double} without the cost of creating a
+ *       {@link Number} instance.</li>
+ *   <li>{@link #getMinLong(int)} and {@link #getMaxLong(int)} are equivalent to the above
+ *       methods for the {@code long} primitive type, used mostly for {@link java.util.Date}
+ *       values (see implementation note below).</li>
+ *   <li>{@link #intersect(Range)} provides a more convenient way than {@code subSet(…)},
+ *       {@code headSet(…)} and {@code tailSet(…)} for creating views over subsets of a
+ *       {@code RangeSet}.</li>
+ *   <li>{@link #trimToSize()} frees unused space.</li>
  * </ul>
  *
  * {@section Implementation note}
  * For efficiency reasons, this set stores the range values in a Java array of primitive type if
- * possible. The instances given in argument to the {@link #add(Range)} method are not retained by
- * this class. Ranges are recreated during iterations by calls to the {@link #newRange(Comparable,
- * Comparable)} method. Subclasses can override that method if they need to customize the range
- * objects to be created.
+ * possible. The {@code Range} instances given in argument to the {@link #add(Range)} method are
+ * not retained by this class. Ranges are recreated during iterations by calls to the
+ * {@link #newRange(Comparable, Comparable)} method. Subclasses can override that method if they
+ * need to customize the range objects to be created.
+ *
+ * <p>While it is possible to create {@code RangeSet<Date>} instances, is is more efficient to
+ * use {@code RangeSet<Long>} with millisecond values because {@code RangeSet} will internally
+ * use {@code long[]} arrays in the later case.</p>
  *
  * @param <E> The type of range elements.
  *
@@ -1281,9 +1288,28 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
     }
 
     /**
+     * Returns a {@linkplain Range#getMinValue() range minimum value} as a {@code long}.
+     * The {@code index} can be any value from 0 inclusive to the set {@link #size() size}
+     * exclusive. The returned values always increase with {@code index}.
+     * Widening conversions are performed as needed.
+     *
+     * @param  index The range index, from 0 inclusive to {@link #size() size} exclusive.
+     * @return The minimum value for the range at the specified index, inclusive.
+     * @throws IndexOutOfBoundsException if {@code index} is out of bounds.
+     * @throws ClassCastException if range elements are not convertible to {@code long}.
+     */
+    public long getMinLong(int index) throws IndexOutOfBoundsException, ClassCastException {
+        if ((index *= 2) >= length) {
+            throw new IndexOutOfBoundsException();
+        }
+        return Array.getLong(array, index);
+    }
+
+    /**
      * Returns a {@linkplain Range#getMinValue() range minimum value} as a {@code double}.
      * The {@code index} can be any value from 0 inclusive to the set {@link #size() size}
      * exclusive. The returned values always increase with {@code index}.
+     * Widening conversions are performed as needed.
      *
      * @param  index The range index, from 0 inclusive to {@link #size() size} exclusive.
      * @return The minimum value for the range at the specified index, inclusive.
@@ -1300,9 +1326,28 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
     }
 
     /**
+     * Returns a {@linkplain Range#getMaxValue() range maximum value} as a {@code long}.
+     * The {@code index} can be any value from 0 inclusive to the set {@link #size() size}
+     * exclusive. The returned values always increase with {@code index}.
+     * Widening conversions are performed as needed.
+     *
+     * @param  index The range index, from 0 inclusive to {@link #size() size} exclusive.
+     * @return The maximum value for the range at the specified index, inclusive.
+     * @throws IndexOutOfBoundsException if {@code index} is out of bounds.
+     * @throws ClassCastException if range elements are not convertible to {@code long}.
+     */
+    public long getMaxLong(int index) throws IndexOutOfBoundsException, ClassCastException {
+        if ((index *= 2) >= length) {
+            throw new IndexOutOfBoundsException();
+        }
+        return Array.getLong(array, index + 1);
+    }
+
+    /**
      * Returns a {@linkplain Range#getMaxValue() range maximum value} as a {@code double}.
      * The {@code index} can be any value from 0 inclusive to the set's {@link #size size}
      * exclusive. The returned values always increase with {@code index}.
+     * Widening conversions are performed as needed.
      *
      * @param  index The range index, from 0 inclusive to {@link #size size} exclusive.
      * @return The maximum value for the range at the specified index, exclusive.
