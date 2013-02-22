@@ -26,7 +26,9 @@ import org.apache.sis.util.resources.Errors;
  * {@code NumberRange} has no unit of measurement. For a range of physical measurements
  * with unit of measure, see {@link MeasurementRange}.
  *
- * <p>Most operations in this class are defined in two versions:</p>
+ * <p>{@code NumberRange} has some capability to convert different number types before to
+ * perform operations. In order to provide both this flexibility and the safety of generic
+ * types, most operations in this class are defined in two versions:</p>
  * <ul>
  *   <li>Methods inherited from the {@code Range} parent class
  *      ({@link #contains(Range) contains}, {@link #intersect(Range) intersect},
@@ -51,6 +53,14 @@ import org.apache.sis.util.resources.Errors;
  *   <li>{@link #castTo(Class)} for casting the range values to an other type.</li>
  * </ul>
  *
+ * {@section Relationship with standards}
+ * {@code NumberRange} is the SIS class closest to the
+ * <a href="http://en.wikipedia.org/wiki/Interval_%28mathematics%29">mathematical definition of interval</a>.
+ * It is closely related, while not identical, to the ISO 19123 (<cite>Coverage geometry and functions</cite>)
+ * definition of "ranges". At the difference of the parent {@link Range} class, which can be used only with
+ * {@linkplain org.opengis.coverage.DiscreteCoverage discrete coverages}, the {@code NumberRange} class can
+ * also be used with {@linkplain org.opengis.coverage.ContinuousCoverage continuous coverages}.
+ *
  * @param <E> The type of range elements as a subclass of {@link Number}.
  *
  * @author  Martin Desruisseaux (IRD)
@@ -60,6 +70,8 @@ import org.apache.sis.util.resources.Errors;
  * @module
  *
  * @see RangeFormat
+ * @see org.apache.sis.util.collection.RangeSet
+ * @see <a href="http://en.wikipedia.org/wiki/Interval_%28mathematics%29">Wikipedia: Interval</a>
  */
 @Immutable
 public class NumberRange<E extends Number & Comparable<? super E>> extends Range<E> {
@@ -69,24 +81,13 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
     private static final long serialVersionUID = -818167965963008231L;
 
     /**
-     * Constructs an inclusive range of {@code byte} values.
-     *
-     * @param  minValue The minimal value, inclusive.
-     * @param  maxValue The maximal value, <strong>inclusive</strong>.
-     * @return The new range of numeric values for the given bounds.
-     */
-    public static NumberRange<Byte> create(final byte minValue, final byte maxValue) {
-        return new NumberRange<Byte>(Byte.class, Byte.valueOf(minValue), Byte.valueOf(maxValue));
-    }
-
-    /**
      * Constructs a range of {@code byte} values.
      *
      * @param  minValue       The minimal value.
      * @param  isMinIncluded  {@code true} if the minimal value is inclusive, or {@code false} if exclusive.
      * @param  maxValue       The maximal value.
      * @param  isMaxIncluded  {@code true} if the maximal value is inclusive, or {@code false} if exclusive.
-     * @return The new range of numeric values for the given bounds.
+     * @return The new range of numeric values for the given endpoints.
      */
     public static NumberRange<Byte> create(final byte minValue, final boolean isMinIncluded,
                                            final byte maxValue, final boolean isMaxIncluded)
@@ -97,24 +98,13 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
     }
 
     /**
-     * Constructs an inclusive range of {@code short} values.
-     *
-     * @param  minValue The minimal value, inclusive.
-     * @param  maxValue The maximal value, <strong>inclusive</strong>.
-     * @return The new range of numeric values for the given bounds.
-     */
-    public static NumberRange<Short> create(final short minValue, final short maxValue) {
-        return new NumberRange<Short>(Short.class, Short.valueOf(minValue), Short.valueOf(maxValue));
-    }
-
-    /**
      * Constructs a range of {@code short} values.
      *
      * @param  minValue       The minimal value.
      * @param  isMinIncluded  {@code true} if the minimal value is inclusive, or {@code false} if exclusive.
      * @param  maxValue       The maximal value.
      * @param  isMaxIncluded  {@code true} if the maximal value is inclusive, or {@code false} if exclusive.
-     * @return The new range of numeric values for the given bounds.
+     * @return The new range of numeric values for the given endpoints.
      */
     public static NumberRange<Short> create(final short minValue, final boolean isMinIncluded,
                                             final short maxValue, final boolean isMaxIncluded)
@@ -125,24 +115,13 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
     }
 
     /**
-     * Constructs an inclusive range of {@code int} values.
-     *
-     * @param  minValue The minimal value, inclusive.
-     * @param  maxValue The maximal value, <strong>inclusive</strong>.
-     * @return The new range of numeric values for the given bounds.
-     */
-    public static NumberRange<Integer> create(final int minValue, final int maxValue) {
-        return new NumberRange<Integer>(Integer.class, Integer.valueOf(minValue), Integer.valueOf(maxValue));
-    }
-
-    /**
      * Constructs a range of {@code int} values.
      *
      * @param  minValue       The minimal value.
      * @param  isMinIncluded  {@code true} if the minimal value is inclusive, or {@code false} if exclusive.
      * @param  maxValue       The maximal value.
      * @param  isMaxIncluded  {@code true} if the maximal value is inclusive, or {@code false} if exclusive.
-     * @return The new range of numeric values for the given bounds.
+     * @return The new range of numeric values for the given endpoints.
      */
     public static NumberRange<Integer> create(final int minValue, final boolean isMinIncluded,
                                               final int maxValue, final boolean isMaxIncluded)
@@ -153,24 +132,13 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
     }
 
     /**
-     * Constructs an inclusive range of {@code long} values.
-     *
-     * @param  minValue The minimal value, inclusive.
-     * @param  maxValue The maximal value, <strong>inclusive</strong>.
-     * @return The new range of numeric values for the given bounds.
-     */
-    public static NumberRange<Long> create(final long minValue, final long maxValue) {
-        return new NumberRange<Long>(Long.class, Long.valueOf(minValue), Long.valueOf(maxValue));
-    }
-
-    /**
      * Constructs a range of {@code long} values.
      *
      * @param  minValue       The minimal value.
      * @param  isMinIncluded  {@code true} if the minimal value is inclusive, or {@code false} if exclusive.
      * @param  maxValue       The maximal value.
      * @param  isMaxIncluded  {@code true} if the maximal value is inclusive, or {@code false} if exclusive.
-     * @return The new range of numeric values for the given bounds.
+     * @return The new range of numeric values for the given endpoints.
      */
     public static NumberRange<Long> create(final long minValue, final boolean isMinIncluded,
                                            final long maxValue, final boolean isMaxIncluded)
@@ -181,20 +149,6 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
     }
 
     /**
-     * Constructs an inclusive range of {@code float} values.
-     * The values can not be {@link Float#NaN}.
-     *
-     * @param  minValue The minimal value, inclusive, or {@link Float#NEGATIVE_INFINITY} if none..
-     * @param  maxValue The maximal value, <strong>inclusive</strong>, or {@link Float#POSITIVE_INFINITY} if none.
-     * @return The new range of numeric values for the given bounds.
-     */
-    public static NumberRange<Float> create(final float minValue, final float maxValue) {
-        return new NumberRange<Float>(Float.class,
-                valueOf("minValue", minValue, Float.NEGATIVE_INFINITY),
-                valueOf("maxValue", maxValue, Float.POSITIVE_INFINITY));
-    }
-
-    /**
      * Constructs a range of {@code float} values.
      * The values can not be {@link Float#NaN}.
      *
@@ -202,7 +156,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      * @param  isMinIncluded  {@code true} if the minimal value is inclusive, or {@code false} if exclusive.
      * @param  maxValue       The maximal value, or {@link Float#POSITIVE_INFINITY} if none.
      * @param  isMaxIncluded  {@code true} if the maximal value is inclusive, or {@code false} if exclusive.
-     * @return The new range of numeric values for the given bounds.
+     * @return The new range of numeric values for the given endpoints.
      */
     public static NumberRange<Float> create(final float minValue, final boolean isMinIncluded,
                                             final float maxValue, final boolean isMaxIncluded)
@@ -224,20 +178,6 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
     }
 
     /**
-     * Constructs an inclusive range of {@code double} values.
-     * The values can not be {@link Double#NaN}.
-     *
-     * @param  minValue The minimal value, inclusive, or {@link Double#NEGATIVE_INFINITY} if none..
-     * @param  maxValue The maximal value, <strong>inclusive</strong>, or {@link Double#POSITIVE_INFINITY} if none.
-     * @return The new range of numeric values for the given bounds.
-     */
-    public static NumberRange<Double> create(final double minValue, final double maxValue) {
-        return new NumberRange<Double>(Double.class,
-                valueOf("minValue", minValue, Double.NEGATIVE_INFINITY),
-                valueOf("maxValue", maxValue, Double.POSITIVE_INFINITY));
-    }
-
-    /**
      * Constructs a range of {@code double} values.
      * The values can not be {@link Double#NaN}.
      *
@@ -245,7 +185,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      * @param  isMinIncluded  {@code true} if the minimal value is inclusive, or {@code false} if exclusive.
      * @param  maxValue       The maximal value, or {@link Double#POSITIVE_INFINITY} if none.
      * @param  isMaxIncluded  {@code true} if the maximal value is inclusive, or {@code false} if exclusive.
-     * @return The new range of numeric values for the given bounds.
+     * @return The new range of numeric values for the given endpoints.
      */
     public static NumberRange<Double> create(final double minValue, final boolean isMinIncluded,
                                              final double maxValue, final boolean isMaxIncluded)
@@ -327,18 +267,6 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      */
     public NumberRange(final Range<E> range) {
         super(range);
-    }
-
-    /**
-     * Constructs an inclusive range of {@link Number} objects.
-     *
-     * @param  type     The element type, usually one of {@link Byte}, {@link Short},
-     *                  {@link Integer}, {@link Long}, {@link Float} or {@link Double}.
-     * @param  minValue The minimum value, inclusive, or {@code null} if none.
-     * @param  maxValue The maximum value, <strong>inclusive</strong>, or {@code null} if none.
-     */
-    public NumberRange(final Class<E> type, final E minValue, final E maxValue) {
-        super(type, minValue, maxValue);
     }
 
     /**

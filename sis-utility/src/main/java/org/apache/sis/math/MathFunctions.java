@@ -58,6 +58,8 @@ import static org.apache.sis.internal.util.Utilities.SIGN_BIT_MASK;
  * @since   0.3 (derived from geotk-1.0)
  * @version 0.3
  * @module
+ *
+ * @see org.apache.sis.util.Numbers
  */
 public final class MathFunctions extends Static {
     /**

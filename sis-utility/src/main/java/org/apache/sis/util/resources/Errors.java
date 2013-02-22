@@ -340,6 +340,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int StalledThread_1 = 63;
 
         /**
+         * Ordering between “{0}” and “{1}” elements is undefined.
+         */
+        public static final int UndefinedOrderingForElements_2 = 70;
+
+        /**
          * Unexpected change in ‘{0}’.
          */
         public static final int UnexpectedChange_1 = 56;
