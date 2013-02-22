@@ -236,6 +236,25 @@ public final strictfp class RangeSetTest extends TestCase {
     }
 
     /**
+     * Tests the {@link RangeSet#getMinLong(int)}, {@link RangeSet#getMaxLong(int)},
+     * {@link RangeSet#getMinDouble(int)} and {@link RangeSet#getMaxDouble(int)} methods.
+     */
+    @Test
+    public void testGetAsPrimitiveType() {
+        final RangeSet<Integer> ranges = RangeSet.create(Integer.class, true, false);
+        assertTrue(ranges.add( -5,  25));
+        assertTrue(ranges.add(-20, -10));
+        assertEquals(-20L,  ranges.getMinLong(0));
+        assertEquals(-10L,  ranges.getMaxLong(0));
+        assertEquals( -5L,  ranges.getMinLong(1));
+        assertEquals( 25L,  ranges.getMaxLong(1));
+        assertEquals(-20.0, ranges.getMinDouble(0), 0.0);
+        assertEquals(-10.0, ranges.getMaxDouble(0), 0.0);
+        assertEquals( -5.0, ranges.getMinDouble(1), 0.0);
+        assertEquals( 25.0, ranges.getMaxDouble(1), 0.0);
+    }
+
+    /**
      * Tests the {@link RangeSet#intersect(Range)} method. The {@code subSet(…)}, {@code headSet(…)}
      * and {@code tailSet(…)} methods delegate their work to that {@code intersect(…)} method.
      */
