@@ -32,24 +32,43 @@ import org.apache.sis.internal.util.Objects;
  * a user to determine if a value of the same class is contained inside the range.
  * The minimum and maximum values do not have to be included in the range, and
  * can be null.  If the minimum or maximum values are null, the range is said to
- * be unbounded on that extreme. If both the minimum and maximum are null,
+ * be unbounded on that endpoint. If both the minimum and maximum are null,
  * the range is completely unbounded and all values of that class are contained
  * within the range. Null values are always considered <em>exclusive</em>,
- * since iterations over the values will never reach the infinite bound.
+ * since iterations over the values will never reach the infinite endpoint.
+ *
+ * <p>The minimal and maximal values (the <cite>endpoints</cite>) may be inclusive or exclusive.
+ * Numeric ranges where both endpoints are inclusive are called <cite>closed intervals</cite>
+ * and are represented by square brackets, for example "{@code [0 … 255]}".
+ * Numeric ranges where both endpoints are exclusive are called <cite>open intervals</cite>
+ * and are represented by parenthesis, for example "{@code (0 … 256)}".</p>
  *
  * {@section Type and value of range elements}
  * To be a member of a {@code Range}, the {@code <E>} type defining the range must implement the
  * {@link Comparable} interface. All argument values given to the methods of this class shall be
- * or contain instances of the same {@code <E>} type. The type is enforced by parameterized type,
+ * or contain instances of that {@code <E>} type. The type is enforced by parameterized type,
  * but some subclasses may put additional constraints. For example {@link MeasurementRange} will
- * additionally checks the units of measurement. Every methods defined in this class may throw
- * an {@link IllegalArgumentException} if a given argument does not meet a constraint other than
- * the type.
+ * additionally checks the units of measurement. Consequently every methods defined in this class
+ * may throw an {@link IllegalArgumentException} if a given argument does not meet some constraint
+ * beyond the type.
  *
- * {@section String representation}
- * The {@linkplain #toString() string representation} of a {@code Range} is defined
- * in a locale-insensitive way. In order to format a range using a different locale,
- * or for parsing a range, use {@link RangeFormat}.
+ * {@section Relationship with ISO 19123 definition of range}
+ * The ISO 19123 standard (<cite>Coverage geometry and functions</cite>) defines the range as the set
+ * (either finite or {@linkplain org.opengis.geometry.TransfiniteSet transfinite}) of feature attribute
+ * values associated by a function (the {@linkplain org.opengis.coverage.Coverage coverage}) with the
+ * elements of the coverage domain. In other words, if we see a coverage as a function, then a range
+ * is the set of possible return values.
+ *
+ * <p>The characteristics of the spatial domain are defined by the ISO 19123 standard whereas the
+ * characteristics of the attribute range are not part of that standard. In Apache SIS, those
+ * characteristics are described by the {@link org.apache.sis.coverage.SampleDimension} class,
+ * which may contain one or many {@code Range} instances. Consequently this {@code Range} class
+ * is closely related, but not identical, to the ISO 19123 definition or range.</p>
+ *
+ * <p>Ranges are not necessarily numeric. Numeric and non-numeric ranges can be associated to
+ * {@linkplain org.opengis.coverage.DiscreteCoverage discrete coverages}, while typically only
+ * numeric ranges can be associated to {@linkplain org.opengis.coverage.ContinuousCoverage
+ * continuous coverages}.</p>
  *
  * @param <E> The type of range elements, typically a {@link Number} subclass or {@link java.util.Date}.
  *
@@ -61,6 +80,7 @@ import org.apache.sis.internal.util.Objects;
  * @module
  *
  * @see RangeFormat
+ * @see org.apache.sis.util.collection.RangeSet
  */
 @Immutable
 public class Range<E extends Comparable<? super E>> implements CheckedContainer<E>, Serializable {
@@ -102,24 +122,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
     }
 
     /**
-     * Creates a new range bounded by the given inclusive values.
-     *
-     * @param elementType  The class of the range elements.
-     * @param minValue     The minimal value (inclusive), or {@code null} if none.
-     * @param maxValue     The maximal value (inclusive), or {@code null} if none.
-     */
-    public Range(final Class<E> elementType, final E minValue, final E maxValue) {
-        ArgumentChecks.ensureNonNull("elementType", elementType);
-        this.elementType   = elementType;
-        this.minValue      = minValue;
-        this.isMinIncluded = (minValue != null);
-        this.maxValue      = maxValue;
-        this.isMaxIncluded = (maxValue != null);
-        assert validate();
-    }
-
-    /**
-     * Creates a new range bounded by the given values.
+     * Creates a new range bounded by the given endpoint values.
      *
      * @param elementType    The base type of the range elements.
      * @param minValue       The minimal value, or {@code null} if none.
@@ -213,7 +216,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
 
     /**
      * Returns {@code true} if the {@linkplain #getMinValue() minimal value} is inclusive,
-     * or {@code false} is exclusive. Note that {@code null} values are always considered
+     * or {@code false} if exclusive. Note that {@code null} values are always considered
      * exclusive.
      *
      * @return {@code true} if the minimal value is inclusive, or {@code false} if exclusive.
@@ -235,7 +238,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
 
     /**
      * Returns {@code true} if the {@linkplain #getMaxValue() maximal value} is inclusive,
-     * or {@code false} is exclusive. Note that {@code null} values are always considered
+     * or {@code false} if exclusive. Note that {@code null} values are always considered
      * exclusive.
      *
      * @return {@code true} if the maximal value is inclusive, or {@code false} if exclusive.
@@ -461,7 +464,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
     }
 
     /**
-     * Compares the {@linkplain #getMinValue() minimum value} of this range with the given bound of
+     * Compares the {@linkplain #getMinValue() minimum value} of this range with the given endpoint of
      * another range. Since the given value is either the minimal or maximal value of another range,
      * it may be inclusive or exclusive. The later is specified by {@code position} as below:
      *
@@ -473,11 +476,11 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
      *
      * Note that the non-zero position shall be exactly -1 or +1, not arbitrary negative or positive.
      *
-     * @param  value    A bound value of the other range to be compared to the minimal value of this range.
+     * @param  value    An endpoint value of the other range to be compared to the minimal value of this range.
      * @param  position The position of {@code value} relative to the inclusive values of the other range.
      * @return Position (-, + or 0) of the inclusive values of this range compared to the other range.
      *
-     * @see #containsNC(Range)
+     * @see #contains(Range)
      */
     private int compareMinTo(final E value, int position) {
         /*
@@ -519,8 +522,8 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
     }
 
     /**
-     * Compares the {@linkplain #getMaxValue() maximum value} of this range with the given bound of
-     * another range. See the comment in {@link #compareMinTo(Comparable, int)} for more details.
+     * Compares the {@linkplain #getMaxValue() maximum value} of this range with the given endpoint
+     * of another range. See the comment in {@link #compareMinTo(Comparable, int)} for more details.
      */
     private int compareMaxTo(final E value, int position) {
         if (maxValue == null) {
@@ -595,57 +598,55 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
     }
 
     /**
-     * Returns a string representation of this range.
-     * The string representation is defined as below:
+     * Returns a unlocalized string representation of this range. This method complies to the format
+     * described in the <a href="http://en.wikipedia.org/wiki/ISO_31-11">ISO 31-11</a> standard,
+     * except that the minimal and maximal values are separated by the "{@code …}" character
+     * instead than coma. More specifically, the string representation is defined as below:
      *
      * <ul>
-     *   <li>If the range is empty, then this method returns {@code "[]"}.</li>
-     *   <li>Otherwise if the minimal value is equals to the maximal value, then
-     *       the string representation of that value is returned directly.</li>
-     *   <li>Otherwise the string representation of the minimal and maximal values
-     *       are formatted like {@code [min … max]} for inclusive bounds or
-     *       {@code (min … max)} for exclusive bounds, or a mix of both styles.
-     *       The ∞ symbol is used in place of {@code min} or {@code max} for
-     *       unbounded ranges.</li>
+     *   <li>If the range {@linkplain #isEmpty() is empty}, then this method returns "{@code {}}".</li>
+     *   <li>Otherwise if the minimal value is equals to the maximal value, then the string
+     *       representation of that value is returned inside braces as in "{@code {value}}".</li>
+     *   <li>Otherwise the string representation of the minimal and maximal values are formatted
+     *       like "{@code [min … max]}" for inclusive endpoints or "{@code (min … max)}" for exclusive
+     *       endpoints, or a mix of both styles. The "{@code ∞}" symbol is used in place of
+     *       {@code min} or {@code max} for unbounded ranges.</li>
      * </ul>
      *
-     * If this range is a {@link MeasurementRange}, then the unit of measurement is
-     * appended to the above string representation.
+     * If this range is a {@link MeasurementRange}, then the {@linkplain Unit unit of measurement}
+     * is appended to the above string representation except for empty ranges.
      *
      * @see RangeFormat
+     * @see <a href="http://en.wikipedia.org/wiki/ISO_31-11">Wikipedia: ISO 31-11</a>
      */
     @Override
     public String toString() {
         if (isEmpty()) {
-            return "[]";
-        }
-        if (minValue != null && minValue.equals(maxValue)) {
-            String value = minValue.toString();
-            final Unit<?> unit = unit();
-            if (unit != null) {
-                value = value + ' ' + unit;
-            }
-            return value;
+            return "{}";
         }
         final StringBuilder buffer = new StringBuilder(20);
-        buffer.append(isMinIncluded ? '[' : '(');
-        if (minValue == null) {
-            buffer.append("−∞");
+        if (minValue != null && minValue.equals(maxValue)) {
+            buffer.append('{').append(minValue).append('}');
         } else {
-            buffer.append(minValue);
+            buffer.append(isMinIncluded ? '[' : '(');
+            if (minValue == null) {
+                buffer.append("−∞");
+            } else {
+                buffer.append(minValue);
+            }
+            // Compact representation for integers, more space for real numbers.
+            if (Numbers.isInteger(elementType) && isCompact(minValue, false) && isCompact(maxValue, true)) {
+                buffer.append('…');
+            } else {
+                buffer.append(" … ");
+            }
+            if (maxValue == null) {
+                buffer.append('∞');
+            } else {
+                buffer.append(maxValue);
+            }
+            buffer.append(isMaxIncluded ? ']' : ')');
         }
-        // Compact representation for integers, more space for real numbers.
-        if (Numbers.isInteger(elementType) && isCompact(minValue, false) && isCompact(maxValue, true)) {
-            buffer.append('…');
-        } else {
-            buffer.append(" … ");
-        }
-        if (maxValue == null) {
-            buffer.append('∞');
-        } else {
-            buffer.append(maxValue);
-        }
-        buffer.append(isMaxIncluded ? ']' : ')');
         final Unit<?> unit = unit();
         if (unit != null) {
             buffer.append(' ').append(unit);

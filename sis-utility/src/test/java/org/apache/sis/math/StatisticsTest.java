@@ -30,6 +30,16 @@ import static org.apache.sis.test.Assert.*;
 /**
  * Tests {@link Statistics}.
  *
+ * <p>This class uses {@link Random} numbers generator with hard-coded seeds. We do not allow
+ * random seeds because the tests invoke the {@link Random#nextGaussian()} method, then check
+ * if the statistical values are within some range. Because Gaussian distributions have non-null
+ * probability to contain arbitrary large values (infinity is the only limit), testing with random
+ * seeds could produce statistical values out of the expected range no matter how large is this range.
+ * We could only reduce the probability, but never make it null. This is not a flaw in the code,
+ * but a consequence of the probabilistic nature of those statistical distributions.
+ * Consequently, in order to keep the build stable, the random seeds are fixed to values
+ * that are known to produce results inside the range expected by this test class.</p>
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
  * @version 0.3
@@ -63,7 +73,7 @@ public final strictfp class StatisticsTest extends TestCase {
      */
     @Test
     public void testGaussian() {
-        final Random random = new Random(317780561);
+        final Random random = new Random(317780561); // See class javadoc.
         final Statistics statistics = new Statistics(null);
         for (int i=0; i<10000; i++) {
             statistics.add(random.nextGaussian());
@@ -182,7 +192,7 @@ public final strictfp class StatisticsTest extends TestCase {
      */
     @Test
     public void testConcatenation() {
-        final Random random = new Random(429323868);
+        final Random random = new Random(429323868); // See class javadoc.
         final Statistics global = new Statistics(null);
         final Statistics byBlock = new Statistics(null);
         for (int i=0; i<10; i++) {
