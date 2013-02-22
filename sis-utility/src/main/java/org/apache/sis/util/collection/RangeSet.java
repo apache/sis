@@ -419,18 +419,19 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * one of {@code Arrays.binarySearch} methods, depending on element primary type.
      *
      * @param value The value to search.
-     * @param n The length of the array to consider.
+     * @param lower Index of the first value to examine.
+     * @param upper Index after the last value to examine.
      */
-    final int binarySearch(final E value, final int n) {
+    final int binarySearch(final E value, final int lower, final int upper) {
         switch (elementCode) {
-            case DOUBLE:    return Arrays.binarySearch((double[]) array, 0, n, ((Double)    value).doubleValue());
-            case FLOAT:     return Arrays.binarySearch((float []) array, 0, n, ((Float)     value).floatValue ());
-            case LONG:      return Arrays.binarySearch((long  []) array, 0, n, ((Long)      value).longValue  ());
-            case INTEGER:   return Arrays.binarySearch((int   []) array, 0, n, ((Integer)   value).intValue   ());
-            case SHORT:     return Arrays.binarySearch((short []) array, 0, n, ((Short)     value).shortValue ());
-            case BYTE:      return Arrays.binarySearch((byte  []) array, 0, n, ((Byte)      value).byteValue  ());
-            case CHARACTER: return Arrays.binarySearch((char  []) array, 0, n, ((Character) value).charValue  ());
-            default:        return Arrays.binarySearch((Object[]) array, 0, n,              value);
+            case DOUBLE:    return Arrays.binarySearch((double[]) array, lower, upper, ((Double)    value).doubleValue());
+            case FLOAT:     return Arrays.binarySearch((float []) array, lower, upper, ((Float)     value).floatValue ());
+            case LONG:      return Arrays.binarySearch((long  []) array, lower, upper, ((Long)      value).longValue  ());
+            case INTEGER:   return Arrays.binarySearch((int   []) array, lower, upper, ((Integer)   value).intValue   ());
+            case SHORT:     return Arrays.binarySearch((short []) array, lower, upper, ((Short)     value).shortValue ());
+            case BYTE:      return Arrays.binarySearch((byte  []) array, lower, upper, ((Byte)      value).byteValue  ());
+            case CHARACTER: return Arrays.binarySearch((char  []) array, lower, upper, ((Character) value).charValue  ());
+            default:        return Arrays.binarySearch((Object[]) array, lower, upper,              value);
         }
     }
 
@@ -503,8 +504,8 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
             return true;
         }
         final int modCountChk = modCount;
-        int i1 = binarySearch(maxValue, length);
-        int i0 = binarySearch(minValue, (i1 >= 0) ? i1 + 1 : ~i1);
+        int i0 = binarySearch(minValue, 0, length);
+        int i1 = binarySearch(maxValue, (i0 >= 0) ? i0 : ~i0, length);
         if (i0 < 0) {
             i0 = ~i0; // Really tild operator, not minus sign.
             if ((i0 & 1) == 0) {
@@ -643,8 +644,18 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      *   <li>Invoking {@link #remove(Object)} is guaranteed to modify this set.</li>
      * </ul>
      *
-     * However if this method returns {@code false}, then no conclusion can be made about
-     * the {@code add(…)} and {@code remove(…)} behavior.
+     * Conversely, if this method returns {@code false}, then:
+     *
+     * <ul>
+     *   <li>Invoking {@link #add(Range)} is guaranteed to modify this set.</li>
+     *   <li>Invoking {@link #remove(Object)} may or may not modify this set.
+     *       The consequence of invoking {@code remove(…)} is undetermined because it
+     *       depends on whether the given range is outside every ranges in this set,
+     *       or if it overlaps with at least one range.</li>
+     * </ul>
+     *
+     * The default implementation checks the type of the given object, then delegates to
+     * <code>{@linkplain #contains(Range, boolean) contains}(object, false)</code>.
      *
      * @param  object The object to check for inclusion in this set.
      * @return {@code true} if the given object is contained in this set.
@@ -663,11 +674,14 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
 
     /**
      * Returns {@code true} if this set contains the specified element.
-     * If the {@code exact} argument is {@code true}, then this method
-     * searches for an exact match (i.e. this method doesn't check if the
-     * given range is contained in a larger range). Otherwise if the
-     * {@code exact} argument is {@code false}, then this method behaves
-     * as documented in the {@link #contains(Object)} method.
+     *
+     * <ul>
+     *   <li>If the {@code exact} argument is {@code true}, then this method searches
+     *       for an exact match (i.e. this method doesn't check if the given range is
+     *       contained in a larger range).</li>
+     *   <li>If the {@code exact} argument is {@code false}, then this method
+     *       behaves as documented in the {@link #contains(Object)} method.</li>
+     * </ul>
      *
      * @param  range The range to check for inclusion in this set.
      * @param  exact {@code true} for searching for an exact match,
@@ -678,32 +692,13 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
         ArgumentChecks.ensureNonNull("range", range);
         if (exact) {
             if (range.isMinIncluded() && !range.isMaxIncluded()) {
-                final int index = binarySearch(range.getMinValue(), length);
+                final int index = binarySearch(range.getMinValue(), 0, length);
                 if (index >= 0 && (index & 1) == 0) {
                     return getValue(index+1).compareTo(range.getMaxValue()) == 0;
                 }
             }
         } else if (!range.isEmpty()) {
-            int upper = binarySearch(range.getMaxValue(), length);
-            if (upper < 0) {
-                upper = ~upper;
-                if ((upper & 1) == 0) {
-                    // The upper endpoint of the given range falls between
-                    // two ranges of this set, or is after all ranges.
-                    return false;
-                }
-            } else if ((upper & 1) != 0) {
-                // Upper endpoint of the given range matches exactly
-                // the upper endpoint of a range in this set.
-                if (!isMaxIncluded && range.isMaxIncluded()) {
-                    return false;
-                }
-            }
-            /*
-             * At this point, the upper endpoint has been determined to be included
-             * in a range of this set. Now check the lower endpoint.
-             */
-            int lower = binarySearch(range.getMinValue(), upper + 1);
+            int lower = binarySearch(range.getMinValue(), 0, length);
             if (lower < 0) {
                 lower = ~lower;
                 if ((lower & 1) == 0) {
@@ -715,6 +710,25 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
                 // Lower endpoint of the given range matches exactly
                 // the lower endpoint of a range in this set.
                 if (!isMinIncluded && range.isMinIncluded()) {
+                    return false;
+                }
+            }
+            /*
+             * At this point, the lower endpoint has been determined to be included
+             * in a range of this set. Now check the upper endpoint.
+             */
+            int upper = binarySearch(range.getMaxValue(), lower, length);
+            if (upper < 0) {
+                upper = ~upper;
+                if ((upper & 1) == 0) {
+                    // The upper endpoint of the given range falls between
+                    // two ranges of this set, or is after all ranges.
+                    return false;
+                }
+            } else if ((upper & 1) != 0) {
+                // Upper endpoint of the given range matches exactly
+                // the upper endpoint of a range in this set.
+                if (!isMaxIncluded && range.isMaxIncluded()) {
                     return false;
                 }
             }
@@ -894,10 +908,19 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
          */
         private void updateBounds() {
             if (modCount != RangeSet.this.modCount) {
-                final E maxValue = subRange.getMaxValue();
+                int lower = 0;
                 int upper = length;
+                final E minValue = subRange.getMinValue();
+                final E maxValue = subRange.getMaxValue();
+                if (minValue != null) {
+                    lower = binarySearch(minValue, 0, upper);
+                    if (lower < 0) {
+                        lower = ~lower;
+                    }
+                    lower &= ~1; // Force the index to even value.
+                }
                 if (maxValue != null) {
-                    upper = binarySearch(maxValue, upper);
+                    upper = binarySearch(maxValue, lower, upper);
                     if (upper < 0) {
                         upper = ~upper;
                     }
@@ -907,15 +930,6 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
                      * the index of a maximal value), move to the minimal value of the next range.
                      */
                     upper = (upper + 1) & ~1;
-                }
-                final E minValue = subRange.getMinValue();
-                int lower = 0;
-                if (minValue != null) {
-                    lower = binarySearch(minValue, upper);
-                    if (lower < 0) {
-                        lower = ~lower;
-                    }
-                    lower &= ~1; // Force the index to even value.
                 }
                 this.lower = lower;
                 this.upper = upper;
@@ -1250,7 +1264,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * @return The index of the range which contains this value, or -1 if there is no such range.
      */
     public int indexOfRange(final E value) {
-        int index = binarySearch(value, length);
+        int index = binarySearch(value, 0, length);
         if (index < 0) {
             // Found an insertion point. Make sure that the insertion
             // point is inside a range (i.e. before the maximum value).
