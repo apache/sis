@@ -32,7 +32,7 @@ package com.sun.xml.internal.bind.marshaller;
  * after compilation, is the most portable approach we have found.</p>
  *
  * <p>Note that we do not declare any method in this class. This is not needed if we make sure
- * that the method signatures in {@code OGCNamespacePrefixMapper} match the ones in the JDK.
+ * that the method signatures in {@code OGCNamespacePrefixMapper} match the ones in the JDK.</p>
  *
  * @author  Cédric Briançon (Geomatys)
  * @since   0.3 (derived from geotk-3.0)
