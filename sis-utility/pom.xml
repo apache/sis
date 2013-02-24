@@ -105,6 +105,24 @@ Miscellaneous utilities.
   <build>
     <plugins>
 
+      <!-- Delete the "com/sun/xml/..." directory after compilation. -->
+      <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>process-classes</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <delete dir="${project.build.outputDirectory}/com"/>
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
       <!-- Compile properties files into resources UTF files and collect JAR files. -->
       <plugin>
         <groupId>org.apache.sis</groupId>

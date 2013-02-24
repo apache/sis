@@ -327,7 +327,6 @@ Apache SIS is a toolkit for describing location information, including points,
            INDEX.LIST file is incomplete (which seem to happen in practice).
       -->
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
         <configuration>
           <archive>
@@ -466,7 +465,6 @@ Apache SIS is a toolkit for describing location information, including points,
            in order to use version 2.5.1 instead than 2.5. This is necessary
            for avoiding a NullPointerException (http://jira.codehaus.org/browse/MPIR-248) -->
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-project-info-reports-plugin</artifactId>
         <version>2.6</version>
       </plugin>

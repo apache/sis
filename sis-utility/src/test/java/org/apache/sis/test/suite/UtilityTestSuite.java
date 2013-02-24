@@ -92,6 +92,8 @@ import org.junit.runners.Suite;
     // XML most basic types.
     org.apache.sis.xml.XLinkTest.class,
     org.apache.sis.xml.NilReasonTest.class,
+    org.apache.sis.xml.OGCNamespacePrefixMapperTest.class,
+    org.apache.sis.xml.MarshallerPoolTest.class,
     org.apache.sis.internal.jaxb.IdentifierMapAdapterTest.class,
     org.apache.sis.internal.jaxb.IdentifierMapWithSpecialCasesTest.class
 })
