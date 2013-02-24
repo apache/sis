@@ -43,6 +43,7 @@ public final class Namespaces extends Static {
 
     /**
      * The <code>{@value}</code> URL.
+     * The usual prefix for this namespace is {@code "gco"}.
      *
      * @category ISO
      */
@@ -50,6 +51,7 @@ public final class Namespaces extends Static {
 
     /**
      * The <code>{@value}</code> URL.
+     * The usual prefix for this namespace is {@code "gfc"}.
      *
      * @category ISO
      */
@@ -57,6 +59,7 @@ public final class Namespaces extends Static {
 
     /**
      * The <code>{@value}</code> URL.
+     * The usual prefix for this namespace is {@code "gmd"}.
      *
      * @category ISO
      */
@@ -64,6 +67,7 @@ public final class Namespaces extends Static {
 
     /**
      * The <code>{@value}</code> URL.
+     * The usual prefix for this namespace is {@code "gmi"}.
      *
      * @category ISO
      */
@@ -71,6 +75,7 @@ public final class Namespaces extends Static {
 
     /**
      * The <code>{@value}</code> URL.
+     * The usual prefix for this namespace is {@code "gts"}.
      *
      * @category ISO
      */
@@ -78,6 +83,7 @@ public final class Namespaces extends Static {
 
     /**
      * The <code>{@value}</code> URL.
+     * The usual prefix for this namespace is {@code "gmx"}.
      *
      * @category ISO
      */
@@ -85,6 +91,7 @@ public final class Namespaces extends Static {
 
     /**
      * The <code>{@value}</code> URL.
+     * The usual prefix for this namespace is {@code "gml"}.
      *
      * @category OGC
      */
@@ -92,6 +99,7 @@ public final class Namespaces extends Static {
 
     /**
      * The <code>{@value}</code> URL.
+     * The usual prefix for this namespace is {@code "csw"}.
      *
      * @category OGC
      */
@@ -108,6 +116,7 @@ public final class Namespaces extends Static {
 
     /**
      * The <code>{@value}</code> URL.
+     * The usual prefix for this namespace is {@code "xlink"}.
      *
      * @category W3C
      */
@@ -115,6 +124,7 @@ public final class Namespaces extends Static {
 
     /**
      * The <code>{@value}</code> URL.
+     * The usual prefix for this namespace is {@code "fra"}.
      *
      * @category Profiles
      */
