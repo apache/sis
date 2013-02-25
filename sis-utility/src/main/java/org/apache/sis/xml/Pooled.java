@@ -61,7 +61,7 @@ abstract class Pooled {
      *
      * @see #convertPropertyKey(String)
      */
-    private static final String ENDORSED_PREFIX = "com.sun.xml.bind.";
+    static final String ENDORSED_PREFIX = "com.sun.xml.bind.";
 
     /**
      * {@code true} if the JAXB implementation is the one bundled in JDK 6, or {@code false}
