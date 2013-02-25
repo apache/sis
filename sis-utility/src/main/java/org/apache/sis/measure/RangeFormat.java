@@ -182,7 +182,7 @@ public class RangeFormat extends Format {
     // All "character" fields below are code point values.
     /**
      * The character opening an empty range or a range containing only one element.
-     * The default value is {@code '{'}.
+     * The default value is <code>'&#123;'</code>.
      */
     private final int openSet;
 
@@ -208,7 +208,7 @@ public class RangeFormat extends Format {
 
     /**
      * The character closing an empty range or a range containing only one element.
-     * The default value is {@code '}'}.
+     * The default value is <code>'&#125;'</code>.
      */
     private final int closeSet;
 
