@@ -35,7 +35,10 @@ import org.apache.sis.util.resources.Errors;
  * The current implementation is restricted to code list having a maximum of 64 values.
  * This restriction may be removed in a future Apache SIS version.
  *
- * @note
+ * {@note The standard <code>EnumSet</code> class uses different implementations depending on
+ *        whether the enumeration contains more or less than 64 elements. We can not apply the
+ *        same strategy for <code>CodeListSet</code>, because new code list elements can be created
+ *        at runtime. Consequently this implementation needs to be able to handle every cases.}
  *
  * @param <E> The type of code list elements in the set.
  *
