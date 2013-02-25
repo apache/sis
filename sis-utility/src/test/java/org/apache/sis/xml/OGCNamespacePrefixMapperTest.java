@@ -44,26 +44,62 @@ import static org.junit.Assert.*;
  */
 public final strictfp class OGCNamespacePrefixMapperTest extends TestCase {
     /**
-     * Ensures that the class overrides all abstract methods defined in the JDK class.
-     * This test invokes every public methods declared in {@code NamespacePrefixMapper},
-     * which will throw {@link AbstractMethodError} if we forgot to override an abstract
-     * method. Additionally, this test check the result of some method calls in order to
-     * ensure that the invoked method was the one defined in {@link OGCNamespacePrefixMapper}.
+     * Ensures that the {@link OGCNamespacePrefixMapper} class overrides all abstract methods
+     * defined in the JDK class. This test is ignored if the Java framework running this test
+     * is not the Oracle one (i.e. if it does not bundle the Sun internal JAXB implementation).
      *
      * @throws ReflectiveOperationException If an error occurred while invoking a method by
      *         the reflection API.
      */
     @Test
-    public void ensureOverrideMethods() throws ReflectiveOperationException {
-        final OGCNamespacePrefixMapper mapper;
+    public void testInternalJAXB() throws ReflectiveOperationException {
         try {
-            mapper = new OGCNamespacePrefixMapper(null);
+            ensureOverrideMethods(new OGCNamespacePrefixMapper(null));
         } catch (NoClassDefFoundError e) {
             assumeNoException(e);
-            return;
         }
+    }
+
+    /**
+     * Ensures that the {@link OGCNamespacePrefixMapper_Endorsed} class overrides all abstract
+     * methods defined in the JAXB class. This test is ignored if the Java framework running
+     * this test does not contains JAXB in its endorsed directory.
+     *
+     * @throws ReflectiveOperationException If an error occurred while invoking a method by
+     *         the reflection API.
+     */
+    @Test
+    public void testEndorsedJAXB() throws ReflectiveOperationException {
+        try {
+            ensureOverrideMethods(new OGCNamespacePrefixMapper_Endorsed(null));
+        } catch (NoClassDefFoundError e) {
+            assumeNoException(e);
+        }
+    }
+
+    /**
+     * Ensures that the class of the given instance overrides all abstract methods defined by JAXB.
+     * This test invokes every public methods declared in {@code NamespacePrefixMapper},
+     * which will throw {@link AbstractMethodError} if we forgot to override an abstract
+     * method. Additionally, this test checks the result of some method calls in order to
+     * ensure that the invoked method was the one defined in {@link OGCNamespacePrefixMapper}.
+     *
+     * @param  The {@code OGCNamespacePrefixMapper} or {@code OGCNamespacePrefixMapper_Endorsed}
+     *         instance to check.
+     * @throws ReflectiveOperationException If an error occurred while invoking a method by
+     *         the reflection API.
+     */
+    private void ensureOverrideMethods(final Object mapper) throws ReflectiveOperationException {
         String preferredPrefix = "getPreferredPrefix_method_has_not_been_found";
-        for (final Method method : mapper.getClass().getSuperclass().getDeclaredMethods()) {
+        final Method[] methods = mapper.getClass().getSuperclass().getDeclaredMethods();
+        /*
+         * The methods array is empty if the JVM has loaded the SIS placeholder instead than the
+         * real JAXB class.  It should never happen during the Maven build because those classes
+         * are deleted before the tests execution. However this may happen if the tests are run
+         * from an IDE.
+         */
+        assumeTrue(methods.length != 0);
+        for (final Method method : methods) {
             final int modifiers = method.getModifiers();
             if (Modifier.isPublic(modifiers)) {
                 /*

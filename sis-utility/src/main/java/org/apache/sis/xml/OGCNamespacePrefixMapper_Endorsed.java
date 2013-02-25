@@ -16,29 +16,24 @@
  */
 package org.apache.sis.xml;
 
-import com.sun.xml.internal.bind.marshaller.NamespacePrefixMapper;
+import com.sun.xml.bind.marshaller.NamespacePrefixMapper;
 import net.jcip.annotations.Immutable;
 
 
 /**
  * A mapper between namespace prefixes and URL they represent.
- * This class is an alternative to the standard {@link javax.xml.bind.annotation.XmlSchema}
- * annotation. However this class extends the non-standard {@code NamespacePrefixMapper} class,
- * which is bundled in Sun/Oracle JDK since version 6. We have to use this mapper because the
- * {@code @XmlSchema} annotation doesn't work as expected before JAXB 2.2.4, and the JDK 6 is
- * bundled with JAXB 2.1. Even with working {@code @XmlSchema} annotations, this mapper still
- * a convenient may to gain more control like choosing a default namespace at runtime.
+ * This class is identical to {@link OGCNamespacePrefixMapper} except that it depends
+ * on the endorsed JAXB jar instead than the implementation bundled with JDK 6, i.e.
+ * the package name of the parent {@code NamespacePrefixMapper} class does not have
+ * the "{@code internal}" part.
  *
  * @author  Cédric Briançon (Geomatys)
  * @since   0.3 (derived from geotk-2.5)
  * @version 0.3
  * @module
- *
- * @see <a href="http://java.sun.com/webservices/docs/1.5/jaxb/vendorProperties.html">JAXB extensions</a>
- * @see <a href="https://issues.apache.org/jira/browse/SIS-74">SIS-74</a>
  */
 @Immutable
-final class OGCNamespacePrefixMapper extends NamespacePrefixMapper {
+final class OGCNamespacePrefixMapper_Endorsed extends NamespacePrefixMapper {
     /**
      * If non-null, this namespace will be the default namespace (the one without prefix).
      */
@@ -49,7 +44,7 @@ final class OGCNamespacePrefixMapper extends NamespacePrefixMapper {
      *
      * @param defaultNamespace The namespace which doesn't need prefix, or {@code null} if none.
      */
-    public OGCNamespacePrefixMapper(final String defaultNamespace) {
+    public OGCNamespacePrefixMapper_Endorsed(final String defaultNamespace) {
         this.defaultNamespace = defaultNamespace;
     }
 

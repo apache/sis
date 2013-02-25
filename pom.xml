@@ -512,7 +512,7 @@ Apache SIS is a toolkit for describing location information, including points,
           </groups>
 
           <!-- Internal packages to hide from javadoc. -->
-          <excludePackageNames>org.apache.sis.internal</excludePackageNames>
+          <excludePackageNames>org.apache.sis.internal:com</excludePackageNames>
 
           <!-- Custom taglets, some of them implemented in Java. -->
           <tags>

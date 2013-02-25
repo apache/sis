@@ -65,10 +65,15 @@ public class MarshallerPool {
     private static final long TIMEOUT = 15000000000L; // 15 seconds.
 
     /**
-     * The key to be used in the map given to the constructors for specifying the root namespace.
+     * Kind of JAXB implementations.
+     */
+    private static final byte INTERNAL = 0, ENDORSED = 1, OTHER = 2;
+
+    /**
+     * The key to be used in the map given to the constructors for specifying the default namespace.
      * An example of value for this key is {@code "http://www.isotc211.org/2005/gmd"}.
      */
-    public static final String ROOT_NAMESPACE_KEY = "org.apache.sis.xml.rootNamespace";
+    public static final String DEFAULT_NAMESPACE_KEY = "org.apache.sis.xml.defaultNamespace";
 
     /**
      * The JAXB context to use for creating marshaller and unmarshaller.
@@ -76,11 +81,11 @@ public class MarshallerPool {
     private final JAXBContext context;
 
     /**
-     * {@code true} if the JAXB implementation is the one bundled in JDK 6,
-     * or {@code false} if this is an external implementation like a JAR put
-     * in the endorsed directory.
+     * {@link #INTERNAL} if the JAXB implementation is the one bundled in the JDK,
+     * {@link #ENDORSED} if the TAXB implementation is the endorsed JAXB (Glassfish), or
+     * {@link #OTHER} if unknown.
      */
-    private final boolean internal;
+    private final byte implementation;
 
     /**
      * The mapper between namespaces and prefix.
@@ -133,7 +138,7 @@ public class MarshallerPool {
 
     /**
      * Creates a new factory for the given class to be bound. The keys in the {@code properties} map
-     * shall be one or many of the constants defined in this class like {@link #ROOT_NAMESPACE_KEY}.
+     * shall be one or many of the constants defined in this class like {@link #DEFAULT_NAMESPACE_KEY}.
      *
      * @param  properties       The set of properties to be given to the pool.
      * @param  classesToBeBound The classes to be bound, for example {@code DefaultMetadata.class}.
@@ -161,7 +166,7 @@ public class MarshallerPool {
     /**
      * Creates a new factory for the given packages. The separator character for the packages is the
      * colon. The keys in the {@code properties} map shall be one or many of the constants defined
-     * in this class like {@link #ROOT_NAMESPACE_KEY}.
+     * in this class like {@link #DEFAULT_NAMESPACE_KEY}.
      *
      * @param  properties    The set of properties to be given to the pool.
      * @param  packages      The colon-separated list of packages in which JAXB will search for annotated classes.
@@ -181,22 +186,28 @@ public class MarshallerPool {
     @SuppressWarnings({"unchecked", "rawtypes"}) // Generic array creation
     private MarshallerPool(final Map<String,String> properties, final JAXBContext context) throws JAXBException {
         this.context = context;
-        String rootNamespace = properties.get(ROOT_NAMESPACE_KEY);
+        String rootNamespace = properties.get(DEFAULT_NAMESPACE_KEY);
         if (rootNamespace == null) {
             rootNamespace = "";
         }
         /*
          * Detects if we are using the endorsed JAXB implementation (i.e. the one provided in
-         * separated JAR files).  If not, we will assume that we are using the implementation
-         * bundled in JDK 6. We use the JAXB context package name as a criterion.
+         * separated JAR files) or the one bundled in JDK 6. We use the JAXB context package
+         * name as a criterion:
          *
          *   JAXB endorsed JAR uses    "com.sun.xml.bind"
          *   JAXB bundled in JDK uses  "com.sun.xml.internal.bind"
          */
-        internal = !context.getClass().getName().startsWith("com.sun.xml.bind");
-        String type = "org.apache.sis.xml.OGCNamespacePrefixMapper_Endorsed";
-        if (internal) {
-            type = type.substring(0, type.lastIndexOf('_'));
+        String classname = context.getClass().getName();
+        if (classname.startsWith("com.sun.xml.internal.bind.")) {
+            classname = "org.apache.sis.xml.OGCNamespacePrefixMapper";
+            implementation = INTERNAL;
+        } else if (classname.startsWith(Pooled.ENDORSED_PREFIX)) {
+            classname = "org.apache.sis.xml.OGCNamespacePrefixMapper_Endorsed";
+            implementation = ENDORSED;
+        } else {
+            classname = null;
+            implementation = OTHER;
         }
         /*
          * Instantiates the OGCNamespacePrefixMapper appropriate for the implementation
@@ -204,10 +215,12 @@ public class MarshallerPool {
          * usual ClassNotFoundException if the class was found but its parent class has
          * not been found.
          */
-        try {
-            mapper = Class.forName(type).getConstructor(String.class).newInstance(rootNamespace);
+        if (classname == null) {
+            mapper = null;
+        } else try {
+            mapper = Class.forName(classname).getConstructor(String.class).newInstance(rootNamespace);
         } catch (ReflectiveOperationException | NoClassDefFoundError exception) {
-            throw new JAXBException("Unsupported JAXB implementation.", exception);
+            throw new JAXBException(exception);
         }
         marshallers        = new ConcurrentLinkedDeque<>();
         unmarshallers      = new ConcurrentLinkedDeque<>();
@@ -325,7 +338,7 @@ public class MarshallerPool {
     public Marshaller acquireMarshaller() throws JAXBException {
         Marshaller marshaller = marshallers.poll();
         if (marshaller == null) {
-            marshaller = new PooledMarshaller(createMarshaller(), internal);
+            marshaller = new PooledMarshaller(createMarshaller(), implementation == INTERNAL);
         }
         return marshaller;
     }
@@ -352,7 +365,7 @@ public class MarshallerPool {
     public Unmarshaller acquireUnmarshaller() throws JAXBException {
         Unmarshaller unmarshaller = unmarshallers.poll();
         if (unmarshaller == null) {
-            unmarshaller = new PooledUnmarshaller(createUnmarshaller(), internal);
+            unmarshaller = new PooledUnmarshaller(createUnmarshaller(), implementation == INTERNAL);
         }
         return unmarshaller;
     }
@@ -386,13 +399,20 @@ public class MarshallerPool {
      * @throws JAXBException If an error occurred while creating and configuring the marshaller.
      */
     protected Marshaller createMarshaller() throws JAXBException {
-        final String mapperKey = internal ?
-            "com.sun.xml.internal.bind.namespacePrefixMapper" :
-            "com.sun.xml.bind.namespacePrefixMapper";
         final Marshaller marshaller = context.createMarshaller();
         marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
         marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
-        marshaller.setProperty(mapperKey, mapper);
+        switch (implementation) {
+            case INTERNAL: {
+                marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", mapper);
+                break;
+            }
+            case ENDORSED: {
+                marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", mapper);
+                break;
+            }
+            // Do nothing for the OTHER case.
+        }
         synchronized (AdapterReplacement.PROVIDER) {
             for (final AdapterReplacement adapter : AdapterReplacement.PROVIDER) {
                 adapter.register(marshaller);
