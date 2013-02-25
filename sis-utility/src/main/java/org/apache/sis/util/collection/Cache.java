@@ -176,6 +176,15 @@ public class Cache<K,V> extends AbstractMap<K,V> {
     private final boolean soft;
 
     /**
+     * {@code true} if different values may be assigned to the same key. This is usually
+     * an error, so the default {@code Cache} behavior is to thrown an exception in such
+     * case.
+     *
+     * @see #isKeyCollisionAllowed()
+     */
+    private volatile boolean isKeyCollisionAllowed;
+
+    /**
      * A view over the entries in the cache.
      */
     private transient Set<Entry<K,V>> entries;
@@ -509,6 +518,18 @@ public class Cache<K,V> extends AbstractMap<K,V> {
             @SuppressWarnings("unchecked")
             final Work work = (Work) value;
             if (work.lock.isHeldByCurrentThread()) {
+                if (isKeyCollisionAllowed()) {
+                    /*
+                     * Example of key collision: the EPSG database defines the CoordinateOperation
+                     * 8653 ("ED50 to WGS84" using polynomial equations).  The EPSG factory sets a
+                     * lock for this code, then searches for OperationParameters associated to this
+                     * operation. One of those parameters ("Bu0v4") has the same key (EPSG:8653).
+                     * So we get a key collision. If we ignore the second occurrence, its value will
+                     * not be cached. This is okay since the value that we really want to cache is
+                     * CoordinateOperation, which is associated to the first occurrence of that key.
+                     */
+                    return new Simple<>(null);
+                }
                 throw new IllegalStateException(Errors.format(Errors.Keys.RecursiveCreateCallForKey_1, key));
             }
             return work.new Wait();
@@ -610,7 +631,7 @@ public class Cache<K,V> extends AbstractMap<K,V> {
          */
         @Override
         public void putAndUnlock(final V result) throws IllegalStateException {
-            if (result != value) {
+            if (result != value && !isKeyCollisionAllowed()) {
                 throw new IllegalStateException(Errors.format(Errors.Keys.KeyCollision_1, "<unknown>"));
             }
         }
@@ -721,7 +742,7 @@ public class Cache<K,V> extends AbstractMap<K,V> {
              */
             @Override
             public void putAndUnlock(final V result) throws IllegalStateException {
-                if (result != get()) {
+                if (result != get() && !isKeyCollisionAllowed()) {
                     throw new IllegalStateException(Errors.format(Errors.Keys.KeyCollision_1, key));
                 }
             }
@@ -848,6 +869,40 @@ public class Cache<K,V> extends AbstractMap<K,V> {
     public Set<Entry<K,V>> entrySet() {
         final Set<Entry<K,V>> es = entries;
         return (es != null) ? es : (entries = new CacheEntries<>(map.entrySet()));
+    }
+
+    /**
+     * Returns {@code true} if different values may be assigned to the same key.
+     * The default value is {@code false}.
+     *
+     * @return {@code true} if key collisions are allowed.
+     */
+    public boolean isKeyCollisionAllowed() {
+        return isKeyCollisionAllowed;
+    }
+
+    /**
+     * If set to {@code true}, different values may be assigned to the same key. This is usually an
+     * error, so the default {@code Cache} behavior is to thrown an {@link IllegalStateException}
+     * in such cases, typically when {@link Handler#putAndUnlock(Object)} is invoked. However in
+     * some cases we may want to relax this check. For example the EPSG database sometime assigns
+     * the same key to different kind of objects.
+     *
+     * <p>If key collisions are allowed and two threads invoke {@link #lock(Object)} concurrently
+     * for the same key, then the value to be stored in the map will be the one computed by the
+     * first thread who got the lock. The value computed by any other concurrent thread will be
+     * ignored by this {@code Cache} class. However those threads still return their computed
+     * values to their callers.</p>
+     *
+     * <p>This property can also be set in order to allow some recursivity. If during the creation
+     * of an object, the program asks to this {@code Cache} for the same object (using the same key),
+     * then the default {@code Cache} implementation will consider this situation as a key collision
+     * unless this property has been set to {@code true}.</p>
+     *
+     * @param allowed {@code true} if key collisions should be allowed.
+     */
+    public void setKeyCollisionAllowed(final boolean allowed) {
+        isKeyCollisionAllowed = allowed;
     }
 
     /**
