@@ -60,16 +60,16 @@ public final strictfp class RangeSetTest extends TestCase {
     /**
      * Verifies the value of {@link RangeSet#contains(Range, boolean)}.
      *
-     * @param ranges  The range set to test.
-     * @param range   The range to check for inclusion.
-     * @param exact   The expected value in exact mode.
-     * @param lenient The expected value in non-exact mode.
+     * @param ranges   The range set to test.
+     * @param range    The range to check for inclusion.
+     * @param exact    The expected value in exact mode.
+     * @param included The expected value in non-exact mode.
      */
     private static <E extends Comparable<? super E>> void checkContains(final RangeSet<E> ranges,
-            final Range<E> range, final boolean exact, final boolean lenient)
+            final Range<E> range, final boolean exact, final boolean included)
     {
-        assertEquals("RangeSet.contains(…, true)",  exact,  ranges.contains(range, true));
-        assertEquals("RangeSet.contains(…, false)", lenient, ranges.contains(range));
+        assertEquals("RangeSet.contains(…, true)",  exact,    ranges.contains(range, true));
+        assertEquals("RangeSet.contains(…, false)", included, ranges.contains(range));
     }
 
     /**

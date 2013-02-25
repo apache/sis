@@ -28,6 +28,8 @@
             <word>loggings</word>
             <word>marshallable</word>
             <word>marshalled</word>
+            <word>marshaller</word>
+            <word>marshallers</word>
             <word>marshalling</word>
             <word>metadata</word>
             <word>monospaced</word>
@@ -36,6 +38,8 @@
             <word>timezone</word>
             <word>Unicode</word>
             <word>unmarshal</word>
+            <word>unmarshaller</word>
+            <word>unmarshallers</word>
             <word>unmarshalling</word>
             <word>whitespaces</word>
         </spellchecker-wordlist>
