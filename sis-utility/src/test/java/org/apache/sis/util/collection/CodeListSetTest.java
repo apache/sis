@@ -16,10 +16,17 @@
  */
 package org.apache.sis.util.collection;
 
+import java.util.Set;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Random;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.metadata.spatial.PixelOrientation;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.util.iso.LargeCodeList;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -202,5 +209,70 @@ public final strictfp class CodeListSetTest extends TestCase {
         assertTrue(c.addAll(o));
         assertArrayEquals(new Object[] {NORTH, NORTH_EAST, EAST, UP}, c.toArray());
         assertFalse("Invoking a second time should not make any difference.", c.addAll(o));
+    }
+
+    /**
+     * Tests the various methods with a code list containing more than 64 elements.
+     */
+    @Test
+    public void testLargeCodeList() {
+        final Set<LargeCodeList> master = new HashSet<>(Arrays.asList(LargeCodeList.values()));
+        assertTrue("This test requires more than 64 elements.", master.size() > Long.SIZE);
+        final CodeListSet<LargeCodeList> c = new CodeListSet<>(LargeCodeList.class);
+        /*
+         * Copy all content from the master to the CodeListSet. This will indirectly
+         * test CodeListSet.add(E), through the AbstractSet.addAll(Collection) method.
+         */
+        assertTrue(c.addAll(master));
+        assertEquals(master.size(), c.size());
+        assertEquals(master, c);
+        assertFalse("Invoking a second time should not make any difference.", c.addAll(master));
+        /*
+         * Keep a copy of the set before we modify it.
+         */
+        final CodeListSet<LargeCodeList> clone = c.clone();
+        assertNotSame("Clone shall be a new instance.", c, clone);
+        assertEquals("Clone shall be equal to the original.", master, clone);
+        /*
+         * Tests contains(Object) and remove(Object). We also remove elements
+         * from the master set, then we verify that the result is the same.
+         */
+        LargeCodeList lastRemoved = null;
+        final Random random = new Random();
+        do {
+            for (final Iterator<LargeCodeList> it=master.iterator(); it.hasNext();) {
+                final LargeCodeList code = it.next();
+                assertTrue(code.name(), c.contains(code));
+                if (random.nextBoolean()) {
+                    assertTrue (code.name(), c.remove(code));
+                    assertFalse(code.name(), c.contains(code));
+                    it.remove();
+                    lastRemoved = code;
+                    if (master.size() == 1) {
+                        // Very unlikely, but let be safe since the tests
+                        // after the look require at least one element.
+                        break;
+                    }
+                }
+            }
+        } while (lastRemoved == null);
+        assertEquals(master, c);
+        assertFalse(c.isEmpty());
+        /*
+         * Test containsAll(Collection) and removeAll(Collection).
+         */
+        assertTrue ("The original set shall contain the decimated set.",   clone.containsAll(c));
+        assertFalse("The decimated set can not contain the original set.", c.containsAll(clone));
+        assertTrue ("Original set minus one element.",                     clone.remove(lastRemoved));
+        assertTrue ("Add an element to be ignored by removeAll(…).",       c.add(lastRemoved));
+        assertTrue ("Remove all elements found in the decimated set.",     clone.removeAll(c));
+        assertTrue ("Expect no common elements.", Collections.disjoint(master, clone));
+        assertFalse("Invoking a second time should not make any difference.", clone.removeAll(c));
+        /*
+         * Test retainAll(Collection).
+         */
+        assertTrue("Add the element to be retained.", clone.add(lastRemoved));
+        assertTrue(c.retainAll(clone));
+        assertEquals(Collections.singleton(lastRemoved), c);
     }
 }
