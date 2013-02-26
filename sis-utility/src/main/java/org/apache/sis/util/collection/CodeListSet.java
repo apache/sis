@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.io.Serializable;
 import java.lang.reflect.Modifier;
+import net.jcip.annotations.NotThreadSafe;
 import org.opengis.util.CodeList;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.resources.Errors;
@@ -30,7 +31,23 @@ import org.apache.sis.util.resources.Errors;
 
 /**
  * A specialized {@code Set} implementation for use with {@link CodeList} values.
- * This implementation uses a bit mask for efficient storage.
+ * All elements in a {@code CodeListSet} are of the same {@code CodeList} class,
+ * which must be final. Iterators traverse the elements in the order in which the
+ * code list constants are declared.
+ *
+ * {@section Implementation note}
+ * {@code CodeListSet} is implemented internally by bit vectors for compact and efficient storage.
+ * All bulk operations ({@code addAll}, {@code removeAll}, {@code containsAll}) are very quick if
+ * their argument is also a {@code CodeListSet} instance.
+ *
+ * {@section Usage example}
+ * The following example creates a set of {@link org.opengis.referencing.cs.AxisDirection}s
+ * for a (<var>x</var>,<var>y</var>,<var>z</var>) coordinate system:
+ *
+ * {@preformat java
+ *   CodeListSet<AxisDirection> codes = new CodeListSet<>(AxisDirection.class);
+ *   Collections.addAll(codes, AxisDirection.EAST, AxisDirection.NORTH, AxisDirection.UP),
+ * }
  *
  * @param <E> The type of code list elements in the set.
  *
@@ -38,7 +55,10 @@ import org.apache.sis.util.resources.Errors;
  * @since   0.3
  * @version 0.3
  * @module
+ *
+ * @see java.util.EnumSet
  */
+@NotThreadSafe
 public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
         implements CheckedContainer<E>, Cloneable, Serializable
 {
@@ -46,6 +66,12 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = 3648460713432430695L;
+
+    /**
+     * A pool of code list arrays. When many {@code CodeListSet} instances are for the
+     * same code list type, this allows those instances to share the same arrays.
+     */
+    private static final WeakHashSet<CodeList[]> POOL = new WeakHashSet<>(CodeList[].class);
 
     /**
      * The type of code list elements.
@@ -95,6 +121,35 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
     }
 
     /**
+     * Creates set for code lists of the given type. If the {@code fill} argument is {@code false},
+     * then the new set will be initially empty. Otherwise the new set will be filled with all code
+     * list elements of the given type that are known at construction time. Note that if new code
+     * list elements are created after the invocation of this {@code CodeListSet} constructor, then
+     * those new elements will <em>not</em> be in this set.
+     *
+     * @param  elementType The type of code list elements to be included in this set.
+     * @param  fill {@code true} for filling the set with all known elements if the given type,
+     *         or {@code false} for leaving the set empty.
+     * @throws IllegalArgumentException If the given class is not final.
+     */
+    public CodeListSet(final Class<E> elementType, final boolean fill) throws IllegalArgumentException {
+        this(elementType);
+        if (fill) {
+            codes = POOL.unique(Types.getCodeValues(elementType));
+            int n = codes.length;
+            if (n < Long.SIZE) {
+                values = (1L << n) - 1;
+            } else {
+                values = -1;
+                if ((n -= Long.SIZE) != 0) {
+                    supplementary = new BitSet(n);
+                    supplementary.set(0, n);
+                }
+            }
+        }
+    }
+
+    /**
      * Returns the type of code list elements in this set.
      *
      * @return The type of code list elements in this set.
@@ -111,7 +166,7 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
     final E valueOf(final int ordinal) {
         E[] array = codes;
         if (array == null || ordinal >= array.length) {
-            codes = array = Types.getCodeValues(elementType);
+            codes = array = POOL.unique(Types.getCodeValues(elementType));
         }
         return array[ordinal];
     }
