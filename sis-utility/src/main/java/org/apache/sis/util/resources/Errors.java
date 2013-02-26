@@ -68,6 +68,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int CanNotComputeDerivative = 44;
 
         /**
+         * Class ‘{0}’ is not final.
+         */
+        public static final int ClassNotFinal_1 = 71;
+
+        /**
          * Can not clone an object of type ‘{0}’.
          */
         public static final int CloneNotSupported_1 = 42;
