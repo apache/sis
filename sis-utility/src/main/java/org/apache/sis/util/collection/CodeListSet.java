@@ -203,6 +203,13 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
     }
 
     /**
+     * Returns the bitmask to use for a bulk operation with an other set of code lists.
+     */
+    private long mask(final CodeListSet<?> other) {
+        return (elementType == other.elementType) ? other.values : 0;
+    }
+
+    /**
      * Adds all elements of the given collection from this set.
      *
      * @param  c The collection containing elements to be removed from this set.
@@ -211,10 +218,7 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
     @Override
     public boolean removeAll(final Collection<?> c) {
         if (c instanceof CodeListSet) {
-            final CodeListSet<?> o = (CodeListSet) c;
-            if (elementType == o.elementType) {
-                return values != (values &= ~o.values);
-            }
+            return values != (values &= ~mask((CodeListSet<?>) c));
         }
         return super.removeAll(c);
     }
@@ -228,10 +232,7 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
     @Override
     public boolean retainAll(final Collection<?> c) {
         if (c instanceof CodeListSet) {
-            final CodeListSet<?> o = (CodeListSet) c;
-            if (elementType == o.elementType) {
-                return values != (values &= o.values);
-            }
+            return values != (values &= mask((CodeListSet<?>) c));
         }
         return super.retainAll(c);
     }
