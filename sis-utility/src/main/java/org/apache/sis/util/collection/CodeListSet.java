@@ -17,6 +17,7 @@
 package org.apache.sis.util.collection;
 
 import java.util.AbstractSet;
+import java.util.BitSet;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -31,15 +32,6 @@ import org.apache.sis.util.resources.Errors;
  * A specialized {@code Set} implementation for use with {@link CodeList} values.
  * This implementation uses a bit mask for efficient storage.
  *
- * {@section Current limitation}
- * The current implementation is restricted to code list having a maximum of 64 values.
- * This restriction may be removed in a future Apache SIS version.
- *
- * {@note The standard <code>EnumSet</code> class uses different implementations depending on
- *        whether the enumeration contains more or less than 64 elements. We can not apply the
- *        same strategy for <code>CodeListSet</code>, because new code list elements can be created
- *        at runtime. Consequently this implementation needs to be able to growth its capacity.}
- *
  * @param <E> The type of code list elements in the set.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -48,7 +40,7 @@ import org.apache.sis.util.resources.Errors;
  * @module
  */
 public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
-        implements CheckedContainer<E>, Serializable
+        implements CheckedContainer<E>, Cloneable, Serializable
 {
     /**
      * For cross-version compatibility.
@@ -57,20 +49,36 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
 
     /**
      * The type of code list elements.
+     *
+     * @see #getElementType()
      */
-    final Class<E>  elementType;
+    private final Class<E>  elementType;
 
     /**
      * A bitmask of code list values present in this map.
      */
-    long values;
+    private long values;
+
+    /**
+     * The bit set for supplementary values beyond the {@code values} mask, or {@code null}
+     * if none. This is very rarely needed, but we need this field in case a code list has
+     * more than 64 elements.
+     *
+     * {@note The standard <code>EnumSet</code> class uses different implementations depending on
+     *        whether the enumeration contains more or less than 64 elements. We can not apply the
+     *        same strategy for <code>CodeListSet</code>, because new code list elements can be created
+     *        at runtime. Consequently this implementation needs to be able to growth its capacity.}
+     */
+    private BitSet supplementary;
 
     /**
      * All possible code list elements, fetched when first needed.
      * Note that this array may need to be fetched more than once,
      * because code list elements can be dynamically added.
+     *
+     * @see #valueOf(int)
      */
-    transient E[] codes;
+    private transient E[] codes;
 
     /**
      * Creates an initially empty set for code lists of the given type.
@@ -97,11 +105,27 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
     }
 
     /**
+     * Returns the code list for the given ordinal value. This methods depends
+     * only on the code list type; it does not depend on the content of this set.
+     */
+    final E valueOf(final int ordinal) {
+        E[] array = codes;
+        if (array == null || ordinal >= array.length) {
+            codes = array = Types.getCodeValues(elementType);
+        }
+        return array[ordinal];
+    }
+
+    /**
      * Removes all elements from this set.
      */
     @Override
     public void clear() {
         values = 0;
+        final BitSet s = supplementary;
+        if (s != null) {
+            s.clear();
+        }
     }
 
     /**
@@ -109,7 +133,8 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
      */
     @Override
     public boolean isEmpty() {
-        return values == 0;
+        final BitSet s;
+        return values == 0 && ((s = supplementary) == null || s.isEmpty());
     }
 
     /**
@@ -119,22 +144,39 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
      */
     @Override
     public int size() {
-        return Long.bitCount(values);
+        int n = Long.bitCount(values);
+        final BitSet s = supplementary;
+        if (s != null) {
+            n += s.cardinality();
+        }
+        return n;
     }
 
     /**
      * Adds the specified code list element in this set.
      *
-     * @param  e The code list element to add in this set.
+     * @param  element The code list element to add in this set.
      * @return {@code true} if this set has been modified as a consequence of this method call.
      */
     @Override
-    public boolean add(final E e) {
-        final long mask = 1L << e.ordinal();
-        if (mask == 0) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.IndexOutOfBounds_1, "ordinal"));
+    public boolean add(final E element) {
+        int ordinal = element.ordinal();
+        if (ordinal < Long.SIZE) {
+            return values != (values |= (1L << ordinal));
         }
-        return values != (values |= mask);
+        /*
+         * The above code is suffisient in the vast majority of cases. In the rare cases where
+         * there is more than 64 elements, create a BitSet for storing the supplementary values.
+         */
+        BitSet s = supplementary;
+        if (s == null) {
+            supplementary = s = new BitSet();
+        }
+        if (s.get(ordinal -= Long.SIZE)) {
+            return false;
+        }
+        s.set(ordinal);
+        return true;
     }
 
     /**
@@ -148,7 +190,24 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
     @Override
     public boolean remove(final Object object) {
         if (elementType.isInstance(object)) {
-            return values != (values &= ~(1L << ((CodeList) object).ordinal()));
+            return clear(((CodeList<?>) object).ordinal());
+        }
+        return false;
+    }
+
+    /**
+     * Clears the bit at the given ordinal value. This method is invoked by
+     * {@link #remove(Object)} or by {@link Iter#remove()}.
+     */
+    final boolean clear(int ordinal) {
+        if (ordinal < Long.SIZE) {
+            return values != (values &= ~(1L << ordinal));
+        }
+        // Rare cases where there is more than 64 elements.
+        final BitSet s = supplementary;
+        if (s != null && s.get(ordinal -= Long.SIZE)) {
+            s.clear(ordinal);
+            return true;
         }
         return false;
     }
@@ -164,7 +223,15 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
     @Override
     public boolean contains(final Object object) {
         if (elementType.isInstance(object)) {
-            return (values & (1L << ((CodeList) object).ordinal())) != 0;
+            int ordinal = ((CodeList<?>) object).ordinal();
+            if (ordinal < Long.SIZE) {
+                return (values & (1L << ordinal)) != 0;
+            }
+            // Rare cases where there is more than 64 elements.
+            final BitSet s = supplementary;
+            if (s != null) {
+                return s.get(ordinal - Long.SIZE);
+            }
         }
         return false;
     }
@@ -178,10 +245,28 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
     @Override
     public boolean containsAll(final Collection<?> c) {
         if (c instanceof CodeListSet) {
-            final CodeListSet<?> o = (CodeListSet) c;
+            final CodeListSet<?> o = (CodeListSet<?>) c;
             if (elementType == o.elementType) {
-                return values == (values | o.values);
+                if (values == (values | o.values)) {
+                    /*
+                     * Code below this point checks for the rare cases
+                     * where there is more than 64 code list elements.
+                     */
+                    final BitSet s = supplementary;
+                    final BitSet os = o.supplementary;
+                    if (( s == null ||  s.isEmpty()) &&
+                        (os == null || os.isEmpty()))
+                    {
+                        return true;
+                    }
+                    if (s != null && os != null) {
+                        final BitSet tmp = (BitSet) os.clone();
+                        tmp.andNot(s);
+                        return tmp.isEmpty();
+                    }
+                }
             }
+            return false;
         }
         return super.containsAll(c);
     }
@@ -195,9 +280,32 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
     @Override
     public boolean addAll(final Collection<? extends E> c) throws IllegalArgumentException {
         if (c instanceof CodeListSet) {
+            final CodeListSet<?> o = (CodeListSet<?>) c;
             // Following assertion should be ensured by parameterized types.
-            assert elementType.isAssignableFrom(((CodeListSet) c).elementType);
-            return values != (values |= ((CodeListSet) c).values);
+            assert elementType.isAssignableFrom(o.elementType);
+            boolean changed = (values != (values |= o.values));
+            /*
+             * Code below this point is for the rare cases
+             * where there is more than 64 code list elements.
+             */
+            final BitSet os = o.supplementary;
+            if (os != null) {
+                final BitSet s = supplementary;
+                if (s == null) {
+                    if (!os.isEmpty()) {
+                        supplementary = (BitSet) os.clone();
+                        changed = true;
+                    }
+                } else if (changed) {
+                    // Avoid the cost of computing cardinality.
+                    s.or(os);
+                } else {
+                    final int cardinality = s.cardinality();
+                    s.or(os);
+                    changed = (cardinality != s.cardinality());
+                }
+            }
+            return changed;
         }
         return super.addAll(c);
     }
@@ -218,7 +326,26 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
     @Override
     public boolean removeAll(final Collection<?> c) {
         if (c instanceof CodeListSet) {
-            return values != (values &= ~mask((CodeListSet<?>) c));
+            boolean changed = (values != (values &= ~mask((CodeListSet<?>) c)));
+            /*
+             * Code below this point is for the rare cases
+             * where there is more than 64 code list elements.
+             */
+            final BitSet s = supplementary;
+            if (s != null) {
+                final BitSet os = ((CodeListSet<?>) c).supplementary;
+                if (os != null) {
+                    if (changed) {
+                        // Avoid the cost of computing cardinality.
+                        s.andNot(os);
+                    } else {
+                        final int cardinality = s.cardinality();
+                        s.andNot(os);
+                        changed = (cardinality != s.cardinality());
+                    }
+                }
+            }
+            return changed;
         }
         return super.removeAll(c);
     }
@@ -232,19 +359,43 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
     @Override
     public boolean retainAll(final Collection<?> c) {
         if (c instanceof CodeListSet) {
-            return values != (values &= mask((CodeListSet<?>) c));
+            boolean changed = (values != (values &= mask((CodeListSet<?>) c)));
+            /*
+             * Code below this point is for the rare cases
+             * where there is more than 64 code list elements.
+             */
+            final BitSet s = supplementary;
+            if (s != null) {
+                final BitSet os = ((CodeListSet<?>) c).supplementary;
+                if (os == null) {
+                    changed |= !s.isEmpty();
+                    s.clear();
+                } else if (changed) {
+                    // Avoid the cost of computing cardinality.
+                    s.and(os);
+                } else {
+                    final int cardinality = s.cardinality();
+                    s.and(os);
+                    changed = (cardinality != s.cardinality());
+                }
+            }
+            return changed;
         }
         return super.retainAll(c);
     }
 
     /**
      * Returns an iterator over the elements in this set.
+     * The instance returned by this implementation will iterate over a snapshot of this
+     * {@code CodeListSet} content at the time this method has been invoked. Changes in
+     * this {@code CodeListSet} made after this method call will not affect the values
+     * returned by the iterator.
      *
      * @return An iterator over the elements in this set.
      */
     @Override
     public Iterator<E> iterator() {
-        return new Iter();
+        return new Iter(values, supplementary);
     }
 
     /**
@@ -258,16 +409,23 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
         private long remaining;
 
         /**
-         * Mask with all bits set to 1 except the bit for the last value returned by {@link #next()}.
-         * This mask is 0 if {@code next()} has not yet been invoked.
+         * Initialized to a clone of {@link CodeListSet#supplementary}, then the bits are cleared
+         * as we progress in the iteration. The bit set become empty when the iteration is done.
          */
-        private long mask;
+        private final BitSet more;
 
         /**
-         * Creates a new iterator.
+         * Ordinal value of the last element returned by {@link #next()}, or -1 if none.
          */
-        Iter() {
+        private int last;
+
+        /**
+         * Creates a new iterator initialized to the given values.
+         */
+        Iter(final long values, final BitSet supplementary) {
             remaining = values;
+            more = (supplementary != null) ? (BitSet) supplementary.clone() : null;
+            last = -1;
         }
 
         /**
@@ -275,7 +433,7 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
          */
         @Override
         public boolean hasNext() {
-            return remaining != 0;
+            return remaining != 0 || (more != null && !more.isEmpty());
         }
 
         /**
@@ -283,17 +441,18 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
          */
         @Override
         public E next() {
-            final int index = Long.numberOfTrailingZeros(remaining);
-            if (index >= Long.SIZE) {
-                throw new NoSuchElementException();
+            int ordinal = Long.numberOfTrailingZeros(remaining);
+            if (ordinal >= Long.SIZE) {
+                // Rare case when we have more than 64 elements.
+                if (more == null || (ordinal = more.nextSetBit(0)) < 0) {
+                    throw new NoSuchElementException();
+                }
+                more.clear(ordinal);
+                ordinal += Long.SIZE;
             }
-            mask = ~(1L << index);
-            remaining &= mask;
-            E[] array = codes;
-            if (array == null || index >= array.length) {
-                codes = array = Types.getCodeValues(elementType);
-            }
-            return array[index];
+            last = ordinal;
+            remaining &= ~(1L << ordinal);
+            return valueOf(ordinal);
         }
 
         /**
@@ -301,11 +460,31 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
          */
         @Override
         public void remove() {
-            if (mask == 0) {
+            if (last < 0) {
                 throw new IllegalStateException();
             }
-            values &= mask;
-            mask = 0;
+            clear(last);
+            last = -1;
         }
+    }
+
+    /**
+     * Returns a clone of this set.
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    public CodeListSet<E> clone() {
+        @SuppressWarnings("unchecked")
+        final CodeListSet<E> clone;
+        try {
+            clone = (CodeListSet<E>) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError(e); // Should never happen, since we are cloneable.
+        }
+        final BitSet s = supplementary;
+        if (s != null) {
+            clone.supplementary = (BitSet) s.clone();
+        }
+        return clone;
     }
 }
