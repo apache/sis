@@ -17,6 +17,7 @@
 package org.apache.sis.util.collection;
 
 import org.opengis.referencing.cs.AxisDirection;
+import org.opengis.metadata.spatial.PixelOrientation;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOnMethod;
 import org.junit.Test;
@@ -57,6 +58,19 @@ public final strictfp class CodeListSetTest extends TestCase {
     }
 
     /**
+     * Creates a code list of an other kind. The returned set contains a code list having
+     * the same ordinal value than {@link AxisDirection#NORTH}, so we can detect if the
+     * {@code SortedSet} confuses the code list types.
+     */
+    private CodeListSet<PixelOrientation> createOtherKind() {
+        // For the validity of the tests, ordinal value must be the same.
+        assertEquals(NORTH.ordinal(), PixelOrientation.LOWER_LEFT.ordinal());
+        final CodeListSet<PixelOrientation> c = new CodeListSet<>(PixelOrientation.class);
+        assertTrue(c.add(PixelOrientation.LOWER_LEFT));
+        return c;
+    }
+
+    /**
      * Tests the {@link CodeListSet#toArray()} method.
      * This will indirectly tests the iterator.
      */
@@ -91,6 +105,10 @@ public final strictfp class CodeListSetTest extends TestCase {
         assertFalse("WEST",   c.contains(WEST));
         assertTrue ("UP",     c.contains(UP));
         assertFalse("DOWN",   c.contains(DOWN));
+
+        assertFalse("Should be null-safe.", c.contains(null));
+        assertFalse("Code list of other kind should not be included.",
+                c.contains(PixelOrientation.LOWER_LEFT));
     }
 
     /**
@@ -100,6 +118,10 @@ public final strictfp class CodeListSetTest extends TestCase {
     @DependsOnMethod("testContains")
     public void testRemove() {
         final CodeListSet<AxisDirection> c = create(4);
+        assertFalse("Should be null-safe.", c.remove(null));
+        assertFalse("Code list of other kind should not be included.",
+                c.remove(PixelOrientation.LOWER_LEFT));
+
         assertTrue ("NORTH",  c.remove  (NORTH));
         assertFalse("SOUTH",  c.remove  (SOUTH));
         assertFalse("NORTH",  c.contains(NORTH));
@@ -129,6 +151,7 @@ public final strictfp class CodeListSetTest extends TestCase {
         assertTrue (c.containsAll(o));
         assertTrue (o.add(NORTH_EAST));
         assertFalse(c.containsAll(o));
+        assertFalse(c.containsAll(createOtherKind()));
     }
 
     /**
@@ -141,6 +164,7 @@ public final strictfp class CodeListSetTest extends TestCase {
         final CodeListSet<AxisDirection> o = create(2);
         assertTrue(o.add(NORTH_EAST)); // Extra value shall be ignored.
 
+        assertFalse(c.removeAll(createOtherKind()));
         assertTrue(c.removeAll(o));
         assertArrayEquals(new Object[] {UP, FUTURE}, c.toArray());
         assertFalse("Invoking a second time should not make any difference.", c.removeAll(o));
@@ -161,6 +185,8 @@ public final strictfp class CodeListSetTest extends TestCase {
         assertArrayEquals(new Object[] {NORTH, EAST}, c.toArray());
         assertFalse("Invoking a second time should not make any difference.", c.retainAll(o));
         assertEquals(2, c.size());
+        assertTrue(c.retainAll(createOtherKind()));
+        assertTrue(c.isEmpty());
     }
 
     /**
