@@ -21,9 +21,9 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.io.Serializable;
+import java.lang.reflect.Modifier;
 import org.opengis.util.CodeList;
 import org.apache.sis.util.iso.Types;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -38,7 +38,7 @@ import org.apache.sis.util.resources.Errors;
  * {@note The standard <code>EnumSet</code> class uses different implementations depending on
  *        whether the enumeration contains more or less than 64 elements. We can not apply the
  *        same strategy for <code>CodeListSet</code>, because new code list elements can be created
- *        at runtime. Consequently this implementation needs to be able to handle every cases.}
+ *        at runtime. Consequently this implementation needs to be able to growth its capacity.}
  *
  * @param <E> The type of code list elements in the set.
  *
@@ -74,11 +74,15 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
 
     /**
      * Creates an initially empty set for code lists of the given type.
+     * The given {@code CodeList} type shall be final.
      *
-     * @param elementType The type of code list elements to be included in this set.
+     * @param  elementType The type of code list elements to be included in this set.
+     * @throws IllegalArgumentException If the given class is not final.
      */
-    public CodeListSet(final Class<E> elementType) {
-        ArgumentChecks.ensureNonNull("elementType", elementType);
+    public CodeListSet(final Class<E> elementType) throws IllegalArgumentException {
+        if (!Modifier.isFinal(elementType.getModifiers())) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.ClassNotFinal_1, elementType));
+        }
         this.elementType = elementType;
     }
 
@@ -278,7 +282,7 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
          */
         @Override
         public E next() {
-            final int index = Long.numberOfLeadingZeros(remaining);
+            final int index = Long.numberOfTrailingZeros(remaining);
             if (index >= Long.SIZE) {
                 throw new NoSuchElementException();
             }
