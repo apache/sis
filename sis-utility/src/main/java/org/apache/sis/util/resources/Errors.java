@@ -68,6 +68,16 @@ public final class Errors extends IndexedResourceBundle {
         public static final int CanNotComputeDerivative = 44;
 
         /**
+         * Can not convert from type ‘{0}’ to type ‘{1}’.
+         */
+        public static final int CanNotConvertFromType_2 = 72;
+
+        /**
+         * Can not convert value “{0}” to type ‘{1}’.
+         */
+        public static final int CanNotConvertValue_2 = 74;
+
+        /**
          * Class ‘{0}’ is not final.
          */
         public static final int ClassNotFinal_1 = 71;
@@ -243,6 +253,11 @@ public final class Errors extends IndexedResourceBundle {
          * Argument ‘{0}’ shall not be negative. The given value was {1}.
          */
         public static final int NegativeArgument_2 = 8;
+
+        /**
+         * No property named “{0}” has been found in “{1}”.
+         */
+        public static final int NoSuchProperty_2 = 73;
 
         /**
          * No unit of measurement has been specified.
