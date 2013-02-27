@@ -22,6 +22,7 @@ import java.util.Formattable;
 import java.util.FormattableFlags;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.util.Utilities;
+import org.apache.sis.util.CharSequences;
 
 
 /**
@@ -45,11 +46,15 @@ public abstract class AbstractInternationalString implements InternationalString
      * if this string has not yet been determined. This is the default string returned by
      * {@link #toString()} and others methods from the {@link CharSequence} interface.
      *
-     * <p>This field is not serialized because serialization is often used for data transmission
-     * between a server and a client, and the client may not use the same locale than the server.
-     * We want the locale to be examined again on the client side.</p>
+     * {@section Thread safety}
+     * For thread safety this field shall either be read and written in a synchronized block,
+     * or be fixed at construction time and never changed after than point. All other usages
+     * are prohibited.
      *
-     * This field is read and written by {@link SimpleInternationalString}.
+     * {@section Serialization}
+     * This field is not serialized because serialization is often used for data transmission
+     * between a server and a client, and the client may not use the same locale than the server.
+     * We want the locale to be examined again on the client side.
      */
     transient String defaultValue;
 
@@ -67,15 +72,7 @@ public abstract class AbstractInternationalString implements InternationalString
      */
     @Override
     public int length() {
-        String text = defaultValue;
-        if (text == null) {
-            text = toString();
-            if (text == null) {
-                return 0;
-            }
-            defaultValue = text;
-        }
-        return text.length();
+        return CharSequences.length(toString());
     }
 
     /**
@@ -88,15 +85,7 @@ public abstract class AbstractInternationalString implements InternationalString
      */
     @Override
     public char charAt(final int index) throws IndexOutOfBoundsException {
-        String text = defaultValue;
-        if (text == null) {
-            text = toString();
-            if (text == null) {
-                throw new StringIndexOutOfBoundsException();
-            }
-            defaultValue = text;
-        }
-        return text.charAt(index);
+        return toString().charAt(index);
     }
 
     /**
@@ -111,16 +100,12 @@ public abstract class AbstractInternationalString implements InternationalString
      */
     @Override
     public CharSequence subSequence(final int start, final int end) {
-        String text = defaultValue;
+        final String text = toString();
         if (text == null) {
-            text = toString();
-            if (text == null) {
-                if (start == 0 && end == 0) {
-                    return "";
-                }
-                throw new StringIndexOutOfBoundsException();
+            if (start == 0 && end == 0) {
+                return "";
             }
-            defaultValue = text;
+            throw new StringIndexOutOfBoundsException();
         }
         return text.substring(start, end);
     }
@@ -165,7 +150,7 @@ public abstract class AbstractInternationalString implements InternationalString
      * @return The string in the default locale.
      */
     @Override
-    public String toString() {
+    public synchronized String toString() {
         String text = defaultValue;
         if (text == null) {
             text = toString(Locale.getDefault());
