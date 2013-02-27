@@ -116,4 +116,20 @@ public final strictfp class NumberRangeTest extends TestCase {
         assertEquals(NumberRange.create((short) 2, true, (short) 200, true),
                 NumberRange.createBestFit(2, true, 200.0, true));
     }
+
+    /**
+     * Tests the construction using the {@link ValueRange} annotation.
+     * The annotation used for this test is declared on this test method.
+     *
+     * @throws NoSuchMethodException Should never happen.
+     */
+    @Test
+    @ValueRange(minimum=4, maximum=8, isMaxIncluded=false)
+    public void testValueRangeAnnotation() throws NoSuchMethodException {
+        final ValueRange values = NumberRangeTest.class
+                .getMethod("testValueRangeAnnotation").getAnnotation(ValueRange.class);
+        assertNotNull("Annotation not found.", values);
+        final NumberRange<Short> range = new NumberRange<>(Short.class, values);
+        assertEquals(NumberRange.create((short) 4, true, (short) 8, false), range);
+    }
 }
