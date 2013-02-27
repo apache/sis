@@ -270,6 +270,18 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
     }
 
     /**
+     * Constructs a range of the given type with values from the given annotation.
+     *
+     * @param type  The element type, usually one of {@link Byte}, {@link Short},
+     *              {@link Integer}, {@link Long}, {@link Float} or {@link Double}.
+     * @param range The range of values.
+     */
+    public NumberRange(final Class<E> type, final ValueRange range) {
+        super(type, Numbers.cast(valueOf("minimum", range.minimum(), Double.NEGATIVE_INFINITY), type), range.isMinIncluded(),
+                    Numbers.cast(valueOf("maximum", range.maximum(), Double.POSITIVE_INFINITY), type), range.isMaxIncluded());
+    }
+
+    /**
      * Constructs a range of {@link Number} objects.
      *
      * @param type           The element type, usually one of {@link Byte}, {@link Short},
