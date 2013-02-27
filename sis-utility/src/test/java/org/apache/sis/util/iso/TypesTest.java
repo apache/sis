@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Locale;
+import org.opengis.metadata.citation.Address;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.content.ImagingCondition;
@@ -86,6 +87,17 @@ public final strictfp class TypesTest extends TestCase {
                 Types.getDescription(CharacterSet.class, Locale.ENGLISH));
         assertEquals("Jeu de caractères.",
                 Types.getDescription(CharacterSet.class, Locale.FRENCH));
+    }
+
+    /**
+     * Tests the {@link Types#getDescription(Class, String, Locale)} method.
+     */
+    @Test
+    public void testGetPropertyDescription() {
+        assertEquals("The city of the location.",
+                Types.getDescription(Address.class, "city", Locale.ROOT));
+        assertEquals("Country of the physical address.",
+                Types.getDescription(Address.class, "country", Locale.ENGLISH));
     }
 
     /**

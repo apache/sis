@@ -226,7 +226,7 @@ public final class Types extends Static {
      * </ul>
      *
      * @param  code   The code for which to get the localized name, or {@code null}.
-     * @param  locale The local, or {@code null} if none.
+     * @param  locale The locale, or {@code null} if none.
      * @return The localized title, or {@code null} if the given code is null.
      *
      * @see #getDescription(CodeList, Locale)
@@ -272,7 +272,7 @@ public final class Types extends Static {
      * see {@link Types#getDescription(Class, Locale)}.
      *
      * @param  code   The code for which to get the localized description, or {@code null}.
-     * @param  locale The desired local, or {@code null} for the default locale.
+     * @param  locale The desired locale, or {@code null} for the default locale.
      * @return The localized description, or {@code null} if the given code is null.
      *
      * @see #getCodeTitle(CodeList, Locale)
@@ -288,7 +288,7 @@ public final class Types extends Static {
      * Special cases:
      *
      * <ul>
-     *   <li>If {@code code} is {@code null}, then this method returns {@code null}.</li>
+     *   <li>If {@code type} is {@code null}, then this method returns {@code null}.</li>
      *   <li>If {@code locale} is {@code null}, then this method uses the
      *       {@linkplain Locale#getDefault() default locale} - there is no such thing
      *       like "unlocalized" description.</li>
@@ -299,13 +299,45 @@ public final class Types extends Static {
      * </ul>
      *
      * @param  type The GeoAPI interface or code list from which to get the description, or {@code null}.
-     * @param  locale The desired local, or {@code null} for the default locale.
-     * @return The ISO name for the given type, or {@code null} if none or if the type is {@code null}.
+     * @param  locale The desired locale, or {@code null} for the default locale.
+     * @return The localized description, or {@code null} if none or if the given type is {@code null}.
      *
      * @see #getDescription(CodeList, Locale)
      */
     public static String getDescription(final Class<?> type, final Locale locale) {
         return getDescription(getStandardName(type), locale);
+    }
+
+    /**
+     * Returns a localized description for the given property, or {@code null} if none.
+     * The given property name shall be a UML identifier.
+     * Special cases:
+     *
+     * <ul>
+     *   <li>If {@code type} or {@code property} is {@code null}, then this method returns {@code null}.</li>
+     *   <li>If {@code locale} is {@code null}, then this method uses the
+     *       {@linkplain Locale#getDefault() default locale} - there is no such thing
+     *       like "unlocalized" description.</li>
+     *   <li>If there is no resources for the given property in the given language, then this method
+     *       fallback on other languages as described in {@link ResourceBundle} javadoc.</li>
+     *   <li>If there is no localized resources for the given property, then this method returns
+     *       {@code null} - there is no fallback.</li>
+     * </ul>
+     *
+     * @param  type     The GeoAPI interface from which to get the description of a property, or {@code null}.
+     * @param  property The ISO name of the property for which to get the description, or {@code null}.
+     * @param  locale   The desired locale, or {@code null} for the default locale.
+     * @return The localized description, or {@code null} if none or if the given type
+     *         or property name is {@code null}.
+     */
+    public static String getDescription(final Class<?> type, final String property, final Locale locale) {
+        if (property != null) {
+            final String name = getStandardName(type);
+            if (name != null) {
+                return getDescription(name + '.' + property, locale);
+            }
+        }
+        return null;
     }
 
     /**
