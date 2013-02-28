@@ -19,7 +19,6 @@ package org.apache.sis.metadata;
 import java.util.Set;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Locale;
 import java.lang.reflect.Method;
 import net.jcip.annotations.Immutable;
 import javax.measure.unit.Unit;
@@ -31,7 +30,6 @@ import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.internal.simple.SimpleReferenceIdentifier;
-import org.apache.sis.util.iso.AbstractInternationalString;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.util.iso.Types;
@@ -222,11 +220,7 @@ class PropertyDescriptor<T> extends SimpleReferenceIdentifier implements Paramet
      */
     @Override
     public final InternationalString getRemarks() {
-        return new AbstractInternationalString() {
-            @Override public String toString(final Locale locale) {
-                return Types.getDescription(container, code, locale);
-            }
-        };
+        return Types.getDescription(container, code);
     }
 
     /**
