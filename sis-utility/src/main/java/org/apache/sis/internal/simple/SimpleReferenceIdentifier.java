@@ -24,12 +24,17 @@ import org.apache.sis.internal.util.Citations;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Classes;
 
+import static org.apache.sis.util.iso.DefaultNameSpace.DEFAULT_SEPARATOR;
+
 // Related to JDK7
 import java.util.Objects;
 
 
 /**
  * An implementation of {@link ReferenceIdentifier} as a wrapper around a {@link Citation}.
+ * {@code ReferenceIdentifier} is defined by the ISO 19111 standard and is implemented publicly
+ * in the {@link org.apache.sis.referencing} package. This class is provided for non-referencing
+ * code that need a lightweight version.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
@@ -44,7 +49,8 @@ public class SimpleReferenceIdentifier implements ReferenceIdentifier, Serializa
 
     /**
      * Organization or party responsible for definition and maintenance of the
-     * {@linkplain #code}, or {@code null} if none.
+     * {@linkplain #code}, or {@code null} if none. It can be a bibliographical
+     * reference to an international standard such as ISO 19115.
      *
      * @see #getAuthority()
      * @see #getCodeSpace()
@@ -53,7 +59,9 @@ public class SimpleReferenceIdentifier implements ReferenceIdentifier, Serializa
     protected final Citation authority;
 
     /**
-     * The property name as defined by the international {@linkplain #authority}.
+     * Alphanumeric value identifying an instance in the namespace.
+     * It can be for example the name of a class defined by the international standard
+     * referenced by the {@linkplain #authority} citation.
      *
      * @see #getCode()
      */
@@ -72,7 +80,10 @@ public class SimpleReferenceIdentifier implements ReferenceIdentifier, Serializa
 
     /**
      * Organization or party responsible for definition and maintenance of the
-     * {@linkplain #getCode() code}, or {@code null} if none.
+     * {@linkplain #getCode() code}, or {@code null} if none. It can be a
+     * bibliographical reference to an international standard such as ISO 19115.
+     *
+     * <p>The default implementation returns the citation specified at construction time;</p>
      */
     @Override
     public Citation getAuthority() {
@@ -80,8 +91,9 @@ public class SimpleReferenceIdentifier implements ReferenceIdentifier, Serializa
     }
 
     /**
-     * Returns the shortest identifier of the {@linkplain #getAuthority() authority}.
-     * May be {@code null}.
+     * Returns the name or identifier of the person or organization responsible for namespace,
+     * or {@code null} if none. The default implementation returns the shortest identifier of
+     * the {@linkplain #getAuthority() authority}, if any.
      */
     @Override
     public String getCodeSpace() {
@@ -89,8 +101,11 @@ public class SimpleReferenceIdentifier implements ReferenceIdentifier, Serializa
     }
 
     /**
-     * Alphanumeric value identifying an instance in the namespace.
-     * This is defined by the international standard given by {@link #getAuthority()}.
+     * Returns the alphanumeric value identifying an instance in the namespace.
+     * It can be for example the name of a class defined by the international standard
+     * referenced by the {@linkplain #getAuthority() authority} citation.
+     *
+     * <p>The default implementation returns the code specified at construction time;</p>
      */
     @Override
     public String getCode() {
@@ -154,7 +169,7 @@ public class SimpleReferenceIdentifier implements ReferenceIdentifier, Serializa
             open = true;
         }
         if (code != null) {
-            buffer.append(open ? '.' : '“').append(code);
+            buffer.append(open ? DEFAULT_SEPARATOR : '“').append(code);
             open = true;
         }
         if (open) {
@@ -165,6 +180,8 @@ public class SimpleReferenceIdentifier implements ReferenceIdentifier, Serializa
 
     /**
      * Returns a pseudo Well Known Text for this identifier.
+     * While this method is not defined in the {@link ReferenceIdentifier} interface, it is often
+     * defined in related interfaces like {@link org.opengis.referencing.IdentifiedObject}.
      *
      * @return Pseudo Well Known Text for this identifier.
      */

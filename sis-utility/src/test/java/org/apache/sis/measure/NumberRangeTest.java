@@ -31,7 +31,10 @@ import static org.junit.Assert.*;
  * @version 0.3
  * @module
  */
-@DependsOn(RangeTest.class)
+@DependsOn({
+    RangeTest.class,
+    org.apache.sis.util.NumbersTest.class
+})
 public final strictfp class NumberRangeTest extends TestCase {
     /**
      * Tests the endpoint values of a range of integers.

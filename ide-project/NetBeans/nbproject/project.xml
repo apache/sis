@@ -14,6 +14,7 @@
             </source-roots>
             <test-roots>
                 <root id="test.referencing.dir" name="Referencing tests"/>
+                <root id="test.metadata.dir" name="Metadata tests"/>
                 <root id="test.utility.dir" name="Utility tests"/>
             </test-roots>
         </data>

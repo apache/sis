@@ -19,6 +19,7 @@ package org.apache.sis.metadata;
 import java.util.Set;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Locale;
 import java.lang.reflect.Method;
 import net.jcip.annotations.Immutable;
 import javax.measure.unit.Unit;
@@ -29,9 +30,11 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.ReferenceIdentifier;
+import org.apache.sis.internal.simple.SimpleReferenceIdentifier;
+import org.apache.sis.util.iso.AbstractInternationalString;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.ValueRange;
-import org.apache.sis.internal.simple.SimpleReferenceIdentifier;
+import org.apache.sis.util.iso.Types;
 
 // Related to JDK7
 import java.util.Objects;
@@ -62,11 +65,11 @@ class PropertyDescriptor<T> extends SimpleReferenceIdentifier implements Paramet
     private static final long serialVersionUID = 888961503200860655L;
 
     /**
-     * ISO name of the interface which contain this property.
+     * The interface which contain this property.
      *
      * @see #getCodeSpace()
      */
-    private final String container;
+    final Class<?> container;
 
     /**
      * The value type, either the method return type if not a collection,
@@ -108,10 +111,10 @@ class PropertyDescriptor<T> extends SimpleReferenceIdentifier implements Paramet
         private final NumberRange<T> range;
 
         /** Creates a new descriptor for the given range of values. */
-        Bounded(final String container, final Class<T> type, final Citation standard,
+        Bounded(final Class<T> type, final Citation standard,
                 final String property, final Method getter, final ValueRange range)
         {
-            super(container, type, standard, property, getter);
+            super(type, standard, property, getter);
             this.range = new NumberRange<>(type, range);
         }
 
@@ -141,7 +144,6 @@ class PropertyDescriptor<T> extends SimpleReferenceIdentifier implements Paramet
      * Creates a new {@code PropertyDescriptor} instance from the annotations on the given
      * getter method. If there is no restriction, then this method returns {@code null}.
      *
-     * @param  container   ISO name of the interface which contain this property.
      * @param  elementType The value type, either the method return type if not a collection,
      *                     or the type of elements in the collection otherwise.
      * @param  standard    The international standard that define the property, or {@code null} if none.
@@ -149,14 +151,12 @@ class PropertyDescriptor<T> extends SimpleReferenceIdentifier implements Paramet
      * @param  getter      The getter method defined in the interface.
      */
     @SuppressWarnings({"unchecked","rawtypes"})
-    PropertyDescriptor(final String container, final Class<T> elementType,
-            final Citation standard, final String property, final Method getter)
-    {
+    PropertyDescriptor(final Class<T> elementType, final Citation standard, final String property, final Method getter) {
         super(standard, property);
-        this.container = container;
+        container = getter.getDeclaringClass();
         this.elementType = elementType;
         final UML uml = getter.getAnnotation(UML.class);
-        byte cardinality = 2;
+        byte cardinality = 2; // minOccurs = 0, maxOccurs = 1;
         if (uml != null) {
             switch (uml.obligation()) {
                 case MANDATORY:      cardinality = 3; break;  // minOccurs = 1, maxOccurs = 1;
@@ -184,11 +184,16 @@ class PropertyDescriptor<T> extends SimpleReferenceIdentifier implements Paramet
     }
 
     /**
-     * Returns the code space of the property name.
+     * Returns the ISO name of the class containing the property,
+     * or the simple class name if the ISO name is undefined.
      */
     @Override
     public final String getCodeSpace() {
-        return container;
+        String codespace = Types.getStandardName(container);
+        if (codespace == null) {
+            codespace = container.getSimpleName();
+        }
+        return codespace;
     }
 
     /**
@@ -203,7 +208,9 @@ class PropertyDescriptor<T> extends SimpleReferenceIdentifier implements Paramet
     /**
      * An alternative name by which this object is identified.
      * The current implementation returns an empty set.
-     * Future implementation may return the JavaBeans property name.
+     *
+     * <p>Future implementation may return the JavaBeans property name,
+     * if different than the ISO name.</p>
      */
     @Override
     public final Collection<GenericName> getAlias() {
@@ -211,11 +218,15 @@ class PropertyDescriptor<T> extends SimpleReferenceIdentifier implements Paramet
     }
 
     /**
-     * Comments about this property, or {@code null} if none.
+     * Returns comments about this property, or {@code null} if none.
      */
     @Override
-    public InternationalString getRemarks() {
-        return null; // TODO use Types.getDescription
+    public final InternationalString getRemarks() {
+        return new AbstractInternationalString() {
+            @Override public String toString(final Locale locale) {
+                return Types.getDescription(container, code, locale);
+            }
+        };
     }
 
     /**
@@ -232,7 +243,7 @@ class PropertyDescriptor<T> extends SimpleReferenceIdentifier implements Paramet
      * Current implementation unconditionally return {@code null}.
      */
     @Override
-    public T getDefaultValue() {
+    public final T getDefaultValue() {
         return null;
     }
 
@@ -266,7 +277,7 @@ class PropertyDescriptor<T> extends SimpleReferenceIdentifier implements Paramet
      * that here using {@link org.apache.sis.util.collection.CodeListSet}.
      */
     @Override
-    public Set<T> getValidValues() {
+    public final Set<T> getValidValues() {
         return null;
     }
 
@@ -274,31 +285,35 @@ class PropertyDescriptor<T> extends SimpleReferenceIdentifier implements Paramet
      * Returns the unit of measurement. The current implementation returns {@code null}.
      */
     @Override
-    public Unit<?> getUnit() {
+    public final Unit<?> getUnit() {
         return null;
     }
 
     /**
-     * The minimum number of times that values for this parameter group or
-     * parameter are required.
+     * Returns the minimum number of times that values are required.
+     * This method returns 1 if the property is mandatory, or 0 otherwise.
      */
     @Override
-    public int getMinimumOccurs() {
+    public final int getMinimumOccurs() {
         return cardinality & 1;
     }
 
     /**
-     * The maximum number of times that values for this parameter group or
-     * parameter are required.
+     * Returns the maximum number of times that values are required.
+     * This method returns 0 if the property is forbidden, {@link Integer#MAX_VALUE}
+     * if the property is an array or a collection, or 1 otherwise.
      */
     @Override
-    public int getMaximumOccurs() {
+    public final int getMaximumOccurs() {
+        // The cast to (int) propagate the sign bit on all bytes.
+        // Using unsigned shift, the 1111…111_ bit pattern become
+        // 0111…1111, which is Integer.MAX_VALUE.
         return ((int) cardinality) >>> 1;
     }
 
     @Override
     public ParameterValue<T> createValue() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     /**
@@ -309,11 +324,15 @@ class PropertyDescriptor<T> extends SimpleReferenceIdentifier implements Paramet
      */
     @Override
     public boolean equals(final Object obj) {
+        if (obj == this) {
+            return true;
+        }
         if (super.equals(obj)) {
             final PropertyDescriptor<?> that = (PropertyDescriptor<?>) obj;
-            return (this.cardinality == that.cardinality) &&
-                   Objects.equals(this.container,   that.container) &&
-                   Objects.equals(this.elementType, that.elementType);
+            return this.container   == that.container   &&
+                   this.elementType == that.elementType &&
+                   this.cardinality == that.cardinality;
+
         }
         return false;
     }

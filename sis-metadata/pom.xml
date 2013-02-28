@@ -112,6 +112,15 @@ Implementations of metadata derived from ISO 19115. This module provides both an
       <groupId>org.opengis</groupId>
       <artifactId>geoapi-conformance</artifactId>
     </dependency>
+
+    <!-- Test dependencies -->
+    <dependency>
+      <groupId>org.apache.sis</groupId>
+      <artifactId>sis-utility</artifactId>
+      <version>${project.version}</version>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
 </project>
