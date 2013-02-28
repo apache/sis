@@ -59,7 +59,7 @@ public abstract class AbstractMetadata implements LenientComparable {
      */
     private static Class<?> getClass(final Object metadata) {
         Class<?> type = metadata.getClass();
-        while (!Modifier.isPublic(type.getModifiers()) && type.getName().startsWith("org.geotoolkit.metadata.iso.")) { // TODO
+        while (!Modifier.isPublic(type.getModifiers()) && type.getName().startsWith("org.apache.sis.metadata.iso.")) { // TODO
             type = type.getSuperclass();
         }
         return type;
