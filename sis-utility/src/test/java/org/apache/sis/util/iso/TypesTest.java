@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Locale;
+import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Address;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.OnLineFunction;
@@ -77,40 +78,51 @@ public final strictfp class TypesTest extends TestCase {
     }
 
     /**
-     * Tests the {@link Types#getDescription(Class, Locale)} method.
+     * Tests the {@link Types#getResources(String)} method.
      */
     @Test
-    public void testGetDescription() {
-        assertEquals("Name of the character coding standard used in the resource.",
-                Types.getDescription(CharacterSet.class, Locale.ROOT));
-        assertEquals("Name of the character coding standard used in the resource.",
-                Types.getDescription(CharacterSet.class, Locale.ENGLISH));
-        assertEquals("Jeu de caractères.",
-                Types.getDescription(CharacterSet.class, Locale.FRENCH));
+    public void testGetResources() {
+        assertEquals("org.opengis.metadata.Descriptions", Types.getResources("org.opengis.metadata.Identifier"));
+        assertNull(Types.getResources("org.opengis.metadata2.Identifier"));
     }
 
     /**
-     * Tests the {@link Types#getDescription(Class, String, Locale)} method.
+     * Tests the {@link Types#getDescription(Class)} method.
+     */
+    @Test
+    public void testGetDescription() {
+        final InternationalString description = Types.getDescription(CharacterSet.class);
+        assertEquals("Name of the character coding standard used in the resource.",
+                description.toString(Locale.ROOT));
+        assertEquals("Name of the character coding standard used in the resource.",
+                description.toString(Locale.ENGLISH));
+        assertEquals("Jeu de caractères.",
+                description.toString(Locale.FRENCH));
+    }
+
+    /**
+     * Tests the {@link Types#getDescription(Class, String)} method.
      */
     @Test
     public void testGetPropertyDescription() {
         assertEquals("The city of the location.",
-                Types.getDescription(Address.class, "city", Locale.ROOT));
+                Types.getDescription(Address.class, "city").toString(Locale.ROOT));
         assertEquals("Country of the physical address.",
-                Types.getDescription(Address.class, "country", Locale.ENGLISH));
+                Types.getDescription(Address.class, "country").toString(Locale.ENGLISH));
     }
 
     /**
-     * Tests the {@link Types#getDescription(CodeList, Locale)} method.
+     * Tests the {@link Types#getDescription(CodeList)} method.
      */
     @Test
     public void testGetCodeDescription() {
+        final InternationalString description = Types.getDescription(CharacterSet.ISO_8859_1);
         assertEquals("ISO/IEC 8859-1, Information technology - 8-bit single byte coded graphic character sets - Part 1 : Latin alphabet No.1.",
-                Types.getDescription(CharacterSet.ISO_8859_1, Locale.ROOT));
+                description.toString(Locale.ROOT));
         assertEquals("ISO/IEC 8859-1, Information technology - 8-bit single byte coded graphic character sets - Part 1 : Latin alphabet No.1.",
-                Types.getDescription(CharacterSet.ISO_8859_1, Locale.ENGLISH));
+                description.toString(Locale.ENGLISH));
         assertEquals("ISO/IEC 8859-1, alphabet latin 1.",
-                Types.getDescription(CharacterSet.ISO_8859_1, Locale.FRENCH));
+                description.toString(Locale.FRENCH));
     }
 
     /**
@@ -134,23 +146,23 @@ public final strictfp class TypesTest extends TestCase {
     }
 
     /**
-     * Tests the examples given in {@link Types#getCodeTitle(CodeList)} javadoc.
+     * Tests the examples given in {@link Types#getCodeLabel(CodeList)} javadoc.
      */
     @Test
-    public void testGetCodeTitle() {
-        assertEquals("North",         Types.getCodeTitle(AxisDirection   .NORTH));
-        assertEquals("UTF-8",         Types.getCodeTitle(CharacterSet    .UTF_8));
-        assertEquals("Blurred image", Types.getCodeTitle(ImagingCondition.BLURRED_IMAGE));
+    public void testGetCodeLabel() {
+        assertEquals("North",         Types.getCodeLabel(AxisDirection   .NORTH));
+        assertEquals("UTF-8",         Types.getCodeLabel(CharacterSet    .UTF_8));
+        assertEquals("Blurred image", Types.getCodeLabel(ImagingCondition.BLURRED_IMAGE));
     }
 
     /**
-     * Tests {@link Types#getCodeTitle(CodeList, Locale)}.
+     * Tests {@link Types#getCodeTitle(CodeList)}.
      */
     @Test
-    public void testGetLocalizedCodeTitle() {
-        assertEquals("Download",       Types.getCodeTitle(OnLineFunction.DOWNLOAD, Locale.ROOT));
-        assertEquals("Download",       Types.getCodeTitle(OnLineFunction.DOWNLOAD, Locale.ENGLISH));
-        assertEquals("Téléchargement", Types.getCodeTitle(OnLineFunction.DOWNLOAD, Locale.FRENCH));
+    public void testGetCodeTitle() {
+        assertEquals("Download",       Types.getCodeTitle(OnLineFunction.DOWNLOAD).toString(Locale.ROOT));
+        assertEquals("Download",       Types.getCodeTitle(OnLineFunction.DOWNLOAD).toString(Locale.ENGLISH));
+        assertEquals("Téléchargement", Types.getCodeTitle(OnLineFunction.DOWNLOAD).toString(Locale.FRENCH));
     }
 
     /**
