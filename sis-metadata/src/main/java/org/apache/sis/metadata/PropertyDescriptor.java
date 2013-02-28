@@ -54,6 +54,11 @@ import java.util.Objects;
  * @module
  *
  * @see MetadataStandard#asDescriptorMap(Object, KeyNamePolicy, NullValuePolicy)
+ * @see <a href="https://issues.apache.org/jira/browse/SIS-80">SIS-80</a>
+ *
+ * @todo Implementing {@code ParameterDescriptor} is not really appropriate since metadata properties
+ *       are not parameters. Implementing {@link org.opengis.feature.type.PropertyDescriptor} would
+ *       be better, but the later is not yet part of GeoAPI standard and needs cleaning. See SIS-80.
  */
 @Immutable
 class PropertyDescriptor<T> extends SimpleReferenceIdentifier implements ParameterDescriptor<T> {

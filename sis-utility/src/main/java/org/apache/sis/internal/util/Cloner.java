@@ -18,6 +18,7 @@ package org.apache.sis.internal.util;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
+import net.jcip.annotations.NotThreadSafe;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.resources.Errors;
 
@@ -31,15 +32,18 @@ import org.apache.sis.util.resources.Errors;
  * @version 0.3
  * @module
  */
+@NotThreadSafe
 @Workaround(library="JDK", version="1.7")
-public final class Cloner {
+public class Cloner {
     /**
      * The type of the object to clone, or {@code null} if not yet specified.
+     * Used for checking if the cached {@linkplain #method} is still valid.
      */
     private Class<?> type;
 
     /**
      * The {@code clone()} method, or {@code null} if not yet determined.
+     * This is cached for better performance if many instances of the same type are cloned.
      */
     private Method method;
 
@@ -50,7 +54,30 @@ public final class Cloner {
     }
 
     /**
-     * Clones the given object.
+     * Invoked when the given object can not be cloned because no public {@code clone()} method
+     * has been found. If this method returns {@code true}, then the {@link #clone(Object)}
+     * method in this class will throw a {@link CloneNotSupportedException}. Otherwise the
+     * {@code clone(Object)} method will return the original object.
+     *
+     * <p>The default implementation returns {@code true} in every cases.
+     * Subclasses can override this method if they need a different behavior.</p>
+     *
+     * @param  object The object that can not be cloned.
+     * @return {@code true} if the problem shall be considered a clone failure.
+     */
+    protected boolean isCloneRequired(final Object object) {
+        return true;
+    }
+
+    /**
+     * Clones the given object. If the given object does not provide a public {@code clone()}
+     * method, then there is a choice:
+     *
+     * <ul>
+     *   <li>If {@code isCloneRequired(object)} returns {@code true} (the default),
+     *       then a {@link CloneNotSupportedException} is thrown.</li>
+     *   <li>Otherwise the given object is returned.</li>
+     * </ul>
      *
      * @param  object The object to clone, or {@code null}.
      * @return A clone of the given object, or {@code null} if {@code object} was null.
@@ -66,7 +93,9 @@ public final class Cloner {
                 method = valueType.getMethod("clone", (Class<?>[]) null);
                 type = valueType; // Set only if the above line succeed.
             }
-            return method.invoke(object, (Object[]) null);
+            if (method != null) { // May be null if previous call threw NoSuchMethodException.
+                return method.invoke(object, (Object[]) null);
+            }
         } catch (InvocationTargetException e) {
             final Throwable cause = e.getCause();
             if (cause instanceof CloneNotSupportedException) {
@@ -79,9 +108,16 @@ public final class Cloner {
                 throw (Error) cause;
             }
             throw fail(e);
+        } catch (NoSuchMethodException e) {
+            if (isCloneRequired(object)) {
+                throw fail(e);
+            }
+            method = null;
+            type = valueType;
         } catch (ReflectiveOperationException e) {
             throw fail(e);
         }
+        return object;
     }
 
     /**
@@ -91,7 +127,7 @@ public final class Cloner {
      * @param  cause The cause for the failure to clone an object.
      * @return An exception with an error message and the given cause.
      */
-    public CloneNotSupportedException fail(final Throwable cause) {
+    private CloneNotSupportedException fail(final Throwable cause) {
         CloneNotSupportedException e = new CloneNotSupportedException(
                 Errors.format(Errors.Keys.CloneNotSupported_1, type));
         e.initCause(cause);

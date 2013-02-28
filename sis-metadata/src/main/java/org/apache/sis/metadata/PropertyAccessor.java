@@ -117,6 +117,11 @@ final class PropertyAccessor {
     }
 
     /**
+     * The standard which define the {@link #type} interface.
+     */
+    private final Citation standard;
+
+    /**
      * The implemented metadata interface.
      */
     final Class<?> type;
@@ -213,14 +218,16 @@ final class PropertyAccessor {
     /**
      * Creates a new property accessor for the specified metadata implementation.
      *
-     * @param  implementation The type of metadata implementations to wrap.
+     * @param  standard The standard which define the {@code type} interface.
      * @param  type The interface implemented by the metadata, which must be
      *         the value returned by {@link #getStandardType(Class, String)}.
+     * @param  implementation The class of metadata implementations.
      */
-    PropertyAccessor(final Class<?> implementation, final Class<?> type) {
+    PropertyAccessor(final Citation standard, final Class<?> type, final Class<?> implementation) {
         assert type.isAssignableFrom(implementation) : implementation;
-        this.implementation = implementation;
+        this.standard       = standard;
         this.type           = type;
+        this.implementation = implementation;
         this.getters        = getGetters(type);
         int allCount = getters.length;
         int standardCount = allCount;
@@ -703,7 +710,7 @@ final class PropertyAccessor {
         ParameterDescriptor<?> descriptor = descriptors[index];
         if (descriptor == null) {
             final Class<?> elementType = elementTypes[index];
-            final Citation standard    = null; // TODO
+            final Citation standard    = this.standard;
             final String   name        = name(index, KeyNamePolicy.UML_IDENTIFIER);
             final Method   getter      = getters[index];
             ValueRange range = null;
@@ -958,8 +965,8 @@ final class PropertyAccessor {
                      * runtime. However other implementations could use unchecked collection.
                      * There is not much we can do...
                      */
-                    final Collection<Object> unsafe = (Collection<Object>) addTo;
-                    unsafe.add(elements[0]);
+                    // No @SuppressWarnings because this is a real hole.
+                    ((Collection<Object>) addTo).add(elements[0]);
                 }
             }
             /*
@@ -1104,12 +1111,13 @@ final class PropertyAccessor {
         assert implementation.isInstance(metadata) : metadata;
         if (setters != null) {
             final Object[] arguments = new Object[1];
+            final Cloner cloner = new Cloner();
             for (int i=0; i<allCount; i++) {
                 final Method setter = setters[i];
                 if (setter != null) {
                     final Method getter = getters[i];
                     final Object source = get(getter, metadata);
-                    final Object target = null; // TODO ModifiableMetadata.unmodifiable(source);
+                    final Object target = cloner.clone(source);
                     if (source != target) {
                         arguments[0] = target;
                         set(setter, metadata, arguments);

@@ -24,7 +24,7 @@ import org.apache.sis.internal.simple.SimpleCitation;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.apache.sis.test.Assert.*;
 
 
 /**
@@ -91,5 +91,15 @@ public final strictfp class PropertyDescriptorTest extends TestCase {
         assertEquals(PresentationForm.class, descriptor.getValueClass());
         assertEquals(0, descriptor.getMinimumOccurs());
         assertEquals(Integer.MAX_VALUE, descriptor.getMaximumOccurs());
+    }
+
+    /**
+     * Tests serialization.
+     *
+     * @throws NoSuchMethodException Should never happen.
+     */
+    @Test
+    public void testSerialization() throws NoSuchMethodException {
+        assertSerializedEquals(create(InternationalString.class, "getTitle", "title"));
     }
 }

@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.NoSuchElementException;
 import net.jcip.annotations.ThreadSafe;
 import org.opengis.util.CodeList;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.collection.CheckedHashSet;
 import org.apache.sis.util.collection.CheckedArrayList;
 
@@ -44,29 +45,33 @@ import static org.apache.sis.util.collection.CollectionsExt.hashMapCapacity;
  * <p>For singleton value:</p>
  *
  * {@preformat java
- *     private Foo property;
+ *     public class MyMetadata {
+ *         private Foo property;
  *
- *     public synchronized Foo getProperty() {
- *         return property;
- *     }
+ *         public synchronized Foo getProperty() {
+ *             return property;
+ *         }
  *
- *     public synchronized void setProperty(Foo newValue) {
- *         checkWritePermission();
- *         property = newValue;
+ *         public synchronized void setProperty(Foo newValue) {
+ *             checkWritePermission();
+ *             property = newValue;
+ *         }
  *     }
  * }
  *
  * For collections (note that the call to {@link #checkWritePermission()} is implicit):
  *
  * {@preformat java
- *     private Collection<Foo> properties;
+ *     public class MyMetadata {
+ *         private Collection<Foo> properties;
  *
- *     public synchronized Collection<Foo> getProperties() {
- *         return properties = nonNullCollection(properties, Foo.class);
- *     }
+ *         public synchronized Collection<Foo> getProperties() {
+ *             return properties = nonNullCollection(properties, Foo.class);
+ *         }
  *
- *     public synchronized void setProperties(Collection<Foo> newValues) {
- *         properties = copyCollection(newValues, properties, Foo.class);
+ *         public synchronized void setProperties(Collection<Foo> newValues) {
+ *             properties = copyCollection(newValues, properties, Foo.class);
+ *         }
  *     }
  * }
  *
@@ -76,7 +81,16 @@ import static org.apache.sis.util.collection.CollectionsExt.hashMapCapacity;
  * @module
  */
 @ThreadSafe
-public abstract class ModifiableMetadata {
+public abstract class ModifiableMetadata extends AbstractMetadata implements Cloneable {
+    /**
+     * An unmodifiable copy of this metadata, created only when first needed.
+     * If {@code null}, then no unmodifiable entity is available.
+     * If {@code this}, then this entity is itself unmodifiable.
+     *
+     * @see #unmodifiable()
+     */
+    private transient ModifiableMetadata unmodifiable;
+
     /**
      * Constructs an initially empty metadata.
      */
@@ -93,8 +107,83 @@ public abstract class ModifiableMetadata {
      * @see #freeze()
      * @see #checkWritePermission()
      */
-    public final boolean isModifiable() {
-        return true; // To be implemented later.
+    public final synchronized boolean isModifiable() {
+        return unmodifiable != this;
+    }
+
+    /**
+     * Returns an unmodifiable copy of this metadata. Any attempt to modify a property of the
+     * returned object will throw an {@link UnmodifiableMetadataException}. The state of this
+     * object is not modified.
+     *
+     * <p>This method is useful for reusing the same metadata object as a template.
+     * For example:</p>
+     *
+     * {@preformat java
+     *     DefaultCitation myCitation = new DefaultCitation();
+     *     myCitation.setTitle(new SimpleInternationalString("The title of my book"));
+     *     myCitation.setEdition(new SimpleInternationalString("First edition"));
+     *     final Citation firstEdition = (Citation) myCitation.unmodifiable();
+     *
+     *     myCitation.setEdition(new SimpleInternationalString("Second edition"));
+     *     final Citation secondEdition = (Citation) myCitation.unmodifiable();
+     *     // The title of the second edition is unchanged compared to the first edition.
+     * }
+     *
+     * The default implementation makes the following choice:
+     *
+     * <ul>
+     *   <li>If this metadata is itself unmodifiable, then this method returns {@code this}
+     *       unchanged.</li>
+     *   <li>Otherwise this method {@linkplain #clone() clone} this metadata and
+     *       {@linkplain #freeze() freeze} the clone before to return it.</li>
+     * </ul>
+     *
+     * @return An unmodifiable copy of this metadata.
+     */
+    public synchronized AbstractMetadata unmodifiable() {
+        // Reminder: 'unmodifiable' is reset to null by checkWritePermission().
+        if (unmodifiable == null) {
+            final ModifiableMetadata candidate;
+            try {
+                /*
+                 * Need a SHALLOW copy of this metadata, because some attributes
+                 * may already be unmodifiable and we don't want to clone them.
+                 */
+                candidate = clone();
+            } catch (CloneNotSupportedException exception) {
+                /*
+                 * The metadata is not cloneable for some reason left to the user
+                 * (for example it may be backed by some external database).
+                 * Assumes that the metadata is unmodifiable.
+                 */
+                Logging.unexpectedException(LOGGER, getClass(), "unmodifiable", exception);
+                return this;
+            }
+            candidate.freeze();
+            // Set the field only after success. The 'unmodifiable' field must
+            // stay null if an exception occurred during clone() or freeze().
+            unmodifiable = candidate;
+        }
+        assert !unmodifiable.isModifiable();
+        return unmodifiable;
+    }
+
+    /**
+     * Declares this metadata and all its attributes as unmodifiable. Any attempt to modify a
+     * property after this method call will throw an {@link UnmodifiableMetadataException}.
+     * If this metadata is already unmodifiable, then this method does nothing.
+     *
+     * <p>Subclasses usually don't need to override this method since the default implementation
+     * performs its work using Java reflection.</p>
+     *
+     * @see #isModifiable()
+     * @see #checkWritePermission()
+     */
+    public synchronized void freeze() {
+        if (isModifiable()) {
+            throw new UnsupportedOperationException("Not yet implemented."); // TODO
+        }
     }
 
     /**
@@ -112,6 +201,7 @@ public abstract class ModifiableMetadata {
         if (!isModifiable()) {
             throw new UnmodifiableMetadataException("Unmodifiable metadata"); // TODO: localize
         }
+        unmodifiable = null;
     }
 
     /**
@@ -137,7 +227,6 @@ public abstract class ModifiableMetadata {
      *
      * @see #nonNullList(List, Class)
      */
-    @SuppressWarnings("unchecked")
     protected final <E> List<E> copyList(final Collection<? extends E> source,
             List<E> target, final Class<E> elementType)
             throws UnmodifiableMetadataException
@@ -182,7 +271,6 @@ public abstract class ModifiableMetadata {
      *
      * @see #nonNullSet(Set, Class)
      */
-    @SuppressWarnings("unchecked")
     protected final <E> Set<E> copySet(final Collection<? extends E> source,
             Set<E> target, final Class<E> elementType)
             throws UnmodifiableMetadataException
@@ -233,7 +321,6 @@ public abstract class ModifiableMetadata {
      *         elements, or {@code null} if the source was null.
      * @throws UnmodifiableMetadataException if this metadata is unmodifiable.
      */
-    @SuppressWarnings("unchecked")
     protected final <E> Collection<E> copyCollection(final Collection<? extends E> source,
             Collection<E> target, final Class<E> elementType)
             throws UnmodifiableMetadataException
@@ -450,5 +537,23 @@ public abstract class ModifiableMetadata {
     protected <E> Class<? extends Collection<E>> collectionType(final Class<E> elementType) {
         return (Class) (CodeList.class.isAssignableFrom(elementType) ||
                             Enum.class.isAssignableFrom(elementType) ? Set.class : List.class);
+    }
+
+    /**
+     * Returns a shallow copy of this metadata.
+     *
+     * {@section Usage}
+     * While {@linkplain Cloneable cloneable}, this class do not provides the {@code clone()}
+     * operation as part of the public API. The clone operation is required for the internal
+     * working of the {@link #unmodifiable()} method, which needs <strong>shallow</strong>
+     * copies of metadata entities. The default {@link Object#clone()} implementation is
+     * sufficient in most cases.
+     *
+     * @return A <strong>shallow</strong> copy of this metadata.
+     * @throws CloneNotSupportedException if the clone is not supported.
+     */
+    @Override
+    protected ModifiableMetadata clone() throws CloneNotSupportedException {
+        return (ModifiableMetadata) super.clone();
     }
 }
