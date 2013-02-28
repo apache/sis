@@ -78,6 +78,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int CanNotConvertValue_2 = 74;
 
         /**
+         * Can not set a value for property “{0}”.
+         */
+        public static final int CanNotSetPropertyValue_1 = 75;
+
+        /**
          * Class ‘{0}’ is not final.
          */
         public static final int ClassNotFinal_1 = 71;

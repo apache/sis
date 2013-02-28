@@ -305,9 +305,12 @@ class PropertyDescriptor<T> extends SimpleReferenceIdentifier implements Paramet
         return ((int) cardinality) >>> 1;
     }
 
+    /**
+     * Unsupported operation.
+     */
     @Override
-    public ParameterValue<T> createValue() {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public final ParameterValue<T> createValue() {
+        throw new UnsupportedOperationException();
     }
 
     /**
