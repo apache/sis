@@ -21,7 +21,7 @@ import org.junit.runners.Suite;
 
 
 /**
- * All tests from the {@code sis-referencing} module, in approximative dependency order.
+ * All tests from the {@code sis-metadata} module, in approximative dependency order.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
@@ -29,14 +29,7 @@ import org.junit.runners.Suite;
  * @module
  */
 @Suite.SuiteClasses({
-    org.apache.sis.geometry.AbstractDirectPositionTest.class,
-    org.apache.sis.geometry.GeneralDirectPositionTest.class,
-    org.apache.sis.geometry.DirectPosition1DTest.class,
-    org.apache.sis.geometry.DirectPosition2DTest.class,
-    org.apache.sis.geometry.AbstractEnvelopeTest.class,
-    org.apache.sis.geometry.GeneralEnvelopeTest.class,
-    org.apache.sis.geometry.ImmutableEnvelopeTest.class,
-    org.apache.sis.geometry.Envelope2DTest.class
+    org.apache.sis.metadata.PropertyDescriptorTest.class
 })
-public final strictfp class ReferencingTestSuite extends TestSuite {
+public final strictfp class MetadataTestSuite extends TestSuite {
 }
