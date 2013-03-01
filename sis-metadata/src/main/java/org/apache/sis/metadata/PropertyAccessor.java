@@ -21,9 +21,9 @@ import java.util.Map;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Collection;
-import java.util.LinkedHashSet;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
@@ -97,7 +97,7 @@ final class PropertyAccessor {
      * Getters shared between many instances of this class. Two different implementations
      * may share the same getters but different setters.
      */
-    private static final Map<Class<?>, Method[]> SHARED_GETTERS = new HashMap<>();
+    private static final Map<Class<?>, Method[]> SHARED_GETTERS = new IdentityHashMap<>();
 
     /**
      * Additional getter to declare in every list of getter methods that do not already provide
@@ -353,73 +353,6 @@ final class PropertyAccessor {
                 original = name;
                 name = CharSequences.trimWhitespaces(name.toLowerCase(Locale.ROOT));
             } while (!name.equals(original));
-        }
-    }
-
-    /**
-     * Returns the metadata interface implemented by the specified implementation type.
-     * Only one metadata interface can be implemented. If the given type is already an
-     * interface from the standard, it is returned directly.
-     *
-     * @param  type The type of the implementation (could also be the interface type).
-     * @param  interfacePackage The root package for metadata interfaces.
-     * @return The single interface, or {@code null} if none where found.
-     */
-    static Class<?> getStandardType(Class<?> type, final String interfacePackage) {
-        if (type != null) {
-            if (type.isInterface()) {
-                if (type.getName().startsWith(interfacePackage)) {
-                    return type;
-                }
-            } else {
-                /*
-                 * Gets every interfaces from the supplied package in declaration order,
-                 * including the ones declared in the super-class.
-                 */
-                final Set<Class<?>> interfaces = new LinkedHashSet<>();
-                do {
-                    getInterfaces(type, interfacePackage, interfaces);
-                    type = type.getSuperclass();
-                } while (type != null);
-                /*
-                 * If we found more than one interface, removes the
-                 * ones that are sub-interfaces of the other.
-                 */
-                for (final Iterator<Class<?>> it=interfaces.iterator(); it.hasNext();) {
-                    final Class<?> candidate = it.next();
-                    for (final Class<?> child : interfaces) {
-                        if (candidate != child && candidate.isAssignableFrom(child)) {
-                            it.remove();
-                            break;
-                        }
-                    }
-                }
-                final Iterator<Class<?>> it = interfaces.iterator();
-                if (it.hasNext()) {
-                    final Class<?> candidate = it.next();
-                    if (!it.hasNext()) {
-                        return candidate;
-                    }
-                    // Found more than one interface; we don't know which one to pick.
-                    // Returns 'null' for now; the caller will thrown an exception.
-                }
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Puts every interfaces for the given type in the specified collection.
-     * This method invokes itself recursively for scanning parent interfaces.
-     */
-    private static void getInterfaces(final Class<?> type, final String interfacePackage,
-            final Collection<Class<?>> interfaces)
-    {
-        for (final Class<?> candidate : type.getInterfaces()) {
-            if (candidate.getName().startsWith(interfacePackage)) {
-                interfaces.add(candidate);
-            }
-            getInterfaces(candidate, interfacePackage, interfaces);
         }
     }
 

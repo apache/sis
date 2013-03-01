@@ -21,6 +21,7 @@
         <spellchecker-wordlist xmlns="http://www.netbeans.org/ns/spellchecker-wordlist/1">
             <word>bitmask</word>
             <word>classname</word>
+            <word>classnames</word>
             <word>classpath</word>
             <word>deserialization</word>
             <word>deserialized</word>

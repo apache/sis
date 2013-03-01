@@ -57,9 +57,11 @@ public abstract class AbstractMetadata implements LenientComparable {
      *
      * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-48">GEOTK-48</a>
      */
-    private static Class<?> getClass(final Object metadata) {
+    private static Class<?> getPublicClass(final Object metadata) {
         Class<?> type = metadata.getClass();
-        while (!Modifier.isPublic(type.getModifiers()) && type.getName().startsWith("org.apache.sis.metadata.iso.")) { // TODO
+        while (!Modifier.isPublic(type.getModifiers()) &&
+                type.getName().startsWith(MetadataStandard.SIS_PACKAGE))
+        {
             type = type.getSuperclass();
         }
         return type;
@@ -85,7 +87,7 @@ public abstract class AbstractMetadata implements LenientComparable {
             return true;
         }
         if (mode == ComparisonMode.STRICT) {
-            if (object == null || getClass(object) != getClass(this)) {
+            if (object == null || getPublicClass(object) != getPublicClass(this)) {
                 return false;
             }
         }

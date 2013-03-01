@@ -380,6 +380,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int UnexpectedEndOfString_1 = 30;
 
         /**
+         * Type ‘{0}’ is unknown in this context.
+         */
+        public static final int UnknownType_1 = 76;
+
+        /**
          * This affine transform is unmodifiable.
          */
         public static final int UnmodifiableAffineTransform = 23;
