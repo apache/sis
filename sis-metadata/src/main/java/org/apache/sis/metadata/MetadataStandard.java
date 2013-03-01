@@ -1,0 +1,509 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.sis.metadata;
+
+import java.util.Set;
+import java.util.Map;
+import java.util.IdentityHashMap;
+import java.util.LinkedHashSet;
+import java.util.Collection;
+import java.util.Iterator;
+import net.jcip.annotations.ThreadSafe;
+import org.opengis.metadata.citation.Citation;
+import org.apache.sis.util.Classes;
+import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.resources.Errors;
+
+import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+
+
+/**
+ * Enumeration of some metadata standards. A standard is defined by a set of Java interfaces
+ * in a specific package or sub-packages. For example the {@linkplain #ISO_19115 ISO 19115}
+ * standard is defined by <a href="http://www.geoapi.org">GeoAPI</a> interfaces in the
+ * {@link org.opengis.metadata} package and sub-packages.
+ *
+ * <p>This class provides some methods operating on metadata instances through
+ * {@linkplain java.lang.reflect Java reflection}. The following rules are assumed:</p>
+ *
+ * <ul>
+ *   <li>Properties (or metadata attributes) are defined by the collection of {@code get*()}
+ *       methods with arbitrary return type, or {@code is*()} methods with boolean return type,
+ *       found in the <strong>interface</strong>. Getters declared only in the implementation
+ *       are ignored.</li>
+ *   <li>Every properties are <cite>readable</cite>.</li>
+ *   <li>A property is <cite>writable</cite> if a {@code set*(...)} method is defined
+ *       in the implementation class for the corresponding {@code get*()} method. The
+ *       setter doesn't need to be defined in the interface.</li>
+ * </ul>
+ *
+ * An instance of {@code MetadataStandard} is associated to every {@link AbstractMetadata} objects.
+ * The {@code AbstractMetadata} base class usually form the basis of ISO 19115 implementations but
+ * can also be used for other standards. An instance of {@code MetadataStandard} is also associated
+ * with Image I/O {@link org.apache.sis.image.io.metadata.SpatialMetadataFormat} in order to define
+ * the tree of XML nodes to be associated with raster data.
+ *
+ * @author  Martin Desruisseaux (Geomatys)
+ * @since   0.3 (derived from geotk-2.4)
+ * @version 0.3
+ * @module
+ */
+@ThreadSafe
+public class MetadataStandard {
+    /**
+     * The package of SIS implementation of ISO 19115.
+     * This package name has a trailing dot.
+     */
+    static final String SIS_PACKAGE = "org.apache.sis.metadata.iso.";
+
+    /**
+     * Metadata instances defined in this class. The current implementation does not yet
+     * contains the user-defined instances. However this may be something we will need to
+     * do in the future.
+     */
+    private static final MetadataStandard[] INSTANCES;
+
+    /**
+     * An instance working on ISO 19123 standard as defined by GeoAPI interfaces
+     * in the {@link org.opengis.referencing} package and sub-packages.
+     */
+    public static final MetadataStandard ISO_19111;
+
+    /**
+     * An instance working on ISO 19115 standard as defined by GeoAPI interfaces
+     * in the {@link org.opengis.metadata} package and sub-packages.
+     */
+    public static final MetadataStandard ISO_19115;
+
+    /**
+     * An instance working on ISO 19119 standard as defined by GeoAPI interfaces
+     * in the {@link org.opengis.service} package and sub-packages.
+     */
+    public static final MetadataStandard ISO_19119;
+
+    /**
+     * An instance working on ISO 19123 standard as defined by GeoAPI interfaces
+     * in the {@link org.opengis.coverage} package and sub-packages.
+     */
+    public static final MetadataStandard ISO_19123;
+    static {
+        final String[] prefix = {"Default", "Abstract"};
+        final String[] acronyms = {"CoordinateSystem", "CS", "CoordinateReferenceSystem", "CRS"};
+        ISO_19111 = new StandardImplementation("ISO 19111", "org.opengis.referencing.", "org.apache.sis.referencing.", prefix, acronyms);
+        ISO_19115 = new StandardImplementation("ISO 19115", "org.opengis.metadata.", SIS_PACKAGE, prefix, null);
+        ISO_19119 = new StandardImplementation("ISO 19119", "org.opengis.service.",  null, null, null);
+        ISO_19123 = new StandardImplementation("ISO 19123", "org.opengis.coverage.", null, null, null);
+        INSTANCES = new MetadataStandard[] {
+            ISO_19111,
+            ISO_19115,
+            ISO_19119,
+            ISO_19123
+        };
+    }
+
+    /**
+     * Bibliographical reference to the international standard.
+     *
+     * @see #getCitation()
+     */
+    private final Citation citation;
+
+    /**
+     * The root packages for metadata interfaces. Must have a trailing {@code '.'}.
+     */
+    final String interfacePackage;
+
+    /**
+     * Accessors for the specified implementations.
+     * The only legal value types are:
+     *
+     * <ul>
+     *   <li>{@link Class} if we have determined the standard interface for a given type
+     *       but did not yet created the {@link PropertyAccessor} for it.</li>
+     *   <li>{@link PropertyAccessor} otherwise.</li>
+     * </ul>
+     */
+    private final Map<Class<?>, Object> accessors;
+
+    /**
+     * Creates a new instance working on implementation of interfaces defined
+     * in the specified package. For the ISO 19115 standard reflected by GeoAPI
+     * interfaces, it should be the {@link org.opengis.metadata} package.
+     *
+     * @param citation         Bibliographical reference to the international standard.
+     * @param interfacePackage The root package for metadata interfaces.
+     */
+    public MetadataStandard(final Citation citation, final Package interfacePackage) {
+        ensureNonNull("citation", citation);
+        ensureNonNull("interfacePackage", interfacePackage);
+        this.citation         = citation;
+        this.interfacePackage = interfacePackage.getName() + '.';
+        this.accessors        = new IdentityHashMap<>();
+    }
+
+    /**
+     * Creates a new instance working on implementation of interfaces defined in the
+     * specified package. This constructor is used only for the pre-defined constants.
+     *
+     * @param citation         Bibliographical reference to the international standard.
+     * @param interfacePackage The root package for metadata interfaces.
+     */
+    MetadataStandard(final Citation citation, final String interfacePackage) {
+        this.citation         = citation;
+        this.interfacePackage = interfacePackage;
+        this.accessors        = new IdentityHashMap<>();
+    }
+
+    /**
+     * Returns the metadata standard for the given class. The argument given to this method can be
+     * either an interface defined by the standard, or a class implementing such interface. If the
+     * class implements more than one interface, then the first interface recognized by this method,
+     * in declaration order, will be retained.
+     *
+     * <p>The current implementation recognizes only the standards defined by the public static
+     * constants defined in this class. A future SIS version may recognize user-defined constants.</p>
+     *
+     * @param  type The metadata standard interface, or an implementation class.
+     * @return The metadata standard for the given type, or {@code null} if not found.
+     */
+    public static MetadataStandard forClass(final Class<?> type) {
+        String name = type.getName();
+        for (final MetadataStandard candidate : INSTANCES) {
+            if (name.startsWith(candidate.interfacePackage)) {
+                return candidate;
+            }
+        }
+        for (final Class<?> interf : Classes.getAllInterfaces(type)) {
+            name = interf.getName();
+            for (final MetadataStandard candidate : INSTANCES) {
+                if (name.startsWith(candidate.interfacePackage)) {
+                    return candidate;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns a bibliographical reference to the international standard.
+     * The default implementation return the citation given at construction time.
+     *
+     * @return Bibliographical reference to the international standard.
+     */
+    public Citation getCitation() {
+        return citation;
+    }
+
+    /**
+     * Returns the accessor for the specified implementation class, or {@code null} if none.
+     * The given class shall not be the standard interface, unless the metadata is read-only.
+     * More specifically, the given {@code type} shall be one of the following:
+     *
+     * <ul>
+     *   <li>The value of {@code metadata.getClass()};</li>
+     *   <li>The value of {@link #getImplementation(Class)} after check for non-null value.</li>
+     * </ul>
+     *
+     * @param  implementation The implementation class.
+     * @return The accessor for the given implementation, or {@code null} if the given class does
+     *         not implement a metadata interface of the expected package and {@code mandatory}
+     *         is {@code false}.
+     * @throws ClassCastException if the specified class does not implement a metadata interface
+     *         of the expected package and {@code mandatory} is {@code true}.
+     */
+    final PropertyAccessor getAccessor(final Class<?> implementation, final boolean mandatory) {
+        synchronized (accessors) {
+            // Check for previously created accessors.
+            final Object value = accessors.get(implementation);
+            if (value instanceof PropertyAccessor) {
+                return (PropertyAccessor) value;
+            }
+            // Check if we started some computation that we can finish.
+            final Class<?> type;
+            if (value != null) {
+                type = (Class<?>) value;
+            } else {
+                // Nothing were computed. Try to compute now.
+                type = findInterface(implementation);
+                if (type == null) {
+                    if (!mandatory) {
+                        return null;
+                    }
+                    throw new ClassCastException(Errors.format(Errors.Keys.UnknownType_1, type));
+                }
+            }
+            final PropertyAccessor accessor = new PropertyAccessor(citation, type, implementation);
+            accessors.put(implementation, accessor);
+            return accessor;
+        }
+    }
+
+    /**
+     * Returns {@code true} if the given type is assignable to a type from this standard.
+     * If this method returns {@code true}, then invoking {@link #getInterface(Class)} is
+     * guaranteed to succeed without throwing an exception.
+     *
+     * @param  type The implementation class (can be {@code null}).
+     * @return {@code true} if the given class is an interface of this standard,
+     *         or implements an interface of this standard.
+     */
+    public boolean isMetadata(final Class<?> type) {
+        if (type != null) {
+            // Checks if the class is an interface from the standard.
+            if (type.isInterface() && type.getName().startsWith(interfacePackage)) {
+                return true;
+            }
+            // Checks if the class is an implementation of the standard.
+            synchronized (accessors) {
+                if (accessors.containsKey(type)) {
+                    return true;
+                }
+                final Class<?> standard = findInterface(type);
+                if (standard != null) {
+                    accessors.put(type, standard);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns the metadata interface implemented by the specified implementation.
+     * Only one metadata interface can be implemented. If the given type is already
+     * an interface from the standard, then it is returned directly.
+     *
+     * @param  type The standard interface or the implementation class.
+     * @return The single interface, or {@code null} if none where found.
+     */
+    private Class<?> findInterface(Class<?> type) {
+        if (type != null) {
+            if (type.isInterface()) {
+                if (type.getName().startsWith(interfacePackage)) {
+                    return type;
+                }
+            } else {
+                /*
+                 * Gets every interfaces from the supplied package in declaration order,
+                 * including the ones declared in the super-class.
+                 */
+                final Set<Class<?>> interfaces = new LinkedHashSet<>();
+                do {
+                    getInterfaces(type, interfaces);
+                    type = type.getSuperclass();
+                } while (type != null);
+                /*
+                 * If we found more than one interface, removes the
+                 * ones that are sub-interfaces of the other.
+                 */
+                for (final Iterator<Class<?>> it=interfaces.iterator(); it.hasNext();) {
+                    final Class<?> candidate = it.next();
+                    for (final Class<?> child : interfaces) {
+                        if (candidate != child && candidate.isAssignableFrom(child)) {
+                            it.remove();
+                            break;
+                        }
+                    }
+                }
+                final Iterator<Class<?>> it = interfaces.iterator();
+                if (it.hasNext()) {
+                    final Class<?> candidate = it.next();
+                    if (!it.hasNext()) {
+                        return candidate;
+                    }
+                    // Found more than one interface; we don't know which one to pick.
+                    // Returns 'null' for now; the caller will thrown an exception.
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Puts every interfaces for the given type in the specified collection.
+     * This method invokes itself recursively for scanning parent interfaces.
+     *
+     * @see Classes#getAllInterfaces(Class)
+     */
+    private void getInterfaces(final Class<?> type, final Collection<Class<?>> interfaces) {
+        for (final Class<?> candidate : type.getInterfaces()) {
+            if (candidate.getName().startsWith(interfacePackage)) {
+                interfaces.add(candidate);
+            }
+            getInterfaces(candidate, interfaces);
+        }
+    }
+
+    /**
+     * Returns the metadata interface implemented by the specified implementation class.
+     * If the given type is already an interface from this standard, then it is returned
+     * unchanged.
+     *
+     * {@note The word "interface" may be taken in a looser sense than the usual Java sense
+     *        because if the given type is defined in this standard package, then it is returned
+     *        unchanged. The standard package is usually made of interfaces and code lists only,
+     *        but this is not verified by this method.}
+     *
+     * @param  type The implementation class.
+     * @return The interface implemented by the given implementation class.
+     * @throws ClassCastException if the specified implementation class does
+     *         not implement an interface of this standard.
+     *
+     * @see AbstractMetadata#getInterface
+     */
+    public Class<?> getInterface(final Class<?> type) throws ClassCastException {
+        ensureNonNull("type", type);
+        if (type.getName().startsWith(interfacePackage)) {
+            return type;
+        }
+        throw new UnsupportedOperationException(); // TODO: port Geotk code here.
+    }
+
+    /**
+     * Returns the implementation class for the given interface, or {@code null} if none.
+     * The default implementation returns {@code null} if every cases. Subclasses shall
+     * override this method in order to map GeoAPI interfaces to their implementation.
+     *
+     * @param  type The interface, typically from the {@code org.opengis.metadata} package.
+     * @return The implementation class, or {@code null} if none.
+     */
+    protected Class<?> getImplementation(final Class<?> type) {
+        return null;
+    }
+
+    /**
+     * Returns {@code true} if this metadata is modifiable. This method is not public because it
+     * uses heuristic rules. In case of doubt, this method conservatively returns {@code true}.
+     *
+     * @throws ClassCastException if the specified implementation class do
+     *         not implements a metadata interface of the expected package.
+     *
+     * @see ModifiableMetadata#isModifiable()
+     */
+    final boolean isModifiable(final Class<?> implementation) throws ClassCastException {
+        return getAccessor(implementation, true).isModifiable();
+    }
+
+    /**
+     * Replaces every properties in the specified metadata by their
+     * {@linkplain ModifiableMetadata#unmodifiable() unmodifiable variant}.
+     *
+     * @throws ClassCastException if the specified implementation class do
+     *         not implements a metadata interface of the expected package.
+     *
+     * @see ModifiableMetadata#freeze()
+     */
+    final void freeze(final Object metadata) throws ClassCastException {
+        getAccessor(metadata.getClass(), true).freeze(metadata);
+    }
+
+    /**
+     * Copies all metadata from source to target.
+     * The source must implements the same metadata interface than the target.
+     *
+     * @param  source The metadata to copy.
+     * @param  target The target metadata.
+     * @param  skipNulls If {@code true}, only non-null values will be copied.
+     * @throws ClassCastException if the source or target object don't
+     *         implements a metadata interface of the expected package.
+     * @throws UnmodifiableMetadataException if the target metadata is unmodifiable,
+     *         or if at least one setter method was required but not found.
+     *
+     * @see ModifiableMetadata#clone()
+     */
+    public void shallowCopy(final Object source, final Object target, final boolean skipNulls)
+            throws ClassCastException, UnmodifiableMetadataException
+    {
+        ensureNonNull("target", target);
+        final PropertyAccessor accessor = getAccessor(target.getClass(), true);
+        if (!accessor.type.isInstance(source)) {
+            ensureNonNull("source", source);
+            throw new ClassCastException(Errors.format(Errors.Keys.IllegalArgumentClass_3,
+                    "source", accessor.type, source.getClass()));
+        }
+        if (!accessor.shallowCopy(source, target, skipNulls)) {
+            throw new UnmodifiableMetadataException(Errors.format(Errors.Keys.UnmodifiableMetadata));
+        }
+    }
+
+    /**
+     * Compares the two specified metadata objects.
+     * The comparison is <cite>shallow</cite>, i.e. all metadata attributes are compared using the
+     * {@link LenientComparable#equals(Object, ComparisonMode)} method if possible, or the
+     * {@link Object#equals(Object)} method otherwise, without explicit recursive call to
+     * this {@code shallowEquals(...)} method for child metadata.
+     *
+     * <p>This method can optionally excludes null values from the comparison. In metadata,
+     * null value often means "don't know", so in some occasion we want to consider two
+     * metadata as different only if a property value is know for sure to be different.</p>
+     *
+     * <p>The first arguments must be an implementation of a metadata interface, otherwise an
+     * exception will be thrown. The two arguments do not need to be the same implementation
+     * however.</p>
+     *
+     * @param metadata1 The first metadata object to compare.
+     * @param metadata2 The second metadata object to compare.
+     * @param mode      The strictness level of the comparison.
+     * @param skipNulls If {@code true}, only non-null values will be compared.
+     * @return {@code true} if the given metadata objects are equals.
+     * @throws ClassCastException if at least one metadata object don't
+     *         implements a metadata interface of the expected package.
+     *
+     * @see AbstractMetadata#equals(Object, ComparisonMode)
+     */
+    public boolean shallowEquals(final Object metadata1, final Object metadata2,
+            final ComparisonMode mode, final boolean skipNulls) throws ClassCastException
+    {
+        if (metadata1 == metadata2) {
+            return true;
+        }
+        if (metadata1 == null || metadata2 == null) {
+            return false;
+        }
+        final PropertyAccessor accessor = getAccessor(metadata1.getClass(), true);
+        if (accessor.type != findInterface(metadata2.getClass())) {
+            return false;
+        }
+        return accessor.shallowEquals(metadata1, metadata2, mode, skipNulls);
+    }
+
+    /**
+     * Computes a hash code for the specified metadata. The hash code is defined as the
+     * sum of hash code values of all non-null properties. This is the same contract than
+     * {@link java.util.Set#hashCode} and ensure that the hash code value is insensitive
+     * to the ordering of properties.
+     *
+     * @param  metadata The metadata object to compute hash code.
+     * @return A hash code value for the specified metadata.
+     * @throws ClassCastException if the metadata object doesn't implement a metadata
+     *         interface of the expected package.
+     *
+     * @see AbstractMetadata#hashCode()
+     */
+    public int hashCode(final Object metadata) throws ClassCastException {
+        return getAccessor(metadata.getClass(), true).hashCode(metadata);
+    }
+
+    /**
+     * Returns a string representation of this metadata standard.
+     * This is for debugging purpose only and may change in any future version.
+     */
+    @Override
+    public String toString() {
+        return Classes.getShortClassName(this) + '[' + citation.getTitle() + ']';
+    }
+}
