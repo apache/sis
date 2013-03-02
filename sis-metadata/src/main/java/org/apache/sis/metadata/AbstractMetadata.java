@@ -18,7 +18,6 @@ package org.apache.sis.metadata;
 
 import java.util.logging.Logger;
 import java.lang.reflect.Modifier;
-import net.jcip.annotations.ThreadSafe;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.logging.Logging;
@@ -26,19 +25,32 @@ import org.apache.sis.util.logging.Logging;
 
 /**
  * Base class for metadata implementations, providing basic operations using Java reflection.
- * Available operations include the {@linkplain #AbstractMetadata(Object) copy constructor},
- * together with {@link #equals(Object)} and {@link #hashCode()} implementations.
+ * All {@code AbstractMetadata} instances shall be associated to a {@link MetadataStandard},
+ * which is provided by subclasses in the {@link #getStandard()} method. There is typically
+ * a large number of {@code AbstractMetadata} subclasses (not necessarily as direct children)
+ * for the same standard.
  *
- * {@section Requirements for subclasses}
- * Subclasses need to implement the interfaces of some {@linkplain MetadataStandard metadata standard}
- * and return that standard in the {@link #getStandard()} method.
+ * <p>This base class reduces the effort required to implement metadata interface by providing
+ * {@link #equals(Object)}, {@link #hashCode()} and {@link #toString()} implementations.
+ * Those methods are implemented using Java reflection for invoking the getter methods
+ * defined by the {@code MetadataStandard}.</p>
+ *
+ * <p>{@code AbstractMetadata} may be read-only or read/write, at implementation choice.
+ * The {@link ModifiableMetadata} subclass provides the basis of most SIS metadata classes
+ * having writing capabilities.</p>
+ *
+ * {@section Synchronization}
+ * The methods in this class are not synchronized. Synchronizations may be done by getter and
+ * setter methods in subclasses, at implementation choice. We never synchronize the methods that
+ * perform deep traversal of the metadata tree (like {@code equals(Object)}, {@code hashCode()}
+ * or {@code toString()}) because such synchronizations are deadlock prone. For example if
+ * subclasses synchronize their getter methods, then many locks may be acquired in various orders.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.4)
  * @version 0.3
  * @module
  */
-@ThreadSafe
 public abstract class AbstractMetadata implements LenientComparable {
     /**
      * The logger for messages related to metadata implementations.
@@ -52,8 +64,36 @@ public abstract class AbstractMetadata implements LenientComparable {
     }
 
     /**
+     * Returns the metadata standard implemented by subclasses.
+     *
+     * @return The metadata standard implemented.
+     *
+     * @todo This method returns {@link MetadataStandard#ISO_19115} for now,
+     *       but will become an abstract method soon.
+     */
+    public MetadataStandard getStandard() {
+        return MetadataStandard.ISO_19115;
+    }
+
+    /**
+     * Returns the metadata interface implemented by this class. It should be one of the
+     * interfaces defined in the {@linkplain #getStandard() metadata standard} implemented
+     * by this class.
+     *
+     * @return The standard interface implemented by this implementation class.
+     *
+     * @see MetadataStandard#getInterface(Class)
+     */
+    public Class<?> getInterface() {
+        // No need to sychronize, since this method does not depend on property values.
+        return getStandard().getInterface(getClass());
+    }
+
+    /**
      * Returns the class of the given metadata, ignoring SIS private classes
      * like {@link org.apache.sis.metadata.iso.citation.CitationConstant}.
+     * This method does <strong>not</strong> ignores user's private classes,
+     * only the SIS ones.
      *
      * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-48">GEOTK-48</a>
      */
@@ -86,12 +126,20 @@ public abstract class AbstractMetadata implements LenientComparable {
         if (object == this) {
             return true;
         }
+        if (object == null) {
+            return false;
+        }
         if (mode == ComparisonMode.STRICT) {
-            if (object == null || getPublicClass(object) != getPublicClass(this)) {
+            if (getPublicClass(object) != getPublicClass(this)) {
                 return false;
             }
         }
-        // TODO: There is some code to port here.
+        final MetadataStandard standard = getStandard();
+        if (mode != ComparisonMode.STRICT) {
+            if (!getInterface().isInstance(object)) {
+                return false;
+            }
+        }
         /*
          * DEADLOCK WARNING: A deadlock may occur if the same pair of objects is being compared
          * in an other thread (see http://jira.codehaus.org/browse/GEOT-1777). Ideally we would
@@ -99,16 +147,28 @@ public abstract class AbstractMetadata implements LenientComparable {
          * a workaround is to always get the locks in the same order. Unfortunately we have no
          * guarantee that the caller didn't looked the object himself. For now the safest approach
          * is to not synchronize at all.
+         *
+         * Edit: actually, even if we could synchronize the two objects atomically, a deadlock
+         *       risk would still exists for the reason documented in this class's javadoc.
          */
-        // TODO: There is some code to port here.
-        throw new UnsupportedOperationException("Not yet implemented.");
+        return standard.shallowEquals(this, object, mode, false);
     }
 
     /**
      * Performs a {@linkplain ComparisonMode#STRICT strict} comparison of this metadata with
-     * the given object.
+     * the given object. This method is implemented as below:
      *
-     * @param object The object to compare with this metadata for equality.
+     * {@preformat java
+     *     public final boolean equals(final Object object) {
+     *         return equals(object, ComparisonMode.STRICT);
+     *     }
+     * }
+     *
+     * If a subclass needs to override the behavior of this method, then
+     * override {@link #equals(Object, ComparisonMode)} instead.
+     *
+     * @param  object The object to compare with this metadata for equality.
+     * @return {@code true} if the given object is strictly equals to this metadata.
      */
     @Override
     public final boolean equals(final Object object) {
@@ -120,10 +180,16 @@ public abstract class AbstractMetadata implements LenientComparable {
      * is defined as the sum of hash code values of all non-null properties. This is the
      * same contract than {@link java.util.Set#hashCode()} and ensure that the hash code
      * value is insensitive to the ordering of properties.
+     *
+     * {@section Performance note}
+     * This method does not cache the value because current implementation has no notification
+     * mechanism for tracking changes in children properties. If this metadata is known to be
+     * immutable, then subclasses may consider caching the hash code value at their choice.
+     *
+     * @see MetadataStandard#hashCode(Object)
      */
     @Override
-    public synchronized int hashCode() {
-        // TODO: There is some code to port here.
-        throw new UnsupportedOperationException("Not yet implemented.");
+    public int hashCode() {
+        return getStandard().hashCode(this);
     }
 }

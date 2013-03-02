@@ -41,21 +41,34 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * {@linkplain java.lang.reflect Java reflection}. The following rules are assumed:</p>
  *
  * <ul>
- *   <li>Properties (or metadata attributes) are defined by the collection of {@code get*()}
- *       methods with arbitrary return type, or {@code is*()} methods with boolean return type,
- *       found in the <strong>interface</strong>. Getters declared only in the implementation
- *       are ignored.</li>
- *   <li>Every properties are <cite>readable</cite>.</li>
- *   <li>A property is <cite>writable</cite> if a {@code set*(...)} method is defined
- *       in the implementation class for the corresponding {@code get*()} method. The
- *       setter doesn't need to be defined in the interface.</li>
+ *   <li>Properties (or metadata attributes) are defined by the collection of
+ *       following getter methods found <strong>in the interface</strong>
+ *       (methods declared only in the implementation are ignored):
+ *       <ul>
+ *         <li>{@code get*()} methods with arbitrary return type;</li>
+ *         <li>or {@code is*()} methods with boolean return type.</li>
+ *       </ul></li>
+ *   <li>Every properties are <cite>readable</cite>.
+ *       But a property is also <cite>writable</cite> if a {@code set*(…)} method is defined
+ *       <strong>in the implementation class</strong> for the corresponding getter method.
+ *       The setter method doesn't need to be defined in the interface.</li>
  * </ul>
  *
  * An instance of {@code MetadataStandard} is associated to every {@link AbstractMetadata} objects.
  * The {@code AbstractMetadata} base class usually form the basis of ISO 19115 implementations but
- * can also be used for other standards. An instance of {@code MetadataStandard} is also associated
- * with Image I/O {@link org.apache.sis.image.io.metadata.SpatialMetadataFormat} in order to define
- * the tree of XML nodes to be associated with raster data.
+ * can also be used for other standards.
+ *
+ * {@section Defining new <code>MetadataStandard</code> instances}
+ * Users should use the pre-defined constants when applicable.
+ * However if new instances need to be defined, then there is a choice:
+ *
+ * <ul>
+ *   <li>For <em>read-only</em> metadata, {@code MetadataStandard} can be instantiated directly.
+ *       only getter methods will be used and all operations that modify the metadata properties
+ *       will throw an {@link UnmodifiableMetadataException}.</li>
+ *   <li>For <em>read/write</em> metadata, the {@link #getImplementation(Class)}
+ *       method must be overridden in a {@code MetadataStandard} subclass.</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.4)
@@ -67,6 +80,8 @@ public class MetadataStandard {
     /**
      * The package of SIS implementation of ISO 19115.
      * This package name has a trailing dot.
+     *
+     * @see #interfacePackage
      */
     static final String SIS_PACKAGE = "org.apache.sis.metadata.iso.";
 
@@ -363,7 +378,7 @@ public class MetadataStandard {
      * @throws ClassCastException if the specified implementation class does
      *         not implement an interface of this standard.
      *
-     * @see AbstractMetadata#getInterface
+     * @see AbstractMetadata#getInterface()
      */
     public Class<?> getInterface(final Class<?> type) throws ClassCastException {
         ensureNonNull("type", type);
@@ -383,19 +398,6 @@ public class MetadataStandard {
      */
     protected Class<?> getImplementation(final Class<?> type) {
         return null;
-    }
-
-    /**
-     * Returns {@code true} if this metadata is modifiable. This method is not public because it
-     * uses heuristic rules. In case of doubt, this method conservatively returns {@code true}.
-     *
-     * @throws ClassCastException if the specified implementation class do
-     *         not implements a metadata interface of the expected package.
-     *
-     * @see ModifiableMetadata#isModifiable()
-     */
-    final boolean isModifiable(final Class<?> implementation) throws ClassCastException {
-        return getAccessor(implementation, true).isModifiable();
     }
 
     /**
@@ -442,18 +444,21 @@ public class MetadataStandard {
 
     /**
      * Compares the two specified metadata objects.
-     * The comparison is <cite>shallow</cite>, i.e. all metadata attributes are compared using the
-     * {@link LenientComparable#equals(Object, ComparisonMode)} method if possible, or the
-     * {@link Object#equals(Object)} method otherwise, without explicit recursive call to
-     * this {@code shallowEquals(...)} method for child metadata.
+     * The two metadata arguments shall be implementations of a metadata interface defined by
+     * this {@code MetadataStandard}, otherwise an exception will be thrown. However the two
+     * arguments do not need to be the same implementation class.
      *
      * <p>This method can optionally excludes null values from the comparison. In metadata,
-     * null value often means "don't know", so in some occasion we want to consider two
+     * null value often means "don't know", so in some occasions we want to consider two
      * metadata as different only if a property value is know for sure to be different.</p>
      *
-     * <p>The first arguments must be an implementation of a metadata interface, otherwise an
-     * exception will be thrown. The two arguments do not need to be the same implementation
-     * however.</p>
+     * {@section Shallow or deep comparisons}
+     * This method implements a <cite>shallow</cite> comparison in that properties are compared by
+     * invoking their {@code properties.equals(…)} method without <em>explicit</em> recursive call
+     * to this {@code shallowEquals(…)} method for children metadata. However the comparison will
+     * do <em>implicit</em> recursive calls if the {@code properties.equals(…)} implementations
+     * invoke this {@code shallowEquals(…)} method. In the later case, the final result is a deep
+     * comparison.
      *
      * @param metadata1 The first metadata object to compare.
      * @param metadata2 The second metadata object to compare.
