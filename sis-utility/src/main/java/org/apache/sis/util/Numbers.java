@@ -17,7 +17,7 @@
 package org.apache.sis.util;
 
 import java.util.Map;
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
@@ -51,8 +51,16 @@ public final class Numbers extends Static {
 
     /**
      * Mapping between a primitive type and its wrapper, if any.
+     *
+     * {@note In the particular case of <code>Class</code> keys, <code>IdentityHashMap</code> and
+     *        <code>HashMap</code> have identical behavior since <code>Class</code> is final and
+     *        does not override the <code>equals(Object)</code> and <code>hashCode()</code> methods.
+     *        The <code>IdentityHashMap</code> Javadoc claims that it is faster than the regular
+     *        <code>HashMap</code>. But maybe the most interesting property is that it allocates
+     *        less objects since <code>IdentityHashMap</code> implementation doesn't need the chain
+     *        of objects created by <code>HashMap</code>.}
      */
-    private static final Map<Class<?>,Numbers> MAPPING = new HashMap<>(16);
+    private static final Map<Class<?>,Numbers> MAPPING = new IdentityHashMap<>(16);
     static {
         new Numbers(BigDecimal.class, true, false, (byte) (DOUBLE+2)); // Undocumented enum.
         new Numbers(BigInteger.class, false, true, (byte) (DOUBLE+1)); // Undocumented enum.

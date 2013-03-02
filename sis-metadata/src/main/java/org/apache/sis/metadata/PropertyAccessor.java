@@ -96,6 +96,14 @@ final class PropertyAccessor {
     /**
      * Getters shared between many instances of this class. Two different implementations
      * may share the same getters but different setters.
+     *
+     * {@note In the particular case of <code>Class</code> keys, <code>IdentityHashMap</code> and
+     *        <code>HashMap</code> have identical behavior since <code>Class</code> is final and
+     *        does not override the <code>equals(Object)</code> and <code>hashCode()</code> methods.
+     *        The <code>IdentityHashMap</code> Javadoc claims that it is faster than the regular
+     *        <code>HashMap</code>. But maybe the most interesting property is that it allocates
+     *        less objects since <code>IdentityHashMap</code> implementation doesn't need the chain
+     *        of objects created by <code>HashMap</code>.}
      */
     private static final Map<Class<?>, Method[]> SHARED_GETTERS = new IdentityHashMap<>();
 
@@ -951,8 +959,8 @@ final class PropertyAccessor {
 
     /**
      * Compares the two specified metadata objects. The comparison is <cite>shallow</cite>,
-     * i.e. all metadata attributes are compared using the {@link Object#equals(Object)}
-     * method without recursive call to this {@code shallowEquals} method for other metadata.
+     * i.e. all metadata properties are compared using their {@code properties.equals(…)}
+     * method without explicit calls to this {@code shallowEquals} method for children.
      *
      * <p>This method can optionally excludes null values from the comparison. In metadata,
      * null value often means "don't know", so in some occasion we want to consider two
@@ -963,6 +971,8 @@ final class PropertyAccessor {
      * @param  mode      The strictness level of the comparison.
      * @param  skipNulls If {@code true}, only non-null values will be compared.
      * @throws BackingStoreException If the implementation threw a checked exception.
+     *
+     * @see MetadataStandard#shallowEquals(Object, Object, ComparisonMode, boolean)
      */
     public boolean shallowEquals(final Object metadata1, final Object metadata2,
             final ComparisonMode mode, final boolean skipNulls) throws BackingStoreException
@@ -1066,24 +1076,6 @@ final class PropertyAccessor {
                 }
             }
         }
-    }
-
-    /**
-     * Returns {@code true} if the metadata is modifiable. This method is not public because it
-     * uses heuristic rules. In case of doubt, this method conservatively returns {@code true}.
-     */
-    final boolean isModifiable() {
-        if (setters != null) {
-            return true;
-        }
-        for (int i=0; i<allCount; i++) {
-            // Immutable objects usually don't need to be cloned. So if
-            // an object is cloneable, it is probably not immutable.
-            if (Cloneable.class.isAssignableFrom(getters[i].getReturnType())) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**
