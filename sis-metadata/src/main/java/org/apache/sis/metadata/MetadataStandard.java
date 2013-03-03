@@ -93,7 +93,7 @@ public class MetadataStandard {
     private static final MetadataStandard[] INSTANCES;
 
     /**
-     * An instance working on ISO 19123 standard as defined by GeoAPI interfaces
+     * An instance working on ISO 19111 standard as defined by GeoAPI interfaces
      * in the {@link org.opengis.referencing} package and sub-packages.
      */
     public static final MetadataStandard ISO_19111;
@@ -234,6 +234,8 @@ public class MetadataStandard {
      * </ul>
      *
      * @param  implementation The implementation class.
+     * @param  mandatory Whether this method shall throw an exception or return {@code null}
+     *         if no accessor is found for the given implementation class.
      * @return The accessor for the given implementation, or {@code null} if the given class does
      *         not implement a metadata interface of the expected package and {@code mandatory}
      *         is {@code false}.
@@ -448,30 +450,25 @@ public class MetadataStandard {
      * this {@code MetadataStandard}, otherwise an exception will be thrown. However the two
      * arguments do not need to be the same implementation class.
      *
-     * <p>This method can optionally excludes null values from the comparison. In metadata,
-     * null value often means "don't know", so in some occasions we want to consider two
-     * metadata as different only if a property value is know for sure to be different.</p>
-     *
      * {@section Shallow or deep comparisons}
      * This method implements a <cite>shallow</cite> comparison in that properties are compared by
      * invoking their {@code properties.equals(…)} method without <em>explicit</em> recursive call
-     * to this {@code shallowEquals(…)} method for children metadata. However the comparison will
+     * to this {@code standard.equals(…)} method for children metadata. However the comparison will
      * do <em>implicit</em> recursive calls if the {@code properties.equals(…)} implementations
-     * invoke this {@code shallowEquals(…)} method. In the later case, the final result is a deep
-     * comparison.
+     * delegate their work to this {@code standard.equals(…)} method, as {@link AbstractMetadata} does.
+     * In the later case, the final result is a deep comparison.
      *
      * @param metadata1 The first metadata object to compare.
      * @param metadata2 The second metadata object to compare.
      * @param mode      The strictness level of the comparison.
-     * @param skipNulls If {@code true}, only non-null values will be compared.
      * @return {@code true} if the given metadata objects are equals.
      * @throws ClassCastException if at least one metadata object don't
      *         implements a metadata interface of the expected package.
      *
      * @see AbstractMetadata#equals(Object, ComparisonMode)
      */
-    public boolean shallowEquals(final Object metadata1, final Object metadata2,
-            final ComparisonMode mode, final boolean skipNulls) throws ClassCastException
+    public boolean equals(final Object metadata1, final Object metadata2,
+            final ComparisonMode mode) throws ClassCastException
     {
         if (metadata1 == metadata2) {
             return true;
@@ -483,14 +480,14 @@ public class MetadataStandard {
         if (accessor.type != findInterface(metadata2.getClass())) {
             return false;
         }
-        return accessor.shallowEquals(metadata1, metadata2, mode, skipNulls);
+        return accessor.equals(metadata1, metadata2, mode, false);
     }
 
     /**
      * Computes a hash code for the specified metadata. The hash code is defined as the
-     * sum of hash code values of all non-null properties. This is the same contract than
-     * {@link java.util.Set#hashCode} and ensure that the hash code value is insensitive
-     * to the ordering of properties.
+     * sum of hash code values of all non-empty properties. This is a similar contract
+     * than {@link java.util.Set#hashCode()} and ensures that the hash code value is
+     * insensitive to the ordering of properties.
      *
      * @param  metadata The metadata object to compute hash code.
      * @return A hash code value for the specified metadata.

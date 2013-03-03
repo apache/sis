@@ -113,10 +113,6 @@ public abstract class AbstractMetadata implements LenientComparable {
      * for better performances, or for comparing "hidden" attributes not specified
      * by the GeoAPI (or other standard) interface.
      *
-     * <p>This method performs a <cite>deep</cite> comparison: if this metadata contains
-     * other metadata, then the comparison will invoke the {@link Object#equals(Object)}
-     * method on those children as well.</p>
-     *
      * @param  object The object to compare with this metadata.
      * @param  mode The strictness level of the comparison.
      * @return {@code true} if the given object is equal to this metadata.
@@ -151,7 +147,7 @@ public abstract class AbstractMetadata implements LenientComparable {
          * Edit: actually, even if we could synchronize the two objects atomically, a deadlock
          *       risk would still exists for the reason documented in this class's javadoc.
          */
-        return standard.shallowEquals(this, object, mode, false);
+        return standard.equals(this, object, mode);
     }
 
     /**
@@ -177,8 +173,8 @@ public abstract class AbstractMetadata implements LenientComparable {
 
     /**
      * Computes a hash code value for this metadata using Java reflection. The hash code
-     * is defined as the sum of hash code values of all non-null properties. This is the
-     * same contract than {@link java.util.Set#hashCode()} and ensure that the hash code
+     * is defined as the sum of hash code values of all non-empty properties. This is a
+     * similar contract than {@link java.util.Set#hashCode()} and ensures that the hash code
      * value is insensitive to the ordering of properties.
      *
      * {@section Performance note}

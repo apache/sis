@@ -62,7 +62,7 @@ import static org.apache.sis.internal.util.Utilities.floatEpsilonEqual;
  * <ul>
  *   <li>The standard properties defined by the GeoAPI (or other standard) interfaces.
  *       Those properties are the only one accessible by most methods in this class,
- *       except {@link #shallowEquals(Object, Object, ComparisonMode, boolean)},
+ *       except {@link #equals(Object, Object, ComparisonMode, boolean)},
  *       {@link #shallowCopy(Object, Object, boolean)} and {@link #freeze(Object)}.</li>
  *
  *   <li>Extra properties defined by the {@link IdentifiedObject} interface. Those properties
@@ -508,10 +508,13 @@ final class PropertyAccessor {
      * Returns the index of the specified property, or -1 if none.
      * The search is case-insensitive.
      *
-     * @param  key The property to search.
-     * @return The index of the given key, or -1 if none.
+     * @param  name The name of the property to search.
+     * @param  mandatory Whether this method shall throw an exception or return {@code -1}
+     *         if the given name is not found.
+     * @return The index of the given name, or -1 if none and {@code mandatory} is {@code false}.
+     * @throws IllegalArgumentException if the name is not found and {@code mandatory} is {@code true}.
      */
-    final int indexOf(final String name) {
+    final int indexOf(final String name, final boolean mandatory) {
         Integer index = mapping.get(name);
         if (index == null) {
             /*
@@ -521,26 +524,13 @@ final class PropertyAccessor {
              */
             final String key = CharSequences.trimWhitespaces(name.replace(" ", "").toLowerCase(Locale.ROOT));
             if (key == name || (index = mapping.get(key)) == null) { // Identity comparison is okay here.
-                return -1;
+                if (!mandatory) {
+                    return -1;
+                }
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.NoSuchProperty_2, name, type));
             }
         }
         return index;
-    }
-
-    /**
-     * Always returns the index of the specified property (never -1).
-     * The search is case-insensitive.
-     *
-     * @param  key The property to search.
-     * @return The index of the given key.
-     * @throws IllegalArgumentException if the given key is not found.
-     */
-    final int requiredIndexOf(final String key) throws IllegalArgumentException {
-        final int index = indexOf(key);
-        if (index >= 0) {
-            return index;
-        }
-        throw new IllegalArgumentException(Errors.format(Errors.Keys.NoSuchProperty_2, key, type));
     }
 
     /**
@@ -958,12 +948,13 @@ final class PropertyAccessor {
     }
 
     /**
-     * Compares the two specified metadata objects. The comparison is <cite>shallow</cite>,
-     * i.e. all metadata properties are compared using their {@code properties.equals(…)}
-     * method without explicit calls to this {@code shallowEquals} method for children.
+     * Compares the two specified metadata objects. This method implements a <cite>shallow</cite>
+     * comparison, i.e. all metadata properties are compared using their {@code properties.equals(…)}
+     * method without explicit calls to this {@code accessor.equals(…)} method for children.
+     * However the final result may still be a deep comparison.
      *
      * <p>This method can optionally excludes null values from the comparison. In metadata,
-     * null value often means "don't know", so in some occasion we want to consider two
+     * null value often means "don't know", so in some occasions we want to consider two
      * metadata as different only if a property value is know for sure to be different.</p>
      *
      * @param  metadata1 The first metadata object to compare. This object determines the accessor.
@@ -972,9 +963,12 @@ final class PropertyAccessor {
      * @param  skipNulls If {@code true}, only non-null values will be compared.
      * @throws BackingStoreException If the implementation threw a checked exception.
      *
-     * @see MetadataStandard#shallowEquals(Object, Object, ComparisonMode, boolean)
+     * @see MetadataStandard#equals(Object, Object, ComparisonMode, boolean)
+     *
+     * @todo The semantic of the <code>skipNulls</code> argument should be revisited
+     *       in order to provide a behavior more like a <code>contains(Object)</code> method.
      */
-    public boolean shallowEquals(final Object metadata1, final Object metadata2,
+    public boolean equals(final Object metadata1, final Object metadata2,
             final ComparisonMode mode, final boolean skipNulls) throws BackingStoreException
     {
         assert type.isInstance(metadata1) : metadata1;
@@ -985,13 +979,13 @@ final class PropertyAccessor {
             final Method  method = getters[i];
             final Object  value1 = get(method, metadata1);
             final Object  value2 = get(method, metadata2);
-            final boolean empty1 = isEmpty(value1);
-            final boolean empty2 = isEmpty(value2);
+            final boolean empty1 = isNullOrEmpty(value1);
+            final boolean empty2 = isNullOrEmpty(value2);
             if (empty1 && empty2) {
                 continue;
             }
             if (!Utilities.deepEquals(value1, value2, mode)) {
-                if (mode.ordinal() < ComparisonMode.APPROXIMATIVE.ordinal() && floatEpsilonEqual(value1, value2)) {
+                if (mode.ordinal() >= ComparisonMode.APPROXIMATIVE.ordinal() && floatEpsilonEqual(value1, value2)) {
                     continue; // Accept this slight difference.
                 }
                 if (!skipNulls || (!empty1 && !empty2)) {
@@ -1003,9 +997,12 @@ final class PropertyAccessor {
     }
 
     /**
-     * Copies all metadata from source to target. The source can be any implementation of
-     * the metadata interface, but the target must be the implementation expected by this
-     * class.
+     * Copies all non-empty metadata from source to target. The source can be any implementation
+     * of the metadata interface, but the target must be the implementation expected by this class.
+     *
+     * <p>If {@code skipNulls} is {@code true} and the source contains any null or empty properties,
+     * then those properties will <strong>not</strong> overwrite the corresponding properties in the
+     * destination metadata.</p>
      *
      * @param  source The metadata to copy.
      * @param  target The target metadata.
@@ -1027,7 +1024,7 @@ final class PropertyAccessor {
         for (int i=0; i<standardCount; i++) {
             final Method getter = getters[i];
             arguments[0] = get(getter, source);
-            if (!skipNulls || !isEmpty(arguments[0])) {
+            if (!skipNulls || !isNullOrEmpty(arguments[0])) {
                 if (setters == null) {
                     return false;
                 }
@@ -1079,10 +1076,10 @@ final class PropertyAccessor {
     }
 
     /**
-     * Returns a hash code for the specified metadata. The hash code is defined as the
-     * sum of hash code values of all non-null properties. This is the same contract than
-     * {@link java.util.Set#hashCode} and ensure that the hash code value is insensitive
-     * to the ordering of properties.
+     * Computes a hash code for the specified metadata. The hash code is defined as the
+     * sum of hash code values of all non-empty properties. This is a similar contract
+     * than {@link java.util.Set#hashCode()} and ensures that the hash code value is
+     * insensitive to the ordering of properties.
      *
      * @throws BackingStoreException If the implementation threw a checked exception.
      */
@@ -1091,7 +1088,7 @@ final class PropertyAccessor {
         int code = 0;
         for (int i=0; i<standardCount; i++) {
             final Object value = get(getters[i], metadata);
-            if (!isEmpty(value)) {
+            if (!isNullOrEmpty(value)) {
                 code += value.hashCode();
             }
         }
@@ -1099,7 +1096,7 @@ final class PropertyAccessor {
     }
 
     /**
-     * Counts the number of non-null properties.
+     * Counts the number of non-empty properties.
      *
      * @throws BackingStoreException If the implementation threw a checked exception.
      */
@@ -1107,7 +1104,7 @@ final class PropertyAccessor {
         assert type.isInstance(metadata) : metadata;
         int count = 0;
         for (int i=0; i<standardCount; i++) {
-            if (!isEmpty(get(getters[i], metadata))) {
+            if (!isNullOrEmpty(get(getters[i], metadata))) {
                 if (++count >= max) {
                     break;
                 }
@@ -1123,7 +1120,7 @@ final class PropertyAccessor {
      * is invoked from methods doing shallow copy or comparison. If we were inspecting elements,
      * we would need to add a check against infinite recursivity.</p>
      */
-    static boolean isEmpty(final Object value) {
+    static boolean isNullOrEmpty(final Object value) {
         return value == null
                 || ((value instanceof CharSequence) && CharSequences.trimWhitespaces((CharSequence) value).length() == 0)
                 || ((value instanceof Collection<?>) && ((Collection<?>) value).isEmpty())
