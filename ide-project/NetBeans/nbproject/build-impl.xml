@@ -136,6 +136,7 @@ is divided into following sections:
         <condition property="have.tests">
             <or>
                 <available file="${test.referencing.dir}"/>
+                <available file="${test.metadata.dir}"/>
                 <available file="${test.utility.dir}"/>
             </or>
         </condition>
@@ -241,6 +242,7 @@ is divided into following sections:
         <fail unless="src.metadata.dir">Must set src.metadata.dir</fail>
         <fail unless="src.utility.dir">Must set src.utility.dir</fail>
         <fail unless="test.referencing.dir">Must set test.referencing.dir</fail>
+        <fail unless="test.metadata.dir">Must set test.metadata.dir</fail>
         <fail unless="test.utility.dir">Must set test.utility.dir</fail>
         <fail unless="build.dir">Must set build.dir</fail>
         <fail unless="dist.dir">Must set dist.dir</fail>
@@ -424,6 +426,9 @@ is divided into following sections:
                         <fileset dir="${test.referencing.dir}" excludes="@{excludes},${excludes}" includes="@{includes}">
                             <filename name="@{testincludes}"/>
                         </fileset>
+                        <fileset dir="${test.metadata.dir}" excludes="@{excludes},${excludes}" includes="@{includes}">
+                            <filename name="@{testincludes}"/>
+                        </fileset>
                         <fileset dir="${test.utility.dir}" excludes="@{excludes},${excludes}" includes="@{includes}">
                             <filename name="@{testincludes}"/>
                         </fileset>
@@ -457,6 +462,9 @@ is divided into following sections:
                 </condition>
                 <union id="test.set">
                     <fileset dir="${test.referencing.dir}" excludes="@{excludes},**/*.xml,${excludes}" includes="@{includes}">
+                        <filename name="@{testincludes}"/>
+                    </fileset>
+                    <fileset dir="${test.metadata.dir}" excludes="@{excludes},**/*.xml,${excludes}" includes="@{includes}">
                         <filename name="@{testincludes}"/>
                     </fileset>
                     <fileset dir="${test.utility.dir}" excludes="@{excludes},**/*.xml,${excludes}" includes="@{includes}">
@@ -572,6 +580,9 @@ is divided into following sections:
                 <junit dir="${work.dir}" errorproperty="tests.failed" failureproperty="tests.failed" fork="true" forkmode="${junit.forkmode}" showoutput="true" tempdir="${build.dir}">
                     <batchtest todir="${build.test.results.dir}">
                         <fileset dir="${test.referencing.dir}" excludes="@{excludes},${excludes}" includes="@{includes}">
+                            <filename name="@{testincludes}"/>
+                        </fileset>
+                        <fileset dir="${test.metadata.dir}" excludes="@{excludes},${excludes}" includes="@{includes}">
                             <filename name="@{testincludes}"/>
                         </fileset>
                         <fileset dir="${test.utility.dir}" excludes="@{excludes},${excludes}" includes="@{includes}">
@@ -1298,12 +1309,13 @@ is divided into following sections:
         <!-- You can override this target in the ../build.xml file. -->
     </target>
     <target if="do.depend.true" name="-compile-test-depend">
-        <j2seproject3:depend classpath="${javac.test.classpath}" destdir="${build.test.classes.dir}" srcdir="${test.referencing.dir}:${test.utility.dir}"/>
+        <j2seproject3:depend classpath="${javac.test.classpath}" destdir="${build.test.classes.dir}" srcdir="${test.referencing.dir}:${test.metadata.dir}:${test.utility.dir}"/>
     </target>
     <target depends="init,deps-jar,compile,-pre-pre-compile-test,-pre-compile-test,-compile-test-depend" if="have.tests" name="-do-compile-test">
-        <j2seproject3:javac apgeneratedsrcdir="${build.test.classes.dir}" classpath="${javac.test.classpath}" debug="true" destdir="${build.test.classes.dir}" processorpath="${javac.test.processorpath}" srcdir="${test.referencing.dir}:${test.utility.dir}"/>
+        <j2seproject3:javac apgeneratedsrcdir="${build.test.classes.dir}" classpath="${javac.test.classpath}" debug="true" destdir="${build.test.classes.dir}" processorpath="${javac.test.processorpath}" srcdir="${test.referencing.dir}:${test.metadata.dir}:${test.utility.dir}"/>
         <copy todir="${build.test.classes.dir}">
             <fileset dir="${test.referencing.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
+            <fileset dir="${test.metadata.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${test.utility.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
         </copy>
     </target>
@@ -1319,9 +1331,10 @@ is divided into following sections:
     <target depends="init,deps-jar,compile,-pre-pre-compile-test,-pre-compile-test-single" if="have.tests" name="-do-compile-test-single">
         <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
         <j2seproject3:force-recompile destdir="${build.test.classes.dir}"/>
-        <j2seproject3:javac apgeneratedsrcdir="${build.test.classes.dir}" classpath="${javac.test.classpath}" debug="true" destdir="${build.test.classes.dir}" excludes="" includes="${javac.includes}" processorpath="${javac.test.processorpath}" sourcepath="${test.referencing.dir}:${test.utility.dir}" srcdir="${test.referencing.dir}:${test.utility.dir}"/>
+        <j2seproject3:javac apgeneratedsrcdir="${build.test.classes.dir}" classpath="${javac.test.classpath}" debug="true" destdir="${build.test.classes.dir}" excludes="" includes="${javac.includes}" processorpath="${javac.test.processorpath}" sourcepath="${test.referencing.dir}:${test.metadata.dir}:${test.utility.dir}" srcdir="${test.referencing.dir}:${test.metadata.dir}:${test.utility.dir}"/>
         <copy todir="${build.test.classes.dir}">
             <fileset dir="${test.referencing.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
+            <fileset dir="${test.metadata.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${test.utility.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
         </copy>
     </target>

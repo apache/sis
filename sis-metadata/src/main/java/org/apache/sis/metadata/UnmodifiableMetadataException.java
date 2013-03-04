@@ -18,9 +18,15 @@ package org.apache.sis.metadata;
 
 
 /**
- * Thrown when a setter method is invoked on an initially
- * {@linkplain org.apache.sis.metadata.ModifiableMetadata modifiable metadata},
- * but this metadata has since be declared unmodifiable.
+ * Thrown on attempt to set a read-only value in a metadata object.
+ * This exception may happen in the following scenarios:
+ *
+ * <ul>
+ *   <li>A metadata instance was initially {@linkplain org.apache.sis.metadata.ModifiableMetadata
+ *       modifiable}, but that instance has since be declared unmodifiable.</li>
+ *   <li>A write operation has been attempted on the {@linkplain AbstractMetadata#asMap() map view},
+ *       but the metadata object has no corresponding setter methods.</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.4)

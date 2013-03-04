@@ -21,7 +21,7 @@ import org.junit.runners.Suite;
 
 
 /**
- * All tests from the {@code sis-utility} module, in approximative dependency order.
+ * All tests from the {@code sis-referencing} module, in approximative dependency order.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3

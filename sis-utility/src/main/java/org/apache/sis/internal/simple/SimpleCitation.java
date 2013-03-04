@@ -28,8 +28,10 @@ import org.opengis.metadata.citation.PresentationForm;
 import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.citation.Series;
 import org.opengis.util.InternationalString;
-
 import org.apache.sis.util.iso.SimpleInternationalString;
+
+// Related to JDK7
+import org.apache.sis.internal.util.Objects;
 
 
 /**
@@ -85,6 +87,28 @@ public class SimpleCitation implements Citation, Serializable {
     @Override public InternationalString              getCollectiveTitle()         {return null;}
     @Override public String                           getISBN()                    {return null;}
     @Override public String                           getISSN()                    {return null;}
+
+    /**
+     * Compares the given object with this citation for equality.
+     *
+     * @param  obj The object to compare with this citation.
+     * @return {@code true} if both objects are equal.
+     */
+    @Override
+    public boolean equals(final Object obj) {
+        if (obj != null && obj.getClass() == getClass()) {
+            return Objects.equals(title, ((SimpleCitation) obj).title);
+        }
+        return false;
+    }
+
+    /**
+     * Returns a hash code value for this citation.
+     */
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(title) ^ (int) serialVersionUID;
+    }
 
     /**
      * Returns a string representation of this citation.
