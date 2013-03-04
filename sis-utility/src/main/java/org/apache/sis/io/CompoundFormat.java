@@ -17,7 +17,7 @@
 package org.apache.sis.io;
 
 import java.util.Map;
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.Date;
@@ -95,7 +95,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      * The formats for smaller unit of information.
      * Will be created only when first needed.
      */
-    private transient Map<Class<?>,Format> formats;
+    private transient Map<Class<?>, Format> formats;
 
     /**
      * Creates a new format for the given locale. The given locale can be {@code null} or
@@ -328,7 +328,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
             format = createFormat(type);
             if (format != null) {
                 if (formats == null) {
-                    this.formats = formats = new HashMap<Class<?>,Format>(4);
+                    this.formats = formats = new IdentityHashMap<Class<?>,Format>(4);
                 }
                 formats.put(type, format);
                 break;
@@ -399,7 +399,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
         @SuppressWarnings("unchecked")
         final CompoundFormat<T> clone = (CompoundFormat<T>) super.clone();
         if (clone.formats != null) {
-            clone.formats = new HashMap<Class<?>,Format>(clone.formats);
+            clone.formats = new IdentityHashMap<Class<?>,Format>(clone.formats);
             for (final Map.Entry<Class<?>,Format> entry : clone.formats.entrySet()) {
                 entry.setValue((Format) entry.getValue().clone());
             }

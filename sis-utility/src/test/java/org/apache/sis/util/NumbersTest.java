@@ -174,7 +174,33 @@ public final class NumbersTest extends TestCase {
      */
     @Test
     public void testCast() {
-        assertEquals(Byte .valueOf((byte)  10), cast(Integer.valueOf(10), Byte .class));
-        assertEquals(Float.valueOf((float) 10), cast(Integer.valueOf(10), Float.class));
+        final Integer value = new Integer(10); // Intentionally a new instance.
+        assertEquals(Byte   .valueOf((byte)   10), cast(value, Byte   .class));
+        assertEquals(Short  .valueOf((short)  10), cast(value, Short  .class));
+        assertSame  (value,                        cast(value, Integer.class));
+        assertEquals(Long   .valueOf((long)   10), cast(value, Long   .class));
+        assertEquals(Float  .valueOf((float)  10), cast(value, Float  .class));
+        assertEquals(Double .valueOf((double) 10), cast(value, Double .class));
+    }
+
+    /**
+     * Tests {@link Numbers#wrap(double, Class)}.
+     */
+    @Test
+    public void testWrap() {
+        final double value = 10;
+        assertEquals(Byte   .valueOf((byte)   10), wrap(value, Byte   .class));
+        assertEquals(Short  .valueOf((short)  10), wrap(value, Short  .class));
+        assertEquals(Integer.valueOf(         10), wrap(value, Integer.class));
+        assertEquals(Long   .valueOf((long)   10), wrap(value, Long   .class));
+        assertEquals(Float  .valueOf((float)  10), wrap(value, Float  .class));
+        assertEquals(Double .valueOf((double) 10), wrap(value, Double .class));
+        try {
+            final Integer n = wrap(4.5, Integer.class);
+            fail("Expected an exception but got " + n);
+        } catch (IllegalArgumentException e) {
+            // This is the expected exception.
+            assertTrue(e.getMessage().contains("Integer"));
+        }
     }
 }

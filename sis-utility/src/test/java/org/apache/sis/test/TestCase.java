@@ -80,7 +80,6 @@ public abstract strictfp class TestCase {
      * property has been set to a different value.
      *
      * @see org.apache.sis.test
-     * @see #flushVerboseOutput()
      */
     public static final PrintWriter out;
 

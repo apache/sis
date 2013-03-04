@@ -428,7 +428,7 @@ public final strictfp class GeneralEnvelopeTest extends TestCase {
     }
 
     /**
-     * Tests the {@link GeneralEnvelope#GeneralEnvelope(String)} constructor.
+     * Tests the {@link GeneralEnvelope#GeneralEnvelope(CharSequence)} constructor.
      */
     @Test
     public void testWktParsing() {
@@ -482,7 +482,8 @@ public final strictfp class GeneralEnvelopeTest extends TestCase {
     }
 
     /**
-     * Tests the {@link GeneralEnvelope#equals} method.
+     * Tests the {@link GeneralEnvelope#equals(Object)} and
+     * {@link GeneralEnvelope#equals(Envelope, double, boolean)} methods.
      */
     @Test
     public void testEquals() {

@@ -68,6 +68,26 @@ public final class Errors extends IndexedResourceBundle {
         public static final int CanNotComputeDerivative = 44;
 
         /**
+         * Can not convert from type ‘{0}’ to type ‘{1}’.
+         */
+        public static final int CanNotConvertFromType_2 = 72;
+
+        /**
+         * Can not convert value “{0}” to type ‘{1}’.
+         */
+        public static final int CanNotConvertValue_2 = 74;
+
+        /**
+         * Can not set a value for property “{0}”.
+         */
+        public static final int CanNotSetPropertyValue_1 = 75;
+
+        /**
+         * Class ‘{0}’ is not final.
+         */
+        public static final int ClassNotFinal_1 = 71;
+
+        /**
          * Can not clone an object of type ‘{0}’.
          */
         public static final int CloneNotSupported_1 = 42;
@@ -240,6 +260,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int NegativeArgument_2 = 8;
 
         /**
+         * No property named “{0}” has been found in “{1}”.
+         */
+        public static final int NoSuchProperty_2 = 73;
+
+        /**
          * No unit of measurement has been specified.
          */
         public static final int NoUnit = 68;
@@ -353,6 +378,11 @@ public final class Errors extends IndexedResourceBundle {
          * More characters were expected at the end of “{0}”.
          */
         public static final int UnexpectedEndOfString_1 = 30;
+
+        /**
+         * Type ‘{0}’ is unknown in this context.
+         */
+        public static final int UnknownType_1 = 76;
 
         /**
          * This affine transform is unmodifiable.
