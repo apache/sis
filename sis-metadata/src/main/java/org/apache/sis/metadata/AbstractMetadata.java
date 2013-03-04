@@ -17,7 +17,6 @@
 package org.apache.sis.metadata;
 
 import java.util.logging.Logger;
-import java.lang.reflect.Modifier;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.logging.Logging;
@@ -90,24 +89,6 @@ public abstract class AbstractMetadata implements LenientComparable {
     }
 
     /**
-     * Returns the class of the given metadata, ignoring SIS private classes
-     * like {@link org.apache.sis.metadata.iso.citation.CitationConstant}.
-     * This method does <strong>not</strong> ignores user's private classes,
-     * only the SIS ones.
-     *
-     * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-48">GEOTK-48</a>
-     */
-    private static Class<?> getPublicClass(final Object metadata) {
-        Class<?> type = metadata.getClass();
-        while (!Modifier.isPublic(type.getModifiers()) &&
-                type.getName().startsWith(MetadataStandard.SIS_PACKAGE))
-        {
-            type = type.getSuperclass();
-        }
-        return type;
-    }
-
-    /**
      * Compares this metadata with the specified object for equality. The default
      * implementation uses Java reflection. Subclasses may override this method
      * for better performances, or for comparing "hidden" attributes not specified
@@ -126,7 +107,7 @@ public abstract class AbstractMetadata implements LenientComparable {
             return false;
         }
         if (mode == ComparisonMode.STRICT) {
-            if (getPublicClass(object) != getPublicClass(this)) {
+            if (object.getClass() != getClass()) {
                 return false;
             }
         }

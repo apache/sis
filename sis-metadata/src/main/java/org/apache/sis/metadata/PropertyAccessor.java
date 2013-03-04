@@ -63,7 +63,7 @@ import static org.apache.sis.internal.util.Utilities.floatEpsilonEqual;
  *   <li>The standard properties defined by the GeoAPI (or other standard) interfaces.
  *       Those properties are the only one accessible by most methods in this class,
  *       except {@link #equals(Object, Object, ComparisonMode, boolean)},
- *       {@link #shallowCopy(Object, Object, boolean)} and {@link #freeze(Object)}.</li>
+ *       {@link #shallowCopy(Object, Object)} and {@link #freeze(Object)}.</li>
  *
  *   <li>Extra properties defined by the {@link IdentifiedObject} interface. Those properties
  *       invisible in the ISO 19115 model, but appears in ISO 19139 XML marshalling. So we do
@@ -953,44 +953,34 @@ final class PropertyAccessor {
      * method without explicit calls to this {@code accessor.equals(…)} method for children.
      * However the final result may still be a deep comparison.
      *
-     * <p>This method can optionally excludes null values from the comparison. In metadata,
-     * null value often means "don't know", so in some occasions we want to consider two
-     * metadata as different only if a property value is know for sure to be different.</p>
-     *
      * @param  metadata1 The first metadata object to compare. This object determines the accessor.
      * @param  metadata2 The second metadata object to compare.
      * @param  mode      The strictness level of the comparison.
-     * @param  skipNulls If {@code true}, only non-null values will be compared.
      * @throws BackingStoreException If the implementation threw a checked exception.
      *
-     * @see MetadataStandard#equals(Object, Object, ComparisonMode, boolean)
-     *
-     * @todo The semantic of the <code>skipNulls</code> argument should be revisited
-     *       in order to provide a behavior more like a <code>contains(Object)</code> method.
+     * @see MetadataStandard#equals(Object, Object, ComparisonMode)
      */
-    public boolean equals(final Object metadata1, final Object metadata2,
-            final ComparisonMode mode, final boolean skipNulls) throws BackingStoreException
+    public boolean equals(final Object metadata1, final Object metadata2, final ComparisonMode mode)
+            throws BackingStoreException
     {
         assert type.isInstance(metadata1) : metadata1;
         assert type.isInstance(metadata2) : metadata2;
         final int count = (mode == ComparisonMode.STRICT &&
                 EXTRA_GETTER.getDeclaringClass().isInstance(metadata2)) ? allCount : standardCount;
         for (int i=0; i<count; i++) {
-            final Method  method = getters[i];
-            final Object  value1 = get(method, metadata1);
-            final Object  value2 = get(method, metadata2);
-            final boolean empty1 = isNullOrEmpty(value1);
-            final boolean empty2 = isNullOrEmpty(value2);
-            if (empty1 && empty2) {
+            final Method method = getters[i];
+            final Object value1 = get(method, metadata1);
+            final Object value2 = get(method, metadata2);
+            if (isNullOrEmpty(value1) && isNullOrEmpty(value2)) {
+                // Consider empty collections/arrays as equal to null.
+                // Empty strings are also considered equal to null (this is more questionable).
                 continue;
             }
             if (!Utilities.deepEquals(value1, value2, mode)) {
                 if (mode.ordinal() >= ComparisonMode.APPROXIMATIVE.ordinal() && floatEpsilonEqual(value1, value2)) {
                     continue; // Accept this slight difference.
                 }
-                if (!skipNulls || (!empty1 && !empty2)) {
-                    return false;
-                }
+                return false;
             }
         }
         return true;
@@ -1000,19 +990,17 @@ final class PropertyAccessor {
      * Copies all non-empty metadata from source to target. The source can be any implementation
      * of the metadata interface, but the target must be the implementation expected by this class.
      *
-     * <p>If {@code skipNulls} is {@code true} and the source contains any null or empty properties,
-     * then those properties will <strong>not</strong> overwrite the corresponding properties in the
-     * destination metadata.</p>
+     * <p>If the source contains any null or empty properties, then those properties will
+     * <strong>not</strong> overwrite the corresponding properties in the destination metadata.</p>
      *
      * @param  source The metadata to copy.
      * @param  target The target metadata.
-     * @param  skipNulls If {@code true}, only non-null values will be copied.
      * @return {@code true} in case of success, or {@code false} if at least
      *         one setter method was not found.
      * @throws UnmodifiableMetadataException if the target metadata is unmodifiable.
      * @throws BackingStoreException If the implementation threw a checked exception.
      */
-    public boolean shallowCopy(final Object source, final Object target, final boolean skipNulls)
+    public boolean shallowCopy(final Object source, final Object target)
             throws UnmodifiableMetadataException, BackingStoreException
     {
         // Because this PropertyAccesssor is designed for the target, we must
@@ -1024,7 +1012,7 @@ final class PropertyAccessor {
         for (int i=0; i<standardCount; i++) {
             final Method getter = getters[i];
             arguments[0] = get(getter, source);
-            if (!skipNulls || !isNullOrEmpty(arguments[0])) {
+            if (!isNullOrEmpty(arguments[0])) {
                 if (setters == null) {
                     return false;
                 }
@@ -1122,9 +1110,9 @@ final class PropertyAccessor {
      */
     static boolean isNullOrEmpty(final Object value) {
         return value == null
-                || ((value instanceof CharSequence) && CharSequences.trimWhitespaces((CharSequence) value).length() == 0)
+                || ((value instanceof CharSequence)  && ((CharSequence) value).length() == 0)
                 || ((value instanceof Collection<?>) && ((Collection<?>) value).isEmpty())
-                || ((value instanceof Map<?,?>) && ((Map<?,?>) value).isEmpty())
-                || (value.getClass().isArray() && Array.getLength(value) == 0);
+                || ((value instanceof Map<?,?>)      && ((Map<?,?>) value).isEmpty())
+                || (value.getClass().isArray()       && Array.getLength(value) == 0);
     }
 }
