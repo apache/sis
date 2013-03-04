@@ -71,7 +71,7 @@ final class Cloner extends org.apache.sis.internal.util.Cloner {
      * @return A presumed immutable view of the specified object.
      */
     @Override
-    public Object clone(final Object object) {
+    public Object clone(final Object object) throws CloneNotSupportedException {
         /*
          * CASE 1 - The object is an implementation of ModifiableMetadata. It may have
          *          its own algorithm for creating an unmodifiable view of metadata.
@@ -125,10 +125,8 @@ final class Cloner extends org.apache.sis.internal.util.Cloner {
         /*
          * CASE 4 - The object is presumed cloneable.
          */
-        if (object instanceof Cloneable) try {
+        if (object instanceof Cloneable) {
             return super.clone(object);
-        } catch (CloneNotSupportedException e) {
-            throw new UnsupportedOperationException(e);
         }
         /*
          * CASE 5 - Any other case. The object is assumed immutable and returned unchanged.
