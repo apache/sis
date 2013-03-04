@@ -27,6 +27,7 @@ import org.opengis.metadata.citation.Citation;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.util.SystemListener;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
@@ -78,14 +79,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 @ThreadSafe
 public class MetadataStandard {
     /**
-     * The package of SIS implementation of ISO 19115.
-     * This package name has a trailing dot.
-     *
-     * @see #interfacePackage
-     */
-    static final String SIS_PACKAGE = "org.apache.sis.metadata.iso.";
-
-    /**
      * Metadata instances defined in this class. The current implementation does not yet
      * contains the user-defined instances. However this may be something we will need to
      * do in the future.
@@ -119,7 +112,7 @@ public class MetadataStandard {
         final String[] prefix = {"Default", "Abstract"};
         final String[] acronyms = {"CoordinateSystem", "CS", "CoordinateReferenceSystem", "CRS"};
         ISO_19111 = new StandardImplementation("ISO 19111", "org.opengis.referencing.", "org.apache.sis.referencing.", prefix, acronyms);
-        ISO_19115 = new StandardImplementation("ISO 19115", "org.opengis.metadata.", SIS_PACKAGE, prefix, null);
+        ISO_19115 = new StandardImplementation("ISO 19115", "org.opengis.metadata.", "org.apache.sis.metadata.iso.", prefix, null);
         ISO_19119 = new StandardImplementation("ISO 19119", "org.opengis.service.",  null, null, null);
         ISO_19123 = new StandardImplementation("ISO 19123", "org.opengis.coverage.", null, null, null);
         INSTANCES = new MetadataStandard[] {
@@ -128,6 +121,11 @@ public class MetadataStandard {
             ISO_19119,
             ISO_19123
         };
+        SystemListener.add(new SystemListener() {
+            @Override protected void classpathChanged() {
+                clearCache();
+            }
+        });
     }
 
     /**
@@ -214,6 +212,18 @@ public class MetadataStandard {
     }
 
     /**
+     * Clears the cache of accessors. This method is invoked when the classpath changed,
+     * in order to discard the references to classes that may need to be unloaded.
+     */
+    static void clearCache() {
+        for (final MetadataStandard standard : INSTANCES) {
+            synchronized (standard.accessors) {
+                standard.accessors.clear();
+            }
+        }
+    }
+
+    /**
      * Returns a bibliographical reference to the international standard.
      * The default implementation return the citation given at construction time.
      *
@@ -257,10 +267,10 @@ public class MetadataStandard {
                 // Nothing were computed. Try to compute now.
                 type = findInterface(implementation);
                 if (type == null) {
-                    if (!mandatory) {
-                        return null;
+                    if (mandatory) {
+                        throw new ClassCastException(Errors.format(Errors.Keys.UnknownType_1, type));
                     }
-                    throw new ClassCastException(Errors.format(Errors.Keys.UnknownType_1, type));
+                    return null;
                 }
             }
             final PropertyAccessor accessor = new PropertyAccessor(citation, type, implementation);
@@ -280,11 +290,6 @@ public class MetadataStandard {
      */
     public boolean isMetadata(final Class<?> type) {
         if (type != null) {
-            // Checks if the class is an interface from the standard.
-            if (type.isInterface() && type.getName().startsWith(interfacePackage)) {
-                return true;
-            }
-            // Checks if the class is an implementation of the standard.
             synchronized (accessors) {
                 if (accessors.containsKey(type)) {
                     return true;
@@ -384,10 +389,21 @@ public class MetadataStandard {
      */
     public Class<?> getInterface(final Class<?> type) throws ClassCastException {
         ensureNonNull("type", type);
-        if (type.getName().startsWith(interfacePackage)) {
-            return type;
+        synchronized (accessors) {
+            final Object value = accessors.get(type);
+            if (value != null) {
+                if (value instanceof PropertyAccessor) {
+                    return ((PropertyAccessor) value).type;
+                }
+                return (Class<?>) value;
+            }
+            final Class<?> standard = findInterface(type);
+            if (standard == null) {
+                throw new ClassCastException(Errors.format(Errors.Keys.UnknownType_1, type));
+            }
+            accessors.put(type, standard);
+            return standard;
         }
-        throw new UnsupportedOperationException(); // TODO: port Geotk code here.
     }
 
     /**
