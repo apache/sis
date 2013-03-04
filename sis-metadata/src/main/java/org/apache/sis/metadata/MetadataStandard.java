@@ -419,9 +419,11 @@ public class MetadataStandard {
      * Copies all metadata from source to target.
      * The source must implements the same metadata interface than the target.
      *
+     * <p>If the source contains any null or empty properties, then those properties will
+     * <strong>not</strong> overwrite the corresponding properties in the destination metadata.</p>
+     *
      * @param  source The metadata to copy.
      * @param  target The target metadata.
-     * @param  skipNulls If {@code true}, only non-null values will be copied.
      * @throws ClassCastException if the source or target object don't
      *         implements a metadata interface of the expected package.
      * @throws UnmodifiableMetadataException if the target metadata is unmodifiable,
@@ -429,7 +431,7 @@ public class MetadataStandard {
      *
      * @see ModifiableMetadata#clone()
      */
-    public void shallowCopy(final Object source, final Object target, final boolean skipNulls)
+    public void shallowCopy(final Object source, final Object target)
             throws ClassCastException, UnmodifiableMetadataException
     {
         ensureNonNull("target", target);
@@ -439,7 +441,7 @@ public class MetadataStandard {
             throw new ClassCastException(Errors.format(Errors.Keys.IllegalArgumentClass_3,
                     "source", accessor.type, source.getClass()));
         }
-        if (!accessor.shallowCopy(source, target, skipNulls)) {
+        if (!accessor.shallowCopy(source, target)) {
             throw new UnmodifiableMetadataException(Errors.format(Errors.Keys.UnmodifiableMetadata));
         }
     }
@@ -480,7 +482,7 @@ public class MetadataStandard {
         if (accessor.type != findInterface(metadata2.getClass())) {
             return false;
         }
-        return accessor.equals(metadata1, metadata2, mode, false);
+        return accessor.equals(metadata1, metadata2, mode);
     }
 
     /**
