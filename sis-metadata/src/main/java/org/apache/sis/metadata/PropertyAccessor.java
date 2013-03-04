@@ -1037,7 +1037,7 @@ final class PropertyAccessor {
      */
     final void freeze(final Object metadata) throws BackingStoreException {
         assert implementation.isInstance(metadata) : metadata;
-        if (setters != null) {
+        if (setters != null) try {
             final Object[] arguments = new Object[1];
             final Cloner cloner = new Cloner();
             for (int i=0; i<allCount; i++) {
@@ -1060,6 +1060,8 @@ final class PropertyAccessor {
                     }
                 }
             }
+        } catch (CloneNotSupportedException e) {
+            throw new UnsupportedOperationException(e);
         }
     }
 
