@@ -37,6 +37,9 @@ public final class Utilities extends Static {
      * Default tolerance threshold for comparing ordinate values in a projected CRS,
      * assuming that the unit of measurement is metre. This is not a tolerance for
      * testing map projection accuracy.
+     *
+     * @see #ANGULAR_TOLERANCE
+     * @see org.apache.sis.internal.util.Utilities#COMPARISON_THRESHOLD
      */
     public static final double LINEAR_TOLERANCE = 1.0;
 
@@ -44,6 +47,9 @@ public final class Utilities extends Static {
      * Default tolerance threshold for comparing ordinate values in a geographic CRS,
      * assuming that the unit of measurement is decimal degrees and using the standard
      * nautical mile length.
+     *
+     * @see #LINEAR_TOLERANCE
+     * @see org.apache.sis.internal.util.Utilities#COMPARISON_THRESHOLD
      */
     public static final double ANGULAR_TOLERANCE = LINEAR_TOLERANCE / (1852 * 60);
 

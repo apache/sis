@@ -19,6 +19,7 @@ package org.apache.sis.util;
 import java.util.Map;
 import java.util.Set;
 import org.apache.sis.util.collection.CollectionsExt;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -46,6 +47,23 @@ public final class ObjectConverters extends Static {
     public static <T> ObjectConverter<T,T> identity(final Class<T> type) {
         ArgumentChecks.ensureNonNull("type", type);
         return IdentityConverter.create(type);
+    }
+
+    /**
+     * Returns a converter for the specified source and target classes.
+     *
+     * @param  <S> The source class.
+     * @param  <T> The target class.
+     * @param  source The source class.
+     * @param  target The target class, or {@code Object.class} for any.
+     * @return The converter from the specified source class to the target class.
+     * @throws UnconvertibleObjectException if no converter is found.
+     */
+    public static <S,T> ObjectConverter<S,T> find(final Class<S> source, final Class<T> target)
+            throws UnconvertibleObjectException
+    {
+        // TODO: port the implementation from Geotk
+        throw new UnconvertibleObjectException(Errors.format(Errors.Keys.CanNotConvertFromType_2, source, target));
     }
 
     /**

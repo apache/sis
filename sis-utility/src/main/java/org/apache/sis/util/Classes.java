@@ -44,7 +44,7 @@ import static org.apache.sis.util.collection.CollectionsExt.hashMapCapacity;
  *       ({@link #findCommonClass(Class, Class) findCommonClass},
  *        {@link #findCommonInterfaces(Class, Class) findCommonInterfaces})</li>
  *   <li>Getting the bounds of a parameterized field or method
- *       ({@link #boundOfParameterizedAttribute(Method) boundOfParameterizedAttribute})</li>
+ *       ({@link #boundOfParameterizedProperty(Method) boundOfParameterizedProperty})</li>
  *   <li>Getting a short class name ({@link #getShortName(Class) getShortName},
  *       {@link #getShortClassName(Object) getShortClassName})</li>
  * </ul>
@@ -137,8 +137,8 @@ public final class Classes extends Static {
     }
 
     /**
-     * Returns the upper bounds of the parameterized type of the given attribute.
-     * If the attribute does not have a parameterized type, returns {@code null}.
+     * Returns the upper bounds of the parameterized type of the given property.
+     * If the property does not have a parameterized type, returns {@code null}.
      *
      * <p>This method is typically used for fetching the type of elements in a collection.
      * We do not provide a method working from a {@link Class} instance because of the way
@@ -162,14 +162,14 @@ public final class Classes extends Static {
      * @return The upper bound of parameterized type, or {@code null} if the given field
      *         is not of a parameterized type.
      */
-    public static Class<?> boundOfParameterizedAttribute(final Field field) {
+    public static Class<?> boundOfParameterizedProperty(final Field field) {
         return getActualTypeArgument(field.getGenericType());
     }
 
     /**
-     * If the given method is a getter or a setter for a parameterized attribute, returns the
+     * If the given method is a getter or a setter for a parameterized property, returns the
      * upper bounds of the parameterized type. Otherwise returns {@code null}. This method
-     * provides the same semantic than {@link #boundOfParameterizedAttribute(Field)}, but
+     * provides the same semantic than {@link #boundOfParameterizedProperty(Field)}, but
      * works on a getter or setter method rather then the field. See the javadoc of above
      * method for more details.
      *
@@ -181,7 +181,7 @@ public final class Classes extends Static {
      * @return The upper bound of parameterized type, or {@code null} if the given method
      *         do not operate on an object of a parameterized type.
      */
-    public static Class<?> boundOfParameterizedAttribute(final Method method) {
+    public static Class<?> boundOfParameterizedProperty(final Method method) {
         Class<?> c = getActualTypeArgument(method.getGenericReturnType());
         if (c == null) {
             final Type[] parameters = method.getGenericParameterTypes();
@@ -636,7 +636,7 @@ cmp:    for (final Class<?> c : c1) {
     }
 
     /**
-     * Returns {@code true} if the given method may possibly be the getter method for an attribute.
+     * Returns {@code true} if the given method may possibly be the getter method for a property.
      * This method implements the algorithm used by SIS in order to identify getter methods in
      * {@linkplain org.opengis.metadata metadata} interfaces. We do not rely on naming convention
      * (method names starting with "{@code get}" or "{@code is}" prefixes) because not every methods
