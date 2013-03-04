@@ -185,30 +185,30 @@ public final strictfp class ClassesTest extends TestCase {
     }
 
     /**
-     * Tests the {@link Classes#boundOfParameterizedAttribute(Field)} method.
+     * Tests the {@link Classes#boundOfParameterizedProperty(Field)} method.
      *
      * @throws NoSuchFieldException  Should never occur.
      * @throws NoSuchMethodException Should never occur.
      */
     @Test
-    public void testBoundOfParameterizedAttribute() throws NoSuchFieldException, NoSuchMethodException {
+    public void testBoundOfParameterizedProperty() throws NoSuchFieldException, NoSuchMethodException {
         final Class<?>[] g = null;
         final Class<?>[] s = new Class<?>[] {Set.class};
         final Class<Parameterized> c = Parameterized.class;
-        assertNull(                 boundOfParameterizedAttribute(c.getMethod("getter0", g)));
-        assertNull(                 boundOfParameterizedAttribute(c.getMethod("setter0", s)));
-        assertEquals(Long   .class, boundOfParameterizedAttribute(c.getField ("attrib2"   )));
-        assertEquals(Integer.class, boundOfParameterizedAttribute(c.getMethod("getter1", g)));
-        assertEquals(Byte   .class, boundOfParameterizedAttribute(c.getMethod("getter2", g)));
-        assertEquals(Object .class, boundOfParameterizedAttribute(c.getMethod("getter3", g)));
-        assertEquals(short[].class, boundOfParameterizedAttribute(c.getMethod("getter4", g)));
-        assertEquals(String .class, boundOfParameterizedAttribute(c.getMethod("setter1", s)));
-        assertEquals(Short  .class, boundOfParameterizedAttribute(c.getMethod("setter2", s)));
-        assertEquals(Object .class, boundOfParameterizedAttribute(c.getMethod("setter3", s)));
+        assertNull(                 boundOfParameterizedProperty(c.getMethod("getter0", g)));
+        assertNull(                 boundOfParameterizedProperty(c.getMethod("setter0", s)));
+        assertEquals(Long   .class, boundOfParameterizedProperty(c.getField ("attrib2"   )));
+        assertEquals(Integer.class, boundOfParameterizedProperty(c.getMethod("getter1", g)));
+        assertEquals(Byte   .class, boundOfParameterizedProperty(c.getMethod("getter2", g)));
+        assertEquals(Object .class, boundOfParameterizedProperty(c.getMethod("getter3", g)));
+        assertEquals(short[].class, boundOfParameterizedProperty(c.getMethod("getter4", g)));
+        assertEquals(String .class, boundOfParameterizedProperty(c.getMethod("setter1", s)));
+        assertEquals(Short  .class, boundOfParameterizedProperty(c.getMethod("setter2", s)));
+        assertEquals(Object .class, boundOfParameterizedProperty(c.getMethod("setter3", s)));
     }
 
     /**
-     * Dummy class for {@link #testBoundOfParameterizedAttribute()} usage only.
+     * Dummy class for {@link #testBoundOfParameterizedProperty()} usage only.
      */
     private static final class Parameterized {
         public Set<? extends Long> attrib2 = null;
