@@ -24,8 +24,10 @@ import java.util.NoSuchElementException;
 import net.jcip.annotations.ThreadSafe;
 import org.opengis.util.CodeList;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.CheckedHashSet;
 import org.apache.sis.util.collection.CheckedArrayList;
+import org.apache.sis.internal.jaxb.MarshalContext;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.collection.CollectionsExt.isNullOrEmpty;
@@ -82,6 +84,21 @@ import static org.apache.sis.util.collection.CollectionsExt.hashMapCapacity;
  */
 @ThreadSafe
 public abstract class ModifiableMetadata extends AbstractMetadata implements Cloneable {
+    /**
+     * A null implementation for the {@link #FREEZING} constant.
+     */
+    private static final class Null extends ModifiableMetadata {
+        @Override public MetadataStandard getStandard() {
+            return null;
+        }
+    }
+
+    /**
+     * A flag used for {@link #unmodifiable} in order to specify that
+     * {@link #freeze()} is under way.
+     */
+    private static final ModifiableMetadata FREEZING = new Null();
+
     /**
      * An unmodifiable copy of this metadata, created only when first needed.
      * If {@code null}, then no unmodifiable entity is available.
@@ -182,7 +199,14 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      */
     public synchronized void freeze() {
         if (isModifiable()) {
-            throw new UnsupportedOperationException("Not yet implemented."); // TODO
+            ModifiableMetadata success = null;
+            try {
+                unmodifiable = FREEZING;
+                getStandard().freeze(this);
+                success = this;
+            } finally {
+                unmodifiable = success;
+            }
         }
     }
 
@@ -199,7 +223,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
     protected void checkWritePermission() throws UnmodifiableMetadataException {
         assert Thread.holdsLock(this);
         if (!isModifiable()) {
-            throw new UnmodifiableMetadataException("Unmodifiable metadata"); // TODO: localize
+            throw new UnmodifiableMetadataException(Errors.format(Errors.Keys.UnmodifiableMetadata));
         }
         unmodifiable = null;
     }
@@ -227,12 +251,16 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      *
      * @see #nonNullList(List, Class)
      */
+    @SuppressWarnings("unchecked")
     protected final <E> List<E> copyList(final Collection<? extends E> source,
             List<E> target, final Class<E> elementType)
             throws UnmodifiableMetadataException
     {
         // See the comments in copyCollection(...) for implementation notes.
         if (source != target) {
+            if (unmodifiable == FREEZING) {
+                return (List<E>) source;
+            }
             checkWritePermission();
             if (isNullOrEmpty(source)) {
                 target = null;
@@ -271,12 +299,16 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      *
      * @see #nonNullSet(Set, Class)
      */
+    @SuppressWarnings("unchecked")
     protected final <E> Set<E> copySet(final Collection<? extends E> source,
             Set<E> target, final Class<E> elementType)
             throws UnmodifiableMetadataException
     {
         // See the comments in copyCollection(...) for implementation notes.
         if (source != target) {
+            if (unmodifiable == FREEZING) {
+                return (Set<E>) source;
+            }
             checkWritePermission();
             if (isNullOrEmpty(source)) {
                 target = null;
@@ -321,6 +353,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      *         elements, or {@code null} if the source was null.
      * @throws UnmodifiableMetadataException if this metadata is unmodifiable.
      */
+    @SuppressWarnings("unchecked")
     protected final <E> Collection<E> copyCollection(final Collection<? extends E> source,
             Collection<E> target, final Class<E> elementType)
             throws UnmodifiableMetadataException
@@ -331,6 +364,14 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
          * This optimization is required for efficient working of PropertyAccessor.set(...).
          */
         if (source != target) {
+            if (unmodifiable == FREEZING) {
+                /*
+                 * freeze() method is under progress. The source collection is already
+                 * an unmodifiable instance created by unmodifiable(Object).
+                 */
+                assert collectionType(elementType).isAssignableFrom(source.getClass());
+                return (Collection<E>) source;
+            }
             checkWritePermission();
             if (isNullOrEmpty(source)) {
                 target = null;
@@ -352,6 +393,15 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
     }
 
     /**
+     * Returns {@code true} if the caller {@code nonNullCollection} method (or list, or set)
+     * is allowed to returns {@code null} instead than an empty list. This happen mostly at
+     * XML marshalling time.
+     */
+    private static boolean isMarshaling() {
+        return MarshalContext.isFlagSet(MarshalContext.current(), MarshalContext.MARSHALING);
+    }
+
+    /**
      * Returns the specified list, or a new one if {@code c} is null.
      * This is a convenience method for implementation of {@code getFoo()}
      * methods.
@@ -365,7 +415,10 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
     protected final <E> List<E> nonNullList(final List<E> c, final Class<E> elementType) {
         assert Thread.holdsLock(this);
         if (c != null) {
-            return c;
+            return c.isEmpty() && isMarshaling() ? null : c;
+        }
+        if (isMarshaling()) {
+            return null;
         }
         if (isModifiable()) {
             return new MutableList<>(elementType);
@@ -387,7 +440,10 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
     protected final <E> Set<E> nonNullSet(final Set<E> c, final Class<E> elementType) {
         assert Thread.holdsLock(this);
         if (c != null) {
-            return c;
+            return c.isEmpty() && isMarshaling() ? null : c;
+        }
+        if (isMarshaling()) {
+            return null;
         }
         if (isModifiable()) {
             return new MutableSet<>(elementType);
@@ -419,7 +475,10 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
         assert Thread.holdsLock(this);
         if (c != null) {
             assert collectionType(elementType).isAssignableFrom(c.getClass());
-            return c;
+            return c.isEmpty() && isMarshaling() ? null : c;
+        }
+        if (isMarshaling()) {
+            return null;
         }
         final boolean isModifiable = isModifiable();
         if (useSet(elementType)) {
@@ -513,7 +572,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
         if (List.class.isAssignableFrom(type)) {
             return false;
         }
-        throw new NoSuchElementException("Unsupported data type");
+        throw new NoSuchElementException(Errors.format(Errors.Keys.UnsupportedType_1, type));
     }
 
     /**
