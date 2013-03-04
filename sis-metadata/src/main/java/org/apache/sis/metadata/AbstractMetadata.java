@@ -91,7 +91,7 @@ public abstract class AbstractMetadata implements LenientComparable {
     /**
      * Compares this metadata with the specified object for equality. The default
      * implementation uses Java reflection. Subclasses may override this method
-     * for better performances, or for comparing "hidden" attributes not specified
+     * for better performances, or for comparing "hidden" properties not specified
      * by the GeoAPI (or other standard) interface.
      *
      * @param  object The object to compare with this metadata.

@@ -20,7 +20,7 @@ package org.apache.sis.metadata;
 /**
  * Whatever {@link MetadataStandard#asMap MetadataStandard.asMap(…)} shall contain entries
  * for null values or empty collections. By default the map does not provide
- * {@linkplain java.util.Map.Entry entries} for {@code null} metadata attributes or
+ * {@linkplain java.util.Map.Entry entries} for {@code null} metadata properties or
  * {@linkplain java.util.Collection#isEmpty() empty} collections.
  * This enumeration allows control on this behavior.
  *
@@ -39,13 +39,13 @@ public enum NullValuePolicy {
     ALL,
 
     /**
-     * Includes only the non-null attributes.
+     * Includes only the non-null properties.
      * Collections are included no matter if they are empty or not.
      */
     NON_NULL,
 
     /**
-     * Includes only the attributes that are non-null and, in the case of collections,
+     * Includes only the properties that are non-null and, in the case of collections,
      * non-{@linkplain java.util.Collection#isEmpty() empty}.
      * This is the default behavior of {@link AbstractMetadata#asMap()}.
      */

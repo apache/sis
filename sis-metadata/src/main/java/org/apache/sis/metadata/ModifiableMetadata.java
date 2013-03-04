@@ -164,7 +164,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
             final ModifiableMetadata candidate;
             try {
                 /*
-                 * Need a SHALLOW copy of this metadata, because some attributes
+                 * Need a SHALLOW copy of this metadata, because some properties
                  * may already be unmodifiable and we don't want to clone them.
                  */
                 candidate = clone();
@@ -187,7 +187,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
     }
 
     /**
-     * Declares this metadata and all its attributes as unmodifiable. Any attempt to modify a
+     * Declares this metadata and all its properties as unmodifiable. Any attempt to modify a
      * property after this method call will throw an {@link UnmodifiableMetadataException}.
      * If this metadata is already unmodifiable, then this method does nothing.
      *
@@ -236,7 +236,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      *   <li>Invokes {@link #checkWritePermission()} in order to ensure that this metadata is
      *       modifiable.</li>
      *   <li>If {@code source} is null or empty, returns {@code null}
-     *       (meaning that the metadata attribute is not provided).</li>
+     *       (meaning that the metadata property is not provided).</li>
      *   <li>If {@code target} is null, creates a new {@link List}.</li>
      *   <li>Copies the content of the given {@code source} into the target.</li>
      * </ul>
@@ -284,7 +284,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      *   <li>Invokes {@link #checkWritePermission()} in order to ensure that this metadata is
      *       modifiable.</li>
      *   <li>If {@code source} is null or empty, returns {@code null}
-     *       (meaning that the metadata attribute is not provided).</li>
+     *       (meaning that the metadata property is not provided).</li>
      *   <li>If {@code target} is null, creates a new {@link Set}.</li>
      *   <li>Copies the content of the given {@code source} into the target.</li>
      * </ul>
@@ -332,7 +332,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      *   <li>Invokes {@link #checkWritePermission()} in order to ensure that this metadata is
      *       modifiable.</li>
      *   <li>If {@code source} is null or empty, returns {@code null}
-     *       (meaning that the metadata attribute is not provided).</li>
+     *       (meaning that the metadata property is not provided).</li>
      *   <li>If {@code target} is null, creates a new {@link Set} or a new {@link List}
      *       depending on the value returned by {@link #collectionType(Class)}.</li>
      *   <li>Copies the content of the given {@code source} into the target.</li>
@@ -577,7 +577,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
 
     /**
      * Returns the type of collection to use for the given type. The current implementation can
-     * return only two values: <code>{@linkplain Set}.class</code> if the attribute should not
+     * return only two values: <code>{@linkplain Set}.class</code> if the property should not
      * accept duplicated values, or <code>{@linkplain List}.class</code> otherwise. Future SIS
      * versions may accept other types.
      *
@@ -590,7 +590,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * @param  <E> The type of elements in the collection to be created.
      * @param  elementType The type of elements in the collection to be created.
      * @return {@code List.class} or {@code Set.class} depending on whether the
-     *         attribute shall accept duplicated values or not.
+     *         property shall accept duplicated values or not.
      */
     @SuppressWarnings({"rawtypes","unchecked"})
     protected <E> Class<? extends Collection<E>> collectionType(final Class<E> elementType) {

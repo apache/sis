@@ -54,7 +54,7 @@ import static org.apache.sis.internal.util.Utilities.floatEpsilonEqual;
 /**
  * The getter methods declared in a GeoAPI interface, together with setter methods (if any)
  * declared in the SIS implementation. An instance of {@code PropertyAccessor} gives access
- * to all public attributes of an instance of a metadata object. It uses reflection for this
+ * to all public properties of an instance of a metadata object. It uses reflection for this
  * purpose, a little bit like the <cite>Java Beans</cite> framework.
  *
  * <p>This accessor groups the properties in two categories:</p>
@@ -338,7 +338,7 @@ final class PropertyAccessor {
              */
             Class<?> elementType = getter.getReturnType();
             if (Collection.class.isAssignableFrom(elementType)) {
-                elementType = Classes.boundOfParameterizedAttribute(getter);
+                elementType = Classes.boundOfParameterizedProperty(getter);
             }
             elementTypes[i] = Numbers.primitiveToWrapper(elementType);
         }
@@ -724,7 +724,7 @@ final class PropertyAccessor {
      * @param  value    The new value.
      * @param  getOld   {@code true} if this method should first fetches the old value.
      * @return The old value, or {@code null} if {@code getOld} was {@code false}.
-     * @throws UnmodifiableMetadataException if the attribute for the given key is read-only.
+     * @throws UnmodifiableMetadataException if the property for the given key is read-only.
      * @throws ClassCastException if the given value is not of the expected type.
      * @throws BackingStoreException if the implementation threw a checked exception.
      */
