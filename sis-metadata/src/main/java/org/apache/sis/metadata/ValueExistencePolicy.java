@@ -29,9 +29,9 @@ package org.apache.sis.metadata;
  * @version 0.3
  * @module
  *
- * @see MetadataStandard#asMap(Object, KeyNamePolicy, NullValuePolicy)
+ * @see MetadataStandard#asMap(Object, KeyNamePolicy, ValueExistencePolicy)
  */
-public enum NullValuePolicy {
+public enum ValueExistencePolicy {
     /**
      * Includes all entries in the map, including those having a null value or an
      * empty collection.

@@ -43,7 +43,7 @@ import java.util.Objects;
  * For a given metadata instances (typically an {@link AbstractMetadata} subclasses,
  * but other types are allowed), instances of {@code PropertyDescriptor} are obtained
  * indirectly by the {@link MetadataStandard#asDescriptorMap(Object, KeyNamePolicy,
- * NullValuePolicy)} method.
+ * ValueExistencePolicy)} method.
  *
  * @param <T> The value type, either the method return type if not a collection,
  *            or the type of elements in the collection otherwise.
@@ -53,7 +53,7 @@ import java.util.Objects;
  * @version 0.3
  * @module
  *
- * @see MetadataStandard#asDescriptorMap(Object, KeyNamePolicy, NullValuePolicy)
+ * @see MetadataStandard#asDescriptorMap(Object, KeyNamePolicy, ValueExistencePolicy)
  * @see <a href="https://issues.apache.org/jira/browse/SIS-80">SIS-80</a>
  *
  * @todo Implementing {@code ParameterDescriptor} is not really appropriate since metadata properties
