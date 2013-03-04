@@ -171,10 +171,10 @@ public final class CodeListProxy {
         codeList = schema(context, "gmxCodelists.xml", classID);
         /*
          * Get the localized name of the field identifier, if possible.
-         * This code partially duplicates Types.getCodeTitle(CodeList, Locale).
+         * This code partially duplicates Types.getCodeTitle(CodeList).
          * This duplication exists because this constructor stores more information in
          * an opportunist way. If this constructor is updated, please consider updating
-         * the Types.getCodeTitle(CodeList, Locale) method accordingly.
+         * the Types.getCodeTitle(CodeList) method accordingly.
          */
         final Locale locale = context.getLocale();
         if (locale != null) {
@@ -192,7 +192,7 @@ public final class CodeListProxy {
             // Fallback when no value is defined for the code list. Build a value from the
             // most descriptive name (excluding the field name), which is usually the UML
             // name except for CharacterSet in which case it is a string like "UTF-8".
-            value = Types.getCodeTitle(code);
+            value = Types.getCodeLabel(code);
         }
         codeListValue = fieldID;
     }

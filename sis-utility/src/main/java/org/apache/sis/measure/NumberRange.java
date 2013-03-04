@@ -270,6 +270,24 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
     }
 
     /**
+     * Constructs a range of the given type with values from the given annotation.
+     * This constructor does not verify if the given type is wide enough for the values of
+     * the given annotation, because those information are usually static. If nevertheless
+     * the given type is not wide enough, then the values are truncated in the same way
+     * than the Java language casts primitive types.
+     *
+     * @param  type  The element type, restricted to one of {@link Byte}, {@link Short},
+     *               {@link Integer}, {@link Long}, {@link Float} or {@link Double}.
+     * @param  range The range of values.
+     * @throws IllegalArgumentException If the given type is not one of the primitive
+     *         wrappers for numeric types.
+     */
+    public NumberRange(final Class<E> type, final ValueRange range) throws IllegalArgumentException {
+        super(type, Numbers.cast(valueOf("minimum", range.minimum(), Double.NEGATIVE_INFINITY), type), range.isMinIncluded(),
+                    Numbers.cast(valueOf("maximum", range.maximum(), Double.POSITIVE_INFINITY), type), range.isMaxIncluded());
+    }
+
+    /**
      * Constructs a range of {@link Number} objects.
      *
      * @param type           The element type, usually one of {@link Byte}, {@link Short},

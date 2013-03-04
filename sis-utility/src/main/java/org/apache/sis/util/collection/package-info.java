@@ -49,7 +49,8 @@
  *     in which the keys or the values are derived on-the-fly from the content of an other collection.
  *     The can also be used for creating filtered views.
  *   </li><li>
- *     {@link org.apache.sis.util.collection.IntegerList} and
+ *     {@link org.apache.sis.util.collection.IntegerList},
+ *     {@link org.apache.sis.util.collection.CodeListSet} and
  *     {@link org.apache.sis.util.collection.RangeSet} are collections specialized for a particular kind
  *     of content, providing more efficient storage than what we would get with the general-purpose
  *     collection implementations.

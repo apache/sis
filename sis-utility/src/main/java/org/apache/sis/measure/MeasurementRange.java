@@ -141,6 +141,25 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
     }
 
     /**
+     * Constructs a range of the given type with values from the given annotation.
+     * This constructor does not verify if the given type is wide enough for the values of
+     * the given annotation, because those information are usually static. If nevertheless
+     * the given type is not wide enough, then the values are truncated in the same way
+     * than the Java language casts primitive types.
+     *
+     * @param  type  The element type, restricted to one of {@link Byte}, {@link Short},
+     *               {@link Integer}, {@link Long}, {@link Float} or {@link Double}.
+     * @param  range The range of values.
+     * @param  unit  The unit of measurement, or {@code null} if unknown.
+     * @throws IllegalArgumentException If the given type is not one of the primitive
+     *         wrappers for numeric types.
+     */
+    public MeasurementRange(final Class<E> type, final ValueRange range, final Unit<?> unit) throws IllegalArgumentException {
+        super(type, range);
+        this.unit = unit;
+    }
+
+    /**
      * Constructs a range of {@link Number} objects.
      *
      * @param type          The element type, usually one of {@link Float} or {@link Double}.

@@ -51,8 +51,8 @@ import org.apache.sis.internal.util.DefaultFactories;
  *       for creating name-related objects from various objects.</li>
  *   <li>{@link #getStandardName(Class)}, {@link #getListName(CodeList)} and {@link #getCodeName(CodeList)}
  *       for fetching ISO names if possible.</li>
- *   <li>{@link #getCodeTitle(CodeList, Locale)}, {@link #getDescription(CodeList, Locale)} and
- *       {@link #getDescription(Class, Locale)} for fetching human-readable descriptions.</li>
+ *   <li>{@link #getCodeTitle(CodeList)}, {@link #getDescription(CodeList)} and
+ *       {@link #getDescription(Class)} for fetching human-readable descriptions.</li>
  *   <li>{@link #forStandardName(String)} and {@link #forCodeName(Class, String, boolean)} for
  *       fetching an instance from a name (converse of above {@code get} methods).</li>
  * </ul>
@@ -63,13 +63,6 @@ import org.apache.sis.internal.util.DefaultFactories;
  * @module
  */
 public final class Types extends Static {
-    /**
-     * The class loader to use for fetching GeoAPI resources.
-     * Since the resources are bundled in the GeoAPI JAR file,
-     * we use the instance that loaded GeoAPI for more determinist behavior.
-     */
-    private static final ClassLoader CLASSLOADER = UML.class.getClassLoader();
-
     /**
      * The types for ISO 19115 UML identifiers. The keys are UML identifiers. Values
      * are either class names as {@link String} objects, or the {@link Class} instances.
@@ -159,8 +152,9 @@ public final class Types extends Static {
      * @return The UML identifiers or programmatic name for the given code,
      *         or {@code null} if the given code is null.
      *
+     * @see #getCodeLabel(CodeList)
      * @see #getCodeTitle(CodeList)
-     * @see #getDescription(CodeList, Locale)
+     * @see #getDescription(CodeList)
      * @see #forCodeName(Class, String, boolean)
      */
     public static String getCodeName(final CodeList<?> code) {
@@ -175,7 +169,7 @@ public final class Types extends Static {
      * Returns a unlocalized title for the given code.
      * This method builds a title using heuristics rules, which should give reasonable
      * results without the need of resource bundles. For better results, consider using
-     * {@link #getCodeTitle(CodeList, Locale)} instead.
+     * {@link #getCodeTitle(CodeList)} instead.
      *
      * <p>The current heuristic implementation iterates over {@linkplain CodeList#names() all
      * code names}, selects the longest one excluding the {@linkplain CodeList#name() field name}
@@ -183,18 +177,19 @@ public final class Types extends Static {
      * from that name. Examples:</p>
      *
      * <ul>
-     *   <li>{@code getCodeTitle(AxisDirection.NORTH)} returns {@code "North"}.</li>
-     *   <li>{@code getCodeTitle(CharacterSet.UTF_8)} returns {@code "UTF-8"}.</li>
-     *   <li>{@code getCodeTitle(ImagingCondition.BLURRED_IMAGE)} returns {@code "Blurred image"}.</li>
+     *   <li>{@code getCodeLabel(AxisDirection.NORTH)} returns {@code "North"}.</li>
+     *   <li>{@code getCodeLabel(CharacterSet.UTF_8)} returns {@code "UTF-8"}.</li>
+     *   <li>{@code getCodeLabel(ImagingCondition.BLURRED_IMAGE)} returns {@code "Blurred image"}.</li>
      * </ul>
      *
      * @param  code The code from which to get a title, or {@code null}.
      * @return A unlocalized title for the given code, or {@code null} if the given code is null.
      *
      * @see #getCodeName(CodeList)
-     * @see #getDescription(CodeList, Locale)
+     * @see #getCodeTitle(CodeList)
+     * @see #getDescription(CodeList)
      */
-    public static String getCodeTitle(final CodeList<?> code) {
+    public static String getCodeLabel(final CodeList<?> code) {
         if (code == null) {
             return null;
         }
@@ -212,120 +207,197 @@ public final class Types extends Static {
     }
 
     /**
-     * Returns the localized title of the given code.
-     * Special cases:
+     * Returns the title of the given code. Title are usually much shorter than descriptions.
+     * English titles are often the same than the {@linkplain #getCodeLabel(CodeList) code labels}.
      *
-     * <ul>
-     *   <li>If {@code code} is {@code null}, then this method returns {@code null}.</li>
-     *   <li>If {@code locale} is {@code null}, then this method uses {@link Locale#ROOT}
-     *       for "unlocalized" (typically English) strings.</li>
-     *   <li>If there is no resources for the given code in the given language, then this method
-     *       fallback on other languages as described in {@link ResourceBundle} javadoc.</li>
-     *   <li>If there is no localized resources for the given code, then this method fallback
-     *       on {@link #getCodeTitle(CodeList)}.</li>
-     * </ul>
+     * @param  code The code for which to get the title, or {@code null}.
+     * @return The title, or {@code null} if the given code is null.
      *
-     * @param  code   The code for which to get the localized name, or {@code null}.
-     * @param  locale The local, or {@code null} if none.
-     * @return The localized title, or {@code null} if the given code is null.
-     *
-     * @see #getDescription(CodeList, Locale)
+     * @see #getDescription(CodeList)
      */
-    public static String getCodeTitle(final CodeList<?> code, Locale locale) {
-        if (code == null) {
-            return null;
-        }
-        if (locale == null) {
-            locale = Locale.ROOT;
-        }
-        /*
-         * The code below is a duplicated - in a different way - of CodeListProxy(CodeList)
-         * constructor (org.apache.sis.internal.jaxb.code package). This duplication exists
-         * because CodeListProxy constructor stores more information in an opportunist way.
-         * If this method is updated, please update CodeListProxy(CodeList) accordingly.
-         */
-        final String key = getListName(code) + '.' + getCodeName(code);
-        try {
-            return ResourceBundle.getBundle("org.opengis.metadata.CodeLists", locale, CLASSLOADER).getString(key);
-        } catch (MissingResourceException e) {
-            Logging.recoverableException(Types.class, "getCodeTitle", e);
-            return getCodeTitle(code);
-        }
+    public static InternationalString getCodeTitle(final CodeList<?> code) {
+        return (code != null) ? new CodeTitle(code) : null;
     }
 
     /**
-     * Returns the localized description of the given code, or {@code null} if none.
-     * Special cases:
-     *
-     * <ul>
-     *   <li>If {@code code} is {@code null}, then this method returns {@code null}.</li>
-     *   <li>If {@code locale} is {@code null}, then this method uses the
-     *       {@linkplain Locale#getDefault() default locale} - there is no such thing
-     *       like "unlocalized" description.</li>
-     *   <li>If there is no resources for the given code in the given language, then this method
-     *       fallback on other languages as described in {@link ResourceBundle} javadoc.</li>
-     *   <li>If there is no localized resources for the given code, then this method returns
-     *       {@code null} - there is no fallback.</li>
-     * </ul>
-     *
+     * Returns the description of the given code, or {@code null} if none.
      * For a description of the code list as a whole instead than a particular code,
-     * see {@link Types#getDescription(Class, Locale)}.
+     * see {@link Types#getDescription(Class)}.
      *
-     * @param  code   The code for which to get the localized description, or {@code null}.
-     * @param  locale The desired local, or {@code null} for the default locale.
-     * @return The localized description, or {@code null} if the given code is null.
+     * @param  code The code for which to get the localized description, or {@code null}.
+     * @return The description, or {@code null} if none or if the given code is null.
      *
-     * @see #getCodeTitle(CodeList, Locale)
-     * @see #getDescription(Class, Locale)
+     * @see #getCodeTitle(CodeList)
+     * @see #getDescription(Class)
      */
-    public static String getDescription(final CodeList<?> code, final Locale locale) {
-        return (code != null) ? getDescription(getListName(code) + '.' + getCodeName(code), locale) : null;
+    public static InternationalString getDescription(final CodeList<?> code) {
+        if (code != null) {
+            final String resources = getResources(code.getClass().getName());
+            if (resources != null) {
+                return new Description(resources, getListName(code) + '.' + getCodeName(code));
+            }
+        }
+        return null;
     }
 
     /**
-     * Returns a localized description for the given class, or {@code null} if none.
+     * Returns a description for the given class, or {@code null} if none.
      * This method can be used for GeoAPI interfaces or {@link CodeList}.
-     * Special cases:
-     *
-     * <ul>
-     *   <li>If {@code code} is {@code null}, then this method returns {@code null}.</li>
-     *   <li>If {@code locale} is {@code null}, then this method uses the
-     *       {@linkplain Locale#getDefault() default locale} - there is no such thing
-     *       like "unlocalized" description.</li>
-     *   <li>If there is no resources for the given type in the given language, then this method
-     *       fallback on other languages as described in {@link ResourceBundle} javadoc.</li>
-     *   <li>If there is no localized resources for the given type, then this method returns
-     *       {@code null} - there is no fallback.</li>
-     * </ul>
      *
      * @param  type The GeoAPI interface or code list from which to get the description, or {@code null}.
-     * @param  locale The desired local, or {@code null} for the default locale.
-     * @return The ISO name for the given type, or {@code null} if none or if the type is {@code null}.
+     * @return The description, or {@code null} if none or if the given type is {@code null}.
      *
-     * @see #getDescription(CodeList, Locale)
+     * @see #getDescription(CodeList)
      */
-    public static String getDescription(final Class<?> type, final Locale locale) {
-        return getDescription(getStandardName(type), locale);
+    public static InternationalString getDescription(final Class<?> type) {
+        final String name = getStandardName(type);
+        if (name != null) {
+            final String resources = getResources(type.getName());
+            if (resources != null) {
+                return new Description(resources, name);
+            }
+        }
+        return null;
     }
 
     /**
-     * Returns the descriptions for the given key in the given locale.
+     * Returns a description for the given property, or {@code null} if none.
+     * The given type shall be a GeoAPI interface, and the given property shall
+     * be a UML identifier. If any of the input argument is {@code null}, then
+     * this method returns {@code null}.
      *
-     * @param  key     The ISO identifier of a class, or a class property, or a code list value.
-     * @param  locale  The locale in which to get the description.
-     * @return The description, or {@code null} if none.
+     * @param  type     The GeoAPI interface from which to get the description of a property, or {@code null}.
+     * @param  property The ISO name of the property for which to get the description, or {@code null}.
+     * @return The description, or {@code null} if none or if the given type or property name is {@code null}.
      */
-    private static String getDescription(final String key, Locale locale) {
-        if (key != null) {
-            if (locale == null) {
-                locale = Locale.getDefault();
-            }
-            try {
-                return ResourceBundle.getBundle("org.opengis.metadata.Descriptions", locale, CLASSLOADER).getString(key);
-            } catch (MissingResourceException e) {
-                Logging.recoverableException(Types.class, "getDescription", e);
+    public static InternationalString getDescription(final Class<?> type, final String property) {
+        if (property != null) {
+            final String name = getStandardName(type);
+            if (name != null) {
+                final String resources = getResources(type.getName());
+                if (resources != null) {
+                    return new Description(resources, name + '.' + property);
+                }
             }
         }
+        return null;
+    }
+
+    /**
+     * The {@link InternationalString} returned by the {@code Types.getDescription(…)} methods.
+     *
+     * @author  Martin Desruisseaux (Geomatys)
+     * @since   0.3
+     * @version 0.3
+     * @module
+     */
+    private static class Description extends ResourceInternationalString {
+        /**
+         * For cross-version compatibility.
+         */
+        private static final long serialVersionUID = 7336442452947376873L;
+
+        /**
+         * The class loader to use for fetching GeoAPI resources.
+         * Since the resources are bundled in the GeoAPI JAR file,
+         * we use the instance that loaded GeoAPI for more determinist behavior.
+         */
+        private static final ClassLoader CLASSLOADER = UML.class.getClassLoader();
+
+        /**
+         * Creates a new international string from the specified resource bundle and key.
+         *
+         * @param resources The name of the resource bundle, as a fully qualified class name.
+         * @param key       The key for the resource to fetch.
+         */
+        Description(final String resources, final String key) {
+            super(resources, key);
+        }
+
+        /**
+         * Loads the resources using the class loader used for loading GeoAPI interfaces.
+         */
+        @Override
+        protected final ResourceBundle getBundle(final Locale locale) {
+            return ResourceBundle.getBundle(resources, locale, CLASSLOADER);
+        }
+
+        /**
+         * Returns the description for the given locale, or fallback on a default description
+         * if no resources exist for that locale.
+         */
+        @Override
+        public final String toString(final Locale locale) {
+            try {
+                return super.toString(locale);
+            } catch (MissingResourceException e) {
+                Logging.recoverableException(ResourceInternationalString.class, "toString", e);
+                return fallback();
+            }
+        }
+
+        /**
+         * Returns a fallback if no resource is found.
+         */
+        String fallback() {
+            return CharSequences.camelCaseToSentence(key.substring(key.lastIndexOf('.') + 1)).toString();
+        }
+    }
+
+    /**
+     * The {@link InternationalString} returned by the {@code Types.getCodeTitle(…)} method.
+     * The code below is a duplicated - in a different way - of {@code CodeListProxy(CodeList)}
+     * constructor ({@link org.apache.sis.internal.jaxb.code package}). This duplication exists
+     * because {@code CodeListProxy} constructor stores more information in an opportunist way.
+     * If this method is updated, please update {@code CodeListProxy(CodeList)} accordingly.
+     *
+     * @author  Martin Desruisseaux (Geomatys)
+     * @since   0.3
+     * @version 0.3
+     * @module
+     */
+    private static final class CodeTitle extends Description {
+        /**
+         * For cross-version compatibility.
+         */
+        private static final long serialVersionUID = 3306532357801489365L;
+
+        /**
+         * The code list for which to create a title.
+         */
+        private final CodeList<?> code;
+
+        /**
+         * Creates a new international string for the given code list element.
+         *
+         * @param code The code list for which to create a title.
+         */
+        CodeTitle(final CodeList<?> code) {
+            super("org.opengis.metadata.CodeLists", getListName(code) + '.' + getCodeName(code));
+            this.code = code;
+        }
+
+        /**
+         * Returns a fallback if no resource is found.
+         */
+        @Override
+        String fallback() {
+            return getCodeLabel(code);
+        }
+    }
+
+    /**
+     * Returns the resource name for the given GeoAPI type, or {@code null} if none.
+     *
+     * @param  classname The fully qualified name of the GeoAPI type.
+     * @return The resource bundle to load, or {@code null} if none.
+     */
+    static String getResources(final String classname) {
+        String resources = "org.opengis.metadata.Descriptions";
+        if (classname.regionMatches(0, resources, 0, 21)) { // 21 is the location after the last dot.
+            return resources;
+        }
+        // Add more checks here (maybe in a loop) if there is more resource candidates.
         return null;
     }
 

@@ -61,7 +61,7 @@ import static org.apache.sis.util.Numbers.*;
  * return the same values for all instances added to this set. Those values need to be specified
  * at construction time. If a user needs to store mixed kind of ranges, then he needs to subclass
  * this {@code RangeSet} class and override the {@link #add(Range)}, {@link #remove(Object)} and
- * {@link newRange(Comparable, Comparable)} methods.
+ * {@link #newRange(Comparable, Comparable)} methods.
  *
  * {@note Current implementation does not yet support open intervals. The ranges shall be either
  * closed intervals, or half-open. This limitation exists because supporting open intervals implies
@@ -254,7 +254,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
     /**
      * Constructs an initially empty set of ranges.
      * This constructor is provided for sub-classing only.
-     * Client code should use the static {@link #create(Class)} method instead.
+     * Client code should use the static {@link #create(Class, boolean, boolean)} method instead.
      *
      * @param elementType   The type of the range elements.
      * @param isMinIncluded {@code true} if the minimal values are inclusive, or {@code false} if exclusive.
@@ -1397,7 +1397,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
     /**
      * A {@link RangeSet} implementation for {@link NumberRange} elements.
      *
-     * @see RangeSet#create(Class)
+     * @see RangeSet#create(Class, boolean, boolean)
      */
     private static final class Numeric<E extends Number & Comparable<? super E>> extends RangeSet<E> {
         private static final long serialVersionUID = 934107071458551753L;

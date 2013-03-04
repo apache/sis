@@ -17,7 +17,7 @@
 package org.apache.sis.util;
 
 import java.util.Map;
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
@@ -51,8 +51,16 @@ public final class Numbers extends Static {
 
     /**
      * Mapping between a primitive type and its wrapper, if any.
+     *
+     * {@note In the particular case of <code>Class</code> keys, <code>IdentityHashMap</code> and
+     *        <code>HashMap</code> have identical behavior since <code>Class</code> is final and
+     *        does not override the <code>equals(Object)</code> and <code>hashCode()</code> methods.
+     *        The <code>IdentityHashMap</code> Javadoc claims that it is faster than the regular
+     *        <code>HashMap</code>. But maybe the most interesting property is that it allocates
+     *        less objects since <code>IdentityHashMap</code> implementation doesn't need the chain
+     *        of objects created by <code>HashMap</code>.}
      */
-    private static final Map<Class<?>,Numbers> MAPPING = new HashMap<Class<?>,Numbers>(16);
+    private static final Map<Class<?>,Numbers> MAPPING = new IdentityHashMap<Class<?>,Numbers>(16);
     static {
         new Numbers(BigDecimal.class, true, false, (byte) (DOUBLE+2)); // Undocumented enum.
         new Numbers(BigInteger.class, false, true, (byte) (DOUBLE+1)); // Undocumented enum.
@@ -275,6 +283,7 @@ public final class Numbers extends Static {
         }
         if (c1 == null) return c2;
         if (c2 == null) return c1;
+        // At this point, m1 and m2 can not be null.
         return (m1.ordinal >= m2.ordinal) ? c1 : c2;
     }
 
@@ -336,6 +345,7 @@ public final class Numbers extends Static {
         }
         if (c1 == null) return c2;
         if (c2 == null) return c1;
+        // At this point, m1 and m2 can not be null.
         return (m1.ordinal < m2.ordinal) ? c1 : c2;
     }
 
@@ -511,9 +521,9 @@ public final class Numbers extends Static {
      *
      * <ul>
      *   <li>If the given type is {@code Double.class}, then this method returns
-     *       <code>{@linkplain Double#valueOf(double) Double.valueOf}(n.doubleValue())</code>;</li>
+     *       <code>{@linkplain Double#valueOf(double) Double.valueOf}(number.doubleValue())</code>;</li>
      *   <li>If the given type is {@code Float.class}, then this method returns
-     *       <code>{@linkplain Float#valueOf(float) Float.valueOf}(n.floatValue())</code>;</li>
+     *       <code>{@linkplain Float#valueOf(float) Float.valueOf}(number.floatValue())</code>;</li>
      *   <li>And likewise for all remaining known types.</li>
      * </ul>
      *
@@ -527,27 +537,60 @@ public final class Numbers extends Static {
      * then the behavior depends on the implementation of the corresponding
      * {@code Number.fooValue()} method - typically, the value is just rounded or truncated.
      *
-     * @param  <N> The class to cast to.
-     * @param  n The number to cast.
-     * @param  c The destination type.
-     * @return The number casted to the given type.
+     * @param  <N>    The class to cast to.
+     * @param  number The number to cast, or {@code null}.
+     * @param  type   The destination type.
+     * @return The number casted to the given type, or {@code null} if the given value was null.
      * @throws IllegalArgumentException If the given type is not one of the primitive
      *         wrappers for numeric types.
      */
     @SuppressWarnings("unchecked")
-    public static <N extends Number> N cast(final Number n, final Class<N> c)
+    public static <N extends Number> N cast(final Number number, final Class<N> type)
             throws IllegalArgumentException
     {
-        if (n == null || n.getClass() == c) {
-            return (N) n;
+        if (number == null || number.getClass() == type) {
+            return (N) number;
         }
-        if (c == Byte   .class) return (N) Byte   .valueOf(n.  byteValue());
-        if (c == Short  .class) return (N) Short  .valueOf(n. shortValue());
-        if (c == Integer.class) return (N) Integer.valueOf(n.   intValue());
-        if (c == Long   .class) return (N) Long   .valueOf(n.  longValue());
-        if (c == Float  .class) return (N) Float  .valueOf(n. floatValue());
-        if (c == Double .class) return (N) Double .valueOf(n.doubleValue());
-        throw unknownType(c);
+        if (type == Double .class) return (N) Double .valueOf(number.doubleValue());
+        if (type == Float  .class) return (N) Float  .valueOf(number. floatValue());
+        if (type == Long   .class) return (N) Long   .valueOf(number.  longValue());
+        if (type == Integer.class) return (N) Integer.valueOf(number.   intValue());
+        if (type == Short  .class) return (N) Short  .valueOf(number. shortValue());
+        if (type == Byte   .class) return (N) Byte   .valueOf(number.  byteValue());
+        throw unknownType(type);
+    }
+
+    /**
+     * Wraps the given value in a {@code Number} of the specified class.
+     * The given type shall be one of {@link Byte}, {@link Short}, {@link Integer},
+     * {@link Long}, {@link Float} or {@link Double} classes. Furthermore, the given
+     * value shall be convertible to the given class without precision lost,
+     * otherwise an {@link IllegalArgumentException} will be thrown.
+     *
+     * @param  <N> The wrapper class.
+     * @param  value The value to wrap.
+     * @param  type The desired wrapper class.
+     * @return The value wrapped in an object of the given class.
+     * @throws IllegalArgumentException If the given type is not one of the primitive
+     *         wrappers for numeric types, or if the given value can not be wrapped in
+     *         an instance of the given class without precision lost.
+     */
+    @SuppressWarnings("unchecked")
+    public static <N extends Number> N wrap(final double value, final Class<N> type)
+            throws IllegalArgumentException
+    {
+        final N number;
+             if (type == Double .class) return   (N) Double .valueOf(value); // No need to verify.
+        else if (type == Float  .class) number = (N) Float  .valueOf((float) value);
+        else if (type == Long   .class) number = (N) Long   .valueOf((long)  value);
+        else if (type == Integer.class) number = (N) Integer.valueOf((int)   value);
+        else if (type == Short  .class) number = (N) Short  .valueOf((short) value);
+        else if (type == Byte   .class) number = (N) Byte   .valueOf((byte)  value);
+        else throw unknownType(type);
+        if (Double.doubleToLongBits(number.doubleValue()) != Double.doubleToLongBits(value)) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.CanNotConvertValue_2, value, type));
+        }
+        return number;
     }
 
     /**
@@ -570,15 +613,15 @@ public final class Numbers extends Static {
      *        <code>ConverterRegistry</code> class for a more generic method.}
      *
      * @param  <T> The requested type.
-     * @param  type The requested type.
      * @param  value the value to parse.
+     * @param  type The requested type.
      * @return The value object, or {@code null} if {@code value} was null.
      * @throws IllegalArgumentException if {@code type} is not a recognized type.
      * @throws NumberFormatException if {@code type} is a subclass of {@link Number} and the
      *         string value is not parseable as a number of the specified type.
      */
     @SuppressWarnings("unchecked")
-    public static <T> T valueOf(final Class<T> type, String value)
+    public static <T> T valueOf(String value, final Class<T> type)
             throws IllegalArgumentException, NumberFormatException
     {
         if (value == null || type == String.class) {

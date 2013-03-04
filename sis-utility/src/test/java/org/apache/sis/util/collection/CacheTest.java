@@ -297,15 +297,19 @@ public final strictfp class CacheTest extends TestCase {
         }
         out.println();
         /*
-         * Gets the statistics of key values after garbage collection. The mean value should
+         * Gets the statistics of key values after garbage collection. Most values should
          * be higher, because oldest values (which should have been garbage collected first)
          * have lower values. If verbose output is enabled, then we will print the statistics
          * before to perform the actual check in order to allow the developer to have more
          * information in case of failure.
+         *
+         * The mean value is often greater, but not always. Since we have fewer remaining values
+         * (100 instead of 10000), the remaining low values will have a much greater impact on
+         * the mean. Only the check on the minimal value is fully reliable.
          */
         final Statistics afterGC = validateStressEntries("After GC", cache);
         out.println("Statistics on the keys before and after garbage collection.");
-        out.println("The minimum and the mean values should be greater after GC.");
+        out.println("The minimum value should be greater after GC.");
         final StatisticsFormat format = StatisticsFormat.getInstance();
         format.setBorderWidth(1);
         try {
@@ -313,6 +317,7 @@ public final strictfp class CacheTest extends TestCase {
         } catch (IOException e) {
             throw new AssertionError(e);
         }
-        assertTrue("Mean key value should be greater after garbage collection.", afterGC.mean() >= beforeGC.mean());
+        assertTrue("Minimum key value should be greater after garbage collection.",
+                afterGC.minimum() >= beforeGC.minimum());
     }
 }
