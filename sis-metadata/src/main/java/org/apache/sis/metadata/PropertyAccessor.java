@@ -550,14 +550,14 @@ final class PropertyAccessor {
      * Returns the name of the property at the given index, or {@code null} if none.
      *
      * @param  index The index of the property for which to get the name.
-     * @param  keyName The kind of name to return.
+     * @param  keyPolicy The kind of name to return.
      * @return The name of the given kind at the given index,
      *         or {@code null} if the index is out of bounds.
      */
     @SuppressWarnings("fallthrough")
-    final String name(final int index, final KeyNamePolicy keyName) {
+    final String name(final int index, final KeyNamePolicy keyPolicy) {
         if (index >= 0 && index < names.length) {
-            switch (keyName) {
+            switch (keyPolicy) {
                 case UML_IDENTIFIER: {
                     final UML uml = getters[index].getAnnotation(UML.class);
                     if (uml != null) {
@@ -675,7 +675,13 @@ final class PropertyAccessor {
 
     /**
      * Returns the value for the specified metadata, or {@code null} if none.
+     * If the given index is out of bounds, then this method returns {@code null},
+     * so it is safe to invoke this method even if {@link #indexOf(String, boolean)}
+     * returned -1.
      *
+     * @param  index The index of the property for which to get a value.
+     * @param  metadata The metadata object to query.
+     * @return The value, or {@code null} if none or if the given is out of bounds.
      * @throws BackingStoreException If the implementation threw a checked exception.
      */
     final Object get(final int index, final Object metadata) throws BackingStoreException {
@@ -719,6 +725,12 @@ final class PropertyAccessor {
      * a new collection or map before the new value is set, because the setter methods typically
      * copy the new collection in their existing instance.
      *
+     * <p>If the given index is out of bounds, then this method does nothing and return {@code null}.
+     * We do that because the {@link PropertyMap#remove(Object)} method may invoke this method with
+     * an index of -1 if the {@link #indexOf(String, boolean)} method didn't found the property name.
+     * However the given value will be silently discarded, so index out-of-bounds shall be used only
+     * in the context of {@code remove} operations (this is not verified).</p>
+     *
      * @param  index    The index of the property to set.
      * @param  metadata The metadata object on which to set the value.
      * @param  value    The new value.
@@ -731,7 +743,10 @@ final class PropertyAccessor {
     final Object set(final int index, final Object metadata, final Object value, final boolean getOld)
             throws UnmodifiableMetadataException, ClassCastException, BackingStoreException
     {
-        if (index >= 0 && index < standardCount && setters != null) {
+        if (index < 0 || index >= standardCount) {
+            return null;
+        }
+        if (setters != null) {
             final Method getter = getters[index];
             final Method setter = setters[index];
             if (setter != null) {
@@ -1088,6 +1103,7 @@ final class PropertyAccessor {
     /**
      * Counts the number of non-empty properties.
      *
+     * @param  max Stop the count if we reach that value.
      * @throws BackingStoreException If the implementation threw a checked exception.
      */
     public int count(final Object metadata, final int max) throws BackingStoreException {

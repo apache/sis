@@ -35,13 +35,9 @@ import static org.apache.sis.util.collection.CollectionsExt.hashMapCapacity;
 
 
 /**
- * Base class for metadata that may (or may not) be modifiable. Implementations will typically
- * provide {@code set*(...)} methods for each corresponding {@code get*()} method. An initially
- * modifiable metadata may become unmodifiable at a later stage (typically after its construction
- * is completed) by the call to the {@link #freeze()} method.
- *
- * {@section Guidline for implementors}
- * Subclasses should follow the pattern below for every {@code get} and {@code set} methods,
+ * Provides convenience methods for support of modifiable properties in metadata implementations.
+ * Implementations typically provide {@code set*(…)} methods for each corresponding {@code get*()}
+ * method. Subclasses can follow the pattern below for every {@code get} and {@code set} methods,
  * with a different processing for singleton value or for {@linkplain Collection collections}.
  *
  * <p>For singleton value:</p>
@@ -76,6 +72,10 @@ import static org.apache.sis.util.collection.CollectionsExt.hashMapCapacity;
  *         }
  *     }
  * }
+ *
+ * An initially modifiable metadata may become unmodifiable at a later stage
+ * (typically after its construction is completed) by the call to the
+ * {@link #freeze()} method.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
@@ -600,15 +600,13 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
 
     /**
      * Returns a shallow copy of this metadata.
-     *
-     * {@section Usage}
-     * While {@linkplain Cloneable cloneable}, this class do not provides the {@code clone()}
+     * While {@linkplain Cloneable cloneable}, this class does not provides the {@code clone()}
      * operation as part of the public API. The clone operation is required for the internal
-     * working of the {@link #unmodifiable()} method, which needs <strong>shallow</strong>
+     * working of the {@link #unmodifiable()} method, which needs <em>shallow</em>
      * copies of metadata entities. The default {@link Object#clone()} implementation is
      * sufficient in most cases.
      *
-     * @return A <strong>shallow</strong> copy of this metadata.
+     * @return A <em>shallow</em> copy of this metadata.
      * @throws CloneNotSupportedException if the clone is not supported.
      */
     @Override

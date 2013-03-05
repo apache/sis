@@ -18,7 +18,6 @@ package org.apache.sis.metadata.iso.citation;
 
 import java.util.Date;
 import java.util.Collection;
-
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
@@ -26,8 +25,7 @@ import org.opengis.metadata.citation.PresentationForm;
 import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.citation.Series;
 import org.opengis.util.InternationalString;
-
-import org.apache.sis.metadata.ModifiableMetadata;
+import org.apache.sis.metadata.iso.ISOMetadata;
 
 
 /**
@@ -39,7 +37,7 @@ import org.apache.sis.metadata.ModifiableMetadata;
  * @version 0.3
  * @module
  */
-public class DefaultCitation extends ModifiableMetadata implements Citation {
+public class DefaultCitation extends ISOMetadata implements Citation {
     /**
      * Serial number for inter-operability with different versions.
      */
