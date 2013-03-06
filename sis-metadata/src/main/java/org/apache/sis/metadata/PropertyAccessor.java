@@ -264,11 +264,11 @@ final class PropertyAccessor {
             Method getter  = getters[i];
             String name    = getter.getName();
             final int base = prefix(name).length();
-            addMapping(names[i] = toPropertyName(name, base), index);
             addMapping(name, index);
+            addMappingWithLowerCase(names[i] = toPropertyName(name, base), index);
             final UML annotation = getter.getAnnotation(UML.class);
             if (annotation != null) {
-                addMapping(annotation.identifier(), index);
+                addMappingWithLowerCase(annotation.identifier().intern(), index);
             }
             /*
              * Now try to infer the setter from the getter. We replace the "get" prefix by
@@ -277,12 +277,12 @@ final class PropertyAccessor {
             Class<?> returnType = getter.getReturnType();
             arguments[0] = returnType;
             if (name.length() > base) {
-                final char lo = name.charAt(base);
-                final char up = Character.toUpperCase(lo);
+                final int lo = name.codePointAt(base);
+                final int up = Character.toUpperCase(lo);
                 final int length = name.length();
-                final StringBuilder buffer = new StringBuilder(length - base + 3).append(SET);
+                final StringBuilder buffer = new StringBuilder(length - base + 5).append(SET);
                 if (lo != up) {
-                    buffer.append(up).append(name, base+1, length);
+                    buffer.appendCodePoint(up).append(name, base + Character.charCount(lo), length);
                 } else {
                     buffer.append(name, base, length);
                 }
@@ -349,18 +349,24 @@ final class PropertyAccessor {
      * Adds the given (name, index) pair to {@link #mapping}, making sure we don't
      * overwrite an existing entry with different value.
      */
-    private void addMapping(String name, final Integer index) throws IllegalArgumentException {
+    private void addMapping(final String name, final Integer index) {
         if (!name.isEmpty()) {
-            String original;
-            do {
-                final Integer old = mapping.put(name, index);
-                if (old != null && !old.equals(index)) {
-                    throw new IllegalStateException(Errors.format(Errors.Keys.DuplicatedValue_1,
-                            Classes.getShortName(type) + '.' + name));
-                }
-                original = name;
-                name = CharSequences.trimWhitespaces(name.toLowerCase(Locale.ROOT));
-            } while (!name.equals(original));
+            final Integer old = mapping.put(name, index);
+            if (old != null && !old.equals(index)) {
+                throw new IllegalStateException(Errors.format(Errors.Keys.DuplicatedValue_1,
+                        Classes.getShortName(type) + '.' + name));
+            }
+        }
+    }
+
+    /**
+     * Adds the given (name, index) pair and its lower-case variant.
+     */
+    private void addMappingWithLowerCase(final String name, final Integer index) {
+        addMapping(name, index);
+        final String lower = name.toLowerCase(Locale.ROOT);
+        if (lower != name) { // Identity comparison is okay here.
+            addMapping(lower, index);
         }
     }
 
@@ -494,7 +500,7 @@ final class PropertyAccessor {
                 }
             }
         }
-        return CharSequences.trimWhitespaces(name).intern();
+        return name.intern();
     }
 
     /**
@@ -531,19 +537,6 @@ final class PropertyAccessor {
             }
         }
         return index;
-    }
-
-    /**
-     * Returns the declaring class of the getter at the given index.
-     *
-     * @param  index The index of the property for which to get the declaring class.
-     * @return The declaring class at the given index, or {@code null} if the index is out of bounds.
-     */
-    final Class<?> getDeclaringClass(final int index) {
-        if (index >= 0 && index < names.length) {
-            return getters[index].getDeclaringClass();
-        }
-        return null;
     }
 
     /**
@@ -664,13 +657,6 @@ final class PropertyAccessor {
             descriptors[index] = descriptor;
         }
         return descriptor;
-    }
-
-    /**
-     * Returns {@code true} if the property at the given index is writable.
-     */
-    final boolean isWritable(final int index) {
-        return (index >= 0) && (index < standardCount) && (setters != null) && (setters[index] != null);
     }
 
     /**
@@ -1046,7 +1032,7 @@ final class PropertyAccessor {
 
     /**
      * Replaces every properties in the specified metadata by their
-     * {@linkplain ModifiableMetadata#unmodifiable unmodifiable variant}.
+     * {@linkplain ModifiableMetadata#unmodifiable() unmodifiable variant}.
      *
      * @throws BackingStoreException If the implementation threw a checked exception.
      */
