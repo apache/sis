@@ -66,6 +66,9 @@ import java.util.Objects;
  * @since   0.3
  * @version 0.3
  * @module
+ *
+ * @see Node
+ * @see TableColumn
  */
 @NotThreadSafe
 public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
@@ -308,6 +311,9 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
      * @since   0.3
      * @version 0.3
      * @module
+     *
+     * @see DefaultTreeTable
+     * @see TableColumn
      */
     @NotThreadSafe
     public static class Node implements TreeTable.Node, Cloneable, Serializable {
@@ -443,7 +449,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
         }
 
         /**
-         * Creates a node with a single column for object names (c<cite>convenience constructor</cite>).
+         * Creates a node with a single column for object names (<cite>convenience constructor</cite>).
          * The node will have the following columns:
          *
          * <table class="sis">

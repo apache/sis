@@ -202,7 +202,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      */
     @Override
     public Collection<Identifier> getIdentifiers() {
-        return null; // Not yet implemented on intend.
+        return java.util.Collections.emptyList(); // TODO: Not yet implemented on intend.
     }
 
     /**

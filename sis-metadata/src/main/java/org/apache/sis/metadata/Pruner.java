@@ -67,7 +67,8 @@ final class Pruner extends ThreadLocal<Map<Object,Boolean>> {
      * Returns {@code true} if the value for the given entry is a primitive type.
      */
     private static boolean isPrimitive(final Map.Entry<String,Object> entry) {
-        return (entry instanceof PropertyMap.Property) && ((PropertyMap.Property) entry).getValueType().isPrimitive();
+        return (entry instanceof PropertyMap.Property) &&
+                ((PropertyMap.Property) entry).getValueType().isPrimitive();
     }
 
     /**
