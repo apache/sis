@@ -45,6 +45,7 @@ import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -69,12 +70,13 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @version 0.3
  * @module
  */
+@DependsOn(PropertyDescriptorTest.class)
 public final strictfp class PropertyAccessorTest extends TestCase {
     /**
      * Creates a new property accessor for the {@link DefaultCitation} class.
      */
     private static PropertyAccessor createPropertyAccessor() {
-        return new PropertyAccessor(HardCodedCitations.ISO, Citation.class, DefaultCitation.class);
+        return new PropertyAccessor(HardCodedCitations.ISO_19115, Citation.class, DefaultCitation.class);
     }
 
     /**
@@ -182,6 +184,17 @@ public final strictfp class PropertyAccessorTest extends TestCase {
             IdentifiedObject.class, "getIdentifiers",      "identifiers",      "identifier",       "Identifiers",        ReferenceIdentifier[].class,
             IdentifiedObject.class, "getRemarks",          "remarks",          "remarks",          "Remarks",            InternationalString.class,
             ReferenceSystem.class,  "getScope",            "scope",            "SC_CRS.scope",     "Scope",              InternationalString.class);
+    }
+
+    /**
+     * Tests the {@link PropertyAccessor#descriptor(int)} method.
+     */
+    @Test
+    @DependsOnMethod("testConstructor")
+    public void testDescriptor() {
+        final PropertyAccessor accessor = createPropertyAccessor();
+        PropertyDescriptorTest.validateTitle           (accessor.descriptor(accessor.indexOf("title",            true)));
+        PropertyDescriptorTest.validatePresentationForm(accessor.descriptor(accessor.indexOf("presentationForm", true)));
     }
 
     /**

@@ -38,7 +38,7 @@ import static java.util.Collections.singleton;
 public final strictfp class HardCodedCitations extends Static {
     /**
      * The <a href="http://www.iso.org/">International Organization for Standardization</a>
-     * organization. An {@linkplain Citation#getAlternateTitles alternate title} for this
+     * organization. An {@linkplain Citation#getAlternateTitles() alternate title} for this
      * citation is "ISO" (according ISO 19115, alternate titles often contain abbreviations).
      */
     public static final Citation ISO;
@@ -52,8 +52,20 @@ public final strictfp class HardCodedCitations extends Static {
     }
 
     /**
+     * The ISO 19115 standard.
+     */
+    public static final Citation ISO_19115;
+    static {
+        final DefaultCitation c = new DefaultCitation();
+        c.setTitle(new SimpleInternationalString("ISO 19115"));
+        c.setPresentationForms(singleton(PresentationForm.DOCUMENT_DIGITAL));
+        c.freeze();
+        ISO_19115 = c;
+    }
+
+    /**
      * The <a href="http://www.epsg.org">European Petroleum Survey Group</a> authority.
-     * An {@linkplain Citation#getAlternateTitles alternate title} for this citation is
+     * An {@linkplain Citation#getAlternateTitles() alternate title} for this citation is
      * "EPSG" (according ISO 19115, alternate titles often contain abbreviations). In
      * addition, this citation contains the "EPSG" {@linkplain Citation#getIdentifiers identifier}.
      */
