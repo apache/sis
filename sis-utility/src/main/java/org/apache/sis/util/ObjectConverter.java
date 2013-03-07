@@ -25,23 +25,38 @@ import org.apache.sis.math.FunctionProperty;
  * The source and target types may be the same, in which case the {@code ObjectConverter} actually converts
  * the values rather than the type.
  *
- * <p>The main method of this interface is {@link #convert(Object)}, which receive an object of type
- * <var>S</var> and returns an object of type <var>T</var>. Some characteristics about the <var>S</var>
- * to <var>T</var> mapping are given by the {@link #properties()} enumeration, together with the
- * {@link #getSourceClass()} and {@link #getTargetClass()} methods.</p>
+ * <p>The main method of this interface is {@link #convert(Object)}, which receives an object of type
+ * <var>S</var> and returns an object of type <var>T</var>. The set of all <var>S</var> values for which
+ * {@code convert(S)} does not throw {@link UnconvertibleObjectException} is called the <cite>domain</cite>
+ * of this function, regardless of whether the <var>T</var> result is {@code null} or not.</p>
  *
- * <p>The <cite>domain</cite> of this function is the set of all values of type <var>S</var> for
- * which the {@link #convert(Object)} method does not throw {@link UnconvertibleObjectException}.
- * Note that values for which {@code convert(S)} returns {@code null} are considered as part of
- * the domain, even if the {@code null} target value stands for unconvertible source values.</p>
+ * {@section Function properties}
+ * Some characteristics about the <var>S</var> to <var>T</var> mapping are given by the
+ * {@link #properties()} enumeration, together with the {@link #getSourceClass()} and
+ * {@link #getTargetClass()} methods. Some possible function properties are:
  *
- * <p>The above definition affects the function {@linkplain #properties() properties}
- * that this converter can declare:</p>
+ * <ul>
+ *   <li>{@linkplain FunctionProperty#INJECTIVE Injective} if no pair of <var>S</var> can produce
+ *       the same <var>T</var> value (e.g.: conversions from {@link Integer} to {@code String}).</li>
+ *   <li>{@linkplain FunctionProperty#SURJECTIVE Surjective} if every values of <var>T</var> can be
+ *       created from one or many values of <var>S</var> (e.g.: conversions from {@link String} to
+ *       {@link Integer}).</li>
+ *   <li>{@linkplain FunctionProperty#isBijective Bijective} if there is a one-to-one
+ *       relationship between the <var>S</var> and <var>T</var> values.</li>
+ *   <li>{@linkplain FunctionProperty#ORDER_PRESERVING Order preserving} if any sequence of
+ *       increasing <var>S</var> values (in the sense of {@link Comparable}) is mapped to a
+ *       sequence of increasing <var>T</var> values.</li>
+ *   <li>{@linkplain FunctionProperty#ORDER_REVERSING Order reversing} if any sequence of
+ *       increasing <var>S</var> values (in the sense of {@link Comparable}) is mapped to
+ *       a sequence of decreasing <var>T</var> values.</li>
+ * </ul>
+ *
+ * Below are some guidelines about the function properties that a converter can declare:
  *
  * <ul>
  *   <li>If {@code convert(S)} returns {@code null} for unconvertible objects, then this {@code ObjectConverter}
- *       can not declare {@link FunctionProperty#INJECTIVE} in its set of {@linkplain #properties() properties},
- *       because more than one source value can produce the same target value (namely {@code null}).</li>
+ *       can not be declared injective because more than one <var>S</var> value can produce the same
+ *       <var>T</var> value (namely {@code null}).</li>
  *   <li>If {@code convert(S)} throws an exception for unconvertible objects, then this {@code ObjectConverter}
  *       can be declared as an injective function if the other values meet the criteria.
  * </ul>
