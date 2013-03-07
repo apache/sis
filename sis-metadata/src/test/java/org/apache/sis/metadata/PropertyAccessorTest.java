@@ -57,8 +57,8 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 
 /**
  * Tests the {@link PropertyAccessor} class. Every tests in this class instantiates directly a
- * {@link PropertyAccessor} object by invoking the {@link #createPropertyAccessor(Citation)}
- * method. This class shall not test accessors created indirectly (e.g. the accessors created
+ * {@link PropertyAccessor} object by invoking the {@link #createPropertyAccessor()} method.
+ * This class shall not test accessors created indirectly (e.g. the accessors created
  * by {@link MetadataStandard}).
  *
  * <p>This test case uses the {@link Citation} and {@link GeographicCRS} types. If those types
