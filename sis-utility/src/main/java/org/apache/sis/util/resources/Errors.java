@@ -320,6 +320,16 @@ public final class Errors extends IndexedResourceBundle {
         public static final int NonEquilibratedParenthesis_2 = 59;
 
         /**
+         * Conversion is not invertible.
+         */
+        public static final int NonInvertibleConversion = 82;
+
+        /**
+         * Transform is not invertible.
+         */
+        public static final int NonInvertibleTransform = 83;
+
+        /**
          * “{0}” is not a linear unit.
          */
         public static final int NonLinearUnit_1 = 47;
