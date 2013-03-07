@@ -344,6 +344,7 @@ Apache SIS is a toolkit for describing location information, including points,
               <Specification-Vendor>Open Geospatial Consortium</Specification-Vendor>
             </manifestEntries>
           </archive>
+          <skipIfEmpty>true</skipIfEmpty>
         </configuration>
         <executions>
           <execution>

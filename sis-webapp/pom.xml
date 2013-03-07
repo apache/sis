@@ -54,11 +54,10 @@
 
   <build>
     <plugins>
-    <plugin>
-    <groupId>org.codehaus.mojo</groupId>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
         <executions>
-
           <execution>
             <id>reserve-ports</id>
             <phase>initialize</phase>
