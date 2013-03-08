@@ -90,6 +90,9 @@ import org.junit.runners.Suite;
     org.apache.sis.util.collection.TreeTableFormatTest.class,
     org.apache.sis.util.collection.RangeSetTest.class,
 
+    // Converters
+    org.apache.sis.internal.converter.FallbackConverterTest.class,
+
     // XML most basic types.
     org.apache.sis.xml.XLinkTest.class,
     org.apache.sis.xml.NilReasonTest.class,

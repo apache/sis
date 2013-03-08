@@ -327,6 +327,17 @@ final class FallbackConverter<S,T> extends ClassPair<S,T> implements ObjectConve
     }
 
     /**
+     * Returns the primary or fallback converter.
+     *
+     * @param asPrimary {@code true} for the primary branch, or {@code false} for the fallback branch.
+     * @return the requested converter.
+     */
+    final ObjectConverter<S,? extends T> getConverter(final boolean asPrimary) {
+        assert Thread.holdsLock(this);
+        return asPrimary ? primary : fallback;
+    }
+
+    /**
      * Returns the base type of source objects.
      */
     @Override
