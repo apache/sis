@@ -22,6 +22,7 @@ import java.text.ParsePosition;
 import java.text.ParseException;
 import net.jcip.annotations.ThreadSafe;
 import org.apache.sis.util.Numbers;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.internal.util.LocalizedParseException;
 
 
@@ -104,7 +105,8 @@ final class DefaultFormat extends Format {
      * Parses the given string as a number of the type given at construction time.
      */
     @Override
-    public Object parseObject(final String source) throws ParseException {
+    public Object parseObject(String source) throws ParseException {
+        source = CharSequences.trimWhitespaces(source);
         try {
             return valueOf(source);
         } catch (NumberFormatException cause) {
@@ -119,8 +121,9 @@ final class DefaultFormat extends Format {
      */
     @Override
     public Object parseObject(String source, final ParsePosition pos) {
-        final int index = pos.getIndex();
-        source = source.substring(index);
+        final int length = source.length();
+        final int index = CharSequences.skipLeadingWhitespaces(source, pos.getIndex(), length);
+        source = source.substring(index, CharSequences.skipTrailingWhitespaces(source, index, length));
         try {
             return valueOf(source);
         } catch (NumberFormatException cause) {

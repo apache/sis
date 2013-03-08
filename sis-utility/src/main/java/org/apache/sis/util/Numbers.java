@@ -502,8 +502,9 @@ public final class Numbers extends Static {
      * @see #narrowestNumber(double)
      * @see #narrowestNumber(long)
      */
-    public static Number narrowestNumber(String value) throws NumberFormatException {
-        value = CharSequences.trimWhitespaces(value);
+    public static Number narrowestNumber(final String value) throws NumberFormatException {
+        // Do not trim whitespaces. It is up to the caller to do that if he wants.
+        // For such low level function, we are better to avoid hidden initiative.
         final int length = value.length();
         for (int i=0; i<length; i++) {
             final char c = value.charAt(i);
@@ -621,7 +622,7 @@ public final class Numbers extends Static {
      *         string value is not parseable as a number of the specified type.
      */
     @SuppressWarnings("unchecked")
-    public static <T> T valueOf(String value, final Class<T> type)
+    public static <T> T valueOf(final String value, final Class<T> type)
             throws IllegalArgumentException, NumberFormatException
     {
         if (value == null || type == String.class) {
@@ -637,7 +638,8 @@ public final class Numbers extends Static {
              */
             return (T) Character.valueOf(value.isEmpty() ? 0 : value.charAt(0));
         }
-        value = CharSequences.trimWhitespaces(value);
+        // Do not trim whitespaces. It is up to the caller to do that if he wants.
+        // For such low level function, we are better to avoid hidden initiative.
         if (type == Double .class) return (T) Double .valueOf(value);
         if (type == Float  .class) return (T) Float  .valueOf(value);
         if (type == Long   .class) return (T) Long   .valueOf(value);
