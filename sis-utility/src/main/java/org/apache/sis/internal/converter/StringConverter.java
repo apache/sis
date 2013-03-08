@@ -23,6 +23,7 @@ import java.io.ObjectStreamException;
 import java.nio.charset.UnsupportedCharsetException;
 import java.net.URISyntaxException;
 import java.net.MalformedURLException;
+import java.nio.file.InvalidPathException;
 import net.jcip.annotations.Immutable;
 
 import org.apache.sis.math.FunctionProperty;
@@ -437,6 +438,29 @@ abstract class StringConverter<T> extends SurjectiveConverter<String,T> implemen
 
         @Override java.io.File doConvert(String source) {
             return new java.io.File(source);
+        }
+
+        /** Returns the singleton instance on deserialization. */
+        Object readResolve() throws ObjectStreamException {
+            return INSTANCE;
+        }
+    }
+
+    /**
+     * Converter from {@link String} to {@link java.nio.file.Path}.
+     */
+    @Immutable
+    static final class Path extends StringConverter<java.nio.file.Path> {
+        /** Cross-version compatibility. */ static final long serialVersionUID = -5227120925547132828L;
+        /** The unique, shared instance. */ static final Path INSTANCE = new Path();
+        /** For {@link #INSTANCE} only.  */ private Path() {}
+
+        @Override public Class<java.nio.file.Path> getTargetClass() {
+            return java.nio.file.Path.class;
+        }
+
+        @Override java.nio.file.Path doConvert(String source) throws InvalidPathException {
+            return java.nio.file.Paths.get(source);
         }
 
         /** Returns the singleton instance on deserialization. */
