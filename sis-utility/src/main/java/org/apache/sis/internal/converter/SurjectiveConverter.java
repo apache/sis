@@ -14,12 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.util;
+package org.apache.sis.internal.converter;
 
 import java.util.Set;
 import java.util.EnumSet;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.math.FunctionProperty;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -49,7 +50,8 @@ public abstract class SurjectiveConverter<S,T> implements ObjectConverter<S,T> {
     }
 
     /**
-     * Returns the function property, which contains only {@link FunctionProperty#SURJECTIVE}.
+     * Returns {@link FunctionProperty#SURJECTIVE} by default.
+     * Subclasses may add more properties (order preserving, <i>etc.</i>).
      */
     @Override
     public Set<FunctionProperty> properties() {
@@ -57,11 +59,32 @@ public abstract class SurjectiveConverter<S,T> implements ObjectConverter<S,T> {
     }
 
     /**
-     * Unsupported operation, since surjective converters are non-invertible.
+     * Unsupported operation, since surjective converters are non-invertible
+     * (unless the converter is bijective, which is decided by subclasses).
      */
     @Override
     public ObjectConverter<T,S> inverse() throws UnsupportedOperationException {
         throw new UnsupportedOperationException(Errors.format(
                 Errors.Keys.UnsupportedOperation_1, "inverse"));
+    }
+
+    /**
+     * Formats an error message for a value that can not be converted.
+     *
+     * @param  value The value that can not be converted.
+     * @return The error message.
+     */
+    final String formatErrorMessage(final S value) {
+        return Errors.format(Errors.Keys.CanNotConvertValue_2, value, getTargetClass());
+    }
+
+    /**
+     * Returns a string representation of this converter for debugging purpose.
+     */
+    @Override
+    public String toString() {
+        return Classes.getShortClassName(this) + '[' +
+                getSourceClass().getSimpleName() + " ⇨ " +
+                getTargetClass().getSimpleName() + ']';
     }
 }
