@@ -18,6 +18,7 @@ package org.apache.sis.util;
 
 import java.util.Map;
 import java.util.Set;
+import org.apache.sis.internal.converter.IdentityConverter;
 import org.apache.sis.util.collection.CollectionsExt;
 import org.apache.sis.util.resources.Errors;
 

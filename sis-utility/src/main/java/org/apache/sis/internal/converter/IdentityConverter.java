@@ -14,16 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.util;
+package org.apache.sis.internal.converter;
 
 import java.util.Set;
 import java.util.EnumSet;
 import java.util.Map;
-import java.util.WeakHashMap;
+import java.util.IdentityHashMap;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 import net.jcip.annotations.Immutable;
+import org.apache.sis.internal.util.SystemListener;
 import org.apache.sis.math.FunctionProperty;
+import org.apache.sis.util.ObjectConverter;
 
 
 /**
@@ -37,7 +39,7 @@ import org.apache.sis.math.FunctionProperty;
  * @module
  */
 @Immutable
-final class IdentityConverter<T> implements ObjectConverter<T,T>, Serializable {
+public final class IdentityConverter<T> implements ObjectConverter<T,T>, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -45,21 +47,44 @@ final class IdentityConverter<T> implements ObjectConverter<T,T>, Serializable {
 
     /**
      * Identity converters created in the JVM, for sharing unique instances.
-     * Use weak keys in order to allow class unloading.
      */
-    private static final Map<Class<?>, IdentityConverter<?>> CACHE = new WeakHashMap<>();
+    private static final Map<Class<?>, IdentityConverter<?>> CACHE = new IdentityHashMap<>();
+    static {
+        SystemListener.add(new SystemListener() {
+            @Override protected void classpathChanged() {
+                clearCache();
+            }
+        });
+    }
 
     /**
      * Returns an identity converter for the given type.
+     *
+     * @param  <T>  The compile-time type.
+     * @param  type The type of the desired converter.
+     * @return The identity converter for the given type.
      */
-    public static synchronized <T> IdentityConverter<T> create(final Class<T> type) {
-        @SuppressWarnings("unchecked")
-        IdentityConverter<T> converter = (IdentityConverter<T>) CACHE.get(type);
-        if (converter == null) {
-            converter = new IdentityConverter<>(type);
-            CACHE.put(type, converter);
+    public static <T> IdentityConverter<T> create(final Class<T> type) {
+        synchronized (CACHE) {
+            @SuppressWarnings("unchecked")
+            IdentityConverter<T> converter = (IdentityConverter<T>) CACHE.get(type);
+            if (converter == null) {
+                converter = new IdentityConverter<>(type);
+                CACHE.put(type, converter);
+            }
+            return converter;
         }
-        return converter;
+    }
+
+    /**
+     * Invoked when the cache needs to be cleared because the classpath changed.
+     * Some cached type may no longer be on the classpath, so we need to release
+     * references in order to allow the garbage collector to unload them.
+     */
+    static void clearCache() {
+        synchronized (CACHE) {
+            CACHE.clear();
+        }
     }
 
     /**
@@ -107,6 +132,8 @@ final class IdentityConverter<T> implements ObjectConverter<T,T>, Serializable {
 
     /**
      * Returns the given object unchanged.
+     *
+     * @param source The value to convert.
      */
     @Override
     public T convert(final T source) {
@@ -125,7 +152,7 @@ final class IdentityConverter<T> implements ObjectConverter<T,T>, Serializable {
      * Invoked on deserialization for resolving to a unique instance.
      */
     private Object readResolve() throws ObjectStreamException {
-        synchronized (IdentityConverter.class) {
+        synchronized (CACHE) {
             @SuppressWarnings("unchecked")
             final IdentityConverter<T> converter = (IdentityConverter<T>) CACHE.get(type);
             if (converter != null) {
