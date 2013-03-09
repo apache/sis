@@ -130,17 +130,16 @@ public final strictfp class FallbackConverterTest extends TestCase {
          * above tests performs the same check in a more programmatic way. However this
          * is a convenient visual check and a useful debugging tool.
          */
-        if (false) // TODO: FallbackConverter.toString() not yet implemented.
         assertMultilinesEquals(
-                "String ⇨ Object\n" +
-                "  ├─String ⇨ Number\n" +
+                "String         ⇨ Object\n" +
+                "  ├─String     ⇨ Number\n" +
                 "  │   ├─String ⇨ Number\n" +
                 "  │   ├─String ⇨ Short\n" +
                 "  │   ├─String ⇨ Long\n" +
                 "  │   ├─String ⇨ Float\n" +
                 "  │   ├─String ⇨ Integer\n" +
                 "  │   └─String ⇨ Double\n" +
-                "  └─String ⇨ Boolean\n", c.toString());
+                "  └─String     ⇨ Boolean\n", c.toString());
     }
 
     /**

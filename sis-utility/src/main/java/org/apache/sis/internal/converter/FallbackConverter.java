@@ -24,7 +24,10 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.UnconvertibleObjectException;
+import org.apache.sis.util.collection.DefaultTreeTable;
+import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.Debug;
 
 
 /**
@@ -403,5 +406,67 @@ final class FallbackConverter<S,T> extends ClassPair<S,T> implements ObjectConve
     @Override
     public ObjectConverter<T, S> inverse() throws UnsupportedOperationException {
         throw new UnsupportedOperationException(Errors.format(Errors.Keys.NonInvertibleConversion));
+    }
+
+    /**
+     * Creates a node for the given converter and adds it to the given tree.
+     * This method invokes itself recursively for scanning through fallbacks.
+     *
+     * <p>This method creates a simplified tree, in that the cascading of fallbacks converter
+     * of same {@link #targetClass} are hidden: only their leaves are created. The purpose is
+     * to help the developer to focus more on the important elements (the leaf converters)
+     * and be less distracted by the amount of {@code FallbackConverter}s traversed in order
+     * to reach those leaves.</p>
+     *
+     * @param converter The converter for which to create a tree.
+     * @param addTo The node in which to add the converter.
+     */
+    private void toTree(final ObjectConverter<?,?> converter, final TreeTable.Node addTo) {
+        FallbackConverter<?,?> more = null;
+        if (converter instanceof FallbackConverter<?,?>) {
+            more = (FallbackConverter<?,?>) converter;
+            if (more.targetClass == targetClass) { // Simplification case (omit the node).
+                more.toTree(addTo);
+                return;
+            }
+        }
+        final TreeTable.Node node = addTo.newChild();
+        node.setValue(Column.SOURCE, converter.getSourceClass());
+        node.setValue(Column.TARGET, converter.getTargetClass());
+        if (more != null) {
+            more.toTree(node);
+        }
+    }
+
+    /**
+     * Adds a simplified tree representation of this {@code FallbackConverter}
+     * to the given node.
+     *
+     * @param addTo The node in which to add the converter.
+     */
+    final void toTree(final TreeTable.Node addTo) {
+        final ObjectConverter<S,? extends T> primary, fallback;
+        synchronized (this) {
+            primary  = this.primary;
+            fallback = this.fallback;
+        }
+        toTree(primary,  addTo);
+        toTree(fallback, addTo);
+    }
+
+    /**
+     * Returns a tree representation of this converter.
+     * The tree leaves represent the backing converters.
+     */
+    @Debug
+    @Override
+    public String toString() {
+        final DefaultTreeTable table = new DefaultTreeTable(Column.SOURCE, Column.TARGET);
+        final DefaultTreeTable.Node root = new DefaultTreeTable.Node(table);
+        root.setValue(Column.SOURCE, sourceClass);
+        root.setValue(Column.TARGET, targetClass);
+        table.setRoot(root);
+        toTree(root);
+        return Column.format(table);
     }
 }

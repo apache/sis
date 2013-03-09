@@ -20,6 +20,7 @@ import java.text.Format;
 import java.text.FieldPosition;
 import java.text.ParsePosition;
 import java.text.ParseException;
+import java.io.InvalidObjectException;
 import net.jcip.annotations.ThreadSafe;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.CharSequences;
@@ -130,5 +131,13 @@ final class DefaultFormat extends Format {
             pos.setErrorIndex(index);
             return null;
         }
+    }
+
+    /**
+     * Resolves to the singleton instance on deserialization.
+     */
+    private Object readResolve() throws InvalidObjectException {
+        final Format format = getInstance(type);
+        return (format != null) ? format : this;
     }
 }
