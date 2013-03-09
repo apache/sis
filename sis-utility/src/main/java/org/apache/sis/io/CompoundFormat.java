@@ -387,6 +387,8 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
             return format;
         } else if (valueType == Angle.class) {
             return AngleFormat.getInstance(locale);
+        } else if (valueType == Class.class) {
+            return ClassFormat.INSTANCE;
         }
         return null;
     }

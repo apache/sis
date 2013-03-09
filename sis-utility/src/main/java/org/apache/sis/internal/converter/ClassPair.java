@@ -47,15 +47,6 @@ class ClassPair<S,T> {
     protected final Class<T> targetClass;
 
     /**
-     * Creates an entry for the given converter.
-     *
-     * @param converter The converter.
-     */
-    ClassPair(final ObjectConverter<S,T> converter) {
-        this(converter.getSourceClass(), converter.getTargetClass());
-    }
-
-    /**
      * Creates an entry for the given source and target classes.
      *
      * @param sourceClass The {@linkplain ObjectConverter#getSourceClass() source class}.
