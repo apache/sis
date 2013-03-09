@@ -269,10 +269,10 @@ final class FallbackConverter<S,T> extends ClassPair<S,T> implements ObjectConve
                  *
                  * Adding:  String ⇨ Number
                  * to:      String ⇨ Number            : FallbackConverter
-                 *          ├───String ⇨ Short
-                 *          └───String ⇨ Number        : FallbackConverter
-                 *              ├───String ⇨ Integer
-                 *              └───String ⇨ Long
+                 *            ├─String ⇨ Short
+                 *            └─String ⇨ Number        : FallbackConverter
+                 *                ├─String ⇨ Integer
+                 *                └─String ⇨ Long
                  *
                  * We don't want to insert the generic Number converter between specialized
                  * ones (Integer and Long). So rather than going down the tree in this case,
