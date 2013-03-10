@@ -30,6 +30,7 @@ import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.Locales;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.iso.SimpleInternationalString;
@@ -55,6 +56,12 @@ abstract class StringConverter<T> extends SurjectiveConverter<String,T> implemen
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = -3397013355582381432L;
+
+    /**
+     * For inner classes only.
+     */
+    StringConverter() {
+    }
 
     /**
      * Returns the source class, which is always {@link String}.
@@ -425,6 +432,8 @@ abstract class StringConverter<T> extends SurjectiveConverter<String,T> implemen
 
     /**
      * Converter from {@link String} to {@link java.io.File}.
+     * This converter is almost bijective, but not completely since various path separators
+     * ({@code '/'} and {@code '\'}) produce the same {@code File} object.
      */
     @Immutable
     static final class File extends StringConverter<java.io.File> {
@@ -438,6 +447,11 @@ abstract class StringConverter<T> extends SurjectiveConverter<String,T> implemen
 
         @Override java.io.File doConvert(String source) {
             return new java.io.File(source);
+        }
+
+        /** Returns the inverse, since this converter is "almost" bijective. */
+        @Override public ObjectConverter<java.io.File, String> inverse() {
+            return FileConverter.String.INSTANCE;
         }
 
         /** Returns the singleton instance on deserialization. */
@@ -486,6 +500,11 @@ abstract class StringConverter<T> extends SurjectiveConverter<String,T> implemen
             return new java.net.URI(source);
         }
 
+        /** Returns the inverse, since this converter is "almost" bijective. */
+        @Override public ObjectConverter<java.net.URI, String> inverse() {
+            return URIConverter.String.INSTANCE;
+        }
+
         /** Returns the singleton instance on deserialization. */
         Object readResolve() throws ObjectStreamException {
             return INSTANCE;
@@ -507,6 +526,11 @@ abstract class StringConverter<T> extends SurjectiveConverter<String,T> implemen
 
         @Override java.net.URL doConvert(String source) throws MalformedURLException {
             return new java.net.URL(source);
+        }
+
+        /** Returns the inverse, since this converter is "almost" bijective. */
+        @Override public ObjectConverter<java.net.URL, String> inverse() {
+            return URLConverter.String.INSTANCE;
         }
 
         /** Returns the singleton instance on deserialization. */
