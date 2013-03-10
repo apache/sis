@@ -25,11 +25,9 @@ import org.apache.sis.util.resources.Errors;
 
 
 /**
- * Base class for (usually non-invertible) surjective {@link ObjectConverter}s.
- * Surjective converters are converters for which many different source values can produce
- * the same target value. In many cases, the target value having many possible sources is
- * the {@code null} value. This is the case in particular when the converter is used as a
- * filter.
+ * Base class for (usually invertible) injective {@link ObjectConverter}s.
+ * Injective converters are converters for which each source value can produce
+ * only one target value.
  *
  * <p>This base class is stateless. Consequently sub-classes that choose to implement
  * {@link java.io.Serializable} do not need to care about this base class.</p>
@@ -42,32 +40,22 @@ import org.apache.sis.util.resources.Errors;
  * @version 0.3
  * @module
  *
- * @see InjectiveConverter
+ * @see SurjectiveConverter
  */
-public abstract class SurjectiveConverter<S,T> implements ObjectConverter<S,T> {
+public abstract class InjectiveConverter<S,T> implements ObjectConverter<S,T> {
     /**
      * Creates a new converter.
      */
-    protected SurjectiveConverter() {
+    protected InjectiveConverter() {
     }
 
     /**
-     * Returns {@link FunctionProperty#SURJECTIVE} by default.
+     * Returns {@link FunctionProperty#INJECTIVE} and {@link FunctionProperty#INVERTIBLE} by default.
      * Subclasses may add more properties (order preserving, <i>etc.</i>).
      */
     @Override
     public Set<FunctionProperty> properties() {
-        return EnumSet.of(FunctionProperty.SURJECTIVE);
-    }
-
-    /**
-     * Unsupported operation, since surjective converters are non-invertible
-     * (unless the converter is bijective, which is decided by subclasses).
-     */
-    @Override
-    public ObjectConverter<T,S> inverse() throws UnsupportedOperationException {
-        throw new UnsupportedOperationException(Errors.format(
-                Errors.Keys.UnsupportedOperation_1, "inverse"));
+        return EnumSet.of(FunctionProperty.INJECTIVE, FunctionProperty.INVERTIBLE);
     }
 
     /**
