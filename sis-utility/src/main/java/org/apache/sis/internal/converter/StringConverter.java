@@ -72,6 +72,15 @@ abstract class StringConverter<T> extends SurjectiveConverter<String,T> implemen
     }
 
     /**
+     * While this is not a general rule for surjective functions,
+     * all converters defined in this class are invertibles.
+     */
+    @Override
+    public Set<FunctionProperty> properties() {
+        return EnumSet.of(FunctionProperty.SURJECTIVE, FunctionProperty.INVERTIBLE);
+    }
+
+    /**
      * Converts the given string to the target type of this converter.
      * This method verifies that the given string is non-null and non-empty,
      * then delegates to {@link #doConvert(String)}.
@@ -124,6 +133,11 @@ abstract class StringConverter<T> extends SurjectiveConverter<String,T> implemen
             return Numbers.narrowestNumber(source);
         }
 
+        /** Returns the inverse, since this converter is "almost" bijective. */
+        @Override public ObjectConverter<java.lang.Number, String> inverse() {
+            return ObjectToString.NUMBER;
+        }
+
         /** Returns the singleton instance on deserialization. */
         Object readResolve() throws ObjectStreamException {
             return INSTANCE;
@@ -145,6 +159,11 @@ abstract class StringConverter<T> extends SurjectiveConverter<String,T> implemen
 
         @Override java.lang.Double doConvert(String source) throws NumberFormatException {
             return java.lang.Double.parseDouble(source);
+        }
+
+        /** Returns the inverse, since this converter is "almost" bijective. */
+        @Override public ObjectConverter<java.lang.Double, String> inverse() {
+            return new ObjectToString<>(java.lang.Double.class, this);
         }
 
         /** Returns the singleton instance on deserialization. */
@@ -170,6 +189,11 @@ abstract class StringConverter<T> extends SurjectiveConverter<String,T> implemen
             return java.lang.Float.parseFloat(source);
         }
 
+        /** Returns the inverse, since this converter is "almost" bijective. */
+        @Override public ObjectConverter<java.lang.Float, String> inverse() {
+            return new ObjectToString<>(java.lang.Float.class, this);
+        }
+
         /** Returns the singleton instance on deserialization. */
         Object readResolve() throws ObjectStreamException {
             return INSTANCE;
@@ -191,6 +215,11 @@ abstract class StringConverter<T> extends SurjectiveConverter<String,T> implemen
 
         @Override java.lang.Long doConvert(String source) throws NumberFormatException {
             return java.lang.Long.parseLong(source);
+        }
+
+        /** Returns the inverse, since this converter is "almost" bijective. */
+        @Override public ObjectConverter<java.lang.Long, String> inverse() {
+            return new ObjectToString<>(java.lang.Long.class, this);
         }
 
         /** Returns the singleton instance on deserialization. */
@@ -216,6 +245,11 @@ abstract class StringConverter<T> extends SurjectiveConverter<String,T> implemen
             return java.lang.Integer.parseInt(source);
         }
 
+        /** Returns the inverse, since this converter is "almost" bijective. */
+        @Override public ObjectConverter<java.lang.Integer, String> inverse() {
+            return new ObjectToString<>(java.lang.Integer.class, this);
+        }
+
         /** Returns the singleton instance on deserialization. */
         Object readResolve() throws ObjectStreamException {
             return INSTANCE;
@@ -237,6 +271,11 @@ abstract class StringConverter<T> extends SurjectiveConverter<String,T> implemen
 
         @Override java.lang.Short doConvert(String source) throws NumberFormatException {
             return java.lang.Short.parseShort(source);
+        }
+
+        /** Returns the inverse, since this converter is "almost" bijective. */
+        @Override public ObjectConverter<java.lang.Short, String> inverse() {
+            return new ObjectToString<>(java.lang.Short.class, this);
         }
 
         /** Returns the singleton instance on deserialization. */
@@ -262,6 +301,11 @@ abstract class StringConverter<T> extends SurjectiveConverter<String,T> implemen
             return java.lang.Byte.parseByte(source);
         }
 
+        /** Returns the inverse, since this converter is "almost" bijective. */
+        @Override public ObjectConverter<java.lang.Byte, String> inverse() {
+            return new ObjectToString<>(java.lang.Byte.class, this);
+        }
+
         /** Returns the singleton instance on deserialization. */
         Object readResolve() throws ObjectStreamException {
             return INSTANCE;
@@ -285,6 +329,11 @@ abstract class StringConverter<T> extends SurjectiveConverter<String,T> implemen
             return new java.math.BigDecimal(source);
         }
 
+        /** Returns the inverse, since this converter is "almost" bijective. */
+        @Override public ObjectConverter<java.math.BigDecimal, String> inverse() {
+            return new ObjectToString<>(java.math.BigDecimal.class, this);
+        }
+
         /** Returns the singleton instance on deserialization. */
         Object readResolve() throws ObjectStreamException {
             return INSTANCE;
@@ -306,6 +355,11 @@ abstract class StringConverter<T> extends SurjectiveConverter<String,T> implemen
 
         @Override java.math.BigInteger doConvert(String source) throws NumberFormatException {
             return new java.math.BigInteger(source);
+        }
+
+        /** Returns the inverse, since this converter is "almost" bijective. */
+        @Override public ObjectConverter<java.math.BigInteger, String> inverse() {
+            return new ObjectToString<>(java.math.BigInteger.class, this);
         }
 
         /** Returns the singleton instance on deserialization. */
@@ -340,13 +394,17 @@ abstract class StringConverter<T> extends SurjectiveConverter<String,T> implemen
             return java.lang.Boolean.class;
         }
 
-        @Override java.lang.Boolean doConvert(String source) throws UnconvertibleObjectException {
-            source = source.toLowerCase(java.util.Locale.ROOT);
-            switch (source) {
+        @Override java.lang.Boolean doConvert(final String source) throws UnconvertibleObjectException {
+            switch (source.toLowerCase(java.util.Locale.ROOT)) {
                 case "true":  case "yes": case "on":  case "1": return java.lang.Boolean.TRUE;
                 case "false": case "no":  case "off": case "0": return java.lang.Boolean.FALSE;
             }
             throw new UnconvertibleObjectException(formatErrorMessage(source));
+        }
+
+        /** Returns the inverse, since this converter is "almost" bijective. */
+        @Override public ObjectConverter<java.lang.Boolean, String> inverse() {
+            return ObjectToString.BOOLEAN;
         }
 
         /** Returns the singleton instance on deserialization. */
@@ -373,6 +431,11 @@ abstract class StringConverter<T> extends SurjectiveConverter<String,T> implemen
             return Locales.parse(source);
         }
 
+        /** Returns the inverse, since this converter is "almost" bijective. */
+        @Override public ObjectConverter<java.util.Locale, String> inverse() {
+            return ObjectToString.LOCALE;
+        }
+
         /** Returns the singleton instance on deserialization. */
         Object readResolve() throws ObjectStreamException {
             return INSTANCE;
@@ -396,6 +459,11 @@ abstract class StringConverter<T> extends SurjectiveConverter<String,T> implemen
             return java.nio.charset.Charset.forName(source);
         }
 
+        /** Returns the inverse, since this converter is "almost" bijective. */
+        @Override public ObjectConverter<java.nio.charset.Charset, String> inverse() {
+            return ObjectToString.CHARSET;
+        }
+
         /** Returns the singleton instance on deserialization. */
         Object readResolve() throws ObjectStreamException {
             return INSTANCE;
@@ -413,7 +481,8 @@ abstract class StringConverter<T> extends SurjectiveConverter<String,T> implemen
 
         /** Returns the function properties, which is bijective. */
         @Override public Set<FunctionProperty> properties() {
-            return EnumSet.of(FunctionProperty.INJECTIVE, FunctionProperty.SURJECTIVE, FunctionProperty.ORDER_PRESERVING);
+            return EnumSet.of(FunctionProperty.INJECTIVE, FunctionProperty.SURJECTIVE,
+                    FunctionProperty.ORDER_PRESERVING, FunctionProperty.INVERTIBLE);
         }
 
         @Override public Class<org.opengis.util.InternationalString> getTargetClass() {
@@ -422,6 +491,10 @@ abstract class StringConverter<T> extends SurjectiveConverter<String,T> implemen
 
         @Override org.opengis.util.InternationalString doConvert(String source) {
             return new SimpleInternationalString(source);
+        }
+
+        @Override public ObjectConverter<org.opengis.util.InternationalString, String> inverse() {
+            return ObjectToString.I18N;
         }
 
         /** Returns the singleton instance on deserialization. */
@@ -451,7 +524,7 @@ abstract class StringConverter<T> extends SurjectiveConverter<String,T> implemen
 
         /** Returns the inverse, since this converter is "almost" bijective. */
         @Override public ObjectConverter<java.io.File, String> inverse() {
-            return FileConverter.String.INSTANCE;
+            return ObjectToString.FILE;
         }
 
         /** Returns the singleton instance on deserialization. */
@@ -502,7 +575,7 @@ abstract class StringConverter<T> extends SurjectiveConverter<String,T> implemen
 
         /** Returns the inverse, since this converter is "almost" bijective. */
         @Override public ObjectConverter<java.net.URI, String> inverse() {
-            return URIConverter.String.INSTANCE;
+            return ObjectToString.URI;
         }
 
         /** Returns the singleton instance on deserialization. */
@@ -530,7 +603,7 @@ abstract class StringConverter<T> extends SurjectiveConverter<String,T> implemen
 
         /** Returns the inverse, since this converter is "almost" bijective. */
         @Override public ObjectConverter<java.net.URL, String> inverse() {
-            return URLConverter.String.INSTANCE;
+            return ObjectToString.URL;
         }
 
         /** Returns the singleton instance on deserialization. */

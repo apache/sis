@@ -55,36 +55,6 @@ abstract class URLConverter<T> extends InjectiveConverter<URL,T> implements Seri
     }
 
     /**
-     * Converter from {@link URL} to {@link java.lang.String}.
-     * This converter does not encode the string. We do that in order to avoid too many
-     * transformations if we convert back and forward to {@code String}.
-     */
-    @Immutable
-    static final class String extends URLConverter<java.lang.String> {
-        /** Cross-version compatibility. */ static final long serialVersionUID = 8091677760312351740L;
-        /** The unique, shared instance. */ static final String INSTANCE = new String();
-        /** For {@link #INSTANCE} only.  */ private String() {}
-
-        @Override public Class<java.lang.String> getTargetClass() {
-            return java.lang.String.class;
-        }
-
-        @Override public java.lang.String convert(final URL source) {
-            return (source != null) ? source.toExternalForm() : null;
-        }
-
-        /** Returns the inverse, since this converter is "almost" bijective. */
-        @Override public ObjectConverter<java.lang.String, URL> inverse() {
-            return StringConverter.URL.INSTANCE;
-        }
-
-        /** Returns the singleton instance on deserialization. */
-        Object readResolve() throws ObjectStreamException {
-            return INSTANCE;
-        }
-    }
-
-    /**
      * Converter from {@link URL} to {@link java.io.File}.
      */
     @Immutable

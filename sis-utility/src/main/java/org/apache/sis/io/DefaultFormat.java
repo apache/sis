@@ -47,6 +47,7 @@ final class DefaultFormat extends Format {
 
     /**
      * The array for storing singleton instances for types {@code byte} to {@code double}.
+     * The value at index 0 is reserved for the generic {@link Number} type.
      */
     private static final Format[] INSTANCES = new Format[Numbers.DOUBLE - Numbers.BYTE + 2];
 

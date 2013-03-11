@@ -38,11 +38,9 @@ public final strictfp class FallbackConverterTest extends TestCase {
     /**
      * Tests a chain of fallback converters. The initial fallback will understand {@link Short}
      * and {@link Long} types. Later we will add other types like {@link Boolean} and {@link Float}.
-     *
-     * @throws UnconvertibleObjectException Should never happen.
      */
     @Test
-    public void testChain() throws UnconvertibleObjectException {
+    public void testChain() {
         @SuppressWarnings({"unchecked","rawtypes"}) // Generic array creation.
         final ObjectConverter<String,?>[] converters = new ObjectConverter[] {
             StringConverter.Short  .INSTANCE,

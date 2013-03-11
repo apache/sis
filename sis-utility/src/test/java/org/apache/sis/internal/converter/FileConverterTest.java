@@ -21,6 +21,7 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URISyntaxException;
 import java.net.MalformedURLException;
+import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.UnconvertibleObjectException;
@@ -51,53 +52,54 @@ public final strictfp class FileConverterTest extends TestCase {
     }
 
     /**
+     * Asserts that conversion of the given {@code source} value produces
+     * the given {@code target} value, and tests the inverse conversion.
+     */
+    private static <T> void runInvertibleConversion(final ObjectConverter<File,T> c,
+            final File source, final T target) throws UnconvertibleObjectException
+    {
+        assertEquals("Forward conversion.", target, c.convert(source));
+        assertEquals("Inverse conversion.", source, c.inverse().convert(target));
+        assertSame("Inconsistent inverse.", c, c.inverse().inverse());
+        assertTrue("Invertible converters shall declare this capability.",
+                c.properties().contains(FunctionProperty.INVERTIBLE));
+    }
+
+    /**
      * Tests conversions to string values.
-     *
-     * @throws UnconvertibleObjectException Should never happen.
      */
     @Test
-    public void testString() throws UnconvertibleObjectException {
-        final File   source = new File("home/user/index.txt");
-        final String target = "home/user/index.txt".replace("/", File.separator);
-        final ObjectConverter<File,String> c = FileConverter.String.INSTANCE;
-        assertEquals("Forward conversion", target, c.convert(source));
-        assertEquals("Inverse conversion", source, c.inverse().convert(target));
-        assertSame(c, assertSerializedEquals(c));
+    public void testString() {
+        final ObjectConverter<File,String> c = ObjectToString.FILE;
+        runInvertibleConversion(c, new File("home/user/index.txt"), "home/user/index.txt".replace("/", File.separator));
+        assertSame("Deserialization shall resolves to the singleton instance.", c, assertSerializedEquals(c));
     }
 
     /**
      * Tests conversions to URI values.
      *
-     * @throws UnconvertibleObjectException Should never happen.
      * @throws URISyntaxException Should never happen.
      */
     @Test
     @PlatformDependentTest
-    public void testURI() throws UnconvertibleObjectException, URISyntaxException {
+    public void testURI() throws URISyntaxException {
         assumeUnixRoot();
-        final File source = new File("/home/user/index.txt");
-        final URI  target = new URI("file:/home/user/index.txt");
         final ObjectConverter<File,URI> c = FileConverter.URI.INSTANCE;
-        assertEquals("Forward conversion", target, c.convert(source));
-        assertEquals("Inverse conversion", source, c.inverse().convert(target));
-        assertSame(c, assertSerializedEquals(c));
+        runInvertibleConversion(c, new File("/home/user/index.txt"), new URI("file:/home/user/index.txt"));
+        assertSame("Deserialization shall resolves to the singleton instance.", c, assertSerializedEquals(c));
     }
 
     /**
      * Tests conversions to URL values.
      *
-     * @throws UnconvertibleObjectException Should never happen.
      * @throws MalformedURLException Should never happen.
      */
     @Test
     @PlatformDependentTest
-    public void testURL() throws UnconvertibleObjectException, MalformedURLException {
+    public void testURL() throws MalformedURLException {
         assumeUnixRoot();
-        final File source = new File("/home/user/index.txt");
-        final URL  target = new URL("file:/home/user/index.txt");
         final ObjectConverter<File,URL> c = FileConverter.URL.INSTANCE;
-        assertEquals("Forward conversion", target, c.convert(source));
-        assertEquals("Inverse conversion", source, c.inverse().convert(target));
-        assertSame(c, assertSerializedEquals(c));
+        runInvertibleConversion(c, new File("/home/user/index.txt"), new URL("file:/home/user/index.txt"));
+        assertSame("Deserialization shall resolves to the singleton instance.", c, assertSerializedEquals(c));
     }
 }
