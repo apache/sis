@@ -68,7 +68,7 @@ abstract class FileConverter<T> extends InjectiveConverter<File,T> implements Se
         }
 
         @Override public java.lang.String convert(final File source) {
-            return (source != null) ? source.getAbsolutePath() : null;
+            return (source != null) ? source.getPath() : null;
         }
 
         /** Returns the inverse, since this converter is "almost" bijective. */
@@ -84,6 +84,7 @@ abstract class FileConverter<T> extends InjectiveConverter<File,T> implements Se
 
     /**
      * Converter from {@link File} to {@link java.net.URI}.
+     * Note that this converter change relative paths to absolute paths.
      */
     @Immutable
     static final class URI extends FileConverter<java.net.URI> {
