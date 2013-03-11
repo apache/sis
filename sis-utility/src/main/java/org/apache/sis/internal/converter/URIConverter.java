@@ -55,38 +55,6 @@ abstract class URIConverter<T> extends InjectiveConverter<URI,T> implements Seri
     }
 
     /**
-     * Converter from {@link URI} to {@link java.lang.String}.
-     * This converter does not encode the string, i.e. the conversion is performed with
-     * the {@link URI#toString()} method rather than {@link URI#toASCIIString()}. We do
-     * that in order to avoid too many transformations if we convert back and forward to
-     * {@code String}.
-     */
-    @Immutable
-    static final class String extends URIConverter<java.lang.String> {
-        /** Cross-version compatibility. */ static final long serialVersionUID = -1745990349642467147L;
-        /** The unique, shared instance. */ static final String INSTANCE = new String();
-        /** For {@link #INSTANCE} only.  */ private String() {}
-
-        @Override public Class<java.lang.String> getTargetClass() {
-            return java.lang.String.class;
-        }
-
-        @Override public java.lang.String convert(final URI source) {
-            return (source != null) ? source.toString() : null;
-        }
-
-        /** Returns the inverse, since this converter is "almost" bijective. */
-        @Override public ObjectConverter<java.lang.String, URI> inverse() {
-            return StringConverter.URI.INSTANCE;
-        }
-
-        /** Returns the singleton instance on deserialization. */
-        Object readResolve() throws ObjectStreamException {
-            return INSTANCE;
-        }
-    }
-
-    /**
      * Converter from {@link URI} to {@link java.io.File}.
      */
     @Immutable

@@ -94,6 +94,7 @@ import org.junit.runners.Suite;
     org.apache.sis.internal.converter.URIConverterTest.class,
     org.apache.sis.internal.converter.URLConverterTest.class,
     org.apache.sis.internal.converter.FileConverterTest.class,
+    org.apache.sis.internal.converter.StringConverterTest.class,
     org.apache.sis.internal.converter.FallbackConverterTest.class,
 
     // XML most basic types.

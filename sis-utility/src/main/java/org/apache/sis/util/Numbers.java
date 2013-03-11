@@ -46,8 +46,8 @@ public final class Numbers extends Static {
      * Constant of value {@value} used in {@code switch} statements or as index in arrays.
      */
     public static final byte
+            BIG_DECIMAL=10, BIG_INTEGER=9,
             DOUBLE=8, FLOAT=7, LONG=6, INTEGER=5, SHORT=4, BYTE=3, CHARACTER=2, BOOLEAN=1, OTHER=0;
-    // Note: This class assumes that DOUBLE is the greatest public constant.
 
     /**
      * Mapping between a primitive type and its wrapper, if any.
@@ -62,8 +62,8 @@ public final class Numbers extends Static {
      */
     private static final Map<Class<?>,Numbers> MAPPING = new IdentityHashMap<>(16);
     static {
-        new Numbers(BigDecimal.class, true, false, (byte) (DOUBLE+2)); // Undocumented enum.
-        new Numbers(BigInteger.class, false, true, (byte) (DOUBLE+1)); // Undocumented enum.
+        new Numbers(BigDecimal.class, true, false, BIG_DECIMAL);
+        new Numbers(BigInteger.class, false, true, BIG_INTEGER);
         new Numbers(Double   .TYPE, Double   .class, true,  false, (byte) Double   .SIZE, DOUBLE,    'D', Double   .valueOf(Double.NaN));
         new Numbers(Float    .TYPE, Float    .class, true,  false, (byte) Float    .SIZE, FLOAT,     'F', Float    .valueOf(Float .NaN));
         new Numbers(Long     .TYPE, Long     .class, false, true,  (byte) Long     .SIZE, LONG,      'J', Long     .valueOf(        0L));
@@ -304,7 +304,7 @@ public final class Numbers extends Static {
             throws IllegalArgumentException
     {
         return narrowestClass((n1 != null) ? n1.getClass() : null,
-                           (n2 != null) ? n2.getClass() : null);
+                              (n2 != null) ? n2.getClass() : null);
     }
 
     /**
@@ -708,8 +708,10 @@ public final class Numbers extends Static {
     }
 
     /**
-     * Returns one of {@link #DOUBLE}, {@link #FLOAT}, {@link #LONG}, {@link #INTEGER},
-     * {@link #SHORT}, {@link #BYTE}, {@link #CHARACTER}, {@link #BOOLEAN} or {@link #OTHER}
+     * Returns a numeric constant for the given type.
+     * The constants are {@link #BIG_DECIMAL}, {@link #BIG_INTEGER},
+     * {@link #DOUBLE}, {@link #FLOAT}, {@link #LONG}, {@link #INTEGER},
+     * {@link #SHORT}, {@link #BYTE}, {@link #CHARACTER}, {@link #BOOLEAN}, or {@link #OTHER}
      * constants for the given type. This is a commodity for usage in {@code switch} statements.
      *
      * @param type A type (usually either a primitive type or its wrapper).
@@ -717,13 +719,7 @@ public final class Numbers extends Static {
      */
     public static byte getEnumConstant(final Class<?> type) {
         final Numbers mapping = MAPPING.get(type);
-        if (mapping != null) {
-            // Filter out the non-public enum for BigDecimal and BigInteger.
-            if (mapping.size >= 0) {
-                return mapping.ordinal;
-            }
-        }
-        return OTHER;
+        return (mapping != null) ? mapping.ordinal : OTHER;
     }
 
     /**

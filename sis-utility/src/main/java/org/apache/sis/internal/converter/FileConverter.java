@@ -55,34 +55,6 @@ abstract class FileConverter<T> extends InjectiveConverter<File,T> implements Se
     }
 
     /**
-     * Converter from {@link File} to {@link java.lang.String}.
-     */
-    @Immutable
-    static final class String extends FileConverter<java.lang.String> {
-        /** Cross-version compatibility. */ static final long serialVersionUID = -6811286687809954151L;
-        /** The unique, shared instance. */ static final String INSTANCE = new String();
-        /** For {@link #INSTANCE} only.  */ private String() {}
-
-        @Override public Class<java.lang.String> getTargetClass() {
-            return java.lang.String.class;
-        }
-
-        @Override public java.lang.String convert(final File source) {
-            return (source != null) ? source.getPath() : null;
-        }
-
-        /** Returns the inverse, since this converter is "almost" bijective. */
-        @Override public ObjectConverter<java.lang.String, File> inverse() {
-            return StringConverter.File.INSTANCE;
-        }
-
-        /** Returns the singleton instance on deserialization. */
-        Object readResolve() throws ObjectStreamException {
-            return INSTANCE;
-        }
-    }
-
-    /**
      * Converter from {@link File} to {@link java.net.URI}.
      * Note that this converter change relative paths to absolute paths.
      */
