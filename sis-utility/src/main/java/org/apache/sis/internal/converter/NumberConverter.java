@@ -1,19 +1,18 @@
 /*
- *    Geotoolkit.org - An Open Source Java GIS Toolkit
- *    http://www.geotoolkit.org
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- *    (C) 2007-2012, Open Source Geospatial Foundation (OSGeo)
- *    (C) 2009-2012, Geomatys
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *    This library is free software; you can redistribute it and/or
- *    modify it under the terms of the GNU Lesser General Public
- *    License as published by the Free Software Foundation;
- *    version 2.1 of the License.
- *
- *    This library is distributed in the hope that it will be useful,
- *    but WITHOUT ANY WARRANTY; without even the implied warranty of
- *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *    Lesser General Public License for more details.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.apache.sis.internal.converter;
 
@@ -249,8 +248,7 @@ abstract class NumberConverter<T> extends SurjectiveConverter<Number,T> implemen
     static final class BigDecimal extends NumberConverter<java.math.BigDecimal> {
         /** Cross-version compatibility. */ static final long serialVersionUID = -6318144992861058878L;
         /** The unique, shared instance. */ static final BigDecimal INSTANCE = new BigDecimal();
-        /** For {@link #INSTANCE} only.  */ private BigDecimal() {
-        }
+        /** For {@link #INSTANCE} only.  */ private BigDecimal() {}
 
         @Override public Class<java.math.BigDecimal> getTargetClass() {
             return java.math.BigDecimal.class;
@@ -285,8 +283,7 @@ abstract class NumberConverter<T> extends SurjectiveConverter<Number,T> implemen
     static final class BigInteger extends NumberConverter<java.math.BigInteger> {
         /** Cross-version compatibility. */ static final long serialVersionUID = 5940724099300523246L;
         /** The unique, shared instance. */ static final BigInteger INSTANCE = new BigInteger();
-        /** For {@link #INSTANCE} only.  */ private BigInteger() {
-        }
+        /** For {@link #INSTANCE} only.  */ private BigInteger() {}
 
         @Override public Class<java.math.BigInteger> getTargetClass() {
             return java.math.BigInteger.class;
