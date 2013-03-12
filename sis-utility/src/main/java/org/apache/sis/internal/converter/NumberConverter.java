@@ -22,6 +22,7 @@ import net.jcip.annotations.Immutable;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.math.FunctionProperty;
+import org.apache.sis.util.UnconvertibleObjectException;
 
 
 /**
@@ -36,8 +37,8 @@ import org.apache.sis.math.FunctionProperty;
  * value is converted. However performance is not the primary concern here, since those converters
  * will typically be used by code doing more costly work (e.g. the {@code sis-metadata} module
  * providing {@code Map} views using Java reflection). So we rather try to be more compact.
- * If nevertheless performance appear to be a problem, consider reverting to revision 1455255,
- * which was using one subclass per target type as described above.
+ * If nevertheless performance appears to be a problem, consider reverting to revision 1455255
+ * of this class, which was using one subclass per target type as described above.
  *
  * @param <S> The source number type.
  * @param <T> The target number type.
@@ -77,9 +78,14 @@ final class NumberConverter<S extends Number, T extends Number> extends SystemCo
 
     /**
      * Converts the given number to the target type if that type is different.
+     * This implementation is inefficient, but avoid us the need to create one
+     * subclass for each number type. See class javadoc for more details.
      */
     @Override
     public T convert(final S source) {
+        if (Numbers.widestClass(Numbers.narrowestClass(source), targetClass) != targetClass) {
+            throw new UnconvertibleObjectException(formatErrorMessage(source));
+        }
         return Numbers.cast(source, targetClass);
     }
 

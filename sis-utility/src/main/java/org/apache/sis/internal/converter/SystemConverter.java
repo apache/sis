@@ -91,4 +91,14 @@ abstract class SystemConverter<S,T> extends ClassPair<S,T> implements ObjectConv
     protected final Object readResolve() throws ObjectStreamException {
         return ConverterRegistry.SYSTEM.unique(this, false);
     }
+
+    /**
+     * Formats an error message for a value that can not be converted.
+     *
+     * @param  value The value that can not be converted.
+     * @return The error message.
+     */
+    final String formatErrorMessage(final S value) {
+        return Errors.format(Errors.Keys.CanNotConvertValue_2, value, getTargetClass());
+    }
 }

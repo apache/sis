@@ -52,6 +52,19 @@ public final strictfp class NumberConverterTest extends TestCase {
     }
 
     /**
+     * Tries to convert a value which is expected to fail.
+     */
+    private static <S extends Number> void tryUnconvertibleValue(final ObjectConverter<S,?> c, final S source) {
+        try {
+            c.convert(source);
+            fail("Should not accept the value.");
+        } catch (UnconvertibleObjectException e) {
+            // This is the expected exception.
+            assertTrue(e.getMessage().contains(c.getTargetClass().getSimpleName()));
+        }
+    }
+
+    /**
      * Tests conversions to {@link Byte} values.
      */
     @Test
@@ -59,6 +72,10 @@ public final strictfp class NumberConverterTest extends TestCase {
         final ObjectConverter<Integer, Byte> c =
                 new NumberConverter<>(Integer.class, Byte.class).unique();
         runInvertibleConversion(c, Integer.valueOf(-8), Byte.valueOf((byte) -8));
+        runInvertibleConversion(c, Integer.valueOf(Byte.MIN_VALUE), Byte.valueOf(Byte.MIN_VALUE));
+        runInvertibleConversion(c, Integer.valueOf(Byte.MAX_VALUE), Byte.valueOf(Byte.MAX_VALUE));
+        tryUnconvertibleValue  (c, Integer.valueOf(Byte.MIN_VALUE - 1));
+        tryUnconvertibleValue  (c, Integer.valueOf(Byte.MAX_VALUE + 1));
         assertSame("Deserialization shall resolves to the singleton instance.", c, assertSerializedEquals(c));
     }
 
@@ -70,6 +87,10 @@ public final strictfp class NumberConverterTest extends TestCase {
         final ObjectConverter<Integer, Short> c =
                 new NumberConverter<>(Integer.class, Short.class).unique();
         runInvertibleConversion(c, Integer.valueOf(-8), Short.valueOf((short) -8));
+        runInvertibleConversion(c, Integer.valueOf(Short.MIN_VALUE), Short.valueOf(Short.MIN_VALUE));
+        runInvertibleConversion(c, Integer.valueOf(Short.MAX_VALUE), Short.valueOf(Short.MAX_VALUE));
+        tryUnconvertibleValue  (c, Integer.valueOf(Short.MIN_VALUE - 1));
+        tryUnconvertibleValue  (c, Integer.valueOf(Short.MAX_VALUE + 1));
         assertSame("Deserialization shall resolves to the singleton instance.", c, assertSerializedEquals(c));
     }
 
@@ -81,6 +102,7 @@ public final strictfp class NumberConverterTest extends TestCase {
         final ObjectConverter<Float, Integer> c =
                 new NumberConverter<>(Float.class, Integer.class).unique();
         runInvertibleConversion(c, Float.valueOf(-8), Integer.valueOf(-8));
+        // Can not easily tests the values around Integer.MIN/MAX_VALUE because of rounding errors in float.
         assertSame("Deserialization shall resolves to the singleton instance.", c, assertSerializedEquals(c));
     }
 
@@ -103,6 +125,7 @@ public final strictfp class NumberConverterTest extends TestCase {
         final ObjectConverter<Double, Float> c =
                 new NumberConverter<>(Double.class, Float.class).unique();
         runInvertibleConversion(c, Double.valueOf(2.5), Float.valueOf(2.5f));
+        tryUnconvertibleValue  (c, Double.valueOf(1E+40));
         assertSame("Deserialization shall resolves to the singleton instance.", c, assertSerializedEquals(c));
     }
 
