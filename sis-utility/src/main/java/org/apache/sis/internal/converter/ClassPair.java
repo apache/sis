@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.converter;
 
+import java.io.Serializable;
 import net.jcip.annotations.Immutable;
 import org.apache.sis.util.ObjectConverter;
 
@@ -35,7 +36,12 @@ import org.apache.sis.util.ObjectConverter;
  * @module
  */
 @Immutable
-class ClassPair<S,T> {
+class ClassPair<S,T> implements Serializable {
+    /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = -9157788501686115L;
+
     /**
      * The source class.
      */

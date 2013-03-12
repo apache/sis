@@ -419,8 +419,8 @@ public final class Numbers extends Static {
     }
 
     /**
-     * Returns the number of the smallest class capable to hold the specified value. If the
-     * given value is {@code null}, then this method returns {@code null}. Otherwise this
+     * Returns the given number wrapped in the smallest class capable to hold the specified value.
+     * If the given value is {@code null}, then this method returns {@code null}. Otherwise this
      * method delegates to {@link #narrowestNumber(double)} or {@link #narrowestNumber(long)}
      * depending on the value type.
      *
@@ -517,7 +517,8 @@ public final class Numbers extends Static {
 
     /**
      * Casts a number to the specified class. The class must by one of {@link Byte},
-     * {@link Short}, {@link Integer}, {@link Long}, {@link Float} or {@link Double}.
+     * {@link Short}, {@link Integer}, {@link Long}, {@link Float}, {@link Double},
+     * {@link BigInteger} or {@link BigDecimal}.
      * This method makes the following choice:
      *
      * <ul>
@@ -527,10 +528,6 @@ public final class Numbers extends Static {
      *       <code>{@linkplain Float#valueOf(float) Float.valueOf}(number.floatValue())</code>;</li>
      *   <li>And likewise for all remaining known types.</li>
      * </ul>
-     *
-     * {@note This method is intentionally restricted to primitive types. Other types
-     *        like <code>BigDecimal</code> are not the purpose of this method.
-     *        See <code>ObjectConverter</code> for more generic methods.}
      *
      * This method does not verify if the given type is wide enough for the given value,
      * because the type has typically been calculated by {@link #widestClass(Class, Class)}
@@ -552,20 +549,47 @@ public final class Numbers extends Static {
         if (number == null || number.getClass() == type) {
             return (N) number;
         }
-        if (type == Double .class) return (N) Double .valueOf(number.doubleValue());
-        if (type == Float  .class) return (N) Float  .valueOf(number. floatValue());
-        if (type == Long   .class) return (N) Long   .valueOf(number.  longValue());
-        if (type == Integer.class) return (N) Integer.valueOf(number.   intValue());
-        if (type == Short  .class) return (N) Short  .valueOf(number. shortValue());
-        if (type == Byte   .class) return (N) Byte   .valueOf(number.  byteValue());
-        throw unknownType(type);
+        switch (getEnumConstant(type)) {
+            case BYTE:    return (N) Byte   .valueOf(number.  byteValue());
+            case SHORT:   return (N) Short  .valueOf(number. shortValue());
+            case INTEGER: return (N) Integer.valueOf(number.   intValue());
+            case LONG:    return (N) Long   .valueOf(number.  longValue());
+            case FLOAT:   return (N) Float  .valueOf(number. floatValue());
+            case DOUBLE:  return (N) Double .valueOf(number.doubleValue());
+            case BIG_INTEGER: {
+                final BigInteger c;
+                if (number instanceof BigDecimal) {
+                    c = ((BigDecimal) number).toBigInteger();
+                } else {
+                    c = BigInteger.valueOf(number.longValue());
+                }
+                return (N) c;
+            }
+            case BIG_DECIMAL: {
+                final BigDecimal c;
+                if (number instanceof BigInteger) {
+                    c =new BigDecimal((BigInteger) number);
+                } else if (isInteger(number.getClass())) {
+                    c = BigDecimal.valueOf(number.longValue());
+                } else {
+                    c = BigDecimal.valueOf(number.doubleValue());
+                }
+                return (N) c;
+            }
+            default: {
+                if (type.isInstance(number)) {
+                    return (N) number;
+                }
+                throw unknownType(type);
+            }
+        }
     }
 
     /**
      * Wraps the given value in a {@code Number} of the specified class.
-     * The given type shall be one of {@link Byte}, {@link Short}, {@link Integer},
-     * {@link Long}, {@link Float} or {@link Double} classes. Furthermore, the given
-     * value shall be convertible to the given class without precision lost,
+     * The given type shall be one of {@link Byte}, {@link Short}, {@link Integer}, {@link Long},
+     * {@link Float}, {@link Double}, {@link BigInteger} and {@link BigDecimal} classes.
+     * Furthermore, the given value shall be convertible to the given class without precision lost,
      * otherwise an {@link IllegalArgumentException} will be thrown.
      *
      * @param  <N> The wrapper class.
@@ -581,13 +605,17 @@ public final class Numbers extends Static {
             throws IllegalArgumentException
     {
         final N number;
-             if (type == Double .class) return   (N) Double .valueOf(value); // No need to verify.
-        else if (type == Float  .class) number = (N) Float  .valueOf((float) value);
-        else if (type == Long   .class) number = (N) Long   .valueOf((long)  value);
-        else if (type == Integer.class) number = (N) Integer.valueOf((int)   value);
-        else if (type == Short  .class) number = (N) Short  .valueOf((short) value);
-        else if (type == Byte   .class) number = (N) Byte   .valueOf((byte)  value);
-        else throw unknownType(type);
+        switch (getEnumConstant(type)) {
+            case BYTE:        number = (N) Byte      .valueOf((byte)  value); break;
+            case SHORT:       number = (N) Short     .valueOf((short) value); break;
+            case INTEGER:     number = (N) Integer   .valueOf((int)   value); break;
+            case LONG:        number = (N) Long      .valueOf((long)  value); break;
+            case FLOAT:       number = (N) Float     .valueOf((float) value); break;
+            case DOUBLE:      return   (N) Double    .valueOf(value); // No need to verify.
+            case BIG_INTEGER: number = (N) BigInteger.valueOf((long) value); break;
+            case BIG_DECIMAL: return   (N) BigDecimal.valueOf(value); // No need to verify.
+            default: throw unknownType(type);
+        }
         if (Double.doubleToLongBits(number.doubleValue()) != Double.doubleToLongBits(value)) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.CanNotConvertValue_2, value, type));
         }
@@ -596,6 +624,7 @@ public final class Numbers extends Static {
 
     /**
      * Converts the specified string into a value object. The value object can be an instance of
+     * {@link BigDecimal}, {@link BigInteger},
      * {@link Double}, {@link Float}, {@link Long}, {@link Integer}, {@link Short}, {@link Byte},
      * {@link Boolean}, {@link Character} or {@link String} according the specified type. This
      * method makes the following choice:
@@ -607,11 +636,6 @@ public final class Numbers extends Static {
      *       <code>{@linkplain Float#valueOf(String) Float.valueOf}(value)</code>;</li>
      *   <li>And likewise for all remaining known types.</li>
      * </ul>
-     *
-     * {@note This method is intentionally restricted to primitive types, with the addition of
-     *        <code>String</code> which can be though as an identity operation. Other types
-     *        like <code>BigDecimal</code> are not the purpose of this method. See the
-     *        <code>ConverterRegistry</code> class for a more generic method.}
      *
      * @param  <T> The requested type.
      * @param  value the value to parse.
@@ -628,26 +652,30 @@ public final class Numbers extends Static {
         if (value == null || type == String.class) {
             return (T) value;
         }
-        if (type == Character.class) {
-            /*
-             * If the string is empty, returns 0 which means "end of string" in C/C++
-             * and NULL in Unicode standard. If non-empty, take only the first char.
-             * This is somewhat consistent with Boolean.valueOf(...) which is quite
-             * lenient about the parsing as well, and throwing a NumberFormatException
-             * for those would not be appropriate.
-             */
-            return (T) Character.valueOf(value.isEmpty() ? 0 : value.charAt(0));
+        switch (getEnumConstant(type)) {
+            case CHARACTER: {
+                /*
+                 * If the string is empty, returns 0 which means "end of string" in C/C++
+                 * and NULL in Unicode standard. If non-empty, take only the first char.
+                 * This is somewhat consistent with Boolean.valueOf(...) which is quite
+                 * lenient about the parsing as well, and throwing a NumberFormatException
+                 * for those would not be appropriate.
+                 */
+                return (T) Character.valueOf(value.isEmpty() ? 0 : value.charAt(0));
+            }
+            // Do not trim whitespaces. It is up to the caller to do that if he wants.
+            // For such low level function, we are better to avoid hidden initiative.
+            case BOOLEAN:     return (T) Boolean.valueOf(value);
+            case BYTE:        return (T) Byte   .valueOf(value);
+            case SHORT:       return (T) Short  .valueOf(value);
+            case INTEGER:     return (T) Integer.valueOf(value);
+            case LONG:        return (T) Long   .valueOf(value);
+            case FLOAT:       return (T) Float  .valueOf(value);
+            case DOUBLE:      return (T) Double .valueOf(value);
+            case BIG_INTEGER: return (T) new BigInteger(value);
+            case BIG_DECIMAL: return (T) new BigDecimal(value);
+            default: throw unknownType(type);
         }
-        // Do not trim whitespaces. It is up to the caller to do that if he wants.
-        // For such low level function, we are better to avoid hidden initiative.
-        if (type == Double .class) return (T) Double .valueOf(value);
-        if (type == Float  .class) return (T) Float  .valueOf(value);
-        if (type == Long   .class) return (T) Long   .valueOf(value);
-        if (type == Integer.class) return (T) Integer.valueOf(value);
-        if (type == Short  .class) return (T) Short  .valueOf(value);
-        if (type == Byte   .class) return (T) Byte   .valueOf(value);
-        if (type == Boolean.class) return (T) Boolean.valueOf(value);
-        throw unknownType(type);
     }
 
     /**
