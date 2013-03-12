@@ -225,32 +225,6 @@ public final class Classes extends Static {
     }
 
     /**
-     * Casts the {@code type} class to represent a subclass of the class represented by the
-     * {@code sub} argument. Checks that the cast is valid, and returns {@code null} if it
-     * is not.
-     *
-     * <p>This method performs the same work than
-     * <code>type.{@linkplain Class#asSubclass(Class) asSubclass}(sub)</code>,
-     * except that {@code null} is returned instead than throwing an exception
-     * if the cast is not valid or if any of the argument is {@code null}.</p>
-     *
-     * @param  <U>  The compile-time bounds of the {@code sub} argument.
-     * @param  type The class to cast to a sub-class, or {@code null}.
-     * @param  sub  The subclass to cast to, or {@code null}.
-     * @return The {@code type} argument casted to a subclass of the {@code sub} argument,
-     *         or {@code null} if this cast can not be performed.
-     *
-     * @see Class#asSubclass(Class)
-     */
-    @SuppressWarnings({"unchecked","rawtypes"})
-    public static <U> Class<? extends U> asSubclassOrNull(final Class<?> type, final Class<U> sub) {
-        // Design note: We are required to return null if 'sub' is null (not to return 'type'
-        // unchanged), because if we returned 'type', we would have an unsafe cast if this
-        // method is invoked indirectly from a parameterized method.
-        return (type != null && sub != null && sub.isAssignableFrom(type)) ? (Class) type : null;
-    }
-
-    /**
      * Returns the class of the specified object, or {@code null} if {@code object} is null.
      * This method is also useful for fetching the class of an object known only by its bound
      * type. As of Java 6, the usual pattern:
@@ -267,6 +241,7 @@ public final class Classes extends Static {
      * @return The class of the given object, or {@code null} if the given object was null.
      */
     @SuppressWarnings("unchecked")
+    @Workaround(library="JDK", version="1.7")
     public static <T> Class<? extends T> getClass(final T object) {
         return (object != null) ? (Class<? extends T>) object.getClass() : null;
     }
@@ -282,7 +257,7 @@ public final class Classes extends Static {
      * @param  objects The collection of objects.
      * @return The set of classes of all objects in the given collection.
      */
-    public static <T> Set<Class<? extends T>> getClasses(final Collection<? extends T> objects) {
+    private static <T> Set<Class<? extends T>> getClasses(final Iterable<? extends T> objects) {
         final Set<Class<? extends T>> types = new LinkedHashSet<>();
         for (final T object : objects) {
             types.add(getClass(object));
@@ -291,20 +266,42 @@ public final class Classes extends Static {
     }
 
     /**
-     * Returns the set of every interfaces implemented by the given class or interface. This is
-     * similar to {@link Class#getInterfaces()} except that this method searches recursively in
-     * the super-interfaces. For example if the given type is {@link java.util.ArrayList}, then
+     * Returns every interfaces implemented, directly or indirectly, by the given class or interface.
+     * This is similar to {@link Class#getInterfaces()} except that this method searches recursively
+     * in the super-interfaces. For example if the given type is {@link java.util.ArrayList}, then
      * the returned set will contains {@link java.util.List} (which is implemented directly)
      * together with its parent interfaces {@link Collection} and {@link Iterable}.
      *
+     * @param  <T>  The compile-time type of the {@code Class} argument.
      * @param  type The class or interface for which to get all implemented interfaces.
      * @return All implemented interfaces (not including the given {@code type} if it was an
      *         interface), or an empty set if none. Callers can freely modify the returned set.
+     *
+     * @see Class#getInterfaces()
      */
-    public static Set<Class<?>> getAllInterfaces(Class<?> type) {
+    @SuppressWarnings({"unchecked","rawtypes"}) // Generic array creation.
+    public static <T> Class<? super T>[] getAllInterfaces(final Class<T> type) {
+        final Set<Class<?>> interfaces = getInterfaceSet(type);
+        return interfaces.toArray(new Class[interfaces.size()]);
+    }
+
+    /**
+     * Implementation of {@link #getAllInterfaces(Class)} returning a {@link Set}.
+     * The public API exposes the method returning an array instead than a set for
+     * the following reasons:
+     *
+     * <ul>
+     *   <li>Consistency with other methods ({@link #getLeafInterfaces(Class, Class)},
+     *       {@link Class#getInterfaces()}).</li>
+     *   <li>Because arrays in Java are covariant, while the {@code Set} are not.
+     *       Consequently callers can cast {@code Class<? super T>[]} to {@code Class<?>[]}
+     *       while they can not cast {@code Set<Class<? super T>>} to {@code Set<Class<?>>}.</li>
+     * </ul>
+     */
+    static Set<Class<?>> getInterfaceSet(Class<?> type) {
         Set<Class<?>> interfaces = null;
         while (type != null) {
-            interfaces = getAllInterfaces(type, interfaces);
+            interfaces = getInterfaceSet(type, interfaces);
             type = type.getSuperclass();
         }
         return (interfaces != null) ? interfaces : Collections.<Class<?>>emptySet();
@@ -318,15 +315,15 @@ public final class Classes extends Static {
      * @return The given set (may be {@code null}), or a new set if the given set was null
      *         and at least one interface has been found.
      */
-    private static Set<Class<?>> getAllInterfaces(final Class<?> type, Set<Class<?>> addTo) {
+    private static Set<Class<?>> getInterfaceSet(final Class<?> type, Set<Class<?>> addTo) {
         final Class<?>[] interfaces = type.getInterfaces();
         for (int i=0; i<interfaces.length; i++) {
             final Class<?> candidate = interfaces[i];
             if (addTo == null) {
-                addTo = new LinkedHashSet<>(hashMapCapacity(interfaces.length - i));
+                addTo = new LinkedHashSet<>(hashMapCapacity(interfaces.length));
             }
             if (addTo.add(candidate)) {
-                getAllInterfaces(candidate, addTo);
+                getInterfaceSet(candidate, addTo);
             }
         }
         return addTo;
@@ -396,7 +393,7 @@ next:       for (final Class<?> candidate : candidates) {
      * @return The most specialized class, or {@code null} if the given collection does not contain
      *         at least one non-null element.
      */
-    public static Class<?> findSpecializedClass(final Collection<?> objects) {
+    public static Class<?> findSpecializedClass(final Iterable<?> objects) {
         final Set<Class<?>> types = getClasses(objects);
         types.remove(null);
         /*
@@ -448,7 +445,7 @@ next:       for (final Class<?> candidate : candidates) {
      * @return The most specific class common to all supplied objects, or {@code null} if the
      *         given collection does not contain at least one non-null element.
      */
-    public static Class<?> findCommonClass(final Collection<?> objects) {
+    public static Class<?> findCommonClass(final Iterable<?> objects) {
         final Set<Class<?>> types = getClasses(objects);
         types.remove(null);
         return common(types);
@@ -494,13 +491,13 @@ next:       for (final Class<?> candidate : candidates) {
      *         Callers can freely modify the returned set.
      */
     public static Set<Class<?>> findCommonInterfaces(final Class<?> c1, final Class<?> c2) {
-        final Set<Class<?>> interfaces = getAllInterfaces(c1);
-        final Set<Class<?>> buffer     = getAllInterfaces(c2); // To be recycled.
+        final Set<Class<?>> interfaces = getInterfaceSet(c1);
+        final Set<Class<?>> buffer     = getInterfaceSet(c2); // To be recycled.
         interfaces.retainAll(buffer);
         for (Iterator<Class<?>> it=interfaces.iterator(); it.hasNext();) {
             final Class<?> candidate = it.next();
             buffer.clear(); // Safe because the buffer can not be Collections.EMPTY_SET at this point.
-            getAllInterfaces(candidate, buffer);
+            getInterfaceSet(candidate, buffer);
             if (interfaces.removeAll(buffer)) {
                 it = interfaces.iterator();
             }
@@ -621,7 +618,7 @@ cmp:    for (final Class<?> c : c1) {
      * @param  allowedTypes The allowed types.
      * @return {@code true} if the given type is assignable to one of the allowed types.
      */
-    public static boolean isAssignableTo(final Class<?> type, final Class<?>... allowedTypes) {
+    public static boolean isAssignableToAny(final Class<?> type, final Class<?>... allowedTypes) {
         if (type != null) {
             if (allowedTypes == null) {
                 return true;

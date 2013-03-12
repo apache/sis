@@ -83,10 +83,14 @@ final class NumberConverter<S extends Number, T extends Number> extends SystemCo
      */
     @Override
     public T convert(final S source) {
-        if (Numbers.widestClass(Numbers.narrowestClass(source), targetClass) != targetClass) {
+        final T target = Numbers.cast(source, targetClass);
+        if (target.longValue() != source.longValue() ||
+                Double.doubleToLongBits(target.doubleValue()) !=
+                Double.doubleToLongBits(source.doubleValue()))
+        {
             throw new UnconvertibleObjectException(formatErrorMessage(source));
         }
-        return Numbers.cast(source, targetClass);
+        return target;
     }
 
     /**
