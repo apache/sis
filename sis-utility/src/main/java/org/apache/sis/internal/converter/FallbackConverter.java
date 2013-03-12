@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.converter;
 
+import java.util.Arrays;
 import java.util.Set;
 import java.util.EnumSet;
 import java.util.Iterator;
@@ -195,7 +196,7 @@ final class FallbackConverter<S,T> extends ClassPair<S,T> implements ObjectConve
              * root for both classes and interfaces.
              */
             final Set<Class<?>> interfaces = Classes.findCommonInterfaces(target1, target2);
-            interfaces.removeAll(Classes.getAllInterfaces(source));
+            interfaces.removeAll(Arrays.asList(Classes.getAllInterfaces(source)));
             final Iterator<Class<?>> it = interfaces.iterator();
             if (it.hasNext()) {
                 /*
