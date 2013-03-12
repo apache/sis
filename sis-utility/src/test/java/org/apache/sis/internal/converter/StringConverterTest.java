@@ -31,6 +31,7 @@ import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
@@ -44,7 +45,7 @@ import static org.apache.sis.test.Assert.*;
  * @version 0.3
  * @module
  */
-public final strictfp class StringConverterTest {
+public final strictfp class StringConverterTest extends TestCase {
     /**
      * Asserts that conversion of the given {@code source} value produces
      * the given {@code target} value, and tests the inverse conversion.
