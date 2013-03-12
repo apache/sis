@@ -26,9 +26,10 @@ import java.util.Collections;
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.CollectionsExt;
+
+import static java.lang.Double.doubleToLongBits;
 
 
 /**
@@ -350,145 +351,113 @@ public final class Numbers extends Static {
     }
 
     /**
-     * Returns the smallest class capable to hold the specified value. If the given value is
-     * {@code null}, then this method returns {@code null}. Otherwise this method delegates
-     * to {@link #narrowestClass(double)} or {@link #narrowestClass(long)} depending on the value type.
+     * Returns the smallest class capable to hold the specified value.
+     * This method applies the following choices, in that order:
+     *
+     * <ul>
+     *   <li>If the given value is {@code null}, then this method returns {@code null}.</li>
+     *   <li>Otherwise if the given value can not be casted from {@code double} to an other type
+     *       without precision lost, return {@code Double.class}.</li>
+     *   <li>Otherwise if the given value can not be casted from {@code float} to an other type
+     *       without precision lost, return {@code Float.class}.</li>
+     *   <li>Otherwise if the given value is between {@value java.lang.Byte#MIN_VALUE} and
+     *       {@value java.lang.Byte#MAX_VALUE}, then this method returns {@code Byte.class};</li>
+     *   <li>Otherwise if the given value is between {@value java.lang.Short#MIN_VALUE} and
+     *       {@value java.lang.Short#MAX_VALUE}, then this method returns {@code Short.class};</li>
+     *   <li>Otherwise if the given value is between {@value java.lang.Integer#MIN_VALUE} and
+     *       {@value java.lang.Integer#MAX_VALUE}, then this method returns {@code Integer.class};</li>
+     *   <li>Otherwise this method returns {@code Long.class};</li>
+     * </ul>
      *
      * @param  value The value to be wrapped in a finer (if possible) {@link Number}.
      * @return The narrowest type capable to hold the given value.
      *
      * @see #narrowestNumber(Number)
      */
+    @SuppressWarnings("fallthrough")
     public static Class<? extends Number> narrowestClass(final Number value) {
         if (value == null) {
             return null;
         }
-        if (isPrimitiveInteger(value.getClass())) {
-            return narrowestClass(value.longValue());
-        } else {
-            return narrowestClass(value.doubleValue());
+        boolean isFloat = false;
+        final long longValue = value.longValue();
+        switch (getEnumConstant(value.getClass())) {
+            default: {
+                final double doubleValue = value.doubleValue();
+                final float  floatValue  = (float) doubleValue;
+                isFloat = (doubleToLongBits(floatValue) == doubleToLongBits(doubleValue));
+                if (doubleValue != longValue) {
+                    return isFloat ? Float.class : Double.class;
+                }
+                // Fall through.
+            }
+            case LONG:    if (((int)   longValue) != longValue) return isFloat ? Float.class : Long.class;
+            case INTEGER: if (((short) longValue) != longValue) return Integer.class;
+            case SHORT:   if (((byte)  longValue) != longValue) return Short  .class;
+            case BYTE:    return Byte.class;
         }
-    }
-
-    /**
-     * Returns the smallest class capable to hold the specified value.
-     * This is similar to {@link #narrowestClass(long)}, but extended to floating point values.
-     *
-     * @param  value The value to be wrapped in a {@link Number}.
-     * @return The narrowest type capable to hold the given value.
-     *
-     * @see #narrowestNumber(double)
-     */
-    public static Class<? extends Number> narrowestClass(final double value) {
-        final long lg = (long) value;
-        if (value == lg) {
-            return narrowestClass(lg);
-        }
-        final float fv = (float) value;
-        if (Double.doubleToRawLongBits(value) == Double.doubleToRawLongBits(fv)) {
-            return Float.class;
-        }
-        return Double.class;
-    }
-
-    /**
-     * Returns the smallest class capable to hold the specified value.
-     * This method makes the following choice:
-     *
-     * <ul>
-     *   <li>If the given value is between {@value java.lang.Byte#MIN_VALUE} and
-     *       {@value java.lang.Byte#MAX_VALUE}, then this method returns {@code Byte.class};</li>
-     *   <li>If the given value is between {@value java.lang.Short#MIN_VALUE} and
-     *       {@value java.lang.Short#MAX_VALUE}, then this method returns {@code Short.class};</li>
-     *   <li>If the given value is between {@value java.lang.Integer#MIN_VALUE} and
-     *       {@value java.lang.Integer#MAX_VALUE}, then this method returns {@code Integer.class};</li>
-     *   <li>Otherwise this method returns {@code Long.class};</li>
-     * </ul>
-     *
-     * @param  value The value to be wrapped in a {@link Number}.
-     * @return The narrowest type capable to hold the given value.
-     *
-     * @see #narrowestNumber(long)
-     */
-    public static Class<? extends Number> narrowestClass(final long value) {
-        // Tests MAX_VALUE before MIN_VALUE because it is more likely to fail.
-        if (value <= Byte   .MAX_VALUE  &&  value >= Byte   .MIN_VALUE) return Byte.class;
-        if (value <= Short  .MAX_VALUE  &&  value >= Short  .MIN_VALUE) return Short.class;
-        if (value <= Integer.MAX_VALUE  &&  value >= Integer.MIN_VALUE) return Integer.class;
-        return Long.class;
     }
 
     /**
      * Returns the given number wrapped in the smallest class capable to hold the specified value.
-     * If the given value is {@code null}, then this method returns {@code null}. Otherwise this
-     * method delegates to {@link #narrowestNumber(double)} or {@link #narrowestNumber(long)}
-     * depending on the value type.
+     * This method is equivalent to the following code, in a slightly more efficient way:
+     *
+     * {@preformat java
+     *     return cast(value, narrowestClass(value));
+     * }
      *
      * @param  value The value to be wrapped in a finer (if possible) {@link Number}.
      * @return The narrowest type capable to hold the given value.
      *
      * @see #narrowestClass(Number)
+     * @see #cast(Number, Class)
      */
+    @SuppressWarnings("fallthrough")
     public static Number narrowestNumber(final Number value) {
         if (value == null) {
             return null;
         }
         final Number candidate;
-        if (isPrimitiveInteger(value.getClass())) {
-            candidate = narrowestNumber(value.longValue());
-        } else {
-            candidate = narrowestNumber(value.doubleValue());
+        boolean isFloat = false;
+        final long longValue = value.longValue();
+        switch (getEnumConstant(value.getClass())) {
+            default: {
+                final double doubleValue = value.doubleValue();
+                final float  floatValue  = (float) doubleValue;
+                isFloat = (doubleToLongBits(floatValue) == doubleToLongBits(doubleValue));
+                if (doubleValue != longValue) {
+                    candidate = isFloat ? ((Number) Float .valueOf(floatValue))
+                                        : ((Number) Double.valueOf(doubleValue));
+                    break;
+                }
+                // Fall through everywhere.
+            }
+            case LONG: {
+                if (((int) longValue) != longValue) {
+                    candidate = isFloat ? ((Number) Float.valueOf((float) longValue))
+                                        : ((Number) Long.valueOf(longValue));
+                    break;
+                }
+            }
+            case INTEGER: {
+                if (((short) longValue) != longValue) {
+                    candidate = Integer.valueOf((int) longValue);
+                    break;
+                }
+            }
+            case SHORT: {
+                if (((byte) longValue) != longValue) {
+                    candidate = Short.valueOf((short) longValue);
+                    break;
+                }
+            }
+            case BYTE: {
+                candidate = Byte.valueOf((byte) longValue);
+                break;
+            }
         }
         // Keep the existing instance if possible.
         return value.equals(candidate) ? value : candidate;
-    }
-
-    /**
-     * Returns the number of the smallest class capable to hold the specified value.
-     * This is similar to {@link #narrowestNumber(long)}, but extended to floating point values.
-     *
-     * @param  value The value to be wrapped in a {@link Number}.
-     * @return The narrowest type capable to hold the given value.
-     *
-     * @see #narrowestClass(double)
-     */
-    public static Number narrowestNumber(final double value) {
-        final long lg = (long) value;
-        if (value == lg) {
-            return narrowestNumber(lg);
-        }
-        final float fv = (float) value;
-        if (Double.doubleToRawLongBits(value) == Double.doubleToRawLongBits(fv)) {
-            return Float.valueOf(fv);
-        }
-        return Double.valueOf(value);
-    }
-
-    /**
-     * Returns the number of the smallest type capable to hold the specified value.
-     * This method makes the following choice:
-     *
-     * <ul>
-     *   <li>If the given value is between {@value java.lang.Byte#MIN_VALUE} and
-     *       {@value java.lang.Byte#MAX_VALUE}, then it is wrapped in a {@link Byte} object.</li>
-     *   <li>If the given value is between {@value java.lang.Short#MIN_VALUE} and
-     *       {@value java.lang.Short#MAX_VALUE}, then it is wrapped in a {@link Short} object.</li>
-     *   <li>If the given value is between {@value java.lang.Integer#MIN_VALUE} and
-     *       {@value java.lang.Integer#MAX_VALUE}, then it is wrapped in an {@link Integer} object.</li>
-     *   <li>Otherwise the value is wrapped in a {@link Long} object.</li>
-     * </ul>
-     *
-     * @param  value The value to be wrapped in a {@link Number}.
-     * @return The given value as a number of the narrowest type capable to hold it.
-     *
-     * @see #narrowestClass(long)
-     */
-    public static Number narrowestNumber(final long value) {
-        // Tests MAX_VALUE before MIN_VALUE because it is more likely to fail.
-        if (value <= Byte   .MAX_VALUE  &&  value >= Byte   .MIN_VALUE) return Byte   .valueOf((byte)  value);
-        if (value <= Short  .MAX_VALUE  &&  value >= Short  .MIN_VALUE) return Short  .valueOf((short) value);
-        if (value <= Integer.MAX_VALUE  &&  value >= Integer.MIN_VALUE) return Integer.valueOf((int)   value);
-        return Long.valueOf(value);
     }
 
     /**
@@ -499,8 +468,6 @@ public final class Numbers extends Static {
      * @throws NumberFormatException if the given value can not be parsed as a number.
      *
      * @see #narrowestNumber(Number)
-     * @see #narrowestNumber(double)
-     * @see #narrowestNumber(long)
      */
     public static Number narrowestNumber(final String value) throws NumberFormatException {
         // Do not trim whitespaces. It is up to the caller to do that if he wants.
@@ -616,7 +583,7 @@ public final class Numbers extends Static {
             case BIG_DECIMAL: return   (N) BigDecimal.valueOf(value); // No need to verify.
             default: throw unknownType(type);
         }
-        if (Double.doubleToLongBits(number.doubleValue()) != Double.doubleToLongBits(value)) {
+        if (doubleToLongBits(number.doubleValue()) != doubleToLongBits(value)) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.CanNotConvertValue_2, value, type));
         }
         return number;
