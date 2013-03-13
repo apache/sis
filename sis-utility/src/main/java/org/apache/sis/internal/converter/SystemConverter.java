@@ -71,8 +71,7 @@ abstract class SystemConverter<S,T> extends ClassPair<S,T> implements ObjectConv
      */
     @Override
     public ObjectConverter<T, S> inverse() throws UnsupportedOperationException {
-        throw new UnsupportedOperationException(Errors.format(
-                Errors.Keys.UnsupportedOperation_1, "inverse"));
+        throw new UnsupportedOperationException(Errors.format(Errors.Keys.NonInvertibleConversion));
     }
 
     /**

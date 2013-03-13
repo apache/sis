@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.io.InvalidObjectException;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.Debug;
+import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
@@ -78,6 +79,22 @@ final class Column extends TableColumn<Class<?>> implements Serializable {
      */
     private Object readResolve() throws InvalidObjectException {
         return target ? TARGET : SOURCE;
+    }
+
+    /**
+     * Creates a node for the given converter and adds it to the given tree.
+     * Used by {@link FallbackConverter} and {@link ConverterRegistry} for
+     * implementing their {@code toString()} method.
+     *
+     * @param  converter The converter for which to create a tree.
+     * @param  addTo     The node in which to add the converter.
+     * @return The child node created by this method.
+     */
+    static TreeTable.Node toTree(final ObjectConverter<?,?> converter, final TreeTable.Node addTo) {
+        final TreeTable.Node node = addTo.newChild();
+        node.setValue(SOURCE, converter.getSourceClass());
+        node.setValue(TARGET, converter.getTargetClass());
+        return node;
     }
 
     /**

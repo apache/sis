@@ -20,14 +20,13 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.EnumSet;
 import java.util.Iterator;
-import java.io.Serializable;
+import net.jcip.annotations.Immutable;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.collection.TreeTable;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Debug;
 
 
@@ -39,6 +38,11 @@ import org.apache.sis.util.Debug;
  * converter first because we expect that if the user wanted the specific subclass, he would have
  * asked explicitly for it. Trying the generic converter first is both closer to what the user
  * asked and less likely to throw many exceptions before we found a successful conversion.</p>
+ *
+ * <p>All converters in a {@code FallbackConverter} tree have the same source class {@code <S>},
+ * and different target classes {@code <? extends T>} <strong>not</strong> equal to {@code <T>}.
+ * The tree should never have two classes {@code <T1>} and {@code <T2>} such as one is assignable
+ * from the other.</p>
  *
  * <p>Instances are created by the {@link #merge(ObjectConverter, ObjectConverter)} method.
  * It is invoked when a new converter is {@linkplain ConverterRegistry#register(ObjectConverter)
@@ -52,7 +56,8 @@ import org.apache.sis.util.Debug;
  * @version 0.3
  * @module
  */
-final class FallbackConverter<S,T> extends ClassPair<S,T> implements ObjectConverter<S,T>, Serializable {
+@Immutable
+final class FallbackConverter<S,T> extends SystemConverter<S,T> {
     /**
      * For cross-version compatibility.
      */
@@ -61,7 +66,7 @@ final class FallbackConverter<S,T> extends ClassPair<S,T> implements ObjectConve
     /**
      * The primary converter, to be tried first.
      */
-    private ObjectConverter<S, ? extends T> primary;
+    final ObjectConverter<S, ? extends T> primary;
 
     /**
      * The fallback converter. Its target type should not be assignable from the primary target
@@ -70,7 +75,7 @@ final class FallbackConverter<S,T> extends ClassPair<S,T> implements ObjectConve
      * type he would have asked explicitly for it. In addition this layout reduces the amount of
      * exceptions to be thrown and caught before we found a successful conversion.
      */
-    private ObjectConverter<S, ? extends T> fallback;
+    final ObjectConverter<S, ? extends T> fallback;
 
     /**
      * Creates a converter using the given primary and fallback converters. This method may
@@ -88,36 +93,32 @@ final class FallbackConverter<S,T> extends ClassPair<S,T> implements ObjectConve
                               final ObjectConverter<S, ? extends T> fallback)
     {
         super(sourceClass, targetClass);
-        if (swap(primary, fallback)) {
+        if (swap(primary, fallback.getClass())) {
             this.primary  = fallback;
             this.fallback = primary;
         } else {
             this.primary  = primary;
             this.fallback = fallback;
         }
-        assert sourceClass.equals          (primary .getSourceClass()) : primary;
-        assert sourceClass.equals          (fallback.getSourceClass()) : fallback;
-        assert targetClass.isAssignableFrom(primary .getTargetClass()) : primary;
-        assert targetClass.isAssignableFrom(fallback.getTargetClass()) : fallback;
     }
 
     /**
      * Returns {@code true} if the given primary and fallback converters should be interchanged.
      * This method may invoke itself recursively.
      *
-     * @param  primary  The primary converter to test.
-     * @param  fallback The fallback converter to test.
+     * @param  primary The primary converter to test.
+     * @param  fallbackClass The target class of the fallback converter to test.
      * @return {@code true} if the given primary and fallback converters should be interchanged.
      */
-    private static <S> boolean swap(final ObjectConverter<S,?> primary, final ObjectConverter<S,?> fallback) {
-        assert !primary.equals(fallback) : primary;
+    private static <S> boolean swap(final ObjectConverter<S,?> primary, final Class<?> fallbackClass) {
         if (primary instanceof FallbackConverter<?,?>) {
             final FallbackConverter<S,?> candidate = (FallbackConverter<S,?>) primary;
-            return swap(candidate.primary, fallback) && swap(candidate.fallback, fallback);
+            return swap(candidate.primary,  fallbackClass) &&
+                   swap(candidate.fallback, fallbackClass);
         } else {
-            final Class<?> t1 = primary .getTargetClass();
-            final Class<?> t2 = fallback.getTargetClass();
-            return !t1.isAssignableFrom(t2) && t2.isAssignableFrom(t1);
+            final Class<?> targetClass = primary.getTargetClass();
+            return fallbackClass.isAssignableFrom(targetClass) && // This condition is more likely to fail first.
+                    !targetClass.isAssignableFrom(fallbackClass);
         }
     }
 
@@ -136,58 +137,33 @@ final class FallbackConverter<S,T> extends ClassPair<S,T> implements ObjectConve
      *     assert targetClass.isAssignableFrom(converter.getTargetClass()) : converter;
      * }
      *
+     * In the current implementation, the {@code primary} converter can be either an arbitrary
+     * {@code ObjectConverter}, or a previously created {@code FallbackConverter}. However the
+     * {@code fallback} converter shall <strong>not</strong> be a {@code FallbackConverter}.
+     * This restriction exists because the tree built in such case would probably not be the
+     * desired one. It should be okay if only SIS code deal with {@code FallbackConverter}.
+     *
      * @param  <S> The base type of source objects.
      * @param  <T> The base type of converted objects.
-     * @param  existing The existing tree of converters, or {@code null} if none.
-     * @param  converter A new fallback to insert in the converters tree, or {@code null}.
+     * @param  primary The first converter, which may be a {@code Fallback} tree.
+     * @param  fallback A new fallback to insert in the converters tree.
      * @return A tree of converters which contains the given {@code converter}. May be either
      *         {@code existing}, {@code converter} or a new {@code FallbackConverter} instance.
      */
     public static <S,T> ObjectConverter<S, ? extends T> merge(
-                  final ObjectConverter<S, ? extends T> existing,
-                  final ObjectConverter<S, ? extends T> converter)
+                  final ObjectConverter<S, ? extends T> primary,
+                  final ObjectConverter<S, ? extends T> fallback)
     {
-        if (converter == null) return existing;
-        if (existing  == null) return converter;
-        if (existing instanceof FallbackConverter<?,?>) {
-            /*
-             * If we can merge into the existing tree of converters, return that tree
-             * after the merge. Otherwise we will create a new FallbackConverter instance.
-             */
-            if (((FallbackConverter<S, ? extends T>) existing).tryMerge(converter)) {
-                return existing;
-            }
+        assert !(fallback instanceof FallbackConverter<?,?>) : fallback; // See javadoc
+        final ObjectConverter<S, ? extends T> candidate = mergeIfSubtype(primary, fallback, true);
+        if (candidate != null) {
+            return candidate;
         }
-        return create(existing, converter);
-    }
-
-    /**
-     * Creates a converter using the given primary and fallback converters. This method may
-     * interchange the two converters in order to meet the {@linkplain #fallback} contract.
-     *
-     * <p>This method has no information about {@code <T>} type because of parameterized types
-     * erasure, and should not need that information if we didn't made a mistake in this class.
-     * Nevertheless for safety, direct or indirect callers are encouraged to verify themselves
-     * as below:</p>
-     *
-     * {@preformat java
-     *     Class<T> targetClass = ...;
-     *     FallbackConverter<S, ? extends T> converter = create(...);
-     *     assert targetClass.isAssignableFrom(converter.getTargetClass()) : converter;
-     * }
-     *
-     * @param primary  The primary converter.
-     * @param fallback The fallback converter.
-     */
-    private static <S,T> FallbackConverter<S, ? extends T> create(
-            final ObjectConverter<S, ? extends T> primary,
-            final ObjectConverter<S, ? extends T> fallback)
-    {
         final Class<S>           source  = primary .getSourceClass();
         final Class<? extends T> target1 = primary .getTargetClass();
         final Class<? extends T> target2 = fallback.getTargetClass();
         Class<?> target = Classes.findCommonClass(target1, target2);
-        if (target.equals(Object.class)) {
+        if (target == Object.class) {
             /*
              * If there is no common parent class other than Object, looks for a common interface.
              * We perform this special processing for Object.class because this class is handled
@@ -213,6 +189,8 @@ final class FallbackConverter<S,T> extends ClassPair<S,T> implements ObjectConve
          * erasure. If there is no logical error in our algorithm, the cast should be ok.
          * Nevertheless callers are encouraged to verify as documented in the Javadoc.
          */
+        assert target.isAssignableFrom(target1) : target1;
+        assert target.isAssignableFrom(target2) : target2;
         @SuppressWarnings({"unchecked","rawtypes"})
         final FallbackConverter<S, ? extends T> converter =
                 new FallbackConverter(source, target, primary, fallback);
@@ -220,141 +198,92 @@ final class FallbackConverter<S,T> extends ClassPair<S,T> implements ObjectConve
     }
 
     /**
-     * Tries to insert the given converter in this tree of converters. This is possible
-     * only if the target class of the given converter is equals or more specialized
-     * than the target class of this converter.
+     * Merges if the {@code converter} target class of is a subtype of the {@code branch}
+     * target class. Otherwise returns {@code null}.
      *
-     * @param  converter The converter to try to insert in this tree of converters.
-     * @return {@code true} if the insertion has been done, or {@code false} otherwise.
+     * <p>The {@code branch} can be either an arbitrary {@code ObjectConverter}, or a previously
+     * created {@code FallbackConverter}. However the {@code converter} shall be a new instance,
+     * <strong>not</strong> a {@code FallbackConverter} instance.
+     * See {@link #merge(ObjectConverter, ObjectConverter)} javadoc for more information.</p>
+     *
+     * @param  <S> The source class of the {@code branch} converter.
+     * @param  <T> The target class of the {@code branch} converter
+     * @param  branch The converter to eventually merge with {@code converter}.
+     * @param  converter The converter to eventually merge with {@code branch}.
+     * @param  isCreateAllowed To be given verbatim to {@link #merge(ObjectConverter, boolean)}.
+     * @return The merged converter, or {@code null} if the {@code converter}
+     *         target class is not a subtype of the {@code branch} target class.
      */
-    private boolean tryMerge(final ObjectConverter<S,?> converter) { // Do NOT synchronize here.
+    private static <S,T> ObjectConverter<S, ? extends T> mergeIfSubtype(
+            final ObjectConverter<S,T> branch,
+            final ObjectConverter<S,?> converter,
+            final boolean isCreateAllowed)
+    {
+        if (branch.equals(converter)) {
+            return branch;
+        }
+        final Class<T> targetClass = branch.getTargetClass();
         if (!targetClass.isAssignableFrom(converter.getTargetClass())) {
-            return false; // Can not merge because of incompatible type.
+            return null;
         }
+        /*
+         * At this point we know that 'converter.targetClass' is <T> or a subtype of <T>,
+         * so the cast below is safe. If the branch is an instance of FallbackConverter,
+         * continue to follow that branch.
+         */
         @SuppressWarnings("unchecked")
-        final FallbackConverter<S, ? extends T> child =
-                merge((ObjectConverter<S, ? extends T>) converter);
-        if (child != null) {
-            // Didn't merged in this tree, but found a child
-            // which looks like a better insertion point.
-            return child.tryMerge(converter);
-        }
-        return true;
-    }
-
-    /**
-     * Inserts the given converter in this tree of fallback converters. If this method detects
-     * that the insertion should be done in a child of this tree, then this method returns that
-     * child. It is caller responsibility to invoke this method again on the child. We proceed
-     * that way in order to release the synchronization lock before to acquire the child lock,
-     * in order to reduce the risk of dead-lock.
-     *
-     * @param  converter The converter to insert in this tree of converters.
-     * @return {@code null} if the insertion has been done, or a non-null value
-     *         if the insertion should be done in the returned converter instead.
-     */
-    private synchronized FallbackConverter<S, ? extends T> merge(final ObjectConverter<S, ? extends T> converter) {
-        final Class<? extends T> childClass = converter.getTargetClass();
-        /*
-         * First searches on the fallback side of the tree since they are expected
-         * to contain the most specialized classes. Go down the tree until we find
-         * the last node capable to accept the converter. Only after that point we
-         * may switch the search to the primary side of the tree.
-         */
-        Class<? extends T> candidateClass = fallback.getTargetClass();
-        if (candidateClass.isAssignableFrom(childClass)) {
+        final ObjectConverter<S, ? extends T> checked = (ObjectConverter<S, ? extends T>) converter;
+        if (branch instanceof FallbackConverter<?,?>) {
             /*
-             * The new converter could be inserted at this point. Checks if we can
-             * continue to walk down the tree, looking for a more specialized node.
+             * Will follow either 'branch.fallback' or 'branch.primary', depending which one
+             * is the most appropriate. If none can be followed, then the result will be the
+             * same than in the 'else' block.
              */
-            if (fallback instanceof FallbackConverter<?,?>) {
-                /*
-                 * If (candidateClass != childClass), we could have a situation like below:
-                 *
-                 * Adding:  String ⇨ Number
-                 * to:      String ⇨ Number            : FallbackConverter
-                 *            ├─String ⇨ Short
-                 *            └─String ⇨ Number        : FallbackConverter
-                 *                ├─String ⇨ Integer
-                 *                └─String ⇨ Long
-                 *
-                 * We don't want to insert the generic Number converter between specialized
-                 * ones (Integer and Long). So rather than going down the tree in this case,
-                 * we will stop the search as if the above "isAssignableFrom" check failed.
-                 * Otherwise return the insertion point, which is 'fallback', for recursive
-                 * invocation by the caller.
-                 */
-                if (candidateClass != childClass) {
-                    return (FallbackConverter<S, ? extends T>) fallback;
-                }
-            } else {
-                /*
-                 * Splits at this point the node in two branches. The previous converter
-                 * will be the primary branch and the new converter will be the fallback
-                 * branch. The "primary vs fallback" contract is respected since we know
-                 * at this point that the new converter is more specialized,  because of
-                 * the isAssignableFrom(...) check performed above.
-                 */
-                fallback = create(fallback, converter);
-                return null;
-            }
-        }
-        /*
-         * We were looking in the fallback branch. Now look in the primary branch
-         * of the same node. The same comments than above apply.
-         */
-        candidateClass = primary.getTargetClass();
-        if (candidateClass.isAssignableFrom(childClass)) {
-            if (primary instanceof FallbackConverter<?,?>) {
-                if (candidateClass != childClass) {
-                    return (FallbackConverter<S, ? extends T>) primary;
-                }
-            } else {
-                primary = create(primary, converter);
-                return null;
-            }
-        }
-        /*
-         * The branch can not hold the converter. If we can't go down anymore in any
-         * of the two branches, insert the converter at the point we have reached so
-         * far. If the converter is more generic, inserts it as the primary branch in
-         * order to respect the "more generic first" contract.
-         */
-        if (childClass.isAssignableFrom(primary .getTargetClass()) &&
-           !childClass.isAssignableFrom(fallback.getTargetClass()))
-        {
-            primary = create(primary, converter);
+            return ((FallbackConverter<S,T>) branch).merge(checked, isCreateAllowed);
         } else {
-            fallback = create(fallback, converter);
+            /*
+             * Both 'branch' and 'checked' are ordinary converters (not FallbackConverter).
+             */
+            return new FallbackConverter<>(branch.getSourceClass(), targetClass, branch, checked);
         }
-        return null;
     }
 
     /**
-     * Returns the primary or fallback converter.
+     * Merge {@code this} with an other converter whose target class is a subtype of
+     * this {@link #targetClass}. If either {@link #fallback} or {@link #primary} are
+     * other {@code FallbackConverter} instances, then this method will follow those
+     * branches.
      *
-     * @param asPrimary {@code true} for the primary branch, or {@code false} for the fallback branch.
-     * @return the requested converter.
+     * @param  converter The converter to merge with {@code this}.
+     * @param  isCreateAllowed Initially {@code true}, then set to {@code false} if this method
+     *         is invoking itself recursively for the same branch. This information is used for
+     *         making sure that new converters are appended at the end of existing ones
+     *         (otherwise, insertion order is not preserved).
+     * @return The merged converter.
      */
-    final ObjectConverter<S,? extends T> getConverter(final boolean asPrimary) {
-        assert Thread.holdsLock(this);
-        return asPrimary ? primary : fallback;
-    }
-
-    /**
-     * Returns the base type of source objects.
-     */
-    @Override
-    public final Class<S> getSourceClass() {
-        return sourceClass;
-    }
-
-    /**
-     * Returns the base type of target objects.
-     */
-    @Override
-    public final Class<T> getTargetClass() {
-        return targetClass;
+    private ObjectConverter<S, ? extends T> merge(
+            final ObjectConverter<S, ? extends T> converter,
+            final boolean isCreateAllowed)
+    {
+        ObjectConverter<S, ? extends T> candidate;
+        final ObjectConverter<S, ? extends T> newPrimary, newFallback;
+        candidate = mergeIfSubtype(fallback, converter, fallback.getTargetClass() != targetClass);
+        if (candidate != null) {
+            newPrimary  = primary;
+            newFallback = candidate;
+        } else {
+            candidate = mergeIfSubtype(primary, converter, primary.getTargetClass() != targetClass);
+            if (candidate != null) {
+                newPrimary  = candidate;
+                newFallback = fallback;
+            } else if (isCreateAllowed) {
+                newPrimary  = this;
+                newFallback = converter;
+            } else {
+                return null;
+            }
+        }
+        return new FallbackConverter<>(sourceClass, targetClass, newPrimary, newFallback);
     }
 
     /**
@@ -363,11 +292,6 @@ final class FallbackConverter<S,T> extends ClassPair<S,T> implements ObjectConve
      */
     @Override
     public final Set<FunctionProperty> properties() {
-        final ObjectConverter<S, ? extends T> primary, fallback;
-        synchronized (this) {
-            primary  = this.primary;
-            fallback = this.fallback;
-        }
         Set<FunctionProperty> properties = primary.properties();
         if (!(primary instanceof FallbackConverter<?,?>)) {
             properties = EnumSet.copyOf(properties);
@@ -382,11 +306,6 @@ final class FallbackConverter<S,T> extends ClassPair<S,T> implements ObjectConve
      */
     @Override
     public T convert(final S source) throws UnconvertibleObjectException {
-        final ObjectConverter<S, ? extends T> primary, fallback;
-        synchronized (this) {
-            primary  = this.primary;
-            fallback = this.fallback;
-        }
         try {
             return primary.convert(source);
         } catch (UnconvertibleObjectException exception) {
@@ -400,42 +319,20 @@ final class FallbackConverter<S,T> extends ClassPair<S,T> implements ObjectConve
     }
 
     /**
-     * {@code FallbackConverter} are not convertible. This is because the parameterized
-     * types are defined as {@code <S, ? extends T>}. The inverse of those types would
-     * be {@code <? extends S, T>}, which is not compatible with the design of this class.
-     */
-    @Override
-    public ObjectConverter<T, S> inverse() throws UnsupportedOperationException {
-        throw new UnsupportedOperationException(Errors.format(Errors.Keys.NonInvertibleConversion));
-    }
-
-    /**
      * Creates a node for the given converter and adds it to the given tree.
      * This method invokes itself recursively for scanning through fallbacks.
-     *
-     * <p>This method creates a simplified tree, in that the cascading of fallbacks converter
-     * of same {@link #targetClass} are hidden: only their leaves are created. The purpose is
-     * to help the developer to focus more on the important elements (the leaf converters)
-     * and be less distracted by the amount of {@code FallbackConverter}s traversed in order
-     * to reach those leaves.</p>
      *
      * @param converter The converter for which to create a tree.
      * @param addTo The node in which to add the converter.
      */
-    private void toTree(final ObjectConverter<?,?> converter, final TreeTable.Node addTo) {
-        FallbackConverter<?,?> more = null;
+    private void toTree(final ObjectConverter<?,?> converter, TreeTable.Node addTo) {
         if (converter instanceof FallbackConverter<?,?>) {
-            more = (FallbackConverter<?,?>) converter;
-            if (more.targetClass == targetClass) { // Simplification case (omit the node).
-                more.toTree(addTo);
-                return;
+            if (converter.getTargetClass() != targetClass) {
+                addTo = Column.toTree(converter, addTo);
             }
-        }
-        final TreeTable.Node node = addTo.newChild();
-        node.setValue(Column.SOURCE, converter.getSourceClass());
-        node.setValue(Column.TARGET, converter.getTargetClass());
-        if (more != null) {
-            more.toTree(node);
+            ((FallbackConverter<?,?>) converter).toTree(addTo);
+        } else {
+            Column.toTree(converter, addTo);
         }
     }
 
@@ -446,11 +343,6 @@ final class FallbackConverter<S,T> extends ClassPair<S,T> implements ObjectConve
      * @param addTo The node in which to add the converter.
      */
     final void toTree(final TreeTable.Node addTo) {
-        final ObjectConverter<S,? extends T> primary, fallback;
-        synchronized (this) {
-            primary  = this.primary;
-            fallback = this.fallback;
-        }
         toTree(primary,  addTo);
         toTree(fallback, addTo);
     }

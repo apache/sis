@@ -275,14 +275,14 @@ public final class Classes extends Static {
      * @param  <T>  The compile-time type of the {@code Class} argument.
      * @param  type The class or interface for which to get all implemented interfaces.
      * @return All implemented interfaces (not including the given {@code type} if it was an
-     *         interface), or an empty set if none. Callers can freely modify the returned set.
+     *         interface), or an empty array if none.
      *
      * @see Class#getInterfaces()
      */
     @SuppressWarnings({"unchecked","rawtypes"}) // Generic array creation.
     public static <T> Class<? super T>[] getAllInterfaces(final Class<T> type) {
         final Set<Class<?>> interfaces = getInterfaceSet(type);
-        return interfaces.toArray(new Class[interfaces.size()]);
+        return (interfaces != null) ? interfaces.toArray(new Class[interfaces.size()]) : EMPTY_ARRAY;
     }
 
     /**
@@ -297,6 +297,10 @@ public final class Classes extends Static {
      *       Consequently callers can cast {@code Class<? super T>[]} to {@code Class<?>[]}
      *       while they can not cast {@code Set<Class<? super T>>} to {@code Set<Class<?>>}.</li>
      * </ul>
+     *
+     * @param  type The class or interface for which to get all implemented interfaces.
+     * @return All implemented interfaces (not including the given {@code type} if it was an
+     *         interface), or {@code null} if none. Callers can freely modify the returned set.
      */
     static Set<Class<?>> getInterfaceSet(Class<?> type) {
         Set<Class<?>> interfaces = null;
@@ -304,7 +308,7 @@ public final class Classes extends Static {
             interfaces = getInterfaceSet(type, interfaces);
             type = type.getSuperclass();
         }
-        return (interfaces != null) ? interfaces : Collections.<Class<?>>emptySet();
+        return interfaces;
     }
 
     /**
@@ -493,6 +497,9 @@ next:       for (final Class<?> candidate : candidates) {
     public static Set<Class<?>> findCommonInterfaces(final Class<?> c1, final Class<?> c2) {
         final Set<Class<?>> interfaces = getInterfaceSet(c1);
         final Set<Class<?>> buffer     = getInterfaceSet(c2); // To be recycled.
+        if (interfaces == null || buffer == null) {
+            return Collections.emptySet();
+        }
         interfaces.retainAll(buffer);
         for (Iterator<Class<?>> it=interfaces.iterator(); it.hasNext();) {
             final Class<?> candidate = it.next();
