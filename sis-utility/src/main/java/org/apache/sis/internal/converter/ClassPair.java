@@ -114,7 +114,19 @@ class ClassPair<S,T> implements Serializable {
             assert converter.getSourceClass().isAssignableFrom(sourceClass) : sourceClass;
             assert targetClass.isAssignableFrom(converter.getTargetClass()) : targetClass;
         }
-        return (ObjectConverter<S,T>) converter;
+        return (ObjectConverter<? super S, ? extends T>) converter;
+    }
+
+    /**
+     * Returns {@code true} if the source and target classes of the given converter
+     * are strictly equal to the source and target classes of this {@code ClassPair}.
+     *
+     * @param  The converter to check.
+     * @return {@code true} if the given converter is for the same source and target classes.
+     */
+    final boolean isExactlyFor(final ObjectConverter<? super S, ? extends T> converter) {
+        return converter.getSourceClass() == sourceClass &&
+               converter.getTargetClass() == targetClass;
     }
 
     /**

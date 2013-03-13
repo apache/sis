@@ -18,10 +18,10 @@ package org.apache.sis.internal.converter;
 
 import java.util.Collection;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.LinkedHashSet;
-import java.io.Serializable;
-import java.io.ObjectStreamException;
 import net.jcip.annotations.Immutable;
+import org.apache.sis.math.FunctionProperty;
 
 
 /**
@@ -29,45 +29,44 @@ import net.jcip.annotations.Immutable;
  * The source class is fixed to {@code Collection}. The target class is determined
  * by the inner class which extends this {@code CollectionConverter} class.
  *
- * <p>All subclasses will have a unique instance. For this reason, it is not necessary to
- * override the {@code hashCode()} and {@code equals(Object)} methods, since identity
- * comparisons will work just well.</p>
- *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.02)
  * @version 0.3
  * @module
  */
 @Immutable
-abstract class CollectionConverter<T> extends SurjectiveConverter<Collection<?>,T> implements Serializable {
+abstract class CollectionConverter<T> extends SystemConverter<Collection<?>,T> {
     /**
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = -4515250904953131514L;
 
     /**
-     * Returns the source class, which is always {@link Collection}.
+     * For inner classes only.
      */
-    @Override
-    @SuppressWarnings({"unchecked","rawtypes"})
-    public final Class<Collection<?>> getSourceClass() {
-        return (Class) Collection.class;
+    @SuppressWarnings("unchecked")
+    CollectionConverter(final Class<T> targetClass) {
+        super((Class) Collection.class, targetClass);
     }
 
+    /**
+     * Returns {@link FunctionProperty#SURJECTIVE} by default.
+     */
+    @Override
+    public java.util.Set<FunctionProperty> properties() {
+        return EnumSet.of(FunctionProperty.SURJECTIVE);
+    }
 
     /**
      * Converter from {@link Collection} to {@link java.util.List}.
      */
     @Immutable
     static final class List extends CollectionConverter<java.util.List<?>> {
-        /** Cross-version compatibility. */ static final long serialVersionUID = 5492247760609833586L;
-        /** The unique, shared instance. */ static final List INSTANCE = new List();
-        /** For {@link #INSTANCE} only.  */ private List() {}
+        private static final long serialVersionUID = 5492247760609833586L;
 
-        @Override
-        @SuppressWarnings({"unchecked","rawtypes"})
-        public Class<java.util.List<?>> getTargetClass() {
-            return (Class) java.util.List.class;
+        @SuppressWarnings("unchecked")
+        List() {
+            super((Class) java.util.List.class);
         }
 
         @Override
@@ -80,11 +79,6 @@ abstract class CollectionConverter<T> extends SurjectiveConverter<Collection<?>,
             }
             return new ArrayList<>(source);
         }
-
-        /** Returns the singleton instance on deserialization. */
-        Object readResolve() throws ObjectStreamException {
-            return INSTANCE;
-        }
     }
 
 
@@ -93,14 +87,11 @@ abstract class CollectionConverter<T> extends SurjectiveConverter<Collection<?>,
      */
     @Immutable
     static final class Set extends CollectionConverter<java.util.Set<?>> {
-        /** Cross-version compatibility. */ static final long serialVersionUID = -4200659837453206164L;
-        /** The unique, shared instance. */ static final Set INSTANCE = new Set();
-        /** For {@link #INSTANCE} only.  */ private Set() {}
+        private static final long serialVersionUID = -4200659837453206164L;
 
-        @Override
-        @SuppressWarnings({"unchecked","rawtypes"})
-        public Class<java.util.Set<?>> getTargetClass() {
-            return (Class) java.util.Set.class;
+        @SuppressWarnings("unchecked")
+        Set() {
+            super((Class) java.util.Set.class);
         }
 
         @Override
@@ -112,11 +103,6 @@ abstract class CollectionConverter<T> extends SurjectiveConverter<Collection<?>,
                 return (java.util.Set<?>) source;
             }
             return new LinkedHashSet<>(source);
-        }
-
-        /** Returns the singleton instance on deserialization. */
-        Object readResolve() throws ObjectStreamException {
-            return INSTANCE;
         }
     }
 }
