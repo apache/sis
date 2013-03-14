@@ -75,12 +75,47 @@ abstract class SystemConverter<S,T> extends ClassPair<S,T> implements ObjectConv
     }
 
     /**
+     * Performs the comparisons documented in {@link ClassPair#equals(Object)} with an additional
+     * check: if <strong>both</strong> objects to compare are {@code SystemConverter}, then also
+     * requires the two objects to be of the same class. We do that in order to differentiate the
+     * "ordinary" converters from the {@link FallbackConverter}.
+     *
+     * {@section Implementation note}
+     * This is admittedly a little bit convolved. A cleaner approach would have been to not allow
+     * the {@code ConverterRegister} hash map to contain anything else than {@code ClassPair} keys,
+     * but the current strategy of using the same instance for keys and values reduces a little bit
+     * the number of objects to create in the JVM. An other cleaner approach would have been to
+     * compare {@code ObjectConverter}s in a separated method, but users invoking {@code equals}
+     * on our system converters could be surprised.
+     *
+     * <p>Our {@code equals(Object)} definition have the following implications regarding
+     * the way to use the {@link ConverterRegistry#converters} map:</p>
+     * <ul>
+     *   <li>When searching for a converter of the same class than the key (as in the
+     *       {@link ConverterRegistry#findEquals(SystemConverter)} method), then there
+     *       is no restriction on the key that can be given to the {@code Map.get(K)}
+     *       method. The {@code Map} is "normal".</li>
+     *   <li>When searching for a converter for a pair of source and target classes
+     *       (as in {@link ConverterRegistry#find(Class, Class)}), the key shall be
+     *       an instance of {@code ClassPair} instance (not a subclass).</li>
+     * </ul>
+     */
+    @Override
+    public final boolean equals(final Object other) {
+        if (super.equals(other)) {
+            final Class<?> type = other.getClass();
+            return type == ClassPair.class || type == getClass();
+        }
+        return false;
+    }
+
+    /**
      * Returns an unique instance of this converter. If a converter already exists for the same
      * source an target classes, then this converter is returned. Otherwise this converter is
      * cached and returned.
      */
     final ObjectConverter<S,T> unique() {
-        return ConverterRegistry.SYSTEM.unique(this, true);
+        return ConverterRegistry.SYSTEM.unique(this);
     }
 
     /**
@@ -88,7 +123,8 @@ abstract class SystemConverter<S,T> extends ClassPair<S,T> implements ObjectConv
      * in the virtual machine, we do not cache the instance (for now) for security reasons.
      */
     protected final Object readResolve() throws ObjectStreamException {
-        return ConverterRegistry.SYSTEM.unique(this, false);
+        final ObjectConverter<S,T> existing = ConverterRegistry.SYSTEM.findEquals(this);
+        return (existing != null) ? existing : this;
     }
 
     /**

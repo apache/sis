@@ -18,24 +18,25 @@ package org.apache.sis.internal.converter;
 
 import java.util.Map;
 import java.util.LinkedHashMap;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import net.jcip.annotations.ThreadSafe;
 import org.apache.sis.internal.util.SystemListener;
+import org.apache.sis.util.Classes;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverter;
+import org.apache.sis.util.UnconvertibleObjectException;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
  * A collection of {@link ObjectConverter} instances.
  * A converter from the given <var>source type</var> to the given <var>target type</var> can be
- * obtained by a call to {@link #converter(Class, Class)}. If no converter exists for the given
+ * obtained by a call to {@link #find(Class, Class)}. If no converter exists for the given
  * source and target types, then this registry searches for a suitable converter accepting a
  * parent class of the given source type, or returning a sub-class of the given target type.
  *
  * <p>New instances of {@code ConverterRegistry} are initially empty. Custom converters must be
- * explicitly {@linkplain #register registered}. However a system-wide registry initialized
- * with default converters is provided by the {@link #SYSTEM} constant.</p>
+ * explicitly {@linkplain #register(ObjectConverter) registered}. However a system-wide registry
+ * initialized with default converters is provided by the {@link #SYSTEM} constant.</p>
  *
  * {@section Note about conversions from interfaces}
  * {@code ConverterRegistry} is primarily designed for handling converters from classes to
@@ -78,78 +79,373 @@ public class ConverterRegistry {
     }
 
     /**
-     * The map of converters of any kind. We use a single read/write lock for the whole map
-     * because write operations will be rare (so {@code ConcurrentHashMap} may be an overkill).
+     * The map of converters of any kind. For any key of type {@code ClassPair<S,T>},
+     * the value shall be of type {@code ObjectConverter<? super S, ? extends T>}.
+     * To ensure this constraint, values should be read and written using only the
+     * type-safe {@link #get(ClassPair)} and {@link #put(ClassPair, ObjectConverter)}
+     * methods.
+     *
+     * <p>In the special case where the value is actually {@code SystemConverter<S,T>},
+     * then the key and the value may be the same instance (in order to save object
+     * allocations).</p>
+     *
+     * {@section Synchronization note}
+     * Synchronization if performed by {@code synchronized(converters)} statements. We tried
+     * {@code ReadWriteLock}, but this is not very convenient because read operations may be
+     * followed by write operations at any time if the requested converter is not in the cache.
+     * Furthermore profiling has not identified this class as a noticeable contention point.
      */
-    private final Map<ClassPair<?,?>, SystemConverter<?,?>> converters;
-
-    /**
-     * The locks for the {@link #converters} map.
-     */
-    private final ReadWriteLock locks;
+    private final Map<ClassPair<?,?>, ObjectConverter<?,?>> converters;
 
     /**
      * Creates an initially empty set of object converters.
      */
     public ConverterRegistry() {
         converters = new LinkedHashMap<>();
-        locks = new ReentrantReadWriteLock();
     }
 
     /**
      * Removes all converters from this registry.
      */
     public void clear() {
-        final Lock lock = locks.writeLock();
-        lock.lock();
-        try {
+        synchronized (converters) {
             converters.clear();
-        } finally {
-            lock.unlock();
         }
+    }
+
+    /**
+     * Gets the value from the {@linkplain #converters} map for the given key.
+     */
+    private <S,T> ObjectConverter<? super S, ? extends T> get(final ClassPair<S,T> key) {
+        assert Thread.holdsLock(converters);
+        return key.cast(converters.get(key));
+    }
+
+    /**
+     * Puts the given value in the {@linkplain #converters} map for the given key.
+     */
+    @SuppressWarnings("unchecked")
+    private <S,T> void put(ClassPair<S,T> key, final ObjectConverter<? super S, ? extends T> converter) {
+        assert key.getClass() == ClassPair.class; // See SystemConverter.equals(Object)
+        assert Thread.holdsLock(converters);
+        if (converter instanceof SystemConverter<?,?> &&
+            converter.getSourceClass() == key.sourceClass &&
+            converter.getTargetClass() == key.targetClass)
+        {
+            /*
+             * Opportunistically share the same instance for the keys and the values, in order
+             * to reduce a little bit the amount of objects in the JVM. However we must remove
+             * any old value from the map using the old key, otherwise put operation may fail.
+             * See SystemConverter.equals(Object) for more explanation.
+             */
+            converters.remove(key);
+            key = (SystemConverter<S,T>) converter;
+        }
+        converters.put(key, converter);
+    }
+
+    /**
+     * If {@code existing} or one of its children is equals to the given {@code converter},
+     * returns it. Otherwise returns {@code null}.
+     *
+     * @param  <S> The {@code converter} source class.
+     * @param  <T> The {@code converter} target class.
+     * @param  converter The converter to replace by an existing converter, if possible.
+     * @param  existing Existing converter to test.
+     * @return A converter equals to {@code converter}, or {@code null} if none.
+     */
+    @SuppressWarnings("unchecked")
+    private static <S,T> ObjectConverter<S,T> findEquals(ObjectConverter<S,T> converter,
+            final ObjectConverter<S, ? extends T> existing)
+    {
+        if (converter instanceof FallbackConverter<?,?>) {
+            final FallbackConverter<S,T> fc = (FallbackConverter<S,T>) converter;
+            converter = findEquals(fc, fc.primary);
+            if (converter == null) {
+                converter = findEquals(fc, fc.fallback);
+            }
+        } else if (converter.equals(existing)) {
+            converter = (ObjectConverter<S,T>) existing;
+        } else {
+            converter = null;
+        }
+        return converter;
+    }
+
+    /**
+     * Returns a converter equals to the given {@code converter}, or {@code null} if none.
+     *
+     * @param  <S> The {@code converter} source class.
+     * @param  <T> The {@code converter} target class.
+     * @param  converter The converter to replace by an existing converter, if possible.
+     * @return A converter equals to {@code converter}, or {@code null} if none.
+     */
+    @SuppressWarnings("unchecked")
+    final <S,T> ObjectConverter<S,T> findEquals(final SystemConverter<S,T> converter) {
+        ObjectConverter<? super S, ? extends T> existing;
+        synchronized (converters) {
+            existing = get(converter);
+        }
+        if (existing != null && existing.getSourceClass() == converter.getSourceClass()) {
+            return findEquals(converter, (ObjectConverter<S, ? extends T>) existing);
+        }
+        return null;
     }
 
     /**
      * Returns an unique instance of the given converter. If a converter already exists for the
      * same source an target classes, then that converter is returned. Otherwise that converter
-     * is cached if {@code cache} is {@code true} and returned.
+     * is cached and returned.
      *
      * @param  converter The converter to look for a unique instance.
-     * @param  cache Whether to cache the given converter if there is no existing instance.
      * @return A previously existing instance if one exists, or the given converter otherwise.
      */
     @SuppressWarnings("unchecked")
-    final <S,T> ObjectConverter<S,T> unique(final SystemConverter<S,T> converter, final boolean cache) {
-        SystemConverter<S,T> existing;
-        Lock lock = locks.readLock();
-        lock.lock();
-        try {
-            existing = (SystemConverter<S,T>) converters.get(converter);
-        } finally {
-            lock.unlock();
-        }
-        /*
-         * If no instance existed before for the source and target classes, stores this
-         * instance in the pool. However we will need to check again during the write
-         * operation in case an other thread had the time to add an instance in the pool.
-         */
+    final <S,T> ObjectConverter<S,T> unique(final SystemConverter<S,T> converter) {
+        ObjectConverter<S,T> existing = findEquals(converter);
         if (existing == null) {
-            if (!cache) {
+            register(converter);
+            existing = findEquals(converter);
+            if (existing == null) {
                 return converter;
-            }
-            lock = locks.writeLock();
-            lock.lock();
-            try {
-                existing = (SystemConverter<S,T>) converters.put(converter, converter);
-                if (existing != null) {
-                    converters.put(existing, existing);
-                } else {
-                    existing = converter;
-                }
-            } finally {
-                lock.unlock();
             }
         }
         return existing;
+    }
+
+    /**
+     * Registers a new converter. This method should be invoked only once for a given converter,
+     * for example in class static initializer. For example if a {@code Angle} class is defined,
+     * the static initializer of that class could register a converter from {@code Angle} to
+     * {@code Double}.
+     *
+     * <p>This method registers the converter for the {@linkplain ObjectConverter#getTargetClass()
+     * target class}, some parents of the target class (see below) and every interfaces except
+     * {@link Cloneable} which are implemented by the target class and not by the source class.
+     * For example a converter producing {@link Double} can be used for clients that just ask
+     * for a {@link Number}.</p>
+     *
+     * {@section Which super-classes of the target class are registered}
+     * Consider a converter from class {@code S} to class {@code T} where the two classes
+     * are related in a hierarchy as below:
+     *
+     * {@preformat text
+     *   C1
+     *   └───C2
+     *       ├───C3
+     *       │   └───S
+     *       └───C4
+     *           └───T
+     * }
+     *
+     * Invoking this method will register the given converter for all the following cases:
+     *
+     * <ul>
+     *   <li>{@code S} → {@code T}</li>
+     *   <li>{@code S} → {@code C4}</li>
+     * </ul>
+     *
+     * No {@code S} → {@code C2} or {@code S} → {@code C1} converter will be registered,
+     * because an identity converter would be sufficient for those cases.
+     *
+     * {@section Which sub-classes of the source class are registered}
+     * Sub-classes of the source class will be registered on a case-by-case basis when the
+     * {@link #find(Class, Class)} is invoked, because we can not know the set of all
+     * sub-classes in advance (and would not necessarily want to register all of them anyway).
+     *
+     * @param <S> The class of source value.
+     * @param <T> The class of target (converted) values.
+     * @param converter The converter to register.
+     */
+    public <S,T> void register(final ObjectConverter<S,T> converter) {
+        ArgumentChecks.ensureNonNull("converter", converter);
+        /*
+         * If the given converter is a FallbackConverter (maybe obtained from an other
+         * ConverterRegistry), unwraps it and registers its component individually.
+         */
+        if (converter instanceof FallbackConverter<?,?>) {
+            final FallbackConverter<S,T> fc = (FallbackConverter<S,T>) converter;
+            register(fc.primary);
+            register(fc.fallback);
+            return;
+        }
+        /*
+         * Registers an individual converter.
+         */
+        final Class<S> sourceClass = converter.getSourceClass();
+        final Class<T> targetClass = converter.getTargetClass();
+        final Class<?> stopAt = Classes.findCommonClass(sourceClass, targetClass);
+        ArgumentChecks.ensureNonNull("sourceClass", sourceClass);
+        ArgumentChecks.ensureNonNull("targetClass", targetClass);
+        synchronized (converters) {
+            for (Class<? super T> i=targetClass; i!=null && i!=stopAt; i=i.getSuperclass()) {
+                register(new ClassPair<>(sourceClass, i), converter);
+            }
+            /*
+             * At this point, the given class and parent classes
+             * have been registered. Now registers interfaces.
+             */
+            for (final Class<? super T> i : Classes.getAllInterfaces(targetClass)) {
+                if (i.isAssignableFrom(sourceClass)) {
+                    /*
+                     * Target interface is already implemented by the source, so
+                     * there is no reason to convert the source to that interface.
+                     */
+                    continue;
+                }
+                if (Cloneable.class.isAssignableFrom(i)) {
+                    /*
+                     * Exclude this special case. If we were accepting it, we would basically
+                     * provide converters from immutable to mutable objects (e.g. from String
+                     * to Locale), which is not something we would like to encourage. Even if
+                     * the user really wanted a mutable object, in order to modify it he needs
+                     * to known the exact type, so asking for a conversion to Cloneable is too
+                     * vague.
+                     */
+                    continue;
+                }
+                if (sourceClass == Number.class && Comparable.class.isAssignableFrom(i)) {
+                    /*
+                     * Exclude this special case. java.lang.Number does not implement Comparable,
+                     * but its subclasses do. Accepting this case would lead ConverterRegistry to
+                     * offer converters from Number to String, which is not the best move if the
+                     * user want to compare numbers.
+                     */
+                    continue;
+                }
+                if (!i.isAssignableFrom(sourceClass)) {
+                    register(new ClassPair<>(sourceClass, i), converter);
+                }
+            }
+        }
+    }
+
+    /**
+     * Registers the given converter under the given key. If a previous converter is already
+     * registered for the given key, then there is a choice:
+     *
+     * <ul>
+     *   <li>If one converter is defined exactly for the {@code <S,T>} classes while the
+     *       other converter is not, then the most accurate converter will have precedence.</li>
+     *   <li>Otherwise the new converter is registered in addition of the old one in a
+     *       chain of fallbacks.</li>
+     * </ul>
+     *
+     * @param key The key under which to register the converter.
+     * @param converter The converter to register.
+     */
+    @SuppressWarnings("unchecked")
+    private <S,T> void register(final ClassPair<S,T> key, ObjectConverter<S, ? extends T> converter) {
+        final ObjectConverter<? super S, ? extends T> existing = get(key);
+        if (existing != null) {
+            /*
+             * An other converter already exists for the given key. If the converters are
+             * equal (i.e. the user registered the same converter twice), do nothing.
+             */
+            if (existing.equals(converter)) {
+                return;
+            }
+            /*
+             * FallbackConverters are created only for converters having the same source class.
+             * If this is not the case, the new converter will replace the existing one because
+             * its source is more specific:  the source of 'converter' is of type <S> while the
+             * source of 'existing' is of type <? super S>.
+             */
+            assert converter.getSourceClass() == key.sourceClass; // Enforced by parameterized type.
+            if (existing.getSourceClass() == key.sourceClass) {
+                final boolean oldIsExact = existing .getTargetClass() == key.targetClass;
+                final boolean newIsExact = converter.getTargetClass() == key.targetClass;
+                if (oldIsExact & !newIsExact) {
+                    /*
+                     * The existing converter was defined exactly for the <S,T> classes, while the
+                     * new one was defined for an other target. Do not touch the old converter and
+                     * discard the new one. The new converter is not really lost since it should
+                     * have been registered in a previous iteration for its own <S,T> classes.
+                     */
+                    return;
+                }
+                if (newIsExact == oldIsExact) {
+                    /*
+                     * If no converter is considered more accurate than the other, keep both of
+                     * them in a fallback chain. Note that the cast to <S,…> is safe because we
+                     * checked the source class in the above 'if' statement.
+                     */
+                    converter = FallbackConverter.merge((ObjectConverter<S, ? extends T>) existing, converter);
+                    assert key.targetClass.isAssignableFrom(converter.getTargetClass()) : converter; // See FallbackConverter.merge javadoc.
+                }
+            }
+        }
+        put(key, converter);
+    }
+
+    /**
+     * Returns a converter for the specified source and target classes.
+     *
+     * @param  <S> The source class.
+     * @param  <T> The target class.
+     * @param  source The source class.
+     * @param  target The target class, or {@code Object.class} for any.
+     * @return The converter from the specified source class to the target class.
+     * @throws UnconvertibleObjectException if no converter is found.
+     */
+    public <S,T> ObjectConverter<? super S, ? extends T> find(final Class<S> source, final Class<T> target)
+            throws UnconvertibleObjectException
+    {
+        final ClassPair<S,T> key = new ClassPair<>(source, target);
+        synchronized (converters) {
+            ObjectConverter<? super S, ? extends T> converter = get(key);
+            if (converter != null) {
+                return converter;
+            }
+            /*
+             * At this point, no converter were found explicitly for the given key. Searches a
+             * converter accepting some super-class of S, and if we find any cache the result.
+             * This is the complement of the search performed in the register(ObjectConverter)
+             * method, which looked for the parents of the target class. Here we process the
+             * case of the source class.
+             */
+            ClassPair<? super S, T> candidate = key;
+            while ((candidate = candidate.parentSource()) != null) {
+                converter = get(candidate);
+                if (converter != null) {
+                    put(key, converter);
+                    return converter;
+                }
+            }
+            /*
+             * No converter found. Gives a chance to subclasses to provide dynamically-generated
+             * converter. The default implementation does not provide any.
+             */
+            converter = createConverter(source, target);
+            if (converter != null) {
+                put(key, converter);
+                return converter;
+            }
+        }
+        /*
+         * No explicit converter were found. Checks for the trivial case where an identity
+         * converter would fit. We perform this operation last in order to give a chance to
+         * register an explicit converter if we need to.
+         */
+        if (target.isAssignableFrom(source)) {
+            return key.cast(IdentityConverter.create(source));
+        }
+        throw new UnconvertibleObjectException(Errors.format(Errors.Keys.CanNotConvertFromType_2, source, target));
+    }
+
+    /**
+     * Creates a new converter for the given source and target types, or {@code null} if none.
+     * This method is invoked by <code>{@linkplain #find find}(source, target)</code> when no
+     * registered converter were found for the given types.
+     *
+     * @param  <S> The source class.
+     * @param  <T> The target class.
+     * @param  source The source class.
+     * @param  target The target class, or {@code Object.class} for any.
+     * @return A newly generated converter from the specified source class to the target class,
+     *         or {@code null} if none.
+     */
+    protected <S,T> ObjectConverter<S,T> createConverter(final Class<S> source, final Class<T> target) {
+        return null;
     }
 }

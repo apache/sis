@@ -19,13 +19,16 @@ package org.apache.sis.internal.converter;
 import java.io.Serializable;
 import net.jcip.annotations.Immutable;
 import org.apache.sis.util.ObjectConverter;
+import org.apache.sis.util.Debug;
 
 
 /**
  * Holds explicit {@link #sourceClass} and {@link #targetClass} values. Used as key in a hash
- * map of converters. Also used as the base class for subclasses working on explicit source and
- * target class. We allows this opportunist leveraging of implementation because those classes
- * are not public (otherwise a separated hierarchy may have been preferable).
+ * map of converters. Also used as the base class for converters defined in this package.
+ *
+ * <p>The only direct subtype allowed is {@link SystemConverter}.
+ * <strong>No other direct subtype shall exist</strong>.
+ * See {@link #equals(Object)} for an explanation.</p>
  *
  * @param <S> The base type of source objects.
  * @param <T> The base type of converted objects.
@@ -45,12 +48,12 @@ class ClassPair<S,T> implements Serializable {
     /**
      * The source class.
      */
-    protected final Class<S> sourceClass;
+    final Class<S> sourceClass;
 
     /**
      * The target class.
      */
-    protected final Class<T> targetClass;
+    final Class<T> targetClass;
 
     /**
      * Creates an entry for the given source and target classes.
@@ -80,7 +83,7 @@ class ClassPair<S,T> implements Serializable {
      *
      * @return A key for the parent source, or {@code null}.
      */
-    public final ClassPair<? super S, T> parentSource() {
+    final ClassPair<? super S, T> parentSource() {
         final Class<? super S> source;
         if (sourceClass.isInterface()) {
             @SuppressWarnings({"unchecked","rawtypes"})
@@ -118,27 +121,21 @@ class ClassPair<S,T> implements Serializable {
     }
 
     /**
-     * Returns {@code true} if the source and target classes of the given converter
-     * are strictly equal to the source and target classes of this {@code ClassPair}.
+     * Compares the given object with this {@code ClassPair} for equality. Two {@code ClassPair}
+     * instances are considered equal if they have the same source and target classes, ignoring
+     * all other properties eventually defined in subclasses.
      *
-     * @param  The converter to check.
-     * @return {@code true} if the given converter is for the same source and target classes.
-     */
-    final boolean isExactlyFor(final ObjectConverter<? super S, ? extends T> converter) {
-        return converter.getSourceClass() == sourceClass &&
-               converter.getTargetClass() == targetClass;
-    }
-
-    /**
-     * Compares the given object with this entry for equality. Two entries are considered
-     * equals if they have the same source and target classes. This is required for use
-     * as {@link java.util.HashMap} keys in {@link ConverterRegistry}.
+     * <p>This method is designed for use by {@link ConverterRegistry} as {@link java.util.HashMap}
+     * keys. Its primary purpose is <strong>not</strong> to determine if two objects are converters
+     * doing the same conversions. However the {@link SystemConverter} subclass overrides this
+     * method with an additional safety check.</p>
      *
-     * @param  other The object to compare with this entry.
-     * @return {@code true} if the given object is a entry having the same source and target classes.
+     * @param  other The object to compare with this {@code ClassPair}.
+     * @return {@code true} if the given object is a {@code ClassPair}
+     *         having the same source and target classes.
      */
     @Override
-    public final boolean equals(final Object other) {
+    public boolean equals(final Object other) {
         if (other instanceof ClassPair<?,?>) {
             final ClassPair<?,?> that = (ClassPair<?,?>) other;
             return sourceClass == that.sourceClass &&
@@ -148,7 +145,8 @@ class ClassPair<S,T> implements Serializable {
     }
 
     /**
-     * Returns a hash code value for this entry.
+     * Returns a hash code value for this {@code ClassPair}.
+     * See {@link #equals(Object)} javadoc for information on the scope of this method.
      */
     @Override
     public final int hashCode() {
@@ -159,6 +157,7 @@ class ClassPair<S,T> implements Serializable {
      * Returns a string representation for this entry.
      * Used for formatting error messages.
      */
+    @Debug
     @Override
     public String toString() {
         return sourceClass.getSimpleName() + " ⇨ " + targetClass.getSimpleName();
