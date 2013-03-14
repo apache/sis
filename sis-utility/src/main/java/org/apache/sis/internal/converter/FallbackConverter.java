@@ -155,7 +155,7 @@ final class FallbackConverter<S,T> extends SystemConverter<S,T> {
                   final ObjectConverter<S, ? extends T> fallback)
     {
         assert !(fallback instanceof FallbackConverter<?,?>) : fallback; // See javadoc
-        final ObjectConverter<S, ? extends T> candidate = mergeIfSubtype(primary, fallback, true);
+        final ObjectConverter<S, ? extends T> candidate = mergeIfSubtype(primary, fallback, null);
         if (candidate != null) {
             return candidate;
         }
@@ -210,14 +210,14 @@ final class FallbackConverter<S,T> extends SystemConverter<S,T> {
      * @param  <T> The target class of the {@code branch} converter
      * @param  branch The converter to eventually merge with {@code converter}.
      * @param  converter The converter to eventually merge with {@code branch}.
-     * @param  isCreateAllowed To be given verbatim to {@link #merge(ObjectConverter, boolean)}.
+     * @param  parentTarget To be given verbatim to {@link #merge(ObjectConverter, Class)}.
      * @return The merged converter, or {@code null} if the {@code converter}
      *         target class is not a subtype of the {@code branch} target class.
      */
     private static <S,T> ObjectConverter<S, ? extends T> mergeIfSubtype(
             final ObjectConverter<S,T> branch,
             final ObjectConverter<S,?> converter,
-            final boolean isCreateAllowed)
+            final Class<? super T> parentTarget)
     {
         if (branch.equals(converter)) {
             return branch;
@@ -239,7 +239,7 @@ final class FallbackConverter<S,T> extends SystemConverter<S,T> {
              * is the most appropriate. If none can be followed, then the result will be the
              * same than in the 'else' block.
              */
-            return ((FallbackConverter<S,T>) branch).merge(checked, isCreateAllowed);
+            return ((FallbackConverter<S,T>) branch).merge(checked, parentTarget);
         } else {
             /*
              * Both 'branch' and 'checked' are ordinary converters (not FallbackConverter).
@@ -255,31 +255,35 @@ final class FallbackConverter<S,T> extends SystemConverter<S,T> {
      * branches.
      *
      * @param  converter The converter to merge with {@code this}.
-     * @param  isCreateAllowed Initially {@code true}, then set to {@code false} if this method
-     *         is invoking itself recursively for the same branch. This information is used for
-     *         making sure that new converters are appended at the end of existing ones
-     *         (otherwise, insertion order is not preserved).
+     * @param  parentTarget If this method is invoked recursively, the target class
+     *         of the parent {@code FallbackConverter}. Otherwise {@code null}.
      * @return The merged converter.
      */
-    private ObjectConverter<S, ? extends T> merge(
-            final ObjectConverter<S, ? extends T> converter,
-            final boolean isCreateAllowed)
+    private ObjectConverter<S, ? extends T> merge(final ObjectConverter<S, ? extends T> converter,
+            final Class<? super T> parentTarget)
     {
         ObjectConverter<S, ? extends T> candidate;
         final ObjectConverter<S, ? extends T> newPrimary, newFallback;
-        candidate = mergeIfSubtype(fallback, converter, fallback.getTargetClass() != targetClass);
+        candidate = mergeIfSubtype(fallback, converter, targetClass);
         if (candidate != null) {
             newPrimary  = primary;
             newFallback = candidate;
         } else {
-            candidate = mergeIfSubtype(primary, converter, primary.getTargetClass() != targetClass);
+            candidate = mergeIfSubtype(primary, converter, targetClass);
             if (candidate != null) {
                 newPrimary  = candidate;
                 newFallback = fallback;
-            } else if (isCreateAllowed) {
+            } else if (targetClass != parentTarget) {
                 newPrimary  = this;
                 newFallback = converter;
             } else {
+                /*
+                 * If the we can not follow any of the 'primary' and 'fallback' branch,
+                 * and if the target class of this FallbackConverter is the same than
+                 * the target class of the parent, then do not create. We will let the
+                 * parent FallbackConverter do the creation itself in order to chain the
+                 * converters in the order they have been declared.
+                 */
                 return null;
             }
         }
