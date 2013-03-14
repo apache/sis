@@ -19,11 +19,12 @@ package org.apache.sis.internal.converter;
 import java.util.Map;
 import java.util.LinkedHashMap;
 import net.jcip.annotations.ThreadSafe;
-import org.apache.sis.internal.util.SystemListener;
+import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.UnconvertibleObjectException;
+import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -36,7 +37,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * <p>New instances of {@code ConverterRegistry} are initially empty. Custom converters must be
  * explicitly {@linkplain #register(ObjectConverter) registered}. However a system-wide registry
- * initialized with default converters is provided by the {@link #SYSTEM} constant.</p>
+ * initialized with default converters is provided by the {@link HeuristicRegistry#SYSTEM} constant.</p>
  *
  * {@section Note about conversions from interfaces}
  * {@code ConverterRegistry} is primarily designed for handling converters from classes to
@@ -45,39 +46,12 @@ import org.apache.sis.util.resources.Errors;
  * multi-inheritance in interface hierarchy.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.20)
+ * @since   0.3 (derived from geotk-3.00)
  * @version 0.3
  * @module
  */
 @ThreadSafe
 public class ConverterRegistry {
-    /**
-     * The default system-wide instance. This register is initialized with conversions between
-     * some basic Java and SIS objects, like conversions between {@link java.util.Date} and
-     * {@link java.lang.Long}. Those conversions are defined for the lifetime of the JVM.
-     *
-     * <p>If a temporary set of converters is desired, a new instance of {@code ConverterRegistry}
-     * should be created explicitly instead.</p>
-     *
-     * {@section Adding system-wide converters}
-     * Applications can add system-wide custom providers either by explicit call to the
-     * {@link #register(ObjectConverter)} method on the system converter, or by listing
-     * the fully qualified classnames of their {@link ObjectConverter} instances in the
-     * following file (see {@link ServiceLoader} for more info about services loading):
-     *
-     * {@preformat text
-     *     META-INF/services/org.apache.sis.util.converter.ObjectConverter
-     * }
-     */
-    public static final ConverterRegistry SYSTEM = new ConverterRegistry();
-    static {
-        SystemListener.add(new SystemListener() {
-            @Override protected void classpathChanged() {
-                SYSTEM.clear();
-            }
-        });
-    }
-
     /**
      * The map of converters of any kind. For any key of type {@code ClassPair<S,T>},
      * the value shall be of type {@code ObjectConverter<? super S, ? extends T>}.
@@ -190,27 +164,6 @@ public class ConverterRegistry {
             return findEquals(converter, (ObjectConverter<S, ? extends T>) existing);
         }
         return null;
-    }
-
-    /**
-     * Returns an unique instance of the given converter. If a converter already exists for the
-     * same source an target classes, then that converter is returned. Otherwise that converter
-     * is cached and returned.
-     *
-     * @param  converter The converter to look for a unique instance.
-     * @return A previously existing instance if one exists, or the given converter otherwise.
-     */
-    @SuppressWarnings("unchecked")
-    final <S,T> ObjectConverter<S,T> unique(final SystemConverter<S,T> converter) {
-        ObjectConverter<S,T> existing = findEquals(converter);
-        if (existing == null) {
-            register(converter);
-            existing = findEquals(converter);
-            if (existing == null) {
-                return converter;
-            }
-        }
-        return existing;
     }
 
     /**
@@ -379,19 +332,47 @@ public class ConverterRegistry {
     }
 
     /**
-     * Returns a converter for the specified source and target classes.
+     * Returns a converter for exactly the given source and target classes.
+     * The default implementation invokes {@link #find(Class, Class)}, then
+     * ensures that the converter source and target classes are the same ones
+     * than the classes given in argument to this method.
      *
      * @param  <S> The source class.
      * @param  <T> The target class.
-     * @param  source The source class.
-     * @param  target The target class, or {@code Object.class} for any.
+     * @param  sourceClass The source class.
+     * @param  targetClass The target class, or {@code Object.class} for any.
      * @return The converter from the specified source class to the target class.
-     * @throws UnconvertibleObjectException if no converter is found.
+     * @throws UnconvertibleObjectException if no converter is found for the given classes.
      */
-    public <S,T> ObjectConverter<? super S, ? extends T> find(final Class<S> source, final Class<T> target)
+    @SuppressWarnings("unchecked")
+    public <S,T> ObjectConverter<S,T> findExact(final Class<S> sourceClass, final Class<T> targetClass)
             throws UnconvertibleObjectException
     {
-        final ClassPair<S,T> key = new ClassPair<>(source, target);
+        final ObjectConverter<? super S, ? extends T> candidate = find(sourceClass, targetClass);
+        if (candidate.getSourceClass() == sourceClass &&
+            candidate.getTargetClass() == targetClass)
+        {
+            return (ObjectConverter<S,T>) candidate;
+        }
+        throw new UnconvertibleObjectException(Errors.format(Errors.Keys.CanNotConvertFromType_2, sourceClass, targetClass));
+    }
+
+    /**
+     * Returns a converter suitable for the given source and target classes.
+     * This method may return a converter accepting more generic sources or
+     * converting to more specific targets.
+     *
+     * @param  <S> The source class.
+     * @param  <T> The target class.
+     * @param  sourceClass The source class.
+     * @param  targetClass The target class, or {@code Object.class} for any.
+     * @return The converter from the specified source class to the target class.
+     * @throws UnconvertibleObjectException if no converter is found for the given classes.
+     */
+    public <S,T> ObjectConverter<? super S, ? extends T> find(final Class<S> sourceClass, final Class<T> targetClass)
+            throws UnconvertibleObjectException
+    {
+        final ClassPair<S,T> key = new ClassPair<>(sourceClass, targetClass);
         synchronized (converters) {
             ObjectConverter<? super S, ? extends T> converter = get(key);
             if (converter != null) {
@@ -414,23 +395,15 @@ public class ConverterRegistry {
             }
             /*
              * No converter found. Gives a chance to subclasses to provide dynamically-generated
-             * converter. The default implementation does not provide any.
+             * converter.
              */
-            converter = createConverter(source, target);
+            converter = createConverter(sourceClass, targetClass);
             if (converter != null) {
                 put(key, converter);
                 return converter;
             }
         }
-        /*
-         * No explicit converter were found. Checks for the trivial case where an identity
-         * converter would fit. We perform this operation last in order to give a chance to
-         * register an explicit converter if we need to.
-         */
-        if (target.isAssignableFrom(source)) {
-            return key.cast(IdentityConverter.create(source));
-        }
-        throw new UnconvertibleObjectException(Errors.format(Errors.Keys.CanNotConvertFromType_2, source, target));
+        throw new UnconvertibleObjectException(Errors.format(Errors.Keys.CanNotConvertFromType_2, sourceClass, targetClass));
     }
 
     /**
@@ -438,14 +411,72 @@ public class ConverterRegistry {
      * This method is invoked by <code>{@linkplain #find find}(source, target)</code> when no
      * registered converter were found for the given types.
      *
+     * <p>The default implementation checks for the trivial case where an identity converter
+     * would fit, and returns {@code null} in all other cases.
+     * Subclasses can override this method in order to generate some converters dynamically.</p>
+     *
      * @param  <S> The source class.
      * @param  <T> The target class.
-     * @param  source The source class.
-     * @param  target The target class, or {@code Object.class} for any.
+     * @param  sourceClass The source class.
+     * @param  targetClass The target class, or {@code Object.class} for any.
      * @return A newly generated converter from the specified source class to the target class,
      *         or {@code null} if none.
      */
-    protected <S,T> ObjectConverter<S,T> createConverter(final Class<S> source, final Class<T> target) {
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    protected <S,T> ObjectConverter<S,T> createConverter(final Class<S> sourceClass, final Class<T> targetClass) {
+        if (targetClass.isAssignableFrom(sourceClass)) {
+            return new IdentityConverter(sourceClass, targetClass);
+        }
         return null;
+    }
+
+    /**
+     * Returns a string representation of registered converters for debugging purpose.
+     * The converters are show in a tree where all real converters are leafs. Parents
+     * of those leafs are {@link FallbackConverter}s which delegate their work to the
+     * leafs.
+     *
+     * @return A string representation of registered converters.
+     */
+    @Debug
+    @Override
+    public String toString() {
+        final TreeTable table = Column.createTable();
+        final TreeTable.Node root = table.getRoot();
+        root.setValue(Column.SOURCE, getClass());
+        synchronized (converters) {
+            for (final Map.Entry<ClassPair<?,?>, ObjectConverter<?,?>> entry : converters.entrySet()) {
+                TreeTable.Node addTo = root;
+                final ClassPair<?,?> key = entry.getKey();
+                final ObjectConverter<?,?> converter = entry.getValue();
+                if (converter.getSourceClass() != key.sourceClass ||
+                    converter.getTargetClass() != key.targetClass)
+                {
+                    /*
+                     * If we enter this block, then the converter is not really for this
+                     * (source, target) classes pair. Instead, we are leveraging a converter
+                     * which was defined for an other ClassPair.  We show this fact be first
+                     * showing this ClassPair, then the actual converter (source, target) as
+                     * below:
+                     *
+                     *     String     ⇨ Number              (the ClassPair key)
+                     *       └─String ⇨ Integer             (the ObjectConverter value)
+                     *
+                     * This is the same idea than the formatting done by FallbackConverter,
+                     * except that there is only one child. Actually this can be though as
+                     * a lightweight fallback converter.
+                     */
+                    addTo = addTo.newChild();
+                    addTo.setValue(Column.SOURCE, key.sourceClass);
+                    addTo.setValue(Column.TARGET, key.targetClass);
+                }
+                if (converter instanceof FallbackConverter<?,?>) {
+                    ((FallbackConverter<?,?>) converter).toTree(addTo.newChild(), true);
+                } else {
+                    Column.toTree(converter, addTo);
+                }
+            }
+        }
+        return Column.format(table);
     }
 }

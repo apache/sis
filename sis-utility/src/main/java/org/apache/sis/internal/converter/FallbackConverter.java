@@ -25,7 +25,6 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.UnconvertibleObjectException;
-import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.Debug;
 
@@ -331,10 +330,11 @@ final class FallbackConverter<S,T> extends SystemConverter<S,T> {
      */
     private void toTree(final ObjectConverter<?,?> converter, TreeTable.Node addTo) {
         if (converter instanceof FallbackConverter<?,?>) {
-            if (converter.getTargetClass() != targetClass) {
-                addTo = Column.toTree(converter, addTo);
+            final boolean isNew = converter.getTargetClass() != targetClass;
+            if (isNew) {
+                addTo = addTo.newChild();
             }
-            ((FallbackConverter<?,?>) converter).toTree(addTo);
+            ((FallbackConverter<?,?>) converter).toTree(addTo, isNew);
         } else {
             Column.toTree(converter, addTo);
         }
@@ -345,8 +345,13 @@ final class FallbackConverter<S,T> extends SystemConverter<S,T> {
      * to the given node.
      *
      * @param addTo The node in which to add the converter.
+     * @param isNew {@code true} if {@code addTo} is a newly created node.
      */
-    final void toTree(final TreeTable.Node addTo) {
+    final void toTree(final TreeTable.Node addTo, final boolean isNew) {
+        if (isNew) {
+            addTo.setValue(Column.SOURCE, sourceClass);
+            addTo.setValue(Column.TARGET, targetClass);
+        }
         toTree(primary,  addTo);
         toTree(fallback, addTo);
     }
@@ -358,12 +363,8 @@ final class FallbackConverter<S,T> extends SystemConverter<S,T> {
     @Debug
     @Override
     public String toString() {
-        final DefaultTreeTable table = new DefaultTreeTable(Column.SOURCE, Column.TARGET);
-        final DefaultTreeTable.Node root = new DefaultTreeTable.Node(table);
-        root.setValue(Column.SOURCE, sourceClass);
-        root.setValue(Column.TARGET, targetClass);
-        table.setRoot(root);
-        toTree(root);
+        final TreeTable table = Column.createTable();
+        toTree(table.getRoot(), true);
         return Column.format(table);
     }
 }

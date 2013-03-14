@@ -20,7 +20,6 @@ import java.util.Set;
 import java.util.EnumSet;
 import net.jcip.annotations.Immutable;
 import org.apache.sis.util.Numbers;
-import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.UnconvertibleObjectException;
 
@@ -91,14 +90,6 @@ final class NumberConverter<S extends Number, T extends Number> extends SystemCo
             throw new UnconvertibleObjectException(formatErrorMessage(source));
         }
         return target;
-    }
-
-    /**
-     * Returns the inverse of this converter.
-     */
-    @Override
-    public ObjectConverter<T,S> inverse() {
-        return new NumberConverter<>(targetClass, sourceClass).unique();
     }
 
     /**
