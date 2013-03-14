@@ -18,9 +18,9 @@ package org.apache.sis.util;
 
 import java.util.Map;
 import java.util.Set;
-import org.apache.sis.internal.converter.IdentityConverter;
 import org.apache.sis.util.collection.CollectionsExt;
-import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.converter.IdentityConverter;
+import org.apache.sis.internal.converter.HeuristicRegistry;
 
 
 /**
@@ -78,7 +78,7 @@ public final class ObjectConverters extends Static {
      */
     public static <T> ObjectConverter<T,T> identity(final Class<T> type) {
         ArgumentChecks.ensureNonNull("type", type);
-        return IdentityConverter.create(type);
+        return new IdentityConverter<>(type, type).unique();
     }
 
     /**
@@ -94,8 +94,7 @@ public final class ObjectConverters extends Static {
     public static <S,T> ObjectConverter<? super S, ? extends T> find(final Class<S> source, final Class<T> target)
             throws UnconvertibleObjectException
     {
-        // TODO: port the implementation from Geotk
-        throw new UnconvertibleObjectException(Errors.format(Errors.Keys.CanNotConvertFromType_2, source, target));
+        return HeuristicRegistry.SYSTEM.find(source, target);
     }
 
     /**
@@ -174,7 +173,7 @@ public final class ObjectConverters extends Static {
                                                 final Class<V> valueType)
     {
         ArgumentChecks.ensureNonNull("valueType", valueType);
-        return CollectionsExt.derivedMap(storage, keyConverter, IdentityConverter.create(valueType));
+        return CollectionsExt.derivedMap(storage, keyConverter, identity(valueType));
     }
 
     /**
@@ -202,6 +201,6 @@ public final class ObjectConverters extends Static {
                                                   final ObjectConverter<SV,V> valueConverter)
     {
         ArgumentChecks.ensureNonNull("keyType", keyType);
-        return CollectionsExt.derivedMap(storage, IdentityConverter.create(keyType), valueConverter);
+        return CollectionsExt.derivedMap(storage, identity(keyType), valueConverter);
     }
 }

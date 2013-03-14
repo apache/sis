@@ -16,9 +16,11 @@
  */
 package org.apache.sis.internal.converter;
 
-import java.io.Serializable;
+import java.util.EnumSet;
+import java.util.Set;
 import net.jcip.annotations.Immutable;
 import org.apache.sis.util.ObjectConverter;
+import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.UnconvertibleObjectException;
 
 
@@ -37,24 +39,11 @@ import org.apache.sis.util.UnconvertibleObjectException;
  * @module
  */
 @Immutable
-final class CharSequenceConverter<T> extends SurjectiveConverter<CharSequence,T> implements Serializable {
+final class CharSequenceConverter<T> extends SystemConverter<CharSequence,T> {
     /**
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = 2591675151163578878L;
-
-    /**
-     * A converter from {@link CharSequence} to {@link String}.
-     */
-    static final CharSequenceConverter<String> STRING =
-            new CharSequenceConverter<>(String.class, IdentityConverter.create(String.class));
-
-    /**
-     * The target type requested by the user. We retain this type explicitly instead
-     * than querying {@code next.getTargetType()} because it may be a super-class of
-     * the later.
-     */
-    private final Class<T> targetType;
 
     /**
      * The converter to apply after this one.
@@ -64,44 +53,12 @@ final class CharSequenceConverter<T> extends SurjectiveConverter<CharSequence,T>
     /**
      * Creates a new converter from {@link CharSequence} to the given target type.
      *
-     * @param targetType The target type requested by the user.
+     * @param targetClass The target class requested by the user.
      * @param next The converter to apply after this one.
      */
-    private CharSequenceConverter(final Class<T> targetType, final ObjectConverter<? super String, ? extends T> next) {
-        this.targetType = targetType;
+    CharSequenceConverter(final Class<T> targetClass, final ObjectConverter<? super String, ? extends T> next) {
+        super(CharSequence.class, targetClass);
         this.next = next;
-    }
-
-    /**
-     * Creates a new converter from {@link CharSequence} to the given target type.
-     *
-     * @param targetType The target type requested by the user.
-     * @param next The converter to apply after this one.
-     */
-    @SuppressWarnings("unchecked")
-    public static <T> ObjectConverter<? super CharSequence, ? extends T> create(
-            final Class<T> targetType, final ObjectConverter<? super String, ? extends T> next)
-    {
-        if (next.getSourceClass().isAssignableFrom(CharSequence.class)) {
-            return (ObjectConverter<? super CharSequence, ? extends T>) next;
-        }
-        return new CharSequenceConverter<>(targetType, next);
-    }
-
-    /**
-     * Returns the source class, which is always {@link CharSequence}.
-     */
-    @Override
-    public final Class<CharSequence> getSourceClass() {
-        return CharSequence.class;
-    }
-
-    /**
-     * Returns the target class.
-     */
-    @Override
-    public final Class<T> getTargetClass() {
-        return targetType;
     }
 
     /**
@@ -109,9 +66,21 @@ final class CharSequenceConverter<T> extends SurjectiveConverter<CharSequence,T>
      */
     @Override
     public T convert(final CharSequence source) throws UnconvertibleObjectException {
-        if (targetType.isInstance(source)) {
-            return targetType.cast(source);
+        if (targetClass.isInstance(source)) {
+            return targetClass.cast(source);
         }
         return next.convert(source != null ? source.toString() : null);
+    }
+
+    /**
+     * Returns the properties of the converter given at construction time minus
+     * {@link FunctionProperty#INJECTIVE}, because we don't know how many source
+     * {@code CharSequence}s can produce the same {@code String}.
+     */
+    @Override
+    public Set<FunctionProperty> properties() {
+        final EnumSet<FunctionProperty> properties = EnumSet.copyOf(next.properties());
+        properties.remove(FunctionProperty.INJECTIVE);
+        return properties;
     }
 }

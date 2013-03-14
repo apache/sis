@@ -25,6 +25,7 @@ import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTableFormat;
+import org.apache.sis.util.collection.DefaultTreeTable;
 
 
 /**
@@ -82,19 +83,24 @@ final class Column extends TableColumn<Class<?>> implements Serializable {
     }
 
     /**
+     * Creates a table.
+     */
+    static TreeTable createTable() {
+        return new DefaultTreeTable(Column.SOURCE, Column.TARGET);
+    }
+
+    /**
      * Creates a node for the given converter and adds it to the given tree.
      * Used by {@link FallbackConverter} and {@link ConverterRegistry} for
      * implementing their {@code toString()} method.
      *
      * @param  converter The converter for which to create a tree.
      * @param  addTo     The node in which to add the converter.
-     * @return The child node created by this method.
      */
-    static TreeTable.Node toTree(final ObjectConverter<?,?> converter, final TreeTable.Node addTo) {
+    static void toTree(final ObjectConverter<?,?> converter, final TreeTable.Node addTo) {
         final TreeTable.Node node = addTo.newChild();
         node.setValue(SOURCE, converter.getSourceClass());
         node.setValue(TARGET, converter.getTargetClass());
-        return node;
     }
 
     /**
@@ -106,7 +112,7 @@ final class Column extends TableColumn<Class<?>> implements Serializable {
     @Debug
     static String format(final TreeTable table) {
         final TreeTableFormat format = new TreeTableFormat(null, null);
-        format.setColumnSeparatorPattern("[ ] ⇨ ");
+        format.setColumnSeparatorPattern("?[ ] ⇨ ");
         return format.format(table);
     }
 }
