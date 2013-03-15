@@ -78,7 +78,7 @@ public final class ObjectConverters extends Static {
      */
     public static <T> ObjectConverter<T,T> identity(final Class<T> type) {
         ArgumentChecks.ensureNonNull("type", type);
-        return new IdentityConverter<>(type, type).unique();
+        return new IdentityConverter<>(type, type, null).unique();
     }
 
     /**

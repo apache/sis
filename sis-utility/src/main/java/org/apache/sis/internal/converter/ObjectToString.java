@@ -84,14 +84,14 @@ class ObjectToString<S> extends SystemConverter<S,String> {
      */
     @Override
     public final ObjectConverter<String, S> inverse() {
-        return inverse;
+        return (inverse != null) ? inverse : super.inverse();
     }
 
     /**
      * Returns the singleton instance on deserialization, if any.
      */
     @Override
-    public ObjectConverter<S, String> unique() {
+    public final ObjectConverter<S, String> unique() {
         if (inverse != null) {
             return inverse.unique().inverse(); // Will typically delegate to StringConverter.
         }

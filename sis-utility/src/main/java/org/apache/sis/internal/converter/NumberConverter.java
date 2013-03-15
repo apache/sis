@@ -27,7 +27,7 @@ import org.apache.sis.util.resources.Errors;
 
 
 /**
- * Handles conversions from {@link java.lang.Number} to other numbers.
+ * Handles conversions from {@link java.lang.Number} to other kind of numbers.
  * This class supports only the type supported by {@link Numbers}.
  *
  * {@section Performance note}
@@ -73,6 +73,9 @@ final class NumberConverter<S extends Number, T extends Number> extends SystemCo
 
     /**
      * Returns the inverse converter, creating it when first needed.
+     * This method delegates to {@link HeuristicRegistry#SYSTEM} and caches the result.
+     * We do not provide pre-defined constant for the various converter because there
+     * is too many possibly combinations.
      */
     @Override
     public ObjectConverter<T,S> inverse() throws UnsupportedOperationException {
@@ -140,7 +143,7 @@ final class NumberConverter<S extends Number, T extends Number> extends SystemCo
          */
         @Override
         public Set<FunctionProperty> properties() {
-            if (Comparable.class.isAssignableFrom(sourceClass)) {
+            if (targetClass.isAssignableFrom(sourceClass)) {
                 return EnumSet.of(FunctionProperty.INJECTIVE, FunctionProperty.SURJECTIVE,
                             FunctionProperty.ORDER_PRESERVING);
             }

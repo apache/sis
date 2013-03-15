@@ -525,7 +525,9 @@ public final class Numbers extends Static {
             case DOUBLE:  return (N) Double .valueOf(number.doubleValue());
             case BIG_INTEGER: {
                 final BigInteger c;
-                if (number instanceof BigDecimal) {
+                if (number instanceof BigInteger) {
+                    c = (BigInteger) number;
+                } else if (number instanceof BigDecimal) {
                     c = ((BigDecimal) number).toBigInteger();
                 } else {
                     c = BigInteger.valueOf(number.longValue());
@@ -534,8 +536,10 @@ public final class Numbers extends Static {
             }
             case BIG_DECIMAL: {
                 final BigDecimal c;
-                if (number instanceof BigInteger) {
-                    c =new BigDecimal((BigInteger) number);
+                if (number instanceof BigDecimal) {
+                    c = (BigDecimal) number;
+                } else if (number instanceof BigInteger) {
+                    c = new BigDecimal((BigInteger) number);
                 } else if (isInteger(number.getClass())) {
                     c = BigDecimal.valueOf(number.longValue());
                 } else {

@@ -19,6 +19,7 @@ package org.apache.sis.internal.converter;
 import java.util.Set;
 import java.util.EnumSet;
 import net.jcip.annotations.Immutable;
+import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.math.FunctionProperty;
 
 
@@ -43,13 +44,26 @@ public final class IdentityConverter<S extends T, T> extends SystemConverter<S,T
     private static final long serialVersionUID = -7203549932226245206L;
 
     /**
+     * The inverse converter specified at construction time, or {@code null} if none.
+     */
+    private final ObjectConverter<T, S> inverse;
+
+    /**
      * Creates a new identity converter.
      *
      * @param sourceClass The {@linkplain #getSourceClass() source class}.
      * @param targetClass The {@linkplain #getTargetClass() target class}.
+     * @param inverse     The inverse converter, or {@code null} if none.
      */
-    public IdentityConverter(final Class<S> sourceClass, final Class<T> targetClass) {
+    @SuppressWarnings("unchecked")
+    public IdentityConverter(final Class<S> sourceClass, final Class<T> targetClass,
+            ObjectConverter<T, S> inverse)
+    {
         super(sourceClass, targetClass);
+        if (inverse == null && sourceClass == targetClass) {
+            inverse = (ObjectConverter<T,S>) this;
+        }
+        this.inverse = inverse;
     }
 
     /**
@@ -63,11 +77,18 @@ public final class IdentityConverter<S extends T, T> extends SystemConverter<S,T
     @Override
     public Set<FunctionProperty> properties() {
         final EnumSet<FunctionProperty> properties = EnumSet.allOf(FunctionProperty.class);
-        if (sourceClass != targetClass) {
-            // Conservative choice (actually we don't really know).
+        if (inverse == null) {
             properties.remove(FunctionProperty.INVERTIBLE);
         }
         return properties;
+    }
+
+    /**
+     * Returns the inverse converter, if any.
+     */
+    @Override
+    public ObjectConverter<T,S> inverse() throws UnsupportedOperationException {
+        return (inverse != null) ? inverse : super.inverse();
     }
 
     /**

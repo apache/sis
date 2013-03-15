@@ -101,6 +101,7 @@ public class ConverterRegistry {
     @SuppressWarnings("unchecked")
     private <S,T> void put(ClassPair<S,T> key, final ObjectConverter<? super S, ? extends T> converter) {
         assert key.getClass() == ClassPair.class; // See SystemConverter.equals(Object)
+        assert key.cast(converter) != null : converter;
         assert Thread.holdsLock(converters);
         if (converter instanceof SystemConverter<?,?> &&
             converter.getSourceClass() == key.sourceClass &&
@@ -441,7 +442,7 @@ public class ConverterRegistry {
     @SuppressWarnings({"unchecked", "rawtypes"})
     protected <S,T> ObjectConverter<S,T> createConverter(final Class<S> sourceClass, final Class<T> targetClass) {
         if (targetClass.isAssignableFrom(sourceClass)) {
-            return new IdentityConverter(sourceClass, targetClass);
+            return new IdentityConverter(sourceClass, targetClass, null);
         }
         return null;
     }
