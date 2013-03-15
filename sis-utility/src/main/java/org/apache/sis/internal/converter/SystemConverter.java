@@ -134,6 +134,6 @@ abstract class SystemConverter<S,T> extends ClassPair<S,T> implements ObjectConv
      * @return The error message.
      */
     final String formatErrorMessage(final S value) {
-        return Errors.format(Errors.Keys.CanNotConvertValue_2, value, getTargetClass());
+        return Errors.format(Errors.Keys.CanNotConvertValue_2, value, targetClass);
     }
 }
