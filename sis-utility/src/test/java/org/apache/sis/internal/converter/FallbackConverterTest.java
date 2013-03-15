@@ -28,14 +28,17 @@ import static org.apache.sis.test.Assert.*;
 
 
 /**
- * Tests {@link FallbackConverter}.
+ * Tests {@link FallbackConverter}. This test creates {@code FallbackConverter} instances directly.
+ * It shall not use {@link ConverterRegistry}, directly or indirectly, in order to keep the tests
+ * isolated. Note that {@link SystemConverter#inverse()} and serialization indirectly use
+ * {@code ConverterRegistry}, so those tests shall be avoided.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
  * @version 0.3
  * @module
  */
-@DependsOn(StringConverterTest.class)
+@DependsOn(org.apache.sis.util.collection.TreeTableFormatTest.class)
 public final strictfp class FallbackConverterTest extends TestCase {
     /**
      * Conversions that are expected to be supported.
@@ -62,7 +65,7 @@ public final strictfp class FallbackConverterTest extends TestCase {
         assertEquals(INVERTIBLE,   c.properties());
         tryConversions(c, SHORT);
         assertMultilinesEquals(
-                "StringConverter.Short[String ⇨ Short]", c.toString());
+                "StringConverter.Short[Short ← String]", c.toString());
 
         c = FallbackConverter.merge(c, StringConverter.Long.INSTANCE);
         assertEquals(String.class, c.getSourceClass());
@@ -70,9 +73,9 @@ public final strictfp class FallbackConverterTest extends TestCase {
         assertEquals(SURJECTIVE,   c.properties());
         tryConversions(c, LONG);
         assertMultilinesEquals(
-                "String     ⇨ Number\n" +
-                "  ├─String ⇨ Short\n" +
-                "  └─String ⇨ Long\n", c.toString());
+                "Number    ← String\n" +
+                "  ├─Short ← String\n" +
+                "  └─Long  ← String\n", c.toString());
 
         c = FallbackConverter.merge(c, StringConverter.Float.INSTANCE);
         assertEquals(String.class, c.getSourceClass());
@@ -80,10 +83,10 @@ public final strictfp class FallbackConverterTest extends TestCase {
         assertEquals(SURJECTIVE,   c.properties());
         tryConversions(c, FLOAT);
         assertMultilinesEquals(
-                "String     ⇨ Number\n" +
-                "  ├─String ⇨ Short\n" +
-                "  ├─String ⇨ Long\n" +
-                "  └─String ⇨ Float\n", c.toString());
+                "Number    ← String\n" +
+                "  ├─Short ← String\n" +
+                "  ├─Long  ← String\n" +
+                "  └─Float ← String\n", c.toString());
 
         c = FallbackConverter.merge(c, StringConverter.Integer.INSTANCE);
         assertEquals(String.class, c.getSourceClass());
@@ -91,11 +94,11 @@ public final strictfp class FallbackConverterTest extends TestCase {
         assertEquals(SURJECTIVE,   c.properties());
         tryConversions(c, FLOAT);
         assertMultilinesEquals(
-                "String     ⇨ Number\n" +
-                "  ├─String ⇨ Short\n" +
-                "  ├─String ⇨ Long\n" +
-                "  ├─String ⇨ Float\n" +
-                "  └─String ⇨ Integer\n", c.toString());
+                "Number      ← String\n" +
+                "  ├─Short   ← String\n" +
+                "  ├─Long    ← String\n" +
+                "  ├─Float   ← String\n" +
+                "  └─Integer ← String\n", c.toString());
 
         c = FallbackConverter.merge(c, StringConverter.Boolean.INSTANCE);
         assertEquals(String.class, c.getSourceClass());
@@ -103,13 +106,13 @@ public final strictfp class FallbackConverterTest extends TestCase {
         assertEquals(SURJECTIVE,   c.properties());
         tryConversions(c, BOOLEAN);
         assertMultilinesEquals(
-                "String         ⇨ Object\n" +
-                "  ├─String     ⇨ Number\n" +
-                "  │   ├─String ⇨ Short\n" +
-                "  │   ├─String ⇨ Long\n" +
-                "  │   ├─String ⇨ Float\n" +
-                "  │   └─String ⇨ Integer\n" +
-                "  └─String     ⇨ Boolean\n", c.toString());
+                "Object          ← String\n" +
+                "  ├─Number      ← String\n" +
+                "  │   ├─Short   ← String\n" +
+                "  │   ├─Long    ← String\n" +
+                "  │   ├─Float   ← String\n" +
+                "  │   └─Integer ← String\n" +
+                "  └─Boolean     ← String\n", c.toString());
 
         c = FallbackConverter.merge(c, StringConverter.Double.INSTANCE);
         assertEquals(String.class, c.getSourceClass());
@@ -117,20 +120,24 @@ public final strictfp class FallbackConverterTest extends TestCase {
         assertEquals(SURJECTIVE,   c.properties());
         tryConversions(c, BOOLEAN);
         assertMultilinesEquals(
-                "String         ⇨ Object\n" +
-                "  ├─String     ⇨ Number\n" +
-                "  │   ├─String ⇨ Short\n" +
-                "  │   ├─String ⇨ Long\n" +
-                "  │   ├─String ⇨ Float\n" +
-                "  │   ├─String ⇨ Integer\n" +
-                "  │   └─String ⇨ Double\n" +
-                "  └─String     ⇨ Boolean\n", c.toString());
+                "Object          ← String\n" +
+                "  ├─Number      ← String\n" +
+                "  │   ├─Short   ← String\n" +
+                "  │   ├─Long    ← String\n" +
+                "  │   ├─Float   ← String\n" +
+                "  │   ├─Integer ← String\n" +
+                "  │   └─Double  ← String\n" +
+                "  └─Boolean     ← String\n", c.toString());
     }
 
     /**
      * Tries conversions. Parsing numbers should returns a Short, Long or Float because
      * they were the first converters declared. Parsing a boolean should succeed only
      * after we registered the boolean converter.
+     *
+     * <p>Calls to {@link SystemConverter#inverse()} and serialization shall be avoided,
+     * because they indirectly use {@link ConverterRegistry} while we want to keep the
+     * tests isolated.</p>
      */
     private static void tryConversions(final ObjectConverter<String,?> c, final int supported) {
         assertConvertedEquals(c, (supported >= SHORT)   ? Short.valueOf((short) 5) : null, "5");

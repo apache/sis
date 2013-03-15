@@ -86,7 +86,7 @@ final class Column extends TableColumn<Class<?>> implements Serializable {
      * Creates a table.
      */
     static TreeTable createTable() {
-        return new DefaultTreeTable(Column.SOURCE, Column.TARGET);
+        return new DefaultTreeTable(Column.TARGET, Column.SOURCE);
     }
 
     /**
@@ -112,7 +112,7 @@ final class Column extends TableColumn<Class<?>> implements Serializable {
     @Debug
     static String format(final TreeTable table) {
         final TreeTableFormat format = new TreeTableFormat(null, null);
-        format.setColumnSeparatorPattern("?[ ] ⇨ ");
+        format.setColumnSeparatorPattern("?[ ] ← ");
         return format.format(table);
     }
 }

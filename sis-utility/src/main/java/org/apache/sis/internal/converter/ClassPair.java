@@ -160,6 +160,6 @@ class ClassPair<S,T> implements Serializable {
     @Debug
     @Override
     public String toString() {
-        return sourceClass.getSimpleName() + " ⇨ " + targetClass.getSimpleName();
+        return targetClass.getSimpleName() + " ← " + sourceClass.getSimpleName();
     }
 }

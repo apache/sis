@@ -443,7 +443,7 @@ public class ConverterRegistry {
     public String toString() {
         final TreeTable table = Column.createTable();
         final TreeTable.Node root = table.getRoot();
-        root.setValue(Column.SOURCE, getClass());
+        root.setValue(Column.TARGET, getClass());
         synchronized (converters) {
             for (final Map.Entry<ClassPair<?,?>, ObjectConverter<?,?>> entry : converters.entrySet()) {
                 TreeTable.Node addTo = root;
