@@ -17,6 +17,7 @@
 package org.apache.sis.internal.converter;
 
 import java.io.File;
+import java.net.URI;
 import java.util.Date;
 import org.opengis.metadata.spatial.PixelOrientation;
 import org.apache.sis.util.ObjectConverter;
@@ -110,6 +111,21 @@ public final strictfp class HeuristicRegistryTest extends TestCase {
         final ObjectConverter<java.sql.Date, Date> c2 = SYSTEM.findExact(java.sql.Date.class, Date.class);
         assertInstanceOf("sql.Date ← Date", DateConverter.class,     c1);
         assertInstanceOf("Date ← sql.Date", IdentityConverter.class, c2);
+        assertSame("inverse()", c2, c1.inverse());
+        assertSame("inverse()", c1, c2.inverse());
+        assertSame(c1, assertSerializedEquals(c1));
+        assertSame(c2, assertSerializedEquals(c2));
+    }
+
+    /**
+     * Tests the creation of {@link PathConverter}.
+     */
+    @Test
+    public void testFileURI() {
+        final ObjectConverter<File,URI> c1 = SYSTEM.findExact(File.class, URI.class);
+        final ObjectConverter<URI,File> c2 = SYSTEM.findExact(URI.class, File.class);
+        assertInstanceOf("URI ← File", PathConverter.class, c1);
+        assertInstanceOf("File ← URI", PathConverter.class, c2);
         assertSame("inverse()", c2, c1.inverse());
         assertSame("inverse()", c1, c2.inverse());
         assertSame(c1, assertSerializedEquals(c1));
