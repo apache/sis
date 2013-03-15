@@ -39,6 +39,26 @@ import org.apache.sis.util.iso.SimpleInternationalString;
  * Each inner class in this {@code StringConverter} class defines both the
  * forward and the inverse converters.
  *
+ * <p>Most converters are pretty close to bijective functions, but not exactly.
+ * For example conversions from {@code String} to {@link java.io.File} is not
+ * completely bijective because various path separators ({@code '/'} and {@code '\'})
+ * produce the same {@code File} object.</p>
+ *
+ * {@section Special cases}
+ * Conversion table from {@link String} to {@link java.lang.Boolean}:
+ *
+ * <table>
+ *    <tr><th>source</th>          <th>target</th></tr>
+ *    <tr><td>{@code "true"}  </td><td>{@link java.lang.Boolean#TRUE}  </td></tr>
+ *    <tr><td>{@code "false"} </td><td>{@link java.lang.Boolean#FALSE} </td></tr>
+ *    <tr><td>{@code "yes"}   </td><td>{@link java.lang.Boolean#TRUE}  </td></tr>
+ *    <tr><td>{@code "no"}    </td><td>{@link java.lang.Boolean#FALSE} </td></tr>
+ *    <tr><td>{@code "on"}    </td><td>{@link java.lang.Boolean#TRUE}  </td></tr>
+ *    <tr><td>{@code "off"}   </td><td>{@link java.lang.Boolean#FALSE} </td></tr>
+ *    <tr><td>{@code "1"}     </td><td>{@link java.lang.Boolean#TRUE}  </td></tr>
+ *    <tr><td>{@code "0"}     </td><td>{@link java.lang.Boolean#FALSE} </td></tr>
+ * </table>
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.4)
  * @version 0.3
@@ -103,7 +123,8 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
         if (targetClass == java.nio.file.Path      .class) return (StringConverter<T>) Path   .INSTANCE;
         if (targetClass == java.net.URI            .class) return (StringConverter<T>) URI    .INSTANCE;
         if (targetClass == java.net.URL            .class) return (StringConverter<T>) URL    .INSTANCE;
-        if (targetClass == org.opengis.util.InternationalString.class) return (StringConverter<T>) InternationalString.INSTANCE;
+        if (targetClass == org.opengis.util.InternationalString.class)
+            return (StringConverter<T>) InternationalString.INSTANCE;
         return null;
     }
 
@@ -112,6 +133,7 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
      */
     @Override
     public ObjectConverter<String, T> unique() {
+        assert sourceClass == String.class : sourceClass;
         final StringConverter<T> instance = getInstance(targetClass);
         return (instance != null) ? instance : this;
     }
@@ -168,155 +190,105 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
     abstract T doConvert(String source) throws Exception;
 
     /**
-     * Converter from {@link String} to {@link java.lang.Number}.
-     * The finest suitable kind of number will be selected using
-     * {@link Numbers#narrowestNumber(String)}.
+     * Converter from {@link String} to various kinds of {@link java.lang.Number}.
      */
     @Immutable
     private static final class Number extends StringConverter<java.lang.Number> {
-        /** Cross-version compatibility. */ static final long serialVersionUID = 1557277544742023571L;
-        /** The unique, shared instance. */ static final Number INSTANCE = new Number();
-        /** For {@link #INSTANCE} only.  */ private Number() {super(java.lang.Number.class);}
+        private static final long serialVersionUID = 1557277544742023571L;
+        static final Number INSTANCE = new Number();
+        private Number() {super(java.lang.Number.class);}
 
         @Override java.lang.Number doConvert(String source) throws NumberFormatException {
             return Numbers.narrowestNumber(source);
         }
     }
 
-    /**
-     * Converter from {@link String} to {@link java.lang.Double}.
-     */
-    @Immutable
     private static final class Double extends StringConverter<java.lang.Double> {
-        /** Cross-version compatibility. */ static final long serialVersionUID = -9094071164371643060L;
-        /** The unique, shared instance. */ static final Double INSTANCE = new Double();
-        /** For {@link #INSTANCE} only.  */ private Double() {super(java.lang.Double.class);}
+        private static final long serialVersionUID = -9094071164371643060L;
+        static final Double INSTANCE = new Double();
+        private Double() {super(java.lang.Double.class);}
 
         @Override java.lang.Double doConvert(String source) throws NumberFormatException {
             return java.lang.Double.parseDouble(source);
         }
     }
 
-    /**
-     * Converter from {@link String} to {@link java.lang.Float}.
-     */
-    @Immutable
     private static final class Float extends StringConverter<java.lang.Float> {
-        /** Cross-version compatibility. */ static final long serialVersionUID = -2815192289550338333L;
-        /** The unique, shared instance. */ static final Float INSTANCE = new Float();
-        /** For {@link #INSTANCE} only.  */ private Float() {super(java.lang.Float.class);}
+        private static final long serialVersionUID = -2815192289550338333L;
+        static final Float INSTANCE = new Float();
+        private Float() {super(java.lang.Float.class);}
 
         @Override java.lang.Float doConvert(String source) throws NumberFormatException {
             return java.lang.Float.parseFloat(source);
         }
     }
 
-    /**
-     * Converter from {@link String} to {@link java.lang.Long}.
-     */
-    @Immutable
     private static final class Long extends StringConverter<java.lang.Long> {
-        /** Cross-version compatibility. */ static final long serialVersionUID = -2171263041723939779L;
-        /** The unique, shared instance. */ static final Long INSTANCE = new Long();
-        /** For {@link #INSTANCE} only.  */ private Long() {super(java.lang.Long.class);}
+        private static final long serialVersionUID = -2171263041723939779L;
+        static final Long INSTANCE = new Long();
+        private Long() {super(java.lang.Long.class);}
 
         @Override java.lang.Long doConvert(String source) throws NumberFormatException {
             return java.lang.Long.parseLong(source);
         }
     }
 
-    /**
-     * Converter from {@link String} to {@link java.lang.Integer}.
-     */
-    @Immutable
     private static final class Integer extends StringConverter<java.lang.Integer> {
-        /** Cross-version compatibility. */ static final long serialVersionUID = 763211364703205967L;
-        /** The unique, shared instance. */ static final Integer INSTANCE = new Integer();
-        /** For {@link #INSTANCE} only.  */ private Integer() {super(java.lang.Integer.class);}
+        private static final long serialVersionUID = 763211364703205967L;
+        static final Integer INSTANCE = new Integer();
+        private Integer() {super(java.lang.Integer.class);}
 
         @Override java.lang.Integer doConvert(String source) throws NumberFormatException {
             return java.lang.Integer.parseInt(source);
         }
     }
 
-    /**
-     * Converter from {@link String} to {@link java.lang.Short}.
-     */
-    @Immutable
     private static final class Short extends StringConverter<java.lang.Short> {
-        /** Cross-version compatibility. */ static final long serialVersionUID = -1770870328699572960L;
-        /** The unique, shared instance. */ static final Short INSTANCE = new Short();
-        /** For {@link #INSTANCE} only.  */ private Short() {super(java.lang.Short.class);}
+        private static final long serialVersionUID = -1770870328699572960L;
+        static final Short INSTANCE = new Short();
+        private Short() {super(java.lang.Short.class);}
 
         @Override java.lang.Short doConvert(String source) throws NumberFormatException {
             return java.lang.Short.parseShort(source);
         }
     }
 
-    /**
-     * Converter from {@link String} to {@link java.lang.Byte}.
-     */
-    @Immutable
     private static final class Byte extends StringConverter<java.lang.Byte> {
-        /** Cross-version compatibility. */ static final long serialVersionUID = 2084870859391804185L;
-        /** The unique, shared instance. */ static final Byte INSTANCE = new Byte();
-        /** For {@link #INSTANCE} only.  */ private Byte() {super(java.lang.Byte.class);}
+        private static final long serialVersionUID = 2084870859391804185L;
+        static final Byte INSTANCE = new Byte();
+        private Byte() {super(java.lang.Byte.class);}
 
         @Override java.lang.Byte doConvert(String source) throws NumberFormatException {
             return java.lang.Byte.parseByte(source);
         }
     }
 
-    /**
-     * Converter from {@link String} to {@link java.math.BigDecimal}.
-     */
-    @Immutable
     private static final class BigDecimal extends StringConverter<java.math.BigDecimal> {
-        /** Cross-version compatibility. */ static final long serialVersionUID = -8597497425876120213L;
-        /** The unique, shared instance. */ static final BigDecimal INSTANCE = new BigDecimal();
-        /** For {@link #INSTANCE} only.  */ private BigDecimal() {super(java.math.BigDecimal.class);}
+        private static final long serialVersionUID = -8597497425876120213L;
+        static final BigDecimal INSTANCE = new BigDecimal();
+        private BigDecimal() {super(java.math.BigDecimal.class);}
 
         @Override java.math.BigDecimal doConvert(String source) throws NumberFormatException {
             return new java.math.BigDecimal(source);
         }
     }
 
-    /**
-     * Converter from {@link String} to {@link java.math.BigInteger}.
-     */
-    @Immutable
     private static final class BigInteger extends StringConverter<java.math.BigInteger> {
-        /** Cross-version compatibility. */ static final long serialVersionUID = 8658903031519526466L;
-        /** The unique, shared instance. */ static final BigInteger INSTANCE = new BigInteger();
-        /** For {@link #INSTANCE} only.  */ private BigInteger() {super(java.math.BigInteger.class);}
+        private static final long serialVersionUID = 8658903031519526466L;
+        static final BigInteger INSTANCE = new BigInteger();
+        private BigInteger() {super(java.math.BigInteger.class);}
 
         @Override java.math.BigInteger doConvert(String source) throws NumberFormatException {
             return new java.math.BigInteger(source);
         }
     }
 
-    /**
-     * Converter from {@link String} to {@link java.lang.Boolean}.
-     * Conversion table:
-     *
-     * <table>
-     *    <tr><th>source</th>          <th>target</th></tr>
-     *    <tr><td>{@code "true"}  </td><td>{@link java.lang.Boolean#TRUE}  </td></tr>
-     *    <tr><td>{@code "false"} </td><td>{@link java.lang.Boolean#FALSE} </td></tr>
-     *    <tr><td>{@code "yes"}   </td><td>{@link java.lang.Boolean#TRUE}  </td></tr>
-     *    <tr><td>{@code "no"}    </td><td>{@link java.lang.Boolean#FALSE} </td></tr>
-     *    <tr><td>{@code "on"}    </td><td>{@link java.lang.Boolean#TRUE}  </td></tr>
-     *    <tr><td>{@code "off"}   </td><td>{@link java.lang.Boolean#FALSE} </td></tr>
-     *    <tr><td>{@code "1"}     </td><td>{@link java.lang.Boolean#TRUE}  </td></tr>
-     *    <tr><td>{@code "0"}     </td><td>{@link java.lang.Boolean#FALSE} </td></tr>
-     * </table>
-     */
-    @Immutable
     private static final class Boolean extends StringConverter<java.lang.Boolean> {
-        /** Cross-version compatibility. */ static final long serialVersionUID = -27525398425996373L;
-        /** The unique, shared instance. */ static final Boolean INSTANCE = new Boolean();
-        /** For {@link #INSTANCE} only.  */ private Boolean() {super(java.lang.Boolean.class);}
+        private static final long serialVersionUID = -27525398425996373L;
+        static final Boolean INSTANCE = new Boolean();
+        private Boolean() {super(java.lang.Boolean.class);}
 
+        /** See {@link StringConverter} for the conversion table. */
         @Override java.lang.Boolean doConvert(final String source) throws UnconvertibleObjectException {
             switch (source.toLowerCase(java.util.Locale.ROOT)) {
                 case "true":  case "yes": case "on":  case "1": return java.lang.Boolean.TRUE;
@@ -326,110 +298,79 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
         }
     }
 
-    /**
-     * Converter from {@link String} to {@link java.util.Locale}.
-     * Examples of locale in string form: {@code "fr"}, {@code "fr_CA"}.
-     */
-    @Immutable
     private static final class Locale extends StringConverter<java.util.Locale> {
-        /** Cross-version compatibility. */ static final long serialVersionUID = -2888932450292616036L;
-        /** The unique, shared instance. */ static final Locale INSTANCE = new Locale();
-        /** For {@link #INSTANCE} only.  */ private Locale() {super(java.util.Locale.class);}
+        private static final long serialVersionUID = -2888932450292616036L;
+        static final Locale INSTANCE = new Locale();
+        private Locale() {super(java.util.Locale.class);}
 
         @Override java.util.Locale doConvert(String source) throws IllegalArgumentException {
             return Locales.parse(source);
         }
     }
 
-    /**
-     * Converter from {@link String} to {@link java.nio.charset.Charset}.
-     */
-    @Immutable
     private static final class Charset extends StringConverter<java.nio.charset.Charset> {
-        /** Cross-version compatibility. */ static final long serialVersionUID = 4539755855992944656L;
-        /** The unique, shared instance. */ static final Charset INSTANCE = new Charset();
-        /** For {@link #INSTANCE} only.  */ private Charset() {super(java.nio.charset.Charset.class);}
+        private static final long serialVersionUID = 4539755855992944656L;
+        static final Charset INSTANCE = new Charset();
+        private Charset() {super(java.nio.charset.Charset.class);}
 
         @Override java.nio.charset.Charset doConvert(String source) throws UnsupportedCharsetException {
             return java.nio.charset.Charset.forName(source);
         }
     }
 
-    /**
-     * Converter from {@link String} to {@link org.opengis.util.InternationalString}.
-     */
-    @Immutable
-    private static final class InternationalString extends StringConverter<org.opengis.util.InternationalString> {
-        /** Cross-version compatibility. */ static final long serialVersionUID = 730809620191573819L;
-        /** The unique, shared instance. */ static final InternationalString INSTANCE = new InternationalString();
-        /** For {@link #INSTANCE} only.  */ private InternationalString() {super(org.opengis.util.InternationalString.class);}
-
-        /** Returns the function properties, which is bijective. */
-        @Override public Set<FunctionProperty> properties() {
-            return EnumSet.of(FunctionProperty.INJECTIVE, FunctionProperty.SURJECTIVE,
-                    FunctionProperty.ORDER_PRESERVING, FunctionProperty.INVERTIBLE);
-        }
-
-        @Override org.opengis.util.InternationalString doConvert(String source) {
-            return new SimpleInternationalString(source);
-        }
-    }
-
-    /**
-     * Converter from {@link String} to {@link java.io.File}.
-     * This converter is almost bijective, but not completely since various path separators
-     * ({@code '/'} and {@code '\'}) produce the same {@code File} object.
-     */
-    @Immutable
     private static final class File extends StringConverter<java.io.File> {
-        /** Cross-version compatibility. */ static final long serialVersionUID = 6445208470928432376L;
-        /** The unique, shared instance. */ static final File INSTANCE = new File();
-        /** For {@link #INSTANCE} only.  */ private File() {super(java.io.File.class);}
+        private static final long serialVersionUID = 6445208470928432376L;
+        static final File INSTANCE = new File();
+        private File() {super(java.io.File.class);}
 
         @Override java.io.File doConvert(String source) {
             return new java.io.File(source);
         }
     }
 
-    /**
-     * Converter from {@link String} to {@link java.nio.file.Path}.
-     */
-    @Immutable
     private static final class Path extends StringConverter<java.nio.file.Path> {
-        /** Cross-version compatibility. */ static final long serialVersionUID = -5227120925547132828L;
-        /** The unique, shared instance. */ static final Path INSTANCE = new Path();
-        /** For {@link #INSTANCE} only.  */ private Path() {super(java.nio.file.Path.class);}
+        private static final long serialVersionUID = -5227120925547132828L;
+        static final Path INSTANCE = new Path();
+        private Path() {super(java.nio.file.Path.class);}
 
         @Override java.nio.file.Path doConvert(String source) throws InvalidPathException {
             return java.nio.file.Paths.get(source);
         }
     }
 
-    /**
-     * Converter from {@link String} to {@link java.net.URI}.
-     */
-    @Immutable
     private static final class URI extends StringConverter<java.net.URI> {
-        /** Cross-version compatibility. */ static final long serialVersionUID = -2804405634789179706L;
-        /** The unique, shared instance. */ static final URI INSTANCE = new URI();
-        /** For {@link #INSTANCE} only.  */ private URI() {super(java.net.URI.class);}
+        private static final long serialVersionUID = -2804405634789179706L;
+        static final URI INSTANCE = new URI();
+        private URI() {super(java.net.URI.class);}
 
         @Override java.net.URI doConvert(String source) throws URISyntaxException {
             return new java.net.URI(source);
         }
     }
 
-    /**
-     * Converter from {@link String} to {@link java.net.URL}.
-     */
-    @Immutable
     private static final class URL extends StringConverter<java.net.URL> {
-        /** Cross-version compatibility. */ static final long serialVersionUID = 2303928306635765592L;
-        /** The unique, shared instance. */ static final URL INSTANCE = new URL();
-        /** For {@link #INSTANCE} only.  */ private URL() {super(java.net.URL.class);}
+        private static final long serialVersionUID = 2303928306635765592L;
+        static final URL INSTANCE = new URL();
+        private URL() {super(java.net.URL.class);}
 
         @Override java.net.URL doConvert(String source) throws MalformedURLException {
             return new java.net.URL(source);
+        }
+    }
+
+    private static final class InternationalString extends StringConverter<org.opengis.util.InternationalString> {
+        private static final long serialVersionUID = 730809620191573819L;
+        static final InternationalString INSTANCE = new InternationalString();
+        private InternationalString() {super(org.opengis.util.InternationalString.class);}
+
+        @Override org.opengis.util.InternationalString doConvert(String source) {
+            return new SimpleInternationalString(source);
+        }
+
+        /** Declares a bijective function. */
+        @Override public Set<FunctionProperty> properties() {
+            return EnumSet.of(FunctionProperty.INJECTIVE, FunctionProperty.SURJECTIVE,
+                    FunctionProperty.ORDER_PRESERVING, FunctionProperty.INVERTIBLE);
         }
     }
 
@@ -444,7 +385,7 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
     @Immutable
     static final class CodeList<T extends org.opengis.util.CodeList<T>> extends StringConverter<T> {
         /** For cross-version compatibility on serialization. */
-        static final long serialVersionUID = 3289083947166861278L;
+        private static final long serialVersionUID = 3289083947166861278L;
 
         /** Creates a new converter for the given code list. */
         CodeList(final Class<T> targetClass) {
