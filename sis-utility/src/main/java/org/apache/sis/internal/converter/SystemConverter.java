@@ -18,7 +18,6 @@ package org.apache.sis.internal.converter;
 
 import java.io.ObjectStreamException;
 import org.apache.sis.util.ObjectConverter;
-import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -40,11 +39,6 @@ abstract class SystemConverter<S,T> extends ClassPair<S,T> implements ObjectConv
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = 885663610056067478L;
-
-    /**
-     * The inverse converter, created when first needed.
-     */
-    private transient volatile ObjectConverter<T,S> inverse;
 
     /**
      * Creates a new converter for the given source and target classes.
@@ -73,19 +67,11 @@ abstract class SystemConverter<S,T> extends ClassPair<S,T> implements ObjectConv
     }
 
     /**
-     * Returns the inverse converter, creating it when first needed.
+     * Default to non-invertible conversion. Must be overridden by subclasses that support inversions.
      */
     @Override
-    public final ObjectConverter<T,S> inverse() throws UnsupportedOperationException {
-        // No need to synchronize. This is not a big deal if the same object is fetched twice.
-        // The ConverterRegistry clas provides the required synchronization.
-        ObjectConverter<T,S> candidate = inverse;
-        if (candidate == null) try {
-            inverse = candidate = HeuristicRegistry.SYSTEM.findExact(targetClass, sourceClass);
-        } catch (UnconvertibleObjectException e) {
-            throw new UnsupportedOperationException(Errors.format(Errors.Keys.NonInvertibleConversion), e);
-        }
-        return candidate;
+    public ObjectConverter<T,S> inverse() throws UnsupportedOperationException {
+        throw new UnsupportedOperationException(Errors.format(Errors.Keys.NonInvertibleConversion));
     }
 
     /**
@@ -128,7 +114,7 @@ abstract class SystemConverter<S,T> extends ClassPair<S,T> implements ObjectConv
      * exists for the same source an target classes, then this converter is returned.
      * Otherwise this converter is returned <strong>without</strong> being cached.
      */
-    public final ObjectConverter<S,T> unique() {
+    public ObjectConverter<S,T> unique() {
         final ObjectConverter<S,T> existing = HeuristicRegistry.SYSTEM.findEquals(this);
         return (existing != null) ? existing : this;
     }

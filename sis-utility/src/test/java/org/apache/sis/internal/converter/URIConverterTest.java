@@ -61,7 +61,7 @@ public final strictfp class URIConverterTest extends TestCase {
      */
     @Test
     public void testString() throws URISyntaxException {
-        final ObjectConverter<URI,String> c = ObjectToString.URI;
+        final ObjectConverter<URI,String> c = StringConverter.getInstance(URI.class).inverse();
         runInvertibleConversion(c, new URI("file:/home/user/index.txt"), "file:/home/user/index.txt");
         assertSame("Deserialization shall resolves to the singleton instance.", c, assertSerializedEquals(c));
     }

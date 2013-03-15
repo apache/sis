@@ -21,7 +21,9 @@ import java.util.EnumSet;
 import net.jcip.annotations.Immutable;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.math.FunctionProperty;
+import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.UnconvertibleObjectException;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -55,6 +57,11 @@ final class NumberConverter<S extends Number, T extends Number> extends SystemCo
     private static final long serialVersionUID = -8715054480508622025L;
 
     /**
+     * The inverse converter, created when first needed.
+     */
+    private transient volatile ObjectConverter<T,S> inverse;
+
+    /**
      * Creates a new converter for the given source and target classes.
      * This constructor does not verify the validity of parameter values.
      * It is caller's responsibility to ensure that the given class are
@@ -62,6 +69,22 @@ final class NumberConverter<S extends Number, T extends Number> extends SystemCo
      */
     NumberConverter(final Class<S> sourceClass, final Class<T> targetClass) {
         super(sourceClass, targetClass);
+    }
+
+    /**
+     * Returns the inverse converter, creating it when first needed.
+     */
+    @Override
+    public ObjectConverter<T,S> inverse() throws UnsupportedOperationException {
+        // No need to synchronize. This is not a big deal if the same object is fetched twice.
+        // The ConverterRegistry clas provides the required synchronization.
+        ObjectConverter<T,S> candidate = inverse;
+        if (candidate == null) try {
+            inverse = candidate = HeuristicRegistry.SYSTEM.findExact(targetClass, sourceClass);
+        } catch (UnconvertibleObjectException e) {
+            throw new UnsupportedOperationException(Errors.format(Errors.Keys.NonInvertibleConversion), e);
+        }
+        return candidate;
     }
 
     /**
