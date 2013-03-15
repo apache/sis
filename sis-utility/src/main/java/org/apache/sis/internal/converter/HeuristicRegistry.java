@@ -157,6 +157,13 @@ public final class HeuristicRegistry extends ConverterRegistry {
             }
         }
         /*
+         * Various kind of paths (Path, File, URL, URI).
+         */
+        final ObjectConverter<S,T> p = PathConverter.getInstance(sourceClass, targetClass);
+        if (p != null) {
+            return p;
+        }
+        /*
          * From various objects to String.
          */
         if (targetClass == String.class) {
