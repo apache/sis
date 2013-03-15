@@ -27,6 +27,7 @@ import java.net.MalformedURLException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import org.opengis.util.InternationalString;
+import org.opengis.metadata.spatial.PixelOrientation;
 import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.UnconvertibleObjectException;
@@ -35,6 +36,10 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
+
+// Related to JDK7
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 
 /**
@@ -242,7 +247,19 @@ public final strictfp class StringConverterTest extends TestCase {
     @Test
     public void testFile() {
         final ObjectConverter<String,File> c = getInstance(File.class);
-        runInvertibleConversion(c, "home/user/index.txt", new File("home/user/index.txt"));
+        final String path = "home/user/index.txt".replace('/', File.separatorChar);
+        runInvertibleConversion(c, path, new File(path));
+        assertSame("Deserialization shall resolves to the singleton instance.", c, assertSerializedEquals(c));
+    }
+
+    /**
+     * Tests conversions to {@link Path}.
+     */
+    @Test
+    public void testPath() {
+        final ObjectConverter<String,Path> c = getInstance(Path.class);
+        final String path = "home/user/index.txt".replace('/', File.separatorChar);
+        runInvertibleConversion(c, path, Paths.get(path));
         assertSame("Deserialization shall resolves to the singleton instance.", c, assertSerializedEquals(c));
     }
 
@@ -268,5 +285,15 @@ public final strictfp class StringConverterTest extends TestCase {
         final ObjectConverter<String,URL> c = getInstance(URL.class);
         runInvertibleConversion(c, "file:/home/user/index.txt", new URL("file:/home/user/index.txt"));
         assertSame("Deserialization shall resolves to the singleton instance.", c, assertSerializedEquals(c));
+    }
+
+    /**
+     * Tests conversions to {@link org.opengis.util.CodeList}.
+     */
+    @Test
+    public void testCodeList() {
+        final ObjectConverter<String, PixelOrientation> c = new StringConverter.CodeList<>(PixelOrientation.class);
+        runInvertibleConversion(c, "LOWER_RIGHT", PixelOrientation.LOWER_RIGHT);
+        tryUnconvertibleValue(c);
     }
 }
