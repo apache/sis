@@ -16,11 +16,11 @@
  */
 package org.apache.sis.internal.converter;
 
+import java.util.Date;
 import org.opengis.util.CodeList;
 import net.jcip.annotations.ThreadSafe;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ObjectConverter;
-import org.apache.sis.internal.util.SystemListener;
 
 
 /**
@@ -46,22 +46,9 @@ public final class HeuristicRegistry extends ConverterRegistry {
      *
      * {@section Adding system-wide converters}
      * Applications can add system-wide custom providers either by explicit call to the
-     * {@link #register(ObjectConverter)} method on the system converter, or by listing
-     * the fully qualified classnames of their {@link ObjectConverter} instances in the
-     * following file (see {@link ServiceLoader} for more info about services loading):
-     *
-     * {@preformat text
-     *     META-INF/services/org.apache.sis.util.converter.ObjectConverter
-     * }
+     * {@link #register(ObjectConverter)} method on the system converter.
      */
     public static final ConverterRegistry SYSTEM = new HeuristicRegistry();
-    static {
-        SystemListener.add(new SystemListener() {
-            @Override protected void classpathChanged() {
-                SYSTEM.clear();
-            }
-        });
-    }
 
     /**
      * Creates an initially empty set of object converters. The heuristic
@@ -72,7 +59,10 @@ public final class HeuristicRegistry extends ConverterRegistry {
 
     /**
      * Create dynamically the converters for a few special cases.
+     * This method is invoked only the first time that a new pair of source and target classes is
+     * requested. Then, the value returned by this method will be cached for future invocations.
      *
+     * <p>Some (not all) special cases are:</p>
      * <ul>
      *   <li>If the source class is {@link CharSequence}, tries to delegate to an other
      *       converter accepting {@link String} sources.</li>
@@ -87,25 +77,61 @@ public final class HeuristicRegistry extends ConverterRegistry {
     @SuppressWarnings({"unchecked","rawtypes"})
     protected <S,T> ObjectConverter<S,T> createConverter(final Class<S> sourceClass, final Class<T> targetClass) {
         /*
-         * Before to try any heuristic rule, check for the identity converter.
+         * Most methods in this package are provided in such a way that we need to look at the
+         * source class first, then at the target class. However before to perform those usual
+         * checks, we need to check for the inverse conversions below. The reason is that some
+         * of them are identity conversion (e.g. going from java.sql.Date to java.util.Date),
+         * but we don't want to leave the creation of those identity tranforms to the parent
+         * class because it doesn't know what are the inverse of those inverse conversions
+         * (i.e. the direct conversions). For example if the conversion from java.sql.Date
+         * to java.util.Date was created by the super class, that conversion would not contain
+         * an inverse conversion from java.util.Date to java.sql.Date.
+         */
+        if (targetClass == Date.class) {
+            final ObjectConverter<Date, S> candidate = DateConverter.getInstance(sourceClass);
+            if (candidate != null) {
+                return (ObjectConverter<S,T>) candidate.inverse();
+            }
+        }
+        if (targetClass == String.class) {
+            final ObjectConverter<String, S> candidate = StringConverter.getInstance(sourceClass);
+            if (candidate != null) {
+                return (ObjectConverter<S,T>) candidate.inverse();
+            }
+            if (CodeList.class.isAssignableFrom(sourceClass)) {
+                return findExact(targetClass, sourceClass).inverse();
+            }
+        }
+        /*
+         * After we checked for the above special-cases, check for the identity converter.
+         * We need this check before to continue because some of the code below may create
+         * a "real" converter for what was actually an identity operation.
          */
         final ObjectConverter<S,T> identity = super.createConverter(sourceClass, targetClass);
         if (identity != null) {
             return identity;
         }
         /*
-         * From CharSequence to anything.
+         * From CharSequence to anything. Note that this check shall be done only after we have
+         * determined that the conversion is not the identity conversion (i.e. the target is not
+         * CharSequence or Object), otherwise this converter would apply useless toString().
          */
         if (sourceClass == CharSequence.class) {
             return (ObjectConverter<S,T>) new CharSequenceConverter<>(
                     targetClass, find(String.class, targetClass));
         }
         /*
-         * From String to various kind of CodeList.
+         * From String to various kind of objects.
          */
-        if (sourceClass == String.class && CodeList.class.isAssignableFrom(targetClass)) {
-            return (ObjectConverter<S,T>) new StringConverter.CodeList<>(
-                    targetClass.asSubclass(CodeList.class));
+        if (sourceClass == String.class) {
+            final ObjectConverter<String, T> candidate = StringConverter.getInstance(targetClass);
+            if (candidate != null) {
+                return (ObjectConverter<S,T>) candidate;
+            }
+            if (CodeList.class.isAssignableFrom(targetClass)) {
+                return (ObjectConverter<S,T>) new StringConverter.CodeList<>(
+                        targetClass.asSubclass(CodeList.class));
+            }
         }
         /*
          * From Number to other kinds of Number.
@@ -120,6 +146,21 @@ public final class HeuristicRegistry extends ConverterRegistry {
                 return (ObjectConverter<S,T>) new NumberConverter.Comparable<>(
                         sourceClass.asSubclass(Number.class));
             }
+        }
+        /*
+         * From Date to various kind of objects.
+         */
+        if (sourceClass == Date.class) {
+            final ObjectConverter<Date, T> candidate = DateConverter.getInstance(targetClass);
+            if (candidate != null) {
+                return (ObjectConverter<S,T>) candidate;
+            }
+        }
+        /*
+         * From various objects to String.
+         */
+        if (targetClass == String.class) {
+            return (ObjectConverter<S,T>) new ObjectToString<>(sourceClass, null);
         }
         return null;
     }

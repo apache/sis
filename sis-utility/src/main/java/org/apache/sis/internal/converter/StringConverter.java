@@ -132,10 +132,10 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
      * Returns the singleton instance on deserialization, if any.
      */
     @Override
-    public ObjectConverter<String, T> unique() {
+    public final ObjectConverter<String, T> unique() {
         assert sourceClass == String.class : sourceClass;
         final StringConverter<T> instance = getInstance(targetClass);
-        return (instance != null) ? instance : this;
+        return (instance != null) ? instance : super.unique();
     }
 
     /**
