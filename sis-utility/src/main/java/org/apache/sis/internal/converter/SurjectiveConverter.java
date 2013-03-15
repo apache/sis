@@ -86,7 +86,7 @@ public abstract class SurjectiveConverter<S,T> implements ObjectConverter<S,T> {
     @Override
     public String toString() {
         return Classes.getShortClassName(this) + '[' +
-                getSourceClass().getSimpleName() + " ⇨ " +
-                getTargetClass().getSimpleName() + ']';
+                getTargetClass().getSimpleName() + " ← " +
+                getSourceClass().getSimpleName() + ']';
     }
 }
