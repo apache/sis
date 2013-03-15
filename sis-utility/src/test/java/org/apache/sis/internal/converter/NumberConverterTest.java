@@ -21,6 +21,7 @@ import java.math.BigDecimal;
 import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.UnconvertibleObjectException;
+import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -35,6 +36,7 @@ import static org.apache.sis.test.Assert.*;
  * @version 0.3
  * @module
  */
+@DependsOn(HeuristicRegistryTest.class)
 public final strictfp class NumberConverterTest extends TestCase {
     /**
      * Creates a {@link NumberConverter} for the given source and target classes.
