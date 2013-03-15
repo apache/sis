@@ -47,6 +47,17 @@ import static org.apache.sis.test.Assert.*;
  */
 public final strictfp class StringConverterTest extends TestCase {
     /**
+     * Returns an instance for the given target type.
+     */
+    private static <T> StringConverter<T> getInstance(final Class<T> targetClass) {
+        final StringConverter<T> c = StringConverter.getInstance(targetClass);
+        assertNotNull("No instance found for the given target type.", c);
+        assertEquals("Unexpected source class.", String.class, c.getSourceClass());
+        assertEquals("Unexpected source class.", targetClass,  c.getTargetClass());
+        return c;
+    }
+
+    /**
      * Asserts that conversion of the given {@code source} value produces
      * the given {@code target} value, and tests the inverse conversion.
      */
@@ -78,7 +89,7 @@ public final strictfp class StringConverterTest extends TestCase {
      */
     @Test
     public void testNumber() {
-        final ObjectConverter<String,Number> c = StringConverter.Number.INSTANCE;
+        final ObjectConverter<String,Number> c = getInstance(Number.class);
         runInvertibleConversion(c,    "-4", Byte   .valueOf((byte)   -4));
         runInvertibleConversion(c,   "128", Short  .valueOf((short) 128));
         runInvertibleConversion(c, "40000", Integer.valueOf(      40000));
@@ -92,7 +103,7 @@ public final strictfp class StringConverterTest extends TestCase {
      */
     @Test
     public void testDouble() {
-        final ObjectConverter<String,Double> c = StringConverter.Double.INSTANCE;
+        final ObjectConverter<String,Double> c = getInstance(Double.class);
         runInvertibleConversion(c, "4.5", Double.valueOf(4.5));
         tryUnconvertibleValue(c);
         assertSame("Deserialization shall resolves to the singleton instance.", c, assertSerializedEquals(c));
@@ -103,7 +114,7 @@ public final strictfp class StringConverterTest extends TestCase {
      */
     @Test
     public void testFloat() {
-        final ObjectConverter<String,Float> c = StringConverter.Float.INSTANCE;
+        final ObjectConverter<String,Float> c = getInstance(Float.class);
         runInvertibleConversion(c, "4.5", Float.valueOf(4.5f));
         tryUnconvertibleValue(c);
         assertSame("Deserialization shall resolves to the singleton instance.", c, assertSerializedEquals(c));
@@ -114,7 +125,7 @@ public final strictfp class StringConverterTest extends TestCase {
      */
     @Test
     public void testLong() {
-        final ObjectConverter<String,Long> c = StringConverter.Long.INSTANCE;
+        final ObjectConverter<String,Long> c = getInstance(Long.class);
         runInvertibleConversion(c, "45000", Long.valueOf(45000));
         tryUnconvertibleValue(c);
         assertSame("Deserialization shall resolves to the singleton instance.", c, assertSerializedEquals(c));
@@ -125,7 +136,7 @@ public final strictfp class StringConverterTest extends TestCase {
      */
     @Test
     public void testInteger() {
-        final ObjectConverter<String,Integer> c = StringConverter.Integer.INSTANCE;
+        final ObjectConverter<String,Integer> c = getInstance(Integer.class);
         runInvertibleConversion(c, "45000", Integer.valueOf(45000));
         tryUnconvertibleValue(c);
         assertSame("Deserialization shall resolves to the singleton instance.", c, assertSerializedEquals(c));
@@ -136,7 +147,7 @@ public final strictfp class StringConverterTest extends TestCase {
      */
     @Test
     public void testShort() {
-        final ObjectConverter<String,Short> c = StringConverter.Short.INSTANCE;
+        final ObjectConverter<String,Short> c = getInstance(Short.class);
         runInvertibleConversion(c, "4500", Short.valueOf((short) 4500));
         tryUnconvertibleValue(c);
         assertSame("Deserialization shall resolves to the singleton instance.", c, assertSerializedEquals(c));
@@ -147,7 +158,7 @@ public final strictfp class StringConverterTest extends TestCase {
      */
     @Test
     public void testByte() {
-        final ObjectConverter<String,Byte> c = StringConverter.Byte.INSTANCE;
+        final ObjectConverter<String,Byte> c = getInstance(Byte.class);
         runInvertibleConversion(c, "45", Byte.valueOf((byte) 45));
         tryUnconvertibleValue(c);
         assertSame("Deserialization shall resolves to the singleton instance.", c, assertSerializedEquals(c));
@@ -158,7 +169,7 @@ public final strictfp class StringConverterTest extends TestCase {
      */
     @Test
     public void testBigDecimal() {
-        final ObjectConverter<String,BigDecimal> c = StringConverter.BigDecimal.INSTANCE;
+        final ObjectConverter<String,BigDecimal> c = getInstance(BigDecimal.class);
         runInvertibleConversion(c, "45000.5", BigDecimal.valueOf(45000.5));
         tryUnconvertibleValue(c);
         assertSame("Deserialization shall resolves to the singleton instance.", c, assertSerializedEquals(c));
@@ -169,7 +180,7 @@ public final strictfp class StringConverterTest extends TestCase {
      */
     @Test
     public void testBigInteger() {
-        final ObjectConverter<String,BigInteger> c = StringConverter.BigInteger.INSTANCE;
+        final ObjectConverter<String,BigInteger> c = getInstance(BigInteger.class);
         runInvertibleConversion(c, "45000", BigInteger.valueOf(45000));
         tryUnconvertibleValue(c);
         assertSame("Deserialization shall resolves to the singleton instance.", c, assertSerializedEquals(c));
@@ -180,7 +191,7 @@ public final strictfp class StringConverterTest extends TestCase {
      */
     @Test
     public void testBoolean() {
-        final ObjectConverter<String,Boolean> c = StringConverter.Boolean.INSTANCE;
+        final ObjectConverter<String,Boolean> c = getInstance(Boolean.class);
         runInvertibleConversion(c, "true",  Boolean.TRUE);
         runInvertibleConversion(c, "false", Boolean.FALSE);
         assertEquals(Boolean.TRUE,  c.convert("yes"));
@@ -198,7 +209,7 @@ public final strictfp class StringConverterTest extends TestCase {
      */
     @Test
     public void testLocale() {
-        final ObjectConverter<String,Locale> c = StringConverter.Locale.INSTANCE;
+        final ObjectConverter<String,Locale> c = getInstance(Locale.class);
         runInvertibleConversion(c, "fr_CA", Locale.CANADA_FRENCH);
         tryUnconvertibleValue(c);
         assertSame("Deserialization shall resolves to the singleton instance.", c, assertSerializedEquals(c));
@@ -209,7 +220,7 @@ public final strictfp class StringConverterTest extends TestCase {
      */
     @Test
     public void testCharset() {
-        final ObjectConverter<String,Charset> c = StringConverter.Charset.INSTANCE;
+        final ObjectConverter<String,Charset> c = getInstance(Charset.class);
         runInvertibleConversion(c, "UTF-8", StandardCharsets.UTF_8);
         tryUnconvertibleValue(c);
         assertSame("Deserialization shall resolves to the singleton instance.", c, assertSerializedEquals(c));
@@ -220,7 +231,7 @@ public final strictfp class StringConverterTest extends TestCase {
      */
     @Test
     public void testInternationalString() {
-        final ObjectConverter<String,InternationalString> c = StringConverter.InternationalString.INSTANCE;
+        final ObjectConverter<String,InternationalString> c = getInstance(InternationalString.class);
         runInvertibleConversion(c, "Some sentence", new SimpleInternationalString("Some sentence"));
         assertSame("Deserialization shall resolves to the singleton instance.", c, assertSerializedEquals(c));
     }
@@ -230,7 +241,7 @@ public final strictfp class StringConverterTest extends TestCase {
      */
     @Test
     public void testFile() {
-        final ObjectConverter<String,File> c = StringConverter.File.INSTANCE;
+        final ObjectConverter<String,File> c = getInstance(File.class);
         runInvertibleConversion(c, "home/user/index.txt", new File("home/user/index.txt"));
         assertSame("Deserialization shall resolves to the singleton instance.", c, assertSerializedEquals(c));
     }
@@ -242,7 +253,7 @@ public final strictfp class StringConverterTest extends TestCase {
      */
     @Test
     public void testURI() throws URISyntaxException {
-        final ObjectConverter<String,URI> c = StringConverter.URI.INSTANCE;
+        final ObjectConverter<String,URI> c = getInstance(URI.class);
         runInvertibleConversion(c, "file:/home/user/index.txt", new URI("file:/home/user/index.txt"));
         assertSame("Deserialization shall resolves to the singleton instance.", c, assertSerializedEquals(c));
     }
@@ -254,7 +265,7 @@ public final strictfp class StringConverterTest extends TestCase {
      */
     @Test
     public void testURL() throws MalformedURLException  {
-        final ObjectConverter<String,URL> c = StringConverter.URL.INSTANCE;
+        final ObjectConverter<String,URL> c = getInstance(URL.class);
         runInvertibleConversion(c, "file:/home/user/index.txt", new URL("file:/home/user/index.txt"));
         assertSame("Deserialization shall resolves to the singleton instance.", c, assertSerializedEquals(c));
     }

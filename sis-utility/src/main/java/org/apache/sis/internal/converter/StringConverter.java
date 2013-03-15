@@ -18,8 +18,6 @@ package org.apache.sis.internal.converter;
 
 import java.util.Set;
 import java.util.EnumSet;
-import java.io.Serializable;
-import java.io.ObjectStreamException;
 import java.nio.charset.UnsupportedCharsetException;
 import java.net.URISyntaxException;
 import java.net.MalformedURLException;
@@ -37,13 +35,9 @@ import org.apache.sis.util.iso.SimpleInternationalString;
 
 
 /**
- * Handles conversions from {@link String} to various objects.
- * The source class is fixed to {@code String}. The target class is determined
- * by the inner class which extends this {@code StringConverter}.
- *
- * <p>All subclasses will have a unique instance. For this reason, it is not necessary to
- * override the {@code hashCode()} and {@code equals(Object)} methods, since identity
- * comparisons will work just well.</p>
+ * Handles conversions between {@link String} and various kinds of objects.
+ * Each inner class in this {@code StringConverter} class defines both the
+ * forward and the inverse converters.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.4)
@@ -51,24 +45,75 @@ import org.apache.sis.util.iso.SimpleInternationalString;
  * @module
  */
 @Immutable
-abstract class StringConverter<T> extends SurjectiveConverter<String,T> implements Serializable {
+abstract class StringConverter<T> extends SystemConverter<String, T> {
     /**
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = -3397013355582381432L;
 
     /**
-     * For inner classes only.
+     * The inverse converter from the target to the source class.
      */
-    StringConverter() {
+    private final ObjectConverter<T, String> inverse;
+
+    /**
+     * Creates a new converter for the given target class.
+     *
+     * @param targetClass The {@linkplain #getTargetClass() target class}.
+     * @param inverse The inverse converter from the target to the source class.
+     */
+    StringConverter(final Class<T> targetClass) {
+        super(String.class, targetClass);
+        inverse = createInverse();
     }
 
     /**
-     * Returns the source class, which is always {@link String}.
+     * Invoked by the constructor for creating the inverse converter.
+     * To be overridden by classes which need a specialized instance.
+     */
+    ObjectConverter<T, String> createInverse() {
+        return new ObjectToString<>(targetClass, this);
+    }
+
+    /**
+     * Returns a predefined instance for the given target class, or {@code null} if none.
+     * This method does not create any new instance.
+     *
+     * @param  <T> The target class.
+     * @param  targetClass The target class.
+     * @return An instance for the given target class, or {@code null} if none.
+     */
+    @SuppressWarnings({"unchecked","rawtypes"})
+    static <T> StringConverter<T> getInstance(final Class<T> targetClass) {
+        switch (Numbers.getEnumConstant(targetClass)) {
+            case Numbers.BOOLEAN:     return (StringConverter<T>) Boolean   .INSTANCE;
+            case Numbers.BYTE:        return (StringConverter<T>) Byte      .INSTANCE;
+            case Numbers.SHORT:       return (StringConverter<T>) Short     .INSTANCE;
+            case Numbers.INTEGER:     return (StringConverter<T>) Integer   .INSTANCE;
+            case Numbers.LONG:        return (StringConverter<T>) Long      .INSTANCE;
+            case Numbers.FLOAT:       return (StringConverter<T>) Float     .INSTANCE;
+            case Numbers.DOUBLE:      return (StringConverter<T>) Double    .INSTANCE;
+            case Numbers.BIG_INTEGER: return (StringConverter<T>) BigInteger.INSTANCE;
+            case Numbers.BIG_DECIMAL: return (StringConverter<T>) BigDecimal.INSTANCE;
+        }
+        if (targetClass == java.lang.Number        .class) return (StringConverter<T>) Number. INSTANCE;
+        if (targetClass == java.util.Locale        .class) return (StringConverter<T>) Locale. INSTANCE;
+        if (targetClass == java.nio.charset.Charset.class) return (StringConverter<T>) Charset.INSTANCE;
+        if (targetClass == java.io.File            .class) return (StringConverter<T>) File   .INSTANCE;
+        if (targetClass == java.nio.file.Path      .class) return (StringConverter<T>) Path   .INSTANCE;
+        if (targetClass == java.net.URI            .class) return (StringConverter<T>) URI    .INSTANCE;
+        if (targetClass == java.net.URL            .class) return (StringConverter<T>) URL    .INSTANCE;
+        if (targetClass == org.opengis.util.InternationalString.class) return (StringConverter<T>) InternationalString.INSTANCE;
+        return null;
+    }
+
+    /**
+     * Returns the singleton instance on deserialization, if any.
      */
     @Override
-    public final Class<String> getSourceClass() {
-        return String.class;
+    public ObjectConverter<String, T> unique() {
+        final StringConverter<T> instance = getInstance(targetClass);
+        return (instance != null) ? instance : this;
     }
 
     /**
@@ -78,6 +123,14 @@ abstract class StringConverter<T> extends SurjectiveConverter<String,T> implemen
     @Override
     public Set<FunctionProperty> properties() {
         return EnumSet.of(FunctionProperty.SURJECTIVE, FunctionProperty.INVERTIBLE);
+    }
+
+    /**
+     * Returns the inverse converter.
+     */
+    @Override
+    public final ObjectConverter<T, String> inverse() {
+        return inverse;
     }
 
     /**
@@ -120,27 +173,13 @@ abstract class StringConverter<T> extends SurjectiveConverter<String,T> implemen
      * {@link Numbers#narrowestNumber(String)}.
      */
     @Immutable
-    static final class Number extends StringConverter<java.lang.Number> {
+    private static final class Number extends StringConverter<java.lang.Number> {
         /** Cross-version compatibility. */ static final long serialVersionUID = 1557277544742023571L;
         /** The unique, shared instance. */ static final Number INSTANCE = new Number();
-        /** For {@link #INSTANCE} only.  */ private Number() {}
-
-        @Override public Class<java.lang.Number> getTargetClass() {
-            return java.lang.Number.class;
-        }
+        /** For {@link #INSTANCE} only.  */ private Number() {super(java.lang.Number.class);}
 
         @Override java.lang.Number doConvert(String source) throws NumberFormatException {
             return Numbers.narrowestNumber(source);
-        }
-
-        /** Returns the inverse, since this converter is "almost" bijective. */
-        @Override public ObjectConverter<java.lang.Number, String> inverse() {
-            return ObjectToString.NUMBER;
-        }
-
-        /** Returns the singleton instance on deserialization. */
-        Object readResolve() throws ObjectStreamException {
-            return INSTANCE;
         }
     }
 
@@ -148,27 +187,13 @@ abstract class StringConverter<T> extends SurjectiveConverter<String,T> implemen
      * Converter from {@link String} to {@link java.lang.Double}.
      */
     @Immutable
-    static final class Double extends StringConverter<java.lang.Double> {
+    private static final class Double extends StringConverter<java.lang.Double> {
         /** Cross-version compatibility. */ static final long serialVersionUID = -9094071164371643060L;
         /** The unique, shared instance. */ static final Double INSTANCE = new Double();
-        /** For {@link #INSTANCE} only.  */ private Double() {}
-
-        @Override public Class<java.lang.Double> getTargetClass() {
-            return java.lang.Double.class;
-        }
+        /** For {@link #INSTANCE} only.  */ private Double() {super(java.lang.Double.class);}
 
         @Override java.lang.Double doConvert(String source) throws NumberFormatException {
             return java.lang.Double.parseDouble(source);
-        }
-
-        /** Returns the inverse, since this converter is "almost" bijective. */
-        @Override public ObjectConverter<java.lang.Double, String> inverse() {
-            return new ObjectToString<>(java.lang.Double.class, this);
-        }
-
-        /** Returns the singleton instance on deserialization. */
-        Object readResolve() throws ObjectStreamException {
-            return INSTANCE;
         }
     }
 
@@ -176,27 +201,13 @@ abstract class StringConverter<T> extends SurjectiveConverter<String,T> implemen
      * Converter from {@link String} to {@link java.lang.Float}.
      */
     @Immutable
-    static final class Float extends StringConverter<java.lang.Float> {
+    private static final class Float extends StringConverter<java.lang.Float> {
         /** Cross-version compatibility. */ static final long serialVersionUID = -2815192289550338333L;
         /** The unique, shared instance. */ static final Float INSTANCE = new Float();
-        /** For {@link #INSTANCE} only.  */ private Float() {}
-
-        @Override public Class<java.lang.Float> getTargetClass() {
-            return java.lang.Float.class;
-        }
+        /** For {@link #INSTANCE} only.  */ private Float() {super(java.lang.Float.class);}
 
         @Override java.lang.Float doConvert(String source) throws NumberFormatException {
             return java.lang.Float.parseFloat(source);
-        }
-
-        /** Returns the inverse, since this converter is "almost" bijective. */
-        @Override public ObjectConverter<java.lang.Float, String> inverse() {
-            return new ObjectToString<>(java.lang.Float.class, this);
-        }
-
-        /** Returns the singleton instance on deserialization. */
-        Object readResolve() throws ObjectStreamException {
-            return INSTANCE;
         }
     }
 
@@ -204,27 +215,13 @@ abstract class StringConverter<T> extends SurjectiveConverter<String,T> implemen
      * Converter from {@link String} to {@link java.lang.Long}.
      */
     @Immutable
-    static final class Long extends StringConverter<java.lang.Long> {
+    private static final class Long extends StringConverter<java.lang.Long> {
         /** Cross-version compatibility. */ static final long serialVersionUID = -2171263041723939779L;
         /** The unique, shared instance. */ static final Long INSTANCE = new Long();
-        /** For {@link #INSTANCE} only.  */ private Long() {}
-
-        @Override public Class<java.lang.Long> getTargetClass() {
-            return java.lang.Long.class;
-        }
+        /** For {@link #INSTANCE} only.  */ private Long() {super(java.lang.Long.class);}
 
         @Override java.lang.Long doConvert(String source) throws NumberFormatException {
             return java.lang.Long.parseLong(source);
-        }
-
-        /** Returns the inverse, since this converter is "almost" bijective. */
-        @Override public ObjectConverter<java.lang.Long, String> inverse() {
-            return new ObjectToString<>(java.lang.Long.class, this);
-        }
-
-        /** Returns the singleton instance on deserialization. */
-        Object readResolve() throws ObjectStreamException {
-            return INSTANCE;
         }
     }
 
@@ -232,27 +229,13 @@ abstract class StringConverter<T> extends SurjectiveConverter<String,T> implemen
      * Converter from {@link String} to {@link java.lang.Integer}.
      */
     @Immutable
-    static final class Integer extends StringConverter<java.lang.Integer> {
+    private static final class Integer extends StringConverter<java.lang.Integer> {
         /** Cross-version compatibility. */ static final long serialVersionUID = 763211364703205967L;
         /** The unique, shared instance. */ static final Integer INSTANCE = new Integer();
-        /** For {@link #INSTANCE} only.  */ private Integer() {}
-
-        @Override public Class<java.lang.Integer> getTargetClass() {
-            return java.lang.Integer.class;
-        }
+        /** For {@link #INSTANCE} only.  */ private Integer() {super(java.lang.Integer.class);}
 
         @Override java.lang.Integer doConvert(String source) throws NumberFormatException {
             return java.lang.Integer.parseInt(source);
-        }
-
-        /** Returns the inverse, since this converter is "almost" bijective. */
-        @Override public ObjectConverter<java.lang.Integer, String> inverse() {
-            return new ObjectToString<>(java.lang.Integer.class, this);
-        }
-
-        /** Returns the singleton instance on deserialization. */
-        Object readResolve() throws ObjectStreamException {
-            return INSTANCE;
         }
     }
 
@@ -260,27 +243,13 @@ abstract class StringConverter<T> extends SurjectiveConverter<String,T> implemen
      * Converter from {@link String} to {@link java.lang.Short}.
      */
     @Immutable
-    static final class Short extends StringConverter<java.lang.Short> {
+    private static final class Short extends StringConverter<java.lang.Short> {
         /** Cross-version compatibility. */ static final long serialVersionUID = -1770870328699572960L;
         /** The unique, shared instance. */ static final Short INSTANCE = new Short();
-        /** For {@link #INSTANCE} only.  */ private Short() {}
-
-        @Override public Class<java.lang.Short> getTargetClass() {
-            return java.lang.Short.class;
-        }
+        /** For {@link #INSTANCE} only.  */ private Short() {super(java.lang.Short.class);}
 
         @Override java.lang.Short doConvert(String source) throws NumberFormatException {
             return java.lang.Short.parseShort(source);
-        }
-
-        /** Returns the inverse, since this converter is "almost" bijective. */
-        @Override public ObjectConverter<java.lang.Short, String> inverse() {
-            return new ObjectToString<>(java.lang.Short.class, this);
-        }
-
-        /** Returns the singleton instance on deserialization. */
-        Object readResolve() throws ObjectStreamException {
-            return INSTANCE;
         }
     }
 
@@ -288,27 +257,13 @@ abstract class StringConverter<T> extends SurjectiveConverter<String,T> implemen
      * Converter from {@link String} to {@link java.lang.Byte}.
      */
     @Immutable
-    static final class Byte extends StringConverter<java.lang.Byte> {
+    private static final class Byte extends StringConverter<java.lang.Byte> {
         /** Cross-version compatibility. */ static final long serialVersionUID = 2084870859391804185L;
         /** The unique, shared instance. */ static final Byte INSTANCE = new Byte();
-        /** For {@link #INSTANCE} only.  */ private Byte() {}
-
-        @Override public Class<java.lang.Byte> getTargetClass() {
-            return java.lang.Byte.class;
-        }
+        /** For {@link #INSTANCE} only.  */ private Byte() {super(java.lang.Byte.class);}
 
         @Override java.lang.Byte doConvert(String source) throws NumberFormatException {
             return java.lang.Byte.parseByte(source);
-        }
-
-        /** Returns the inverse, since this converter is "almost" bijective. */
-        @Override public ObjectConverter<java.lang.Byte, String> inverse() {
-            return new ObjectToString<>(java.lang.Byte.class, this);
-        }
-
-        /** Returns the singleton instance on deserialization. */
-        Object readResolve() throws ObjectStreamException {
-            return INSTANCE;
         }
     }
 
@@ -316,27 +271,13 @@ abstract class StringConverter<T> extends SurjectiveConverter<String,T> implemen
      * Converter from {@link String} to {@link java.math.BigDecimal}.
      */
     @Immutable
-    static final class BigDecimal extends StringConverter<java.math.BigDecimal> {
+    private static final class BigDecimal extends StringConverter<java.math.BigDecimal> {
         /** Cross-version compatibility. */ static final long serialVersionUID = -8597497425876120213L;
         /** The unique, shared instance. */ static final BigDecimal INSTANCE = new BigDecimal();
-        /** For {@link #INSTANCE} only.  */ private BigDecimal() {}
-
-        @Override public Class<java.math.BigDecimal> getTargetClass() {
-            return java.math.BigDecimal.class;
-        }
+        /** For {@link #INSTANCE} only.  */ private BigDecimal() {super(java.math.BigDecimal.class);}
 
         @Override java.math.BigDecimal doConvert(String source) throws NumberFormatException {
             return new java.math.BigDecimal(source);
-        }
-
-        /** Returns the inverse, since this converter is "almost" bijective. */
-        @Override public ObjectConverter<java.math.BigDecimal, String> inverse() {
-            return new ObjectToString<>(java.math.BigDecimal.class, this);
-        }
-
-        /** Returns the singleton instance on deserialization. */
-        Object readResolve() throws ObjectStreamException {
-            return INSTANCE;
         }
     }
 
@@ -344,27 +285,13 @@ abstract class StringConverter<T> extends SurjectiveConverter<String,T> implemen
      * Converter from {@link String} to {@link java.math.BigInteger}.
      */
     @Immutable
-    static final class BigInteger extends StringConverter<java.math.BigInteger> {
+    private static final class BigInteger extends StringConverter<java.math.BigInteger> {
         /** Cross-version compatibility. */ static final long serialVersionUID = 8658903031519526466L;
         /** The unique, shared instance. */ static final BigInteger INSTANCE = new BigInteger();
-        /** For {@link #INSTANCE} only.  */ private BigInteger() {}
-
-        @Override public Class<java.math.BigInteger> getTargetClass() {
-            return java.math.BigInteger.class;
-        }
+        /** For {@link #INSTANCE} only.  */ private BigInteger() {super(java.math.BigInteger.class);}
 
         @Override java.math.BigInteger doConvert(String source) throws NumberFormatException {
             return new java.math.BigInteger(source);
-        }
-
-        /** Returns the inverse, since this converter is "almost" bijective. */
-        @Override public ObjectConverter<java.math.BigInteger, String> inverse() {
-            return new ObjectToString<>(java.math.BigInteger.class, this);
-        }
-
-        /** Returns the singleton instance on deserialization. */
-        Object readResolve() throws ObjectStreamException {
-            return INSTANCE;
         }
     }
 
@@ -385,14 +312,10 @@ abstract class StringConverter<T> extends SurjectiveConverter<String,T> implemen
      * </table>
      */
     @Immutable
-    static final class Boolean extends StringConverter<java.lang.Boolean> {
+    private static final class Boolean extends StringConverter<java.lang.Boolean> {
         /** Cross-version compatibility. */ static final long serialVersionUID = -27525398425996373L;
         /** The unique, shared instance. */ static final Boolean INSTANCE = new Boolean();
-        /** For {@link #INSTANCE} only.  */ private Boolean() {}
-
-        @Override public Class<java.lang.Boolean> getTargetClass() {
-            return java.lang.Boolean.class;
-        }
+        /** For {@link #INSTANCE} only.  */ private Boolean() {super(java.lang.Boolean.class);}
 
         @Override java.lang.Boolean doConvert(final String source) throws UnconvertibleObjectException {
             switch (source.toLowerCase(java.util.Locale.ROOT)) {
@@ -401,16 +324,6 @@ abstract class StringConverter<T> extends SurjectiveConverter<String,T> implemen
             }
             throw new UnconvertibleObjectException(formatErrorMessage(source));
         }
-
-        /** Returns the inverse, since this converter is "almost" bijective. */
-        @Override public ObjectConverter<java.lang.Boolean, String> inverse() {
-            return ObjectToString.BOOLEAN;
-        }
-
-        /** Returns the singleton instance on deserialization. */
-        Object readResolve() throws ObjectStreamException {
-            return INSTANCE;
-        }
     }
 
     /**
@@ -418,27 +331,13 @@ abstract class StringConverter<T> extends SurjectiveConverter<String,T> implemen
      * Examples of locale in string form: {@code "fr"}, {@code "fr_CA"}.
      */
     @Immutable
-    static final class Locale extends StringConverter<java.util.Locale> {
+    private static final class Locale extends StringConverter<java.util.Locale> {
         /** Cross-version compatibility. */ static final long serialVersionUID = -2888932450292616036L;
         /** The unique, shared instance. */ static final Locale INSTANCE = new Locale();
-        /** For {@link #INSTANCE} only.  */ private Locale() {}
-
-        @Override public Class<java.util.Locale> getTargetClass() {
-            return java.util.Locale.class;
-        }
+        /** For {@link #INSTANCE} only.  */ private Locale() {super(java.util.Locale.class);}
 
         @Override java.util.Locale doConvert(String source) throws IllegalArgumentException {
             return Locales.parse(source);
-        }
-
-        /** Returns the inverse, since this converter is "almost" bijective. */
-        @Override public ObjectConverter<java.util.Locale, String> inverse() {
-            return ObjectToString.LOCALE;
-        }
-
-        /** Returns the singleton instance on deserialization. */
-        Object readResolve() throws ObjectStreamException {
-            return INSTANCE;
         }
     }
 
@@ -446,27 +345,13 @@ abstract class StringConverter<T> extends SurjectiveConverter<String,T> implemen
      * Converter from {@link String} to {@link java.nio.charset.Charset}.
      */
     @Immutable
-    static final class Charset extends StringConverter<java.nio.charset.Charset> {
+    private static final class Charset extends StringConverter<java.nio.charset.Charset> {
         /** Cross-version compatibility. */ static final long serialVersionUID = 4539755855992944656L;
         /** The unique, shared instance. */ static final Charset INSTANCE = new Charset();
-        /** For {@link #INSTANCE} only.  */ private Charset() {}
-
-        @Override public Class<java.nio.charset.Charset> getTargetClass() {
-            return java.nio.charset.Charset.class;
-        }
+        /** For {@link #INSTANCE} only.  */ private Charset() {super(java.nio.charset.Charset.class);}
 
         @Override java.nio.charset.Charset doConvert(String source) throws UnsupportedCharsetException {
             return java.nio.charset.Charset.forName(source);
-        }
-
-        /** Returns the inverse, since this converter is "almost" bijective. */
-        @Override public ObjectConverter<java.nio.charset.Charset, String> inverse() {
-            return ObjectToString.CHARSET;
-        }
-
-        /** Returns the singleton instance on deserialization. */
-        Object readResolve() throws ObjectStreamException {
-            return INSTANCE;
         }
     }
 
@@ -474,10 +359,10 @@ abstract class StringConverter<T> extends SurjectiveConverter<String,T> implemen
      * Converter from {@link String} to {@link org.opengis.util.InternationalString}.
      */
     @Immutable
-    static final class InternationalString extends StringConverter<org.opengis.util.InternationalString> {
+    private static final class InternationalString extends StringConverter<org.opengis.util.InternationalString> {
         /** Cross-version compatibility. */ static final long serialVersionUID = 730809620191573819L;
         /** The unique, shared instance. */ static final InternationalString INSTANCE = new InternationalString();
-        /** For {@link #INSTANCE} only.  */ private InternationalString() {}
+        /** For {@link #INSTANCE} only.  */ private InternationalString() {super(org.opengis.util.InternationalString.class);}
 
         /** Returns the function properties, which is bijective. */
         @Override public Set<FunctionProperty> properties() {
@@ -485,21 +370,8 @@ abstract class StringConverter<T> extends SurjectiveConverter<String,T> implemen
                     FunctionProperty.ORDER_PRESERVING, FunctionProperty.INVERTIBLE);
         }
 
-        @Override public Class<org.opengis.util.InternationalString> getTargetClass() {
-            return org.opengis.util.InternationalString.class;
-        }
-
         @Override org.opengis.util.InternationalString doConvert(String source) {
             return new SimpleInternationalString(source);
-        }
-
-        @Override public ObjectConverter<org.opengis.util.InternationalString, String> inverse() {
-            return ObjectToString.I18N;
-        }
-
-        /** Returns the singleton instance on deserialization. */
-        Object readResolve() throws ObjectStreamException {
-            return INSTANCE;
         }
     }
 
@@ -509,27 +381,13 @@ abstract class StringConverter<T> extends SurjectiveConverter<String,T> implemen
      * ({@code '/'} and {@code '\'}) produce the same {@code File} object.
      */
     @Immutable
-    static final class File extends StringConverter<java.io.File> {
+    private static final class File extends StringConverter<java.io.File> {
         /** Cross-version compatibility. */ static final long serialVersionUID = 6445208470928432376L;
         /** The unique, shared instance. */ static final File INSTANCE = new File();
-        /** For {@link #INSTANCE} only.  */ private File() {}
-
-        @Override public Class<java.io.File> getTargetClass() {
-            return java.io.File.class;
-        }
+        /** For {@link #INSTANCE} only.  */ private File() {super(java.io.File.class);}
 
         @Override java.io.File doConvert(String source) {
             return new java.io.File(source);
-        }
-
-        /** Returns the inverse, since this converter is "almost" bijective. */
-        @Override public ObjectConverter<java.io.File, String> inverse() {
-            return ObjectToString.FILE;
-        }
-
-        /** Returns the singleton instance on deserialization. */
-        Object readResolve() throws ObjectStreamException {
-            return INSTANCE;
         }
     }
 
@@ -537,22 +395,13 @@ abstract class StringConverter<T> extends SurjectiveConverter<String,T> implemen
      * Converter from {@link String} to {@link java.nio.file.Path}.
      */
     @Immutable
-    static final class Path extends StringConverter<java.nio.file.Path> {
+    private static final class Path extends StringConverter<java.nio.file.Path> {
         /** Cross-version compatibility. */ static final long serialVersionUID = -5227120925547132828L;
         /** The unique, shared instance. */ static final Path INSTANCE = new Path();
-        /** For {@link #INSTANCE} only.  */ private Path() {}
-
-        @Override public Class<java.nio.file.Path> getTargetClass() {
-            return java.nio.file.Path.class;
-        }
+        /** For {@link #INSTANCE} only.  */ private Path() {super(java.nio.file.Path.class);}
 
         @Override java.nio.file.Path doConvert(String source) throws InvalidPathException {
             return java.nio.file.Paths.get(source);
-        }
-
-        /** Returns the singleton instance on deserialization. */
-        Object readResolve() throws ObjectStreamException {
-            return INSTANCE;
         }
     }
 
@@ -560,27 +409,13 @@ abstract class StringConverter<T> extends SurjectiveConverter<String,T> implemen
      * Converter from {@link String} to {@link java.net.URI}.
      */
     @Immutable
-    static final class URI extends StringConverter<java.net.URI> {
+    private static final class URI extends StringConverter<java.net.URI> {
         /** Cross-version compatibility. */ static final long serialVersionUID = -2804405634789179706L;
         /** The unique, shared instance. */ static final URI INSTANCE = new URI();
-        /** For {@link #INSTANCE} only.  */ private URI() {}
-
-        @Override public Class<java.net.URI> getTargetClass() {
-            return java.net.URI.class;
-        }
+        /** For {@link #INSTANCE} only.  */ private URI() {super(java.net.URI.class);}
 
         @Override java.net.URI doConvert(String source) throws URISyntaxException {
             return new java.net.URI(source);
-        }
-
-        /** Returns the inverse, since this converter is "almost" bijective. */
-        @Override public ObjectConverter<java.net.URI, String> inverse() {
-            return ObjectToString.URI;
-        }
-
-        /** Returns the singleton instance on deserialization. */
-        Object readResolve() throws ObjectStreamException {
-            return INSTANCE;
         }
     }
 
@@ -588,27 +423,13 @@ abstract class StringConverter<T> extends SurjectiveConverter<String,T> implemen
      * Converter from {@link String} to {@link java.net.URL}.
      */
     @Immutable
-    static final class URL extends StringConverter<java.net.URL> {
+    private static final class URL extends StringConverter<java.net.URL> {
         /** Cross-version compatibility. */ static final long serialVersionUID = 2303928306635765592L;
         /** The unique, shared instance. */ static final URL INSTANCE = new URL();
-        /** For {@link #INSTANCE} only.  */ private URL() {}
-
-        @Override public Class<java.net.URL> getTargetClass() {
-            return java.net.URL.class;
-        }
+        /** For {@link #INSTANCE} only.  */ private URL() {super(java.net.URL.class);}
 
         @Override java.net.URL doConvert(String source) throws MalformedURLException {
             return new java.net.URL(source);
-        }
-
-        /** Returns the inverse, since this converter is "almost" bijective. */
-        @Override public ObjectConverter<java.net.URL, String> inverse() {
-            return ObjectToString.URL;
-        }
-
-        /** Returns the singleton instance on deserialization. */
-        Object readResolve() throws ObjectStreamException {
-            return INSTANCE;
         }
     }
 
@@ -616,28 +437,28 @@ abstract class StringConverter<T> extends SurjectiveConverter<String,T> implemen
      * Converter from {@link String} to {@link org.opengis.util.CodeList}.
      * This converter is particular in that it requires the target class in argument
      * to the constructor.
+     *
+     * <p>Instances of this class are created by
+     * {@link HeuristicRegistry#createConverter(Class, Class)}.</p>
      */
     @Immutable
     static final class CodeList<T extends org.opengis.util.CodeList<T>> extends StringConverter<T> {
         /** For cross-version compatibility on serialization. */
         static final long serialVersionUID = 3289083947166861278L;
 
-        /** The type of the code list. */
-        private final Class<T> targetType;
-
         /** Creates a new converter for the given code list. */
-        CodeList(final Class<T> targetType) {
-            this.targetType = targetType;
-        }
-
-        /** Returns the target class given at construction time. */
-        @Override public Class<T> getTargetClass() {
-            return targetType;
+        CodeList(final Class<T> targetClass) {
+            super(targetClass);
         }
 
         /** Converts the given string to the target type of this converter. */
         @Override T doConvert(String source) {
-            return Types.forCodeName(targetType, source, true);
+            return Types.forCodeName(targetClass, source, true);
+        }
+
+        /** Invoked by the constructor for creating the inverse converter. */
+        @Override ObjectConverter<T, String> createInverse() {
+            return new ObjectToString.CodeList<>(targetClass, this);
         }
     }
 }

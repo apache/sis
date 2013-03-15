@@ -26,6 +26,7 @@ import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.collection.TreeTable;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Debug;
 
 
@@ -153,6 +154,8 @@ final class FallbackConverter<S,T> extends SystemConverter<S,T> {
                   final ObjectConverter<S, ? extends T> primary,
                   final ObjectConverter<S, ? extends T> fallback)
     {
+        ArgumentChecks.ensureNonNull("primary",  primary);
+        ArgumentChecks.ensureNonNull("fallback", fallback);
         assert !(fallback instanceof FallbackConverter<?,?>) : fallback; // See javadoc
         final ObjectConverter<S, ? extends T> candidate = mergeIfSubtype(primary, fallback, null);
         if (candidate != null) {

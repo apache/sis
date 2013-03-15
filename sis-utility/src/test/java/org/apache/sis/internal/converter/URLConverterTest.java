@@ -61,7 +61,7 @@ public final strictfp class URLConverterTest extends TestCase {
      */
     @Test
     public void testString() throws MalformedURLException {
-        final ObjectConverter<URL,String> c = ObjectToString.URL;
+        final ObjectConverter<URL,String> c = StringConverter.getInstance(URL.class).inverse();
         runInvertibleConversion(c, new URL("file:/home/user/index.txt"), "file:/home/user/index.txt");
         assertSame("Deserialization shall resolves to the singleton instance.", c, assertSerializedEquals(c));
     }

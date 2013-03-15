@@ -70,7 +70,7 @@ public final strictfp class FileConverterTest extends TestCase {
      */
     @Test
     public void testString() {
-        final ObjectConverter<File,String> c = ObjectToString.FILE;
+        final ObjectConverter<File,String> c = StringConverter.getInstance(File.class).inverse();
         runInvertibleConversion(c, new File("home/user/index.txt"), "home/user/index.txt".replace("/", File.separator));
         assertSame("Deserialization shall resolves to the singleton instance.", c, assertSerializedEquals(c));
     }

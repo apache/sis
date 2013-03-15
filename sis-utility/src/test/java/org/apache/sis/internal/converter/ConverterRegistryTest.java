@@ -44,8 +44,10 @@ import static org.apache.sis.test.Assert.*;
  * @version 0.3
  * @module
  */
-@DependsOn({FallbackConverterTest.class,
-    org.apache.sis.util.collection.TreeTableFormatTest.class})
+@DependsOn({
+    StringConverterTest.class, FallbackConverterTest.class,
+    org.apache.sis.util.collection.TreeTableFormatTest.class
+})
 public final strictfp class ConverterRegistryTest extends TestCase {
     /**
      * The registry being tested.
@@ -62,6 +64,7 @@ public final strictfp class ConverterRegistryTest extends TestCase {
      * Registers a converter to test.
      */
     private void register(final ObjectConverter<?,?> converter) {
+        assertNotNull("Missing ObjectConverter", converter);
         converters.add(converter);
         registry.register(converter);
     }
@@ -149,11 +152,15 @@ public final strictfp class ConverterRegistryTest extends TestCase {
      * Tests registration of converters from {@link String} to miscellaneous objects.
      * This method tests the addition of many converters because we want to observe
      * how {@linkplain #registry} grow in reaction to those additions.
+     *
+     * <p>This test compares the string representations for convenience.  In theory those string
+     * representations are not committed API, so if the {@code FallbackConverter} implementation
+     * change, it is okay to update this test accordingly.</p>
      */
     @Test
     public void testStringToMiscellaneous() {
         assertAllConvertersAreRegistered();
-        register(StringConverter.Short.INSTANCE);
+        register(StringConverter.getInstance(Short.class));
         assertSameConverterForTarget(Short       .class);
         assertSameConverterForTarget(Number      .class);
         assertIdentityForTarget     (Object      .class);
@@ -174,7 +181,7 @@ public final strictfp class ConverterRegistryTest extends TestCase {
          */
         assertAllConvertersAreRegistered();
         assertNoConverterForTarget(Long.class);
-        register(StringConverter.Long.INSTANCE);
+        register(StringConverter.getInstance(Long.class));
         assertSameConverterForTarget(Long        .class);
         assertIdentityForTarget     (Object      .class);
         assertNoConverterForTarget  (Cloneable   .class);
@@ -200,7 +207,7 @@ public final strictfp class ConverterRegistryTest extends TestCase {
          */
         assertAllConvertersAreRegistered();
         assertNoConverterForTarget(Boolean.class);
-        register(StringConverter.Boolean.INSTANCE);
+        register(StringConverter.getInstance(Boolean.class));
         assertSameConverterForTarget(Boolean     .class);
         assertIdentityForTarget     (Object      .class);
         assertNoConverterForTarget  (Cloneable   .class);
@@ -222,7 +229,7 @@ public final strictfp class ConverterRegistryTest extends TestCase {
          * Expected side-effect: replacement of the FallbackConverter
          */
         assertAllConvertersAreRegistered();
-        register(StringConverter.Number.INSTANCE);
+        register(StringConverter.getInstance(Number.class));
         assertSameConverterForTarget(Number      .class);
         assertIdentityForTarget     (Object      .class);
         assertNoConverterForTarget  (Cloneable   .class);
@@ -235,15 +242,15 @@ public final strictfp class ConverterRegistryTest extends TestCase {
             "  ├─Comparable    ← String\n" +
             "  ├─Serializable  ← String\n" +
             "  ├─Long          ← String\n" +
-            "  ├─Number        ← String\n" + // Replaced the FallbackConverter.
-            "  └─Boolean       ← String\n", registry.toString());
+            "  ├─Boolean       ← String\n" +
+            "  └─Number        ← String\n", registry.toString()); // Replaced the FallbackConverter.
         /*
          * Adds String ← Float
          * Expected side-effect: none
          */
         assertAllConvertersAreRegistered();
         assertNoConverterForTarget(Float.class);
-        register(StringConverter.Float.INSTANCE);
+        register(StringConverter.getInstance(Float.class));
         assertSameConverterForTarget(Float       .class);
         assertIdentityForTarget     (Object      .class);
         assertNoConverterForTarget  (Cloneable   .class);
@@ -256,8 +263,8 @@ public final strictfp class ConverterRegistryTest extends TestCase {
             "  ├─Comparable    ← String\n" +
             "  ├─Serializable  ← String\n" +
             "  ├─Long          ← String\n" +
-            "  ├─Number        ← String\n" +
             "  ├─Boolean       ← String\n" +
+            "  ├─Number        ← String\n" +
             "  └─Float         ← String\n", registry.toString());
         /*
          * Final check.
@@ -269,12 +276,16 @@ public final strictfp class ConverterRegistryTest extends TestCase {
      * Tests registration of converters between {@link Number} and miscellaneous objects.
      * This method tests the addition of many converters because we want to observe
      * how {@linkplain #registry} grow in reaction to those additions.
+     *
+     * <p>This test compares the string representations for convenience.  In theory those string
+     * representations are not committed API, so if the {@code FallbackConverter} implementation
+     * change, it is okay to update this test accordingly.</p>
      */
     @Test
     @DependsOnMethod("testStringToMiscellaneous")
     public void testNumberToMiscellaneous() {
         assertAllConvertersAreRegistered();
-        register(ObjectToString.NUMBER);
+        register(StringConverter.getInstance(Number.class).inverse());
         assertSameConverterForTarget(String      .class);
         assertIdentityForTarget     (Object      .class);
         assertNoConverterForTarget  (Cloneable   .class);
@@ -293,7 +304,7 @@ public final strictfp class ConverterRegistryTest extends TestCase {
          * Expected side-effect: none
          */
         assertAllConvertersAreRegistered();
-        register(StringConverter.Number.INSTANCE);
+        register(StringConverter.getInstance(Number.class));
         assertSameConverterForTarget(Number.class);
         assertMultilinesEquals("After StringConverter.Number",
             "ConverterRegistry\n" +
