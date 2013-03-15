@@ -306,8 +306,8 @@ public class ConverterRegistry {
              */
             assert converter.getSourceClass() == key.sourceClass; // Enforced by parameterized type.
             if (existing.getSourceClass() == key.sourceClass) {
-                final boolean oldIsExact = existing .getTargetClass() == key.targetClass;
-                final boolean newIsExact = converter.getTargetClass() == key.targetClass;
+                final boolean oldIsExact = isExactlyFor(existing,  key.targetClass);
+                final boolean newIsExact = isExactlyFor(converter, key.targetClass);
                 if (oldIsExact & !newIsExact) {
                     /*
                      * The existing converter was defined exactly for the <S,T> classes, while the
@@ -329,6 +329,22 @@ public class ConverterRegistry {
             }
         }
         put(key, converter);
+    }
+
+    /**
+     * Returns {@code true} if the given converter has exactly the given target class.
+     * If the given converter is a {@link FallbackConverter}, then all children shall
+     * have the same target type too.
+     */
+    private static boolean isExactlyFor(final ObjectConverter<?,?> converter, final Class<?> targetClass) {
+        if (converter.getTargetClass() != targetClass) {
+            return false;
+        }
+        if (converter instanceof FallbackConverter<?,?>) {
+            final FallbackConverter<?,?> fc = (FallbackConverter<?,?>) converter;
+            return isExactlyFor(fc.primary, targetClass) && isExactlyFor(fc.fallback, targetClass);
+        }
+        return true;
     }
 
     /**
@@ -459,8 +475,8 @@ public class ConverterRegistry {
                      * showing this ClassPair, then the actual converter (source, target) as
                      * below:
                      *
-                     *     String     ⇨ Number              (the ClassPair key)
-                     *       └─String ⇨ Integer             (the ObjectConverter value)
+                     *     Number      ← String             (the ClassPair key)
+                     *       └─Integer ← String             (the ObjectConverter value)
                      *
                      * This is the same idea than the formatting done by FallbackConverter,
                      * except that there is only one child. Actually this can be though as

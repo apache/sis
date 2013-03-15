@@ -95,8 +95,10 @@ import org.junit.runners.Suite;
     org.apache.sis.internal.converter.URLConverterTest.class,
     org.apache.sis.internal.converter.FileConverterTest.class,
     org.apache.sis.internal.converter.StringConverterTest.class,
-    org.apache.sis.internal.converter.NumberConverterTest.class,
     org.apache.sis.internal.converter.FallbackConverterTest.class,
+    org.apache.sis.internal.converter.ConverterRegistryTest.class,
+    org.apache.sis.internal.converter.HeuristicRegistryTest.class,
+    org.apache.sis.internal.converter.NumberConverterTest.class, // Shall be after HeuristicRegistryTest.
 
     // XML most basic types.
     org.apache.sis.xml.XLinkTest.class,
