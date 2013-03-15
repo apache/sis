@@ -71,16 +71,6 @@ public abstract class SurjectiveConverter<S,T> implements ObjectConverter<S,T> {
     }
 
     /**
-     * Formats an error message for a value that can not be converted.
-     *
-     * @param  value The value that can not be converted.
-     * @return The error message.
-     */
-    final String formatErrorMessage(final S value) {
-        return Errors.format(Errors.Keys.CanNotConvertValue_2, value, getTargetClass());
-    }
-
-    /**
      * Returns a string representation of this converter for debugging purpose.
      */
     @Override
