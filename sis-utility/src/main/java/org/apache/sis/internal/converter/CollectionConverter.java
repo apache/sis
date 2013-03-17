@@ -60,12 +60,11 @@ abstract class CollectionConverter<T> extends SystemConverter<Collection<?>,T> {
     /**
      * Converter from {@link Collection} to {@link java.util.List}.
      */
-    @Immutable
-    static final class List extends CollectionConverter<java.util.List<?>> {
+    public static final class List extends CollectionConverter<java.util.List<?>> {
         private static final long serialVersionUID = 5492247760609833586L;
 
         @SuppressWarnings("unchecked")
-        List() {
+        public List() { // Instantiated by ServiceLoader.
             super((Class) java.util.List.class);
         }
 
@@ -85,12 +84,11 @@ abstract class CollectionConverter<T> extends SystemConverter<Collection<?>,T> {
     /**
      * Converter from {@link Collection} to {@link java.util.Set}.
      */
-    @Immutable
-    static final class Set extends CollectionConverter<java.util.Set<?>> {
+    public static final class Set extends CollectionConverter<java.util.Set<?>> {
         private static final long serialVersionUID = -4200659837453206164L;
 
         @SuppressWarnings("unchecked")
-        Set() {
+        public Set() { // Instantiated by ServiceLoader.
             super((Class) java.util.Set.class);
         }
 

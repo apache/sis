@@ -144,8 +144,7 @@ final class NumberConverter<S extends Number, T extends Number> extends SystemCo
         @Override
         public Set<FunctionProperty> properties() {
             if (targetClass.isAssignableFrom(sourceClass)) {
-                return EnumSet.of(FunctionProperty.INJECTIVE, FunctionProperty.SURJECTIVE,
-                            FunctionProperty.ORDER_PRESERVING);
+                return bijective();
             }
             return EnumSet.noneOf(FunctionProperty.class);
         }

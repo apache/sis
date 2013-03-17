@@ -299,6 +299,15 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
         }
     }
 
+    public static final class Angle extends StringConverter<org.apache.sis.measure.Angle> {
+        private static final long serialVersionUID = -6937967772504961327L;
+        public Angle() {super(org.apache.sis.measure.Angle.class);} // Instantiated by ServiceLoader.
+
+        @Override org.apache.sis.measure.Angle doConvert(String source) throws NumberFormatException {
+            return new org.apache.sis.measure.Angle(source);
+        }
+    }
+
     public static final class InternationalString extends StringConverter<org.opengis.util.InternationalString> {
         private static final long serialVersionUID = 730809620191573819L;
         public InternationalString() {super(org.opengis.util.InternationalString.class);} // Instantiated by ServiceLoader.
@@ -307,10 +316,9 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
             return new SimpleInternationalString(source);
         }
 
-        /** Declares a bijective function. */
+        /** Declares that the converter is bijective. */
         @Override public Set<FunctionProperty> properties() {
-            return EnumSet.of(FunctionProperty.INJECTIVE, FunctionProperty.SURJECTIVE,
-                    FunctionProperty.ORDER_PRESERVING, FunctionProperty.INVERTIBLE);
+            return bijective();
         }
     }
 

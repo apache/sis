@@ -16,7 +16,10 @@
  */
 package org.apache.sis.internal.converter;
 
+import java.util.Set;
+import java.util.EnumSet;
 import java.io.ObjectStreamException;
+import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.resources.Errors;
 
@@ -67,6 +70,15 @@ abstract class SystemConverter<S,T> extends ClassPair<S,T> implements ObjectConv
     }
 
     /**
+     * Convenience method for {@link #properties()} implementation of bijective converters
+     * between comparable objects. The converter is presumed invertible and to preserve order.
+     */
+    static Set<FunctionProperty> bijective() {
+        return EnumSet.of(FunctionProperty.INJECTIVE, FunctionProperty.SURJECTIVE,
+                    FunctionProperty.ORDER_PRESERVING, FunctionProperty.INVERTIBLE);
+    }
+
+    /**
      * Default to non-invertible conversion. Must be overridden by subclasses that support inversions.
      */
     @Override
@@ -113,6 +125,8 @@ abstract class SystemConverter<S,T> extends ClassPair<S,T> implements ObjectConv
      * Returns an unique instance of this converter if one exists. If a converter already
      * exists for the same source an target classes, then this converter is returned.
      * Otherwise this converter is returned <strong>without</strong> being cached.
+     *
+     * @return The unique instance, or {@code this} if no unique instance can be found.
      */
     public ObjectConverter<S,T> unique() {
         final ObjectConverter<S,T> existing = SystemRegistry.INSTANCE.findEquals(this);
