@@ -48,52 +48,16 @@ abstract class DateConverter<T> extends SystemConverter<Date,T> {
     private static final long serialVersionUID = -7770401534710581917L;
 
     /**
-     * The inverse converter specified at construction time.
+     * The inverse converter. Must be initialized by subclass constructors.
      */
-    private final SystemConverter<T, Date> inverse;
+    SystemConverter<T, Date> inverse;
 
     /**
-     * Creates a converter with an inverse which is the identity converter.
+     * Creates a converter for the given target type.
+     * Subclasses must initialize {@link #inverse}.
      */
-    @SuppressWarnings("unchecked")
     DateConverter(final Class<T> targetClass) {
         super(Date.class, targetClass);
-        assert Date.class.isAssignableFrom(targetClass);
-        inverse = new IdentityConverter(targetClass, Date.class, this);
-    }
-
-    /**
-     * Creates a converter with the given inverse converter.
-     */
-    DateConverter(final Class<T> targetClass, final SystemConverter<T, Date> inverse) {
-        super(Date.class, targetClass);
-        this.inverse = inverse;
-    }
-
-    /**
-     * Returns a predefined instance for the given target class, or {@code null} if none.
-     * This method does not create any new instance.
-     *
-     * @param  <T> The target class.
-     * @param  targetClass The target class.
-     * @return An instance for the given target class, or {@code null} if none.
-     */
-    @SuppressWarnings({"unchecked","rawtypes"})
-    static <T> DateConverter<T> getInstance(final Class<T> targetClass) {
-        if (targetClass == java.lang.Long    .class) return (DateConverter<T>) Long     .INSTANCE;
-        if (targetClass == java.sql.Date     .class) return (DateConverter<T>) SQL      .INSTANCE;
-        if (targetClass == java.sql.Timestamp.class) return (DateConverter<T>) Timestamp.INSTANCE;
-        return null;
-    }
-
-    /**
-     * Returns the singleton instance on deserialization, if any.
-     */
-    @Override
-    public final ObjectConverter<Date, T> unique() {
-        assert sourceClass == Date.class : sourceClass;
-        final DateConverter<T> instance = getInstance(targetClass);
-        return (instance != null) ? instance : this;
     }
 
     /**
@@ -106,7 +70,7 @@ abstract class DateConverter<T> extends SystemConverter<Date,T> {
     }
 
     /**
-     * Returns the inverse given at construction time.
+     * Returns the inverse converter.
      */
     @Override
     public final ObjectConverter<T, Date> inverse() {
@@ -115,21 +79,31 @@ abstract class DateConverter<T> extends SystemConverter<Date,T> {
 
     /**
      * Converter from {@code Long} to {@code Date}.
-     * This is the inverse of {@link org.apache.sis.internal.converter.DateConverter.Long}.
+     * This converter is <strong>not</strong> registered by {@link ConverterRegistry#initialize()}.
+     * Instead, {@link SystemRegistry} will fetch it when first needed by looking at the inverse
+     * of {@link DateConverter.Long}. The same is true for all inverse converters defined in the
+     * {@code DateConverter} enclosing class.
      */
     private static final class Inverse extends SystemConverter<java.lang.Long, java.util.Date> {
         private static final long serialVersionUID = 3999693055029959455L;
 
-        private Inverse() {
+        private final SystemConverter<java.util.Date, java.lang.Long> inverse;
+
+        Inverse(final SystemConverter<java.util.Date, java.lang.Long> inverse) {
             super(java.lang.Long.class, java.util.Date.class);
+            this.inverse = inverse;
         }
 
         @Override public ObjectConverter<java.util.Date, java.lang.Long> inverse() {
-            return DateConverter.Long.INSTANCE;
+            return inverse;
+        }
+
+        @Override public ObjectConverter<java.lang.Long, Date> unique() {
+            return inverse.inverse();
         }
 
         @Override public Set<FunctionProperty> properties() {
-            return DateConverter.Long.INSTANCE.properties();
+            return inverse.properties();
         }
 
         @Override public java.util.Date convert(final java.lang.Long target) {
@@ -139,14 +113,13 @@ abstract class DateConverter<T> extends SystemConverter<Date,T> {
 
     /**
      * Converter from {@code Date} to {@code Long}.
-     * This is the inverse of {@link org.apache.sis.internal.converter.DateConverter.Inverse}.
      */
-    private static final class Long extends DateConverter<java.lang.Long> {
+    public static final class Long extends DateConverter<java.lang.Long> {
         private static final long serialVersionUID = 3163928356094316134L;
-        static final Long INSTANCE = new Long();
 
-        private Long() {
-            super(java.lang.Long.class, new Inverse());
+        public Long() { // Instantiated by ServiceLoader.
+            super(java.lang.Long.class);
+            inverse = new Inverse(this);
         }
 
         @Override public Set<FunctionProperty> properties() {
@@ -163,12 +136,12 @@ abstract class DateConverter<T> extends SystemConverter<Date,T> {
      * From {@code Date} to SQL {@code Date}.
      * The inverse of this converter is the identity conversion.
      */
-    private static final class SQL extends DateConverter<java.sql.Date> {
+    public static final class SQL extends DateConverter<java.sql.Date> {
         private static final long serialVersionUID = -3644605344718636345L;
-        static final SQL INSTANCE = new SQL();
 
-        private SQL() {
+        public SQL() { // Instantiated by ServiceLoader.
             super(java.sql.Date.class);
+            inverse = new IdentityConverter<>(targetClass, Date.class, this);
         }
 
         @Override public java.sql.Date convert(final Date source) {
@@ -183,12 +156,12 @@ abstract class DateConverter<T> extends SystemConverter<Date,T> {
      * From {@code Date} to SQL {@code Timestamp}.
      * The inverse of this converter is the identity conversion.
      */
-    private static final class Timestamp extends DateConverter<java.sql.Timestamp> {
+    public static final class Timestamp extends DateConverter<java.sql.Timestamp> {
         private static final long serialVersionUID = 3798633184562706892L;
-        static final Timestamp INSTANCE = new Timestamp();
 
-        private Timestamp() {
+        public Timestamp() { // Instantiated by ServiceLoader.
             super(java.sql.Timestamp.class);
+            inverse = new IdentityConverter<>(targetClass, Date.class, this);
         }
 
         @Override public java.sql.Timestamp convert(final Date source) {

@@ -160,7 +160,7 @@ public final strictfp class ConverterRegistryTest extends TestCase {
     @Test
     public void testStringToMiscellaneous() {
         assertAllConvertersAreRegistered();
-        register(StringConverter.getInstance(Short.class));
+        register(new StringConverter.Short());
         assertSameConverterForTarget(Short       .class);
         assertSameConverterForTarget(Number      .class);
         assertIdentityForTarget     (Object      .class);
@@ -181,7 +181,7 @@ public final strictfp class ConverterRegistryTest extends TestCase {
          */
         assertAllConvertersAreRegistered();
         assertNoConverterForTarget(Long.class);
-        register(StringConverter.getInstance(Long.class));
+        register(new StringConverter.Long());
         assertSameConverterForTarget(Long        .class);
         assertIdentityForTarget     (Object      .class);
         assertNoConverterForTarget  (Cloneable   .class);
@@ -207,7 +207,7 @@ public final strictfp class ConverterRegistryTest extends TestCase {
          */
         assertAllConvertersAreRegistered();
         assertNoConverterForTarget(Boolean.class);
-        register(StringConverter.getInstance(Boolean.class));
+        register(new StringConverter.Boolean());
         assertSameConverterForTarget(Boolean     .class);
         assertIdentityForTarget     (Object      .class);
         assertNoConverterForTarget  (Cloneable   .class);
@@ -229,7 +229,7 @@ public final strictfp class ConverterRegistryTest extends TestCase {
          * Expected side-effect: replacement of the FallbackConverter
          */
         assertAllConvertersAreRegistered();
-        register(StringConverter.getInstance(Number.class));
+        register(new StringConverter.Number());
         assertSameConverterForTarget(Number      .class);
         assertIdentityForTarget     (Object      .class);
         assertNoConverterForTarget  (Cloneable   .class);
@@ -250,7 +250,7 @@ public final strictfp class ConverterRegistryTest extends TestCase {
          */
         assertAllConvertersAreRegistered();
         assertNoConverterForTarget(Float.class);
-        register(StringConverter.getInstance(Float.class));
+        register(new StringConverter.Float());
         assertSameConverterForTarget(Float       .class);
         assertIdentityForTarget     (Object      .class);
         assertNoConverterForTarget  (Cloneable   .class);
@@ -285,7 +285,7 @@ public final strictfp class ConverterRegistryTest extends TestCase {
     @DependsOnMethod("testStringToMiscellaneous")
     public void testNumberToMiscellaneous() {
         assertAllConvertersAreRegistered();
-        register(StringConverter.getInstance(Number.class).inverse());
+        register(new StringConverter.Number().inverse());
         assertSameConverterForTarget(String      .class);
         assertIdentityForTarget     (Object      .class);
         assertNoConverterForTarget  (Cloneable   .class);
@@ -304,7 +304,7 @@ public final strictfp class ConverterRegistryTest extends TestCase {
          * Expected side-effect: none
          */
         assertAllConvertersAreRegistered();
-        register(StringConverter.getInstance(Number.class));
+        register(new StringConverter.Number());
         assertSameConverterForTarget(Number.class);
         assertMultilinesEquals("After StringConverter.Number",
             "ConverterRegistry\n" +

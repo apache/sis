@@ -36,7 +36,7 @@ import static org.apache.sis.test.Assert.*;
  * @version 0.3
  * @module
  */
-@DependsOn(HeuristicRegistryTest.class)
+@DependsOn(SystemRegistryTest.class)
 public final strictfp class NumberConverterTest extends TestCase {
     /**
      * Creates a {@link NumberConverter} for the given source and target classes.
@@ -47,7 +47,7 @@ public final strictfp class NumberConverterTest extends TestCase {
     private static <S extends Number, T> ObjectConverter<S,T> create(
             final Class<S> sourceClass, final Class<T> targetClass)
     {
-        final ObjectConverter<S,T> converter = HeuristicRegistry.SYSTEM.findExact(sourceClass, targetClass);
+        final ObjectConverter<S,T> converter = SystemRegistry.INSTANCE.findExact(sourceClass, targetClass);
         assertInstanceOf("ConverterRegistry.find(" + sourceClass.getSimpleName() + ", " + targetClass.getSimpleName() + ')',
                 (targetClass == Comparable.class) ? NumberConverter.Comparable.class : NumberConverter.class, converter);
         return converter;

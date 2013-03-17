@@ -26,11 +26,11 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
-import static org.apache.sis.internal.converter.HeuristicRegistry.SYSTEM;
+import static org.apache.sis.internal.converter.SystemRegistry.INSTANCE;
 
 
 /**
- * Tests the {@link HeuristicRegistry#SYSTEM} constant.
+ * Tests the {@link SystemRegistry#INSTANCE} constant.
  * This class shall not perform any conversion tests; it shall only checks the registrations.
  * Conversion tests are the purpose of other test classes in this package.
  *
@@ -40,14 +40,14 @@ import static org.apache.sis.internal.converter.HeuristicRegistry.SYSTEM;
  * @module
  */
 @DependsOn(ConverterRegistryTest.class)
-public final strictfp class HeuristicRegistryTest extends TestCase {
+public final strictfp class SystemRegistryTest extends TestCase {
     /**
      * Tests the creation of {@link StringConverter}.
      */
     @Test
     public void testStringFile() {
-        final ObjectConverter<String,File> c1 = SYSTEM.findExact(String.class, File.class);
-        final ObjectConverter<File,String> c2 = SYSTEM.findExact(File.class, String.class);
+        final ObjectConverter<String,File> c1 = INSTANCE.findExact(String.class, File.class);
+        final ObjectConverter<File,String> c2 = INSTANCE.findExact(File.class, String.class);
         assertInstanceOf("File ← String", StringConverter.class, c1);
         assertInstanceOf("String ← File", ObjectToString.class,  c2);
         assertSame("inverse()", c2, c1.inverse());
@@ -61,8 +61,8 @@ public final strictfp class HeuristicRegistryTest extends TestCase {
      */
     @Test
     public void testStringCodeList() {
-        final ObjectConverter<String, PixelOrientation> c1 = SYSTEM.findExact(String.class, PixelOrientation.class);
-        final ObjectConverter<PixelOrientation, String> c2 = SYSTEM.findExact(PixelOrientation.class, String.class);
+        final ObjectConverter<String, PixelOrientation> c1 = INSTANCE.findExact(String.class, PixelOrientation.class);
+        final ObjectConverter<PixelOrientation, String> c2 = INSTANCE.findExact(PixelOrientation.class, String.class);
         assertInstanceOf("PixelOrientation ← String", StringConverter.class, c1);
         assertInstanceOf("String ← PixelOrientation", ObjectToString.class,  c2);
         assertSame("inverse()", c2, c1.inverse());
@@ -76,8 +76,8 @@ public final strictfp class HeuristicRegistryTest extends TestCase {
      */
     @Test
     public void testFloatDouble() {
-        final ObjectConverter<Float,Double> c1 = SYSTEM.findExact(Float.class, Double.class);
-        final ObjectConverter<Double,Float> c2 = SYSTEM.findExact(Double.class, Float.class);
+        final ObjectConverter<Float,Double> c1 = INSTANCE.findExact(Float.class, Double.class);
+        final ObjectConverter<Double,Float> c2 = INSTANCE.findExact(Double.class, Float.class);
         assertInstanceOf("Double ← Float", NumberConverter.class, c1);
         assertInstanceOf("Float ← Double", NumberConverter.class, c2);
         assertSame("inverse()", c2, c1.inverse());
@@ -91,8 +91,8 @@ public final strictfp class HeuristicRegistryTest extends TestCase {
      */
     @Test
     public void testDateLong() {
-        final ObjectConverter<Date,Long> c1 = SYSTEM.findExact(Date.class, Long.class);
-        final ObjectConverter<Long,Date> c2 = SYSTEM.findExact(Long.class, Date.class);
+        final ObjectConverter<Date,Long> c1 = INSTANCE.findExact(Date.class, Long.class);
+        final ObjectConverter<Long,Date> c2 = INSTANCE.findExact(Long.class, Date.class);
         assertInstanceOf("Long ← Date", DateConverter.class,   c1);
         assertInstanceOf("Date ← Long", SystemConverter.class, c2);
         assertSame("inverse()", c2, c1.inverse());
@@ -107,8 +107,8 @@ public final strictfp class HeuristicRegistryTest extends TestCase {
      */
     @Test
     public void testDateSQL() {
-        final ObjectConverter<Date, java.sql.Date> c1 = SYSTEM.findExact(Date.class, java.sql.Date.class);
-        final ObjectConverter<java.sql.Date, Date> c2 = SYSTEM.findExact(java.sql.Date.class, Date.class);
+        final ObjectConverter<Date, java.sql.Date> c1 = INSTANCE.findExact(Date.class, java.sql.Date.class);
+        final ObjectConverter<java.sql.Date, Date> c2 = INSTANCE.findExact(java.sql.Date.class, Date.class);
         assertInstanceOf("sql.Date ← Date", DateConverter.class,     c1);
         assertInstanceOf("Date ← sql.Date", IdentityConverter.class, c2);
         assertSame("inverse()", c2, c1.inverse());
@@ -122,8 +122,8 @@ public final strictfp class HeuristicRegistryTest extends TestCase {
      */
     @Test
     public void testFileURI() {
-        final ObjectConverter<File,URI> c1 = SYSTEM.findExact(File.class, URI.class);
-        final ObjectConverter<URI,File> c2 = SYSTEM.findExact(URI.class, File.class);
+        final ObjectConverter<File,URI> c1 = INSTANCE.findExact(File.class, URI.class);
+        final ObjectConverter<URI,File> c2 = INSTANCE.findExact(URI.class, File.class);
         assertInstanceOf("URI ← File", PathConverter.class, c1);
         assertInstanceOf("File ← URI", PathConverter.class, c2);
         assertSame("inverse()", c2, c1.inverse());

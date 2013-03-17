@@ -17,17 +17,33 @@
 package org.apache.sis.internal.converter;
 
 import java.util.Date;
+import java.util.ServiceLoader;
 import org.opengis.util.CodeList;
 import net.jcip.annotations.ThreadSafe;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ObjectConverter;
+import org.apache.sis.util.UnconvertibleObjectException;
+import org.apache.sis.internal.util.SystemListener;
 
 
 /**
- * A {@link ConverterRegistry} which applies heuristic rules in addition of the explicitly
- * registered converters. Those heuristic rules are provided in a separated class in order
- * to keep the {@link ConverterRegistry} class "pure", and concentrate all arbitrary
- * decisions in this single class.
+ * The Apache SIS system-wide {@link ConverterRegistry}.
+ * This class serves two purposes:
+ *
+ * <ul>
+ *   <li><p>Fetch the list of converters from the content of all
+ *       {@code META-INF/services/org.apache.sis.util.converter.ObjectConverter} files found on the classpath.
+ *       The intend is to allow other modules to register their own converters.</p></li>
+ *
+ *   <li><p>Apply heuristic rules in addition to the explicitly registered converters.
+ *       Those heuristic rules are provided in a separated class in order to keep the
+ *       {@link ConverterRegistry} class a little bit more "pure", and concentrate
+ *       most arbitrary decisions in this single class.</p></li>
+ * </ul>
+ *
+ * When using {@code SystemRegistry}, new converters may "automagically" appear as a consequence
+ * of the above-cited heuristic rules. This differs from the {@link ConverterRegistry} behavior,
+ * where only registered converters are used.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.02)
@@ -35,7 +51,7 @@ import org.apache.sis.util.ObjectConverter;
  * @module
  */
 @ThreadSafe
-public final class HeuristicRegistry extends ConverterRegistry {
+public final class SystemRegistry extends ConverterRegistry {
     /**
      * The default system-wide instance. This register is initialized with conversions between
      * some basic Java and SIS objects, like conversions between {@link java.util.Date} and
@@ -44,17 +60,67 @@ public final class HeuristicRegistry extends ConverterRegistry {
      * <p>If a temporary set of converters is desired, a new instance of {@code ConverterRegistry}
      * should be created explicitly instead.</p>
      *
-     * {@section Adding system-wide converters}
-     * Applications can add system-wide custom providers either by explicit call to the
-     * {@link #register(ObjectConverter)} method on the system converter.
+     * <p>See the package javadoc for information about how applications can add
+     * custom system-wide converters.</p>
      */
-    public static final ConverterRegistry SYSTEM = new HeuristicRegistry();
+    public static final ConverterRegistry INSTANCE = new SystemRegistry();
+    static {
+        /*
+         * Force reloading of META-INF/services files if the classpath changed,
+         * since the set of reachable META-INF/services files may have changed.
+         * If any converters were registered by explicit calls to the 'register' method,
+         * then those converters are lost. This is of concern only for applications using
+         * a modularization framework like OSGi. See package javadoc for more information.
+         */
+        SystemListener.add(new SystemListener() {
+            @Override protected void classpathChanged() {
+                INSTANCE.clear();
+            }
+        });
+    }
 
     /**
      * Creates an initially empty set of object converters. The heuristic
      * rules apply right away, even if no converter have been registered yet.
      */
-    private HeuristicRegistry() {
+    private SystemRegistry() {
+    }
+
+    /**
+     * Invoked when this {@code ConverterRegistry} needs to be initialized. This method
+     * is automatically invoked the first time that {@link #register(ObjectConverter)}
+     * or {@link #find(Class, Class)} is invoked.
+     *
+     * <p>The default implementation is equivalent to the following code
+     * (see the package javadoc for more information):</p>
+     *
+     * {@preformat java
+     *     ClassLoader loader = getClass().getClassLoader();
+     *     for (ObjectConverter<?,?> converter : ServiceLoader.load(ObjectConverter.class, loader)) {
+     *         register(converter);
+     *     }
+     * }
+     */
+    @Override
+    protected void initialize() {
+        for (ObjectConverter<?,?> converter : ServiceLoader.load(ObjectConverter.class, getClass().getClassLoader())) {
+            if (converter instanceof SystemConverter<?,?>) {
+                converter = ((SystemConverter<?,?>) converter).unique();
+            }
+            register(converter);
+        }
+    }
+
+    /**
+     * Returns {@code true} if we should look for the inverse converter of the given target class.
+     * For example if no converter is explicitely registered from {@code Float} to {@code String},
+     * we can look for the converter from {@code String} to {@code Float}, then fetch its inverse.
+     *
+     * <p>We allow this operation only for a few types which are needed for the way SIS converters
+     * are defined in this internal package.</p>
+     */
+    private static boolean tryInverse(final Class<?> targetClass) {
+        return (targetClass == String.class) || (targetClass == Date.class);
     }
 
     /**
@@ -87,19 +153,11 @@ public final class HeuristicRegistry extends ConverterRegistry {
          * to java.util.Date was created by the super class, that conversion would not contain
          * an inverse conversion from java.util.Date to java.sql.Date.
          */
-        if (targetClass == Date.class) {
-            final ObjectConverter<Date, S> candidate = DateConverter.getInstance(sourceClass);
-            if (candidate != null) {
-                return (ObjectConverter<S,T>) candidate.inverse();
-            }
-        }
-        if (targetClass == String.class) {
-            final ObjectConverter<String, S> candidate = StringConverter.getInstance(sourceClass);
-            if (candidate != null) {
-                return (ObjectConverter<S,T>) candidate.inverse();
-            }
-            if (CodeList.class.isAssignableFrom(sourceClass)) {
+        if (tryInverse(targetClass) && !tryInverse(sourceClass)) { // The ! is for preventing infinite recursivity.
+            try {
                 return findExact(targetClass, sourceClass).inverse();
+            } catch (UnconvertibleObjectException e) {
+                // Ignore. The code below may succeed.
             }
         }
         /*
@@ -121,13 +179,9 @@ public final class HeuristicRegistry extends ConverterRegistry {
                     targetClass, find(String.class, targetClass));
         }
         /*
-         * From String to various kind of objects.
+         * From String to CodeList.
          */
         if (sourceClass == String.class) {
-            final ObjectConverter<String, T> candidate = StringConverter.getInstance(targetClass);
-            if (candidate != null) {
-                return (ObjectConverter<S,T>) candidate;
-            }
             if (CodeList.class.isAssignableFrom(targetClass)) {
                 return (ObjectConverter<S,T>) new StringConverter.CodeList<>(
                         targetClass.asSubclass(CodeList.class));
@@ -146,22 +200,6 @@ public final class HeuristicRegistry extends ConverterRegistry {
                 return (ObjectConverter<S,T>) new NumberConverter.Comparable<>(
                         sourceClass.asSubclass(Number.class));
             }
-        }
-        /*
-         * From Date to various kind of objects.
-         */
-        if (sourceClass == Date.class) {
-            final ObjectConverter<Date, T> candidate = DateConverter.getInstance(targetClass);
-            if (candidate != null) {
-                return (ObjectConverter<S,T>) candidate;
-            }
-        }
-        /*
-         * Various kind of paths (Path, File, URL, URI).
-         */
-        final ObjectConverter<S,T> p = PathConverter.getInstance(sourceClass, targetClass);
-        if (p != null) {
-            return p;
         }
         /*
          * From various objects to String.

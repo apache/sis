@@ -96,49 +96,6 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
     }
 
     /**
-     * Returns a predefined instance for the given target class, or {@code null} if none.
-     * This method does not create any new instance.
-     *
-     * @param  <T> The target class.
-     * @param  targetClass The target class.
-     * @return An instance for the given target class, or {@code null} if none.
-     */
-    @SuppressWarnings({"unchecked","rawtypes"})
-    static <T> StringConverter<T> getInstance(final Class<T> targetClass) {
-        switch (Numbers.getEnumConstant(targetClass)) {
-            case Numbers.BOOLEAN:     return (StringConverter<T>) Boolean   .INSTANCE;
-            case Numbers.BYTE:        return (StringConverter<T>) Byte      .INSTANCE;
-            case Numbers.SHORT:       return (StringConverter<T>) Short     .INSTANCE;
-            case Numbers.INTEGER:     return (StringConverter<T>) Integer   .INSTANCE;
-            case Numbers.LONG:        return (StringConverter<T>) Long      .INSTANCE;
-            case Numbers.FLOAT:       return (StringConverter<T>) Float     .INSTANCE;
-            case Numbers.DOUBLE:      return (StringConverter<T>) Double    .INSTANCE;
-            case Numbers.BIG_INTEGER: return (StringConverter<T>) BigInteger.INSTANCE;
-            case Numbers.BIG_DECIMAL: return (StringConverter<T>) BigDecimal.INSTANCE;
-        }
-        if (targetClass == java.lang.Number        .class) return (StringConverter<T>) Number. INSTANCE;
-        if (targetClass == java.util.Locale        .class) return (StringConverter<T>) Locale. INSTANCE;
-        if (targetClass == java.nio.charset.Charset.class) return (StringConverter<T>) Charset.INSTANCE;
-        if (targetClass == java.io.File            .class) return (StringConverter<T>) File   .INSTANCE;
-        if (targetClass == java.nio.file.Path      .class) return (StringConverter<T>) Path   .INSTANCE;
-        if (targetClass == java.net.URI            .class) return (StringConverter<T>) URI    .INSTANCE;
-        if (targetClass == java.net.URL            .class) return (StringConverter<T>) URL    .INSTANCE;
-        if (targetClass == org.opengis.util.InternationalString.class)
-            return (StringConverter<T>) InternationalString.INSTANCE;
-        return null;
-    }
-
-    /**
-     * Returns the singleton instance on deserialization, if any.
-     */
-    @Override
-    public final ObjectConverter<String, T> unique() {
-        assert sourceClass == String.class : sourceClass;
-        final StringConverter<T> instance = getInstance(targetClass);
-        return (instance != null) ? instance : super.unique();
-    }
-
-    /**
      * While this is not a general rule for surjective functions,
      * all converters defined in this class are invertibles.
      */
@@ -193,100 +150,90 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
      * Converter from {@link String} to various kinds of {@link java.lang.Number}.
      */
     @Immutable
-    private static final class Number extends StringConverter<java.lang.Number> {
+    public static final class Number extends StringConverter<java.lang.Number> {
         private static final long serialVersionUID = 1557277544742023571L;
-        static final Number INSTANCE = new Number();
-        private Number() {super(java.lang.Number.class);}
+        public Number() {super(java.lang.Number.class);} // Instantiated by ServiceLoader.
 
         @Override java.lang.Number doConvert(String source) throws NumberFormatException {
             return Numbers.narrowestNumber(source);
         }
     }
 
-    private static final class Double extends StringConverter<java.lang.Double> {
+    public static final class Double extends StringConverter<java.lang.Double> {
         private static final long serialVersionUID = -9094071164371643060L;
-        static final Double INSTANCE = new Double();
-        private Double() {super(java.lang.Double.class);}
+        public Double() {super(java.lang.Double.class);} // Instantiated by ServiceLoader.
 
         @Override java.lang.Double doConvert(String source) throws NumberFormatException {
             return java.lang.Double.parseDouble(source);
         }
     }
 
-    private static final class Float extends StringConverter<java.lang.Float> {
+    public static final class Float extends StringConverter<java.lang.Float> {
         private static final long serialVersionUID = -2815192289550338333L;
-        static final Float INSTANCE = new Float();
-        private Float() {super(java.lang.Float.class);}
+        public Float() {super(java.lang.Float.class);} // Instantiated by ServiceLoader.
 
         @Override java.lang.Float doConvert(String source) throws NumberFormatException {
             return java.lang.Float.parseFloat(source);
         }
     }
 
-    private static final class Long extends StringConverter<java.lang.Long> {
+    public static final class Long extends StringConverter<java.lang.Long> {
         private static final long serialVersionUID = -2171263041723939779L;
-        static final Long INSTANCE = new Long();
-        private Long() {super(java.lang.Long.class);}
+        public Long() {super(java.lang.Long.class);} // Instantiated by ServiceLoader.
 
         @Override java.lang.Long doConvert(String source) throws NumberFormatException {
             return java.lang.Long.parseLong(source);
         }
     }
 
-    private static final class Integer extends StringConverter<java.lang.Integer> {
+    public static final class Integer extends StringConverter<java.lang.Integer> {
         private static final long serialVersionUID = 763211364703205967L;
-        static final Integer INSTANCE = new Integer();
-        private Integer() {super(java.lang.Integer.class);}
+        public Integer() {super(java.lang.Integer.class);} // Instantiated by ServiceLoader.
 
         @Override java.lang.Integer doConvert(String source) throws NumberFormatException {
             return java.lang.Integer.parseInt(source);
         }
     }
 
-    private static final class Short extends StringConverter<java.lang.Short> {
+    public static final class Short extends StringConverter<java.lang.Short> {
         private static final long serialVersionUID = -1770870328699572960L;
-        static final Short INSTANCE = new Short();
-        private Short() {super(java.lang.Short.class);}
+        public Short() {super(java.lang.Short.class);} // Instantiated by ServiceLoader.
 
         @Override java.lang.Short doConvert(String source) throws NumberFormatException {
             return java.lang.Short.parseShort(source);
         }
     }
 
-    private static final class Byte extends StringConverter<java.lang.Byte> {
+    public static final class Byte extends StringConverter<java.lang.Byte> {
         private static final long serialVersionUID = 2084870859391804185L;
-        static final Byte INSTANCE = new Byte();
-        private Byte() {super(java.lang.Byte.class);}
+        public Byte() {super(java.lang.Byte.class);} // Instantiated by ServiceLoader.
 
         @Override java.lang.Byte doConvert(String source) throws NumberFormatException {
             return java.lang.Byte.parseByte(source);
         }
     }
 
-    private static final class BigDecimal extends StringConverter<java.math.BigDecimal> {
+    public static final class BigDecimal extends StringConverter<java.math.BigDecimal> {
         private static final long serialVersionUID = -8597497425876120213L;
-        static final BigDecimal INSTANCE = new BigDecimal();
-        private BigDecimal() {super(java.math.BigDecimal.class);}
+        public BigDecimal() {super(java.math.BigDecimal.class);} // Instantiated by ServiceLoader.
 
         @Override java.math.BigDecimal doConvert(String source) throws NumberFormatException {
             return new java.math.BigDecimal(source);
         }
     }
 
-    private static final class BigInteger extends StringConverter<java.math.BigInteger> {
+    public static final class BigInteger extends StringConverter<java.math.BigInteger> {
         private static final long serialVersionUID = 8658903031519526466L;
-        static final BigInteger INSTANCE = new BigInteger();
-        private BigInteger() {super(java.math.BigInteger.class);}
+        public BigInteger() {super(java.math.BigInteger.class);} // Instantiated by ServiceLoader.
 
         @Override java.math.BigInteger doConvert(String source) throws NumberFormatException {
             return new java.math.BigInteger(source);
         }
     }
 
-    private static final class Boolean extends StringConverter<java.lang.Boolean> {
+    public static final class Boolean extends StringConverter<java.lang.Boolean> {
         private static final long serialVersionUID = -27525398425996373L;
-        static final Boolean INSTANCE = new Boolean();
-        private Boolean() {super(java.lang.Boolean.class);}
+        public Boolean() {super(java.lang.Boolean.class);} // Instantiated by ServiceLoader.
 
         /** See {@link StringConverter} for the conversion table. */
         @Override java.lang.Boolean doConvert(final String source) throws UnconvertibleObjectException {
@@ -298,70 +245,63 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
         }
     }
 
-    private static final class Locale extends StringConverter<java.util.Locale> {
+    public static final class Locale extends StringConverter<java.util.Locale> {
         private static final long serialVersionUID = -2888932450292616036L;
-        static final Locale INSTANCE = new Locale();
-        private Locale() {super(java.util.Locale.class);}
+        public Locale() {super(java.util.Locale.class);} // Instantiated by ServiceLoader.
 
         @Override java.util.Locale doConvert(String source) throws IllegalArgumentException {
             return Locales.parse(source);
         }
     }
 
-    private static final class Charset extends StringConverter<java.nio.charset.Charset> {
+    public static final class Charset extends StringConverter<java.nio.charset.Charset> {
         private static final long serialVersionUID = 4539755855992944656L;
-        static final Charset INSTANCE = new Charset();
-        private Charset() {super(java.nio.charset.Charset.class);}
+        public Charset() {super(java.nio.charset.Charset.class);} // Instantiated by ServiceLoader.
 
         @Override java.nio.charset.Charset doConvert(String source) throws UnsupportedCharsetException {
             return java.nio.charset.Charset.forName(source);
         }
     }
 
-    private static final class File extends StringConverter<java.io.File> {
+    public static final class File extends StringConverter<java.io.File> {
         private static final long serialVersionUID = 6445208470928432376L;
-        static final File INSTANCE = new File();
-        private File() {super(java.io.File.class);}
+        public File() {super(java.io.File.class);} // Instantiated by ServiceLoader.
 
         @Override java.io.File doConvert(String source) {
             return new java.io.File(source);
         }
     }
 
-    private static final class Path extends StringConverter<java.nio.file.Path> {
+    public static final class Path extends StringConverter<java.nio.file.Path> {
         private static final long serialVersionUID = -5227120925547132828L;
-        static final Path INSTANCE = new Path();
-        private Path() {super(java.nio.file.Path.class);}
+        public Path() {super(java.nio.file.Path.class);} // Instantiated by ServiceLoader.
 
         @Override java.nio.file.Path doConvert(String source) throws InvalidPathException {
             return java.nio.file.Paths.get(source);
         }
     }
 
-    private static final class URI extends StringConverter<java.net.URI> {
+    public static final class URI extends StringConverter<java.net.URI> {
         private static final long serialVersionUID = -2804405634789179706L;
-        static final URI INSTANCE = new URI();
-        private URI() {super(java.net.URI.class);}
+        public URI() {super(java.net.URI.class);} // Instantiated by ServiceLoader.
 
         @Override java.net.URI doConvert(String source) throws URISyntaxException {
             return new java.net.URI(source);
         }
     }
 
-    private static final class URL extends StringConverter<java.net.URL> {
+    public static final class URL extends StringConverter<java.net.URL> {
         private static final long serialVersionUID = 2303928306635765592L;
-        static final URL INSTANCE = new URL();
-        private URL() {super(java.net.URL.class);}
+        public URL() {super(java.net.URL.class);} // Instantiated by ServiceLoader.
 
         @Override java.net.URL doConvert(String source) throws MalformedURLException {
             return new java.net.URL(source);
         }
     }
 
-    private static final class InternationalString extends StringConverter<org.opengis.util.InternationalString> {
+    public static final class InternationalString extends StringConverter<org.opengis.util.InternationalString> {
         private static final long serialVersionUID = 730809620191573819L;
-        static final InternationalString INSTANCE = new InternationalString();
-        private InternationalString() {super(org.opengis.util.InternationalString.class);}
+        public InternationalString() {super(org.opengis.util.InternationalString.class);} // Instantiated by ServiceLoader.
 
         @Override org.opengis.util.InternationalString doConvert(String source) {
             return new SimpleInternationalString(source);
@@ -380,7 +320,7 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
      * to the constructor.
      *
      * <p>Instances of this class are created by
-     * {@link HeuristicRegistry#createConverter(Class, Class)}.</p>
+     * {@link SystemRegistry#createConverter(Class, Class)}.</p>
      */
     @Immutable
     static final class CodeList<T extends org.opengis.util.CodeList<T>> extends StringConverter<T> {

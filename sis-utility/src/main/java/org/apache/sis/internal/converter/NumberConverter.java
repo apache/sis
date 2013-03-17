@@ -73,7 +73,7 @@ final class NumberConverter<S extends Number, T extends Number> extends SystemCo
 
     /**
      * Returns the inverse converter, creating it when first needed.
-     * This method delegates to {@link HeuristicRegistry#SYSTEM} and caches the result.
+     * This method delegates to {@link SystemRegistry#INSTANCE} and caches the result.
      * We do not provide pre-defined constant for the various converter because there
      * is too many possibly combinations.
      */
@@ -83,7 +83,7 @@ final class NumberConverter<S extends Number, T extends Number> extends SystemCo
         // The ConverterRegistry clas provides the required synchronization.
         ObjectConverter<T,S> candidate = inverse;
         if (candidate == null) try {
-            inverse = candidate = HeuristicRegistry.SYSTEM.findExact(targetClass, sourceClass);
+            inverse = candidate = SystemRegistry.INSTANCE.findExact(targetClass, sourceClass);
         } catch (UnconvertibleObjectException e) {
             throw new UnsupportedOperationException(Errors.format(Errors.Keys.NonInvertibleConversion), e);
         }

@@ -19,9 +19,10 @@
     </copy>
 
     <!-- Following are classical properties resources files. -->
-    <copy todir="${build.classes.dir}/org/apache/sis/internal/util">
-      <fileset dir="${project.root}/sis-utility/src/main/resources/org/apache/sis/internal/util">
-        <include name="*.properties"/>
+    <copy todir="${build.classes.dir}">
+      <fileset dir="${project.root}/sis-utility/src/main/resources">
+        <include name="META-INF/services/*"/>
+        <include name="**/*.properties"/>
       </fileset>
     </copy>
   </target>

@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.Set;
 import org.apache.sis.util.collection.CollectionsExt;
 import org.apache.sis.internal.converter.IdentityConverter;
-import org.apache.sis.internal.converter.HeuristicRegistry;
+import org.apache.sis.internal.converter.SystemRegistry;
 
 
 /**
@@ -94,7 +94,7 @@ public final class ObjectConverters extends Static {
     public static <S,T> ObjectConverter<? super S, ? extends T> find(final Class<S> source, final Class<T> target)
             throws UnconvertibleObjectException
     {
-        return HeuristicRegistry.SYSTEM.find(source, target);
+        return SystemRegistry.INSTANCE.find(source, target);
     }
 
     /**

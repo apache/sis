@@ -37,7 +37,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * <p>New instances of {@code ConverterRegistry} are initially empty. Custom converters must be
  * explicitly {@linkplain #register(ObjectConverter) registered}. However a system-wide registry
- * initialized with default converters is provided by the {@link HeuristicRegistry#SYSTEM} constant.</p>
+ * initialized with default converters is provided by the {@link SystemRegistry#INSTANCE} constant.</p>
  *
  * {@section Note about conversions from interfaces}
  * {@code ConverterRegistry} is primarily designed for handling converters from classes to
@@ -72,6 +72,13 @@ public class ConverterRegistry {
     private final Map<ClassPair<?,?>, ObjectConverter<?,?>> converters;
 
     /**
+     * {@code true} if this {@code ConverterRegistry} has been initialized.
+     *
+     * @see #initialize()
+     */
+    private boolean isInitialized;
+
+    /**
      * Creates an initially empty set of object converters.
      */
     public ConverterRegistry() {
@@ -79,11 +86,34 @@ public class ConverterRegistry {
     }
 
     /**
-     * Removes all converters from this registry.
+     * Invoked when this {@code ConverterRegistry} needs to be initialized. This method
+     * is automatically invoked the first time that {@link #register(ObjectConverter)}
+     * or {@link #find(Class, Class)} is invoked.
+     *
+     * <p>The default implementation does nothing. Subclasses can override this method
+     * in order to register a default set of converters. For example a subclass could
+     * fetch the {@code ObjectConverter} instances from the {@code META-INF/services}
+     * directories as below:</p>
+     *
+     * {@preformat java
+     *     ClassLoader loader = getClass().getClassLoader();
+     *     for (ObjectConverter<?,?> converter : ServiceLoader.load(ObjectConverter.class, loader)) {
+     *         register(converter);
+     *     }
+     * }
+     */
+    protected void initialize() {
+    }
+
+    /**
+     * Removes all converters from this registry and set this {@code ServiceRegistry}
+     * state to <cite>uninitialized</cite>. The {@link #initialize()} method will be
+     * invoked again when first needed.
      */
     public void clear() {
         synchronized (converters) {
             converters.clear();
+            isInitialized = false;
         }
     }
 
@@ -232,12 +262,20 @@ public class ConverterRegistry {
         ArgumentChecks.ensureNonNull("sourceClass", sourceClass);
         ArgumentChecks.ensureNonNull("targetClass", targetClass);
         synchronized (converters) {
+            /*
+             * If this registry has not yet been initialized, initializes it before we search
+             * for the place where to put the given converter in the hierarchy of converters.
+             */
+            if (!isInitialized) {
+                isInitialized = true; // Before 'initialize()' for preventing infinite recursivity.
+                initialize();
+            }
             for (Class<? super T> i=targetClass; i!=null && i!=stopAt; i=i.getSuperclass()) {
                 register(new ClassPair<>(sourceClass, i), converter);
             }
             /*
-             * At this point, the given class and parent classes
-             * have been registered. Now registers interfaces.
+             * At this point, the given class and parent classes have been registered.
+             * Now registers interfaces, except for the special cases coded below.
              */
             for (final Class<? super T> i : Classes.getAllInterfaces(targetClass)) {
                 if (i.isAssignableFrom(sourceClass)) {
@@ -264,6 +302,15 @@ public class ConverterRegistry {
                      * but its subclasses do. Accepting this case would lead ConverterRegistry to
                      * offer converters from Number to String, which is not the best move if the
                      * user want to compare numbers.
+                     */
+                    continue;
+                }
+                if (sourceClass == String.class && Iterable.class.isAssignableFrom(targetClass)) {
+                    /*
+                     * Exclude the case of String to Iterables (including collections), because
+                     * there is too many ways to perform such conversion. For example we do not
+                     * want find(String, Iterable) to select a conversion to java.nio.file.Path
+                     * (which implements Iterable).
                      */
                     continue;
                 }
@@ -394,6 +441,19 @@ public class ConverterRegistry {
             ObjectConverter<? super S, ? extends T> converter = get(key);
             if (converter != null) {
                 return converter;
+            }
+            /*
+             * If the user is invoking this method for the firt time, regiter the converers
+             * declared in all "META-INF/services/org.apache.sis.util.ObjectConverter" files
+             * found on the classpath and try again.
+             */
+            if (!isInitialized) {
+                isInitialized = true; // Before 'initialize()' for preventing infinite recursivity.
+                initialize();
+                converter = get(key);
+                if (converter != null) {
+                    return converter;
+                }
             }
             /*
              * At this point, no converter were found explicitly for the given key. Searches a

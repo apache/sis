@@ -16,9 +16,30 @@
  */
 
 /**
- * {@link org.apache.sis.util.ObjectConverter} implementations.
- * A system-wide set of conversions is pre-defined and available by the
- * {@link org.apache.sis.internal.converter.ConverterRegistry#system()} method.
+ * Default set of {@link org.apache.sis.util.ObjectConverter} implementations.
+ * Converter for a given pair of <cite>source</cite> and <cite>target</cite> classes
+ * can be obtained with {@link org.apache.sis.internal.converter.ConverterRegistry}.
+ * A system-wide instance of {@code ConverterRegistry} with a default set of conversions
+ * is available as {@link org.apache.sis.internal.converter.SystemRegistry#INSTANCE}.
+ *
+ * {@section Adding system-wide converters}
+ * Applications can add system-wide custom converters either by explicit calls to the
+ * {@code SystemRegistry.INSTANCE.register(ObjectConverter)} method, or by listing the
+ * fully qualified classnames of their {@link ObjectConverter} instances in a file having
+ * exactly the following name:
+ *
+ * {@preformat text
+ *     META-INF/services/org.apache.sis.util.converter.ObjectConverter
+ * }
+ *
+ * Applications deployed in a modularization framework like OSGi shall use only the
+ * {@code META-INF} approach, because system converters are discarded every time the
+ * classpath changes. Having the converters declared in {@code META-INF} ensure that
+ * they will be reloaded when needed.
+ *
+ * <p>Alternatively, applications can also use their own {@code ConverterRegistry} instance.
+ * Non-system instances do not scan for {@code META-INF} and do not discard their content on
+ * classpath changes.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.5)

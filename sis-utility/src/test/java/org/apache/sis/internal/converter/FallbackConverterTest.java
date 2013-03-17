@@ -60,7 +60,7 @@ public final strictfp class FallbackConverterTest extends TestCase {
         final EnumSet<FunctionProperty> SURJECTIVE = EnumSet.of(FunctionProperty.SURJECTIVE);
         final EnumSet<FunctionProperty> INVERTIBLE = EnumSet.of(FunctionProperty.SURJECTIVE, FunctionProperty.INVERTIBLE);
 
-        ObjectConverter<String,?> c = StringConverter.getInstance(Short.class);
+        ObjectConverter<String,?> c = new StringConverter.Short();
         assertEquals(String.class, c.getSourceClass());
         assertEquals(Short.class,  c.getTargetClass());
         assertEquals(INVERTIBLE,   c.properties());
@@ -68,7 +68,7 @@ public final strictfp class FallbackConverterTest extends TestCase {
         assertMultilinesEquals(
                 "Short ← String", c.toString());
 
-        c = FallbackConverter.merge(c, StringConverter.getInstance(Long.class));
+        c = FallbackConverter.merge(c, new StringConverter.Long());
         assertEquals(String.class, c.getSourceClass());
         assertEquals(Number.class, c.getTargetClass());
         assertEquals(SURJECTIVE,   c.properties());
@@ -78,7 +78,7 @@ public final strictfp class FallbackConverterTest extends TestCase {
                 "  ├─Short ← String\n" +
                 "  └─Long  ← String\n", c.toString());
 
-        c = FallbackConverter.merge(c, StringConverter.getInstance(Float.class));
+        c = FallbackConverter.merge(c, new StringConverter.Float());
         assertEquals(String.class, c.getSourceClass());
         assertEquals(Number.class, c.getTargetClass());
         assertEquals(SURJECTIVE,   c.properties());
@@ -89,7 +89,7 @@ public final strictfp class FallbackConverterTest extends TestCase {
                 "  ├─Long  ← String\n" +
                 "  └─Float ← String\n", c.toString());
 
-        c = FallbackConverter.merge(c, StringConverter.getInstance(Integer.class));
+        c = FallbackConverter.merge(c, new StringConverter.Integer());
         assertEquals(String.class, c.getSourceClass());
         assertEquals(Number.class, c.getTargetClass());
         assertEquals(SURJECTIVE,   c.properties());
@@ -101,7 +101,7 @@ public final strictfp class FallbackConverterTest extends TestCase {
                 "  ├─Float   ← String\n" +
                 "  └─Integer ← String\n", c.toString());
 
-        c = FallbackConverter.merge(c, StringConverter.getInstance(Boolean.class));
+        c = FallbackConverter.merge(c, new StringConverter.Boolean());
         assertEquals(String.class, c.getSourceClass());
         assertEquals(Object.class, c.getTargetClass());
         assertEquals(SURJECTIVE,   c.properties());
@@ -115,7 +115,7 @@ public final strictfp class FallbackConverterTest extends TestCase {
                 "  │   └─Integer ← String\n" +
                 "  └─Boolean     ← String\n", c.toString());
 
-        c = FallbackConverter.merge(c, StringConverter.getInstance(Double.class));
+        c = FallbackConverter.merge(c, new StringConverter.Double());
         assertEquals(String.class, c.getSourceClass());
         assertEquals(Object.class, c.getTargetClass());
         assertEquals(SURJECTIVE,   c.properties());
