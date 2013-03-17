@@ -19,7 +19,10 @@ package org.apache.sis.internal.converter;
 import java.io.File;
 import java.net.URI;
 import java.util.Date;
+import java.util.List;
+import java.util.Collection;
 import org.opengis.metadata.spatial.PixelOrientation;
+import org.apache.sis.measure.Angle;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -48,8 +51,8 @@ public final strictfp class SystemRegistryTest extends TestCase {
     public void testStringFile() {
         final ObjectConverter<String,File> c1 = INSTANCE.findExact(String.class, File.class);
         final ObjectConverter<File,String> c2 = INSTANCE.findExact(File.class, String.class);
-        assertInstanceOf("File ← String", StringConverter.class, c1);
-        assertInstanceOf("String ← File", ObjectToString.class,  c2);
+        assertInstanceOf("File ← String", StringConverter.File.class, c1);
+        assertInstanceOf("String ← File", ObjectToString.class, c2);
         assertSame("inverse()", c2, c1.inverse());
         assertSame("inverse()", c1, c2.inverse());
         assertSame(c1, assertSerializedEquals(c1));
@@ -63,8 +66,8 @@ public final strictfp class SystemRegistryTest extends TestCase {
     public void testStringCodeList() {
         final ObjectConverter<String, PixelOrientation> c1 = INSTANCE.findExact(String.class, PixelOrientation.class);
         final ObjectConverter<PixelOrientation, String> c2 = INSTANCE.findExact(PixelOrientation.class, String.class);
-        assertInstanceOf("PixelOrientation ← String", StringConverter.class, c1);
-        assertInstanceOf("String ← PixelOrientation", ObjectToString.class,  c2);
+        assertInstanceOf("PixelOrientation ← String", StringConverter.CodeList.class, c1);
+        assertInstanceOf("String ← PixelOrientation", ObjectToString.CodeList.class,  c2);
         assertSame("inverse()", c2, c1.inverse());
         assertSame("inverse()", c1, c2.inverse());
         assertSame(c1, assertSerializedEquals(c1));
@@ -93,7 +96,7 @@ public final strictfp class SystemRegistryTest extends TestCase {
     public void testDateLong() {
         final ObjectConverter<Date,Long> c1 = INSTANCE.findExact(Date.class, Long.class);
         final ObjectConverter<Long,Date> c2 = INSTANCE.findExact(Long.class, Date.class);
-        assertInstanceOf("Long ← Date", DateConverter.class,   c1);
+        assertInstanceOf("Long ← Date", DateConverter.Long.class, c1);
         assertInstanceOf("Date ← Long", SystemConverter.class, c2);
         assertSame("inverse()", c2, c1.inverse());
         assertSame("inverse()", c1, c2.inverse());
@@ -109,7 +112,7 @@ public final strictfp class SystemRegistryTest extends TestCase {
     public void testDateSQL() {
         final ObjectConverter<Date, java.sql.Date> c1 = INSTANCE.findExact(Date.class, java.sql.Date.class);
         final ObjectConverter<java.sql.Date, Date> c2 = INSTANCE.findExact(java.sql.Date.class, Date.class);
-        assertInstanceOf("sql.Date ← Date", DateConverter.class,     c1);
+        assertInstanceOf("sql.Date ← Date", DateConverter.SQL.class, c1);
         assertInstanceOf("Date ← sql.Date", IdentityConverter.class, c2);
         assertSame("inverse()", c2, c1.inverse());
         assertSame("inverse()", c1, c2.inverse());
@@ -124,11 +127,37 @@ public final strictfp class SystemRegistryTest extends TestCase {
     public void testFileURI() {
         final ObjectConverter<File,URI> c1 = INSTANCE.findExact(File.class, URI.class);
         final ObjectConverter<URI,File> c2 = INSTANCE.findExact(URI.class, File.class);
-        assertInstanceOf("URI ← File", PathConverter.class, c1);
-        assertInstanceOf("File ← URI", PathConverter.class, c2);
+        assertInstanceOf("URI ← File", PathConverter.FileURI.class, c1);
+        assertInstanceOf("File ← URI", PathConverter.URIFile.class, c2);
         assertSame("inverse()", c2, c1.inverse());
         assertSame("inverse()", c1, c2.inverse());
         assertSame(c1, assertSerializedEquals(c1));
         assertSame(c2, assertSerializedEquals(c2));
+    }
+
+    /**
+     * Tests the creation of {@link AngleConverter}.
+     */
+    @Test
+    public void testAngle() {
+        final ObjectConverter<Angle,Double> c1 = INSTANCE.findExact(Angle.class, Double.class);
+        final ObjectConverter<Double,Angle> c2 = INSTANCE.findExact(Double.class, Angle.class);
+        assertInstanceOf("Double ← Angle", AngleConverter.class, c1);
+        assertInstanceOf("Angle ← Double", AngleConverter.Inverse.class, c2);
+        assertSame("inverse()", c2, c1.inverse());
+        assertSame("inverse()", c1, c2.inverse());
+        assertSame(c1, assertSerializedEquals(c1));
+        assertSame(c2, assertSerializedEquals(c2));
+    }
+
+    /**
+     * Tests the creation of {@link CollectionConverter}.
+     */
+    @Test
+    @SuppressWarnings("rawtypes")
+    public void testCollection() {
+        final ObjectConverter<Collection,List> c1 = INSTANCE.findExact(Collection.class, List.class);
+        assertInstanceOf("List ← Collection", CollectionConverter.class, c1);
+        assertSame(c1, assertSerializedEquals(c1));
     }
 }

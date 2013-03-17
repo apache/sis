@@ -123,8 +123,7 @@ abstract class DateConverter<T> extends SystemConverter<Date,T> {
         }
 
         @Override public Set<FunctionProperty> properties() {
-            return EnumSet.of(FunctionProperty.INJECTIVE, FunctionProperty.SURJECTIVE,
-                    FunctionProperty.ORDER_PRESERVING, FunctionProperty.INVERTIBLE);
+            return bijective();
         }
 
         @Override public java.lang.Long convert(final Date source) {

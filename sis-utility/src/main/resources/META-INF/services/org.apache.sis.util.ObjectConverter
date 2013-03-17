@@ -16,6 +16,9 @@ org.apache.sis.internal.converter.StringConverter$File
 org.apache.sis.internal.converter.StringConverter$Path
 org.apache.sis.internal.converter.StringConverter$URI
 org.apache.sis.internal.converter.StringConverter$URL
+org.apache.sis.internal.converter.StringConverter$Angle
+org.apache.sis.internal.converter.AngleConverter
+org.apache.sis.internal.converter.AngleConverter$Inverse
 org.apache.sis.internal.converter.PathConverter$FileURI
 org.apache.sis.internal.converter.PathConverter$FileURL
 org.apache.sis.internal.converter.PathConverter$URLFile
@@ -25,3 +28,5 @@ org.apache.sis.internal.converter.PathConverter$URI_URL
 org.apache.sis.internal.converter.DateConverter$Long
 org.apache.sis.internal.converter.DateConverter$SQL
 org.apache.sis.internal.converter.DateConverter$Timestamp
+org.apache.sis.internal.converter.CollectionConverter$List
+org.apache.sis.internal.converter.CollectionConverter$Set

@@ -91,6 +91,7 @@ import org.junit.runners.Suite;
     org.apache.sis.util.collection.RangeSetTest.class,
 
     // Converters
+    org.apache.sis.internal.converter.AngleConverterTest.class,
     org.apache.sis.internal.converter.PathConverterTest.class,
     org.apache.sis.internal.converter.StringConverterTest.class,
     org.apache.sis.internal.converter.FallbackConverterTest.class,

@@ -28,10 +28,12 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.spatial.PixelOrientation;
+import org.apache.sis.measure.Angle;
 import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -50,6 +52,7 @@ import java.nio.file.Paths;
  * @version 0.3
  * @module
  */
+@DependsOn(org.apache.sis.measure.AngleTest.class)
 public final strictfp class StringConverterTest extends TestCase {
     /**
      * Asserts that conversion of the given {@code source} value produces
@@ -176,6 +179,17 @@ public final strictfp class StringConverterTest extends TestCase {
     public void testBigInteger() {
         final ObjectConverter<String,BigInteger> c = new StringConverter.BigInteger();
         runInvertibleConversion(c, "45000", BigInteger.valueOf(45000));
+        tryUnconvertibleValue(c);
+        assertSerializedEquals(c);
+    }
+
+    /**
+     * Tests conversions to {@link Angle}.
+     */
+    @Test
+    public void testAngle() {
+        final ObjectConverter<String,Angle> c = new StringConverter.Angle();
+        runInvertibleConversion(c, "42°30′00″", new Angle(42.5));
         tryUnconvertibleValue(c);
         assertSerializedEquals(c);
     }
