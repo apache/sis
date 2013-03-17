@@ -256,7 +256,6 @@ public final strictfp class PropertyAccessorTest extends TestCase {
      */
     @Test
     @DependsOnMethod("testSet")
-    @Ignore("Needs ObjectConverters.find(…) implementation.")
     public void testSetWithConversion() {
         final String           expected = "Some title";
         final Citation         citation = new DefaultCitation();
@@ -287,7 +286,6 @@ public final strictfp class PropertyAccessorTest extends TestCase {
      */
     @Test
     @DependsOnMethod("testSet")
-    @Ignore("Needs ObjectConverters.find(…) implementation.")
     public void testSetInCollectionWithConversion() {
         testSetInCollection(true);
     }
