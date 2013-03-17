@@ -40,7 +40,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
 
 // Related to JDK7
-import org.apache.sis.internal.util.JDK7;
+import org.apache.sis.internal.jdk7.JDK7;
 
 
 /**

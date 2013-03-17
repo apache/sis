@@ -29,7 +29,8 @@ import org.junit.runners.Suite;
  * @module
  */
 @Suite.SuiteClasses({
-    org.apache.sis.metadata.PropertyDescriptorTest.class
+    org.apache.sis.metadata.PropertyDescriptorTest.class,
+    org.apache.sis.metadata.PropertyAccessorTest.class
 })
 public final strictfp class MetadataTestSuite extends TestSuite {
 }

@@ -24,7 +24,7 @@ import org.apache.sis.util.Numbers;
 import org.apache.sis.util.resources.Errors;
 
 // Related to JDK7
-import org.apache.sis.internal.util.Objects;
+import org.apache.sis.internal.jdk7.Objects;
 
 
 /**

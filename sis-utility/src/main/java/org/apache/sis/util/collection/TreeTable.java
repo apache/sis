@@ -30,17 +30,17 @@ import java.util.List;
  *
  * {@preformat text
  *   Citation
- *   ├───Title…………………………………………………………… Open Geospatial Consortium
- *   ├───Presentation Forms………………………… document digital
- *   ├───Cited Responsible Parties
- *   │   ├───Organisation Name………………… Open Geospatial Consortium
- *   │   ├───Role…………………………………………………… resource provider
- *   │   └───Contact Info
- *   │       └───Online Resource
- *   │           ├───Linkage……………………… http://www.opengeospatial.org/
- *   │           └───Function…………………… information
- *   └───Identifiers
- *       └───Code…………………………………………………… OGC
+ *     ├─Title…………………………………………………………… Open Geospatial Consortium
+ *     ├─Presentation Forms………………………… document digital
+ *     ├─Cited Responsible Parties
+ *     │   ├─Organisation Name………………… Open Geospatial Consortium
+ *     │   ├─Role…………………………………………………… resource provider
+ *     │   └─Contact Info
+ *     │       └─Online Resource
+ *     │           ├─Linkage……………………… http://www.opengeospatial.org/
+ *     │           └─Function…………………… information
+ *     └─Identifiers
+ *         └─Code…………………………………………………… OGC
  * }
  *
  * <p>In many cases, the columns are known in advance as hard-coded static constants.

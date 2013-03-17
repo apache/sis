@@ -14,17 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.util;
+package org.apache.sis.internal.converter;
 
 import java.util.Set;
 import java.util.EnumSet;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.math.FunctionProperty;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.resources.Errors;
 
 
 /**
- * Base class for non-invertible surjective {@link ObjectConverter}s.
+ * Base class for (usually non-invertible) surjective {@link ObjectConverter}s.
  * Surjective converters are converters for which many different source values can produce
  * the same target value. In many cases, the target value having many possible sources is
  * the {@code null} value. This is the case in particular when the converter is used as a
@@ -40,6 +41,8 @@ import org.apache.sis.util.resources.Errors;
  * @since   0.3
  * @version 0.3
  * @module
+ *
+ * @see InjectiveConverter
  */
 public abstract class SurjectiveConverter<S,T> implements ObjectConverter<S,T> {
     /**
@@ -49,7 +52,8 @@ public abstract class SurjectiveConverter<S,T> implements ObjectConverter<S,T> {
     }
 
     /**
-     * Returns the function property, which contains only {@link FunctionProperty#SURJECTIVE}.
+     * Returns {@link FunctionProperty#SURJECTIVE} by default.
+     * Subclasses may add more properties (order preserving, <i>etc.</i>).
      */
     @Override
     public Set<FunctionProperty> properties() {
@@ -57,11 +61,22 @@ public abstract class SurjectiveConverter<S,T> implements ObjectConverter<S,T> {
     }
 
     /**
-     * Unsupported operation, since surjective converters are non-invertible.
+     * Unsupported operation, since surjective converters are non-invertible
+     * (unless the converter is bijective, which is decided by subclasses).
      */
     @Override
     public ObjectConverter<T,S> inverse() throws UnsupportedOperationException {
         throw new UnsupportedOperationException(Errors.format(
                 Errors.Keys.UnsupportedOperation_1, "inverse"));
+    }
+
+    /**
+     * Returns a string representation of this converter for debugging purpose.
+     */
+    @Override
+    public String toString() {
+        return Classes.getShortClassName(this) + '[' +
+                getTargetClass().getSimpleName() + " ← " +
+                getSourceClass().getSimpleName() + ']';
     }
 }

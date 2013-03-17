@@ -26,7 +26,7 @@ import org.opengis.annotation.Obligation;
 
 /**
  * The comparator for sorting method order. This comparator puts mandatory methods first,
- * which is necessary for reducing the risk of ambiguity in {@link PropertyTree#parse}.
+ * which is necessary for reducing the risk of ambiguity in {@link MetadataTreeFormat#parse}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.4)

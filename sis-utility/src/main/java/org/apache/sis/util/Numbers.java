@@ -26,9 +26,10 @@ import java.util.Collections;
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.CollectionsExt;
+
+import static java.lang.Double.doubleToLongBits;
 
 
 /**
@@ -46,8 +47,8 @@ public final class Numbers extends Static {
      * Constant of value {@value} used in {@code switch} statements or as index in arrays.
      */
     public static final byte
+            BIG_DECIMAL=10, BIG_INTEGER=9,
             DOUBLE=8, FLOAT=7, LONG=6, INTEGER=5, SHORT=4, BYTE=3, CHARACTER=2, BOOLEAN=1, OTHER=0;
-    // Note: This class assumes that DOUBLE is the greatest public constant.
 
     /**
      * Mapping between a primitive type and its wrapper, if any.
@@ -62,8 +63,8 @@ public final class Numbers extends Static {
      */
     private static final Map<Class<?>,Numbers> MAPPING = new IdentityHashMap<Class<?>,Numbers>(16);
     static {
-        new Numbers(BigDecimal.class, true, false, (byte) (DOUBLE+2)); // Undocumented enum.
-        new Numbers(BigInteger.class, false, true, (byte) (DOUBLE+1)); // Undocumented enum.
+        new Numbers(BigDecimal.class, true, false, BIG_DECIMAL);
+        new Numbers(BigInteger.class, false, true, BIG_INTEGER);
         new Numbers(Double   .TYPE, Double   .class, true,  false, (byte) Double   .SIZE, DOUBLE,    'D', Double   .valueOf(Double.NaN));
         new Numbers(Float    .TYPE, Float    .class, true,  false, (byte) Float    .SIZE, FLOAT,     'F', Float    .valueOf(Float .NaN));
         new Numbers(Long     .TYPE, Long     .class, false, true,  (byte) Long     .SIZE, LONG,      'J', Long     .valueOf(        0L));
@@ -304,7 +305,7 @@ public final class Numbers extends Static {
             throws IllegalArgumentException
     {
         return narrowestClass((n1 != null) ? n1.getClass() : null,
-                           (n2 != null) ? n2.getClass() : null);
+                              (n2 != null) ? n2.getClass() : null);
     }
 
     /**
@@ -350,145 +351,113 @@ public final class Numbers extends Static {
     }
 
     /**
-     * Returns the smallest class capable to hold the specified value. If the given value is
-     * {@code null}, then this method returns {@code null}. Otherwise this method delegates
-     * to {@link #narrowestClass(double)} or {@link #narrowestClass(long)} depending on the value type.
+     * Returns the smallest class capable to hold the specified value.
+     * This method applies the following choices, in that order:
+     *
+     * <ul>
+     *   <li>If the given value is {@code null}, then this method returns {@code null}.</li>
+     *   <li>Otherwise if the given value can not be casted from {@code double} to an other type
+     *       without precision lost, return {@code Double.class}.</li>
+     *   <li>Otherwise if the given value can not be casted from {@code float} to an other type
+     *       without precision lost, return {@code Float.class}.</li>
+     *   <li>Otherwise if the given value is between {@value java.lang.Byte#MIN_VALUE} and
+     *       {@value java.lang.Byte#MAX_VALUE}, then this method returns {@code Byte.class};</li>
+     *   <li>Otherwise if the given value is between {@value java.lang.Short#MIN_VALUE} and
+     *       {@value java.lang.Short#MAX_VALUE}, then this method returns {@code Short.class};</li>
+     *   <li>Otherwise if the given value is between {@value java.lang.Integer#MIN_VALUE} and
+     *       {@value java.lang.Integer#MAX_VALUE}, then this method returns {@code Integer.class};</li>
+     *   <li>Otherwise this method returns {@code Long.class};</li>
+     * </ul>
      *
      * @param  value The value to be wrapped in a finer (if possible) {@link Number}.
      * @return The narrowest type capable to hold the given value.
      *
      * @see #narrowestNumber(Number)
      */
+    @SuppressWarnings("fallthrough")
     public static Class<? extends Number> narrowestClass(final Number value) {
         if (value == null) {
             return null;
         }
-        if (isPrimitiveInteger(value.getClass())) {
-            return narrowestClass(value.longValue());
-        } else {
-            return narrowestClass(value.doubleValue());
+        boolean isFloat = false;
+        final long longValue = value.longValue();
+        switch (getEnumConstant(value.getClass())) {
+            default: {
+                final double doubleValue = value.doubleValue();
+                final float  floatValue  = (float) doubleValue;
+                isFloat = (doubleToLongBits(floatValue) == doubleToLongBits(doubleValue));
+                if (doubleValue != longValue) {
+                    return isFloat ? Float.class : Double.class;
+                }
+                // Fall through.
+            }
+            case LONG:    if (((int)   longValue) != longValue) return isFloat ? Float.class : Long.class;
+            case INTEGER: if (((short) longValue) != longValue) return Integer.class;
+            case SHORT:   if (((byte)  longValue) != longValue) return Short  .class;
+            case BYTE:    return Byte.class;
         }
     }
 
     /**
-     * Returns the smallest class capable to hold the specified value.
-     * This is similar to {@link #narrowestClass(long)}, but extended to floating point values.
+     * Returns the given number wrapped in the smallest class capable to hold the specified value.
+     * This method is equivalent to the following code, in a slightly more efficient way:
      *
-     * @param  value The value to be wrapped in a {@link Number}.
-     * @return The narrowest type capable to hold the given value.
-     *
-     * @see #narrowestNumber(double)
-     */
-    public static Class<? extends Number> narrowestClass(final double value) {
-        final long lg = (long) value;
-        if (value == lg) {
-            return narrowestClass(lg);
-        }
-        final float fv = (float) value;
-        if (Double.doubleToRawLongBits(value) == Double.doubleToRawLongBits(fv)) {
-            return Float.class;
-        }
-        return Double.class;
-    }
-
-    /**
-     * Returns the smallest class capable to hold the specified value.
-     * This method makes the following choice:
-     *
-     * <ul>
-     *   <li>If the given value is between {@value java.lang.Byte#MIN_VALUE} and
-     *       {@value java.lang.Byte#MAX_VALUE}, then this method returns {@code Byte.class};</li>
-     *   <li>If the given value is between {@value java.lang.Short#MIN_VALUE} and
-     *       {@value java.lang.Short#MAX_VALUE}, then this method returns {@code Short.class};</li>
-     *   <li>If the given value is between {@value java.lang.Integer#MIN_VALUE} and
-     *       {@value java.lang.Integer#MAX_VALUE}, then this method returns {@code Integer.class};</li>
-     *   <li>Otherwise this method returns {@code Long.class};</li>
-     * </ul>
-     *
-     * @param  value The value to be wrapped in a {@link Number}.
-     * @return The narrowest type capable to hold the given value.
-     *
-     * @see #narrowestNumber(long)
-     */
-    public static Class<? extends Number> narrowestClass(final long value) {
-        // Tests MAX_VALUE before MIN_VALUE because it is more likely to fail.
-        if (value <= Byte   .MAX_VALUE  &&  value >= Byte   .MIN_VALUE) return Byte.class;
-        if (value <= Short  .MAX_VALUE  &&  value >= Short  .MIN_VALUE) return Short.class;
-        if (value <= Integer.MAX_VALUE  &&  value >= Integer.MIN_VALUE) return Integer.class;
-        return Long.class;
-    }
-
-    /**
-     * Returns the number of the smallest class capable to hold the specified value. If the
-     * given value is {@code null}, then this method returns {@code null}. Otherwise this
-     * method delegates to {@link #narrowestNumber(double)} or {@link #narrowestNumber(long)}
-     * depending on the value type.
+     * {@preformat java
+     *     return cast(value, narrowestClass(value));
+     * }
      *
      * @param  value The value to be wrapped in a finer (if possible) {@link Number}.
      * @return The narrowest type capable to hold the given value.
      *
      * @see #narrowestClass(Number)
+     * @see #cast(Number, Class)
      */
+    @SuppressWarnings("fallthrough")
     public static Number narrowestNumber(final Number value) {
         if (value == null) {
             return null;
         }
         final Number candidate;
-        if (isPrimitiveInteger(value.getClass())) {
-            candidate = narrowestNumber(value.longValue());
-        } else {
-            candidate = narrowestNumber(value.doubleValue());
+        boolean isFloat = false;
+        final long longValue = value.longValue();
+        switch (getEnumConstant(value.getClass())) {
+            default: {
+                final double doubleValue = value.doubleValue();
+                final float  floatValue  = (float) doubleValue;
+                isFloat = (doubleToLongBits(floatValue) == doubleToLongBits(doubleValue));
+                if (doubleValue != longValue) {
+                    candidate = isFloat ? ((Number) Float .valueOf(floatValue))
+                                        : ((Number) Double.valueOf(doubleValue));
+                    break;
+                }
+                // Fall through everywhere.
+            }
+            case LONG: {
+                if (((int) longValue) != longValue) {
+                    candidate = isFloat ? ((Number) Float.valueOf((float) longValue))
+                                        : ((Number) Long.valueOf(longValue));
+                    break;
+                }
+            }
+            case INTEGER: {
+                if (((short) longValue) != longValue) {
+                    candidate = Integer.valueOf((int) longValue);
+                    break;
+                }
+            }
+            case SHORT: {
+                if (((byte) longValue) != longValue) {
+                    candidate = Short.valueOf((short) longValue);
+                    break;
+                }
+            }
+            case BYTE: {
+                candidate = Byte.valueOf((byte) longValue);
+                break;
+            }
         }
         // Keep the existing instance if possible.
         return value.equals(candidate) ? value : candidate;
-    }
-
-    /**
-     * Returns the number of the smallest class capable to hold the specified value.
-     * This is similar to {@link #narrowestNumber(long)}, but extended to floating point values.
-     *
-     * @param  value The value to be wrapped in a {@link Number}.
-     * @return The narrowest type capable to hold the given value.
-     *
-     * @see #narrowestClass(double)
-     */
-    public static Number narrowestNumber(final double value) {
-        final long lg = (long) value;
-        if (value == lg) {
-            return narrowestNumber(lg);
-        }
-        final float fv = (float) value;
-        if (Double.doubleToRawLongBits(value) == Double.doubleToRawLongBits(fv)) {
-            return Float.valueOf(fv);
-        }
-        return Double.valueOf(value);
-    }
-
-    /**
-     * Returns the number of the smallest type capable to hold the specified value.
-     * This method makes the following choice:
-     *
-     * <ul>
-     *   <li>If the given value is between {@value java.lang.Byte#MIN_VALUE} and
-     *       {@value java.lang.Byte#MAX_VALUE}, then it is wrapped in a {@link Byte} object.</li>
-     *   <li>If the given value is between {@value java.lang.Short#MIN_VALUE} and
-     *       {@value java.lang.Short#MAX_VALUE}, then it is wrapped in a {@link Short} object.</li>
-     *   <li>If the given value is between {@value java.lang.Integer#MIN_VALUE} and
-     *       {@value java.lang.Integer#MAX_VALUE}, then it is wrapped in an {@link Integer} object.</li>
-     *   <li>Otherwise the value is wrapped in a {@link Long} object.</li>
-     * </ul>
-     *
-     * @param  value The value to be wrapped in a {@link Number}.
-     * @return The given value as a number of the narrowest type capable to hold it.
-     *
-     * @see #narrowestClass(long)
-     */
-    public static Number narrowestNumber(final long value) {
-        // Tests MAX_VALUE before MIN_VALUE because it is more likely to fail.
-        if (value <= Byte   .MAX_VALUE  &&  value >= Byte   .MIN_VALUE) return Byte   .valueOf((byte)  value);
-        if (value <= Short  .MAX_VALUE  &&  value >= Short  .MIN_VALUE) return Short  .valueOf((short) value);
-        if (value <= Integer.MAX_VALUE  &&  value >= Integer.MIN_VALUE) return Integer.valueOf((int)   value);
-        return Long.valueOf(value);
     }
 
     /**
@@ -499,11 +468,10 @@ public final class Numbers extends Static {
      * @throws NumberFormatException if the given value can not be parsed as a number.
      *
      * @see #narrowestNumber(Number)
-     * @see #narrowestNumber(double)
-     * @see #narrowestNumber(long)
      */
-    public static Number narrowestNumber(String value) throws NumberFormatException {
-        value = CharSequences.trimWhitespaces(value);
+    public static Number narrowestNumber(final String value) throws NumberFormatException {
+        // Do not trim whitespaces. It is up to the caller to do that if he wants.
+        // For such low level function, we are better to avoid hidden initiative.
         final int length = value.length();
         for (int i=0; i<length; i++) {
             final char c = value.charAt(i);
@@ -516,7 +484,8 @@ public final class Numbers extends Static {
 
     /**
      * Casts a number to the specified class. The class must by one of {@link Byte},
-     * {@link Short}, {@link Integer}, {@link Long}, {@link Float} or {@link Double}.
+     * {@link Short}, {@link Integer}, {@link Long}, {@link Float}, {@link Double},
+     * {@link BigInteger} or {@link BigDecimal}.
      * This method makes the following choice:
      *
      * <ul>
@@ -526,10 +495,6 @@ public final class Numbers extends Static {
      *       <code>{@linkplain Float#valueOf(float) Float.valueOf}(number.floatValue())</code>;</li>
      *   <li>And likewise for all remaining known types.</li>
      * </ul>
-     *
-     * {@note This method is intentionally restricted to primitive types. Other types
-     *        like <code>BigDecimal</code> are not the purpose of this method.
-     *        See <code>ObjectConverter</code> for more generic methods.}
      *
      * This method does not verify if the given type is wide enough for the given value,
      * because the type has typically been calculated by {@link #widestClass(Class, Class)}
@@ -551,20 +516,51 @@ public final class Numbers extends Static {
         if (number == null || number.getClass() == type) {
             return (N) number;
         }
-        if (type == Double .class) return (N) Double .valueOf(number.doubleValue());
-        if (type == Float  .class) return (N) Float  .valueOf(number. floatValue());
-        if (type == Long   .class) return (N) Long   .valueOf(number.  longValue());
-        if (type == Integer.class) return (N) Integer.valueOf(number.   intValue());
-        if (type == Short  .class) return (N) Short  .valueOf(number. shortValue());
-        if (type == Byte   .class) return (N) Byte   .valueOf(number.  byteValue());
-        throw unknownType(type);
+        switch (getEnumConstant(type)) {
+            case BYTE:    return (N) Byte   .valueOf(number.  byteValue());
+            case SHORT:   return (N) Short  .valueOf(number. shortValue());
+            case INTEGER: return (N) Integer.valueOf(number.   intValue());
+            case LONG:    return (N) Long   .valueOf(number.  longValue());
+            case FLOAT:   return (N) Float  .valueOf(number. floatValue());
+            case DOUBLE:  return (N) Double .valueOf(number.doubleValue());
+            case BIG_INTEGER: {
+                final BigInteger c;
+                if (number instanceof BigInteger) {
+                    c = (BigInteger) number;
+                } else if (number instanceof BigDecimal) {
+                    c = ((BigDecimal) number).toBigInteger();
+                } else {
+                    c = BigInteger.valueOf(number.longValue());
+                }
+                return (N) c;
+            }
+            case BIG_DECIMAL: {
+                final BigDecimal c;
+                if (number instanceof BigDecimal) {
+                    c = (BigDecimal) number;
+                } else if (number instanceof BigInteger) {
+                    c = new BigDecimal((BigInteger) number);
+                } else if (isInteger(number.getClass())) {
+                    c = BigDecimal.valueOf(number.longValue());
+                } else {
+                    c = BigDecimal.valueOf(number.doubleValue());
+                }
+                return (N) c;
+            }
+            default: {
+                if (type.isInstance(number)) {
+                    return (N) number;
+                }
+                throw unknownType(type);
+            }
+        }
     }
 
     /**
      * Wraps the given value in a {@code Number} of the specified class.
-     * The given type shall be one of {@link Byte}, {@link Short}, {@link Integer},
-     * {@link Long}, {@link Float} or {@link Double} classes. Furthermore, the given
-     * value shall be convertible to the given class without precision lost,
+     * The given type shall be one of {@link Byte}, {@link Short}, {@link Integer}, {@link Long},
+     * {@link Float}, {@link Double}, {@link BigInteger} and {@link BigDecimal} classes.
+     * Furthermore, the given value shall be convertible to the given class without precision lost,
      * otherwise an {@link IllegalArgumentException} will be thrown.
      *
      * @param  <N> The wrapper class.
@@ -580,14 +576,18 @@ public final class Numbers extends Static {
             throws IllegalArgumentException
     {
         final N number;
-             if (type == Double .class) return   (N) Double .valueOf(value); // No need to verify.
-        else if (type == Float  .class) number = (N) Float  .valueOf((float) value);
-        else if (type == Long   .class) number = (N) Long   .valueOf((long)  value);
-        else if (type == Integer.class) number = (N) Integer.valueOf((int)   value);
-        else if (type == Short  .class) number = (N) Short  .valueOf((short) value);
-        else if (type == Byte   .class) number = (N) Byte   .valueOf((byte)  value);
-        else throw unknownType(type);
-        if (Double.doubleToLongBits(number.doubleValue()) != Double.doubleToLongBits(value)) {
+        switch (getEnumConstant(type)) {
+            case BYTE:        number = (N) Byte      .valueOf((byte)  value); break;
+            case SHORT:       number = (N) Short     .valueOf((short) value); break;
+            case INTEGER:     number = (N) Integer   .valueOf((int)   value); break;
+            case LONG:        number = (N) Long      .valueOf((long)  value); break;
+            case FLOAT:       number = (N) Float     .valueOf((float) value); break;
+            case DOUBLE:      return   (N) Double    .valueOf(value); // No need to verify.
+            case BIG_INTEGER: number = (N) BigInteger.valueOf((long) value); break;
+            case BIG_DECIMAL: return   (N) BigDecimal.valueOf(value); // No need to verify.
+            default: throw unknownType(type);
+        }
+        if (doubleToLongBits(number.doubleValue()) != doubleToLongBits(value)) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.CanNotConvertValue_2, value, type));
         }
         return number;
@@ -595,6 +595,7 @@ public final class Numbers extends Static {
 
     /**
      * Converts the specified string into a value object. The value object can be an instance of
+     * {@link BigDecimal}, {@link BigInteger},
      * {@link Double}, {@link Float}, {@link Long}, {@link Integer}, {@link Short}, {@link Byte},
      * {@link Boolean}, {@link Character} or {@link String} according the specified type. This
      * method makes the following choice:
@@ -607,11 +608,6 @@ public final class Numbers extends Static {
      *   <li>And likewise for all remaining known types.</li>
      * </ul>
      *
-     * {@note This method is intentionally restricted to primitive types, with the addition of
-     *        <code>String</code> which can be though as an identity operation. Other types
-     *        like <code>BigDecimal</code> are not the purpose of this method. See the
-     *        <code>ConverterRegistry</code> class for a more generic method.}
-     *
      * @param  <T> The requested type.
      * @param  value the value to parse.
      * @param  type The requested type.
@@ -621,31 +617,36 @@ public final class Numbers extends Static {
      *         string value is not parseable as a number of the specified type.
      */
     @SuppressWarnings("unchecked")
-    public static <T> T valueOf(String value, final Class<T> type)
+    public static <T> T valueOf(final String value, final Class<T> type)
             throws IllegalArgumentException, NumberFormatException
     {
         if (value == null || type == String.class) {
             return (T) value;
         }
-        if (type == Character.class) {
-            /*
-             * If the string is empty, returns 0 which means "end of string" in C/C++
-             * and NULL in Unicode standard. If non-empty, take only the first char.
-             * This is somewhat consistent with Boolean.valueOf(...) which is quite
-             * lenient about the parsing as well, and throwing a NumberFormatException
-             * for those would not be appropriate.
-             */
-            return (T) Character.valueOf(value.isEmpty() ? 0 : value.charAt(0));
+        switch (getEnumConstant(type)) {
+            case CHARACTER: {
+                /*
+                 * If the string is empty, returns 0 which means "end of string" in C/C++
+                 * and NULL in Unicode standard. If non-empty, take only the first char.
+                 * This is somewhat consistent with Boolean.valueOf(...) which is quite
+                 * lenient about the parsing as well, and throwing a NumberFormatException
+                 * for those would not be appropriate.
+                 */
+                return (T) Character.valueOf(value.isEmpty() ? 0 : value.charAt(0));
+            }
+            // Do not trim whitespaces. It is up to the caller to do that if he wants.
+            // For such low level function, we are better to avoid hidden initiative.
+            case BOOLEAN:     return (T) Boolean.valueOf(value);
+            case BYTE:        return (T) Byte   .valueOf(value);
+            case SHORT:       return (T) Short  .valueOf(value);
+            case INTEGER:     return (T) Integer.valueOf(value);
+            case LONG:        return (T) Long   .valueOf(value);
+            case FLOAT:       return (T) Float  .valueOf(value);
+            case DOUBLE:      return (T) Double .valueOf(value);
+            case BIG_INTEGER: return (T) new BigInteger(value);
+            case BIG_DECIMAL: return (T) new BigDecimal(value);
+            default: throw unknownType(type);
         }
-        value = CharSequences.trimWhitespaces(value);
-        if (type == Double .class) return (T) Double .valueOf(value);
-        if (type == Float  .class) return (T) Float  .valueOf(value);
-        if (type == Long   .class) return (T) Long   .valueOf(value);
-        if (type == Integer.class) return (T) Integer.valueOf(value);
-        if (type == Short  .class) return (T) Short  .valueOf(value);
-        if (type == Byte   .class) return (T) Byte   .valueOf(value);
-        if (type == Boolean.class) return (T) Boolean.valueOf(value);
-        throw unknownType(type);
     }
 
     /**
@@ -706,8 +707,10 @@ public final class Numbers extends Static {
     }
 
     /**
-     * Returns one of {@link #DOUBLE}, {@link #FLOAT}, {@link #LONG}, {@link #INTEGER},
-     * {@link #SHORT}, {@link #BYTE}, {@link #CHARACTER}, {@link #BOOLEAN} or {@link #OTHER}
+     * Returns a numeric constant for the given type.
+     * The constants are {@link #BIG_DECIMAL}, {@link #BIG_INTEGER},
+     * {@link #DOUBLE}, {@link #FLOAT}, {@link #LONG}, {@link #INTEGER},
+     * {@link #SHORT}, {@link #BYTE}, {@link #CHARACTER}, {@link #BOOLEAN}, or {@link #OTHER}
      * constants for the given type. This is a commodity for usage in {@code switch} statements.
      *
      * @param type A type (usually either a primitive type or its wrapper).
@@ -715,13 +718,7 @@ public final class Numbers extends Static {
      */
     public static byte getEnumConstant(final Class<?> type) {
         final Numbers mapping = MAPPING.get(type);
-        if (mapping != null) {
-            // Filter out the non-public enum for BigDecimal and BigInteger.
-            if (mapping.size >= 0) {
-                return mapping.ordinal;
-            }
-        }
-        return OTHER;
+        return (mapping != null) ? mapping.ordinal : OTHER;
     }
 
     /**

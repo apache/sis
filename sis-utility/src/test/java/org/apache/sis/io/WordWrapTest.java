@@ -25,7 +25,7 @@ import static org.junit.Assert.*;
 import static org.apache.sis.util.Characters.SOFT_HYPHEN;
 
 // Related to JK7
-import org.apache.sis.internal.util.JDK7;
+import org.apache.sis.internal.jdk7.JDK7;
 
 
 /**

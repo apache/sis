@@ -47,7 +47,7 @@ import static org.apache.sis.math.MathFunctions.isNegative;
 import static org.apache.sis.math.MathFunctions.isPositive;
 
 // Related to JDK7
-import org.apache.sis.internal.util.Objects;
+import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
@@ -939,7 +939,7 @@ public abstract class AbstractEnvelope implements Envelope {
      * @param  isSimplePrecision {@code true} if every lower and upper corner values can be casted to {@code float}.
      * @return The envelope as a {@code BOX2D} or {@code BOX3D} (most typical dimensions) in WKT format.
      *
-     * @see GeneralEnvelope#GeneralEnvelope(String)
+     * @see GeneralEnvelope#GeneralEnvelope(CharSequence)
      * @see org.apache.sis.measure.CoordinateFormat
      * @see org.apache.sis.io.wkt
      */

@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.util;
+package org.apache.sis.internal.jdk7;
 
 import java.util.Arrays;
 
 
 /**
- * Place holder for {@link java.util.Objects}. This class will be deleted when we will be allowed
- * to compile for JDK7.
+ * Place holder for {@link java.util.Objects}.
+ * This class will be deleted when we will be allowed to compile for JDK7.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from GeoAPI)
