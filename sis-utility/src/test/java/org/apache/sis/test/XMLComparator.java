@@ -50,7 +50,7 @@ import static org.apache.sis.util.Characters.NO_BREAK_SPACE;
 import static org.apache.sis.util.CharSequences.trimWhitespaces;
 
 // Related to JDK7
-import org.apache.sis.internal.util.JDK7;
+import org.apache.sis.internal.jdk7.JDK7;
 
 
 /**

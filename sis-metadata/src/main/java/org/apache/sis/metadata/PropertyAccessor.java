@@ -264,11 +264,11 @@ final class PropertyAccessor {
             Method getter  = getters[i];
             String name    = getter.getName();
             final int base = prefix(name).length();
-            addMapping(names[i] = toPropertyName(name, base), index);
             addMapping(name, index);
+            addMappingWithLowerCase(names[i] = toPropertyName(name, base), index);
             final UML annotation = getter.getAnnotation(UML.class);
             if (annotation != null) {
-                addMapping(annotation.identifier(), index);
+                addMappingWithLowerCase(annotation.identifier().intern(), index);
             }
             /*
              * Now try to infer the setter from the getter. We replace the "get" prefix by
@@ -277,12 +277,12 @@ final class PropertyAccessor {
             Class<?> returnType = getter.getReturnType();
             arguments[0] = returnType;
             if (name.length() > base) {
-                final char lo = name.charAt(base);
-                final char up = Character.toUpperCase(lo);
+                final int lo = name.codePointAt(base);
+                final int up = Character.toUpperCase(lo);
                 final int length = name.length();
-                final StringBuilder buffer = new StringBuilder(length - base + 3).append(SET);
+                final StringBuilder buffer = new StringBuilder(length - base + 5).append(SET);
                 if (lo != up) {
-                    buffer.append(up).append(name, base+1, length);
+                    buffer.appendCodePoint(up).append(name, base + Character.charCount(lo), length);
                 } else {
                     buffer.append(name, base, length);
                 }
@@ -349,18 +349,24 @@ final class PropertyAccessor {
      * Adds the given (name, index) pair to {@link #mapping}, making sure we don't
      * overwrite an existing entry with different value.
      */
-    private void addMapping(String name, final Integer index) throws IllegalArgumentException {
+    private void addMapping(final String name, final Integer index) {
         if (!name.isEmpty()) {
-            String original;
-            do {
-                final Integer old = mapping.put(name, index);
-                if (old != null && !old.equals(index)) {
-                    throw new IllegalStateException(Errors.format(Errors.Keys.DuplicatedValue_1,
-                            Classes.getShortName(type) + '.' + name));
-                }
-                original = name;
-                name = CharSequences.trimWhitespaces(name.toLowerCase(Locale.ROOT));
-            } while (!name.equals(original));
+            final Integer old = mapping.put(name, index);
+            if (old != null && !old.equals(index)) {
+                throw new IllegalStateException(Errors.format(Errors.Keys.DuplicatedValue_1,
+                        Classes.getShortName(type) + '.' + name));
+            }
+        }
+    }
+
+    /**
+     * Adds the given (name, index) pair and its lower-case variant.
+     */
+    private void addMappingWithLowerCase(final String name, final Integer index) {
+        addMapping(name, index);
+        final String lower = name.toLowerCase(Locale.ROOT);
+        if (lower != name) { // Identity comparison is okay here.
+            addMapping(lower, index);
         }
     }
 
@@ -494,7 +500,7 @@ final class PropertyAccessor {
                 }
             }
         }
-        return CharSequences.trimWhitespaces(name).intern();
+        return name.intern();
     }
 
     /**
@@ -534,30 +540,17 @@ final class PropertyAccessor {
     }
 
     /**
-     * Returns the declaring class of the getter at the given index.
-     *
-     * @param  index The index of the property for which to get the declaring class.
-     * @return The declaring class at the given index, or {@code null} if the index is out of bounds.
-     */
-    final Class<?> getDeclaringClass(final int index) {
-        if (index >= 0 && index < names.length) {
-            return getters[index].getDeclaringClass();
-        }
-        return null;
-    }
-
-    /**
      * Returns the name of the property at the given index, or {@code null} if none.
      *
      * @param  index The index of the property for which to get the name.
-     * @param  keyName The kind of name to return.
+     * @param  keyPolicy The kind of name to return.
      * @return The name of the given kind at the given index,
      *         or {@code null} if the index is out of bounds.
      */
     @SuppressWarnings("fallthrough")
-    final String name(final int index, final KeyNamePolicy keyName) {
+    final String name(final int index, final KeyNamePolicy keyPolicy) {
         if (index >= 0 && index < names.length) {
-            switch (keyName) {
+            switch (keyPolicy) {
                 case UML_IDENTIFIER: {
                     final UML uml = getters[index].getAnnotation(UML.class);
                     if (uml != null) {
@@ -667,15 +660,14 @@ final class PropertyAccessor {
     }
 
     /**
-     * Returns {@code true} if the property at the given index is writable.
-     */
-    final boolean isWritable(final int index) {
-        return (index >= 0) && (index < standardCount) && (setters != null) && (setters[index] != null);
-    }
-
-    /**
      * Returns the value for the specified metadata, or {@code null} if none.
+     * If the given index is out of bounds, then this method returns {@code null},
+     * so it is safe to invoke this method even if {@link #indexOf(String, boolean)}
+     * returned -1.
      *
+     * @param  index The index of the property for which to get a value.
+     * @param  metadata The metadata object to query.
+     * @return The value, or {@code null} if none or if the given is out of bounds.
      * @throws BackingStoreException If the implementation threw a checked exception.
      */
     final Object get(final int index, final Object metadata) throws BackingStoreException {
@@ -719,6 +711,12 @@ final class PropertyAccessor {
      * a new collection or map before the new value is set, because the setter methods typically
      * copy the new collection in their existing instance.
      *
+     * <p>If the given index is out of bounds, then this method does nothing and return {@code null}.
+     * We do that because the {@link PropertyMap#remove(Object)} method may invoke this method with
+     * an index of -1 if the {@link #indexOf(String, boolean)} method didn't found the property name.
+     * However the given value will be silently discarded, so index out-of-bounds shall be used only
+     * in the context of {@code remove} operations (this is not verified).</p>
+     *
      * @param  index    The index of the property to set.
      * @param  metadata The metadata object on which to set the value.
      * @param  value    The new value.
@@ -731,7 +729,10 @@ final class PropertyAccessor {
     final Object set(final int index, final Object metadata, final Object value, final boolean getOld)
             throws UnmodifiableMetadataException, ClassCastException, BackingStoreException
     {
-        if (index >= 0 && index < standardCount && setters != null) {
+        if (index < 0 || index >= standardCount) {
+            return null;
+        }
+        if (setters != null) {
             final Method getter = getters[index];
             final Method setter = setters[index];
             if (setter != null) {
@@ -1031,7 +1032,7 @@ final class PropertyAccessor {
 
     /**
      * Replaces every properties in the specified metadata by their
-     * {@linkplain ModifiableMetadata#unmodifiable unmodifiable variant}.
+     * {@linkplain ModifiableMetadata#unmodifiable() unmodifiable variant}.
      *
      * @throws BackingStoreException If the implementation threw a checked exception.
      */
@@ -1088,6 +1089,7 @@ final class PropertyAccessor {
     /**
      * Counts the number of non-empty properties.
      *
+     * @param  max Stop the count if we reach that value.
      * @throws BackingStoreException If the implementation threw a checked exception.
      */
     public int count(final Object metadata, final int max) throws BackingStoreException {

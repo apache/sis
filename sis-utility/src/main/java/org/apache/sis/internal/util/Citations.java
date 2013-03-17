@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.util;
 
+import org.apache.sis.internal.jdk7.Objects;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Locale;

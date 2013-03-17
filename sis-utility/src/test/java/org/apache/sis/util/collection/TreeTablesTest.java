@@ -73,19 +73,19 @@ public final strictfp class TreeTablesTest extends TestCase {
     public void testConcatenateSingletons() throws ParseException {
         final TreeTable table = TreeTables.parse(
                 "root\n" +
-                "├───users\n" +
-                "│   └───alice\n" +
-                "│       ├───data\n" +
-                "│       │   └───mercator\n" +
-                "│       └───document\n" +
-                "└───lib\n", NAME);
+                "  ├─users\n" +
+                "  │   └─alice\n" +
+                "  │       ├─data\n" +
+                "  │       │   └─mercator\n" +
+                "  │       └─document\n" +
+                "  └─lib\n", NAME);
         ((DefaultTreeTable) table).setRoot(concatenateSingletons(table.getRoot()));
         assertMultilinesEquals(
                 "root\n" +
-                "├───users/alice\n" +
-                "│   ├───data/mercator\n" +
-                "│   └───document\n" +
-                "└───lib\n".replace("/", File.separator), table.toString());
+                "  ├─users/alice\n" +
+                "  │   ├─data/mercator\n" +
+                "  │   └─document\n" +
+                "  └─lib\n".replace("/", File.separator), table.toString());
     }
 
     /**
@@ -104,14 +104,14 @@ public final strictfp class TreeTablesTest extends TestCase {
         nodeForPath(files, NAME, new File("users/Alice/data/mercator")).setValue(VALUE_AS_NUMBER, 60);
         assertMultilinesEquals(
                 "Root\n" +
-                "├───users\n" +
-                "│   ├───Alice\n" +
-                "│   │   ├───data………………………… 10\n" +
-                "│   │   │   └───mercator…… 60\n" +
-                "│   │   └───document……………… 50\n" +
-                "│   └───Bob……………………………………… 30\n" +
-                "│       └───data………………………… 20\n" +
-                "└───lib………………………………………………… 40\n", table.toString());
+                "  ├─users\n" +
+                "  │   ├─Alice\n" +
+                "  │   │   ├─data………………………… 10\n" +
+                "  │   │   │   └─mercator…… 60\n" +
+                "  │   │   └─document……………… 50\n" +
+                "  │   └─Bob……………………………………… 30\n" +
+                "  │       └─data………………………… 20\n" +
+                "  └─lib………………………………………………… 40\n", table.toString());
     }
 
     /**

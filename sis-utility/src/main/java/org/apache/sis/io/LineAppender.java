@@ -25,7 +25,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.internal.util.X364;
 
 // Related to JK7
-import org.apache.sis.internal.util.JDK7;
+import org.apache.sis.internal.jdk7.JDK7;
 
 
 /**

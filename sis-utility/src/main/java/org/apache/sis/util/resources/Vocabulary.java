@@ -105,6 +105,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final int DaylightTime = 24;
 
         /**
+         * Destination
+         */
+        public static final int Destination = 38;
+
+        /**
          * Directory
          */
         public static final int Directory = 36;
@@ -203,6 +208,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Scale
          */
         public static final int Scale = 23;
+
+        /**
+         * Source
+         */
+        public static final int Source = 39;
 
         /**
          * Standard deviation

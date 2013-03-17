@@ -121,7 +121,6 @@ public class TableColumn<V> implements CheckedContainer<V> {
      * the column elements are typically instances of {@link String} or {@link InternationalString},
      * depending on whether the data provide localization support or not.
      */
-    @SuppressWarnings("unchecked")
     public static final TableColumn<CharSequence> VALUE_AS_TEXT = new Constant<CharSequence>("VALUE_AS_TEXT",
             CharSequence.class, Vocabulary.Keys.Value);
 
@@ -129,13 +128,12 @@ public class TableColumn<V> implements CheckedContainer<V> {
      * Frequently-used constant for a column of object numerical values.
      * The column {@linkplain #getHeader() header} is "<cite>Value</cite>" (eventually localized).
      */
-    @SuppressWarnings("unchecked")
     public static final TableColumn<Number> VALUE_AS_NUMBER = new Constant<Number>("VALUE_AS_NUMBER",
             Number.class, Vocabulary.Keys.Value);
 
     /**
      * A map containing only the {@link #NAME} column.
-     * This is the default set of columns when parsing a table tree.
+     * This is the default set of columns when parsing a tree table.
      */
     static final Map<TableColumn<?>,Integer> NAME_MAP =
             Collections.<TableColumn<?>,Integer>singletonMap(NAME, 0);
@@ -249,7 +247,6 @@ public class TableColumn<V> implements CheckedContainer<V> {
     public TableColumn(final Class<V> type, final CharSequence header) {
         ArgumentChecks.ensureNonNull("type",   this.type   = type);
         ArgumentChecks.ensureNonNull("header", this.header = header);
-        this.header = Types.toInternationalString(header);
     }
 
     /**

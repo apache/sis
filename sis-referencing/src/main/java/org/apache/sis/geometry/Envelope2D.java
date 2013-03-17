@@ -49,7 +49,7 @@ import static org.apache.sis.geometry.AbstractEnvelope.isWrapAround;
 import static org.apache.sis.geometry.AbstractEnvelope.isNegativeUnsafe;
 
 // Related to JDK7
-import org.apache.sis.internal.util.Objects;
+import org.apache.sis.internal.jdk7.Objects;
 
 
 /**

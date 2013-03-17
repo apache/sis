@@ -35,7 +35,7 @@ import org.apache.sis.measure.ValueRange;
 import org.apache.sis.util.iso.Types;
 
 // Related to JDK7
-import org.apache.sis.internal.util.Objects;
+import org.apache.sis.internal.jdk7.Objects;
 
 
 /**

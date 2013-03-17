@@ -344,6 +344,7 @@ Apache SIS is a toolkit for describing location information, including points,
               <Specification-Vendor>Open Geospatial Consortium</Specification-Vendor>
             </manifestEntries>
           </archive>
+          <skipIfEmpty>true</skipIfEmpty>
         </configuration>
         <executions>
           <execution>
@@ -598,9 +599,9 @@ Apache SIS is a toolkit for describing location information, including points,
        ============================================================== -->
   <modules>
     <module>sis-build-helper</module>
-    <module>sis-referencing</module>
     <module>sis-utility</module>
     <module>sis-metadata</module>
+    <module>sis-referencing</module>
     <module>sis-webapp</module>
     <module>sis-app</module>
   </modules>

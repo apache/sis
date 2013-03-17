@@ -138,7 +138,7 @@ public final class ImmutableEnvelope extends ArrayEnvelope implements Serializab
      * }
      *
      * However this constructor is lenient to other geometry types like {@code POLYGON}.
-     * See the javadoc of the {@link GeneralEnvelope#GeneralEnvelope(String) GeneralEnvelope}
+     * See the javadoc of the {@link GeneralEnvelope#GeneralEnvelope(CharSequence) GeneralEnvelope}
      * constructor for more information.
      *
      * @param  wkt The {@code BOX}, {@code POLYGON} or other kind of element to parse.

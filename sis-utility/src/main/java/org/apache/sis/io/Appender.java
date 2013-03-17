@@ -24,7 +24,7 @@ import org.apache.sis.util.ArgumentChecks;
 import static org.apache.sis.util.Characters.isLineOrParagraphSeparator;
 
 // Related to JDK7
-import org.apache.sis.internal.util.JDK7;
+import org.apache.sis.internal.jdk7.JDK7;
 
 
 /**
