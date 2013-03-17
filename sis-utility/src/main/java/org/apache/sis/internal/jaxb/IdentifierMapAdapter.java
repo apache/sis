@@ -34,7 +34,7 @@ import org.apache.sis.xml.IdentifierSpace;
 import static org.apache.sis.util.collection.CollectionsExt.hashMapCapacity;
 
 // Related to JDK7
-import org.apache.sis.internal.util.Objects;
+import org.apache.sis.internal.jdk7.Objects;
 
 
 /**

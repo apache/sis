@@ -19,11 +19,43 @@ package org.apache.sis.util;
 import java.util.Map;
 import java.util.Set;
 import org.apache.sis.util.collection.CollectionsExt;
-import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.converter.IdentityConverter;
+import org.apache.sis.internal.converter.SystemRegistry;
 
 
 /**
  * Creates {@link ObjectConverter} instances, or uses them for creating collection views.
+ * Converters are created by the following methods:
+ *
+ * <ul>
+ *   <li>{@link #identity(Class)}</li>
+ *   <li>{@link #find(Class, Class)}</li>
+ * </ul>
+ *
+ * Converters can be used for creating derived collections by the following methods:
+ *
+ * <ul>
+ *   <li>{@link #derivedSet(Set, ObjectConverter)}</li>
+ *   <li>{@link #derivedMap(Map, ObjectConverter, ObjectConverter)}</li>
+ *   <li>{@link #derivedKeys(Map, ObjectConverter, Class)}</li>
+ *   <li>{@link #derivedValues(Map, Class, ObjectConverter)}</li>
+ * </ul>
+ *
+ * {@section Example}
+ * The following code convert instances in a collection from type {@code S} to type {@code T},
+ * where the types are unknown at compile-time. Note that the converter is obtained only once
+ * before to be applied to every elements in the loop.
+ *
+ * {@preformat java
+ *     Class<S> sourceType = ...
+ *     Class<T> targetType = ...
+ *     Collection<S> sources = ...;
+ *     Collection<T> targets = ...;
+ *     ObjectConverter<S,T> converter = ObjectConverters.find(sourceType, targetType);
+ *     for (S source : sources) {
+ *         targets.add(converter.convert(source));
+ *     }
+ * }
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-3.00)
@@ -46,7 +78,7 @@ public final class ObjectConverters extends Static {
      */
     public static <T> ObjectConverter<T,T> identity(final Class<T> type) {
         ArgumentChecks.ensureNonNull("type", type);
-        return IdentityConverter.create(type);
+        return new IdentityConverter<T,T>(type, type, null).unique();
     }
 
     /**
@@ -59,11 +91,10 @@ public final class ObjectConverters extends Static {
      * @return The converter from the specified source class to the target class.
      * @throws UnconvertibleObjectException if no converter is found.
      */
-    public static <S,T> ObjectConverter<S,T> find(final Class<S> source, final Class<T> target)
+    public static <S,T> ObjectConverter<? super S, ? extends T> find(final Class<S> source, final Class<T> target)
             throws UnconvertibleObjectException
     {
-        // TODO: port the implementation from Geotk
-        throw new UnconvertibleObjectException(Errors.format(Errors.Keys.CanNotConvertFromType_2, source, target));
+        return SystemRegistry.INSTANCE.find(source, target);
     }
 
     /**
@@ -142,7 +173,7 @@ public final class ObjectConverters extends Static {
                                                 final Class<V> valueType)
     {
         ArgumentChecks.ensureNonNull("valueType", valueType);
-        return CollectionsExt.derivedMap(storage, keyConverter, IdentityConverter.create(valueType));
+        return CollectionsExt.derivedMap(storage, keyConverter, identity(valueType));
     }
 
     /**
@@ -170,6 +201,6 @@ public final class ObjectConverters extends Static {
                                                   final ObjectConverter<SV,V> valueConverter)
     {
         ArgumentChecks.ensureNonNull("keyType", keyType);
-        return CollectionsExt.derivedMap(storage, IdentityConverter.create(keyType), valueConverter);
+        return CollectionsExt.derivedMap(storage, identity(keyType), valueConverter);
     }
 }

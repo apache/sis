@@ -23,8 +23,8 @@ import static java.lang.Character.*;
 import static org.apache.sis.util.StringBuilders.replace;
 
 // Related to JDK7
-import static org.apache.sis.internal.util.JDK7.lowSurrogate;
-import static org.apache.sis.internal.util.JDK7.highSurrogate;
+import static org.apache.sis.internal.jdk7.JDK7.lowSurrogate;
+import static org.apache.sis.internal.jdk7.JDK7.highSurrogate;
 
 
 /**

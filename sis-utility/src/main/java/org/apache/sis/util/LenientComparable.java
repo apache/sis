@@ -25,11 +25,11 @@ package org.apache.sis.util;
  *
  * {@section Conditions for equality}
  * <ul>
- *   <li>{@link org.apache.sis.metadata.iso.MetadataEntity} subclasses
+ *   <li>{@link org.apache.sis.metadata.iso.ISOMetadata} subclasses
  *     <ol>
  *       <li>{@link ComparisonMode#STRICT STRICT} – Objects must be of the same class
  *           and all attributes must be equal, including {@code xlink} and others
- *           {@linkplain org.apache.sis.metadata.iso.MetadataEntity#getIdentifiers() identifiers}.</li>
+ *           {@linkplain org.apache.sis.metadata.iso.ISOMetadata#getIdentifiers() identifiers}.</li>
  *       <li>{@link ComparisonMode#BY_CONTRACT BY_CONTRACT} – The same attributes than the above
  *           {@code STRICT} mode must be equal, but the metadata object don't need to be implemented
  *           by the same class provided that they implement the same GeoAPI interface.</li>

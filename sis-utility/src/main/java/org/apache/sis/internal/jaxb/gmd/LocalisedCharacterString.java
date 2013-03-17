@@ -22,7 +22,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import org.apache.sis.internal.jaxb.MarshalContext;
 
 // Related to JDK7
-import org.apache.sis.internal.util.Objects;
+import org.apache.sis.internal.jdk7.Objects;
 
 
 /**

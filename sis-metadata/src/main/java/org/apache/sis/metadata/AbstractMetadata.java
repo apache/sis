@@ -16,34 +16,52 @@
  */
 package org.apache.sis.metadata;
 
+import java.util.Map;
 import java.util.logging.Logger;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
+import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.logging.Logging;
+
+import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
 /**
- * Base class for metadata implementations, providing basic operations using Java reflection.
- * All {@code AbstractMetadata} instances shall be associated to a {@link MetadataStandard},
- * which is provided by subclasses in the {@link #getStandard()} method. There is typically
- * a large number of {@code AbstractMetadata} subclasses (not necessarily as direct children)
- * for the same standard.
+ * Provides basic operations using Java reflection for metadata implementations.
+ * All {@code AbstractMetadata} instances shall be associated to a {@link MetadataStandard}.
+ * The metadata standard is given by the {@link #getStandard()} method and is typically a
+ * constant fixed by the subclass.
  *
- * <p>This base class reduces the effort required to implement metadata interface by providing
+ * <p>There is a large number of {@code AbstractMetadata} subclasses (not necessarily as direct children)
+ * for the same standard, where each subclass implement one Java interface defined by the metadata standard.
+ * This base class reduces the effort required to implement those metadata interfaces by providing
  * {@link #equals(Object)}, {@link #hashCode()} and {@link #toString()} implementations.
  * Those methods are implemented using Java reflection for invoking the getter methods
  * defined by the {@code MetadataStandard}.</p>
  *
- * <p>{@code AbstractMetadata} may be read-only or read/write, at implementation choice.
- * The {@link ModifiableMetadata} subclass provides the basis of most SIS metadata classes
- * having writing capabilities.</p>
+ * {@note This class does not synchronize the methods that perform deep traversal of the metadata tree
+ * (like <code>equals(Object)</code>, <code>hashCode()</code> or <code>toString()</code>) because such
+ * synchronizations are deadlock prone. For example if subclasses synchronize their getter methods,
+ * then many locks may be acquired in various orders.}
  *
- * {@section Synchronization}
- * The methods in this class are not synchronized. Synchronizations may be done by getter and
- * setter methods in subclasses, at implementation choice. We never synchronize the methods that
- * perform deep traversal of the metadata tree (like {@code equals(Object)}, {@code hashCode()}
- * or {@code toString()}) because such synchronizations are deadlock prone. For example if
- * subclasses synchronize their getter methods, then many locks may be acquired in various orders.
+ * {@code AbstractMetadata} subclasses may be read-only or read/write, at implementation choice.
+ * The methods that modify the metadata may throw {@link UnmodifiableMetadataException} if the
+ * metadata does not support the operation. Those methods are:
+ *
+ * <ul>
+ *   <li>{@link #prune()}</li>
+ *   <li>{@link #shallowCopy(Object)}</li>
+ *   <li>{@link #asMap()} with {@code put} operations</li>
+ * </ul>
+ *
+ * Read-only operations operating on metadata values are:
+ *
+ * <ul>
+ *   <li>{@link #isEmpty()}</li>
+ *   <li>{@link #asMap()} with {@code get} operations</li>
+ *   <li>{@link #asTreeTable()}</li>
+ *   <li>{@link #equals(Object, ComparisonMode)}</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.4)
@@ -57,6 +75,13 @@ public abstract class AbstractMetadata implements LenientComparable {
     protected static final Logger LOGGER = Logging.getLogger(AbstractMetadata.class);
 
     /**
+     * A view of this metadata as a map. Will be created only when first needed.
+     *
+     * @see #asMap()
+     */
+    private transient Map<String,Object> asMap;
+
+    /**
      * Creates an initially empty metadata.
      */
     protected AbstractMetadata() {
@@ -64,15 +89,12 @@ public abstract class AbstractMetadata implements LenientComparable {
 
     /**
      * Returns the metadata standard implemented by subclasses.
+     * Subclasses will typically return a hard-coded constant such as
+     * {@link MetadataStandard#ISO_19115}.
      *
      * @return The metadata standard implemented.
-     *
-     * @todo This method returns {@link MetadataStandard#ISO_19115} for now,
-     *       but will become an abstract method soon.
      */
-    public MetadataStandard getStandard() {
-        return MetadataStandard.ISO_19115;
-    }
+    public abstract MetadataStandard getStandard();
 
     /**
      * Returns the metadata interface implemented by this class. It should be one of the
@@ -86,6 +108,105 @@ public abstract class AbstractMetadata implements LenientComparable {
     public Class<?> getInterface() {
         // No need to sychronize, since this method does not depend on property values.
         return getStandard().getInterface(getClass());
+    }
+
+    /**
+     * Returns {@code true} if this metadata contains only {@code null} or empty properties.
+     * A property is considered empty in any of the following cases:
+     *
+     * <ul>
+     *   <li>An empty {@linkplain CharSequence character sequences}.</li>
+     *   <li>An {@linkplain java.util.Collection#isEmpty() empty collection} or an empty array.</li>
+     *   <li>A collection or array containing only {@code null} or empty elements.</li>
+     *   <li>An other metadata object containing only {@code null} or empty attributes.</li>
+     * </ul>
+     *
+     * Note that empty properties can be removed by calling the {@link ModifiableMetadata#prune()}
+     * method.
+     *
+     * {@section Note for implementors}
+     * The default implementation uses Java reflection indirectly, by iterating over all entries
+     * returned by {@link MetadataStandard#asMap(Object, KeyNamePolicy, ValueExistencePolicy)}.
+     * Subclasses that override this method should usually not invoke {@code super.isEmpty()},
+     * because the Java reflection will discover and process the properties defined in the
+     * subclasses - which is usually not the intend when overriding a method.
+     *
+     * @return {@code true} if this metadata is empty.
+     *
+     * @see org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#isEmpty()
+     */
+    public boolean isEmpty() {
+        return Pruner.isEmpty(this, false);
+    }
+
+    /**
+     * Removes all references to empty properties. The default implementation iterates over all
+     * {@linkplain ValueExistencePolicy#NON_NULL non null} properties, and sets to {@code null}
+     * the properties for which {@link #isEmpty()} returned {@code true}.
+     *
+     * @throws UnmodifiableMetadataException If this metadata is not modifiable.
+     */
+    public void prune() {
+        Pruner.isEmpty(this, true);
+    }
+
+    /**
+     * Copies the values from the specified metadata. The {@code source} metadata must implements
+     * the same metadata interface (defined by the {@linkplain #getStandard() standard}) than this
+     * class, but doesn't need to be the same implementation class.
+     * The default implementation performs the copy using Java reflections.
+     *
+     * {@note This method is intended to provide the functionality of a <cite>copy constructor</cite>.
+     * We do not provide copy constructor directly because usage of Java reflection in this context
+     * is unsafe (we could invoke subclass methods before the subclasses construction is completed).}
+     *
+     * @param  source The metadata to copy values from.
+     * @throws ClassCastException if the specified metadata doesn't implements the expected
+     *         metadata interface.
+     * @throws UnmodifiableMetadataException if this class doesn't define {@code set*(…)} methods
+     *         corresponding to the {@code get*()} methods found in the implemented interface, or
+     *         if this instance is not modifiable for some other reason.
+     */
+    public void shallowCopy(final Object source) throws ClassCastException, UnmodifiableMetadataException {
+        ensureNonNull("source", source);
+        getStandard().shallowCopy(source, this);
+    }
+
+    /**
+     * Returns a view of the property values in a {@link Map}. The map is backed by this metadata
+     * object, so changes in the underlying metadata object are immediately reflected in the map
+     * and conversely.
+     *
+     * <p>The map supports the {@link Map#put(Object, Object) put(…)} and {@link Map#remove(Object)
+     * remove(…)} operations if the underlying metadata object contains setter methods.
+     * The keys are case-insensitive and can be either the JavaBeans property name or
+     * the UML identifier.</p>
+     *
+     * <p>The default implementation is equivalent to the following method call:</p>
+     * {@preformat java
+     *   return getStandard().asMap(this, KeyNamePolicy.JAVABEANS_PROPERTY, ValueExistencePolicy.NON_EMPTY);
+     * }
+     *
+     * @return A view of this metadata object as a map.
+     *
+     * @see MetadataStandard#asMap(Object, KeyNamePolicy, ValueExistencePolicy)
+     */
+    public synchronized Map<String,Object> asMap() {
+        if (asMap == null) {
+            asMap = getStandard().asMap(this, KeyNamePolicy.JAVABEANS_PROPERTY, ValueExistencePolicy.NON_EMPTY);
+        }
+        return asMap;
+    }
+
+    /**
+     * Returns the property types and values as a tree table.
+     * In the current implementation, the tree is not live (i.e. changes in metadata are not
+     * reflected in the tree). However it may be improved in a future SIS implementation.
+     *
+     * @return The property types and values as a tree table.
+     */
+    public TreeTable asTreeTable() {
+        return getStandard().asTreeTable(this);
     }
 
     /**
@@ -158,15 +279,30 @@ public abstract class AbstractMetadata implements LenientComparable {
      * similar contract than {@link java.util.Set#hashCode()} and ensures that the hash code
      * value is insensitive to the ordering of properties.
      *
-     * {@section Performance note}
-     * This method does not cache the value because current implementation has no notification
-     * mechanism for tracking changes in children properties. If this metadata is known to be
-     * immutable, then subclasses may consider caching the hash code value at their choice.
+     * {@note This method does not cache the value because current implementation has no notification
+     *        mechanism for tracking changes in children properties. If this metadata is known to be
+     *        immutable, then subclasses may consider caching the hash code value at their choice.}
      *
      * @see MetadataStandard#hashCode(Object)
      */
     @Override
     public int hashCode() {
         return getStandard().hashCode(this);
+    }
+
+    /**
+     * Returns a string representation of this metadata.
+     * The default implementation is as below:
+     *
+     * {@preformat java
+     *     return asTreeTable().toString();
+     * }
+     *
+     * Note that this make extensive use of Unicode characters
+     * and is better rendered with a monospaced font.
+     */
+    @Override
+    public String toString() {
+        return asTreeTable().toString();
     }
 }

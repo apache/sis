@@ -29,7 +29,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.iso.AbstractInternationalString;
 
 // Related to JDK7
-import org.apache.sis.internal.util.Objects;
+import org.apache.sis.internal.jdk7.Objects;
 
 
 /**

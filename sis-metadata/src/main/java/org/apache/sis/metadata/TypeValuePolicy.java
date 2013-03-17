@@ -18,9 +18,9 @@ package org.apache.sis.metadata;
 
 
 /**
- * Whatever {@link MetadataStandard#asTypeMap MetadataStandard.asTypeMap(…)} shall return values
- * for the property types, the element types (same as property types except for collections) or
- * the declaring classes.
+ * The kind of values in the {@link MetadataStandard#asTypeMap MetadataStandard.asTypeMap(…)}.
+ * This enumeration specifies whether the values shall be property types, element types (same
+ * as property types except for collections) or the declaring classes.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.03)

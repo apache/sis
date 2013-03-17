@@ -29,7 +29,7 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.util.Citations;
 
 // Related to JDK7
-import org.apache.sis.internal.util.Objects;
+import org.apache.sis.internal.jdk7.Objects;
 
 
 /**

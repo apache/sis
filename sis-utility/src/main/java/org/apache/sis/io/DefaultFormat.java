@@ -20,8 +20,10 @@ import java.text.Format;
 import java.text.FieldPosition;
 import java.text.ParsePosition;
 import java.text.ParseException;
+import java.io.InvalidObjectException;
 import net.jcip.annotations.ThreadSafe;
 import org.apache.sis.util.Numbers;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.internal.util.LocalizedParseException;
 
 
@@ -45,6 +47,7 @@ final class DefaultFormat extends Format {
 
     /**
      * The array for storing singleton instances for types {@code byte} to {@code double}.
+     * The value at index 0 is reserved for the generic {@link Number} type.
      */
     private static final Format[] INSTANCES = new Format[Numbers.DOUBLE - Numbers.BYTE + 2];
 
@@ -104,7 +107,8 @@ final class DefaultFormat extends Format {
      * Parses the given string as a number of the type given at construction time.
      */
     @Override
-    public Object parseObject(final String source) throws ParseException {
+    public Object parseObject(String source) throws ParseException {
+        source = CharSequences.trimWhitespaces(source);
         try {
             return valueOf(source);
         } catch (NumberFormatException cause) {
@@ -119,13 +123,22 @@ final class DefaultFormat extends Format {
      */
     @Override
     public Object parseObject(String source, final ParsePosition pos) {
-        final int index = pos.getIndex();
-        source = source.substring(index);
+        final int length = source.length();
+        final int index = CharSequences.skipLeadingWhitespaces(source, pos.getIndex(), length);
+        source = source.substring(index, CharSequences.skipTrailingWhitespaces(source, index, length));
         try {
             return valueOf(source);
         } catch (NumberFormatException cause) {
             pos.setErrorIndex(index);
             return null;
         }
+    }
+
+    /**
+     * Resolves to the singleton instance on deserialization.
+     */
+    private Object readResolve() throws InvalidObjectException {
+        final Format format = getInstance(type);
+        return (format != null) ? format : this;
     }
 }

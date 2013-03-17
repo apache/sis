@@ -27,7 +27,7 @@ import static java.lang.Double.isNaN;
 import static java.lang.Double.doubleToLongBits;
 
 // Related to JDK7
-import org.apache.sis.internal.util.Objects;
+import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
