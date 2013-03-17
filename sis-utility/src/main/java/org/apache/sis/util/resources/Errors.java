@@ -78,6 +78,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int CanNotConvertValue_2 = 74;
 
         /**
+         * Can not instantiate an object of type ‘{0}’.
+         */
+        public static final int CanNotInstantiate_1 = 81;
+
+        /**
          * Can not set a value for property “{0}”.
          */
         public static final int CanNotSetPropertyValue_1 = 75;
@@ -101,6 +106,16 @@ public final class Errors extends IndexedResourceBundle {
          * Value “{0}” is duplicated.
          */
         public static final int DuplicatedValue_1 = 38;
+
+        /**
+         * Found {0} duplicated values.
+         */
+        public static final int DuplicatedValuesCount_1 = 78;
+
+        /**
+         * Duplicated values for the “{0}” property.
+         */
+        public static final int DuplicatedValuesForProperty_1 = 79;
 
         /**
          * Element “{0}” is already present.
@@ -255,6 +270,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int MismatchedDimension_3 = 58;
 
         /**
+         * Missing value in the “{0}” column.
+         */
+        public static final int MissingValueInColumn_1 = 77;
+
+        /**
          * Argument ‘{0}’ shall not be negative. The given value was {1}.
          */
         public static final int NegativeArgument_2 = 8;
@@ -298,6 +318,16 @@ public final class Errors extends IndexedResourceBundle {
          * Missing a ‘{1}’ parenthesis in “{0}”.
          */
         public static final int NonEquilibratedParenthesis_2 = 59;
+
+        /**
+         * Conversion is not invertible.
+         */
+        public static final int NonInvertibleConversion = 82;
+
+        /**
+         * Transform is not invertible.
+         */
+        public static final int NonInvertibleTransform = 83;
 
         /**
          * “{0}” is not a linear unit.
@@ -378,6 +408,11 @@ public final class Errors extends IndexedResourceBundle {
          * More characters were expected at the end of “{0}”.
          */
         public static final int UnexpectedEndOfString_1 = 30;
+
+        /**
+         * Type of the “{0}” property is unknown.
+         */
+        public static final int UnknownTypeForProperty_1 = 80;
 
         /**
          * Type ‘{0}’ is unknown in this context.

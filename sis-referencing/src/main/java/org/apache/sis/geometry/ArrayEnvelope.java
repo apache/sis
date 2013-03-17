@@ -41,7 +41,7 @@ import static org.apache.sis.math.MathFunctions.isNegative;
 import static org.apache.sis.internal.referencing.Utilities.isPoleToPole;
 
 // Related to JDK7
-import org.apache.sis.internal.util.Objects;
+import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
@@ -195,7 +195,7 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
      * }
      *
      * However this constructor is lenient to other geometry types like {@code POLYGON}.
-     * See the javadoc of the {@link GeneralEnvelope#GeneralEnvelope(String) GeneralEnvelope}
+     * See the javadoc of the {@link GeneralEnvelope#GeneralEnvelope(CharSequence) GeneralEnvelope}
      * constructor for more information.
      *
      * @param  wkt The {@code BOX}, {@code POLYGON} or other kind of element to parse.

@@ -27,6 +27,7 @@ import org.opengis.metadata.citation.Citation;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.internal.util.SystemListener;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -416,6 +417,56 @@ public class MetadataStandard {
      */
     protected Class<?> getImplementation(final Class<?> type) {
         return null;
+    }
+
+    /**
+     * Returns a view of the specified metadata object as a {@link Map}.
+     * The map is backed by the metadata object using Java reflection, so changes in the
+     * underlying metadata object are immediately reflected in the map and conversely.
+     *
+     * <p>The map content is determined by the arguments: {@code metadata} determines the set of
+     * keys, {@code keyPolicy} determines their {@code String} representations of those keys and
+     * {@code valuePolicy} determines whether entries having a null value or an empty collection
+     * shall be included in the map.</p>
+     *
+     * <p>The map supports the {@link Map#put(Object, Object) put(…)} and {@link Map#remove(Object)
+     * remove(…)} operations if the underlying metadata object contains setter methods.
+     * The keys are case-insensitive and can be either the JavaBeans property name or
+     * the UML identifier.</p>
+     *
+     * @param  metadata The metadata object to view as a map.
+     * @param  keyPolicy Determines the string representation of map keys.
+     * @param  valuePolicy Whether the entries having null value or empty collection shall be
+     *         included in the map.
+     * @return A map view over the metadata object.
+     * @throws ClassCastException if the metadata object doesn't implement a metadata
+     *         interface of the expected package.
+     *
+     * @see AbstractMetadata#asMap()
+     */
+    public Map<String,Object> asMap(final Object metadata, final KeyNamePolicy keyPolicy,
+            final ValueExistencePolicy valuePolicy) throws ClassCastException
+    {
+        ensureNonNull("metadata",    metadata);
+        ensureNonNull("keyPolicy",   keyPolicy);
+        ensureNonNull("valuePolicy", valuePolicy);
+        return new PropertyMap(metadata, getAccessor(metadata.getClass(), true), keyPolicy, valuePolicy);
+    }
+
+    /**
+     * Returns the specified metadata object as a tree table.
+     * In the current implementation, the tree is not live (i.e. changes in metadata are not
+     * reflected in the tree). However it may be improved in a future SIS implementation.
+     *
+     * @param  metadata The metadata object to formats as a tree table.
+     * @return A tree table representation of the specified metadata.
+     * @throws ClassCastException if the metadata object doesn't implement a metadata
+     *         interface of the expected package.
+     *
+     * @see AbstractMetadata#asTreeTable()
+     */
+    public TreeTable asTreeTable(final Object metadata) throws ClassCastException {
+        throw new UnsupportedOperationException("Not yet implemented"); // TODO
     }
 
     /**

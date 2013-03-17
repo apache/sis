@@ -88,7 +88,7 @@ public final strictfp class ClassesTest extends TestCase {
      */
     @Test
     public void testGetAllInterfaces() {
-        final Set<Class<?>> interfaces = getAllInterfaces(ArrayList.class);
+        final Set<Class<?>> interfaces = getInterfaceSet(ArrayList.class);
         assertTrue(interfaces.contains(List        .class));
         assertTrue(interfaces.contains(Collection  .class));
         assertTrue(interfaces.contains(Iterable    .class));

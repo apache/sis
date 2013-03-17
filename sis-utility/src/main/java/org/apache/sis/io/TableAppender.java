@@ -31,7 +31,7 @@ import org.apache.sis.internal.util.X364;
 import static org.apache.sis.util.Characters.isLineOrParagraphSeparator;
 
 // Related to JK7
-import org.apache.sis.internal.util.JDK7;
+import org.apache.sis.internal.jdk7.JDK7;
 
 
 /**

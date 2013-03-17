@@ -49,20 +49,20 @@ import org.apache.sis.util.ArgumentChecks;
  * <table class="compact"><tr><td>
  * {@preformat text
  *   root
- *   ├───users
- *   │   └───alice
- *   │       ├───data
- *   │       │   └───mercator
- *   │       └───document
- *   └───lib
+ *     ├─users
+ *     │   └─alice
+ *     │       ├─data
+ *     │       │   └─mercator
+ *     │       └─document
+ *     └─lib
  * }
  * </td><td>
  * {@preformat text
  *   root
- *   ├───users/alice
- *   │   ├───data/mercator
- *   │   └───document
- *   └───lib
+ *     ├─users/alice
+ *     │   ├─data/mercator
+ *     │   └─document
+ *     └─lib
  * }
  * </td></tr></table>
  * {@preformat java
@@ -119,9 +119,9 @@ public final class TreeTables extends Static {
      *
      * {@preformat text
      *   from
-     *   └───users
-     *       └───alice
-     *           └───data
+     *     └─users
+     *         └─alice
+     *             └─data
      * }
      *
      * @param  from   The root node from which to start the search.

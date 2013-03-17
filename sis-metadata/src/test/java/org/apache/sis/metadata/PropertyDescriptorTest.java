@@ -18,9 +18,10 @@ package org.apache.sis.metadata;
 
 import java.util.Locale;
 import org.opengis.util.InternationalString;
+import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.PresentationForm;
-import org.apache.sis.internal.simple.SimpleCitation;
+import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -47,7 +48,7 @@ public final strictfp class PropertyDescriptorTest extends TestCase {
     private static <T> PropertyDescriptor<T> create(final Class<T> elementType, final String method,
             final String property) throws NoSuchMethodException
     {
-        return new PropertyDescriptor<T>(elementType, new SimpleCitation("ISO 19115"), property,
+        return new PropertyDescriptor<T>(elementType, HardCodedCitations.ISO_19115, property,
                 Citation.class.getMethod(method));
     }
 
@@ -59,10 +60,17 @@ public final strictfp class PropertyDescriptorTest extends TestCase {
      */
     @Test
     public void testTitle() throws NoSuchMethodException {
-        final PropertyDescriptor<?> descriptor = create(InternationalString.class, "getTitle", "title");
+        validateTitle(create(InternationalString.class, "getTitle", "title"));
+    }
+
+    /**
+     * Validates a descriptor for {@link Citation#getTitle()}.
+     * This is validation code to be shared with {@link PropertyAccessorTest#testDescriptor()}.
+     */
+    static void validateTitle(final ParameterDescriptor<?> descriptor) {
         assertEquals("ISO 19115",   descriptor.getName().getAuthority().getTitle().toString());
-        assertEquals("CI_Citation", descriptor.getCodeSpace());
-        assertEquals("title",       descriptor.getCode());
+        assertEquals("CI_Citation", descriptor.getName().getCodeSpace());
+        assertEquals("title",       descriptor.getName().getCode());
         final InternationalString remarks = descriptor.getRemarks();
         assertEquals("Name by which the cited resource is known.", remarks.toString(Locale.ENGLISH));
         // Test other locale here, if any.
@@ -80,10 +88,17 @@ public final strictfp class PropertyDescriptorTest extends TestCase {
      */
     @Test
     public void testPresentationForm() throws NoSuchMethodException {
-        final PropertyDescriptor<?> descriptor = create(PresentationForm.class, "getPresentationForms", "presentationForm");
+        validatePresentationForm(create(PresentationForm.class, "getPresentationForms", "presentationForm"));
+    }
+
+    /**
+     * Validates a descriptor for {@link Citation#getPresentationForms()}.
+     * This is validation code to be shared with {@link PropertyAccessorTest#testDescriptor()}.
+     */
+    static void validatePresentationForm(final ParameterDescriptor<?> descriptor) {
         assertEquals("ISO 19115",        descriptor.getName().getAuthority().getTitle().toString());
-        assertEquals("CI_Citation",      descriptor.getCodeSpace());
-        assertEquals("presentationForm", descriptor.getCode());
+        assertEquals("CI_Citation",      descriptor.getName().getCodeSpace());
+        assertEquals("presentationForm", descriptor.getName().getCode());
         final InternationalString remarks = descriptor.getRemarks();
         assertEquals("Mode in which the resource is represented.", remarks.toString(Locale.ENGLISH));
         // Test other locale here, if any.
