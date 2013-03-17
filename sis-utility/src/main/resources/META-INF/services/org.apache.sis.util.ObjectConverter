@@ -1,0 +1,27 @@
+# Loaded by org.apache.sis.internal.converter.ConverterRegistry.
+org.apache.sis.internal.converter.StringConverter$Number
+org.apache.sis.internal.converter.StringConverter$Byte
+org.apache.sis.internal.converter.StringConverter$Short
+org.apache.sis.internal.converter.StringConverter$Integer
+org.apache.sis.internal.converter.StringConverter$Long
+org.apache.sis.internal.converter.StringConverter$Float
+org.apache.sis.internal.converter.StringConverter$Double
+org.apache.sis.internal.converter.StringConverter$BigInteger
+org.apache.sis.internal.converter.StringConverter$BigDecimal
+org.apache.sis.internal.converter.StringConverter$Boolean
+org.apache.sis.internal.converter.StringConverter$Locale
+org.apache.sis.internal.converter.StringConverter$Charset
+org.apache.sis.internal.converter.StringConverter$InternationalString
+org.apache.sis.internal.converter.StringConverter$File
+org.apache.sis.internal.converter.StringConverter$Path
+org.apache.sis.internal.converter.StringConverter$URI
+org.apache.sis.internal.converter.StringConverter$URL
+org.apache.sis.internal.converter.PathConverter$FileURI
+org.apache.sis.internal.converter.PathConverter$FileURL
+org.apache.sis.internal.converter.PathConverter$URLFile
+org.apache.sis.internal.converter.PathConverter$URIFile
+org.apache.sis.internal.converter.PathConverter$URL_URI
+org.apache.sis.internal.converter.PathConverter$URI_URL
+org.apache.sis.internal.converter.DateConverter$Long
+org.apache.sis.internal.converter.DateConverter$SQL
+org.apache.sis.internal.converter.DateConverter$Timestamp

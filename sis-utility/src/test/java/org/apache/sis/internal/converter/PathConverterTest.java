@@ -26,6 +26,7 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.test.PlatformDependentTest;
+import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -41,6 +42,7 @@ import static org.apache.sis.test.Assert.*;
  * @version 0.3
  * @module
  */
+@DependsOn(StringConverterTest.class)
 public final strictfp class PathConverterTest extends TestCase {
     /**
      * Assumes that the platform file system has a Unix-style root.
@@ -70,9 +72,9 @@ public final strictfp class PathConverterTest extends TestCase {
      */
     @Test
     public void testFile_String() {
-        final ObjectConverter<File,String> c = StringConverter.getInstance(File.class).inverse();
+        final ObjectConverter<File,String> c = new StringConverter.File().inverse();
         runInvertibleConversion(c, new File("home/user/index.txt"), "home/user/index.txt".replace("/", File.separator));
-        assertSame("Deserialization shall resolves to the singleton instance.", c, assertSerializedEquals(c));
+        assertSerializedEquals(c);
     }
 
     /**
@@ -84,9 +86,9 @@ public final strictfp class PathConverterTest extends TestCase {
     @PlatformDependentTest
     public void testFile_URI() throws URISyntaxException {
         assumeUnixRoot();
-        final ObjectConverter<File,URI> c = PathConverter.getInstance(File.class, URI.class);
+        final ObjectConverter<File,URI> c = PathConverter.FileURI.INSTANCE;
         runInvertibleConversion(c, new File("/home/user/index.txt"), new URI("file:/home/user/index.txt"));
-        assertSame("Deserialization shall resolves to the singleton instance.", c, assertSerializedEquals(c));
+        assertSerializedEquals(c);
     }
 
     /**
@@ -98,9 +100,9 @@ public final strictfp class PathConverterTest extends TestCase {
     @PlatformDependentTest
     public void testFile_URL() throws MalformedURLException {
         assumeUnixRoot();
-        final ObjectConverter<File,URL> c = PathConverter.getInstance(File.class, URL.class);
+        final ObjectConverter<File,URL> c = PathConverter.FileURL.INSTANCE;
         runInvertibleConversion(c, new File("/home/user/index.txt"), new URL("file:/home/user/index.txt"));
-        assertSame("Deserialization shall resolves to the singleton instance.", c, assertSerializedEquals(c));
+        assertSerializedEquals(c);
     }
 
     /**
@@ -110,9 +112,9 @@ public final strictfp class PathConverterTest extends TestCase {
      */
     @Test
     public void testURI_String() throws URISyntaxException {
-        final ObjectConverter<URI,String> c = StringConverter.getInstance(URI.class).inverse();
+        final ObjectConverter<URI,String> c = new StringConverter.URI().inverse();
         runInvertibleConversion(c, new URI("file:/home/user/index.txt"), "file:/home/user/index.txt");
-        assertSame("Deserialization shall resolves to the singleton instance.", c, assertSerializedEquals(c));
+        assertSerializedEquals(c);
     }
 
     /**
@@ -123,9 +125,9 @@ public final strictfp class PathConverterTest extends TestCase {
      */
     @Test
     public void testURI_URL() throws MalformedURLException, URISyntaxException {
-        final ObjectConverter<URI,URL> c = PathConverter.getInstance(URI.class, URL.class);
+        final ObjectConverter<URI,URL> c = PathConverter.URI_URL.INSTANCE;
         runInvertibleConversion(c, new URI("file:/home/user/index.txt"), new URL("file:/home/user/index.txt"));
-        assertSame("Deserialization shall resolves to the singleton instance.", c, assertSerializedEquals(c));
+        assertSerializedEquals(c);
     }
 
     /**
@@ -137,9 +139,9 @@ public final strictfp class PathConverterTest extends TestCase {
     @PlatformDependentTest
     public void testURI_File() throws URISyntaxException {
         PathConverterTest.assumeUnixRoot();
-        final ObjectConverter<URI,File> c = PathConverter.getInstance(URI.class, File.class);
+        final ObjectConverter<URI,File> c = PathConverter.URIFile.INSTANCE;
         runInvertibleConversion(c, new URI("file:/home/user/index.txt"), new File("/home/user/index.txt"));
-        assertSame("Deserialization shall resolves to the singleton instance.", c, assertSerializedEquals(c));
+        assertSerializedEquals(c);
     }
 
     /**
@@ -149,9 +151,9 @@ public final strictfp class PathConverterTest extends TestCase {
      */
     @Test
     public void testURL_String() throws MalformedURLException {
-        final ObjectConverter<URL,String> c = StringConverter.getInstance(URL.class).inverse();
+        final ObjectConverter<URL,String> c = new StringConverter.URL().inverse();
         runInvertibleConversion(c, new URL("file:/home/user/index.txt"), "file:/home/user/index.txt");
-        assertSame("Deserialization shall resolves to the singleton instance.", c, assertSerializedEquals(c));
+        assertSerializedEquals(c);
     }
 
     /**
@@ -162,9 +164,9 @@ public final strictfp class PathConverterTest extends TestCase {
      */
     @Test
     public void testURL_URI() throws MalformedURLException, URISyntaxException {
-        final ObjectConverter<URL,URI> c = PathConverter.getInstance(URL.class, URI.class);
+        final ObjectConverter<URL,URI> c = PathConverter.URL_URI.INSTANCE;
         runInvertibleConversion(c, new URL("file:/home/user/index.txt"), new URI("file:/home/user/index.txt"));
-        assertSame("Deserialization shall resolves to the singleton instance.", c, assertSerializedEquals(c));
+        assertSerializedEquals(c);
     }
 
     /**
@@ -176,8 +178,8 @@ public final strictfp class PathConverterTest extends TestCase {
     @PlatformDependentTest
     public void testURL_File() throws MalformedURLException {
         PathConverterTest.assumeUnixRoot();
-        final ObjectConverter<URL,File> c = PathConverter.getInstance(URL.class, File.class);
+        final ObjectConverter<URL,File> c = PathConverter.URLFile.INSTANCE;
         runInvertibleConversion(c, new URL("file:/home/user/index.txt"), new File("/home/user/index.txt"));
-        assertSame("Deserialization shall resolves to the singleton instance.", c, assertSerializedEquals(c));
+        assertSerializedEquals(c);
     }
 }

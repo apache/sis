@@ -115,7 +115,7 @@ abstract class SystemConverter<S,T> extends ClassPair<S,T> implements ObjectConv
      * Otherwise this converter is returned <strong>without</strong> being cached.
      */
     public ObjectConverter<S,T> unique() {
-        final ObjectConverter<S,T> existing = HeuristicRegistry.SYSTEM.findEquals(this);
+        final ObjectConverter<S,T> existing = SystemRegistry.INSTANCE.findEquals(this);
         return (existing != null) ? existing : this;
     }
 

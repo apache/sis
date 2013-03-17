@@ -582,11 +582,11 @@ cmp:    for (final Class<?> c : c1) {
         if (classe == null) {
             return "<*>";
         }
-        Class<?> enclosing = classe.getEnclosingClass();
         while (classe.isAnonymousClass()) {
             classe = classe.getSuperclass();
         }
         String name = classe.getSimpleName();
+        final Class<?> enclosing = classe.getEnclosingClass();
         if (enclosing != null) {
             name = getShortName(enclosing) + '.' + name;
         }
