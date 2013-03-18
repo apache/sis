@@ -73,7 +73,7 @@ public final strictfp class PathConverterTest extends TestCase {
     @Test
     public void testFile_String() {
         final ObjectConverter<File,String> c = new StringConverter.File().inverse();
-        runInvertibleConversion(c, new File("home/user/index.txt"), "home/user/index.txt".replace("/", File.separator));
+        runInvertibleConversion(c, new File("home/user/index.txt"), "home/user/index.txt".replace('/', File.separatorChar));
         assertSerializedEquals(c);
     }
 
