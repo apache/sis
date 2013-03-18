@@ -82,12 +82,12 @@ public final strictfp class TreeTablesTest extends TestCase {
                 "  │       └─document\n" +
                 "  └─lib\n", NAME);
         ((DefaultTreeTable) table).setRoot(concatenateSingletons(table.getRoot()));
-        assertMultilinesEquals(
+        assertMultilinesEquals((
                 "root\n" +
                 "  ├─users/alice\n" +
                 "  │   ├─data/mercator\n" +
                 "  │   └─document\n" +
-                "  └─lib\n".replace("/", File.separator), table.toString());
+                "  └─lib\n").replace('/', File.separatorChar), table.toString());
     }
 
     /**
