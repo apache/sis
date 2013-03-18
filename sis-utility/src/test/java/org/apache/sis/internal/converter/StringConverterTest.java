@@ -25,7 +25,6 @@ import java.net.URL;
 import java.net.URISyntaxException;
 import java.net.MalformedURLException;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.spatial.PixelOrientation;
 import org.apache.sis.measure.Angle;
@@ -42,6 +41,7 @@ import static org.apache.sis.test.Assert.*;
 // Related to JDK7
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.charset.StandardCharsets;
 
 
 /**
