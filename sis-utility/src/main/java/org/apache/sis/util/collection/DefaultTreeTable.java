@@ -512,7 +512,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
 
         /**
          * Adds a new child in the {@linkplain #getChildren() children list}.
-         * The default implementation delegates to {@link Node#Node(Node)},
+         * The default implementation delegates to {@code Node(Node)} constructor,
          * which has the following implications:
          *
          * <ul>
