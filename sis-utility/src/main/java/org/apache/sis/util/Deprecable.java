@@ -29,7 +29,7 @@ package org.apache.sis.util;
  *       of an object which has been renamed.</li>
  * </ul>
  *
- * @author Martin Desruisseaux (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.20)
  * @version 0.3
  * @module
