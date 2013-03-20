@@ -19,9 +19,9 @@
  */
 package org.apache.sis.metadata.iso.constraint;
 
+import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.constraint.Classification;
 import org.opengis.metadata.constraint.SecurityConstraints;
@@ -80,7 +80,7 @@ public class DefaultSecurityConstraints extends DefaultConstraints implements Se
     /**
      * Creates a security constraints initialized with the specified classification.
      *
-     * @param classification The name of the handling restrictions on the resource.
+     * @param classification The name of the handling restrictions on the resource, or {@code null}.
      */
     public DefaultSecurityConstraints(final Classification classification) {
         this.classification = classification;
