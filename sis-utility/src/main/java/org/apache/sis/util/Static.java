@@ -47,6 +47,10 @@ package org.apache.sis.util;
  * <tr><td>{@link ArraysExt}</td>
  *     <td>Insert or remove elements in the middle of arrays.</td></tr>
  *
+ * <tr><th colspan="2" class="hsep">OGC/ISO objects (metadata, referencing, geometries)</th></tr>
+ * <tr><td>{@link org.apache.sis.metadata.iso.MetadataObjects}</td>
+ *     <td>Extract information from {@link org.opengis.metadata} objects.</td></tr>
+ *
  * <tr><th colspan="2" class="hsep">Input / Output (including CRS, XML, images)</th></tr>
  * <tr><td>{@link org.apache.sis.io.IO}</td>
  *     <td>Methods working on {@link Appendable} instances.</td></tr>
@@ -74,9 +78,8 @@ package org.apache.sis.util;
  */
 public class Static {
     /**
-     * Do not allow instantiation. This construction is defined only in order to allow
-     * subclassing. Subclasses shall declare their own private constructor in order to
-     * prevent instantiation.
+     * For subclasses only.
+     * Subclasses shall declare a private constructor for preventing instantiation.
      */
     protected Static() {
     }
