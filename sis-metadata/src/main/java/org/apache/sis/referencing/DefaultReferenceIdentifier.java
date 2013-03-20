@@ -14,8 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- *    This package contains documentation from OpenGIS specifications.
- *    OpenGIS consortium's work is fully acknowledged here.
+ * This package contains documentation from OGC specifications.
+ * Open Geospatial Consortium's work is fully acknowledged here.
  */
 package org.apache.sis.referencing;
 
