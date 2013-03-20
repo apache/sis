@@ -369,7 +369,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
                  * freeze() method is under progress. The source collection is already
                  * an unmodifiable instance created by unmodifiable(Object).
                  */
-                assert collectionType(elementType).isAssignableFrom(source.getClass());
+                assert collectionType(elementType).isInstance(source);
                 return (Collection<E>) source;
             }
             checkWritePermission();
@@ -403,15 +403,13 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
 
     /**
      * Returns the specified list, or a new one if {@code c} is null.
-     * This is a convenience method for implementation of {@code getFoo()}
-     * methods.
+     * This is a convenience method for implementation of {@code getFoo()} methods.
      *
      * @param  <E> The type of elements in the list.
-     * @param  c The list to checks.
+     * @param  c The existing list, or {@code null} if the list has not yet been created.
      * @param  elementType The element type (used only if {@code c} is null).
      * @return {@code c}, or a new list if {@code c} is null.
      */
-    // See the comments in nonNullCollection(...) for implementation notes.
     protected final <E> List<E> nonNullList(final List<E> c, final Class<E> elementType) {
         assert Thread.holdsLock(this);
         if (c != null) {
@@ -428,15 +426,13 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
 
     /**
      * Returns the specified set, or a new one if {@code c} is null.
-     * This is a convenience method for implementation of {@code getFoo()}
-     * methods.
+     * This is a convenience method for implementation of {@code getFoo()} methods.
      *
      * @param  <E> The type of elements in the set.
-     * @param  c The set to checks.
+     * @param  c The existing set, or {@code null} if the set has not yet been created.
      * @param  elementType The element type (used only if {@code c} is null).
      * @return {@code c}, or a new set if {@code c} is null.
      */
-    // See the comments in nonNullCollection(...) for implementation notes.
     protected final <E> Set<E> nonNullSet(final Set<E> c, final Class<E> elementType) {
         assert Thread.holdsLock(this);
         if (c != null) {
@@ -453,28 +449,25 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
 
     /**
      * Returns the specified collection, or a new one if {@code c} is null.
-     * This is a convenience method for implementation of {@code getFoo()}
-     * methods.
+     * This is a convenience method for implementation of {@code getFoo()} methods.
      *
      * {@section Choosing a collection type}
-     * Implementations shall invoke {@link #nonNullList nonNullList} or {@link #nonNullSet
-     * nonNullSet} instead than this method when the collection type is enforced by ISO
+     * Implementations shall invoke {@link #nonNullList nonNullList(…)} or {@link #nonNullSet
+     * nonNullSet(…)} instead than this method when the collection type is enforced by ISO
      * specification. When the type is not enforced by the specification, some freedom are
      * allowed at implementor choice. The default implementation invokes
      * {@link #collectionType(Class)} in order to get a hint about whether a {@link List}
      * or a {@link Set} should be used.
      *
      * @param  <E> The type of elements in the collection.
-     * @param  c The collection to checks.
+     * @param  c The existing collection, or {@code null} if the collection has not yet been created.
      * @param  elementType The element type (used only if {@code c} is null).
      * @return {@code c}, or a new collection if {@code c} is null.
      */
-    // Despite the javadoc claims, we do not yet return null during copy operations.
-    // However a future version may do so if it appears worth on a performance point of view.
     protected final <E> Collection<E> nonNullCollection(final Collection<E> c, final Class<E> elementType) {
         assert Thread.holdsLock(this);
         if (c != null) {
-            assert collectionType(elementType).isAssignableFrom(c.getClass());
+            assert collectionType(elementType).isInstance(c);
             return c.isEmpty() && isMarshaling() ? null : c;
         }
         if (isMarshaling()) {
@@ -494,6 +487,34 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
                 return Collections.emptyList();
             }
         }
+    }
+
+    /**
+     * Creates a modifiable collection containing only the given value, if non-null.
+     * This is a convenience method for initializing fields in subclass constructors.
+     * This method should not be invoked in other context.
+     *
+     * <p>The collection type is selected as described in the
+     * {@link #nonNullCollection(Collection, Class)}.</p>
+     *
+     * @param  <E> The type of elements in the collection.
+     * @param  elementType The element type (used only if {@code value} is non-null).
+     * @param  value The singleton value to put in the returned collection, or {@code null}.
+     * @return A new modifiable collection containing the given value, or {@code null} if
+     *         the given value was null.
+     */
+    protected final <E> Collection<E> singleton(final Class<E> elementType, final E value) {
+        if (value == null) {
+            return null;
+        }
+        final Collection<E> collection;
+        if (useSet(elementType)) {
+            collection = new MutableSet<>(elementType);
+        } else {
+            collection = new MutableList<>(elementType);
+        }
+        collection.add(value);
+        return collection;
     }
 
     /**
