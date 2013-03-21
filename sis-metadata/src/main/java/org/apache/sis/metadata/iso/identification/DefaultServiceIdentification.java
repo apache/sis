@@ -18,8 +18,6 @@ package org.apache.sis.metadata.iso.identification;
 
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
-import net.jcip.annotations.ThreadSafe;
-
 import org.opengis.metadata.identification.ServiceIdentification;
 
 
@@ -34,7 +32,6 @@ import org.opengis.metadata.identification.ServiceIdentification;
  * @version 0.3
  * @module
  */
-@ThreadSafe
 @XmlType(name = "MD_ServiceIdentification_Type")
 @XmlRootElement(name = "SV_ServiceIdentification") // Prefix is really SV_ according ISO 19115 corrigendum.
 public class DefaultServiceIdentification extends AbstractIdentification implements ServiceIdentification {

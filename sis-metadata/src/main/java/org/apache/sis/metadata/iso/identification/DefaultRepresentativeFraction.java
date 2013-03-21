@@ -28,6 +28,11 @@ import org.apache.sis.util.resources.Errors;
  * A scale defined as the inverse of a denominator.
  * Scale is defined as a kind of {@link Number}.
  *
+ * <p>In addition to the standard properties, SIS provides the following methods:</p>
+ * <ul>
+ *   <li>{@link #setScale(double)} for computing the denominator from a scale value.</li>
+ * </ul>
+ *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.4)

@@ -16,7 +16,9 @@
  */
 package org.apache.sis.metadata.iso;
 
+import java.util.Collection;
 import java.io.Serializable;
+import org.opengis.metadata.Identifier;
 import net.jcip.annotations.ThreadSafe;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.ModifiableMetadata;
@@ -37,6 +39,12 @@ public class ISOMetadata extends ModifiableMetadata implements Serializable {
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = 5730550742604669102L;
+
+    /**
+     * All identifiers associated with this metadata, or {@code null} if none.
+     * This field is initialized to a non-null value when first needed.
+     */
+    protected Collection<Identifier> identifiers;
 
     /**
      * Constructs an initially empty metadata.
