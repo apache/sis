@@ -28,9 +28,8 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 3.18
- *
- * @since 3.02
+ * @since   0.3 (derived from geotk-3.02)
+ * @version 0.3
  * @module
  */
 public final class LE_Processing extends PropertyType<LE_Processing, Processing> {

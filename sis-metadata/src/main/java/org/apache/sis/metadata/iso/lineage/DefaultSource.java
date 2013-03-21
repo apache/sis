@@ -171,8 +171,6 @@ public class DefaultSource extends ISOMetadata implements Source {
      * Sets the denominator of the representative fraction on a source map.
      *
      * @param newValue The new scale denominator.
-     *
-     * @since 2.4
      */
     public synchronized void setScaleDenominator(final RepresentativeFraction newValue)  {
         checkWritePermission();
