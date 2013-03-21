@@ -13,9 +13,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * This package contains documentation from OGC specifications.
- * Open Geospatial Consortium's work is fully acknowledged here.
  */
 package org.apache.sis.metadata.iso.extent;
 
