@@ -16,8 +16,8 @@
  */
 
 /**
- * {@linkplain org.apache.sis.metadata.iso.maintenance.DefaultMaintenanceInformation Maintenance information} implementation.
- * An explanation for this package is provided in the {@linkplain org.opengis.metadata.maintenance OpenGIS® javadoc}.
+ * {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitation Citation} implementation.
+ * An explanation for this package is provided in the {@linkplain org.opengis.metadata.citation OpenGIS® javadoc}.
  * The remaining discussion on this page is specific to the SIS implementation.
  *
  * {@section Overview}
@@ -38,19 +38,26 @@
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({
+    @XmlJavaTypeAdapter(CI_Address.class),
+    @XmlJavaTypeAdapter(CI_Contact.class),
+    @XmlJavaTypeAdapter(CI_Date.class),
+    @XmlJavaTypeAdapter(CI_DateTypeCode.class),
+    @XmlJavaTypeAdapter(CI_OnLineFunctionCode.class),
+    @XmlJavaTypeAdapter(CI_OnlineResource.class),
+    @XmlJavaTypeAdapter(CI_PresentationFormCode.class),
     @XmlJavaTypeAdapter(CI_ResponsibleParty.class),
-    @XmlJavaTypeAdapter(MD_MaintenanceFrequencyCode.class),
-    @XmlJavaTypeAdapter(MD_MaintenanceInformation.class),
-    @XmlJavaTypeAdapter(MD_ScopeCode.class),
-    @XmlJavaTypeAdapter(MD_ScopeDescription.class),
-//    @XmlJavaTypeAdapter(TM_PeriodDuration.class), // TODO
+    @XmlJavaTypeAdapter(CI_RoleCode.class),
+    @XmlJavaTypeAdapter(CI_Series.class),
+    @XmlJavaTypeAdapter(CI_Telephone.class),
+    @XmlJavaTypeAdapter(MD_Identifier.class),
 
     // Java types, primitive types and basic OGC types handling
+//    @XmlJavaTypeAdapter(GO_URL.class), // TODO
 //    @XmlJavaTypeAdapter(GO_DateTime.class), // TODO
     @XmlJavaTypeAdapter(StringAdapter.class),
     @XmlJavaTypeAdapter(InternationalStringAdapter.class)
 })
-package org.apache.sis.metadata.iso.maintenance;
+package org.apache.sis.metadata.iso.citation;
 
 import javax.xml.bind.annotation.XmlNs;
 import javax.xml.bind.annotation.XmlNsForm;
@@ -59,9 +66,8 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
-
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.internal.jaxb.gco.*;
+import org.apache.sis.internal.jaxb.gmd.*;
 import org.apache.sis.internal.jaxb.code.*;
-//import org.apache.sis.internal.jaxb.gts.TM_PeriodDuration; // TODO
 import org.apache.sis.internal.jaxb.metadata.*;

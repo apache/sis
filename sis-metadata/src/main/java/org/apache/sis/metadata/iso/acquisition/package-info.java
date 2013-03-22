@@ -17,7 +17,7 @@
 
 /**
  * {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultAcquisitionInformation Acquisition} implementation.
- * An explanation for this package is provided in the {@linkplain org.opengis.metadata.constraint OpenGIS® javadoc}.
+ * An explanation for this package is provided in the {@linkplain org.opengis.metadata.acquisition OpenGIS® javadoc}.
  * The remaining discussion on this page is specific to the SIS implementation.
  *
  * {@section Overview}
