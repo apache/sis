@@ -55,7 +55,7 @@ public class MI_ImageDescription extends DefaultImageDescription {
      * @param original The original metadata to copy.
      */
     public MI_ImageDescription(final ImageDescription original) {
-        super(original);
+        shallowCopy(original);
     }
 
     /**
