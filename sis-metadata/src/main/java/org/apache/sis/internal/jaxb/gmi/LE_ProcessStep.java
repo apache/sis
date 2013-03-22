@@ -55,7 +55,7 @@ public class LE_ProcessStep extends DefaultProcessStep {
      * @param original The original metadata to copy.
      */
     public LE_ProcessStep(final ProcessStep original) {
-        super(original);
+        shallowCopy(original);
     }
 
     /**

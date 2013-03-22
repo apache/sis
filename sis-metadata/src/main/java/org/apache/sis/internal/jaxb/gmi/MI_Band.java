@@ -53,7 +53,7 @@ public class MI_Band extends DefaultBand {
      * @param original The original metadata to copy.
      */
     public MI_Band(final Band original) {
-        super(original);
+        shallowCopy(original);
     }
 
     /**

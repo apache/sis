@@ -55,7 +55,7 @@ public class MI_Georectified extends DefaultGeorectified {
      * @param original The original metadata to copy.
      */
     public MI_Georectified(final Georectified original) {
-        super(original);
+        shallowCopy(original);
     }
 
     /**
