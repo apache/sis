@@ -47,7 +47,6 @@ import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static java.util.Collections.singleton;
