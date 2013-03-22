@@ -75,7 +75,6 @@ public final class EX_GeographicExtent extends PropertyType<EX_GeographicExtent,
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public AbstractGeographicExtent getElement() {
         return skip() ? null : AbstractGeographicExtent.castOrCopy(metadata);

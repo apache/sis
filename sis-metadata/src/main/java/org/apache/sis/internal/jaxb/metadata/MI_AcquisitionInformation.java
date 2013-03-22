@@ -77,7 +77,6 @@ public final class MI_AcquisitionInformation extends
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public DefaultAcquisitionInformation getElement() {
         return skip() ? null : DefaultAcquisitionInformation.castOrCopy(metadata);

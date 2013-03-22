@@ -75,7 +75,6 @@ public final class EX_Extent extends PropertyType<EX_Extent, Extent> {
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public DefaultExtent getElement() {
         return skip() ? null : DefaultExtent.castOrCopy(metadata);

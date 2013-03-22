@@ -77,7 +77,6 @@ public final class MD_ApplicationSchemaInformation extends
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public DefaultApplicationSchemaInformation getElement() {
         return skip() ? null : DefaultApplicationSchemaInformation.castOrCopy(metadata);

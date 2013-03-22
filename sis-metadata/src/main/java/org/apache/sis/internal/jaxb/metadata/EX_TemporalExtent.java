@@ -75,7 +75,6 @@ public final class EX_TemporalExtent extends PropertyType<EX_TemporalExtent, Tem
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public DefaultTemporalExtent getElement() {
         return skip() ? null : DefaultTemporalExtent.castOrCopy(metadata);

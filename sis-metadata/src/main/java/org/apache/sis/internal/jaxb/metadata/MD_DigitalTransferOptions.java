@@ -77,7 +77,6 @@ public final class MD_DigitalTransferOptions extends
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public DefaultDigitalTransferOptions getElement() {
         return skip() ? null : DefaultDigitalTransferOptions.castOrCopy(metadata);

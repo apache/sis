@@ -75,7 +75,6 @@ public final class MI_RequestedDate extends PropertyType<MI_RequestedDate, Reque
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public DefaultRequestedDate getElement() {
         return skip() ? null : DefaultRequestedDate.castOrCopy(metadata);

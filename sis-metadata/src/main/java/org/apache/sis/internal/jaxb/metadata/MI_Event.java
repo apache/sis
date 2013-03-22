@@ -75,7 +75,6 @@ public final class MI_Event extends PropertyType<MI_Event, Event> {
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public DefaultEvent getElement() {
         return skip() ? null : DefaultEvent.castOrCopy(metadata);

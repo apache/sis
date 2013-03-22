@@ -75,7 +75,6 @@ public final class DQ_DataQuality extends PropertyType<DQ_DataQuality, DataQuali
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public DefaultDataQuality getElement() {
         return skip() ? null : DefaultDataQuality.castOrCopy(metadata);

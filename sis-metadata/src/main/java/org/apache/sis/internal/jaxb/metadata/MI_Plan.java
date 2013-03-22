@@ -75,7 +75,6 @@ public final class MI_Plan extends PropertyType<MI_Plan, Plan> {
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public DefaultPlan getElement() {
         return skip() ? null : DefaultPlan.castOrCopy(metadata);

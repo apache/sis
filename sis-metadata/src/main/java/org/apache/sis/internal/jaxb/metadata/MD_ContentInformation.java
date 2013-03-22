@@ -81,7 +81,6 @@ public final class MD_ContentInformation extends
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public AbstractContentInformation getElement() {
         if (skip()) return null;

@@ -75,7 +75,6 @@ public final class DQ_Element extends PropertyType<DQ_Element, Element> {
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public AbstractElement getElement() {
         return skip() ? null : AbstractElement.castOrCopy(metadata);

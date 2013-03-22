@@ -75,7 +75,6 @@ public final class MD_Usage extends PropertyType<MD_Usage, Usage> {
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public DefaultUsage getElement() {
         return skip() ? null : DefaultUsage.castOrCopy(metadata);

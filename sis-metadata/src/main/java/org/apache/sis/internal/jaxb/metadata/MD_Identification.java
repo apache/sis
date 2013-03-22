@@ -75,7 +75,6 @@ public final class MD_Identification extends PropertyType<MD_Identification, Ide
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public AbstractIdentification getElement() {
         return skip() ? null : AbstractIdentification.castOrCopy(metadata);

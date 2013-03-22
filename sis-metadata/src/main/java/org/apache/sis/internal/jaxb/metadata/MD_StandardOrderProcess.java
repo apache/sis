@@ -77,7 +77,6 @@ public final class MD_StandardOrderProcess extends
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public DefaultStandardOrderProcess getElement() {
         return skip() ? null : DefaultStandardOrderProcess.castOrCopy(metadata);

@@ -77,7 +77,6 @@ public final class MI_EnvironmentalRecord extends
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public DefaultEnvironmentalRecord getElement() {
         return skip() ? null : DefaultEnvironmentalRecord.castOrCopy(metadata);

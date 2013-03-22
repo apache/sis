@@ -77,7 +77,6 @@ public final class MI_RangeElementDescription extends
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public DefaultRangeElementDescription getElement() {
         return skip() ? null : DefaultRangeElementDescription.castOrCopy(metadata);

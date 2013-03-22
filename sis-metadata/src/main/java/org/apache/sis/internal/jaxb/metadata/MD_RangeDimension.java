@@ -77,7 +77,6 @@ public final class MD_RangeDimension extends PropertyType<MD_RangeDimension, Ran
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public DefaultRangeDimension getElement() {
         if (skip()) return null;

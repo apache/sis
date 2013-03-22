@@ -81,7 +81,6 @@ public final class MD_SpatialRepresentation extends
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public AbstractSpatialRepresentation getElement() {
         if (skip()) return null;

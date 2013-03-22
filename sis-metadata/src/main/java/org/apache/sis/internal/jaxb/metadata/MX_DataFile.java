@@ -75,7 +75,6 @@ public final class MX_DataFile extends PropertyType<MX_DataFile, DataFile> {
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public DefaultDataFile getElement() {
         return skip() ? null : DefaultDataFile.castOrCopy(metadata);

@@ -76,7 +76,6 @@ public final class LE_Algorithm extends PropertyType<LE_Algorithm, Algorithm> {
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public DefaultAlgorithm getElement() {
         return skip() ? null : DefaultAlgorithm.castOrCopy(metadata);

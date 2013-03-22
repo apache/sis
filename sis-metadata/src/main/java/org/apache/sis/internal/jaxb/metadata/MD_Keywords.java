@@ -75,7 +75,6 @@ public final class MD_Keywords extends PropertyType<MD_Keywords, Keywords> {
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public DefaultKeywords getElement() {
         return skip() ? null : DefaultKeywords.castOrCopy(metadata);
