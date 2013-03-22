@@ -24,6 +24,31 @@
  * For a global overview of metadata in SIS, see the
  * <a href="{@docRoot}/../sis-metadata/index.html">Metadata page on the project web site</a>.
  *
+ * <p><b>Metadata class hierarchy:</b></p>
+ * <ul>
+ *   <li>{@linkplain org.apache.sis.metadata.iso.acquisition#DefaultAcquisitionInformation Acquisition information}</li>
+ *   <li>{@linkplain org.apache.sis.metadata.iso.acquisition#DefaultObjective Objective} (<i>used in</i> acquisition information)</li>
+ *   <li>{@linkplain org.apache.sis.metadata.iso.acquisition#DefaultRequirement Requirement} (<i>used in</i> acquisition information)</li>
+ *   <li>{@linkplain org.apache.sis.metadata.iso.acquisition#DefaultRequestedDate RequestedDate} (<i>used in</i> requirement)</li>
+ *   <li>{@linkplain org.apache.sis.metadata.iso.acquisition#DefaultPlan Plan} (<i>used in</i> acquisition information)</li>
+ *   <li>{@linkplain org.apache.sis.metadata.iso.acquisition#DefaultOperation Operation} (<i>used in</i> plan)</li>
+ *   <li>{@linkplain org.apache.sis.metadata.iso.acquisition#DefaultPlatform Platform} (<i>used in operation</i>)</li>
+ *   <li>{@linkplain org.apache.sis.metadata.iso.acquisition#DefaultInstrument Instrument} (<i>used in</i> platform)</li>
+ *   <li>{@linkplain org.apache.sis.metadata.iso.acquisition#DefaultPlatformPass PlatformPass} (<i>used in</i> objective)</li>
+ *   <li>{@linkplain org.apache.sis.metadata.iso.acquisition#DefaultEvent Event} (<i>used in</i> platform pass)</li>
+ *   <li>{@linkplain org.apache.sis.metadata.iso.acquisition#DefaultEnvironmentalRecord Environmental record} (<i>used in</i> acquisition information)</li>
+ * </ul>
+ * <b>GeoAPI enumerations and code lists:</b>
+ * <ul>
+ *   <li>{@linkplain org.opengis.metadata.acquisition.ObjectiveType Objective type} (<i>used in</i> objective)</li>
+ *   <li>{@linkplain org.opengis.metadata.acquisition.Priority Priority} (<i>used in</i> requirement)</li>
+ *   <li>{@linkplain org.opengis.metadata.acquisition.GeometryType Geometry type} (<i>used in</i> plan)</li>
+ *   <li>{@linkplain org.opengis.metadata.acquisition.OperationType Operation type} (<i>used in</i> operation)</li>
+ *   <li>{@linkplain org.opengis.metadata.acquisition.Trigger Trigger} (<i>used in</i> event)</li>
+ *   <li>{@linkplain org.opengis.metadata.acquisition.Context Context} (<i>used in</i> event)</li>
+ *   <li>{@linkplain org.opengis.metadata.acquisition.Sequence Sequence} (<i>used in</i> event)</li>
+ * </ul>
+ *
  * {@section Collections and null values}
  * Unless otherwise noted in the Javadoc, all constructors and setter methods accept {@code null} argument.
  * A null argument value means that the metadata element can not be provided, and the reason for that is unspecified.

@@ -709,8 +709,6 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
 
     /**
      * Provides information about the acquisition of the data.
-     *
-     * @since 3.03
      */
     @Override
     @XmlElement(name = "acquisitionInformation", namespace = Namespaces.GMI)

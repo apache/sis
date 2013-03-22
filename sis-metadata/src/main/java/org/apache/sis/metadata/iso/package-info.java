@@ -24,6 +24,22 @@
  * For a global overview of metadata in SIS, see the
  * <a href="{@docRoot}/../sis-metadata/index.html">Metadata page on the project web site</a>.
  *
+ * <p><b>Metadata class hierarchy:</b></p>
+ * <ul>
+ *   <li>{@linkplain org.apache.sis.metadata.iso#DefaultMetadata Metadata</li>
+ *   <li>{@linkplain org.apache.sis.metadata.iso#DefaultIdentifier Identifier}</li>
+ *   <li>{@linkplain org.apache.sis.metadata.iso#DefaultPortrayalCatalogueReference Portrayal catalogue reference} (<i>used in</i> metadata)</li>
+ *   <li>{@linkplain org.apache.sis.metadata.iso#DefaultMetadataExtensionInformation Metadata extension information} (<i>used in</i> metadata)</li>
+ *   <li>{@linkplain org.apache.sis.metadata.iso#DefaultExtendedElementInformation Extended element information} (<i>used in</i> metadata extension information)</li>
+ *   <li>{@linkplain org.apache.sis.metadata.iso#DefaultApplicationSchemaInformation Application schema information} (<i>used in</i> metadata)</li>
+ *   <li>{@linkplain org.apache.sis.metadata.iso#DefaultFeatureTypeList Feature type list}</li>
+ * </ul>
+ * <b>GeoAPI enumerations and code lists:</b>
+ * <ul>
+ *   <li>{@linkplain org.opengis.metadata.Datatype Data type} (<i>used in</i> extended element information)</li>
+ *   <li>{@linkplain org.opengis.metadata.Obligation Obligation} (<i>used in</i> extended element information)</li>
+ * </ul>
+ *
  * {@section Localization}
  * When a metadata object is marshalled as an ISO 19139 compliant XML document, the marshaller
  * {@link org.apache.sis.xml.XML#LOCALE} property will be used for the localization of every
