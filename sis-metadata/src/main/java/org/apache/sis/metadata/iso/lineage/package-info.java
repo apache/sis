@@ -17,7 +17,7 @@
 
 /**
  * {@linkplain org.apache.sis.metadata.iso.lineage.DefaultLineage Lineage} implementation.
- * An explanation for this package is provided in the {@linkplain org.opengis.metadata.content OpenGIS® javadoc}.
+ * An explanation for this package is provided in the {@linkplain org.opengis.metadata.lineage OpenGIS® javadoc}.
  * The remaining discussion on this page is specific to the SIS implementation.
  *
  * {@section Overview}

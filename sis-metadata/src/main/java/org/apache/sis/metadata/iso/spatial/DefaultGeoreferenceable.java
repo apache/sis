@@ -172,8 +172,6 @@ public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation im
 
     /**
      * Returns the terms which support grid data georeferencing.
-     *
-     * @since 2.4
      */
     @Override
 /// @XmlElement(name = "georeferencedParameters", required = true)
@@ -185,8 +183,6 @@ public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation im
      * Sets the terms which support grid data georeferencing.
      *
      * @param newValue The new georeferenced parameters.
-     *
-     * @since 2.4
      */
     public synchronized void setGeoreferencedParameters(final Record newValue) {
         checkWritePermission();

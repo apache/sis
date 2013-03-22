@@ -17,7 +17,7 @@
 
 /**
  * {@linkplain org.apache.sis.metadata.iso.extent.DefaultExtent Extent} implementation.
- * An explanation for this package is provided in the {@linkplain org.opengis.metadata.content OpenGIS® javadoc}.
+ * An explanation for this package is provided in the {@linkplain org.opengis.metadata.extent OpenGIS® javadoc}.
  * The remaining discussion on this page is specific to the SIS implementation.
  *
  * {@section Overview}

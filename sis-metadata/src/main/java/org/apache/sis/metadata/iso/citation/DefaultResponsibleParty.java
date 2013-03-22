@@ -16,46 +16,206 @@
  */
 package org.apache.sis.metadata.iso.citation;
 
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.citation.Contact;
 import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.citation.Role;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.ISOMetadata;
 
-public class DefaultResponsibleParty extends ISOMetadata implements ResponsibleParty {
 
+/**
+ * Identification of, and means of communication with, person(s) and
+ * organizations associated with the dataset.
+ *
+ * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @author  Touraïvane (IRD)
+ * @author  Cédric Briançon (Geomatys)
+ * @since   0.3 (derived from geotk-2.1)
+ * @version 0.3
+ * @module
+ */
+@XmlType(name = "CI_ResponsibleParty_Type", propOrder = {
+    "individualName",
+    "organisationName",
+    "positionName",
+    "contactInfo",
+    "role"
+})
+@XmlRootElement(name = "CI_ResponsibleParty")
+public class DefaultResponsibleParty extends ISOMetadata implements ResponsibleParty {
+    /**
+     * Serial number for inter-operability with different versions.
+     */
+    private static final long serialVersionUID = -2477962229031486552L;
+
+    /**
+     * Name of the responsible person- surname, given name, title separated by a delimiter.
+     */
     private String individualName;
 
+    /**
+     * Name of the responsible organization.
+     */
     private InternationalString organisationName;
 
+    /**
+     * Role or position of the responsible person
+     */
     private InternationalString positionName;
 
+    /**
+     * Address of the responsible party.
+     */
     private Contact contactInfo;
 
+    /**
+     * Function performed by the responsible party.
+     */
     private Role role;
 
+    /**
+     * Constructs an initially empty responsible party.
+     */
+    public DefaultResponsibleParty() {
+    }
+
+    /**
+     * Constructs a responsibility party with the given role.
+     *
+     * @param role The function performed by the responsible party, or {@code null}.
+     */
+    public DefaultResponsibleParty(final Role role) {
+        this.role = role;
+    }
+
+    /**
+     * Returns a SIS metadata implementation with the same values than the given arbitrary
+     * implementation. If the given object is {@code null}, then this method returns {@code null}.
+     * Otherwise if the given object is already a SIS implementation, then the given object is
+     * returned unchanged. Otherwise a new SIS implementation is created and initialized to the
+     * property values of the given object, using a <cite>shallow</cite> copy operation
+     * (i.e. properties are not cloned).
+     *
+     * @param  object The object to get as a SIS implementation, or {@code null} if none.
+     * @return A SIS implementation containing the values of the given object (may be the
+     *         given object itself), or {@code null} if the argument was null.
+     */
+    public static DefaultResponsibleParty castOrCopy(final ResponsibleParty object) {
+        if (object == null || object instanceof DefaultResponsibleParty) {
+            return (DefaultResponsibleParty) object;
+        }
+        final DefaultResponsibleParty copy = new DefaultResponsibleParty();
+        copy.shallowCopy(object);
+        return copy;
+    }
+
+    /**
+     * Returns the name of the responsible person- surname, given name, title separated by a delimiter.
+     * Only one of {@code individualName}, {@link #getOrganisationName organisationName}
+     * and {@link #getPositionName positionName} should be provided.
+     */
     @Override
+    @XmlElement(name = "individualName")
     public synchronized String getIndividualName() {
         return individualName;
     }
 
+    /**
+     * Sets the name of the responsible person- surname, given name, title separated by a delimiter.
+     * Only one of {@code individualName}, {@link #getOrganisationName organisationName}
+     * and {@link #getPositionName positionName} should be provided.
+     *
+     * @param newValue The new individual name, or {@code null} if none.
+     */
+    public synchronized void setIndividualName(final String newValue) {
+        checkWritePermission();
+        individualName = newValue;
+    }
+
+    /**
+     * Returns the name of the responsible organization. Only one of
+     * {@link #getIndividualName individualName}, {@code organisationName}
+     * and {@link #getPositionName positionName} should be provided.
+     */
     @Override
+    @XmlElement(name = "organisationName")
     public synchronized InternationalString getOrganisationName() {
         return organisationName;
     }
 
+    /**
+     * Sets the name of the responsible organization. Only one of
+     * {@link #getIndividualName individualName}, {@code organisationName}
+     * and {@link #getPositionName positionName} should be provided.
+     *
+     * @param newValue The new organisation name, or {@code null} if none.
+     */
+    public synchronized void setOrganisationName(final InternationalString newValue) {
+        checkWritePermission();
+        organisationName = newValue;
+    }
+
+    /**
+     * Returns the role or position of the responsible person Only one of
+     * {@link #getIndividualName individualName}, {@link #getOrganisationName organisationName}
+     * and {@code positionName} should be provided.
+     */
     @Override
+    @XmlElement(name = "positionName")
     public synchronized InternationalString getPositionName() {
         return positionName;
     }
 
+    /**
+     * set the role or position of the responsible person Only one of
+     * {@link #getIndividualName individualName}, {@link #getOrganisationName organisationName}
+     * and {@code positionName} should be provided.
+     *
+     * @param newValue The new position name, or {@code null} if none.
+     */
+    public synchronized void setPositionName(final InternationalString newValue) {
+        checkWritePermission();
+        positionName = newValue;
+    }
+
+    /**
+     * Returns the address of the responsible party.
+     */
     @Override
+    @XmlElement(name = "contactInfo")
     public synchronized Contact getContactInfo() {
         return contactInfo;
     }
 
+    /**
+     * Sets the address of the responsible party.
+     *
+     * @param newValue The new contact info, or {@code null} if none.
+     */
+    public synchronized void setContactInfo(final Contact newValue) {
+        checkWritePermission();
+        contactInfo = newValue;
+    }
+
+    /**
+     * Returns the function performed by the responsible party.
+     */
     @Override
+    @XmlElement(name = "role", required = true)
     public synchronized Role getRole() {
         return role;
+    }
+
+    /**
+     * Sets the function performed by the responsible party.
+     *
+     * @param newValue The new role, or {@code null} if none.
+     */
+    public synchronized void setRole(final Role newValue) {
+        checkWritePermission();
+        role = newValue;
     }
 }
