@@ -134,7 +134,7 @@ public class DefaultObjective extends ISOMetadata implements Objective {
      */
     @Override
     @XmlElement(name = "identifier", required = true)
-    public Collection<Identifier> getIdentifiers() {
+    public synchronized Collection<Identifier> getIdentifiers() {
         identifiers = nonNullCollection(identifiers, Identifier.class);
         return filterIdentifiers(identifiers);
     }
