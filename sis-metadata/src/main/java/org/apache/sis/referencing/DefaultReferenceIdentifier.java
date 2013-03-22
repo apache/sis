@@ -73,7 +73,7 @@ public class DefaultReferenceIdentifier implements ReferenceIdentifier, Deprecab
      */
     @XmlElement(required = true, namespace = Namespaces.GMD)
     @XmlJavaTypeAdapter(StringAdapter.class)
-    protected final String code;
+    private final String code;
 
     /**
      * Name or identifier of the person or organization responsible for namespace, or
@@ -83,7 +83,7 @@ public class DefaultReferenceIdentifier implements ReferenceIdentifier, Deprecab
      */
     @XmlElement(required = true, namespace = Namespaces.GMD)
     @XmlJavaTypeAdapter(StringAdapter.class)
-    protected final String codeSpace;
+    private final String codeSpace;
 
     /**
      * Organization or party responsible for definition and maintenance of the code space or code,
@@ -93,7 +93,7 @@ public class DefaultReferenceIdentifier implements ReferenceIdentifier, Deprecab
      */
     @XmlElement(required = true, namespace = Namespaces.GMD)
     @XmlJavaTypeAdapter(CI_Citation.class)
-    protected final Citation authority;
+    private final Citation authority;
 
     /**
      * Identifier of the version of the associated code space or code as specified
