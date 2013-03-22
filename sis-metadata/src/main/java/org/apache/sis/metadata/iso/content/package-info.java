@@ -33,6 +33,24 @@
  * Both {@code Band} and {@code SampleDimension} interfaces extend the same parent,
  * {@link org.opengis.metadata.content.RangeDimension}.
  *
+ * {@section Collections and null values}
+ * Unless otherwise noted in the Javadoc, all constructors and setter methods accept {@code null} argument.
+ * A null argument value means that the metadata element can not be provided, and the reason for that is unspecified.
+ * Alternatively, users can specify why a metadata element is missing by providing a value created by
+ * {@link org.apache.sis.xml.NilReason#createNilObject NilReason.createNilObject(Class)}.
+ *
+ * <p>Unless otherwise noted in the Javadoc, all getter methods may return an empty collection,
+ * an empty array or {@code null} if there is no value. More specifically:</p>
+ * <ul>
+ *   <li>If the return type is a collection, the method may return an empty collection (never {@code null}).</li>
+ *   <li>If the return type is an array, the method may return an empty array (never {@code null}).</li>
+ *   <li>Otherwise the method may return {@code null}.</li>
+ * </ul>
+ *
+ * Unless the metadata object has been marked as unmodifiable and unless otherwise noted in the Javadoc,
+ * all collections returned by getter methods are <cite>live</cite>: adding new elements in the collection
+ * modify directly the underlying metadata object.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
