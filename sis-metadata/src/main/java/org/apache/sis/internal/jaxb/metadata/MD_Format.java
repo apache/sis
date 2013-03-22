@@ -75,7 +75,6 @@ public final class MD_Format extends PropertyType<MD_Format, Format> {
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public DefaultFormat getElement() {
         return skip() ? null : DefaultFormat.castOrCopy(metadata);

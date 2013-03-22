@@ -76,7 +76,6 @@ public final class LI_ProcessStep extends PropertyType<LI_ProcessStep, ProcessSt
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public DefaultProcessStep getElement() {
         return skip() ? null : LE_ProcessStep.castOrCopy(metadata);

@@ -80,7 +80,6 @@ public final class MD_Identifier extends PropertyType<MD_Identifier, Identifier>
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public DefaultIdentifier getElement() {
         if (skip()) return null;

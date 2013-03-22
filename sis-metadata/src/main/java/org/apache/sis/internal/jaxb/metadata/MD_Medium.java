@@ -75,7 +75,6 @@ public final class MD_Medium extends PropertyType<MD_Medium, Medium> {
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public DefaultMedium getElement() {
         return skip() ? null : DefaultMedium.castOrCopy(metadata);

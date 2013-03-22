@@ -77,7 +77,6 @@ public final class MD_DataIdentification extends
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public DefaultDataIdentification getElement() {
         return skip() ? null : DefaultDataIdentification.castOrCopy(metadata);

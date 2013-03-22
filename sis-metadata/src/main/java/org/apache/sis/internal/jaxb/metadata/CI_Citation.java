@@ -75,7 +75,6 @@ public final class CI_Citation extends PropertyType<CI_Citation, Citation> {
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public DefaultCitation getElement() {
         return skip() ? null : DefaultCitation.castOrCopy(metadata);

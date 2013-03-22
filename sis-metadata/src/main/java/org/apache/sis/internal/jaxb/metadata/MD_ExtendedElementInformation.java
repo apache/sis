@@ -77,7 +77,6 @@ public final class MD_ExtendedElementInformation extends
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public DefaultExtendedElementInformation getElement() {
         return skip() ? null : DefaultExtendedElementInformation.castOrCopy(metadata);

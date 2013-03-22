@@ -75,7 +75,6 @@ public final class MD_Constraints extends PropertyType<MD_Constraints, Constrain
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public DefaultConstraints getElement() {
         return skip() ? null : DefaultConstraints.castOrCopy(metadata);

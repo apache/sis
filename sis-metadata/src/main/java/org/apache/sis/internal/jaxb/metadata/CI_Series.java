@@ -75,7 +75,6 @@ public final class CI_Series extends PropertyType<CI_Series, Series> {
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public DefaultSeries getElement() {
         return skip() ? null : DefaultSeries.castOrCopy(metadata);

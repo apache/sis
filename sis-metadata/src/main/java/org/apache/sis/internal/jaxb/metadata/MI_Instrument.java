@@ -75,7 +75,6 @@ public final class MI_Instrument extends PropertyType<MI_Instrument, Instrument>
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public DefaultInstrument getElement() {
         return skip() ? null : DefaultInstrument.castOrCopy(metadata);

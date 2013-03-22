@@ -75,7 +75,6 @@ public final class CI_Contact extends PropertyType<CI_Contact, Contact> {
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public DefaultContact getElement() {
         return skip() ? null : DefaultContact.castOrCopy(metadata);

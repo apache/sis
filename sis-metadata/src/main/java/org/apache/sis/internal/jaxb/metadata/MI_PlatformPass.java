@@ -75,7 +75,6 @@ public final class MI_PlatformPass extends PropertyType<MI_PlatformPass, Platfor
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public DefaultPlatformPass getElement() {
         return skip() ? null : DefaultPlatformPass.castOrCopy(metadata);

@@ -75,7 +75,6 @@ public final class MD_Distribution extends PropertyType<MD_Distribution, Distrib
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public DefaultDistribution getElement() {
         return skip() ? null : DefaultDistribution.castOrCopy(metadata);

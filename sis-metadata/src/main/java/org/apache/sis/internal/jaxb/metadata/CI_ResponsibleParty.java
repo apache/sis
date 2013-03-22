@@ -77,7 +77,6 @@ public final class CI_ResponsibleParty extends
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public DefaultResponsibleParty getElement() {
         return skip() ? null : DefaultResponsibleParty.castOrCopy(metadata);

@@ -75,7 +75,6 @@ public final class MD_Resolution extends PropertyType<MD_Resolution, Resolution>
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public DefaultResolution getElement() {
         return skip() ? null : DefaultResolution.castOrCopy(metadata);

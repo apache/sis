@@ -75,7 +75,6 @@ public final class CI_Address extends PropertyType<CI_Address, Address> {
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public DefaultAddress getElement() {
         return skip() ? null : DefaultAddress.castOrCopy(metadata);

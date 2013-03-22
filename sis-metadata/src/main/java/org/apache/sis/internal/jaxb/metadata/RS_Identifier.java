@@ -80,7 +80,6 @@ public final class RS_Identifier extends PropertyType<RS_Identifier, ReferenceId
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public DefaultReferenceIdentifier getElement() {
         if (skip()) return null;

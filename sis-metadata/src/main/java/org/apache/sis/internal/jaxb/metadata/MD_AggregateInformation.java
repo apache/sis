@@ -77,7 +77,6 @@ public final class MD_AggregateInformation extends
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public DefaultAggregateInformation getElement() {
         return skip() ? null : DefaultAggregateInformation.castOrCopy(metadata);

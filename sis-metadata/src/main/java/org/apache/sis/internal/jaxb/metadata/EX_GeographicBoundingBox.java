@@ -77,7 +77,6 @@ public final class EX_GeographicBoundingBox extends
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public DefaultGeographicBoundingBox getElement() {
         return skip() ? null : DefaultGeographicBoundingBox.castOrCopy(metadata);

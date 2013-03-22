@@ -75,7 +75,6 @@ public final class MI_GCP extends PropertyType<MI_GCP, GCP> {
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public DefaultGCP getElement() {
         return skip() ? null : DefaultGCP.castOrCopy(metadata);

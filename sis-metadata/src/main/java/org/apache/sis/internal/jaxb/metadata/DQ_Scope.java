@@ -75,7 +75,6 @@ public final class DQ_Scope extends PropertyType<DQ_Scope, Scope> {
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public DefaultScope getElement() {
         return skip() ? null : DefaultScope.castOrCopy(metadata);

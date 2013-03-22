@@ -77,7 +77,6 @@ public final class MD_PortrayalCatalogueReference extends
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public DefaultPortrayalCatalogueReference getElement() {
         return skip() ? null : DefaultPortrayalCatalogueReference.castOrCopy(metadata);

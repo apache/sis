@@ -75,7 +75,6 @@ public final class CI_Date extends PropertyType<CI_Date, CitationDate> {
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public DefaultCitationDate getElement() {
         return skip() ? null : DefaultCitationDate.castOrCopy(metadata);

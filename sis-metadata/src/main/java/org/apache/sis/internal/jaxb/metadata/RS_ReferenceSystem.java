@@ -75,7 +75,6 @@ public class RS_ReferenceSystem extends PropertyType<RS_ReferenceSystem, Referen
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public ReferenceSystemMetadata getElement() {
         if (skip()) return null;

@@ -75,7 +75,6 @@ public final class MD_GeometricObjects extends PropertyType<MD_GeometricObjects,
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public DefaultGeometricObjects getElement() {
         return skip() ? null : DefaultGeometricObjects.castOrCopy(metadata);

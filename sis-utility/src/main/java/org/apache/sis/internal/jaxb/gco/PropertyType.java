@@ -64,6 +64,41 @@ import org.apache.sis.util.iso.SimpleInternationalString;
  *       ISO 19139 schemas.</li>
  * </ul>
  *
+ * {@section Guidlines for subclasses}
+ * Subclasses shall provide a method returning the SIS implementation class for the metadata value.
+ * This method will be systematically called at marshalling time by JAXB. Typical implementation
+ * ({@code BoundType} and {@code ValueType} need to be replaced by the concrete class):
+ *
+ * {@preformat java
+ *   &#64;XmlElementRef
+ *   public BoundType getElement() {
+ *       if (skip()) return null;
+ *       final ValueType metadata = this.metadata;
+ *       return (metadata instanceof BoundType) ? (BoundType) metadata : new BoundType(metadata);
+ *   }
+ *
+ *   public void getElement(final BoundType metadata) {
+ *       this.metadata = metadata;
+ *   }
+ * }
+ *
+ * The actual implementation may be slightly more complicated than the above if there is
+ * various subclasses to check.
+ *
+ * {@note A previous version provided an abstract <code>getElement()</code> method in this class
+ * for enforcing its definition in subclasses. But this has been removed for two reasons:
+ * <ul>
+ *   <li>While the return value is usually <code>BoundType</code>, in some situations it is
+ *       rather an other type like <code>String</code>. For this raison the return type must
+ *       be declared as <code>Object</code>, and subclasses have to restrict it to a more
+ *       specific type.</li>
+ *   <li>The parameterized return type forces the compiler to generate bridge methods under
+ *       the hood. In the particular case of typical <code>PropertyType</code> subclasses,
+ *       this increases the size of <code>.class</code></li> files by approximatively 4.5%.
+ *       While quite small, this is a useless overhead since we never need to invoke the
+ *       abstract <code>getElement()</code> from this class.</li>
+ * </ul>}
+ *
  * @param <ValueType> The adapter subclass.
  * @param <BoundType> The interface being adapted.
  *
@@ -508,34 +543,12 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
         return metadata;
     }
 
-    /**
-     * Returns the SIS implementation class generated from the metadata value.
-     * The overriding method in subclasses will be systematically called at marshalling time by JAXB.
+    /*
+     * Do not provide the following method here:
      *
-     * <p>The return value is usually an implementation of {@code BoundType}.
-     * But in some situations this is a Java type like {@link String}.
-     * For this raison the return type is declared as {@code Object} here,
-     * but subclasses shall restrict that to a more specific type.</p>
+     *     public abstract BountType getElement();
      *
-     * <p>Typical implementation ({@code BoundType} and {@code ValueType} need to be replaced
-     * by the concrete class):</p>
-     *
-     * {@preformat java
-     *   &#64;Override
-     *   &#64;XmlElementRef
-     *   public BoundType getElement() {
-     *       if (skip()) return null;
-     *       final ValueType metadata = this.metadata;
-     *       return (metadata instanceof BoundType) ? (BoundType) metadata : new BoundType(metadata);
-     *   }
-     * }
-     *
-     * The actual implementation may be slightly more complicated than the above if there is
-     * various subclasses to check.
-     *
-     * @return The metadata to be marshalled.
-     *
-     * @see #skip()
+     * as it adds a small but unnecessary overhead.
+     * See class Javadoc for more information.
      */
-    public abstract Object getElement();
 }

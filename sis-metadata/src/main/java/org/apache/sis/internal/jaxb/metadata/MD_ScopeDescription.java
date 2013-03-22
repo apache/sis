@@ -75,7 +75,6 @@ public final class MD_ScopeDescription extends PropertyType<MD_ScopeDescription,
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public DefaultScopeDescription getElement() {
         return skip() ? null : DefaultScopeDescription.castOrCopy(metadata);

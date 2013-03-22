@@ -75,7 +75,6 @@ public final class MD_Dimension extends PropertyType<MD_Dimension, Dimension> {
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public DefaultDimension getElement() {
         return skip() ? null : DefaultDimension.castOrCopy(metadata);

@@ -76,7 +76,6 @@ public final class LI_Source extends PropertyType<LI_Source, Source> {
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public DefaultSource getElement() {
         return skip() ? null : LE_Source.castOrCopy(metadata);

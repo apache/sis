@@ -75,7 +75,6 @@ public final class MD_FeatureTypeList extends PropertyType<MD_FeatureTypeList, F
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public DefaultFeatureTypeList getElement() {
         return skip() ? null : DefaultFeatureTypeList.castOrCopy(metadata);

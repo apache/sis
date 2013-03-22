@@ -77,7 +77,6 @@ public final class MI_GeolocationInformation extends
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public AbstractGeolocationInformation getElement() {
         return skip() ? null : AbstractGeolocationInformation.castOrCopy(metadata);

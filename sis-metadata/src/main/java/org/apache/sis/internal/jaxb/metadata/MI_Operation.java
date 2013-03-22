@@ -75,7 +75,6 @@ public final class MI_Operation extends PropertyType<MI_Operation, Operation> {
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public DefaultOperation getElement() {
         return skip() ? null : DefaultOperation.castOrCopy(metadata);

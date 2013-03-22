@@ -77,7 +77,6 @@ public final class MD_MaintenanceInformation extends
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public DefaultMaintenanceInformation getElement() {
         return skip() ? null : DefaultMaintenanceInformation.castOrCopy(metadata);

@@ -75,7 +75,6 @@ public final class CI_Telephone extends PropertyType<CI_Telephone, Telephone> {
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public DefaultTelephone getElement() {
         return skip() ? null : DefaultTelephone.castOrCopy(metadata);

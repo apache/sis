@@ -75,7 +75,6 @@ public final class MI_Objective extends PropertyType<MI_Objective, Objective> {
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public DefaultObjective getElement() {
         return skip() ? null : DefaultObjective.castOrCopy(metadata);

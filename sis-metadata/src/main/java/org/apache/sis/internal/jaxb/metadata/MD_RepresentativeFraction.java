@@ -77,7 +77,6 @@ public final class MD_RepresentativeFraction extends
      *
      * @return The metadata to be marshalled.
      */
-    @Override
     @XmlElementRef
     public DefaultRepresentativeFraction getElement() {
         return skip() ? null : DefaultRepresentativeFraction.castOrCopy(metadata);
