@@ -24,20 +24,20 @@
  * For a global overview of metadata in SIS, see the
  * <a href="{@docRoot}/../sis-metadata/index.html">Metadata page on the project web site</a>.
  *
- * <p><b>Metadata class hierarchy:</b></p>
+ * <p><b>Aggregation hierarchy:</b></p>
  * <ul>
- *   <li>{@linkplain org.apache.sis.metadata.iso#DefaultMetadata Metadata</li>
- *   <li>{@linkplain org.apache.sis.metadata.iso#DefaultIdentifier Identifier}</li>
- *   <li>{@linkplain org.apache.sis.metadata.iso#DefaultPortrayalCatalogueReference Portrayal catalogue reference} (<i>used in</i> metadata)</li>
- *   <li>{@linkplain org.apache.sis.metadata.iso#DefaultMetadataExtensionInformation Metadata extension information} (<i>used in</i> metadata)</li>
- *   <li>{@linkplain org.apache.sis.metadata.iso#DefaultExtendedElementInformation Extended element information} (<i>used in</i> metadata extension information)</li>
- *   <li>{@linkplain org.apache.sis.metadata.iso#DefaultApplicationSchemaInformation Application schema information} (<i>used in</i> metadata)</li>
- *   <li>{@linkplain org.apache.sis.metadata.iso#DefaultFeatureTypeList Feature type list}</li>
- * </ul>
- * <b>GeoAPI enumerations and code lists:</b>
- * <ul>
- *   <li>{@linkplain org.opengis.metadata.Datatype Data type} (<i>used in</i> extended element information)</li>
- *   <li>{@linkplain org.opengis.metadata.Obligation Obligation} (<i>used in</i> extended element information)</li>
+ *   <li>{@linkplain org.apache.sis.metadata.iso.DefaultMetadata Metadata}<ul>
+ *     <li>{@linkplain org.apache.sis.metadata.iso.DefaultPortrayalCatalogueReference Portrayal catalogue reference}</li>
+ *     <li>{@linkplain org.apache.sis.metadata.iso.DefaultApplicationSchemaInformation Application schema information}</li>
+ *     <li>{@linkplain org.apache.sis.metadata.iso.DefaultMetadataExtensionInformation Metadata extension information}<ul>
+ *       <li>{@linkplain org.apache.sis.metadata.iso.DefaultExtendedElementInformation Extended element information}<ul>
+ *         <li>{@linkplain org.opengis.metadata.Datatype Data type} (a code list)</li>
+ *         <li>{@linkplain org.opengis.metadata.Obligation Obligation} (a code list)</li>
+ *       </ul></li>
+ *     </ul></li>
+ *   </ul></li>
+ *   <li>{@linkplain org.apache.sis.metadata.iso.DefaultFeatureTypeList Feature type list}</li>
+ *   <li>{@linkplain org.apache.sis.metadata.iso.DefaultIdentifier Identifier}</li>
  * </ul>
  *
  * {@section Localization}
