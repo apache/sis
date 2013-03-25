@@ -24,6 +24,27 @@
  * For a global overview of metadata in SIS, see the
  * <a href="{@docRoot}/../sis-metadata/index.html">Metadata page on the project web site</a>.
  *
+ * <p><b>Aggregation hierarchy:</b></p>
+ * <ul>
+ *   <li>{@linkplain org.apache.sis.metadata.iso.citation.DefaultCitation Citation}<ul>
+ *     <li>{@linkplain org.apache.sis.metadata.iso.citation.DefaultCitationDate Citation date}<ul>
+ *       <li>{@linkplain org.opengis.metadata.citation.DateType Date type} (a code list)</li>
+ *     </ul></li>
+ *     <li>{@linkplain org.apache.sis.metadata.iso.citation.DefaultResponsibleParty Responsible party}<ul>
+ *       <li>{@linkplain org.apache.sis.metadata.iso.citation.DefaultContact Contact}<ul>
+ *         <li>{@linkplain org.apache.sis.metadata.iso.citation.DefaultTelephone Telephone}</li>
+ *         <li>{@linkplain org.apache.sis.metadata.iso.citation.DefaultAddress Address}</li>
+ *         <li>{@linkplain org.apache.sis.metadata.iso.citation.DefaultOnlineResource Online resource}<ul>
+ *           <li>{@linkplain org.opengis.metadata.citation.OnLineFunction Online function} (a code list)</li>
+ *         </ul></li>
+ *       </ul></li>
+ *       <li>{@linkplain org.opengis.metadata.citation.Role Role} (a code list)</li>
+ *     </ul></li>
+ *     <li>{@linkplain org.opengis.metadata.citation.PresentationForm Presentation form} (a code list)</li>
+ *     <li>{@linkplain org.apache.sis.metadata.iso.citation.DefaultSeries Series}</li>
+ *   </ul></li>
+ * </ul>
+ *
  * {@section Unified identifiers view}
  * Apache SIS provides a unified view of all metadata identifiers. This view includes the citation
  * {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitation#getISBN() ISBN} and
