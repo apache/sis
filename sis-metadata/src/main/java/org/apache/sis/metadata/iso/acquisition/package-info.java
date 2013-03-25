@@ -24,29 +24,34 @@
  * For a global overview of metadata in SIS, see the
  * <a href="{@docRoot}/../sis-metadata/index.html">Metadata page on the project web site</a>.
  *
- * <p><b>Metadata class hierarchy:</b></p>
+ * <p><b>Aggregation hierarchy:</b></p>
  * <ul>
- *   <li>{@linkplain org.apache.sis.metadata.iso.acquisition#DefaultAcquisitionInformation Acquisition information}</li>
- *   <li>{@linkplain org.apache.sis.metadata.iso.acquisition#DefaultObjective Objective} (<i>used in</i> acquisition information)</li>
- *   <li>{@linkplain org.apache.sis.metadata.iso.acquisition#DefaultRequirement Requirement} (<i>used in</i> acquisition information)</li>
- *   <li>{@linkplain org.apache.sis.metadata.iso.acquisition#DefaultRequestedDate RequestedDate} (<i>used in</i> requirement)</li>
- *   <li>{@linkplain org.apache.sis.metadata.iso.acquisition#DefaultPlan Plan} (<i>used in</i> acquisition information)</li>
- *   <li>{@linkplain org.apache.sis.metadata.iso.acquisition#DefaultOperation Operation} (<i>used in</i> plan)</li>
- *   <li>{@linkplain org.apache.sis.metadata.iso.acquisition#DefaultPlatform Platform} (<i>used in operation</i>)</li>
- *   <li>{@linkplain org.apache.sis.metadata.iso.acquisition#DefaultInstrument Instrument} (<i>used in</i> platform)</li>
- *   <li>{@linkplain org.apache.sis.metadata.iso.acquisition#DefaultPlatformPass PlatformPass} (<i>used in</i> objective)</li>
- *   <li>{@linkplain org.apache.sis.metadata.iso.acquisition#DefaultEvent Event} (<i>used in</i> platform pass)</li>
- *   <li>{@linkplain org.apache.sis.metadata.iso.acquisition#DefaultEnvironmentalRecord Environmental record} (<i>used in</i> acquisition information)</li>
- * </ul>
- * <b>GeoAPI enumerations and code lists:</b>
- * <ul>
- *   <li>{@linkplain org.opengis.metadata.acquisition.ObjectiveType Objective type} (<i>used in</i> objective)</li>
- *   <li>{@linkplain org.opengis.metadata.acquisition.Priority Priority} (<i>used in</i> requirement)</li>
- *   <li>{@linkplain org.opengis.metadata.acquisition.GeometryType Geometry type} (<i>used in</i> plan)</li>
- *   <li>{@linkplain org.opengis.metadata.acquisition.OperationType Operation type} (<i>used in</i> operation)</li>
- *   <li>{@linkplain org.opengis.metadata.acquisition.Trigger Trigger} (<i>used in</i> event)</li>
- *   <li>{@linkplain org.opengis.metadata.acquisition.Context Context} (<i>used in</i> event)</li>
- *   <li>{@linkplain org.opengis.metadata.acquisition.Sequence Sequence} (<i>used in</i> event)</li>
+ *   <li>{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultAcquisitionInformation Acquisition information}<ul>
+ *     <li>{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultObjective Objective}<ul>
+ *       <li>{@linkplain org.opengis.metadata.acquisition.ObjectiveType Objective type} (a code list)</li>
+ *       <li>{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultPlatformPass PlatformPass}<ul>
+ *         <li>{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultEvent Event}<ul>
+ *           <li>{@linkplain org.opengis.metadata.acquisition.Trigger Trigger} (a code list)</li>
+ *           <li>{@linkplain org.opengis.metadata.acquisition.Context Context} (a code list)</li>
+ *           <li>{@linkplain org.opengis.metadata.acquisition.Sequence Sequence} (a code list)</li>
+ *         </ul></li>
+ *       </ul></li>
+ *     </ul></li>
+ *     <li>{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultRequirement Requirement}<ul>
+ *       <li>{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultRequestedDate Requested date}</li>
+ *       <li>{@linkplain org.opengis.metadata.acquisition.Priority Priority} (a code list)</li>
+ *     </ul></li>
+ *     <li>{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultPlan Plan}<ul>
+ *       <li>{@linkplain org.opengis.metadata.acquisition.GeometryType Geometry type} (a code list)</li>
+ *       <li>{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultOperation Operation}<ul>
+ *         <li>{@linkplain org.opengis.metadata.acquisition.OperationType Operation type} (a code list)</li>
+ *         <li>{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultPlatform Platform}<ul>
+ *           <li>{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultInstrument Instrument}</li>
+ *         </ul></li>
+ *       </ul></li>
+ *     </ul></li>
+ *   </ul></li>
+ *   <li>{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultEnvironmentalRecord Environmental record} (<i>used in</i> acquisition information)</li>
  * </ul>
  *
  * {@section Collections and null values}
