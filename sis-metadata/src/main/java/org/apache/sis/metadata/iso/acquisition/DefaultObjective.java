@@ -148,7 +148,7 @@ public class DefaultObjective extends ISOMetadata implements Objective {
      */
     public synchronized void setIdentifiers(final Collection<? extends Identifier> newValues) {
         final Collection<Identifier> oldIds = NonMarshalledAuthority.getIdentifiers(identifiers);
-        identifiers = copyCollection(newValues, identifiers, Identifier.class);
+        identifiers = writeCollection(newValues, identifiers, Identifier.class);
         NonMarshalledAuthority.setIdentifiers(identifiers, oldIds);
     }
 
@@ -186,7 +186,7 @@ public class DefaultObjective extends ISOMetadata implements Objective {
      * @param newValues The new types values.
      */
     public synchronized void setTypes(final Collection<? extends ObjectiveType> newValues) {
-        types = copyCollection(newValues, types, ObjectiveType.class);
+        types = writeCollection(newValues, types, ObjectiveType.class);
     }
 
     /**
@@ -204,7 +204,7 @@ public class DefaultObjective extends ISOMetadata implements Objective {
      * @param newValues The new functions values.
      */
     public synchronized void setFunctions(final Collection<? extends InternationalString> newValues) {
-        functions = copyCollection(newValues, functions, InternationalString.class);
+        functions = writeCollection(newValues, functions, InternationalString.class);
     }
 
     /**
@@ -224,7 +224,7 @@ public class DefaultObjective extends ISOMetadata implements Objective {
      * @param newValues The new extents values.
      */
     public synchronized void setExtents(final Collection<? extends Extent> newValues) {
-        extents = copyCollection(newValues, extents, Extent.class);
+        extents = writeCollection(newValues, extents, Extent.class);
     }
 
     /**
@@ -242,7 +242,7 @@ public class DefaultObjective extends ISOMetadata implements Objective {
      * @param newValues The new objective occurrences values.
      */
     public synchronized void setObjectiveOccurences(final Collection<? extends Event> newValues) {
-        objectiveOccurences = copyCollection(newValues, objectiveOccurences, Event.class);
+        objectiveOccurences = writeCollection(newValues, objectiveOccurences, Event.class);
     }
 
     /**
@@ -260,7 +260,7 @@ public class DefaultObjective extends ISOMetadata implements Objective {
      * @param newValues The new pass values.
      */
     public synchronized void setPass(final Collection<? extends PlatformPass> newValues) {
-        pass = copyCollection(newValues, pass, PlatformPass.class);
+        pass = writeCollection(newValues, pass, PlatformPass.class);
     }
 
     /**
@@ -278,6 +278,6 @@ public class DefaultObjective extends ISOMetadata implements Objective {
      * @param newValues The new sensing instruments values.
      */
     public synchronized void setSensingInstruments(final Collection<? extends Instrument> newValues) {
-        sensingInstruments = copyCollection(newValues, sensingInstruments, Instrument.class);
+        sensingInstruments = writeCollection(newValues, sensingInstruments, Instrument.class);
     }
 }

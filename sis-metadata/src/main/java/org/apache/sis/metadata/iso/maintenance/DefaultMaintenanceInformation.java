@@ -213,7 +213,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      * @param newValues The new update scopes.
      */
     public synchronized void setUpdateScopes(final Collection<? extends ScopeCode> newValues) {
-        updateScopes = copyCollection(newValues, updateScopes, ScopeCode.class);
+        updateScopes = writeCollection(newValues, updateScopes, ScopeCode.class);
     }
 
     /**
@@ -231,7 +231,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      * @param newValues The new update scope descriptions.
      */
     public synchronized void setUpdateScopeDescriptions(final Collection<? extends ScopeDescription> newValues) {
-        updateScopeDescriptions = copyCollection(newValues, updateScopeDescriptions, ScopeDescription.class);
+        updateScopeDescriptions = writeCollection(newValues, updateScopeDescriptions, ScopeDescription.class);
     }
 
     /**
@@ -249,7 +249,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      * @param newValues The new maintenance notes.
      */
     public synchronized void setMaintenanceNotes(final Collection<? extends InternationalString> newValues) {
-        maintenanceNotes = copyCollection(newValues, maintenanceNotes, InternationalString.class);
+        maintenanceNotes = writeCollection(newValues, maintenanceNotes, InternationalString.class);
     }
 
     /**
@@ -269,6 +269,6 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      * @param newValues The new contacts
      */
     public synchronized void setContacts(final Collection<? extends ResponsibleParty> newValues) {
-        contacts = copyCollection(newValues, contacts, ResponsibleParty.class);
+        contacts = writeCollection(newValues, contacts, ResponsibleParty.class);
     }
 }

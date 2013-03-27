@@ -61,7 +61,7 @@ public class DefaultPortrayalCatalogueReference extends ISOMetadata
      * @param portrayalCatalogueCitation The bibliographic reference, or {@code null} if none.
      */
     public DefaultPortrayalCatalogueReference(final Citation portrayalCatalogueCitation) {
-        portrayalCatalogueCitations = singleton(Citation.class, portrayalCatalogueCitation);
+        portrayalCatalogueCitations = singleton(portrayalCatalogueCitation, Citation.class);
     }
 
     /**
@@ -100,6 +100,6 @@ public class DefaultPortrayalCatalogueReference extends ISOMetadata
      * @param newValues The new portrayal catalogue citations.
      */
     public synchronized void setPortrayalCatalogueCitations(Collection<? extends Citation> newValues) {
-        portrayalCatalogueCitations = copyCollection(newValues, portrayalCatalogueCitations, Citation.class);
+        portrayalCatalogueCitations = writeCollection(newValues, portrayalCatalogueCitations, Citation.class);
     }
 }

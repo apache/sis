@@ -120,6 +120,6 @@ public class DefaultGCP extends ISOMetadata implements GCP {
      * @param newValues The new accuracy report values.
      */
     public synchronized void setAccuracyReports(final Collection<? extends Element> newValues) {
-        accuracyReports = copyCollection(newValues, accuracyReports, Element.class);
+        accuracyReports = writeCollection(newValues, accuracyReports, Element.class);
     }
 }

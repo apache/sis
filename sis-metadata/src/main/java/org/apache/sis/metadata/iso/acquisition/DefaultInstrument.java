@@ -114,7 +114,7 @@ public class DefaultInstrument extends ISOMetadata implements Instrument {
      * @param newValues The new citation values.
      */
     public synchronized void setCitations(final Collection<? extends Citation> newValues) {
-        citations = copyCollection(newValues, citations, Citation.class);
+        citations = writeCollection(newValues, citations, Citation.class);
     }
 
     /**

@@ -254,7 +254,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * @param newValues The new credits.
      */
     public synchronized void setCredits(final Collection<? extends String> newValues) {
-        credits = copyCollection(newValues, credits, String.class);
+        credits = writeCollection(newValues, credits, String.class);
     }
 
     /**
@@ -272,7 +272,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * @param newValues The new status.
      */
     public synchronized void setStatus(final Collection<? extends Progress> newValues) {
-        status = copyCollection(newValues, status, Progress.class);
+        status = writeCollection(newValues, status, Progress.class);
     }
 
     /**
@@ -291,7 +291,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * @param newValues The new points of contacts.
      */
     public synchronized void setPointOfContacts(final Collection<? extends ResponsibleParty> newValues) {
-        pointOfContacts = copyCollection(newValues, pointOfContacts, ResponsibleParty.class);
+        pointOfContacts = writeCollection(newValues, pointOfContacts, ResponsibleParty.class);
     }
 
     /**
@@ -309,7 +309,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * @param newValues The new resource maintenance info.
      */
     public synchronized void setResourceMaintenances(final Collection<? extends MaintenanceInformation> newValues) {
-        resourceMaintenances = copyCollection(newValues, resourceMaintenances, MaintenanceInformation.class);
+        resourceMaintenances = writeCollection(newValues, resourceMaintenances, MaintenanceInformation.class);
     }
 
     /**
@@ -327,7 +327,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * @param newValues The new graphics overviews.
      */
     public synchronized void setGraphicOverviews(final Collection<? extends BrowseGraphic> newValues) {
-        graphicOverviews = copyCollection(newValues, graphicOverviews, BrowseGraphic.class);
+        graphicOverviews = writeCollection(newValues, graphicOverviews, BrowseGraphic.class);
     }
 
     /**
@@ -345,7 +345,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * @param newValues The new resource format.
      */
     public synchronized void setResourceFormats(final Collection<? extends Format> newValues) {
-        resourceFormats = copyCollection(newValues, resourceFormats, Format.class);
+        resourceFormats = writeCollection(newValues, resourceFormats, Format.class);
     }
 
     /**
@@ -363,7 +363,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * @param newValues The new descriptive keywords.
      */
     public synchronized void setDescriptiveKeywords(final Collection<? extends Keywords> newValues) {
-        descriptiveKeywords = copyCollection(newValues, descriptiveKeywords, Keywords.class);
+        descriptiveKeywords = writeCollection(newValues, descriptiveKeywords, Keywords.class);
     }
 
     /**
@@ -382,7 +382,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * @param newValues The new resource specific usages.
      */
     public synchronized void setResourceSpecificUsages(final Collection<? extends Usage> newValues) {
-        resourceSpecificUsages = copyCollection(newValues, resourceSpecificUsages, Usage.class);
+        resourceSpecificUsages = writeCollection(newValues, resourceSpecificUsages, Usage.class);
     }
 
     /**
@@ -400,7 +400,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * @param newValues The new resource constraints.
      */
     public synchronized void setResourceConstraints(final Collection<? extends Constraints> newValues) {
-        resourceConstraints = copyCollection(newValues, resourceConstraints, Constraints.class);
+        resourceConstraints = writeCollection(newValues, resourceConstraints, Constraints.class);
     }
 
     /**
@@ -418,6 +418,6 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * @param newValues The new aggregation info.
      */
     public synchronized void setAggregationInfo(final Collection<? extends AggregateInformation> newValues) {
-        aggregationInfo = copyCollection(newValues, aggregationInfo, AggregateInformation.class);
+        aggregationInfo = writeCollection(newValues, aggregationInfo, AggregateInformation.class);
     }
 }

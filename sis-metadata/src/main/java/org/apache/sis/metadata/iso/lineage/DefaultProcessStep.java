@@ -220,7 +220,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      * @param newValues The new processors.
      */
     public synchronized void setProcessors(final Collection<? extends ResponsibleParty> newValues) {
-        processors = copyCollection(newValues, processors, ResponsibleParty.class);
+        processors = writeCollection(newValues, processors, ResponsibleParty.class);
     }
 
     /**
@@ -239,7 +239,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      * @param newValues The new sources.
      */
     public synchronized void setSources(final Collection<? extends Source> newValues) {
-        sources = copyCollection(newValues, sources, Source.class);
+        sources = writeCollection(newValues, sources, Source.class);
     }
 
     /**
@@ -257,7 +257,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      * @param newValues The new output values.
      */
     public synchronized void setOutputs(final Collection<? extends Source> newValues) {
-        outputs = copyCollection(newValues, outputs, Source.class);
+        outputs = writeCollection(newValues, outputs, Source.class);
     }
 
     /**
@@ -298,6 +298,6 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      * @param newValues The new process step report values.
      */
     public synchronized void setReports(final Collection<? extends ProcessStepReport> newValues) {
-        reports = copyCollection(newValues, reports, ProcessStepReport.class);
+        reports = writeCollection(newValues, reports, ProcessStepReport.class);
     }
 }

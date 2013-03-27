@@ -69,7 +69,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      * @param useLimitation The use limitation, or {@code null} if none.
      */
     public DefaultConstraints(final CharSequence useLimitation) {
-        useLimitations = singleton(InternationalString.class, Types.toInternationalString(useLimitation));
+        useLimitations = singleton(Types.toInternationalString(useLimitation), InternationalString.class);
     }
 
     /**
@@ -122,6 +122,6 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      * @param newValues The new use limitations.
      */
     public synchronized void setUseLimitations(final Collection<? extends InternationalString> newValues) {
-        useLimitations = copyCollection(newValues, useLimitations, InternationalString.class);
+        useLimitations = writeCollection(newValues, useLimitations, InternationalString.class);
     }
 }

@@ -178,7 +178,7 @@ public class DefaultPlan extends ISOMetadata implements Plan {
      * @param newValues The new identifications of the activity.
      */
     public synchronized void setOperations(final Collection<? extends Operation> newValues) {
-        operations = copyCollection(newValues, operations, Operation.class);
+        operations = writeCollection(newValues, operations, Operation.class);
     }
 
     /**
@@ -196,6 +196,6 @@ public class DefaultPlan extends ISOMetadata implements Plan {
      * @param newValues The new satisfied requirements.
      */
     public synchronized void setSatisfiedRequirements(final Collection<? extends Requirement> newValues) {
-        satisfiedRequirements = copyCollection(newValues, satisfiedRequirements, Requirement.class);
+        satisfiedRequirements = writeCollection(newValues, satisfiedRequirements, Requirement.class);
     }
 }

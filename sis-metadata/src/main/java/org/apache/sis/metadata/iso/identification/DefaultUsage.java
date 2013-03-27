@@ -93,7 +93,7 @@ public class DefaultUsage extends ISOMetadata implements Usage {
     {
         this(); // Initialize the date field.
         this.specificUsage   = Types.toInternationalString(specificUsage);
-        this.userContactInfo = singleton(ResponsibleParty.class, userContactInfo);
+        this.userContactInfo = singleton(userContactInfo, ResponsibleParty.class);
     }
 
     /**
@@ -194,6 +194,6 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      * @param newValues The new user contact info.
      */
     public synchronized void setUserContactInfo(final Collection<? extends ResponsibleParty> newValues) {
-        userContactInfo = copyCollection(newValues, userContactInfo, ResponsibleParty.class);
+        userContactInfo = writeCollection(newValues, userContactInfo, ResponsibleParty.class);
     }
 }

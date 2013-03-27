@@ -61,12 +61,28 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
      * Constructs an initially empty metadata.
      */
     protected ISOMetadata() {
-        super();
+    }
+
+    /**
+     * Constructs a new metadata initialized with the values from the specified object.
+     * If the given object is an instance of {@link IdentifiedObject}, then this constructor
+     * copies the {@linkplain #identifiers collection of identifiers}.
+     *
+     * @param object The metadata to copy values from, or {@code null} if none.
+     */
+    protected ISOMetadata(final Object object) {
+        if (object instanceof IdentifiedObject) {
+            identifiers = copyCollection(((IdentifiedObject) object).getIdentifiers(), Identifier.class);
+        }
     }
 
     /**
      * Returns the metadata standard implemented by subclasses,
      * which is {@linkplain MetadataStandard#ISO_19115 ISO 19115}.
+     *
+     * {@note Subclasses shall not override this method in a way that depends on the object state,
+     *        since this method may be indirectly invoked by copy constructors (i.e. is may be
+     *        invoked before this metadata object is fully constructed).}
      */
     @Override
     public MetadataStandard getStandard() {

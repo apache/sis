@@ -110,7 +110,7 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
      * @param newValues The new values.
      */
     public synchronized void setValues(final List<Record> newValues) {
-        values = copyList(newValues, values, Record.class);
+        values = writeList(newValues, values, Record.class);
     }
 
     /**

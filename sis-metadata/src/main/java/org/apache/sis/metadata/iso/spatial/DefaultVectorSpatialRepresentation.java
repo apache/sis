@@ -119,6 +119,6 @@ public class DefaultVectorSpatialRepresentation extends AbstractSpatialRepresent
      * @param newValues The new geometric objects.
      */
     public synchronized void setGeometricObjects(final Collection<? extends GeometricObjects> newValues) {
-        geometricObjects = copyCollection(newValues, geometricObjects, GeometricObjects.class);
+        geometricObjects = writeCollection(newValues, geometricObjects, GeometricObjects.class);
     }
 }

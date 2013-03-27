@@ -170,9 +170,9 @@ public class DefaultExtendedElementInformation extends ISOMetadata
         this.definition   = Types.toInternationalString(definition);
         this.condition    = Types.toInternationalString(condition);
         this.dataType     = dataType;
-        this.parentEntity = singleton(String.class, parentEntity);
+        this.parentEntity = singleton(parentEntity, String.class);
         this.rule         = Types.toInternationalString(rule);
-        this.sources      = singleton(ResponsibleParty.class, source);
+        this.sources      = singleton(source, ResponsibleParty.class);
     }
 
     /**
@@ -396,7 +396,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      * @param newValues The new parent entity.
      */
     public synchronized void setParentEntity(final Collection<? extends String> newValues) {
-        parentEntity = copyCollection(newValues, parentEntity, String.class);
+        parentEntity = writeCollection(newValues, parentEntity, String.class);
     }
 
     /**
@@ -433,7 +433,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      * @param newValues The new rationales.
      */
     public synchronized void setRationales(final Collection<? extends InternationalString> newValues) {
-        rationales = copyCollection(newValues, rationales, InternationalString.class);
+        rationales = writeCollection(newValues, rationales, InternationalString.class);
     }
 
     /**
@@ -451,6 +451,6 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      * @param newValues The new sources.
      */
     public synchronized void setSources(final Collection<? extends ResponsibleParty> newValues) {
-        sources = copyCollection(newValues, sources, ResponsibleParty.class);
+        sources = writeCollection(newValues, sources, ResponsibleParty.class);
     }
 }

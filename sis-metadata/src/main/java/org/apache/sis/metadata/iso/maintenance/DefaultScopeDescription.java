@@ -119,7 +119,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * @param newValues The new attributes.
      */
     public synchronized void setAttributes(final Set<? extends AttributeType> newValues) {
-        attributes = copySet(newValues, attributes, AttributeType.class);
+        attributes = writeSet(newValues, attributes, AttributeType.class);
     }
 
     /**
@@ -136,7 +136,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * @param newValues The new features.
      */
     public synchronized void setFeatures(final Set<? extends FeatureType> newValues) {
-        features = copySet(newValues, features, FeatureType.class);
+        features = writeSet(newValues, features, FeatureType.class);
     }
 
     /**
@@ -153,7 +153,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * @param newValues The new feature instances.
      */
     public synchronized void setFeatureInstances(final Set<? extends FeatureType> newValues) {
-        featureInstances = copySet(newValues, featureInstances, FeatureType.class);
+        featureInstances = writeSet(newValues, featureInstances, FeatureType.class);
     }
 
     /**
@@ -170,7 +170,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * @param newValues The new attribute instances.
      */
     public synchronized void setAttributeInstances(final Set<? extends AttributeType> newValues) {
-        attributeInstances = copySet(newValues, attributeInstances, AttributeType.class);
+        attributeInstances = writeSet(newValues, attributeInstances, AttributeType.class);
     }
 
     /**

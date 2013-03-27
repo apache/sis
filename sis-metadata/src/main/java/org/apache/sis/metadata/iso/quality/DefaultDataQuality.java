@@ -141,7 +141,7 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
      * @param newValues The new reports.
      */
     public synchronized void setReports(final Collection<? extends Element> newValues) {
-        reports = copyCollection(newValues, reports, Element.class);
+        reports = writeCollection(newValues, reports, Element.class);
     }
 
     /**

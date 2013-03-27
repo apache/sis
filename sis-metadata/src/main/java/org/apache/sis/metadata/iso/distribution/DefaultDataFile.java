@@ -105,7 +105,7 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
      * @param newValues The new feature type values.
      */
     public synchronized void setFeatureTypes(final Collection<? extends LocalName> newValues) {
-        featureTypes = copyCollection(newValues, featureTypes, LocalName.class);
+        featureTypes = writeCollection(newValues, featureTypes, LocalName.class);
     }
 
     /**

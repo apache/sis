@@ -136,7 +136,7 @@ public class DefaultScope extends ISOMetadata implements Scope {
      * @param newValues The new level description.
      */
     public synchronized void setLevelDescription(final Collection<? extends ScopeDescription> newValues) {
-        levelDescription = copyCollection(newValues, levelDescription, ScopeDescription.class);
+        levelDescription = writeCollection(newValues, levelDescription, ScopeDescription.class);
     }
 
     /**

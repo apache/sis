@@ -79,7 +79,7 @@ public class DefaultKeywords extends ISOMetadata implements Keywords {
      *                the subject, or {@code null} if none.
      */
     public DefaultKeywords(final CharSequence keyword) {
-        keywords = singleton(InternationalString.class, Types.toInternationalString(keyword));
+        keywords = singleton(Types.toInternationalString(keyword), InternationalString.class);
     }
 
     /**
@@ -118,7 +118,7 @@ public class DefaultKeywords extends ISOMetadata implements Keywords {
      * @param newValues The new keywords.
      */
     public synchronized void setKeywords(final Collection<? extends InternationalString> newValues) {
-        keywords = copyCollection(newValues, keywords, InternationalString.class);
+        keywords = writeCollection(newValues, keywords, InternationalString.class);
     }
 
     /**

@@ -168,6 +168,6 @@ public class DefaultGCPCollection extends AbstractGeolocationInformation impleme
      * @param newValues The new ground control points values.
      */
     public synchronized void setGCPs(final Collection<? extends GCP> newValues) {
-        GCPs = copyCollection(newValues, GCPs, GCP.class);
+        GCPs = writeCollection(newValues, GCPs, GCP.class);
     }
 }

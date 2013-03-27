@@ -92,6 +92,9 @@ public abstract class AbstractMetadata implements LenientComparable {
      * Subclasses will typically return a hard-coded constant such as
      * {@link MetadataStandard#ISO_19115}.
      *
+     * {@note Implementation of this method shall not depend on the object state,
+     *        since this method may be indirectly invoked by copy constructors.}
+     *
      * @return The metadata standard implemented.
      */
     public abstract MetadataStandard getStandard();

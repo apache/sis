@@ -184,7 +184,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
     public DefaultCitation(final ResponsibleParty party) {
         this(); // Initialize the date field.
         if (party != null) {
-            citedResponsibleParties = singleton(ResponsibleParty.class, party);
+            citedResponsibleParties = singleton(party, ResponsibleParty.class);
             title = party.getOrganisationName();
             if (title == null) {
                 title = party.getPositionName();
@@ -254,7 +254,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * @param newValues The new alternate titles, or {@code null} if none.
      */
     public synchronized void setAlternateTitles(final Collection<? extends InternationalString> newValues) {
-        alternateTitles = copyCollection(newValues, alternateTitles, InternationalString.class);
+        alternateTitles = writeCollection(newValues, alternateTitles, InternationalString.class);
     }
 
     /**
@@ -272,7 +272,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * @param newValues The new dates, or {@code null} if none.
      */
     public synchronized void setDates(final Collection<? extends CitationDate> newValues) {
-        dates = copyCollection(newValues, dates, CitationDate.class);
+        dates = writeCollection(newValues, dates, CitationDate.class);
     }
 
     /**
@@ -347,7 +347,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      */
     public synchronized void setIdentifiers(final Collection<? extends Identifier> newValues) {
         final Collection<Identifier> oldIds = NonMarshalledAuthority.getIdentifiers(identifiers);
-        identifiers = copyCollection(newValues, identifiers, Identifier.class);
+        identifiers = writeCollection(newValues, identifiers, Identifier.class);
         NonMarshalledAuthority.setIdentifiers(identifiers, oldIds);
     }
 
@@ -368,7 +368,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * @param newValues The new cited responsible parties, or {@code null} if none.
      */
     public synchronized void setCitedResponsibleParties(final Collection<? extends ResponsibleParty> newValues) {
-        citedResponsibleParties = copyCollection(newValues, citedResponsibleParties, ResponsibleParty.class);
+        citedResponsibleParties = writeCollection(newValues, citedResponsibleParties, ResponsibleParty.class);
     }
 
     /**
@@ -386,7 +386,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * @param newValues The new presentation form, or {@code null} if none.
      */
     public synchronized void setPresentationForms(final Collection<? extends PresentationForm> newValues) {
-        presentationForms = copyCollection(newValues, presentationForms, PresentationForm.class);
+        presentationForms = writeCollection(newValues, presentationForms, PresentationForm.class);
     }
 
     /**

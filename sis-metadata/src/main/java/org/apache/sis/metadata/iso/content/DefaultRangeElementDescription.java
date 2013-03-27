@@ -147,6 +147,6 @@ public class DefaultRangeElementDescription extends ISOMetadata implements Range
      * @param newValues The new range element values.
      */
     public synchronized void setRangeElements(final Collection<? extends Record> newValues) {
-        rangeElements = copyCollection(newValues, rangeElements, Record.class);
+        rangeElements = writeCollection(newValues, rangeElements, Record.class);
     }
 }

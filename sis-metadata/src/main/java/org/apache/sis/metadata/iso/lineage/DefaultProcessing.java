@@ -144,7 +144,7 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
      * @param newValues The new software references values.
      */
     public synchronized void setSoftwareReferences(final Collection<? extends Citation> newValues) {
-        softwareReferences = copyCollection(newValues, softwareReferences, Citation.class);
+        softwareReferences = writeCollection(newValues, softwareReferences, Citation.class);
     }
 
     /**
@@ -181,7 +181,7 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
      * @param newValues The new documentations values.
      */
     public synchronized void setDocumentations(final Collection<? extends Citation> newValues) {
-        documentations = copyCollection(newValues, documentations, Citation.class);
+        documentations = writeCollection(newValues, documentations, Citation.class);
     }
 
     /**
@@ -221,6 +221,6 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
      * @param newValues The new algorithms values.
      */
     public synchronized void setAlgorithms(final Collection<? extends Algorithm> newValues) {
-        algorithms = copyCollection(newValues, algorithms, Algorithm.class);
+        algorithms = writeCollection(newValues, algorithms, Algorithm.class);
     }
 }

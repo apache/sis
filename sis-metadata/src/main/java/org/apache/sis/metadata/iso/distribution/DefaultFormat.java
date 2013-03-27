@@ -234,6 +234,6 @@ public class DefaultFormat extends ISOMetadata implements Format {
      * @param newValues The new format distributors.
      */
     public synchronized void setFormatDistributors(final Collection<? extends Distributor> newValues) {
-        formatDistributors = copyCollection(newValues, formatDistributors, Distributor.class);
+        formatDistributors = writeCollection(newValues, formatDistributors, Distributor.class);
     }
 }

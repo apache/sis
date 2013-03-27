@@ -120,8 +120,8 @@ public class DefaultDataIdentification extends AbstractIdentification implements
                                      final TopicCategory topicCategory)
     {
         super(citation, abstracts);
-        languages = singleton(Locale.class, language);
-        topicCategories = singleton(TopicCategory.class, topicCategory);
+        languages = singleton(language, Locale.class);
+        topicCategories = singleton(topicCategory, TopicCategory.class);
     }
 
     /**
@@ -160,7 +160,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
      * @param newValues The new spatial representation types.
      */
     public synchronized void setSpatialRepresentationTypes(final Collection<? extends SpatialRepresentationType> newValues) {
-        spatialRepresentationTypes = copyCollection(newValues, spatialRepresentationTypes, SpatialRepresentationType.class);
+        spatialRepresentationTypes = writeCollection(newValues, spatialRepresentationTypes, SpatialRepresentationType.class);
     }
 
     /**
@@ -180,7 +180,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
      * @param newValues The new spatial resolutions.
      */
     public synchronized void setSpatialResolutions(final Collection<? extends Resolution> newValues) {
-        spatialResolutions = copyCollection(newValues, spatialResolutions, Resolution.class);
+        spatialResolutions = writeCollection(newValues, spatialResolutions, Resolution.class);
     }
 
     /**
@@ -198,7 +198,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
      * @param newValues The new languages.
      */
     public synchronized void setLanguages(final Collection<? extends Locale> newValues)  {
-        languages = copyCollection(newValues, languages, Locale.class);
+        languages = writeCollection(newValues, languages, Locale.class);
     }
 
     /**
@@ -216,7 +216,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
      * @param newValues The new character sets.
      */
     public synchronized void setCharacterSets(final Collection<? extends CharacterSet> newValues) {
-        characterSets = copyCollection(newValues, characterSets, CharacterSet.class);
+        characterSets = writeCollection(newValues, characterSets, CharacterSet.class);
     }
 
     /**
@@ -234,7 +234,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
      * @param newValues The new topic categories.
      */
     public synchronized void setTopicCategories(final Collection<? extends TopicCategory> newValues) {
-        topicCategories = copyCollection(newValues, topicCategories, TopicCategory.class);
+        topicCategories = writeCollection(newValues, topicCategories, TopicCategory.class);
     }
 
     /**
@@ -273,7 +273,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
      * @param newValues The new extents
      */
     public synchronized void setExtents(final Collection<? extends Extent> newValues) {
-        extents = copyCollection(newValues, extents, Extent.class);
+        extents = writeCollection(newValues, extents, Extent.class);
     }
 
     /**

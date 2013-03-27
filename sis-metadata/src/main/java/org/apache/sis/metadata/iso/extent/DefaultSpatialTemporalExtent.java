@@ -92,6 +92,6 @@ public class DefaultSpatialTemporalExtent extends DefaultTemporalExtent implemen
      * @param newValues The new spatial extent.
      */
     public synchronized void setSpatialExtent(final Collection<? extends GeographicExtent> newValues) {
-        spatialExtent = copyCollection(newValues, spatialExtent, GeographicExtent.class);
+        spatialExtent = writeCollection(newValues, spatialExtent, GeographicExtent.class);
     }
 }
