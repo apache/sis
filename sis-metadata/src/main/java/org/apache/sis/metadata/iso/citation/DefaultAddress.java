@@ -179,7 +179,7 @@ public class DefaultAddress extends ISOMetadata implements Address {
      * @param newValues The new delivery points, or {@code null} if none.
      */
     public synchronized void setDeliveryPoints(final Collection<? extends String> newValues) {
-        deliveryPoints = copyCollection(newValues, deliveryPoints, String.class);
+        deliveryPoints = writeCollection(newValues, deliveryPoints, String.class);
     }
 
     /**
@@ -197,7 +197,7 @@ public class DefaultAddress extends ISOMetadata implements Address {
      * @param newValues The new electronic mail addresses, or {@code null} if none.
      */
     public synchronized void setElectronicMailAddresses(final Collection<? extends String> newValues) {
-        electronicMailAddresses = copyCollection(newValues, electronicMailAddresses, String.class);
+        electronicMailAddresses = writeCollection(newValues, electronicMailAddresses, String.class);
     }
 
     /**

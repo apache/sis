@@ -154,7 +154,7 @@ public class DefaultGridSpatialRepresentation extends AbstractSpatialRepresentat
     public synchronized void setAxisDimensionProperties(final List<? extends Dimension> newValues) {
         checkWritePermission();
         axisDimensionProperties = (List<Dimension>)
-                copyCollection(newValues, axisDimensionProperties, Dimension.class);
+                writeCollection(newValues, axisDimensionProperties, Dimension.class);
     }
 
     /**

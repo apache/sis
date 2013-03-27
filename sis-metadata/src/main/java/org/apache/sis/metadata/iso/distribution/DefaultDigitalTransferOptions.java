@@ -158,7 +158,7 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
      * @param newValues The new online sources.
      */
     public synchronized void setOnLines(final Collection<? extends OnlineResource> newValues) {
-        onLines = copyCollection(newValues, onLines, OnlineResource.class);
+        onLines = writeCollection(newValues, onLines, OnlineResource.class);
     }
 
     /**

@@ -885,7 +885,7 @@ final class PropertyAccessor {
                 /*
                  * We now have objects of the appropriate type. If we have a singleton to be added
                  * in an existing collection, add it now. In that case the 'newValue' should refer
-                 * to the 'addTo' collection. We rely on ModifiableMetadata.copyCollection(...)
+                 * to the 'addTo' collection. We rely on the ModifiableMetadata.writeCollection(…)
                  * optimization for detecting that the new collection is the same instance than
                  * the old one so there is nothing to do. We could exit from the method, but let
                  * it continues in case the user override the 'setFoo(...)' method.

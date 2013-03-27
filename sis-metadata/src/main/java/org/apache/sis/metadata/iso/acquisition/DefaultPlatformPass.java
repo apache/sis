@@ -142,6 +142,6 @@ public class DefaultPlatformPass extends ISOMetadata implements PlatformPass {
      * @param newValues The new related events values.
      */
     public synchronized void setRelatedEvents(final Collection<? extends Event> newValues) {
-        relatedEvents = copyCollection(newValues, relatedEvents, Event.class);
+        relatedEvents = writeCollection(newValues, relatedEvents, Event.class);
     }
 }

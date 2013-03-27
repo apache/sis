@@ -149,7 +149,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
      * @param newValues The new densities.
      */
     public synchronized void setDensities(final Collection<? extends Double> newValues) {
-        densities = copyCollection(newValues, densities, Double.class);
+        densities = writeCollection(newValues, densities, Double.class);
     }
 
     /**
@@ -206,7 +206,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
      * @param newValues The new medium formats.
      */
     public synchronized void setMediumFormats(final Collection<? extends MediumFormat> newValues) {
-        mediumFormats = copyCollection(newValues, mediumFormats, MediumFormat.class);
+        mediumFormats = writeCollection(newValues, mediumFormats, MediumFormat.class);
     }
 
     /**

@@ -138,7 +138,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      * @param newValues The new languages.
      */
     public synchronized void setLanguages(final Collection<? extends Locale> newValues) {
-        languages = copyCollection(newValues, languages, Locale.class);
+        languages = writeCollection(newValues, languages, Locale.class);
     }
 
     /**
@@ -175,7 +175,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      * @param newValues The new feature types.
      */
     public synchronized void setFeatureTypes(final Collection<? extends GenericName> newValues) {
-        featureTypes = copyCollection(newValues, featureTypes, GenericName.class);
+        featureTypes = writeCollection(newValues, featureTypes, GenericName.class);
     }
 
     /**
@@ -193,6 +193,6 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      * @param newValues The feature catalogue citations.
      */
     public synchronized void setFeatureCatalogueCitations(final Collection<? extends Citation> newValues) {
-        featureCatalogueCitations = copyCollection(newValues, featureCatalogueCitations, Citation.class);
+        featureCatalogueCitations = writeCollection(newValues, featureCatalogueCitations, Citation.class);
     }
 }

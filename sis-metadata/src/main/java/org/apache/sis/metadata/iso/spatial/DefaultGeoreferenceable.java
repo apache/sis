@@ -204,7 +204,7 @@ public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation im
      * @param newValues The new parameter citations.
      */
     public synchronized void setParameterCitations(final Collection<? extends Citation> newValues) {
-        parameterCitations = copyCollection(newValues, parameterCitations, Citation.class);
+        parameterCitations = writeCollection(newValues, parameterCitations, Citation.class);
     }
 
     /**
@@ -226,6 +226,6 @@ public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation im
      * @param newValues The new geolocation information values.
      */
     public synchronized void setGeolocationInformation(final Collection<? extends GeolocationInformation> newValues) {
-        geolocationInformation = copyCollection(newValues, geolocationInformation, GeolocationInformation.class);
+        geolocationInformation = writeCollection(newValues, geolocationInformation, GeolocationInformation.class);
     }
 }

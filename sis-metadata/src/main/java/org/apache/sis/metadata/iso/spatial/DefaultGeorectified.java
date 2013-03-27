@@ -195,7 +195,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      * @param newValues The new corner points.
      */
     public synchronized void setCornerPoints(final List<? extends Point> newValues) {
-        cornerPoints = copyList(newValues, cornerPoints, Point.class);
+        cornerPoints = writeList(newValues, cornerPoints, Point.class);
     }
 
     /**
@@ -274,7 +274,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      * @param newValues The new transformation mapping.
      */
     public synchronized void setTransformationDimensionMapping(final Collection<? extends InternationalString> newValues) {
-        transformationDimensionMapping = copyCollection(newValues, transformationDimensionMapping, InternationalString.class);
+        transformationDimensionMapping = writeCollection(newValues, transformationDimensionMapping, InternationalString.class);
     }
 
     /**
@@ -292,6 +292,6 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      * @param newValues The new check points values.
      */
     public synchronized void setCheckPoints(final Collection<? extends GCP> newValues) {
-        checkPoints = copyCollection(newValues, checkPoints, GCP.class);
+        checkPoints = writeCollection(newValues, checkPoints, GCP.class);
     }
 }

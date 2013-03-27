@@ -107,7 +107,7 @@ public class DefaultDistribution extends ISOMetadata implements Distribution {
      * @param newValues The new distribution formats.
      */
     public synchronized void setDistributionFormats(final Collection<? extends Format> newValues) {
-        distributionFormats = copyCollection(newValues, distributionFormats, Format.class);
+        distributionFormats = writeCollection(newValues, distributionFormats, Format.class);
     }
 
     /**
@@ -125,7 +125,7 @@ public class DefaultDistribution extends ISOMetadata implements Distribution {
      * @param newValues The new distributors.
      */
     public synchronized void setDistributors(final Collection<? extends Distributor> newValues) {
-        distributors = copyCollection(newValues, distributors, Distributor.class);
+        distributors = writeCollection(newValues, distributors, Distributor.class);
     }
 
     /**
@@ -145,6 +145,6 @@ public class DefaultDistribution extends ISOMetadata implements Distribution {
      * @param newValues The new transfer options.
      */
     public synchronized void setTransferOptions(final Collection<? extends DigitalTransferOptions> newValues) {
-        transferOptions = copyCollection(newValues, transferOptions, DigitalTransferOptions.class);
+        transferOptions = writeCollection(newValues, transferOptions, DigitalTransferOptions.class);
     }
 }

@@ -99,6 +99,6 @@ public class AbstractGeolocationInformation extends ISOMetadata implements Geolo
      * @param newValues The new quality information values.
      */
     public synchronized void setQualityInfo(Collection<? extends DataQuality> newValues) {
-        qualityInfo = copyCollection(newValues, qualityInfo, DataQuality.class);
+        qualityInfo = writeCollection(newValues, qualityInfo, DataQuality.class);
     }
 }

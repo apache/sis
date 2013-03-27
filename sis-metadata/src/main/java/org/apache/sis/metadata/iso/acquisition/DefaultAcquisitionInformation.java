@@ -134,7 +134,7 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
      * @param newValues The new plan values.
      */
     public synchronized void setAcquisitionPlans(final Collection<? extends Plan> newValues) {
-        acquisitionPlans = copyCollection(newValues, acquisitionPlans, Plan.class);
+        acquisitionPlans = writeCollection(newValues, acquisitionPlans, Plan.class);
     }
 
     /**
@@ -152,7 +152,7 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
      * @param newValues The new acquisition requirements values.
      */
     public synchronized void setAcquisitionRequirements(final Collection<? extends Requirement> newValues) {
-        acquisitionRequirements = copyCollection(newValues, acquisitionRequirements, Requirement.class);
+        acquisitionRequirements = writeCollection(newValues, acquisitionRequirements, Requirement.class);
     }
 
     /**
@@ -190,7 +190,7 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
      * @param newValues The new instruments values.
      */
     public synchronized void setInstruments(final Collection<? extends Instrument> newValues) {
-        instruments = copyCollection(newValues, instruments, Instrument.class);
+        instruments = writeCollection(newValues, instruments, Instrument.class);
     }
 
     /**
@@ -208,7 +208,7 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
      * @param newValues The new objectives values.
      */
     public synchronized void setObjectives(final Collection<? extends Objective> newValues) {
-        objectives = copyCollection(newValues, objectives, Objective.class);
+        objectives = writeCollection(newValues, objectives, Objective.class);
     }
 
     /**
@@ -226,7 +226,7 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
      * @param newValues The new operations values.
      */
     public synchronized void setOperations(final Collection<? extends Operation> newValues) {
-        operations = copyCollection(newValues, operations, Operation.class);
+        operations = writeCollection(newValues, operations, Operation.class);
     }
 
     /**
@@ -244,6 +244,6 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
      * @param newValues The new platforms values.
      */
     public synchronized void setPlatforms(final Collection<? extends Platform> newValues) {
-        platforms = copyCollection(newValues, platforms, Platform.class);
+        platforms = writeCollection(newValues, platforms, Platform.class);
     }
 }

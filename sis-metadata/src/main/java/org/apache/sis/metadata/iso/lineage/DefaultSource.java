@@ -232,7 +232,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      * @param newValues The new source extents.
      */
     public synchronized void setSourceExtents(final Collection<? extends Extent> newValues) {
-        sourceExtents = copyCollection(newValues, sourceExtents, Extent.class);
+        sourceExtents = writeCollection(newValues, sourceExtents, Extent.class);
     }
 
     /**
@@ -250,7 +250,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      * @param newValues The new source steps.
      */
     public synchronized void setSourceSteps(final Collection<? extends ProcessStep> newValues) {
-        sourceSteps = copyCollection(newValues, sourceSteps, ProcessStep.class);
+        sourceSteps = writeCollection(newValues, sourceSteps, ProcessStep.class);
     }
 
     /**

@@ -177,7 +177,7 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
      * @param newValues The new requestors values.
      */
     public synchronized void setRequestors(final Collection<? extends ResponsibleParty> newValues) {
-        requestors = copyCollection(newValues, requestors, ResponsibleParty.class);
+        requestors = writeCollection(newValues, requestors, ResponsibleParty.class);
     }
 
     /**
@@ -195,7 +195,7 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
      * @param newValues The new recipients values.
      */
     public synchronized void setRecipients(final Collection<? extends ResponsibleParty> newValues) {
-        recipients = copyCollection(newValues, recipients, ResponsibleParty.class);
+        recipients = writeCollection(newValues, recipients, ResponsibleParty.class);
     }
 
     /**
@@ -269,6 +269,6 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
      * @param newValues The new satisfied plans values.
      */
     public synchronized void setSatisfiedPlans(final Collection<? extends Plan> newValues) {
-        satisfiedPlans = copyCollection(newValues, satisfiedPlans, Plan.class);
+        satisfiedPlans = writeCollection(newValues, satisfiedPlans, Plan.class);
     }
 }

@@ -163,7 +163,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
      * @param newValues The new dimensions.
      */
     public synchronized void setDimensions(final Collection<? extends RangeDimension> newValues) {
-        dimensions = copyCollection(newValues, dimensions, RangeDimension.class);
+        dimensions = writeCollection(newValues, dimensions, RangeDimension.class);
     }
 
     /**
@@ -183,6 +183,6 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
      * @param newValues The new range element description.
      */
     public synchronized void setRangeElementDescriptions(final Collection<? extends RangeElementDescription> newValues) {
-        rangeElementDescriptions = copyCollection(newValues, rangeElementDescriptions, RangeElementDescription.class);
+        rangeElementDescriptions = writeCollection(newValues, rangeElementDescriptions, RangeElementDescription.class);
     }
 }

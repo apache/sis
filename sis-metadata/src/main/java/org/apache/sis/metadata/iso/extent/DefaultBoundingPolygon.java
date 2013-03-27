@@ -62,7 +62,7 @@ public class DefaultBoundingPolygon extends AbstractGeographicExtent implements 
      * @param polygon The sets of points defining the bounding polygon.
      */
     public DefaultBoundingPolygon(final Geometry polygon) {
-        polygons = singleton(Geometry.class, polygon);
+        polygons = singleton(polygon, Geometry.class);
     }
 
     /**
@@ -101,6 +101,6 @@ public class DefaultBoundingPolygon extends AbstractGeographicExtent implements 
      * @param newValues The new polygons.
      */
     public synchronized void setPolygons(final Collection<? extends Geometry> newValues) {
-        polygons = copyCollection(newValues, polygons, Geometry.class);
+        polygons = writeCollection(newValues, polygons, Geometry.class);
     }
 }

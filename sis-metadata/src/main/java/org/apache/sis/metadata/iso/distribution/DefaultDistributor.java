@@ -144,7 +144,7 @@ public class DefaultDistributor extends ISOMetadata implements Distributor {
      * @param newValues The new distribution order processes.
      */
     public synchronized void setDistributionOrderProcesses(final Collection<? extends StandardOrderProcess> newValues) {
-        distributionOrderProcesses = copyCollection(newValues, distributionOrderProcesses, StandardOrderProcess.class);
+        distributionOrderProcesses = writeCollection(newValues, distributionOrderProcesses, StandardOrderProcess.class);
     }
 
     /**
@@ -162,7 +162,7 @@ public class DefaultDistributor extends ISOMetadata implements Distributor {
      * @param newValues The new distributor formats.
      */
     public synchronized void setDistributorFormats(final Collection<? extends Format> newValues) {
-        distributorFormats = copyCollection(newValues, distributorFormats, Format.class);
+        distributorFormats = writeCollection(newValues, distributorFormats, Format.class);
     }
 
     /**
@@ -180,6 +180,6 @@ public class DefaultDistributor extends ISOMetadata implements Distributor {
      * @param newValues The new distributor transfer options.
      */
     public synchronized void setDistributorTransferOptions(final Collection<? extends DigitalTransferOptions> newValues) {
-        distributorTransferOptions = copyCollection(newValues, distributorTransferOptions, DigitalTransferOptions.class);
+        distributorTransferOptions = writeCollection(newValues, distributorTransferOptions, DigitalTransferOptions.class);
     }
 }

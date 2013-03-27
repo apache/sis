@@ -135,7 +135,7 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
      * @param newValues The new process steps.
      */
     public synchronized void setProcessSteps(final Collection<? extends ProcessStep> newValues)  {
-        processSteps = copyCollection(newValues, processSteps, ProcessStep.class);
+        processSteps = writeCollection(newValues, processSteps, ProcessStep.class);
     }
 
     /**
@@ -153,6 +153,6 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
      * @param newValues The new sources.
      */
     public synchronized void setSources(final Collection<? extends Source> newValues) {
-        sources = copyCollection(newValues, sources, Source.class);
+        sources = writeCollection(newValues, sources, Source.class);
     }
 }

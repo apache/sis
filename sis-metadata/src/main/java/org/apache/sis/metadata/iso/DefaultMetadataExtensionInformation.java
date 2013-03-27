@@ -123,6 +123,6 @@ public class DefaultMetadataExtensionInformation extends ISOMetadata
      * @param newValues The new extended element information.
      */
     public synchronized void setExtendedElementInformation(final Collection<? extends ExtendedElementInformation> newValues) {
-        extendedElementInformation = copyCollection(newValues, extendedElementInformation, ExtendedElementInformation.class);
+        extendedElementInformation = writeCollection(newValues, extendedElementInformation, ExtendedElementInformation.class);
     }
 }

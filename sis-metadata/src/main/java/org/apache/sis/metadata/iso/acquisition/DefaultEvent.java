@@ -234,7 +234,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
      * @param newValues The new expected objectives values.
      */
     public synchronized void setExpectedObjectives(final Collection<? extends Objective> newValues) {
-        expectedObjectives = copyCollection(newValues, expectedObjectives, Objective.class);
+        expectedObjectives = writeCollection(newValues, expectedObjectives, Objective.class);
     }
 
     /**
@@ -270,6 +270,6 @@ public class DefaultEvent extends ISOMetadata implements Event {
      * @param newValues The new instrument values.
      */
     public synchronized void setRelatedSensors(final Collection<? extends Instrument> newValues) {
-        relatedSensors = copyCollection(newValues, relatedSensors, Instrument.class);
+        relatedSensors = writeCollection(newValues, relatedSensors, Instrument.class);
     }
 }

@@ -174,7 +174,7 @@ public class DefaultPlatform extends ISOMetadata implements Platform {
      * @param newValues The new sponsors values;
      */
     public synchronized void setSponsors(final Collection<? extends ResponsibleParty> newValues) {
-        sponsors = copyCollection(newValues, sponsors, ResponsibleParty.class);
+        sponsors = writeCollection(newValues, sponsors, ResponsibleParty.class);
     }
 
     /**
@@ -192,6 +192,6 @@ public class DefaultPlatform extends ISOMetadata implements Platform {
      * @param newValues The new instruments values.
      */
     public synchronized void setInstruments(final Collection<? extends Instrument> newValues) {
-        instruments = copyCollection(newValues, instruments, Instrument.class);
+        instruments = writeCollection(newValues, instruments, Instrument.class);
     }
 }

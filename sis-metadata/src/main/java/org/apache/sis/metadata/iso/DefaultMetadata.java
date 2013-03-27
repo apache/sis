@@ -240,9 +240,9 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
                            final Date             dateStamp,
                            final Identification   identificationInfo)
     {
-        this.contacts  = singleton(ResponsibleParty.class, contact);
+        this.contacts  = singleton(contact, ResponsibleParty.class);
         this.dateStamp = (dateStamp != null) ? dateStamp.getTime() : Long.MIN_VALUE;
-        this.identificationInfo = singleton(Identification.class, identificationInfo);
+        this.identificationInfo = singleton(identificationInfo, Identification.class);
     }
 
     /**
@@ -330,7 +330,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @param newValues The new locales.
      */
     public synchronized void setLocales(final Collection<? extends Locale> newValues) {
-        locales = copyCollection(newValues, locales, Locale.class);
+        locales = writeCollection(newValues, locales, Locale.class);
     }
 
     /**
@@ -386,7 +386,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @param newValues The new hierarchy levels.
      */
     public synchronized void setHierarchyLevels(final Collection<? extends ScopeCode> newValues) {
-        hierarchyLevels = copyCollection(newValues, hierarchyLevels, ScopeCode.class);
+        hierarchyLevels = writeCollection(newValues, hierarchyLevels, ScopeCode.class);
     }
 
     /**
@@ -404,7 +404,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @param newValues The new hierarchy level names.
      */
     public synchronized void setHierarchyLevelNames(final Collection<? extends String> newValues) {
-        hierarchyLevelNames = copyCollection(newValues, hierarchyLevelNames, String.class);
+        hierarchyLevelNames = writeCollection(newValues, hierarchyLevelNames, String.class);
     }
 
     /**
@@ -423,7 +423,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     public synchronized void setContacts(final Collection<? extends ResponsibleParty> newValues) {
         checkWritePermission();
-        contacts = copyCollection(newValues, contacts, ResponsibleParty.class);
+        contacts = writeCollection(newValues, contacts, ResponsibleParty.class);
     }
 
     /**
@@ -517,7 +517,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @param newValues The new spatial representation info.
      */
     public synchronized void setSpatialRepresentationInfo(final Collection<? extends SpatialRepresentation> newValues) {
-        spatialRepresentationInfo = copyCollection(newValues, spatialRepresentationInfo, SpatialRepresentation.class);
+        spatialRepresentationInfo = writeCollection(newValues, spatialRepresentationInfo, SpatialRepresentation.class);
     }
 
     /**
@@ -535,7 +535,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @param newValues The new reference system info.
      */
     public synchronized void setReferenceSystemInfo(final Collection<? extends ReferenceSystem> newValues) {
-        referenceSystemInfo = copyCollection(newValues, referenceSystemInfo, ReferenceSystem.class);
+        referenceSystemInfo = writeCollection(newValues, referenceSystemInfo, ReferenceSystem.class);
     }
 
     /**
@@ -553,7 +553,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @param newValues The new metadata extension info.
      */
     public synchronized void setMetadataExtensionInfo(final Collection<? extends MetadataExtensionInformation> newValues) {
-        metadataExtensionInfo = copyCollection(newValues, metadataExtensionInfo, MetadataExtensionInformation.class);
+        metadataExtensionInfo = writeCollection(newValues, metadataExtensionInfo, MetadataExtensionInformation.class);
     }
 
     /**
@@ -571,7 +571,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @param newValues The new identification info.
      */
     public synchronized void setIdentificationInfo(final Collection<? extends Identification> newValues) {
-        identificationInfo = copyCollection(newValues, identificationInfo, Identification.class);
+        identificationInfo = writeCollection(newValues, identificationInfo, Identification.class);
     }
 
     /**
@@ -591,7 +591,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @param newValues The new content info.
      */
     public synchronized void setContentInfo(final Collection<? extends ContentInformation> newValues) {
-        contentInfo = copyCollection(newValues, contentInfo, ContentInformation.class);
+        contentInfo = writeCollection(newValues, contentInfo, ContentInformation.class);
     }
 
     /**
@@ -628,7 +628,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @param newValues The new data quality info.
      */
     public synchronized void setDataQualityInfo(final Collection<? extends DataQuality> newValues) {
-        dataQualityInfo = copyCollection(newValues, dataQualityInfo, DataQuality.class);
+        dataQualityInfo = writeCollection(newValues, dataQualityInfo, DataQuality.class);
     }
 
     /**
@@ -649,7 +649,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     public synchronized void setPortrayalCatalogueInfo(
             final Collection<? extends PortrayalCatalogueReference> newValues)
     {
-        portrayalCatalogueInfo = copyCollection(newValues, portrayalCatalogueInfo, PortrayalCatalogueReference.class);
+        portrayalCatalogueInfo = writeCollection(newValues, portrayalCatalogueInfo, PortrayalCatalogueReference.class);
     }
 
     /**
@@ -667,7 +667,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @param newValues The new metadata constraints.
      */
     public synchronized void setMetadataConstraints(final Collection<? extends Constraints> newValues) {
-        metadataConstraints = copyCollection(newValues, metadataConstraints, Constraints.class);
+        metadataConstraints = writeCollection(newValues, metadataConstraints, Constraints.class);
     }
 
     /**
@@ -685,7 +685,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @param newValues The new application schema info.
      */
     public synchronized void setApplicationSchemaInfo(final Collection<? extends ApplicationSchemaInformation> newValues) {
-        applicationSchemaInfo = copyCollection(newValues, applicationSchemaInfo, ApplicationSchemaInformation.class);
+        applicationSchemaInfo = writeCollection(newValues, applicationSchemaInfo, ApplicationSchemaInformation.class);
     }
 
     /**
@@ -722,7 +722,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @param newValues The new acquisition information.
      */
     public synchronized void setAcquisitionInformation(final Collection<? extends AcquisitionInformation> newValues) {
-        acquisitionInformation = copyCollection(newValues, acquisitionInformation, AcquisitionInformation.class);
+        acquisitionInformation = writeCollection(newValues, acquisitionInformation, AcquisitionInformation.class);
     }
 
     /**

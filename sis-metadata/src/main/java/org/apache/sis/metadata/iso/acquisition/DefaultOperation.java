@@ -254,7 +254,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
      * @param newValues The new child operations values.
      */
     public synchronized void setChildOperations(final Collection<? extends Operation> newValues) {
-        childOperations = copyCollection(newValues, childOperations, Operation.class);
+        childOperations = writeCollection(newValues, childOperations, Operation.class);
     }
 
     /**
@@ -272,7 +272,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
      * @param newValues The new objectives values.
      */
     public synchronized void setObjectives(final Collection<? extends Objective> newValues) {
-        objectives = copyCollection(newValues, objectives, Objective.class);
+        objectives = writeCollection(newValues, objectives, Objective.class);
     }
 
     /**
@@ -328,7 +328,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
      * @param newValues The new platforms values.
      */
     public synchronized void setPlatforms(final Collection<? extends Platform> newValues) {
-        platforms = copyCollection(newValues, platforms, Platform.class);
+        platforms = writeCollection(newValues, platforms, Platform.class);
     }
 
     /**
@@ -346,6 +346,6 @@ public class DefaultOperation extends ISOMetadata implements Operation {
      * @param newValues The new significant events value.
      */
     public synchronized void setSignificantEvents(final Collection<? extends Event> newValues) {
-        significantEvents = copyCollection(newValues, significantEvents, Event.class);
+        significantEvents = writeCollection(newValues, significantEvents, Event.class);
     }
 }

@@ -135,7 +135,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      */
     public AbstractElement(final Result result) {
         this(); // Initialize date fields.
-        results = singleton(Result.class, result);
+        results = singleton(result, Result.class);
     }
 
     /**
@@ -199,7 +199,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      * @param newValues The new name of measures.
      */
     public synchronized void setNamesOfMeasure(final Collection<? extends InternationalString> newValues) {
-        namesOfMeasure = copyCollection(newValues, namesOfMeasure, InternationalString.class);
+        namesOfMeasure = writeCollection(newValues, namesOfMeasure, InternationalString.class);
     }
 
     /**
@@ -360,6 +360,6 @@ public class AbstractElement extends ISOMetadata implements Element {
      * @param newValues The new results.
      */
     public synchronized void setResults(final Collection<? extends Result> newValues) {
-        results = copyCollection(newValues, results, Result.class);
+        results = writeCollection(newValues, results, Result.class);
     }
 }
