@@ -53,7 +53,7 @@ public class LE_Source extends DefaultSource {
      * @param original The original metadata to copy.
      */
     public LE_Source(final Source original) {
-        shallowCopy(original);
+        super(original);
     }
 
     /**

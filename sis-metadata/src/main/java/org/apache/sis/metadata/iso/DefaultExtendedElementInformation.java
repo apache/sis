@@ -176,12 +176,44 @@ public class DefaultExtendedElementInformation extends ISOMetadata
     }
 
     /**
-     * Returns a SIS metadata implementation with the same values than the given arbitrary
-     * implementation. If the given object is {@code null}, then this method returns {@code null}.
-     * Otherwise if the given object is already a SIS implementation, then the given object is
-     * returned unchanged. Otherwise a new SIS implementation is created and initialized to the
-     * property values of the given object, using a <cite>shallow</cite> copy operation
-     * (i.e. properties are not cloned).
+     * Constructs a new instance initialized with the values from the specified metadata object.
+     * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
+     * given object are not recursively copied.
+     *
+     * @param object The metadata to copy values from.
+     *
+     * @see #castOrCopy(ExtendedElementInformation)
+     */
+    public DefaultExtendedElementInformation(final ExtendedElementInformation object) {
+        super(object);
+        name              = object.getName();
+        shortName         = object.getShortName();
+        domainCode        = object.getDomainCode();
+        definition        = object.getDefinition();
+        obligation        = object.getObligation();
+        condition         = object.getCondition();
+        dataType          = object.getDataType();
+        maximumOccurrence = object.getMaximumOccurrence();
+        domainValue       = object.getDomainValue();
+        parentEntity      = copyCollection(object.getParentEntity(), String.class);
+        rule              = object.getRule();
+        rationales        = copyCollection(object.getRationales(), InternationalString.class);
+        sources           = copyCollection(object.getSources(), ResponsibleParty.class);
+    }
+
+    /**
+     * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
+     * This method performs the first applicable actions in the following choices:
+     *
+     * <ul>
+     *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
+     *   <li>Otherwise if the given object is already an instance of
+     *       {@code DefaultExtendedElementInformation}, then it is returned unchanged.</li>
+     *   <li>Otherwise a new {@code DefaultExtendedElementInformation} instance is created using the
+     *       {@linkplain #DefaultExtendedElementInformation(ExtendedElementInformation) copy constructor}
+     *       and returned. Note that this is a <cite>shallow</cite> copy operation, since the other
+     *       metadata contained in the given object are not recursively copied.</li>
+     * </ul>
      *
      * @param  object The object to get as a SIS implementation, or {@code null} if none.
      * @return A SIS implementation containing the values of the given object (may be the
@@ -191,9 +223,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata
         if (object == null || object instanceof DefaultExtendedElementInformation) {
             return (DefaultExtendedElementInformation) object;
         }
-        final DefaultExtendedElementInformation copy = new DefaultExtendedElementInformation();
-        copy.shallowCopy(object);
-        return copy;
+        return new DefaultExtendedElementInformation(object);
     }
 
     /**

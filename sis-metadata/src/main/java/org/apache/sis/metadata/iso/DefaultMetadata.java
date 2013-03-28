@@ -246,12 +246,55 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     }
 
     /**
-     * Returns a SIS metadata implementation with the same values than the given arbitrary
-     * implementation. If the given object is {@code null}, then this method returns {@code null}.
-     * Otherwise if the given object is already a SIS implementation, then the given object is
-     * returned unchanged. Otherwise a new SIS implementation is created and initialized to the
-     * property values of the given object, using a <cite>shallow</cite> copy operation
-     * (i.e. properties are not cloned).
+     * Constructs a new instance initialized with the values from the specified metadata object.
+     * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
+     * given object are not recursively copied.
+     *
+     * @param object The metadata to copy values from.
+     *
+     * @see #castOrCopy(Metadata)
+     */
+    public DefaultMetadata(final Metadata object) {
+        super(object);
+        fileIdentifier            = object.getFileIdentifier();
+        language                  = object.getLanguage();
+        characterSet              = object.getCharacterSet();
+        parentIdentifier          = object.getParentIdentifier();
+        hierarchyLevels           = copyCollection(object.getHierarchyLevels(), ScopeCode.class);
+        hierarchyLevelNames       = copyCollection(object.getHierarchyLevelNames(), String.class);
+        contacts                  = copyCollection(object.getContacts(), ResponsibleParty.class);
+// TODO dateStamp                 = object.getDateStamp();
+        metadataStandardName      = object.getMetadataStandardName();
+        metadataStandardVersion   = object.getMetadataStandardVersion();
+        dataSetUri                = object.getDataSetUri();
+        locales                   = copyCollection(object.getLocales(), Locale.class);
+        spatialRepresentationInfo = copyCollection(object.getSpatialRepresentationInfo(), SpatialRepresentation.class);
+        referenceSystemInfo       = copyCollection(object.getReferenceSystemInfo(), ReferenceSystem.class);
+        metadataExtensionInfo     = copyCollection(object.getMetadataExtensionInfo(), MetadataExtensionInformation.class);
+        identificationInfo        = copyCollection(object.getIdentificationInfo(), Identification.class);
+        contentInfo               = copyCollection(object.getContentInfo(), ContentInformation.class);
+        distributionInfo          = object.getDistributionInfo();
+        dataQualityInfo           = copyCollection(object.getDataQualityInfo(), DataQuality.class);
+        portrayalCatalogueInfo    = copyCollection(object.getPortrayalCatalogueInfo(), PortrayalCatalogueReference.class);
+        metadataConstraints       = copyCollection(object.getMetadataConstraints(), Constraints.class);
+        applicationSchemaInfo     = copyCollection(object.getApplicationSchemaInfo(), ApplicationSchemaInformation.class);
+        metadataMaintenance       = object.getMetadataMaintenance();
+        acquisitionInformation    = copyCollection(object.getAcquisitionInformation(), AcquisitionInformation.class);
+    }
+
+    /**
+     * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
+     * This method performs the first applicable actions in the following choices:
+     *
+     * <ul>
+     *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
+     *   <li>Otherwise if the given object is already an instance of
+     *       {@code DefaultMetadata}, then it is returned unchanged.</li>
+     *   <li>Otherwise a new {@code DefaultMetadata} instance is created using the
+     *       {@linkplain #DefaultMetadata(Metadata) copy constructor}
+     *       and returned. Note that this is a <cite>shallow</cite> copy operation, since the other
+     *       metadata contained in the given object are not recursively copied.</li>
+     * </ul>
      *
      * @param  object The object to get as a SIS implementation, or {@code null} if none.
      * @return A SIS implementation containing the values of the given object (may be the
@@ -261,9 +304,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
         if (object == null || object instanceof DefaultMetadata) {
             return (DefaultMetadata) object;
         }
-        final DefaultMetadata copy = new DefaultMetadata();
-        copy.shallowCopy(object);
-        return copy;
+        return new DefaultMetadata(object);
     }
 
     /**

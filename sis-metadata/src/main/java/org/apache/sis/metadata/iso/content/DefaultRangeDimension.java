@@ -66,15 +66,35 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
     }
 
     /**
-     * Returns a SIS metadata implementation with the same values than the given arbitrary
-     * implementation. If the given object is {@code null}, then this method returns {@code null}.
-     * Otherwise if the given object is already a SIS implementation, then the given object is
-     * returned unchanged. Otherwise a new SIS implementation is created and initialized to the
-     * property values of the given object, using a <cite>shallow</cite> copy operation
-     * (i.e. properties are not cloned).
+     * Constructs a new instance initialized with the values from the specified metadata object.
+     * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
+     * given object are not recursively copied.
      *
-     * <p>This method checks for the {@link Band} sub-interface. If that interface is found,
-     * then this method delegates to the corresponding {@code castOrCopy} static method.</p>
+     * @param object The metadata to copy values from.
+     *
+     * @see #castOrCopy(RangeDimension)
+     */
+    public DefaultRangeDimension(final RangeDimension object) {
+        super(object);
+        sequenceIdentifier = object.getSequenceIdentifier();
+        descriptor         = object.getDescriptor();
+    }
+
+    /**
+     * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
+     * This method performs the first applicable actions in the following choices:
+     *
+     * <ul>
+     *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
+     *   <li>Otherwise if the given object is is an instance of {@link Band}, then this method
+     *       delegates to the {@code castOrCopy(…)} method of the corresponding SIS subclass.</li>
+     *   <li>Otherwise if the given object is already an instance of
+     *       {@code DefaultRangeDimension}, then it is returned unchanged.</li>
+     *   <li>Otherwise a new {@code DefaultRangeDimension} instance is created using the
+     *       {@linkplain #DefaultRangeDimension(RangeDimension) copy constructor}
+     *       and returned. Note that this is a <cite>shallow</cite> copy operation, since the other
+     *       metadata contained in the given object are not recursively copied.</li>
+     * </ul>
      *
      * @param  object The object to get as a SIS implementation, or {@code null} if none.
      * @return A SIS implementation containing the values of the given object (may be the
@@ -84,12 +104,11 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
         if (object instanceof Band) {
             return DefaultBand.castOrCopy((Band) object);
         }
+        // Intentionally tested after the sub-interfaces.
         if (object == null || object instanceof DefaultRangeDimension) {
             return (DefaultRangeDimension) object;
         }
-        final DefaultRangeDimension copy = new DefaultRangeDimension();
-        copy.shallowCopy(object);
-        return copy;
+        return new DefaultRangeDimension(object);
     }
 
     /**

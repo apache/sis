@@ -109,12 +109,35 @@ public class DefaultExtent extends ISOMetadata implements Extent {
     }
 
     /**
-     * Returns a SIS metadata implementation with the same values than the given arbitrary
-     * implementation. If the given object is {@code null}, then this method returns {@code null}.
-     * Otherwise if the given object is already a SIS implementation, then the given object is
-     * returned unchanged. Otherwise a new SIS implementation is created and initialized to the
-     * property values of the given object, using a <cite>shallow</cite> copy operation
-     * (i.e. properties are not cloned).
+     * Constructs a new instance initialized with the values from the specified metadata object.
+     * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
+     * given object are not recursively copied.
+     *
+     * @param object The metadata to copy values from.
+     *
+     * @see #castOrCopy(Extent)
+     */
+    public DefaultExtent(final Extent object) {
+        super(object);
+        description        = object.getDescription();
+        geographicElements = copyCollection(object.getGeographicElements(), GeographicExtent.class);
+        temporalElements   = copyCollection(object.getTemporalElements(), TemporalExtent.class);
+        verticalElements   = copyCollection(object.getVerticalElements(), VerticalExtent.class);
+    }
+
+    /**
+     * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
+     * This method performs the first applicable actions in the following choices:
+     *
+     * <ul>
+     *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
+     *   <li>Otherwise if the given object is already an instance of
+     *       {@code DefaultExtent}, then it is returned unchanged.</li>
+     *   <li>Otherwise a new {@code DefaultExtent} instance is created using the
+     *       {@linkplain #DefaultExtent(Extent) copy constructor}
+     *       and returned. Note that this is a <cite>shallow</cite> copy operation, since the other
+     *       metadata contained in the given object are not recursively copied.</li>
+     * </ul>
      *
      * @param  object The object to get as a SIS implementation, or {@code null} if none.
      * @return A SIS implementation containing the values of the given object (may be the
@@ -124,9 +147,7 @@ public class DefaultExtent extends ISOMetadata implements Extent {
         if (object == null || object instanceof DefaultExtent) {
             return (DefaultExtent) object;
         }
-        final DefaultExtent copy = new DefaultExtent();
-        copy.shallowCopy(object);
-        return copy;
+        return new DefaultExtent(object);
     }
 
     /**

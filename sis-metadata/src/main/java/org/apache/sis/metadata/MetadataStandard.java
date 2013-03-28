@@ -269,7 +269,7 @@ public class MetadataStandard {
                 type = findInterface(implementation);
                 if (type == null) {
                     if (mandatory) {
-                        throw new ClassCastException(Errors.format(Errors.Keys.UnknownType_1, type));
+                        throw new ClassCastException(Errors.format(Errors.Keys.UnknownType_1, implementation));
                     }
                     return null;
                 }

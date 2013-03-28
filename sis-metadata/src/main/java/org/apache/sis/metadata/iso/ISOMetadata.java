@@ -25,6 +25,7 @@ import org.apache.sis.xml.IdentifiedObject;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.ModifiableMetadata;
 import org.apache.sis.internal.jaxb.IdentifierMapWithSpecialCases;
+import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -68,9 +69,10 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
      * If the given object is an instance of {@link IdentifiedObject}, then this constructor
      * copies the {@linkplain #identifiers collection of identifiers}.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param object The metadata to copy values from.
      */
     protected ISOMetadata(final Object object) {
+        ArgumentChecks.ensureNonNull("object", object);
         if (object instanceof IdentifiedObject) {
             identifiers = copyCollection(((IdentifiedObject) object).getIdentifiers(), Identifier.class);
         }
