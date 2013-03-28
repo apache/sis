@@ -49,6 +49,7 @@ import org.apache.sis.xml.IdentifiedObject;
 import static org.apache.sis.util.collection.CollectionsExt.modifiableCopy;
 import static org.apache.sis.util.collection.CollectionsExt.hashMapCapacity;
 import static org.apache.sis.internal.util.Utilities.floatEpsilonEqual;
+import static org.apache.sis.metadata.PropertyComparator.*;
 
 
 /**
@@ -78,21 +79,6 @@ import static org.apache.sis.internal.util.Utilities.floatEpsilonEqual;
  */
 @ThreadSafe
 final class PropertyAccessor {
-    /**
-     * The prefix for getters on boolean values.
-     */
-    private static final String IS = "is";
-
-    /**
-     * The prefix for getters (general case).
-     */
-    private static final String GET = "get";
-
-    /**
-     * The prefix for setters.
-     */
-    private static final String SET = "set";
-
     /**
      * Getters shared between many instances of this class. Two different implementations
      * may share the same getters but different setters.
@@ -236,7 +222,7 @@ final class PropertyAccessor {
         this.standard       = standard;
         this.type           = type;
         this.implementation = implementation;
-        this.getters        = getGetters(type);
+        this.getters        = getGetters(type, implementation);
         int allCount = getters.length;
         int standardCount = allCount;
         if (allCount != 0 && getters[allCount-1] == EXTRA_GETTER) {
@@ -375,9 +361,10 @@ final class PropertyAccessor {
      * since it may be shared among many instances of {@code PropertyAccessor}.
      *
      * @param  type The metadata interface.
+     * @param  implementation The class of metadata implementations.
      * @return The getters declared in the given interface (never {@code null}).
      */
-    private static Method[] getGetters(final Class<?> type) {
+    private static Method[] getGetters(final Class<?> type, final Class<?> implementation) {
         synchronized (SHARED_GETTERS) {
             Method[] getters = SHARED_GETTERS.get(type);
             if (getters == null) {
@@ -425,7 +412,7 @@ final class PropertyAccessor {
                  * keep the extra methods last. The code checking for the extra methods require
                  * them to be last.
                  */
-                Arrays.sort(getters, 0, count, PropertyComparator.INSTANCE);
+                Arrays.sort(getters, 0, count, new PropertyComparator(implementation));
                 if (!hasExtraGetter) {
                     if (getters.length == count) {
                         getters = Arrays.copyOf(getters, count+1);
@@ -437,70 +424,6 @@ final class PropertyAccessor {
             }
             return getters;
         }
-    }
-
-    /**
-     * Returns the prefix of the specified method name. If the method name doesn't starts with
-     * a prefix (for example {@link org.opengis.metadata.quality.ConformanceResult#pass()}),
-     * then this method returns an empty string.
-     */
-    private static String prefix(final String name) {
-        if (name.startsWith(GET)) {
-            return GET;
-        }
-        if (name.startsWith(IS)) {
-            return IS;
-        }
-        if (name.startsWith(SET)) {
-            return SET;
-        }
-        return "";
-    }
-
-    /**
-     * Returns {@code true} if the specified string starting at the specified index contains
-     * no lower case characters. The characters don't have to be in upper case however (e.g.
-     * non-alphabetic characters)
-     */
-    private static boolean isAcronym(final String name, int offset) {
-        final int length = name.length();
-        while (offset < length) {
-            final int c = name.codePointAt(offset);
-            if (Character.isLowerCase(c)) {
-                return false;
-            }
-            offset += Character.charCount(c);
-        }
-        return true;
-    }
-
-    /**
-     * Removes the {@code "get"} or {@code "is"} prefix and turn the first character after the
-     * prefix into lower case. For example the method name {@code "getTitle"} will be replaced
-     * by the property name {@code "title"}. We will perform this operation only if there is
-     * at least 1 character after the prefix.
-     *
-     * @param  name The method name (can not be {@code null}).
-     * @param  base Must be the result of {@code prefix(name).length()}.
-     * @return The property name (never {@code null}).
-     */
-    private static String toPropertyName(String name, final int base) {
-        final int length = name.length();
-        if (length > base) {
-            if (isAcronym(name, base)) {
-                name = name.substring(base);
-            } else {
-                final int up = name.codePointAt(base);
-                final int lo = Character.toLowerCase(up);
-                if (up != lo) {
-                    name = new StringBuilder(length - base).appendCodePoint(lo)
-                            .append(name, base + Character.charCount(up), length).toString();
-                } else {
-                    name = name.substring(base);
-                }
-            }
-        }
-        return name.intern();
     }
 
     /**
