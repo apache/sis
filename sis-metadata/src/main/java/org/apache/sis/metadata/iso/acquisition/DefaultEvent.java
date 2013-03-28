@@ -32,6 +32,9 @@ import org.opengis.metadata.acquisition.Trigger;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
 
+import static org.apache.sis.internal.metadata.MetadataUtilities.toDate;
+import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
+
 
 /**
  * Identification of a significant collection point within an operation.
@@ -116,7 +119,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
         trigger            = object.getTrigger();
         context            = object.getContext();
         sequence           = object.getSequence();
-// TODO time               = object.getTime();
+        time               = toMilliseconds(object.getTime());
         expectedObjectives = copyCollection(object.getExpectedObjectives(), Objective.class);
         relatedPass        = object.getRelatedPass();
         relatedSensors     = copyCollection(object.getRelatedSensors(), Instrument.class);
@@ -230,8 +233,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
     @Override
     @XmlElement(name = "time", required = true)
     public synchronized Date getTime() {
-        final long date = this.time;
-        return (date != Long.MIN_VALUE) ? new Date(date) : null;
+        return toDate(time);
     }
 
     /**
@@ -241,7 +243,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
      */
     public synchronized void setTime(final Date newValue) {
         checkWritePermission();
-        time = (newValue != null) ? newValue.getTime() : Long.MIN_VALUE;
+        time = toMilliseconds(newValue);
     }
 
     /**

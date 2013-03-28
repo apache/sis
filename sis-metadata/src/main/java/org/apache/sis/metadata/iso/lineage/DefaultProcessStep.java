@@ -32,6 +32,9 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.xml.Namespaces;
 
+import static org.apache.sis.internal.metadata.MetadataUtilities.toDate;
+import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
+
 
 /**
  * Description of the event, including related parameters or tolerances.
@@ -136,7 +139,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
         super(object);
         description           = object.getDescription();
         rationale             = object.getRationale();
-// TODO date                  = object.getDate();
+        date                  = toMilliseconds(object.getDate());
         processors            = copyCollection(object.getProcessors(), ResponsibleParty.class);
         sources               = copyCollection(object.getSources(), Source.class);
         outputs               = copyCollection(object.getOutputs(), Source.class);
@@ -214,7 +217,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
     @Override
     @XmlElement(name = "dateTime")
     public synchronized Date getDate() {
-        return (date != Long.MIN_VALUE) ? new Date(date) : null;
+        return toDate(date);
     }
 
     /**
@@ -225,7 +228,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      */
     public synchronized void setDate(final Date newValue) {
         checkWritePermission();
-        date = (newValue != null) ? newValue.getTime() : Long.MIN_VALUE;
+        date = toMilliseconds(newValue);
     }
 
     /**

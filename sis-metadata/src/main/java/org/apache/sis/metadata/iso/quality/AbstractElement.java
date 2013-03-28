@@ -155,8 +155,8 @@ public class AbstractElement extends ISOMetadata implements Element {
         evaluationMethodType        = object.getEvaluationMethodType();
         evaluationMethodDescription = object.getEvaluationMethodDescription();
         evaluationProcedure         = object.getEvaluationProcedure();
-// TODO dates                       = copyCollection(object.getDates(), Date.class);
         results                     = copyCollection(object.getResults(), Result.class);
+        writeDates(object.getDates());
     }
 
     /**
@@ -348,11 +348,18 @@ public class AbstractElement extends ISOMetadata implements Element {
      *
      * @param newValues The new dates, or {@code null}.
      */
-    public synchronized void setDates(final Collection<Date> newValues) {
+    public synchronized void setDates(final Collection<? extends Date> newValues) {
         checkWritePermission();
+        writeDates(newValues);
+    }
+
+    /**
+     * Implementation of {@link #setDates(Collection)}.
+     */
+    private void writeDates(final Collection<? extends Date> newValues) {
         date1 = date2 = Long.MIN_VALUE;
         if (newValues != null) {
-            final Iterator<Date> it = newValues.iterator();
+            final Iterator<? extends Date> it = newValues.iterator();
             if (it.hasNext()) {
                 date1 = it.next().getTime();
                 if (it.hasNext()) {

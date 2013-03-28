@@ -24,6 +24,9 @@ import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.DateType;
 import org.apache.sis.metadata.iso.ISOMetadata;
 
+import static org.apache.sis.internal.metadata.MetadataUtilities.toDate;
+import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
+
 
 /**
  * Reference date and event used to describe it.
@@ -70,7 +73,7 @@ public class DefaultCitationDate extends ISOMetadata implements CitationDate {
      * @param dateType The event used for reference date.
      */
     public DefaultCitationDate(final Date date, final DateType dateType) {
-        this.date = (date != null) ? date.getTime() : Long.MIN_VALUE;
+        this.date = toMilliseconds(date);
         this.dateType = dateType;
     }
 
@@ -85,7 +88,7 @@ public class DefaultCitationDate extends ISOMetadata implements CitationDate {
      */
     public DefaultCitationDate(final CitationDate object) {
         super(object);
-// TODO date     = object.getDate();
+        date     = toMilliseconds(object.getDate());
         dateType = object.getDateType();
     }
 
@@ -120,7 +123,7 @@ public class DefaultCitationDate extends ISOMetadata implements CitationDate {
     @Override
     @XmlElement(name = "date", required = true)
     public synchronized Date getDate() {
-        return (date != Long.MIN_VALUE) ? new Date(date) : null;
+        return toDate(date);
     }
 
     /**
@@ -130,7 +133,7 @@ public class DefaultCitationDate extends ISOMetadata implements CitationDate {
      */
     public synchronized void setDate(final Date newValue) {
         checkWritePermission();
-        date = (newValue != null) ? newValue.getTime() : Long.MIN_VALUE;
+        date = toMilliseconds(newValue);
     }
 
     /**

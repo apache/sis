@@ -45,6 +45,9 @@ import org.apache.sis.internal.jaxb.MarshalContext;
 //import org.apache.sis.internal.jaxb.gmd.PT_Locale; // TODO
 import org.apache.sis.xml.Namespaces;
 
+import static org.apache.sis.internal.metadata.MetadataUtilities.toDate;
+import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
+
 
 /**
  * Root entity which defines metadata about a resource or resources.
@@ -241,7 +244,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
                            final Identification   identificationInfo)
     {
         this.contacts  = singleton(contact, ResponsibleParty.class);
-        this.dateStamp = (dateStamp != null) ? dateStamp.getTime() : Long.MIN_VALUE;
+        this.dateStamp = toMilliseconds(dateStamp);
         this.identificationInfo = singleton(identificationInfo, Identification.class);
     }
 
@@ -263,7 +266,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
         hierarchyLevels           = copyCollection(object.getHierarchyLevels(), ScopeCode.class);
         hierarchyLevelNames       = copyCollection(object.getHierarchyLevelNames(), String.class);
         contacts                  = copyCollection(object.getContacts(), ResponsibleParty.class);
-// TODO dateStamp                 = object.getDateStamp();
+        dateStamp                 = toMilliseconds(object.getDateStamp());
         metadataStandardName      = object.getMetadataStandardName();
         metadataStandardVersion   = object.getMetadataStandardVersion();
         dataSetUri                = object.getDataSetUri();
@@ -473,7 +476,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     @Override
     @XmlElement(name = "dateStamp", required = true)
     public synchronized Date getDateStamp() {
-        return (dateStamp != Long.MIN_VALUE) ? new Date(dateStamp) : (Date)null;
+        return toDate(dateStamp);
     }
 
     /**
@@ -483,7 +486,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     public synchronized void setDateStamp(final Date newValue) {
         checkWritePermission();
-        dateStamp = (newValue != null) ? newValue.getTime() : Long.MIN_VALUE;
+        dateStamp = toMilliseconds(newValue);
     }
 
     /**
