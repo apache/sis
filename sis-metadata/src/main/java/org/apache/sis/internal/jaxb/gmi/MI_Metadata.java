@@ -55,7 +55,7 @@ public class MI_Metadata extends DefaultMetadata {
      * @param original The original metadata to copy.
      */
     public MI_Metadata(final Metadata original) {
-        shallowCopy(original);
+        super(original);
     }
 
     /**

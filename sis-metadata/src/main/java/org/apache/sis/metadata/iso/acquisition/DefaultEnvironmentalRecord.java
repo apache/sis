@@ -74,12 +74,35 @@ public class DefaultEnvironmentalRecord extends ISOMetadata implements Environme
     }
 
     /**
-     * Returns a SIS metadata implementation with the same values than the given arbitrary
-     * implementation. If the given object is {@code null}, then this method returns {@code null}.
-     * Otherwise if the given object is already a SIS implementation, then the given object is
-     * returned unchanged. Otherwise a new SIS implementation is created and initialized to the
-     * property values of the given object, using a <cite>shallow</cite> copy operation
-     * (i.e. properties are not cloned).
+     * Constructs a new instance initialized with the values from the specified metadata object.
+     * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
+     * given object are not recursively copied.
+     *
+     * @param object The metadata to copy values from.
+     *
+     * @see #castOrCopy(EnvironmentalRecord)
+     */
+    public DefaultEnvironmentalRecord(final EnvironmentalRecord object) {
+        super(object);
+        averageAirTemperature    = object.getAverageAirTemperature();
+        maxRelativeHumidity      = object.getMaxRelativeHumidity();
+        maxAltitude              = object.getMaxAltitude();
+        meteorologicalConditions = object.getMeteorologicalConditions();
+    }
+
+    /**
+     * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
+     * This method performs the first applicable actions in the following choices:
+     *
+     * <ul>
+     *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
+     *   <li>Otherwise if the given object is already an instance of
+     *       {@code DefaultEnvironmentalRecord}, then it is returned unchanged.</li>
+     *   <li>Otherwise a new {@code DefaultEnvironmentalRecord} instance is created using the
+     *       {@linkplain #DefaultEnvironmentalRecord(EnvironmentalRecord) copy constructor}
+     *       and returned. Note that this is a <cite>shallow</cite> copy operation, since the other
+     *       metadata contained in the given object are not recursively copied.</li>
+     * </ul>
      *
      * @param  object The object to get as a SIS implementation, or {@code null} if none.
      * @return A SIS implementation containing the values of the given object (may be the
@@ -89,9 +112,7 @@ public class DefaultEnvironmentalRecord extends ISOMetadata implements Environme
         if (object == null || object instanceof DefaultEnvironmentalRecord) {
             return (DefaultEnvironmentalRecord) object;
         }
-        final DefaultEnvironmentalRecord copy = new DefaultEnvironmentalRecord();
-        copy.shallowCopy(object);
-        return copy;
+        return new DefaultEnvironmentalRecord(object);
     }
 
     /**

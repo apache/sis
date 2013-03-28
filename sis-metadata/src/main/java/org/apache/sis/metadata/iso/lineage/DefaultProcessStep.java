@@ -124,12 +124,39 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
     }
 
     /**
-     * Returns a SIS metadata implementation with the same values than the given arbitrary
-     * implementation. If the given object is {@code null}, then this method returns {@code null}.
-     * Otherwise if the given object is already a SIS implementation, then the given object is
-     * returned unchanged. Otherwise a new SIS implementation is created and initialized to the
-     * property values of the given object, using a <cite>shallow</cite> copy operation
-     * (i.e. properties are not cloned).
+     * Constructs a new instance initialized with the values from the specified metadata object.
+     * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
+     * given object are not recursively copied.
+     *
+     * @param object The metadata to copy values from.
+     *
+     * @see #castOrCopy(ProcessStep)
+     */
+    public DefaultProcessStep(final ProcessStep object) {
+        super(object);
+        description           = object.getDescription();
+        rationale             = object.getRationale();
+// TODO date                  = object.getDate();
+        processors            = copyCollection(object.getProcessors(), ResponsibleParty.class);
+        sources               = copyCollection(object.getSources(), Source.class);
+        outputs               = copyCollection(object.getOutputs(), Source.class);
+        processingInformation = object.getProcessingInformation();
+        reports               = copyCollection(object.getReports(), ProcessStepReport.class);
+    }
+
+    /**
+     * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
+     * This method performs the first applicable actions in the following choices:
+     *
+     * <ul>
+     *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
+     *   <li>Otherwise if the given object is already an instance of
+     *       {@code DefaultProcessStep}, then it is returned unchanged.</li>
+     *   <li>Otherwise a new {@code DefaultProcessStep} instance is created using the
+     *       {@linkplain #DefaultProcessStep(ProcessStep) copy constructor}
+     *       and returned. Note that this is a <cite>shallow</cite> copy operation, since the other
+     *       metadata contained in the given object are not recursively copied.</li>
+     * </ul>
      *
      * @param  object The object to get as a SIS implementation, or {@code null} if none.
      * @return A SIS implementation containing the values of the given object (may be the
@@ -139,9 +166,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
         if (object == null || object instanceof DefaultProcessStep) {
             return (DefaultProcessStep) object;
         }
-        final DefaultProcessStep copy = new DefaultProcessStep();
-        copy.shallowCopy(object);
-        return copy;
+        return new DefaultProcessStep(object);
     }
 
      /**

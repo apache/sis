@@ -85,12 +85,37 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
     }
 
     /**
-     * Returns a SIS metadata implementation with the same values than the given arbitrary
-     * implementation. If the given object is {@code null}, then this method returns {@code null}.
-     * Otherwise if the given object is already a SIS implementation, then the given object is
-     * returned unchanged. Otherwise a new SIS implementation is created and initialized to the
-     * property values of the given object, using a <cite>shallow</cite> copy operation
-     * (i.e. properties are not cloned).
+     * Constructs a new instance initialized with the values from the specified metadata object.
+     * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
+     * given object are not recursively copied.
+     *
+     * @param object The metadata to copy values from.
+     *
+     * @see #castOrCopy(ScopeDescription)
+     */
+    public DefaultScopeDescription(final ScopeDescription object) {
+        super(object);
+        dataset            = object.getDataset();
+        other              = object.getOther();
+        attributeInstances = copySet(object.getAttributeInstances(), AttributeType.class);
+        attributes         = copySet(object.getAttributes(), AttributeType.class);
+        featureInstances   = copySet(object.getFeatureInstances(), FeatureType.class);
+        features           = copySet(object.getFeatures(), FeatureType.class);
+    }
+
+    /**
+     * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
+     * This method performs the first applicable actions in the following choices:
+     *
+     * <ul>
+     *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
+     *   <li>Otherwise if the given object is already an instance of
+     *       {@code DefaultScopeDescription}, then it is returned unchanged.</li>
+     *   <li>Otherwise a new {@code DefaultScopeDescription} instance is created using the
+     *       {@linkplain #DefaultScopeDescription(ScopeDescription) copy constructor}
+     *       and returned. Note that this is a <cite>shallow</cite> copy operation, since the other
+     *       metadata contained in the given object are not recursively copied.</li>
+     * </ul>
      *
      * @param  object The object to get as a SIS implementation, or {@code null} if none.
      * @return A SIS implementation containing the values of the given object (may be the
@@ -100,9 +125,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
         if (object == null || object instanceof DefaultScopeDescription) {
             return (DefaultScopeDescription) object;
         }
-        final DefaultScopeDescription copy = new DefaultScopeDescription();
-        copy.shallowCopy(object);
-        return copy;
+        return new DefaultScopeDescription(object);
     }
 
     /**

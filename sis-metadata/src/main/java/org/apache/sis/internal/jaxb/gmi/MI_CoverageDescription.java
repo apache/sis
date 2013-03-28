@@ -55,7 +55,7 @@ public class MI_CoverageDescription extends DefaultCoverageDescription {
      * @param original The original metadata to copy.
      */
     public MI_CoverageDescription(final CoverageDescription original) {
-        shallowCopy(original);
+        super(original);
     }
 
     /**

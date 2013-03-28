@@ -74,15 +74,13 @@ public class DefaultRepresentativeFraction extends Number implements Representat
     /**
      * Constructs a new representative fraction initialized to the value of the given object.
      *
-     * @param  source The representative fraction to copy, or {@code null} if none.
-     * @throws IllegalArgumentException If the given source is non-null and its denominator
-     *         is not a positive number or zero.
+     * @param  object The representative fraction to copy.
+     * @throws IllegalArgumentException If the denominator of the given source is negative.
      */
-    public DefaultRepresentativeFraction(final RepresentativeFraction source) throws IllegalArgumentException {
-        if (source != null) {
-            denominator = source.getDenominator();
-            ArgumentChecks.ensurePositive("source", denominator);
-        }
+    public DefaultRepresentativeFraction(final RepresentativeFraction object) throws IllegalArgumentException {
+        ArgumentChecks.ensureNonNull("object", object);
+        denominator = object.getDenominator();
+        ArgumentChecks.ensurePositive("object", denominator);
     }
 
     /**

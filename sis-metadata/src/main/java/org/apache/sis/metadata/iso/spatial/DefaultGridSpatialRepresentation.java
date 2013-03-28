@@ -85,18 +85,40 @@ public class DefaultGridSpatialRepresentation extends AbstractSpatialRepresentat
     }
 
     /**
-     * Returns a SIS metadata implementation with the same values than the given arbitrary
-     * implementation. If the given object is {@code null}, then this method returns {@code null}.
-     * Otherwise if the given object is already a SIS implementation, then the given object is
-     * returned unchanged. Otherwise a new SIS implementation is created and initialized to the
-     * property values of the given object, using a <cite>shallow</cite> copy operation
-     * (i.e. properties are not cloned).
+     * Constructs a new instance initialized with the values from the specified metadata object.
+     * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
+     * given object are not recursively copied.
      *
-     * <p>This method checks for the {@link Georectified} and {@link Georeferenceable}
-     * sub-interfaces. If one of those interfaces is found, then this method delegates to
-     * the corresponding {@code castOrCopy} static method. If the given object implements more
-     * than one of the above-cited interfaces, then the {@code castOrCopy} method to be used is
-     * unspecified.</p>
+     * @param object The metadata to copy values from.
+     *
+     * @see #castOrCopy(GridSpatialRepresentation)
+     */
+    public DefaultGridSpatialRepresentation(final GridSpatialRepresentation object) {
+        super(object);
+        numberOfDimensions               = object.getNumberOfDimensions();
+        axisDimensionProperties          = copyList(object.getAxisDimensionProperties(), Dimension.class);
+        cellGeometry                     = object.getCellGeometry();
+        transformationParameterAvailable = object.isTransformationParameterAvailable();
+    }
+
+    /**
+     * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
+     * This method performs the first applicable actions in the following choices:
+     *
+     * <ul>
+     *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
+     *   <li>Otherwise if the given object is is an instance of {@link Georectified} or
+     *       {@link Georeferenceable}, then this method delegates to the {@code castOrCopy(…)}
+     *       method of the corresponding SIS subclass. Note that if the given object implements
+     *       more than one of the above-cited interfaces, then the {@code castOrCopy(…)} method
+     *       to be used is unspecified.</li>
+     *   <li>Otherwise if the given object is already an instance of
+     *       {@code DefaultGridSpatialRepresentation}, then it is returned unchanged.</li>
+     *   <li>Otherwise a new {@code DefaultGridSpatialRepresentation} instance is created using the
+     *       {@linkplain #DefaultGridSpatialRepresentation(GridSpatialRepresentation) copy constructor}
+     *       and returned. Note that this is a <cite>shallow</cite> copy operation, since the other
+     *       metadata contained in the given object are not recursively copied.</li>
+     * </ul>
      *
      * @param  object The object to get as a SIS implementation, or {@code null} if none.
      * @return A SIS implementation containing the values of the given object (may be the
@@ -109,12 +131,11 @@ public class DefaultGridSpatialRepresentation extends AbstractSpatialRepresentat
         if (object instanceof Georeferenceable) {
             return DefaultGeoreferenceable.castOrCopy((Georeferenceable) object);
         }
+        // Intentionally tested after the sub-interfaces.
         if (object == null || object instanceof DefaultGridSpatialRepresentation) {
             return (DefaultGridSpatialRepresentation) object;
         }
-        final DefaultGridSpatialRepresentation copy = new DefaultGridSpatialRepresentation();
-        copy.shallowCopy(object);
-        return copy;
+        return new DefaultGridSpatialRepresentation(object);
     }
 
     /**

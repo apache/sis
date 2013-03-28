@@ -54,18 +54,36 @@ public class AbstractContentInformation extends ISOMetadata implements ContentIn
     }
 
     /**
-     * Returns a SIS metadata implementation with the same values than the given arbitrary
-     * implementation. If the given object is {@code null}, then this method returns {@code null}.
-     * Otherwise if the given object is already a SIS implementation, then the given object is
-     * returned unchanged. Otherwise a new SIS implementation is created and initialized to the
-     * property values of the given object, using a <cite>shallow</cite> copy operation
-     * (i.e. properties are not cloned).
+     * Constructs a new instance initialized with the values from the specified metadata object.
+     * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
+     * given object are not recursively copied.
      *
-     * <p>This method checks for the {@link CoverageDescription} and {@link FeatureCatalogueDescription}
-     * sub-interfaces. If one of those interfaces is found, then this method delegates to
-     * the corresponding {@code castOrCopy} static method. If the given object implements more
-     * than one of the above-cited interfaces, then the {@code castOrCopy} method to be used is
-     * unspecified.</p>
+     * @param object The metadata to copy values from.
+     *
+     * @see #castOrCopy(ContentInformation)
+     */
+    public AbstractContentInformation(final ContentInformation object) {
+        super(object);
+    }
+
+    /**
+     * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
+     * This method performs the first applicable actions in the following choices:
+     *
+     * <ul>
+     *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
+     *   <li>Otherwise if the given object is is an instance of {@link FeatureCatalogueDescription}
+     *       or {@link CoverageDescription}, then this method delegates to the {@code castOrCopy(…)}
+     *       method of the corresponding SIS subclass. Note that if the given object implements
+     *       more than one of the above-cited interfaces, then the {@code castOrCopy(…)} method
+     *       to be used is unspecified.</li>
+     *   <li>Otherwise if the given object is already an instance of
+     *       {@code AbstractContentInformation}, then it is returned unchanged.</li>
+     *   <li>Otherwise a new {@code AbstractContentInformation} instance is created using the
+     *       {@linkplain #AbstractContentInformation(ContentInformation) copy constructor}
+     *       and returned. Note that this is a <cite>shallow</cite> copy operation, since the other
+     *       metadata contained in the given object are not recursively copied.</li>
+     * </ul>
      *
      * @param  object The object to get as a SIS implementation, or {@code null} if none.
      * @return A SIS implementation containing the values of the given object (may be the
@@ -78,11 +96,10 @@ public class AbstractContentInformation extends ISOMetadata implements ContentIn
         if (object instanceof FeatureCatalogueDescription) {
             return DefaultFeatureCatalogueDescription.castOrCopy((FeatureCatalogueDescription) object);
         }
+        // Intentionally tested after the sub-interfaces.
         if (object == null || object instanceof AbstractContentInformation) {
             return (AbstractContentInformation) object;
         }
-        final AbstractContentInformation copy = new AbstractContentInformation();
-        copy.shallowCopy(object);
-        return copy;
+        return new AbstractContentInformation(object);
     }
 }

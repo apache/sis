@@ -55,7 +55,7 @@ public class MI_Georeferenceable  extends DefaultGeoreferenceable {
      * @param original The original metadata to copy.
      */
     public MI_Georeferenceable(final Georeferenceable original) {
-        shallowCopy(original);
+        super(original);
     }
 
     /**

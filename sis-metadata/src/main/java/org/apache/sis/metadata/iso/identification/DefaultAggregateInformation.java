@@ -76,12 +76,35 @@ public class DefaultAggregateInformation extends ISOMetadata implements Aggregat
     }
 
     /**
-     * Returns a SIS metadata implementation with the same values than the given arbitrary
-     * implementation. If the given object is {@code null}, then this method returns {@code null}.
-     * Otherwise if the given object is already a SIS implementation, then the given object is
-     * returned unchanged. Otherwise a new SIS implementation is created and initialized to the
-     * property values of the given object, using a <cite>shallow</cite> copy operation
-     * (i.e. properties are not cloned).
+     * Constructs a new instance initialized with the values from the specified metadata object.
+     * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
+     * given object are not recursively copied.
+     *
+     * @param object The metadata to copy values from.
+     *
+     * @see #castOrCopy(AggregateInformation)
+     */
+    public DefaultAggregateInformation(final AggregateInformation object) {
+        super(object);
+        aggregateDataSetName       = object.getAggregateDataSetName();
+        aggregateDataSetIdentifier = object.getAggregateDataSetIdentifier();
+        associationType            = object.getAssociationType();
+        initiativeType             = object.getInitiativeType();
+    }
+
+    /**
+     * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
+     * This method performs the first applicable actions in the following choices:
+     *
+     * <ul>
+     *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
+     *   <li>Otherwise if the given object is already an instance of
+     *       {@code DefaultAggregateInformation}, then it is returned unchanged.</li>
+     *   <li>Otherwise a new {@code DefaultAggregateInformation} instance is created using the
+     *       {@linkplain #DefaultAggregateInformation(AggregateInformation) copy constructor}
+     *       and returned. Note that this is a <cite>shallow</cite> copy operation, since the other
+     *       metadata contained in the given object are not recursively copied.</li>
+     * </ul>
      *
      * @param  object The object to get as a SIS implementation, or {@code null} if none.
      * @return A SIS implementation containing the values of the given object (may be the
@@ -91,9 +114,7 @@ public class DefaultAggregateInformation extends ISOMetadata implements Aggregat
         if (object == null || object instanceof DefaultAggregateInformation) {
             return (DefaultAggregateInformation) object;
         }
-        final DefaultAggregateInformation copy = new DefaultAggregateInformation();
-        copy.shallowCopy(object);
-        return copy;
+        return new DefaultAggregateInformation(object);
     }
 
     /**

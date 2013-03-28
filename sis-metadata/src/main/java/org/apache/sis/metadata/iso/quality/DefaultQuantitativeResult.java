@@ -75,12 +75,35 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
     }
 
     /**
-     * Returns a SIS metadata implementation with the same values than the given arbitrary
-     * implementation. If the given object is {@code null}, then this method returns {@code null}.
-     * Otherwise if the given object is already a SIS implementation, then the given object is
-     * returned unchanged. Otherwise a new SIS implementation is created and initialized to the
-     * property values of the given object, using a <cite>shallow</cite> copy operation
-     * (i.e. properties are not cloned).
+     * Constructs a new instance initialized with the values from the specified metadata object.
+     * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
+     * given object are not recursively copied.
+     *
+     * @param object The metadata to copy values from.
+     *
+     * @see #castOrCopy(QuantitativeResult)
+     */
+    public DefaultQuantitativeResult(final QuantitativeResult object) {
+        super(object);
+        valueType      = object.getValueType();
+        valueUnit      = object.getValueUnit();
+        errorStatistic = object.getErrorStatistic();
+        values         = copyList(object.getValues(), Record.class);
+    }
+
+    /**
+     * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
+     * This method performs the first applicable actions in the following choices:
+     *
+     * <ul>
+     *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
+     *   <li>Otherwise if the given object is already an instance of
+     *       {@code DefaultQuantitativeResult}, then it is returned unchanged.</li>
+     *   <li>Otherwise a new {@code DefaultQuantitativeResult} instance is created using the
+     *       {@linkplain #DefaultQuantitativeResult(QuantitativeResult) copy constructor}
+     *       and returned. Note that this is a <cite>shallow</cite> copy operation, since the other
+     *       metadata contained in the given object are not recursively copied.</li>
+     * </ul>
      *
      * @param  object The object to get as a SIS implementation, or {@code null} if none.
      * @return A SIS implementation containing the values of the given object (may be the
@@ -90,9 +113,7 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
         if (object == null || object instanceof DefaultQuantitativeResult) {
             return (DefaultQuantitativeResult) object;
         }
-        final DefaultQuantitativeResult copy = new DefaultQuantitativeResult();
-        copy.shallowCopy(object);
-        return copy;
+        return new DefaultQuantitativeResult(object);
     }
 
     /**

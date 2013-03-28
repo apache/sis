@@ -58,15 +58,34 @@ public class AbstractGeolocationInformation extends ISOMetadata implements Geolo
     }
 
     /**
-     * Returns a SIS metadata implementation with the same values than the given arbitrary
-     * implementation. If the given object is {@code null}, then this method returns {@code null}.
-     * Otherwise if the given object is already a SIS implementation, then the given object is
-     * returned unchanged. Otherwise a new SIS implementation is created and initialized to the
-     * property values of the given object, using a <cite>shallow</cite> copy operation
-     * (i.e. properties are not cloned).
+     * Constructs a new instance initialized with the values from the specified metadata object.
+     * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
+     * given object are not recursively copied.
      *
-     * <p>This method checks for the {@link GCPCollection} sub-interface. If that interface is
-     * found, then this method delegates to the corresponding {@code castOrCopy} static method.</p>
+     * @param object The metadata to copy values from.
+     *
+     * @see #castOrCopy(GeolocationInformation)
+     */
+    public AbstractGeolocationInformation(final GeolocationInformation object) {
+        super(object);
+        qualityInfo = copyCollection(object.getQualityInfo(), DataQuality.class);
+    }
+
+    /**
+     * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
+     * This method performs the first applicable actions in the following choices:
+     *
+     * <ul>
+     *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
+     *   <li>Otherwise if the given object is is an instance of {@link GCPCollection}, then this method
+     *       delegates to the {@code castOrCopy(…)} method of the corresponding SIS subclass.</li>
+     *   <li>Otherwise if the given object is already an instance of
+     *       {@code AbstractGeolocationInformation}, then it is returned unchanged.</li>
+     *   <li>Otherwise a new {@code AbstractGeolocationInformation} instance is created using the
+     *       {@linkplain #AbstractGeolocationInformation(GeolocationInformation) copy constructor}
+     *       and returned. Note that this is a <cite>shallow</cite> copy operation, since the other
+     *       metadata contained in the given object are not recursively copied.</li>
+     * </ul>
      *
      * @param  object The object to get as a SIS implementation, or {@code null} if none.
      * @return A SIS implementation containing the values of the given object (may be the
@@ -76,12 +95,11 @@ public class AbstractGeolocationInformation extends ISOMetadata implements Geolo
         if (object instanceof GCPCollection) {
             return DefaultGCPCollection.castOrCopy((GCPCollection) object);
         }
+        // Intentionally tested after the sub-interfaces.
         if (object == null || object instanceof AbstractGeolocationInformation) {
             return (AbstractGeolocationInformation) object;
         }
-        final AbstractGeolocationInformation copy = new AbstractGeolocationInformation();
-        copy.shallowCopy(object);
-        return copy;
+        return new AbstractGeolocationInformation(object);
     }
 
     /**
