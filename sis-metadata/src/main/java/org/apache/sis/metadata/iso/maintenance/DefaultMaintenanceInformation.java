@@ -30,6 +30,9 @@ import org.opengis.temporal.PeriodDuration;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.ISOMetadata;
 
+import static org.apache.sis.internal.metadata.MetadataUtilities.toDate;
+import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
+
 
 /**
  * Information about the scope and frequency of updating.
@@ -127,7 +130,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     public DefaultMaintenanceInformation(final MaintenanceInformation object) {
         super(object);
         maintenanceAndUpdateFrequency   = object.getMaintenanceAndUpdateFrequency();
-// TODO dateOfNextUpdate                = object.getDateOfNextUpdate();
+        dateOfNextUpdate                = toMilliseconds(object.getDateOfNextUpdate());
         userDefinedMaintenanceFrequency = object.getUserDefinedMaintenanceFrequency();
         updateScopes                    = copyCollection(object.getUpdateScopes(), ScopeCode.class);
         updateScopeDescriptions         = copyCollection(object.getUpdateScopeDescriptions(), ScopeDescription.class);
@@ -187,8 +190,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     @Override
     @XmlElement(name = "dateOfNextUpdate")
     public synchronized Date getDateOfNextUpdate() {
-        final long date = dateOfNextUpdate;
-        return (date != Long.MIN_VALUE) ? new Date(date) : null;
+        return toDate(dateOfNextUpdate);
     }
 
     /**
@@ -198,7 +200,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      */
     public synchronized void setDateOfNextUpdate(final Date newValue) {
         checkWritePermission();
-        dateOfNextUpdate = (newValue!=null) ? newValue.getTime() : Long.MIN_VALUE;
+        dateOfNextUpdate = toMilliseconds(newValue);
     }
 
     /**

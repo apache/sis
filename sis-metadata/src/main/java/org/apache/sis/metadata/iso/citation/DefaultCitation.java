@@ -36,6 +36,8 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.xml.IdentifierSpace;
 
 import static org.apache.sis.internal.jaxb.MarshalContext.filterIdentifiers;
+import static org.apache.sis.internal.metadata.MetadataUtilities.toDate;
+import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
 
 
 /**
@@ -213,7 +215,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
         alternateTitles         = copyCollection(object.getAlternateTitles(), InternationalString.class);
         dates                   = copyCollection(object.getDates(), CitationDate.class);
         edition                 = object.getEdition();
-// TODO editionDate             = object.getEditionDate();
+        editionDate             = toMilliseconds(object.getEditionDate());
         identifiers             = copyCollection(object.getIdentifiers(), Identifier.class);
         citedResponsibleParties = copyCollection(object.getCitedResponsibleParties(), ResponsibleParty.class);
         presentationForms       = copyCollection(object.getPresentationForms(), PresentationForm.class);
@@ -330,7 +332,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
     @Override
     @XmlElement(name = "editionDate")
     public synchronized Date getEditionDate() {
-        return (editionDate != Long.MIN_VALUE) ? new Date(editionDate) : null;
+        return toDate(editionDate);
     }
 
     /**
@@ -340,7 +342,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      */
     public synchronized void setEditionDate(final Date newValue) {
         checkWritePermission();
-        editionDate = (newValue != null) ? newValue.getTime() : Long.MIN_VALUE;
+        editionDate = toMilliseconds(newValue);
     }
 
     /**

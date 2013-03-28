@@ -31,6 +31,9 @@ import org.opengis.metadata.citation.ResponsibleParty;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
 
+import static org.apache.sis.internal.metadata.MetadataUtilities.toDate;
+import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
+
 
 /**
  * Requirement to be satisfied by the planned data acquisition.
@@ -118,7 +121,7 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
         recipients     = copyCollection(object.getRecipients(), ResponsibleParty.class);
         priority       = object.getPriority();
         requestedDate  = object.getRequestedDate();
-// TODO expiryDate     = object.getExpiryDate();
+        expiryDate     = toMilliseconds(object.getExpiryDate());
         satisfiedPlans = copyCollection(object.getSatisfiedPlans(), Plan.class);
     }
 
@@ -267,8 +270,7 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
     @Override
     @XmlElement(name = "expiryDate", required = true)
     public synchronized Date getExpiryDate() {
-        final long date = this.expiryDate;
-        return (date != Long.MIN_VALUE) ? new Date(date) : null;
+        return toDate(expiryDate);
     }
 
     /**
@@ -278,7 +280,7 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
      */
     public synchronized void setExpiryDate(final Date newValue) {
         checkWritePermission();
-        expiryDate = (newValue != null) ? newValue.getTime() : Long.MIN_VALUE;
+        expiryDate = toMilliseconds(newValue);
     }
 
     /**

@@ -23,6 +23,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.acquisition.RequestedDate;
 import org.apache.sis.metadata.iso.ISOMetadata;
 
+import static org.apache.sis.internal.metadata.MetadataUtilities.toDate;
+import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
+
 
 /**
  * Range of date validity.
@@ -75,8 +78,8 @@ public class DefaultRequestedDate extends ISOMetadata implements RequestedDate {
      */
     public DefaultRequestedDate(final RequestedDate object) {
         super(object);
-// TODO requestedDateOfCollection = object.getRequestedDateOfCollection();
-// TODO latestAcceptableDate      = object.getLatestAcceptableDate();
+        requestedDateOfCollection = toMilliseconds(object.getRequestedDateOfCollection());
+        latestAcceptableDate      = toMilliseconds(object.getLatestAcceptableDate());
     }
 
     /**
@@ -110,8 +113,7 @@ public class DefaultRequestedDate extends ISOMetadata implements RequestedDate {
     @Override
     @XmlElement(name = "requestedDateOfCollection", required = true)
     public synchronized Date getRequestedDateOfCollection() {
-        final long date = this.requestedDateOfCollection;
-        return (date != Long.MIN_VALUE) ? new Date(date) : null;
+        return toDate(requestedDateOfCollection);
     }
 
     /**
@@ -121,7 +123,7 @@ public class DefaultRequestedDate extends ISOMetadata implements RequestedDate {
      */
     public synchronized void setRequestedDateOfCollection(final Date newValue) {
         checkWritePermission();
-        requestedDateOfCollection = (newValue != null) ? newValue.getTime() : Long.MIN_VALUE;
+        requestedDateOfCollection = toMilliseconds(newValue);
     }
 
     /**
@@ -130,8 +132,7 @@ public class DefaultRequestedDate extends ISOMetadata implements RequestedDate {
     @Override
     @XmlElement(name = "latestAcceptableDate", required = true)
     public synchronized Date getLatestAcceptableDate() {
-        final long date = this.latestAcceptableDate;
-        return (date != Long.MIN_VALUE) ? new Date(date) : null;
+        return toDate(latestAcceptableDate);
     }
 
     /**
@@ -141,6 +142,6 @@ public class DefaultRequestedDate extends ISOMetadata implements RequestedDate {
      */
     public synchronized void setLatestAcceptableDate(final Date newValue) {
         checkWritePermission();
-        latestAcceptableDate = (newValue != null) ? newValue.getTime() : Long.MIN_VALUE;
+        latestAcceptableDate = toMilliseconds(newValue);
     }
 }

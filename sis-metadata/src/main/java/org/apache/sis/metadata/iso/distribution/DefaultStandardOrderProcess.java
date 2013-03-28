@@ -24,6 +24,9 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.distribution.StandardOrderProcess;
 import org.apache.sis.metadata.iso.ISOMetadata;
 
+import static org.apache.sis.internal.metadata.MetadataUtilities.toDate;
+import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
+
 
 /**
  * Common ways in which the resource may be obtained or received, and related instructions
@@ -90,7 +93,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
     public DefaultStandardOrderProcess(final StandardOrderProcess object) {
         super(object);
         fees                     = object.getFees();
-// TODO plannedAvailableDateTime = object.getPlannedAvailableDateTime();
+        plannedAvailableDateTime = toMilliseconds(object.getPlannedAvailableDateTime());
         orderingInstructions     = object.getOrderingInstructions();
         turnaround               = object.getTurnaround();
     }
@@ -147,8 +150,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
     @Override
     @XmlElement(name = "plannedAvailableDateTime")
     public synchronized Date getPlannedAvailableDateTime() {
-        return (plannedAvailableDateTime != Long.MIN_VALUE) ?
-                new Date(plannedAvailableDateTime) : null;
+        return toDate(plannedAvailableDateTime);
     }
 
     /**
@@ -158,7 +160,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
      */
     public synchronized void setPlannedAvailableDateTime(final Date newValue) {
         checkWritePermission();
-        plannedAvailableDateTime = (newValue != null) ? newValue.getTime() : Long.MIN_VALUE;
+        plannedAvailableDateTime = toMilliseconds(newValue);
     }
 
     /**

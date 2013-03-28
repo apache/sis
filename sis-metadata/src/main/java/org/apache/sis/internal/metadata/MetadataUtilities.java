@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.metadata;
 
+import java.util.Date;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.metadata.InvalidMetadataException;
@@ -34,6 +35,28 @@ public final class MetadataUtilities extends Static {
      * Do not allow instantiation of this class.
      */
     private MetadataUtilities() {
+    }
+
+    /**
+     * Returns the milliseconds value of the given date, or {@link Long#MIN_VALUE}
+     * if the date us null.
+     *
+     * @param  value The date, or {@code null}.
+     * @return The time in milliseconds, or {@code Long.MIN_VALUE} if none.
+     */
+    public static long toMilliseconds(final Date value) {
+        return (value != null) ? value.getTime() : Long.MIN_VALUE;
+    }
+
+    /**
+     * Returns the given milliseconds time to a date object, or returns null
+     * if the given time is {@link Long#MIN_VALUE}.
+     *
+     * @param  value The time in milliseconds.
+     * @return The date for the given milliseconds value, or {@code null}.
+     */
+    public static Date toDate(final long value) {
+        return (value != Long.MIN_VALUE) ? new Date(value) : null;
     }
 
     /**

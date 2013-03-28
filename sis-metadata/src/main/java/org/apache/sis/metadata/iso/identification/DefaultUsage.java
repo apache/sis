@@ -27,6 +27,9 @@ import org.opengis.metadata.citation.ResponsibleParty;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.iso.Types;
 
+import static org.apache.sis.internal.metadata.MetadataUtilities.toDate;
+import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
+
 
 /**
  * Brief description of ways in which the resource(s) is/are currently used.
@@ -108,7 +111,7 @@ public class DefaultUsage extends ISOMetadata implements Usage {
     public DefaultUsage(final Usage object) {
         super(object);
         specificUsage             = object.getSpecificUsage();
-// TODO usageDate                 = object.getUsageDate();
+        usageDate                 = toMilliseconds(object.getUsageDate());
         userDeterminedLimitations = object.getUserDeterminedLimitations();
         userContactInfo           = copyCollection(object.getUserContactInfo(), ResponsibleParty.class);
     }
@@ -164,7 +167,7 @@ public class DefaultUsage extends ISOMetadata implements Usage {
     @Override
     @XmlElement(name = "usageDateTime")
     public synchronized Date getUsageDate() {
-        return (usageDate != Long.MIN_VALUE) ? new Date(usageDate) : null;
+        return toDate(usageDate);
     }
 
     /**
@@ -174,7 +177,7 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      */
     public synchronized void setUsageDate(final Date newValue)  {
         checkWritePermission();
-        usageDate = (newValue != null) ? newValue.getTime() : Long.MIN_VALUE;
+        usageDate = toMilliseconds(newValue);
     }
 
     /**
