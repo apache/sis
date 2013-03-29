@@ -59,6 +59,16 @@ public class DefaultGridSpatialRepresentation extends AbstractSpatialRepresentat
     private static final long serialVersionUID = -8400572307442433979L;
 
     /**
+     * Mask for the {@code transformationParameterAvailable} boolean value.
+     *
+     * @see #booleans
+     */
+    static final byte TRANSFORMATION_MASK = 1;
+
+    // If more masks are added in a future version, then
+    // all of them should be private except the last one.
+
+    /**
      * Number of independent spatial-temporal axes.
      */
     private Integer numberOfDimensions;
@@ -74,9 +84,14 @@ public class DefaultGridSpatialRepresentation extends AbstractSpatialRepresentat
     private CellGeometry cellGeometry;
 
     /**
-     * Indication of whether or not parameters for transformation exists.
+     * The set of booleans values. Bits are read and written using the {@code *_MASK} constants.
+     *
+     * @see #TRANSFORMATION_MASK
+     * @see DefaultGeorectified#CHECK_POINT_MASK
+     * @see DefaultGeoreferenceable#CONTROL_POINT_MASK
+     * @see DefaultGeoreferenceable#OPERATION_MASK
      */
-    private boolean transformationParameterAvailable;
+    byte booleans;
 
     /**
      * Constructs an initially empty grid spatial representation.
@@ -95,10 +110,12 @@ public class DefaultGridSpatialRepresentation extends AbstractSpatialRepresentat
      */
     public DefaultGridSpatialRepresentation(final GridSpatialRepresentation object) {
         super(object);
-        numberOfDimensions               = object.getNumberOfDimensions();
-        axisDimensionProperties          = copyList(object.getAxisDimensionProperties(), Dimension.class);
-        cellGeometry                     = object.getCellGeometry();
-        transformationParameterAvailable = object.isTransformationParameterAvailable();
+        numberOfDimensions      = object.getNumberOfDimensions();
+        axisDimensionProperties = copyList(object.getAxisDimensionProperties(), Dimension.class);
+        cellGeometry            = object.getCellGeometry();
+        if (object.isTransformationParameterAvailable()) {
+            booleans = TRANSFORMATION_MASK;
+        }
     }
 
     /**
@@ -203,7 +220,7 @@ public class DefaultGridSpatialRepresentation extends AbstractSpatialRepresentat
     @Override
     @XmlElement(name = "transformationParameterAvailability", required = true)
     public synchronized boolean isTransformationParameterAvailable() {
-        return transformationParameterAvailable;
+        return (booleans & TRANSFORMATION_MASK) != 0;
     }
 
     /**
@@ -213,6 +230,10 @@ public class DefaultGridSpatialRepresentation extends AbstractSpatialRepresentat
      */
     public synchronized void setTransformationParameterAvailable(final boolean newValue) {
         checkWritePermission();
-        transformationParameterAvailable = newValue;
+        if (newValue) {
+            booleans |= TRANSFORMATION_MASK;
+        } else {
+            booleans &= ~TRANSFORMATION_MASK;
+        }
     }
 }

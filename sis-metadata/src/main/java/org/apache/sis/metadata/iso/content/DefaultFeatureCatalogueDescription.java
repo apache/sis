@@ -25,6 +25,9 @@ import org.opengis.util.GenericName;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.content.FeatureCatalogueDescription;
 
+import static org.apache.sis.internal.metadata.MetadataUtilities.getBoolean;
+import static org.apache.sis.internal.metadata.MetadataUtilities.setBoolean;
+
 
 /**
  * Information identifying the feature catalogue.
@@ -53,19 +56,25 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
     private static final long serialVersionUID = 1984922846251567908L;
 
     /**
-     * Indication of whether or not the cited feature catalogue complies with ISO 19110.
+     * Mask for the {@code compliant} {@link Boolean} value.
+     * Needs 2 bits since the values can be {@code true}, {@code false} or {@code null}.
+     *
+     * @see #booleans
      */
-    private Boolean compliant;
+    private static final byte COMPLIANT_MASK = 0b011;
+
+    /**
+     * Mask for the {@code includedWithDataset} {@code boolean} value.
+     * Needs only 1 bit because the value can not be {@code null}.
+     *
+     * @see #booleans
+     */
+    private static final byte INCLUDED_MASK = 0b100;
 
     /**
      * Language(s) used within the catalogue
      */
     private Collection<Locale> languages;
-
-    /**
-     * Indication of whether or not the feature catalogue is included with the dataset.
-     */
-    private boolean includedWithDataset;
 
     /**
      * Subset of feature types from cited feature catalogue occurring in dataset.
@@ -76,6 +85,15 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      * Complete bibliographic reference to one or more external feature catalogues.
      */
     private Collection<Citation> featureCatalogueCitations;
+
+    /**
+     * The set of {@code boolean} and {@link Boolean} values.
+     * Bits are read and written using the {@code *_MASK} constants.
+     *
+     * @see #COMPLIANT_MASK
+     * @see #INCLUDED_MASK
+     */
+    private byte booleans;
 
     /**
      * Constructs an initially empty feature catalogue description.
@@ -94,9 +112,9 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      */
     public DefaultFeatureCatalogueDescription(final FeatureCatalogueDescription object) {
         super(object);
-        compliant                 = object.isCompliant();
+        booleans                  = object.isIncludedWithDataset() ? INCLUDED_MASK : 0;
+        booleans                  = (byte) setBoolean(booleans, COMPLIANT_MASK, object.isCompliant());
         languages                 = copyCollection(object.getLanguages(), Locale.class);
-        includedWithDataset       = object.isIncludedWithDataset();
         featureTypes              = copyCollection(object.getFeatureTypes(), GenericName.class);
         featureCatalogueCitations = copyCollection(object.getFeatureCatalogueCitations(), Citation.class);
     }
@@ -132,7 +150,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
     @Override
     @XmlElement(name = "complianceCode")
     public synchronized Boolean isCompliant() {
-        return compliant;
+        return getBoolean(booleans, COMPLIANT_MASK);
     }
 
     /**
@@ -142,7 +160,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      */
     public synchronized void setCompliant(final Boolean newValue) {
         checkWritePermission();
-        compliant = newValue;
+        booleans = (byte) setBoolean(booleans, COMPLIANT_MASK, newValue);
     }
 
     /**
@@ -169,7 +187,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
     @Override
     @XmlElement(name = "includedWithDataset", required = true)
     public synchronized boolean isIncludedWithDataset() {
-        return includedWithDataset;
+        return (booleans & INCLUDED_MASK) != 0;
     }
 
     /**
@@ -179,7 +197,11 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      */
     public synchronized void setIncludedWithDataset(final boolean newValue) {
         checkWritePermission();
-        includedWithDataset = newValue;
+        if (newValue) {
+            booleans |= INCLUDED_MASK;
+        } else {
+            booleans &= ~INCLUDED_MASK;
+        }
     }
 
     /**

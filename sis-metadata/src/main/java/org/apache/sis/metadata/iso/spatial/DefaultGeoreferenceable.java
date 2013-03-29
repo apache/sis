@@ -57,14 +57,18 @@ public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation im
     private static final long serialVersionUID = 7369639367164358759L;
 
     /**
-     * Indication of whether or not control point(s) exists.
+     * Mask for the {@code controlPointAvailable} boolean value.
+     *
+     * @see #booleans
      */
-    private boolean controlPointAvailable;
+    private static final byte CONTROL_POINT_MASK = TRANSFORMATION_MASK << 1;
 
     /**
-     * Indication of whether or not orientation parameters are available.
+     * Mask for the {@code orientationParameterAvailable} boolean value.
+     *
+     * @see #booleans
      */
-    private boolean orientationParameterAvailable;
+    private static final byte OPERATION_MASK = CONTROL_POINT_MASK << 1;
 
     /**
      * Description of parameters used to describe sensor orientation.
@@ -103,8 +107,12 @@ public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation im
      */
     public DefaultGeoreferenceable(final Georeferenceable object) {
         super(object);
-        controlPointAvailable           = object.isControlPointAvailable();
-        orientationParameterAvailable   = object.isOrientationParameterAvailable();
+        if (object.isControlPointAvailable()) {
+            booleans |= CONTROL_POINT_MASK;
+        }
+        if (object.isOrientationParameterAvailable()) {
+            booleans |= OPERATION_MASK;
+        }
         orientationParameterDescription = object.getOrientationParameterDescription();
         parameterCitations              = copyCollection(object.getParameterCitations(), Citation.class);
         geolocationInformation          = copyCollection(object.getGeolocationInformation(), GeolocationInformation.class);
@@ -142,7 +150,7 @@ public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation im
     @Override
     @XmlElement(name = "controlPointAvailability", required = true)
     public synchronized boolean isControlPointAvailable() {
-        return controlPointAvailable;
+        return (booleans & CONTROL_POINT_MASK) != 0;
     }
 
     /**
@@ -152,7 +160,11 @@ public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation im
      */
     public synchronized void setControlPointAvailable(final boolean newValue) {
        checkWritePermission();
-       controlPointAvailable = newValue;
+        if (newValue) {
+            booleans |= CONTROL_POINT_MASK;
+        } else {
+            booleans &= ~CONTROL_POINT_MASK;
+        }
     }
 
     /**
@@ -161,7 +173,7 @@ public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation im
     @Override
     @XmlElement(name = "orientationParameterAvailability", required = true)
     public synchronized boolean isOrientationParameterAvailable() {
-        return orientationParameterAvailable;
+        return (booleans & OPERATION_MASK) != 0;
     }
 
     /**
@@ -171,7 +183,11 @@ public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation im
      */
     public synchronized void setOrientationParameterAvailable(final boolean newValue) {
         checkWritePermission();
-        orientationParameterAvailable = newValue;
+        if (newValue) {
+            booleans |= OPERATION_MASK;
+        } else {
+            booleans &= ~OPERATION_MASK;
+        }
     }
 
     /**
