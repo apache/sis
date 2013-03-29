@@ -62,10 +62,11 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
     private static final long serialVersionUID = -4467097498958444505L;
 
     /**
-     * Indication of whether or not geographic position points are available to test the
-     * accuracy of the georeferenced grid data.
+     * Mask for the {@code checkPointAvailable} boolean value.
+     *
+     * @see #booleans
      */
-    private boolean checkPointAvailable;
+    private static final byte CHECK_POINT_MASK = TRANSFORMATION_MASK << 1;
 
     /**
      * Description of geographic position points used to test the accuracy of the
@@ -125,7 +126,9 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      */
     public DefaultGeorectified(final Georectified object) {
         super(object);
-        checkPointAvailable                = object.isCheckPointAvailable();
+        if (object.isCheckPointAvailable()) {
+            booleans |= CHECK_POINT_MASK;
+        }
         checkPointDescription              = object.getCheckPointDescription();
         cornerPoints                       = copyList(object.getCornerPoints(), Point.class);
         centerPoint                        = object.getCenterPoint();
@@ -167,7 +170,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
     @Override
     @XmlElement(name = "checkPointAvailability", required = true)
     public synchronized boolean isCheckPointAvailable() {
-        return checkPointAvailable;
+        return (booleans & CHECK_POINT_MASK) != 0;
     }
 
     /**
@@ -178,7 +181,11 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      */
     public synchronized void setCheckPointAvailable(final boolean newValue) {
         checkWritePermission();
-        checkPointAvailable = newValue;
+        if (newValue) {
+            booleans |= CHECK_POINT_MASK;
+        } else {
+            booleans &= ~CHECK_POINT_MASK;
+        }
     }
 
     /**

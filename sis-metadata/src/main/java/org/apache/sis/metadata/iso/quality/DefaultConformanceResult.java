@@ -60,9 +60,9 @@ public class DefaultConformanceResult extends AbstractResult implements Conforma
 
     /**
      * Indication of the conformance result.
-     * <p>
-     * The field is directly annotated here, because the getter method is called {@link #pass()},
-     * and JAXB does not recognize it. The method should have been called getPass() or isPass().
+     *
+     * <p>The field is directly annotated here, because the getter method is called {@link #pass()},
+     * and JAXB does not recognize it. The method should have been called getPass() or isPass().</p>
      */
     @XmlElement(name = "pass", required = true)
     private Boolean pass;

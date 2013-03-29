@@ -21,6 +21,9 @@ import org.apache.sis.util.Static;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.metadata.InvalidMetadataException;
 
+// Related to JDK7
+import java.util.Objects;
+
 
 /**
  * Miscellaneous utility methods for metadata.
@@ -57,6 +60,48 @@ public final class MetadataUtilities extends Static {
      */
     public static Date toDate(final long value) {
         return (value != Long.MIN_VALUE) ? new Date(value) : null;
+    }
+
+    /**
+     * Sets the bit under the given mask for the given boolean value.
+     * This method uses two bits as below:
+     *
+     * <ul>
+     *   <li>{@code 00} - {@code null}</li>
+     *   <li>{@code 10} - {@code Boolean.FALSE}</li>
+     *   <li>{@code 11} - {@code Boolean.TRUE}</li>
+     * </ul>
+     *
+     * @param  flags The set of bits to modify for the given boolean value.
+     * @param  mask  The bit mask, which much have exactly two consecutive bits set.
+     * @param  value The boolean value to store in the {@code flags}, or {@code null}.
+     * @return The updated {@code flags}.
+     */
+    public static int setBoolean(int flags, final int mask, final Boolean value) {
+        assert 3 << Integer.numberOfTrailingZeros(mask) == mask : mask;
+        if (value == null) {
+            flags &= ~mask;
+        } else {
+            flags |= mask;
+            if (!value) {
+                flags &= ~(mask & (mask >>> 1));
+            }
+        }
+        assert Objects.equals(getBoolean(flags, mask), value) : value;
+        return flags;
+    }
+
+    /**
+     * Returns the boolean value for the bits under the given mask.
+     * This method is the reverse of {@link #setBoolean(int, int, Boolean)}.
+     *
+     * @param  flags The set of bits from which to read the boolean value under the given mask.
+     * @param  mask  The bit mask, which much have exactly two consecutive bits set.
+     * @return The boolean value under the given mask (may be {@code null}).
+     */
+    public static Boolean getBoolean(int flags, final int mask) {
+        flags &= mask;
+        return (flags == 0) ? null : Boolean.valueOf(flags == mask);
     }
 
     /**

@@ -25,6 +25,9 @@ import org.opengis.metadata.content.ImageDescription;
 import org.opengis.metadata.content.ImagingCondition;
 import org.apache.sis.measure.ValueRange;
 
+import static org.apache.sis.internal.metadata.MetadataUtilities.getBoolean;
+import static org.apache.sis.internal.metadata.MetadataUtilities.setBoolean;
+
 
 /**
  * Information about an image's suitability for use.
@@ -57,6 +60,46 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = -6168624828802439062L;
+
+    /**
+     * Mask for the {@code triangulationIndicator} {@link Boolean} value.
+     * Needs 2 bits since the values can be {@code true}, {@code false} or {@code null}.
+     *
+     * @see #booleans
+     */
+    private static final short TRIANGULATION_MASK = 3;
+
+    /**
+     * Mask for the {@code radiometricCalibrationDataAvailable} {@link Boolean} value.
+     * Needs 2 bits since the values can be {@code true}, {@code false} or {@code null}.
+     *
+     * @see #booleans
+     */
+    private static final short RADIOMETRIC_MASK = TRIANGULATION_MASK << 2;
+
+    /**
+     * Mask for the {@code cameraCalibrationInformationAvailable} {@link Boolean} value.
+     * Needs 2 bits since the values can be {@code true}, {@code false} or {@code null}.
+     *
+     * @see #booleans
+     */
+    private static final short CAMERA_MASK = RADIOMETRIC_MASK << 2;
+
+    /**
+     * Mask for the {@code filmDistortionInformationAvailable} {@link Boolean} value.
+     * Needs 2 bits since the values can be {@code true}, {@code false} or {@code null}.
+     *
+     * @see #booleans
+     */
+    private static final short FILM_MASK = CAMERA_MASK << 2;
+
+    /**
+     * Mask for the {@code lensDistortionInformationAvailable} {@link Boolean} value.
+     * Needs 2 bits since the values can be {@code true}, {@code false} or {@code null}.
+     *
+     * @see #booleans
+     */
+    private static final short LENS_MASK = FILM_MASK << 2;
 
     /**
      * Illumination elevation measured in degrees clockwise from the target plane
@@ -93,36 +136,20 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     private Identifier processingLevelCode;
 
     /**
-     * Count of the number the number of lossy compression cycles performed on the image.
+     * Count of the number of lossy compression cycles performed on the image.
      */
     private Integer compressionGenerationQuantity;
 
     /**
-     * Indication of whether or not triangulation has been performed upon the image.
+     * The set of {@link Boolean} values. Bits are read and written using the {@code *_MASK} constants.
+     *
+     * @see #TRIANGULATION_MASK
+     * @see #RADIOMETRIC_MASK
+     * @see #CAMERA_MASK
+     * @see #FILM_MASK
+     * @see #LENS_MASK
      */
-    private Boolean triangulationIndicator;
-
-    /**
-     * Indication of whether or not the radiometric calibration information for generating the
-     * radiometrically calibrated standard data product is available.
-     */
-    private Boolean radiometricCalibrationDataAvailable;
-
-    /**
-     * Indication of whether or not constants are available which allow for camera calibration
-     * corrections.
-     */
-    private Boolean cameraCalibrationInformationAvailable;
-
-    /**
-     * Indication of whether or not Calibration Reseau information is available.
-     */
-    private Boolean filmDistortionInformationAvailable;
-
-    /**
-     * Indication of whether or not lens aberration correction information is available.
-     */
-    private Boolean lensDistortionInformationAvailable;
+    private short booleans;
 
     /**
      * Constructs an initially empty image description.
@@ -148,11 +175,14 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
         cloudCoverPercentage                  = object.getCloudCoverPercentage();
         processingLevelCode                   = object.getProcessingLevelCode();
         compressionGenerationQuantity         = object.getCompressionGenerationQuantity();
-        triangulationIndicator                = object.getTriangulationIndicator();
-        radiometricCalibrationDataAvailable   = object.isRadiometricCalibrationDataAvailable();
-        cameraCalibrationInformationAvailable = object.isCameraCalibrationInformationAvailable();
-        filmDistortionInformationAvailable    = object.isFilmDistortionInformationAvailable();
-        lensDistortionInformationAvailable    = object.isLensDistortionInformationAvailable();
+
+        int flags;
+        flags = setBoolean(0,     TRIANGULATION_MASK, object.getTriangulationIndicator());
+        flags = setBoolean(flags, RADIOMETRIC_MASK,   object.isRadiometricCalibrationDataAvailable());
+        flags = setBoolean(flags, CAMERA_MASK,        object.isCameraCalibrationInformationAvailable());
+        flags = setBoolean(flags, FILM_MASK,          object.isFilmDistortionInformationAvailable());
+        flags = setBoolean(flags, LENS_MASK,          object.isLensDistortionInformationAvailable());
+        booleans = (short) flags;
     }
 
     /**
@@ -334,7 +364,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     @Override
     @XmlElement(name = "triangulationIndicator")
     public synchronized Boolean getTriangulationIndicator() {
-        return triangulationIndicator;
+        return getBoolean(booleans, TRIANGULATION_MASK);
     }
 
     /**
@@ -344,7 +374,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      */
     public synchronized void setTriangulationIndicator(final Boolean newValue) {
         checkWritePermission();
-        triangulationIndicator = newValue;
+        booleans = (short) setBoolean(booleans, TRIANGULATION_MASK, newValue);
     }
 
     /**
@@ -354,7 +384,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     @Override
     @XmlElement(name = "radiometricCalibrationDataAvailability")
     public synchronized Boolean isRadiometricCalibrationDataAvailable() {
-        return radiometricCalibrationDataAvailable;
+        return getBoolean(booleans, RADIOMETRIC_MASK);
     }
 
     /**
@@ -365,7 +395,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      */
     public synchronized void setRadiometricCalibrationDataAvailable(final Boolean newValue) {
         checkWritePermission();
-        radiometricCalibrationDataAvailable = newValue;
+        booleans = (short) setBoolean(booleans, RADIOMETRIC_MASK, newValue);
     }
 
     /**
@@ -375,7 +405,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     @Override
     @XmlElement(name = "cameraCalibrationInformationAvailability")
     public synchronized Boolean isCameraCalibrationInformationAvailable() {
-        return cameraCalibrationInformationAvailable;
+        return getBoolean(booleans, CAMERA_MASK);
     }
 
     /**
@@ -386,7 +416,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      */
     public synchronized void setCameraCalibrationInformationAvailable(final Boolean newValue) {
         checkWritePermission();
-        cameraCalibrationInformationAvailable = newValue;
+        booleans = (short) setBoolean(booleans, CAMERA_MASK, newValue);
     }
 
     /**
@@ -395,7 +425,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     @Override
     @XmlElement(name = "filmDistortionInformationAvailability")
     public synchronized Boolean isFilmDistortionInformationAvailable() {
-        return filmDistortionInformationAvailable;
+        return getBoolean(booleans, FILM_MASK);
     }
 
     /**
@@ -405,7 +435,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      */
     public synchronized void setFilmDistortionInformationAvailable(final Boolean newValue) {
         checkWritePermission();
-        filmDistortionInformationAvailable = newValue;
+        booleans = (short) setBoolean(booleans, FILM_MASK, newValue);
     }
 
     /**
@@ -414,7 +444,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     @Override
     @XmlElement(name = "lensDistortionInformationAvailability")
     public synchronized Boolean isLensDistortionInformationAvailable() {
-        return lensDistortionInformationAvailable;
+        return getBoolean(booleans, LENS_MASK);
     }
 
     /**
@@ -424,6 +454,6 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      */
     public synchronized void setLensDistortionInformationAvailable(final Boolean newValue) {
         checkWritePermission();
-        lensDistortionInformationAvailable = newValue;
+        booleans = (short) setBoolean(booleans, LENS_MASK, newValue);
     }
 }
