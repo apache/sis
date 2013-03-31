@@ -24,10 +24,22 @@ import org.opengis.feature.type.AttributeType;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.metadata.maintenance.ScopeDescription;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.internal.metadata.ExcludedSet;
+import org.apache.sis.util.collection.CheckedContainer;
+
+import static org.apache.sis.internal.jaxb.MarshalContext.isMarshaling;
+import static org.apache.sis.util.collection.CollectionsExt.isNullOrEmpty;
 
 
 /**
  * Description of the class of information covered by the information.
+ *
+ * {@section Relationship between properties}
+ * ISO 19115 defines {@code ScopeDescription} as an <cite>union</cite> (in the C/C++ sense):
+ * only one of the properties in this class can be set to a non-empty value.
+ * Setting any property to a non-empty value discard all the other ones.
+ * See the {@linkplain #DefaultScopeDescription(ScopeDescription) constructor javadoc}
+ * for information about which property has precedence on copy operations.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
@@ -48,35 +60,41 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
     private static final long serialVersionUID = -5671299759930976286L;
 
     /**
-     * The attributes to which the information applies.
+     * Enumeration of possible values for {@link #property}.
      */
-    private Set<AttributeType> attributes;
+    private static final byte ATTRIBUTES=1, FEATURES=2, FEATURE_INSTANCES=3, ATTRIBUTE_INSTANCES=4, DATASET=5, OTHER=6;
 
     /**
-     * The features to which the information applies.
+     * The names of the mutually exclusive properties. The index of each name shall be the
+     * value of the above {@code byte} constants minus one.
      */
-    private Set<FeatureType> features;
+    private static final String[] NAMES = {
+        "attributes",
+        "features",
+        "featureInstances",
+        "attributeInstances",
+        "dataset",
+        "other"
+    };
 
     /**
-     * The feature instances to which the information applies.
+     * Specifies which property is set, or 0 if none.
      */
-    private Set<FeatureType> featureInstances;
+    private byte property;
 
     /**
-     * The attribute instances to which the information applies.
+     * The value, as one of the following types:
+     *
+     * <ul>
+     *   <li>{@code Set<AttributeType>} for the {@code attributes} property</li>
+     *   <li>{@code Set<FeatureType>}   for the {@code features} property</li>
+     *   <li>{@code Set<FeatureType>}   for the {@code featureInstances} property</li>
+     *   <li>{@code Set<AttributeType>} for the {@code attributeInstances} property</li>
+     *   <li>{@code String} for the {@code dataset} property</li>
+     *   <li>{@code String} for the {@code other} property</li>
+     * </ul>
      */
-    private Set<AttributeType> attributeInstances;
-
-    /**
-     * Dataset to which the information applies.
-     */
-    private String dataset;
-
-    /**
-     * Class of information that does not fall into the other categories to
-     * which the information applies.
-     */
-    private String other;
+    private Object value;
 
     /**
      * Creates an initially empty scope description.
@@ -89,18 +107,48 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
+     * <p>If the given object contains more than one value, then the first non-null element in the
+     * following list has precedence: {@linkplain #getAttributes() attributes},
+     * {@linkplain #getFeatures() features}, {@linkplain #getFeatureInstances() feature instances},
+     * {@linkplain #getAttributeInstances() attribute instances}, {@linkplain #getDataset() dataset}
+     * and {@linkplain #getOther() other}.</p>
+     *
      * @param object The metadata to copy values from.
      *
      * @see #castOrCopy(ScopeDescription)
      */
+    @SuppressWarnings("unchecked")
     public DefaultScopeDescription(final ScopeDescription object) {
         super(object);
-        dataset            = object.getDataset();
-        other              = object.getOther();
-        attributeInstances = copySet(object.getAttributeInstances(), AttributeType.class);
-        attributes         = copySet(object.getAttributes(), AttributeType.class);
-        featureInstances   = copySet(object.getFeatureInstances(), FeatureType.class);
-        features           = copySet(object.getFeatures(), FeatureType.class);
+        for (byte i=ATTRIBUTES; i<=OTHER; i++) {
+            Object candidate;
+            switch (i) {
+                case ATTRIBUTES:          candidate = object.getAttributes();         break;
+                case FEATURES:            candidate = object.getFeatures();           break;
+                case FEATURE_INSTANCES:   candidate = object.getFeatureInstances();   break;
+                case ATTRIBUTE_INSTANCES: candidate = object.getAttributeInstances(); break;
+                case DATASET:             candidate = object.getDataset();            break;
+                case OTHER:               candidate = object.getOther();              break;
+                default: throw new AssertionError(i);
+            }
+            if (candidate != null) {
+                switch (i) {
+                    case ATTRIBUTES:
+                    case ATTRIBUTE_INSTANCES: {
+                        candidate = copySet((Set<AttributeType>) candidate, AttributeType.class);
+                        break;
+                    }
+                    case FEATURES:
+                    case FEATURE_INSTANCES: {
+                        candidate = copySet((Set<FeatureType>) candidate, FeatureType.class);
+                        break;
+                    }
+                }
+                value = candidate;
+                property = i;
+                break;
+            }
+        }
     }
 
     /**
@@ -129,71 +177,149 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
     }
 
     /**
+     * Returns the given value casted to a {@code Set} of elements of the given type.
+     * It is caller responsibility to ensure that the cast is valid, as element type
+     * is verified only when assertions are enabled.
+     */
+    @SuppressWarnings("unchecked")
+    private static <E> Set<E> cast(final Object value, final Class<E> type) {
+        assert ((CheckedContainer<?>) value).getElementType() == type;
+        return (Set<E>) value;
+    }
+
+    /**
+     * Returns the set of properties identified by the {@code code} argument,
+     * or an unmodifiable empty set if another value is defined.
+     */
+    private <E> Set<E> getProperty(final Class<E> type, final byte code) {
+        final Object value = this.value;
+        if (value != null) {
+            if (property == code) {
+                return cast(value, type);
+            } else if (!(value instanceof Set) || !((Set<?>) value).isEmpty()) {
+                return isMarshaling() ? null : new ExcludedSet<E>(NAMES[code-1], NAMES[property-1]);
+            }
+        }
+        // Unconditionally create a new set, because the
+        // user may hold a reference to the previous one.
+        final Set<E> c = nonNullSet(null, type);
+        property = code;
+        this.value = c;
+        return c;
+    }
+
+    /**
+     * Sets the properties identified by the {@code code} argument, if non-null and non-empty.
+     * This discards any other properties.
+     */
+    private <E> void setProperty(final Set<? extends E> newValue, final Class<E> type, final byte code) {
+        Set<E> c = null;
+        if (property == code) {
+            c = cast(value, type);
+        } else if (isNullOrEmpty(newValue)) {
+            return;
+        }
+        value = writeSet(newValue, c, type);
+    }
+
+    /**
      * Returns the attributes to which the information applies.
+     *
+     * {@section Conditions}
+     * This method returns a modifiable collection only if no other property is set.
+     * Otherwise, this method returns an unmodifiable empty collection.
      */
     @Override
     public synchronized Set<AttributeType> getAttributes() {
-        return attributes = nonNullSet(attributes, AttributeType.class);
+        return getProperty(AttributeType.class, ATTRIBUTES);
     }
 
     /**
      * Sets the attributes to which the information applies.
      *
+     * {@section Effect on other properties}
+     * If and only if the {@code newValue} is non-empty, then this method automatically
+     * discards the all other properties.
+     *
      * @param newValues The new attributes.
      */
     public synchronized void setAttributes(final Set<? extends AttributeType> newValues) {
-        attributes = writeSet(newValues, attributes, AttributeType.class);
+        setProperty(newValues, AttributeType.class, ATTRIBUTES);
     }
 
     /**
      * Returns the features to which the information applies.
+     *
+     * {@section Conditions}
+     * This method returns a modifiable collection only if no other property is set.
+     * Otherwise, this method returns an unmodifiable empty collection.
      */
     @Override
     public synchronized Set<FeatureType> getFeatures() {
-        return features = nonNullSet(features, FeatureType.class);
+        return getProperty(FeatureType.class, FEATURES);
     }
 
     /**
      * Sets the features to which the information applies.
      *
+     * {@section Effect on other properties}
+     * If and only if the {@code newValue} is non-empty, then this method automatically
+     * discards the all other properties.
+     *
      * @param newValues The new features.
      */
     public synchronized void setFeatures(final Set<? extends FeatureType> newValues) {
-        features = writeSet(newValues, features, FeatureType.class);
+        setProperty(newValues, FeatureType.class, FEATURES);
     }
 
     /**
      * Returns the feature instances to which the information applies.
+     *
+     * {@section Conditions}
+     * This method returns a modifiable collection only if no other property is set.
+     * Otherwise, this method returns an unmodifiable empty collection.
      */
     @Override
     public synchronized Set<FeatureType> getFeatureInstances() {
-        return featureInstances = nonNullSet(featureInstances, FeatureType.class);
+        return getProperty(FeatureType.class, FEATURE_INSTANCES);
     }
 
     /**
      * Sets the feature instances to which the information applies.
      *
+     * {@section Effect on other properties}
+     * If and only if the {@code newValue} is non-empty, then this method automatically
+     * discards the all other properties.
+     *
      * @param newValues The new feature instances.
      */
     public synchronized void setFeatureInstances(final Set<? extends FeatureType> newValues) {
-        featureInstances = writeSet(newValues, featureInstances, FeatureType.class);
+        setProperty(newValues, FeatureType.class, FEATURE_INSTANCES);
     }
 
     /**
      * Returns the attribute instances to which the information applies.
+     *
+     * {@section Conditions}
+     * This method returns a modifiable collection only if no other property is set.
+     * Otherwise, this method returns an unmodifiable empty collection.
      */
     @Override
     public synchronized Set<AttributeType> getAttributeInstances() {
-        return attributeInstances = nonNullSet(attributeInstances, AttributeType.class);
+        return getProperty(AttributeType.class, ATTRIBUTE_INSTANCES);
     }
 
     /**
      * Sets the attribute instances to which the information applies.
      *
+     * {@section Effect on other properties}
+     * If and only if the {@code newValue} is non-empty, then this method automatically
+     * discards the all other properties.
+     *
      * @param newValues The new attribute instances.
      */
     public synchronized void setAttributeInstances(final Set<? extends AttributeType> newValues) {
-        attributeInstances = writeSet(newValues, attributeInstances, AttributeType.class);
+        setProperty(newValues, AttributeType.class, ATTRIBUTE_INSTANCES);
     }
 
     /**
@@ -202,17 +328,23 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
     @Override
     @XmlElement(name = "dataset")
     public synchronized String getDataset() {
-        return dataset;
+        return (property == DATASET) ? (String) value : null;
     }
 
     /**
      * Sets the dataset to which the information applies.
      *
+     * {@section Effect on other properties}
+     * If and only if the {@code newValue} is non-null, then this method automatically
+     * discards the all other properties.
+     *
      * @param newValue The new dataset.
      */
     public synchronized void setDataset(final String newValue) {
         checkWritePermission();
-        dataset = newValue;
+        if (newValue != null || property == DATASET) {
+            value = newValue;
+        }
     }
 
     /**
@@ -222,17 +354,23 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
     @Override
     @XmlElement(name = "other")
     public synchronized String getOther() {
-        return other;
+        return (property == OTHER) ? (String) value : null;
     }
 
     /**
      * Sets the class of information that does not fall into the other categories to
      * which the information applies.
      *
+     * {@section Effect on other properties}
+     * If and only if the {@code newValue} is non-null, then this method automatically
+     * discards the all other properties.
+     *
      * @param newValue Other class of information.
      */
     public synchronized void setOther(final String newValue) {
         checkWritePermission();
-        other = newValue;
+        if (newValue != null || property == OTHER) {
+            value = newValue;
+        }
     }
 }

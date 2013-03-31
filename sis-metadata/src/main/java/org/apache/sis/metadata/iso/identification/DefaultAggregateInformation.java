@@ -30,6 +30,13 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 /**
  * Aggregate dataset information.
  *
+ * {@section Relationship between properties}
+ * According ISO 19115, the {@linkplain #getAggregateDataSetName() aggregate dataset name} and
+ * {@linkplain #getAggregateDataSetIdentifier() aggregate dataset identifier} properties are
+ * exclusive: setting one of those properties to a non-null value discard the other one.
+ * See the {@linkplain #DefaultAggregateInformation(AggregateInformation) constructor javadoc}
+ * for information about which property has precedence on copy operations.
+ *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
@@ -50,14 +57,9 @@ public class DefaultAggregateInformation extends ISOMetadata implements Aggregat
     private static final long serialVersionUID = 5520234916010871192L;
 
     /**
-     * Citation information about the aggregate dataset.
+     * The {@code aggregateDataSetName} or {@code aggregateDataSetIdentifier} property.
      */
-    private Citation aggregateDataSetName;
-
-    /**
-     * Identification information about aggregate dataset.
-     */
-    private Identifier aggregateDataSetIdentifier;
+    private Object nameOrIdentifier;
 
     /**
      * Association type of the aggregate dataset.
@@ -80,16 +82,22 @@ public class DefaultAggregateInformation extends ISOMetadata implements Aggregat
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
+     * <p>If both {@linkplain #getAggregateDataSetName() aggregate dataset name} and
+     * {@linkplain #getAggregateDataSetIdentifier() aggregate dataset identifier} are
+     * specified, then the name will have precedence and the identifier is silently discarded.</p>
+     *
      * @param object The metadata to copy values from.
      *
      * @see #castOrCopy(AggregateInformation)
      */
     public DefaultAggregateInformation(final AggregateInformation object) {
         super(object);
-        aggregateDataSetName       = object.getAggregateDataSetName();
-        aggregateDataSetIdentifier = object.getAggregateDataSetIdentifier();
-        associationType            = object.getAssociationType();
-        initiativeType             = object.getInitiativeType();
+        nameOrIdentifier = object.getAggregateDataSetName();
+        if (nameOrIdentifier == null) {
+            nameOrIdentifier = object.getAggregateDataSetIdentifier();
+        }
+        associationType = object.getAssociationType();
+        initiativeType  = object.getInitiativeType();
     }
 
     /**
@@ -118,6 +126,15 @@ public class DefaultAggregateInformation extends ISOMetadata implements Aggregat
     }
 
     /**
+     * Invoked every time the code needs to decide whether the provided information
+     * is the name or the identifier. Defined as a method in order to have a single
+     * word to search if we need to revisit the policy.
+     */
+    private boolean isName() {
+        return (nameOrIdentifier instanceof Citation);
+    }
+
+    /**
      * Citation information about the aggregate dataset.
      *
      * @return Citation information about the aggregate dataset, or {@code null}.
@@ -125,17 +142,23 @@ public class DefaultAggregateInformation extends ISOMetadata implements Aggregat
     @Override
     @XmlElement(name = "aggregateDataSetName")
     public synchronized Citation getAggregateDataSetName() {
-        return aggregateDataSetName;
+        return isName() ? (Citation) nameOrIdentifier : null;
     }
 
     /**
      * Sets the citation information about the aggregate dataset.
      *
+     * {@section Effect on other properties}
+     * If and only if the {@code newValue} is non-null, then this method automatically
+     * discards the {@linkplain #setAggregateDataSetIdentifier aggregate dataset identifier}.
+     *
      * @param newValue The new citation.
      */
     public synchronized void setAggregateDataSetName(final Citation newValue) {
         checkWritePermission();
-        aggregateDataSetName = newValue;
+        if (newValue != null || isName()) {
+            nameOrIdentifier = newValue;
+        }
     }
 
     /**
@@ -146,16 +169,23 @@ public class DefaultAggregateInformation extends ISOMetadata implements Aggregat
     @Override
     @XmlElement(name = "aggregateDataSetIdentifier")
     public synchronized Identifier getAggregateDataSetIdentifier() {
-        return aggregateDataSetIdentifier;
+        return isName() ? null : (Identifier) nameOrIdentifier;
     }
 
     /**
      * Sets the identification information about aggregate dataset.
      *
+     * {@section Effect on other properties}
+     * If and only if the {@code newValue} is non-null, then this method automatically
+     * discards the {@linkplain #setAggregateDataSetName aggregate dataset name}.
+     *
      * @param newValue The new identifier.
      */
     public synchronized void setAggregateDataSetIdentifier(final Identifier newValue) {
-        aggregateDataSetIdentifier = newValue;
+        checkWritePermission();
+        if (newValue != null || !isName()) {
+            nameOrIdentifier = newValue;
+        }
     }
 
     /**
@@ -175,6 +205,7 @@ public class DefaultAggregateInformation extends ISOMetadata implements Aggregat
      * @param newValue The new association type.
      */
     public synchronized void setAssociationType(final AssociationType newValue) {
+        checkWritePermission();
         associationType = newValue;
     }
 
@@ -195,6 +226,7 @@ public class DefaultAggregateInformation extends ISOMetadata implements Aggregat
      * @param newValue The new initiative.
      */
     public synchronized void setInitiativeType(final InitiativeType newValue) {
+        checkWritePermission();
         initiativeType = newValue;
     }
 }

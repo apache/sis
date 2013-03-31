@@ -27,11 +27,11 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.CheckedHashSet;
 import org.apache.sis.util.collection.CheckedArrayList;
-import org.apache.sis.internal.jaxb.MarshalContext;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.collection.CollectionsExt.isNullOrEmpty;
 import static org.apache.sis.util.collection.CollectionsExt.hashMapCapacity;
+import static org.apache.sis.internal.jaxb.MarshalContext.isMarshaling;
 
 
 /**
@@ -485,15 +485,6 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
         }
         collection.add(value);
         return collection;
-    }
-
-    /**
-     * Returns {@code true} if the caller {@code nonNullCollection} method (or list, or set)
-     * is allowed to returns {@code null} instead than an empty list. This happen mostly at
-     * XML marshalling time.
-     */
-    private static boolean isMarshaling() {
-        return MarshalContext.isFlagSet(MarshalContext.current(), MarshalContext.MARSHALING);
     }
 
     /**

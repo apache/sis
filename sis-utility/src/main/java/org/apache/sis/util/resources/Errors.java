@@ -63,6 +63,12 @@ public final class Errors extends IndexedResourceBundle {
         }
 
         /**
+         * No element can be added to this set because properties ‘{0}’ and ‘{1}’ are mutually
+         * exclusive.
+         */
+        public static final int CanNotAddToExclusiveSet_2 = 87;
+
+        /**
          * Can not compute the derivative.
          */
         public static final int CanNotComputeDerivative = 44;
