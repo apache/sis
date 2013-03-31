@@ -54,8 +54,7 @@ public class DefaultScope extends ISOMetadata implements Scope {
     private ScopeCode level;
 
     /**
-     * Information about the spatial, vertical and temporal extent of the data specified by the
-     * scope.
+     * Information about the spatial, vertical and temporal extent of the data specified by the scope.
      */
     private Extent extent;
 
@@ -141,8 +140,6 @@ public class DefaultScope extends ISOMetadata implements Scope {
 
     /**
      * Returns detailed descriptions about the level of the data specified by the scope.
-     * Should be defined only if the {@linkplain #getLevel level} is not equal
-     * to {@link ScopeCode#DATASET DATASET} or {@link ScopeCode#SERIES SERIES}.
      */
     @Override
     @XmlElement(name = "levelDescription")

@@ -33,10 +33,20 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.xml.Namespaces;
+import org.apache.sis.internal.metadata.ExcludedSet;
+
+import static org.apache.sis.internal.jaxb.MarshalContext.isMarshaling;
+import static org.apache.sis.util.collection.CollectionsExt.isNullOrEmpty;
 
 
 /**
  * Information about the source data used in creating the data specified by the scope.
+ *
+ * {@section Relationship between properties}
+ * According ISO 19115, the {@linkplain #getDescription() description} and {@linkplain #getSourceExtents()
+ * source extents} properties are exclusive: setting one of those properties to a non-empty value discard
+ * the other one. See the {@linkplain #DefaultSource(Source) constructor javadoc} for information about
+ * which property has precedence on copy operations.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
@@ -63,9 +73,9 @@ public class DefaultSource extends ISOMetadata implements Source {
     private static final long serialVersionUID = 6277132009549470021L;
 
     /**
-     * Detailed description of the level of the source data.
+     * The {@code description} or the {@code sourceExtents} property.
      */
-    private InternationalString description;
+    private Object descriptionOrExtents;
 
     /**
      * Denominator of the representative fraction on a source map.
@@ -81,11 +91,6 @@ public class DefaultSource extends ISOMetadata implements Source {
      * Recommended reference to be used for the source data.
      */
     private Citation sourceCitation;
-
-    /**
-     * Information about the spatial, vertical and temporal extent of the source data.
-     */
-    private Collection<Extent> sourceExtents;
 
     /**
      * Information about an event in the creation process for the source data.
@@ -115,7 +120,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      * @param description A detailed description of the level of the source data, or {@code null}.
      */
     public DefaultSource(final CharSequence description) {
-        this.description = Types.toInternationalString(description);
+        descriptionOrExtents = Types.toInternationalString(description);
     }
 
     /**
@@ -123,20 +128,26 @@ public class DefaultSource extends ISOMetadata implements Source {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
+     * <p>If both {@linkplain #getSourceExtents() source extents} and {@linkplain #getDescription()
+     * description} are specified, then the source extents will have precedence and the description
+     * is silently discarded.</p>
+     *
      * @param object The metadata to copy values from.
      *
      * @see #castOrCopy(Source)
      */
     public DefaultSource(final Source object) {
         super(object);
-        description           = object.getDescription();
+        descriptionOrExtents  = object.getDescription();
         scaleDenominator      = object.getScaleDenominator();
         sourceCitation        = object.getSourceCitation();
-        sourceExtents         = copyCollection(object.getSourceExtents(), Extent.class);
         sourceSteps           = copyCollection(object.getSourceSteps(), ProcessStep.class);
         processedLevel        = object.getProcessedLevel();
         resolution            = object.getResolution();
         sourceReferenceSystem = object.getSourceReferenceSystem();
+        if (descriptionOrExtents == null) {
+            descriptionOrExtents = copyCollection(object.getSourceExtents(), Extent.class);
+        }
     }
 
     /**
@@ -165,22 +176,37 @@ public class DefaultSource extends ISOMetadata implements Source {
     }
 
     /**
+     * Invoked every time the code needs to decide whether the provided information
+     * is description or source extents. Defined as a method in order to have a single
+     * word to search if we need to revisit the policy.
+     */
+    private boolean isDescription() {
+        return (descriptionOrExtents instanceof InternationalString);
+    }
+
+    /**
      * Returns a detailed description of the level of the source data.
      */
     @Override
     @XmlElement(name = "description")
     public synchronized InternationalString getDescription() {
-        return description;
+        return isDescription() ? (InternationalString) descriptionOrExtents : null;
     }
 
     /**
      * Sets a detailed description of the level of the source data.
      *
+     * {@section Effect on other properties}
+     * If and only if the {@code newValue} is non-null, then this method automatically
+     * discards the {@linkplain #setSourceExtents source extents} collection.
+     *
      * @param newValue The new description.
      */
     public synchronized void setDescription(final InternationalString newValue) {
         checkWritePermission();
-        description = newValue;
+        if (newValue != null || isDescription()) {
+            descriptionOrExtents = newValue;
+        }
     }
 
     /**
@@ -242,22 +268,40 @@ public class DefaultSource extends ISOMetadata implements Source {
     }
 
     /**
-     * Returns tiInformation about the spatial, vertical and temporal extent
-     * of the source data.
+     * Returns the information about the spatial, vertical and temporal extent of the source data.
+     *
+     * {@section Conditions}
+     * This method returns a modifiable collection only if the {@linkplain #getDescription()
+     * description} is not set. Otherwise, this method returns an unmodifiable empty collection.
      */
     @Override
     @XmlElement(name = "sourceExtent")
     public synchronized Collection<Extent> getSourceExtents()  {
-        return sourceExtents = nonNullCollection(sourceExtents, Extent.class);
+        if (isDescription()) {
+            return isMarshaling() ? null : new ExcludedSet<Extent>("sourceExtent", "description");
+        }
+        @SuppressWarnings("unchecked")
+        Collection<Extent> sourceExtents = (Collection<Extent>) descriptionOrExtents;
+        sourceExtents = nonNullCollection(sourceExtents, Extent.class);
+        descriptionOrExtents = sourceExtents;
+        return sourceExtents;
     }
 
     /**
      * Information about the spatial, vertical and temporal extent of the source data.
      *
+     * {@section Effect on other properties}
+     * If and only if the {@code newValue} is non-null, then this method automatically
+     * discards the {@linkplain #setDescription description}.
+     *
      * @param newValues The new source extents.
      */
     public synchronized void setSourceExtents(final Collection<? extends Extent> newValues) {
-        sourceExtents = writeCollection(newValues, sourceExtents, Extent.class);
+        @SuppressWarnings("unchecked")
+        final Collection<Extent> sourceExtents = isDescription() ? null : (Collection<Extent>) descriptionOrExtents;
+        if (sourceExtents != null || !isNullOrEmpty(newValues)) {
+            descriptionOrExtents = writeCollection(newValues, sourceExtents, Extent.class);
+        }
     }
 
     /**

@@ -36,6 +36,11 @@ import org.apache.sis.xml.Namespaces;
  * in the grid can be geolocated given its grid coordinate and the grid origin, cell spacing,
  * and orientation indication of whether or not geographic.
  *
+ * {@section Relationship between properties}
+ * According ISO 19115, the {@linkplain #getCheckPointDescription() check point description}
+ * can be provided only if the {@linkplain #isCheckPointAvailable() check point availability}
+ * is {@code true}. The setter methods will ensure that this condition is not violated.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
@@ -126,9 +131,6 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      */
     public DefaultGeorectified(final Georectified object) {
         super(object);
-        if (object.isCheckPointAvailable()) {
-            booleans |= CHECK_POINT_MASK;
-        }
         checkPointDescription              = object.getCheckPointDescription();
         cornerPoints                       = copyList(object.getCornerPoints(), Point.class);
         centerPoint                        = object.getCenterPoint();
@@ -136,6 +138,11 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
         transformationDimensionDescription = object.getTransformationDimensionDescription();
         transformationDimensionMapping     = copyCollection(object.getTransformationDimensionMapping(), InternationalString.class);
         checkPoints                        = copyCollection(object.getCheckPoints(), GCP.class);
+
+        // checkPointAvailability is required to be 'true' if there is a description.
+        if (checkPointDescription != null || object.isCheckPointAvailable()) {
+            booleans |= CHECK_POINT_MASK;
+        }
     }
 
     /**
@@ -177,6 +184,10 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      * Sets an indication of whether or not geographic position points are available to test the
      * accuracy of the georeferenced grid data.
      *
+     * {@section Effect on other properties}
+     * If and only if the given {@code newValue} is {@code false}, then this method automatically sets
+     * the {@linkplain #setCheckPointDescription check point description} property to {@code null}.
+     *
      * @param newValue {@code true} if check points are available.
      */
     public synchronized void setCheckPointAvailable(final boolean newValue) {
@@ -185,12 +196,14 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
             booleans |= CHECK_POINT_MASK;
         } else {
             booleans &= ~CHECK_POINT_MASK;
+            checkPointDescription = null;
         }
     }
 
     /**
      * Returns a description of geographic position points used to test the accuracy of the
-     * georeferenced grid data.
+     * georeferenced grid data. This value is non-null only if {@link #isCheckPointAvailable()}
+     * returns {@code true}.
      */
     @Override
     @XmlElement(name = "checkPointDescription")
@@ -202,11 +215,18 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      * Sets the description of geographic position points used to test the accuracy of the
      * georeferenced grid data.
      *
+     * {@section Effect on other properties}
+     * If and only if the given {@code newValue} is non-null, then this method automatically sets
+     * the {@linkplain #setCheckPointAvailable check point availability} property to {@code true}.
+     *
      * @param newValue The new check point description.
      */
     public synchronized void setCheckPointDescription(final InternationalString newValue) {
         checkWritePermission();
         checkPointDescription = newValue;
+        if (newValue != null) {
+            booleans |= CHECK_POINT_MASK;
+        }
     }
 
     /**
