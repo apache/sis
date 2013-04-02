@@ -239,7 +239,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      *
      * {@section Effect on other properties}
      * If and only if the {@code newValue} is non-empty, then this method automatically
-     * discards the all other properties.
+     * discards all other properties.
      *
      * @param newValues The new attributes.
      */
@@ -264,7 +264,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      *
      * {@section Effect on other properties}
      * If and only if the {@code newValue} is non-empty, then this method automatically
-     * discards the all other properties.
+     * discards all other properties.
      *
      * @param newValues The new features.
      */
@@ -289,7 +289,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      *
      * {@section Effect on other properties}
      * If and only if the {@code newValue} is non-empty, then this method automatically
-     * discards the all other properties.
+     * discards all other properties.
      *
      * @param newValues The new feature instances.
      */
@@ -314,7 +314,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      *
      * {@section Effect on other properties}
      * If and only if the {@code newValue} is non-empty, then this method automatically
-     * discards the all other properties.
+     * discards all other properties.
      *
      * @param newValues The new attribute instances.
      */
@@ -336,7 +336,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      *
      * {@section Effect on other properties}
      * If and only if the {@code newValue} is non-null, then this method automatically
-     * discards the all other properties.
+     * discards all other properties.
      *
      * @param newValue The new dataset.
      */
@@ -363,7 +363,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      *
      * {@section Effect on other properties}
      * If and only if the {@code newValue} is non-null, then this method automatically
-     * discards the all other properties.
+     * discards all other properties.
      *
      * @param newValue Other class of information.
      */
