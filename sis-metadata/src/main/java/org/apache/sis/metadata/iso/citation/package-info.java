@@ -24,7 +24,29 @@
  * For a global overview of metadata in SIS, see the
  * <a href="{@docRoot}/../sis-metadata/index.html">Metadata page on the project web site</a>.
  *
- * <p><b>Aggregation hierarchy:</b></p>
+ * <table class="sis"><tr>
+ *   <th>Class hierarchy</th>
+ *   <th>Aggregation hierarchy</th>
+ * </tr><tr><td>
+ * <ul>
+ *   <li>{@linkplain org.apache.sis.metadata.iso.ISOMetadata ISO-19115 metadata}<ul>
+ *     <li>{@linkplain org.apache.sis.metadata.iso.citation.DefaultCitation Citation}</li>
+ *     <li>{@linkplain org.apache.sis.metadata.iso.citation.DefaultCitationDate Citation date}</li>
+ *     <li>{@linkplain org.apache.sis.metadata.iso.citation.DefaultResponsibleParty Responsible party}</li>
+ *     <li>{@linkplain org.apache.sis.metadata.iso.citation.DefaultContact Contact}</li>
+ *     <li>{@linkplain org.apache.sis.metadata.iso.citation.DefaultTelephone Telephone}</li>
+ *     <li>{@linkplain org.apache.sis.metadata.iso.citation.DefaultAddress Address}</li>
+ *     <li>{@linkplain org.apache.sis.metadata.iso.citation.DefaultOnlineResource Online resource}</li>
+ *     <li>{@linkplain org.apache.sis.metadata.iso.citation.DefaultSeries Series}</li>
+ *   </ul></li>
+ *   <li>{@linkplain org.opengis.util.CodeList}<ul>
+ *     <li>{@linkplain org.opengis.metadata.citation.DateType Date type}</li>
+ *     <li>{@linkplain org.opengis.metadata.citation.OnLineFunction Online function}</li>
+ *     <li>{@linkplain org.opengis.metadata.citation.PresentationForm Presentation form}</li>
+ *     <li>{@linkplain org.opengis.metadata.citation.Role Role}</li>
+ *   </ul></li>
+ * </ul>
+ * </td><td>
  * <ul>
  *   <li>{@linkplain org.apache.sis.metadata.iso.citation.DefaultCitation Citation}<ul>
  *     <li>{@linkplain org.apache.sis.metadata.iso.citation.DefaultCitationDate Citation date}<ul>
@@ -44,6 +66,7 @@
  *     <li>{@linkplain org.apache.sis.metadata.iso.citation.DefaultSeries Series}</li>
  *   </ul></li>
  * </ul>
+ * </td></tr></table>
  *
  * {@section Unified identifiers view}
  * Apache SIS provides a unified view of all metadata identifiers. This view includes the citation
