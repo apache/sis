@@ -26,29 +26,21 @@
  *
  * <table class="sis"><tr>
  *   <th>Class hierarchy</th>
- *   <th>Aggregation hierarchy</th>
- * </tr><tr><td>
- * <ul>
- *   <li>{@linkplain org.apache.sis.metadata.iso.ISOMetadata ISO-19115 metadata}<ul>
- *     <li>{@linkplain org.apache.sis.metadata.iso.constraint.DefaultConstraints Constraints}<ul>
- *       <li>{@linkplain org.apache.sis.metadata.iso.constraint.DefaultLegalConstraints Legal constraints}</li>
- *       <li>{@linkplain org.apache.sis.metadata.iso.constraint.DefaultSecurityConstraints Security constraints}</li>
- *     </ul></li>
- *   </ul></li>
- *   <li>{@linkplain org.opengis.util.CodeList Code list}<ul>
- *     <li>{@linkplain org.opengis.metadata.constraints.Restriction Restriction}</li>
- *     <li>{@linkplain org.opengis.metadata.constraints.Classification Classification}</li>
- *   </ul></li>
- * </ul>
- * </td><td>
- * <ul>
- *   <li>{@linkplain org.apache.sis.metadata.iso.constraint.DefaultLegalConstraints Legal constraints}<ul>
- *     <li>{@linkplain org.opengis.metadata.constraints.Restriction Restriction} (a code list)</li>
- *   </ul></li>
- *   <li>{@linkplain org.apache.sis.metadata.iso.constraint.DefaultSecurityConstraints Security constraints}<ul>
- *     <li>{@linkplain org.opengis.metadata.constraints.Classification Classification} (a code list)</li>
- *   </ul></li>
- * </ul>
+ *   <th clas="sep">Aggregation hierarchy</th>
+ * </tr><tr><td class="sep" nowrap>
+ * {@linkplain org.apache.sis.metadata.iso.ISOMetadata ISO-19115 metadata}<br>
+ * {@code  └─} {@linkplain org.apache.sis.metadata.iso.constraint.DefaultConstraints Constraints}<br>
+ * {@code      ├─} {@linkplain org.apache.sis.metadata.iso.constraint.DefaultLegalConstraints Legal constraints}<br>
+ * {@code      └─} {@linkplain org.apache.sis.metadata.iso.constraint.DefaultSecurityConstraints Security constraints}<br>
+ * {@linkplain org.opengis.util.CodeList Code list}<br>
+ * {@code  ├─} {@linkplain org.opengis.metadata.constraints.Restriction Restriction}<br>
+ * {@code  └─} {@linkplain org.opengis.metadata.constraints.Classification Classification}<br>
+ * </td><td class="sep" nowrap>
+ * {@linkplain org.apache.sis.metadata.iso.constraint.DefaultConstraints Constraints}<br>
+ * {@linkplain org.apache.sis.metadata.iso.constraint.DefaultLegalConstraints Legal constraints}<br>
+ * {@code  └─} {@linkplain org.opengis.metadata.constraints.Restriction Restriction} (a code list)<br>
+ * {@linkplain org.apache.sis.metadata.iso.constraint.DefaultSecurityConstraints Security constraints}<br>
+ * {@code  └─} {@linkplain org.opengis.metadata.constraints.Classification Classification} (a code list)<br>
  * </td></tr></table>
  *
  * {@section Collections and null values}

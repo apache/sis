@@ -26,45 +26,35 @@
  *
  * <table class="sis"><tr>
  *   <th>Class hierarchy</th>
- *   <th>Aggregation hierarchy</th>
+ *   <th class="sep">Aggregation hierarchy</th>
  * </tr><tr><td>
- * <ul>
- *   <li>{@linkplain org.apache.sis.metadata.iso.ISOMetadata ISO-19115 metadata}<ul>
- *     <li>{@linkplain org.apache.sis.metadata.iso.content.AbstractContentInformation Content information}<ul>
- *       <li>{@linkplain org.apache.sis.metadata.iso.content.DefaultFeatureCatalogueDescription Feature catalogue description}</li>
- *       <li>{@linkplain org.apache.sis.metadata.iso.content.DefaultCoverageDescription Coverage description}<ul>
- *         <li>{@linkplain org.apache.sis.metadata.iso.content.DefaultImageDescription Image description}</li>
- *       </ul></li>
- *     </ul></li>
- *     <li>{@linkplain org.apache.sis.metadata.iso.content.DefaultRangeDimension Range dimension}<ul>
- *       <li>{@linkplain org.apache.sis.metadata.iso.content.DefaultBand Band</li>
- *     </ul></li>
- *     <li>{@linkplain org.apache.sis.metadata.iso.content.DefaultRangeElementDescription Range element description}</li>
- *   </ul></li>
- *   <li>{@linkplain org.opengis.util.CodeList Code list}<ul>
- *     <li>{@linkplain org.opengis.metadata.content.BandDefinition Band definition}</li>
- *     <li>{@linkplain org.opengis.metadata.content.CoverageContentType Coverage content type}</li>
- *     <li>{@linkplain org.opengis.metadata.content.ImagingCondition Imaging condition}</li>
- *     <li>{@linkplain org.opengis.metadata.content.PolarizationOrientation Polarization orientation}</li>
- *     <li>{@linkplain org.opengis.metadata.content.TransferFunctionType Transfer function type}</li>
- *   </ul></li>
- * </ul>
- * </td><td>
- * <ul>
- *   <li>{@linkplain org.apache.sis.metadata.iso.content.DefaultCoverageDescription Coverage description}<ul>
- *     <li>{@linkplain org.opengis.metadata.content.CoverageContentType Coverage content type} (a code list)</li>
- *     <li>{@linkplain org.apache.sis.metadata.iso.content.DefaultRangeDimension Range dimension}</li>
- *     <li>{@linkplain org.apache.sis.metadata.iso.content.DefaultRangeElementDescription Range element description}</li>
- *   </ul></li>
- *   <li>{@linkplain org.apache.sis.metadata.iso.content.DefaultBand Band<ul>
- *     <li>{@linkplain org.opengis.metadata.content.BandDefinition Band definition} (a code list)</li>
- *     <li>{@linkplain org.opengis.metadata.content.PolarizationOrientation Polarization orientation}} (a code list)</li>
- *     <li>{@linkplain org.opengis.metadata.content.TransferFunctionType Transfer function type}} (a code list)</li>
- *   </ul></li>
- *   <li>{@linkplain org.apache.sis.metadata.iso.content.DefaultImageDescription Image description}<ul>
- *     <li>{@linkplain org.opengis.metadata.content.ImagingCondition Imaging condition} (a code list)</li>
- *   </ul></li>
- * </ul>
+ * {@linkplain org.apache.sis.metadata.iso.ISOMetadata ISO-19115 metadata}<br>
+ * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.content.AbstractContentInformation Content information}<br>
+ * {@code  │   ├─} {@linkplain org.apache.sis.metadata.iso.content.DefaultFeatureCatalogueDescription Feature catalogue description}<br>
+ * {@code  │   └─} {@linkplain org.apache.sis.metadata.iso.content.DefaultCoverageDescription Coverage description}<br>
+ * {@code  │       └─} {@linkplain org.apache.sis.metadata.iso.content.DefaultImageDescription Image description}<br>
+ * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.content.DefaultRangeDimension Range dimension}<br>
+ * {@code  │   └─} {@linkplain org.apache.sis.metadata.iso.content.DefaultBand Band}<br>
+ * {@code  └─} {@linkplain org.apache.sis.metadata.iso.content.DefaultRangeElementDescription Range element description}<br>
+ * {@linkplain org.opengis.util.CodeList Code list}<br>
+ * {@code  ├─} {@linkplain org.opengis.metadata.content.BandDefinition Band definition}<br>
+ * {@code  ├─} {@linkplain org.opengis.metadata.content.CoverageContentType Coverage content type}<br>
+ * {@code  ├─} {@linkplain org.opengis.metadata.content.ImagingCondition Imaging condition}<br>
+ * {@code  ├─} {@linkplain org.opengis.metadata.content.PolarizationOrientation Polarization orientation}<br>
+ * {@code  └─} {@linkplain org.opengis.metadata.content.TransferFunctionType Transfer function type}<br>
+ * </td><td class="sep">
+ * {@linkplain org.apache.sis.metadata.iso.content.AbstractContentInformation Content information}<br>
+ * {@linkplain org.apache.sis.metadata.iso.content.DefaultFeatureCatalogueDescription Feature catalogue description}<br>
+ * {@linkplain org.apache.sis.metadata.iso.content.DefaultCoverageDescription Coverage description}<br>
+ * {@code  ├─} {@linkplain org.opengis.metadata.content.CoverageContentType Coverage content type} (a code list)<br>
+ * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.content.DefaultRangeDimension Range dimension}<br>
+ * {@code  └─} {@linkplain org.apache.sis.metadata.iso.content.DefaultRangeElementDescription Range element description}<br>
+ * {@linkplain org.apache.sis.metadata.iso.content.DefaultBand Band}<br>
+ * {@code  ├─} {@linkplain org.opengis.metadata.content.BandDefinition Band definition} (a code list)<br>
+ * {@code  ├─} {@linkplain org.opengis.metadata.content.PolarizationOrientation Polarization orientation} (a code list)<br>
+ * {@code  └─} {@linkplain org.opengis.metadata.content.TransferFunctionType Transfer function type}} (a code list)<br>
+ * {@linkplain org.apache.sis.metadata.iso.content.DefaultImageDescription Image description}<br>
+ * {@code  └─} {@linkplain org.opengis.metadata.content.ImagingCondition Imaging condition} (a code list)<br>
  * </td></tr></table>
  *
  * {@section Bands in gridded data}

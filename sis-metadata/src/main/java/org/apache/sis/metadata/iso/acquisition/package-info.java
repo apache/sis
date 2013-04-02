@@ -26,61 +26,47 @@
  *
  * <table class="sis"><tr>
  *   <th>Class hierarchy</th>
- *   <th>Aggregation hierarchy</th>
- * </tr><tr><td>
- * <ul>
- *   <li>{@linkplain org.apache.sis.metadata.iso.ISOMetadata ISO-19115 metadata}<ul>
- *     <li>{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultAcquisitionInformation Acquisition information}</li>
- *     <li>{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultObjective Objective}</li>
- *     <li>{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultPlatformPass PlatformPass}</li>
- *     <li>{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultEvent Event}</li>
- *     <li>{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultRequirement Requirement}</li>
- *     <li>{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultRequestedDate Requested date}</li>
- *     <li>{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultPlan Plan}</li>
- *     <li>{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultOperation Operation}</li>
- *     <li>{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultPlatform Platform}</li>
- *     <li>{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultInstrument Instrument}</li>
- *     <li>{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultEnvironmentalRecord Environmental record}</li>
- *   </ul></li>
- *   <li>{@linkplain org.opengis.util.CodeList Code list}<ul>
- *     <li>{@linkplain org.opengis.metadata.acquisition.ObjectiveType Objective type}</li>
- *     <li>{@linkplain org.opengis.metadata.acquisition.Trigger Trigger}</li>
- *     <li>{@linkplain org.opengis.metadata.acquisition.Context Context}</li>
- *     <li>{@linkplain org.opengis.metadata.acquisition.Sequence Sequence}</li>
- *     <li>{@linkplain org.opengis.metadata.acquisition.Priority Priority}</li>
- *     <li>{@linkplain org.opengis.metadata.acquisition.GeometryType Geometry type}</li>
- *     <li>{@linkplain org.opengis.metadata.acquisition.OperationType Operation type}</li>
- *   </ul></li>
- * </ul>
- * </td><td>
- * <ul>
- *   <li>{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultAcquisitionInformation Acquisition information}<ul>
- *     <li>{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultObjective Objective}<ul>
- *       <li>{@linkplain org.opengis.metadata.acquisition.ObjectiveType Objective type} (a code list)</li>
- *       <li>{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultPlatformPass PlatformPass}<ul>
- *         <li>{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultEvent Event}<ul>
- *           <li>{@linkplain org.opengis.metadata.acquisition.Trigger Trigger} (a code list)</li>
- *           <li>{@linkplain org.opengis.metadata.acquisition.Context Context} (a code list)</li>
- *           <li>{@linkplain org.opengis.metadata.acquisition.Sequence Sequence} (a code list)</li>
- *         </ul></li>
- *       </ul></li>
- *     </ul></li>
- *     <li>{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultRequirement Requirement}<ul>
- *       <li>{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultRequestedDate Requested date}</li>
- *       <li>{@linkplain org.opengis.metadata.acquisition.Priority Priority} (a code list)</li>
- *     </ul></li>
- *     <li>{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultPlan Plan}<ul>
- *       <li>{@linkplain org.opengis.metadata.acquisition.GeometryType Geometry type} (a code list)</li>
- *       <li>{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultOperation Operation}<ul>
- *         <li>{@linkplain org.opengis.metadata.acquisition.OperationType Operation type} (a code list)</li>
- *         <li>{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultPlatform Platform}<ul>
- *           <li>{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultInstrument Instrument}</li>
- *         </ul></li>
- *       </ul></li>
- *     </ul></li>
- *   </ul></li>
- *   <li>{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultEnvironmentalRecord Environmental record}</li>
- * </ul>
+ *   <th class="sep">Aggregation hierarchy</th>
+ * </tr><tr><td nowrap>
+ * {@linkplain org.apache.sis.metadata.iso.ISOMetadata ISO-19115 metadata}<br>
+ * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultAcquisitionInformation Acquisition information}<br>
+ * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultObjective Objective}<br>
+ * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultPlatformPass PlatformPass}<br>
+ * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultEvent Event}<br>
+ * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultRequirement Requirement}<br>
+ * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultRequestedDate Requested date}<br>
+ * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultPlan Plan}<br>
+ * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultOperation Operation}<br>
+ * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultPlatform Platform}<br>
+ * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultInstrument Instrument}<br>
+ * {@code  └─} {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultEnvironmentalRecord Environmental record}<br>
+ * {@linkplain org.opengis.util.CodeList Code list}<br>
+ * {@code  ├─} {@linkplain org.opengis.metadata.acquisition.ObjectiveType Objective type}<br>
+ * {@code  ├─} {@linkplain org.opengis.metadata.acquisition.Trigger Trigger}<br>
+ * {@code  ├─} {@linkplain org.opengis.metadata.acquisition.Context Context}<br>
+ * {@code  ├─} {@linkplain org.opengis.metadata.acquisition.Sequence Sequence}<br>
+ * {@code  ├─} {@linkplain org.opengis.metadata.acquisition.Priority Priority}<br>
+ * {@code  ├─} {@linkplain org.opengis.metadata.acquisition.GeometryType Geometry type}<br>
+ * {@code  └─} {@linkplain org.opengis.metadata.acquisition.OperationType Operation type}<br>
+ * </td><td class="sep" nowrap>
+ * {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultAcquisitionInformation Acquisition information}<br>
+ * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultObjective Objective}<br>
+ * {@code  │   ├─} {@linkplain org.opengis.metadata.acquisition.ObjectiveType Objective type} (a code list)<br>
+ * {@code  │   ├─} {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultPlatformPass PlatformPass}<br>
+ * {@code  │   │   └─} {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultEvent Event}<br>
+ * {@code  │   │       ├─} {@linkplain org.opengis.metadata.acquisition.Trigger Trigger} (a code list)<br>
+ * {@code  │   │       ├─} {@linkplain org.opengis.metadata.acquisition.Context Context} (a code list)<br>
+ * {@code  │   │       └─} {@linkplain org.opengis.metadata.acquisition.Sequence Sequence} (a code list)<br>
+ * {@code  │   ├─} {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultRequirement Requirement}<br>
+ * {@code  │   │   ├─} {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultRequestedDate Requested date}<br>
+ * {@code  │   │   └─} {@linkplain org.opengis.metadata.acquisition.Priority Priority} (a code list)<br>
+ * {@code  │   └─} {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultPlan Plan}<br>
+ * {@code  │       ├─} {@linkplain org.opengis.metadata.acquisition.GeometryType Geometry type} (a code list)<br>
+ * {@code  │       └─} {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultOperation Operation}<br>
+ * {@code  │           ├─} {@linkplain org.opengis.metadata.acquisition.OperationType Operation type} (a code list)<br>
+ * {@code  │           └─} {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultPlatform Platform}<br>
+ * {@code  │               └─} {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultInstrument Instrument}<br>
+ * {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultEnvironmentalRecord Environmental record}<br>
  * </td></tr></table>
  *
  * {@section Collections and null values}

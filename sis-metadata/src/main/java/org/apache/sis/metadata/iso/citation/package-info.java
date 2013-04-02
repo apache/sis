@@ -26,46 +26,35 @@
  *
  * <table class="sis"><tr>
  *   <th>Class hierarchy</th>
- *   <th>Aggregation hierarchy</th>
- * </tr><tr><td>
- * <ul>
- *   <li>{@linkplain org.apache.sis.metadata.iso.ISOMetadata ISO-19115 metadata}<ul>
- *     <li>{@linkplain org.apache.sis.metadata.iso.citation.DefaultCitation Citation}</li>
- *     <li>{@linkplain org.apache.sis.metadata.iso.citation.DefaultCitationDate Citation date}</li>
- *     <li>{@linkplain org.apache.sis.metadata.iso.citation.DefaultResponsibleParty Responsible party}</li>
- *     <li>{@linkplain org.apache.sis.metadata.iso.citation.DefaultContact Contact}</li>
- *     <li>{@linkplain org.apache.sis.metadata.iso.citation.DefaultTelephone Telephone}</li>
- *     <li>{@linkplain org.apache.sis.metadata.iso.citation.DefaultAddress Address}</li>
- *     <li>{@linkplain org.apache.sis.metadata.iso.citation.DefaultOnlineResource Online resource}</li>
- *     <li>{@linkplain org.apache.sis.metadata.iso.citation.DefaultSeries Series}</li>
- *   </ul></li>
- *   <li>{@linkplain org.opengis.util.CodeList Code list}<ul>
- *     <li>{@linkplain org.opengis.metadata.citation.DateType Date type}</li>
- *     <li>{@linkplain org.opengis.metadata.citation.OnLineFunction Online function}</li>
- *     <li>{@linkplain org.opengis.metadata.citation.PresentationForm Presentation form}</li>
- *     <li>{@linkplain org.opengis.metadata.citation.Role Role}</li>
- *   </ul></li>
- * </ul>
- * </td><td>
- * <ul>
- *   <li>{@linkplain org.apache.sis.metadata.iso.citation.DefaultCitation Citation}<ul>
- *     <li>{@linkplain org.apache.sis.metadata.iso.citation.DefaultCitationDate Citation date}<ul>
- *       <li>{@linkplain org.opengis.metadata.citation.DateType Date type} (a code list)</li>
- *     </ul></li>
- *     <li>{@linkplain org.apache.sis.metadata.iso.citation.DefaultResponsibleParty Responsible party}<ul>
- *       <li>{@linkplain org.apache.sis.metadata.iso.citation.DefaultContact Contact}<ul>
- *         <li>{@linkplain org.apache.sis.metadata.iso.citation.DefaultTelephone Telephone}</li>
- *         <li>{@linkplain org.apache.sis.metadata.iso.citation.DefaultAddress Address}</li>
- *         <li>{@linkplain org.apache.sis.metadata.iso.citation.DefaultOnlineResource Online resource}<ul>
- *           <li>{@linkplain org.opengis.metadata.citation.OnLineFunction Online function} (a code list)</li>
- *         </ul></li>
- *       </ul></li>
- *       <li>{@linkplain org.opengis.metadata.citation.Role Role} (a code list)</li>
- *     </ul></li>
- *     <li>{@linkplain org.opengis.metadata.citation.PresentationForm Presentation form} (a code list)</li>
- *     <li>{@linkplain org.apache.sis.metadata.iso.citation.DefaultSeries Series}</li>
- *   </ul></li>
- * </ul>
+ *   <th class="sep">Aggregation hierarchy</th>
+ * </tr><tr><td nowrap>
+ * {@linkplain org.apache.sis.metadata.iso.ISOMetadata ISO-19115 metadata}<br>
+ * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitation Citation}<br>
+ * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitationDate Citation date}<br>
+ * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultResponsibleParty Responsible party}<br>
+ * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultContact Contact}<br>
+ * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultTelephone Telephone}<br>
+ * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultAddress Address}<br>
+ * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultOnlineResource Online resource}<br>
+ * {@code  └─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultSeries Series}<br>
+ * {@linkplain org.opengis.util.CodeList Code list}<br>
+ * {@code  ├─} {@linkplain org.opengis.metadata.citation.DateType Date type}<br>
+ * {@code  ├─} {@linkplain org.opengis.metadata.citation.OnLineFunction Online function}<br>
+ * {@code  ├─} {@linkplain org.opengis.metadata.citation.PresentationForm Presentation form}<br>
+ * {@code  └─} {@linkplain org.opengis.metadata.citation.Role Role}<br>
+ * </td><td class="sep" nowrap>
+ * {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitation Citation}<br>
+ * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitationDate Citation date}<br>
+ * {@code  │   └─} {@linkplain org.opengis.metadata.citation.DateType Date type} (a code list)<br>
+ * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultResponsibleParty Responsible party}<br>
+ * {@code  │   ├─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultContact Contact}<br>
+ * {@code  │   │   ├─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultTelephone Telephone}<br>
+ * {@code  │   │   ├─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultAddress Address}<br>
+ * {@code  │   │   └─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultOnlineResource Online resource}<br>
+ * {@code  │   │       └─} {@linkplain org.opengis.metadata.citation.OnLineFunction Online function} (a code list)<br>
+ * {@code  │   └─} {@linkplain org.opengis.metadata.citation.Role Role} (a code list)<br>
+ * {@code  ├─} {@linkplain org.opengis.metadata.citation.PresentationForm Presentation form} (a code list)<br>
+ * {@code  └─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultSeries Series}<br>
  * </td></tr></table>
  *
  * {@section Unified identifiers view}
