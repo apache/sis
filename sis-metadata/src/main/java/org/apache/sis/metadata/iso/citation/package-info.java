@@ -27,7 +27,7 @@
  * <table class="sis"><tr>
  *   <th>Class hierarchy</th>
  *   <th class="sep">Aggregation hierarchy</th>
- * </tr><tr><td nowrap>
+ * </tr><tr><td width="50%" nowrap>
  * {@linkplain org.apache.sis.metadata.iso.ISOMetadata ISO-19115 metadata}<br>
  * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitation Citation}<br>
  * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitationDate Citation date}<br>
@@ -42,7 +42,7 @@
  * {@code  ├─} {@linkplain org.opengis.metadata.citation.OnLineFunction Online function}<br>
  * {@code  ├─} {@linkplain org.opengis.metadata.citation.PresentationForm Presentation form}<br>
  * {@code  └─} {@linkplain org.opengis.metadata.citation.Role Role}<br>
- * </td><td class="sep" nowrap>
+ * </td><td class="sep" width="50%" nowrap>
  * {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitation Citation}<br>
  * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitationDate Citation date}<br>
  * {@code  │   └─} {@linkplain org.opengis.metadata.citation.DateType Date type} (a code list)<br>
