@@ -24,6 +24,28 @@
  * For a global overview of metadata in SIS, see the
  * <a href="{@docRoot}/../sis-metadata/index.html">Metadata page on the project web site</a>.
  *
+ * <table class="sis"><tr>
+ *   <th>Class hierarchy</th>
+ *   <th class="sep">Aggregation hierarchy</th>
+ * </tr><tr><td>
+ * {@linkplain org.apache.sis.metadata.iso.ISOMetadata ISO-19115 metadata}<br>
+ * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.extent.DefaultExtent Extent}<br>
+ * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.extent.AbstractGeographicExtent Geographic extent}<br>
+ * {@code  │   ├─} {@linkplain org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox Geographic bounding box}<br>
+ * {@code  │   ├─} {@linkplain org.apache.sis.metadata.iso.extent.DefaultGeographicDescription Geographic description}<br>
+ * {@code  │   └─} {@linkplain org.apache.sis.metadata.iso.extent.DefaultBoundingPolygon Bounding polygon}<br>
+ * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.extent.DefaultVerticalExtent Vertical extent}<br>
+ * {@code  └─} {@linkplain org.apache.sis.metadata.iso.extent.DefaultTemporalExtent Temporal extent}<br>
+ * {@code      └─} {@linkplain org.apache.sis.metadata.iso.extent.DefaultSpatialTemporalExtent Spatial temporal extent}<br>
+ * </td><td class="sep">
+ * {@linkplain org.apache.sis.metadata.iso.extent.DefaultExtent Extent}<br>
+ * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.extent.AbstractGeographicExtent Geographic extent}<br>
+ * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.extent.DefaultVerticalExtent Vertical extent}<br>
+ * {@code  └─} {@linkplain org.apache.sis.metadata.iso.extent.DefaultTemporalExtent Temporal extent}<br>
+ * {@linkplain org.apache.sis.metadata.iso.extent.DefaultSpatialTemporalExtent Spatial temporal extent}<br>
+ * {@code  └─} {@linkplain org.apache.sis.metadata.iso.extent.AbstractGeographicExtent Geographic extent}<br>
+ * </td></tr></table>
+ *
  * <p>In addition to the standard properties, SIS provides the following methods:</p>
  * <ul>
  *   <li>{@link org.apache.sis.metadata.iso.MetadataObjects#getGeographicBoundingBox
