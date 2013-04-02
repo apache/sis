@@ -24,7 +24,26 @@
  * For a global overview of metadata in SIS, see the
  * <a href="{@docRoot}/../sis-metadata/index.html">Metadata page on the project web site</a>.
  *
- * <p><b>Aggregation hierarchy:</b></p>
+ * <table class="sis"><tr>
+ *   <th>Class hierarchy</th>
+ *   <th>Aggregation hierarchy</th>
+ * </tr><tr><td>
+ * <ul>
+ *   <li>{@linkplain org.apache.sis.metadata.iso.ISOMetadata ISO-19115 metadata}<ul>
+ *     <li>{@linkplain org.apache.sis.metadata.iso.DefaultMetadata Metadata}</li>
+ *     <li>{@linkplain org.apache.sis.metadata.iso.DefaultPortrayalCatalogueReference Portrayal catalogue reference}</li>
+ *     <li>{@linkplain org.apache.sis.metadata.iso.DefaultApplicationSchemaInformation Application schema information}</li>
+ *     <li>{@linkplain org.apache.sis.metadata.iso.DefaultMetadataExtensionInformation Metadata extension information}</li>
+ *     <li>{@linkplain org.apache.sis.metadata.iso.DefaultExtendedElementInformation Extended element information}</li>
+ *     <li>{@linkplain org.apache.sis.metadata.iso.DefaultFeatureTypeList Feature type list}</li>
+ *     <li>{@linkplain org.apache.sis.metadata.iso.DefaultIdentifier Identifier}</li>
+ *   </ul></li>
+ *   <li>{@linkplain org.geoapi.util.CodeList}<ul>
+ *     <li>{@linkplain org.opengis.metadata.Datatype Data type}</li>
+ *     <li>{@linkplain org.opengis.metadata.Obligation Obligation}</li>
+ *   </ul></li>
+ * </ul>
+ * </td><td>
  * <ul>
  *   <li>{@linkplain org.apache.sis.metadata.iso.DefaultMetadata Metadata}<ul>
  *     <li>{@linkplain org.apache.sis.metadata.iso.DefaultPortrayalCatalogueReference Portrayal catalogue reference}</li>
@@ -39,6 +58,7 @@
  *   <li>{@linkplain org.apache.sis.metadata.iso.DefaultFeatureTypeList Feature type list}</li>
  *   <li>{@linkplain org.apache.sis.metadata.iso.DefaultIdentifier Identifier}</li>
  * </ul>
+ * </td></tr></table>
  *
  * {@section Localization}
  * When a metadata object is marshalled as an ISO 19139 compliant XML document, the marshaller

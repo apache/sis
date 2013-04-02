@@ -24,7 +24,35 @@
  * For a global overview of metadata in SIS, see the
  * <a href="{@docRoot}/../sis-metadata/index.html">Metadata page on the project web site</a>.
  *
- * <p><b>Aggregation hierarchy:</b></p>
+ * <table class="sis"><tr>
+ *   <th>Class hierarchy</th>
+ *   <th>Aggregation hierarchy</th>
+ * </tr><tr><td>
+ * <ul>
+ *   <li>{@linkplain org.apache.sis.metadata.iso.ISOMetadata ISO-19115 metadata}<ul>
+ *     <li>{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultAcquisitionInformation Acquisition information}</li>
+ *     <li>{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultObjective Objective}</li>
+ *     <li>{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultPlatformPass PlatformPass}</li>
+ *     <li>{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultEvent Event}</li>
+ *     <li>{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultRequirement Requirement}</li>
+ *     <li>{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultRequestedDate Requested date}</li>
+ *     <li>{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultPlan Plan}</li>
+ *     <li>{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultOperation Operation}</li>
+ *     <li>{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultPlatform Platform}</li>
+ *     <li>{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultInstrument Instrument}</li>
+ *     <li>{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultEnvironmentalRecord Environmental record}</li>
+ *   </ul></li>
+ *   <li>{@linkplain org.geoapi.util.CodeList}<ul>
+ *     <li>{@linkplain org.opengis.metadata.acquisition.ObjectiveType Objective type}</li>
+ *     <li>{@linkplain org.opengis.metadata.acquisition.Trigger Trigger}</li>
+ *     <li>{@linkplain org.opengis.metadata.acquisition.Context Context}</li>
+ *     <li>{@linkplain org.opengis.metadata.acquisition.Sequence Sequence}</li>
+ *     <li>{@linkplain org.opengis.metadata.acquisition.Priority Priority}</li>
+ *     <li>{@linkplain org.opengis.metadata.acquisition.GeometryType Geometry type}</li>
+ *     <li>{@linkplain org.opengis.metadata.acquisition.OperationType Operation type}</li>
+ *   </ul></li>
+ * </ul>
+ * </td><td>
  * <ul>
  *   <li>{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultAcquisitionInformation Acquisition information}<ul>
  *     <li>{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultObjective Objective}<ul>
@@ -51,8 +79,9 @@
  *       </ul></li>
  *     </ul></li>
  *   </ul></li>
- *   <li>{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultEnvironmentalRecord Environmental record} (<i>used in</i> acquisition information)</li>
+ *   <li>{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultEnvironmentalRecord Environmental record}</li>
  * </ul>
+ * </td></tr></table>
  *
  * {@section Collections and null values}
  * Unless otherwise noted in the Javadoc, all constructors and setter methods accept {@code null} argument.
