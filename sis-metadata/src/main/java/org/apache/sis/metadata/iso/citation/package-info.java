@@ -39,7 +39,7 @@
  *     <li>{@linkplain org.apache.sis.metadata.iso.citation.DefaultOnlineResource Online resource}</li>
  *     <li>{@linkplain org.apache.sis.metadata.iso.citation.DefaultSeries Series}</li>
  *   </ul></li>
- *   <li>{@linkplain org.opengis.util.CodeList}<ul>
+ *   <li>{@linkplain org.opengis.util.CodeList Code list}<ul>
  *     <li>{@linkplain org.opengis.metadata.citation.DateType Date type}</li>
  *     <li>{@linkplain org.opengis.metadata.citation.OnLineFunction Online function}</li>
  *     <li>{@linkplain org.opengis.metadata.citation.PresentationForm Presentation form}</li>
