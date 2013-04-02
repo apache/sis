@@ -27,7 +27,7 @@
  * <table class="sis"><tr>
  *   <th>Class hierarchy</th>
  *   <th class="sep">Aggregation hierarchy</th>
- * </tr><tr><td nowrap>
+ * </tr><tr><td width="50%" nowrap>
  * {@linkplain org.apache.sis.metadata.iso.ISOMetadata ISO-19115 metadata}<br>
  * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultAcquisitionInformation Acquisition information}<br>
  * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultObjective Objective}<br>
@@ -48,7 +48,7 @@
  * {@code  ├─} {@linkplain org.opengis.metadata.acquisition.Priority Priority}<br>
  * {@code  ├─} {@linkplain org.opengis.metadata.acquisition.GeometryType Geometry type}<br>
  * {@code  └─} {@linkplain org.opengis.metadata.acquisition.OperationType Operation type}<br>
- * </td><td class="sep" nowrap>
+ * </td><td class="sep" width="50%" nowrap>
  * {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultAcquisitionInformation Acquisition information}<br>
  * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultObjective Objective}<br>
  * {@code  │   ├─} {@linkplain org.opengis.metadata.acquisition.ObjectiveType Objective type} (a code list)<br>

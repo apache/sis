@@ -27,7 +27,7 @@
  * <table class="sis"><tr>
  *   <th>Class hierarchy</th>
  *   <th class="sep">Aggregation hierarchy</th>
- * </tr><tr><td nowrap>
+ * </tr><tr><td width="50%" nowrap>
  * {@linkplain org.apache.sis.metadata.iso.ISOMetadata ISO-19115 metadata}<br>
  * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.DefaultMetadata Metadata}<br>
  * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.DefaultPortrayalCatalogueReference Portrayal catalogue reference}<br>
@@ -39,7 +39,7 @@
  * {@linkplain org.opengis.util.CodeList Code list}<br>
  * {@code  ├─} {@linkplain org.opengis.metadata.Datatype Data type}<br>
  * {@code  └─} {@linkplain org.opengis.metadata.Obligation Obligation}
- * </td><td class="sep" nowrap>
+ * </td><td class="sep" width="50%" nowrap>
  * {@linkplain org.apache.sis.metadata.iso.DefaultMetadata Metadata}<br>
  * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.DefaultPortrayalCatalogueReference Portrayal catalogue reference}<br>
  * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.DefaultApplicationSchemaInformation Application schema information}<br>

@@ -27,7 +27,7 @@
  * <table class="sis"><tr>
  *   <th>Class hierarchy</th>
  *   <th class="sep">Aggregation hierarchy</th>
- * </tr><tr><td>
+ * </tr><tr><td width="50%" nowrap>
  * {@linkplain org.apache.sis.metadata.iso.ISOMetadata ISO-19115 metadata}<br>
  * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.content.AbstractContentInformation Content information}<br>
  * {@code  │   ├─} {@linkplain org.apache.sis.metadata.iso.content.DefaultFeatureCatalogueDescription Feature catalogue description}<br>
@@ -42,7 +42,7 @@
  * {@code  ├─} {@linkplain org.opengis.metadata.content.ImagingCondition Imaging condition}<br>
  * {@code  ├─} {@linkplain org.opengis.metadata.content.PolarizationOrientation Polarization orientation}<br>
  * {@code  └─} {@linkplain org.opengis.metadata.content.TransferFunctionType Transfer function type}<br>
- * </td><td class="sep">
+ * </td><td class="sep" width="50%" nowrap>
  * {@linkplain org.apache.sis.metadata.iso.content.AbstractContentInformation Content information}<br>
  * {@linkplain org.apache.sis.metadata.iso.content.DefaultFeatureCatalogueDescription Feature catalogue description}<br>
  * {@linkplain org.apache.sis.metadata.iso.content.DefaultCoverageDescription Coverage description}<br>
@@ -52,7 +52,7 @@
  * {@linkplain org.apache.sis.metadata.iso.content.DefaultBand Band}<br>
  * {@code  ├─} {@linkplain org.opengis.metadata.content.BandDefinition Band definition} (a code list)<br>
  * {@code  ├─} {@linkplain org.opengis.metadata.content.PolarizationOrientation Polarization orientation} (a code list)<br>
- * {@code  └─} {@linkplain org.opengis.metadata.content.TransferFunctionType Transfer function type}} (a code list)<br>
+ * {@code  └─} {@linkplain org.opengis.metadata.content.TransferFunctionType Transfer function type} (a code list)<br>
  * {@linkplain org.apache.sis.metadata.iso.content.DefaultImageDescription Image description}<br>
  * {@code  └─} {@linkplain org.opengis.metadata.content.ImagingCondition Imaging condition} (a code list)<br>
  * </td></tr></table>
