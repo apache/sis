@@ -26,38 +26,29 @@
  *
  * <table class="sis"><tr>
  *   <th>Class hierarchy</th>
- *   <th>Aggregation hierarchy</th>
- * </tr><tr><td>
- * <ul>
- *   <li>{@linkplain org.apache.sis.metadata.iso.ISOMetadata ISO-19115 metadata}<ul>
- *     <li>{@linkplain org.apache.sis.metadata.iso.DefaultMetadata Metadata}</li>
- *     <li>{@linkplain org.apache.sis.metadata.iso.DefaultPortrayalCatalogueReference Portrayal catalogue reference}</li>
- *     <li>{@linkplain org.apache.sis.metadata.iso.DefaultApplicationSchemaInformation Application schema information}</li>
- *     <li>{@linkplain org.apache.sis.metadata.iso.DefaultMetadataExtensionInformation Metadata extension information}</li>
- *     <li>{@linkplain org.apache.sis.metadata.iso.DefaultExtendedElementInformation Extended element information}</li>
- *     <li>{@linkplain org.apache.sis.metadata.iso.DefaultFeatureTypeList Feature type list}</li>
- *     <li>{@linkplain org.apache.sis.metadata.iso.DefaultIdentifier Identifier}</li>
- *   </ul></li>
- *   <li>{@linkplain org.opengis.util.CodeList Code list}<ul>
- *     <li>{@linkplain org.opengis.metadata.Datatype Data type}</li>
- *     <li>{@linkplain org.opengis.metadata.Obligation Obligation}</li>
- *   </ul></li>
- * </ul>
- * </td><td>
- * <ul>
- *   <li>{@linkplain org.apache.sis.metadata.iso.DefaultMetadata Metadata}<ul>
- *     <li>{@linkplain org.apache.sis.metadata.iso.DefaultPortrayalCatalogueReference Portrayal catalogue reference}</li>
- *     <li>{@linkplain org.apache.sis.metadata.iso.DefaultApplicationSchemaInformation Application schema information}</li>
- *     <li>{@linkplain org.apache.sis.metadata.iso.DefaultMetadataExtensionInformation Metadata extension information}<ul>
- *       <li>{@linkplain org.apache.sis.metadata.iso.DefaultExtendedElementInformation Extended element information}<ul>
- *         <li>{@linkplain org.opengis.metadata.Datatype Data type} (a code list)</li>
- *         <li>{@linkplain org.opengis.metadata.Obligation Obligation} (a code list)</li>
- *       </ul></li>
- *     </ul></li>
- *   </ul></li>
- *   <li>{@linkplain org.apache.sis.metadata.iso.DefaultFeatureTypeList Feature type list}</li>
- *   <li>{@linkplain org.apache.sis.metadata.iso.DefaultIdentifier Identifier}</li>
- * </ul>
+ *   <th class="sep">Aggregation hierarchy</th>
+ * </tr><tr><td nowrap>
+ * {@linkplain org.apache.sis.metadata.iso.ISOMetadata ISO-19115 metadata}<br>
+ * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.DefaultMetadata Metadata}<br>
+ * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.DefaultPortrayalCatalogueReference Portrayal catalogue reference}<br>
+ * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.DefaultApplicationSchemaInformation Application schema information}<br>
+ * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.DefaultMetadataExtensionInformation Metadata extension information}<br>
+ * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.DefaultExtendedElementInformation Extended element information}<br>
+ * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.DefaultFeatureTypeList Feature type list}<br>
+ * {@code  └─} {@linkplain org.apache.sis.metadata.iso.DefaultIdentifier Identifier}<br>
+ * {@linkplain org.opengis.util.CodeList Code list}<br>
+ * {@code  ├─} {@linkplain org.opengis.metadata.Datatype Data type}<br>
+ * {@code  └─} {@linkplain org.opengis.metadata.Obligation Obligation}
+ * </td><td class="sep" nowrap>
+ * {@linkplain org.apache.sis.metadata.iso.DefaultMetadata Metadata}<br>
+ * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.DefaultPortrayalCatalogueReference Portrayal catalogue reference}<br>
+ * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.DefaultApplicationSchemaInformation Application schema information}<br>
+ * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.DefaultMetadataExtensionInformation Metadata extension information}<br>
+ * {@code  │   └─} {@linkplain org.apache.sis.metadata.iso.DefaultExtendedElementInformation Extended element information}<br>
+ * {@code  │       ├─} {@linkplain org.opengis.metadata.Datatype Data type} (a code list)<br>
+ * {@code  │       └─} {@linkplain org.opengis.metadata.Obligation Obligation} (a code list)<br>
+ * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.DefaultFeatureTypeList Feature type list}<br>
+ * {@code  └─} {@linkplain org.apache.sis.metadata.iso.DefaultIdentifier Identifier}
  * </td></tr></table>
  *
  * {@section Localization}
