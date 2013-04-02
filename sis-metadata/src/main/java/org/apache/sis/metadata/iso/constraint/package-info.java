@@ -24,6 +24,33 @@
  * For a global overview of metadata in SIS, see the
  * <a href="{@docRoot}/../sis-metadata/index.html">Metadata page on the project web site</a>.
  *
+ * <table class="sis"><tr>
+ *   <th>Class hierarchy</th>
+ *   <th>Aggregation hierarchy</th>
+ * </tr><tr><td>
+ * <ul>
+ *   <li>{@linkplain org.apache.sis.metadata.iso.ISOMetadata ISO-19115 metadata}<ul>
+ *     <li>{@linkplain org.apache.sis.metadata.iso.constraint.DefaultConstraints Constraints}<ul>
+ *       <li>{@linkplain org.apache.sis.metadata.iso.constraint.DefaultLegalConstraints Legal constraints}</li>
+ *       <li>{@linkplain org.apache.sis.metadata.iso.constraint.DefaultSecurityConstraints Security constraints}</li>
+ *     </ul></li>
+ *   </ul></li>
+ *   <li>{@linkplain org.opengis.util.CodeList Code list}<ul>
+ *     <li>{@linkplain org.opengis.metadata.constraints.Restriction Restriction}</li>
+ *     <li>{@linkplain org.opengis.metadata.constraints.Classification Classification}</li>
+ *   </ul></li>
+ * </ul>
+ * </td><td>
+ * <ul>
+ *   <li>{@linkplain org.apache.sis.metadata.iso.constraint.DefaultLegalConstraints Legal constraints}<ul>
+ *     <li>{@linkplain org.opengis.metadata.constraints.Restriction Restriction} (a code list)</li>
+ *   </ul></li>
+ *   <li>{@linkplain org.apache.sis.metadata.iso.constraint.DefaultSecurityConstraints Security constraints}<ul>
+ *     <li>{@linkplain org.opengis.metadata.constraints.Classification Classification} (a code list)</li>
+ *   </ul></li>
+ * </ul>
+ * </td></tr></table>
+ *
  * {@section Collections and null values}
  * Unless otherwise noted in the Javadoc, all constructors and setter methods accept {@code null} argument.
  * A null argument value means that the metadata element can not be provided, and the reason for that is unspecified.
