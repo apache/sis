@@ -38,7 +38,7 @@
  *     <li>{@linkplain org.apache.sis.metadata.iso.DefaultFeatureTypeList Feature type list}</li>
  *     <li>{@linkplain org.apache.sis.metadata.iso.DefaultIdentifier Identifier}</li>
  *   </ul></li>
- *   <li>{@linkplain org.geoapi.util.CodeList}<ul>
+ *   <li>{@linkplain org.opengis.util.CodeList}<ul>
  *     <li>{@linkplain org.opengis.metadata.Datatype Data type}</li>
  *     <li>{@linkplain org.opengis.metadata.Obligation Obligation}</li>
  *   </ul></li>

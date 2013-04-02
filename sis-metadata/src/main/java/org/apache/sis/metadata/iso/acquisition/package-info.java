@@ -42,7 +42,7 @@
  *     <li>{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultInstrument Instrument}</li>
  *     <li>{@linkplain org.apache.sis.metadata.iso.acquisition.DefaultEnvironmentalRecord Environmental record}</li>
  *   </ul></li>
- *   <li>{@linkplain org.geoapi.util.CodeList}<ul>
+ *   <li>{@linkplain org.opengis.util.CodeList}<ul>
  *     <li>{@linkplain org.opengis.metadata.acquisition.ObjectiveType Objective type}</li>
  *     <li>{@linkplain org.opengis.metadata.acquisition.Trigger Trigger}</li>
  *     <li>{@linkplain org.opengis.metadata.acquisition.Context Context}</li>
