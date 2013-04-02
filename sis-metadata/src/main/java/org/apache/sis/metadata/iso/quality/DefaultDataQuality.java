@@ -24,21 +24,15 @@ import org.opengis.metadata.lineage.Lineage;
 import org.opengis.metadata.quality.DataQuality;
 import org.opengis.metadata.quality.Element;
 import org.opengis.metadata.quality.Scope;
-import org.apache.sis.internal.metadata.ExcludedSet;
 import org.apache.sis.metadata.iso.ISOMetadata;
-
-import static org.apache.sis.internal.jaxb.MarshalContext.isMarshaling;
-import static org.apache.sis.util.collection.CollectionsExt.isNullOrEmpty;
 
 
 /**
  * Quality information for the data specified by a data quality scope.
  *
  * {@section Relationship between properties}
- * According ISO 19115, the {@linkplain #getLineage() lineage} and {@linkplain #getReports() reports}
- * properties are exclusive: setting one of those properties to a non-empty value discard the other one.
- * See the {@linkplain #DefaultDataQuality(DataQuality) constructor javadoc} for information about
- * which property has precedence on copy operations.
+ * According ISO 19115, at least one of {@linkplain #getLineage() lineage} and
+ * {@linkplain #getReports() reports} shall be provided.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
@@ -64,10 +58,18 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
     private Scope scope;
 
     /**
-     * Either the lineage as a {@link Lineage} instance or the reports
-     * as a {@code Collection<Element>} instance.
+     * Quantitative quality information for the data specified by the scope.
+     * Should be provided only if {@linkplain Scope#getLevel scope level} is
+     * {@linkplain org.opengis.metadata.maintenance.ScopeCode#DATASET dataset}.
      */
-    private Object lineageOrReports;
+    private Collection<Element> reports;
+
+    /**
+     * Non-quantitative quality information about the lineage of the data specified by the scope.
+     * Should be provided only if {@linkplain Scope#getLevel scope level} is
+     * {@linkplain org.opengis.metadata.maintenance.ScopeCode#DATASET dataset}.
+     */
+    private Lineage lineage;
 
     /**
      * Constructs an initially empty data quality.
@@ -89,21 +91,15 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * <p>If both {@linkplain #getLineage() lineage} and {@linkplain #getReports() reports} are
-     * specified, then the reports will have precedence and the lineage is silently discarded.</p>
-     *
      * @param object The metadata to copy values from.
      *
      * @see #castOrCopy(DataQuality)
      */
     public DefaultDataQuality(final DataQuality object) {
         super(object);
-        scope = object.getScope();
-        lineageOrReports = copyCollection(object.getReports(), Element.class);
-        if (lineageOrReports == null) {
-            // Give precedence to quantitative information.
-            lineageOrReports = object.getLineage();
-        }
+        scope   = object.getScope();
+        reports = copyCollection(object.getReports(), Element.class);
+        lineage = object.getLineage();
     }
 
     /**
@@ -151,78 +147,43 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
     }
 
     /**
-     * Invoked every time the code needs to decide whether the provided information
-     * is lineage or the reports. Defined as a method in order to have a single word
-     * to search if we need to revisit the policy.
-     */
-    private boolean isLineage() {
-        return (lineageOrReports instanceof Lineage);
-    }
-
-    /**
      * Returns the quantitative quality information for the data specified by the scope.
-     *
-     * {@section Conditions}
-     * This method returns a modifiable collection only if the {@linkplain #getLineage() lineage}
-     * is not set. Otherwise, this method returns an unmodifiable empty collection.
      *
      * @return The quantitative quality information.
      */
     @Override
     @XmlElement(name = "report")
     public synchronized Collection<Element> getReports() {
-        if (isLineage()) {
-            return isMarshaling() ? null : new ExcludedSet<Element>("report", "lineage");
-        }
-        @SuppressWarnings("unchecked")
-        Collection<Element> reports = (Collection<Element>) lineageOrReports;
-        reports = nonNullCollection(reports, Element.class);
-        lineageOrReports = reports;
-        return reports;
+        return reports = nonNullCollection(reports, Element.class);
     }
 
     /**
      * Sets the quantitative quality information for the data specified by the scope.
      *
-     * {@section Effect on other properties}
-     * If and only if the {@code newValue} is non-empty, then this method automatically
-     * discards the {@linkplain #setLineage lineage}.
-     *
      * @param newValues The new reports.
      */
     public synchronized void setReports(final Collection<? extends Element> newValues) {
-        @SuppressWarnings("unchecked")
-        final Collection<Element> reports = isLineage() ? null : (Collection<Element>) lineageOrReports;
-        if (reports != null || !isNullOrEmpty(newValues)) {
-            lineageOrReports = writeCollection(newValues, reports, Element.class);
-        }
+        reports = writeCollection(newValues, reports, Element.class);
     }
 
     /**
      * Returns non-quantitative quality information about the lineage of the data specified
-     * by the scope. Note that the lineage and the {@linkplain #getReports() reports} are
-     * mutually exclusive properties.
+     * by the scope.
      */
     @Override
     @XmlElement(name = "lineage")
     public synchronized Lineage getLineage() {
-        return isLineage() ? (Lineage) lineageOrReports : null;
+        return lineage;
     }
 
     /**
      * Sets the non-quantitative quality information about the lineage of the data specified
      * by the scope.
      *
-     * {@section Effect on other properties}
-     * If and only if the {@code newValue} is non-null, then this method automatically
-     * discards the {@linkplain #setReports reports} collection.
-     *
      * @param newValue The new lineage.
      */
     public synchronized void setLineage(final Lineage newValue) {
         checkWritePermission();
-        if (newValue != null || isLineage()) {
-            lineageOrReports = newValue;
-        }
+        lineage = newValue;
     }
 }

@@ -37,9 +37,9 @@ import org.apache.sis.xml.Namespaces;
  * and orientation indication of whether or not geographic.
  *
  * {@section Relationship between properties}
- * According ISO 19115, the {@linkplain #getCheckPointDescription() check point description}
- * can be provided only if the {@linkplain #isCheckPointAvailable() check point availability}
- * is {@code true}. The setter methods will ensure that this condition is not violated.
+ * Providing the {@linkplain #getCheckPointDescription() check point description} implies that
+ * {@linkplain #isCheckPointAvailable() check point availability} is {@code true}. The setter
+ * methods will ensure that this condition is not violated.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)

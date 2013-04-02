@@ -30,6 +30,13 @@ import org.apache.sis.measure.ValueRange;
 /**
  * Level of detail expressed as a scale factor or a ground distance.
  *
+ * {@section Relationship between properties}
+ * ISO 19115 defines {@code Resolution} as an <cite>union</cite> (in the C/C++ sense):
+ * only one of the properties in this class can be set to a non-empty value.
+ * Setting any property to a non-empty value discard all the other ones.
+ * See the {@linkplain #DefaultResolution(Resolution) constructor javadoc}
+ * for information about which property has precedence on copy operations.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
@@ -49,19 +56,10 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
     private static final long serialVersionUID = -4644465057871958482L;
 
     /**
-     * Level of detail expressed as the scale of a comparable hardcopy map or chart.
-     * This value should be between 0 and 1.
-     * Only one of {@linkplain #getEquivalentScale() equivalent scale} and
-     * {@linkplain #getDistance() ground sample distance} may be provided.
+     * Either the scale as a {@link RepresentativeFraction} instance or the distance
+     * as a {@code Double} instance.
      */
-    private RepresentativeFraction equivalentScale;
-
-    /**
-     * Ground sample distance.
-     * Only one of {@linkplain #getEquivalentScale() equivalent scale} and
-     * {@linkplain #getDistance() ground sample distance} may be provided.
-     */
-    private Double distance;
+    private Object scaleOrDistance;
 
     /**
      * Constructs an initially empty resolution.
@@ -74,14 +72,19 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
+     * <p>If both {@linkplain #getEquivalentScale() scale} and {@linkplain #getDistance() distance}
+     * are specified, then the scale will have precedence and the distance is silently discarded.</p>
+     *
      * @param object The metadata to copy values from.
      *
      * @see #castOrCopy(Resolution)
      */
     public DefaultResolution(final Resolution object) {
         super(object);
-        equivalentScale = object.getEquivalentScale();
-        distance        = object.getDistance();
+        scaleOrDistance = object.getEquivalentScale();
+        if (scaleOrDistance == null) {
+            scaleOrDistance = object.getDistance();
+        }
     }
 
     /**
@@ -110,6 +113,15 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
     }
 
     /**
+     * Invoked every time the code needs to decide whether the provided information
+     * is scale or distance. Defined as a method in order to have a single word to
+     * search if we need to revisit the policy.
+     */
+    private boolean isDistance() {
+        return (scaleOrDistance instanceof Double);
+    }
+
+    /**
      * Returns the level of detail expressed as the scale of a comparable hardcopy map or chart.
      * Only one of {@linkplain #getEquivalentScale() equivalent scale} and
      * {@linkplain #getDistance() ground sample distance} may be provided.
@@ -117,17 +129,23 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
     @Override
     @XmlElement(name = "equivalentScale")
     public synchronized RepresentativeFraction getEquivalentScale()  {
-        return equivalentScale;
+        return isDistance() ? null : (RepresentativeFraction) scaleOrDistance;
     }
 
     /**
      * Sets the level of detail expressed as the scale of a comparable hardcopy map or chart.
      *
+     * {@section Effect on other properties}
+     * If and only if the {@code newValue} is non-null, then this method automatically
+     * discards the {@linkplain #setDistance distance}.
+     *
      * @param newValue The new equivalent scale.
      */
     public synchronized void setEquivalentScale(final RepresentativeFraction newValue) {
         checkWritePermission();
-        equivalentScale = newValue;
+        if (newValue != null || !isDistance()) {
+            scaleOrDistance = newValue;
+        }
     }
 
     /**
@@ -140,7 +158,7 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
 //    @XmlJavaTypeAdapter(GO_Distance.class) // TODO
     @XmlElement(name = "distance")
     public synchronized Double getDistance() {
-        return distance;
+        return isDistance() ? (Double) scaleOrDistance : null;
     }
 
     /**
@@ -150,6 +168,8 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      */
     public synchronized void setDistance(final Double newValue) {
         checkWritePermission();
-        distance = newValue;
+        if (newValue != null || isDistance()) {
+            scaleOrDistance = newValue;
+        }
     }
 }
