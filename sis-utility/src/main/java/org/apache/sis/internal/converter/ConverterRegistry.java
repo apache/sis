@@ -305,7 +305,7 @@ public class ConverterRegistry {
                      */
                     continue;
                 }
-                if (sourceClass == String.class && Iterable.class.isAssignableFrom(targetClass)) {
+                if (sourceClass == String.class && Iterable.class.isAssignableFrom(i)) {
                     /*
                      * Exclude the case of String to Iterables (including collections), because
                      * there is too many ways to perform such conversion. For example we do not

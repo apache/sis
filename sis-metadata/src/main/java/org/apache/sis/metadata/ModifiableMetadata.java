@@ -27,11 +27,11 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.CheckedHashSet;
 import org.apache.sis.util.collection.CheckedArrayList;
-import org.apache.sis.internal.jaxb.MarshalContext;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.collection.CollectionsExt.isNullOrEmpty;
 import static org.apache.sis.util.collection.CollectionsExt.hashMapCapacity;
+import static org.apache.sis.internal.jaxb.MarshalContext.isMarshaling;
 
 
 /**
@@ -68,7 +68,7 @@ import static org.apache.sis.util.collection.CollectionsExt.hashMapCapacity;
  *         }
  *
  *         public synchronized void setProperties(Collection<Foo> newValues) {
- *             properties = copyCollection(newValues, properties, Foo.class);
+ *             properties = writeCollection(newValues, properties, Foo.class);
  *         }
  *     }
  * }
@@ -112,7 +112,6 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * Constructs an initially empty metadata.
      */
     protected ModifiableMetadata() {
-        super();
     }
 
     /**
@@ -229,8 +228,8 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
     }
 
     /**
-     * Copies the content of one list ({@code source}) into an other ({@code target}).
-     * This method performs the following steps:
+     * Writes the content of the {@code source} collection into the {@code target} list,
+     * creating it if needed. This method performs the following steps:
      *
      * <ul>
      *   <li>Invokes {@link #checkWritePermission()} in order to ensure that this metadata is
@@ -241,7 +240,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      *   <li>Copies the content of the given {@code source} into the target.</li>
      * </ul>
      *
-     * @param  <E>         The type of elements in the list.
+     * @param  <E>         The type represented by the {@code Class} argument.
      * @param  source      The source list, or {@code null}.
      * @param  target      The target list, or {@code null} if not yet created.
      * @param  elementType The base type of elements to put in the list.
@@ -252,11 +251,11 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * @see #nonNullList(List, Class)
      */
     @SuppressWarnings("unchecked")
-    protected final <E> List<E> copyList(final Collection<? extends E> source,
+    protected final <E> List<E> writeList(final Collection<? extends E> source,
             List<E> target, final Class<E> elementType)
             throws UnmodifiableMetadataException
     {
-        // See the comments in copyCollection(...) for implementation notes.
+        // See the comments in writeCollection(...) for implementation notes.
         if (source != target) {
             if (unmodifiable == FREEZING) {
                 return (List<E>) source;
@@ -277,8 +276,8 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
     }
 
     /**
-     * Copies the content of one Set ({@code source}) into an other ({@code target}).
-     * This method performs the following steps:
+     * Writes the content of the {@code source} collection into the {@code target} set,
+     * creating it if needed. This method performs the following steps:
      *
      * <ul>
      *   <li>Invokes {@link #checkWritePermission()} in order to ensure that this metadata is
@@ -289,7 +288,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      *   <li>Copies the content of the given {@code source} into the target.</li>
      * </ul>
      *
-     * @param  <E>         The type of elements in the set.
+     * @param  <E>         The type represented by the {@code Class} argument.
      * @param  source      The source set, or {@code null}.
      * @param  target      The target set, or {@code null} if not yet created.
      * @param  elementType The base type of elements to put in the set.
@@ -300,11 +299,11 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * @see #nonNullSet(Set, Class)
      */
     @SuppressWarnings("unchecked")
-    protected final <E> Set<E> copySet(final Collection<? extends E> source,
+    protected final <E> Set<E> writeSet(final Collection<? extends E> source,
             Set<E> target, final Class<E> elementType)
             throws UnmodifiableMetadataException
     {
-        // See the comments in copyCollection(...) for implementation notes.
+        // See the comments in writeCollection(...) for implementation notes.
         if (source != target) {
             if (unmodifiable == FREEZING) {
                 return (Set<E>) source;
@@ -325,8 +324,8 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
     }
 
     /**
-     * Copies the content of one collection ({@code source}) into an other ({@code target}).
-     * This method performs the following steps:
+     * Writes the content of the {@code source} collection into the {@code target} list or set,
+     * creating it if needed. This method performs the following steps:
      *
      * <ul>
      *   <li>Invokes {@link #checkWritePermission()} in order to ensure that this metadata is
@@ -339,13 +338,13 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * </ul>
      *
      * {@section Choosing a collection type}
-     * Implementations shall invoke {@link #copyList copyList} or {@link #copySet copySet} methods
+     * Implementations shall invoke {@link #writeList writeList} or {@link #writeSet writeSet} methods
      * instead than this method when the collection type is enforced by ISO specification.
      * When the type is not enforced by the specification, some freedom are allowed at
      * implementor choice. The default implementation invokes {@link #collectionType(Class)}
      * in order to get a hint about whether a {@link List} or a {@link Set} should be used.
      *
-     * @param  <E>         The type of elements in the collection.
+     * @param  <E>         The type represented by the {@code Class} argument.
      * @param  source      The source collection, or {@code null}.
      * @param  target      The target collection, or {@code null} if not yet created.
      * @param  elementType The base type of elements to put in the collection.
@@ -354,7 +353,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * @throws UnmodifiableMetadataException if this metadata is unmodifiable.
      */
     @SuppressWarnings("unchecked")
-    protected final <E> Collection<E> copyCollection(final Collection<? extends E> source,
+    protected final <E> Collection<E> writeCollection(final Collection<? extends E> source,
             Collection<E> target, final Class<E> elementType)
             throws UnmodifiableMetadataException
     {
@@ -369,7 +368,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
                  * freeze() method is under progress. The source collection is already
                  * an unmodifiable instance created by unmodifiable(Object).
                  */
-                assert collectionType(elementType).isAssignableFrom(source.getClass());
+                assert collectionType(elementType).isInstance(source);
                 return (Collection<E>) source;
             }
             checkWritePermission();
@@ -393,25 +392,110 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
     }
 
     /**
-     * Returns {@code true} if the caller {@code nonNullCollection} method (or list, or set)
-     * is allowed to returns {@code null} instead than an empty list. This happen mostly at
-     * XML marshalling time.
+     * Creates a list with the content of the {@code source} collection,
+     * or returns {@code null} if the source is {@code null} or empty.
+     * This is a convenience method for copying fields in subclass copy constructors.
+     *
+     * @param  <E>         The type represented by the {@code Class} argument.
+     * @param  source      The source collection, or {@code null}.
+     * @param  elementType The base type of elements to put in the list.
+     * @return A list containing the {@code source} elements,
+     *         or {@code null} if the source was null or empty.
      */
-    private static boolean isMarshaling() {
-        return MarshalContext.isFlagSet(MarshalContext.current(), MarshalContext.MARSHALING);
+    protected final <E> List<E> copyList(final Collection<? extends E> source, final Class<E> elementType) {
+        if (isNullOrEmpty(source)) {
+            return null;
+        }
+        final List<E> target = new MutableList<E>(elementType, source.size());
+        target.addAll(source);
+        return target;
+    }
+
+    /**
+     * Creates a set with the content of the {@code source} collection,
+     * or returns {@code null} if the source is {@code null} or empty.
+     * This is a convenience method for copying fields in subclass copy constructors.
+     *
+     * @param  <E>         The type represented by the {@code Class} argument.
+     * @param  source      The source collection, or {@code null}.
+     * @param  elementType The base type of elements to put in the set.
+     * @return A set containing the {@code source} elements,
+     *         or {@code null} if the source was null or empty.
+     */
+    protected final <E> Set<E> copySet(final Collection<? extends E> source, final Class<E> elementType) {
+        if (isNullOrEmpty(source)) {
+            return null;
+        }
+        final Set<E> target = new MutableSet<E>(elementType, source.size());
+        target.addAll(source);
+        return target;
+    }
+
+    /**
+     * Creates a list or set with the content of the {@code source} collection,
+     * or returns {@code null} if the source is {@code null} or empty.
+     * This is a convenience method for copying fields in subclass copy constructors.
+     *
+     * <p>The collection type is selected as described in the
+     * {@link #nonNullCollection(Collection, Class)}.</p>
+     *
+     * @param  <E>         The type represented by the {@code Class} argument.
+     * @param  source      The source collection, or {@code null}.
+     * @param  elementType The base type of elements to put in the collection.
+     * @return A collection containing the {@code source} elements,
+     *         or {@code null} if the source was null or empty.
+     */
+    protected final <E> Collection<E> copyCollection(final Collection<? extends E> source, final Class<E> elementType) {
+        if (isNullOrEmpty(source)) {
+            return null;
+        }
+        final Collection<E> target;
+        final int capacity = source.size();
+        if (useSet(elementType)) {
+            target = new MutableSet<E>(elementType, capacity);
+        } else {
+            target = new MutableList<E>(elementType, capacity);
+        }
+        target.addAll(source);
+        return target;
+    }
+
+    /**
+     * Creates a singleton list or set containing only the given value, if non-null.
+     * This is a convenience method for initializing fields in subclass constructors.
+     *
+     * <p>The collection type is selected as described in the
+     * {@link #nonNullCollection(Collection, Class)}.</p>
+     *
+     * @param  <E>         The type represented by the {@code Class} argument.
+     * @param  value       The singleton value to put in the returned collection, or {@code null}.
+     * @param  elementType The element type (used only if {@code value} is non-null).
+     * @return A new modifiable collection containing the given value,
+     *         or {@code null} if the given value was null.
+     */
+    protected final <E> Collection<E> singleton(final E value, final Class<E> elementType) {
+        if (value == null) {
+            return null;
+        }
+        final Collection<E> collection;
+        if (useSet(elementType)) {
+            collection = new MutableSet<E>(elementType);
+        } else {
+            collection = new MutableList<E>(elementType);
+        }
+        collection.add(value);
+        return collection;
     }
 
     /**
      * Returns the specified list, or a new one if {@code c} is null.
-     * This is a convenience method for implementation of {@code getFoo()}
-     * methods.
+     * This is a convenience method for implementation of {@code getFoo()} methods.
      *
-     * @param  <E> The type of elements in the list.
-     * @param  c The list to checks.
+     * @param  <E> The type represented by the {@code Class} argument.
+     * @param  c The existing list, or {@code null} if the list has not yet been created.
      * @param  elementType The element type (used only if {@code c} is null).
      * @return {@code c}, or a new list if {@code c} is null.
      */
-    // See the comments in nonNullCollection(...) for implementation notes.
     protected final <E> List<E> nonNullList(final List<E> c, final Class<E> elementType) {
         assert Thread.holdsLock(this);
         if (c != null) {
@@ -428,15 +512,13 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
 
     /**
      * Returns the specified set, or a new one if {@code c} is null.
-     * This is a convenience method for implementation of {@code getFoo()}
-     * methods.
+     * This is a convenience method for implementation of {@code getFoo()} methods.
      *
-     * @param  <E> The type of elements in the set.
-     * @param  c The set to checks.
+     * @param  <E> The type represented by the {@code Class} argument.
+     * @param  c The existing set, or {@code null} if the set has not yet been created.
      * @param  elementType The element type (used only if {@code c} is null).
      * @return {@code c}, or a new set if {@code c} is null.
      */
-    // See the comments in nonNullCollection(...) for implementation notes.
     protected final <E> Set<E> nonNullSet(final Set<E> c, final Class<E> elementType) {
         assert Thread.holdsLock(this);
         if (c != null) {
@@ -453,28 +535,25 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
 
     /**
      * Returns the specified collection, or a new one if {@code c} is null.
-     * This is a convenience method for implementation of {@code getFoo()}
-     * methods.
+     * This is a convenience method for implementation of {@code getFoo()} methods.
      *
      * {@section Choosing a collection type}
-     * Implementations shall invoke {@link #nonNullList nonNullList} or {@link #nonNullSet
-     * nonNullSet} instead than this method when the collection type is enforced by ISO
+     * Implementations shall invoke {@link #nonNullList nonNullList(…)} or {@link #nonNullSet
+     * nonNullSet(…)} instead than this method when the collection type is enforced by ISO
      * specification. When the type is not enforced by the specification, some freedom are
      * allowed at implementor choice. The default implementation invokes
      * {@link #collectionType(Class)} in order to get a hint about whether a {@link List}
      * or a {@link Set} should be used.
      *
-     * @param  <E> The type of elements in the collection.
-     * @param  c The collection to checks.
+     * @param  <E> The type represented by the {@code Class} argument.
+     * @param  c The existing collection, or {@code null} if the collection has not yet been created.
      * @param  elementType The element type (used only if {@code c} is null).
      * @return {@code c}, or a new collection if {@code c} is null.
      */
-    // Despite the javadoc claims, we do not yet return null during copy operations.
-    // However a future version may do so if it appears worth on a performance point of view.
     protected final <E> Collection<E> nonNullCollection(final Collection<E> c, final Class<E> elementType) {
         assert Thread.holdsLock(this);
         if (c != null) {
-            assert collectionType(elementType).isAssignableFrom(c.getClass());
+            assert collectionType(elementType).isInstance(c);
             return c.isEmpty() && isMarshaling() ? null : c;
         }
         if (isMarshaling()) {

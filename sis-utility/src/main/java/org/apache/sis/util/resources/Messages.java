@@ -60,6 +60,11 @@ public final class Messages extends IndexedResourceBundle {
         public static final int ChangedContainerCapacity_2 = 0;
 
         /**
+         * Text were discarded for some locales.
+         */
+        public static final int LocalesDiscarded = 2;
+
+        /**
          * Unavailable content.
          */
         public static final int UnavailableContent = 1;
