@@ -42,7 +42,7 @@
  * </td></tr></table>
  *
  * {@section Collections and null values}
- * Unless otherwise noted in the Javadoc, all constructors and setter methods accept {@code null} argument.
+ * All constructors (except the <cite>copy constructor</cite>) and setter methods accept {@code null} arguments.
  * A null argument value means that the metadata element can not be provided, and the reason for that is unspecified.
  * Alternatively, users can specify why a metadata element is missing by providing a value created by
  * {@link org.apache.sis.xml.NilReason#createNilObject NilReason.createNilObject(Class)}.
@@ -57,7 +57,8 @@
  *
  * Unless the metadata object has been marked as unmodifiable and unless otherwise noted in the Javadoc,
  * all collections returned by getter methods are <cite>live</cite>: adding new elements in the collection
- * modify directly the underlying metadata object.
+ * modify directly the underlying metadata object. Noticeable exceptions to this rule are <cite>union</cite>
+ * structures, for which only one property can be non-empty in the same object.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)

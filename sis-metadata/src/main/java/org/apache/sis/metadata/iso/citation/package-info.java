@@ -65,7 +65,7 @@
  * See {@link org.apache.sis.xml.IdentifierMap} for more information.
  *
  * {@section Collections and null values}
- * Unless otherwise noted in the Javadoc, all constructors and setter methods accept {@code null} argument.
+ * All constructors (except the <cite>copy constructor</cite>) and setter methods accept {@code null} arguments.
  * A null argument value means that the metadata element can not be provided, and the reason for that is unspecified.
  * Alternatively, users can specify why a metadata element is missing by providing a value created by
  * {@link org.apache.sis.xml.NilReason#createNilObject NilReason.createNilObject(Class)}.
