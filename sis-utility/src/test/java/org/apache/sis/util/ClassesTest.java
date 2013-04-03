@@ -123,8 +123,8 @@ public final strictfp class ClassesTest extends TestCase {
     private static abstract class T3 extends T2 implements Transformation {}
 
     /**
-     * Tests {@link Classes#findCommonClass(Collection)}
-     * and {@link Classes#findSpecializedClass(Collection)}.
+     * Tests {@link Classes#findCommonClass(Iterable)}
+     * and {@link Classes#findSpecializedClass(Iterable)}.
      */
     @Test
     public void testFindCommonParent() {
