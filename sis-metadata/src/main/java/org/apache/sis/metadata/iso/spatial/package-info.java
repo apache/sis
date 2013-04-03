@@ -24,6 +24,47 @@
  * For a global overview of metadata in SIS, see the
  * <a href="{@docRoot}/../sis-metadata/index.html">Metadata page on the project web site</a>.
  *
+ * <table class="sis"><tr>
+ *   <th>Class hierarchy</th>
+ *   <th class="sep">Aggregation hierarchy</th>
+ * </tr><tr><td width="50%" nowrap>
+ * {@linkplain org.apache.sis.metadata.iso.ISOMetadata ISO-19115 metadata}<br>
+ * {@code  ├─}         {@linkplain org.apache.sis.metadata.iso.spatial.AbstractSpatialRepresentation      Spatial representation} «abstract»<br>
+ * {@code  │   ├─}     {@linkplain org.apache.sis.metadata.iso.spatial.DefaultVectorSpatialRepresentation Vector spatial representation}<br>
+ * {@code  │   └─}     {@linkplain org.apache.sis.metadata.iso.spatial.DefaultGridSpatialRepresentation   Grid spatial representation}<br>
+ * {@code  │       ├─} {@linkplain org.apache.sis.metadata.iso.spatial.DefaultGeoreferenceable            Georeferenceable}<br>
+ * {@code  │       └─} {@linkplain org.apache.sis.metadata.iso.spatial.DefaultGeorectified                Georectified}<br>
+ * {@code  ├─}         {@linkplain org.apache.sis.metadata.iso.spatial.AbstractGeolocationInformation     Geolocation information} «abstract»<br>
+ * {@code  │   └─}     {@linkplain org.apache.sis.metadata.iso.spatial.DefaultGCPCollection               GCP collection}<br>
+ * {@code  ├─}         {@linkplain org.apache.sis.metadata.iso.spatial.DefaultGCP                         GCP}<br>
+ * {@code  ├─}         {@linkplain org.apache.sis.metadata.iso.spatial.DefaultDimension                   Dimension}<br>
+ * {@code  └─}         {@linkplain org.apache.sis.metadata.iso.spatial.DefaultGeometricObjects            Geometric objects}<br>
+ * {@linkplain org.opengis.util.CodeList Code list}<br>
+ * {@code  ├─} {@linkplain org.opengis.metadata.spatial.TopologyLevel             Topology level}<br>
+ * {@code  ├─} {@linkplain org.opengis.metadata.spatial.GeometricObjectType       Geometric object type}<br>
+ * {@code  ├─} {@linkplain org.opengis.metadata.spatial.CellGeometry              Cell geometry}<br>
+ * {@code  ├─} {@linkplain org.opengis.metadata.spatial.PixelOrientation          Pixel orientation}<br>
+ * {@code  ├─} {@linkplain org.opengis.metadata.spatial.DimensionNameType         Dimension name type}<br>
+ * {@code  └─} {@linkplain org.opengis.metadata.spatial.SpatialRepresentationType Spatial representation type}<br>
+ * </td><td class="sep" width="50%" nowrap>
+ *                 {@linkplain org.apache.sis.metadata.iso.spatial.AbstractSpatialRepresentation      Spatial representation} «abstract»<br>
+ *                 {@linkplain org.apache.sis.metadata.iso.spatial.DefaultVectorSpatialRepresentation Vector spatial representation}<br>
+ * {@code  ├─}     {@linkplain org.opengis.metadata.spatial.TopologyLevel                             Topology level} «code list»<br>
+ * {@code  └─}     {@linkplain org.apache.sis.metadata.iso.spatial.DefaultGeometricObjects            Geometric objects}<br>
+ * {@code      └─} {@linkplain org.opengis.metadata.spatial.GeometricObjectType                       Geometric object type} «code list»<br>
+ *                 {@linkplain org.apache.sis.metadata.iso.spatial.DefaultGridSpatialRepresentation   Grid spatial representation}<br>
+ * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.spatial.DefaultDimension                   Dimension}<br>
+ * {@code  │   └─} {@linkplain org.opengis.metadata.spatial.DimensionNameType                         Dimension name type} «code list»<br>
+ * {@code  ├─}     {@linkplain org.opengis.metadata.spatial.CellGeometry                              Cell geometry} «code list»<br>
+ *                 {@linkplain org.apache.sis.metadata.iso.spatial.DefaultGeoreferenceable            Georeferenceable}<br>
+ * {@code  └─}     {@linkplain org.apache.sis.metadata.iso.spatial.AbstractGeolocationInformation     Geolocation information} «abstract»<br>
+ *                 {@linkplain org.apache.sis.metadata.iso.spatial.DefaultGeorectified                Georectified}<br>
+ * {@code  ├─}     {@linkplain org.opengis.metadata.spatial.PixelOrientation                          Pixel orientation} «code list»<br>
+ * {@code  └─}     {@linkplain org.apache.sis.metadata.iso.spatial.DefaultGCP                         GCP}<br>
+ *                 {@linkplain org.apache.sis.metadata.iso.spatial.DefaultGCPCollection               GCP collection}<br>
+ *                 {@linkplain org.opengis.metadata.spatial.SpatialRepresentationType                 Spatial representation type} «code list»<br>
+ * </td></tr></table>
+ *
  * {@section Collections and null values}
  * Unless otherwise noted in the Javadoc, all constructors and setter methods accept {@code null} argument.
  * A null argument value means that the metadata element can not be provided, and the reason for that is unspecified.

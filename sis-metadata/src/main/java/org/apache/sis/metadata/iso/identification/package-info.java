@@ -58,6 +58,7 @@
  * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultResolution            Resolution}<br>
  * {@code  └─}     {@linkplain org.opengis.metadata.identification.TopicCategory                       Topic category} «code list»<br>
  *                 {@linkplain org.apache.sis.metadata.iso.identification.DefaultServiceIdentification Service identification}<br>
+ *                 {@linkplain org.opengis.metadata.identification.CharacterSet                        Character set} «code list»<br>
  * </td></tr></table>
  *
  * <p>In addition to the standard properties, SIS provides the following methods:</p>
