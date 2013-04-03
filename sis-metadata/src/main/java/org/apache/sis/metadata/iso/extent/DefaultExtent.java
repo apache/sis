@@ -45,8 +45,7 @@ import org.apache.sis.internal.metadata.ReferencingServices;
  * <p>In addition to the standard properties, SIS provides the following methods:</p>
  * <ul>
  *   <li>{@link #addElements(Envelope)} for adding extents inferred from the given envelope.</li>
- *   <li>{@link org.apache.sis.metadata.iso.MetadataObjects#getGeographicBoundingBox(Extent)}
- *       for extracting a global geographic bounding box.</li>
+ *   <li>{@link Extents#getGeographicBoundingBox(Extent)} for extracting a global geographic bounding box.</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
@@ -56,7 +55,7 @@ import org.apache.sis.internal.metadata.ReferencingServices;
  * @version 0.3
  * @module
  *
- * @see org.apache.sis.metadata.iso.MetadataObjects#getGeographicBoundingBox(Extent)
+ * @see Extents#getGeographicBoundingBox(Extent)
  */
 @XmlType(name = "EX_Extent_Type", propOrder = {
     "description",

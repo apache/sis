@@ -14,31 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.metadata.iso;
+package org.apache.sis.metadata.iso.extent;
 
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.BoundingPolygon;
 import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
-import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.util.Static;
 
 import static org.apache.sis.internal.metadata.MetadataUtilities.getInclusion;
 
 
 /**
- * Convenience static methods for extracting information from {@link org.opengis.metadata} objects.
+ * Convenience static methods for extracting information from {@link Extent} objects.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.2)
  * @version 0.3
  * @module
  */
-public final class MetadataObjects extends Static {
+public final class Extents extends Static {
     /**
      * Do no allow instantiation of this class.
      */
-    private MetadataObjects() {
+    private Extents() {
     }
 
     /**
