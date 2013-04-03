@@ -51,8 +51,8 @@
  *
  * <p>In addition to the standard properties, SIS provides the following methods:</p>
  * <ul>
- *   <li>{@link org.apache.sis.metadata.iso.MetadataObjects#getGeographicBoundingBox
- *       MetadataObjects.getGeographicBoundingBox(Extent)}
+ *   <li>{@link org.apache.sis.metadata.iso.extent.Extents#getGeographicBoundingBox
+ *       Extents.getGeographicBoundingBox(Extent)}
  *       for extracting a global geographic bounding box.</li>
  *
  *   <li>{@link org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#setBounds(double, double, double, double)

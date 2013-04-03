@@ -48,8 +48,8 @@ package org.apache.sis.util;
  *     <td>Insert or remove elements in the middle of arrays.</td></tr>
  *
  * <tr><th colspan="2" class="hsep">OGC/ISO objects (metadata, referencing, geometries)</th></tr>
- * <tr><td>{@link org.apache.sis.metadata.iso.MetadataObjects}</td>
- *     <td>Extract information from {@link org.opengis.metadata} objects.</td></tr>
+ * <tr><td>{@link org.apache.sis.metadata.iso.extent.Extents}</td>
+ *     <td>Extract information from {@link org.opengis.metadata.extent.Extent} objects.</td></tr>
  *
  * <tr><th colspan="2" class="hsep">Input / Output (including CRS, XML, images)</th></tr>
  * <tr><td>{@link org.apache.sis.io.IO}</td>
