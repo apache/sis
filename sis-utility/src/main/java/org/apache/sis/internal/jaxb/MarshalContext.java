@@ -219,6 +219,23 @@ public final class MarshalContext extends org.apache.sis.xml.MarshalContext {
     }
 
     /**
+     * Returns {@code true} if XML marshalling is under progress.
+     * This convenience method is implemented by:
+     *
+     * {@preformat java
+     *     return isFlagSet(current(), MARSHALING);
+     * }
+     *
+     * Callers should use the {@link #isFlagSet(MarshalContext, int)} method instead if the
+     * {@code MarshalContext} instance is known, for avoiding a call to {@link #current()}.
+     * 
+     * @return {@code true} if XML marshalling is under progress.
+     */
+    public static boolean isMarshaling() {
+        return isFlagSet(current(), MARSHALING);
+    }
+
+    /**
      * Returns {@code true} if the given flag is set.
      *
      * @param  context The current context, or {@code null} if none.

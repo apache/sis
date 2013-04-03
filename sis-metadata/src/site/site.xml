@@ -26,8 +26,8 @@
   <body>
     <menu name="Quick links">
       <item name="Module Javadoc"  href="apidocs/index.html"/>
+      <item name="FAQ"             href="faq.html"/>
       <item name="Apache SIS home" href="../index.html"/>
     </menu>
-
   </body>
 </project>

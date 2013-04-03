@@ -63,6 +63,12 @@ public final class Errors extends IndexedResourceBundle {
         }
 
         /**
+         * No element can be added to this set because properties ‘{0}’ and ‘{1}’ are mutually
+         * exclusive.
+         */
+        public static final int CanNotAddToExclusiveSet_2 = 87;
+
+        /**
          * Can not compute the derivative.
          */
         public static final int CanNotComputeDerivative = 44;
@@ -210,6 +216,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int IllegalRange_2 = 11;
 
         /**
+         * Property “{0}” has an incompatible value.
+         */
+        public static final int IncompatiblePropertyValue_1 = 86;
+
+        /**
          * Units “{0}” and “{1}” are incompatible.
          */
         public static final int IncompatibleUnits_2 = 67;
@@ -268,6 +279,16 @@ public final class Errors extends IndexedResourceBundle {
          * Argument ‘{0}’ has {2} dimension{2,choice,1#|2#s}, while {1} was expected.
          */
         public static final int MismatchedDimension_3 = 58;
+
+        /**
+         * This operation requires the “{0}” module.
+         */
+        public static final int MissingRequiredModule_1 = 84;
+
+        /**
+         * Missing value for property “{0}”.
+         */
+        public static final int MissingValueForProperty_1 = 85;
 
         /**
          * Missing value in the “{0}” column.
