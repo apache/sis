@@ -29,26 +29,26 @@
  *   <th class="sep">Aggregation hierarchy</th>
  * </tr><tr><td width="50%" nowrap>
  * {@linkplain org.apache.sis.metadata.iso.ISOMetadata ISO-19115 metadata}<br>
- * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.DefaultMetadata Metadata}<br>
- * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.DefaultPortrayalCatalogueReference Portrayal catalogue reference}<br>
+ * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.DefaultMetadata                     Metadata}<br>
+ * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.DefaultPortrayalCatalogueReference  Portrayal catalogue reference}<br>
  * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.DefaultApplicationSchemaInformation Application schema information}<br>
  * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.DefaultMetadataExtensionInformation Metadata extension information}<br>
- * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.DefaultExtendedElementInformation Extended element information}<br>
- * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.DefaultFeatureTypeList Feature type list}<br>
- * {@code  └─} {@linkplain org.apache.sis.metadata.iso.DefaultIdentifier Identifier}<br>
+ * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.DefaultExtendedElementInformation   Extended element information}<br>
+ * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.DefaultFeatureTypeList              Feature type list}<br>
+ * {@code  └─} {@linkplain org.apache.sis.metadata.iso.DefaultIdentifier                   Identifier}<br>
  * {@linkplain org.opengis.util.CodeList Code list}<br>
- * {@code  ├─} {@linkplain org.opengis.metadata.Datatype Data type}<br>
- * {@code  └─} {@linkplain org.opengis.metadata.Obligation Obligation}
+ * {@code  ├─} {@linkplain org.opengis.metadata.Datatype   Data type}<br>
+ * {@code  └─} {@linkplain org.opengis.metadata.Obligation Obligation}<br>
  * </td><td class="sep" width="50%" nowrap>
- * {@linkplain org.apache.sis.metadata.iso.DefaultMetadata Metadata}<br>
- * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.DefaultPortrayalCatalogueReference Portrayal catalogue reference}<br>
- * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.DefaultApplicationSchemaInformation Application schema information}<br>
- * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.DefaultMetadataExtensionInformation Metadata extension information}<br>
- * {@code  │   └─} {@linkplain org.apache.sis.metadata.iso.DefaultExtendedElementInformation Extended element information}<br>
- * {@code  │       ├─} {@linkplain org.opengis.metadata.Datatype Data type} (a code list)<br>
- * {@code  │       └─} {@linkplain org.opengis.metadata.Obligation Obligation} (a code list)<br>
- * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.DefaultFeatureTypeList Feature type list}<br>
- * {@code  └─} {@linkplain org.apache.sis.metadata.iso.DefaultIdentifier Identifier}
+ *                     {@linkplain org.apache.sis.metadata.iso.DefaultMetadata                     Metadata}<br>
+ * {@code  ├─}         {@linkplain org.apache.sis.metadata.iso.DefaultPortrayalCatalogueReference  Portrayal catalogue reference}<br>
+ * {@code  ├─}         {@linkplain org.apache.sis.metadata.iso.DefaultApplicationSchemaInformation Application schema information}<br>
+ * {@code  ├─}         {@linkplain org.apache.sis.metadata.iso.DefaultMetadataExtensionInformation Metadata extension information}<br>
+ * {@code  │   └─}     {@linkplain org.apache.sis.metadata.iso.DefaultExtendedElementInformation   Extended element information}<br>
+ * {@code  │       ├─} {@linkplain org.opengis.metadata.Datatype                                   Data type} «code list»<br>
+ * {@code  │       └─} {@linkplain org.opengis.metadata.Obligation                                 Obligation} «code list»<br>
+ * {@code  ├─}         {@linkplain org.apache.sis.metadata.iso.DefaultFeatureTypeList              Feature type list}<br>
+ * {@code  └─}         {@linkplain org.apache.sis.metadata.iso.DefaultIdentifier                   Identifier}<br>
  * </td></tr></table>
  *
  * {@section Localization}

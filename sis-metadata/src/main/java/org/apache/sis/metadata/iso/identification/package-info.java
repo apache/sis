@@ -24,6 +24,42 @@
  * For a global overview of metadata in SIS, see the
  * <a href="{@docRoot}/../sis-metadata/index.html">Metadata page on the project web site</a>.
  *
+ * <table class="sis"><tr>
+ *   <th>Class hierarchy</th>
+ *   <th class="sep">Aggregation hierarchy</th>
+ * </tr><tr><td width="50%" nowrap>
+ * {@linkplain org.apache.sis.metadata.iso.ISOMetadata ISO-19115 metadata}<br>
+ * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.identification.AbstractIdentification       Identification} «abstract»<br>
+ * {@code  │   ├─} {@linkplain org.apache.sis.metadata.iso.identification.DefaultDataIdentification    Data identification}<br>
+ * {@code  │   └─} {@linkplain org.apache.sis.metadata.iso.identification.DefaultServiceIdentification Service identification}<br>
+ * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultResolution            Resolution}<br>
+ * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultBrowseGraphic         Browse graphic}<br>
+ * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultKeywords              Keywords}<br>
+ * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultUsage                 Usage}<br>
+ * {@code  └─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultAggregateInformation  Aggregate information}<br>
+ * {@linkplain org.opengis.util.CodeList Code list}<br>
+ * {@code  ├─} {@linkplain org.opengis.metadata.identification.Progress        Progress}<br>
+ * {@code  ├─} {@linkplain org.opengis.metadata.identification.KeywordType     Keyword type}<br>
+ * {@code  ├─} {@linkplain org.opengis.metadata.identification.AssociationType Association type}<br>
+ * {@code  ├─} {@linkplain org.opengis.metadata.identification.InitiativeType  Initiative type}<br>
+ * {@code  ├─} {@linkplain org.opengis.metadata.identification.TopicCategory   Topic category}<br>
+ * {@code  └─} {@linkplain org.opengis.metadata.identification.CharacterSet    Character set}<br>
+ * </td><td class="sep" width="50%" nowrap>
+ *                 {@linkplain org.apache.sis.metadata.iso.identification.AbstractIdentification       Identification}  «abstract»<br>
+ * {@code  ├─}     {@linkplain org.opengis.metadata.identification.Progress                            Progress} «code list»<br>
+ * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultBrowseGraphic         Browse graphic}<br>
+ * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultKeywords              Keywords}<br>
+ * {@code  │   └─} {@linkplain org.opengis.metadata.identification.KeywordType                         Keyword type} «code list»<br>
+ * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultUsage                 Usage}<br>
+ * {@code  └─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultAggregateInformation  Aggregate information}<br>
+ * {@code      ├─} {@linkplain org.opengis.metadata.identification.AssociationType                     Association type} «code list»<br>
+ * {@code      └─} {@linkplain org.opengis.metadata.identification.InitiativeType                      Initiative type} «code list»<br>
+ *                 {@linkplain org.apache.sis.metadata.iso.identification.DefaultDataIdentification    Data identification}<br>
+ * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultResolution            Resolution}<br>
+ * {@code  └─}     {@linkplain org.opengis.metadata.identification.TopicCategory                       Topic category} «code list»<br>
+ *                 {@linkplain org.apache.sis.metadata.iso.identification.DefaultServiceIdentification Service identification}<br>
+ * </td></tr></table>
+ *
  * <p>In addition to the standard properties, SIS provides the following methods:</p>
  * <ul>
  *   <li>{@link org.apache.sis.metadata.iso.identification.DefaultRepresentativeFraction#setScale(double)}

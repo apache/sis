@@ -29,18 +29,18 @@
  *   <th class="sep">Aggregation hierarchy</th>
  * </tr><tr><td class="sep" width="50%" nowrap>
  * {@linkplain org.apache.sis.metadata.iso.ISOMetadata ISO-19115 metadata}<br>
- * {@code  └─} {@linkplain org.apache.sis.metadata.iso.constraint.DefaultConstraints Constraints}<br>
- * {@code      ├─} {@linkplain org.apache.sis.metadata.iso.constraint.DefaultLegalConstraints Legal constraints}<br>
+ * {@code  └─}     {@linkplain org.apache.sis.metadata.iso.constraint.DefaultConstraints         Constraints}<br>
+ * {@code      ├─} {@linkplain org.apache.sis.metadata.iso.constraint.DefaultLegalConstraints    Legal constraints}<br>
  * {@code      └─} {@linkplain org.apache.sis.metadata.iso.constraint.DefaultSecurityConstraints Security constraints}<br>
  * {@linkplain org.opengis.util.CodeList Code list}<br>
- * {@code  ├─} {@linkplain org.opengis.metadata.constraints.Restriction Restriction}<br>
+ * {@code  ├─} {@linkplain org.opengis.metadata.constraints.Restriction    Restriction}<br>
  * {@code  └─} {@linkplain org.opengis.metadata.constraints.Classification Classification}<br>
  * </td><td class="sep" width="50%" nowrap>
- * {@linkplain org.apache.sis.metadata.iso.constraint.DefaultConstraints Constraints}<br>
- * {@linkplain org.apache.sis.metadata.iso.constraint.DefaultLegalConstraints Legal constraints}<br>
- * {@code  └─} {@linkplain org.opengis.metadata.constraints.Restriction Restriction} (a code list)<br>
- * {@linkplain org.apache.sis.metadata.iso.constraint.DefaultSecurityConstraints Security constraints}<br>
- * {@code  └─} {@linkplain org.opengis.metadata.constraints.Classification Classification} (a code list)<br>
+ *             {@linkplain org.apache.sis.metadata.iso.constraint.DefaultConstraints         Constraints}<br>
+ *             {@linkplain org.apache.sis.metadata.iso.constraint.DefaultLegalConstraints    Legal constraints}<br>
+ * {@code  └─} {@linkplain org.opengis.metadata.constraints.Restriction                      Restriction} «code list»<br>
+ *             {@linkplain org.apache.sis.metadata.iso.constraint.DefaultSecurityConstraints Security constraints}<br>
+ * {@code  └─} {@linkplain org.opengis.metadata.constraints.Classification                   Classification} «code list»<br>
  * </td></tr></table>
  *
  * {@section Collections and null values}
