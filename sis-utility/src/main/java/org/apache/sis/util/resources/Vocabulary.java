@@ -125,6 +125,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final int JavaHome = 30;
 
         /**
+         * Latitude
+         */
+        public static final int Latitude = 40;
+
+        /**
          * Libraries
          */
         public static final int Libraries = 35;
@@ -143,6 +148,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Localization
          */
         public static final int Localization = 19;
+
+        /**
+         * Longitude
+         */
+        public static final int Longitude = 41;
 
         /**
          * Maximum value

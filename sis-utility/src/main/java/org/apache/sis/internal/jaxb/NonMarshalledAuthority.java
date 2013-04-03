@@ -37,8 +37,8 @@ import org.apache.sis.xml.IdentifierSpace;
  *
  * <ul>
  *   <li>The XML attributes declared by ISO 19139 specification in the {@code gco:PropertyType}
- *       element: {@code gml:id}, {@code gco:uuid} and {@code xlink:href}. Those attributes are not
- *       part of the ISO 19115 specification. Those authorities are declared in the
+ *       element: {@code gml:id}, {@code gco:uuid} and {@code xlink:href}. Those attributes are
+ *       not part of the ISO 19115 specification. Those authorities are declared in the
  *       {@link IdentifierSpace} interfaces.</li>
  *
  *   <li>ISO 19115 attributes that we choose, for the SIS implementation, to merge with

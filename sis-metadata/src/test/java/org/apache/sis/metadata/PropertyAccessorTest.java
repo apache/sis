@@ -47,7 +47,6 @@ import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static java.util.Collections.singleton;
@@ -141,26 +140,27 @@ public final strictfp class PropertyAccessorTest extends TestCase {
     }
 
     /**
-     * Tests the constructor. This test may need to be updated if a future GeoAPI release
-     * modifies the {@link Citation} interface.
+     * Tests the constructor with the {@link DefaultCitation} implementation.
+     * The order of properties shall be the order declared in the {@code XmlType.propOrder} annotation.
+     * This test may need to be updated if a future GeoAPI release modifies the {@link Citation} interface.
      */
     @Test
     public void testConstructor() {
         assertMappingEquals(createPropertyAccessor(),
         //……Declaring type………Method………………………………………………………………JavaBeans………………………………………………UML identifier……………………………Sentence………………………………………………………Type………………………………………………………………
-/*Required*/Citation.class, "getDates",                   "dates",                   "date",                  "Dates",                      CitationDate[].class,
             Citation.class, "getTitle",                   "title",                   "title",                 "Title",                      InternationalString.class,
-/*Optional*/Citation.class, "getAlternateTitles",         "alternateTitles",         "alternateTitle",        "Alternate titles",           InternationalString[].class,
-            Citation.class, "getCitedResponsibleParties", "citedResponsibleParties", "citedResponsibleParty", "Cited responsible parties",  ResponsibleParty[].class,
-            Citation.class, "getCollectiveTitle",         "collectiveTitle",         "collectiveTitle",       "Collective title",           InternationalString.class,
+            Citation.class, "getAlternateTitles",         "alternateTitles",         "alternateTitle",        "Alternate titles",           InternationalString[].class,
+            Citation.class, "getDates",                   "dates",                   "date",                  "Dates",                      CitationDate[].class,
             Citation.class, "getEdition",                 "edition",                 "edition",               "Edition",                    InternationalString.class,
             Citation.class, "getEditionDate",             "editionDate",             "editionDate",           "Edition date",               Date.class,
             Citation.class, "getIdentifiers",             "identifiers",             "identifier",            "Identifiers",                Identifier[].class,
-            Citation.class, "getISBN",                    "ISBN",                    "ISBN",                  "ISBN",                       String.class,
-            Citation.class, "getISSN",                    "ISSN",                    "ISSN",                  "ISSN",                       String.class,
-            Citation.class, "getOtherCitationDetails",    "otherCitationDetails",    "otherCitationDetails",  "Other citation details",     InternationalString.class,
+            Citation.class, "getCitedResponsibleParties", "citedResponsibleParties", "citedResponsibleParty", "Cited responsible parties",  ResponsibleParty[].class,
             Citation.class, "getPresentationForms",       "presentationForms",       "presentationForm",      "Presentation forms",         PresentationForm[].class,
-            Citation.class, "getSeries",                  "series",                  "series",                "Series",                     Series.class);
+            Citation.class, "getSeries",                  "series",                  "series",                "Series",                     Series.class,
+            Citation.class, "getOtherCitationDetails",    "otherCitationDetails",    "otherCitationDetails",  "Other citation details",     InternationalString.class,
+            Citation.class, "getCollectiveTitle",         "collectiveTitle",         "collectiveTitle",       "Collective title",           InternationalString.class,
+            Citation.class, "getISBN",                    "ISBN",                    "ISBN",                  "ISBN",                       String.class,
+            Citation.class, "getISSN",                    "ISSN",                    "ISSN",                  "ISSN",                       String.class);
     }
 
     /**
