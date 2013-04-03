@@ -19,7 +19,6 @@ package org.apache.sis.internal.jaxb.metadata;
 import java.util.Set;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Objects;
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -31,6 +30,9 @@ import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.util.iso.DefaultNameSpace;
+
+// Related to JDK7
+import java.util.Objects;
 
 
 /**
