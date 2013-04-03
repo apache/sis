@@ -120,6 +120,8 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      * If no extent has been {@linkplain #setExtent(TemporalPrimitive) explicitely set},
      * then this method will build an extent from the {@linkplain #getStartTime() start
      * time} and {@linkplain #getEndTime() end time} if any.
+     *
+     * @return The content date.
      */
     @Override
     @XmlElement(name = "extent", required = true)
@@ -130,7 +132,7 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
     /**
      * Sets the date and time for the content of the dataset.
      *
-     * @param newValue The new extent.
+     * @param newValue The new content date.
      */
     public synchronized void setExtent(final TemporalPrimitive newValue) {
         checkWritePermission();

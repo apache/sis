@@ -19,20 +19,17 @@ package org.apache.sis.referencing;
 import java.util.Map;
 import java.util.Locale;
 import java.util.Collection;
-import java.util.Objects;
 import java.util.logging.Level;
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import net.jcip.annotations.Immutable;
-
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.parameter.InvalidParameterValueException;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.util.InternationalString;
-
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.CharSequences;
@@ -48,6 +45,9 @@ import org.apache.sis.internal.jaxb.gco.StringAdapter;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 import static org.opengis.referencing.IdentifiedObject.REMARKS_KEY;
+
+// Related to JDK7
+import java.util.Objects;
 
 
 /**
