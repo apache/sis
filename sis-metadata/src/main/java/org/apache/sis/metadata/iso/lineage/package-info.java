@@ -24,6 +24,28 @@
  * For a global overview of metadata in SIS, see the
  * <a href="{@docRoot}/../sis-metadata/index.html">Metadata page on the project web site</a>.
  *
+ * <table class="sis"><tr>
+ *   <th>Class hierarchy</th>
+ *   <th class="sep">Aggregation hierarchy</th>
+ * </tr><tr><td width="50%" nowrap>
+ * {@linkplain org.apache.sis.metadata.iso.ISOMetadata ISO-19115 metadata}<br>
+ * {@code  ├─}         {@linkplain org.apache.sis.metadata.iso.lineage.DefaultLineage           Lineage}<br>
+ * {@code  ├─}         {@linkplain org.apache.sis.metadata.iso.lineage.DefaultProcessStep       Process step}<br>
+ * {@code  ├─}         {@linkplain org.apache.sis.metadata.iso.lineage.DefaultSource            Source}<br>
+ * {@code  ├─}         {@linkplain org.apache.sis.metadata.iso.lineage.DefaultNominalResolution Nominal resolution}<br>
+ * {@code  ├─}         {@linkplain org.apache.sis.metadata.iso.lineage.DefaultProcessing        Processing}<br>
+ * {@code  ├─}         {@linkplain org.apache.sis.metadata.iso.lineage.DefaultAlgorithm         Algorithm}<br>
+ * {@code  └─}         {@linkplain org.apache.sis.metadata.iso.lineage.DefaultProcessStepReport Process step report}<br>
+ * </td><td class="sep" width="50%" nowrap>
+ *                     {@linkplain org.apache.sis.metadata.iso.lineage.DefaultLineage           Lineage}<br>
+ * {@code  └─}         {@linkplain org.apache.sis.metadata.iso.lineage.DefaultProcessStep       Process step}<br>
+ * {@code      ├─}     {@linkplain org.apache.sis.metadata.iso.lineage.DefaultSource            Source}<br>
+ * {@code      │   └─} {@linkplain org.apache.sis.metadata.iso.lineage.DefaultNominalResolution Nominal resolution}<br>
+ * {@code      ├─}     {@linkplain org.apache.sis.metadata.iso.lineage.DefaultProcessing        Processing}<br>
+ * {@code      │   └─} {@linkplain org.apache.sis.metadata.iso.lineage.DefaultAlgorithm         Algorithm}<br>
+ * {@code      └─}     {@linkplain org.apache.sis.metadata.iso.lineage.DefaultProcessStepReport Process step report}<br>
+ * </td></tr></table>
+ *
  * {@section Collections and null values}
  * Unless otherwise noted in the Javadoc, all constructors and setter methods accept {@code null} argument.
  * A null argument value means that the metadata element can not be provided, and the reason for that is unspecified.

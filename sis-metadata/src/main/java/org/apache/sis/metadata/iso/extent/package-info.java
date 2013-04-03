@@ -44,6 +44,9 @@
  * {@code  └─} {@linkplain org.apache.sis.metadata.iso.extent.DefaultTemporalExtent        Temporal extent}<br>
  *             {@linkplain org.apache.sis.metadata.iso.extent.DefaultSpatialTemporalExtent Spatial temporal extent}<br>
  * {@code  └─} {@linkplain org.apache.sis.metadata.iso.extent.AbstractGeographicExtent     Geographic extent} «abstract»<br>
+ *             {@linkplain org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox Geographic bounding box}<br>
+ *             {@linkplain org.apache.sis.metadata.iso.extent.DefaultGeographicDescription Geographic description}<br>
+ *             {@linkplain org.apache.sis.metadata.iso.extent.DefaultBoundingPolygon       Bounding polygon}<br>
  * </td></tr></table>
  *
  * <p>In addition to the standard properties, SIS provides the following methods:</p>

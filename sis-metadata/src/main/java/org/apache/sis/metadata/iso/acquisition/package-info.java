@@ -66,7 +66,7 @@
  * {@code  │           ├─}     {@linkplain org.opengis.metadata.acquisition.OperationType                        Operation type} «code list»<br>
  * {@code  │           └─}     {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultPlatform               Platform}<br>
  * {@code  │               └─} {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultInstrument             Instrument}<br>
- *                             {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultEnvironmentalRecord    Environmental record}<br>
+ * {@code  └─}                 {@linkplain org.apache.sis.metadata.iso.acquisition.DefaultEnvironmentalRecord    Environmental record}<br>
  * </td></tr></table>
  *
  * {@section Collections and null values}
