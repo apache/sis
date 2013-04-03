@@ -16,6 +16,8 @@
  */
 package org.apache.sis.internal.geoapi.temporal;
 
+import org.opengis.temporal.TemporalPrimitive;
+
 
 /**
  * Placeholder for a GeoAPI interfaces not present in GeoAPI 3.0.0.
@@ -25,7 +27,7 @@ package org.apache.sis.internal.geoapi.temporal;
  * @version 0.3
  * @module
  */
-public interface Instant {
+public interface Instant extends TemporalPrimitive {
     /**
      * Gets the date of this instant.
      *
