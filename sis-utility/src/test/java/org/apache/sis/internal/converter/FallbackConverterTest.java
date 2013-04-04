@@ -60,7 +60,7 @@ public final strictfp class FallbackConverterTest extends TestCase {
         final EnumSet<FunctionProperty> SURJECTIVE = EnumSet.of(FunctionProperty.SURJECTIVE);
         final EnumSet<FunctionProperty> INVERTIBLE = EnumSet.of(FunctionProperty.SURJECTIVE, FunctionProperty.INVERTIBLE);
 
-        ObjectConverter<String,?> c = new StringConverter.Short();
+        ObjectConverter<String,? extends Object> c = new StringConverter.Short();
         assertEquals(String.class, c.getSourceClass());
         assertEquals(Short.class,  c.getTargetClass());
         assertEquals(INVERTIBLE,   c.properties());
