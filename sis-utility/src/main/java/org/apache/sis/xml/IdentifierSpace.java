@@ -59,8 +59,11 @@ public interface IdentifierSpace<T> extends Citation {
      * Its type is {@code "xs:ID"} - i.e. it is a fragment identifier, unique within document scope only,
      * for internal cross-references. It is not useful by itself as a persistent unique identifier.
      *
-     * <p>The XML {@linkplain #getName() attribute name} is {@code "gml:id"}.
-     * The XML attribute name of the reference to an identified object is {@code "xlink:href"}.</p>
+     * <p>The XML {@linkplain #getName() attribute name} is {@code "gml:id"}, but is also used
+     * for {@code "gco:id"} in metadata documents. However the {@code "gco:"} prefix is omitted
+     * in XML documents (i.e. the {@code gco:id} attribute is <cite>unqualified</cite>).</p>
+     *
+     * <p>The XML attribute name of the reference to such identified object is {@code "xlink:href"}.</p>
      *
      * @see javax.xml.bind.annotation.XmlID
      */
@@ -71,8 +74,11 @@ public interface IdentifierSpace<T> extends Citation {
      * that implement ISO 19115 in XML. May be used as a persistent unique identifier, but only
      * available within GMD context.
      *
-     * <p>The XML {@linkplain #getName() attribute name} is {@code "gco:uuid"}.
-     * The XML attribute name of the reference to an identified object is {@code "gco:uuidref"}.</p>
+     * <p>The XML {@linkplain #getName() attribute name} is {@code "gco:uuid"}. However the
+     * {@code "gco:"} prefix is omitted in XML documents (i.e. the {@code gco:uuid} attribute
+     * is <cite>unqualified</cite>).</p>
+     *
+     * <p>The XML attribute name of the reference to such identified object is {@code "gco:uuidref"}.
      *
      * @see UUID
      */
