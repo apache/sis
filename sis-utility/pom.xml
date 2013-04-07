@@ -70,6 +70,12 @@ Miscellaneous utilities.
   </developers>
   <contributors>
     <contributor>
+      <name>Adrian Custer</name>
+      <roles>
+        <role>documentation</role>
+      </roles>
+    </contributor>
+    <contributor>
       <name>Cédric Briançon</name>
       <email>cedric.briancon@geomatys.com</email>
       <organization>Geomatys</organization>

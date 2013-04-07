@@ -65,6 +65,12 @@ Implementations of metadata derived from ISO 19115. This module provides both an
   </developers>
   <contributors>
     <contributor>
+      <name>Adrian Custer</name>
+      <roles>
+        <role>documentation</role>
+      </roles>
+    </contributor>
+    <contributor>
       <name>Cédric Briançon</name>
       <email>cedric.briancon@geomatys.com</email>
       <organization>Geomatys</organization>

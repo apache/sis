@@ -198,6 +198,12 @@ Apache SIS is a toolkit for describing location information, including points,
 
   <contributors>
     <contributor>
+      <name>Adrian Custer</name>
+      <roles>
+        <role>documentation</role>
+      </roles>
+    </contributor>
+    <contributor>
       <name>Andrew Hart</name>
       <!-- id>ahart</id -->
     </contributor>
