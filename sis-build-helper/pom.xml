@@ -80,6 +80,9 @@ Define Maven Mojos and Javadoc taglets for generating resource files
       </roles>
     </developer>
   </developers>
+  <contributors>
+    <!-- To prevent inheritance from parent pom.xml -->
+  </contributors>
 
 
   <!-- ===========================================================
