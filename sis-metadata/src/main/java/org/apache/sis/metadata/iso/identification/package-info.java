@@ -45,7 +45,7 @@
  * {@code  ├─} {@linkplain org.opengis.metadata.identification.TopicCategory   Topic category}<br>
  * {@code  └─} {@linkplain org.opengis.metadata.identification.CharacterSet    Character set}<br>
  * </td><td class="sep" width="50%" nowrap>
- *                 {@linkplain org.apache.sis.metadata.iso.identification.AbstractIdentification       Identification}  «abstract»<br>
+ *                 {@linkplain org.apache.sis.metadata.iso.identification.AbstractIdentification       Identification} «abstract»<br>
  * {@code  ├─}     {@linkplain org.opengis.metadata.identification.Progress                            Progress} «code list»<br>
  * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultBrowseGraphic         Browse graphic}<br>
  * {@code  ├─}     {@linkplain org.apache.sis.metadata.iso.identification.DefaultKeywords              Keywords}<br>
