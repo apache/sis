@@ -46,7 +46,7 @@ public class DefaultMetadataExtensionInformation extends ISOMetadata
     /**
      * Serial number for compatibility with different versions.
      */
-    private static final long serialVersionUID = 573866936088674519L;
+    private static final long serialVersionUID = 1471486028607039929L;
 
     /**
      * Information about on-line sources containing the community profile name and

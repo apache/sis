@@ -50,7 +50,7 @@ public class DefaultInstrument extends ISOMetadata implements Instrument {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 6356044176200794578L;
+    private static final long serialVersionUID = -7439143424271079960L;
 
     /**
      * Complete citation of the instrument.

@@ -36,7 +36,7 @@ public class DefaultTemporalConsistency extends AbstractTemporalAccuracy impleme
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -2549290466982699190L;
+    private static final long serialVersionUID = 5468604313098465903L;
 
     /**
      * Constructs an initially empty temporal consistency.

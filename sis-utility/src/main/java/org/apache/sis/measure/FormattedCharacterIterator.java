@@ -55,7 +55,7 @@ final class FormattedCharacterIterator extends SimpleCharacterIterator implement
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 360841752298264186L;
+    private static final long serialVersionUID = -5864519830922231670L;
 
     /**
      * Holds a field value, together with the run range in which this value is valid.

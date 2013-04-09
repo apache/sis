@@ -69,7 +69,7 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -3543010637264725421L;
+    private static final long serialVersionUID = 6969884732125615287L;
 
     /**
      * Longest wavelength that the sensor is capable of collecting within a designated band.

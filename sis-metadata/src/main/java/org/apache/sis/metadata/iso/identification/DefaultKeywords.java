@@ -48,7 +48,7 @@ public class DefaultKeywords extends ISOMetadata implements Keywords {
     /**
      * Serial number for compatibility with different versions.
      */
-    private static final long serialVersionUID = 48691634443678266L;
+    private static final long serialVersionUID = -2765705888428016211L;
 
     /**
      * Commonly used word(s) or formalised word(s) or phrase(s) used to describe the subject.

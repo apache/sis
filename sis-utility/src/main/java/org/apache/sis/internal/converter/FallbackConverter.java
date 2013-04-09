@@ -61,7 +61,7 @@ final class FallbackConverter<S,T> extends SystemConverter<S,T> {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -6588190939281568858L;
+    private static final long serialVersionUID = 6331789192804695560L;
 
     /**
      * The primary converter, to be tried first.

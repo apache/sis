@@ -37,7 +37,7 @@ public class UnmodifiableMetadataException extends UnsupportedOperationException
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -1885135341334523675L;
+    private static final long serialVersionUID = 286569086054839096L;
 
     /**
      * Creates a new exception with the specified detail message.

@@ -37,7 +37,7 @@ public class DefaultFormatConsistency extends AbstractLogicalConsistency impleme
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -1204766930140154729L;
+    private static final long serialVersionUID = -1891952351079148415L;
 
     /**
      * Constructs an initially empty formal consistency.

@@ -49,7 +49,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 1771854790746022204L;
+    private static final long serialVersionUID = -5622398793237824161L;
 
     /**
      * Limitation affecting the fitness for use of the resource.

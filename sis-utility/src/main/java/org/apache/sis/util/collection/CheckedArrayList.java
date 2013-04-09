@@ -69,7 +69,7 @@ public class CheckedArrayList<E> extends ArrayList<E> implements CheckedContaine
     /**
      * Serial version UID for compatibility with different versions.
      */
-    private static final long serialVersionUID = -587331971085094268L;
+    private static final long serialVersionUID = -8265578982723471814L;
 
     /**
      * The element type.

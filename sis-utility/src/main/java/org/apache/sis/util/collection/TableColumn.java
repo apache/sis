@@ -164,7 +164,7 @@ public class TableColumn<V> implements CheckedContainer<V> {
         /**
          * For cross-version compatibility.
          */
-        private static final long serialVersionUID = -2486202389234601560L;
+        private static final long serialVersionUID = -3460868641711391888L;
 
         /**
          * The programmatic name of the static final field holding this constant.

@@ -78,7 +78,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -818167965963008231L;
+    private static final long serialVersionUID = -3198281191274903617L;
 
     /**
      * Constructs a range of {@code byte} values.

@@ -45,7 +45,7 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
     /**
      * Serial number for compatibility with different versions.
      */
-    private static final long serialVersionUID = 1715873406472953616L;
+    private static final long serialVersionUID = 1769063690091153678L;
 
     /**
      * Name of the file that contains a graphic that provides an illustration of the dataset.

@@ -77,7 +77,7 @@ public abstract class TabularFormat<T> extends CompoundFormat<T> {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -1599411687892965650L;
+    private static final long serialVersionUID = -4556687020021477908L;
 
     /**
      * The line separator to use for formatting the tree.

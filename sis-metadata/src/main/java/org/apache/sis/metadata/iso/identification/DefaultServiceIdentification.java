@@ -38,7 +38,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
     /**
      * Serial number for compatibility with different versions.
      */
-    private static final long serialVersionUID = -8337161132057617851L;
+    private static final long serialVersionUID = 4988429302218128178L;
 
     /**
      * Constructs an initially empty service identification.

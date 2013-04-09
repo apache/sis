@@ -49,7 +49,7 @@ public class DefaultResponsibleParty extends ISOMetadata implements ResponsibleP
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -2477962229031486552L;
+    private static final long serialVersionUID = -3429257224445006902L;
 
     /**
      * Name of the responsible person- surname, given name, title separated by a delimiter.

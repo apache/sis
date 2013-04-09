@@ -99,7 +99,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 7254025230235329493L;
+    private static final long serialVersionUID = 7337533776231004504L;
 
     /**
      * Unique identifier for this metadata file, or {@code null} if none.

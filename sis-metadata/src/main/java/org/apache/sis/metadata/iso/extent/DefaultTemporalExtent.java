@@ -56,7 +56,7 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 3668140516657118045L;
+    private static final long serialVersionUID = -6149873501105795242L;
 
     /**
      * The date and time for the content of the dataset.

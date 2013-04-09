@@ -45,7 +45,7 @@ public class DefaultProcessStepReport extends ISOMetadata implements ProcessStep
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -7054783651586763896L;
+    private static final long serialVersionUID = -6413716753156038081L;
 
     /**
      * Name of the processing report.

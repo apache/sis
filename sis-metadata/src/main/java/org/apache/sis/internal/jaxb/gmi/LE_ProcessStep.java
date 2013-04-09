@@ -39,7 +39,7 @@ public class LE_ProcessStep extends DefaultProcessStep {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -7511299413801716712L;
+    private static final long serialVersionUID = -3629663823701442873L;
 
     /**
      * Creates an initially empty metadata.

@@ -68,7 +68,7 @@ public class CheckedHashSet<E> extends LinkedHashSet<E> implements CheckedContai
     /**
      * Serial version UID for compatibility with different versions.
      */
-    private static final long serialVersionUID = -9014541457174735097L;
+    private static final long serialVersionUID = 1999408533884863599L;
 
     /**
      * The element type.

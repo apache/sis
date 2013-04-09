@@ -622,7 +622,7 @@ public final class Errors extends IndexedResourceBundle {
      * The international string to be returned by {@link formatInternational}.
      */
     private static final class International extends ResourceInternationalString {
-        private static final long serialVersionUID = -229348959712294902L;
+        private static final long serialVersionUID = -5355796215044405012L;
 
         International(int key)                   {super(key);}
         International(int key, Object args)      {super(key, args);}

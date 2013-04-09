@@ -42,7 +42,7 @@ final class EmptySortedSet<E> extends AbstractSet<E> implements SortedSet<E>, Se
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 4684832991264788298L;
+    private static final long serialVersionUID = -2404255437755421772L;
 
     /**
      * The unique instance of this set.

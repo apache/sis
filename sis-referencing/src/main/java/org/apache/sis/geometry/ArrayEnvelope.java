@@ -57,7 +57,7 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 7284917239693486738L;
+    private static final long serialVersionUID = 1657970968782634545L;
 
     /**
      * Ordinate values of lower and upper corners. The length of this array is twice the

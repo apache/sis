@@ -41,7 +41,7 @@ abstract class SystemConverter<S,T> extends ClassPair<S,T> implements ObjectConv
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 885663610056067478L;
+    private static final long serialVersionUID = -5003169442214901702L;
 
     /**
      * Creates a new converter for the given source and target classes.

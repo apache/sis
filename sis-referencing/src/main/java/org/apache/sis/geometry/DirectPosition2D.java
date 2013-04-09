@@ -71,7 +71,7 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 835130287438466996L;
+    private static final long serialVersionUID = 6063110617109934018L;
 
     /**
      * The coordinate reference system for this position;

@@ -42,7 +42,7 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 5730550742604669102L;
+    private static final long serialVersionUID = -4997239501383133209L;
 
     /**
      * All identifiers associated with this metadata, or {@code null} if none.

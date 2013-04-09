@@ -39,7 +39,7 @@ abstract class CollectionConverter<T> extends SystemConverter<Collection<?>,T> {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -4515250904953131514L;
+    private static final long serialVersionUID = -9214936334129327955L;
 
     /**
      * For inner classes only.
@@ -61,7 +61,7 @@ abstract class CollectionConverter<T> extends SystemConverter<Collection<?>,T> {
      * Converter from {@link Collection} to {@link java.util.List}.
      */
     public static final class List extends CollectionConverter<java.util.List<?>> {
-        private static final long serialVersionUID = 5492247760609833586L;
+        private static final long serialVersionUID = -8680976097058177832L;
 
         @SuppressWarnings("unchecked")
         public List() { // Instantiated by ServiceLoader.
@@ -85,7 +85,7 @@ abstract class CollectionConverter<T> extends SystemConverter<Collection<?>,T> {
      * Converter from {@link Collection} to {@link java.util.Set}.
      */
     public static final class Set extends CollectionConverter<java.util.Set<?>> {
-        private static final long serialVersionUID = -4200659837453206164L;
+        private static final long serialVersionUID = -1065360595793529078L;
 
         @SuppressWarnings("unchecked")
         public Set() { // Instantiated by ServiceLoader.

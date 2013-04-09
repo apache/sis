@@ -42,7 +42,7 @@ abstract class PathConverter<S,T> extends SystemConverter<S,T> {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -2150865427977735620L;
+    private static final long serialVersionUID = 4361503025580262022L;
 
     /**
      * Creates a path converter from the given source class to the given  target class.
@@ -95,7 +95,7 @@ abstract class PathConverter<S,T> extends SystemConverter<S,T> {
      * This converter changes relative paths to absolute paths.
      */
     public static final class FileURI extends PathConverter<File,URI> {
-        private static final long serialVersionUID = 1032598133849975567L;
+        private static final long serialVersionUID = 1122784850124333991L;
         static final FileURI INSTANCE = new FileURI();
         public FileURI() {super(File.class, URI.class);} // Instantiated by ServiceLoader.
 
@@ -110,7 +110,7 @@ abstract class PathConverter<S,T> extends SystemConverter<S,T> {
      * Converter from {@link File} to {@link URL}.
      */
     public static final class FileURL extends PathConverter<File,URL> {
-        private static final long serialVersionUID = 621496099287330756L;
+        private static final long serialVersionUID = 2191394598748096966L;
         static final FileURL INSTANCE = new FileURL();
         public FileURL() {super(File.class, URL.class);} // Instantiated by ServiceLoader.
 
@@ -125,7 +125,7 @@ abstract class PathConverter<S,T> extends SystemConverter<S,T> {
      * Converter from {@link URL} to {@link File}.
      */
     public static final class URLFile extends PathConverter<URL,File> {
-        private static final long serialVersionUID = 1228852836485762335L;
+        private static final long serialVersionUID = 3669726699184691997L;
         static final URLFile INSTANCE = new URLFile();
         public URLFile() {super(URL.class, File.class);} // Instantiated by ServiceLoader.
 
@@ -140,7 +140,7 @@ abstract class PathConverter<S,T> extends SystemConverter<S,T> {
      * Converter from {@link URL} to {@link File}.
      */
     public static final class URIFile extends PathConverter<URI,File> {
-        private static final long serialVersionUID = 5289256237146366469L;
+        private static final long serialVersionUID = 5070991554943811760L;
         static final URIFile INSTANCE = new URIFile();
         public URIFile() {super(URI.class, File.class);} // Instantiated by ServiceLoader.
 
@@ -155,7 +155,7 @@ abstract class PathConverter<S,T> extends SystemConverter<S,T> {
      * Converter from {@link URL} to {@link URI}.
      */
     public static final class URL_URI extends PathConverter<URL,URI> {
-        private static final long serialVersionUID = -1653233667050600894L;
+        private static final long serialVersionUID = 6327568235014244008L;
         static final URL_URI INSTANCE = new URL_URI();
         public URL_URI() {super(URL.class, URI.class);} // Instantiated by ServiceLoader.
 
@@ -170,7 +170,7 @@ abstract class PathConverter<S,T> extends SystemConverter<S,T> {
      * Converter from {@link URI} to {@link URL}.
      */
     public static final class URI_URL extends PathConverter<URI,URL> {
-        private static final long serialVersionUID = -7866572007304228474L;
+        private static final long serialVersionUID = 5478354821309176895L;
         static final URI_URL INSTANCE = new URI_URL();
         public URI_URL() {super(URI.class, URL.class);} // Instantiated by ServiceLoader.
 

@@ -64,7 +64,7 @@ public class DefaultSource extends ISOMetadata implements Source {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 6277132009549470021L;
+    private static final long serialVersionUID = -398526682785377249L;
 
     /**
      * Detailed description of the level of the source data.

@@ -46,7 +46,7 @@ public class DefaultRangeElementDescription extends ISOMetadata implements Range
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -2869953851390143207L;
+    private static final long serialVersionUID = -8891149098619355114L;
 
     /**
      * Designation associated with a set of range elements.

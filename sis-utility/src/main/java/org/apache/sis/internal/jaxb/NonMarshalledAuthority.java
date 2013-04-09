@@ -68,7 +68,7 @@ public final class NonMarshalledAuthority<T> extends SimpleCitation implements I
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -6309485399210742418L;
+    private static final long serialVersionUID = 6299502270649111201L;
 
     /**
      * Ordinal values for switch statements. The constant defined here shall

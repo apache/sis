@@ -53,7 +53,7 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
     /**
      * Serial number for compatibility with different versions.
      */
-    private static final long serialVersionUID = -4644465057871958482L;
+    private static final long serialVersionUID = 3856547985745400172L;
 
     /**
      * Either the scale as a {@link RepresentativeFraction} instance or the distance

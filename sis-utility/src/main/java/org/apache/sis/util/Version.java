@@ -42,7 +42,7 @@ public class Version implements CharSequence, Comparable<Version>, Serializable 
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -6793384507333713770L;
+    private static final long serialVersionUID = 8402041502662929792L;
 
     /**
      * The version of this Apache SIS distribution.

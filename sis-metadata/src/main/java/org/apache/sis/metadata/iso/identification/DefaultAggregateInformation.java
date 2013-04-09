@@ -52,7 +52,7 @@ public class DefaultAggregateInformation extends ISOMetadata implements Aggregat
     /**
      * Serial number for compatibility with different versions.
      */
-    private static final long serialVersionUID = 5520234916010871192L;
+    private static final long serialVersionUID = 4183321601376092254L;
 
     /**
      * Citation information about the aggregate dataset.

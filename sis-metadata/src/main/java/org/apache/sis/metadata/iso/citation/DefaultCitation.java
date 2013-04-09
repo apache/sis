@@ -75,7 +75,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 2595269795652984755L;
+    private static final long serialVersionUID = 3490090845236158848L;
 
     /**
      * The authority for International Standard Book Number.
