@@ -36,7 +36,7 @@ public class DefaultCompletenessOmission extends AbstractCompleteness implements
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 6614084398532053054L;
+    private static final long serialVersionUID = 6782225824097039360L;
 
     /**
      * Constructs an initially empty completeness omission.

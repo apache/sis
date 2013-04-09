@@ -46,7 +46,7 @@ public class AbstractResult extends ISOMetadata implements Result {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 2961355780515174732L;
+    private static final long serialVersionUID = 3510023908820052467L;
 
     /**
      * Constructs an initially empty result.

@@ -43,7 +43,7 @@ public class DefaultGeographicDescription extends AbstractGeographicExtent
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 7250161161099782176L;
+    private static final long serialVersionUID = 7876194854687370299L;
 
     /**
      * The identifier used to represent a geographic area.

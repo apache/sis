@@ -75,7 +75,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 1951201018202846555L;
+    private static final long serialVersionUID = 7991792044044382191L;
 
     /**
      * The root node, or {@code null} if not yet specified.
@@ -320,7 +320,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
         /**
          * For cross-version compatibility.
          */
-        private static final long serialVersionUID = 2931274954865719140L;
+        private static final long serialVersionUID = -5729029633479218691L;
 
         /**
          * Implementation of {@link Node} children list. This list updates automatically the

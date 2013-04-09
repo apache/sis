@@ -46,7 +46,7 @@ public class DefaultVectorSpatialRepresentation extends AbstractSpatialRepresent
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 5643234643524810592L;
+    private static final long serialVersionUID = -5891825325520101913L;
 
     /**
      * Code which identifies the degree of complexity of the spatial relationships.

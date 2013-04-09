@@ -88,7 +88,7 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 2661044384787218964L;
+    private static final long serialVersionUID = -1445849218952061605L;
 
     /**
      * An immutable empty instance.

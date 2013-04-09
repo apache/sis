@@ -51,7 +51,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
     /**
      * For compatibility with different versions.
      */
-    private static final long serialVersionUID = -3605810209653785967L;
+    private static final long serialVersionUID = 13882164775184042L;
 
     /**
      * The wrapped array.
@@ -279,7 +279,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
         /**
          * For cross-version compatibility.
          */
-        private static final long serialVersionUID = -6297280390649627532L;
+        private static final long serialVersionUID = 33065197642139916L;
 
         /**
          * Index of the first element and size of this list.

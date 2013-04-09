@@ -38,7 +38,7 @@ public class NullArgumentException extends NullPointerException {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -9191547216229354211L;
+    private static final long serialVersionUID = 7924011726325288438L;
 
     /**
      * Constructs an exception with no detail message.

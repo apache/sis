@@ -45,7 +45,7 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 5737775725403867273L;
+    private static final long serialVersionUID = -4556006719009557349L;
 
     /**
      * Provides the list of feature types concerned by the transfer data file. Depending on

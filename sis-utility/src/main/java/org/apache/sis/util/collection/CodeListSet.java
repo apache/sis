@@ -65,7 +65,7 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 3648460713432430695L;
+    private static final long serialVersionUID = -6328082298556260980L;
 
     /**
      * A pool of code list arrays. When many {@code CodeListSet} instances are for the

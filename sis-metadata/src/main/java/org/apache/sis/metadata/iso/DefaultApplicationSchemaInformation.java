@@ -50,7 +50,7 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -3109191272905767382L;
+    private static final long serialVersionUID = -884081423040392985L;
 
     /**
      * Name of the application schema used.

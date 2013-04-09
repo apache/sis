@@ -38,7 +38,7 @@ public class DefaultConceptualConsistency extends AbstractLogicalConsistency
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 7143342570712197486L;
+    private static final long serialVersionUID = -8842701325499002671L;
 
     /**
      * Constructs an initially empty conceptual consistency.

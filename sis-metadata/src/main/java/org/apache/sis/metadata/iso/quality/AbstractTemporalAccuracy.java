@@ -45,7 +45,7 @@ public class AbstractTemporalAccuracy extends AbstractElement implements Tempora
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 4525353962603986621L;
+    private static final long serialVersionUID = -6273519060177989201L;
 
     /**
      * Constructs an initially empty temporal accuracy.

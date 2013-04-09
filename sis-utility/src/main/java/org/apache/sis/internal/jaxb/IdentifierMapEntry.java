@@ -37,7 +37,7 @@ final class IdentifierMapEntry extends AbstractMap.SimpleEntry<Citation,String> 
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -5484541090753985572L;
+    private static final long serialVersionUID = 5159620102001638970L;
 
     /**
      * Creates a new entry for the given authority and code.
@@ -68,7 +68,7 @@ final class IdentifierMapEntry extends AbstractMap.SimpleEntry<Citation,String> 
      * identifier collection.
      */
     static final class Immutable extends AbstractMap.SimpleImmutableEntry<Citation,String> implements Identifier {
-        private static final long serialVersionUID = -8179498861233498041L;
+        private static final long serialVersionUID = -6857931598565368465L;
         Immutable(Citation authority, String code) {super(authority, code);}
         @Override public Citation getAuthority()   {return getKey();}
         @Override public String   getCode()        {return getValue();}

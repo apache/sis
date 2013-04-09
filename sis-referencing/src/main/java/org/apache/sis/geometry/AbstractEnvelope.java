@@ -982,7 +982,7 @@ public abstract class AbstractEnvelope implements Envelope {
      * @module
      */
     private abstract class Point extends AbstractDirectPosition implements Serializable {
-        private static final long serialVersionUID = 9051824576982927750L;
+        private static final long serialVersionUID = -4868610696294317932L;
 
         /** The coordinate reference system in which the coordinate is given. */
         @Override public final CoordinateReferenceSystem getCoordinateReferenceSystem() {
@@ -999,7 +999,7 @@ public abstract class AbstractEnvelope implements Envelope {
      * The corner returned by {@link AbstractEnvelope#getLowerCorner()}.
      */
     private final class LowerCorner extends Point {
-        private static final long serialVersionUID = 1342844299471364436L;
+        private static final long serialVersionUID = 1310741484466506178L;
 
         @Override public double getOrdinate(final int dimension) throws IndexOutOfBoundsException {
             return getLower(dimension);
@@ -1015,7 +1015,7 @@ public abstract class AbstractEnvelope implements Envelope {
      * The corner returned by {@link AbstractEnvelope#getUpperCorner()}.
      */
     private final class UpperCorner extends Point {
-        private static final long serialVersionUID = 8999737674570427517L;
+        private static final long serialVersionUID = -6458663549974061472L;
 
         @Override public double getOrdinate(final int dimension) throws IndexOutOfBoundsException {
             return getUpper(dimension);
@@ -1031,7 +1031,7 @@ public abstract class AbstractEnvelope implements Envelope {
      * The point returned by {@link AbstractEnvelope#getMedian()}.
      */
     private final class Median extends Point {
-        private static final long serialVersionUID = 4204675972453668922L;
+        private static final long serialVersionUID = -5826011018957321729L;
 
         @Override public double getOrdinate(final int dimension) throws IndexOutOfBoundsException {
             return getMedian(dimension);

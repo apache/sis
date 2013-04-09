@@ -58,7 +58,7 @@ public final class NilReason implements Serializable {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -1302619137838086028L;
+    private static final long serialVersionUID = 5553785821187789895L;
 
     /**
      * There is no value.

@@ -36,7 +36,7 @@ public final class Longitude extends Angle {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -8614900608052762636L;
+    private static final long serialVersionUID = -3203511772374891877L;
 
     /**
      * Minimum usual value for longitude ({@value}°).

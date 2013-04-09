@@ -37,7 +37,7 @@ final class EmptyQueue<E> extends AbstractQueue<E> implements Serializable {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -6147951199761870325L;
+    private static final long serialVersionUID = 2798927118201392605L;
 
     /**
      * The singleton instance to be returned by {@link Collections#emptyQueue()}.

@@ -47,7 +47,7 @@ public class DefaultGCPCollection extends AbstractGeolocationInformation impleme
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -5267006706468159746L;
+    private static final long serialVersionUID = -2757911443659529373L;
 
     /**
      * Identifier of the GCP collection.

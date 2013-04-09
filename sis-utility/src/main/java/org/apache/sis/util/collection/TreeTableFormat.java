@@ -86,7 +86,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -4476366905386037025L;
+    private static final long serialVersionUID = 147992015470098561L;
 
     /**
      * Shared {@code TreeTableFormat} instance for {@link TreeTable#toString()} implementation.

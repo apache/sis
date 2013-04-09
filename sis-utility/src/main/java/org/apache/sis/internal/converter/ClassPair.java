@@ -43,7 +43,7 @@ class ClassPair<S,T> implements Serializable {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -9157788501686115L;
+    private static final long serialVersionUID = -5214470401299470687L;
 
     /**
      * The source class.

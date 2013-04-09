@@ -39,7 +39,7 @@ public class MI_CoverageDescription extends DefaultCoverageDescription {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -8679911383066193615L;
+    private static final long serialVersionUID = -8365259738630697633L;
 
     /**
      * Creates an initially empty metadata.

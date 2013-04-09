@@ -46,7 +46,7 @@ public class DefaultScope extends ISOMetadata implements Scope {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -8021256328527422972L;
+    private static final long serialVersionUID = -1152756005841712646L;
 
     /**
      * Hierarchical level of the data specified by the scope.

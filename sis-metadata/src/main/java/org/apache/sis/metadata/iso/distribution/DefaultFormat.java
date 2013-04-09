@@ -51,7 +51,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 6498897239493553607L;
+    private static final long serialVersionUID = -6713019619784302519L;
 
     /**
      * Name of the data transfer format(s).

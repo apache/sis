@@ -38,7 +38,7 @@ public class DefaultThematicClassificationCorrectness extends AbstractThematicAc
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -5484398738783800915L;
+    private static final long serialVersionUID = 2503537202481975130L;
 
     /**
      * Constructs an initially empty thematic classification correctness.

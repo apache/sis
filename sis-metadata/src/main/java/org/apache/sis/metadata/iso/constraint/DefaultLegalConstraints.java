@@ -48,7 +48,7 @@ public class DefaultLegalConstraints extends DefaultConstraints implements Legal
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -2891061818279024901L;
+    private static final long serialVersionUID = -228007779747439839L;
 
     /**
      * Access constraints applied to assure the protection of privacy or intellectual property,

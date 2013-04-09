@@ -54,7 +54,7 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -8032712379901591272L;
+    private static final long serialVersionUID = 5698533358975632857L;
 
     /**
      * Reference to document describing processing software.

@@ -295,7 +295,7 @@ public final class Types extends Static {
         /**
          * For cross-version compatibility.
          */
-        private static final long serialVersionUID = 7336442452947376873L;
+        private static final long serialVersionUID = -6202647167398898834L;
 
         /**
          * The class loader to use for fetching GeoAPI resources.

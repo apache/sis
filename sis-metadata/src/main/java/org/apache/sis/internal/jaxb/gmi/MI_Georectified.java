@@ -39,7 +39,7 @@ public class MI_Georectified extends DefaultGeorectified {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 6964334064255912684L;
+    private static final long serialVersionUID = 7518820483760523541L;
 
     /**
      * Creates an initially empty metadata.

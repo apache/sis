@@ -60,7 +60,7 @@ public class DefaultLocalName extends AbstractName implements LocalName {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 8747478206456790138L;
+    private static final long serialVersionUID = -697839568997068872L;
 
     /**
      * The scope of this name, or {@code null} if the scope is the unique {@code GLOBAL} instance.

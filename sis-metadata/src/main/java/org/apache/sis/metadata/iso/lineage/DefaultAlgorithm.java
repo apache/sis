@@ -45,7 +45,7 @@ public class DefaultAlgorithm extends ISOMetadata implements Algorithm {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 6343760610092069341L;
+    private static final long serialVersionUID = 5718445163047946957L;
 
     /**
      * Information identifying the algorithm and version or date.

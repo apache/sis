@@ -36,7 +36,7 @@ public class DefaultCompletenessCommission extends AbstractCompleteness implemen
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 1565144822249562765L;
+    private static final long serialVersionUID = 1941293019209523920L;
 
     /**
      * Constructs an initially empty completeness commission.
