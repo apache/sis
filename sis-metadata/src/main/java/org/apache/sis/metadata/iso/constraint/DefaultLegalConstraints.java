@@ -27,6 +27,9 @@ import org.opengis.metadata.constraint.LegalConstraints;
 
 /**
  * Restrictions and legal prerequisites for accessing and using the resource.
+ * The {@linkplain #getOtherConstraints() other constraint} element shall be non-empty only if
+ * {@linkplain #getAccessConstraints() access constraints} and/or {@linkplain #getUseConstraints()
+ * use constraints} elements have a value of {@link Restriction#OTHER_RESTRICTIONS}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)

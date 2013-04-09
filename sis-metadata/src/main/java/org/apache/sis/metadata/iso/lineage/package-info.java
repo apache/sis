@@ -38,9 +38,10 @@
  * {@code  └─}         {@linkplain org.apache.sis.metadata.iso.lineage.DefaultProcessStepReport Process step report}<br>
  * </td><td class="sep" width="50%" nowrap>
  *                     {@linkplain org.apache.sis.metadata.iso.lineage.DefaultLineage           Lineage}<br>
+ * {@code  ├─}         {@linkplain org.apache.sis.metadata.iso.lineage.DefaultSource            Source}<br>
+ * {@code  │   └─}     {@linkplain org.apache.sis.metadata.iso.lineage.DefaultNominalResolution Nominal resolution}<br>
  * {@code  └─}         {@linkplain org.apache.sis.metadata.iso.lineage.DefaultProcessStep       Process step}<br>
  * {@code      ├─}     {@linkplain org.apache.sis.metadata.iso.lineage.DefaultSource            Source}<br>
- * {@code      │   └─} {@linkplain org.apache.sis.metadata.iso.lineage.DefaultNominalResolution Nominal resolution}<br>
  * {@code      ├─}     {@linkplain org.apache.sis.metadata.iso.lineage.DefaultProcessing        Processing}<br>
  * {@code      │   └─} {@linkplain org.apache.sis.metadata.iso.lineage.DefaultAlgorithm         Algorithm}<br>
  * {@code      └─}     {@linkplain org.apache.sis.metadata.iso.lineage.DefaultProcessStepReport Process step report}<br>

@@ -37,8 +37,8 @@
  * {@code  ├─} {@linkplain org.apache.sis.metadata.iso.distribution.DefaultDigitalTransferOptions Digital transfer options}<br>
  * {@code  └─} {@linkplain org.apache.sis.metadata.iso.distribution.DefaultDataFile               Data file}<br>
  * {@linkplain org.opengis.util.CodeList Code list}<br>
- * {@code  ├─} {@linkplain org.opengis.metadata.distribution.MediumName   Medium name}</br>
- * {@code  └─} {@linkplain org.opengis.metadata.distribution.MediumFormat Medium format}</br>
+ * {@code  ├─} {@linkplain org.opengis.metadata.distribution.MediumName   Medium name}<br>
+ * {@code  └─} {@linkplain org.opengis.metadata.distribution.MediumFormat Medium format}<br>
  * </td><td class="sep" width="50%" nowrap>
  *                     {@linkplain org.apache.sis.metadata.iso.distribution.DefaultDistribution           Distribution}<br>
  * {@code  ├─}         {@linkplain org.apache.sis.metadata.iso.distribution.DefaultFormat                 Format}<br>
@@ -46,8 +46,8 @@
  * {@code  │   └─}     {@linkplain org.apache.sis.metadata.iso.distribution.DefaultStandardOrderProcess   Standard order process}<br>
  * {@code  └─}         {@linkplain org.apache.sis.metadata.iso.distribution.DefaultDigitalTransferOptions Digital transfer options}<br>
  * {@code      └─}     {@linkplain org.apache.sis.metadata.iso.distribution.DefaultMedium                 Medium}<br>
- * {@code          ├─} {@linkplain org.opengis.metadata.distribution.MediumName                           Medium name} «code list»</br>
- * {@code          └─} {@linkplain org.opengis.metadata.distribution.MediumFormat                         Medium format} «code list»</br>
+ * {@code          ├─} {@linkplain org.opengis.metadata.distribution.MediumName                           Medium name} «code list»<br>
+ * {@code          └─} {@linkplain org.opengis.metadata.distribution.MediumFormat                         Medium format} «code list»<br>
  *                     {@linkplain org.apache.sis.metadata.iso.distribution.DefaultDataFile               Data file}<br>
  * </td></tr></table>
  *
