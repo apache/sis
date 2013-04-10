@@ -59,7 +59,7 @@ public class DefaultObjective extends ISOMetadata implements Objective {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -4633298523976029384L;
+    private static final long serialVersionUID = 8273806197892815938L;
 
     /**
      * Priority applied to the target.

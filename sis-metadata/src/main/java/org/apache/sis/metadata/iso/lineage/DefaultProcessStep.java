@@ -62,7 +62,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 8151975419390308233L;
+    private static final long serialVersionUID = -3511714360929580873L;
 
     /**
      * Description of the event, including related parameters or tolerances.

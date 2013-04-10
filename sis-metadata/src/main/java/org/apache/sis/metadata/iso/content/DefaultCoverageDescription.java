@@ -55,7 +55,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 5943716957630930520L;
+    private static final long serialVersionUID = -3314118785767660332L;
 
     /**
      * Description of the attribute described by the measurement value.

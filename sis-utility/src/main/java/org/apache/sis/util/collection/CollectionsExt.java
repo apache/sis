@@ -503,7 +503,7 @@ public final class CollectionsExt extends Static {
         /**
          * For cross-version compatibility.
          */
-        private static final long serialVersionUID = -8926770873102046405L;
+        private static final long serialVersionUID = 7050753365408754641L;
 
         /**
          * The unique instance. Can not be public because of parameterized types: we need a method
@@ -592,7 +592,7 @@ public final class CollectionsExt extends Static {
         /**
          * For cross-version compatibility.
          */
-        private static final long serialVersionUID = 3809610984070771228L;
+        private static final long serialVersionUID = 807166038568740444L;
 
         /**
          * The unique instance. Can not be public because of parameterized types: we need a method

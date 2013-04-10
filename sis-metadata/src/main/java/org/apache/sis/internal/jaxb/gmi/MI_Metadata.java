@@ -39,7 +39,7 @@ public class MI_Metadata extends DefaultMetadata {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 5472890635961139724L;
+    private static final long serialVersionUID = -2785777463171443407L;
 
     /**
      * Creates an initially empty metadata.

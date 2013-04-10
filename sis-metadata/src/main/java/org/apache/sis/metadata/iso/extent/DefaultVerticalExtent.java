@@ -52,7 +52,7 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -3214554246909844079L;
+    private static final long serialVersionUID = -1963873471175296153L;
 
     /**
      * The lowest vertical extent contained in the dataset.

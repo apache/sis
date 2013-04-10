@@ -45,7 +45,7 @@ public class DefaultSecurityConstraints extends DefaultConstraints implements Se
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 6412833018607679734L;;
+    private static final long serialVersionUID = 621767670847345848L;;
 
     /**
      * Name of the handling restrictions on the resource.

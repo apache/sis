@@ -61,7 +61,7 @@ public abstract class AbstractName implements GenericName, Serializable {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 3362498790089164525L;
+    private static final long serialVersionUID = 667242702456713391L;
 
     /**
      * A view of this name as a fully-qualified one.
@@ -268,7 +268,7 @@ public abstract class AbstractName implements GenericName, Serializable {
         /**
          * Serial number for inter-operability with different versions.
          */
-        private static final long serialVersionUID = -6422809765366372062L;
+        private static final long serialVersionUID = -5259001179796274879L;
 
         /**
          * The sequence of {@linkplain DefaultLocalName local names} making this generic name.

@@ -44,7 +44,7 @@ public class AbstractGeolocationInformation extends ISOMetadata implements Geolo
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -2929163425440282342L;
+    private static final long serialVersionUID = 2234791083092464542L;
 
     /**
      * Provides an overall assessment of quality of geolocation information.

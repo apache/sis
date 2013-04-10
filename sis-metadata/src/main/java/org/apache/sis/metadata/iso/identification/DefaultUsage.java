@@ -52,7 +52,7 @@ public class DefaultUsage extends ISOMetadata implements Usage {
     /**
      * Serial number for compatibility with different versions.
      */
-    private static final long serialVersionUID = 4059324536168287490L;
+    private static final long serialVersionUID = 7464000583573398579L;
 
     /**
      * Brief description of the resource and/or resource series usage.

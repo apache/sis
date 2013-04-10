@@ -58,7 +58,7 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 3980319420337513745L;
+    private static final long serialVersionUID = -3532903747339978756L;
 
     /**
      * The unit of measurement, or {@code null} if unknown.

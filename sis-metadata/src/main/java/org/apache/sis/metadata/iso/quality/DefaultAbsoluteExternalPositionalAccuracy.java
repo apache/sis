@@ -39,7 +39,7 @@ public class DefaultAbsoluteExternalPositionalAccuracy extends AbstractPositiona
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 4116627805950579738L;
+    private static final long serialVersionUID = -5520313307277547148L;
 
     /**
      * Constructs an initially empty absolute external positional accuracy.

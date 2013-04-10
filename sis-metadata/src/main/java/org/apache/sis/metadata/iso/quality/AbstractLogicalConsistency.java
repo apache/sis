@@ -48,7 +48,7 @@ public class AbstractLogicalConsistency extends AbstractElement implements Logic
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -2470752876057569947L;
+    private static final long serialVersionUID = -1795493465311213248L;
 
     /**
      * Constructs an initially empty logical consistency.

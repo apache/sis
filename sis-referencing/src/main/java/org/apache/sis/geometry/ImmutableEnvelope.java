@@ -48,7 +48,7 @@ public final class ImmutableEnvelope extends ArrayEnvelope implements Serializab
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 5593936512712449234L;
+    private static final long serialVersionUID = 8740224085449107870L;
 
     /**
      * Constructs an envelope defined by two corners given as direct positions.

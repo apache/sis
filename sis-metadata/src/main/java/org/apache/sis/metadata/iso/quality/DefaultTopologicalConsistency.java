@@ -39,7 +39,7 @@ public class DefaultTopologicalConsistency extends AbstractLogicalConsistency
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -255014076679068944L;
+    private static final long serialVersionUID = 5797622283821358613L;
 
     /**
      * Constructs an initially empty topological consistency.

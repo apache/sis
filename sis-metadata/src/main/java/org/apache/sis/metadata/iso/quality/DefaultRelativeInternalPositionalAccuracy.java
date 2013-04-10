@@ -39,7 +39,7 @@ public class DefaultRelativeInternalPositionalAccuracy extends AbstractPositiona
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -8216355887797408106L;
+    private static final long serialVersionUID = 8385667875833802576L;
 
     /**
      * Constructs an initially empty relative internal positional accuracy.

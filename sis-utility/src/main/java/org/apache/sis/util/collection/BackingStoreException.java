@@ -57,7 +57,7 @@ public class BackingStoreException extends RuntimeException {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -1714319767053628606L;
+    private static final long serialVersionUID = -4549821631559359838L;
 
     /**
      * Constructs a new exception with no detail message.

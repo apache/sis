@@ -65,7 +65,7 @@ class PropertyDescriptor<T> extends SimpleReferenceIdentifier implements Paramet
     /**
      * For cross-versions compatibility.
      */
-    private static final long serialVersionUID = 888961503200860655L;
+    private static final long serialVersionUID = 6279709738674566891L;
 
     /**
      * The interface which contain this property.
@@ -108,7 +108,7 @@ class PropertyDescriptor<T> extends SimpleReferenceIdentifier implements Paramet
      */
     static final class Bounded<T extends Number & Comparable<T>> extends PropertyDescriptor<T> {
         /** For cross versions compatibility. */
-        private static final long serialVersionUID = 7869130373802184834L;
+        private static final long serialVersionUID = 2066938309308576985L;
 
         /** The range of valid values. */
         private final NumberRange<T> range;

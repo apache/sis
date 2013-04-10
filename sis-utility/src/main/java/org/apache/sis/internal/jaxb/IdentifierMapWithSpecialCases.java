@@ -48,7 +48,7 @@ public final class IdentifierMapWithSpecialCases extends IdentifierMapAdapter {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 5139573827448780289L;
+    private static final long serialVersionUID = 8135179749011991090L;
 
     /**
      * Creates a new map which will be a view over the given identifiers.

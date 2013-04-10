@@ -44,7 +44,7 @@ public class DefaultGeometricObjects extends ISOMetadata implements GeometricObj
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 8755950031078638313L;
+    private static final long serialVersionUID = -7965994170083468201L;
 
     /**
      * Total number of the point or vector object type occurring in the dataset.

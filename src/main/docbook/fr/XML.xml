@@ -28,7 +28,7 @@
     qui ne font pas partie des spécifications abstraites d’origines.
     Ces attributs supplémentaires sont habituellement propres au <acronym>XML</acronym>
     et peuvent ne pas apparaître directement dans l’<acronym>API</acronym> de Apache <acronym>SIS</acronym>.
-    Certains de ces attributs, notamment <literal role="OGC">gmd:id</literal>, <literal role="OGC">gco:uuid</literal>
+    Certains de ces attributs, notamment <literal role="OGC">id</literal>, <literal role="OGC">uuid</literal>
     et <literal>xlink:href</literal>, restent toutefois accessibles sous forme de paires clé-valeurs.
   </para>
   <para>
@@ -181,7 +181,7 @@
       Le type de la valeur est un élément <acronym>XML</acronym> dont le nom commence toujours par une lettre majuscule, en ignorant les préfixes.
       Dans l’exemple ci-haut nous avions <classname role="OGC">MD_DataIdentification</classname>, qui correspond à l’interface Java <classname role="GeoAPI">DataIdentification</classname>.
       C’est cet élément <acronym>XML</acronym> qui contient les propriétés filles. Cet élément accepte aussi un groupe d’attributs
-      (notamment <literal role="OGC">gmd:id</literal> et <literal role="OGC">gco:uuid</literal>)
+      (notamment <literal role="OGC">id</literal> et <literal role="OGC">uuid</literal>)
       que les schémas <acronym>XSD</acronym> de l’<acronym>OGC</acronym> nomment collectivement <classname role="OGC">gco:ObjectIdentification</classname>.
       Ces attributs n’ont pas de méthodes Java dédiées, mais sont accessibles indirectement via l’interface <classname role="SIS">IdentifiedObject</classname>
       décrite dans la sous-section suivante.
@@ -219,8 +219,8 @@
     <section>
       <title>Identification d’instances déjà définies</title>
       <para>
-        L’élément englobant peut contenir un attribut <literal role="OGC">gmd:id</literal>,
-        <literal role="OGC">gco:uuid</literal> ou <literal>xlink:href</literal>.
+        L’élément englobant peut contenir un attribut <literal role="OGC">id</literal>,
+        <literal role="OGC">uuid</literal> ou <literal>xlink:href</literal>.
         Si un de ces attributs est présent, l’élément englobé peut être complètement omis;
         il sera remplacé au moment de la lecture par l’élément référencé par l’attribut.
         Dans l’exemple suivant, la partie gauche définie un élément associé à l’identifiant “<literal>mon_id</literal>”,
@@ -258,11 +258,11 @@
       </para>
       <itemizedlist>
         <listitem>
-          <literal role="OGC">gmd:id</literal> n’est valide qu’à l’intérieur du document <acronym>XML</acronym>
+          <literal role="OGC">id</literal> n’est valide qu’à l’intérieur du document <acronym>XML</acronym>
           qui définit l’objet ainsi référencé.
         </listitem>
         <listitem>
-          <literal role="OGC">gco:uuid</literal> peut être valide à l’extérieur du document <acronym>XML</acronym>,
+          <literal role="OGC">uuid</literal> peut être valide à l’extérieur du document <acronym>XML</acronym>,
           mais quelqu’un doit maintenir une base de données fournissant les objets pour chaque <acronym>UUID</acronym> donnés.
         </listitem>
         <listitem>
@@ -278,10 +278,10 @@
         notamment <constant role="SIS">ID</constant>, <constant role="SIS">UUID</constant> et <constant role="SIS">HREF</constant>.
         Chacune de ces clés peut être associée à une valeur d’un type différent (habituellement <classname>String</classname>,
         <classname>UUID</classname> ou <classname>URI</classname>) selon la clé.
-        Par exemple le code suivant définit une valeur pour l’attribut <literal role="OGC">gco:uuid</literal>:
+        Par exemple le code suivant définit une valeur pour l’attribut <literal role="OGC">uuid</literal>:
       </para>
       <example>
-        <title>Associer un identifiant <literal role="OGC">gco:uuid</literal> à une méta-donnée</title>
+        <title>Associer un identifiant <literal role="OGC">uuid</literal> à une méta-donnée</title>
         <programlisting language="java">import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.xml.IdentifierSpace;
 import java.util.UUID;

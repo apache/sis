@@ -43,7 +43,7 @@ final class DefaultFormat extends Format {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -4896767141936942311L;
+    private static final long serialVersionUID = -2309270763519060316L;
 
     /**
      * The array for storing singleton instances for types {@code byte} to {@code double}.

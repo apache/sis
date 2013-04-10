@@ -35,7 +35,7 @@ final class GlobalNameSpace extends DefaultNameSpace {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 5276591595735817024L;
+    private static final long serialVersionUID = 4652341179694633152L;
 
     /**
      * The unique global namespace.

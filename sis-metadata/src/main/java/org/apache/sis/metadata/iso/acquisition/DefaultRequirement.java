@@ -59,7 +59,7 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 7305276418007196948L;
+    private static final long serialVersionUID = -4987984804974769238L;
 
     /**
      * Identification of reference or guidance material for the requirement.

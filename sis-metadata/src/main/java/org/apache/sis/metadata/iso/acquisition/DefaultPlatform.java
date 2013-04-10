@@ -51,7 +51,7 @@ public class DefaultPlatform extends ISOMetadata implements Platform {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -6870357428019309408L;
+    private static final long serialVersionUID = -1607271701134014369L;
 
     /**
      * Source where information about the platform is described.

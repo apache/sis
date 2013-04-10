@@ -46,7 +46,7 @@ public class SimpleCitation implements Citation, Serializable {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -1490465918703910949L;
+    private static final long serialVersionUID = 4818846034764528263L;
 
     /**
      * The title to be returned by {@link #getTitle()}.

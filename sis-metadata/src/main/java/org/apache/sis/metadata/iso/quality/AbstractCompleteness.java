@@ -43,7 +43,7 @@ public class AbstractCompleteness extends AbstractElement implements Completenes
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -7893993264874215741L;
+    private static final long serialVersionUID = 8839542601508369777L;
 
     /**
      * Constructs an initially empty completeness.

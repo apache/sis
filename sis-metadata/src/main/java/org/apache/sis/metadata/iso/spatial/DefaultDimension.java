@@ -47,7 +47,7 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -2572515000574007266L;
+    private static final long serialVersionUID = 1104542984724265236L;
 
     /**
      * Name of the axis.

@@ -27,6 +27,9 @@ import org.opengis.metadata.constraint.LegalConstraints;
 
 /**
  * Restrictions and legal prerequisites for accessing and using the resource.
+ * The {@linkplain #getOtherConstraints() other constraint} element shall be non-empty only if
+ * {@linkplain #getAccessConstraints() access constraints} and/or {@linkplain #getUseConstraints()
+ * use constraints} elements have a value of {@link Restriction#OTHER_RESTRICTIONS}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
@@ -45,7 +48,7 @@ public class DefaultLegalConstraints extends DefaultConstraints implements Legal
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -2891061818279024901L;
+    private static final long serialVersionUID = -228007779747439839L;
 
     /**
      * Access constraints applied to assure the protection of privacy or intellectual property,

@@ -87,7 +87,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -5393896130562660517L;
+    private static final long serialVersionUID = 603508245068333284L;
 
     /**
      * The base type of elements in this range.

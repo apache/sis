@@ -40,7 +40,7 @@ public class DefaultSpatialTemporalExtent extends DefaultTemporalExtent implemen
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 821702768255546660L;
+    private static final long serialVersionUID = -2461142677245013474L;
 
     /**
      * The spatial extent component of composite
