@@ -25,8 +25,8 @@ import net.jcip.annotations.ThreadSafe;
 import org.opengis.util.CodeList;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.collection.CheckedHashSet;
-import org.apache.sis.util.collection.CheckedArrayList;
+import org.apache.sis.internal.util.CheckedHashSet;
+import org.apache.sis.internal.util.CheckedArrayList;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.collection.CollectionsExt.isNullOrEmpty;

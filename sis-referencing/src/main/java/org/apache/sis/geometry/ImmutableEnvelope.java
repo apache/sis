@@ -116,12 +116,12 @@ public final class ImmutableEnvelope extends ArrayEnvelope implements Serializab
      * <p>The main purpose of this method is to assign a non-null CRS when the envelope to
      * copy has a null CRS.</p>
      *
-     * @param  envelope The envelope from which to copy ordinate values.
      * @param  crs      The CRS to assign to this envelope, or {@code null}.
+     * @param  envelope The envelope from which to copy ordinate values.
      * @throws MismatchedDimensionException If the dimension of the given CRS is not equals
      *         to the dimension of the given envelope.
      */
-    public ImmutableEnvelope(final Envelope envelope, final CoordinateReferenceSystem crs)
+    public ImmutableEnvelope(final CoordinateReferenceSystem crs, final Envelope envelope)
             throws MismatchedDimensionException
     {
         super(envelope);
@@ -142,13 +142,13 @@ public final class ImmutableEnvelope extends ArrayEnvelope implements Serializab
      * See the javadoc of the {@link GeneralEnvelope#GeneralEnvelope(CharSequence) GeneralEnvelope}
      * constructor for more information.
      *
-     * @param  wkt The {@code BOX}, {@code POLYGON} or other kind of element to parse.
      * @param  crs The coordinate reference system, or {@code null} if none.
+     * @param  wkt The {@code BOX}, {@code POLYGON} or other kind of element to parse.
      * @throws IllegalArgumentException If the given string can not be parsed.
      * @throws MismatchedDimensionException If the dimension of the given CRS is not equals
      *         to the dimension of the parsed envelope.
      */
-    public ImmutableEnvelope(final CharSequence wkt, final CoordinateReferenceSystem crs)
+    public ImmutableEnvelope(final CoordinateReferenceSystem crs, final CharSequence wkt)
             throws IllegalArgumentException, MismatchedDimensionException
     {
         super(wkt);

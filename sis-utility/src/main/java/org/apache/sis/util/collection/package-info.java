@@ -34,16 +34,6 @@
  *     and supports concurrency, while the other implementations are more lightweight, sometime
  *     thread-safe but without concurrency support.
  *   </li><li>
- *     {@link org.apache.sis.util.collection.CheckedContainer},
- *     {@link org.apache.sis.util.collection.CheckedArrayList},
- *     {@link org.apache.sis.util.collection.CheckedHashSet} and
- *     {@link org.apache.sis.util.collection.CheckedHashMap} can be used for combining <em>runtime</em>
- *     type safety with thread-safety (without concurrency). They are similar in functionalities to
- *     the wrappers provided by the standard {@link java.util.Collections} methods, except that they
- *     combine both functionalities in a single class (so reducing the amount of indirection), provide
- *     a hook for making the collections read-only and allow the caller to specify the synchronization
- *     lock of his choice.
- *   </li><li>
  *     {@linkplain org.apache.sis.util.collection.CollectionsExt#derivedMap Derived Map} and
  *     {@linkplain org.apache.sis.util.collection.CollectionsExt#derivedSet derived Set} are wrapper collections
  *     in which the keys or the values are derived on-the-fly from the content of an other collection.
