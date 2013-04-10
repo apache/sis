@@ -116,11 +116,11 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
      * The actual axis orientations are determined by the specified CRS.
      * See the <a href="#skip-navbar_top">class javadoc</a> for details.
      *
+     * @param crs The coordinate reference system, or {@code null}.
      * @param x   The first ordinate value (not necessarily horizontal).
      * @param y   The second ordinate value (not necessarily vertical).
-     * @param crs The coordinate reference system, or {@code null}.
      */
-    public DirectPosition2D(final double x, final double y, final CoordinateReferenceSystem crs) {
+    public DirectPosition2D(final CoordinateReferenceSystem crs, final double x, final double y) {
         super(x, y);
         this.crs = crs;
         ensureDimensionMatches("crs", 2, crs);

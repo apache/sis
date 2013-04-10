@@ -216,11 +216,11 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Cloneabl
      * If the given rectangle has negative width or height, they will be interpreted
      * as an envelope spanning the anti-meridian.
      *
-     * @param rect The rectangle to copy (can not be {@code null}).
      * @param crs  The coordinate reference system, or {@code null}.
+     * @param rect The rectangle to copy (can not be {@code null}).
      * @throws MismatchedDimensionException If the given CRS is not two-dimensional.
      */
-    public Envelope2D(final Rectangle2D rect, final CoordinateReferenceSystem crs)
+    public Envelope2D(final CoordinateReferenceSystem crs, final Rectangle2D rect)
             throws MismatchedDimensionException
     {
         super(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight()); // Really 'super', not 'this'.
@@ -243,8 +243,8 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Cloneabl
      * @param  height The envelope height. May be negative for envelope spanning the anti-meridian.
      * @throws MismatchedDimensionException If the given CRS is not two-dimensional.
      */
-    public Envelope2D(final double x, final double y, final double width, final double height,
-            final CoordinateReferenceSystem crs) throws MismatchedDimensionException
+    public Envelope2D(final CoordinateReferenceSystem crs, final double x, final double y,
+            final double width, final double height) throws MismatchedDimensionException
     {
         super(x, y, width, height); // Really 'super', not 'this'.
         ensureDimensionMatches("crs", 2, crs);
@@ -302,7 +302,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Cloneabl
      */
     @Override
     public DirectPosition2D getLowerCorner() {
-        return new DirectPosition2D(x, y, crs);
+        return new DirectPosition2D(crs, x, y);
     }
 
     /**
@@ -325,7 +325,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Cloneabl
      */
     @Override
     public DirectPosition2D getUpperCorner() {
-        return new DirectPosition2D(x+width, y+height, crs);
+        return new DirectPosition2D(crs, x+width, y+height);
     }
 
     /**
@@ -691,7 +691,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Cloneabl
     @Override
     public Envelope2D createIntersection(final Rectangle2D rect) {
         final Envelope2D env = (rect instanceof Envelope2D) ? (Envelope2D) rect : null;
-        final Envelope2D inter = new Envelope2D(NaN, NaN, NaN, NaN, crs);
+        final Envelope2D inter = new Envelope2D(crs, NaN, NaN, NaN, NaN);
         for (int i=0; i!=2; i++) {
             final double min0, min1, span0, span1;
             if (i == 0) {
