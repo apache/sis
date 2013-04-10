@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.util.collection;
+package org.apache.sis.internal.util;
 
 import java.util.Set;
 import java.util.Iterator;
@@ -25,6 +25,7 @@ import java.util.NoSuchElementException;
 import net.jcip.annotations.ThreadSafe;
 import org.apache.sis.util.Decorator;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.collection.CheckedContainer;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
