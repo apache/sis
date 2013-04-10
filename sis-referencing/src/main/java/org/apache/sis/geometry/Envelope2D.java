@@ -109,7 +109,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Cloneabl
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -3319231220761419350L;
+    private static final long serialVersionUID = 761232175464415062L;
 
     /**
      * The coordinate reference system, or {@code null}.

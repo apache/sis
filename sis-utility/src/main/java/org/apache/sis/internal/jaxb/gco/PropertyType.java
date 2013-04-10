@@ -21,8 +21,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import org.apache.sis.xml.XLink;
 import org.apache.sis.xml.NilObject;
 import org.apache.sis.xml.NilReason;
@@ -456,29 +454,14 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
 
 
     /**
-     * Returns the bound type, which is typically the GeoAPI interface. The default implementation
-     * fetches the type using reflection, by looking at the second argument in the parameterized
-     * types. However subclasses can override this method in order to return directly the type,
-     * for type safety and performance reason.
+     * Returns the bound type, which is typically the GeoAPI interface.
+     * Subclasses need to return a hard-coded value. They shall not compute
+     * a value from the object fields, because this method is invoked from
+     * the constructor.
      *
      * @return The bound type, which is typically the GeoAPI interface.
      */
-    @SuppressWarnings("unchecked")
-    protected Class<BoundType> getBoundType() {
-        Class<?> classe = getClass();
-        do {
-            // Typically executed exactly once, but implemented as a loop anyway as a
-            // safety in case we derive sub-classes from existing direct sub-classes.
-            final Type type = classe.getGenericSuperclass();
-            if (type instanceof ParameterizedType) {
-                final ParameterizedType pt = (ParameterizedType) type;
-                if (pt.getRawType() == PropertyType.class) {
-                    return (Class) pt.getActualTypeArguments()[1];
-                }
-            }
-        } while ((classe = classe.getSuperclass()) != null);
-        throw new AssertionError(getClass()); // Should never happen.
-    }
+    protected abstract Class<BoundType> getBoundType();
 
     /**
      * Creates a new instance of this class wrapping the given metadata.

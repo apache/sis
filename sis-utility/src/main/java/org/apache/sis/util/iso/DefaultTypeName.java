@@ -42,7 +42,7 @@ public class DefaultTypeName extends DefaultLocalName implements TypeName {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -7985388992575173993L;
+    private static final long serialVersionUID = 7182126541436753582L;
 
     /**
      * Empty constructor to be used by JAXB only. Despite its "final" declaration,

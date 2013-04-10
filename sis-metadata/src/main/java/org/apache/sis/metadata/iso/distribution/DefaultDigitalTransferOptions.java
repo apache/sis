@@ -51,7 +51,7 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -1533064478468754337L;
+    private static final long serialVersionUID = 3797035083686261676L;
 
     /**
      * Tiles, layers, geographic areas, etc., in which data is available.

@@ -49,7 +49,7 @@ public class SimpleInternationalString extends AbstractInternationalString imple
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 3543963804501667578L;
+    private static final long serialVersionUID = 7600371840915793379L;
 
     /**
      * Creates a new instance from the given string. If the type of the text

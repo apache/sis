@@ -61,7 +61,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -935396252908733907L;
+    private static final long serialVersionUID = 5892811836634834434L;
 
     /**
      * Name of the extended metadata element.

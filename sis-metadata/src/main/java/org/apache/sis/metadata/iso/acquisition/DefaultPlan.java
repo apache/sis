@@ -50,7 +50,7 @@ public class DefaultPlan extends ISOMetadata implements Plan {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -8457900515677160271L;
+    private static final long serialVersionUID = -1212695055582082867L;
 
     /**
      * Manner of sampling geometry that the planner expects for collection of objective data.

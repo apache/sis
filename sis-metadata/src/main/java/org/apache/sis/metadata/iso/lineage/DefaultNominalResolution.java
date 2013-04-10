@@ -43,7 +43,7 @@ public class DefaultNominalResolution extends ISOMetadata implements NominalReso
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -3337606314192690008L;
+    private static final long serialVersionUID = -4000422414866855607L;
 
     /**
      * Distance between consistent parts of (centre, left side, right side) adjacent pixels

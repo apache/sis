@@ -56,7 +56,7 @@ public class DefaultGridSpatialRepresentation extends AbstractSpatialRepresentat
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -8400572307442433979L;
+    private static final long serialVersionUID = -1111392086980738831L;
 
     /**
      * Mask for the {@code transformationParameterAvailable} boolean value.

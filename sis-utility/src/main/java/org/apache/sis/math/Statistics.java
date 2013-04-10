@@ -92,7 +92,7 @@ public class Statistics implements Cloneable, Serializable {
     /**
      * Serial number for compatibility with different versions.
      */
-    private static final long serialVersionUID = -22884277805533726L;
+    private static final long serialVersionUID = 8495118253884975477L;
 
     /**
      * The name of the phenomenon for which this object is collecting statistics.
@@ -573,7 +573,7 @@ public class Statistics implements Cloneable, Serializable {
         /**
          * Serial number for compatibility with different versions.
          */
-        private static final long serialVersionUID = 3464306833883333219L;
+        private static final long serialVersionUID = -5149634417399815874L;
 
         /**
          * Statistics about the differences between consecutive sample values.

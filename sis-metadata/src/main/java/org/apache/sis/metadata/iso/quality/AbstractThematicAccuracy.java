@@ -46,7 +46,7 @@ public class AbstractThematicAccuracy extends AbstractElement implements Themati
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -781072634778767137L;
+    private static final long serialVersionUID = 7256282057348615018L;
 
     /**
      * Constructs an initially empty thematic accuracy.

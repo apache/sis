@@ -47,7 +47,7 @@ abstract class ResourceInternationalString extends AbstractInternationalString i
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 4744571031462678126L;
+    private static final long serialVersionUID = -3910920973710535738L;
 
     /**
      * The key for the resource to fetch. A negative value means that the resource takes no

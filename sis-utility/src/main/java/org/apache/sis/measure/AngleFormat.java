@@ -111,7 +111,7 @@ public class AngleFormat extends Format implements Localized {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 4320403817210439764L;
+    private static final long serialVersionUID = 820524050016391537L;
 
     /**
      * Hemisphere symbols. Must be upper-case.
@@ -186,7 +186,7 @@ public class AngleFormat extends Format implements Localized {
         /**
          * For cross-version compatibility.
          */
-        private static final long serialVersionUID = 3824094360855371451L;
+        private static final long serialVersionUID = -5015489890305908251L;
 
         /**
          * Creates a new field of the given name. The given name shall

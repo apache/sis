@@ -51,7 +51,7 @@ public class AbstractGeographicExtent extends ISOMetadata implements GeographicE
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -8844015895495563161L;
+    private static final long serialVersionUID = 4819196764221609263L;
 
     /**
      * Mask for the {@code inclusion} {@link Boolean} value.

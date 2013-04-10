@@ -37,7 +37,7 @@ public class LE_Source extends DefaultSource {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -8237367019409009341L;
+    private static final long serialVersionUID = -4284654104287846003L;
 
     /**
      * Creates an initially empty metadata.

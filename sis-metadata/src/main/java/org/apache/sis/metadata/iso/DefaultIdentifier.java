@@ -42,7 +42,7 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 7459062382170865919L;
+    private static final long serialVersionUID = -23375776954553866L;
 
     /**
      * Alphanumeric value identifying an instance in the namespace.

@@ -69,7 +69,7 @@ public class CheckedHashMap<K,V> extends LinkedHashMap<K,V> implements Cloneable
     /**
      * Serial version UID for compatibility with different versions.
      */
-    private static final long serialVersionUID = -7777695267921872849L;
+    private static final long serialVersionUID = -5983828895888575736L;
 
     /**
      * The class type for keys.

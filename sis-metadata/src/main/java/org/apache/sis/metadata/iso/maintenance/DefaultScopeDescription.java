@@ -57,7 +57,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -5671299759930976286L;
+    private static final long serialVersionUID = -2029119689389845656L;
 
     /**
      * Enumeration of possible values for {@link #property}.

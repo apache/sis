@@ -36,7 +36,7 @@ public final class Latitude extends Angle {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -4496748683919618976L;
+    private static final long serialVersionUID = -2227675003893702061L;
 
     /**
      * Minimum usual value for latitude ({@value}°).

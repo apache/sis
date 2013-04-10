@@ -39,7 +39,7 @@ public class MI_ImageDescription extends DefaultImageDescription {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -943279317653405499L;
+    private static final long serialVersionUID = -6373977837954788960L;
 
     /**
      * Creates an initially empty metadata.

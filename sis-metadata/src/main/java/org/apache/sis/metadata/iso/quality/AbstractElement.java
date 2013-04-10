@@ -74,7 +74,7 @@ public class AbstractElement extends ISOMetadata implements Element {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -3542504624077298894L;
+    private static final long serialVersionUID = 3963454452767190970L;
 
     /**
      * Name of the test applied to the data.

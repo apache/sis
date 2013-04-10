@@ -41,7 +41,7 @@ public final class ExcludedSet<E> extends AbstractSet<E> implements Serializable
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -3882719616419776295L;
+    private static final long serialVersionUID = -5502982329328318554L;
 
     /**
      * The name of the mutually exclusive properties.

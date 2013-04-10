@@ -46,7 +46,7 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
     /**
      * Serial number for compatibility with different versions.
      */
-    private static final long serialVersionUID = 1230713599561236060L;
+    private static final long serialVersionUID = -403671810118461829L;
 
     /**
      * Quantitative value or values, content determined by the evaluation procedure used.

@@ -59,7 +59,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -6168624828802439062L;
+    private static final long serialVersionUID = 1756867502303578674L;
 
     /**
      * Mask for the {@code triangulationIndicator} {@link Boolean} value.

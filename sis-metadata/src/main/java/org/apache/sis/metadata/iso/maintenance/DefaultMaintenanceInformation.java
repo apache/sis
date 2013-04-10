@@ -59,7 +59,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 8523463344581266776L;
+    private static final long serialVersionUID = -5134544727860361898L;
 
     /**
      * Frequency with which changes and additions are made to the resource after the

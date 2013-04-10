@@ -43,7 +43,7 @@ final class CharSequenceConverter<T> extends SystemConverter<CharSequence,T> {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 2591675151163578878L;
+    private static final long serialVersionUID = -2853169224777674260L;
 
     /**
      * The converter to apply after this one.

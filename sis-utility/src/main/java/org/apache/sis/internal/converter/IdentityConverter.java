@@ -44,7 +44,7 @@ public final class IdentityConverter<T, S extends T> extends SystemConverter<S,T
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -7203549932226245206L;
+    private static final long serialVersionUID = -4410848323263094741L;
 
     /**
      * The inverse converter specified at construction time, or {@code null} if none.

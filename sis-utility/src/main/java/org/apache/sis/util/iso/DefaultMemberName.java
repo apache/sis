@@ -45,7 +45,7 @@ public class DefaultMemberName extends DefaultLocalName implements MemberName {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 6252686806895124457L;
+    private static final long serialVersionUID = 7307683415489715298L;
 
     /**
      * The type of the data associated with the record member.
