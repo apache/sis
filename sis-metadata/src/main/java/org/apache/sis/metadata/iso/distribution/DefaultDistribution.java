@@ -47,7 +47,7 @@ public class DefaultDistribution extends ISOMetadata implements Distribution {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -5899590027802365131L;
+    private static final long serialVersionUID = 1331353255189686369L;
 
     /**
      * Provides a description of the format of the data to be distributed.

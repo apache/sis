@@ -69,17 +69,20 @@ Define Maven Mojos and Javadoc taglets for generating resource files
        =========================================================== -->
   <developers>
     <developer>
-      <id>desruisseaux</id>
       <name>Martin Desruisseaux</name>
+      <id>desruisseaux</id>
       <email>desruisseaux@apache.org</email>
       <organization>Geomatys</organization>
-      <organizationUrl>http://www.geomatys.com/</organizationUrl>
+      <organizationUrl>http://www.geomatys.com</organizationUrl>
       <timezone>+1</timezone>
       <roles>
-        <role>Developer</role>
+        <role>developer</role>
       </roles>
     </developer>
   </developers>
+  <contributors>
+    <!-- To prevent inheritance from parent pom.xml -->
+  </contributors>
 
 
   <!-- ===========================================================

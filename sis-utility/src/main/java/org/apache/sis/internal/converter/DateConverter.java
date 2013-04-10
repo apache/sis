@@ -45,7 +45,7 @@ abstract class DateConverter<T> extends SystemConverter<Date,T> {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -7770401534710581917L;
+    private static final long serialVersionUID = 945435736679371963L;
 
     /**
      * The inverse converter. Must be initialized by subclass constructors.
@@ -85,7 +85,7 @@ abstract class DateConverter<T> extends SystemConverter<Date,T> {
      * {@code DateConverter} enclosing class.
      */
     private static final class Inverse extends SystemConverter<java.lang.Long, java.util.Date> {
-        private static final long serialVersionUID = 3999693055029959455L;
+        private static final long serialVersionUID = 5022624034871426299L;
 
         private final SystemConverter<java.util.Date, java.lang.Long> inverse;
 
@@ -115,7 +115,7 @@ abstract class DateConverter<T> extends SystemConverter<Date,T> {
      * Converter from {@code Date} to {@code Long}.
      */
     public static final class Long extends DateConverter<java.lang.Long> {
-        private static final long serialVersionUID = 3163928356094316134L;
+        private static final long serialVersionUID = 5145114630594761657L;
 
         public Long() { // Instantiated by ServiceLoader.
             super(java.lang.Long.class);
@@ -136,7 +136,7 @@ abstract class DateConverter<T> extends SystemConverter<Date,T> {
      * The inverse of this converter is the identity conversion.
      */
     public static final class SQL extends DateConverter<java.sql.Date> {
-        private static final long serialVersionUID = -3644605344718636345L;
+        private static final long serialVersionUID = -7444502675467008640L;
 
         public SQL() { // Instantiated by ServiceLoader.
             super(java.sql.Date.class);
@@ -156,7 +156,7 @@ abstract class DateConverter<T> extends SystemConverter<Date,T> {
      * The inverse of this converter is the identity conversion.
      */
     public static final class Timestamp extends DateConverter<java.sql.Timestamp> {
-        private static final long serialVersionUID = 3798633184562706892L;
+        private static final long serialVersionUID = 7629460512978844462L;
 
         public Timestamp() { // Instantiated by ServiceLoader.
             super(java.sql.Timestamp.class);

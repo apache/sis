@@ -50,7 +50,7 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 7964896551368382214L;
+    private static final long serialVersionUID = 5036527927404894540L;
 
     /**
      * The specific data to which the data quality information applies.

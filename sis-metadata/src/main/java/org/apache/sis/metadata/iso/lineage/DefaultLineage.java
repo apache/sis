@@ -53,7 +53,7 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 3351230301999744987L;
+    private static final long serialVersionUID = 6214461492323186254L;
 
     /**
      * General explanation of the data producer's knowledge about the lineage of a dataset.

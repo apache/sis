@@ -47,7 +47,7 @@ class SexagesimalConverter extends UnitConverter {
     /**
      * Serial number for compatibility with different versions.
      */
-    private static final long serialVersionUID = 3873494343412121773L;
+    private static final long serialVersionUID = -2119974989555436361L;
 
     /**
      * Small tolerance factor when comparing numbers close to 1.
@@ -172,7 +172,7 @@ class SexagesimalConverter extends UnitConverter {
         /**
          * Serial number for compatibility with different versions.
          */
-        private static final long serialVersionUID = -7171869900634417819L;
+        private static final long serialVersionUID = -1928146841653975281L;
 
         /**
          * Constructs a converter.

@@ -45,7 +45,7 @@ public class DefaultGCP extends ISOMetadata implements GCP {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -5517470507848931237L;
+    private static final long serialVersionUID = -2021981491910341192L;
 
     /**
      * Geographic or map position of the control point, in either two or three dimensions.

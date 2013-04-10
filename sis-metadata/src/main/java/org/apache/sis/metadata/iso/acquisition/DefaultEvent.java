@@ -60,7 +60,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -5625600499628778407L;
+    private static final long serialVersionUID = -519920133287763009L;
 
     /**
      * Initiator of the event.

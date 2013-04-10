@@ -44,7 +44,7 @@ public class DefaultSeries extends ISOMetadata implements Series {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 2784101441023323052L;
+    private static final long serialVersionUID = 7061644572814855051L;
 
     /**
      * Name of the series, or aggregate dataset, of which the dataset is a part.

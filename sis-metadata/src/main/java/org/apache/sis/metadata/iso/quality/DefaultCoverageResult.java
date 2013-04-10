@@ -49,7 +49,7 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -5014701989643853577L;
+    private static final long serialVersionUID = 5860811052940576277L;
 
     /**
      * Method used to spatially represent the coverage result.

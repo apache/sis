@@ -103,7 +103,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 1752330560227688940L;
+    private static final long serialVersionUID = 3796799507279068254L;
 
     /**
      * Used for setting the {@link #ordinates} field during a {@link #clone()} operation only.
@@ -354,11 +354,11 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * The {@linkplain #getCoordinateReferenceSystem() coordinate reference system}
      * (if any) stay unchanged.
      *
-     * @see #isNull()
+     * @see #isAllNaN()
      */
-    public void setToNull() {
+    public void setToNaN() {
         Arrays.fill(ordinates, Double.NaN);
-        assert isNull() : this;
+        assert isAllNaN() : this;
     }
 
     /**

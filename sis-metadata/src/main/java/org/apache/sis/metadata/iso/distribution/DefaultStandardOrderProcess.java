@@ -50,7 +50,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -6503378937452728631L;
+    private static final long serialVersionUID = 6107884863471045743L;
 
     /**
      * Fees and terms for retrieving the resource.

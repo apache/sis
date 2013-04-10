@@ -99,7 +99,7 @@ public class RangeFormat extends Format {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 6700474540675919894L;
+    private static final long serialVersionUID = 2459948572315667868L;
 
     /**
      * The constant value for {@link FieldPosition} which designate the minimal value.
@@ -135,7 +135,7 @@ public class RangeFormat extends Format {
         /**
          * For cross-version compatibility.
          */
-        private static final long serialVersionUID = 2286464612919602208L;
+        private static final long serialVersionUID = 2000378602311146796L;
 
         /**
          * Creates a new field of the given name. The given name shall

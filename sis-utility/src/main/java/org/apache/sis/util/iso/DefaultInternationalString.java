@@ -55,7 +55,7 @@ public class DefaultInternationalString extends AbstractInternationalString impl
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 5760033376627376938L;
+    private static final long serialVersionUID = 3663160836923279819L;
 
     /**
      * The string values in different locales (never {@code null}).

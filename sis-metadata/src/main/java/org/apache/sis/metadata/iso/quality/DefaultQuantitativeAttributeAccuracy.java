@@ -38,7 +38,7 @@ public class DefaultQuantitativeAttributeAccuracy extends AbstractThematicAccura
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 7030401943270178746L;
+    private static final long serialVersionUID = 4190822658851541881L;
 
     /**
      * Constructs an initially empty quantitative attribute accuracy.

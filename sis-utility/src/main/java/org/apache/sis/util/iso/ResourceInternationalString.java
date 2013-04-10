@@ -85,7 +85,7 @@ public class ResourceInternationalString extends AbstractInternationalString imp
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 6339944890723487336L;
+    private static final long serialVersionUID = -8636012022904092254L;
 
     /**
      * The name of the resource bundle, as a fully qualified class name.

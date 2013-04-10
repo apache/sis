@@ -47,7 +47,7 @@ public class DefaultPlatformPass extends ISOMetadata implements PlatformPass {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -1695097227120034432L;
+    private static final long serialVersionUID = -6447077434254133293L;
 
     /**
      * Area covered by the pass.

@@ -61,7 +61,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -4247450339144267883L;
+    private static final long serialVersionUID = 4828650802232651791L;
 
     /**
      * Description of the mission on which the platform observations are made and the

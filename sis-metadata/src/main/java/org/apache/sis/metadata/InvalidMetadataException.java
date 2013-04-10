@@ -29,7 +29,7 @@ public class InvalidMetadataException extends IllegalStateException {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 3219759595538181102L;
+    private static final long serialVersionUID = 947896851753786460L;
 
     /**
      * Creates a new exception with the specified detail message.

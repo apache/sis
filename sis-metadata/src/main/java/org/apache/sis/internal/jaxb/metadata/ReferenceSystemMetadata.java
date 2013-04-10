@@ -58,7 +58,7 @@ public class ReferenceSystemMetadata implements ReferenceSystem, Serializable {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 7008508657011563047L;
+    private static final long serialVersionUID = 2810145397032096087L;
 
     /**
      * The primary name by which this object is identified.

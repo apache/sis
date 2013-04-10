@@ -46,7 +46,7 @@ public class DefaultConformanceResult extends AbstractResult implements Conforma
     /**
      * Serial number for compatibility with different versions.
      */
-    private static final long serialVersionUID = -8746956498487963352L;
+    private static final long serialVersionUID = -2958690684356371311L;
 
     /**
      * Citation of product specification or user requirement against which data is being evaluated.

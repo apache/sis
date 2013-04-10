@@ -32,7 +32,7 @@ class FormatField extends Format.Field {
     /**
      * Serial number for cross-version compatibility.
      */
-    private static final long serialVersionUID = -5344437554919766622L;
+    private static final long serialVersionUID = 8152048308355926356L;
 
     /**
      * A sentinel value for {@link FormattedCharacterIterator} internal usage only,

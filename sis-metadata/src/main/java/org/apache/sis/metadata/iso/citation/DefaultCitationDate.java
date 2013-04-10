@@ -46,7 +46,7 @@ public class DefaultCitationDate extends ISOMetadata implements CitationDate {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -2884791484254008454L;
+    private static final long serialVersionUID = 5140213754542273710L;
 
     /**
      * Reference date for the cited resource in milliseconds elapsed sine January 1st, 1970,

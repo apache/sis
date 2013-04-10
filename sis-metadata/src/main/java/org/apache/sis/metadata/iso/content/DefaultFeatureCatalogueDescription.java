@@ -53,7 +53,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 1984922846251567908L;
+    private static final long serialVersionUID = -3626075463499626813L;
 
     /**
      * Mask for the {@code compliant} {@link Boolean} value.

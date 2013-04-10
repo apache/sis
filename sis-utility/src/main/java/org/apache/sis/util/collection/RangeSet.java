@@ -115,7 +115,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -6085227672036239981L;
+    private static final long serialVersionUID = 7493555225994855486L;
 
     /**
      * The range comparator returned by {@link RangeSet#comparator()}. This comparator
@@ -141,7 +141,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
         /**
          * For cross-version compatibility.
          */
-        private static final long serialVersionUID = -3710903977144041225L;
+        private static final long serialVersionUID = 8688450091923783564L;
 
         /**
          * The singleton instance, as a raw type in order to allow
@@ -1400,7 +1400,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * @see RangeSet#create(Class, boolean, boolean)
      */
     private static final class Numeric<E extends Number & Comparable<? super E>> extends RangeSet<E> {
-        private static final long serialVersionUID = 934107071458551753L;
+        private static final long serialVersionUID = 5603640102714482527L;
 
         Numeric(final Class<E> elementType, final boolean isMinIncluded, final boolean isMaxIncluded) {
             super(elementType, isMinIncluded, isMaxIncluded);

@@ -36,7 +36,7 @@ public class DefaultDomainConsistency extends AbstractLogicalConsistency impleme
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -358082990944183859L;
+    private static final long serialVersionUID = -2397510938251794672L;
 
     /**
      * Constructs an initially empty domain consistency.

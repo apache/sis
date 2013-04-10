@@ -493,7 +493,7 @@ public final strictfp class GeneralEnvelopeTest extends TestCase {
          */
         final GeneralEnvelope e1 = new GeneralEnvelope(4);
         assertTrue  (e1.isEmpty());
-        assertFalse (e1.isNull());
+        assertFalse (e1.isAllNaN());
         assertEquals(e1.getLowerCorner(), e1.getUpperCorner());
         /*
          * Initializes with arbitrary coordinate values.
@@ -502,7 +502,7 @@ public final strictfp class GeneralEnvelopeTest extends TestCase {
         for (int i=e1.getDimension(); --i>=0;) {
             e1.setRange(i, i*5 + 2, i*6 + 5);
         }
-        assertFalse(e1.isNull ());
+        assertFalse(e1.isAllNaN ());
         assertFalse(e1.isEmpty());
         assertFalse(e1.getLowerCorner().equals(e1.getUpperCorner()));
         /*

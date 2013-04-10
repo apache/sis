@@ -86,7 +86,7 @@ public class XLink implements Serializable {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -4349950135677857725L;
+    private static final long serialVersionUID = 4046720871882443681L;
 
     /**
      * The type of link. If {@code null}, then the type will be inferred by {@link #getType()}.

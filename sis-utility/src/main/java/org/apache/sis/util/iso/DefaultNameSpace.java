@@ -57,7 +57,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -3064358267398624306L;
+    private static final long serialVersionUID = 8272640747799127007L;
 
     /**
      * The default separator, which is {@value}. The separator is inserted between the

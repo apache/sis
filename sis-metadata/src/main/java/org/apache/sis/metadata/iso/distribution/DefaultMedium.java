@@ -52,7 +52,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -2838122926367921673L;
+    private static final long serialVersionUID = 7751002701087451894L;
 
     /**
      * Name of the medium on which the resource can be received.

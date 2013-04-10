@@ -78,7 +78,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -7094915750367581487L;
+    private static final long serialVersionUID = -689151528653024968L;
 
     /**
      * The locale given at construction time, or {@link Locale#ROOT} (never {@code null}) for

@@ -38,7 +38,7 @@ public class DefaultAccuracyOfATimeMeasurement extends AbstractTemporalAccuracy
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -7934234071852119486L;
+    private static final long serialVersionUID = 2248263966450664491L;
 
     /**
      * Constructs an initially empty accuracy of a time measurement.

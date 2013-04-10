@@ -41,7 +41,7 @@ final class Column extends TableColumn<Class<?>> implements Serializable {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -828524683891584679L;
+    private static final long serialVersionUID = -6297242452383159294L;
 
     /**
      * The column for the source type.

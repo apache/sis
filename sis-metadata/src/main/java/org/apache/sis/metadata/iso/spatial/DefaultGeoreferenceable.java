@@ -54,7 +54,7 @@ public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation im
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 7369639367164358759L;
+    private static final long serialVersionUID = -334605303200205283L;
 
     /**
      * Mask for the {@code controlPointAvailable} boolean value.

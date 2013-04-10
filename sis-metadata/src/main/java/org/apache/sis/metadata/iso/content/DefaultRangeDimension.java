@@ -47,7 +47,7 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 4365956866782010460L;
+    private static final long serialVersionUID = -8624244894762434804L;
 
     /**
      * Number that uniquely identifies instances of bands of wavelengths on which a sensor operates.

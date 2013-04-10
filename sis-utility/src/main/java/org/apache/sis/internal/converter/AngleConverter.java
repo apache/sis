@@ -34,7 +34,7 @@ import org.apache.sis.math.FunctionProperty;
 @Immutable
 public final class AngleConverter extends SystemConverter<Angle,Double> {
     /** For cross-version compatibility. */
-    private static final long serialVersionUID = -1034882100844343376L;
+    private static final long serialVersionUID = -5124032874967170238L;
 
     /** The unique instance. */
     static final AngleConverter INSTANCE = new AngleConverter();
@@ -71,7 +71,7 @@ public final class AngleConverter extends SystemConverter<Angle,Double> {
     @Immutable
     public static final class Inverse extends SystemConverter<Double,Angle> {
         /** For cross-version compatibility. */
-        private static final long serialVersionUID = -8973303108935526882L;
+        private static final long serialVersionUID = -1736966474591258159L;
 
         /** The unique instance. */
         static final Inverse INSTANCE = new Inverse();
