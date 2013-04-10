@@ -43,7 +43,7 @@ public class DefaultBoundingPolygon extends AbstractGeographicExtent implements 
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 8174011874910887918L;
+    private static final long serialVersionUID = 3404580901560754370L;
 
     /**
      * The sets of points defining the bounding polygon.

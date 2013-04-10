@@ -57,7 +57,7 @@ public final class PerformanceLevel extends Level {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 6055684381688936293L;
+    private static final long serialVersionUID = -6547125008284983701L;
 
     /*
      * IMPLEMENTATION NOTE: The level values used in the constants below are also used

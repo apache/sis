@@ -63,7 +63,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     /**
      * Serial number for compatibility with different versions.
      */
-    private static final long serialVersionUID = 5794381277658853611L;
+    private static final long serialVersionUID = -6512101909569333306L;
 
     /**
      * Citation data for the resource(s).

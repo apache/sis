@@ -38,7 +38,7 @@ public class DefaultGriddedDataPositionalAccuracy extends AbstractPositionalAccu
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -3852184823135498458L;
+    private static final long serialVersionUID = 1006810371734607137L;
 
     /**
      * Constructs an initially empty gridded data positional acccuracy.

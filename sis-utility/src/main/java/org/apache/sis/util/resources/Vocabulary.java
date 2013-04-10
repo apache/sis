@@ -309,7 +309,7 @@ public final class Vocabulary extends IndexedResourceBundle {
      * The international string to be returned by {@link formatInternational}.
      */
     private static final class International extends ResourceInternationalString {
-        private static final long serialVersionUID = 8360132666298806838L;
+        private static final long serialVersionUID = -5423999784169092823L;
 
         International(int key)                   {super(key);}
         International(int key, Object args)      {super(key, args);}

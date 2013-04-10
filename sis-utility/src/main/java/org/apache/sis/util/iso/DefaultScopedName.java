@@ -55,7 +55,7 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -5215955533541748481L;
+    private static final long serialVersionUID = 1363103337249930577L;
 
     /**
      * The immutable list of parsed names.

@@ -37,7 +37,7 @@ public class MI_Band extends DefaultBand {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -7061684569453232088L;
+    private static final long serialVersionUID = -6839213923457158942L;
 
     /**
      * Creates an initially empty metadata.

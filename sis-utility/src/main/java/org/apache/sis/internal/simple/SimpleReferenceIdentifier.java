@@ -45,7 +45,7 @@ public class SimpleReferenceIdentifier implements ReferenceIdentifier, Serializa
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -2838613660030835519L;
+    private static final long serialVersionUID = -3544709943777129514L;
 
     /**
      * Organization or party responsible for definition and maintenance of the

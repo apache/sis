@@ -45,7 +45,7 @@ public class AbstractSpatialRepresentation extends ISOMetadata implements Spatia
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 1443170876207840116L;
+    private static final long serialVersionUID = -2238840586154687777L;
 
     /**
      * Constructs an initially empty spatial representation.

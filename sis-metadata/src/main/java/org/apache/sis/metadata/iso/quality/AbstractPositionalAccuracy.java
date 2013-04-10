@@ -46,7 +46,7 @@ public class AbstractPositionalAccuracy extends AbstractElement implements Posit
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 6043381860937480828L;
+    private static final long serialVersionUID = 1127147951521512624L;
 
     /**
      * Constructs an initially empty positional accuracy.

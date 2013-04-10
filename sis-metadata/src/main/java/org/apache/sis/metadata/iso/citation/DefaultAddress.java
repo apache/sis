@@ -48,7 +48,7 @@ public class DefaultAddress extends ISOMetadata implements Address {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 2278687294173262546L;
+    private static final long serialVersionUID = 1357443146723845129L;
 
     /**
      * State, province of the location.

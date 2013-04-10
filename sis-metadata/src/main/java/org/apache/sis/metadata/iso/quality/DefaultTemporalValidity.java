@@ -36,7 +36,7 @@ public class DefaultTemporalValidity extends AbstractTemporalAccuracy implements
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 2866684429712027839L;
+    private static final long serialVersionUID = 7271555924670981058L;
 
     /**
      * Constructs an initially empty temporal validity.

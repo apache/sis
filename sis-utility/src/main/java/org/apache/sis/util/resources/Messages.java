@@ -186,7 +186,7 @@ public final class Messages extends IndexedResourceBundle {
      * The international string to be returned by {@link formatInternational}.
      */
     private static final class International extends ResourceInternationalString {
-        private static final long serialVersionUID = -229348959712294903L;
+        private static final long serialVersionUID = 4553487496835099424L;
 
         International(int key)                   {super(key);}
         International(int key, Object args)      {super(key, args);}

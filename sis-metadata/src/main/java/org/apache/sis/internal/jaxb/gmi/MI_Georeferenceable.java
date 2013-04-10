@@ -39,7 +39,7 @@ public class MI_Georeferenceable  extends DefaultGeoreferenceable {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -8181513425297909032L;
+    private static final long serialVersionUID = 4709694415908530851L;
 
     /**
      * Creates an initially empty metadata.

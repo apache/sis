@@ -64,7 +64,7 @@ public class DefaultReferenceIdentifier implements ReferenceIdentifier, Deprecab
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 2004263079254434562L;
+    private static final long serialVersionUID = -7681717592582493409L;
 
     /**
      * Identifier code or name, optionally from a controlled list or pattern defined by a code space.

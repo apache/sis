@@ -42,7 +42,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 4920157673337669241L;
+    private static final long serialVersionUID = -1920621361930970869L;
 
     /**
      * Telephone numbers by which individuals can speak to the responsible organization or individual.

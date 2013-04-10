@@ -47,7 +47,7 @@ class ObjectToString<S> extends SystemConverter<S,String> {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 1460382215827540172L;
+    private static final long serialVersionUID = 502567744195102675L;
 
     /**
      * The inverse converter specified at construction time.
@@ -106,7 +106,7 @@ class ObjectToString<S> extends SystemConverter<S,String> {
      * @see org.apache.sis.internal.converter.StringConverter.CodeList
      */
     static final class CodeList<S extends org.opengis.util.CodeList<S>> extends ObjectToString<S> {
-        private static final long serialVersionUID = 1313285261794842777L;
+        private static final long serialVersionUID = 1454105232343463228L;
 
         /** Creates a new converter from the given type of code list to strings. */
         CodeList(final Class<S> sourceClass, final SystemConverter<String, S> inverse) {

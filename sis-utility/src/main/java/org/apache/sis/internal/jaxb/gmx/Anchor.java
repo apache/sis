@@ -47,7 +47,7 @@ public final class Anchor extends XLink implements InternationalString {
     /**
      * Defined as a matter of principle (this class is not expected to be serialized).
      */
-    private static final long serialVersionUID = -6101324942683322597L;
+    private static final long serialVersionUID = -7896134857052775101L;
 
     /**
      * Often a short textual description of the URI target.

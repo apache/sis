@@ -54,7 +54,7 @@ final class NumberConverter<S extends Number, T extends Number> extends SystemCo
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -8715054480508622025L;
+    private static final long serialVersionUID = 3339549290992876106L;
 
     /**
      * The inverse converter, created when first needed.
@@ -127,7 +127,7 @@ final class NumberConverter<S extends Number, T extends Number> extends SystemCo
         /**
          * For cross-version compatibility.
          */
-        private static final long serialVersionUID = 3716134638218072176L;
+        private static final long serialVersionUID = -6366381413315460619L;
 
         /**
          * Creates a new converter from the given type of numbers to {@code Comparable} instances.

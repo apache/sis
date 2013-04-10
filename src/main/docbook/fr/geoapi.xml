@@ -108,7 +108,7 @@
           Une conversion à partir des schémas <acronym>XSD</acronym> introduit, au moins dans le cas des méta-données, près du
           double du nombre d’interfaces réellement définies par le standard, sans que cela n’apporte de nouvelles fonctionnalités.
           Les schémas <acronym>XSD</acronym> définissent aussi des attributs propres aux documents <acronym>XML</acronym>
-          (<literal role="OGC">gmd:id</literal>, <literal role="OGC">gco:uuid</literal>, <literal>xlink:href</literal>, <foreignphrase>etc.</foreignphrase>),
+          (<literal role="OGC">id</literal>, <literal role="OGC">uuid</literal>, <literal>xlink:href</literal>, <foreignphrase>etc.</foreignphrase>),
           qui n’existent pas dans les diagrammes <acronym>UML</acronym> originaux et que l’on ne souhaite pas forcément exposer dans un API Java.
           Une conversion à partir des schémas <acronym>UML</acronym> évite ce problème, mais les outils capable d’effectuer cette
           opération sont plus rares.

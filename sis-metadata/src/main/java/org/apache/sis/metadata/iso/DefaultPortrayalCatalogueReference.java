@@ -42,7 +42,7 @@ public class DefaultPortrayalCatalogueReference extends ISOMetadata
     /**
      * Serial number for compatibility with different versions.
      */
-    private static final long serialVersionUID = -3095277682987563157L;
+    private static final long serialVersionUID = -6211960792438534868L;
 
     /**
      * Bibliographic reference to the portrayal catalogue cited.

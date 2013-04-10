@@ -45,7 +45,7 @@ public class DefaultEnvironmentalRecord extends ISOMetadata implements Environme
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -8553651678708627947L;
+    private static final long serialVersionUID = 3634348015931833471L;
 
     /**
      * Average air temperature along the flight pass during the photo flight.

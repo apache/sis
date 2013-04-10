@@ -45,7 +45,7 @@ public class AbstractContentInformation extends ISOMetadata implements ContentIn
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -1609535650982322560L;
+    private static final long serialVersionUID = -3237461458526348999L;
 
     /**
      * Constructs an initially empty content information.

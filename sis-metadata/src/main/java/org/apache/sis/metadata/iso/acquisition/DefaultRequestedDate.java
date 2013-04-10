@@ -45,7 +45,7 @@ public class DefaultRequestedDate extends ISOMetadata implements RequestedDate {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -8884795189934200802L;
+    private static final long serialVersionUID = 942236885315159329L;
 
     /**
      * Preferred date and time of collection,

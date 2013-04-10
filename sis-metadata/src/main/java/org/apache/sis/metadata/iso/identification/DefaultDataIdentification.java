@@ -56,7 +56,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
     /**
      * Serial number for compatibility with different versions.
      */
-    private static final long serialVersionUID = 2099051218533426785L;
+    private static final long serialVersionUID = 8586544979707643009L;
 
     /**
      * Method used to spatially represent geographic information.

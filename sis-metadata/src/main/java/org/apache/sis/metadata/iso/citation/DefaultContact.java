@@ -49,7 +49,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 3283637180253117382L;
+    private static final long serialVersionUID = 3844283689911660546L;
 
     /**
      * Telephone numbers at which the organization or individual may be contacted.

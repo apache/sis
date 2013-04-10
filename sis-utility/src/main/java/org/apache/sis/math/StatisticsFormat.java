@@ -55,7 +55,7 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -7393669354879347985L;
+    private static final long serialVersionUID = 6914760410359494163L;
 
     /**
      * Number of additional digits, to be added to the number of digits computed from the

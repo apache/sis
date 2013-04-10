@@ -37,7 +37,7 @@ public class DefaultUsability extends AbstractElement implements Usability {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -2834763269479082042L;
+    private static final long serialVersionUID = -7316059750787640719L;
 
     /**
      * Constructs an initially empty usability.

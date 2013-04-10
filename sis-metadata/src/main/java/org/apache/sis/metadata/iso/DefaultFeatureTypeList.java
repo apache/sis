@@ -41,7 +41,7 @@ public class DefaultFeatureTypeList extends ISOMetadata implements FeatureTypeLi
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 5417914796207743856L;
+    private static final long serialVersionUID = 1172943083269243669L;
 
     /**
      * Instance of a type defined in the spatial schema.

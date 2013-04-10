@@ -45,7 +45,7 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 3235094562875693710L;
+    private static final long serialVersionUID = -9196647508968517838L;
 
     /**
      * The coordinate reference system for this position;

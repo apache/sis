@@ -49,7 +49,7 @@ public class DefaultDistributor extends ISOMetadata implements Distributor {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 7142984376823483766L;
+    private static final long serialVersionUID = 5706757156163948001L;
 
     /**
      * Party from whom the resource may be obtained. This list need not be exhaustive.

@@ -56,7 +56,7 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 7284917239693486738L;
+    private static final long serialVersionUID = 1657970968782634545L;
 
     /**
      * Ordinate values of lower and upper corners. The length of this array is twice the
@@ -430,7 +430,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
                 }
             }
         }
-        assert !isNull() : this;
+        assert !isAllNaN() : this;
         return false;
     }
 
@@ -438,7 +438,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
      * {@inheritDoc}
      */
     @Override
-    public boolean isNull() {
+    public boolean isAllNaN() {
         for (int i=0; i<ordinates.length; i++) {
             if (!Double.isNaN(ordinates[i])) {
                 return false;

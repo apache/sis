@@ -55,7 +55,7 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 1232071263806560246L;
+    private static final long serialVersionUID = 6115581617356679324L;
 
     /**
      * Identifies the plan as implemented by the acquisition.

@@ -54,7 +54,7 @@ public class Angle implements Comparable<Angle>, Formattable, Serializable {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 1158747349433104534L;
+    private static final long serialVersionUID = 3701568577051191744L;
 
     /**
      * A shared instance of {@link AngleFormat}.

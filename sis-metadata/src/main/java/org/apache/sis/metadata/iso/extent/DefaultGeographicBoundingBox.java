@@ -72,7 +72,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -3278089380004172514L;
+    private static final long serialVersionUID = -9200149606040429957L;
 
     /**
      * A bounding box ranging from 180°W to 180°E and 90°S to 90°N.
@@ -471,7 +471,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
      *
      * @return {@code true} if this metadata does not define any bound value.
      *
-     * @see org.apache.sis.geometry.AbstractEnvelope#isNull()
+     * @see org.apache.sis.geometry.AbstractEnvelope#isAllNaN()
      */
     @Override
     public synchronized boolean isEmpty() {
