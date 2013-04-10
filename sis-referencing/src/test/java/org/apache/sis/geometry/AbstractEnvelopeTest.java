@@ -82,7 +82,7 @@ public final strictfp class AbstractEnvelopeTest extends TestCase {
                 break;
             }
             case RECTANGLE: {
-                envelope = new Envelope2D(xmin, ymin, xmax - xmin, ymax - ymin, WGS84);
+                envelope = new Envelope2D(WGS84, xmin, ymin, xmax - xmin, ymax - ymin);
                 break;
             }
             default: throw new IllegalArgumentException(String.valueOf(type));
