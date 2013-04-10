@@ -431,7 +431,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
                 }
             }
         }
-        assert !isNull() : this;
+        assert !isAllNaN() : this;
         return false;
     }
 
@@ -439,7 +439,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
      * {@inheritDoc}
      */
     @Override
-    public boolean isNull() {
+    public boolean isAllNaN() {
         for (int i=0; i<ordinates.length; i++) {
             if (!Double.isNaN(ordinates[i])) {
                 return false;

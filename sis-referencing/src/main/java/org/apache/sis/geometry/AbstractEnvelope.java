@@ -498,8 +498,8 @@ public abstract class AbstractEnvelope implements Envelope {
     /**
      * Determines whether or not this envelope is empty. An envelope is non-empty only if it has
      * at least one {@linkplain #getDimension() dimension}, and the {@linkplain #getSpan(int) span}
-     * is greater than 0 along all dimensions. Note that a non-empty envelope is always
-     * non-{@linkplain #isNull() null}, but the converse is not always true.
+     * is greater than 0 along all dimensions. Note that {@link #isAllNaN()} always returns
+     * {@code false} for a non-empty envelope, but the converse is not always true.
      *
      * @return {@code true} if this envelope is empty.
      *
@@ -516,28 +516,32 @@ public abstract class AbstractEnvelope implements Envelope {
                 return true;
             }
         }
-        assert !isNull() : this;
+        assert !isAllNaN() : this;
         return false;
     }
 
     /**
      * Returns {@code false} if at least one ordinate value is not {@linkplain Double#NaN NaN}.
-     * This {@code isNull()} check is a little bit different than the {@link #isEmpty()} check
+     * This {@code isAllNaN()} check is a little bit different than the {@link #isEmpty()} check
      * since it returns {@code false} for a partially initialized envelope, while {@code isEmpty()}
      * returns {@code false} only after all dimensions have been initialized. More specifically,
      * the following rules apply:
      *
      * <ul>
-     *   <li>If {@code isNull() == true}, then {@code isEmpty() == true}</li>
-     *   <li>If {@code isEmpty() == false}, then {@code isNull() == false}</li>
+     *   <li>If {@code isAllNaN() == true}, then {@code isEmpty() == true}</li>
+     *   <li>If {@code isEmpty() == false}, then {@code isAllNaN() == false}</li>
      *   <li>The converse of the above-cited rules are not always true.</li>
      * </ul>
      *
+     * Note that a all-NaN envelope can still have a non-null
+     * {@linkplain #getCoordinateReferenceSystem() coordinate reference system}.
+     *
      * @return {@code true} if this envelope has NaN values.
      *
-     * @see GeneralEnvelope#setToNull()
+     * @see GeneralEnvelope#setToNaN()
+     * @see org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#isEmpty()
      */
-    public boolean isNull() {
+    public boolean isAllNaN() {
         final int dimension = getDimension();
         for (int i=0; i<dimension; i++) {
             if (!Double.isNaN(getLower(i)) || !Double.isNaN(getUpper(i))) {

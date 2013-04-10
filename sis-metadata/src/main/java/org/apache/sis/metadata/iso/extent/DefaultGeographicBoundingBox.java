@@ -471,7 +471,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
      *
      * @return {@code true} if this metadata does not define any bound value.
      *
-     * @see org.apache.sis.geometry.AbstractEnvelope#isNull()
+     * @see org.apache.sis.geometry.AbstractEnvelope#isAllNaN()
      */
     @Override
     public synchronized boolean isEmpty() {

@@ -354,11 +354,11 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * The {@linkplain #getCoordinateReferenceSystem() coordinate reference system}
      * (if any) stay unchanged.
      *
-     * @see #isNull()
+     * @see #isAllNaN()
      */
-    public void setToNull() {
+    public void setToNaN() {
         Arrays.fill(ordinates, Double.NaN);
-        assert isNull() : this;
+        assert isAllNaN() : this;
     }
 
     /**
