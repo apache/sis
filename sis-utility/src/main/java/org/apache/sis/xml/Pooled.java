@@ -152,10 +152,10 @@ abstract class Pooled {
 
     /**
      * Returns the initial value of {@link MarshalContext#bitMasks}. Shall be 0 if this object is
-     * an unmarshaller, or {@link MarshalContext#MARSHALING} if it is an {@link Unmarshaller}.
+     * an unmarshaller, or {@link MarshalContext#MARSHALLING} if it is an {@link Unmarshaller}.
      */
     private int initialBitMasks() {
-        return (this instanceof Marshaller) ? MarshalContext.MARSHALING : 0;
+        return (this instanceof Marshaller) ? MarshalContext.MARSHALLING : 0;
     }
 
     /**
