@@ -30,12 +30,11 @@ import org.opengis.metadata.citation.Series;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.iso.SimpleInternationalString;
-import org.apache.sis.util.collection.CollectionsExt;
 import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.xml.IdentifierSpace;
 
-import static org.apache.sis.internal.jaxb.MarshalContext.filterIdentifiers;
+import static org.apache.sis.util.collection.CollectionsExt.isNullOrEmpty;
 import static org.apache.sis.internal.metadata.MetadataUtilities.toDate;
 import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
 
@@ -81,8 +80,8 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * The authority for International Standard Book Number.
      *
      * <p><b>Implementation note:</b> This field is read by reflection in
-     * {@link org.apache.sis.internal.jaxb.NonMarshalledAuthority}. IF this
-     * field is renamed or moved, then {@code NonMarshalledAuthority} needs
+     * {@link org.apache.sis.internal.jaxb.NonMarshalledAuthority#getCitation(String)}.
+     * If this field is renamed or moved, then {@code NonMarshalledAuthority} needs
      * to be updated.</p>
      */
     static final IdentifierSpace<String> ISBN = new NonMarshalledAuthority<String>("ISBN", NonMarshalledAuthority.ISBN);
@@ -91,8 +90,8 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * The authority for International Standard Serial Number.
      *
      * <p><b>Implementation note:</b> This field is read by reflection in
-     * {@link org.apache.sis.internal.jaxb.NonMarshalledAuthority}. IF this
-     * field is renamed or moved, then {@code NonMarshalledAuthority} needs
+     * {@link org.apache.sis.internal.jaxb.NonMarshalledAuthority#getCitation(String)}.
+     * If this field is renamed or moved, then {@code NonMarshalledAuthority} needs
      * to be updated.</p>
      */
     static final IdentifierSpace<String> ISSN = new NonMarshalledAuthority<String>("ISSN", NonMarshalledAuthority.ISSN);
@@ -350,37 +349,46 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * Example: Universal Product Code (UPC), National Stock Number (NSN).
      *
      * {@section Unified identifiers view}
-     * In this SIS implementation, the collection returned by this method includes the
-     * {@linkplain #getISBN() ISBN} and {@linkplain #getISSN() ISSN} codes
-     * (except at XML marshalling time for ISO 19139 compliance).
+     * In this SIS implementation, the collection returned by this method includes the XML identifiers
+     * ({@linkplain IdentifierSpace#ID ID}, {@linkplain IdentifierSpace#UUID UUID}, <i>etc.</i>),
+     * as well as the {@linkplain #getISBN() ISBN} and {@linkplain #getISSN() ISSN} codes, thus
+     * providing a unified view of every kind of identifiers associated to this citation.
+     *
+     * {@note The <code>&lt:gmd:identifier&gt;</code> element marshalled to XML will exclude
+     *        all the above cited identifiers, for ISO 19139 compliance. Those identifiers
+     *        will appear in other XML elements or attributes.}
+     *
+     * @see #getISBN()
+     * @see #getISSN()
+     * @see #getIdentifierMap()
      */
     @Override
     @XmlElement(name = "identifier")
     public synchronized Collection<Identifier> getIdentifiers() {
         identifiers = nonNullCollection(identifiers, Identifier.class);
-        return filterIdentifiers(identifiers);
+        return NonMarshalledAuthority.excludeOnMarshalling(identifiers);
     }
 
     /**
      * Sets the unique identifier for the resource.
      * Example: Universal Product Code (UPC), National Stock Number (NSN).
      *
-     * <p>The following exceptions apply:</p>
-     * <ul>
-     *   <li>This method does not set the {@linkplain #getISBN() ISBN} and {@linkplain #getISSN() ISSN}
-     *       codes, even if they are included in the given collection. The ISBN/ISSN codes shall be set
-     *       by the {@link #setISBN(String)} or {@link #setISSN(String)} methods, for compliance with
-     *       the ISO 19115 model.</li>
-     *   <li>The {@linkplain IdentifierSpace XML identifiers} ({@linkplain IdentifierSpace#ID ID},
-     *       {@linkplain IdentifierSpace#UUID UUID}, <i>etc.</i>) are ignored because.</li>
-     * </ul>
+     * <p>This method overwrites all previous identifiers with the given new values,
+     * <strong>except</strong> the XML identifiers ({@linkplain IdentifierSpace#ID ID},
+     * {@linkplain IdentifierSpace#UUID UUID}, <i>etc.</i>), ISBN and ISSN codes, if any.
+     * We do not overwrite the XML identifiers because they are usually associated to object
+     * identity, and we do not overwrite ISBN/ISSN codes because they have dedicated setters
+     * for compliance with the ISO 19115 model.</p>
      *
      * @param newValues The new identifiers, or {@code null} if none.
+     *
+     * @see #setISBN(String)
+     * @see #setISSN(String)
      */
     public synchronized void setIdentifiers(final Collection<? extends Identifier> newValues) {
-        final Collection<Identifier> oldIds = NonMarshalledAuthority.getIdentifiers(identifiers);
+        final Collection<Identifier> oldIds = NonMarshalledAuthority.filteredCopy(identifiers);
         identifiers = writeCollection(newValues, identifiers, Identifier.class);
-        NonMarshalledAuthority.setIdentifiers(identifiers, oldIds);
+        NonMarshalledAuthority.replace(identifiers, oldIds);
     }
 
     /**
@@ -489,12 +497,13 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      *   return getIdentifierMap().getSpecialized(Citations.ISBN);
      * }
      *
+     * @see #getIdentifiers()
      * @see Citations#ISBN
      */
     @Override
     @XmlElement(name = "ISBN")
     public synchronized String getISBN() {
-        return CollectionsExt.isNullOrEmpty(identifiers) ? null : getIdentifierMap().getSpecialized(ISBN);
+        return isNullOrEmpty(identifiers) ? null : getIdentifierMap().getSpecialized(ISBN);
     }
 
     /**
@@ -506,10 +515,13 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * }
      *
      * @param newValue The new ISBN, or {@code null} if none.
+     *
+     * @see #setIdentifiers(Collection)
+     * @see Citations#ISBN
      */
     public synchronized void setISBN(final String newValue) {
         checkWritePermission();
-        if (newValue != null || !CollectionsExt.isNullOrEmpty(identifiers)) {
+        if (newValue != null || !isNullOrEmpty(identifiers)) {
             getIdentifierMap().putSpecialized(ISBN, newValue);
         }
     }
@@ -522,12 +534,13 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      *   return getIdentifierMap().getSpecialized(Citations.ISSN);
      * }
      *
+     * @see #getIdentifiers()
      * @see Citations#ISSN
      */
     @Override
     @XmlElement(name = "ISSN")
     public synchronized String getISSN() {
-        return CollectionsExt.isNullOrEmpty(identifiers) ? null : getIdentifierMap().getSpecialized(ISSN);
+        return isNullOrEmpty(identifiers) ? null : getIdentifierMap().getSpecialized(ISSN);
     }
 
     /**
@@ -539,10 +552,13 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * }
      *
      * @param newValue The new ISSN.
+     *
+     * @see #setIdentifiers(Collection)
+     * @see Citations#ISSN
      */
     public synchronized void setISSN(final String newValue) {
         checkWritePermission();
-        if (newValue != null || !CollectionsExt.isNullOrEmpty(identifiers)) {
+        if (newValue != null || !isNullOrEmpty(identifiers)) {
             getIdentifierMap().putSpecialized(ISSN, newValue);
         }
     }
