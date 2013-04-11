@@ -30,11 +30,13 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.parameter.InvalidParameterValueException;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.util.InternationalString;
+import org.apache.sis.util.Locales;
 import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
+import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.iso.DefaultInternationalString;
 import org.apache.sis.internal.simple.SimpleCitation;
 import org.apache.sis.internal.jaxb.metadata.CI_Citation;
@@ -42,7 +44,6 @@ import org.apache.sis.internal.jaxb.metadata.ReferenceSystemMetadata;
 import org.apache.sis.internal.jaxb.gco.StringAdapter;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 import static org.opengis.referencing.IdentifiedObject.REMARKS_KEY;
 
 // Related to JDK7
@@ -258,16 +259,10 @@ public class UnmodifiableIdentifier implements ReferenceIdentifier, Deprecable, 
          * This algorithm is sub-optimal if the map contains a lot of entries of no interest to
          * this identifier. Hopefully, most users will fill a map with only useful entries.
          */
-        String key   = null;
-        Object value = null;
         for (final Map.Entry<String,?> entry : properties.entrySet()) {
-            key   = entry.getKey().trim().toLowerCase();
-            value = entry.getValue();
+            String key   = entry.getKey().trim().toLowerCase();
+            Object value = entry.getValue();
             switch (key) {
-                case NAME_KEY: {
-                    code = value;
-                    continue;
-                }
                 case CODE_KEY: {
                     code = value;
                     continue;
@@ -282,31 +277,36 @@ public class UnmodifiableIdentifier implements ReferenceIdentifier, Deprecable, 
                 }
                 case AUTHORITY_KEY: {
                     if (value instanceof String) {
-                        value = new SimpleCitation(value.toString());
+                        value = new SimpleCitation((String) value);
                     }
                     authority = value;
                     continue;
                 }
                 case REMARKS_KEY: {
-                    if (value instanceof InternationalString) {
-                        remarks = value;
-                        continue;
+                    if (value instanceof String) {
+                        value = new SimpleInternationalString((String) value);
                     }
-                    break; // The string will be converted to InternationalString below.
+                    remarks = value;
+                    continue;
                 }
             }
             /*
              * Search for additional locales (e.g. "remarks_fr").
              */
-            if (value instanceof String) {
+            final Locale locale = Locales.parseSuffix(REMARKS_KEY, key);
+            if (locale != null) {
                 if (localized == null) {
                     if (remarks instanceof DefaultInternationalString) {
                         localized = (DefaultInternationalString) remarks;
                     } else {
                         localized = new DefaultInternationalString();
+                        if (remarks instanceof CharSequence) { // String or InternationalString.
+                            localized.add(Locale.ROOT, remarks.toString());
+                            remarks = null;
+                        }
                     }
                 }
-                localized.add(REMARKS_KEY, key, value.toString());
+                localized.add(locale, (String) value);
             }
         }
         /*
@@ -334,6 +334,8 @@ public class UnmodifiableIdentifier implements ReferenceIdentifier, Deprecable, 
          * there (not before). This is a wanted feature, since we want to catch ClassCastExceptions
          * and rethrown them as more informative exceptions.
          */
+        String key   = null;
+        Object value = null;
         try {
             key=      CODE_KEY; this.code      = (String)              (value = code);
             key=   VERSION_KEY; this.version   = (String)              (value = version);
