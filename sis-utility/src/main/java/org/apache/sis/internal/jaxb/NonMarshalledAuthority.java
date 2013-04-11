@@ -19,12 +19,15 @@ package org.apache.sis.internal.jaxb;
 import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.io.Serializable;
 import java.io.ObjectStreamException;
 import java.lang.reflect.Field;
 import org.opengis.metadata.Identifier;
 import org.apache.sis.internal.simple.SimpleCitation;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.xml.IdentifierSpace;
 
 
@@ -69,6 +72,12 @@ public final class NonMarshalledAuthority<T> extends SimpleCitation implements I
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = 6299502270649111201L;
+
+    /**
+     * Sets to {@code true} if {@link #getCitation(String)} has already logged a warning.
+     * This is used in order to avoid flooding the logs with the same message.
+     */
+    private static volatile boolean warningLogged;
 
     /**
      * Ordinal values for switch statements. The constant defined here shall
@@ -210,7 +219,9 @@ public final class NonMarshalledAuthority<T> extends SimpleCitation implements I
     }
 
     /**
-     * Returns one of the constants in the {@link DefaultCitation} class.
+     * Returns one of the constants in the {@link DefaultCitation} class, or {@code null} if none.
+     * We need to use Java reflection because the {@code sis-metadata} module may not be in the
+     * classpath.
      */
     private static IdentifierSpace<?> getCitation(final String name) throws ObjectStreamException {
         try {
@@ -218,13 +229,19 @@ public final class NonMarshalledAuthority<T> extends SimpleCitation implements I
             field.setAccessible(true);
             return (IdentifierSpace<?>) field.get(null);
         } catch (ReflectiveOperationException e) {
-            Logging.unexpectedException(NonMarshalledAuthority.class, "readResolve", e);
+            if (!warningLogged) {
+                warningLogged = true;
+                final LogRecord record = Errors.getResources(null).getLogRecord(Level.WARNING,
+                        Errors.Keys.MissingRequiredModule_1, "sis-metadata");
+                record.setThrown(e);
+                Logging.log(NonMarshalledAuthority.class, "readResolve", record);
+            }
         }
         return null;
     }
 
     /**
-     * Invoked at deserialization time in order to setIdentifiers the deserialized instance
+     * Invoked at deserialization time in order to replace the deserialized instance
      * by the appropriate instance defined in the {@link IdentifierSpace} interface.
      */
     private Object readResolve() throws ObjectStreamException {
