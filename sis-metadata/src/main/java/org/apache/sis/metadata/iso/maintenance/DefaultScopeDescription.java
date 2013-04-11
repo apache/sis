@@ -27,7 +27,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.internal.metadata.ExcludedSet;
 import org.apache.sis.util.collection.CheckedContainer;
 
-import static org.apache.sis.internal.jaxb.MarshalContext.isMarshaling;
+import static org.apache.sis.internal.jaxb.MarshalContext.isMarshalling;
 import static org.apache.sis.util.collection.CollectionsExt.isNullOrEmpty;
 
 
@@ -197,7 +197,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
             if (property == code) {
                 return cast(value, type);
             } else if (!(value instanceof Set) || !((Set<?>) value).isEmpty()) {
-                return isMarshaling() ? null : new ExcludedSet<E>(NAMES[code-1], NAMES[property-1]);
+                return isMarshalling() ? null : new ExcludedSet<E>(NAMES[code-1], NAMES[property-1]);
             }
         }
         // Unconditionally create a new set, because the

@@ -16,15 +16,12 @@
  */
 package org.apache.sis.internal.jaxb;
 
-import java.util.Collection;
 import java.util.Map;
 import java.util.Locale;
 import java.util.TimeZone;
-import org.opengis.metadata.Identifier;
 import org.apache.sis.util.Version;
 import org.apache.sis.xml.ValueConverter;
 import org.apache.sis.xml.ReferenceResolver;
-import org.apache.sis.util.collection.UnmodifiableArrayList;
 
 
 /**
@@ -44,7 +41,7 @@ public final class MarshalContext extends org.apache.sis.xml.MarshalContext {
      * The bit flag telling if a marshalling process is under progress.
      * This flag is unset for unmarshalling processes.
      */
-    public static final int MARSHALING = 1;
+    public static final int MARSHALLING = 1;
 
     /**
      * The bit flag for enabling substitution of language codes by character strings.
@@ -131,7 +128,7 @@ public final class MarshalContext extends org.apache.sis.xml.MarshalContext {
      * @param  schemas    The schemas root URL, or {@code null} if none.
      * @param  locale     The locale, or {@code null} if unspecified.
      * @param  timezone   The timezone, or {@code null} if unspecified.
-     * @param  bitMasks   A combination of {@link #MARSHALING}, {@link #SUBSTITUTE_LANGUAGE},
+     * @param  bitMasks   A combination of {@link #MARSHALLING}, {@link #SUBSTITUTE_LANGUAGE},
      *                    {@link #SUBSTITUTE_COUNTRY} or other bit masks.
      */
     public MarshalContext(final ValueConverter converter, final ReferenceResolver resolver,
@@ -223,23 +220,23 @@ public final class MarshalContext extends org.apache.sis.xml.MarshalContext {
      * This convenience method is implemented by:
      *
      * {@preformat java
-     *     return isFlagSet(current(), MARSHALING);
+     *     return isFlagSet(current(), MARSHALLING);
      * }
      *
      * Callers should use the {@link #isFlagSet(MarshalContext, int)} method instead if the
      * {@code MarshalContext} instance is known, for avoiding a call to {@link #current()}.
-     * 
+     *
      * @return {@code true} if XML marshalling is under progress.
      */
-    public static boolean isMarshaling() {
-        return isFlagSet(current(), MARSHALING);
+    public static boolean isMarshalling() {
+        return isFlagSet(current(), MARSHALLING);
     }
 
     /**
      * Returns {@code true} if the given flag is set.
      *
      * @param  context The current context, or {@code null} if none.
-     * @param  flag One of {@link #MARSHALING}, {@link #SUBSTITUTE_LANGUAGE},
+     * @param  flag One of {@link #MARSHALLING}, {@link #SUBSTITUTE_LANGUAGE},
      *         {@link #SUBSTITUTE_COUNTRY} or other bit masks.
      * @return {@code true} if the given flag is set.
      */
@@ -331,30 +328,6 @@ public final class MarshalContext extends org.apache.sis.xml.MarshalContext {
             }
         }
         return true;
-    }
-
-    /**
-     * If marshalling, filters the given collection of identifiers in order to omit any identifiers
-     * for which the authority is one of the {@link org.apache.sis.xml.IdentifierSpace} constants.
-     *
-     * @param  identifiers The identifiers to filter, or {@code null}.
-     * @return The identifiers to marshal, or {@code null} if none.
-     */
-    public static Collection<Identifier> filterIdentifiers(Collection<Identifier> identifiers) {
-        if (identifiers != null && isFlagSet(current(), MARSHALING)) {
-            int count = identifiers.size();
-            if (count != 0) {
-                final Identifier[] copy = identifiers.toArray(new Identifier[count]);
-                for (int i=count; --i>=0;) {
-                    final Identifier id = copy[i];
-                    if (id == null || (id.getAuthority() instanceof NonMarshalledAuthority)) {
-                        System.arraycopy(copy, i+1, copy, i, --count - i);
-                    }
-                }
-                identifiers = (count != 0) ? UnmodifiableArrayList.wrap(copy, 0, count) : null;
-            }
-        }
-        return identifiers;
     }
 
     /**

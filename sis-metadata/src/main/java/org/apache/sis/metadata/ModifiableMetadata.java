@@ -31,7 +31,7 @@ import org.apache.sis.internal.util.CheckedArrayList;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.collection.CollectionsExt.isNullOrEmpty;
 import static org.apache.sis.util.collection.CollectionsExt.hashMapCapacity;
-import static org.apache.sis.internal.jaxb.MarshalContext.isMarshaling;
+import static org.apache.sis.internal.jaxb.MarshalContext.isMarshalling;
 
 
 /**
@@ -499,9 +499,9 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
     protected final <E> List<E> nonNullList(final List<E> c, final Class<E> elementType) {
         assert Thread.holdsLock(this);
         if (c != null) {
-            return c.isEmpty() && isMarshaling() ? null : c;
+            return c.isEmpty() && isMarshalling() ? null : c;
         }
-        if (isMarshaling()) {
+        if (isMarshalling()) {
             return null;
         }
         if (isModifiable()) {
@@ -522,9 +522,9 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
     protected final <E> Set<E> nonNullSet(final Set<E> c, final Class<E> elementType) {
         assert Thread.holdsLock(this);
         if (c != null) {
-            return c.isEmpty() && isMarshaling() ? null : c;
+            return c.isEmpty() && isMarshalling() ? null : c;
         }
-        if (isMarshaling()) {
+        if (isMarshalling()) {
             return null;
         }
         if (isModifiable()) {
@@ -554,9 +554,9 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
         assert Thread.holdsLock(this);
         if (c != null) {
             assert collectionType(elementType).isInstance(c);
-            return c.isEmpty() && isMarshaling() ? null : c;
+            return c.isEmpty() && isMarshalling() ? null : c;
         }
-        if (isMarshaling()) {
+        if (isMarshalling()) {
             return null;
         }
         final boolean isModifiable = isModifiable();
