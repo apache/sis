@@ -157,48 +157,6 @@ public class DefaultInternationalString extends AbstractInternationalString impl
     }
 
     /**
-     * Adds a string for the given property key. This is a convenience method for constructing an
-     * {@code DefaultInternationalString} during iteration through the entries in a {@link Map}.
-     * It infers the {@code Locale} from the property {@code key}, using the following steps:
-     *
-     * <ul>
-     *   <li>If the {@code key} does not start with the specified {@code prefix}, then
-     *       this method does nothing and returns {@code false}.</li>
-     *   <li>Otherwise, the characters after the {@code prefix} are parsed as an ISO language
-     *       and country code, and the {@link #add(Locale, String)} method is invoked.</li>
-     * </ul>
-     *
-     * For example if the prefix is {@code "remarks"}, then the {@code "remarks_fr"} property key
-     * stands for remarks in {@linkplain Locale#FRENCH French} while the {@code "remarks_fr_CA"}
-     * property key stands for remarks in {@linkplain Locale#CANADA_FRENCH French Canadian}.
-     *
-     * @param  prefix The prefix to skip at the beginning of the {@code key}.
-     * @param  key    The property key which will determined the locale.
-     * @param  value  The localized string for the specified {@code key}.
-     * @return {@code true} if the key has been recognized, or {@code false} otherwise.
-     * @throws IllegalArgumentException if the locale after the prefix is an illegal code,
-     *         or a different string value was already set for the given locale.
-     */
-    public boolean add(final String prefix, final String key, final String value)
-            throws IllegalArgumentException
-    {
-        if (key.startsWith(prefix)) {
-            Locale locale = null;
-            final int offset = prefix.length();
-            if (key.length() != offset) {
-                if (key.charAt(offset) == '_') {
-                    locale = Locales.parse(key.substring(offset + 1));
-                } else {
-                    return false;
-                }
-            }
-            add(locale, value);
-            return true;
-        }
-        return false;
-    }
-
-    /**
      * Returns the set of locales defined in this international string.
      *
      * @return The set of locales.

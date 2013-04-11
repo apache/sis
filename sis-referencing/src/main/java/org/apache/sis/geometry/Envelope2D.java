@@ -196,7 +196,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Cloneabl
              box.getSouthBoundLatitude(),
              box.getEastBoundLongitude(),
              box.getNorthBoundLatitude());
-        try {
+        if (false) try { // TODO: excluded for now because CRS.forCode is not yet implemented.
             crs = CRS.forCode("CRS:84");
         } catch (FactoryException e) {
             // Should never happen since we asked for a CRS which should always be present.

@@ -19,12 +19,17 @@ package org.apache.sis.internal.jaxb;
 import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.io.Serializable;
 import java.io.ObjectStreamException;
 import java.lang.reflect.Field;
 import org.opengis.metadata.Identifier;
+import org.opengis.metadata.citation.Citation;
 import org.apache.sis.internal.simple.SimpleCitation;
+import org.apache.sis.util.collection.UnmodifiableArrayList;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.xml.IdentifierSpace;
 
 
@@ -69,6 +74,12 @@ public final class NonMarshalledAuthority<T> extends SimpleCitation implements I
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = 6299502270649111201L;
+
+    /**
+     * Sets to {@code true} if {@link #getCitation(String)} has already logged a warning.
+     * This is used in order to avoid flooding the logs with the same message.
+     */
+    private static volatile boolean warningLogged;
 
     /**
      * Ordinal values for switch statements. The constant defined here shall
@@ -164,13 +175,50 @@ public final class NonMarshalledAuthority<T> extends SimpleCitation implements I
     }
 
     /**
+     * If marshalling, filters the given collection of identifiers in order to omit any identifiers
+     * for which the authority is an instance of {@code NonMarshalledAuthority}. This should exclude
+     * all {@link org.apache.sis.xml.IdentifierSpace} constants.
+     *
+     * @param  identifiers The identifiers to filter, or {@code null}.
+     * @return The identifiers to marshal, or {@code null} if none.
+     */
+    public static Collection<Identifier> excludeOnMarshalling(Collection<Identifier> identifiers) {
+        if (identifiers != null && MarshalContext.isMarshalling()) {
+            int count = identifiers.size();
+            if (count != 0) {
+                final Identifier[] copy = identifiers.toArray(new Identifier[count]);
+                for (int i=count; --i>=0;) {
+                    final Identifier id = copy[i];
+                    if (id == null || (id.getAuthority() instanceof NonMarshalledAuthority)) {
+                        System.arraycopy(copy, i+1, copy, i, --count - i);
+                    }
+                }
+                identifiers = (count != 0) ? UnmodifiableArrayList.wrap(copy, 0, count) : null;
+            }
+        }
+        return identifiers;
+    }
+
+    /**
      * Returns a collection containing only the identifiers having a {@code NonMarshalledAuthority}.
+     * This method is invoked for saving the identifiers that are conceptually stored in distinct fields
+     * (XML identifier, UUID, ISBN, ISSN) before to overwrite the collection of all identifiers in
+     * a metadata object.
+     *
+     * <p>This method is invoked from {@code setIdentifiers(Collection<Identifier>)} implementation
+     * in {@link org.apache.sis.metadata.iso.ISOMetadata} subclasses as below:</p>
+     *
+     * {@preformat java
+     *     final Collection<Identifier> oldIds = NonMarshalledAuthority.filteredCopy(identifiers);
+     *     identifiers = writeCollection(newValues, identifiers, Identifier.class);
+     *     NonMarshalledAuthority.replace(identifiers, oldIds);
+     * }
      *
      * @param  <T> The type of object used as identifier values.
-     * @param  identifiers The identifiers to getIdentifiers, or {@code null} if none.
-     * @return The filtered identifiers, or {@code null} if none.
+     * @param  identifiers The metadata internal identifiers collection, or {@code null} if none.
+     * @return The new list containing the filtered identifiers, or {@code null} if none.
      */
-    public static <T extends Identifier> Collection<T> getIdentifiers(final Collection<? extends T> identifiers) {
+    public static <T extends Identifier> Collection<T> filteredCopy(final Collection<T> identifiers) {
         Collection<T> filtered = null;
         if (identifiers != null) {
             int remaining = identifiers.size();
@@ -188,29 +236,40 @@ public final class NonMarshalledAuthority<T> extends SimpleCitation implements I
     }
 
     /**
-     * Removes from the given collection every identifiers having a {@code NonMarshalledAuthority},
-     * then adds the previously filtered identifiers (if any).
+     * Replaces all identifiers in the {@code identifiers} collection having the same
+     * {@linkplain Identifier#getAuthority() authority} than the ones in {@code oldIds}.
+     * More specifically:
+     *
+     * <ul>
+     *   <li>First, remove all {@code identifiers} elements having the same authority
+     *       than one of the elements in {@code oldIds}.</li>
+     *   <li>Next, add all {@code oldIds} elements to {@code identifiers}.</li>
+     * </ul>
      *
      * @param <T> The type of object used as identifier values.
-     * @param identifiers The collection from which to remove identifiers, or {@code null}.
-     * @param filtered The previous filtered identifiers returned by {@link #getIdentifiers}.
+     * @param identifiers The metadata internal identifiers collection, or {@code null} if none.
+     * @param oldIds The previous filtered identifiers returned by {@link #filteredCopy(Collection)},
+     *               or {@code null} if none.
      */
-    public static <T extends Identifier> void setIdentifiers(final Collection<T> identifiers, final Collection<T> filtered) {
-        if (identifiers != null) {
-            for (final Iterator<T> it=identifiers.iterator(); it.hasNext();) {
-                final T id = it.next();
-                if (id == null || id.getAuthority() instanceof NonMarshalledAuthority<?>) {
-                    it.remove();
+    public static <T extends Identifier> void replace(final Collection<T> identifiers, final Collection<T> oldIds) {
+        if (oldIds != null && identifiers != null) {
+            for (final T old : oldIds) {
+                final Citation authority = old.getAuthority();
+                for (final Iterator<T> it=identifiers.iterator(); it.hasNext();) {
+                    final T id = it.next();
+                    if (id == null || id.getAuthority() == authority) {
+                        it.remove();
+                    }
                 }
             }
-            if (filtered != null) {
-                identifiers.addAll(filtered);
-            }
+            identifiers.addAll(oldIds);
         }
     }
 
     /**
-     * Returns one of the constants in the {@link DefaultCitation} class.
+     * Returns one of the constants in the {@link DefaultCitation} class, or {@code null} if none.
+     * We need to use Java reflection because the {@code sis-metadata} module may not be in the
+     * classpath.
      */
     private static IdentifierSpace<?> getCitation(final String name) throws ObjectStreamException {
         try {
@@ -218,13 +277,19 @@ public final class NonMarshalledAuthority<T> extends SimpleCitation implements I
             field.setAccessible(true);
             return (IdentifierSpace<?>) field.get(null);
         } catch (Exception e) {
-            Logging.unexpectedException(NonMarshalledAuthority.class, "readResolve", e);
+            if (!warningLogged) {
+                warningLogged = true;
+                final LogRecord record = Errors.getResources(null).getLogRecord(Level.WARNING,
+                        Errors.Keys.MissingRequiredModule_1, "sis-metadata");
+                record.setThrown(e);
+                Logging.log(NonMarshalledAuthority.class, "readResolve", record);
+            }
         }
         return null;
     }
 
     /**
-     * Invoked at deserialization time in order to setIdentifiers the deserialized instance
+     * Invoked at deserialization time in order to replace the deserialized instance
      * by the appropriate instance defined in the {@link IdentifierSpace} interface.
      */
     private Object readResolve() throws ObjectStreamException {
