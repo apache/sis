@@ -242,24 +242,6 @@ public class UnmodifiableIdentifier implements ReferenceIdentifier, Deprecable, 
      * @throws IllegalArgumentException if a property is invalid for some other reason.
      */
     public UnmodifiableIdentifier(final Map<String,?> properties) throws IllegalArgumentException {
-        this(properties, true);
-    }
-
-    /**
-     * Implementation of the constructor. The remarks in the {@code properties} map will be
-     * parsed only if the {@code standalone} argument is set to {@code true}, i.e. this
-     * identifier is being constructed as a standalone object. If {@code false}, then this
-     * identifier is assumed to be constructed from inside the {@link AbstractIdentifiedObject}
-     * constructor.
-     *
-     * @param  properties The properties to parse, as described in the public constructor.
-     * @param  standalone {@code true} for parsing "remarks" as well.
-     * @throws InvalidParameterValueException if a property has an invalid value.
-     * @throws IllegalArgumentException if a property is invalid for some other reason.
-     */
-    UnmodifiableIdentifier(final Map<String,?> properties, final boolean standalone)
-            throws IllegalArgumentException
-    {
         ensureNonNull("properties", properties);
         Object code      = null;
         Object codeSpace = null;
@@ -268,7 +250,7 @@ public class UnmodifiableIdentifier implements ReferenceIdentifier, Deprecable, 
         Object remarks   = null;
         DefaultInternationalString localized = null;
         /*
-         * Iterates through each map entry. This have two purposes:
+         * Iterate through each map entry. This have two purposes:
          *
          *   1) Ignore case (a call to properties.get("foo") can't do that)
          *   2) Find localized remarks.
@@ -283,9 +265,6 @@ public class UnmodifiableIdentifier implements ReferenceIdentifier, Deprecable, 
             value = entry.getValue();
             switch (key) {
                 case NAME_KEY: {
-                    if (standalone) {
-                        break;
-                    }
                     code = value;
                     continue;
                 }
@@ -309,17 +288,17 @@ public class UnmodifiableIdentifier implements ReferenceIdentifier, Deprecable, 
                     continue;
                 }
                 case REMARKS_KEY: {
-                    if (standalone && value instanceof InternationalString) {
+                    if (value instanceof InternationalString) {
                         remarks = value;
                         continue;
                     }
-                    break;
+                    break; // The string will be converted to InternationalString below.
                 }
             }
             /*
-             * Searches for additional locales (e.g. "remarks_fr").
+             * Search for additional locales (e.g. "remarks_fr").
              */
-            if (standalone && value instanceof String) {
+            if (value instanceof String) {
                 if (localized == null) {
                     if (remarks instanceof DefaultInternationalString) {
                         localized = (DefaultInternationalString) remarks;
@@ -331,7 +310,7 @@ public class UnmodifiableIdentifier implements ReferenceIdentifier, Deprecable, 
             }
         }
         /*
-         * Gets the localized remarks, if it was not yet set. If a user specified remarks
+         * Get the localized remarks, if it was not yet set. If a user specified remarks
          * both as InternationalString and as String for some locales (which is a weird
          * usage...), then current implementation discards the later with a warning.
          */
@@ -344,16 +323,16 @@ public class UnmodifiableIdentifier implements ReferenceIdentifier, Deprecable, 
             }
         }
         /*
-         * Completes the code space if it was not explicitly set. We take the first
+         * Complete the code space if it was not explicitly set. We take the first
          * identifier if there is any, otherwise we take the shortest title.
          */
         if (codeSpace == null && authority instanceof Citation) {
             codeSpace = getCodeSpace((Citation) authority);
         }
         /*
-         * Stores the definitive reference to the attributes. Note that casts are performed only
+         * Store the definitive reference to the attributes. Note that casts are performed only
          * there (not before). This is a wanted feature, since we want to catch ClassCastExceptions
-         * are rethrown them as more informative exceptions.
+         * and rethrown them as more informative exceptions.
          */
         try {
             key=      CODE_KEY; this.code      = (String)              (value = code);
