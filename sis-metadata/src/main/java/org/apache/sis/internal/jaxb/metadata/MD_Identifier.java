@@ -108,14 +108,13 @@ public final class MD_Identifier extends PropertyType<MD_Identifier, Identifier>
      */
     @XmlElement(name = "RS_Identifier")
     public UnmodifiableIdentifier getReferenceIdentifier() {
-        if (skip()) return null;
-        final Identifier metadata = this.metadata;
-        if (!(metadata instanceof ReferenceIdentifier)) {
-            return null;
+        if (!skip()) {
+            final Identifier metadata = this.metadata;
+            if (metadata instanceof ReferenceIdentifier) {
+                return UnmodifiableIdentifier.castOrCopy((ReferenceIdentifier) metadata);
+            }
         }
-        return (metadata instanceof UnmodifiableIdentifier) ?
-            (UnmodifiableIdentifier) metadata :
-            new UnmodifiableIdentifier((ReferenceIdentifier) metadata);
+        return null;
     }
 
     /**

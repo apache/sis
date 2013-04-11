@@ -38,7 +38,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.iso.DefaultInternationalString;
-import org.apache.sis.internal.simple.SimpleCitation;
+import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.jaxb.metadata.CI_Citation;
 import org.apache.sis.internal.jaxb.metadata.ReferenceSystemMetadata;
 import org.apache.sis.internal.jaxb.gco.StringAdapter;
@@ -277,7 +277,7 @@ public class UnmodifiableIdentifier implements ReferenceIdentifier, Deprecable, 
                 }
                 case AUTHORITY_KEY: {
                     if (value instanceof String) {
-                        value = new SimpleCitation((String) value);
+                        value = Citations.fromName((String) value);
                     }
                     authority = value;
                     continue;
@@ -391,6 +391,31 @@ public class UnmodifiableIdentifier implements ReferenceIdentifier, Deprecable, 
             }
         }
         return null;
+    }
+
+    /**
+     * Returns a SIS identifier implementation with the values of the given arbitrary implementation.
+     * This method performs the first applicable actions in the following choices:
+     *
+     * <ul>
+     *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
+     *   <li>Otherwise if the given object is already an instance of
+     *       {@code UnmodifiableIdentifier}, then it is returned unchanged.</li>
+     *   <li>Otherwise a new {@code UnmodifiableIdentifier} instance is created using the
+     *       {@linkplain #UnmodifiableIdentifier(ReferenceIdentifier) copy constructor}
+     *       and returned. Note that this is a <cite>shallow</cite> copy operation, since the other
+     *       metadata contained in the given object are not recursively copied.</li>
+     * </ul>
+     *
+     * @param  object The object to get as a SIS implementation, or {@code null} if none.
+     * @return A SIS implementation containing the values of the given object (may be the
+     *         given object itself), or {@code null} if the argument was null.
+     */
+    public static UnmodifiableIdentifier castOrCopy(final ReferenceIdentifier object) {
+        if (object == null || object instanceof UnmodifiableIdentifier) {
+            return (UnmodifiableIdentifier) object;
+        }
+        return new UnmodifiableIdentifier(object);
     }
 
     /**

@@ -81,8 +81,8 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * The authority for International Standard Book Number.
      *
      * <p><b>Implementation note:</b> This field is read by reflection in
-     * {@link org.apache.sis.internal.jaxb.NonMarshalledAuthority}. IF this
-     * field is renamed or moved, then {@code NonMarshalledAuthority} needs
+     * {@link org.apache.sis.internal.jaxb.NonMarshalledAuthority#getCitation(String)}.
+     * If this field is renamed or moved, then {@code NonMarshalledAuthority} needs
      * to be updated.</p>
      */
     static final IdentifierSpace<String> ISBN = new NonMarshalledAuthority<>("ISBN", NonMarshalledAuthority.ISBN);
@@ -91,8 +91,8 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * The authority for International Standard Serial Number.
      *
      * <p><b>Implementation note:</b> This field is read by reflection in
-     * {@link org.apache.sis.internal.jaxb.NonMarshalledAuthority}. IF this
-     * field is renamed or moved, then {@code NonMarshalledAuthority} needs
+     * {@link org.apache.sis.internal.jaxb.NonMarshalledAuthority#getCitation(String)}.
+     * If this field is renamed or moved, then {@code NonMarshalledAuthority} needs
      * to be updated.</p>
      */
     static final IdentifierSpace<String> ISSN = new NonMarshalledAuthority<>("ISSN", NonMarshalledAuthority.ISSN);
