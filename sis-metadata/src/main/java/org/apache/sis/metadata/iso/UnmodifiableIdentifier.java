@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.referencing;
+package org.apache.sis.metadata.iso;
 
 import java.util.Map;
 import java.util.Locale;
@@ -30,20 +30,20 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.parameter.InvalidParameterValueException;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.util.InternationalString;
-import org.apache.sis.xml.Namespaces;
+import org.apache.sis.util.Locales;
 import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
+import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.iso.DefaultInternationalString;
-import org.apache.sis.internal.simple.SimpleCitation;
+import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.jaxb.metadata.CI_Citation;
 import org.apache.sis.internal.jaxb.metadata.ReferenceSystemMetadata;
 import org.apache.sis.internal.jaxb.gco.StringAdapter;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 import static org.opengis.referencing.IdentifiedObject.REMARKS_KEY;
 
 // Related to JDK7
@@ -51,7 +51,9 @@ import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
- * An identification of a {@link org.opengis.referencing.crs.CoordinateReferenceSystem} object.
+ * Unmodifiable value uniquely identifying an object within a namespace, together with a version.
+ * This kind of identifier is primarily used for identification of
+ * {@link org.opengis.referencing.crs.CoordinateReferenceSystem} objects.
  *
  * @author Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.03)
@@ -59,8 +61,8 @@ import org.apache.sis.internal.jdk7.Objects;
  * @module
  */
 @Immutable
-@XmlRootElement(name = "RS_Identifier", namespace = Namespaces.GMD)
-public class DefaultReferenceIdentifier implements ReferenceIdentifier, Deprecable, Serializable {
+@XmlRootElement(name = "RS_Identifier")
+public class UnmodifiableIdentifier implements ReferenceIdentifier, Deprecable, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -71,7 +73,7 @@ public class DefaultReferenceIdentifier implements ReferenceIdentifier, Deprecab
      *
      * @see #getCode()
      */
-    @XmlElement(required = true, namespace = Namespaces.GMD)
+    @XmlElement(required = true)
     @XmlJavaTypeAdapter(StringAdapter.class)
     private final String code;
 
@@ -81,7 +83,7 @@ public class DefaultReferenceIdentifier implements ReferenceIdentifier, Deprecab
      *
      * @see #getCodeSpace()
      */
-    @XmlElement(required = true, namespace = Namespaces.GMD)
+    @XmlElement(required = true)
     @XmlJavaTypeAdapter(StringAdapter.class)
     private final String codeSpace;
 
@@ -91,7 +93,7 @@ public class DefaultReferenceIdentifier implements ReferenceIdentifier, Deprecab
      *
      * @see #getAuthority()
      */
-    @XmlElement(required = true, namespace = Namespaces.GMD)
+    @XmlElement(required = true)
     @XmlJavaTypeAdapter(CI_Citation.class)
     private final Citation authority;
 
@@ -104,20 +106,20 @@ public class DefaultReferenceIdentifier implements ReferenceIdentifier, Deprecab
      *
      * @see #getVersion()
      */
-    @XmlElement(namespace = Namespaces.GMD)
+    @XmlElement
     private final String version;
 
     /**
      * Comments on or information about this identifier, or {@code null} if none.
      *
-     * @see #getRemarks
+     * @see #getRemarks()
      */
     private final InternationalString remarks;
 
     /**
      * Empty constructor for JAXB.
      */
-    private DefaultReferenceIdentifier() {
+    private UnmodifiableIdentifier() {
         code      = null;
         codeSpace = null;
         authority = null;
@@ -132,14 +134,14 @@ public class DefaultReferenceIdentifier implements ReferenceIdentifier, Deprecab
      *
      * @param identifier The identifier to copy.
      */
-    public DefaultReferenceIdentifier(final ReferenceIdentifier identifier) {
+    public UnmodifiableIdentifier(final ReferenceIdentifier identifier) {
         ensureNonNull("identifier", identifier);
         code      = identifier.getCode();
         codeSpace = identifier.getCodeSpace();
         authority = identifier.getAuthority();
         version   = identifier.getVersion();
-        if (identifier instanceof DefaultReferenceIdentifier) {
-            remarks = ((DefaultReferenceIdentifier) identifier).getRemarks();
+        if (identifier instanceof UnmodifiableIdentifier) {
+            remarks = ((UnmodifiableIdentifier) identifier).getRemarks();
         } else {
             remarks = null;
         }
@@ -158,7 +160,7 @@ public class DefaultReferenceIdentifier implements ReferenceIdentifier, Deprecab
      *          Identifier code or name, optionally from a controlled list or pattern defined by
      *          a code space. The code can not be null.
      */
-    public DefaultReferenceIdentifier(final Citation authority, final String codeSpace, final String code) {
+    public UnmodifiableIdentifier(final Citation authority, final String codeSpace, final String code) {
         this(authority, codeSpace, code, null, null);
     }
 
@@ -181,7 +183,7 @@ public class DefaultReferenceIdentifier implements ReferenceIdentifier, Deprecab
      * @param remarks
      *          Comments on or information about this identifier, or {@code null} if none.
      */
-    public DefaultReferenceIdentifier(final Citation authority, final String codeSpace,
+    public UnmodifiableIdentifier(final Citation authority, final String codeSpace,
             final String code, final String version, final InternationalString remarks)
     {
         ensureNonNull("code", code);
@@ -240,25 +242,7 @@ public class DefaultReferenceIdentifier implements ReferenceIdentifier, Deprecab
      * @throws InvalidParameterValueException if a property has an invalid value.
      * @throws IllegalArgumentException if a property is invalid for some other reason.
      */
-    public DefaultReferenceIdentifier(final Map<String,?> properties) throws IllegalArgumentException {
-        this(properties, true);
-    }
-
-    /**
-     * Implementation of the constructor. The remarks in the {@code properties} map will be
-     * parsed only if the {@code standalone} argument is set to {@code true}, i.e. this
-     * identifier is being constructed as a standalone object. If {@code false}, then this
-     * identifier is assumed to be constructed from inside the {@link AbstractIdentifiedObject}
-     * constructor.
-     *
-     * @param  properties The properties to parse, as described in the public constructor.
-     * @param  standalone {@code true} for parsing "remarks" as well.
-     * @throws InvalidParameterValueException if a property has an invalid value.
-     * @throws IllegalArgumentException if a property is invalid for some other reason.
-     */
-    DefaultReferenceIdentifier(final Map<String,?> properties, final boolean standalone)
-            throws IllegalArgumentException
-    {
+    public UnmodifiableIdentifier(final Map<String,?> properties) throws IllegalArgumentException {
         ensureNonNull("properties", properties);
         Object code      = null;
         Object codeSpace = null;
@@ -267,7 +251,7 @@ public class DefaultReferenceIdentifier implements ReferenceIdentifier, Deprecab
         Object remarks   = null;
         DefaultInternationalString localized = null;
         /*
-         * Iterates through each map entry. This have two purposes:
+         * Iterate through each map entry. This have two purposes:
          *
          *   1) Ignore case (a call to properties.get("foo") can't do that)
          *   2) Find localized remarks.
@@ -275,19 +259,11 @@ public class DefaultReferenceIdentifier implements ReferenceIdentifier, Deprecab
          * This algorithm is sub-optimal if the map contains a lot of entries of no interest to
          * this identifier. Hopefully, most users will fill a map with only useful entries.
          */
-        String key   = null;
-        Object value = null;
         for (final Map.Entry<String,?> entry : properties.entrySet()) {
-            key   = entry.getKey().trim().toLowerCase();
-            value = entry.getValue();
+            String key   = entry.getKey().trim().toLowerCase();
+            Object value = entry.getValue();
             /*switch (key)*/ { // This is a "string in switch" on the JDK7 branch.
-                if (key.equals(NAME_KEY)) {
-                    if (!standalone) {
-                        code = value;
-                        continue;
-                    }
-                }
-                else if (key.equals(CODE_KEY)) {
+                if (key.equals(CODE_KEY)) {
                     code = value;
                     continue;
                 }
@@ -301,34 +277,40 @@ public class DefaultReferenceIdentifier implements ReferenceIdentifier, Deprecab
                 }
                 else if (key.equals(AUTHORITY_KEY)) {
                     if (value instanceof String) {
-                        value = new SimpleCitation(value.toString());
+                        value = Citations.fromName((String) value);
                     }
                     authority = value;
                     continue;
                 }
                 else if (key.equals(REMARKS_KEY)) {
-                    if (standalone && value instanceof InternationalString) {
-                        remarks = value;
-                        continue;
+                    if (value instanceof String) {
+                        value = new SimpleInternationalString((String) value);
                     }
+                    remarks = value;
+                    continue;
                 }
             }
             /*
-             * Searches for additional locales (e.g. "remarks_fr").
+             * Search for additional locales (e.g. "remarks_fr").
              */
-            if (standalone && value instanceof String) {
+            final Locale locale = Locales.parseSuffix(REMARKS_KEY, key);
+            if (locale != null) {
                 if (localized == null) {
                     if (remarks instanceof DefaultInternationalString) {
                         localized = (DefaultInternationalString) remarks;
                     } else {
                         localized = new DefaultInternationalString();
+                        if (remarks instanceof CharSequence) { // String or InternationalString.
+                            localized.add(Locale.ROOT, remarks.toString());
+                            remarks = null;
+                        }
                     }
                 }
-                localized.add(REMARKS_KEY, key, value.toString());
+                localized.add(locale, (String) value);
             }
         }
         /*
-         * Gets the localized remarks, if it was not yet set. If a user specified remarks
+         * Get the localized remarks, if it was not yet set. If a user specified remarks
          * both as InternationalString and as String for some locales (which is a weird
          * usage...), then current implementation discards the later with a warning.
          */
@@ -336,22 +318,24 @@ public class DefaultReferenceIdentifier implements ReferenceIdentifier, Deprecab
             if (remarks == null) {
                 remarks = localized;
             } else {
-                Logging.log(DefaultReferenceIdentifier.class, "<init>",
+                Logging.log(UnmodifiableIdentifier.class, "<init>",
                     Messages.getResources(null).getLogRecord(Level.WARNING, Messages.Keys.LocalesDiscarded));
             }
         }
         /*
-         * Completes the code space if it was not explicitly set. We take the first
+         * Complete the code space if it was not explicitly set. We take the first
          * identifier if there is any, otherwise we take the shortest title.
          */
         if (codeSpace == null && authority instanceof Citation) {
             codeSpace = getCodeSpace((Citation) authority);
         }
         /*
-         * Stores the definitive reference to the attributes. Note that casts are performed only
+         * Store the definitive reference to the attributes. Note that casts are performed only
          * there (not before). This is a wanted feature, since we want to catch ClassCastExceptions
-         * are rethrown them as more informative exceptions.
+         * and rethrown them as more informative exceptions.
          */
+        String key   = null;
+        Object value = null;
         try {
             key=      CODE_KEY; this.code      = (String)              (value = code);
             key=   VERSION_KEY; this.version   = (String)              (value = version);
@@ -409,6 +393,31 @@ public class DefaultReferenceIdentifier implements ReferenceIdentifier, Deprecab
             }
         }
         return null;
+    }
+
+    /**
+     * Returns a SIS identifier implementation with the values of the given arbitrary implementation.
+     * This method performs the first applicable actions in the following choices:
+     *
+     * <ul>
+     *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
+     *   <li>Otherwise if the given object is already an instance of
+     *       {@code UnmodifiableIdentifier}, then it is returned unchanged.</li>
+     *   <li>Otherwise a new {@code UnmodifiableIdentifier} instance is created using the
+     *       {@linkplain #UnmodifiableIdentifier(ReferenceIdentifier) copy constructor}
+     *       and returned. Note that this is a <cite>shallow</cite> copy operation, since the other
+     *       metadata contained in the given object are not recursively copied.</li>
+     * </ul>
+     *
+     * @param  object The object to get as a SIS implementation, or {@code null} if none.
+     * @return A SIS implementation containing the values of the given object (may be the
+     *         given object itself), or {@code null} if the argument was null.
+     */
+    public static UnmodifiableIdentifier castOrCopy(final ReferenceIdentifier object) {
+        if (object == null || object instanceof UnmodifiableIdentifier) {
+            return (UnmodifiableIdentifier) object;
+        }
+        return new UnmodifiableIdentifier(object);
     }
 
     /**
@@ -474,8 +483,8 @@ public class DefaultReferenceIdentifier implements ReferenceIdentifier, Deprecab
     /**
      * Returns {@code true} if the object represented by this identifier is deprecated. In such
      * case, the {@linkplain #getRemarks() remarks} may contains the new identifier to use.
-     * <p>
-     * The default implementation returns {@code false} in all cases.
+     *
+     * <p>The default implementation returns {@code false} in all cases.</p>
      *
      * @see AbstractIdentifiedObject#isDeprecated()
      *
@@ -513,7 +522,7 @@ public class DefaultReferenceIdentifier implements ReferenceIdentifier, Deprecab
             return true;
         }
         if (object != null && object.getClass() == getClass()) {
-            final DefaultReferenceIdentifier that = (DefaultReferenceIdentifier) object;
+            final UnmodifiableIdentifier that = (UnmodifiableIdentifier) object;
             return Objects.equals(code,      that.code)      &&
                    Objects.equals(codeSpace, that.codeSpace) &&
                    Objects.equals(authority, that.authority) &&

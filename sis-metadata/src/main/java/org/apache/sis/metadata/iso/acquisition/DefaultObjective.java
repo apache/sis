@@ -32,8 +32,6 @@ import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
 
-import static org.apache.sis.internal.jaxb.MarshalContext.filterIdentifiers;
-
 
 /**
  * Describes the characteristics, spatial and temporal extent of the intended object to be observed.
@@ -152,29 +150,36 @@ public class DefaultObjective extends ISOMetadata implements Objective {
     /**
      * Returns the code used to identify the objective.
      *
-     * {@section Implementation limitation}
-     * In the current SIS implementation, the returned list is always unmodifiable. The only way
-     * to change the collection of identifiers is to invoke {@link #setIdentifiers(Collection)}.
-     * This limitation may be removed in a future SIS version.
+     * {@section Unified identifiers view}
+     * In this SIS implementation, the collection returned by this method includes the XML identifiers
+     * ({@linkplain IdentifierSpace#ID ID}, {@linkplain IdentifierSpace#UUID UUID}, <i>etc.</i>),
+     * thus providing a unified view of every kind of identifiers associated to this objective.
+     *
+     * {@note The <code>&lt:gmd:identifier&gt;</code> element marshalled to XML will exclude
+     *        all the above cited identifiers, for ISO 19139 compliance. Those identifiers
+     *        will appear in other XML elements or attributes.}
      */
     @Override
     @XmlElement(name = "identifier", required = true)
     public synchronized Collection<Identifier> getIdentifiers() {
         identifiers = nonNullCollection(identifiers, Identifier.class);
-        return filterIdentifiers(identifiers);
+        return NonMarshalledAuthority.excludeOnMarshalling(identifiers);
     }
 
     /**
      * Sets the code used to identify the objective.
-     * If the given collection contains XML identifiers like {@linkplain IdentifierSpace#ID ID}
-     * or {@linkplain IdentifierSpace#UUID UUID}, then those identifiers are ignored.
+     *
+     * <p>This method overwrites all previous identifiers with the given new values,
+     * <strong>except</strong> the XML identifiers ({@linkplain IdentifierSpace#ID ID},
+     * {@linkplain IdentifierSpace#UUID UUID}, <i>etc.</i>), if any. We do not overwrite
+     * the XML identifiers because they are usually associated to object identity.</p>
      *
      * @param newValues The new identifiers values.
      */
     public synchronized void setIdentifiers(final Collection<? extends Identifier> newValues) {
-        final Collection<Identifier> oldIds = NonMarshalledAuthority.getIdentifiers(identifiers);
+        final Collection<Identifier> oldIds = NonMarshalledAuthority.filteredCopy(identifiers);
         identifiers = writeCollection(newValues, identifiers, Identifier.class);
-        NonMarshalledAuthority.setIdentifiers(identifiers, oldIds);
+        NonMarshalledAuthority.replace(identifiers, oldIds);
     }
 
     /**

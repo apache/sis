@@ -99,7 +99,8 @@ public interface IdentifiedObject {
     Collection<? extends Identifier> getIdentifiers();
 
     /**
-     * A map view of {@linkplain #getIdentifiers() identifiers}.
+     * A map view of the {@linkplain #getIdentifiers() identifiers} collection
+     * as (<var>authority</var>, <var>code</var>) entries.
      * Each {@linkplain java.util.Map.Entry map entry} is associated
      * to an element from the above identifier collection in which the
      * {@linkplain java.util.Map.Entry#getKey() key} is the
