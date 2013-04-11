@@ -202,9 +202,16 @@ public final class Locales extends Static {
      * country code (again either as 2 or 3 letters), optionally followed by {@code '_'} and
      * the variant.
      *
+     * <p>This method can be used when the caller wants the same {@code Locale} constants no
+     * matter if the language and country codes use 2 or 3 letters. Apache SIS usually don't
+     * distinguish those two cases since ISO 19139 documents have to use the 3 letters codes
+     * anyway.</p>
+     *
      * @param  code The language code, which may be followed by country code.
      * @return The language for the given code.
      * @throws IllegalArgumentException If the given code doesn't seem to be a valid locale.
+     *
+     * @see Locale#forLanguageTag(String)
      */
     public static Locale parse(final String code) throws IllegalArgumentException {
         final String language, country, variant;
@@ -260,6 +267,43 @@ public final class Locales extends Static {
             return unique(new Locale(language2, country2, variant));
         }
         return unique(new Locale(language, country, variant));
+    }
+
+    /**
+     * Parses the locale encoded in the suffix of a property key. This convenience method
+     * is used when a property in a {@link java.util.Map} may have many localized variants.
+     * For example the {@code "remarks"} property may be defined by values associated to the
+     * {@code "remarks_en"} and {@code "remarks_fr"} keys, for English and French locales
+     * respectively.
+     *
+     * <p>This method infers the {@code Locale} from the property {@code key}
+     * with the following steps:</p>
+     *
+     * <ul>
+     *   <li>If the given {@code key} is exactly equals to {@code prefix},
+     *       then this method returns {@link Locale#ROOT}.</li>
+     *   <li>Otherwise if the given {@code key} does not start with the specified {@code prefix}
+     *       followed by the {@code '_'} character, then this method returns {@code null}.</li>
+     *   <li>Otherwise, the characters after the {@code '_'} are parsed as an ISO language
+     *       and country code by the {@link #parse(String)} method.</li>
+     * </ul>
+     *
+     * @param  prefix The prefix to skip at the beginning of the {@code key}.
+     * @param  key    The property key from which to extract the locale.
+     * @return {@code true} if the key has been recognized, or {@code false} otherwise.
+     * @throws IllegalArgumentException if the locale after the prefix is an illegal code.
+     */
+    public static Locale parseSuffix(final String prefix, final String key) throws IllegalArgumentException {
+        if (key.startsWith(prefix)) {
+            final int offset = prefix.length();
+            if (key.length() == offset) {
+                return Locale.ROOT;
+            }
+            if (key.charAt(offset) == '_') {
+                return parse(key.substring(offset + 1));
+            }
+        }
+        return null;
     }
 
     /**
