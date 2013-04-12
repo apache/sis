@@ -28,7 +28,7 @@ import org.apache.sis.internal.metadata.ExcludedSet;
 import org.apache.sis.util.collection.CheckedContainer;
 
 import static org.apache.sis.internal.jaxb.MarshalContext.isMarshalling;
-import static org.apache.sis.util.collection.CollectionsExt.isNullOrEmpty;
+import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 
 
 /**

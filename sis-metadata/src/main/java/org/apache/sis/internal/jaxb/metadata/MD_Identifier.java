@@ -23,7 +23,7 @@ import org.opengis.metadata.Identifier;
 import org.opengis.referencing.ReferenceIdentifier;
 
 import org.apache.sis.metadata.iso.DefaultIdentifier;
-import org.apache.sis.metadata.iso.UnmodifiableIdentifier;
+import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
 
 
@@ -107,11 +107,11 @@ public final class MD_Identifier extends PropertyType<MD_Identifier, Identifier>
      * @return The metadata to be marshalled.
      */
     @XmlElement(name = "RS_Identifier")
-    public UnmodifiableIdentifier getReferenceIdentifier() {
+    public ImmutableIdentifier getReferenceIdentifier() {
         if (!skip()) {
             final Identifier metadata = this.metadata;
             if (metadata instanceof ReferenceIdentifier) {
-                return UnmodifiableIdentifier.castOrCopy((ReferenceIdentifier) metadata);
+                return ImmutableIdentifier.castOrCopy((ReferenceIdentifier) metadata);
             }
         }
         return null;
@@ -122,7 +122,7 @@ public final class MD_Identifier extends PropertyType<MD_Identifier, Identifier>
      *
      * @param metadata The unmarshalled metadata.
      */
-    public void setReferenceIdentifier(final UnmodifiableIdentifier metadata) {
+    public void setReferenceIdentifier(final ImmutableIdentifier metadata) {
         this.metadata = metadata;
     }
 }

@@ -37,6 +37,11 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * This class is final in order to ensure that the immutability contract can not be broken
  * (assuming not using <cite>Java Native Interface</cite> or reflections).
  *
+ * {@note While <code>ImmutableEnvelope</code> objects are immutable, they contain references to
+ *        <code>CoordinateReferenceSystem</code> objects which are not guaranteed to be immutable.
+ *        For better safety, factory codes are encouraged to pass only immutable instances of
+ *        coordinate reference systems to the constructors.}
+ *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-3.00)

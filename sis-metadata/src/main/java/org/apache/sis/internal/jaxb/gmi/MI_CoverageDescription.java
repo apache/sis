@@ -21,7 +21,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.content.CoverageDescription;
 import org.apache.sis.metadata.iso.content.DefaultCoverageDescription;
 
-import static org.apache.sis.util.collection.CollectionsExt.isNullOrEmpty;
+import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 
 
 /**

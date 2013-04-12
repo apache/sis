@@ -22,8 +22,8 @@ import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
-import org.apache.sis.util.collection.CollectionsExt;
-import org.apache.sis.util.collection.UnmodifiableArrayList;
+import org.apache.sis.util.collection.Containers;
+import org.apache.sis.internal.util.CollectionsExt;
 
 
 /**
@@ -105,7 +105,7 @@ final class Cloner extends org.apache.sis.internal.util.Cloner {
                 } else {
                     // Conservatively assumes a List if we are not sure to have a Set,
                     // since the list is less destructive (no removal of duplicated).
-                    collection = UnmodifiableArrayList.wrap(array);
+                    collection = Containers.unmodifiableList(array);
                 }
             }
             return collection;

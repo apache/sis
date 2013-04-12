@@ -21,7 +21,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.spatial.Georectified;
 import org.apache.sis.metadata.iso.spatial.DefaultGeorectified;
 
-import static org.apache.sis.util.collection.CollectionsExt.isNullOrEmpty;
+import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 
 
 /**

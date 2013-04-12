@@ -38,13 +38,30 @@ public final class Objects {
     /**
      * See JDK7 javadoc.
      *
-     * @param value Reference to check against null value.
-     * @param message Exception message.
+     * @param  <T> The type of the value to check.
+     * @param  value Reference to check against null value.
+     * @return The given {@code value}, guaranteed to be non null.
      */
-    public static void requireNonNull(final Object value, final String message) {
+    public static <T> T requireNonNull(final T value) {
+        if (value == null) {
+            throw new NullPointerException();
+        }
+        return value;
+    }
+
+    /**
+     * See JDK7 javadoc.
+     *
+     * @param  <T> The type of the value to check.
+     * @param  value Reference to check against null value.
+     * @param  message Exception message.
+     * @return The given {@code value}, guaranteed to be non null.
+     */
+    public static <T> T requireNonNull(final T value, final String message) {
         if (value == null) {
             throw new NullPointerException(message);
         }
+        return value;
     }
 
     /**

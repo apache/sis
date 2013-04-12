@@ -147,7 +147,7 @@ public final class XML extends Static {
      *     Unmarshaller um = marshallerPool.acquireUnmarshaller();
      *     um.setProperty(XML.RESOLVER, myResolver);
      *     Object obj = um.unmarshal(xml);
-     *     marshallerPool.release(um);
+     *     marshallerPool.recycle(um);
      * }
      *
      * @see Unmarshaller#setProperty(String, Object)
@@ -195,7 +195,7 @@ public final class XML extends Static {
      *     Unmarshaller um = marshallerPool.acquireUnmarshaller();
      *     um.setProperty(XML.CONVERTER, myWarningList);
      *     Object obj = um.unmarshal(xml);
-     *     marshallerPool.release(um);
+     *     marshallerPool.recycle(um);
      *     if (!myWarningList.isEmpty()) {
      *         // Report here the warnings to the user.
      *     }
@@ -298,7 +298,7 @@ public final class XML extends Static {
         final MarshallerPool pool = getPool();
         final Marshaller marshaller = pool.acquireMarshaller();
         marshaller.marshal(object, output);
-        pool.release(marshaller);
+        pool.recycle(marshaller);
         return output.toString();
     }
 
@@ -313,7 +313,7 @@ public final class XML extends Static {
         final MarshallerPool pool = getPool();
         final Marshaller marshaller = pool.acquireMarshaller();
         marshaller.marshal(object, output);
-        pool.release(marshaller);
+        pool.recycle(marshaller);
     }
 
     /**
@@ -327,7 +327,7 @@ public final class XML extends Static {
         final MarshallerPool pool = getPool();
         final Marshaller marshaller = pool.acquireMarshaller();
         marshaller.marshal(object, output);
-        pool.release(marshaller);
+        pool.recycle(marshaller);
     }
 
     /**
@@ -342,7 +342,7 @@ public final class XML extends Static {
         final MarshallerPool pool = getPool();
         final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
         final Object object = unmarshaller.unmarshal(in);
-        pool.release(unmarshaller);
+        pool.recycle(unmarshaller);
         return object;
     }
 
@@ -357,7 +357,7 @@ public final class XML extends Static {
         final MarshallerPool pool = getPool();
         final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
         final Object object = unmarshaller.unmarshal(input);
-        pool.release(unmarshaller);
+        pool.recycle(unmarshaller);
         return object;
     }
 
@@ -372,7 +372,7 @@ public final class XML extends Static {
         final MarshallerPool pool = getPool();
         final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
         final Object object = unmarshaller.unmarshal(input);
-        pool.release(unmarshaller);
+        pool.recycle(unmarshaller);
         return object;
     }
 }
