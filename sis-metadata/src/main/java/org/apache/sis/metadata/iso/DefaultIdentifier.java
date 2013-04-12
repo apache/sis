@@ -32,6 +32,8 @@ import org.opengis.metadata.citation.Citation;
  * @since   0.3 (derived from geotk-2.1)
  * @version 0.3
  * @module
+ *
+ * @see ImmutableIdentifier
  */
 @XmlType(name = "MD_Identifier_Type", propOrder = {
     "code",

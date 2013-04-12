@@ -51,18 +51,25 @@ import java.util.Objects;
 
 
 /**
- * Unmodifiable value uniquely identifying an object within a namespace, together with a version.
+ * Immutable value uniquely identifying an object within a namespace, together with a version.
  * This kind of identifier is primarily used for identification of
  * {@link org.opengis.referencing.crs.CoordinateReferenceSystem} objects.
+ *
+ * {@note While <code>ImmutableIdentifier</code> objects are immutable, they may contain references to
+ *        <code>Citation</code> and <code>InternationalString</code> objects which are not guaranteed
+ *        to be immutable. For better safety, factory codes are encouraged to pass only immutable
+ *        citations and immutable international strings to the constructors.}
  *
  * @author Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.03)
  * @version 0.3
  * @module
+ *
+ * @see DefaultIdentifier
  */
 @Immutable
 @XmlRootElement(name = "RS_Identifier")
-public class UnmodifiableIdentifier implements ReferenceIdentifier, Deprecable, Serializable {
+public class ImmutableIdentifier implements ReferenceIdentifier, Deprecable, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -119,7 +126,7 @@ public class UnmodifiableIdentifier implements ReferenceIdentifier, Deprecable, 
     /**
      * Empty constructor for JAXB.
      */
-    private UnmodifiableIdentifier() {
+    private ImmutableIdentifier() {
         code      = null;
         codeSpace = null;
         authority = null;
@@ -134,14 +141,14 @@ public class UnmodifiableIdentifier implements ReferenceIdentifier, Deprecable, 
      *
      * @param identifier The identifier to copy.
      */
-    public UnmodifiableIdentifier(final ReferenceIdentifier identifier) {
+    public ImmutableIdentifier(final ReferenceIdentifier identifier) {
         ensureNonNull("identifier", identifier);
         code      = identifier.getCode();
         codeSpace = identifier.getCodeSpace();
         authority = identifier.getAuthority();
         version   = identifier.getVersion();
-        if (identifier instanceof UnmodifiableIdentifier) {
-            remarks = ((UnmodifiableIdentifier) identifier).getRemarks();
+        if (identifier instanceof ImmutableIdentifier) {
+            remarks = ((ImmutableIdentifier) identifier).getRemarks();
         } else {
             remarks = null;
         }
@@ -160,7 +167,7 @@ public class UnmodifiableIdentifier implements ReferenceIdentifier, Deprecable, 
      *          Identifier code or name, optionally from a controlled list or pattern defined by
      *          a code space. The code can not be null.
      */
-    public UnmodifiableIdentifier(final Citation authority, final String codeSpace, final String code) {
+    public ImmutableIdentifier(final Citation authority, final String codeSpace, final String code) {
         this(authority, codeSpace, code, null, null);
     }
 
@@ -183,7 +190,7 @@ public class UnmodifiableIdentifier implements ReferenceIdentifier, Deprecable, 
      * @param remarks
      *          Comments on or information about this identifier, or {@code null} if none.
      */
-    public UnmodifiableIdentifier(final Citation authority, final String codeSpace,
+    public ImmutableIdentifier(final Citation authority, final String codeSpace,
             final String code, final String version, final InternationalString remarks)
     {
         ensureNonNull("code", code);
@@ -242,7 +249,7 @@ public class UnmodifiableIdentifier implements ReferenceIdentifier, Deprecable, 
      * @throws InvalidParameterValueException if a property has an invalid value.
      * @throws IllegalArgumentException if a property is invalid for some other reason.
      */
-    public UnmodifiableIdentifier(final Map<String,?> properties) throws IllegalArgumentException {
+    public ImmutableIdentifier(final Map<String,?> properties) throws IllegalArgumentException {
         ensureNonNull("properties", properties);
         Object code      = null;
         Object codeSpace = null;
@@ -318,7 +325,7 @@ public class UnmodifiableIdentifier implements ReferenceIdentifier, Deprecable, 
             if (remarks == null) {
                 remarks = localized;
             } else {
-                Logging.log(UnmodifiableIdentifier.class, "<init>",
+                Logging.log(ImmutableIdentifier.class, "<init>",
                     Messages.getResources(null).getLogRecord(Level.WARNING, Messages.Keys.LocalesDiscarded));
             }
         }
@@ -400,9 +407,9 @@ public class UnmodifiableIdentifier implements ReferenceIdentifier, Deprecable, 
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
      *   <li>Otherwise if the given object is already an instance of
-     *       {@code UnmodifiableIdentifier}, then it is returned unchanged.</li>
-     *   <li>Otherwise a new {@code UnmodifiableIdentifier} instance is created using the
-     *       {@linkplain #UnmodifiableIdentifier(ReferenceIdentifier) copy constructor}
+     *       {@code ImmutableIdentifier}, then it is returned unchanged.</li>
+     *   <li>Otherwise a new {@code ImmutableIdentifier} instance is created using the
+     *       {@linkplain #ImmutableIdentifier(ReferenceIdentifier) copy constructor}
      *       and returned. Note that this is a <cite>shallow</cite> copy operation, since the other
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
@@ -411,11 +418,11 @@ public class UnmodifiableIdentifier implements ReferenceIdentifier, Deprecable, 
      * @return A SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
-    public static UnmodifiableIdentifier castOrCopy(final ReferenceIdentifier object) {
-        if (object == null || object instanceof UnmodifiableIdentifier) {
-            return (UnmodifiableIdentifier) object;
+    public static ImmutableIdentifier castOrCopy(final ReferenceIdentifier object) {
+        if (object == null || object instanceof ImmutableIdentifier) {
+            return (ImmutableIdentifier) object;
         }
-        return new UnmodifiableIdentifier(object);
+        return new ImmutableIdentifier(object);
     }
 
     /**
@@ -472,8 +479,9 @@ public class UnmodifiableIdentifier implements ReferenceIdentifier, Deprecable, 
     /**
      * Comments on or information about this identifier, or {@code null} if none.
      *
-     * @return Optional comments about this identifier.
+     * @return Optional comments about this identifier, or {@code null} if none.
      */
+    @Override
     public InternationalString getRemarks() {
         return remarks;
     }
@@ -520,7 +528,7 @@ public class UnmodifiableIdentifier implements ReferenceIdentifier, Deprecable, 
             return true;
         }
         if (object != null && object.getClass() == getClass()) {
-            final UnmodifiableIdentifier that = (UnmodifiableIdentifier) object;
+            final ImmutableIdentifier that = (ImmutableIdentifier) object;
             return Objects.equals(code,      that.code)      &&
                    Objects.equals(codeSpace, that.codeSpace) &&
                    Objects.equals(authority, that.authority) &&
