@@ -123,18 +123,38 @@ public final class Utilities extends Static {
      * @param formatter The formatter in which to format the value.
      * @param flags     The formatting flags.
      * @param width     Minimal number of characters to write, padding with {@code ' '} if necessary.
+     * @param precision Number of characters to keep before truncation, or -1 if no limit.
      * @param value     The text to format.
      */
-    public static void formatTo(final Formatter formatter, final int flags, int width, String value) {
+    public static void formatTo(final Formatter formatter, final int flags,
+            int width, int precision, String value)
+    {
         final String format;
         final Object[] args;
         boolean isUpperCase = (flags & FormattableFlags.UPPERCASE) != 0;
         if (isUpperCase && width > 0) {
             // May change the string length in some locales.
             value = value.toUpperCase(formatter.locale());
-            isUpperCase = false;
+            isUpperCase = false; // Because conversion has already been done.
         }
-        final int length = value.length();
+        int length = value.length();
+        if (precision >= 0) {
+            for (int i=0,n=0; i<length; i += n) {
+                if (--precision < 0) {
+                    // Found the amount of characters to keep. The 'n' variable can be
+                    // zero only if precision == 0, in which case the string is empty.
+                    if (n == 0) {
+                        value = "";
+                    } else {
+                        length = (i -= n) + 1;
+                        final StringBuilder buffer = new StringBuilder(length);
+                        value = buffer.append(value, 0, i).append('…').toString();
+                    }
+                    break;
+                }
+                n = Character.charCount(value.codePointAt(i));
+            }
+        }
         // Double check since length() is faster than codePointCount(...).
         if (width > length && (width -= value.codePointCount(0, length)) > 0) {
             format = "%s%s";

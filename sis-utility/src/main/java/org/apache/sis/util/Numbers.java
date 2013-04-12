@@ -27,7 +27,7 @@ import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.collection.CollectionsExt;
+import org.apache.sis.internal.util.CollectionsExt;
 
 import static java.lang.Double.doubleToLongBits;
 
