@@ -83,6 +83,30 @@ public final class CollectionsExt extends Static {
     }
 
     /**
+     * Returns the specified array as an immutable set, or {@code null} if the array is null.
+     * If the given array contains duplicated elements, i.e. elements that are equal in the
+     * sense of {@link Object#equals(Object)}, then only the last instance of the duplicated
+     * values will be included in the returned set.
+     *
+     * @param  <E> The type of array elements.
+     * @param  array The array to copy in a set. May be {@code null}.
+     * @return A set containing the array elements, or {@code null} if the given array was null.
+     *
+     * @see Collections#unmodifiableSet(Set)
+     */
+    @SafeVarargs
+    public static <E> Set<E> immutableSet(final E... array) {
+        if (array == null) {
+            return null;
+        }
+        switch (array.length) {
+            case 0:  return Collections.emptySet();
+            case 1:  return Collections.singleton(array[0]);
+            default: return Collections.unmodifiableSet(new LinkedHashSet<>(Arrays.asList(array)));
+        }
+    }
+
+    /**
      * Returns a unmodifiable version of the given set.
      * This method is different than the standard {@link Collections#unmodifiableSet(Set)}
      * in that it tries to returns a more efficient object when there is zero or one element.

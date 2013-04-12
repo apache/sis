@@ -16,17 +16,14 @@
  */
 package org.apache.sis.metadata;
 
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-
 import org.apache.sis.util.collection.Containers;
-import static org.apache.sis.internal.util.CollectionsExt.unmodifiableOrCopy;
+import org.apache.sis.internal.util.CollectionsExt;
 
 
 /**
@@ -104,11 +101,7 @@ final class Cloner extends org.apache.sis.internal.util.Cloner {
                 // Do not use the SIS Checked* classes since we don't
                 // need synchronization or type checking anymore.
                 if (isSet) {
-                    switch (array.length) {
-                        case 0:  collection = Collections.emptySet(); break;
-                        case 1:  collection = Collections.singleton(array[0]); break;
-                        default: collection = Collections.unmodifiableSet(new LinkedHashSet<>(Arrays.asList(array))); break;
-                    }
+                    collection = CollectionsExt.immutableSet(array);
                 } else {
                     // Conservatively assumes a List if we are not sure to have a Set,
                     // since the list is less destructive (no removal of duplicated).
@@ -127,7 +120,7 @@ final class Cloner extends org.apache.sis.internal.util.Cloner {
                 final Map.Entry<Object,Object> entry = it.next();
                 entry.setValue(clone(entry.getValue()));
             }
-            return unmodifiableOrCopy(map);
+            return CollectionsExt.unmodifiableOrCopy(map);
         }
         /*
          * CASE 4 - The object is presumed cloneable.
