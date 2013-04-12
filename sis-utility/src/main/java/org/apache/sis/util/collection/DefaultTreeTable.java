@@ -16,6 +16,7 @@
  */
 package org.apache.sis.util.collection;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.LinkedHashMap;
@@ -25,6 +26,7 @@ import net.jcip.annotations.NotThreadSafe;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Cloner;
+import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 import static org.apache.sis.util.CharSequences.trimWhitespaces;
 import static org.apache.sis.util.collection.CollectionsExt.isNullOrEmpty;
@@ -124,7 +126,9 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
         if (columns.length == 0) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "columns"));
         }
-        columns = columns.clone();
+        // Copy the array for safety against user changes, and also for forcing the element type
+        // to TableColumn, not a subclass, because of the UnmodifiableArrayList.wrap(E[]) contract.
+        columns = Arrays.copyOf(columns, columns.length, TableColumn[].class);
         this.columnIndices = createColumnIndices(columns);
         this.columns = UnmodifiableArrayList.wrap(columns);
     }
@@ -171,6 +175,10 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
     /**
      * Returns all columns in the given map, sorted by increasing index value.
      * This method relies on {@link LinkedHashSet} preserving insertion order.
+     *
+     * @return The columns in an array of elements of type {@code TableColumn},
+     *         <strong>not a subtype</strong> for allowing usage in
+     *         {@link UnmodifiableArrayList#wrap(E[])}.
      */
     static TableColumn<?>[] getColumns(final Map<TableColumn<?>,Integer> columnIndices) {
         return columnIndices.keySet().toArray(new TableColumn<?>[columnIndices.size()]);
