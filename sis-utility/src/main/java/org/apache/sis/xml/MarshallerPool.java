@@ -41,7 +41,7 @@ import org.apache.sis.internal.jaxb.AdapterReplacement;
  * {@preformat java
  *     Marshaller marshaller = pool.acquireMarshaller();
  *     marshaller.marchall(...);
- *     pool.release(marshaller);
+ *     pool.recycle(marshaller);
  * }
  *
  * {@section Configuring (un)marshallers}
@@ -101,7 +101,7 @@ public class MarshallerPool {
      * synchronized block.</p>
      *
      * @see #acquireMarshaller()
-     * @see #release(Marshaller)
+     * @see #recycle(Marshaller)
      */
     private final Deque<Marshaller> marshallers;
 
@@ -114,7 +114,7 @@ public class MarshallerPool {
      * synchronized block.</p>
      *
      * @see #acquireUnmarshaller()
-     * @see #release(Unmarshaller)
+     * @see #recycle(Unmarshaller)
      */
     private final Deque<Unmarshaller> unmarshallers;
 
@@ -237,13 +237,13 @@ public class MarshallerPool {
      *   <li>Registers a delayed task for disposing expired (un)marshallers after the timeout.</li>
      * </ul>
      */
-    private <T> void release(final Deque<T> queue, final T marshaller) {
+    private <T> void recycle(final Deque<T> queue, final T marshaller) {
         try {
             ((Pooled) marshaller).reset();
         } catch (JAXBException exception) {
             // Not expected to happen because we are supposed
             // to reset the properties to their initial values.
-            Logging.unexpectedException(MarshallerPool.class, "release", exception);
+            Logging.unexpectedException(MarshallerPool.class, "recycle", exception);
             return;
         }
         queue.push(marshaller);
@@ -325,12 +325,11 @@ public class MarshallerPool {
      * {@preformat java
      *     Marshaller marshaller = pool.acquireMarshaller();
      *     marshaller.marchall(...);
-     *     pool.release(marshaller);
+     *     pool.recycle(marshaller);
      * }
      *
-     * Note that this is not strictly required to release the marshaller in a {@code finally}
-     * block. Actually it is safer to let the garbage collector disposes the marshaller if an
-     * error occurred while marshalling the object.
+     * Note that {@link #recycle(Marshaller)} shall not be invoked in case of exception,
+     * since the marshaller may be in an invalid state.
      *
      * @return A marshaller configured for formatting OGC/ISO XML.
      * @throws JAXBException If an error occurred while creating and configuring a marshaller.
@@ -352,12 +351,11 @@ public class MarshallerPool {
      * {@preformat java
      *     Unmarshaller unmarshaller = pool.acquireUnmarshaller();
      *     Unmarshaller.unmarchall(...);
-     *     pool.release(unmarshaller);
+     *     pool.recycle(unmarshaller);
      * }
      *
-     * Note that this is not strictly required to release the unmarshaller in a {@code finally}
-     * block. Actually it is safer to let the garbage collector disposes the unmarshaller if an
-     * error occurred while unmarshalling the object.
+     * Note that {@link #recycle(Unmarshaller)} shall not be invoked in case of exception,
+     * since the unmarshaller may be in an invalid state.
      *
      * @return A unmarshaller configured for parsing OGC/ISO XML.
      * @throws JAXBException If an error occurred while creating and configuring the unmarshaller.
@@ -371,23 +369,31 @@ public class MarshallerPool {
     }
 
     /**
-     * Declares a marshaller as available for reuse. The caller should not use
-     * anymore the marshaller after this method call.
+     * Declares a marshaller as available for reuse.
+     * The caller should not use anymore the given marshaller after this method call.
+     *
+     * <p>Do not invoke this method if the marshaller threw an exception, since the
+     * marshaller may be in an invalid state. In particular, this method should not
+     * be invoked in a {@code finally} block.</p>
      *
      * @param marshaller The marshaller to return to the pool.
      */
-    public void release(final Marshaller marshaller) {
-        release(marshallers, marshaller);
+    public void recycle(final Marshaller marshaller) {
+        recycle(marshallers, marshaller);
     }
 
     /**
-     * Declares a unmarshaller as available for reuse. The caller should not use
-     * anymore the unmarshaller after this method call.
+     * Declares a unmarshaller as available for reuse.
+     * The caller should not use anymore the given unmarshaller after this method call.
+     *
+     * <p>Do not invoke this method if the marshaller threw an exception, since the
+     * marshaller may be in an invalid state. In particular, this method should not
+     * be invoked in a {@code finally} block.</p>
      *
      * @param unmarshaller The unmarshaller to return to the pool.
      */
-    public void release(final Unmarshaller unmarshaller) {
-        release(unmarshallers, unmarshaller);
+    public void recycle(final Unmarshaller unmarshaller) {
+        recycle(unmarshallers, unmarshaller);
     }
 
     /**
