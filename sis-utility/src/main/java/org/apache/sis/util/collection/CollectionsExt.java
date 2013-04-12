@@ -16,30 +16,19 @@
  */
 package org.apache.sis.util.collection;
 
-import java.util.*;
-import java.io.Serializable;
+import java.util.Map;
+import java.util.Set;
+import java.util.List;
+import java.util.Collection;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverter;
+import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 
 /**
  * Static methods working on {@link Collection} objects.
  * This is an extension to the standard {@link Collections} utility class.
- * Some worthy methods are:
- *
- * <ul>
- *   <li>Null-safe {@link #isNullOrEmpty(Collection) isNullOrEmpty} method,
- *       for the convenience of classes using the <cite>lazy instantiation</cite> pattern.</li>
- *   <li>{@link #toCollection(Object) toCollection} for wrapping or copying arbitrary objects to
- *       list or collection.</li>
- *   <li>List and sorted set {@linkplain #listComparator() comparators}.</li>
- *   <li>{@link #modifiableCopy(Collection) modifiableCopy} method for taking a snapshot of an arbitrary
- *       implementation into an unsynchronized, modifiable, in-memory object.</li>
- *   <li>{@link #unmodifiableOrCopy(Set) unmodifiableOrCopy} methods, which may be slightly more
- *       compact than the standard {@link Collections#unmodifiableSet(Set)} equivalent
- *       when the unmodifiable collection is not required to be a view over the original collection.</li>
- * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-3.00)
@@ -87,34 +76,45 @@ public final class CollectionsExt extends Static {
     }
 
     /**
-     * Returns a {@linkplain Queue queue} which is always empty and accepts no element.
+     * Returns an unmodifiable view of the given array. A direct reference to the given array is
+     * retained (i.e. the array is <strong>not</strong> cloned). Consequently the given array
+     * shall not be modified after construction if the returned list is intended to be immutable.
      *
-     * @param <E> The type of elements in the empty collection.
-     * @return An empty collection.
+     * <p>The returned list implements the {@link CheckedContainer} interface. The value returned by
+     * its {@link CheckedContainer#getElementType()} method is inferred from the array component type.
+     * Because arrays in the Java language are covariant (at the contrary of collections),
+     * the list type have to be {@code <? extends E>} instead than {@code <E>}.</p>
      *
-     * @see Collections#emptyList()
-     * @see Collections#emptySet()
+     * @param  <E> The base type of elements in the list.
+     * @param  array The array to wrap, or {@code null} if none.
+     * @return The given array wrapped in an unmodifiable list, or {@code null} if the given
+     *         array was null.
      */
-    @SuppressWarnings({"unchecked","rawtype"})
-    public static <E> Queue<E> emptyQueue() {
-        return EmptyQueue.INSTANCE;
+    @SafeVarargs
+    public static <E> List<? extends E> unmodifiableList(final E... array) {
+        return UnmodifiableArrayList.wrap(array);
     }
 
     /**
-     * Returns a {@linkplain SortedSet sorted set} which is always empty and accepts no element.
+     * Returns an unmodifiable view of a subregion of the given array. A direct reference to the
+     * given array is retained (i.e. the array is <strong>not</strong> cloned). Consequently the
+     * specified sub-region of the given array shall not be modified after construction if the
+     * returned list is intended to be immutable.
      *
-     * {@note This method exists only on the JDK6 and JDK7 branches. This method will
-     *        be removed from the JDK8 branch, since it has been added to the JDK.}
+     * <p>The returned list implements the {@link CheckedContainer} interface. The value returned by
+     * its {@link CheckedContainer#getElementType()} method is inferred from the array component type.
+     * Because arrays in the Java language are covariant (at the contrary of collections),
+     * the list type have to be {@code <? extends E>} instead than {@code <E>}.</p>
      *
-     * @param <E> The type of elements in the empty collection.
-     * @return An empty collection.
-     *
-     * @see Collections#emptyList()
-     * @see Collections#emptySet()
+     * @param  <E>   The type of elements in the list.
+     * @param  array The array to wrap (can not be null).
+     * @param  lower Low endpoint (inclusive) of the sublist.
+     * @param  upper High endpoint (exclusive) of the sublist.
+     * @return The given array wrapped in an unmodifiable list.
+     * @throws IndexOutOfBoundsException If the lower or upper value are out of bounds.
      */
-    @SuppressWarnings({"unchecked","rawtype"})
-    public static <E> SortedSet<E> emptySortedSet() {
-        return EmptySortedSet.INSTANCE;
+    public static <E> List<? extends E> unmodifiableList(final E[] array, final int lower, final int upper) {
+        return UnmodifiableArrayList.wrap(array, lower, upper);
     }
 
     /**
@@ -149,8 +149,6 @@ public final class CollectionsExt extends Static {
      *         converter, or {@code null} if {@code storage} was null.
      *
      * @see org.apache.sis.util.ObjectConverters#derivedSet(Set, ObjectConverter)
-     *
-     * @category converter
      */
     public static <S,E> Set<E> derivedSet(final Set<S> storage, final ObjectConverter<S,E> converter) {
         ArgumentChecks.ensureNonNull("converter", converter);
@@ -195,8 +193,6 @@ public final class CollectionsExt extends Static {
      * @see org.apache.sis.util.ObjectConverters#derivedMap(Map, ObjectConverter, ObjectConverter)
      * @see org.apache.sis.util.ObjectConverters#derivedKeys(Map, ObjectConverter, Class)
      * @see org.apache.sis.util.ObjectConverters#derivedValues(Map, Class, ObjectConverter)
-     *
-     * @category converter
      */
     public static <SK,SV,K,V> Map<K,V> derivedMap(final Map<SK,SV> storage,
                                                   final ObjectConverter<SK,K> keyConverter,
@@ -208,437 +204,6 @@ public final class CollectionsExt extends Static {
             return null;
         }
         return DerivedMap.create(storage, keyConverter, valueConverter);
-    }
-
-    /**
-     * Returns the specified array as an immutable set, or {@code null} if the array is null.
-     * If the given array contains duplicated elements, i.e. elements that are equal in the
-     * sense of {@link Object#equals(Object)}, then only the last instance of the duplicated
-     * values will be included in the returned set.
-     *
-     * @param  <E> The type of array elements.
-     * @param  array The array to copy in a set. May be {@code null}.
-     * @return A set containing the array elements, or {@code null} if the given array was null.
-     *
-     * @see Collections#unmodifiableSet(Set)
-     *
-     * @category converter
-     */
-    @SafeVarargs
-    public static <E> Set<E> immutableSet(final E... array) {
-        if (array == null) {
-            return null;
-        }
-        switch (array.length) {
-            case 0:  return Collections.emptySet();
-            case 1:  return Collections.singleton(array[0]);
-            default: return Collections.unmodifiableSet(new LinkedHashSet<>(Arrays.asList(array)));
-        }
-    }
-
-    /**
-     * Returns a unmodifiable version of the given set.
-     * This method is different than the standard {@link Collections#unmodifiableSet(Set)}
-     * in that it tries to returns a more efficient object when there is zero or one element.
-     * Such small set occurs frequently in Apache SIS, especially for
-     * {@link org.apache.sis.referencing.AbstractIdentifiedObject} names or identifiers.
-     *
-     * <p><em>The set returned by this method may or may not be a view of the given set</em>.
-     * Consequently this method shall be used <strong>only</strong> if the given set will
-     * <strong>not</strong> be modified after this method call. In case of doubt, use the
-     * standard {@link Collections#unmodifiableSet(Set)} method instead.</p>
-     *
-     * @param  <E>  The type of elements in the set.
-     * @param  set  The set to make unmodifiable, or {@code null}.
-     * @return A unmodifiable version of the given set, or {@code null} if the given set was null.
-     *
-     * @category converter
-     */
-    public static <E> Set<E> unmodifiableOrCopy(Set<E> set) {
-        if (set != null) {
-            switch (set.size()) {
-                case 0: {
-                    set = Collections.emptySet();
-                    break;
-                }
-                case 1: {
-                    set = Collections.singleton(set.iterator().next());
-                    break;
-                }
-                default: {
-                    set = Collections.unmodifiableSet(set);
-                    break;
-                }
-            }
-        }
-        return set;
-    }
-
-    /**
-     * Returns a unmodifiable version of the given map.
-     * This method is different than the standard {@link Collections#unmodifiableMap(Map)}
-     * in that it tries to returns a more efficient object when there is zero or one entry.
-     * Such small maps occur frequently in Apache SIS.
-     *
-     * <p><em>The map returned by this method may or may not be a view of the given map</em>.
-     * Consequently this method shall be used <strong>only</strong> if the given map will
-     * <strong>not</strong> be modified after this method call. In case of doubt, use the
-     * standard {@link Collections#unmodifiableMap(Map)} method instead.</p>
-     *
-     * @param  <K>  The type of keys in the map.
-     * @param  <V>  The type of values in the map.
-     * @param  map  The map to make unmodifiable, or {@code null}.
-     * @return A unmodifiable version of the given map, or {@code null} if the given map was null.
-     *
-     * @category converter
-     */
-    public static <K,V> Map<K,V> unmodifiableOrCopy(Map<K,V> map) {
-        if (map != null) {
-            switch (map.size()) {
-                case 0: {
-                    map = Collections.emptyMap();
-                    break;
-                }
-                case 1: {
-                    final Map.Entry<K,V> entry = map.entrySet().iterator().next();
-                    map = Collections.singletonMap(entry.getKey(), entry.getValue());
-                    break;
-                }
-                default: {
-                    map = Collections.unmodifiableMap(map);
-                    break;
-                }
-            }
-        }
-        return map;
-    }
-
-    /**
-     * Copies the content of the given collection to a new, unsynchronized, modifiable, in-memory
-     * collection. The implementation class of the returned collection may be different than the
-     * class of the collection given in argument. The following table gives the types mapping
-     * applied by this method:
-     *
-     * <table class="sis">
-     * <tr><th>Input type</th>                              <th class="sep">Output type</th></tr>
-     * <tr><td>{@link SortedSet}</td>                       <td class="sep">{@link TreeSet}</td></tr>
-     * <tr><td>{@link HashSet}</td>                         <td class="sep">{@link HashSet}</td></tr>
-     * <tr><td>{@link Set} other than above</td>            <td class="sep">{@link LinkedHashSet}</td></tr>
-     * <tr><td>{@link Queue}</td>                           <td class="sep">{@link LinkedList}</td></tr>
-     * <tr><td>{@link List} or other {@link Collection}</td><td class="sep">{@link ArrayList}</td></tr>
-     * </table>
-     *
-     * @param  <E> The type of elements in the collection.
-     * @param  collection The collection to copy, or {@code null}.
-     * @return A copy of the given collection, or {@code null} if the given collection was null.
-     *
-     * @category converter
-     */
-    @SuppressWarnings("unchecked")
-    public static <E> Collection<E> modifiableCopy(final Collection<E> collection) {
-        if (collection == null) {
-            return null;
-        }
-        /*
-         * We will use the clone() method when possible because they are
-         * implemented in a more efficient way than the copy constructors.
-         */
-        final Class<?> type = collection.getClass();
-        if (collection instanceof Set<?>) {
-            if (collection instanceof SortedSet<?>) {
-                if (type == TreeSet.class) {
-                    return (Collection<E>) ((TreeSet<E>) collection).clone();
-                }
-                return new TreeSet<>(collection);
-            }
-            if (type == HashSet.class || type == LinkedHashSet.class) {
-                return (Collection<E>) ((HashSet<E>) collection).clone();
-            }
-            return new LinkedHashSet<>(collection);
-        }
-        if (collection instanceof Queue<?>) {
-            if (type == LinkedList.class) {
-                return (Collection<E>) ((LinkedList<E>) collection).clone();
-            }
-            return new LinkedList<>(collection);
-        }
-        if (type == ArrayList.class) {
-            return (Collection<E>) ((ArrayList<E>) collection).clone();
-        }
-        return new ArrayList<>(collection);
-    }
-
-    /**
-     * Copies the content of the given map to a new unsynchronized, modifiable, in-memory map.
-     * The implementation class of the returned map may be different than the class of the map
-     * given in argument. The following table gives the types mapping applied by this method:
-     *
-     * <table class="sis">
-     * <tr><th>Input type</th>                  <th class="sep">Output type</th></tr>
-     * <tr><td>{@link SortedMap}</td>           <td class="sep">{@link TreeMap}</td></tr>
-     * <tr><td>{@link HashMap}</td>             <td class="sep">{@link HashMap}</td></tr>
-     * <tr><td>{@link Map} other than above</td><td class="sep">{@link LinkedHashMap}</td></tr>
-     * </table>
-     *
-     * @param  <K> The type of keys in the map.
-     * @param  <V> The type of values in the map.
-     * @param  map The map to copy, or {@code null}.
-     * @return A copy of the given map, or {@code null} if the given map was null.
-     *
-     * @category converter
-     */
-    @SuppressWarnings("unchecked")
-    public static <K,V> Map<K,V> modifiableCopy(final Map<K,V> map) {
-        if (map == null) {
-            return null;
-        }
-        /*
-         * We will use the clone() method when possible because they are
-         * implemented in a more efficient way than the copy constructors.
-         */
-        final Class<?> type = map.getClass();
-        if (map instanceof SortedMap<?,?>) {
-            if (type == TreeMap.class) {
-                return (Map<K,V>) ((TreeMap<K,V>) map).clone();
-            }
-            return new TreeMap<>(map);
-        }
-        if (type == HashMap.class || type == LinkedHashMap.class) {
-            return (Map<K,V>) ((HashMap<K,V>) map).clone();
-        }
-        return new LinkedHashMap<>(map);
-    }
-
-    /**
-     * Returns the given value as a collection. Special cases:
-     *
-     * <ul>
-     *   <li>If the value is null, then this method returns an {@linkplain Collections#emptyList() empty list}.</li>
-     *   <li>If the value is an instance of {@link Collection}, then it is returned unchanged.</li>
-     *   <li>If the value is an array of objects, then it is returned {@linkplain Arrays#asList(Object[]) as a list}.</li>
-     *   <li>If the value is an instance of {@link Iterable}, {@link Iterator} or {@link Enumeration}, copies the values in a new list.</li>
-     *   <li>Otherwise the value is returned as a {@linkplain Collections#singletonList(Object) singleton list}.</li>
-     * </ul>
-     *
-     * <p>Note that in the {@link Iterator} and {@link Enumeration} cases, the given value object
-     * is not valid anymore after this method call since it has been used for the iteration.</p>
-     *
-     * <p>If the returned object needs to be a list, then this method can be chained
-     * with {@link #toList(Collection)} as below:</p>
-     *
-     * {@preformat java
-     *     List<?> list = toList(toCollection(object));
-     * }
-     *
-     * @param  value The value to return as a collection, or {@code null}.
-     * @return The value as a collection, or wrapped in a collection (never {@code null}).
-     *
-     * @category converter
-     */
-    public static Collection<?> toCollection(final Object value) {
-        if (value == null) {
-            return Collections.emptyList();
-        }
-        if (value instanceof Collection<?>) {
-            return (Collection<?>) value;
-        }
-        if (value instanceof Object[]) {
-            return Arrays.asList((Object[]) value);
-        }
-        if (value instanceof Iterable<?>) {
-            final List<Object> list = new ArrayList<>();
-            for (final Object element : (Iterable<?>) value) {
-                list.add(element);
-            }
-            return list;
-        }
-        if (value instanceof Iterator<?>) {
-            final Iterator<?> it = (Iterator<?>) value;
-            final List<Object> list = new ArrayList<>();
-            while (it.hasNext()) {
-                list.add(it.next());
-            }
-            return list;
-        }
-        if (value instanceof Enumeration<?>) {
-            return Collections.list((Enumeration<?>) value);
-        }
-        return Collections.singletonList(value);
-    }
-
-    /**
-     * Casts or copies the given collection to a list. Special cases:
-     *
-     * <ul>
-     *   <li>If the given collection is {@code null}, then this method returns {@code null}.</li>
-     *   <li>If the given collection is already a list, then it is returned unchanged.</li>
-     *   <li>Otherwise the elements are copied in a new list, which is returned.</li>
-     * </ul>
-     *
-     * This method can be chained with {@link #toCollection(Object)}
-     * for handling a wider range of types:
-     *
-     * {@preformat java
-     *     List<?> list = toList(toCollection(object));
-     * }
-     *
-     * @param  <T> The type of elements in the given collection.
-     * @param  collection The collection to cast or copy to a list.
-     * @return The given collection as a list, or a copy of the given collection.
-     *
-     * @category converter
-     */
-    public static <T> List<T> toList(final Collection<T> collection) {
-        if (collection instanceof List<?>) {
-            return (List<T>) collection;
-        }
-        return new ArrayList<>(collection);
-    }
-
-    /**
-     * The comparator to be returned by {@link Collections#listComparator()} and similar methods.
-     */
-    private static final class Compare<T extends Comparable<T>>
-            implements Comparator<Collection<T>>, Serializable
-    {
-        /**
-         * For cross-version compatibility.
-         */
-        private static final long serialVersionUID = 7050753365408754641L;
-
-        /**
-         * The unique instance. Can not be public because of parameterized types: we need a method
-         * for casting to the expected type. This is the same trick than the one used by the JDK
-         * in the {@link Collections#emptySet()} method for instance.
-         */
-        @SuppressWarnings("rawtypes")
-        static final Comparator INSTANCE = new Compare();
-
-        /**
-         * Do not allow instantiation other than the unique {@link #INSTANCE}.
-         */
-        private Compare() {
-        }
-
-        /**
-         * Compares two collections of comparable objects.
-         */
-        @Override
-        public int compare(final Collection<T> c1, final Collection<T> c2) {
-            final Iterator<T> i1 = c1.iterator();
-            final Iterator<T> i2 = c2.iterator();
-            int c;
-            do {
-                final boolean h1 = i1.hasNext();
-                final boolean h2 = i2.hasNext();
-                if (!h1) return h2 ? -1 : 0;
-                if (!h2) return +1;
-                final T e1 = i1.next();
-                final T e2 = i2.next();
-                c = e1.compareTo(e2);
-            } while (c == 0);
-            return c;
-        }
-    };
-
-    /**
-     * Returns a comparator for lists of comparable elements. The first element of each list are
-     * {@linkplain Comparable#compareTo(Object) compared}. If one is <cite>greater than</cite> or
-     * <cite>less than</cite> the other, the result of that comparison is returned. Otherwise
-     * the second element are compared, and so on until either non-equal elements are found,
-     * or end-of-list are reached. In the later case, the shortest list is considered
-     * <cite>less than</cite> the longest one.
-     *
-     * <p>If both lists have the same length and equal elements in the sense of
-     * {@link Comparable#compareTo}, then the comparator returns 0.</p>
-     *
-     * @param  <T> The type of elements in both lists.
-     * @return The ordering between two lists.
-     *
-     * @category comparator
-     */
-    @SuppressWarnings("unchecked")
-    public static <T extends Comparable<T>> Comparator<List<T>> listComparator() {
-        return Compare.INSTANCE;
-    }
-
-    /**
-     * Returns a comparator for sorted sets of comparable elements. The first element of each set
-     * are {@linkplain Comparable#compareTo(Object) compared}. If one is <cite>greater than</cite>
-     * or <cite>less than</cite> the other, the result of that comparison is returned. Otherwise
-     * the second element are compared, and so on until either non-equal elements are found,
-     * or end-of-set are reached. In the later case, the smallest set is considered
-     * <cite>less than</cite> the largest one.
-     *
-     * {@note There is no method accepting an arbitrary <code>Set</code> or <code>Collection</code>
-     *        argument because this comparator makes sense only for collections having determinist
-     *        iteration order.}
-     *
-     * @param <T> The type of elements in both sets.
-     * @return The ordering between two sets.
-     *
-     * @category comparator
-     */
-    @SuppressWarnings("unchecked")
-    public static <T extends Comparable<T>> Comparator<SortedSet<T>> sortedSetComparator() {
-        return Compare.INSTANCE;
-    }
-
-    /**
-     * The comparator to be returned by {@link Collections#valueComparator()}.
-     */
-    private static final class ValueComparator<K,V extends Comparable<V>>
-            implements Comparator<Map.Entry<K,V>>, Serializable
-    {
-        /**
-         * For cross-version compatibility.
-         */
-        private static final long serialVersionUID = 807166038568740444L;
-
-        /**
-         * The unique instance. Can not be public because of parameterized types: we need a method
-         * for casting to the expected type. This is the same trick than the one used by the JDK
-         * in the {@link Collections#emptySet()} method for instance.
-         */
-        @SuppressWarnings("rawtypes")
-        static final ValueComparator INSTANCE = new ValueComparator();
-
-        /**
-         * Do not allow instantiation other than the unique {@link #INSTANCE}.
-         */
-        private ValueComparator() {
-        }
-
-        /**
-         * Compares the values of two entries.
-         */
-        @Override
-        public int compare(final Map.Entry<K,V> e1, final Map.Entry<K,V> e2) {
-            return e1.getValue().compareTo(e2.getValue());
-        }
-    }
-
-    /**
-     * Returns a comparator for map entries having comparable {@linkplain java.util.Map.Entry#getValue() values}.
-     * For any pair of entries {@code e1} and {@code e2}, this method performs the comparison as below:
-     *
-     * {@preformat java
-     *     return e1.getValue().compareTo(e2.getValue());
-     * }
-     *
-     * This comparator can be used as a complement to {@link SortedSet}. While {@code SortedSet}
-     * maintains keys ordering at all time, {@code valueComparator()} is typically used only at
-     * the end of a process in which the values are the numerical calculation results.
-     *
-     * @param <K> The type of keys in the map entries.
-     * @param <V> The type of values in the map entries.
-     * @return A comparator for the values of the given type.
-     *
-     * @category comparator
-     */
-    @SuppressWarnings("unchecked")
-    public static <K,V extends Comparable<V>> Comparator<Map.Entry<K,V>> valueComparator() {
-        return ValueComparator.INSTANCE;
     }
 
     /**

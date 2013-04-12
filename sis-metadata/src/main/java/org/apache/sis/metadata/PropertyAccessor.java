@@ -46,10 +46,10 @@ import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.xml.IdentifiedObject;
 
-import static org.apache.sis.util.collection.CollectionsExt.modifiableCopy;
-import static org.apache.sis.util.collection.CollectionsExt.hashMapCapacity;
-import static org.apache.sis.internal.util.Utilities.floatEpsilonEqual;
 import static org.apache.sis.metadata.PropertyComparator.*;
+import static org.apache.sis.internal.util.Utilities.floatEpsilonEqual;
+import static org.apache.sis.internal.util.CollectionsExt.modifiableCopy;
+import static org.apache.sis.util.collection.CollectionsExt.hashMapCapacity;
 
 
 /**

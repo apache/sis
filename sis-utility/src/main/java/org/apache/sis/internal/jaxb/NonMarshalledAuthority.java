@@ -27,7 +27,7 @@ import java.lang.reflect.Field;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.internal.simple.SimpleCitation;
-import org.apache.sis.util.collection.UnmodifiableArrayList;
+import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.xml.IdentifierSpace;

@@ -14,11 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.util.collection;
+package org.apache.sis.internal.util;
 
 import java.io.Serializable;
 import java.util.AbstractList;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.collection.CheckedContainer;
 
 // Related to JDK7
 import java.util.Objects;
@@ -37,8 +38,20 @@ import java.util.Objects;
  *     List<?> list = Collections.unmodifiableList(Arrays.asList(array));
  * }
  *
- * except that this class uses one less level of indirection. Despite that advantage being minor,
- * this class is defined because extensively used in the SIS library.
+ * except that this class uses one less level of indirection (which may be significant since
+ * unmodifiable lists are extensively used in SIS) and implements the {@link CheckedContainer}
+ * interface.
+ *
+ * {@section WARNING! Type safety hole}
+ * The {@link #getElementType()} return type is {@code Class<E>}, but its implementation actually
+ * returns {@code Class<? extends E>}. This contract violation is possible because Java arrays are
+ * covariant (at the contrary of collections). In order to avoid such contract violation, callers
+ * <strong>must</strong> ensure that the type of array elements in exactly {@code E}, not a subtype
+ * of {@code E}. This class has no way to verify that condition. This class is not in the public API
+ * for this reason.
+ *
+ * <p>Note that the public API, {@link org.apache.sis.util.collection.CollectionsExt#unmodifiableList(E[])},
+ * returns {@code List<? extends E>}, which is okay.</p>
  *
  * @param <E> The type of elements in the list.
  *
@@ -66,18 +79,27 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
      * <p>This constructor is for sub-classing only. Users should invoke the {@link #wrap(Object[])}
      * static method instead.</p>
      *
+     * {@section WARNING! Type safety hole}
+     * Callers <strong>must</strong> ensure that the type of array elements in exactly {@code E},
+     * not a subtype of {@code E}. See class javadoc for more information.
+     *
      * @param array The array to wrap.
      */
     @SafeVarargs
     protected UnmodifiableArrayList(final E... array) {
-        ArgumentChecks.ensureNonNull("array", array);
-        this.array = array;
+        this.array = Objects.requireNonNull(array);
     }
 
     /**
      * Creates a new instance wrapping the given array. A direct reference to the given array is
      * retained (i.e. the array is <strong>not</strong> cloned). Consequently the given array
      * shall not be modified after construction if the returned list is intended to be immutable.
+     *
+     * {@section WARNING! Type safety hole}
+     * Callers <strong>must</strong> ensure that the type of array elements in exactly {@code E},
+     * not a subtype of {@code E}. If the caller is okay with {@code List<? extends E>}, then (s)he
+     * should use {@link org.apache.sis.util.collection.CollectionsExt#unmodifiableList(E[])} instead.
+     * See class javadoc for more information.
      *
      * @param  <E> The type of elements in the list.
      * @param  array The array to wrap, or {@code null} if none.
@@ -94,6 +116,12 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
      * given array is retained (i.e. the array is <strong>not</strong> cloned). Consequently the
      * specified sub-region of the given array shall not be modified after construction if the
      * returned list is intended to be immutable.
+     *
+     * {@section WARNING! Type safety hole}
+     * Callers <strong>must</strong> ensure that the type of array elements in exactly {@code E},
+     * not a subtype of {@code E}. If the caller is okay with {@code List<? extends E>}, then (s)he
+     * should use {@link org.apache.sis.util.collection.CollectionsExt#unmodifiableList(E[])} instead.
+     * See class javadoc for more information.
      *
      * @param  <E>   The type of elements in the list.
      * @param  array The array to wrap.
@@ -120,8 +148,8 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
      * @return The type of elements in the list.
      */
     @Override
-    @SuppressWarnings("unchecked") // Safe if this instance was created safely with wrap(E[]).
     public Class<E> getElementType() {
+        // No @SuppressWarnings because this cast is really unsafe. See class javadoc.
         return (Class<E>) array.getClass().getComponentType();
     }
 
@@ -288,6 +316,10 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
 
         /**
          * Creates a new sublist.
+         *
+         * {@section WARNING! Type safety hole}
+         * Callers <strong>must</strong> ensure that the type of array elements in exactly {@code E},
+         * not a subtype of {@code E}. See {@link UnmodifiableArrayList} class javadoc for more information.
          */
         SubList(final E[] array, final int lower, final int size) {
             super(array);

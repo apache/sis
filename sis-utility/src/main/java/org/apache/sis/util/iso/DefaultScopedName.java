@@ -29,7 +29,7 @@ import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.collection.UnmodifiableArrayList;
+import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 
 
@@ -146,6 +146,7 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
         if (i != size) { // Paranoiac check.
             throw new ConcurrentModificationException(Errors.format(Errors.Keys.UnexpectedChange_1, "names"));
         }
+        // Following line is safe because 'parsedNames' type is <? extends LocalName>.
         parsedNames = UnmodifiableArrayList.wrap(locals);
     }
 
@@ -210,6 +211,7 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
         if (index != locals.length) { // Paranoiac check.
             throw new ConcurrentModificationException(Errors.format(Errors.Keys.UnexpectedChange_1, "tail"));
         }
+        // Following line is safe because 'parsedNames' type is <? extends LocalName>.
         parsedNames = UnmodifiableArrayList.wrap(locals);
         if (tail instanceof LocalName) {
             this.path = path;

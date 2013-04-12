@@ -21,7 +21,7 @@ import java.util.Iterator;
 import java.util.Collection;
 import java.util.IdentityHashMap;
 import org.opengis.util.CodeList;
-import org.apache.sis.util.collection.CollectionsExt;
+import org.apache.sis.internal.util.CollectionsExt;
 
 
 /**
