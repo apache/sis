@@ -18,7 +18,7 @@ package org.apache.sis.internal.jaxb.metadata;
 
 import javax.xml.bind.annotation.XmlElementRef;
 import org.opengis.referencing.ReferenceIdentifier;
-import org.apache.sis.metadata.iso.UnmodifiableIdentifier;
+import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
 
 
@@ -81,13 +81,13 @@ public final class RS_Identifier extends PropertyType<RS_Identifier, ReferenceId
      * @return The metadata to be marshalled.
      */
     @XmlElementRef
-    public UnmodifiableIdentifier getElement() {
+    public ImmutableIdentifier getElement() {
         if (skip()) return null;
         final ReferenceIdentifier metadata = this.metadata;
-        if (metadata instanceof UnmodifiableIdentifier) {
-            return (UnmodifiableIdentifier) metadata;
+        if (metadata instanceof ImmutableIdentifier) {
+            return (ImmutableIdentifier) metadata;
         } else {
-            return new UnmodifiableIdentifier(metadata);
+            return new ImmutableIdentifier(metadata);
         }
     }
 
@@ -96,7 +96,7 @@ public final class RS_Identifier extends PropertyType<RS_Identifier, ReferenceId
      *
      * @param metadata The unmarshalled metadata.
      */
-    public void setElement(final UnmodifiableIdentifier metadata) {
+    public void setElement(final ImmutableIdentifier metadata) {
         this.metadata = metadata;
     }
 }

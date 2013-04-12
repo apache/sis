@@ -16,6 +16,8 @@
  */
 package org.apache.sis.util;
 
+import org.opengis.util.InternationalString;
+
 
 /**
  * Interface of classes for which deprecated instances may exist. Deprecated instances exist in some
@@ -41,4 +43,14 @@ public interface Deprecable {
      * @return {@code true} if this instance is deprecated.
      */
     boolean isDeprecated();
+
+    /**
+     * If this instance is deprecated, the reason or the alternative to use.
+     * Otherwise, an optional free text.
+     *
+     * @return Comments about this instance, or {@code null} if none. Shall be the
+     *         reason for deprecation or the alternative to use if this instance
+     *         {@linkplain #isDeprecated() is deprecated}.
+     */
+    InternationalString getRemarks();
 }
