@@ -192,6 +192,22 @@ public final strictfp class RangeFormatTest extends TestCase {
     }
 
     /**
+     * Tests the {@link RangeFormat#format(Object, StringBuffer, FieldPosition)} method
+     * using the alternate format.
+     */
+    @Test
+    public void testAlternateFormat() {
+        format = new RangeFormat(Locale.CANADA);
+        minPos = new FieldPosition(RangeFormat.Field.MIN_VALUE);
+        maxPos = new FieldPosition(RangeFormat.Field.MAX_VALUE);
+        format.setAlternateForm(true);
+
+        assertEquals("[-10 … 20]", format(NumberRange.create(-10, true, 20, true)));
+        assertEquals("]-3 … 4[",   format(NumberRange.create( -3, false, 4, false)));
+        assertEquals("[2 … 8[",    format(NumberRange.create(  2, true,  8, false)));
+    }
+
+    /**
      * Tests the parsing method on ranges of numbers. This test fixes the type to
      * {@code Integer.class}.  A different test will let the parser determine the
      * type itself.

@@ -31,7 +31,7 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 import org.apache.sis.util.Version;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.collection.CollectionsExt;
+import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.jaxb.MarshalContext;
 
 
