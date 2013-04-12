@@ -16,9 +16,13 @@
  */
 package org.apache.sis.measure;
 
+import java.util.Formatter;
+import java.util.Formattable;
+import java.util.FormattableFlags;
 import java.io.Serializable;
 import javax.measure.unit.Unit;
 import net.jcip.annotations.Immutable;
+import org.apache.sis.internal.util.Utilities;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Numbers;
@@ -83,7 +87,7 @@ import java.util.Objects;
  * @see org.apache.sis.util.collection.RangeSet
  */
 @Immutable
-public class Range<E extends Comparable<? super E>> implements CheckedContainer<E>, Serializable {
+public class Range<E extends Comparable<? super E>> implements CheckedContainer<E>, Formattable, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -652,5 +656,32 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
             buffer.append(' ').append(unit);
         }
         return buffer.toString();
+    }
+
+    /**
+     * Formats this range using the provider formatter. This method is invoked when an
+     * {@code Range} object is formatted using the {@code "%s"} conversion specifier of
+     * {@link Formatter}. Users don't need to invoke this method explicitely.
+     *
+     * <p>If the alternate flags is present (as in {@code "%#s"}), then the range will
+     * be formatted using the {@linkplain RangeFormat#isAlternateForm() alternate form}
+     * for exclusive bounds.</p>
+     *
+     * @param formatter The formatter in which to format this angle.
+     * @param flags     {@link FormattableFlags#LEFT_JUSTIFY} for left alignment, or 0 for right alignment.
+     * @param width     Minimal number of characters to write, padding with {@code ' '} if necessary.
+     * @param precision Maximal number of characters to write, or -1 if no limit.
+     */
+    @Override
+    public void formatTo(final Formatter formatter, final int flags, final int width, int precision) {
+        final String value;
+        if (precision == 0) {
+            value = "";
+        } else {
+            final RangeFormat format = new RangeFormat(formatter.locale(), elementType);
+            format.setAlternateForm((flags & FormattableFlags.ALTERNATE) != 0);
+            value = format.format(this, new StringBuffer(), null).toString();
+        }
+        Utilities.formatTo(formatter, flags, width, precision, value);
     }
 }

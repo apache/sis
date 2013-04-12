@@ -16,6 +16,7 @@
  */
 package org.apache.sis.measure;
 
+import java.util.Locale;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -303,6 +304,19 @@ public final strictfp class RangeTest extends TestCase {
         assertEquals("(10 … 20)", new Range<>(Integer.class, 10, false, 20, false).toString());
         assertEquals("[10 … 20)", new Range<>(Integer.class, 10, true,  20, false).toString());
         assertEquals("(10 … 20]", new Range<>(Integer.class, 10, false, 20, true ).toString());
+    }
+
+    /**
+     * Tests the {@link Range#formatTo(Formatter, int, int, int)} method.
+     */
+    @Test
+    public void testFormatTo() {
+        final Range<Integer> range = new Range<>(Integer.class, 10, true,  20, false);
+        assertEquals("[10 … 20)",    String.format(Locale.CANADA, "%s", range));
+        assertEquals("[10 … 20)",    String.format(Locale.CANADA, "%4s", range));
+        assertEquals("[10 … 20)   ", String.format(Locale.CANADA, "%-12s", range));
+        assertEquals("   [10 … 20)", String.format(Locale.CANADA, "%12s", range));
+        assertEquals("[10 … 20[   ", String.format(Locale.CANADA, "%#-12s", range));
     }
 
     /**
