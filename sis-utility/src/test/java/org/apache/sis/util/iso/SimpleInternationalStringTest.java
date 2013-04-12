@@ -60,4 +60,17 @@ public final strictfp class SimpleInternationalStringTest extends TestCase {
         assertEquals(MESSAGE, after.toString(Locale.JAPANESE));
         validate(after);
     }
+
+    /**
+     * Tests the formatting in a {@code printf} statement.
+     */
+    @Test
+    public void testPrintf() {
+        final SimpleInternationalString toTest = new SimpleInternationalString(MESSAGE);
+        assertEquals(MESSAGE,                               String.format("%s", toTest));
+        assertEquals("    This is an unlocalized message.", String.format("%35s", toTest));
+        assertEquals("This is an unlocalized message.    ", String.format("%-35s", toTest));
+        assertEquals("This is a…",                          String.format("%1.10s", toTest));
+        assertEquals("This is a…  ",                        String.format("%-12.10s", toTest));
+    }
 }
