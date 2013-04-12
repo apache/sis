@@ -98,7 +98,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
      * {@section WARNING! Type safety hole}
      * Callers <strong>must</strong> ensure that the type of array elements in exactly {@code E},
      * not a subtype of {@code E}. If the caller is okay with {@code List<? extends E>}, then (s)he
-     * should use {@link org.apache.sis.util.collection.CollectionsExt#unmodifiableList(E[])} instead.
+     * should use {@link org.apache.sis.util.collection.Containers#unmodifiableList(E[])} instead.
      * See class javadoc for more information.
      *
      * @param  <E> The type of elements in the list.
@@ -120,7 +120,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
      * {@section WARNING! Type safety hole}
      * Callers <strong>must</strong> ensure that the type of array elements in exactly {@code E},
      * not a subtype of {@code E}. If the caller is okay with {@code List<? extends E>}, then (s)he
-     * should use {@link org.apache.sis.util.collection.CollectionsExt#unmodifiableList(E[])} instead.
+     * should use {@link org.apache.sis.util.collection.Containers#unmodifiableList(E[])} instead.
      * See class javadoc for more information.
      *
      * @param  <E>   The type of elements in the list.

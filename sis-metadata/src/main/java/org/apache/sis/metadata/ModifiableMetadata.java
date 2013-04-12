@@ -29,8 +29,8 @@ import org.apache.sis.internal.util.CheckedHashSet;
 import org.apache.sis.internal.util.CheckedArrayList;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-import static org.apache.sis.util.collection.CollectionsExt.isNullOrEmpty;
-import static org.apache.sis.util.collection.CollectionsExt.hashMapCapacity;
+import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
+import static org.apache.sis.util.collection.Containers.hashMapCapacity;
 import static org.apache.sis.internal.jaxb.MarshalContext.isMarshalling;
 
 

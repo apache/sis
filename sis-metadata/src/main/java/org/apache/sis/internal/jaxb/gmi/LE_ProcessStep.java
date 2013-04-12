@@ -21,7 +21,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.lineage.ProcessStep;
 import org.apache.sis.metadata.iso.lineage.DefaultProcessStep;
 
-import static org.apache.sis.util.collection.CollectionsExt.isNullOrEmpty;
+import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 
 
 /**

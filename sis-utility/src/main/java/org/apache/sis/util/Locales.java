@@ -29,7 +29,7 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.CharSequences.trimWhitespaces;
-import static org.apache.sis.util.collection.CollectionsExt.hashMapCapacity;
+import static org.apache.sis.util.collection.Containers.hashMapCapacity;
 
 
 /**

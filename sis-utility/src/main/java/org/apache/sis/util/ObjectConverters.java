@@ -18,7 +18,7 @@ package org.apache.sis.util;
 
 import java.util.Map;
 import java.util.Set;
-import org.apache.sis.util.collection.CollectionsExt;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.internal.converter.IdentityConverter;
 import org.apache.sis.internal.converter.SystemRegistry;
 
@@ -103,7 +103,7 @@ public final class ObjectConverters extends Static {
      * by invoking the {@link ObjectConverter#convert(Object)} method on the given converter.
      *
      * <p>This convenience method delegates to
-     * {@link CollectionsExt#derivedSet CollectionsExt.derivedSet(…)}.
+     * {@link Containers#derivedSet Containers.derivedSet(…)}.
      * See the javadoc of the above method for more information.
      *
      * @param  <S>       The type of elements in the storage (original) set.
@@ -114,10 +114,10 @@ public final class ObjectConverters extends Static {
      * @return A view over the {@code storage} set containing all elements converted by the given
      *         converter, or {@code null} if {@code storage} was null.
      *
-     * @see CollectionsExt#derivedSet(Set, ObjectConverter)
+     * @see Containers#derivedSet(Set, ObjectConverter)
      */
     public static <S,E> Set<E> derivedSet(final Set<S> storage, final ObjectConverter<S,E> converter) {
-        return CollectionsExt.derivedSet(storage, converter);
+        return Containers.derivedSet(storage, converter);
     }
 
     /**
@@ -126,7 +126,7 @@ public final class ObjectConverters extends Static {
      * by invoking the {@link ObjectConverter#convert(Object)} method on the given converters.
      *
      * <p>This convenience method delegates to
-     * {@link CollectionsExt#derivedMap CollectionsExt.derivedMap(…)}.
+     * {@link Containers#derivedMap Containers.derivedMap(…)}.
      * See the javadoc of the above method for more information.
      *
      * @param <SK>         The type of keys   in the storage map.
@@ -139,13 +139,13 @@ public final class ObjectConverters extends Static {
      * @return A view over the {@code storage} map containing all entries converted by the given
      *         converters, or {@code null} if {@code storage} was null.
      *
-     * @see CollectionsExt#derivedMap(Map, ObjectConverter, ObjectConverter)
+     * @see Containers#derivedMap(Map, ObjectConverter, ObjectConverter)
      */
     public static <SK,SV,K,V> Map<K,V> derivedMap(final Map<SK,SV> storage,
                                                   final ObjectConverter<SK,K> keyConverter,
                                                   final ObjectConverter<SV,V> valueConverter)
     {
-        return CollectionsExt.derivedMap(storage, keyConverter, valueConverter);
+        return Containers.derivedMap(storage, keyConverter, valueConverter);
     }
 
     /**
@@ -154,7 +154,7 @@ public final class ObjectConverters extends Static {
      * invoking the {@link ObjectConverter#convert(Object)} method on the given converter.
      *
      * <p>This convenience method delegates to
-     * {@link CollectionsExt#derivedMap CollectionsExt.derivedMap(…)}.
+     * {@link Containers#derivedMap Containers.derivedMap(…)}.
      * See the javadoc of the above method for more information.
      *
      * @param <SK>         The type of keys   in the storage map.
@@ -166,14 +166,14 @@ public final class ObjectConverters extends Static {
      * @return A view over the {@code storage} map containing all entries with the keys converted
      *         by the given converter, or {@code null} if {@code storage} was null.
      *
-     * @see CollectionsExt#derivedMap(Map, ObjectConverter, ObjectConverter)
+     * @see Containers#derivedMap(Map, ObjectConverter, ObjectConverter)
      */
     public static <SK,K,V> Map<K,V> derivedKeys(final Map<SK,V> storage,
                                                 final ObjectConverter<SK,K> keyConverter,
                                                 final Class<V> valueType)
     {
         ArgumentChecks.ensureNonNull("valueType", valueType);
-        return CollectionsExt.derivedMap(storage, keyConverter, identity(valueType));
+        return Containers.derivedMap(storage, keyConverter, identity(valueType));
     }
 
     /**
@@ -182,7 +182,7 @@ public final class ObjectConverters extends Static {
      * invoking the {@link ObjectConverter#convert(Object)} method on the given converter.
      *
      * <p>This convenience method delegates to
-     * {@link CollectionsExt#derivedMap CollectionsExt.derivedMap(…)}.
+     * {@link Containers#derivedMap Containers.derivedMap(…)}.
      * See the javadoc of the above method for more information.
      *
      * @param <K>          The type of keys in the storage and derived map.
@@ -194,13 +194,13 @@ public final class ObjectConverters extends Static {
      * @return A view over the {@code storage} map containing all entries with the values converted
      *         by the given converter, or {@code null} if {@code storage} was null.
      *
-     * @see CollectionsExt#derivedMap(Map, ObjectConverter, ObjectConverter)
+     * @see Containers#derivedMap(Map, ObjectConverter, ObjectConverter)
      */
     public static <K,SV,V> Map<K,V> derivedValues(final Map<K,SV> storage,
                                                   final Class<K> keyType,
                                                   final ObjectConverter<SV,V> valueConverter)
     {
         ArgumentChecks.ensureNonNull("keyType", keyType);
-        return CollectionsExt.derivedMap(storage, identity(keyType), valueConverter);
+        return Containers.derivedMap(storage, identity(keyType), valueConverter);
     }
 }

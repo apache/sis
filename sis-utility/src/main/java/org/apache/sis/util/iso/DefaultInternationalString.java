@@ -32,7 +32,7 @@ import org.apache.sis.util.Locales;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
-import static org.apache.sis.util.collection.CollectionsExt.isNullOrEmpty;
+import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 
 // Related to JDK7
 import java.util.Objects;

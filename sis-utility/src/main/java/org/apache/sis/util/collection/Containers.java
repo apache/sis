@@ -27,19 +27,20 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 
 /**
- * Static methods working on {@link Collection} objects.
- * This is an extension to the standard {@link Collections} utility class.
+ * Static methods working on {@link Collection} or {@link CheckedContainer} objects.
+ * Unless otherwise noted in the javadoc, every collections except {@link Map} returned
+ * by the methods in this class implement the {@code CheckedContainer} interface.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-3.00)
  * @version 0.3
  * @module
  */
-public final class CollectionsExt extends Static {
+public final class Containers extends Static {
     /**
      * Do not allow instantiation of this class.
      */
-    private CollectionsExt() {
+    private Containers() {
     }
 
     /**
@@ -89,6 +90,8 @@ public final class CollectionsExt extends Static {
      * @param  array The array to wrap, or {@code null} if none.
      * @return The given array wrapped in an unmodifiable list, or {@code null} if the given
      *         array was null.
+     *
+     * @see java.util.Arrays#asList(T[])
      */
     @SafeVarargs
     public static <E> List<? extends E> unmodifiableList(final E... array) {
