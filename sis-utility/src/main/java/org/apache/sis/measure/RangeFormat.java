@@ -249,6 +249,14 @@ public class RangeFormat extends Format {
     private final String infinity;
 
     /**
+     * {@code true} if {@code RangeFormat} shall use the alternate form at formatting time.
+     * This flag as no effect on parsing, since both forms are accepted.
+     *
+     * @see #isAlternateForm()
+     */
+    private boolean alternateForm;
+
+    /**
      * The type of the range components. Valid types are {@link Number}, {@link Angle},
      * {@link Date} or a subclass of those types. This value determines the kind of range
      * to be created by the parse method:
@@ -430,6 +438,29 @@ public class RangeFormat extends Format {
     }
 
     /**
+     * Returns {@code true} if this {@code RangeFormat} shall use the alternate form at
+     * formatting time. The alternate form expresses open intervals like {@code ]a…b[}
+     * instead of {@code (a…b)}.
+     *
+     * <p>This flag as no effect on parsing, since the parser accepts both forms.</p>
+     *
+     * @return {@code true} for using the alternate format instead of the default format.
+     */
+    public boolean isAlternateForm() {
+        return alternateForm;
+    }
+
+    /**
+     * Sets whether this {@code RangeFormat} shall use the alternate form at formatting time.
+     *
+     * @param alternateForm {@code true} for using the alternate format, or {@code false} for
+     *        using the default format.
+     */
+    public void setAlternateForm(final boolean alternateForm) {
+        this.alternateForm = alternateForm;
+    }
+
+    /**
      * Returns the {@code *_FIELD} constant for the given field position, or -1 if none.
      */
     private static int getField(final FieldPosition position) {
@@ -521,8 +552,11 @@ public class RangeFormat extends Format {
             }
             field = MAX_VALUE_FIELD;
         }
-        toAppendTo.appendCodePoint(isSingleton ? openSet :
-                range.isMinIncluded() ? openInclusive : openExclusive);
+        toAppendTo.appendCodePoint( // Select the char for the first condition to be true below:
+                isSingleton           ? openSet :
+                range.isMinIncluded() ? openInclusive :
+                alternateForm         ? openExclusiveAlt :
+                /* otherwise */         openExclusive);
         for (; field <= UNIT_FIELD; field++) {
             final Object value;
             switch (field) {
@@ -569,9 +603,12 @@ public class RangeFormat extends Format {
                     toAppendTo.append(' ').append(separator).append(' ');
                     break;
                 }
-                case MAX_VALUE_FIELD: {
-                    toAppendTo.appendCodePoint(isSingleton ? closeSet :
-                            range.isMaxIncluded() ? closeInclusive : closeExclusive);
+                case MAX_VALUE_FIELD: { // Select the char for the first condition to be true below:
+                    toAppendTo.appendCodePoint(
+                            isSingleton           ? closeSet :
+                            range.isMaxIncluded() ? closeInclusive :
+                            alternateForm         ? closeExclusiveAlt :
+                            /* otherwise */         closeExclusive);
                     break;
                 }
             }

@@ -57,13 +57,13 @@ public final strictfp class MarshallerPoolTest extends TestCase {
         /*
          * MarshallerPool should reset the properties to their initial state.
          */
-        pool.release(marshaller);
+        pool.recycle(marshaller);
         assertSame(marshaller, pool.acquireMarshaller());
         /*
          * Following should be null, but has been replaced by "" under the hood
          * for avoiding a NullPointerException in current JAXB implementation.
          */
         assertEquals("", marshaller.getProperty("com.sun.xml.bind.xmlHeaders"));
-        pool.release(marshaller);
+        pool.recycle(marshaller);
     }
 }

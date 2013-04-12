@@ -177,28 +177,8 @@ public abstract class AbstractInternationalString implements InternationalString
      *                  or -1 for no restriction.
      */
     @Override
-    public void formatTo(final Formatter formatter, int flags, final int width, int precision) {
-        final Locale locale = formatter.locale();
-        String value = toString(locale);
-        if (precision >= 0) {
-            if ((flags & FormattableFlags.UPPERCASE) != 0) {
-                value = value.toUpperCase(locale); // May change the length in some locales.
-                flags &= ~FormattableFlags.UPPERCASE;
-            }
-            final int length = value.length();
-            if (precision < length) {
-                try {
-                    precision = value.offsetByCodePoints(0, precision);
-                } catch (IndexOutOfBoundsException e) {
-                    precision = length;
-                    // Happen if the string has fewer code-points than 'precision'. We could
-                    // avoid the try-catch block by checking value.codePointCount(…), but it
-                    // would result in scanning the string twice.
-                }
-                value = value.substring(0, precision);
-            }
-        }
-        Utilities.formatTo(formatter, flags, width, value);
+    public void formatTo(final Formatter formatter, final int flags, final int width, final int precision) {
+        Utilities.formatTo(formatter, flags, width, precision, toString(formatter.locale()));
     }
 
     /**
