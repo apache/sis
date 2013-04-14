@@ -62,7 +62,7 @@ import static org.apache.sis.math.MathFunctions.isSameSign;
  *   <li>{@linkplain #GeneralEnvelope(Envelope) From a an other envelope} (copy constructor).</li>
  *   <li>{@linkplain #GeneralEnvelope(GeographicBoundingBox) From a geographic bounding box}.</li>
  *   <li>{@linkplain #GeneralEnvelope(CharSequence) From a character sequence}
- *       representing a {@code BBOX} in <cite>Well Known Text</cite> (WKT) format.</li>
+ *       representing a {@code BBOX} or a <cite>Well Known Text</cite> (WKT) format.</li>
  * </ul>
  *
  * {@section Spanning the anti-meridian of a Geographic CRS}
@@ -182,8 +182,8 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
 
     /**
      * Constructs a new envelope initialized to the values parsed from the given string in
-     * <cite>Well Known Text</cite> (WKT) format. The given string is typically a {@code BOX}
-     * element like below:
+     * {@code BOX} or <cite>Well Known Text</cite> (WKT) format. The given string is typically
+     * a {@code BOX} element like below:
      *
      * {@preformat wkt
      *     BOX(-180 -90, 180 90)
@@ -201,11 +201,11 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      *   <li>The coordinate having the highest dimension determines the dimension of this envelope.</li>
      * </ul>
      *
-     * This constructor does not check the consistency of the provided WKT. For example it doesn't
+     * This constructor does not check the consistency of the provided text. For example it does not
      * check that every points in a {@code LINESTRING} have the same dimension. However this
      * constructor ensures that the parenthesis are balanced, in order to catch some malformed WKT.
      *
-     * <p>The following examples can be parsed by this constructor in addition of the standard
+     * <p>The following examples can be parsed by this constructor in addition of the usual
      * {@code BOX} element. This constructor creates the bounding box of those geometries:</p>
      *
      * <ul>
@@ -217,8 +217,8 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * @param  wkt The {@code BOX}, {@code POLYGON} or other kind of element to parse.
      * @throws IllegalArgumentException If the given string can not be parsed.
      *
-     * @see Envelopes#parseWKT(String)
-     * @see Envelopes#toWKT(Envelope)
+     * @see Envelopes#fromWKT(String)
+     * @see Envelopes#toString(Envelope)
      */
     public GeneralEnvelope(final CharSequence wkt) throws IllegalArgumentException {
         super(wkt);

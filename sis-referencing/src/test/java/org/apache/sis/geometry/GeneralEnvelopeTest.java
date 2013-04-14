@@ -457,20 +457,20 @@ public final strictfp class GeneralEnvelopeTest extends TestCase {
         assertEquals(  40, envelope.getUpper(1), STRICT);
         validate(envelope);
 
-        assertEquals("BOX2D(6 10, 6 10)",     new GeneralEnvelope("POINT(6 10)").toString());
+        assertEquals("BOX(6 10, 6 10)",     new GeneralEnvelope("POINT(6 10)").toString());
         assertEquals("BOX3D(6 10 3, 6 10 3)", new GeneralEnvelope("POINT M [ 6 10 3 ] ").toString());
-        assertEquals("BOX2D(3 4, 20 50)",     new GeneralEnvelope("LINESTRING(3 4,10 50,20 25)").toString());
-        assertEquals("BOX2D(1 1, 6 5)",       new GeneralEnvelope(
+        assertEquals("BOX(3 4, 20 50)",     new GeneralEnvelope("LINESTRING(3 4,10 50,20 25)").toString());
+        assertEquals("BOX(1 1, 6 5)",       new GeneralEnvelope(
                 "MULTIPOLYGON(((1 1,5 1,5 5,1 5,1 1),(2 2, 3 2, 3 3, 2 3,2 2)),((3 3,6 2,6 4,3 3)))").toString());
-        assertEquals("BOX2D(3 6, 7 10)", new GeneralEnvelope("GEOMETRYCOLLECTION(POINT(4 6),LINESTRING(3 8,7 10))").toString());
+        assertEquals("BOX(3 6, 7 10)", new GeneralEnvelope("GEOMETRYCOLLECTION(POINT(4 6),LINESTRING(3 8,7 10))").toString());
         assertEquals(0, new GeneralEnvelope("BOX()").getDimension());
 
         try {
-            new GeneralEnvelope("BOX2D(3 4");
+            new GeneralEnvelope("BOX(3 4");
             fail("Parsing should fails because of missing parenthesis.");
         } catch (IllegalArgumentException e) {
             // This is the expected exception.
-            assertTrue(e.getMessage().contains("BOX2D"));
+            assertTrue(e.getMessage().contains("BOX"));
         }
         try {
             new GeneralEnvelope("LINESTRING(3 4,10 50),20 25)");

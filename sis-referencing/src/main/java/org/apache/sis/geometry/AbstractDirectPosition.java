@@ -214,7 +214,7 @@ public abstract class AbstractDirectPosition implements DirectPosition {
     }
 
     /**
-     * Implementation of the public {@link #toString()} and {@link Envelope2D#toString()} methods
+     * Implementation of the public {@link #toString()} and {@link DirectPosition2D#toString()} methods
      * for formatting a {@code POINT} element from a direct position in <cite>Well Known Text</cite>
      * (WKT) format.
      *
