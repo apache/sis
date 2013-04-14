@@ -54,6 +54,6 @@ public final class CRS extends Static {
             throws NoSuchAuthorityCodeException, FactoryException
     {
         ensureNonNull("code", code);
-        throw new UnsupportedOperationException("Not yet implemented.");
+        return null;
     }
 }
