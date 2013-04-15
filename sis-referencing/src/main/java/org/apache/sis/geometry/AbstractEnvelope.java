@@ -915,20 +915,26 @@ public abstract class AbstractEnvelope implements Envelope {
     }
 
     /**
-     * Formats this envelope in the <cite>Well Known Text</cite> (WKT) format.
+     * Formats this envelope as a "{@code BOX}" element.
      * The output is of the form "{@code BOX}<var>n</var>{@code D(}{@linkplain #getLowerCorner()
      * lower corner}{@code ,}{@linkplain #getUpperCorner() upper corner}{@code )}"
      * where <var>n</var> is the {@linkplain #getDimension() number of dimensions}.
-     * Example:
+     * The number of dimension is written only if different than 2.
+     *
+     * <p>Example:</p>
      *
      * {@preformat wkt
+     *   BOX(-90 -180, 90 180)
      *   BOX3D(-90 -180 0, 90 180 1)
      * }
+     *
+     * {@note The <code>BOX</code> element is not part of the standard <cite>Well Known Text</cite>
+     *        (WKT) format. However it is understood by many softwares, for example GDAL and PostGIS.}
      *
      * The string returned by this method can be {@linkplain GeneralEnvelope#GeneralEnvelope(CharSequence) parsed}
      * by the {@code GeneralEnvelope} constructor.
      *
-     * @return This envelope as a {@code BOX2D} or {@code BOX3D} (most typical dimensions) in WKT format.
+     * @return This envelope as a {@code BOX} or {@code BOX3D} (most typical dimensions) element.
      */
     @Override
     public String toString() {
@@ -936,12 +942,12 @@ public abstract class AbstractEnvelope implements Envelope {
     }
 
     /**
-     * Implementation of the public {@link #toString()} and {@link Envelopes#toWKT(Envelope)} methods
-     * for formatting a {@code BOX} element from an envelope in <cite>Well Known Text</cite> (WKT) format.
+     * Implementation of the public {@link #toString()} and {@link Envelopes#toString(Envelope)}
+     * methods for formatting a {@code BOX} element from an envelope.
      *
      * @param  envelope The envelope to format.
      * @param  isSimplePrecision {@code true} if every lower and upper corner values can be casted to {@code float}.
-     * @return The envelope as a {@code BOX2D} or {@code BOX3D} (most typical dimensions) in WKT format.
+     * @return This envelope as a {@code BOX} or {@code BOX3D} (most typical dimensions) element.
      *
      * @see GeneralEnvelope#GeneralEnvelope(CharSequence)
      * @see org.apache.sis.measure.CoordinateFormat
@@ -949,7 +955,10 @@ public abstract class AbstractEnvelope implements Envelope {
      */
     static String toString(final Envelope envelope, final boolean isSimplePrecision) {
         final int dimension = envelope.getDimension();
-        final StringBuilder buffer = new StringBuilder(64).append("BOX").append(dimension).append('D');
+        final StringBuilder buffer = new StringBuilder(64).append("BOX");
+        if (dimension != 2) {
+            buffer.append(dimension).append('D');
+        }
         if (dimension == 0) {
             buffer.append("()");
         } else {
