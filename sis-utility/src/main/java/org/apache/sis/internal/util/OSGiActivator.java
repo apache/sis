@@ -25,12 +25,15 @@ import org.osgi.framework.BundleListener;
 
 /**
  * Bundle activator for OSGi environment.
- * This class should not be used directly.
+ * This class is declared in the {@code maven-bundle-plugin} configuration in the
+ * {@code sis-utility/pom.xml} file. This class should not be used directly.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
  * @version 0.3
  * @module
+ *
+ * @see ServletListener
  */
 public final class OSGiActivator implements BundleActivator, BundleListener {
     /**
