@@ -196,7 +196,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Cloneabl
              box.getSouthBoundLatitude(),
              box.getEastBoundLongitude(),
              box.getNorthBoundLatitude());
-        if (false) try { // TODO: excluded for now because CRS.forCode is not yet implemented.
+        try {
             crs = CRS.forCode("CRS:84");
         } catch (FactoryException e) {
             // Should never happen since we asked for a CRS which should always be present.
@@ -966,16 +966,16 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Cloneabl
     }
 
     /**
-     * Formats this envelope in the <cite>Well Known Text</cite> (WKT) format.
-     * The output is of the form "{@code BOX2D(}{@linkplain #getLowerCorner()
+     * Formats this envelope as a "{@code BOX}" element.
+     * The output is of the form "{@code BOX(}{@linkplain #getLowerCorner()
      * lower corner}{@code ,}{@linkplain #getUpperCorner() upper corner}{@code )}".
      * Example:
      *
      * {@preformat wkt
-     *   BOX3D(-90 -180, 90 180)
+     *   BOX(-90 -180, 90 180)
      * }
      *
-     * @see Envelopes#toWKT(Envelope)
+     * @see Envelopes#toString(Envelope)
      */
     @Override
     public String toString() {

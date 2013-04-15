@@ -51,6 +51,8 @@ package org.apache.sis.util;
  * <tr><th colspan="2" class="hsep">OGC/ISO objects (metadata, referencing, geometries)</th></tr>
  * <tr><td>{@link org.apache.sis.metadata.iso.extent.Extents}</td>
  *     <td>Extract information from {@link org.opengis.metadata.extent.Extent} objects.</td></tr>
+ * <tr><td>{@link org.apache.sis.geometry.Envelopes}</td>
+ *     <td>Parse, format and transform {@linkplain org.opengis.geometry.Envelope envelopes}.</td></tr>
  *
  * <tr><th colspan="2" class="hsep">Input / Output (including CRS, XML, images)</th></tr>
  * <tr><td>{@link org.apache.sis.io.IO}</td>

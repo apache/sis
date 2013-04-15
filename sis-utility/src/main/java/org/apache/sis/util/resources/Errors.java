@@ -139,6 +139,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int EmptyDictionary = 54;
 
         /**
+         * Envelope must be at least two-dimensional and non-empty.
+         */
+        public static final int EmptyEnvelope2D = 88;
+
+        /**
          * Property named “{0}” shall not be empty.
          */
         public static final int EmptyProperty_1 = 55;

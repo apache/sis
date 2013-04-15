@@ -557,6 +557,7 @@ Apache SIS is a toolkit for describing location information, including points,
           <docencoding>${website.encoding}</docencoding>        <!-- Encoding of the generated HTML files. -->
           <charset>${website.encoding}</charset>                <!-- Encoding to declare in the HTML META tag. -->
           <locale>${website.locale}</locale>                    <!-- Locale for navigation bar, help file contents, etc. -->
+          <author>false</author>                                <!-- Excludes the authors text in the generated docs. -->
           <version>false</version>                              <!-- Excludes the version text in the generated docs. -->
           <nosince>true</nosince>                               <!-- Omits the "Since" sections associated with the since tags. -->
           <noqualifier>all</noqualifier>                        <!-- Omit qualifying package name before class names in output. -->
