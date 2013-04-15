@@ -112,6 +112,17 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
     private static volatile Field ordinatesField;
 
     /**
+     * Creates a new envelope using the given array of ordinate values. This constructor stores
+     * the given reference directly; it does <strong>not</strong> clone the given array. This is
+     * the desired behavior for proper working of {@link SubEnvelope}.
+     *
+     * @param ordinates The array of ordinate values to store directly (not cloned).
+     */
+    GeneralEnvelope(final double[] ordinates) {
+        super(ordinates);
+    }
+
+    /**
      * Constructs an envelope defined by two corners given as direct positions.
      * If at least one corner is associated to a CRS, then the new envelope will also
      * be associated to that CRS.
@@ -290,28 +301,30 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * (<var>x</var><sub>min</sub>, <var>y</var><sub>min</sub>, <var>z</var><sub>min</sub>,
      *  <var>x</var><sub>max</sub>, <var>y</var><sub>max</sub>, <var>z</var><sub>max</sub>)
      *
-     * @param ordinates The new ordinate values.
+     * @param corners Ordinates of the new lower corner followed by the new upper corner.
      */
-    public void setEnvelope(final double... ordinates) {
-        if ((ordinates.length & 1) != 0) {
-            throw new IllegalArgumentException(Errors.format(
-                    Errors.Keys.OddArrayLength_1, ordinates.length));
-        }
-        final int dimension = ordinates.length >>> 1;
-        final int expected  = getDimension();
-        if (dimension != expected) {
-            throw new MismatchedDimensionException(Errors.format(
-                    Errors.Keys.MismatchedDimension_3, "ordinates", expected, dimension));
-        }
-        doSetEnvelope(ordinates);
+    public void setEnvelope(final double... corners) {
+        verifyArrayLength(ordinates.length >>> 1, corners);
+        System.arraycopy(corners, 0, ordinates, 0, ordinates.length);
     }
 
     /**
-     * Sets the ordinate values after their validity has been verified.
-     * Must be overridden by {@link SubEnvelope}.
+     * Verifies that the given array of ordinate values has the expected length
+     * for the given number of dimensions.
+     *
+     * @param dimension The dimension of the envelope.
+     * @param corners The user-provided array of ordinate values.
      */
-    void doSetEnvelope(final double[] values) {
-        System.arraycopy(values, 0, ordinates, 0, ordinates.length);
+    static void verifyArrayLength(final int dimension, final double[] corners) {
+        if ((corners.length & 1) != 0) {
+            throw new IllegalArgumentException(Errors.format(
+                    Errors.Keys.OddArrayLength_1, corners.length));
+        }
+        final int d = corners.length >>> 1;
+        if (d != dimension) {
+            throw new MismatchedDimensionException(Errors.format(
+                    Errors.Keys.MismatchedDimension_3, "ordinates", dimension, d));
+        }
     }
 
     /**
@@ -883,6 +896,41 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
             }
         }
         return changed;
+    }
+
+    /**
+     * Returns a view over this envelope that encompass only some dimensions. The returned object is "live":
+     * changes applied on the original envelope is reflected in the sub-envelope view, and conversely.
+     *
+     * <p>This method is useful for querying and updating only some dimensions.
+     * For example in order to expand only the horizontal component of a four dimensional
+     * (<var>x</var>,<var>y</var>,<var>z</var>,<var>t</var>) envelope, one can use:</p>
+     *
+     * {@preformat
+     *     envelope.subEnvelope(0, 2).add(myPosition2D);
+     * }
+     *
+     * If the sub-envelope needs to be independent from the original envelope, use the following idiom:
+     *
+     * {@preformat
+     *     GeneralEnvelope copy = envelope.subEnvelope(0, 2).clone();
+     * }
+     *
+     * The sub-envelope is initialized with a {@code null} {@linkplain #getCoordinateReferenceSystem() CRS}.
+     * This method does not compute a sub-CRS because it may not be needed, or the sub-CRS may be already
+     * known by the caller.
+     *
+     * @param  beginIndex The index of the first valid ordinate value of the corners.
+     * @param  endIndex   The index after the last valid ordinate value of the corners.
+     * @return The sub-envelope of dimension {@code endIndex - beginIndex}.
+     * @throws IndexOutOfBoundsException If an index is out of bounds.
+     */
+    // Must be overridden in SubEnvelope
+    public GeneralEnvelope subEnvelope(final int beginIndex, final int endIndex) throws IndexOutOfBoundsException {
+        ensureValidIndexRange(ordinates.length >>> 1, beginIndex, endIndex);
+        return new SubEnvelope(ordinates, beginIndex, endIndex);
+        // Do check if we could return "this" as an optimization, in order to keep the
+        // method contract simpler (i.e. the returned envelope CRS is always null).
     }
 
     /**

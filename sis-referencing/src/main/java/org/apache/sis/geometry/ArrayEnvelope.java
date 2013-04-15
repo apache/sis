@@ -80,6 +80,17 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
     CoordinateReferenceSystem crs;
 
     /**
+     * Creates a new envelope using the given array of ordinate values. This constructor stores
+     * the given reference directly; it does <strong>not</strong> clone the given array. This is
+     * the desired behavior for proper working of {@link SubEnvelope}.
+     *
+     * @param ordinates The array of ordinate values to store directly (not cloned).
+     */
+    ArrayEnvelope(final double[] ordinates) {
+        this.ordinates = ordinates;
+    }
+
+    /**
      * Constructs an envelope defined by two corners given as direct positions.
      * If at least one corner is associated to a CRS, then the new envelope will also
      * be associated to that CRS.
@@ -315,7 +326,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
     }
 
     /**
-     * Returns the index of the first valid lower ordinate value in the {@link #ordinates} array.
+     * Returns the index of the first valid ordinate value of the lower corner in the {@link #ordinates} array.
      * This is always 0, unless this envelope is a {@link SubEnvelope}.
      *
      * <p>See {@link #endIndex()} for the list of methods that need to be also overridden
@@ -326,7 +337,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
     }
 
     /**
-     * Returns the index after the last valid lower ordinate value in the {@link #ordinates} array.
+     * Returns the index after the last valid ordinate value of the lower corner in the {@link #ordinates} array.
      * This is always {@code ordinates.length >>> 1}, unless this envelope is a {@link SubEnvelope}.
      *
      * <p>Unless otherwise indicated by a "{@code // Must be overridden in SubEnvelope}" comment, every methods
