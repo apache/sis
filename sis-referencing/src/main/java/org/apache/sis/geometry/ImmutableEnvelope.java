@@ -135,8 +135,8 @@ public final class ImmutableEnvelope extends ArrayEnvelope implements Serializab
 
     /**
      * Constructs a new envelope initialized to the values parsed from the given string in
-     * <cite>Well Known Text</cite> (WKT) format. The given string is typically a {@code BOX}
-     * element like below:
+     * {@code BOX} or <cite>Well Known Text</cite> (WKT) format. The given string is typically
+     * a {@code BOX} element like below:
      *
      * {@preformat wkt
      *     BOX(-180 -90, 180 90)
