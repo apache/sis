@@ -44,13 +44,14 @@ public final strictfp class SubEnvelopeTest extends GeneralEnvelopeTest {
     @Override
     GeneralEnvelope create(final double xmin, final double ymin, final double xmax, final double ymax) {
         final GeneralEnvelope envelope = new GeneralEnvelope(5);
-        envelope.setCoordinateReferenceSystem(WGS84);
         envelope.setEnvelope(1, 4, xmin, ymin, 5,
                              2, 7, xmax, ymax, 9);
         if (PENDING_NEXT_GEOAPI_RELEASE) {
             validate(envelope);
         }
-        return envelope.subEnvelope(2, 4);
+        final GeneralEnvelope sub = envelope.subEnvelope(2, 4);
+        sub.setCoordinateReferenceSystem(WGS84);
+        return sub;
     }
 
     /**
