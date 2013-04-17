@@ -117,6 +117,8 @@ public final class Containers extends Static {
      * @throws IndexOutOfBoundsException If the lower or upper value are out of bounds.
      */
     public static <E> List<? extends E> unmodifiableList(final E[] array, final int lower, final int upper) {
+        ArgumentChecks.ensureNonNull("array", array);
+        ArgumentChecks.ensureValidIndexRange(array.length, lower, upper);
         return UnmodifiableArrayList.wrap(array, lower, upper);
     }
 

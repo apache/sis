@@ -27,7 +27,7 @@ import static org.apache.sis.geometry.GeneralEnvelopeTest.STRICT;
 
 
 /**
- * Tests the {@link SubEnvelopeTest} class. This method leverage the tests written for
+ * Tests the {@link SubEnvelope} class. This method leverage the tests written for
  * {@link GeneralEnvelope}, but using a sub-envelope instead than a full envelope.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)

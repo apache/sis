@@ -379,17 +379,18 @@ public final strictfp class PropertyAccessorTest extends TestCase {
     public void testHashCode() {
         final DefaultCitation  instance = new DefaultCitation();
         final PropertyAccessor accessor = createPropertyAccessor();
+        final int              baseCode = Citation.class.hashCode();
         int hashCode = accessor.hashCode(instance);
-        assertEquals("Empty metadata.", 0, hashCode);
+        assertEquals("Empty metadata.", baseCode, hashCode);
 
         final InternationalString title = new SimpleInternationalString("Some title");
         instance.setTitle(title);
         hashCode = accessor.hashCode(instance);
-        assertEquals("Metadata with a single value.", title.hashCode(), hashCode);
+        assertEquals("Metadata with a single value.", baseCode + title.hashCode(), hashCode);
 
         final InternationalString alternateTitle = new SimpleInternationalString("An other title");
         instance.setAlternateTitles(singleton(alternateTitle));
         hashCode = accessor.hashCode(instance);
-        assertEquals("Metadata with two values.", title.hashCode() + Arrays.asList(alternateTitle).hashCode(), hashCode);
+        assertEquals("Metadata with two values.", baseCode + title.hashCode() + Arrays.asList(alternateTitle).hashCode(), hashCode);
     }
 }

@@ -990,16 +990,16 @@ final class PropertyAccessor {
     }
 
     /**
-     * Computes a hash code for the specified metadata. The hash code is defined as the
-     * sum of hash code values of all non-empty properties. This is a similar contract
-     * than {@link java.util.Set#hashCode()} and ensures that the hash code value is
-     * insensitive to the ordering of properties.
+     * Computes a hash code for the specified metadata. The hash code is defined as the sum
+     * of hash code values of all non-empty properties, plus the hash code of the interface.
+     * This is a similar contract than {@link java.util.Set#hashCode()} (except for the interface)
+     * and ensures that the hash code value is insensitive to the ordering of properties.
      *
      * @throws BackingStoreException If the implementation threw a checked exception.
      */
     public int hashCode(final Object metadata) throws BackingStoreException {
         assert type.isInstance(metadata) : metadata;
-        int code = 0;
+        int code = type.hashCode();
         for (int i=0; i<standardCount; i++) {
             final Object value = get(getters[i], metadata);
             if (!isNullOrEmpty(value)) {
