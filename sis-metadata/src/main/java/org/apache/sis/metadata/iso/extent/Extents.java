@@ -32,6 +32,8 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.getInclusion;
  * @since   0.3 (derived from geotk-2.2)
  * @version 0.3
  * @module
+ *
+ * @see org.apache.sis.geometry.Envelopes
  */
 public final class Extents extends Static {
     /**

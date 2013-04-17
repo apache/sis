@@ -42,12 +42,12 @@ public final strictfp class StatisticsFormatTest extends TestCase {
     @Test
     public void testFormattingWithoutHeader() {
         final Statistics statistics = Statistics.forSeries(null, null, null);
-        statistics.add(10);
-        statistics.add(15);
-        statistics.add(22);
-        statistics.add(17);
-        statistics.add(12);
-        statistics.add( 3);
+        statistics.accept(10);
+        statistics.accept(15);
+        statistics.accept(22);
+        statistics.accept(17);
+        statistics.accept(12);
+        statistics.accept( 3);
 
         final StatisticsFormat format = StatisticsFormat.getInstance(Locale.US);
         final String text = format.format(statistics);
@@ -68,12 +68,12 @@ public final strictfp class StatisticsFormatTest extends TestCase {
     @DependsOnMethod("testFormattingWithoutHeader")
     public void testFormattingWithBorder() {
         final Statistics statistics = Statistics.forSeries("Temperature", "∂T/∂t", "∂²T/∂t²");
-        statistics.add(10);
-        statistics.add(15);
-        statistics.add(22);
-        statistics.add(17);
-        statistics.add(12);
-        statistics.add( 3);
+        statistics.accept(10);
+        statistics.accept(15);
+        statistics.accept(22);
+        statistics.accept(17);
+        statistics.accept(12);
+        statistics.accept( 3);
 
         final StatisticsFormat format = StatisticsFormat.getInstance(Locale.US);
         format.setBorderWidth(1);

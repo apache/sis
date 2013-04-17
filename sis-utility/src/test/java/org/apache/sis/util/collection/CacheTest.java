@@ -192,7 +192,7 @@ public final strictfp class CacheTest extends TestCase {
             final int key = entry.getKey();
             final int value = entry.getValue();
             assertEquals(key*key, value);
-            statistics.add(key);
+            statistics.accept(key);
         }
         return statistics;
     }

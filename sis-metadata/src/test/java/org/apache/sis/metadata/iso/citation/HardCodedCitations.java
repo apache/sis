@@ -20,6 +20,7 @@ import java.util.Collection;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.PresentationForm;
+import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.Static;
 
@@ -29,6 +30,10 @@ import static java.util.Collections.singleton;
 
 /**
  * Hard-coded citation constants used for testing purpose only.
+ * We use those hard-coded constants instead than the ones defined in the
+ * {@link org.apache.sis.metadata.iso.citation.Citations} class in order
+ * to protect the test suite against any change in the definition of the
+ * above-cited public constants.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.4)
@@ -41,12 +46,12 @@ public final strictfp class HardCodedCitations extends Static {
      * organization. An {@linkplain Citation#getAlternateTitles() alternate title} for this
      * citation is "ISO" (according ISO 19115, alternate titles often contain abbreviations).
      */
-    public static final Citation ISO;
+    public static final DefaultCitation ISO;
     static {
-        final DefaultCitation c = new DefaultCitation();
-        c.setTitle(new SimpleInternationalString("International Organization for Standardization"));
+        final DefaultCitation c = new DefaultCitation("International Organization for Standardization");
         c.setAlternateTitles(singleton(new SimpleInternationalString("ISO")));
         c.setPresentationForms(singleton(PresentationForm.DOCUMENT_DIGITAL));
+        c.getIdentifiers().add(new DefaultIdentifier("ISO"));
         c.freeze();
         ISO = c;
     }
@@ -54,10 +59,9 @@ public final strictfp class HardCodedCitations extends Static {
     /**
      * The ISO 19115 standard.
      */
-    public static final Citation ISO_19115;
+    public static final DefaultCitation ISO_19115;
     static {
-        final DefaultCitation c = new DefaultCitation();
-        c.setTitle(new SimpleInternationalString("ISO 19115"));
+        final DefaultCitation c = new DefaultCitation("ISO 19115");
         c.setPresentationForms(singleton(PresentationForm.DOCUMENT_DIGITAL));
         c.freeze();
         ISO_19115 = c;
@@ -69,12 +73,12 @@ public final strictfp class HardCodedCitations extends Static {
      * "EPSG" (according ISO 19115, alternate titles often contain abbreviations). In
      * addition, this citation contains the "EPSG" {@linkplain Citation#getIdentifiers identifier}.
      */
-    public static final Citation EPSG;
+    public static final DefaultCitation EPSG;
     static {
-        final DefaultCitation c = new DefaultCitation();
-        c.setTitle(new SimpleInternationalString("European Petroleum Survey Group"));
+        final DefaultCitation c = new DefaultCitation("European Petroleum Survey Group");
         c.setAlternateTitles(singleton(new SimpleInternationalString("EPSG")));
         c.setPresentationForms(singleton(PresentationForm.TABLE_DIGITAL));
+        c.getIdentifiers().add(new DefaultIdentifier("EPSG"));
         c.freeze();
         EPSG = c;
     }
@@ -82,10 +86,9 @@ public final strictfp class HardCodedCitations extends Static {
     /**
      * The <a href="http://www.remotesensing.org/geotiff/geotiff.html">GeoTIFF</a> specification.
      */
-    public static final Citation GEOTIFF;
+    public static final DefaultCitation GEOTIFF;
     static {
-        final DefaultCitation c = new DefaultCitation();
-        c.setTitle(new SimpleInternationalString("GeoTIFF"));
+        final DefaultCitation c = new DefaultCitation("GeoTIFF");
         c.setPresentationForms(singleton(PresentationForm.DOCUMENT_DIGITAL));
         c.freeze();
         GEOTIFF = c;
@@ -98,15 +101,21 @@ public final strictfp class HardCodedCitations extends Static {
     }
 
     /**
-     * Asserts that the given identifiers are for the {@link HardCodedCitations#EPSG} constant.
+     * Asserts that the given {@linkplain Identifier#getCode() identifier code}
+     * is found in the collection of identifiers.
      *
+     * @param expected The expected identifier code (typically {@code "ISO"} or {@code "EPSG"}).
      * @param identifiers The collection to validate. Should be a collection of {@link Identifier}.
      */
-    public static void assertIdentifiersForEPSG(final Collection<?> identifiers) {
+    public static void assertIdentifiersFor(final String expected, final Collection<?> identifiers) {
         assertNotNull("identifiers", identifiers);
+        int count = 0;
         for (final Object id : identifiers) {
             assertInstanceOf("identifier", Identifier.class, id);
-            // TODO: check for EPSG identifiers here.
+            if (((Identifier) id).getCode().equals(expected)) {
+                count++;
+            }
         }
+        assertEquals("Unexpected amount of identifiers.", 1, count);
     }
 }

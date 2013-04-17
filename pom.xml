@@ -311,9 +311,10 @@ Apache SIS is a toolkit for describing location information, including points,
 
       <!-- Libraries (language, XML, network) -->
       <dependency>
-        <groupId>javax.servlet</groupId>
-        <artifactId>servlet-api</artifactId>
-        <version>2.4</version>
+        <groupId>javax</groupId>
+        <artifactId>javaee-api</artifactId>
+        <version>6.0</version>
+        <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>org.geonames</groupId>
