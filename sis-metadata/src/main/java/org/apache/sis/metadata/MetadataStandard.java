@@ -553,10 +553,10 @@ public class MetadataStandard {
     }
 
     /**
-     * Computes a hash code for the specified metadata. The hash code is defined as the
-     * sum of hash code values of all non-empty properties. This is a similar contract
-     * than {@link java.util.Set#hashCode()} and ensures that the hash code value is
-     * insensitive to the ordering of properties.
+     * Computes a hash code for the specified metadata. The hash code is defined as the sum
+     * of hash code values of all non-empty properties, plus the hash code of the interface.
+     * This is a similar contract than {@link java.util.Set#hashCode()} (except for the interface)
+     * and ensures that the hash code value is insensitive to the ordering of properties.
      *
      * @param  metadata The metadata object to compute hash code.
      * @return A hash code value for the specified metadata.

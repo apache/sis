@@ -40,6 +40,7 @@ import static org.apache.sis.util.StringBuilders.trimFractionalPart;
  * @version 0.3
  * @module
  *
+ * @see org.apache.sis.metadata.iso.extent.Extents
  * @see CRS
  */
 public final class Envelopes extends Static {
@@ -76,7 +77,7 @@ public final class Envelopes extends Static {
      *   <li>{@code GEOMETRYCOLLECTION(POINT(4 6),LINESTRING(3 8,7 10))}</li>
      * </ul>
      *
-     * See {@link GeneralEnvelope#GeneralEnvelope(String)} for more information about the
+     * See {@link GeneralEnvelope#GeneralEnvelope(CharSequence)} for more information about the
      * parsing rules.
      *
      * @param  wkt The {@code BOX}, {@code POLYGON} or other kind of element to parse.
@@ -87,7 +88,7 @@ public final class Envelopes extends Static {
      * @see CRS#fromWKT(String)
      * @see org.apache.sis.io.wkt
      */
-    public static Envelope fromWKT(final String wkt) throws FactoryException {
+    public static Envelope fromWKT(final CharSequence wkt) throws FactoryException {
         ensureNonNull("wkt", wkt);
         try {
             return new GeneralEnvelope(wkt);
@@ -108,13 +109,13 @@ public final class Envelopes extends Static {
      * {@note The <code>BOX</code> element is not part of the standard <cite>Well Known Text</cite>
      *        (WKT) format. However it is understood by many softwares, for example GDAL and PostGIS.}
      *
-     * The string returned by this method can be {@linkplain GeneralEnvelope#GeneralEnvelope(String)
+     * The string returned by this method can be {@linkplain GeneralEnvelope#GeneralEnvelope(CharSequence)
      * parsed} by the {@code GeneralEnvelope} constructor.
      *
      * @param  envelope The envelope to format.
      * @return The envelope as a {@code BOX} or {@code BOX3D} in WKT format.
      *
-     * @see #fromWKT(String)
+     * @see #fromWKT(CharSequence)
      * @see org.apache.sis.io.wkt
      */
     public static String toString(final Envelope envelope) {
@@ -126,7 +127,7 @@ public final class Envelopes extends Static {
      * (WKT) format. {@code POLYGON} can be used as an alternative to {@code BOX} when the element
      * needs to be considered as a standard WKT geometry.
      *
-     * <p>The string returned by this method can be {@linkplain GeneralEnvelope#GeneralEnvelope(String)
+     * <p>The string returned by this method can be {@linkplain GeneralEnvelope#GeneralEnvelope(CharSequence)
      * parsed} by the {@code GeneralEnvelope} constructor.</p>
      *
      * @param  envelope The envelope to format.

@@ -176,10 +176,10 @@ public final strictfp class PropertyAccessorTest extends TestCase {
         final Class<?> type = GeographicCRS.class;
         assertMappingEquals(new PropertyAccessor(HardCodedCitations.ISO, type, type),
         //……Declaring type……………………………Method……………………………………………JavaBeans……………………………UML identifier………………Sentence…………………………………Type…………………………………………………………
-/*Required*/GeographicCRS.class,    "getCoordinateSystem", "coordinateSystem", "coordinateSystem", "Coordinate system",  EllipsoidalCS.class,       // Covariant return type
+            GeographicCRS.class,    "getCoordinateSystem", "coordinateSystem", "coordinateSystem", "Coordinate system",  EllipsoidalCS.class,       // Covariant return type
             GeodeticCRS.class,      "getDatum",            "datum",            "datum",            "Datum",              GeodeticDatum.class,       // Covariant return type
             IdentifiedObject.class, "getName",             "name",             "name",             "Name",               ReferenceIdentifier.class,
-/*Optional*/IdentifiedObject.class, "getAlias",            "alias",            "alias",            "Alias",              GenericName[].class,
+            IdentifiedObject.class, "getAlias",            "alias",            "alias",            "Alias",              GenericName[].class,
             ReferenceSystem.class,  "getDomainOfValidity", "domainOfValidity", "domainOfValidity", "Domain of validity", Extent.class,
             IdentifiedObject.class, "getIdentifiers",      "identifiers",      "identifier",       "Identifiers",        ReferenceIdentifier[].class,
             IdentifiedObject.class, "getRemarks",          "remarks",          "remarks",          "Remarks",            InternationalString.class,
@@ -203,23 +203,23 @@ public final strictfp class PropertyAccessorTest extends TestCase {
     @Test
     @DependsOnMethod("testConstructor")
     public void testGet() {
-        final Citation         citation = HardCodedCitations.ISO;
+        final DefaultCitation  instance = HardCodedCitations.ISO;
         final PropertyAccessor accessor = createPropertyAccessor();
 
         // Singleton value (not a collection)
-        final Object title = accessor.get(accessor.indexOf("title", true), citation);
+        final Object title = accessor.get(accessor.indexOf("title", true), instance);
         assertInstanceOf("title", InternationalString.class, title);
-        assertEquals("International Organization for Standardization", title.toString());
+        assertEquals("title", "International Organization for Standardization", title.toString());
 
         // Collection of InternationalStrings
-        final Object alternateTitles = accessor.get(accessor.indexOf("alternateTitles", true), citation);
+        final Object alternateTitles = accessor.get(accessor.indexOf("alternateTitles", true), instance);
         assertInstanceOf("alternateTitles", Collection.class, alternateTitles);
-        assertEquals("ISO", getSingleton((Collection<?>) alternateTitles).toString());
+        assertEquals("alternateTitles", "ISO", getSingleton((Collection<?>) alternateTitles).toString());
 
         // Collection of Identifiers
-        final Object identifiers = accessor.get(accessor.indexOf("identifiers", true), citation);
+        final Object identifiers = accessor.get(accessor.indexOf("identifiers", true), instance);
         assertInstanceOf("identifiers", Collection.class, identifiers);
-        HardCodedCitations.assertIdentifiersForEPSG((Collection<?>) identifiers);
+        HardCodedCitations.assertIdentifiersFor("ISO", (Collection<?>) identifiers);
     }
 
     /**
@@ -229,24 +229,22 @@ public final strictfp class PropertyAccessorTest extends TestCase {
     @Test
     @DependsOnMethod("testGet")
     public void testSet() {
-        final Citation         citation = new DefaultCitation();
+        final DefaultCitation  instance = new DefaultCitation();
         final PropertyAccessor accessor = createPropertyAccessor();
-        {
-            final Object newValue = new SimpleInternationalString("Some title");
-            final int    index    = accessor.indexOf("title", true);
-            final Object oldValue = accessor.set(index, citation, newValue, true);
-            assertNull(oldValue);
-            assertSame(newValue, accessor.get(index, citation));
-            assertSame(newValue, citation.getTitle());
-        }
-        if (false) { // TODO
-            final Object newValue = "Some ISBN code";
-            final int    index    = accessor.indexOf("ISBN", true);
-            final Object oldValue = accessor.set(index, citation, newValue, true);
-            assertNull(oldValue);
-            assertSame(newValue, accessor.get(index, citation));
-            assertSame(newValue, citation.getISBN());
-        }
+        Object newValue;
+        int index;
+
+        newValue = new SimpleInternationalString("Some title");
+        index = accessor.indexOf("title", true);
+        assertNull("title", accessor.set(index, instance, newValue, true));
+        assertSame("title", newValue, accessor.get(index, instance));
+        assertSame("title", newValue, instance.getTitle());
+
+        newValue = "Some ISBN code";
+        index = accessor.indexOf("ISBN", true);
+        assertNull("ISBN", accessor.set(index, instance, newValue, true));
+        assertSame("ISBN", newValue, accessor.get(index, instance));
+        assertSame("ISBN", newValue, instance.getISBN());
     }
 
     /**
@@ -258,16 +256,16 @@ public final strictfp class PropertyAccessorTest extends TestCase {
     @DependsOnMethod("testSet")
     public void testSetWithConversion() {
         final String           expected = "Some title";
-        final Citation         citation = new DefaultCitation();
+        final DefaultCitation  instance = new DefaultCitation();
         final PropertyAccessor accessor = createPropertyAccessor();
         final int              index    = accessor.indexOf("title", true);
-        final Object           oldValue = accessor.set(index, citation, expected, true);
-        final Object           value    = accessor.get(index, citation);
+        final Object           oldValue = accessor.set(index, instance, expected, true);
+        final Object           value    = accessor.get(index, instance);
 
-        assertNull(oldValue);
+        assertNull("title", oldValue);
         assertInstanceOf("title", InternationalString.class, value);
-        assertSame(expected, value.toString());
-        assertSame(value, citation.getTitle());
+        assertSame("title", expected, value.toString());
+        assertSame("title", value, instance.getTitle());
     }
 
     /**
@@ -299,27 +297,27 @@ public final strictfp class PropertyAccessorTest extends TestCase {
         final String              text2    = "Yet an other title";
         final InternationalString title1   = new SimpleInternationalString(text1);
         final InternationalString title2   = new SimpleInternationalString(text2);
-        final Citation            citation = new DefaultCitation();
+        final DefaultCitation     instance = new DefaultCitation();
         final PropertyAccessor    accessor = createPropertyAccessor();
-        final int                 index    = accessor.indexOf("alternateTitle", true);
+        final int                 index    = accessor.indexOf("alternateTitles", true);
 
         // Insert the first value. Old collection shall be empty.
-        Object oldValue = accessor.set(index, citation, conversion ? text1 : title1, true);
-        assertInstanceOf("alternateTitle", Collection.class, oldValue);
-        assertTrue(((Collection<?>) oldValue).isEmpty());
+        Object oldValue = accessor.set(index, instance, conversion ? text1 : title1, true);
+        assertInstanceOf("alternateTitles", Collection.class, oldValue);
+        assertTrue("alternateTitles", ((Collection<?>) oldValue).isEmpty());
 
         // Insert the second value. Old collection shall contains the first value.
-        oldValue = accessor.set(index, citation, conversion ? text2 : title2, true);
-        assertInstanceOf("alternateTitle", Collection.class, oldValue);
+        oldValue = accessor.set(index, instance, conversion ? text2 : title2, true);
+        assertInstanceOf("alternateTitles", Collection.class, oldValue);
         oldValue = getSingleton((Collection<?>) oldValue);
-        assertSame(text1, oldValue.toString());
+        assertSame("alternateTitles", text1, oldValue.toString());
         if (!conversion) {
             assertSame("InternationalString should have been stored as-is.", title1, oldValue);
         }
 
         // Check final collection content.
         final List<InternationalString> expected = Arrays.asList(title1, title2);
-        assertEquals(expected, accessor.get(index, citation));
+        assertEquals("alternateTitles", expected, accessor.get(index, instance));
     }
 
     /**
@@ -327,8 +325,8 @@ public final strictfp class PropertyAccessorTest extends TestCase {
      */
     @Test
     public void testShallowCopy() {
-        final Citation original = HardCodedCitations.ISO;
-        final Citation copy = new DefaultCitation();
+        final DefaultCitation original = HardCodedCitations.ISO;
+        final DefaultCitation copy = new DefaultCitation();
         final PropertyAccessor accessor = createPropertyAccessor();
         assertTrue("The copy should have modified the destination.", accessor.shallowCopy(original, copy));
         assertEquals("International Organization for Standardization", copy.getTitle().toString());
@@ -346,35 +344,29 @@ public final strictfp class PropertyAccessorTest extends TestCase {
      * Tests the equals methods.
      */
     @Test
-    @DependsOnMethod("testShallowCopy")
     public void testEquals() {
-        Citation citation = HardCodedCitations.EPSG;
+        DefaultCitation citation = HardCodedCitations.EPSG;
         final PropertyAccessor accessor = createPropertyAccessor();
         assertFalse(accessor.equals(citation, HardCodedCitations.GEOTIFF, ComparisonMode.STRICT));
         assertTrue (accessor.equals(citation, HardCodedCitations.EPSG,    ComparisonMode.STRICT));
-        /*
-         * Same test than above, but on a copy of the EPSG constant.
-         */
-        citation = new DefaultCitation();
-        assertTrue (accessor.shallowCopy(HardCodedCitations.EPSG, citation));
+
+        // Same test than above, but on a copy of the EPSG constant.
+        citation = new DefaultCitation(HardCodedCitations.EPSG);
         assertFalse(accessor.equals(citation, HardCodedCitations.GEOTIFF, ComparisonMode.STRICT));
         assertTrue (accessor.equals(citation, HardCodedCitations.EPSG,    ComparisonMode.STRICT));
-        /*
-         * Identifiers shall be stored in different collection instances with equal content.
-         */
+
+        // Identifiers shall be stored in different collection instances with equal content.
         final int    index  = accessor.indexOf("identifiers", true);
         final Object source = accessor.get(index, HardCodedCitations.EPSG);
         final Object target = accessor.get(index, citation);
         assertInstanceOf("identifiers", Collection.class, source);
         assertInstanceOf("identifiers", Collection.class, target);
-//      assertNotSame(source, target);  // TODO: require non-empty collection.
-        assertEquals (source, target);
-        HardCodedCitations.assertIdentifiersForEPSG((Collection<?>) source);
-        HardCodedCitations.assertIdentifiersForEPSG((Collection<?>) target);
-        /*
-         * Set the identifiers to null, which should clear the collection.
-         */
-// TODO assertEquals("Expected the previous value.", source, accessor.set(index, citation, null, true));
+        assertNotSame("Distinct objects shall have distinct collections.", source, target);
+        assertEquals ("The two collections shall have the same content.",  source, target);
+        HardCodedCitations.assertIdentifiersFor("EPSG", (Collection<?>) target);
+
+        // Set the identifiers to null, which should clear the collection.
+        assertEquals("Expected the previous value.", source, accessor.set(index, citation, null, true));
         final Object value = accessor.get(index, citation);
         assertNotNull("Should have replaced null by an empty collection.", value);
         assertTrue("Should have replaced null by an empty collection.", ((Collection<?>) value).isEmpty());
@@ -385,19 +377,20 @@ public final strictfp class PropertyAccessorTest extends TestCase {
      */
     @Test
     public void testHashCode() {
-        final DefaultCitation citation = new DefaultCitation();
+        final DefaultCitation  instance = new DefaultCitation();
         final PropertyAccessor accessor = createPropertyAccessor();
-        int hashCode = accessor.hashCode(citation);
-        assertEquals("Empty metadata.", 0, hashCode);
+        final int              baseCode = Citation.class.hashCode();
+        int hashCode = accessor.hashCode(instance);
+        assertEquals("Empty metadata.", baseCode, hashCode);
 
         final InternationalString title = new SimpleInternationalString("Some title");
-        citation.setTitle(title);
-        hashCode = accessor.hashCode(citation);
-        assertEquals("Metadata with a single value.", title.hashCode(), hashCode);
+        instance.setTitle(title);
+        hashCode = accessor.hashCode(instance);
+        assertEquals("Metadata with a single value.", baseCode + title.hashCode(), hashCode);
 
         final InternationalString alternateTitle = new SimpleInternationalString("An other title");
-        citation.setAlternateTitles(singleton(alternateTitle));
-        hashCode = accessor.hashCode(citation);
-        assertEquals("Metadata with two values.", title.hashCode() + Arrays.asList(alternateTitle).hashCode(), hashCode);
+        instance.setAlternateTitles(singleton(alternateTitle));
+        hashCode = accessor.hashCode(instance);
+        assertEquals("Metadata with two values.", baseCode + title.hashCode() + Arrays.asList(alternateTitle).hashCode(), hashCode);
     }
 }

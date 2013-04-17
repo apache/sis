@@ -115,6 +115,9 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
      * specified sub-region of the given array shall not be modified after construction if the
      * returned list is intended to be immutable.
      *
+     * <p>This method does not check the validity of the given index.
+     * The check must be done by the caller.</p>
+     *
      * {@section WARNING! Type safety hole}
      * Callers <strong>must</strong> ensure that the type of array elements in exactly {@code E},
      * not a subtype of {@code E}. If the caller is okay with {@code List<? extends E>}, then (s)he
@@ -126,13 +129,10 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
      * @param  lower Low endpoint (inclusive) of the sublist.
      * @param  upper High endpoint (exclusive) of the sublist.
      * @return The given array wrapped in an unmodifiable list.
-     * @throws IndexOutOfBoundsException If the lower or upper value are out of bounds.
      */
     public static <E> UnmodifiableArrayList<E> wrap(final E[] array, final int lower, final int upper)
             throws IndexOutOfBoundsException
     {
-        ArgumentChecks.ensureNonNull("array", array);
-        ArgumentChecks.ensureValidIndexRange(array.length, lower, upper);
         if (lower == 0 && upper == array.length) {
             return new UnmodifiableArrayList<E>(array);
         }
