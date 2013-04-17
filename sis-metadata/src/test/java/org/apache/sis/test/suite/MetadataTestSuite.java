@@ -30,7 +30,7 @@ import org.junit.runners.Suite;
  */
 @Suite.SuiteClasses({
     org.apache.sis.internal.metadata.MetadataUtilitiesTest.class,
-    org.apache.sis.metadata.PropertyDescriptorTest.class,
+    org.apache.sis.metadata.PropertyInformationTest.class,
     org.apache.sis.metadata.PropertyAccessorTest.class,
     org.apache.sis.metadata.MetadataStandardTest.class
 })
