@@ -69,7 +69,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @version 0.3
  * @module
  */
-@DependsOn(PropertyDescriptorTest.class)
+@DependsOn(PropertyInformationTest.class)
 public final strictfp class PropertyAccessorTest extends TestCase {
     /**
      * Creates a new property accessor for the {@link DefaultCitation} class.
@@ -191,10 +191,10 @@ public final strictfp class PropertyAccessorTest extends TestCase {
      */
     @Test
     @DependsOnMethod("testConstructor")
-    public void testDescriptor() {
+    public void testInformation() {
         final PropertyAccessor accessor = createPropertyAccessor();
-        PropertyDescriptorTest.validateTitle           (accessor.descriptor(accessor.indexOf("title",            true)));
-        PropertyDescriptorTest.validatePresentationForm(accessor.descriptor(accessor.indexOf("presentationForm", true)));
+        PropertyInformationTest.validateTitle           (accessor.information(accessor.indexOf("title",            true)));
+        PropertyInformationTest.validatePresentationForm(accessor.information(accessor.indexOf("presentationForm", true)));
     }
 
     /**
