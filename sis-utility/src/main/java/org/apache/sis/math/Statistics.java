@@ -54,7 +54,7 @@ import java.util.Objects;
  *
  * <p>An instance of {@code Statistics} is initially empty: the {@linkplain #count() count} of
  * values is set to zero, and all above-cited statistical values are set to {@link Double#NaN NaN}.
- * The statistics are updated every time an {@link #add(double)} method is invoked with a non-NaN
+ * The statistics are updated every time an {@link #accept(double)} method is invoked with a non-NaN
  * value.</p>
  *
  * {@section Examples}
@@ -64,7 +64,7 @@ import java.util.Objects;
  * {@preformat java
  *     Statistics stats = new Statistics("y");
  *     for (int i=0; i<numberOfValues; i++) {
- *         stats.add(f(i));
+ *         stats.accept(f(i));
  *     }
  *     System.out.println(stats);
  * }
@@ -77,7 +77,7 @@ import java.util.Objects;
  *     final double Δx = ...; // Put here the interval between x values
  *     Statistics stats = Statistics.forSeries("y", "∂y/∂x", "∂²y/∂x²");
  *     for (int i=0; i<numberOfValues; i++) {
- *         stats.add(f(x₀ + i*Δx));
+ *         stats.accept(f(x₀ + i*Δx));
  *     }
  *     stats.differences().scale(1/Δx);
  *     System.out.println(stats);
@@ -104,22 +104,22 @@ public class Statistics implements Cloneable, Serializable {
     private final InternationalString name;
 
     /**
-     * The minimal value given to the {@link #add(double)} method.
+     * The minimal value given to the {@link #accept(double)} method.
      */
     private double minimum = NaN;
 
     /**
-     * The maximal value given to the {@link #add(double)} method.
+     * The maximal value given to the {@link #accept(double)} method.
      */
     private double maximum = NaN;
 
     /**
-     * The sum of all values given to the {@link #add(double)} method.
+     * The sum of all values given to the {@link #accept(double)} method.
      */
     private double sum;
 
     /**
-     * The sum of square of all values given to the {@link #add(double)} method.
+     * The sum of square of all values given to the {@link #accept(double)} method.
      */
     private double squareSum;
 
@@ -136,12 +136,12 @@ public class Statistics implements Cloneable, Serializable {
     private transient double squareLowBits;
 
     /**
-     * Number of non-NaN values given to the {@link #add(double)} method.
+     * Number of non-NaN values given to the {@link #accept(double)} method.
      */
     private int count;
 
     /**
-     * Number of NaN values given to the {@link #add(double)} method.
+     * Number of NaN values given to the {@link #accept(double)} method.
      * Those value are ignored in the computation of all above values.
      */
     private int countNaN;
@@ -165,8 +165,8 @@ public class Statistics implements Cloneable, Serializable {
 
     /**
      * Constructs a new {@code Statistics} object which will also compute finite differences
-     * up to the given order. If the values to be given to the {@code add(…)} methods are the
-     * <var>y</var> values of some <var>y</var>=<var>f</var>(<var>x</var>) function for
+     * up to the given order. If the values to be given to the {@code accept(…)} methods are
+     * the <var>y</var> values of some <var>y</var>=<var>f</var>(<var>x</var>) function for
      * <var>x</var> values increasing or decreasing at a constant interval Δ<var>x</var>,
      * then the finite differences are proportional to discrete derivatives.
      *
@@ -245,23 +245,26 @@ public class Statistics implements Cloneable, Serializable {
      * {@link Double#NaN NaN} values increment the {@linkplain #countNaN() NaN count},
      * but are otherwise ignored.
      *
+     * {@note This method is named <code>accept</code> for compatibility with the
+     *        <code>java.util.function.DoubleConsumer</code> interface in JDK8.}
+     *
      * @param sample The sample value (may be NaN).
      *
-     * @see #add(long)
-     * @see #add(Statistics)
+     * @see #accept(long)
+     * @see #combine(Statistics)
      */
-    public void add(final double sample) {
+    public void accept(final double sample) {
         if (isNaN(sample)) {
             countNaN++;
         } else {
-            addReal(sample);
+            real(sample);
         }
     }
 
     /**
-     * Implementation of {@link #add(double)} for real (non-NaN) numbers.
+     * Implementation of {@link #accept(double)} for real (non-NaN) numbers.
      */
-    private void addReal(double sample) {
+    private void real(double sample) {
         // Two next lines use !(a >= b) instead than
         // (a < b) in order to take NaN in account.
         if (!(minimum <= sample)) minimum = sample;
@@ -282,25 +285,28 @@ public class Statistics implements Cloneable, Serializable {
     /**
      * Updates statistics for the specified integer sample value.
      * For very large integer values (greater than 2<sup>52</sup> in magnitude),
-     * this method may be more accurate than the {@link #add(double)} version.
+     * this method may be more accurate than the {@link #accept(double)} version.
+     *
+     * {@note This method is named <code>accept</code> for compatibility with the
+     *        <code>java.util.function.LongConsumer</code> interface in JDK8.}
      *
      * @param sample The sample value.
      *
-     * @see #add(double)
-     * @see #add(Statistics)
+     * @see #accept(double)
+     * @see #combine(Statistics)
      */
-    public void add(final long sample) {
-        addReal(sample);
+    public void accept(final long sample) {
+        real(sample);
     }
 
     /**
      * Updates statistics with all samples from the specified {@code stats}.
      * Invoking this method is equivalent (except for rounding errors) to invoking
-     * {@link #add(double) add} for all samples that were added to {@code stats}.
+     * {@link #accept(double) accept(…)} for all samples that were added to {@code stats}.
      *
      * @param stats The statistics to be added to {@code this}.
      */
-    public void add(final Statistics stats) {
+    public void combine(final Statistics stats) {
         ArgumentChecks.ensureNonNull("stats", stats);
 
         // "if (a < b)" is equivalent to "if (!isNaN(a) && a < b)".
@@ -321,7 +327,7 @@ public class Statistics implements Cloneable, Serializable {
      * Multiplies the statistics by the given factor. The given scale factory is also applied
      * recursively on the {@linkplain #differences() differences} statistics, if any.
      * Invoking this method transforms the statistics as if every values given to the
-     * {@code add(…)} had been first multiplied by the given factor.
+     * {@code accept(…)} had been first multiplied by the given factor.
      *
      * <p>This method is useful for computing discrete derivatives from the differences between
      * sample values. See {@link #differences()} or {@link #forSeries forSeries(…)} for more
@@ -423,7 +429,7 @@ public class Statistics implements Cloneable, Serializable {
     }
 
     /**
-     * Returns the standard deviation. If the sample values given to the {@code add(…)}
+     * Returns the standard deviation. If the sample values given to the {@code accept(…)}
      * methods have a uniform distribution, then the returned value should be close to
      * <code>sqrt({@linkplain #span() span}<sup>2</sup> / 12)</code>. If they have a
      * Gaussian distribution (which is the most common case), then the returned value
@@ -445,7 +451,7 @@ public class Statistics implements Cloneable, Serializable {
      * </table>
      *
      * @param allPopulation
-     *          {@code true} if sample values given to {@code add(…)} methods were the totality
+     *          {@code true} if sample values given to {@code accept(…)} methods were the totality
      *          of the population under study, or {@code false} if they were only a sampling.
      * @return  The standard deviation.
      */
@@ -455,7 +461,7 @@ public class Statistics implements Cloneable, Serializable {
 
     /**
      * Returns the statistics on the differences between sample values, or {@code null} if none.
-     * For example if the sample values given to the {@code add(…)} methods were <var>y₀</var>,
+     * For example if the sample values given to the {@code accept(…)} methods were <var>y₀</var>,
      * <var>y₁</var>, <var>y₂</var> and <var>y₃</var>, then this method returns statistics on
      * <var>y₁</var>-<var>y₀</var>, <var>y₂</var>-<var>y₁</var> and <var>y₃</var>-<var>y₂</var>.
      *
@@ -582,13 +588,13 @@ public class Statistics implements Cloneable, Serializable {
         private Statistics delta;
 
         /**
-         * Last value given to an {@link #add(double) add} method as
-         * a {@code double}, or {@link Double#NaN NaN} if none.
+         * Last value given to an {@link #accept(double)} method as
+         * a {@code double}, or {@link Double#NaN} if none.
          */
         private double last = NaN;
 
         /**
-         * Last value given to an {@link #add(long) add}
+         * Last value given to an {@link #accept(long)}
          * method as a {@code long}, or 0 if none.
          */
         private long lastAsLong;
@@ -632,31 +638,31 @@ public class Statistics implements Cloneable, Serializable {
          * Updates statistics for the specified sample value and its discrete derivatives.
          * The {@link #delta} statistics are updated with <code>sample - sample<sub>last</sub></code>
          * value, where <code>sample<sub>last</sub></code> is the value given to the previous call of
-         * an {@code add(…)} method.
+         * an {@code accept(…)} method.
          */
         @Override
-        public void add(final double sample) {
-            super.add(sample);
-            delta.add(sample - last);
+        public void accept(final double sample) {
+            super.accept(sample);
+            delta.accept(sample - last);
             last       = sample;
             lastAsLong = (long) sample;
         }
 
         /**
-         * Performs the same work than {@link #add(double)}, but with greater precision for
+         * Performs the same work than {@link #accept(double)}, but with greater precision for
          * very large integer values (greater than 2<sup>52</sup> in magnitude),
          */
         @Override
-        public void add(final long sample) {
-            super.add(sample);
+        public void accept(final long sample) {
+            super.accept(sample);
             if (last == (double) lastAsLong) {
                 // 'lastAsLong' may have more precision than 'last' since the cast to the
-                // 'double' type may loose some digits. Invoke the 'delta.add(long)' version.
-                delta.add(sample - lastAsLong);
+                // 'double' type may loose some digits. Invoke the 'delta.accept(long)' version.
+                delta.accept(sample - lastAsLong);
             } else {
                 // The sample value is either fractional, outside 'long' range,
-                // infinity or NaN. Invoke the 'delta.add(double)' version.
-                delta.add(sample - last);
+                // infinity or NaN. Invoke the 'delta.accept(double)' version.
+                delta.accept(sample - last);
             }
             last       = sample;
             lastAsLong = sample;
@@ -669,10 +675,10 @@ public class Statistics implements Cloneable, Serializable {
          *         {@code Statistics.Delta}.
          */
         @Override
-        public void add(final Statistics stats) throws ClassCastException {
+        public void combine(final Statistics stats) throws ClassCastException {
             ArgumentChecks.ensureNonNull("stats", stats);
-            delta.add(stats.differences());
-            super.add(stats);
+            delta.combine(stats.differences());
+            super.combine(stats);
             if (stats instanceof WithDelta) {
                 final WithDelta toAdd = (WithDelta) stats;
                 last       = toAdd.last;
