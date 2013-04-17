@@ -76,7 +76,7 @@ public final strictfp class StatisticsTest extends TestCase {
         final Random random = new Random(317780561); // See class javadoc.
         final Statistics statistics = new Statistics(null);
         for (int i=0; i<10000; i++) {
-            statistics.add(random.nextGaussian());
+            statistics.accept(random.nextGaussian());
         }
         assertEquals(0, statistics.countNaN());
         assertEquals(10000, statistics.count());
@@ -101,7 +101,7 @@ public final strictfp class StatisticsTest extends TestCase {
         final Random random = new Random(309080660);
         final Statistics statistics = new Statistics(null);
         for (int i=0; i<10000; i++) {
-            statistics.add(random.nextDouble()*range + lower);
+            statistics.accept(random.nextDouble()*range + lower);
         }
         assertEquals(0,      statistics.countNaN());
         assertEquals(10000,  statistics.count());
@@ -114,7 +114,7 @@ public final strictfp class StatisticsTest extends TestCase {
 
     /**
      * Same than {@link #testUniform()}, but on integer values.
-     * Used for testing {@link Statistics#add(long)}.
+     * Used for testing {@link Statistics#accept(long)}.
      */
     @Test
     public void testUniformUsingIntegers() {
@@ -128,7 +128,7 @@ public final strictfp class StatisticsTest extends TestCase {
         final Random random = new Random(309080660);
         final Statistics statistics = new Statistics(null);
         for (int i=0; i<10000; i++) {
-            statistics.add(random.nextInt(range) + lower);
+            statistics.accept(random.nextInt(range) + lower);
         }
         assertEquals(0,      statistics.countNaN());
         assertEquals(10000,  statistics.count());
@@ -174,15 +174,15 @@ public final strictfp class StatisticsTest extends TestCase {
             assertTrue("Possible misorder in offsetAndTolerancePairs", offset > 10);
             assertTrue("Possible misorder in offsetAndTolerancePairs", tolerance < 0.2);
             statistics.reset();
-            statistics.add(offset);
+            statistics.accept(offset);
             for (int i=0; i<10000; i++) {
-                statistics.add(random.nextDouble());
+                statistics.accept(random.nextDouble());
             }
             final double r = statistics.mean() - offset / statistics.count();
             final double expected = (tolerance != 0) ? 0.5 : 0;
             assertEquals(expected, r, tolerance);
 
-            statistics.add(-offset); // Accuracy will be better than in previous test.
+            statistics.accept(-offset); // Accuracy will be better than in previous test.
             assertEquals(expected, statistics.mean(), min(tolerance, 0.1));
         }
     }
@@ -204,10 +204,10 @@ public final strictfp class StatisticsTest extends TestCase {
                 } else {
                     value = random.nextGaussian() + 10*random.nextDouble();
                 }
-                global.add(value);
-                block.add(value);
+                global.accept(value);
+                block.accept(value);
             }
-            byBlock.add(block);
+            byBlock.combine(block);
             if (i == 0) {
                 assertEquals("Adding for the first time; should have the same amount of data.",   block,  byBlock);
                 assertEquals("Adding for the first time; should have got exactly the same data.", global, byBlock);
@@ -232,10 +232,10 @@ public final strictfp class StatisticsTest extends TestCase {
     @Test
     public void testSerialization() throws IOException {
         final Statistics statistics = new Statistics(null);
-        statistics.add(40);
-        statistics.add(10);
-        statistics.add(NaN);
-        statistics.add(20);
+        statistics.accept(40);
+        statistics.accept(10);
+        statistics.accept(NaN);
+        statistics.accept(20);
         final Statistics after = assertSerializedEquals(statistics);
         assertNotSame(statistics, after);
         assertEquals( 3,                 after.count());

@@ -78,7 +78,7 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
     private byte borderWidth;
 
     /**
-     * {@code true} if the sample values given to {@code Statistics.add(…)} methods were the
+     * {@code true} if the sample values given to {@code Statistics.accept(…)} methods were the
      * totality of the population under study, or {@code false} if they were only a sampling.
      *
      * @see #isForAllPopulation()
