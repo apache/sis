@@ -116,6 +116,8 @@ public final class Containers extends Static {
      * @throws IndexOutOfBoundsException If the lower or upper value are out of bounds.
      */
     public static <E> List<? extends E> unmodifiableList(final E[] array, final int lower, final int upper) {
+        ArgumentChecks.ensureNonNull("array", array);
+        ArgumentChecks.ensureValidIndexRange(array.length, lower, upper);
         return UnmodifiableArrayList.wrap(array, lower, upper);
     }
 
@@ -209,12 +211,12 @@ public final class Containers extends Static {
     }
 
     /**
-     * Returns the capacity to be given to the {@link HashMap#HashMap(int) HashMap}
+     * Returns the capacity to be given to the {@link java.util.HashMap#HashMap(int) HashMap}
      * constructor for holding the given number of elements. This method computes the capacity
      * for the default <cite>load factor</cite>, which is 0.75.
      *
-     * <p>The same calculation can be used for {@link LinkedHashMap} and
-     * {@link HashSet} as well, which are built on top of {@code HashMap}.</p>
+     * <p>The same calculation can be used for {@link java.util.LinkedHashMap} and
+     * {@link java.util.HashSet} as well, which are built on top of {@code HashMap}.</p>
      *
      * @param count The number of elements to be put into the hash map or hash set.
      * @return The minimal initial capacity to be given to the hash map constructor.
