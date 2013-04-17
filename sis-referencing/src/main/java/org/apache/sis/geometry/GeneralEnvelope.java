@@ -228,7 +228,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * @param  wkt The {@code BOX}, {@code POLYGON} or other kind of element to parse.
      * @throws IllegalArgumentException If the given string can not be parsed.
      *
-     * @see Envelopes#fromWKT(String)
+     * @see Envelopes#fromWKT(CharSequence)
      * @see Envelopes#toString(Envelope)
      */
     public GeneralEnvelope(final CharSequence wkt) throws IllegalArgumentException {
@@ -906,13 +906,13 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * For example in order to expand only the horizontal component of a four dimensional
      * (<var>x</var>,<var>y</var>,<var>z</var>,<var>t</var>) envelope, one can use:</p>
      *
-     * {@preformat
+     * {@preformat java
      *     envelope.subEnvelope(0, 2).add(myPosition2D);
      * }
      *
      * If the sub-envelope needs to be independent from the original envelope, use the following idiom:
      *
-     * {@preformat
+     * {@preformat java
      *     GeneralEnvelope copy = envelope.subEnvelope(0, 2).clone();
      * }
      *

@@ -16,7 +16,7 @@
 	<classpathentry kind="var" path="M2_REPO/org/geonames/georss-rome/0.9.8/georss-rome-0.9.8.jar"/>
 	<classpathentry kind="var" path="M2_REPO/rome/rome/0.9/rome-0.9.jar"/>
 	<classpathentry kind="var" path="M2_REPO/jdom/jdom/1.0/jdom-1.0.jar"/>
-	<classpathentry kind="var" path="M2_REPO/javax/servlet/servlet-api/2.4/servlet-api-2.4.jar"/>
+	<classpathentry kind="var" path="M2_REPO/javax/javaee-api/6.0/javaee-api-6.0.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="var" path="M2_REPO/org/opengis/geoapi/3.0.0/geoapi-3.0.0.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/opengis/geoapi-conformance/3.0.0/geoapi-conformance-3.0.0.jar"/>
