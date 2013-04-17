@@ -27,12 +27,12 @@ import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import org.apache.sis.metadata.iso.quality.AbstractCompleteness;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.opengis.test.Assert.*;
-import org.apache.sis.test.DependsOnMethod;
 
 
 /**
@@ -153,8 +153,9 @@ public final strictfp class MetadataStandardTest extends TestCase {
     }
 
     /**
-     * Tests {@link MetadataStandard#hashCode(Object)} using {@link HashSet}
-     * as the reference implementation for hash code values.
+     * Tests {@link MetadataStandard#hashCode(Object)} using {@link HashSet} as the reference
+     * implementation for computing hash code values. The hash code is defined as the sum of
+     * hash code values of all non-empty properties, plus the hash code of the interface.
      */
     @Test
     @DependsOnMethod("testMap")
@@ -164,6 +165,7 @@ public final strictfp class MetadataStandardTest extends TestCase {
         final Map<String,Object> map = std.asMap(instance,
                 KeyNamePolicy.JAVABEANS_PROPERTY, ValueExistencePolicy.NON_EMPTY);
         assertFalse(map.isEmpty()); // Actually 'testMap()' job, but verified for safety.
-        assertEquals("hashCode()", new HashSet<>(map.values()).hashCode(), std.hashCode(instance));
+        assertEquals("hashCode()", new HashSet<>(map.values()).hashCode() + Citation.class.hashCode(),
+                std.hashCode(instance));
     }
 }
