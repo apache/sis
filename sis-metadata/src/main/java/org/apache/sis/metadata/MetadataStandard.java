@@ -496,13 +496,13 @@ public class MetadataStandard {
      *
      * @see AbstractMetadata#asMap()
      */
-    public Map<String,Object> asMap(final Object metadata, final KeyNamePolicy keyPolicy,
+    public Map<String,Object> asValueMap(final Object metadata, final KeyNamePolicy keyPolicy,
             final ValueExistencePolicy valuePolicy) throws ClassCastException
     {
         ensureNonNull("metadata",    metadata);
         ensureNonNull("keyPolicy",   keyPolicy);
         ensureNonNull("valuePolicy", valuePolicy);
-        return new PropertyMap(metadata, getAccessor(metadata.getClass(), true), keyPolicy, valuePolicy);
+        return new ValueMap(metadata, getAccessor(metadata.getClass(), true), keyPolicy, valuePolicy);
     }
 
     /**

@@ -116,18 +116,18 @@ public final strictfp class MetadataStandardTest extends TestCase {
     }
 
     /**
-     * Tests the {@link MetadataStandard#asMap(Object, KeyNamePolicy, ValueExistencePolicy)} implementation.
-     * Note: this test duplicates {@link PropertyMapTest}, but is done here again as an integration test.
+     * Tests the {@link MetadataStandard#asValueMap(Object, KeyNamePolicy, ValueExistencePolicy)} implementation.
+     * Note: this test duplicates {@link ValueMapTest}, but is done here again as an integration test.
      */
     @Test
-    public void testMap() {
+    public void testValueMap() {
         final DefaultCitation instance = new DefaultCitation(HardCodedCitations.EPSG);
-        final Map<String,Object> map = MetadataStandard.ISO_19115.asMap(instance,
+        final Map<String,Object> map = MetadataStandard.ISO_19115.asValueMap(instance,
                 KeyNamePolicy.JAVABEANS_PROPERTY, ValueExistencePolicy.NON_EMPTY);
         assertFalse("The properties map shall not be empty.", map.isEmpty());
         assertEquals("Unexpected number of properties.", 4, map.size());
         /*
-         * Verify the set of keys in the PropertyMap.
+         * Verify the set of keys in the ValueMap.
          *
          * Note: the iterator order (and consequently, the order of elements in the following
          * string representation) is determined by the @XmlType(…) annotation and verified by
@@ -171,13 +171,13 @@ public final strictfp class MetadataStandardTest extends TestCase {
      * hash code values of all non-empty properties, plus the hash code of the interface.
      */
     @Test
-    @DependsOnMethod("testMap")
+    @DependsOnMethod("testValueMap")
     public void testHashCode() {
         final MetadataStandard std = MetadataStandard.ISO_19115;
         final DefaultCitation instance = HardCodedCitations.EPSG;
-        final Map<String,Object> map = std.asMap(instance,
+        final Map<String,Object> map = std.asValueMap(instance,
                 KeyNamePolicy.JAVABEANS_PROPERTY, ValueExistencePolicy.NON_EMPTY);
-        assertFalse(map.isEmpty()); // Actually 'testMap()' job, but verified for safety.
+        assertFalse(map.isEmpty()); // Actually 'testValueMap()' job, but verified for safety.
         assertEquals("hashCode()", new HashSet<>(map.values()).hashCode() + Citation.class.hashCode(),
                 std.hashCode(instance));
     }

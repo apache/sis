@@ -35,9 +35,9 @@ import java.util.Objects;
  * @version 0.3
  * @module
  *
- * @see MetadataStandard#asMap(Object, KeyNamePolicy, ValueExistencePolicy)
+ * @see MetadataStandard#asValueMap(Object, KeyNamePolicy, ValueExistencePolicy)
  */
-final class PropertyMap extends MetadataMap<Object> {
+final class ValueMap extends MetadataMap<Object> {
     /**
      * The metadata object to wrap.
      */
@@ -56,7 +56,7 @@ final class PropertyMap extends MetadataMap<Object> {
      * @param keyPolicy   Determines the string representation of keys in the map..
      * @param valuePolicy The behavior of this map toward null or empty values.
      */
-    PropertyMap(final Object metadata, final PropertyAccessor accessor,
+    ValueMap(final Object metadata, final PropertyAccessor accessor,
             final KeyNamePolicy keyPolicy, final ValueExistencePolicy valuePolicy)
     {
         super(accessor, keyPolicy);

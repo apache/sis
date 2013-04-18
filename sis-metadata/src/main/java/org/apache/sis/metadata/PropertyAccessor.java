@@ -632,7 +632,7 @@ final class PropertyAccessor {
      * copy the new collection in their existing instance.
      *
      * <p>If the given index is out of bounds, then this method does nothing and return {@code null}.
-     * We do that because the {@link PropertyMap#remove(Object)} method may invoke this method with
+     * We do that because the {@link ValueMap#remove(Object)} method may invoke this method with
      * an index of -1 if the {@link #indexOf(String, boolean)} method didn't found the property name.
      * However the given value will be silently discarded, so index out-of-bounds shall be used only
      * in the context of {@code remove} operations (this is not verified).</p>
