@@ -24,10 +24,13 @@ import java.util.Collection;
 import java.util.Iterator;
 import net.jcip.annotations.ThreadSafe;
 import org.opengis.metadata.citation.Citation;
+import org.opengis.metadata.ExtendedElementInformation;
+import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.TreeTable;
+import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.internal.util.SystemListener;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -417,6 +420,55 @@ public class MetadataStandard {
      */
     protected Class<?> getImplementation(final Class<?> type) {
         return null;
+    }
+
+    /**
+     * Returns information about a metadata type as {@link Map}. The returned map contains information
+     * inferred from the ISO names, the {@link org.opengis.annotation.Obligation} enumeration and the
+     * {@link org.apache.sis.measure.ValueRange} annotations.
+     *
+     * <p>In the particular case of Apache SIS implementation, all values in the information map
+     * additionally implement the following interfaces:</p>
+     * <ul>
+     *   <li>{@link ReferenceIdentifier} with the following properties:
+     *     <ul>
+     *       <li>The {@linkplain ReferenceIdentifier#getAuthority() authority} is this metadata standard {@linkplain #getCitation() citation}.</li>
+     *       <li>The {@linkplain ReferenceIdentifier#getCodeSpace() codespace} is the standard name of the interface that contain the property.</li>
+     *       <li>The {@linkplain ReferenceIdentifier#getCode() code} is the standard name of the property.</li>
+     *     </ul>
+     *   </li>
+     *   <li>{@link CheckedContainer} with the following properties:
+     *     <ul>
+     *       <li>The {@linkplain CheckedContainer#getElementType() element type} is the type of property values
+     *           as defined by {@link TypeValuePolicy#ELEMENT_TYPE}.</li>
+     *     </ul>
+     *   </li>
+     * </ul>
+     *
+     * In addition, for each map entry the value returned by {@link ExtendedElementInformation#getDomainValue()}
+     * may optionally be an instance of any of the following classes:
+     *
+     * <ul>
+     *   <li>{@link org.apache.sis.measure.NumberRange} if the valid values are constrained to some specific range.</li>
+     * </ul>
+     *
+     * @param  type The metadata interface or implementation class.
+     * @param  keyNames Determines the string representation of map keys.
+     * @return The restrictions that are violated by the given metadata instance,
+     *         or all restrictions if {@code metadata} is a {@link Class}.
+     * @throws ClassCastException if the given type doesn't implement a metadata
+     *         interface of the expected package.
+     */
+    public Map<String,ExtendedElementInformation> asInformationMap(Class<?> type,
+            final KeyNamePolicy keyNames) throws ClassCastException
+    {
+        ensureNonNull("type",     type);
+        ensureNonNull("keyNames", keyNames);
+        final Class<?> implementation = getImplementation(type);
+        if (implementation != null) {
+            type = implementation;
+        }
+        return new InformationMap(getAccessor(type, true), keyNames);
     }
 
     /**

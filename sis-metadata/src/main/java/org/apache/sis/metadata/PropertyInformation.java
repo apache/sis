@@ -16,6 +16,7 @@
  */
 package org.apache.sis.metadata;
 
+import java.util.Locale;
 import java.util.Collection;
 import java.util.Collections;
 import java.lang.reflect.Method;
@@ -40,7 +41,7 @@ import org.apache.sis.util.logging.Logging;
  * Description of a metadata property inferred from Java reflection.
  * For a given metadata instances (typically an {@link AbstractMetadata} subclasses,
  * but other types are allowed), instances of {@code PropertyInformation} are obtained
- * indirectly by the {@link MetadataStandard#getElementInformation(Object, KeyNamePolicy)} method.
+ * indirectly by the {@link MetadataStandard#asInformationMap(Class, KeyNamePolicy)} method.
  *
  * @param <T> The value type, either the method return type if not a collection,
  *            or the type of elements in the collection otherwise.
@@ -50,7 +51,8 @@ import org.apache.sis.util.logging.Logging;
  * @version 0.3
  * @module
  *
- * @see MetadataStandard#getElementInformation(Object, KeyNamePolicy)
+ * @see InformationMap
+ * @see MetadataStandard#asInformationMap(Class, KeyNamePolicy)
  * @see <a href="https://issues.apache.org/jira/browse/SIS-80">SIS-80</a>
  */
 @Immutable
@@ -265,7 +267,7 @@ final class PropertyInformation<T> extends SimpleReferenceIdentifier
      * In the particular case of SIS implementation, this method may return a subclass of {@link NumberRange}.
      */
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked","rawtypes"})
     public InternationalString getDomainValue() {
         Object domain = domainValue;
         if (domain != null) {
@@ -355,5 +357,26 @@ final class PropertyInformation<T> extends SimpleReferenceIdentifier
     @Override
     public final int hashCode() {
         return (parent.hashCode() + 31 * code.hashCode()) ^ (int) serialVersionUID;
+    }
+
+    /**
+     * Invoked by {@link #toString()} in order to append additional information
+     * after the identifier.
+     */
+    @Override
+    protected void appendToString(final StringBuilder buffer) {
+        buffer.append(" : ").append(Types.getCodeLabel(getDataType()))
+              .append(", ").append(getObligation().name().toLowerCase(Locale.US))
+              .append(", maxOccurs=");
+        final int n = getMaximumOccurrence();
+        if (n != Integer.MAX_VALUE) {
+            buffer.append(n);
+        } else {
+            buffer.append('∞');
+        }
+        final InternationalString domainValue = getDomainValue();
+        if (domainValue != null) {
+            buffer.append(", domain=").append(domainValue);
+        }
     }
 }
