@@ -24,10 +24,13 @@ import java.util.Collection;
 import java.util.Iterator;
 import net.jcip.annotations.ThreadSafe;
 import org.opengis.metadata.citation.Citation;
+import org.opengis.metadata.ExtendedElementInformation;
+import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.TreeTable;
+import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.internal.util.SystemListener;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -43,15 +46,14 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * {@linkplain java.lang.reflect Java reflection}. The following rules are assumed:</p>
  *
  * <ul>
- *   <li>Properties (or metadata attributes) are defined by the collection of
- *       following getter methods found <strong>in the interface</strong>
- *       (methods declared only in the implementation are ignored):
+ *   <li>Metadata properties are defined by the collection of following getter methods found
+ *       <strong>in the interface</strong>, ignoring implementation methods:
  *       <ul>
  *         <li>{@code get*()} methods with arbitrary return type;</li>
  *         <li>or {@code is*()} methods with boolean return type.</li>
  *       </ul></li>
- *   <li>Every properties are <cite>readable</cite>.
- *       But a property is also <cite>writable</cite> if a {@code set*(…)} method is defined
+ *   <li>All properties are <cite>readable</cite>.</li>
+ *   <li>A property is also <cite>writable</cite> if a {@code set*(…)} method is defined
  *       <strong>in the implementation class</strong> for the corresponding getter method.
  *       The setter method doesn't need to be defined in the interface.</li>
  * </ul>
@@ -66,7 +68,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * <ul>
  *   <li>For <em>read-only</em> metadata, {@code MetadataStandard} can be instantiated directly.
- *       only getter methods will be used and all operations that modify the metadata properties
+ *       Only getter methods will be used and all operations that modify the metadata properties
  *       will throw an {@link UnmodifiableMetadataException}.</li>
  *   <li>For <em>read/write</em> metadata, the {@link #getImplementation(Class)}
  *       method must be overridden in a {@code MetadataStandard} subclass.</li>
@@ -154,9 +156,10 @@ public class MetadataStandard {
     private final Map<Class<?>, Object> accessors;
 
     /**
-     * Creates a new instance working on implementation of interfaces defined
-     * in the specified package. For the ISO 19115 standard reflected by GeoAPI
-     * interfaces, it should be the {@link org.opengis.metadata} package.
+     * Creates a new instance working on implementation of interfaces defined in the specified package.
+     *
+     * <p><b>Example:</b>: For the ISO 19115 standard reflected by GeoAPI interfaces,
+     * {@code interfacePackage} shall be the {@link org.opengis.metadata} package.</p>
      *
      * @param citation         Bibliographical reference to the international standard.
      * @param interfacePackage The root package for metadata interfaces.
@@ -420,6 +423,133 @@ public class MetadataStandard {
     }
 
     /**
+     * Returns the names of all properties defined in the given metadata type.
+     * The property names appears both as keys and as values, but may be written differently.
+     * The names may be {@linkplain KeyNamePolicy#UML_IDENTIFIER standard identifiers} (e.g.
+     * as defined by ISO 19115), {@linkplain KeyNamePolicy#JAVABEANS_PROPERTY JavaBeans names},
+     * {@linkplain KeyNamePolicy#METHOD_NAME method names} or {@linkplain KeyNamePolicy#SENTENCE
+     * sentences} (usually in English).
+     *
+     * <p><b>Example:</b> The {@code value} in the following code is
+     * <code>"alternateTitle<u>s</u>"</code> (note the plural):</p>
+     *
+     * {@preformat java
+     *   MetadataStandard standard = MetadataStandard.ISO_19115;
+     *   Map<String, String> names = standard.asNameMap(Citation.class, UML_IDENTIFIER, JAVABEANS_PROPERTY);
+     *   String value = names.get("alternateTitle");  // alternateTitles
+     * }
+     *
+     * The {@code keyPolicy} argument specify only the string representation of keys returned by the iterators.
+     * No matter the key name policy, the {@code key} argument given to any {@link Map} method can be any of the
+     * above-cited forms of property names.
+     *
+     * @param  type        The interface or implementation class of a metadata.
+     * @param  keyPolicy   Determines the string representation of map keys.
+     * @param  valuePolicy Determines the string representation of map values.
+     * @return The names of all properties defined by the given metadata type.
+     * @throws ClassCastException if the specified interface or implementation class does
+     *         not extend or implement a metadata interface of the expected package.
+     */
+    public Map<String,String> asNameMap(Class<?> type, final KeyNamePolicy keyPolicy,
+            final KeyNamePolicy valuePolicy) throws ClassCastException
+    {
+        ensureNonNull("type",        type);
+        ensureNonNull("keyPolicy",   keyPolicy);
+        ensureNonNull("valuePolicy", valuePolicy);
+        final Class<?> implementation = getImplementation(type);
+        if (implementation != null) {
+            type = implementation;
+        }
+        return new NameMap(getAccessor(type, true), keyPolicy, valuePolicy);
+    }
+
+    /**
+     * Returns the type of all properties, or their declaring type, defined in the given
+     * metadata type. The keys in the returned map are the same than the keys in the above
+     * {@linkplain #asNameMap name map}. The values are determined by the {@code valuePolicy}
+     * argument, which can be {@linkplain TypeValuePolicy#ELEMENT_TYPE element type} or the
+     * {@linkplain TypeValuePolicy#DECLARING_INTERFACE declaring interface} among others.
+     *
+     * <p><b>Example:</b> The {@code value} in the following code is {@code InternationalString.class}:</p>
+     *
+     * {@preformat java
+     *   MetadataStandard  standard = MetadataStandard.ISO_19115;
+     *   Map<String,Class<?>> types = standard.asTypeMap(Citation.class, UML_IDENTIFIER, ELEMENT_TYPE);
+     *   Class<?> value = names.get("alternateTitle");  // InternationalString.class
+     * }
+     *
+     * @param  type        The interface or implementation class of a metadata.
+     * @param  keyPolicy   Determines the string representation of map keys.
+     * @param  valuePolicy Whether the values shall be property types, the element types
+     *         (same as property types except for collections) or the declaring interface or class.
+     * @return The types or declaring type of all properties defined in the given metadata type.
+     * @throws ClassCastException if the specified interface or implementation class does
+     *         not extend or implement a metadata interface of the expected package.
+     */
+    public Map<String,Class<?>> asTypeMap(Class<?> type, final KeyNamePolicy keyPolicy,
+            final TypeValuePolicy valuePolicy) throws ClassCastException
+    {
+        ensureNonNull("type",        type);
+        ensureNonNull("keyPolicy",   keyPolicy);
+        ensureNonNull("valuePolicy", valuePolicy);
+        final Class<?> implementation = getImplementation(type);
+        if (implementation != null) {
+            type = implementation;
+        }
+        return new TypeMap(getAccessor(type, true), keyPolicy, valuePolicy);
+    }
+
+    /**
+     * Returns information about all properties defined in the given metadata type.
+     * The keys in the returned map are the same than the keys in the above
+     * {@linkplain #asNameMap name map}. The values contain information inferred from
+     * the ISO names, the {@link org.opengis.annotation.Obligation} enumeration and the
+     * {@link org.apache.sis.measure.ValueRange} annotations.
+     *
+     * <p>In the particular case of Apache SIS implementation, all values in the information map
+     * additionally implement the following interfaces:</p>
+     * <ul>
+     *   <li>{@link ReferenceIdentifier} with the following properties:
+     *     <ul>
+     *       <li>The {@linkplain ReferenceIdentifier#getAuthority() authority} is this metadata standard {@linkplain #getCitation() citation}.</li>
+     *       <li>The {@linkplain ReferenceIdentifier#getCodeSpace() codespace} is the standard name of the interface that contain the property.</li>
+     *       <li>The {@linkplain ReferenceIdentifier#getCode() code} is the standard name of the property.</li>
+     *     </ul>
+     *   </li>
+     *   <li>{@link CheckedContainer} with the following properties:
+     *     <ul>
+     *       <li>The {@linkplain CheckedContainer#getElementType() element type} is the type of property values
+     *           as defined by {@link TypeValuePolicy#ELEMENT_TYPE}.</li>
+     *     </ul>
+     *   </li>
+     * </ul>
+     *
+     * In addition, for each map entry the value returned by {@link ExtendedElementInformation#getDomainValue()}
+     * may optionally be an instance of any of the following classes:
+     *
+     * <ul>
+     *   <li>{@link org.apache.sis.measure.NumberRange} if the valid values are constrained to some specific range.</li>
+     * </ul>
+     *
+     * @param  type      The metadata interface or implementation class.
+     * @param  keyPolicy Determines the string representation of map keys.
+     * @return Information about all properties defined in the given metadata type.
+     * @throws ClassCastException if the given type doesn't implement a metadata
+     *         interface of the expected package.
+     */
+    public Map<String,ExtendedElementInformation> asInformationMap(Class<?> type,
+            final KeyNamePolicy keyPolicy) throws ClassCastException
+    {
+        ensureNonNull("type",     type);
+        ensureNonNull("keyNames", keyPolicy);
+        final Class<?> implementation = getImplementation(type);
+        if (implementation != null) {
+            type = implementation;
+        }
+        return new InformationMap(getAccessor(type, true), keyPolicy);
+    }
+
+    /**
      * Returns a view of the specified metadata object as a {@link Map}.
      * The map is backed by the metadata object using Java reflection, so changes in the
      * underlying metadata object are immediately reflected in the map and conversely.
@@ -444,13 +574,13 @@ public class MetadataStandard {
      *
      * @see AbstractMetadata#asMap()
      */
-    public Map<String,Object> asMap(final Object metadata, final KeyNamePolicy keyPolicy,
+    public Map<String,Object> asValueMap(final Object metadata, final KeyNamePolicy keyPolicy,
             final ValueExistencePolicy valuePolicy) throws ClassCastException
     {
         ensureNonNull("metadata",    metadata);
         ensureNonNull("keyPolicy",   keyPolicy);
         ensureNonNull("valuePolicy", valuePolicy);
-        return new PropertyMap(metadata, getAccessor(metadata.getClass(), true), keyPolicy, valuePolicy);
+        return new ValueMap(metadata, getAccessor(metadata.getClass(), true), keyPolicy, valuePolicy);
     }
 
     /**

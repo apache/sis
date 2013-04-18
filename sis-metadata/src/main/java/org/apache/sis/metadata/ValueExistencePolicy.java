@@ -18,8 +18,8 @@ package org.apache.sis.metadata;
 
 
 /**
- * Whatever {@link MetadataStandard#asMap MetadataStandard.asMap(…)} shall contain entries
- * for null values or empty collections. By default the map does not provide
+ * Whatever {@link MetadataStandard#asValueMap MetadataStandard.asValueMap(…)} shall contain
+ * entries for null values or empty collections. By default the map does not provide
  * {@linkplain java.util.Map.Entry entries} for {@code null} metadata properties or
  * {@linkplain java.util.Collection#isEmpty() empty} collections.
  * This enumeration allows control on this behavior.
@@ -29,7 +29,7 @@ package org.apache.sis.metadata;
  * @version 0.3
  * @module
  *
- * @see MetadataStandard#asMap(Object, KeyNamePolicy, ValueExistencePolicy)
+ * @see MetadataStandard#asValueMap(Object, KeyNamePolicy, ValueExistencePolicy)
  */
 public enum ValueExistencePolicy {
     /**
