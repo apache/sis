@@ -105,7 +105,7 @@ abstract class MetadataMap<V> extends AbstractMap<String,V> {
 
         /**
          * Assumes that the underlying map is unmodifiable.
-         * Only {@link PropertyMap} supports this method.
+         * Only {@link ValueMap} supports this method.
          */
         @Override
         public void remove() {
