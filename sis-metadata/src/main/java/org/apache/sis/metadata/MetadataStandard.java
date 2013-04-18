@@ -423,8 +423,87 @@ public class MetadataStandard {
     }
 
     /**
-     * Returns information about a metadata type as {@link Map}. The returned map contains information
-     * inferred from the ISO names, the {@link org.opengis.annotation.Obligation} enumeration and the
+     * Returns the names of all properties defined in the given metadata type.
+     * The property names appears both as keys and as values, but may be written differently.
+     * The names may be {@linkplain KeyNamePolicy#UML_IDENTIFIER standard identifiers} (e.g.
+     * as defined by ISO 19115), {@linkplain KeyNamePolicy#JAVABEANS_PROPERTY JavaBeans names},
+     * {@linkplain KeyNamePolicy#METHOD_NAME method names} or {@linkplain KeyNamePolicy#SENTENCE
+     * sentences} (usually in English).
+     *
+     * <p><b>Example:</b> The {@code value} in the following code is
+     * <code>"alternateTitle<u>s</u>"</code> (note the plural):</p>
+     *
+     * {@preformat java
+     *   MetadataStandard standard = MetadataStandard.ISO_19115;
+     *   Map<String, String> names = standard.asNameMap(Citation.class, UML_IDENTIFIER, JAVABEANS_PROPERTY);
+     *   String value = names.get("alternateTitle");  // alternateTitles
+     * }
+     *
+     * The {@code keyPolicy} argument specify only the string representation of keys returned by the iterators.
+     * No matter the key name policy, the {@code key} argument given to any {@link Map} method can be any of the
+     * above-cited forms of property names.
+     *
+     * @param  type        The interface or implementation class of a metadata.
+     * @param  keyPolicy   Determines the string representation of map keys.
+     * @param  valuePolicy Determines the string representation of map values.
+     * @return The names of all properties defined by the given metadata type.
+     * @throws ClassCastException if the specified interface or implementation class does
+     *         not extend or implement a metadata interface of the expected package.
+     */
+    public Map<String,String> asNameMap(Class<?> type, final KeyNamePolicy keyPolicy,
+            final KeyNamePolicy valuePolicy) throws ClassCastException
+    {
+        ensureNonNull("type",        type);
+        ensureNonNull("keyPolicy",   keyPolicy);
+        ensureNonNull("valuePolicy", valuePolicy);
+        final Class<?> implementation = getImplementation(type);
+        if (implementation != null) {
+            type = implementation;
+        }
+        return new NameMap(getAccessor(type, true), keyPolicy, valuePolicy);
+    }
+
+    /**
+     * Returns the type of all properties, or their declaring type, defined in the given
+     * metadata type. The keys in the returned map are the same than the keys in the above
+     * {@linkplain #asNameMap name map}. The values are determined by the {@code valuePolicy}
+     * argument, which can be {@linkplain TypeValuePolicy#ELEMENT_TYPE element type} or the
+     * {@linkplain TypeValuePolicy#DECLARING_INTERFACE declaring interface} among others.
+     *
+     * <p><b>Example:</b> The {@code value} in the following code is {@code InternationalString.class}:</p>
+     *
+     * {@preformat java
+     *   MetadataStandard  standard = MetadataStandard.ISO_19115;
+     *   Map<String,Class<?>> types = standard.asTypeMap(Citation.class, UML_IDENTIFIER, ELEMENT_TYPE);
+     *   Class<?> value = names.get("alternateTitle");  // InternationalString.class
+     * }
+     *
+     * @param  type        The interface or implementation class of a metadata.
+     * @param  keyPolicy   Determines the string representation of map keys.
+     * @param  valuePolicy Whether the values shall be property types, the element types
+     *         (same as property types except for collections) or the declaring interface or class.
+     * @return The types or declaring type of all properties defined in the given metadata type.
+     * @throws ClassCastException if the specified interface or implementation class does
+     *         not extend or implement a metadata interface of the expected package.
+     */
+    public Map<String,Class<?>> asTypeMap(Class<?> type, final KeyNamePolicy keyPolicy,
+            final TypeValuePolicy valuePolicy) throws ClassCastException
+    {
+        ensureNonNull("type",        type);
+        ensureNonNull("keyPolicy",   keyPolicy);
+        ensureNonNull("valuePolicy", valuePolicy);
+        final Class<?> implementation = getImplementation(type);
+        if (implementation != null) {
+            type = implementation;
+        }
+        return new TypeMap(getAccessor(type, true), keyPolicy, valuePolicy);
+    }
+
+    /**
+     * Returns information about all properties defined in the given metadata type.
+     * The keys in the returned map are the same than the keys in the above
+     * {@linkplain #asNameMap name map}. The values contain information inferred from
+     * the ISO names, the {@link org.opengis.annotation.Obligation} enumeration and the
      * {@link org.apache.sis.measure.ValueRange} annotations.
      *
      * <p>In the particular case of Apache SIS implementation, all values in the information map
@@ -452,23 +531,22 @@ public class MetadataStandard {
      *   <li>{@link org.apache.sis.measure.NumberRange} if the valid values are constrained to some specific range.</li>
      * </ul>
      *
-     * @param  type The metadata interface or implementation class.
-     * @param  keyNames Determines the string representation of map keys.
-     * @return The restrictions that are violated by the given metadata instance,
-     *         or all restrictions if {@code metadata} is a {@link Class}.
+     * @param  type      The metadata interface or implementation class.
+     * @param  keyPolicy Determines the string representation of map keys.
+     * @return Information about all properties defined in the given metadata type.
      * @throws ClassCastException if the given type doesn't implement a metadata
      *         interface of the expected package.
      */
     public Map<String,ExtendedElementInformation> asInformationMap(Class<?> type,
-            final KeyNamePolicy keyNames) throws ClassCastException
+            final KeyNamePolicy keyPolicy) throws ClassCastException
     {
         ensureNonNull("type",     type);
-        ensureNonNull("keyNames", keyNames);
+        ensureNonNull("keyNames", keyPolicy);
         final Class<?> implementation = getImplementation(type);
         if (implementation != null) {
             type = implementation;
         }
-        return new InformationMap(getAccessor(type, true), keyNames);
+        return new InformationMap(getAccessor(type, true), keyPolicy);
     }
 
     /**

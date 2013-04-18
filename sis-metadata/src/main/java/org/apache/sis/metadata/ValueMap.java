@@ -41,7 +41,7 @@ final class ValueMap extends PropertyMap<Object> {
     /**
      * The metadata object to wrap.
      */
-    private final Object metadata;
+    final Object metadata;
 
     /**
      * The behavior of this map toward null or empty values.
@@ -279,7 +279,7 @@ final class ValueMap extends PropertyMap<Object> {
      * @version 0.3
      * @module
      */
-    private final class Iter extends PropertyMap<Object>.Iter {
+    private final class Iter implements Iterator<Map.Entry<String,Object>> {
         /**
          * The current and the next property, or {@code null} if the iteration is over.
          */
