@@ -30,7 +30,7 @@ import java.lang.reflect.InvocationTargetException;
 import net.jcip.annotations.ThreadSafe;
 import org.opengis.annotation.UML;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.parameter.ParameterDescriptor;
+import org.opengis.metadata.ExtendedElementInformation;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Numbers;
@@ -201,13 +201,13 @@ final class PropertyAccessor {
     private transient volatile ObjectConverter<?,?> converter;
 
     /**
-     * The property descriptions, including the name and restrictions on valid values.
+     * The property information, including the name and restrictions on valid values.
      * The array will be created when first needed. A {@code null} element means that
-     * the descriptor at that index has not yet been computed.
+     * the information at that index has not yet been computed.
      *
-     * @see #descriptor(int)
+     * @see #information(int)
      */
-    private transient ParameterDescriptor<?>[] descriptors;
+    private transient ExtendedElementInformation[] informations;
 
     /**
      * Creates a new property accessor for the specified metadata implementation.
@@ -538,26 +538,27 @@ final class PropertyAccessor {
     }
 
     /**
-     * Returns the descriptor for the property at the given index.
-     * The descriptor are created when first needed.
+     * Returns the information for the property at the given index.
+     * The information are created when first needed.
      *
-     * @param  index The index of the property for which to get the descriptor.
-     * @return The descriptor for the property at the given index,
+     * @param  index The index of the property for which to get the information.
+     * @return The information for the property at the given index,
      *         or {@code null} if the index is out of bounds.
+     *
+     * @see PropertyInformation
      */
     @SuppressWarnings({"unchecked","rawtypes"})
-    final synchronized ParameterDescriptor<?> descriptor(final int index) {
-        ParameterDescriptor[] descriptors = this.descriptors;
-        if (descriptors == null) {
-            this.descriptors = descriptors = new PropertyDescriptor<?>[standardCount];
+    final synchronized ExtendedElementInformation information(final int index) {
+        ExtendedElementInformation[] informations = this.informations;
+        if (informations == null) {
+            this.informations = informations = new PropertyInformation<?>[standardCount];
         }
-        if (index < 0 || index >= descriptors.length) {
+        if (index < 0 || index >= informations.length) {
             return null;
         }
-        ParameterDescriptor<?> descriptor = descriptors[index];
-        if (descriptor == null) {
+        ExtendedElementInformation information = informations[index];
+        if (information == null) {
             final Class<?> elementType = elementTypes[index];
-            final Citation standard    = this.standard;
             final String   name        = name(index, KeyNamePolicy.UML_IDENTIFIER);
             final Method   getter      = getters[index];
             ValueRange range = null;
@@ -572,14 +573,10 @@ final class PropertyAccessor {
                     throw new AssertionError(error);
                 }
             }
-            if (range != null) {
-                descriptor = new PropertyDescriptor.Bounded(elementType, standard, name, getter, range);
-            } else {
-                descriptor = new PropertyDescriptor(elementType, standard, name, getter);
-            }
-            descriptors[index] = descriptor;
+            information = new PropertyInformation(standard, name, getter, elementType, range);
+            informations[index] = information;
         }
-        return descriptor;
+        return information;
     }
 
     /**
@@ -635,7 +632,7 @@ final class PropertyAccessor {
      * copy the new collection in their existing instance.
      *
      * <p>If the given index is out of bounds, then this method does nothing and return {@code null}.
-     * We do that because the {@link PropertyMap#remove(Object)} method may invoke this method with
+     * We do that because the {@link ValueMap#remove(Object)} method may invoke this method with
      * an index of -1 if the {@link #indexOf(String, boolean)} method didn't found the property name.
      * However the given value will be silently discarded, so index out-of-bounds shall be used only
      * in the context of {@code remove} operations (this is not verified).</p>

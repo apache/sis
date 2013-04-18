@@ -59,7 +59,7 @@ final class Pruner extends ThreadLocal<Map<Object,Boolean>> {
      * include empty (but non-null) values in order to allow us to set them to {@code null}.
      */
     private static Map<String, Object> asMap(final MetadataStandard standard, final Object metadata, final boolean prune) {
-        return standard.asMap(metadata, KeyNamePolicy.JAVABEANS_PROPERTY, prune ?
+        return standard.asValueMap(metadata, KeyNamePolicy.JAVABEANS_PROPERTY, prune ?
                 ValueExistencePolicy.NON_NULL : ValueExistencePolicy.NON_EMPTY);
     }
 
@@ -67,8 +67,8 @@ final class Pruner extends ThreadLocal<Map<Object,Boolean>> {
      * Returns {@code true} if the value for the given entry is a primitive type.
      */
     private static boolean isPrimitive(final Map.Entry<String,Object> entry) {
-        return (entry instanceof PropertyMap.Property) &&
-                ((PropertyMap.Property) entry).getValueType().isPrimitive();
+        return (entry instanceof ValueMap.Property) &&
+                ((ValueMap.Property) entry).getValueType().isPrimitive();
     }
 
     /**

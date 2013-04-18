@@ -175,7 +175,18 @@ public class SimpleReferenceIdentifier implements ReferenceIdentifier, Serializa
         if (open) {
             buffer.append('”');
         }
+        appendToString(buffer);
         return buffer.append(']').toString();
+    }
+
+    /**
+     * Invoked by {@link #toString()} in order to allow subclasses to add additional information.
+     * This method is invoked just before the final {@code ']'} is appended to the buffer.
+     *
+     * @param buffer A buffer filled with the {@link #toString()} characters,
+     *               that subclasses can update.
+     */
+    protected void appendToString(final StringBuilder buffer) {
     }
 
     /**
