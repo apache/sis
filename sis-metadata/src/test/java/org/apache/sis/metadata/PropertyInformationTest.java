@@ -24,8 +24,12 @@ import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.PresentationForm;
 import org.opengis.metadata.ExtendedElementInformation;
+import org.opengis.metadata.acquisition.EnvironmentalRecord;
+import org.apache.sis.metadata.iso.acquisition.DefaultEnvironmentalRecord;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import org.apache.sis.util.collection.CheckedContainer;
+import org.apache.sis.measure.ValueRange;
+import org.apache.sis.measure.Range;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -58,6 +62,16 @@ public final strictfp class PropertyInformationTest extends TestCase {
     }
 
     /**
+     * Asserts that the {@linkplain ExtendedElementInformation#getParentEntity() parent entity}
+     * of the given element is {@link Citation}.
+     */
+    private static void assertParentIsCitation(final ExtendedElementInformation information) {
+        assertInstanceOf("Specific to SIS implementation.", Identifier.class, information);
+        assertEquals("ISO 19115",   ((Identifier) information).getAuthority().getTitle().toString());
+        assertEquals("CI_Citation", getSingleton(information.getParentEntity()));
+    }
+
+    /**
      * Tests the properties of {@link Citation#getTitle()}.
      * The element type is an {@link InternationalString} singleton, which is mandatory.
      *
@@ -73,19 +87,18 @@ public final strictfp class PropertyInformationTest extends TestCase {
      * This is validation code to be shared with {@link PropertyAccessorTest#testInformation()}.
      */
     static void validateTitle(final ExtendedElementInformation information) {
-        assertInstanceOf("SIS-specific", Identifier.class, information);
-        assertEquals("ISO 19115",   ((Identifier) information).getAuthority().getTitle().toString());
-        assertEquals("CI_Citation", getSingleton(information.getParentEntity()));
-        assertEquals("title",       information.getName());
+        assertParentIsCitation(information);
+        assertEquals("title", information.getName());
         final InternationalString definition = information.getDefinition();
         assertEquals("Name by which the cited resource is known.", definition.toString(Locale.ENGLISH));
         // Test other locale here, if any.
 
-        assertInstanceOf("SIS-specific", CheckedContainer.class, information);
+        assertInstanceOf("Specific to SIS implementation.", CheckedContainer.class, information);
         assertEquals(InternationalString.class, ((CheckedContainer<?>) information).getElementType());
         assertEquals(Datatype.CHARACTER_STRING, information.getDataType());
         assertEquals(Obligation.MANDATORY, information.getObligation());
         assertEquals(Integer.valueOf(1), information.getMaximumOccurrence());
+        assertNull(information.getDomainValue());
     }
 
     /**
@@ -104,19 +117,39 @@ public final strictfp class PropertyInformationTest extends TestCase {
      * This is validation code to be shared with {@link PropertyAccessorTest#testInformation()}.
      */
     static void validatePresentationForm(final ExtendedElementInformation information) {
-        assertInstanceOf("SIS-specific", Identifier.class, information);
-        assertEquals("ISO 19115",        ((Identifier) information).getAuthority().getTitle().toString());
-        assertEquals("CI_Citation",      getSingleton(information.getParentEntity()));
+        assertParentIsCitation(information);
         assertEquals("presentationForm", information.getName());
         final InternationalString definition = information.getDefinition();
         assertEquals("Mode in which the resource is represented.", definition.toString(Locale.ENGLISH));
         // Test other locale here, if any.
 
-        assertInstanceOf("SIS-specific", CheckedContainer.class, information);
+        assertInstanceOf("Specific to SIS implementation.", CheckedContainer.class, information);
         assertEquals(PresentationForm.class, ((CheckedContainer<?>) information).getElementType());
         assertEquals(Datatype.CODE_LIST, information.getDataType());
         assertEquals(Obligation.OPTIONAL, information.getObligation());
         assertEquals(Integer.valueOf(Integer.MAX_VALUE), information.getMaximumOccurrence());
+        assertNull(information.getDomainValue());
+    }
+
+    /**
+     * Tests {@link PropertyInformation#getDomainValue()} with a non-null range.
+     *
+     * @throws NoSuchMethodException Should never happen.
+     */
+    @Test
+    public void testGetDomainValue()  throws NoSuchMethodException {
+        final ExtendedElementInformation information = new PropertyInformation<>(HardCodedCitations.ISO_19115,
+                "maxRelativeHumidity", EnvironmentalRecord.class.getMethod("getMaxRelativeHumidity"), Double.class,
+                DefaultEnvironmentalRecord.class.getMethod("getMaxRelativeHumidity").getAnnotation(ValueRange.class));
+
+        final InternationalString domainValue = information.getDomainValue();
+        assertNotNull(domainValue);
+        assertEquals("[0.0 … 100.0]", domainValue.toString());
+        assertEquals("[0 … 100]", domainValue.toString(Locale.ENGLISH));
+        assertEquals("[0 … 100]", domainValue.toString(Locale.FRENCH));
+        assertInstanceOf("Specific to SIS implementation.", Range.class, domainValue);
+        assertEquals("getMinValue()", Double.valueOf(  0), ((Range) domainValue).getMinValue());
+        assertEquals("getMaxValue()", Double.valueOf(100), ((Range) domainValue).getMaxValue());
     }
 
     /**

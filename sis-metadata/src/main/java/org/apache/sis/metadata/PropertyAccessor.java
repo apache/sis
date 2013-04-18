@@ -544,6 +544,8 @@ final class PropertyAccessor {
      * @param  index The index of the property for which to get the information.
      * @return The information for the property at the given index,
      *         or {@code null} if the index is out of bounds.
+     *
+     * @see PropertyInformation
      */
     @SuppressWarnings({"unchecked","rawtypes"})
     final synchronized ExtendedElementInformation information(final int index) {

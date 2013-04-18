@@ -33,6 +33,7 @@ import org.apache.sis.measure.ValueRange;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.collection.CheckedContainer;
+import org.apache.sis.util.logging.Logging;
 
 
 /**
@@ -43,7 +44,6 @@ import org.apache.sis.util.collection.CheckedContainer;
  *
  * @param <T> The value type, either the method return type if not a collection,
  *            or the type of elements in the collection otherwise.
- *
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.05)
@@ -97,6 +97,15 @@ final class PropertyInformation<T> extends SimpleReferenceIdentifier
     private final byte maximumOccurs;
 
     /**
+     * The domain of valid values, or {@code null} if none. If non-null, then this is set to an
+     * instance of {@link ValueRange} at construction time, then replaced by an instance of
+     * {@link DomainRange} when first needed by the {@link #getDomainValue()} method.
+     *
+     * @see #getDomainValue()
+     */
+    private Object domainValue;
+
+    /**
      * Creates a new {@code PropertyInformation} instance from the annotations on the given
      * getter method.
      *
@@ -133,7 +142,7 @@ final class PropertyInformation<T> extends SimpleReferenceIdentifier
         }
         this.minimumOccurs = minimumOccurs;
         this.maximumOccurs = maximumOccurs;
-        // TODO: store the range.
+        this.domainValue   = range;
     }
 
     /**
@@ -253,10 +262,31 @@ final class PropertyInformation<T> extends SimpleReferenceIdentifier
 
     /**
      * Returns valid values that can be assigned to the extended element, or {@code null} if none.
+     * In the particular case of SIS implementation, this method may return a subclass of {@link NumberRange}.
      */
     @Override
+    @SuppressWarnings("unchecked")
     public InternationalString getDomainValue() {
-        return null; // TODO: A NumberRange subclass implementing InternationalString?
+        Object domain = domainValue;
+        if (domain != null) {
+            if (!(domain instanceof DomainRange)) {
+                try {
+                    domain = new DomainRange(elementType, (ValueRange) domain);
+                } catch (IllegalArgumentException e) {
+                    /*
+                     * May happen only if a ValueRange annotation is applied on the wrong method.
+                     * The JUnit tests ensure that this never happen at least for the SIS metadata
+                     * implementation. If this error happen anyway, the user probably doesn't expect
+                     * to have an IllegalArgumentException while he didn't provided any argument.
+                     * Returning null as a fallback is compliant with the method contract.
+                     */
+                    Logging.unexpectedException(PropertyInformation.class, "getDomainValue", e);
+                    domain = null;
+                }
+                domainValue = domain;
+            }
+        }
+        return (DomainRange) domain;
     }
 
     /**
