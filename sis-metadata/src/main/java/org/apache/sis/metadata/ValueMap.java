@@ -37,7 +37,7 @@ import java.util.Objects;
  *
  * @see MetadataStandard#asValueMap(Object, KeyNamePolicy, ValueExistencePolicy)
  */
-final class ValueMap extends MetadataMap<Object> {
+final class ValueMap extends PropertyMap<Object> {
     /**
      * The metadata object to wrap.
      */
@@ -279,7 +279,7 @@ final class ValueMap extends MetadataMap<Object> {
      * @version 0.3
      * @module
      */
-    private final class Iter extends MetadataMap<Object>.Iter {
+    private final class Iter extends PropertyMap<Object>.Iter {
         /**
          * The current and the next property, or {@code null} if the iteration is over.
          */
@@ -376,7 +376,7 @@ final class ValueMap extends MetadataMap<Object> {
      * @version 0.3
      * @module
      */
-    private final class Entries extends MetadataMap<Object>.Entries {
+    private final class Entries extends PropertyMap<Object>.Entries {
         /**
          * Creates an entry set.
          */
