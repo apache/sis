@@ -43,15 +43,14 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * {@linkplain java.lang.reflect Java reflection}. The following rules are assumed:</p>
  *
  * <ul>
- *   <li>Properties (or metadata attributes) are defined by the collection of
- *       following getter methods found <strong>in the interface</strong>
- *       (methods declared only in the implementation are ignored):
+ *   <li>Metadata properties are defined by the collection of following getter methods found
+ *       <strong>in the interface</strong>, ignoring implementation methods:
  *       <ul>
  *         <li>{@code get*()} methods with arbitrary return type;</li>
  *         <li>or {@code is*()} methods with boolean return type.</li>
  *       </ul></li>
- *   <li>Every properties are <cite>readable</cite>.
- *       But a property is also <cite>writable</cite> if a {@code set*(…)} method is defined
+ *   <li>All properties are <cite>readable</cite>.</li>
+ *   <li>A property is also <cite>writable</cite> if a {@code set*(…)} method is defined
  *       <strong>in the implementation class</strong> for the corresponding getter method.
  *       The setter method doesn't need to be defined in the interface.</li>
  * </ul>
@@ -66,7 +65,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * <ul>
  *   <li>For <em>read-only</em> metadata, {@code MetadataStandard} can be instantiated directly.
- *       only getter methods will be used and all operations that modify the metadata properties
+ *       Only getter methods will be used and all operations that modify the metadata properties
  *       will throw an {@link UnmodifiableMetadataException}.</li>
  *   <li>For <em>read/write</em> metadata, the {@link #getImplementation(Class)}
  *       method must be overridden in a {@code MetadataStandard} subclass.</li>
@@ -154,9 +153,10 @@ public class MetadataStandard {
     private final Map<Class<?>, Object> accessors;
 
     /**
-     * Creates a new instance working on implementation of interfaces defined
-     * in the specified package. For the ISO 19115 standard reflected by GeoAPI
-     * interfaces, it should be the {@link org.opengis.metadata} package.
+     * Creates a new instance working on implementation of interfaces defined in the specified package.
+     *
+     * <p><b>Example:</b>: For the ISO 19115 standard reflected by GeoAPI interfaces,
+     * {@code interfacePackage} shall be the {@link org.opengis.metadata} package.</p>
      *
      * @param citation         Bibliographical reference to the international standard.
      * @param interfacePackage The root package for metadata interfaces.

@@ -115,7 +115,7 @@ final class PropertyMap extends MetadataMap<Object> {
      *
      * @throws IllegalArgumentException if the given key is not the name of a property in the metadata.
      * @throws ClassCastException if the given value is not of the expected type.
-     * @throws UnmodifiableMetadataException if the attribute for the given key is read-only.
+     * @throws UnmodifiableMetadataException if the property for the given key is read-only.
      */
     @Override
     public Object put(final String key, final Object value) {
@@ -129,7 +129,7 @@ final class PropertyMap extends MetadataMap<Object> {
      *
      * @throws IllegalArgumentException if at least one key is not the name of a property in the metadata.
      * @throws ClassCastException if at least one value is not of the expected type.
-     * @throws UnmodifiableMetadataException if at least one attribute is read-only.
+     * @throws UnmodifiableMetadataException if at least one property is read-only.
      */
     @Override
     public void putAll(final Map<? extends String, ?> map) {
@@ -141,7 +141,7 @@ final class PropertyMap extends MetadataMap<Object> {
     /**
      * Removes the mapping for a key from this map if it is present.
      *
-     * @throws UnmodifiableMetadataException if the attribute for the given key is read-only.
+     * @throws UnmodifiableMetadataException if the property for the given key is read-only.
      */
     @Override
     public Object remove(final Object key) throws UnsupportedOperationException {
@@ -226,7 +226,7 @@ final class PropertyMap extends MetadataMap<Object> {
          * Replaces the value corresponding to this entry with the specified value.
          *
          * @throws ClassCastException if the given value is not of the expected type.
-         * @throws UnmodifiableMetadataException if the attribute for this entry is read-only.
+         * @throws UnmodifiableMetadataException if the property for this entry is read-only.
          */
         @Override
         public Object setValue(final Object value) {
@@ -352,7 +352,7 @@ final class PropertyMap extends MetadataMap<Object> {
         /**
          * Removes from the underlying collection the last element returned by the iterator.
          *
-         * @throws UnmodifiableMetadataException if the attribute for this entry is read-only.
+         * @throws UnmodifiableMetadataException if the property for this entry is read-only.
          */
         @Override
         public void remove() {
