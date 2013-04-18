@@ -19,40 +19,44 @@ package org.apache.sis.metadata;
 import java.util.Map;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import org.opengis.metadata.ExtendedElementInformation;
 
 
 /**
- * Map of information for a given implementation class. This map is read-only.
- * All values in this map are instances of {@link PropertyInformation}.
+ * Map of property names for a given implementation class. This map is read-only.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.04)
  * @version 0.3
  * @module
  *
- * @see PropertyInformation
- * @see MetadataStandard#asInformationMap(Class, KeyNamePolicy)
+ * @see MetadataStandard#asNameMap(Class, KeyNamePolicy, KeyNamePolicy)
  */
-final class InformationMap extends PropertyMap<ExtendedElementInformation> {
+final class NameMap extends PropertyMap<String> {
     /**
-     * Creates an information map for the specified accessor.
-     *
-     * @param accessor  The accessor to use for the metadata.
-     * @param keyPolicy Determines the string representation of keys in the map.
+     * Determines the string representation of values in this map.
      */
-    InformationMap(final PropertyAccessor accessor, final KeyNamePolicy keyPolicy) {
+    final KeyNamePolicy valuePolicy;
+
+    /**
+     * Creates a name map for the specified accessor.
+     *
+     * @param accessor    The accessor to use for the metadata.
+     * @param keyPolicy   Determines the string representation of keys in the map.
+     * @param valuePolicy Determines the string representation of values in this map.
+     */
+    NameMap(final PropertyAccessor accessor, final KeyNamePolicy keyPolicy, final KeyNamePolicy valuePolicy) {
         super(accessor, keyPolicy);
+        this.valuePolicy = valuePolicy;
     }
 
     /**
-     * Returns the information to which the specified key is mapped,
-     * or {@code null} if this map contains no mapping for the key.
+     * Returns the value to which the specified key is mapped, or {@code null}
+     * if this map contains no mapping for the key.
      */
     @Override
-    public ExtendedElementInformation get(final Object key) {
+    public String get(final Object key) {
         if (key instanceof String) {
-            return accessor.information(accessor.indexOf((String) key, false));
+            return accessor.name(accessor.indexOf((String) key, false), valuePolicy);
         }
         return null;
     }
@@ -61,13 +65,13 @@ final class InformationMap extends PropertyMap<ExtendedElementInformation> {
      * Returns an iterator over the entries contained in this map.
      */
     @Override
-    final Iterator<Map.Entry<String,ExtendedElementInformation>> iterator() {
+    final Iterator<Map.Entry<String,String>> iterator() {
         return new Iter() {
             @Override
-            public Map.Entry<String,ExtendedElementInformation> next() {
-                final ExtendedElementInformation value = accessor.information(index);
+            public Map.Entry<String,String> next() {
+                final String value = accessor.name(index, valuePolicy);
                 if (value == null) {
-                    // PropertyAccessor.information(int) never return null if the index is valid.
+                    // PropertyAccessor.name(int) never return null if the index is valid.
                     throw new NoSuchElementException();
                 }
                 return new SimpleImmutableEntry<>(accessor.name(index++, keyPolicy), value);

@@ -77,6 +77,17 @@ abstract class PropertyMap<V> extends AbstractMap<String,V> {
     }
 
     /**
+     * Returns {@code true} if this map contains a mapping for the specified key.
+     * The default implementation is okay only if all metadata defined by the standard are included
+     * in the map. Subclasses shall override this method if their map contain only a subset of all
+     * possible metadata elements.
+     */
+    @Override
+    public boolean containsKey(final Object key) {
+        return (key instanceof String) && accessor.indexOf((String) key, false) >= 0;
+    }
+
+    /**
      * Returns a view of the mappings contained in this map. Subclasses shall override this method
      * if they define a different entries set class than the default {@link Entries} inner class.
      */
@@ -106,17 +117,29 @@ abstract class PropertyMap<V> extends AbstractMap<String,V> {
      */
     abstract class Iter implements Iterator<Map.Entry<String,V>> {
         /**
+         * Index of the next element to return.
+         */
+        int index;
+
+        /**
          * Creates a new iterator.
          */
         Iter() {
         }
 
         /**
-         * Assumes that the underlying map is unmodifiable.
-         * Only {@link ValueMap} supports this method.
+         * Returns {@code true} if there is more elements to return.
          */
         @Override
-        public void remove() {
+        public final boolean hasNext() {
+            return index < accessor.count();
+        }
+
+        /**
+         * Assumes that the underlying map is unmodifiable.
+         */
+        @Override
+        public final void remove() {
             throw new UnsupportedOperationException();
         }
     }
