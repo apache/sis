@@ -59,9 +59,14 @@ abstract class MetadataMap<V> extends AbstractMap<String,V> {
 
     /**
      * Returns the number of elements in this map.
+     * The default implementation returns {@link PropertyAccessor#count()}, which is okay only if
+     * all metadata defined by the standard are included in the map. Subclasses shall override
+     * this method if their map contain only a subset of all possible metadata elements.
      */
     @Override
-    public abstract int size();
+    public int size() {
+        return accessor.count();
+    }
 
     /**
      * Returns a view of the mappings contained in this map. Subclasses shall override this method

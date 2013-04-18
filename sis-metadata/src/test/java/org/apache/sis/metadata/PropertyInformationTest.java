@@ -31,6 +31,7 @@ import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.measure.Range;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.test.DependsOnMethod;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
@@ -137,7 +138,7 @@ public final strictfp class PropertyInformationTest extends TestCase {
      * @throws NoSuchMethodException Should never happen.
      */
     @Test
-    public void testGetDomainValue()  throws NoSuchMethodException {
+    public void testGetDomainValue() throws NoSuchMethodException {
         final ExtendedElementInformation information = new PropertyInformation<>(HardCodedCitations.ISO_19115,
                 "maxRelativeHumidity", EnvironmentalRecord.class.getMethod("getMaxRelativeHumidity"), Double.class,
                 DefaultEnvironmentalRecord.class.getMethod("getMaxRelativeHumidity").getAnnotation(ValueRange.class));
@@ -150,6 +151,22 @@ public final strictfp class PropertyInformationTest extends TestCase {
         assertInstanceOf("Specific to SIS implementation.", Range.class, domainValue);
         assertEquals("getMinValue()", Double.valueOf(  0), ((Range) domainValue).getMinValue());
         assertEquals("getMaxValue()", Double.valueOf(100), ((Range) domainValue).getMaxValue());
+    }
+
+    /**
+     * Tests the {@link PropertyInformation#toString()} method.
+     * All information in the expected strings have been validated by previous tests in this class.
+     *
+     * @throws NoSuchMethodException Should never happen.
+     */
+    @Test
+    @DependsOnMethod({"testTitle", "testPresentationForm"})
+    public void testToString() throws NoSuchMethodException {
+        assertEquals("PropertyInformation[“CI_Citation:title” : Character string, mandatory, maxOccurs=1]",
+                create(InternationalString.class, "getTitle", "title").toString());
+
+        assertEquals("PropertyInformation[“CI_Citation:presentationForm” : Codelist, optional, maxOccurs=∞]",
+                create(PresentationForm.class, "getPresentationForms", "presentationForm").toString());
     }
 
     /**

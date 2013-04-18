@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.Collection;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.quality.Completeness;
+import org.opengis.metadata.ExtendedElementInformation;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import org.apache.sis.metadata.iso.quality.AbstractCompleteness;
@@ -44,7 +45,7 @@ import static org.opengis.test.Assert.*;
  * @version 0.3
  * @module
  */
-@DependsOn(PropertyAccessorTest.class)
+@DependsOn({PropertyAccessorTest.class, PropertyInformationTest.class})
 public final strictfp class MetadataStandardTest extends TestCase {
     /**
      * Tests {@link MetadataStandard#getInterface(Class)}.
@@ -116,8 +117,7 @@ public final strictfp class MetadataStandardTest extends TestCase {
 
     /**
      * Tests the {@link MetadataStandard#asMap(Object, KeyNamePolicy, ValueExistencePolicy)} implementation.
-     * Note: this test duplicates {@link PropertyMapTest}, but is done here again because other tests in this
-     * class depend on it.
+     * Note: this test duplicates {@link PropertyMapTest}, but is done here again as an integration test.
      */
     @Test
     public void testMap() {
@@ -150,6 +150,19 @@ public final strictfp class MetadataStandardTest extends TestCase {
         final Object identifiers = map.get("identifiers");
         assertInstanceOf("identifiers", Collection.class, identifiers);
         HardCodedCitations.assertIdentifiersFor("EPSG", (Collection<?>) identifiers);
+    }
+
+    /**
+     * Tests the {@link MetadataStandard#asInformationMap(Class, KeyNamePolicy)} implementation.
+     * Note: this test duplicates {@link PropertyInformationTest}, but is done here again as an
+     * integration test.
+     */
+    @Test
+    public void testInformationMap() {
+        final Map<String,ExtendedElementInformation> map = MetadataStandard.ISO_19115.asInformationMap(
+                Citation.class, KeyNamePolicy.JAVABEANS_PROPERTY);
+        PropertyInformationTest.validateTitle(map.get("title"));
+        PropertyInformationTest.validatePresentationForm(map.get("presentationForms"));
     }
 
     /**
