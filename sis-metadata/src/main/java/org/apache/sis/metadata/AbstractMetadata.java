@@ -121,7 +121,7 @@ public abstract class AbstractMetadata implements LenientComparable {
      *   <li>An empty {@linkplain CharSequence character sequences}.</li>
      *   <li>An {@linkplain java.util.Collection#isEmpty() empty collection} or an empty array.</li>
      *   <li>A collection or array containing only {@code null} or empty elements.</li>
-     *   <li>An other metadata object containing only {@code null} or empty attributes.</li>
+     *   <li>An other metadata object containing only {@code null} or empty properties.</li>
      * </ul>
      *
      * Note that empty properties can be removed by calling the {@link ModifiableMetadata#prune()}
