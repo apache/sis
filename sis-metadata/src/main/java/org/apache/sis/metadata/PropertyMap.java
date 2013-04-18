@@ -24,7 +24,10 @@ import java.util.Iterator;
 
 
 /**
- * The base class of {@link Map} views.
+ * The base class of {@link Map} views of metadata properties.
+ * The map keys are fixed to the {@link String} type and will be the property names.
+ * The map values depend on the actual {@code PropertyMap} subclasses; they may be
+ * property values, property classes or property information.
  *
  * @param <V> The type of values in the map.
  *
@@ -32,8 +35,13 @@ import java.util.Iterator;
  * @since   0.3 (derived from geotk-3.04)
  * @version 0.3
  * @module
+ *
+ * @see ValueMap
+ * @see NameMap
+ * @see TypeMap
+ * @see InformationMap
  */
-abstract class MetadataMap<V> extends AbstractMap<String,V> {
+abstract class PropertyMap<V> extends AbstractMap<String,V> {
     /**
      * The accessor to use for the metadata.
      */
@@ -52,7 +60,7 @@ abstract class MetadataMap<V> extends AbstractMap<String,V> {
     /**
      * Creates a new map backed by the given accessor.
      */
-    MetadataMap(final PropertyAccessor accessor, final KeyNamePolicy keyPolicy) {
+    PropertyMap(final PropertyAccessor accessor, final KeyNamePolicy keyPolicy) {
         this.accessor  = accessor;
         this.keyPolicy = keyPolicy;
     }
@@ -136,7 +144,7 @@ abstract class MetadataMap<V> extends AbstractMap<String,V> {
          */
         @Override
         public final boolean isEmpty() {
-            return MetadataMap.this.isEmpty();
+            return PropertyMap.this.isEmpty();
         }
 
         /**
@@ -144,7 +152,7 @@ abstract class MetadataMap<V> extends AbstractMap<String,V> {
          */
         @Override
         public final int size() {
-            return MetadataMap.this.size();
+            return PropertyMap.this.size();
         }
 
         /**
@@ -152,7 +160,7 @@ abstract class MetadataMap<V> extends AbstractMap<String,V> {
          */
         @Override
         public final Iterator<Map.Entry<String,V>> iterator() {
-            return MetadataMap.this.iterator();
+            return PropertyMap.this.iterator();
         }
     }
 }
