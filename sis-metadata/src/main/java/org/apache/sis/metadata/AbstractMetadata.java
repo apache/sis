@@ -121,7 +121,7 @@ public abstract class AbstractMetadata implements LenientComparable {
      *   <li>An empty {@linkplain CharSequence character sequences}.</li>
      *   <li>An {@linkplain java.util.Collection#isEmpty() empty collection} or an empty array.</li>
      *   <li>A collection or array containing only {@code null} or empty elements.</li>
-     *   <li>An other metadata object containing only {@code null} or empty attributes.</li>
+     *   <li>An other metadata object containing only {@code null} or empty properties.</li>
      * </ul>
      *
      * Note that empty properties can be removed by calling the {@link ModifiableMetadata#prune()}
@@ -129,7 +129,7 @@ public abstract class AbstractMetadata implements LenientComparable {
      *
      * {@section Note for implementors}
      * The default implementation uses Java reflection indirectly, by iterating over all entries
-     * returned by {@link MetadataStandard#asMap(Object, KeyNamePolicy, ValueExistencePolicy)}.
+     * returned by {@link MetadataStandard#asValueMap(Object, KeyNamePolicy, ValueExistencePolicy)}.
      * Subclasses that override this method should usually not invoke {@code super.isEmpty()},
      * because the Java reflection will discover and process the properties defined in the
      * subclasses - which is usually not the intend when overriding a method.
@@ -187,16 +187,16 @@ public abstract class AbstractMetadata implements LenientComparable {
      *
      * <p>The default implementation is equivalent to the following method call:</p>
      * {@preformat java
-     *   return getStandard().asMap(this, KeyNamePolicy.JAVABEANS_PROPERTY, ValueExistencePolicy.NON_EMPTY);
+     *   return getStandard().asValueMap(this, KeyNamePolicy.JAVABEANS_PROPERTY, ValueExistencePolicy.NON_EMPTY);
      * }
      *
      * @return A view of this metadata object as a map.
      *
-     * @see MetadataStandard#asMap(Object, KeyNamePolicy, ValueExistencePolicy)
+     * @see MetadataStandard#asValueMap(Object, KeyNamePolicy, ValueExistencePolicy)
      */
     public synchronized Map<String,Object> asMap() {
         if (asMap == null) {
-            asMap = getStandard().asMap(this, KeyNamePolicy.JAVABEANS_PROPERTY, ValueExistencePolicy.NON_EMPTY);
+            asMap = getStandard().asValueMap(this, KeyNamePolicy.JAVABEANS_PROPERTY, ValueExistencePolicy.NON_EMPTY);
         }
         return asMap;
     }

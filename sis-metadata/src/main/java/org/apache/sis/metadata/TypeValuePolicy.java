@@ -53,16 +53,16 @@ public enum TypeValuePolicy {
     ELEMENT_TYPE,
 
     /**
-     * The type of the class that declares the method. A metadata implementation may have
-     * different declaring classes for its properties if some of them are declared in parent
-     * classes.
+     * The type of the interface that declares the method. For any metadata object, different
+     * properties may have different declaring interfaces if some properties were inherited
+     * from parent interfaces.
      */
-    DECLARING_CLASS,
+    DECLARING_INTERFACE,
 
     /**
-     * The type of the interface that declares the method. This is the same than
-     * {@link #DECLARING_CLASS}, except that the interface from the metadata standard
-     * is returned instead than the implementation class.
+     * The type of the class that declares the method. This is similar to
+     * {@link #DECLARING_INTERFACE}, except that the implementation class
+     * from the metadata standard is returned instead than the interface.
      */
-    DECLARING_INTERFACE
+    DECLARING_CLASS
 }

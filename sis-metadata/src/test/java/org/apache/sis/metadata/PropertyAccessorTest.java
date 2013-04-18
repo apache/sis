@@ -69,7 +69,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @version 0.3
  * @module
  */
-@DependsOn(PropertyDescriptorTest.class)
+@DependsOn(PropertyInformationTest.class)
 public final strictfp class PropertyAccessorTest extends TestCase {
     /**
      * Creates a new property accessor for the {@link DefaultCitation} class.
@@ -143,6 +143,11 @@ public final strictfp class PropertyAccessorTest extends TestCase {
      * Tests the constructor with the {@link DefaultCitation} implementation.
      * The order of properties shall be the order declared in the {@code XmlType.propOrder} annotation.
      * This test may need to be updated if a future GeoAPI release modifies the {@link Citation} interface.
+     * Other tests that depends on {@link Citation} property order are {@link MetadataStandardTest#testNameMap()}
+     * and {@link MetadataStandardTest#testTypeMap()}</p>
+     *
+     * @see MetadataStandardTest#testNameMap()
+     * @see MetadataStandardTest#testTypeMap()
      */
     @Test
     public void testConstructor() {
@@ -191,10 +196,10 @@ public final strictfp class PropertyAccessorTest extends TestCase {
      */
     @Test
     @DependsOnMethod("testConstructor")
-    public void testDescriptor() {
+    public void testInformation() {
         final PropertyAccessor accessor = createPropertyAccessor();
-        PropertyDescriptorTest.validateTitle           (accessor.descriptor(accessor.indexOf("title",            true)));
-        PropertyDescriptorTest.validatePresentationForm(accessor.descriptor(accessor.indexOf("presentationForm", true)));
+        PropertyInformationTest.validateTitle           (accessor.information(accessor.indexOf("title",            true)));
+        PropertyInformationTest.validatePresentationForm(accessor.information(accessor.indexOf("presentationForm", true)));
     }
 
     /**
