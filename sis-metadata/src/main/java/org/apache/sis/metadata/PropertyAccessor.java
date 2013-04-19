@@ -18,6 +18,7 @@ package org.apache.sis.metadata;
 
 import java.util.Set;
 import java.util.Map;
+import java.util.List;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.HashMap;
@@ -49,6 +50,7 @@ import org.apache.sis.xml.IdentifiedObject;
 
 import static org.apache.sis.metadata.PropertyComparator.*;
 import static org.apache.sis.internal.util.Utilities.floatEpsilonEqual;
+import static org.apache.sis.internal.util.CollectionsExt.snapshot;
 import static org.apache.sis.internal.util.CollectionsExt.modifiableCopy;
 import static org.apache.sis.util.collection.Containers.hashMapCapacity;
 
@@ -668,7 +670,11 @@ final class PropertyAccessor {
                 if (getOld) {
                     old = get(getter, metadata);
                     if (old instanceof Collection<?>) {
-                        old = modifiableCopy((Collection<?>) old);
+                        if (old instanceof List<?>) {
+                            old = snapshot((List<?>) old);
+                        } else {
+                            old = modifiableCopy((Collection<?>) old);
+                        }
                     } else if (old instanceof Map<?,?>) {
                         old = modifiableCopy((Map<?,?>) old);
                     }

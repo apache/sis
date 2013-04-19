@@ -582,11 +582,11 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
     private final class MutableSet<E> extends CheckedHashSet<E> {
         private static final long serialVersionUID = 3032602282358733056L;
 
-        public MutableSet(Class<E> type) {
+        MutableSet(Class<E> type) {
             super(type, 4); // Use a small capacity because we typically have few elements.
         }
 
-        public MutableSet(Class<E> type, int capacity) {
+        MutableSet(Class<E> type, int capacity) {
             super(type, hashMapCapacity(capacity));
         }
 
@@ -614,11 +614,11 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
     private final class MutableList<E> extends CheckedArrayList<E> {
         private static final long serialVersionUID = 5800381255701183058L;
 
-        public MutableList(Class<E> type) {
+        MutableList(Class<E> type) {
             super(type, 4); // Use a small capacity because we typically have few elements.
         }
 
-        public MutableList(Class<E> type, int capacity) {
+        MutableList(Class<E> type, int capacity) {
             super(type, capacity);
         }
 
