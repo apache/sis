@@ -18,6 +18,7 @@ package org.apache.sis.test.suite;
 
 import org.apache.sis.test.TestSuite;
 import org.junit.runners.Suite;
+import org.junit.BeforeClass;
 
 
 /**
@@ -40,4 +41,11 @@ import org.junit.runners.Suite;
     org.apache.sis.geometry.Envelope2DTest.class
 })
 public final strictfp class ReferencingTestSuite extends TestSuite {
+    /**
+     * Verifies the list of tests before the suite is run.
+     */
+    @BeforeClass
+    public static void verifyTestList() {
+        verifyTestList(MetadataTestSuite.class);
+    }
 }

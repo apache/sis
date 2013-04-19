@@ -151,7 +151,7 @@ public class SimpleReferenceIdentifier implements ReferenceIdentifier, Serializa
      */
     @Override
     public int hashCode() {
-        return Objects.hash(authority, code);
+        return Objects.hash(authority, code) ^ (int) serialVersionUID;
     }
 
     /**
