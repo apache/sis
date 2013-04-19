@@ -18,7 +18,6 @@ package org.apache.sis.metadata;
 
 import java.util.Map;
 import java.util.HashMap;
-import java.util.AbstractMap;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.acquisition.EnvironmentalRecord;
 import org.apache.sis.test.DependsOn;
@@ -26,6 +25,7 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+import static java.util.AbstractMap.SimpleEntry;
 import static org.apache.sis.metadata.KeyNamePolicy.*;
 
 
@@ -42,7 +42,7 @@ import static org.apache.sis.metadata.KeyNamePolicy.*;
 @DependsOn(PropertyAccessorTest.class)
 public final strictfp class NameMapTest extends TestCase {
     /**
-     * Tests the {@link MetadataStandard#asName(Class, KeyNamePolicy, KeyNamePolicy)} implementation.
+     * Tests {@code NameMap.entrySet()} for an exact match (including iteration order).
      * The properties used in this test are listed in {@link PropertyAccessorTest#testConstructor()}.
      *
      * @see PropertyAccessorTest#testConstructor()
@@ -52,19 +52,19 @@ public final strictfp class NameMapTest extends TestCase {
         final Map<String,String> map = MetadataStandard.ISO_19115.asNameMap(
                 Citation.class, KeyNamePolicy.UML_IDENTIFIER, KeyNamePolicy.JAVABEANS_PROPERTY);
         assertArrayEquals(new Object[] {
-            new AbstractMap.SimpleEntry<>("title",                 "title"),
-            new AbstractMap.SimpleEntry<>("alternateTitle",        "alternateTitles"),
-            new AbstractMap.SimpleEntry<>("date",                  "dates"),
-            new AbstractMap.SimpleEntry<>("edition",               "edition"),
-            new AbstractMap.SimpleEntry<>("editionDate",           "editionDate"),
-            new AbstractMap.SimpleEntry<>("identifier",            "identifiers"),
-            new AbstractMap.SimpleEntry<>("citedResponsibleParty", "citedResponsibleParties"),
-            new AbstractMap.SimpleEntry<>("presentationForm",      "presentationForms"),
-            new AbstractMap.SimpleEntry<>("series",                "series"),
-            new AbstractMap.SimpleEntry<>("otherCitationDetails",  "otherCitationDetails"),
-            new AbstractMap.SimpleEntry<>("collectiveTitle",       "collectiveTitle"),
-            new AbstractMap.SimpleEntry<>("ISBN",                  "ISBN"),
-            new AbstractMap.SimpleEntry<>("ISSN",                  "ISSN")
+            new SimpleEntry<>("title",                 "title"),
+            new SimpleEntry<>("alternateTitle",        "alternateTitles"),
+            new SimpleEntry<>("date",                  "dates"),
+            new SimpleEntry<>("edition",               "edition"),
+            new SimpleEntry<>("editionDate",           "editionDate"),
+            new SimpleEntry<>("identifier",            "identifiers"),
+            new SimpleEntry<>("citedResponsibleParty", "citedResponsibleParties"),
+            new SimpleEntry<>("presentationForm",      "presentationForms"),
+            new SimpleEntry<>("series",                "series"),
+            new SimpleEntry<>("otherCitationDetails",  "otherCitationDetails"),
+            new SimpleEntry<>("collectiveTitle",       "collectiveTitle"),
+            new SimpleEntry<>("ISBN",                  "ISBN"),
+            new SimpleEntry<>("ISSN",                  "ISSN")
         }, map.entrySet().toArray());
 
         assertEquals("alternateTitles", map.get("alternateTitle"));
@@ -97,7 +97,7 @@ public final strictfp class NameMapTest extends TestCase {
      * {@link PropertyAccessor#name(int, KeyNamePolicy)} method and run this test again.
      */
     @Test
-    public void testIntern() {
+    public void testStringIntern() {
         String name;
         Map<String,String> map;
         /*

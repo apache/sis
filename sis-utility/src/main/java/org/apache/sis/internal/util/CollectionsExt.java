@@ -18,6 +18,7 @@ package org.apache.sis.internal.util;
 
 import java.util.*;
 import org.apache.sis.util.Static;
+import org.apache.sis.util.collection.CodeListSet;
 
 
 /**
@@ -28,7 +29,7 @@ import org.apache.sis.util.Static;
  * <ul>
  *   <li>{@link #toCollection(Object) toCollection} for wrapping or copying arbitrary objects to
  *       list or collection.</li>
- *   <li>{@link #modifiableCopy(Collection) modifiableCopy} method for taking a snapshot of an arbitrary
+ *   <li>{@link #copy(Collection, boolean) copy} method for taking a snapshot of an arbitrary
  *       implementation into an unsynchronized, modifiable, in-memory object.</li>
  *   <li>{@link #unmodifiableOrCopy(Set) unmodifiableOrCopy} methods, which may be slightly more
  *       compact than the standard {@link Collections#unmodifiableSet(Set)} equivalent
@@ -194,6 +195,8 @@ public final class CollectionsExt extends Static {
      * <tr><td>{@link List} or other {@link Collection}</td><td class="sep">{@link ArrayList}</td></tr>
      * </table>
      *
+     * This method may not preserve the {@link org.apache.sis.util.collection.CheckedContainer} interface.
+     *
      * @param  <E> The type of elements in the collection.
      * @param  collection The collection to copy, or {@code null}.
      * @return A copy of the given collection, or {@code null} if the given collection was null.
@@ -217,6 +220,12 @@ public final class CollectionsExt extends Static {
             }
             if (type == HashSet.class || type == LinkedHashSet.class) {
                 return (Collection<E>) ((HashSet<E>) collection).clone();
+            }
+            if (collection instanceof EnumSet<?>) {
+                return ((EnumSet) collection).clone();
+            }
+            if (collection instanceof CodeListSet<?>) {
+                return ((CodeListSet) collection).clone();
             }
             return new LinkedHashSet<>(collection);
         }

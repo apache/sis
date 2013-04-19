@@ -36,6 +36,7 @@ import org.junit.BeforeClass;
     org.apache.sis.metadata.NameMapTest.class,
     org.apache.sis.metadata.TypeMapTest.class,
     org.apache.sis.metadata.InformationMapTest.class,
+    org.apache.sis.metadata.ValueMapTest.class,
     org.apache.sis.metadata.MetadataStandardTest.class
 })
 public final strictfp class MetadataTestSuite extends TestSuite {

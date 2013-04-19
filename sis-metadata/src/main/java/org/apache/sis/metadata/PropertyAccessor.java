@@ -483,7 +483,7 @@ final class PropertyAccessor {
                          * Workaround here: I though that annotation strings were interned like any other
                          * constants, but it doesn't seem to be the case as of JDK7. To check if a future
                          * JDK release still needs this explicit call to String.intern(), try to remove
-                         * the ".intern()" part and run the NameMapTest.testIntern() method.
+                         * the ".intern()" part and run the NameMapTest.testStringIntern() method.
                          */
                         return uml.identifier().intern();
                     }
