@@ -143,11 +143,11 @@ public final strictfp class PropertyAccessorTest extends TestCase {
      * Tests the constructor with the {@link DefaultCitation} implementation.
      * The order of properties shall be the order declared in the {@code XmlType.propOrder} annotation.
      * This test may need to be updated if a future GeoAPI release modifies the {@link Citation} interface.
-     * Other tests that depends on {@link Citation} property order are {@link MetadataStandardTest#testNameMap()}
-     * and {@link MetadataStandardTest#testTypeMap()}</p>
+     * Other tests that depends on {@link Citation} property order are {@link NameMapTest#testEntrySet()}
+     * and {@link TypeMapTest#testEntrySet()}</p>
      *
-     * @see MetadataStandardTest#testNameMap()
-     * @see MetadataStandardTest#testTypeMap()
+     * @see NameMapTest#testEntrySet()
+     * @see TypeMapTest#testEntrySet()
      */
     @Test
     public void testConstructor() {

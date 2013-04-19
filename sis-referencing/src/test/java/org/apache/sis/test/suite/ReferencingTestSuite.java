@@ -42,10 +42,11 @@ import org.junit.BeforeClass;
 })
 public final strictfp class ReferencingTestSuite extends TestSuite {
     /**
-     * Verifies the list of tests before the suite is run.
+     * Verifies the list of tests before to run the suite.
+     * See {@link #verifyTestList(Class)} for more information.
      */
     @BeforeClass
     public static void verifyTestList() {
-        verifyTestList(MetadataTestSuite.class);
+        verifyTestList(ReferencingTestSuite.class);
     }
 }

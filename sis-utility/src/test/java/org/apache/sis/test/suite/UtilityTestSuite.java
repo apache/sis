@@ -93,8 +93,8 @@ import org.junit.BeforeClass;
 
     // Converters
     org.apache.sis.internal.converter.AngleConverterTest.class,
-    org.apache.sis.internal.converter.PathConverterTest.class,
     org.apache.sis.internal.converter.StringConverterTest.class,
+    org.apache.sis.internal.converter.PathConverterTest.class,
     org.apache.sis.internal.converter.FallbackConverterTest.class,
     org.apache.sis.internal.converter.ConverterRegistryTest.class,
     org.apache.sis.internal.converter.SystemRegistryTest.class,
@@ -110,10 +110,11 @@ import org.junit.BeforeClass;
 })
 public final strictfp class UtilityTestSuite extends TestSuite {
     /**
-     * Verifies the list of tests before the suite is run.
+     * Verifies the list of tests before to run the suite.
+     * See {@link #verifyTestList(Class)} for more information.
      */
     @BeforeClass
     public static void verifyTestList() {
-        verifyTestList(MetadataTestSuite.class);
+        verifyTestList(UtilityTestSuite.class);
     }
 }

@@ -20,16 +20,8 @@ import java.util.Set;
 import java.util.Map;
 import java.util.HashSet;
 import java.util.Collection;
-import java.util.Date;
-import org.opengis.util.InternationalString;
-import org.opengis.metadata.Identifier;
-import org.opengis.metadata.citation.Series;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.citation.CitationDate;
-import org.opengis.metadata.citation.ResponsibleParty;
-import org.opengis.metadata.citation.PresentationForm;
 import org.opengis.metadata.quality.Completeness;
-import org.opengis.metadata.ExtendedElementInformation;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import org.apache.sis.metadata.iso.quality.AbstractCompleteness;
@@ -41,19 +33,27 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.opengis.test.Assert.*;
-import static java.util.AbstractMap.SimpleEntry;
 
 
 /**
  * Tests the {@link MetadataStandard} class.
- * Unless otherwise specified, the tests use the {@link MetadataStandard#ISO_19115} constant.
+ * Unless otherwise specified, all tests use the {@link MetadataStandard#ISO_19115} constant.
+ *
+ * <p>The following methods are not tested by this class, because they are tested by
+ * dedicated classes named according the implementation class doing the actual work:</p>
+ *
+ * <ul>
+ *   <li>{@link MetadataStandard#asNameMap(Class, KeyNamePolicy, KeyNamePolicy)}, tested by {@link NameMapTest}</li>
+ *   <li>{@link MetadataStandard#asTypeMap(Class, KeyNamePolicy, TypeValuePolicy)}, tested by {@link TypeMapTest}</li>
+ *   <li>{@link MetadataStandard#asInformationMap(Class, KeyNamePolicy)}, tested by {@link InformationMapTest}</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.4)
  * @version 0.3
  * @module
  */
-@DependsOn({PropertyAccessorTest.class, PropertyInformationTest.class})
+@DependsOn({PropertyAccessorTest.class, NameMapTest.class, TypeMapTest.class, InformationMapTest.class})
 public final strictfp class MetadataStandardTest extends TestCase {
     /**
      * Tests {@link MetadataStandard#getInterface(Class)}.
@@ -121,80 +121,6 @@ public final strictfp class MetadataStandardTest extends TestCase {
         // test comparison with a modified copy
         instance.setTitle(new SimpleInternationalString("A dummy title"));
         assertFalse(std.equals(instance, HardCodedCitations.EPSG,    ComparisonMode.STRICT));
-    }
-
-    /**
-     * Tests the {@link MetadataStandard#asName(Class, KeyNamePolicy, KeyNamePolicy)} implementation.
-     * The properties used in this test are listed in {@link PropertyAccessorTest#testConstructor()}.
-     *
-     * @see PropertyAccessorTest#testConstructor()
-     */
-    @Test
-    public void testNameMap() {
-        final Map<String,String> map = MetadataStandard.ISO_19115.asNameMap(
-                Citation.class, KeyNamePolicy.UML_IDENTIFIER, KeyNamePolicy.JAVABEANS_PROPERTY);
-        assertArrayEquals(new Object[] {
-            new SimpleEntry<>("title",                 "title"),
-            new SimpleEntry<>("alternateTitle",        "alternateTitles"),
-            new SimpleEntry<>("date",                  "dates"),
-            new SimpleEntry<>("edition",               "edition"),
-            new SimpleEntry<>("editionDate",           "editionDate"),
-            new SimpleEntry<>("identifier",            "identifiers"),
-            new SimpleEntry<>("citedResponsibleParty", "citedResponsibleParties"),
-            new SimpleEntry<>("presentationForm",      "presentationForms"),
-            new SimpleEntry<>("series",                "series"),
-            new SimpleEntry<>("otherCitationDetails",  "otherCitationDetails"),
-            new SimpleEntry<>("collectiveTitle",       "collectiveTitle"),
-            new SimpleEntry<>("ISBN",                  "ISBN"),
-            new SimpleEntry<>("ISSN",                  "ISSN")
-        }, map.entrySet().toArray());
-
-        assertEquals("alternateTitles", map.get("alternateTitle"));
-        assertNull("Shall not exists.", map.get("dummy"));
-    }
-
-    /**
-     * Tests the {@link MetadataStandard#asType(Class, KeyNamePolicy, TypeValuePolicy)} implementation.
-     * The properties used in this test are listed in {@link PropertyAccessorTest#testConstructor()}.
-     *
-     * @see PropertyAccessorTest#testConstructor()
-     */
-    @Test
-    public void testTypeMap() {
-        final Map<String,Class<?>> map = MetadataStandard.ISO_19115.asTypeMap(
-                Citation.class, KeyNamePolicy.UML_IDENTIFIER, TypeValuePolicy.ELEMENT_TYPE);
-        assertArrayEquals(new Object[] {
-            new SimpleEntry<>("title",                 InternationalString.class),
-            new SimpleEntry<>("alternateTitle",        InternationalString.class),
-            new SimpleEntry<>("date",                  CitationDate.class),
-            new SimpleEntry<>("edition",               InternationalString.class),
-            new SimpleEntry<>("editionDate",           Date.class),
-            new SimpleEntry<>("identifier",            Identifier.class),
-            new SimpleEntry<>("citedResponsibleParty", ResponsibleParty.class),
-            new SimpleEntry<>("presentationForm",      PresentationForm.class),
-            new SimpleEntry<>("series",                Series.class),
-            new SimpleEntry<>("otherCitationDetails",  InternationalString.class),
-            new SimpleEntry<>("collectiveTitle",       InternationalString.class),
-            new SimpleEntry<>("ISBN",                  String.class),
-            new SimpleEntry<>("ISSN",                  String.class)
-        }, map.entrySet().toArray());
-
-        assertEquals(InternationalString.class, map.get("alternateTitle"));
-        assertNull("Shall not exists.", map.get("dummy"));
-    }
-
-    /**
-     * Tests the {@link MetadataStandard#asInformationMap(Class, KeyNamePolicy)} implementation.
-     * Note: this test duplicates {@link PropertyInformationTest}, but is done here again as an
-     * integration test.
-     */
-    @Test
-    public void testInformationMap() {
-        final Map<String,ExtendedElementInformation> map = MetadataStandard.ISO_19115.asInformationMap(
-                Citation.class, KeyNamePolicy.JAVABEANS_PROPERTY);
-        PropertyInformationTest.validateTitle(map.get("title"));
-        PropertyInformationTest.validatePresentationForm(map.get("presentationForms"));
-        assertNull("Shall not exists.", map.get("dummy"));
     }
 
     /**
