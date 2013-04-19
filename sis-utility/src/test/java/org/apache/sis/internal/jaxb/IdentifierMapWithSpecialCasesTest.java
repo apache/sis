@@ -42,7 +42,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @version 0.3
  * @module
  */
-@DependsOn(IdentifierMapAdapter.class)
+@DependsOn(IdentifierMapAdapterTest.class)
 public final strictfp class IdentifierMapWithSpecialCasesTest extends IdentifierMapAdapterTest {
     /**
      * The HREF string to replace by {@link XLink#toString()}.

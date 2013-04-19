@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.IdentityHashMap;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.internal.simple.SimpleCitation;
 
 
 /**
@@ -79,7 +78,7 @@ final class StandardImplementation extends MetadataStandard {
     StandardImplementation(final String citation, final String interfacePackage,
             final String implementationPackage, final String[] prefix, final String[] acronyms)
     {
-        super(new SimpleCitation(citation), interfacePackage);
+        super(citation, interfacePackage);
         this.implementationPackage = implementationPackage;
         this.prefix                = prefix;
         this.acronyms              = acronyms;

@@ -36,6 +36,7 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Utilities;
+import org.apache.sis.util.Workaround;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ObjectConverter;
@@ -471,13 +472,20 @@ final class PropertyAccessor {
      *         or {@code null} if the index is out of bounds.
      */
     @SuppressWarnings("fallthrough")
+    @Workaround(library="JDK", version="1.7") // Actually apply to String.intern() below.
     final String name(final int index, final KeyNamePolicy keyPolicy) {
         if (index >= 0 && index < names.length) {
             switch (keyPolicy) {
                 case UML_IDENTIFIER: {
                     final UML uml = getters[index].getAnnotation(UML.class);
                     if (uml != null) {
-                        return uml.identifier();
+                        /*
+                         * Workaround here: I though that annotation strings were interned like any other
+                         * constants, but it doesn't seem to be the case as of JDK7. To check if a future
+                         * JDK release still needs this explicit call to String.intern(), try to remove
+                         * the ".intern()" part and run the NameMapTest.testStringIntern() method.
+                         */
+                        return uml.identifier().intern();
                     }
                     // Fallthrough
                 }

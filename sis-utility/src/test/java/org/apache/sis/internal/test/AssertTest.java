@@ -17,6 +17,7 @@
 package org.apache.sis.internal.test;
 
 import org.junit.Test;
+import org.apache.sis.test.TestCase;
 
 import static org.apache.sis.test.Assert.*;
 
@@ -29,7 +30,7 @@ import static org.apache.sis.test.Assert.*;
  * @version 0.3
  * @module
  */
-public final strictfp class AssertTest {
+public final strictfp class AssertTest extends TestCase {
     /**
      * Tests the {@link Assert#assertMultilinesEquals(String, String)} method.
      */

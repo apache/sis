@@ -16,8 +16,12 @@
  */
 package org.apache.sis.test;
 
+import java.util.Map;
+import java.util.IdentityHashMap;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
+
+import static org.junit.Assert.*;
 
 
 /**
@@ -34,5 +38,48 @@ public abstract strictfp class TestSuite {
      * Creates a new test suite.
      */
     protected TestSuite() {
+    }
+
+    /**
+     * Verifies the list of tests before the suite is run.
+     * This method verifies the following conditions:
+     *
+     * <ul>
+     *   <li>Every class shall extend either the SIS {@link TestCase} or the GeoAPI {@link org.opengis.test.TestCase}.</li>
+     *   <li>No class shall be declared twice.</li>
+     *   <li>If a test depends on another test, then the other test shall be before the dependant test.</li>
+     * </ul>
+     *
+     * Subclasses shall invoke this method as below:
+     *
+     * {@preformat java
+     *    &#64;BeforeClass
+     *    public static void verifyTestList() {
+     *        verifyTestList(MetadataTestSuite.class);
+     *    }
+     * }
+     *
+     * @param suite The suite for which to verify order.
+     */
+    protected static void verifyTestList(final Class<? extends TestSuite> suite) {
+        final Class<?>[] testCases = suite.getAnnotation(Suite.SuiteClasses.class).value();
+        final Map<Class<?>,Boolean> done = new IdentityHashMap<Class<?>,Boolean>(testCases.length);
+        for (final Class<?> testCase : testCases) {
+            if (!TestCase.class.isAssignableFrom(testCase) && !org.opengis.test.TestCase.class.isAssignableFrom(testCase)) {
+                fail("Class " + testCase.getCanonicalName() + " does not extends TestCase.");
+            }
+            final DependsOn dependencies = testCase.getAnnotation(DependsOn.class);
+            if (dependencies != null) {
+                for (final Class<?> dependency : dependencies.value()) {
+                    if (!done.containsKey(dependency)) {
+                        fail("Class " + testCase.getCanonicalName() + " depends on " + dependency.getCanonicalName()
+                                + ", but the dependency has not been found before the test.");
+                    }
+                }
+            }
+            if (done.put(testCase, Boolean.TRUE) != null) {
+                fail("Class " + testCase.getCanonicalName() + " is declared twice.");
+            }
+        }
     }
 }

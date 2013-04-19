@@ -18,6 +18,7 @@ package org.apache.sis.test.suite;
 
 import org.apache.sis.test.TestSuite;
 import org.junit.runners.Suite;
+import org.junit.BeforeClass;
 
 
 /**
@@ -32,7 +33,19 @@ import org.junit.runners.Suite;
     org.apache.sis.internal.metadata.MetadataUtilitiesTest.class,
     org.apache.sis.metadata.PropertyInformationTest.class,
     org.apache.sis.metadata.PropertyAccessorTest.class,
+    org.apache.sis.metadata.NameMapTest.class,
+    org.apache.sis.metadata.TypeMapTest.class,
+    org.apache.sis.metadata.InformationMapTest.class,
+    org.apache.sis.metadata.ValueMapTest.class,
     org.apache.sis.metadata.MetadataStandardTest.class
 })
 public final strictfp class MetadataTestSuite extends TestSuite {
+    /**
+     * Verifies the list of tests before to run the suite.
+     * See {@link #verifyTestList(Class)} for more information.
+     */
+    @BeforeClass
+    public static void verifyTestList() {
+        verifyTestList(MetadataTestSuite.class);
+    }
 }

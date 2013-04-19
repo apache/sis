@@ -43,7 +43,12 @@ import org.apache.sis.util.logging.Logging;
  * but other types are allowed), instances of {@code PropertyInformation} are obtained
  * indirectly by the {@link MetadataStandard#asInformationMap(Class, KeyNamePolicy)} method.
  *
- * @param <T> The value type, either the method return type if not a collection,
+ * {@note The rational for implementing <code>CheckedContainer</code> is to consider each
+ *        <code>ExtendedElementInformation</code> instance as the set of all possible values
+ *        for the property. If the information had a <code>contains(E)</code> method, it would
+ *        return <code>true</code> if the given value is valid for that property.}
+ *
+ * @param <E> The value type, either the method return type if not a collection,
  *            or the type of elements in the collection otherwise.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -56,8 +61,8 @@ import org.apache.sis.util.logging.Logging;
  * @see <a href="https://issues.apache.org/jira/browse/SIS-80">SIS-80</a>
  */
 @Immutable
-final class PropertyInformation<T> extends SimpleReferenceIdentifier
-        implements ExtendedElementInformation, CheckedContainer<T>
+final class PropertyInformation<E> extends SimpleReferenceIdentifier
+        implements ExtendedElementInformation, CheckedContainer<E>
 {
     /**
      * For cross-versions compatibility.
@@ -78,7 +83,7 @@ final class PropertyInformation<T> extends SimpleReferenceIdentifier
      * @see #getDataType()
      * @see #getElementType()
      */
-    private final Class<T> elementType;
+    private final Class<E> elementType;
 
     /**
      * The minimum number of occurrences.
@@ -121,7 +126,7 @@ final class PropertyInformation<T> extends SimpleReferenceIdentifier
      */
     @SuppressWarnings({"unchecked","rawtypes"})
     PropertyInformation(final Citation standard, final String property, final Method getter,
-            final Class<T> elementType, final ValueRange range)
+            final Class<E> elementType, final ValueRange range)
     {
         super(standard, property);
         parent = getter.getDeclaringClass();
@@ -247,7 +252,7 @@ final class PropertyInformation<T> extends SimpleReferenceIdentifier
      * returns the type of elements in the array or collection.
      */
     @Override
-    public Class<T> getElementType() {
+    public Class<E> getElementType() {
         return elementType;
     }
 
