@@ -18,6 +18,7 @@ package org.apache.sis.test.suite;
 
 import org.apache.sis.test.TestSuite;
 import org.junit.runners.Suite;
+import org.junit.BeforeClass;
 
 
 /**
@@ -92,8 +93,8 @@ import org.junit.runners.Suite;
 
     // Converters
     org.apache.sis.internal.converter.AngleConverterTest.class,
-    org.apache.sis.internal.converter.PathConverterTest.class,
     org.apache.sis.internal.converter.StringConverterTest.class,
+    org.apache.sis.internal.converter.PathConverterTest.class,
     org.apache.sis.internal.converter.FallbackConverterTest.class,
     org.apache.sis.internal.converter.ConverterRegistryTest.class,
     org.apache.sis.internal.converter.SystemRegistryTest.class,
@@ -108,4 +109,12 @@ import org.junit.runners.Suite;
     org.apache.sis.internal.jaxb.IdentifierMapWithSpecialCasesTest.class
 })
 public final strictfp class UtilityTestSuite extends TestSuite {
+    /**
+     * Verifies the list of tests before to run the suite.
+     * See {@link #verifyTestList(Class)} for more information.
+     */
+    @BeforeClass
+    public static void verifyTestList() {
+        verifyTestList(UtilityTestSuite.class);
+    }
 }
