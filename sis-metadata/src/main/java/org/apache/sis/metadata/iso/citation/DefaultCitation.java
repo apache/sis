@@ -503,7 +503,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
     @Override
     @XmlElement(name = "ISBN")
     public synchronized String getISBN() {
-        return isNullOrEmpty(identifiers) ? null : getIdentifierMap().getSpecialized(ISBN);
+        return isNullOrEmpty(identifiers) ? null : getIdentifierMap().get(ISBN);
     }
 
     /**
@@ -540,7 +540,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
     @Override
     @XmlElement(name = "ISSN")
     public synchronized String getISSN() {
-        return isNullOrEmpty(identifiers) ? null : getIdentifierMap().getSpecialized(ISSN);
+        return isNullOrEmpty(identifiers) ? null : getIdentifierMap().get(ISSN);
     }
 
     /**

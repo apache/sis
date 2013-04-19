@@ -66,7 +66,7 @@ public class DefaultGeographicDescription extends AbstractGeographicExtent
     public DefaultGeographicDescription(final Citation authority, final String code) {
         super(true);
         if (authority != null || code != null) {
-            this.geographicIdentifier = new DefaultIdentifier(code, authority);
+            this.geographicIdentifier = new DefaultIdentifier(authority, code);
         }
     }
 

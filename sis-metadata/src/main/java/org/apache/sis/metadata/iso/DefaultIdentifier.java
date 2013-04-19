@@ -84,14 +84,14 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
     /**
      * Creates an identifier initialized to the given authority and code.
      *
-     * @param code      The alphanumeric value identifying an instance in the namespace,
-     *                  or {@code null} if none.
      * @param authority The organization or party responsible for definition and maintenance
      *                  of the code, or {@code null} if none.
+     * @param code      The alphanumeric value identifying an instance in the namespace,
+     *                  or {@code null} if none.
      */
-    public DefaultIdentifier(final String code, final Citation authority) {
-        this.code = code;
+    public DefaultIdentifier(final Citation authority, final String code) {
         this.authority = authority;
+        this.code = code;
     }
 
     /**
