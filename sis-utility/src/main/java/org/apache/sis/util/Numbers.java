@@ -61,7 +61,7 @@ public final class Numbers extends Static {
      *        less objects since <code>IdentityHashMap</code> implementation doesn't need the chain
      *        of objects created by <code>HashMap</code>.}
      */
-    private static final Map<Class<?>,Numbers> MAPPING = new IdentityHashMap<>(16);
+    private static final Map<Class<?>,Numbers> MAPPING = new IdentityHashMap<>(11);
     static {
         new Numbers(BigDecimal.class, true, false, BIG_DECIMAL);
         new Numbers(BigInteger.class, false, true, BIG_INTEGER);

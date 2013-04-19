@@ -18,6 +18,7 @@ package org.apache.sis.test.suite;
 
 import org.apache.sis.test.TestSuite;
 import org.junit.runners.Suite;
+import org.junit.BeforeClass;
 
 
 /**
@@ -108,4 +109,11 @@ import org.junit.runners.Suite;
     org.apache.sis.internal.jaxb.IdentifierMapWithSpecialCasesTest.class
 })
 public final strictfp class UtilityTestSuite extends TestSuite {
+    /**
+     * Verifies the list of tests before the suite is run.
+     */
+    @BeforeClass
+    public static void verifyTestList() {
+        verifyTestList(MetadataTestSuite.class);
+    }
 }

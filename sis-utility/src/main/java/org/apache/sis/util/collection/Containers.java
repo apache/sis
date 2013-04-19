@@ -217,7 +217,8 @@ public final class Containers extends Static {
      * for the default <cite>load factor</cite>, which is 0.75.
      *
      * <p>The same calculation can be used for {@link java.util.LinkedHashMap} and
-     * {@link java.util.HashSet} as well, which are built on top of {@code HashMap}.</p>
+     * {@link java.util.HashSet} as well, which are built on top of {@code HashMap}.
+     * However it is not needed for {@link java.util.IdentityHashMap}.</p>
      *
      * @param count The number of elements to be put into the hash map or hash set.
      * @return The minimal initial capacity to be given to the hash map constructor.
