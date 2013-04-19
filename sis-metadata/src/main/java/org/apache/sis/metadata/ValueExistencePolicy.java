@@ -16,6 +16,10 @@
  */
 package org.apache.sis.metadata;
 
+import java.util.Map;
+import java.util.Collection;
+import java.lang.reflect.Array;
+
 
 /**
  * Whatever {@link MetadataStandard#asValueMap MetadataStandard.asValueMap(…)} shall contain
@@ -49,5 +53,40 @@ public enum ValueExistencePolicy {
      * non-{@linkplain java.util.Collection#isEmpty() empty}.
      * This is the default behavior of {@link AbstractMetadata#asMap()}.
      */
-    NON_EMPTY
+    NON_EMPTY;
+
+
+    /**
+     * Returns {@code true} if the specified object is null or an empty collection, array or string.
+     *
+     * <p>This method intentionally does not inspect array or collection elements, since this method
+     * is invoked from methods doing shallow copy or comparison. If we were inspecting elements,
+     * we would need to add a check against infinite recursivity.</p>
+     */
+    static boolean isNullOrEmpty(final Object value) {
+        return value == null
+                || ((value instanceof CharSequence)  && isEmpty((CharSequence) value))
+                || ((value instanceof Collection<?>) && ((Collection<?>) value).isEmpty())
+                || ((value instanceof Map<?,?>)      && ((Map<?,?>) value).isEmpty())
+                || (value.getClass().isArray()       && Array.getLength(value) == 0);
+    }
+
+    /**
+     * Returns {@code true} if the given character sequence shall be considered empty.
+     * The current implementation returns {@code true} if the sequence contains only
+     * whitespaces in the sense of Java (i.e. ignoring line feeds, but not ignoring
+     * non-breaking spaces). The exact criterion is not a committed part of the API
+     * and may change in future SIS versions according experiences.
+     */
+    private static boolean isEmpty(final CharSequence value) {
+        final int length = value.length();
+        for (int i=0; i<length;) {
+            final int c = Character.codePointAt(value, i);
+            if (!Character.isWhitespace(c)) {
+                return false;
+            }
+            i += Character.charCount(c);
+        }
+        return true;
+    }
 }

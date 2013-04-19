@@ -280,6 +280,27 @@ public final class CollectionsExt extends Static {
     }
 
     /**
+     * Returns a snapshot of the given list. The returned list will not be affected by changes
+     * in the given list after this method call. This method makes no guaranteed about whether
+     * the returned list is modifiable or not.
+     *
+     * @param  <E>  The type of elements in the list.
+     * @param  list The list for which to take a snapshot, or {@code null} if none.
+     * @return A snapshot of the given list, or {@code list} itself if null or unmodifiable.
+     */
+    @SuppressWarnings("unchecked")
+    public static <E> List<E> snapshot(final List<E> list) {
+        if (list != null && !(list instanceof UnmodifiableArrayList<?>)) {
+            switch (list.size()) {
+                case 0:  return Collections.emptyList();
+                case 1:  return Collections.singletonList(list.get(0));
+                default: return (List<E>) Arrays.asList(list.toArray());
+            }
+        }
+        return list;
+    }
+
+    /**
      * Returns the given value as a collection. Special cases:
      *
      * <ul>
