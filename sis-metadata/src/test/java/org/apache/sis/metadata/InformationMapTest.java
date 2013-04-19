@@ -45,11 +45,11 @@ import static org.junit.Assert.*;
 @DependsOn({PropertyAccessorTest.class, PropertyInformationTest.class})
 public final strictfp class InformationMapTest extends TestCase {
     /**
-     * Tests the map on a few specific properties of the {@link Citation} type.
+     * Tests {@link InformationMap#get(Object)} on a few specific properties of the {@link Citation} type.
      * This test duplicates {@link PropertyInformationTest}, but is done here again as an integration test.
      */
     @Test
-    public void testSpecificProperty() {
+    public void testGet() {
         final Map<String,ExtendedElementInformation> map = MetadataStandard.ISO_19115.asInformationMap(
                 Citation.class, KeyNamePolicy.JAVABEANS_PROPERTY);
         PropertyInformationTest.validateTitle(map.get("title"));
@@ -58,7 +58,8 @@ public final strictfp class InformationMapTest extends TestCase {
     }
 
     /**
-     * Tests the content of the key set of {@link EnvironmentalRecord}.
+     * Tests {@code InformationMap.keySet()}.
+     * This method uses the {@link EnvironmentalRecord} metadata type.
      * There is no requirement on the properties order.
      */
     @Test

@@ -18,10 +18,12 @@ package org.apache.sis.metadata;
 
 import java.util.Set;
 import java.util.Map;
+import java.util.List;
 import java.util.HashSet;
 import java.util.Collection;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.quality.Completeness;
+import org.opengis.coverage.grid.RectifiedGrid;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import org.apache.sis.metadata.iso.quality.AbstractCompleteness;
@@ -39,7 +41,7 @@ import static org.opengis.test.Assert.*;
  * Tests the {@link MetadataStandard} class.
  * Unless otherwise specified, all tests use the {@link MetadataStandard#ISO_19115} constant.
  *
- * <p>The following methods are not tested by this class, because they are tested by
+ * <p>The following methods are not (or few) tested by this class, because they are tested by
  * dedicated classes named according the implementation class doing the actual work:</p>
  *
  * <ul>
@@ -53,7 +55,8 @@ import static org.opengis.test.Assert.*;
  * @version 0.3
  * @module
  */
-@DependsOn({PropertyAccessorTest.class, NameMapTest.class, TypeMapTest.class, InformationMapTest.class})
+@DependsOn({PropertyAccessorTest.class, InformationMapTest.class,
+    NameMapTest.class, TypeMapTest.class, ValueMapTest.class})
 public final strictfp class MetadataStandardTest extends TestCase {
     /**
      * Tests {@link MetadataStandard#getInterface(Class)}.
@@ -71,7 +74,7 @@ public final strictfp class MetadataStandardTest extends TestCase {
      */
     @Test
     public void testGetWrongInterface() {
-        final MetadataStandard std = new MetadataStandard(HardCodedCitations.ISO, "org.opengis.dummy.");
+        final MetadataStandard std = new MetadataStandard("SIS", "org.apache.sis.dummy.");
         try {
             std.getInterface(DefaultCitation.class);
             fail("No dummy interface expected.");
@@ -125,7 +128,8 @@ public final strictfp class MetadataStandardTest extends TestCase {
 
     /**
      * Tests the {@link MetadataStandard#asValueMap(Object, KeyNamePolicy, ValueExistencePolicy)} implementation.
-     * Note: this test duplicates {@link ValueMapTest}, but is done here again as an integration test.
+     * This test duplicates {@link ValueMapTest}, but is done here again as an integration test and because many
+     * {@code MetadataStandard} methods depend on it ({@code equals}, {@code hashCode}, {@code prune}, <i>etc.</i>).
      */
     @Test
     public void testValueMap() {
@@ -175,5 +179,36 @@ public final strictfp class MetadataStandardTest extends TestCase {
         assertFalse(map.isEmpty()); // Actually 'testValueMap()' job, but verified for safety.
         assertEquals("hashCode()", new HashSet<>(map.values()).hashCode() + Citation.class.hashCode(),
                 std.hashCode(instance));
+    }
+
+    /**
+     * Tests the {@link MetadataStandard#ISO_19123} constant. Getters shall
+     * be accessible even if there is no implementation on the classpath.
+     */
+    @Test
+    public void testWithoutImplementation() {
+        final MetadataStandard std = MetadataStandard.ISO_19123;
+        assertFalse("isMetadata(Citation)",        std.isMetadata(Citation.class));
+        assertFalse("isMetadata(DefaultCitation)", std.isMetadata(DefaultCitation.class));
+        assertTrue ("isMetadata(RectifiedGrid)",   std.isMetadata(RectifiedGrid.class));
+        /*
+         * Ensure that the getters have been found.
+         */
+        final Map<String,String> names = std.asNameMap(RectifiedGrid.class, KeyNamePolicy.UML_IDENTIFIER, KeyNamePolicy.JAVABEANS_PROPERTY);
+        assertFalse("Getters should have been found even if there is no implementation.", names.isEmpty());
+        assertEquals("dimension", names.get("dimension"));
+        assertEquals("cells", names.get("cell"));
+        /*
+         * Ensure that the type are recognized, especially RectifiedGrid.getOffsetVectors()
+         * which is of type List<double[]>.
+         */
+        Map<String,Class<?>> types;
+        types = std.asTypeMap(RectifiedGrid.class, KeyNamePolicy.UML_IDENTIFIER, TypeValuePolicy.PROPERTY_TYPE);
+        assertEquals("The return type is the int primitive type.", Integer.TYPE, types.get("dimension"));
+        assertEquals("The offset vectors are stored in a List.",   List.class,   types.get("offsetVectors"));
+
+        types = std.asTypeMap(RectifiedGrid.class, KeyNamePolicy.UML_IDENTIFIER, TypeValuePolicy.ELEMENT_TYPE);
+        assertEquals("As elements in a list of dimensions.",       Integer.class,  types.get("dimension"));
+        assertEquals("As elements in the list of offset vectors.", double[].class, types.get("offsetVectors"));
     }
 }

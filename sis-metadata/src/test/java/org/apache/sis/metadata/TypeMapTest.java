@@ -17,7 +17,7 @@
 package org.apache.sis.metadata;
 
 import java.util.Map;
-import java.util.AbstractMap;
+import java.util.Collection;
 import java.util.Date;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
@@ -25,12 +25,18 @@ import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.PresentationForm;
 import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.metadata.citation.Series;
+import org.opengis.metadata.extent.GeographicExtent;
+import org.opengis.metadata.extent.GeographicDescription;
 import org.opengis.util.InternationalString;
+import org.apache.sis.metadata.iso.citation.DefaultCitation;
+import org.apache.sis.metadata.iso.extent.AbstractGeographicExtent;
+import org.apache.sis.metadata.iso.extent.DefaultGeographicDescription;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+import static java.util.AbstractMap.SimpleEntry;
 
 
 /**
@@ -39,14 +45,14 @@ import static org.junit.Assert.*;
  * Unless otherwise specified, all tests use the {@link MetadataStandard#ISO_19115} constant.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
+ * @since   0.3 (derived from geotk-3.00)
  * @version 0.3
  * @module
  */
 @DependsOn(PropertyAccessorTest.class)
 public final strictfp class TypeMapTest extends TestCase {
     /**
-     * Tests the {@link MetadataStandard#asType(Class, KeyNamePolicy, TypeValuePolicy)} implementation.
+     * Tests {@code TypeMap.entrySet()} for an exact match (including iteration order).
      * The properties used in this test are listed in {@link PropertyAccessorTest#testConstructor()}.
      *
      * @see PropertyAccessorTest#testConstructor()
@@ -56,22 +62,59 @@ public final strictfp class TypeMapTest extends TestCase {
         final Map<String,Class<?>> map = MetadataStandard.ISO_19115.asTypeMap(
                 Citation.class, KeyNamePolicy.UML_IDENTIFIER, TypeValuePolicy.ELEMENT_TYPE);
         assertArrayEquals(new Object[] {
-            new AbstractMap.SimpleEntry<>("title",                 InternationalString.class),
-            new AbstractMap.SimpleEntry<>("alternateTitle",        InternationalString.class),
-            new AbstractMap.SimpleEntry<>("date",                  CitationDate.class),
-            new AbstractMap.SimpleEntry<>("edition",               InternationalString.class),
-            new AbstractMap.SimpleEntry<>("editionDate",           Date.class),
-            new AbstractMap.SimpleEntry<>("identifier",            Identifier.class),
-            new AbstractMap.SimpleEntry<>("citedResponsibleParty", ResponsibleParty.class),
-            new AbstractMap.SimpleEntry<>("presentationForm",      PresentationForm.class),
-            new AbstractMap.SimpleEntry<>("series",                Series.class),
-            new AbstractMap.SimpleEntry<>("otherCitationDetails",  InternationalString.class),
-            new AbstractMap.SimpleEntry<>("collectiveTitle",       InternationalString.class),
-            new AbstractMap.SimpleEntry<>("ISBN",                  String.class),
-            new AbstractMap.SimpleEntry<>("ISSN",                  String.class)
+            new SimpleEntry<>("title",                 InternationalString.class),
+            new SimpleEntry<>("alternateTitle",        InternationalString.class),
+            new SimpleEntry<>("date",                  CitationDate.class),
+            new SimpleEntry<>("edition",               InternationalString.class),
+            new SimpleEntry<>("editionDate",           Date.class),
+            new SimpleEntry<>("identifier",            Identifier.class),
+            new SimpleEntry<>("citedResponsibleParty", ResponsibleParty.class),
+            new SimpleEntry<>("presentationForm",      PresentationForm.class),
+            new SimpleEntry<>("series",                Series.class),
+            new SimpleEntry<>("otherCitationDetails",  InternationalString.class),
+            new SimpleEntry<>("collectiveTitle",       InternationalString.class),
+            new SimpleEntry<>("ISBN",                  String.class),
+            new SimpleEntry<>("ISSN",                  String.class)
         }, map.entrySet().toArray());
 
         assertEquals(InternationalString.class, map.get("alternateTitle"));
         assertNull("Shall not exists.", map.get("dummy"));
+    }
+
+    /**
+     * Tests {@link TypeMap#get(Object)} on a well known metadata type for various {@link TypeValuePolicy}.
+     */
+    @Test
+    public void testGet() {
+        final MetadataStandard standard = MetadataStandard.ISO_19115;
+        final KeyNamePolicy keyPolicy = KeyNamePolicy.JAVABEANS_PROPERTY;
+        Map<String, Class<?>> types;
+
+        types = standard.asTypeMap(DefaultCitation.class, keyPolicy, TypeValuePolicy.PROPERTY_TYPE);
+        assertEquals(InternationalString.class, types.get("title"));
+        assertEquals(Collection.class,          types.get("alternateTitles"));
+
+        types = standard.asTypeMap(DefaultCitation.class, keyPolicy, TypeValuePolicy.ELEMENT_TYPE);
+        assertEquals(InternationalString.class, types.get("title"));
+        assertEquals(InternationalString.class, types.get("alternateTitles"));
+
+        types = standard.asTypeMap(DefaultCitation.class, keyPolicy, TypeValuePolicy.DECLARING_INTERFACE);
+        assertEquals(Citation.class, types.get("title"));
+        assertEquals(Citation.class, types.get("alternateTitles"));
+
+        types = standard.asTypeMap(DefaultCitation.class, keyPolicy, TypeValuePolicy.DECLARING_CLASS);
+        assertEquals(DefaultCitation.class, types.get("title"));
+        assertEquals(DefaultCitation.class, types.get("alternateTitles"));
+
+        /*
+         * Tests declaring classes/interfaces again, now with metadata having a class hierarchy.
+         */
+        types = standard.asTypeMap(DefaultGeographicDescription.class, keyPolicy, TypeValuePolicy.DECLARING_INTERFACE);
+        assertEquals(GeographicDescription.class, types.get("geographicIdentifier"));
+        assertEquals(GeographicExtent.class,      types.get("inclusion"));
+
+        types = standard.asTypeMap(DefaultGeographicDescription.class, keyPolicy, TypeValuePolicy.DECLARING_CLASS);
+        assertEquals(DefaultGeographicDescription.class, types.get("geographicIdentifier"));
+        assertEquals(AbstractGeographicExtent.class,     types.get("inclusion"));
     }
 }
