@@ -520,6 +520,11 @@ public class MetadataStandard {
      *     <ul>
      *       <li>The {@linkplain CheckedContainer#getElementType() element type} is the type of property values
      *           as defined by {@link TypeValuePolicy#ELEMENT_TYPE}.</li>
+     *
+     *       {@note The rational for implementing <code>CheckedContainer</code> is to consider each
+     *       <code>ExtendedElementInformation</code> instance as the set of all possible values for
+     *       the property. If the information had a <code>contains(E)</code> method, it would return
+     *       <code>true</code> if the given value is valid for that property.}
      *     </ul>
      *   </li>
      * </ul>

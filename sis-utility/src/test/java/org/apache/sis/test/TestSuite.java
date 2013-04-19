@@ -42,6 +42,14 @@ public abstract strictfp class TestSuite {
 
     /**
      * Verifies the list of tests before the suite is run.
+     * This method verifies the following conditions:
+     *
+     * <ul>
+     *   <li>Every class shall extend either the SIS {@link TestCase} or the GeoAPI {@link org.opengis.test.TestCase}.</li>
+     *   <li>No class shall be declared twice.</li>
+     *   <li>If a test depends on another test, then the other test shall be before the dependant test.</li>
+     * </ul>
+     *
      * Subclasses shall invoke this method as below:
      *
      * {@preformat java
@@ -57,7 +65,7 @@ public abstract strictfp class TestSuite {
         final Class<?>[] testCases = suite.getAnnotation(Suite.SuiteClasses.class).value();
         final Map<Class<?>,Boolean> done = new IdentityHashMap<>(testCases.length);
         for (final Class<?> testCase : testCases) {
-            if (!TestCase.class.isAssignableFrom(testCase)) {
+            if (!TestCase.class.isAssignableFrom(testCase) && !org.opengis.test.TestCase.class.isAssignableFrom(testCase)) {
                 fail("Class " + testCase.getCanonicalName() + " does not extends TestCase.");
             }
             final DependsOn dependencies = testCase.getAnnotation(DependsOn.class);
