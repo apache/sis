@@ -200,13 +200,13 @@ public final strictfp class ValueMapTest extends TestCase {
     }
 
     /**
-     * Tests the {@link ValueMap#add(String,Object)} and {@link ValueMap#remove(Object)} methods.
+     * Tests the {@link ValueMap#put(String,Object)} and {@link ValueMap#remove(Object)} methods.
      * Note that this test is intentionally sensitive to iteration order.
      * That order shall be fixed by the {@code XmlType} annotation.
      */
     @Test
     @DependsOnMethod("testEntrySet")
-    public void testAddAndRemove() {
+    public void testPutAndRemove() {
         final Map<String,Object> map = createCitation();
         /*
          * Remove the ISBN value. Result shall be:

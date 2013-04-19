@@ -31,13 +31,18 @@ import org.junit.BeforeClass;
  */
 @Suite.SuiteClasses({
     org.apache.sis.internal.metadata.MetadataUtilitiesTest.class,
+    org.apache.sis.metadata.iso.citation.DefaultCitationDateTest.class,
+    org.apache.sis.metadata.iso.citation.DefaultCitationTest.class,
+
+    // Classes using Java reflection.
     org.apache.sis.metadata.PropertyInformationTest.class,
     org.apache.sis.metadata.PropertyAccessorTest.class,
     org.apache.sis.metadata.NameMapTest.class,
     org.apache.sis.metadata.TypeMapTest.class,
     org.apache.sis.metadata.InformationMapTest.class,
     org.apache.sis.metadata.ValueMapTest.class,
-    org.apache.sis.metadata.MetadataStandardTest.class
+    org.apache.sis.metadata.MetadataStandardTest.class,
+    org.apache.sis.metadata.PrunerTest.class
 })
 public final strictfp class MetadataTestSuite extends TestSuite {
     /**
