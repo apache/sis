@@ -42,6 +42,22 @@ import static java.util.Collections.singleton;
  */
 public final strictfp class HardCodedCitations extends Static {
     /**
+     * The <a href="http://www.opengeospatial.org">Open Geospatial consortium</a> organization.
+     * "Open Geospatial consortium" is the new name for "OpenGIS consortium".
+     * An {@linkplain Citation#getAlternateTitles() alternate title} for this citation is "OGC"
+     * (according ISO 19115, alternate titles often contain abbreviations).
+     */
+    public static final DefaultCitation OGC;
+    static {
+        final DefaultCitation c = new DefaultCitation("Open Geospatial consortium");
+        c.setAlternateTitles(singleton(new SimpleInternationalString("OGC")));
+        c.setPresentationForms(singleton(PresentationForm.DOCUMENT_DIGITAL));
+        c.getIdentifiers().add(new DefaultIdentifier("OGC"));
+        c.freeze();
+        OGC = c;
+    }
+
+    /**
      * The <a href="http://www.iso.org/">International Organization for Standardization</a>
      * organization. An {@linkplain Citation#getAlternateTitles() alternate title} for this
      * citation is "ISO" (according ISO 19115, alternate titles often contain abbreviations).

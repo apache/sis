@@ -23,6 +23,8 @@ import java.util.IdentityHashMap;
 import org.opengis.util.CodeList;
 import org.apache.sis.internal.util.CollectionsExt;
 
+import static org.apache.sis.metadata.ValueExistencePolicy.*;
+
 
 /**
  * Implementation of {@link AbstractMetadata#isEmpty()} and {@link ModifiableMetadata#prune()}
@@ -59,8 +61,7 @@ final class Pruner extends ThreadLocal<Map<Object,Boolean>> {
      * include empty (but non-null) values in order to allow us to set them to {@code null}.
      */
     private static Map<String, Object> asMap(final MetadataStandard standard, final Object metadata, final boolean prune) {
-        return standard.asValueMap(metadata, KeyNamePolicy.JAVABEANS_PROPERTY, prune ?
-                ValueExistencePolicy.NON_NULL : ValueExistencePolicy.NON_EMPTY);
+        return standard.asValueMap(metadata, KeyNamePolicy.JAVABEANS_PROPERTY, prune ? NON_NULL : NON_EMPTY);
     }
 
     /**
@@ -136,7 +137,7 @@ final class Pruner extends ThreadLocal<Map<Object,Boolean>> {
                 final Collection<?> values = CollectionsExt.toCollection(value);
                 for (final Iterator<?> it = values.iterator(); it.hasNext();) {
                     final Object element = it.next();
-                    if (!PropertyAccessor.isNullOrEmpty(element)) {
+                    if (!isNullOrEmpty(element)) {
                         /*
                          * If the value is not an empty "simple" property (null value, or empty
                          * string, or an empty collection or array), check if it is an other
