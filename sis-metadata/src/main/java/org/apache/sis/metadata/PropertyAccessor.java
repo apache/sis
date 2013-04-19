@@ -18,13 +18,13 @@ package org.apache.sis.metadata;
 
 import java.util.Set;
 import java.util.Map;
+import java.util.List;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Collection;
-import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
 import net.jcip.annotations.ThreadSafe;
@@ -48,7 +48,9 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.xml.IdentifiedObject;
 
 import static org.apache.sis.metadata.PropertyComparator.*;
+import static org.apache.sis.metadata.ValueExistencePolicy.isNullOrEmpty;
 import static org.apache.sis.internal.util.Utilities.floatEpsilonEqual;
+import static org.apache.sis.internal.util.CollectionsExt.snapshot;
 import static org.apache.sis.internal.util.CollectionsExt.modifiableCopy;
 import static org.apache.sis.util.collection.Containers.hashMapCapacity;
 
@@ -668,7 +670,11 @@ final class PropertyAccessor {
                 if (getOld) {
                     old = get(getter, metadata);
                     if (old instanceof Collection<?>) {
-                        old = modifiableCopy((Collection<?>) old);
+                        if (old instanceof List<?>) {
+                            old = snapshot((List<?>) old);
+                        } else {
+                            old = modifiableCopy((Collection<?>) old);
+                        }
                     } else if (old instanceof Map<?,?>) {
                         old = modifiableCopy((Map<?,?>) old);
                     }
@@ -1031,20 +1037,5 @@ final class PropertyAccessor {
             }
         }
         return count;
-    }
-
-    /**
-     * Returns {@code true} if the specified object is null or an empty collection, array or string.
-     *
-     * <p>This method intentionally does not inspect array or collection elements, since this method
-     * is invoked from methods doing shallow copy or comparison. If we were inspecting elements,
-     * we would need to add a check against infinite recursivity.</p>
-     */
-    static boolean isNullOrEmpty(final Object value) {
-        return value == null
-                || ((value instanceof CharSequence)  && ((CharSequence) value).length() == 0)
-                || ((value instanceof Collection<?>) && ((Collection<?>) value).isEmpty())
-                || ((value instanceof Map<?,?>)      && ((Map<?,?>) value).isEmpty())
-                || (value.getClass().isArray()       && Array.getLength(value) == 0);
     }
 }

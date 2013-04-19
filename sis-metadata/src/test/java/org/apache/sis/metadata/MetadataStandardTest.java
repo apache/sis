@@ -53,8 +53,12 @@ import static org.opengis.test.Assert.*;
  * @version 0.3
  * @module
  */
-@DependsOn({PropertyAccessorTest.class, InformationMapTest.class,
-    NameMapTest.class, TypeMapTest.class, ValueMapTest.class})
+@DependsOn({
+    PropertyAccessorTest.class,
+    InformationMapTest.class,
+    NameMapTest.class,
+    TypeMapTest.class,
+    ValueMapTest.class})
 public final strictfp class MetadataStandardTest extends TestCase {
     /**
      * Tests {@link MetadataStandard#getInterface(Class)}.
