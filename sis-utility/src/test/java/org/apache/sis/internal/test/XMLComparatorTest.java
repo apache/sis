@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.test;
 
+import org.apache.sis.test.TestCase;
 import org.apache.sis.test.XMLComparator;
 import org.junit.Test;
 
@@ -30,7 +31,7 @@ import static org.junit.Assert.*;
  * @version 0.3
  * @module
  */
-public final strictfp class XMLComparatorTest {
+public final strictfp class XMLComparatorTest extends TestCase {
     /**
      * Tests the {@link XMLComparator#ignoredAttributes} and {@link XMLComparator#ignoredNodes}
      * sets.

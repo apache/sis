@@ -106,7 +106,13 @@ public final class Types extends Static {
             if (uml != null) {
                 final String id = uml.identifier();
                 if (id != null && !id.isEmpty()) {
-                    return id;
+                    /*
+                     * Workaround: I though that annotation strings were interned like any other constants,
+                     * but it does not seem to be the case as of JDK7.  To verify if this explicit call to
+                     * String.intern() is still needed in a future JDK release, see the workaround comment
+                     * in the org.apache.sis.metadata.PropertyAccessor.name(…) method.
+                     */
+                    return id.intern();
                 }
             }
         }

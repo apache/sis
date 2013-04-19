@@ -32,6 +32,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.internal.util.SystemListener;
+import org.apache.sis.internal.simple.SimpleCitation;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
@@ -116,8 +117,8 @@ public class MetadataStandard {
         final String[] acronyms = {"CoordinateSystem", "CS", "CoordinateReferenceSystem", "CRS"};
         ISO_19111 = new StandardImplementation("ISO 19111", "org.opengis.referencing.", "org.apache.sis.referencing.", prefix, acronyms);
         ISO_19115 = new StandardImplementation("ISO 19115", "org.opengis.metadata.", "org.apache.sis.metadata.iso.", prefix, null);
-        ISO_19119 = new StandardImplementation("ISO 19119", "org.opengis.service.",  null, null, null);
-        ISO_19123 = new StandardImplementation("ISO 19123", "org.opengis.coverage.", null, null, null);
+        ISO_19119 = new MetadataStandard      ("ISO 19119", "org.opengis.service.");
+        ISO_19123 = new MetadataStandard      ("ISO 19123", "org.opengis.coverage.");
         INSTANCES = new MetadataStandard[] {
             ISO_19111,
             ISO_19115,
@@ -179,8 +180,8 @@ public class MetadataStandard {
      * @param citation         Bibliographical reference to the international standard.
      * @param interfacePackage The root package for metadata interfaces.
      */
-    MetadataStandard(final Citation citation, final String interfacePackage) {
-        this.citation         = citation;
+    MetadataStandard(final String citation, final String interfacePackage) {
+        this.citation         = new SimpleCitation(citation);
         this.interfacePackage = interfacePackage;
         this.accessors        = new IdentityHashMap<Class<?>,Object>();
     }
@@ -520,6 +521,11 @@ public class MetadataStandard {
      *     <ul>
      *       <li>The {@linkplain CheckedContainer#getElementType() element type} is the type of property values
      *           as defined by {@link TypeValuePolicy#ELEMENT_TYPE}.</li>
+     *
+     *       {@note The rational for implementing <code>CheckedContainer</code> is to consider each
+     *       <code>ExtendedElementInformation</code> instance as the set of all possible values for
+     *       the property. If the information had a <code>contains(E)</code> method, it would return
+     *       <code>true</code> if the given value is valid for that property.}
      *     </ul>
      *   </li>
      * </ul>
