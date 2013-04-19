@@ -68,7 +68,7 @@ final class ValueMap extends PropertyMap<Object> {
      * Returns {@code true} if the given value should be ignored.
      */
     final boolean ignore(final Object value) {
-        return valuePolicy == ValueExistencePolicy.NON_EMPTY && PropertyAccessor.isNullOrEmpty(value);
+        return valuePolicy == ValueExistencePolicy.NON_EMPTY && ValueExistencePolicy.isNullOrEmpty(value);
     }
 
     /**
@@ -311,7 +311,7 @@ final class ValueMap extends PropertyMap<Object> {
                         break;
                     }
                     case NON_EMPTY: {
-                        skip = PropertyAccessor.isNullOrEmpty(value);
+                        skip = ValueExistencePolicy.isNullOrEmpty(value);
                         break;
                     }
                     default: {
