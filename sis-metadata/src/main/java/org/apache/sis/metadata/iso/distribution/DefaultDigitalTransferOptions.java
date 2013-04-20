@@ -127,7 +127,7 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
      */
     @Override
     @XmlElement(name = "unitsOfDistribution")
-    public synchronized InternationalString getUnitsOfDistribution() {
+    public InternationalString getUnitsOfDistribution() {
         return unitsOfDistribution;
     }
 
@@ -136,7 +136,7 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
      *
      * @param newValue The new units of distribution.
      */
-    public synchronized void setUnitsOfDistribution(final InternationalString newValue) {
+    public void setUnitsOfDistribution(final InternationalString newValue) {
         checkWritePermission();
         unitsOfDistribution = newValue;
     }
@@ -149,7 +149,7 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
     @XmlElement(name = "transferSize")
     @XmlJavaTypeAdapter(GO_Real.class)
     @ValueRange(minimum=0, isMinIncluded=false)
-    public synchronized Double getTransferSize() {
+    public Double getTransferSize() {
         return transferSize;
     }
 
@@ -159,7 +159,7 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
      *
      * @param newValue The new transfer size.
      */
-    public synchronized void setTransferSize(final Double newValue) {
+    public void setTransferSize(final Double newValue) {
         checkWritePermission();
         transferSize = newValue;
     }
@@ -169,7 +169,7 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
      */
     @Override
     @XmlElement(name = "onLine")
-    public synchronized Collection<OnlineResource> getOnLines() {
+    public Collection<OnlineResource> getOnLines() {
         return onLines = nonNullCollection(onLines, OnlineResource.class);
     }
 
@@ -178,7 +178,7 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
      *
      * @param newValues The new online sources.
      */
-    public synchronized void setOnLines(final Collection<? extends OnlineResource> newValues) {
+    public void setOnLines(final Collection<? extends OnlineResource> newValues) {
         onLines = writeCollection(newValues, onLines, OnlineResource.class);
     }
 
@@ -187,7 +187,7 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
      */
     @Override
     @XmlElement(name = "offLine")
-    public synchronized Medium getOffLine() {
+    public Medium getOffLine() {
         return offLine;
     }
 
@@ -196,7 +196,7 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
      *
      * @param newValue The new offline media.
      */
-    public synchronized void setOffLine(final Medium newValue) {
+    public void setOffLine(final Medium newValue) {
         checkWritePermission();
         offLine = newValue;
     }

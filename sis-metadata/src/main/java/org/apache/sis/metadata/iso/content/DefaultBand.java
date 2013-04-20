@@ -204,7 +204,7 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
     @Override
     @XmlElement(name = "maxValue")
     @XmlJavaTypeAdapter(GO_Real.class)
-    public synchronized Double getMaxValue() {
+    public Double getMaxValue() {
         return maxValue;
     }
 
@@ -214,7 +214,7 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
      *
      * @param newValue The new longest wavelength.
      */
-    public synchronized void setMaxValue(final Double newValue) {
+    public void setMaxValue(final Double newValue) {
         checkWritePermission();
         maxValue = newValue;
     }
@@ -226,7 +226,7 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
     @Override
     @XmlElement(name = "minValue")
     @XmlJavaTypeAdapter(GO_Real.class)
-    public synchronized Double getMinValue() {
+    public Double getMinValue() {
         return minValue;
     }
 
@@ -236,7 +236,7 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
      *
      * @param newValue The new shortest wavelength.
      */
-    public synchronized void setMinValue(final Double newValue) {
+    public void setMinValue(final Double newValue) {
         checkWritePermission();
         minValue = newValue;
     }
@@ -248,7 +248,7 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
      */
     @Override
     @XmlElement(name = "units")
-    public synchronized Unit<Length> getUnits() {
+    public Unit<Length> getUnits() {
         return units;
     }
 
@@ -259,7 +259,7 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
      *
      * @param newValue The new units.
      */
-    public synchronized void setUnits(final Unit<Length> newValue) {
+    public void setUnits(final Unit<Length> newValue) {
         checkWritePermission();
         units = newValue;
     }
@@ -269,7 +269,7 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
      */
     @Override
     @XmlElement(name = "peakResponse")
-    public synchronized Double getPeakResponse() {
+    public Double getPeakResponse() {
         return peakResponse;
     }
 
@@ -278,7 +278,7 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
      *
      * @param newValue The new peak response.
      */
-    public synchronized void setPeakResponse(final Double newValue) {
+    public void setPeakResponse(final Double newValue) {
         checkWritePermission();
         peakResponse = newValue;
     }
@@ -290,7 +290,7 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
     @Override
     @ValueRange(minimum=1)
     @XmlElement(name = "bitsPerValue")
-    public synchronized Integer getBitsPerValue() {
+    public Integer getBitsPerValue() {
         return bitsPerValue;
     }
 
@@ -300,7 +300,7 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
      *
      * @param newValue The new number of bits per value.
      */
-    public synchronized void setBitsPerValue(final Integer newValue) {
+    public void setBitsPerValue(final Integer newValue) {
         checkWritePermission();
         bitsPerValue = newValue;
     }
@@ -311,7 +311,7 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
     @Override
     @ValueRange(minimum=0)
     @XmlElement(name = "toneGradation")
-    public synchronized Integer getToneGradation() {
+    public Integer getToneGradation() {
         return toneGradation;
     }
 
@@ -320,7 +320,7 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
      *
      * @param newValue The new tone gradation.
      */
-    public synchronized void setToneGradation(final Integer newValue) {
+    public void setToneGradation(final Integer newValue) {
         checkWritePermission();
         toneGradation = newValue;
     }
@@ -330,7 +330,7 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
      */
     @Override
     @XmlElement(name = "scaleFactor")
-    public synchronized Double getScaleFactor() {
+    public Double getScaleFactor() {
         return scaleFactor;
     }
 
@@ -339,7 +339,7 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
      *
      * @param newValue The new scale factor.
      */
-    public synchronized void setScaleFactor(final Double newValue) {
+    public void setScaleFactor(final Double newValue) {
         checkWritePermission();
         scaleFactor = newValue;
     }
@@ -349,7 +349,7 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
      */
     @Override
     @XmlElement(name = "offset")
-    public synchronized Double getOffset() {
+    public Double getOffset() {
         return offset;
     }
 
@@ -358,7 +358,7 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
      *
      * @param newValue The new offset.
      */
-    public synchronized void setOffset(final Double newValue) {
+    public void setOffset(final Double newValue) {
         checkWritePermission();
         offset = newValue;
     }
@@ -369,7 +369,7 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
      */
     @Override
     @XmlElement(name = "bandBoundaryDefinition", namespace = Namespaces.GMI)
-    public synchronized BandDefinition getBandBoundaryDefinition() {
+    public BandDefinition getBandBoundaryDefinition() {
         return bandBoundaryDefinition;
     }
 
@@ -379,7 +379,7 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
      *
      * @param newValue The new band definition.
      */
-    public synchronized void setBandBoundaryDefinition(final BandDefinition newValue) {
+    public void setBandBoundaryDefinition(final BandDefinition newValue) {
         checkWritePermission();
         bandBoundaryDefinition = newValue;
     }
@@ -391,7 +391,7 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
     @Override
     @ValueRange(minimum=0, isMinIncluded=false)
     @XmlElement(name = "nominalSpatialResolution", namespace = Namespaces.GMI)
-    public synchronized Double getNominalSpatialResolution() {
+    public Double getNominalSpatialResolution() {
         return nominalSpatialResolution;
     }
 
@@ -401,7 +401,7 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
      *
      * @param newValue The new nominal spatial resolution.
      */
-    public synchronized void setNominalSpatialResolution(final Double newValue) {
+    public void setNominalSpatialResolution(final Double newValue) {
         checkWritePermission();
         nominalSpatialResolution = newValue;
     }
@@ -411,7 +411,7 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
      */
     @Override
     @XmlElement(name = "transferFunctionType", namespace = Namespaces.GMI)
-    public synchronized TransferFunctionType getTransferFunctionType() {
+    public TransferFunctionType getTransferFunctionType() {
         return transferFunctionType;
     }
 
@@ -420,7 +420,7 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
      *
      * @param newValue The new transfer function value.
      */
-    public synchronized void setTransferFunctionType(final TransferFunctionType newValue) {
+    public void setTransferFunctionType(final TransferFunctionType newValue) {
         checkWritePermission();
         transferFunctionType = newValue;
     }
@@ -430,7 +430,7 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
      */
     @Override
     @XmlElement(name = "transmittedPolarization", namespace = Namespaces.GMI)
-    public synchronized PolarizationOrientation getTransmittedPolarization() {
+    public PolarizationOrientation getTransmittedPolarization() {
         return transmittedPolarization;
     }
 
@@ -439,7 +439,7 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
      *
      * @param newValue The new transmitted polarization.
      */
-    public synchronized void setTransmittedPolarization(final PolarizationOrientation newValue) {
+    public void setTransmittedPolarization(final PolarizationOrientation newValue) {
         checkWritePermission();
         transmittedPolarization = newValue;
     }
@@ -449,7 +449,7 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
      */
     @Override
     @XmlElement(name = "detectedPolarization", namespace = Namespaces.GMI)
-    public synchronized PolarizationOrientation getDetectedPolarization() {
+    public PolarizationOrientation getDetectedPolarization() {
         return detectedPolarization;
     }
 
@@ -458,7 +458,7 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
      *
      * @param newValue The new detected polarization.
      */
-    public synchronized void setDetectedPolarization(final PolarizationOrientation newValue) {
+    public void setDetectedPolarization(final PolarizationOrientation newValue) {
         checkWritePermission();
         detectedPolarization = newValue;
     }

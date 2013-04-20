@@ -149,7 +149,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      */
     @Override
     @XmlElement(name = "complianceCode")
-    public synchronized Boolean isCompliant() {
+    public Boolean isCompliant() {
         return getBoolean(booleans, COMPLIANT_MASK);
     }
 
@@ -158,7 +158,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      *
      * @param newValue The new compliance value.
      */
-    public synchronized void setCompliant(final Boolean newValue) {
+    public void setCompliant(final Boolean newValue) {
         checkWritePermission();
         booleans = (byte) setBoolean(booleans, COMPLIANT_MASK, newValue);
     }
@@ -168,7 +168,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      */
     @Override
     @XmlElement(name = "language")
-    public synchronized Collection<Locale> getLanguages() {
+    public Collection<Locale> getLanguages() {
         return languages = nonNullCollection(languages, Locale.class);
     }
 
@@ -177,7 +177,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      *
      * @param newValues The new languages.
      */
-    public synchronized void setLanguages(final Collection<? extends Locale> newValues) {
+    public void setLanguages(final Collection<? extends Locale> newValues) {
         languages = writeCollection(newValues, languages, Locale.class);
     }
 
@@ -186,7 +186,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      */
     @Override
     @XmlElement(name = "includedWithDataset", required = true)
-    public synchronized boolean isIncludedWithDataset() {
+    public boolean isIncludedWithDataset() {
         return (booleans & INCLUDED_MASK) != 0;
     }
 
@@ -195,7 +195,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      *
      * @param newValue {@code true} if the feature catalogue is included.
      */
-    public synchronized void setIncludedWithDataset(final boolean newValue) {
+    public void setIncludedWithDataset(final boolean newValue) {
         checkWritePermission();
         if (newValue) {
             booleans |= INCLUDED_MASK;
@@ -209,7 +209,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      */
     @Override
     @XmlElement(name = "featureTypes")
-    public synchronized Collection<GenericName> getFeatureTypes() {
+    public Collection<GenericName> getFeatureTypes() {
         return featureTypes = nonNullCollection(featureTypes, GenericName.class);
     }
 
@@ -218,7 +218,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      *
      * @param newValues The new feature types.
      */
-    public synchronized void setFeatureTypes(final Collection<? extends GenericName> newValues) {
+    public void setFeatureTypes(final Collection<? extends GenericName> newValues) {
         featureTypes = writeCollection(newValues, featureTypes, GenericName.class);
     }
 
@@ -227,7 +227,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      */
     @Override
     @XmlElement(name = "featureCatalogueCitation", required = true)
-    public synchronized Collection<Citation> getFeatureCatalogueCitations() {
+    public Collection<Citation> getFeatureCatalogueCitations() {
         return featureCatalogueCitations = nonNullCollection(featureCatalogueCitations, Citation.class);
     }
 
@@ -236,7 +236,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      *
      * @param newValues The feature catalogue citations.
      */
-    public synchronized void setFeatureCatalogueCitations(final Collection<? extends Citation> newValues) {
+    public void setFeatureCatalogueCitations(final Collection<? extends Citation> newValues) {
         featureCatalogueCitations = writeCollection(newValues, featureCatalogueCitations, Citation.class);
     }
 }

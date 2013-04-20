@@ -112,7 +112,7 @@ public class DefaultRequestedDate extends ISOMetadata implements RequestedDate {
      */
     @Override
     @XmlElement(name = "requestedDateOfCollection", required = true)
-    public synchronized Date getRequestedDateOfCollection() {
+    public Date getRequestedDateOfCollection() {
         return toDate(requestedDateOfCollection);
     }
 
@@ -121,7 +121,7 @@ public class DefaultRequestedDate extends ISOMetadata implements RequestedDate {
      *
      * @param newValue The new requested date of collection value.
      */
-    public synchronized void setRequestedDateOfCollection(final Date newValue) {
+    public void setRequestedDateOfCollection(final Date newValue) {
         checkWritePermission();
         requestedDateOfCollection = toMilliseconds(newValue);
     }
@@ -131,7 +131,7 @@ public class DefaultRequestedDate extends ISOMetadata implements RequestedDate {
      */
     @Override
     @XmlElement(name = "latestAcceptableDate", required = true)
-    public synchronized Date getLatestAcceptableDate() {
+    public Date getLatestAcceptableDate() {
         return toDate(latestAcceptableDate);
     }
 
@@ -140,7 +140,7 @@ public class DefaultRequestedDate extends ISOMetadata implements RequestedDate {
      *
      * @param newValue The new latest acceptable data value.
      */
-    public synchronized void setLatestAcceptableDate(final Date newValue) {
+    public void setLatestAcceptableDate(final Date newValue) {
         checkWritePermission();
         latestAcceptableDate = toMilliseconds(newValue);
     }

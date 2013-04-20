@@ -146,7 +146,7 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
      *
      * @param newValue The new identifier value.
      */
-    public synchronized void setIdentifier(final Identifier newValue) {
+    public void setIdentifier(final Identifier newValue) {
         checkWritePermission();
         identifiers = nonNullCollection(identifiers, Identifier.class);
         NonMarshalledAuthority.setMarshallable(identifiers, newValue);
@@ -157,7 +157,7 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
      */
     @Override
     @XmlElement(name = "softwareReference", namespace = Namespaces.GMI)
-    public synchronized Collection<Citation> getSoftwareReferences() {
+    public Collection<Citation> getSoftwareReferences() {
         return softwareReferences = nonNullCollection(softwareReferences, Citation.class);
     }
 
@@ -166,7 +166,7 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
      *
      * @param newValues The new software references values.
      */
-    public synchronized void setSoftwareReferences(final Collection<? extends Citation> newValues) {
+    public void setSoftwareReferences(final Collection<? extends Citation> newValues) {
         softwareReferences = writeCollection(newValues, softwareReferences, Citation.class);
     }
 
@@ -175,7 +175,7 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
      */
     @Override
     @XmlElement(name = "procedureDescription", namespace = Namespaces.GMI)
-    public synchronized InternationalString getProcedureDescription() {
+    public InternationalString getProcedureDescription() {
         return procedureDescription;
     }
 
@@ -184,7 +184,7 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
      *
      * @param newValue The new procedure description value.
      */
-    public synchronized void setProcedureDescription(final InternationalString newValue) {
+    public void setProcedureDescription(final InternationalString newValue) {
         checkWritePermission();
         procedureDescription = newValue;
     }
@@ -194,7 +194,7 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
      */
     @Override
     @XmlElement(name = "documentation", namespace = Namespaces.GMI)
-    public synchronized Collection<Citation> getDocumentations() {
+    public Collection<Citation> getDocumentations() {
         return documentations = nonNullCollection(documentations, Citation.class);
     }
 
@@ -203,7 +203,7 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
      *
      * @param newValues The new documentations values.
      */
-    public synchronized void setDocumentations(final Collection<? extends Citation> newValues) {
+    public void setDocumentations(final Collection<? extends Citation> newValues) {
         documentations = writeCollection(newValues, documentations, Citation.class);
     }
 
@@ -213,7 +213,7 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
      */
     @Override
     @XmlElement(name = "runTimeParameters", namespace = Namespaces.GMI)
-    public synchronized InternationalString getRunTimeParameters() {
+    public InternationalString getRunTimeParameters() {
         return runTimeParameters;
     }
 
@@ -222,7 +222,7 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
      *
      * @param newValue The new runtime parameter value.
      */
-    public synchronized void setRunTimeParameters(final InternationalString newValue) {
+    public void setRunTimeParameters(final InternationalString newValue) {
         checkWritePermission();
         runTimeParameters = newValue;
     }
@@ -233,7 +233,7 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
      */
     @Override
     @XmlElement(name = "algorithm", namespace = Namespaces.GMI)
-    public synchronized Collection<Algorithm> getAlgorithms() {
+    public Collection<Algorithm> getAlgorithms() {
         return algorithms = nonNullCollection(algorithms, Algorithm.class);
     }
 
@@ -243,7 +243,7 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
      *
      * @param newValues The new algorithms values.
      */
-    public synchronized void setAlgorithms(final Collection<? extends Algorithm> newValues) {
+    public void setAlgorithms(final Collection<? extends Algorithm> newValues) {
         algorithms = writeCollection(newValues, algorithms, Algorithm.class);
     }
 }

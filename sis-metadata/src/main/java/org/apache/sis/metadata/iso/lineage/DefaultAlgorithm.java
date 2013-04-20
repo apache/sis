@@ -108,7 +108,7 @@ public class DefaultAlgorithm extends ISOMetadata implements Algorithm {
      */
     @Override
     @XmlElement(name = "citation", namespace = Namespaces.GMI, required = true)
-    public synchronized Citation getCitation() {
+    public Citation getCitation() {
         return citation;
     }
 
@@ -117,7 +117,7 @@ public class DefaultAlgorithm extends ISOMetadata implements Algorithm {
      *
      * @param newValue The new citation value.
      */
-    public synchronized void setCitation(final Citation newValue) {
+    public void setCitation(final Citation newValue) {
         checkWritePermission();
         citation = newValue;
     }
@@ -127,7 +127,7 @@ public class DefaultAlgorithm extends ISOMetadata implements Algorithm {
      */
     @Override
     @XmlElement(name = "description", namespace = Namespaces.GMI, required = true)
-    public synchronized InternationalString getDescription() {
+    public InternationalString getDescription() {
         return description;
     }
 
@@ -136,7 +136,7 @@ public class DefaultAlgorithm extends ISOMetadata implements Algorithm {
      *
      * @param newValue The new description value.
      */
-    public synchronized void setDescription(final InternationalString newValue) {
+    public void setDescription(final InternationalString newValue) {
         checkWritePermission();
         description = newValue;
     }

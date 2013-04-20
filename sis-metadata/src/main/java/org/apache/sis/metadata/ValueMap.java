@@ -158,7 +158,7 @@ final class ValueMap extends PropertyMap<Object> {
      * Returns a view of the mappings contained in this map.
      */
     @Override
-    public synchronized Set<Map.Entry<String,Object>> entrySet() {
+    public Set<Map.Entry<String,Object>> entrySet() {
         if (entrySet == null) {
             entrySet = new Entries();
         }

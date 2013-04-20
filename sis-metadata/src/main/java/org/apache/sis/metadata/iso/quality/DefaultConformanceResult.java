@@ -136,7 +136,7 @@ public class DefaultConformanceResult extends AbstractResult implements Conforma
      */
     @Override
     @XmlElement(name = "specification", required = true)
-    public synchronized Citation getSpecification() {
+    public Citation getSpecification() {
         return specification;
     }
 
@@ -146,7 +146,7 @@ public class DefaultConformanceResult extends AbstractResult implements Conforma
      *
      * @param newValue The new specification.
      */
-    public synchronized void setSpecification(final Citation newValue) {
+    public void setSpecification(final Citation newValue) {
         checkWritePermission();
         specification = newValue;
     }
@@ -156,7 +156,7 @@ public class DefaultConformanceResult extends AbstractResult implements Conforma
      */
     @Override
     @XmlElement(name = "explanation", required = true)
-    public synchronized InternationalString getExplanation() {
+    public InternationalString getExplanation() {
         return explanation;
     }
 
@@ -165,7 +165,7 @@ public class DefaultConformanceResult extends AbstractResult implements Conforma
      *
      * @param newValue The new explanation.
      */
-    public synchronized void setExplanation(final InternationalString newValue) {
+    public void setExplanation(final InternationalString newValue) {
         checkWritePermission();
         explanation = newValue;
     }
@@ -174,7 +174,7 @@ public class DefaultConformanceResult extends AbstractResult implements Conforma
      * Returns an indication of the conformance result.
      */
     @Override
-    public synchronized Boolean pass() {
+    public Boolean pass() {
         return pass;
     }
 
@@ -183,7 +183,7 @@ public class DefaultConformanceResult extends AbstractResult implements Conforma
      *
      * @param newValue {@code true} if the test pass.
      */
-    public synchronized void setPass(final Boolean newValue) {
+    public void setPass(final Boolean newValue) {
         checkWritePermission();
         pass = newValue;
     }
