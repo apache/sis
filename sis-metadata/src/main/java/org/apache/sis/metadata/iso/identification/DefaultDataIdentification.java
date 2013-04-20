@@ -175,7 +175,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
      */
     @Override
     @XmlElement(name = "spatialRepresentationType")
-    public synchronized Collection<SpatialRepresentationType> getSpatialRepresentationTypes() {
+    public Collection<SpatialRepresentationType> getSpatialRepresentationTypes() {
         return spatialRepresentationTypes = nonNullCollection(spatialRepresentationTypes, SpatialRepresentationType.class);
     }
 
@@ -184,7 +184,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
      *
      * @param newValues The new spatial representation types.
      */
-    public synchronized void setSpatialRepresentationTypes(final Collection<? extends SpatialRepresentationType> newValues) {
+    public void setSpatialRepresentationTypes(final Collection<? extends SpatialRepresentationType> newValues) {
         spatialRepresentationTypes = writeCollection(newValues, spatialRepresentationTypes, SpatialRepresentationType.class);
     }
 
@@ -194,7 +194,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
      */
     @Override
     @XmlElement(name = "spatialResolution")
-    public synchronized Collection<Resolution> getSpatialResolutions() {
+    public Collection<Resolution> getSpatialResolutions() {
         return spatialResolutions = nonNullCollection(spatialResolutions, Resolution.class);
     }
 
@@ -204,7 +204,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
      *
      * @param newValues The new spatial resolutions.
      */
-    public synchronized void setSpatialResolutions(final Collection<? extends Resolution> newValues) {
+    public void setSpatialResolutions(final Collection<? extends Resolution> newValues) {
         spatialResolutions = writeCollection(newValues, spatialResolutions, Resolution.class);
     }
 
@@ -213,7 +213,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
      */
     @Override
     @XmlElement(name = "language", required = true)
-    public synchronized Collection<Locale> getLanguages() {
+    public Collection<Locale> getLanguages() {
         return languages = nonNullCollection(languages, Locale.class);
     }
 
@@ -222,7 +222,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
      *
      * @param newValues The new languages.
      */
-    public synchronized void setLanguages(final Collection<? extends Locale> newValues)  {
+    public void setLanguages(final Collection<? extends Locale> newValues)  {
         languages = writeCollection(newValues, languages, Locale.class);
     }
 
@@ -231,7 +231,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
      */
     @Override
     @XmlElement(name = "characterSet")
-    public synchronized Collection<CharacterSet> getCharacterSets() {
+    public Collection<CharacterSet> getCharacterSets() {
         return characterSets = nonNullCollection(characterSets, CharacterSet.class);
     }
 
@@ -240,7 +240,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
      *
      * @param newValues The new character sets.
      */
-    public synchronized void setCharacterSets(final Collection<? extends CharacterSet> newValues) {
+    public void setCharacterSets(final Collection<? extends CharacterSet> newValues) {
         characterSets = writeCollection(newValues, characterSets, CharacterSet.class);
     }
 
@@ -249,7 +249,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
      */
     @Override
     @XmlElement(name = "topicCategory")
-    public synchronized Collection<TopicCategory> getTopicCategories()  {
+    public Collection<TopicCategory> getTopicCategories()  {
         return topicCategories = nonNullCollection(topicCategories, TopicCategory.class);
     }
 
@@ -258,7 +258,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
      *
      * @param newValues The new topic categories.
      */
-    public synchronized void setTopicCategories(final Collection<? extends TopicCategory> newValues) {
+    public void setTopicCategories(final Collection<? extends TopicCategory> newValues) {
         topicCategories = writeCollection(newValues, topicCategories, TopicCategory.class);
     }
 
@@ -268,7 +268,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
      */
     @Override
     @XmlElement(name = "environmentDescription")
-    public synchronized InternationalString getEnvironmentDescription() {
+    public InternationalString getEnvironmentDescription() {
         return environmentDescription;
     }
 
@@ -277,7 +277,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
      *
      * @param newValue The new environment description.
      */
-    public synchronized void setEnvironmentDescription(final InternationalString newValue)  {
+    public void setEnvironmentDescription(final InternationalString newValue)  {
         checkWritePermission();
         environmentDescription = newValue;
     }
@@ -288,7 +288,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
      */
     @Override
     @XmlElement(name = "extent")
-    public synchronized Collection<Extent> getExtents() {
+    public Collection<Extent> getExtents() {
         return extents = nonNullCollection(extents, Extent.class);
     }
 
@@ -297,7 +297,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
      *
      * @param newValues The new extents
      */
-    public synchronized void setExtents(final Collection<? extends Extent> newValues) {
+    public void setExtents(final Collection<? extends Extent> newValues) {
         extents = writeCollection(newValues, extents, Extent.class);
     }
 
@@ -306,7 +306,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
      */
     @Override
     @XmlElement(name = "supplementalInformation")
-    public synchronized InternationalString getSupplementalInformation() {
+    public InternationalString getSupplementalInformation() {
         return supplementalInformation;
     }
 
@@ -315,7 +315,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
      *
      * @param newValue The new supplemental information.
      */
-    public synchronized void setSupplementalInformation(final InternationalString newValue) {
+    public void setSupplementalInformation(final InternationalString newValue) {
         checkWritePermission();
         supplementalInformation = newValue;
     }

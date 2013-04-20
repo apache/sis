@@ -117,7 +117,7 @@ public class DefaultGeometricObjects extends ISOMetadata implements GeometricObj
      */
     @Override
     @XmlElement(name = "geometricObjectType", required = true)
-    public synchronized GeometricObjectType getGeometricObjectType() {
+    public GeometricObjectType getGeometricObjectType() {
         return geometricObjectType;
     }
 
@@ -126,7 +126,7 @@ public class DefaultGeometricObjects extends ISOMetadata implements GeometricObj
      *
      * @param newValue The new geometric object type.
      */
-    public synchronized void setGeometricObjectType(final GeometricObjectType newValue) {
+    public void setGeometricObjectType(final GeometricObjectType newValue) {
         checkWritePermission();
         geometricObjectType = newValue;
     }
@@ -137,7 +137,7 @@ public class DefaultGeometricObjects extends ISOMetadata implements GeometricObj
     @Override
     @ValueRange(minimum=0)
     @XmlElement(name = "geometricObjectCount")
-    public synchronized Integer getGeometricObjectCount() {
+    public Integer getGeometricObjectCount() {
         return geometricObjectCount;
     }
 
@@ -146,7 +146,7 @@ public class DefaultGeometricObjects extends ISOMetadata implements GeometricObj
      *
      * @param newValue The geometric object count.
      */
-    public synchronized void setGeometricObjectCount(final Integer newValue) {
+    public void setGeometricObjectCount(final Integer newValue) {
         checkWritePermission();
         geometricObjectCount = newValue;
     }

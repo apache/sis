@@ -129,7 +129,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      */
     @Override
     @XmlElement(name = "useLimitation")
-    public synchronized Collection<InternationalString> getUseLimitations() {
+    public Collection<InternationalString> getUseLimitations() {
         return useLimitations = nonNullCollection(useLimitations, InternationalString.class);
     }
 
@@ -139,7 +139,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      *
      * @param newValues The new use limitations.
      */
-    public synchronized void setUseLimitations(final Collection<? extends InternationalString> newValues) {
+    public void setUseLimitations(final Collection<? extends InternationalString> newValues) {
         useLimitations = writeCollection(newValues, useLimitations, InternationalString.class);
     }
 }

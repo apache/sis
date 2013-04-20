@@ -148,7 +148,7 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
      */
     @Override
     @XmlElement(name = "acquisitionPlan")
-    public synchronized Collection<Plan> getAcquisitionPlans() {
+    public Collection<Plan> getAcquisitionPlans() {
         return acquisitionPlans = nonNullCollection(acquisitionPlans, Plan.class);
     }
 
@@ -157,7 +157,7 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
      *
      * @param newValues The new plan values.
      */
-    public synchronized void setAcquisitionPlans(final Collection<? extends Plan> newValues) {
+    public void setAcquisitionPlans(final Collection<? extends Plan> newValues) {
         acquisitionPlans = writeCollection(newValues, acquisitionPlans, Plan.class);
     }
 
@@ -166,7 +166,7 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
      */
     @Override
     @XmlElement(name = "acquisitionRequirement")
-    public synchronized Collection<Requirement> getAcquisitionRequirements() {
+    public Collection<Requirement> getAcquisitionRequirements() {
         return acquisitionRequirements = nonNullCollection(acquisitionRequirements, Requirement.class);
     }
 
@@ -175,7 +175,7 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
      *
      * @param newValues The new acquisition requirements values.
      */
-    public synchronized void setAcquisitionRequirements(final Collection<? extends Requirement> newValues) {
+    public void setAcquisitionRequirements(final Collection<? extends Requirement> newValues) {
         acquisitionRequirements = writeCollection(newValues, acquisitionRequirements, Requirement.class);
     }
 
@@ -185,7 +185,7 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
      */
     @Override
     @XmlElement(name = "environmentalConditions")
-    public synchronized EnvironmentalRecord getEnvironmentalConditions() {
+    public EnvironmentalRecord getEnvironmentalConditions() {
         return environmentalConditions;
     }
 
@@ -194,7 +194,7 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
      *
      * @param newValue The new environmental record value.
      */
-    public synchronized void setEnvironmentalConditions(final EnvironmentalRecord newValue) {
+    public void setEnvironmentalConditions(final EnvironmentalRecord newValue) {
         checkWritePermission();
         environmentalConditions = newValue;
     }
@@ -204,7 +204,7 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
      */
     @Override
     @XmlElement(name = "instrument")
-    public synchronized Collection<Instrument> getInstruments() {
+    public Collection<Instrument> getInstruments() {
         return instruments = nonNullCollection(instruments, Instrument.class);
     }
 
@@ -213,7 +213,7 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
      *
      * @param newValues The new instruments values.
      */
-    public synchronized void setInstruments(final Collection<? extends Instrument> newValues) {
+    public void setInstruments(final Collection<? extends Instrument> newValues) {
         instruments = writeCollection(newValues, instruments, Instrument.class);
     }
 
@@ -222,7 +222,7 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
      */
     @Override
     @XmlElement(name = "objective")
-    public synchronized Collection<Objective> getObjectives() {
+    public Collection<Objective> getObjectives() {
         return objectives = nonNullCollection(objectives, Objective.class);
     }
 
@@ -231,7 +231,7 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
      *
      * @param newValues The new objectives values.
      */
-    public synchronized void setObjectives(final Collection<? extends Objective> newValues) {
+    public void setObjectives(final Collection<? extends Objective> newValues) {
         objectives = writeCollection(newValues, objectives, Objective.class);
     }
 
@@ -240,7 +240,7 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
      */
     @Override
     @XmlElement(name = "operation")
-    public synchronized Collection<Operation> getOperations() {
+    public Collection<Operation> getOperations() {
         return operations = nonNullCollection(operations, Operation.class);
     }
 
@@ -249,7 +249,7 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
      *
      * @param newValues The new operations values.
      */
-    public synchronized void setOperations(final Collection<? extends Operation> newValues) {
+    public void setOperations(final Collection<? extends Operation> newValues) {
         operations = writeCollection(newValues, operations, Operation.class);
     }
 
@@ -258,7 +258,7 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
      */
     @Override
     @XmlElement(name = "platform")
-    public synchronized Collection<Platform> getPlatforms() {
+    public Collection<Platform> getPlatforms() {
         return platforms = nonNullCollection(platforms, Platform.class);
     }
 
@@ -267,7 +267,7 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
      *
      * @param newValues The new platforms values.
      */
-    public synchronized void setPlatforms(final Collection<? extends Platform> newValues) {
+    public void setPlatforms(final Collection<? extends Platform> newValues) {
         platforms = writeCollection(newValues, platforms, Platform.class);
     }
 }

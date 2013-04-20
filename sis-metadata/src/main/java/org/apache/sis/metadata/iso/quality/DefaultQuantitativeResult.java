@@ -121,7 +121,7 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
      */
     @Override
 //  @XmlElement(name = "value", required = true) // TODO
-    public synchronized List<Record> getValues() {
+    public List<Record> getValues() {
         return values = nonNullList(values, Record.class);
     }
 
@@ -130,7 +130,7 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
      *
      * @param newValues The new values.
      */
-    public synchronized void setValues(final List<Record> newValues) {
+    public void setValues(final List<Record> newValues) {
         values = writeList(newValues, values, Record.class);
     }
 
@@ -139,7 +139,7 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
      */
     @Override
     @XmlElement(name = "valueType")
-    public synchronized RecordType getValueType()  {
+    public RecordType getValueType()  {
         return valueType;
     }
 
@@ -148,7 +148,7 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
      *
      * @param newValue The new value type.
      */
-    public synchronized void setValueType(final RecordType newValue) {
+    public void setValueType(final RecordType newValue) {
         checkWritePermission();
         valueType = newValue;
     }
@@ -158,7 +158,7 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
      */
     @Override
     @XmlElement(name = "valueUnit", required = true)
-    public synchronized Unit<?> getValueUnit()  {
+    public Unit<?> getValueUnit()  {
         return valueUnit;
     }
 
@@ -167,7 +167,7 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
      *
      * @param newValue The new value unit.
      */
-    public synchronized void setValueUnit(final Unit<?> newValue) {
+    public void setValueUnit(final Unit<?> newValue) {
         checkWritePermission();
         valueUnit = newValue;
     }
@@ -177,7 +177,7 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
      */
     @Override
     @XmlElement(name = "errorStatistic")
-    public synchronized InternationalString getErrorStatistic()  {
+    public InternationalString getErrorStatistic()  {
         return errorStatistic;
     }
 
@@ -186,7 +186,7 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
      *
      * @param newValue The new error statistic.
      */
-    public synchronized void setErrorStatistic(final InternationalString newValue) {
+    public void setErrorStatistic(final InternationalString newValue) {
         checkWritePermission();
         errorStatistic = newValue;
     }

@@ -122,7 +122,7 @@ public class DefaultSeries extends ISOMetadata implements Series {
      */
     @Override
     @XmlElement(name = "name")
-    public synchronized InternationalString getName() {
+    public InternationalString getName() {
         return name;
     }
 
@@ -131,7 +131,7 @@ public class DefaultSeries extends ISOMetadata implements Series {
      *
      * @param newValue The new name, or {@code null} if none.
      */
-    public synchronized void setName(final InternationalString newValue) {
+    public void setName(final InternationalString newValue) {
         checkWritePermission();
         name = newValue;
     }
@@ -141,7 +141,7 @@ public class DefaultSeries extends ISOMetadata implements Series {
      */
     @Override
     @XmlElement(name = "issueIdentification")
-    public synchronized String getIssueIdentification() {
+    public String getIssueIdentification() {
         return issueIdentification;
     }
 
@@ -150,7 +150,7 @@ public class DefaultSeries extends ISOMetadata implements Series {
      *
      * @param newValue The new issue identification, or {@code null} if none.
      */
-    public synchronized void setIssueIdentification(final String newValue) {
+    public void setIssueIdentification(final String newValue) {
         checkWritePermission();
         issueIdentification = newValue;
     }
@@ -160,7 +160,7 @@ public class DefaultSeries extends ISOMetadata implements Series {
      */
     @Override
     @XmlElement(name = "page")
-    public synchronized String getPage() {
+    public String getPage() {
         return page;
     }
 
@@ -169,7 +169,7 @@ public class DefaultSeries extends ISOMetadata implements Series {
      *
      * @param newValue The new page, or {@code null} if none.
      */
-    public synchronized void setPage(final String newValue) {
+    public void setPage(final String newValue) {
         checkWritePermission();
         page = newValue;
     }

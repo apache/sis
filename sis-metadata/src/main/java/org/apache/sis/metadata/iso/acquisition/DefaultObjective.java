@@ -161,7 +161,7 @@ public class DefaultObjective extends ISOMetadata implements Objective {
      */
     @Override
     @XmlElement(name = "identifier", required = true)
-    public synchronized Collection<Identifier> getIdentifiers() {
+    public Collection<Identifier> getIdentifiers() {
         identifiers = nonNullCollection(identifiers, Identifier.class);
         return NonMarshalledAuthority.excludeOnMarshalling(identifiers);
     }
@@ -176,7 +176,7 @@ public class DefaultObjective extends ISOMetadata implements Objective {
      *
      * @param newValues The new identifiers values.
      */
-    public synchronized void setIdentifiers(final Collection<? extends Identifier> newValues) {
+    public void setIdentifiers(final Collection<? extends Identifier> newValues) {
         final Collection<Identifier> oldIds = NonMarshalledAuthority.filteredCopy(identifiers);
         identifiers = writeCollection(newValues, identifiers, Identifier.class);
         NonMarshalledAuthority.replace(identifiers, oldIds);
@@ -187,7 +187,7 @@ public class DefaultObjective extends ISOMetadata implements Objective {
      */
     @Override
     @XmlElement(name = "priority")
-    public synchronized InternationalString getPriority() {
+    public InternationalString getPriority() {
         return priority;
     }
 
@@ -196,7 +196,7 @@ public class DefaultObjective extends ISOMetadata implements Objective {
      *
      * @param newValue The new priority value.
      */
-    public synchronized void setPriority(final InternationalString newValue) {
+    public void setPriority(final InternationalString newValue) {
         checkWritePermission();
         priority = newValue;
     }
@@ -206,7 +206,7 @@ public class DefaultObjective extends ISOMetadata implements Objective {
      */
     @Override
     @XmlElement(name = "type")
-    public synchronized Collection<ObjectiveType> getTypes() {
+    public Collection<ObjectiveType> getTypes() {
         return types = nonNullCollection(types, ObjectiveType.class);
     }
 
@@ -215,7 +215,7 @@ public class DefaultObjective extends ISOMetadata implements Objective {
      *
      * @param newValues The new types values.
      */
-    public synchronized void setTypes(final Collection<? extends ObjectiveType> newValues) {
+    public void setTypes(final Collection<? extends ObjectiveType> newValues) {
         types = writeCollection(newValues, types, ObjectiveType.class);
     }
 
@@ -224,7 +224,7 @@ public class DefaultObjective extends ISOMetadata implements Objective {
      */
     @Override
     @XmlElement(name = "function")
-    public synchronized Collection<InternationalString> getFunctions() {
+    public Collection<InternationalString> getFunctions() {
         return functions = nonNullCollection(functions, InternationalString.class);
     }
 
@@ -233,7 +233,7 @@ public class DefaultObjective extends ISOMetadata implements Objective {
      *
      * @param newValues The new functions values.
      */
-    public synchronized void setFunctions(final Collection<? extends InternationalString> newValues) {
+    public void setFunctions(final Collection<? extends InternationalString> newValues) {
         functions = writeCollection(newValues, functions, InternationalString.class);
     }
 
@@ -243,7 +243,7 @@ public class DefaultObjective extends ISOMetadata implements Objective {
      */
     @Override
     @XmlElement(name = "extent")
-    public synchronized Collection<Extent> getExtents() {
+    public Collection<Extent> getExtents() {
         return extents = nonNullCollection(extents, Extent.class);
     }
 
@@ -253,7 +253,7 @@ public class DefaultObjective extends ISOMetadata implements Objective {
      *
      * @param newValues The new extents values.
      */
-    public synchronized void setExtents(final Collection<? extends Extent> newValues) {
+    public void setExtents(final Collection<? extends Extent> newValues) {
         extents = writeCollection(newValues, extents, Extent.class);
     }
 
@@ -262,7 +262,7 @@ public class DefaultObjective extends ISOMetadata implements Objective {
      */
     @Override
     @XmlElement(name = "objectiveOccurence", required = true)
-    public synchronized Collection<Event> getObjectiveOccurences() {
+    public Collection<Event> getObjectiveOccurences() {
         return objectiveOccurences = nonNullCollection(objectiveOccurences, Event.class);
     }
 
@@ -271,7 +271,7 @@ public class DefaultObjective extends ISOMetadata implements Objective {
      *
      * @param newValues The new objective occurrences values.
      */
-    public synchronized void setObjectiveOccurences(final Collection<? extends Event> newValues) {
+    public void setObjectiveOccurences(final Collection<? extends Event> newValues) {
         objectiveOccurences = writeCollection(newValues, objectiveOccurences, Event.class);
     }
 
@@ -280,7 +280,7 @@ public class DefaultObjective extends ISOMetadata implements Objective {
      */
     @Override
     @XmlElement(name = "pass")
-    public synchronized Collection<PlatformPass> getPass() {
+    public Collection<PlatformPass> getPass() {
         return pass = nonNullCollection(pass, PlatformPass.class);
     }
 
@@ -289,7 +289,7 @@ public class DefaultObjective extends ISOMetadata implements Objective {
      *
      * @param newValues The new pass values.
      */
-    public synchronized void setPass(final Collection<? extends PlatformPass> newValues) {
+    public void setPass(final Collection<? extends PlatformPass> newValues) {
         pass = writeCollection(newValues, pass, PlatformPass.class);
     }
 
@@ -298,7 +298,7 @@ public class DefaultObjective extends ISOMetadata implements Objective {
      */
     @Override
     @XmlElement(name = "sensingInstrument")
-    public synchronized Collection<Instrument> getSensingInstruments() {
+    public Collection<Instrument> getSensingInstruments() {
         return sensingInstruments = nonNullCollection(sensingInstruments, Instrument.class);
     }
 
@@ -307,7 +307,7 @@ public class DefaultObjective extends ISOMetadata implements Objective {
      *
      * @param newValues The new sensing instruments values.
      */
-    public synchronized void setSensingInstruments(final Collection<? extends Instrument> newValues) {
+    public void setSensingInstruments(final Collection<? extends Instrument> newValues) {
         sensingInstruments = writeCollection(newValues, sensingInstruments, Instrument.class);
     }
 }

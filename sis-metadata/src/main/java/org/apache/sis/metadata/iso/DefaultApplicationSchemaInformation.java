@@ -159,7 +159,7 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata
      */
     @Override
     @XmlElement(name = "name", required = true)
-    public synchronized Citation getName() {
+    public Citation getName() {
         return name;
     }
 
@@ -168,7 +168,7 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata
      *
      * @param newValue The new name.
      */
-    public synchronized void setName(final Citation newValue) {
+    public void setName(final Citation newValue) {
         checkWritePermission();
         name = newValue;
     }
@@ -178,7 +178,7 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata
      */
     @Override
     @XmlElement(name = "schemaLanguage", required = true)
-    public synchronized String getSchemaLanguage() {
+    public String getSchemaLanguage() {
         return schemaLanguage;
     }
 
@@ -187,7 +187,7 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata
      *
      * @param newValue The new schema language.
      */
-    public synchronized void setSchemaLanguage(final String newValue) {
+    public void setSchemaLanguage(final String newValue) {
         checkWritePermission();
         schemaLanguage = newValue;
     }
@@ -197,7 +197,7 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata
      */
     @Override
     @XmlElement(name = "constraintLanguage", required = true)
-    public synchronized String getConstraintLanguage()  {
+    public String getConstraintLanguage()  {
         return constraintLanguage;
     }
 
@@ -206,7 +206,7 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata
      *
      * @param newValue The new constraint language.
      */
-    public synchronized void setConstraintLanguage(final String newValue) {
+    public void setConstraintLanguage(final String newValue) {
         checkWritePermission();
         constraintLanguage = newValue;
     }
@@ -216,7 +216,7 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata
      */
     @Override
     @XmlElement(name = "schemaAscii")
-    public synchronized URI getSchemaAscii()  {
+    public URI getSchemaAscii()  {
         return schemaAscii;
     }
 
@@ -225,7 +225,7 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata
      *
      * @param newValue The new ASCII file.
      */
-    public synchronized void setSchemaAscii(final URI newValue) {
+    public void setSchemaAscii(final URI newValue) {
         checkWritePermission();
         schemaAscii = newValue;
     }
@@ -235,7 +235,7 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata
      */
     @Override
     @XmlElement(name = "graphicsFile")
-    public synchronized URI getGraphicsFile()  {
+    public URI getGraphicsFile()  {
         return graphicsFile;
     }
 
@@ -244,7 +244,7 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata
      *
      * @param newValue The new graphics file.
      */
-    public synchronized void setGraphicsFile(final URI newValue) {
+    public void setGraphicsFile(final URI newValue) {
         checkWritePermission();
         graphicsFile = newValue;
     }
@@ -254,7 +254,7 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata
      */
     @Override
     @XmlElement(name = "softwareDevelopmentFile")
-    public synchronized URI getSoftwareDevelopmentFile()  {
+    public URI getSoftwareDevelopmentFile()  {
         return softwareDevelopmentFile;
     }
 
@@ -263,7 +263,7 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata
      *
      * @param newValue The new software development file.
      */
-    public synchronized void setSoftwareDevelopmentFile(final URI newValue) {
+    public void setSoftwareDevelopmentFile(final URI newValue) {
         checkWritePermission();
         softwareDevelopmentFile = newValue;
     }
@@ -273,7 +273,7 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata
      */
     @Override
     @XmlElement(name = "softwareDevelopmentFileFormat")
-    public synchronized String getSoftwareDevelopmentFileFormat()  {
+    public String getSoftwareDevelopmentFileFormat()  {
         return softwareDevelopmentFileFormat;
     }
 
@@ -282,7 +282,7 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata
      *
      * @param newValue The new software development file format.
      */
-    public synchronized void setSoftwareDevelopmentFileFormat(final String newValue) {
+    public void setSoftwareDevelopmentFileFormat(final String newValue) {
         checkWritePermission();
         softwareDevelopmentFileFormat = newValue;
     }

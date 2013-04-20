@@ -128,7 +128,7 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      */
     @Override
     @XmlElement(name = "equivalentScale")
-    public synchronized RepresentativeFraction getEquivalentScale()  {
+    public RepresentativeFraction getEquivalentScale()  {
         return isDistance() ? null : (RepresentativeFraction) scaleOrDistance;
     }
 
@@ -141,7 +141,7 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      *
      * @param newValue The new equivalent scale.
      */
-    public synchronized void setEquivalentScale(final RepresentativeFraction newValue) {
+    public void setEquivalentScale(final RepresentativeFraction newValue) {
         checkWritePermission();
         if (newValue != null || !isDistance()) {
             scaleOrDistance = newValue;
@@ -157,7 +157,7 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
     @ValueRange(minimum=0, isMinIncluded=false)
 //    @XmlJavaTypeAdapter(GO_Distance.class) // TODO
     @XmlElement(name = "distance")
-    public synchronized Double getDistance() {
+    public Double getDistance() {
         return isDistance() ? (Double) scaleOrDistance : null;
     }
 
@@ -166,7 +166,7 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      *
      * @param newValue The new distance.
      */
-    public synchronized void setDistance(final Double newValue) {
+    public void setDistance(final Double newValue) {
         checkWritePermission();
         if (newValue != null || isDistance()) {
             scaleOrDistance = newValue;

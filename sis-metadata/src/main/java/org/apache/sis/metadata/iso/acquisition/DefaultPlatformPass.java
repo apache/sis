@@ -120,7 +120,7 @@ public class DefaultPlatformPass extends ISOMetadata implements PlatformPass {
      *
      * @param newValue The new identifier value.
      */
-    public synchronized void setIdentifier(final Identifier newValue) {
+    public void setIdentifier(final Identifier newValue) {
         checkWritePermission();
         identifiers = nonNullCollection(identifiers, Identifier.class);
         NonMarshalledAuthority.setMarshallable(identifiers, newValue);
@@ -133,7 +133,7 @@ public class DefaultPlatformPass extends ISOMetadata implements PlatformPass {
      */
     @Override
     @XmlElement(name = "extent")
-    public synchronized Geometry getExtent() {
+    public Geometry getExtent() {
         return extent;
     }
 
@@ -142,7 +142,7 @@ public class DefaultPlatformPass extends ISOMetadata implements PlatformPass {
      *
      * @param newValue The new extent value.
      */
-    public synchronized void setExtent(final Geometry newValue) {
+    public void setExtent(final Geometry newValue) {
         checkWritePermission();
         extent = newValue;
     }
@@ -152,7 +152,7 @@ public class DefaultPlatformPass extends ISOMetadata implements PlatformPass {
      */
     @Override
     @XmlElement(name = "relatedEvent")
-    public synchronized Collection<Event> getRelatedEvents() {
+    public Collection<Event> getRelatedEvents() {
         return relatedEvents = nonNullCollection(relatedEvents, Event.class);
     }
 
@@ -161,7 +161,7 @@ public class DefaultPlatformPass extends ISOMetadata implements PlatformPass {
      *
      * @param newValues The new related events values.
      */
-    public synchronized void setRelatedEvents(final Collection<? extends Event> newValues) {
+    public void setRelatedEvents(final Collection<? extends Event> newValues) {
         relatedEvents = writeCollection(newValues, relatedEvents, Event.class);
     }
 }

@@ -117,7 +117,7 @@ public class DefaultDistribution extends ISOMetadata implements Distribution {
      */
     @Override
     @XmlElement(name = "distributionFormat")
-    public synchronized Collection<Format> getDistributionFormats() {
+    public Collection<Format> getDistributionFormats() {
         return distributionFormats = nonNullCollection(distributionFormats, Format.class);
     }
 
@@ -126,7 +126,7 @@ public class DefaultDistribution extends ISOMetadata implements Distribution {
      *
      * @param newValues The new distribution formats.
      */
-    public synchronized void setDistributionFormats(final Collection<? extends Format> newValues) {
+    public void setDistributionFormats(final Collection<? extends Format> newValues) {
         distributionFormats = writeCollection(newValues, distributionFormats, Format.class);
     }
 
@@ -135,7 +135,7 @@ public class DefaultDistribution extends ISOMetadata implements Distribution {
      */
     @Override
     @XmlElement(name = "distributor")
-    public synchronized Collection<Distributor> getDistributors() {
+    public Collection<Distributor> getDistributors() {
         return distributors = nonNullCollection(distributors, Distributor.class);
     }
 
@@ -144,7 +144,7 @@ public class DefaultDistribution extends ISOMetadata implements Distribution {
      *
      * @param newValues The new distributors.
      */
-    public synchronized void setDistributors(final Collection<? extends Distributor> newValues) {
+    public void setDistributors(final Collection<? extends Distributor> newValues) {
         distributors = writeCollection(newValues, distributors, Distributor.class);
     }
 
@@ -154,7 +154,7 @@ public class DefaultDistribution extends ISOMetadata implements Distribution {
      */
     @Override
     @XmlElement(name = "transferOptions")
-    public synchronized Collection<DigitalTransferOptions> getTransferOptions() {
+    public Collection<DigitalTransferOptions> getTransferOptions() {
         return transferOptions = nonNullCollection(transferOptions, DigitalTransferOptions.class);
     }
 
@@ -164,7 +164,7 @@ public class DefaultDistribution extends ISOMetadata implements Distribution {
      *
      * @param newValues The new transfer options.
      */
-    public synchronized void setTransferOptions(final Collection<? extends DigitalTransferOptions> newValues) {
+    public void setTransferOptions(final Collection<? extends DigitalTransferOptions> newValues) {
         transferOptions = writeCollection(newValues, transferOptions, DigitalTransferOptions.class);
     }
 }

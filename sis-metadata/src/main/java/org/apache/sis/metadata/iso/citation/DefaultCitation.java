@@ -255,7 +255,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      */
     @Override
     @XmlElement(name = "title", required = true)
-    public synchronized InternationalString getTitle() {
+    public InternationalString getTitle() {
         return title;
     }
 
@@ -264,7 +264,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      *
      * @param newValue The new title, or {@code null} if none.
      */
-    public synchronized void setTitle(final InternationalString newValue) {
+    public void setTitle(final InternationalString newValue) {
         checkWritePermission();
         title = newValue;
     }
@@ -275,7 +275,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      */
     @Override
     @XmlElement(name = "alternateTitle")
-    public synchronized Collection<InternationalString> getAlternateTitles() {
+    public Collection<InternationalString> getAlternateTitles() {
         return alternateTitles = nonNullCollection(alternateTitles, InternationalString.class);
     }
 
@@ -284,7 +284,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      *
      * @param newValues The new alternate titles, or {@code null} if none.
      */
-    public synchronized void setAlternateTitles(final Collection<? extends InternationalString> newValues) {
+    public void setAlternateTitles(final Collection<? extends InternationalString> newValues) {
         alternateTitles = writeCollection(newValues, alternateTitles, InternationalString.class);
     }
 
@@ -293,7 +293,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      */
     @Override
     @XmlElement(name = "date", required = true)
-    public synchronized Collection<CitationDate> getDates() {
+    public Collection<CitationDate> getDates() {
         return dates = nonNullCollection(dates, CitationDate.class);
     }
 
@@ -302,7 +302,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      *
      * @param newValues The new dates, or {@code null} if none.
      */
-    public synchronized void setDates(final Collection<? extends CitationDate> newValues) {
+    public void setDates(final Collection<? extends CitationDate> newValues) {
         dates = writeCollection(newValues, dates, CitationDate.class);
     }
 
@@ -311,7 +311,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      */
     @Override
     @XmlElement(name = "edition")
-    public synchronized InternationalString getEdition() {
+    public InternationalString getEdition() {
         return edition;
     }
 
@@ -320,7 +320,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      *
      * @param newValue The new edition, or {@code null} if none.
      */
-    public synchronized void setEdition(final InternationalString newValue) {
+    public void setEdition(final InternationalString newValue) {
         checkWritePermission();
         edition = newValue;
     }
@@ -330,7 +330,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      */
     @Override
     @XmlElement(name = "editionDate")
-    public synchronized Date getEditionDate() {
+    public Date getEditionDate() {
         return toDate(editionDate);
     }
 
@@ -339,7 +339,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      *
      * @param newValue The new edition date, or {@code null} if none.
      */
-    public synchronized void setEditionDate(final Date newValue) {
+    public void setEditionDate(final Date newValue) {
         checkWritePermission();
         editionDate = toMilliseconds(newValue);
     }
@@ -364,7 +364,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      */
     @Override
     @XmlElement(name = "identifier")
-    public synchronized Collection<Identifier> getIdentifiers() {
+    public Collection<Identifier> getIdentifiers() {
         identifiers = nonNullCollection(identifiers, Identifier.class);
         return NonMarshalledAuthority.excludeOnMarshalling(identifiers);
     }
@@ -385,7 +385,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * @see #setISBN(String)
      * @see #setISSN(String)
      */
-    public synchronized void setIdentifiers(final Collection<? extends Identifier> newValues) {
+    public void setIdentifiers(final Collection<? extends Identifier> newValues) {
         final Collection<Identifier> oldIds = NonMarshalledAuthority.filteredCopy(identifiers);
         identifiers = writeCollection(newValues, identifiers, Identifier.class);
         NonMarshalledAuthority.replace(identifiers, oldIds);
@@ -397,7 +397,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      */
     @Override
     @XmlElement(name = "citedResponsibleParty")
-    public synchronized Collection<ResponsibleParty> getCitedResponsibleParties() {
+    public Collection<ResponsibleParty> getCitedResponsibleParties() {
         return citedResponsibleParties = nonNullCollection(citedResponsibleParties, ResponsibleParty.class);
     }
 
@@ -407,7 +407,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      *
      * @param newValues The new cited responsible parties, or {@code null} if none.
      */
-    public synchronized void setCitedResponsibleParties(final Collection<? extends ResponsibleParty> newValues) {
+    public void setCitedResponsibleParties(final Collection<? extends ResponsibleParty> newValues) {
         citedResponsibleParties = writeCollection(newValues, citedResponsibleParties, ResponsibleParty.class);
     }
 
@@ -416,7 +416,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      */
     @Override
     @XmlElement(name = "presentationForm")
-    public synchronized Collection<PresentationForm> getPresentationForms() {
+    public Collection<PresentationForm> getPresentationForms() {
         return presentationForms = nonNullCollection(presentationForms, PresentationForm.class);
     }
 
@@ -425,7 +425,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      *
      * @param newValues The new presentation form, or {@code null} if none.
      */
-    public synchronized void setPresentationForms(final Collection<? extends PresentationForm> newValues) {
+    public void setPresentationForms(final Collection<? extends PresentationForm> newValues) {
         presentationForms = writeCollection(newValues, presentationForms, PresentationForm.class);
     }
 
@@ -434,7 +434,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      */
     @Override
     @XmlElement(name = "series")
-    public synchronized Series getSeries() {
+    public Series getSeries() {
         return series;
     }
 
@@ -443,7 +443,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      *
      * @param newValue The new series.
      */
-    public synchronized void setSeries(final Series newValue) {
+    public void setSeries(final Series newValue) {
         checkWritePermission();
         series = newValue;
     }
@@ -453,7 +453,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      */
     @Override
     @XmlElement(name = "otherCitationDetails")
-    public synchronized InternationalString getOtherCitationDetails() {
+    public InternationalString getOtherCitationDetails() {
         return otherCitationDetails;
     }
 
@@ -462,7 +462,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      *
      * @param newValue Other citations details, or {@code null} if none.
      */
-    public synchronized void setOtherCitationDetails(final InternationalString newValue) {
+    public void setOtherCitationDetails(final InternationalString newValue) {
         checkWritePermission();
         otherCitationDetails = newValue;
     }
@@ -474,7 +474,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      */
     @Override
     @XmlElement(name = "collectiveTitle")
-    public synchronized InternationalString getCollectiveTitle() {
+    public InternationalString getCollectiveTitle() {
         return collectiveTitle;
     }
 
@@ -484,7 +484,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      *
      * @param newValue The new collective title, or {@code null} if none.
      */
-    public synchronized void setCollectiveTitle(final InternationalString newValue) {
+    public void setCollectiveTitle(final InternationalString newValue) {
         checkWritePermission();
         collectiveTitle = newValue;
     }
@@ -502,7 +502,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      */
     @Override
     @XmlElement(name = "ISBN")
-    public synchronized String getISBN() {
+    public String getISBN() {
         return isNullOrEmpty(identifiers) ? null : getIdentifierMap().get(ISBN);
     }
 
@@ -519,7 +519,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * @see #setIdentifiers(Collection)
      * @see Citations#ISBN
      */
-    public synchronized void setISBN(final String newValue) {
+    public void setISBN(final String newValue) {
         checkWritePermission();
         if (newValue != null || !isNullOrEmpty(identifiers)) {
             getIdentifierMap().putSpecialized(ISBN, newValue);
@@ -539,7 +539,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      */
     @Override
     @XmlElement(name = "ISSN")
-    public synchronized String getISSN() {
+    public String getISSN() {
         return isNullOrEmpty(identifiers) ? null : getIdentifierMap().get(ISSN);
     }
 
@@ -556,7 +556,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * @see #setIdentifiers(Collection)
      * @see Citations#ISSN
      */
-    public synchronized void setISSN(final String newValue) {
+    public void setISSN(final String newValue) {
         checkWritePermission();
         if (newValue != null || !isNullOrEmpty(identifiers)) {
             getIdentifierMap().putSpecialized(ISSN, newValue);

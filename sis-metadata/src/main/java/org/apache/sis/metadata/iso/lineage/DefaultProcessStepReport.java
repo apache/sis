@@ -114,7 +114,7 @@ public class DefaultProcessStepReport extends ISOMetadata implements ProcessStep
      */
     @Override
     @XmlElement(name = "name", namespace = Namespaces.GMI, required = true)
-    public synchronized InternationalString getName() {
+    public InternationalString getName() {
         return name;
     }
 
@@ -123,7 +123,7 @@ public class DefaultProcessStepReport extends ISOMetadata implements ProcessStep
      *
      * @param newValue The new name value.
      */
-    public synchronized void setName(final InternationalString newValue) {
+    public void setName(final InternationalString newValue) {
         checkWritePermission();
         name = newValue;
     }
@@ -134,7 +134,7 @@ public class DefaultProcessStepReport extends ISOMetadata implements ProcessStep
      */
     @Override
     @XmlElement(name = "description", namespace = Namespaces.GMI)
-    public synchronized InternationalString getDescription() {
+    public InternationalString getDescription() {
         return description;
     }
 
@@ -143,7 +143,7 @@ public class DefaultProcessStepReport extends ISOMetadata implements ProcessStep
      *
      * @param newValue The new description value.
      */
-    public synchronized void setDescription(final InternationalString newValue) {
+    public void setDescription(final InternationalString newValue) {
         checkWritePermission();
         description = newValue;
     }
@@ -153,7 +153,7 @@ public class DefaultProcessStepReport extends ISOMetadata implements ProcessStep
      */
     @Override
     @XmlElement(name = "fileType", namespace = Namespaces.GMI)
-    public synchronized InternationalString getFileType() {
+    public InternationalString getFileType() {
         return fileType;
     }
 
@@ -162,7 +162,7 @@ public class DefaultProcessStepReport extends ISOMetadata implements ProcessStep
      *
      * @param newValue The new file type value.
      */
-    public synchronized void setFileType(final InternationalString newValue) {
+    public void setFileType(final InternationalString newValue) {
         checkWritePermission();
         fileType = newValue;
     }

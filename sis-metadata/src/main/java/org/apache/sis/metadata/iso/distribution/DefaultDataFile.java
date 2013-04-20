@@ -114,7 +114,7 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
      */
     @Override
     @XmlElement(name = "featureType", namespace = Namespaces.GMX)
-    public synchronized Collection<LocalName> getFeatureTypes() {
+    public Collection<LocalName> getFeatureTypes() {
         return featureTypes = nonNullCollection(featureTypes, LocalName.class);
     }
 
@@ -123,7 +123,7 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
      *
      * @param newValues The new feature type values.
      */
-    public synchronized void setFeatureTypes(final Collection<? extends LocalName> newValues) {
+    public void setFeatureTypes(final Collection<? extends LocalName> newValues) {
         featureTypes = writeCollection(newValues, featureTypes, LocalName.class);
     }
 
@@ -132,7 +132,7 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
      */
     @Override
     @XmlElement(name = "fileFormat", namespace = Namespaces.GMX, required = true)
-    public synchronized Format getFileFormat() {
+    public Format getFileFormat() {
         return fileFormat;
     }
 
@@ -141,7 +141,7 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
      *
      * @param newValue The new file format value.
      */
-    public synchronized void setFileFormat(final Format newValue) {
+    public void setFileFormat(final Format newValue) {
         checkWritePermission();
         fileFormat = newValue;
     }

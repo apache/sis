@@ -169,7 +169,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      */
     @Override
     @XmlElement(name = "maintenanceAndUpdateFrequency", required = true)
-    public synchronized MaintenanceFrequency getMaintenanceAndUpdateFrequency() {
+    public MaintenanceFrequency getMaintenanceAndUpdateFrequency() {
         return maintenanceAndUpdateFrequency;
     }
 
@@ -179,7 +179,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      *
      * @param newValue The new maintenance frequency.
      */
-    public synchronized void setMaintenanceAndUpdateFrequency(final MaintenanceFrequency newValue) {
+    public void setMaintenanceAndUpdateFrequency(final MaintenanceFrequency newValue) {
         checkWritePermission();
         maintenanceAndUpdateFrequency = newValue;
     }
@@ -189,7 +189,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      */
     @Override
     @XmlElement(name = "dateOfNextUpdate")
-    public synchronized Date getDateOfNextUpdate() {
+    public Date getDateOfNextUpdate() {
         return toDate(dateOfNextUpdate);
     }
 
@@ -198,7 +198,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      *
      * @param newValue The new date of next update.
      */
-    public synchronized void setDateOfNextUpdate(final Date newValue) {
+    public void setDateOfNextUpdate(final Date newValue) {
         checkWritePermission();
         dateOfNextUpdate = toMilliseconds(newValue);
     }
@@ -210,7 +210,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      */
     @Override
     @XmlElement(name = "userDefinedMaintenanceFrequency")
-    public synchronized PeriodDuration getUserDefinedMaintenanceFrequency() {
+    public PeriodDuration getUserDefinedMaintenanceFrequency() {
         return userDefinedMaintenanceFrequency;
     }
 
@@ -219,7 +219,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      *
      * @param newValue The new user defined maintenance frequency.
      */
-    public synchronized void setUserDefinedMaintenanceFrequency(final PeriodDuration newValue) {
+    public void setUserDefinedMaintenanceFrequency(final PeriodDuration newValue) {
         checkWritePermission();
         userDefinedMaintenanceFrequency = newValue;
     }
@@ -229,7 +229,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      */
     @Override
     @XmlElement(name = "updateScope")
-    public synchronized Collection<ScopeCode> getUpdateScopes() {
+    public Collection<ScopeCode> getUpdateScopes() {
         return updateScopes = nonNullCollection(updateScopes, ScopeCode.class);
     }
 
@@ -238,7 +238,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      *
      * @param newValues The new update scopes.
      */
-    public synchronized void setUpdateScopes(final Collection<? extends ScopeCode> newValues) {
+    public void setUpdateScopes(final Collection<? extends ScopeCode> newValues) {
         updateScopes = writeCollection(newValues, updateScopes, ScopeCode.class);
     }
 
@@ -247,7 +247,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      */
     @Override
     @XmlElement(name = "updateScopeDescription")
-    public synchronized Collection<ScopeDescription> getUpdateScopeDescriptions() {
+    public Collection<ScopeDescription> getUpdateScopeDescriptions() {
         return updateScopeDescriptions = nonNullCollection(updateScopeDescriptions, ScopeDescription.class);
     }
 
@@ -256,7 +256,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      *
      * @param newValues The new update scope descriptions.
      */
-    public synchronized void setUpdateScopeDescriptions(final Collection<? extends ScopeDescription> newValues) {
+    public void setUpdateScopeDescriptions(final Collection<? extends ScopeDescription> newValues) {
         updateScopeDescriptions = writeCollection(newValues, updateScopeDescriptions, ScopeDescription.class);
     }
 
@@ -265,7 +265,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      */
     @Override
     @XmlElement(name = "maintenanceNote")
-    public synchronized Collection<InternationalString> getMaintenanceNotes() {
+    public Collection<InternationalString> getMaintenanceNotes() {
         return maintenanceNotes = nonNullCollection(maintenanceNotes, InternationalString.class);
     }
 
@@ -274,7 +274,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      *
      * @param newValues The new maintenance notes.
      */
-    public synchronized void setMaintenanceNotes(final Collection<? extends InternationalString> newValues) {
+    public void setMaintenanceNotes(final Collection<? extends InternationalString> newValues) {
         maintenanceNotes = writeCollection(newValues, maintenanceNotes, InternationalString.class);
     }
 
@@ -284,7 +284,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      */
     @Override
     @XmlElement(name = "contact")
-    public synchronized Collection<ResponsibleParty> getContacts() {
+    public Collection<ResponsibleParty> getContacts() {
         return contacts = nonNullCollection(contacts, ResponsibleParty.class);
     }
 
@@ -294,7 +294,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      *
      * @param newValues The new contacts
      */
-    public synchronized void setContacts(final Collection<? extends ResponsibleParty> newValues) {
+    public void setContacts(final Collection<? extends ResponsibleParty> newValues) {
         contacts = writeCollection(newValues, contacts, ResponsibleParty.class);
     }
 }

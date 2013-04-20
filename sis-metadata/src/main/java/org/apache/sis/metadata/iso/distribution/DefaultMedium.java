@@ -140,7 +140,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
      */
     @Override
     @XmlElement(name = "name")
-    public synchronized MediumName getName() {
+    public MediumName getName() {
         return name;
     }
 
@@ -149,7 +149,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
      *
      * @param newValue The new name.
      */
-    public synchronized void setName(final MediumName newValue) {
+    public void setName(final MediumName newValue) {
         checkWritePermission();
         name = newValue;
     }
@@ -161,7 +161,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
     @Override
     @XmlElement(name = "density")
     @ValueRange(minimum=0, isMinIncluded=false)
-    public synchronized Collection<Double> getDensities() {
+    public Collection<Double> getDensities() {
         return densities = nonNullCollection(densities, Double.class);
     }
 
@@ -171,7 +171,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
      *
      * @param newValues The new densities.
      */
-    public synchronized void setDensities(final Collection<? extends Double> newValues) {
+    public void setDensities(final Collection<? extends Double> newValues) {
         densities = writeCollection(newValues, densities, Double.class);
     }
 
@@ -180,7 +180,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
      */
     @Override
     @XmlElement(name = "densityUnits")
-    public synchronized Unit<?> getDensityUnits() {
+    public Unit<?> getDensityUnits() {
         return densityUnits;
     }
 
@@ -189,7 +189,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
      *
      * @param newValue The new density units.
      */
-    public synchronized void setDensityUnits(final Unit<?> newValue) {
+    public void setDensityUnits(final Unit<?> newValue) {
         checkWritePermission();
         densityUnits = newValue;
     }
@@ -200,7 +200,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
     @Override
     @ValueRange(minimum=0)
     @XmlElement(name = "volumes")
-    public synchronized Integer getVolumes() {
+    public Integer getVolumes() {
         return volumes;
     }
 
@@ -209,7 +209,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
      *
      * @param newValue The new volumes.
      */
-    public synchronized void setVolumes(final Integer newValue) {
+    public void setVolumes(final Integer newValue) {
         checkWritePermission();
         volumes = newValue;
     }
@@ -219,7 +219,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
      */
     @Override
     @XmlElement(name = "mediumFormat")
-    public synchronized Collection<MediumFormat> getMediumFormats() {
+    public Collection<MediumFormat> getMediumFormats() {
         return mediumFormats = nonNullCollection(mediumFormats, MediumFormat.class);
     }
 
@@ -228,7 +228,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
      *
      * @param newValues The new medium formats.
      */
-    public synchronized void setMediumFormats(final Collection<? extends MediumFormat> newValues) {
+    public void setMediumFormats(final Collection<? extends MediumFormat> newValues) {
         mediumFormats = writeCollection(newValues, mediumFormats, MediumFormat.class);
     }
 
@@ -237,7 +237,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
      */
     @Override
     @XmlElement(name = "mediumNote")
-    public synchronized InternationalString getMediumNote() {
+    public InternationalString getMediumNote() {
         return mediumNote;
     }
 
@@ -246,7 +246,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
      *
      * @param newValue The new medium note.
      */
-    public synchronized void setMediumNote(final InternationalString newValue) {
+    public void setMediumNote(final InternationalString newValue) {
         checkWritePermission();
         mediumNote = newValue;
     }

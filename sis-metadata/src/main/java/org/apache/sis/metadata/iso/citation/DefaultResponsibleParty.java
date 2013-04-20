@@ -141,7 +141,7 @@ public class DefaultResponsibleParty extends ISOMetadata implements ResponsibleP
      */
     @Override
     @XmlElement(name = "individualName")
-    public synchronized String getIndividualName() {
+    public String getIndividualName() {
         return individualName;
     }
 
@@ -152,7 +152,7 @@ public class DefaultResponsibleParty extends ISOMetadata implements ResponsibleP
      *
      * @param newValue The new individual name, or {@code null} if none.
      */
-    public synchronized void setIndividualName(final String newValue) {
+    public void setIndividualName(final String newValue) {
         checkWritePermission();
         individualName = newValue;
     }
@@ -164,7 +164,7 @@ public class DefaultResponsibleParty extends ISOMetadata implements ResponsibleP
      */
     @Override
     @XmlElement(name = "organisationName")
-    public synchronized InternationalString getOrganisationName() {
+    public InternationalString getOrganisationName() {
         return organisationName;
     }
 
@@ -175,7 +175,7 @@ public class DefaultResponsibleParty extends ISOMetadata implements ResponsibleP
      *
      * @param newValue The new organisation name, or {@code null} if none.
      */
-    public synchronized void setOrganisationName(final InternationalString newValue) {
+    public void setOrganisationName(final InternationalString newValue) {
         checkWritePermission();
         organisationName = newValue;
     }
@@ -187,7 +187,7 @@ public class DefaultResponsibleParty extends ISOMetadata implements ResponsibleP
      */
     @Override
     @XmlElement(name = "positionName")
-    public synchronized InternationalString getPositionName() {
+    public InternationalString getPositionName() {
         return positionName;
     }
 
@@ -198,7 +198,7 @@ public class DefaultResponsibleParty extends ISOMetadata implements ResponsibleP
      *
      * @param newValue The new position name, or {@code null} if none.
      */
-    public synchronized void setPositionName(final InternationalString newValue) {
+    public void setPositionName(final InternationalString newValue) {
         checkWritePermission();
         positionName = newValue;
     }
@@ -208,7 +208,7 @@ public class DefaultResponsibleParty extends ISOMetadata implements ResponsibleP
      */
     @Override
     @XmlElement(name = "contactInfo")
-    public synchronized Contact getContactInfo() {
+    public Contact getContactInfo() {
         return contactInfo;
     }
 
@@ -217,7 +217,7 @@ public class DefaultResponsibleParty extends ISOMetadata implements ResponsibleP
      *
      * @param newValue The new contact info, or {@code null} if none.
      */
-    public synchronized void setContactInfo(final Contact newValue) {
+    public void setContactInfo(final Contact newValue) {
         checkWritePermission();
         contactInfo = newValue;
     }
@@ -227,7 +227,7 @@ public class DefaultResponsibleParty extends ISOMetadata implements ResponsibleP
      */
     @Override
     @XmlElement(name = "role", required = true)
-    public synchronized Role getRole() {
+    public Role getRole() {
         return role;
     }
 
@@ -236,7 +236,7 @@ public class DefaultResponsibleParty extends ISOMetadata implements ResponsibleP
      *
      * @param newValue The new role, or {@code null} if none.
      */
-    public synchronized void setRole(final Role newValue) {
+    public void setRole(final Role newValue) {
         checkWritePermission();
         role = newValue;
     }

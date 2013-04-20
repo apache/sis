@@ -100,7 +100,7 @@ public class DefaultSpatialTemporalExtent extends DefaultTemporalExtent implemen
      */
     @Override
     @XmlElement(name = "spatialExtent", required = true)
-    public synchronized Collection<GeographicExtent> getSpatialExtent() {
+    public Collection<GeographicExtent> getSpatialExtent() {
         return spatialExtent = nonNullCollection(spatialExtent, GeographicExtent.class);
     }
 
@@ -109,7 +109,7 @@ public class DefaultSpatialTemporalExtent extends DefaultTemporalExtent implemen
      *
      * @param newValues The new spatial extent.
      */
-    public synchronized void setSpatialExtent(final Collection<? extends GeographicExtent> newValues) {
+    public void setSpatialExtent(final Collection<? extends GeographicExtent> newValues) {
         spatialExtent = writeCollection(newValues, spatialExtent, GeographicExtent.class);
     }
 }
