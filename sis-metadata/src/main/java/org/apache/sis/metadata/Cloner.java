@@ -98,8 +98,8 @@ final class Cloner extends org.apache.sis.internal.util.Cloner {
                 for (int i=0; i<array.length; i++) {
                     array[i] = clone(array[i]);
                 }
-                // Do not use the SIS Checked* classes since we don't
-                // need synchronization or type checking anymore.
+                // Do not use the SIS Checked* classes since
+                // we don't need type checking anymore.
                 if (isSet) {
                     collection = CollectionsExt.immutableSet(array);
                 } else {

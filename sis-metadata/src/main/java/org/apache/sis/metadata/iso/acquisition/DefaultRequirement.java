@@ -156,7 +156,7 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
      */
     @Override
     @XmlElement(name = "citation")
-    public synchronized Citation getCitation() {
+    public Citation getCitation() {
         return citation;
     }
 
@@ -165,7 +165,7 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
      *
      * @param newValue The new citation value.
      */
-    public synchronized void setCitation(final Citation newValue) {
+    public void setCitation(final Citation newValue) {
         checkWritePermission();
         citation = newValue;
     }
@@ -184,7 +184,7 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
      *
      * @param newValue The new identifier value.
      */
-    public synchronized void setIdentifier(final Identifier newValue) {
+    public void setIdentifier(final Identifier newValue) {
         checkWritePermission();
         identifiers = nonNullCollection(identifiers, Identifier.class);
         NonMarshalledAuthority.setMarshallable(identifiers, newValue);
@@ -195,7 +195,7 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
      */
     @Override
     @XmlElement(name = "requestor", required = true)
-    public synchronized Collection<ResponsibleParty> getRequestors() {
+    public Collection<ResponsibleParty> getRequestors() {
         return requestors = nonNullCollection(requestors, ResponsibleParty.class);
     }
 
@@ -204,7 +204,7 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
      *
      * @param newValues The new requestors values.
      */
-    public synchronized void setRequestors(final Collection<? extends ResponsibleParty> newValues) {
+    public void setRequestors(final Collection<? extends ResponsibleParty> newValues) {
         requestors = writeCollection(newValues, requestors, ResponsibleParty.class);
     }
 
@@ -213,7 +213,7 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
      */
     @Override
     @XmlElement(name = "recipient", required = true)
-    public synchronized Collection<ResponsibleParty> getRecipients() {
+    public Collection<ResponsibleParty> getRecipients() {
         return recipients = nonNullCollection(recipients, ResponsibleParty.class);
     }
 
@@ -222,7 +222,7 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
      *
      * @param newValues The new recipients values.
      */
-    public synchronized void setRecipients(final Collection<? extends ResponsibleParty> newValues) {
+    public void setRecipients(final Collection<? extends ResponsibleParty> newValues) {
         recipients = writeCollection(newValues, recipients, ResponsibleParty.class);
     }
 
@@ -231,7 +231,7 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
      */
     @Override
     @XmlElement(name = "priority", required = true)
-    public synchronized Priority getPriority() {
+    public Priority getPriority() {
         return priority;
     }
 
@@ -240,7 +240,7 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
      *
      * @param newValue The new priority value.
      */
-    public synchronized void setPriority(final Priority newValue) {
+    public void setPriority(final Priority newValue) {
         checkWritePermission();
         priority = newValue;
     }
@@ -250,7 +250,7 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
      */
     @Override
     @XmlElement(name = "requestedDate", required = true)
-    public synchronized RequestedDate getRequestedDate() {
+    public RequestedDate getRequestedDate() {
         return requestedDate;
     }
 
@@ -259,7 +259,7 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
      *
      * @param newValue The new requested date value.
      */
-    public synchronized void setRequestedDate(final RequestedDate newValue) {
+    public void setRequestedDate(final RequestedDate newValue) {
         checkWritePermission();
         requestedDate = newValue;
     }
@@ -269,7 +269,7 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
      */
     @Override
     @XmlElement(name = "expiryDate", required = true)
-    public synchronized Date getExpiryDate() {
+    public Date getExpiryDate() {
         return toDate(expiryDate);
     }
 
@@ -278,7 +278,7 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
      *
      * @param newValue The new expiry date.
      */
-    public synchronized void setExpiryDate(final Date newValue) {
+    public void setExpiryDate(final Date newValue) {
         checkWritePermission();
         expiryDate = toMilliseconds(newValue);
     }
@@ -288,14 +288,14 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
      */
     @Override
     @XmlElement(name = "satisfiedPlan")
-    public synchronized Collection<Plan> getSatisfiedPlans() {
+    public Collection<Plan> getSatisfiedPlans() {
         return satisfiedPlans = nonNullCollection(satisfiedPlans, Plan.class);
     }
 
     /**
      * @param newValues The new satisfied plans values.
      */
-    public synchronized void setSatisfiedPlans(final Collection<? extends Plan> newValues) {
+    public void setSatisfiedPlans(final Collection<? extends Plan> newValues) {
         satisfiedPlans = writeCollection(newValues, satisfiedPlans, Plan.class);
     }
 }

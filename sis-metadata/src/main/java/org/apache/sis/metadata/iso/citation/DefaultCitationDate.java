@@ -122,7 +122,7 @@ public class DefaultCitationDate extends ISOMetadata implements CitationDate {
      */
     @Override
     @XmlElement(name = "date", required = true)
-    public synchronized Date getDate() {
+    public Date getDate() {
         return toDate(date);
     }
 
@@ -131,7 +131,7 @@ public class DefaultCitationDate extends ISOMetadata implements CitationDate {
      *
      * @param newValue The new date.
      */
-    public synchronized void setDate(final Date newValue) {
+    public void setDate(final Date newValue) {
         checkWritePermission();
         date = toMilliseconds(newValue);
     }
@@ -141,7 +141,7 @@ public class DefaultCitationDate extends ISOMetadata implements CitationDate {
      */
     @Override
     @XmlElement(name = "dateType", required = true)
-    public synchronized DateType getDateType() {
+    public DateType getDateType() {
         return dateType;
     }
 
@@ -150,7 +150,7 @@ public class DefaultCitationDate extends ISOMetadata implements CitationDate {
      *
      * @param newValue The new event.
      */
-    public synchronized void setDateType(final DateType newValue) {
+    public void setDateType(final DateType newValue) {
         checkWritePermission();
         dateType = newValue;
     }

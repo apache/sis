@@ -120,7 +120,7 @@ public class DefaultEnvironmentalRecord extends ISOMetadata implements Environme
      */
     @Override
     @XmlElement(name = "averageAirTemperature", required = true)
-    public synchronized Double getAverageAirTemperature() {
+    public Double getAverageAirTemperature() {
         return averageAirTemperature;
     }
 
@@ -129,7 +129,7 @@ public class DefaultEnvironmentalRecord extends ISOMetadata implements Environme
      *
      * @param newValue The new average air temperature value.
      */
-    public synchronized void setAverageAirTemperature(final Double newValue) {
+    public void setAverageAirTemperature(final Double newValue) {
         checkWritePermission();
         averageAirTemperature = newValue;
     }
@@ -140,7 +140,7 @@ public class DefaultEnvironmentalRecord extends ISOMetadata implements Environme
     @Override
     @ValueRange(minimum=0, maximum=100)
     @XmlElement(name = "maxRelativeHumidity", required = true)
-    public synchronized Double getMaxRelativeHumidity() {
+    public Double getMaxRelativeHumidity() {
         return maxRelativeHumidity;
     }
 
@@ -149,7 +149,7 @@ public class DefaultEnvironmentalRecord extends ISOMetadata implements Environme
      *
      * @param newValue The new maximum relative humidity.
      */
-    public synchronized void setMaxRelativeHumidity(final Double newValue) {
+    public void setMaxRelativeHumidity(final Double newValue) {
         checkWritePermission();
         maxRelativeHumidity = newValue;
     }
@@ -159,7 +159,7 @@ public class DefaultEnvironmentalRecord extends ISOMetadata implements Environme
      */
     @Override
     @XmlElement(name = "maxAltitude", required = true)
-    public synchronized Double getMaxAltitude() {
+    public Double getMaxAltitude() {
         return maxAltitude;
     }
 
@@ -168,7 +168,7 @@ public class DefaultEnvironmentalRecord extends ISOMetadata implements Environme
      *
      * @param newValue The new maximum altitude value.
      */
-    public synchronized void setMaxAltitude(final Double newValue) {
+    public void setMaxAltitude(final Double newValue) {
         checkWritePermission();
         maxAltitude = newValue;
     }
@@ -179,7 +179,7 @@ public class DefaultEnvironmentalRecord extends ISOMetadata implements Environme
      */
     @Override
     @XmlElement(name = "meteorologicalConditions", required = true)
-    public synchronized InternationalString getMeteorologicalConditions() {
+    public InternationalString getMeteorologicalConditions() {
         return meteorologicalConditions;
     }
 
@@ -189,7 +189,7 @@ public class DefaultEnvironmentalRecord extends ISOMetadata implements Environme
      *
      * @param newValue The meteorological conditions value.
      */
-    public synchronized void setMeteorologicalConditions(final InternationalString newValue) {
+    public void setMeteorologicalConditions(final InternationalString newValue) {
         checkWritePermission();
         meteorologicalConditions = newValue;
     }

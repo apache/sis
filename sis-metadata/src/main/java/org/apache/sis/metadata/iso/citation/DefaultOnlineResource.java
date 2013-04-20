@@ -149,7 +149,7 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
      */
     @Override
     @XmlElement(name = "applicationProfile")
-    public synchronized String getApplicationProfile() {
+    public String getApplicationProfile() {
         return applicationProfile;
     }
 
@@ -158,7 +158,7 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
      *
      * @param newValue The new application profile.
      */
-    public synchronized void setApplicationProfile(final String newValue) {
+    public void setApplicationProfile(final String newValue) {
         checkWritePermission();
         applicationProfile = newValue;
     }
@@ -168,7 +168,7 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
      */
     @Override
     @XmlElement(name = "name")
-    public synchronized String getName() {
+    public String getName() {
         return name;
     }
 
@@ -177,7 +177,7 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
      *
      * @param newValue The new name, or {@code null} if none.
      */
-    public synchronized void setName(final String newValue) {
+    public void setName(final String newValue) {
         checkWritePermission();
         name = newValue;
     }
@@ -187,7 +187,7 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
      */
     @Override
     @XmlElement(name = "description")
-    public synchronized InternationalString getDescription() {
+    public InternationalString getDescription() {
         return description;
     }
 
@@ -196,7 +196,7 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
      *
      * @param newValue The new description, or {@code null} if none.
      */
-    public synchronized void setDescription(final InternationalString newValue) {
+    public void setDescription(final InternationalString newValue) {
         checkWritePermission();
         description = newValue;
     }
@@ -206,7 +206,7 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
      */
     @Override
     @XmlElement(name = "function")
-    public synchronized OnLineFunction getFunction() {
+    public OnLineFunction getFunction() {
         return function;
     }
 
@@ -215,7 +215,7 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
      *
      * @param newValue The new function, or {@code null} if none.
      */
-    public synchronized void setFunction(final OnLineFunction newValue) {
+    public void setFunction(final OnLineFunction newValue) {
         checkWritePermission();
         function = newValue;
     }
@@ -226,7 +226,7 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
      */
     @Override
     @XmlElement(name = "linkage", required = true)
-    public synchronized URI getLinkage() {
+    public URI getLinkage() {
         return linkage;
     }
 
@@ -236,7 +236,7 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
      *
      * @param newValue The new linkage, or {@code null} if none.
      */
-    public synchronized void setLinkage(final URI newValue) {
+    public void setLinkage(final URI newValue) {
         checkWritePermission();
         linkage = newValue;
     }
@@ -246,7 +246,7 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
      */
     @Override
     @XmlElement(name = "protocol")
-    public synchronized String getProtocol() {
+    public String getProtocol() {
         return protocol;
     }
 
@@ -255,7 +255,7 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
      *
      * @param newValue The new protocol, or {@code null} if none.
      */
-    public synchronized void setProtocol(final String newValue) {
+    public void setProtocol(final String newValue) {
         checkWritePermission();
         protocol = newValue;
     }

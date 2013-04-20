@@ -150,7 +150,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
      */
     @Override
     @XmlElement(name = "name", required = true)
-    public synchronized InternationalString getName() {
+    public InternationalString getName() {
         return name;
     }
 
@@ -159,7 +159,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
      *
      * @param newValue The new name.
      */
-    public synchronized void setName(final InternationalString newValue) {
+    public void setName(final InternationalString newValue) {
          checkWritePermission();
          name = newValue;
      }
@@ -169,7 +169,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
      */
     @Override
     @XmlElement(name = "version", required = true)
-    public synchronized InternationalString getVersion() {
+    public InternationalString getVersion() {
         return version;
     }
 
@@ -178,7 +178,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
      *
      * @param newValue The new version.
      */
-    public synchronized void setVersion(final InternationalString newValue) {
+    public void setVersion(final InternationalString newValue) {
         checkWritePermission();
         version = newValue;
     }
@@ -188,7 +188,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
      */
     @Override
     @XmlElement(name = "amendmentNumber")
-    public synchronized InternationalString getAmendmentNumber() {
+    public InternationalString getAmendmentNumber() {
         return amendmentNumber;
     }
 
@@ -197,7 +197,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
      *
      * @param newValue The new amendment number.
      */
-    public synchronized void setAmendmentNumber(final InternationalString newValue) {
+    public void setAmendmentNumber(final InternationalString newValue) {
         checkWritePermission();
         amendmentNumber = newValue;
     }
@@ -207,7 +207,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
      */
     @Override
     @XmlElement(name = "specification")
-    public synchronized InternationalString getSpecification() {
+    public InternationalString getSpecification() {
         return specification;
     }
 
@@ -216,7 +216,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
      *
      * @param newValue The new specification.
      */
-    public synchronized void setSpecification(final InternationalString newValue) {
+    public void setSpecification(final InternationalString newValue) {
         checkWritePermission();
         specification = newValue;
     }
@@ -227,7 +227,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
      */
     @Override
     @XmlElement(name = "fileDecompressionTechnique")
-    public synchronized InternationalString getFileDecompressionTechnique() {
+    public InternationalString getFileDecompressionTechnique() {
         return fileDecompressionTechnique;
     }
 
@@ -237,7 +237,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
      *
      * @param newValue The new file decompression technique.
      */
-    public synchronized void setFileDecompressionTechnique(final InternationalString newValue) {
+    public void setFileDecompressionTechnique(final InternationalString newValue) {
         checkWritePermission();
         fileDecompressionTechnique = newValue;
     }
@@ -247,7 +247,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
      */
     @Override
     @XmlElement(name = "formatDistributor")
-    public synchronized Collection<Distributor> getFormatDistributors() {
+    public Collection<Distributor> getFormatDistributors() {
         return formatDistributors = nonNullCollection(formatDistributors, Distributor.class);
     }
 
@@ -256,7 +256,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
      *
      * @param newValues The new format distributors.
      */
-    public synchronized void setFormatDistributors(final Collection<? extends Distributor> newValues) {
+    public void setFormatDistributors(final Collection<? extends Distributor> newValues) {
         formatDistributors = writeCollection(newValues, formatDistributors, Distributor.class);
     }
 }

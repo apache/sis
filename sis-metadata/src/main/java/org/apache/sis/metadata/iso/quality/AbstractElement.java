@@ -214,7 +214,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      */
     @Override
     @XmlElement(name = "nameOfMeasure")
-    public synchronized Collection<InternationalString> getNamesOfMeasure() {
+    public Collection<InternationalString> getNamesOfMeasure() {
         return namesOfMeasure = nonNullCollection(namesOfMeasure, InternationalString.class);
     }
 
@@ -223,7 +223,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      *
      * @param newValues The new name of measures.
      */
-    public synchronized void setNamesOfMeasure(final Collection<? extends InternationalString> newValues) {
+    public void setNamesOfMeasure(final Collection<? extends InternationalString> newValues) {
         namesOfMeasure = writeCollection(newValues, namesOfMeasure, InternationalString.class);
     }
 
@@ -232,7 +232,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      */
     @Override
     @XmlElement(name = "measureIdentification")
-    public synchronized Identifier getMeasureIdentification() {
+    public Identifier getMeasureIdentification() {
         return measureIdentification;
     }
 
@@ -241,7 +241,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      *
      * @param newValue The new measure identification.
      */
-    public synchronized void setMeasureIdentification(final Identifier newValue)  {
+    public void setMeasureIdentification(final Identifier newValue)  {
         checkWritePermission();
         measureIdentification = newValue;
     }
@@ -251,7 +251,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      */
     @Override
     @XmlElement(name = "measureDescription")
-    public synchronized InternationalString getMeasureDescription() {
+    public InternationalString getMeasureDescription() {
         return measureDescription;
     }
 
@@ -260,7 +260,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      *
      * @param newValue The new measure description.
      */
-    public synchronized void setMeasureDescription(final InternationalString newValue)  {
+    public void setMeasureDescription(final InternationalString newValue)  {
         checkWritePermission();
         measureDescription = newValue;
     }
@@ -271,7 +271,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      */
     @Override
     @XmlElement(name = "evaluationMethodType")
-    public synchronized EvaluationMethodType getEvaluationMethodType() {
+    public EvaluationMethodType getEvaluationMethodType() {
         return evaluationMethodType;
     }
 
@@ -280,7 +280,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      *
      * @param newValue The new evaluation method type.
      */
-    public synchronized void setEvaluationMethodType(final EvaluationMethodType newValue)  {
+    public void setEvaluationMethodType(final EvaluationMethodType newValue)  {
         checkWritePermission();
         evaluationMethodType = newValue;
     }
@@ -290,7 +290,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      */
     @Override
     @XmlElement(name = "evaluationMethodDescription")
-    public synchronized InternationalString getEvaluationMethodDescription() {
+    public InternationalString getEvaluationMethodDescription() {
         return evaluationMethodDescription;
     }
 
@@ -299,7 +299,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      *
      * @param newValue The new evaluation method description.
      */
-    public synchronized void setEvaluationMethodDescription(final InternationalString newValue)  {
+    public void setEvaluationMethodDescription(final InternationalString newValue)  {
         checkWritePermission();
         evaluationMethodDescription = newValue;
     }
@@ -309,7 +309,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      */
     @Override
     @XmlElement(name = "evaluationProcedure")
-    public synchronized Citation getEvaluationProcedure() {
+    public Citation getEvaluationProcedure() {
         return evaluationProcedure;
     }
 
@@ -318,7 +318,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      *
      * @param newValue The new evaluation procedure.
      */
-    public synchronized void setEvaluationProcedure(final Citation newValue) {
+    public void setEvaluationProcedure(final Citation newValue) {
         checkWritePermission();
         evaluationProcedure = newValue;
     }
@@ -330,7 +330,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      */
     @Override
     @XmlElement(name = "dateTime")
-    public synchronized Collection<Date> getDates() {
+    public Collection<Date> getDates() {
         if (date1 == Long.MIN_VALUE) {
             return Collections.emptyList();
         }
@@ -348,7 +348,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      *
      * @param newValues The new dates, or {@code null}.
      */
-    public synchronized void setDates(final Collection<? extends Date> newValues) {
+    public void setDates(final Collection<? extends Date> newValues) {
         checkWritePermission();
         writeDates(newValues);
     }
@@ -380,7 +380,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      */
     @Override
     @XmlElement(name = "result", required = true)
-    public synchronized Collection<Result> getResults() {
+    public Collection<Result> getResults() {
         return results = nonNullCollection(results, Result.class);
     }
 
@@ -391,7 +391,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      *
      * @param newValues The new results.
      */
-    public synchronized void setResults(final Collection<? extends Result> newValues) {
+    public void setResults(final Collection<? extends Result> newValues) {
         results = writeCollection(newValues, results, Result.class);
     }
 }

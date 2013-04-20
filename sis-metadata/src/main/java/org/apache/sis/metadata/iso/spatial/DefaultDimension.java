@@ -127,7 +127,7 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
      */
     @Override
     @XmlElement(name = "dimensionName", required = true)
-    public synchronized DimensionNameType getDimensionName() {
+    public DimensionNameType getDimensionName() {
         return dimensionName;
     }
 
@@ -136,7 +136,7 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
      *
      * @param newValue The new dimension name.
      */
-    public synchronized void setDimensionName(final DimensionNameType newValue) {
+    public void setDimensionName(final DimensionNameType newValue) {
         checkWritePermission();
         dimensionName = newValue;
     }
@@ -147,7 +147,7 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
     @Override
     @ValueRange(minimum=0)
     @XmlElement(name = "dimensionSize", required = true)
-    public synchronized Integer getDimensionSize() {
+    public Integer getDimensionSize() {
         return dimensionSize;
     }
 
@@ -156,7 +156,7 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
      *
      * @param newValue The new dimension size.
      */
-    public synchronized void setDimensionSize(final Integer newValue) {
+    public void setDimensionSize(final Integer newValue) {
         checkWritePermission();
         dimensionSize = newValue;
     }
@@ -168,7 +168,7 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
     @ValueRange(minimum=0, isMinIncluded=false)
 //  @XmlJavaTypeAdapter(GO_Measure.class) // TODO
     @XmlElement(name = "resolution")
-    public synchronized Double getResolution() {
+    public Double getResolution() {
         return resolution;
     }
 
@@ -177,7 +177,7 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
      *
      * @param newValue The new resolution.
      */
-    public synchronized void setResolution(final Double newValue) {
+    public void setResolution(final Double newValue) {
         checkWritePermission();
         resolution = newValue;
     }

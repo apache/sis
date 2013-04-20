@@ -173,7 +173,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      */
     @Override
     @XmlElement(name = "description")
-    public synchronized InternationalString getDescription() {
+    public InternationalString getDescription() {
         return description;
     }
 
@@ -182,7 +182,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      *
      * @param newValue The new description.
      */
-    public synchronized void setDescription(final InternationalString newValue) {
+    public void setDescription(final InternationalString newValue) {
         checkWritePermission();
         description = newValue;
     }
@@ -192,7 +192,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      */
     @Override
     @XmlElement(name = "scaleDenominator")
-    public synchronized RepresentativeFraction getScaleDenominator()  {
+    public RepresentativeFraction getScaleDenominator()  {
         return scaleDenominator;
     }
 
@@ -201,7 +201,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      *
      * @param newValue The new scale denominator.
      */
-    public synchronized void setScaleDenominator(final RepresentativeFraction newValue)  {
+    public void setScaleDenominator(final RepresentativeFraction newValue)  {
         checkWritePermission();
         scaleDenominator = newValue;
     }
@@ -212,7 +212,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      * @todo needs to annotate the referencing module before.
      */
     @Override
-    public synchronized ReferenceSystem getSourceReferenceSystem()  {
+    public ReferenceSystem getSourceReferenceSystem()  {
         return sourceReferenceSystem;
     }
 
@@ -221,7 +221,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      *
      * @param newValue The new reference system.
      */
-    public synchronized void setSourceReferenceSystem(final ReferenceSystem newValue) {
+    public void setSourceReferenceSystem(final ReferenceSystem newValue) {
         checkWritePermission();
         sourceReferenceSystem = newValue;
     }
@@ -231,7 +231,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      */
     @Override
     @XmlElement(name = "sourceCitation")
-    public synchronized Citation getSourceCitation() {
+    public Citation getSourceCitation() {
         return sourceCitation;
     }
 
@@ -240,7 +240,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      *
      * @param newValue The new source citation.
      */
-    public synchronized void setSourceCitation(final Citation newValue) {
+    public void setSourceCitation(final Citation newValue) {
         checkWritePermission();
         sourceCitation = newValue;
     }
@@ -250,7 +250,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      */
     @Override
     @XmlElement(name = "sourceExtent")
-    public synchronized Collection<Extent> getSourceExtents()  {
+    public Collection<Extent> getSourceExtents()  {
         return sourceExtents = nonNullCollection(sourceExtents, Extent.class);
     }
 
@@ -259,7 +259,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      *
      * @param newValues The new source extents.
      */
-    public synchronized void setSourceExtents(final Collection<? extends Extent> newValues) {
+    public void setSourceExtents(final Collection<? extends Extent> newValues) {
         sourceExtents = writeCollection(newValues, sourceExtents, Extent.class);
     }
 
@@ -268,7 +268,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      */
     @Override
     @XmlElement(name = "sourceStep")
-    public synchronized Collection<ProcessStep> getSourceSteps() {
+    public Collection<ProcessStep> getSourceSteps() {
         return sourceSteps = nonNullCollection(sourceSteps, ProcessStep.class);
     }
 
@@ -277,7 +277,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      *
      * @param newValues The new source steps.
      */
-    public synchronized void setSourceSteps(final Collection<? extends ProcessStep> newValues) {
+    public void setSourceSteps(final Collection<? extends ProcessStep> newValues) {
         sourceSteps = writeCollection(newValues, sourceSteps, ProcessStep.class);
     }
 
@@ -286,7 +286,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      */
     @Override
     @XmlElement(name = "processedLevel", namespace = Namespaces.GMI)
-    public synchronized Identifier getProcessedLevel() {
+    public Identifier getProcessedLevel() {
         return processedLevel;
     }
 
@@ -295,7 +295,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      *
      * @param newValue The new processed level value.
      */
-    public synchronized void setProcessedLevel(final Identifier newValue) {
+    public void setProcessedLevel(final Identifier newValue) {
         checkWritePermission();
         processedLevel = newValue;
     }
@@ -306,7 +306,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      */
     @Override
     @XmlElement(name = "resolution", namespace = Namespaces.GMI)
-    public synchronized NominalResolution getResolution() {
+    public NominalResolution getResolution() {
         return resolution;
     }
 
@@ -316,7 +316,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      *
      * @param newValue The new nominal resolution value.
      */
-    public synchronized void setResolution(final NominalResolution newValue) {
+    public void setResolution(final NominalResolution newValue) {
         checkWritePermission();
         resolution = newValue;
     }

@@ -107,7 +107,7 @@ public class AbstractGeolocationInformation extends ISOMetadata implements Geolo
      */
     @Override
     @XmlElement(name = "qualityInfo", namespace = Namespaces.GMI)
-    public synchronized Collection<DataQuality> getQualityInfo() {
+    public Collection<DataQuality> getQualityInfo() {
         return qualityInfo = nonNullCollection(qualityInfo, DataQuality.class);
     }
 
@@ -116,7 +116,7 @@ public class AbstractGeolocationInformation extends ISOMetadata implements Geolo
      *
      * @param newValues The new quality information values.
      */
-    public synchronized void setQualityInfo(Collection<? extends DataQuality> newValues) {
+    public void setQualityInfo(Collection<? extends DataQuality> newValues) {
         qualityInfo = writeCollection(newValues, qualityInfo, DataQuality.class);
     }
 }

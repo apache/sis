@@ -46,11 +46,11 @@ import static org.apache.sis.internal.jaxb.MarshalContext.isMarshalling;
  *     public class MyMetadata {
  *         private Foo property;
  *
- *         public synchronized Foo getProperty() {
+ *         public Foo getProperty() {
  *             return property;
  *         }
  *
- *         public synchronized void setProperty(Foo newValue) {
+ *         public void setProperty(Foo newValue) {
  *             checkWritePermission();
  *             property = newValue;
  *         }
@@ -63,11 +63,11 @@ import static org.apache.sis.internal.jaxb.MarshalContext.isMarshalling;
  *     public class MyMetadata {
  *         private Collection<Foo> properties;
  *
- *         public synchronized Collection<Foo> getProperties() {
+ *         public Collection<Foo> getProperties() {
  *             return properties = nonNullCollection(properties, Foo.class);
  *         }
  *
- *         public synchronized void setProperties(Collection<Foo> newValues) {
+ *         public void setProperties(Collection<Foo> newValues) {
  *             properties = writeCollection(newValues, properties, Foo.class);
  *         }
  *     }
@@ -123,7 +123,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * @see #freeze()
      * @see #checkWritePermission()
      */
-    public final synchronized boolean isModifiable() {
+    public final boolean isModifiable() {
         return unmodifiable != this;
     }
 
@@ -157,7 +157,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      *
      * @return An unmodifiable copy of this metadata.
      */
-    public synchronized AbstractMetadata unmodifiable() {
+    public AbstractMetadata unmodifiable() {
         // Reminder: 'unmodifiable' is reset to null by checkWritePermission().
         if (unmodifiable == null) {
             final ModifiableMetadata candidate;
@@ -196,7 +196,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * @see #isModifiable()
      * @see #checkWritePermission()
      */
-    public synchronized void freeze() {
+    public void freeze() {
         if (isModifiable()) {
             ModifiableMetadata success = null;
             try {
@@ -220,7 +220,6 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * @see #freeze()
      */
     protected void checkWritePermission() throws UnmodifiableMetadataException {
-        assert Thread.holdsLock(this);
         if (!isModifiable()) {
             throw new UnmodifiableMetadataException(Errors.format(Errors.Keys.UnmodifiableMetadata));
         }
@@ -497,7 +496,6 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * @return {@code c}, or a new list if {@code c} is null.
      */
     protected final <E> List<E> nonNullList(final List<E> c, final Class<E> elementType) {
-        assert Thread.holdsLock(this);
         if (c != null) {
             return c.isEmpty() && isMarshalling() ? null : c;
         }
@@ -520,7 +518,6 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * @return {@code c}, or a new set if {@code c} is null.
      */
     protected final <E> Set<E> nonNullSet(final Set<E> c, final Class<E> elementType) {
-        assert Thread.holdsLock(this);
         if (c != null) {
             return c.isEmpty() && isMarshalling() ? null : c;
         }
@@ -551,7 +548,6 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * @return {@code c}, or a new collection if {@code c} is null.
      */
     protected final <E> Collection<E> nonNullCollection(final Collection<E> c, final Class<E> elementType) {
-        assert Thread.holdsLock(this);
         if (c != null) {
             assert collectionType(elementType).isInstance(c);
             return c.isEmpty() && isMarshalling() ? null : c;
@@ -576,8 +572,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
     }
 
     /**
-     * A checked set synchronized on the enclosing {@link ModifiableMetadata}.
-     * Used for mutable sets only.
+     * A set checking element validity and write permission before to change any value.
      */
     private final class MutableSet<E> extends CheckedHashSet<E> {
         private static final long serialVersionUID = 3032602282358733056L;
@@ -588,11 +583,6 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
 
         MutableSet(Class<E> type, int capacity) {
             super(type, hashMapCapacity(capacity));
-        }
-
-        @Override
-        protected Object getLock() {
-            return ModifiableMetadata.this;
         }
 
         @Override
@@ -608,8 +598,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
     }
 
     /**
-     * A checked list synchronized on the enclosing {@link ModifiableMetadata}.
-     * Used for mutable lists only.
+     * A list checking element validity and write permission before to change any value.
      */
     private final class MutableList<E> extends CheckedArrayList<E> {
         private static final long serialVersionUID = 5800381255701183058L;
@@ -620,11 +609,6 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
 
         MutableList(Class<E> type, int capacity) {
             super(type, capacity);
-        }
-
-        @Override
-        protected Object getLock() {
-            return ModifiableMetadata.this;
         }
 
         @Override

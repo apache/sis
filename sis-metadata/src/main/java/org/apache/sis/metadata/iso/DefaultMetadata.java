@@ -315,7 +315,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Override
     @XmlElement(name = "fileIdentifier")
-    public synchronized String getFileIdentifier() {
+    public String getFileIdentifier() {
         return fileIdentifier;
     }
 
@@ -324,7 +324,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @param newValue The new identifier.
      */
-    public synchronized void setFileIdentifier(final String newValue) {
+    public void setFileIdentifier(final String newValue) {
         checkWritePermission();
         fileIdentifier = newValue;
     }
@@ -336,7 +336,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Override
     @XmlElement(name = "language")
-    public synchronized Locale getLanguage() {
+    public Locale getLanguage() {
         return language;
     }
 
@@ -349,7 +349,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @see org.apache.sis.xml.XML#LOCALE
      */
-    public synchronized void setLanguage(final Locale newValue) {
+    public void setLanguage(final Locale newValue) {
         checkWritePermission();
         language = newValue;
         // The "magik" applying this language to every children
@@ -363,7 +363,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     @Override
     @XmlElement(name = "locale")
 //    @XmlJavaTypeAdapter(PT_Locale.class) // TODO
-    public synchronized Collection<Locale> getLocales() {
+    public Collection<Locale> getLocales() {
         return locales = nonNullCollection(locales, Locale.class);
     }
 
@@ -373,7 +373,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @param newValues The new locales.
      */
-    public synchronized void setLocales(final Collection<? extends Locale> newValues) {
+    public void setLocales(final Collection<? extends Locale> newValues) {
         locales = writeCollection(newValues, locales, Locale.class);
     }
 
@@ -382,7 +382,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Override
     @XmlElement(name = "characterSet")
-    public synchronized CharacterSet getCharacterSet()  {
+    public CharacterSet getCharacterSet()  {
         return characterSet;
     }
 
@@ -391,7 +391,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @param newValue The new character set.
      */
-    public synchronized void setCharacterSet(final CharacterSet newValue) {
+    public void setCharacterSet(final CharacterSet newValue) {
         checkWritePermission();
         characterSet = newValue;
     }
@@ -401,7 +401,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Override
     @XmlElement(name = "parentIdentifier")
-    public synchronized String getParentIdentifier() {
+    public String getParentIdentifier() {
         return parentIdentifier;
     }
 
@@ -410,7 +410,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @param newValue The new parent identifier.
      */
-    public synchronized void setParentIdentifier(final String newValue) {
+    public void setParentIdentifier(final String newValue) {
         checkWritePermission();
         parentIdentifier = newValue;
     }
@@ -420,7 +420,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Override
     @XmlElement(name = "hierarchyLevel")
-    public synchronized Collection<ScopeCode> getHierarchyLevels() {
+    public Collection<ScopeCode> getHierarchyLevels() {
         return hierarchyLevels = nonNullCollection(hierarchyLevels, ScopeCode.class);
     }
 
@@ -429,7 +429,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @param newValues The new hierarchy levels.
      */
-    public synchronized void setHierarchyLevels(final Collection<? extends ScopeCode> newValues) {
+    public void setHierarchyLevels(final Collection<? extends ScopeCode> newValues) {
         hierarchyLevels = writeCollection(newValues, hierarchyLevels, ScopeCode.class);
     }
 
@@ -438,7 +438,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Override
     @XmlElement(name = "hierarchyLevelName")
-    public synchronized Collection<String> getHierarchyLevelNames() {
+    public Collection<String> getHierarchyLevelNames() {
         return hierarchyLevelNames = nonNullCollection(hierarchyLevelNames, String.class);
     }
 
@@ -447,7 +447,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @param newValues The new hierarchy level names.
      */
-    public synchronized void setHierarchyLevelNames(final Collection<? extends String> newValues) {
+    public void setHierarchyLevelNames(final Collection<? extends String> newValues) {
         hierarchyLevelNames = writeCollection(newValues, hierarchyLevelNames, String.class);
     }
 
@@ -456,7 +456,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Override
     @XmlElement(name = "contact", required = true)
-    public synchronized Collection<ResponsibleParty> getContacts() {
+    public Collection<ResponsibleParty> getContacts() {
         return contacts = nonNullCollection(contacts, ResponsibleParty.class);
     }
 
@@ -465,7 +465,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @param newValues The new contacts.
      */
-    public synchronized void setContacts(final Collection<? extends ResponsibleParty> newValues) {
+    public void setContacts(final Collection<? extends ResponsibleParty> newValues) {
         checkWritePermission();
         contacts = writeCollection(newValues, contacts, ResponsibleParty.class);
     }
@@ -475,7 +475,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Override
     @XmlElement(name = "dateStamp", required = true)
-    public synchronized Date getDateStamp() {
+    public Date getDateStamp() {
         return toDate(dateStamp);
     }
 
@@ -484,7 +484,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @param newValue The new date stamp.
      */
-    public synchronized void setDateStamp(final Date newValue) {
+    public void setDateStamp(final Date newValue) {
         checkWritePermission();
         dateStamp = toMilliseconds(newValue);
     }
@@ -494,7 +494,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Override
     @XmlElement(name = "metadataStandardName")
-    public synchronized String getMetadataStandardName() {
+    public String getMetadataStandardName() {
         return metadataStandardName;
     }
 
@@ -503,7 +503,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @param newValue The new metadata standard name.
      */
-    public synchronized void setMetadataStandardName(final String newValue) {
+    public void setMetadataStandardName(final String newValue) {
         checkWritePermission();
         metadataStandardName = newValue;
     }
@@ -513,7 +513,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Override
     @XmlElement(name = "metadataStandardVersion")
-    public synchronized String getMetadataStandardVersion() {
+    public String getMetadataStandardVersion() {
         return metadataStandardVersion;
     }
 
@@ -522,7 +522,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @param newValue The new metadata standard version.
      */
-    public synchronized void setMetadataStandardVersion(final String newValue) {
+    public void setMetadataStandardVersion(final String newValue) {
         checkWritePermission();
         metadataStandardVersion = newValue;
     }
@@ -532,7 +532,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Override
     @XmlElement(name = "dataSetURI")
-    public synchronized String getDataSetUri() {
+    public String getDataSetUri() {
         return dataSetUri;
     }
 
@@ -541,7 +541,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @param newValue The new data set URI.
      */
-    public synchronized void setDataSetUri(final String newValue) {
+    public void setDataSetUri(final String newValue) {
         checkWritePermission();
         dataSetUri = newValue;
     }
@@ -551,7 +551,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Override
     @XmlElement(name = "spatialRepresentationInfo")
-    public synchronized Collection<SpatialRepresentation> getSpatialRepresentationInfo() {
+    public Collection<SpatialRepresentation> getSpatialRepresentationInfo() {
         return spatialRepresentationInfo = nonNullCollection(spatialRepresentationInfo, SpatialRepresentation.class);
     }
 
@@ -560,7 +560,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @param newValues The new spatial representation info.
      */
-    public synchronized void setSpatialRepresentationInfo(final Collection<? extends SpatialRepresentation> newValues) {
+    public void setSpatialRepresentationInfo(final Collection<? extends SpatialRepresentation> newValues) {
         spatialRepresentationInfo = writeCollection(newValues, spatialRepresentationInfo, SpatialRepresentation.class);
     }
 
@@ -569,7 +569,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Override
     @XmlElement(name = "referenceSystemInfo")
-    public synchronized Collection<ReferenceSystem> getReferenceSystemInfo() {
+    public Collection<ReferenceSystem> getReferenceSystemInfo() {
         return referenceSystemInfo = nonNullCollection(referenceSystemInfo, ReferenceSystem.class);
     }
 
@@ -578,7 +578,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @param newValues The new reference system info.
      */
-    public synchronized void setReferenceSystemInfo(final Collection<? extends ReferenceSystem> newValues) {
+    public void setReferenceSystemInfo(final Collection<? extends ReferenceSystem> newValues) {
         referenceSystemInfo = writeCollection(newValues, referenceSystemInfo, ReferenceSystem.class);
     }
 
@@ -587,7 +587,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Override
     @XmlElement(name = "metadataExtensionInfo")
-    public synchronized Collection<MetadataExtensionInformation> getMetadataExtensionInfo() {
+    public Collection<MetadataExtensionInformation> getMetadataExtensionInfo() {
         return metadataExtensionInfo = nonNullCollection(metadataExtensionInfo, MetadataExtensionInformation.class);
     }
 
@@ -596,7 +596,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @param newValues The new metadata extension info.
      */
-    public synchronized void setMetadataExtensionInfo(final Collection<? extends MetadataExtensionInformation> newValues) {
+    public void setMetadataExtensionInfo(final Collection<? extends MetadataExtensionInformation> newValues) {
         metadataExtensionInfo = writeCollection(newValues, metadataExtensionInfo, MetadataExtensionInformation.class);
     }
 
@@ -605,7 +605,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Override
     @XmlElement(name = "identificationInfo", required = true)
-    public synchronized Collection<Identification> getIdentificationInfo() {
+    public Collection<Identification> getIdentificationInfo() {
         return identificationInfo = nonNullCollection(identificationInfo, Identification.class);
     }
 
@@ -614,7 +614,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @param newValues The new identification info.
      */
-    public synchronized void setIdentificationInfo(final Collection<? extends Identification> newValues) {
+    public void setIdentificationInfo(final Collection<? extends Identification> newValues) {
         identificationInfo = writeCollection(newValues, identificationInfo, Identification.class);
     }
 
@@ -624,7 +624,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Override
     @XmlElement(name = "contentInfo")
-    public synchronized Collection<ContentInformation> getContentInfo() {
+    public Collection<ContentInformation> getContentInfo() {
         return contentInfo = nonNullCollection(contentInfo, ContentInformation.class);
     }
 
@@ -634,7 +634,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @param newValues The new content info.
      */
-    public synchronized void setContentInfo(final Collection<? extends ContentInformation> newValues) {
+    public void setContentInfo(final Collection<? extends ContentInformation> newValues) {
         contentInfo = writeCollection(newValues, contentInfo, ContentInformation.class);
     }
 
@@ -643,7 +643,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Override
     @XmlElement(name = "distributionInfo")
-    public synchronized Distribution getDistributionInfo() {
+    public Distribution getDistributionInfo() {
         return distributionInfo;
     }
 
@@ -652,7 +652,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @param newValue The new distribution info.
      */
-    public synchronized void setDistributionInfo(final Distribution newValue) {
+    public void setDistributionInfo(final Distribution newValue) {
         checkWritePermission();
         distributionInfo = newValue;
     }
@@ -662,7 +662,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Override
     @XmlElement(name = "dataQualityInfo")
-    public synchronized Collection<DataQuality> getDataQualityInfo() {
+    public Collection<DataQuality> getDataQualityInfo() {
         return dataQualityInfo = nonNullCollection(dataQualityInfo, DataQuality.class);
     }
 
@@ -671,7 +671,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @param newValues The new data quality info.
      */
-    public synchronized void setDataQualityInfo(final Collection<? extends DataQuality> newValues) {
+    public void setDataQualityInfo(final Collection<? extends DataQuality> newValues) {
         dataQualityInfo = writeCollection(newValues, dataQualityInfo, DataQuality.class);
     }
 
@@ -681,7 +681,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Override
     @XmlElement(name = "portrayalCatalogueInfo")
-    public synchronized Collection<PortrayalCatalogueReference> getPortrayalCatalogueInfo() {
+    public Collection<PortrayalCatalogueReference> getPortrayalCatalogueInfo() {
         return portrayalCatalogueInfo = nonNullCollection(portrayalCatalogueInfo, PortrayalCatalogueReference.class);
     }
 
@@ -690,7 +690,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @param newValues The new portrayal catalog info.
      */
-    public synchronized void setPortrayalCatalogueInfo(
+    public void setPortrayalCatalogueInfo(
             final Collection<? extends PortrayalCatalogueReference> newValues)
     {
         portrayalCatalogueInfo = writeCollection(newValues, portrayalCatalogueInfo, PortrayalCatalogueReference.class);
@@ -701,7 +701,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Override
     @XmlElement(name = "metadataConstraints")
-    public synchronized Collection<Constraints> getMetadataConstraints() {
+    public Collection<Constraints> getMetadataConstraints() {
         return metadataConstraints = nonNullCollection(metadataConstraints, Constraints.class);
     }
 
@@ -710,7 +710,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @param newValues The new metadata constraints.
      */
-    public synchronized void setMetadataConstraints(final Collection<? extends Constraints> newValues) {
+    public void setMetadataConstraints(final Collection<? extends Constraints> newValues) {
         metadataConstraints = writeCollection(newValues, metadataConstraints, Constraints.class);
     }
 
@@ -719,7 +719,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Override
     @XmlElement(name = "applicationSchemaInfo")
-    public synchronized Collection<ApplicationSchemaInformation> getApplicationSchemaInfo() {
+    public Collection<ApplicationSchemaInformation> getApplicationSchemaInfo() {
         return applicationSchemaInfo = nonNullCollection(applicationSchemaInfo, ApplicationSchemaInformation.class);
     }
 
@@ -728,7 +728,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @param newValues The new application schema info.
      */
-    public synchronized void setApplicationSchemaInfo(final Collection<? extends ApplicationSchemaInformation> newValues) {
+    public void setApplicationSchemaInfo(final Collection<? extends ApplicationSchemaInformation> newValues) {
         applicationSchemaInfo = writeCollection(newValues, applicationSchemaInfo, ApplicationSchemaInformation.class);
     }
 
@@ -737,7 +737,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Override
     @XmlElement(name = "metadataMaintenance")
-    public synchronized MaintenanceInformation getMetadataMaintenance() {
+    public MaintenanceInformation getMetadataMaintenance() {
         return metadataMaintenance;
     }
 
@@ -746,7 +746,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @param newValue The new metadata maintenance.
      */
-    public synchronized void setMetadataMaintenance(final MaintenanceInformation newValue) {
+    public void setMetadataMaintenance(final MaintenanceInformation newValue) {
         checkWritePermission();
         metadataMaintenance = newValue;
     }
@@ -756,7 +756,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Override
     @XmlElement(name = "acquisitionInformation", namespace = Namespaces.GMI)
-    public synchronized Collection<AcquisitionInformation> getAcquisitionInformation() {
+    public Collection<AcquisitionInformation> getAcquisitionInformation() {
         return acquisitionInformation = nonNullCollection(acquisitionInformation, AcquisitionInformation.class);
     }
 
@@ -765,7 +765,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @param newValues The new acquisition information.
      */
-    public synchronized void setAcquisitionInformation(final Collection<? extends AcquisitionInformation> newValues) {
+    public void setAcquisitionInformation(final Collection<? extends AcquisitionInformation> newValues) {
         acquisitionInformation = writeCollection(newValues, acquisitionInformation, AcquisitionInformation.class);
     }
 

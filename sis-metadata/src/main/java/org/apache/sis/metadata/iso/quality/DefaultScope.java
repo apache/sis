@@ -124,7 +124,7 @@ public class DefaultScope extends ISOMetadata implements Scope {
      */
     @Override
     @XmlElement(name = "level", required = true)
-    public synchronized ScopeCode getLevel() {
+    public ScopeCode getLevel() {
         return level;
     }
 
@@ -133,7 +133,7 @@ public class DefaultScope extends ISOMetadata implements Scope {
      *
      * @param newValue The new level.
      */
-    public synchronized void setLevel(final ScopeCode newValue) {
+    public void setLevel(final ScopeCode newValue) {
         checkWritePermission();
         level = newValue;
     }
@@ -143,7 +143,7 @@ public class DefaultScope extends ISOMetadata implements Scope {
      */
     @Override
     @XmlElement(name = "levelDescription")
-    public synchronized Collection<ScopeDescription> getLevelDescription() {
+    public Collection<ScopeDescription> getLevelDescription() {
         return levelDescription = nonNullCollection(levelDescription, ScopeDescription.class);
     }
 
@@ -152,7 +152,7 @@ public class DefaultScope extends ISOMetadata implements Scope {
      *
      * @param newValues The new level description.
      */
-    public synchronized void setLevelDescription(final Collection<? extends ScopeDescription> newValues) {
+    public void setLevelDescription(final Collection<? extends ScopeDescription> newValues) {
         levelDescription = writeCollection(newValues, levelDescription, ScopeDescription.class);
     }
 
@@ -162,7 +162,7 @@ public class DefaultScope extends ISOMetadata implements Scope {
      */
     @Override
     @XmlElement(name = "extent")
-    public synchronized Extent getExtent() {
+    public Extent getExtent() {
         return extent;
     }
 
@@ -172,7 +172,7 @@ public class DefaultScope extends ISOMetadata implements Scope {
      *
      * @param newValue The new extent.
      */
-    public synchronized void setExtent(final Extent newValue) {
+    public void setExtent(final Extent newValue) {
         checkWritePermission();
         extent = newValue;
     }

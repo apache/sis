@@ -139,7 +139,7 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
      */
     @Override
     @XmlElement(name = "code", required = true)
-    public synchronized String getCode() {
+    public String getCode() {
         return code;
     }
 
@@ -148,7 +148,7 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
      *
      * @param newValue The new code, or {@code null}.
      */
-    public synchronized void setCode(final String newValue) {
+    public void setCode(final String newValue) {
         checkWritePermission();
         code = newValue;
     }
@@ -161,7 +161,7 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
      *
      * @return The version, or {@code null} if not available.
      */
-    public synchronized String getVersion() {
+    public String getVersion() {
         return version;
     }
 
@@ -170,7 +170,7 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
      *
      * @param newValue The new version.
      */
-    public synchronized void setVersion(final String newValue) {
+    public void setVersion(final String newValue) {
         checkWritePermission();
         version = newValue;
     }
@@ -183,7 +183,7 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
      */
     @Override
     @XmlElement(name = "authority")
-    public synchronized Citation getAuthority() {
+    public Citation getAuthority() {
         return authority;
     }
 
@@ -193,7 +193,7 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
      *
      * @param newValue The new authority.
      */
-    public synchronized void setAuthority(final Citation newValue) {
+    public void setAuthority(final Citation newValue) {
         checkWritePermission();
         authority = newValue;
     }
