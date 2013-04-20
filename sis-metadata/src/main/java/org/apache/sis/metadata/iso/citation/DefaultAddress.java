@@ -135,7 +135,7 @@ public class DefaultAddress extends ISOMetadata implements Address {
      */
     @Override
     @XmlElement(name = "administrativeArea")
-    public synchronized InternationalString getAdministrativeArea() {
+    public InternationalString getAdministrativeArea() {
         return administrativeArea;
     }
 
@@ -144,7 +144,7 @@ public class DefaultAddress extends ISOMetadata implements Address {
      *
      * @param newValue The new administrative area.
      */
-    public synchronized void setAdministrativeArea(final InternationalString newValue) {
+    public void setAdministrativeArea(final InternationalString newValue) {
         checkWritePermission();
         administrativeArea = newValue;
     }
@@ -154,7 +154,7 @@ public class DefaultAddress extends ISOMetadata implements Address {
      */
     @Override
     @XmlElement(name = "city")
-    public synchronized InternationalString getCity() {
+    public InternationalString getCity() {
         return city;
     }
 
@@ -163,7 +163,7 @@ public class DefaultAddress extends ISOMetadata implements Address {
      *
      * @param newValue The new city, or {@code null} if none.
      */
-    public synchronized void setCity(final InternationalString newValue) {
+    public void setCity(final InternationalString newValue) {
         checkWritePermission();
         city = newValue;
     }
@@ -173,7 +173,7 @@ public class DefaultAddress extends ISOMetadata implements Address {
      */
     @Override
     @XmlElement(name = "country")
-    public synchronized InternationalString getCountry() {
+    public InternationalString getCountry() {
         return country;
     }
 
@@ -182,7 +182,7 @@ public class DefaultAddress extends ISOMetadata implements Address {
      *
      * @param newValue The new country, or {@code null} if none.
      */
-    public synchronized void setCountry(final InternationalString newValue) {
+    public void setCountry(final InternationalString newValue) {
         checkWritePermission();
         country = newValue;
     }
@@ -192,7 +192,7 @@ public class DefaultAddress extends ISOMetadata implements Address {
      */
     @Override
     @XmlElement(name = "deliveryPoint")
-    public synchronized Collection<String> getDeliveryPoints() {
+    public Collection<String> getDeliveryPoints() {
         return deliveryPoints = nonNullCollection(deliveryPoints, String.class);
     }
 
@@ -201,7 +201,7 @@ public class DefaultAddress extends ISOMetadata implements Address {
      *
      * @param newValues The new delivery points, or {@code null} if none.
      */
-    public synchronized void setDeliveryPoints(final Collection<? extends String> newValues) {
+    public void setDeliveryPoints(final Collection<? extends String> newValues) {
         deliveryPoints = writeCollection(newValues, deliveryPoints, String.class);
     }
 
@@ -210,7 +210,7 @@ public class DefaultAddress extends ISOMetadata implements Address {
      */
     @Override
     @XmlElement(name = "electronicMailAddress")
-    public synchronized Collection<String> getElectronicMailAddresses() {
+    public Collection<String> getElectronicMailAddresses() {
         return electronicMailAddresses = nonNullCollection(electronicMailAddresses, String.class);
     }
 
@@ -219,7 +219,7 @@ public class DefaultAddress extends ISOMetadata implements Address {
      *
      * @param newValues The new electronic mail addresses, or {@code null} if none.
      */
-    public synchronized void setElectronicMailAddresses(final Collection<? extends String> newValues) {
+    public void setElectronicMailAddresses(final Collection<? extends String> newValues) {
         electronicMailAddresses = writeCollection(newValues, electronicMailAddresses, String.class);
     }
 
@@ -228,7 +228,7 @@ public class DefaultAddress extends ISOMetadata implements Address {
      */
     @Override
     @XmlElement(name = "postalCode")
-    public synchronized String getPostalCode() {
+    public String getPostalCode() {
         return postalCode;
     }
 
@@ -237,7 +237,7 @@ public class DefaultAddress extends ISOMetadata implements Address {
      *
      * @param newValue The new postal code, or {@code null} if none.
      */
-    public synchronized void setPostalCode(final String newValue) {
+    public void setPostalCode(final String newValue) {
         checkWritePermission();
         postalCode = newValue;
     }

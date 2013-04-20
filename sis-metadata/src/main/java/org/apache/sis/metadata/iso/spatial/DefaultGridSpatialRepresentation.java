@@ -161,7 +161,7 @@ public class DefaultGridSpatialRepresentation extends AbstractSpatialRepresentat
     @Override
     @ValueRange(minimum=0)
     @XmlElement(name = "numberOfDimensions", required = true)
-    public synchronized Integer getNumberOfDimensions() {
+    public Integer getNumberOfDimensions() {
         return numberOfDimensions;
     }
 
@@ -170,7 +170,7 @@ public class DefaultGridSpatialRepresentation extends AbstractSpatialRepresentat
      *
      * @param newValue The new number of dimension.
      */
-    public synchronized void setNumberOfDimensions(final Integer newValue) {
+    public void setNumberOfDimensions(final Integer newValue) {
         checkWritePermission();
         numberOfDimensions = newValue;
     }
@@ -180,7 +180,7 @@ public class DefaultGridSpatialRepresentation extends AbstractSpatialRepresentat
      */
     @Override
     @XmlElement(name = "axisDimensionProperties", required = true)
-    public synchronized List<Dimension> getAxisDimensionProperties() {
+    public List<Dimension> getAxisDimensionProperties() {
         return axisDimensionProperties = nonNullList(axisDimensionProperties, Dimension.class);
     }
 
@@ -189,7 +189,7 @@ public class DefaultGridSpatialRepresentation extends AbstractSpatialRepresentat
      *
      * @param newValues The new axis dimension properties.
      */
-    public synchronized void setAxisDimensionProperties(final List<? extends Dimension> newValues) {
+    public void setAxisDimensionProperties(final List<? extends Dimension> newValues) {
         checkWritePermission();
         axisDimensionProperties = (List<Dimension>)
                 writeCollection(newValues, axisDimensionProperties, Dimension.class);
@@ -200,7 +200,7 @@ public class DefaultGridSpatialRepresentation extends AbstractSpatialRepresentat
      */
     @Override
     @XmlElement(name = "cellGeometry", required = true)
-    public synchronized CellGeometry getCellGeometry() {
+    public CellGeometry getCellGeometry() {
         return cellGeometry;
     }
 
@@ -209,7 +209,7 @@ public class DefaultGridSpatialRepresentation extends AbstractSpatialRepresentat
      *
      * @param newValue The new cell geometry.
      */
-    public synchronized void setCellGeometry(final CellGeometry newValue) {
+    public void setCellGeometry(final CellGeometry newValue) {
         checkWritePermission();
         cellGeometry = newValue;
     }
@@ -219,7 +219,7 @@ public class DefaultGridSpatialRepresentation extends AbstractSpatialRepresentat
      */
     @Override
     @XmlElement(name = "transformationParameterAvailability", required = true)
-    public synchronized boolean isTransformationParameterAvailable() {
+    public boolean isTransformationParameterAvailable() {
         return (booleans & TRANSFORMATION_MASK) != 0;
     }
 
@@ -228,7 +228,7 @@ public class DefaultGridSpatialRepresentation extends AbstractSpatialRepresentat
      *
      * @param newValue {@code true} if the transformation parameters are available.
      */
-    public synchronized void setTransformationParameterAvailable(final boolean newValue) {
+    public void setTransformationParameterAvailable(final boolean newValue) {
         checkWritePermission();
         if (newValue) {
             booleans |= TRANSFORMATION_MASK;

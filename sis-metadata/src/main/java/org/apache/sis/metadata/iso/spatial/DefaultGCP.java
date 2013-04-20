@@ -110,7 +110,7 @@ public class DefaultGCP extends ISOMetadata implements GCP {
      */
     @Override
     //@XmlElement(name = "geographicCoordinates")
-    public synchronized DirectPosition getGeographicCoordinates() {
+    public DirectPosition getGeographicCoordinates() {
         return geographicCoordinates;
     }
 
@@ -119,7 +119,7 @@ public class DefaultGCP extends ISOMetadata implements GCP {
      *
      * @param newValue The new geographic coordinates values.
      */
-    public synchronized void setGeographicCoordinates(final DirectPosition newValue) {
+    public void setGeographicCoordinates(final DirectPosition newValue) {
         checkWritePermission();
         geographicCoordinates = newValue;
     }
@@ -129,7 +129,7 @@ public class DefaultGCP extends ISOMetadata implements GCP {
      */
     @Override
     @XmlElement(name = "accuracyReport", namespace = Namespaces.GMI)
-    public synchronized Collection<Element> getAccuracyReports() {
+    public Collection<Element> getAccuracyReports() {
         return accuracyReports = nonNullCollection(accuracyReports, Element.class);
     }
 
@@ -138,7 +138,7 @@ public class DefaultGCP extends ISOMetadata implements GCP {
      *
      * @param newValues The new accuracy report values.
      */
-    public synchronized void setAccuracyReports(final Collection<? extends Element> newValues) {
+    public void setAccuracyReports(final Collection<? extends Element> newValues) {
         accuracyReports = writeCollection(newValues, accuracyReports, Element.class);
     }
 }

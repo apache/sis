@@ -129,7 +129,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
      */
     @Override
     @XmlElement(name = "fees")
-    public synchronized InternationalString getFees() {
+    public InternationalString getFees() {
         return fees;
     }
 
@@ -139,7 +139,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
      *
      * @param newValue The new fees.
      */
-    public synchronized void setFees(final InternationalString newValue) {
+    public void setFees(final InternationalString newValue) {
         checkWritePermission();
         fees = newValue;
     }
@@ -149,7 +149,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
      */
     @Override
     @XmlElement(name = "plannedAvailableDateTime")
-    public synchronized Date getPlannedAvailableDateTime() {
+    public Date getPlannedAvailableDateTime() {
         return toDate(plannedAvailableDateTime);
     }
 
@@ -158,7 +158,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
      *
      * @param newValue The new planned available time.
      */
-    public synchronized void setPlannedAvailableDateTime(final Date newValue) {
+    public void setPlannedAvailableDateTime(final Date newValue) {
         checkWritePermission();
         plannedAvailableDateTime = toMilliseconds(newValue);
     }
@@ -168,7 +168,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
      */
     @Override
     @XmlElement(name = "orderingInstructions")
-    public synchronized InternationalString getOrderingInstructions() {
+    public InternationalString getOrderingInstructions() {
         return orderingInstructions;
     }
 
@@ -177,7 +177,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
      *
      * @param newValue The new ordering instructions.
      */
-    public synchronized void setOrderingInstructions(final InternationalString newValue) {
+    public void setOrderingInstructions(final InternationalString newValue) {
         checkWritePermission();
         orderingInstructions = newValue;
     }
@@ -187,7 +187,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
      */
     @Override
     @XmlElement(name = "turnaround")
-    public synchronized InternationalString getTurnaround() {
+    public InternationalString getTurnaround() {
         return turnaround;
     }
 
@@ -196,7 +196,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
      *
      * @param newValue The new turnaround.
      */
-    public synchronized void setTurnaround(final InternationalString newValue) {
+    public void setTurnaround(final InternationalString newValue) {
         checkWritePermission();
         turnaround = newValue;
     }

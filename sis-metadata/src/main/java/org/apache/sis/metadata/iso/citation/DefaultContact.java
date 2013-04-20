@@ -140,7 +140,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
      */
     @Override
     @XmlElement(name = "phone")
-    public synchronized Telephone getPhone() {
+    public Telephone getPhone() {
         return phone;
     }
 
@@ -149,7 +149,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
      *
      * @param newValue The new telephone, or {@code null} if none.
      */
-    public synchronized void setPhone(final Telephone newValue) {
+    public void setPhone(final Telephone newValue) {
         checkWritePermission();
         phone = newValue;
     }
@@ -159,7 +159,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
      */
     @Override
     @XmlElement(name = "address")
-    public synchronized Address getAddress() {
+    public Address getAddress() {
         return address;
     }
 
@@ -168,7 +168,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
      *
      * @param newValue The new address, or {@code null} if none.
      */
-    public synchronized void setAddress(final Address newValue) {
+    public void setAddress(final Address newValue) {
         checkWritePermission();
         address = newValue;
     }
@@ -178,7 +178,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
      */
     @Override
     @XmlElement(name = "onlineResource")
-    public synchronized OnlineResource getOnlineResource() {
+    public OnlineResource getOnlineResource() {
         return onlineResource;
     }
 
@@ -187,7 +187,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
      *
      * @param newValue The new online resource, or {@code null} if none.
      */
-    public synchronized void setOnlineResource(final OnlineResource newValue) {
+    public void setOnlineResource(final OnlineResource newValue) {
         checkWritePermission();
         onlineResource = newValue;
     }
@@ -198,7 +198,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
      */
     @Override
     @XmlElement(name = "hoursOfService")
-    public synchronized InternationalString getHoursOfService() {
+    public InternationalString getHoursOfService() {
         return hoursOfService;
     }
 
@@ -208,7 +208,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
      *
      * @param newValue The new hours of service, or {@code null} if none.
      */
-    public synchronized void setHoursOfService(final InternationalString newValue) {
+    public void setHoursOfService(final InternationalString newValue) {
         checkWritePermission();
         hoursOfService = newValue;
     }
@@ -218,7 +218,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
      */
     @Override
     @XmlElement(name = "contactInstructions")
-    public synchronized InternationalString getContactInstructions() {
+    public InternationalString getContactInstructions() {
         return contactInstructions;
     }
 
@@ -227,7 +227,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
      *
      * @param newValue The new contact instructions, or {@code null} if none.
      */
-    public synchronized void setContactInstructions(final InternationalString newValue) {
+    public void setContactInstructions(final InternationalString newValue) {
         checkWritePermission();
         contactInstructions = newValue;
     }

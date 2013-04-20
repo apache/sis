@@ -176,7 +176,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      */
     @Override
     @XmlElement(name = "checkPointAvailability", required = true)
-    public synchronized boolean isCheckPointAvailable() {
+    public boolean isCheckPointAvailable() {
         return (booleans & CHECK_POINT_MASK) != 0;
     }
 
@@ -190,7 +190,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      *
      * @param newValue {@code true} if check points are available.
      */
-    public synchronized void setCheckPointAvailable(final boolean newValue) {
+    public void setCheckPointAvailable(final boolean newValue) {
         checkWritePermission();
         if (newValue) {
             booleans |= CHECK_POINT_MASK;
@@ -207,7 +207,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      */
     @Override
     @XmlElement(name = "checkPointDescription")
-    public synchronized InternationalString getCheckPointDescription() {
+    public InternationalString getCheckPointDescription() {
         return checkPointDescription;
     }
 
@@ -221,7 +221,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      *
      * @param newValue The new check point description.
      */
-    public synchronized void setCheckPointDescription(final InternationalString newValue) {
+    public void setCheckPointDescription(final InternationalString newValue) {
         checkWritePermission();
         checkPointDescription = newValue;
         if (newValue != null) {
@@ -237,7 +237,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      */
     @Override
     @XmlElement(name = "cornerPoints", required = true)
-    public synchronized List<Point> getCornerPoints() {
+    public List<Point> getCornerPoints() {
         return cornerPoints = nonNullList(cornerPoints, Point.class);
     }
 
@@ -246,7 +246,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      *
      * @param newValues The new corner points.
      */
-    public synchronized void setCornerPoints(final List<? extends Point> newValues) {
+    public void setCornerPoints(final List<? extends Point> newValues) {
         cornerPoints = writeList(newValues, cornerPoints, Point.class);
     }
 
@@ -257,7 +257,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      */
     @Override
     @XmlElement(name = "centerPoint")
-    public synchronized Point getCenterPoint() {
+    public Point getCenterPoint() {
         return centerPoint;
     }
 
@@ -266,7 +266,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      *
      * @param newValue The new center point.
      */
-    public synchronized void setCenterPoint(final Point newValue) {
+    public void setCenterPoint(final Point newValue) {
         checkWritePermission();
         centerPoint = newValue;
     }
@@ -276,7 +276,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      */
     @Override
     @XmlElement(name = "pointInPixel", required = true)
-    public synchronized PixelOrientation getPointInPixel() {
+    public PixelOrientation getPointInPixel() {
         return pointInPixel;
     }
 
@@ -285,7 +285,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      *
      * @param newValue The new point in a pixel.
      */
-    public synchronized void setPointInPixel(final PixelOrientation newValue) {
+    public void setPointInPixel(final PixelOrientation newValue) {
         checkWritePermission();
         pointInPixel = newValue;
     }
@@ -296,7 +296,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      */
     @Override
     @XmlElement(name = "transformationDimensionDescription")
-    public synchronized InternationalString getTransformationDimensionDescription() {
+    public InternationalString getTransformationDimensionDescription() {
         return transformationDimensionDescription;
     }
 
@@ -306,7 +306,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      *
      * @param newValue The new transformation dimension description.
      */
-    public synchronized void setTransformationDimensionDescription(final InternationalString newValue) {
+    public void setTransformationDimensionDescription(final InternationalString newValue) {
         checkWritePermission();
         transformationDimensionDescription = newValue;
     }
@@ -316,7 +316,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      */
     @Override
     @XmlElement(name = "transformationDimensionMapping")
-    public synchronized Collection<InternationalString> getTransformationDimensionMapping() {
+    public Collection<InternationalString> getTransformationDimensionMapping() {
         return transformationDimensionMapping = nonNullCollection(transformationDimensionMapping, InternationalString.class);
     }
 
@@ -325,7 +325,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      *
      * @param newValues The new transformation mapping.
      */
-    public synchronized void setTransformationDimensionMapping(final Collection<? extends InternationalString> newValues) {
+    public void setTransformationDimensionMapping(final Collection<? extends InternationalString> newValues) {
         transformationDimensionMapping = writeCollection(newValues, transformationDimensionMapping, InternationalString.class);
     }
 
@@ -334,7 +334,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      */
     @Override
     @XmlElement(name = "checkPoint", namespace = Namespaces.GMI)
-    public synchronized Collection<GCP> getCheckPoints() {
+    public Collection<GCP> getCheckPoints() {
         return checkPoints = nonNullCollection(checkPoints, GCP.class);
     }
 
@@ -343,7 +343,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      *
      * @param newValues The new check points values.
      */
-    public synchronized void setCheckPoints(final Collection<? extends GCP> newValues) {
+    public void setCheckPoints(final Collection<? extends GCP> newValues) {
         checkPoints = writeCollection(newValues, checkPoints, GCP.class);
     }
 }

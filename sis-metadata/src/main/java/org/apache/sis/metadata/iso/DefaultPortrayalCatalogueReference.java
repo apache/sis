@@ -108,7 +108,7 @@ public class DefaultPortrayalCatalogueReference extends ISOMetadata
      */
     @Override
     @XmlElement(name = "portrayalCatalogueCitation", required = true)
-    public synchronized Collection<Citation> getPortrayalCatalogueCitations() {
+    public Collection<Citation> getPortrayalCatalogueCitations() {
         return portrayalCatalogueCitations = nonNullCollection(portrayalCatalogueCitations, Citation.class);
     }
 
@@ -117,7 +117,7 @@ public class DefaultPortrayalCatalogueReference extends ISOMetadata
      *
      * @param newValues The new portrayal catalogue citations.
      */
-    public synchronized void setPortrayalCatalogueCitations(Collection<? extends Citation> newValues) {
+    public void setPortrayalCatalogueCitations(Collection<? extends Citation> newValues) {
         portrayalCatalogueCitations = writeCollection(newValues, portrayalCatalogueCitations, Citation.class);
     }
 }

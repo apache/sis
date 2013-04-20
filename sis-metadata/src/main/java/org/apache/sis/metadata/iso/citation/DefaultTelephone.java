@@ -106,7 +106,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      */
     @Override
     @XmlElement(name = "voice")
-    public synchronized Collection<String> getVoices() {
+    public Collection<String> getVoices() {
         return voices = nonNullCollection(voices, String.class);
     }
 
@@ -116,7 +116,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      *
      * @param newValues The new telephone numbers, or {@code null} if none.
      */
-    public synchronized void setVoices(final Collection<? extends String> newValues) {
+    public void setVoices(final Collection<? extends String> newValues) {
         voices = writeCollection(newValues, voices, String.class);
     }
 
@@ -126,7 +126,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      */
     @Override
     @XmlElement(name = "facsimile")
-    public synchronized Collection<String> getFacsimiles() {
+    public Collection<String> getFacsimiles() {
         return facsimiles = nonNullCollection(facsimiles, String.class);
     }
 
@@ -136,7 +136,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      *
      * @param newValues The new telephone number, or {@code null} if none.
      */
-    public synchronized void setFacsimiles(final Collection<? extends String> newValues) {
+    public void setFacsimiles(final Collection<? extends String> newValues) {
         facsimiles = writeCollection(newValues, facsimiles, String.class);
     }
 }

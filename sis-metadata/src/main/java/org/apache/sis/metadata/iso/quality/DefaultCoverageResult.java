@@ -131,7 +131,7 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
      */
     @Override
     @XmlElement(name = "spatialRepresentationType", namespace = Namespaces.GMI, required = true)
-    public synchronized SpatialRepresentationType getSpatialRepresentationType() {
+    public SpatialRepresentationType getSpatialRepresentationType() {
         return spatialRepresentationType;
     }
 
@@ -140,7 +140,7 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
      *
      * @param newValue The new spatial representation type value.
      */
-    public synchronized void setSpatialRepresentationType(final SpatialRepresentationType newValue) {
+    public void setSpatialRepresentationType(final SpatialRepresentationType newValue) {
         checkWritePermission();
         spatialRepresentationType = newValue;
     }
@@ -150,7 +150,7 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
      */
     @Override
     @XmlElement(name = "resultSpatialRepresentation", namespace = Namespaces.GMI, required = true)
-    public synchronized SpatialRepresentation getResultSpatialRepresentation() {
+    public SpatialRepresentation getResultSpatialRepresentation() {
         return resultSpatialRepresentation;
     }
 
@@ -159,7 +159,7 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
      *
      * @param newValue The new spatial representation value.
      */
-    public synchronized void setResultSpatialRepresentation(final SpatialRepresentation newValue) {
+    public void setResultSpatialRepresentation(final SpatialRepresentation newValue) {
         checkWritePermission();
         resultSpatialRepresentation = newValue;
     }
@@ -170,7 +170,7 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
      */
     @Override
     @XmlElement(name = "resultContentDescription", namespace = Namespaces.GMI, required = true)
-    public synchronized CoverageDescription getResultContentDescription() {
+    public CoverageDescription getResultContentDescription() {
         return resultContentDescription;
     }
 
@@ -180,7 +180,7 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
      *
      * @param newValue The new content description value.
      */
-    public synchronized void setResultContentDescription(final CoverageDescription newValue) {
+    public void setResultContentDescription(final CoverageDescription newValue) {
         checkWritePermission();
         resultContentDescription = newValue;
     }
@@ -190,7 +190,7 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
      */
     @Override
     @XmlElement(name = "resultFormat", namespace = Namespaces.GMI, required = true)
-    public synchronized Format getResultFormat() {
+    public Format getResultFormat() {
         return resultFormat;
     }
 
@@ -199,7 +199,7 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
      *
      * @param newValue The new result format value.
      */
-    public synchronized void setResultFormat(final Format newValue) {
+    public void setResultFormat(final Format newValue) {
         checkWritePermission();
         resultFormat = newValue;
     }
@@ -209,7 +209,7 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
      */
     @Override
     @XmlElement(name = "resultFile", namespace = Namespaces.GMX, required = true)
-    public synchronized DataFile getResultFile() {
+    public DataFile getResultFile() {
         return resultFile;
     }
 
@@ -218,7 +218,7 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
      *
      * @param newValue The new result file value.
      */
-    public synchronized void setResultFile(final DataFile newValue) {
+    public void setResultFile(final DataFile newValue) {
         checkWritePermission();
         resultFile = newValue;
     }

@@ -217,7 +217,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      */
     @Override
     @XmlElement(name = "citation", required = true)
-    public synchronized Citation getCitation() {
+    public Citation getCitation() {
         return citation;
     }
 
@@ -226,7 +226,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      *
      * @param newValue The new citation.
      */
-    public synchronized void setCitation(final Citation newValue) {
+    public void setCitation(final Citation newValue) {
         checkWritePermission();
         citation = newValue;
     }
@@ -236,7 +236,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      */
     @Override
     @XmlElement(name = "abstract", required = true)
-    public synchronized InternationalString getAbstract() {
+    public InternationalString getAbstract() {
         return abstracts;
     }
 
@@ -245,7 +245,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      *
      * @param newValue The new abstract.
      */
-    public synchronized void setAbstract(final InternationalString newValue) {
+    public void setAbstract(final InternationalString newValue) {
         checkWritePermission();
         abstracts = newValue;
     }
@@ -255,7 +255,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      */
     @Override
     @XmlElement(name = "purpose")
-    public synchronized InternationalString getPurpose() {
+    public InternationalString getPurpose() {
         return purpose;
     }
 
@@ -264,7 +264,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      *
      * @param newValue The new purpose.
      */
-    public synchronized void setPurpose(final InternationalString newValue) {
+    public void setPurpose(final InternationalString newValue) {
         checkWritePermission();
         purpose = newValue;
     }
@@ -274,7 +274,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      */
     @Override
     @XmlElement(name = "credit")
-    public synchronized Collection<String> getCredits() {
+    public Collection<String> getCredits() {
         return credits = nonNullCollection(credits, String.class);
     }
 
@@ -283,7 +283,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      *
      * @param newValues The new credits.
      */
-    public synchronized void setCredits(final Collection<? extends String> newValues) {
+    public void setCredits(final Collection<? extends String> newValues) {
         credits = writeCollection(newValues, credits, String.class);
     }
 
@@ -292,7 +292,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      */
     @Override
     @XmlElement(name = "status")
-    public synchronized Collection<Progress> getStatus() {
+    public Collection<Progress> getStatus() {
         return status = nonNullCollection(status, Progress.class);
     }
 
@@ -301,7 +301,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      *
      * @param newValues The new status.
      */
-    public synchronized void setStatus(final Collection<? extends Progress> newValues) {
+    public void setStatus(final Collection<? extends Progress> newValues) {
         status = writeCollection(newValues, status, Progress.class);
     }
 
@@ -311,7 +311,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      */
     @Override
     @XmlElement(name = "pointOfContact")
-    public synchronized Collection<ResponsibleParty> getPointOfContacts() {
+    public Collection<ResponsibleParty> getPointOfContacts() {
         return pointOfContacts = nonNullCollection(pointOfContacts, ResponsibleParty.class);
     }
 
@@ -320,7 +320,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      *
      * @param newValues The new points of contacts.
      */
-    public synchronized void setPointOfContacts(final Collection<? extends ResponsibleParty> newValues) {
+    public void setPointOfContacts(final Collection<? extends ResponsibleParty> newValues) {
         pointOfContacts = writeCollection(newValues, pointOfContacts, ResponsibleParty.class);
     }
 
@@ -329,7 +329,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      */
     @Override
     @XmlElement(name = "resourceMaintenance")
-    public synchronized Collection<MaintenanceInformation> getResourceMaintenances() {
+    public Collection<MaintenanceInformation> getResourceMaintenances() {
         return resourceMaintenances = nonNullCollection(resourceMaintenances, MaintenanceInformation.class);
     }
 
@@ -338,7 +338,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      *
      * @param newValues The new resource maintenance info.
      */
-    public synchronized void setResourceMaintenances(final Collection<? extends MaintenanceInformation> newValues) {
+    public void setResourceMaintenances(final Collection<? extends MaintenanceInformation> newValues) {
         resourceMaintenances = writeCollection(newValues, resourceMaintenances, MaintenanceInformation.class);
     }
 
@@ -347,7 +347,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      */
     @Override
     @XmlElement(name = "graphicOverview")
-    public synchronized Collection<BrowseGraphic> getGraphicOverviews() {
+    public Collection<BrowseGraphic> getGraphicOverviews() {
         return graphicOverviews = nonNullCollection(graphicOverviews, BrowseGraphic.class);
     }
 
@@ -356,7 +356,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      *
      * @param newValues The new graphics overviews.
      */
-    public synchronized void setGraphicOverviews(final Collection<? extends BrowseGraphic> newValues) {
+    public void setGraphicOverviews(final Collection<? extends BrowseGraphic> newValues) {
         graphicOverviews = writeCollection(newValues, graphicOverviews, BrowseGraphic.class);
     }
 
@@ -365,7 +365,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      */
     @Override
     @XmlElement(name = "resourceFormat")
-    public synchronized Collection<Format> getResourceFormats() {
+    public Collection<Format> getResourceFormats() {
         return resourceFormats = nonNullCollection(resourceFormats, Format.class);
     }
 
@@ -374,7 +374,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      *
      * @param newValues The new resource format.
      */
-    public synchronized void setResourceFormats(final Collection<? extends Format> newValues) {
+    public void setResourceFormats(final Collection<? extends Format> newValues) {
         resourceFormats = writeCollection(newValues, resourceFormats, Format.class);
     }
 
@@ -383,7 +383,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      */
     @Override
     @XmlElement(name = "descriptiveKeywords")
-    public synchronized Collection<Keywords> getDescriptiveKeywords() {
+    public Collection<Keywords> getDescriptiveKeywords() {
         return descriptiveKeywords = nonNullCollection(descriptiveKeywords, Keywords.class);
     }
 
@@ -392,7 +392,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      *
      * @param newValues The new descriptive keywords.
      */
-    public synchronized void setDescriptiveKeywords(final Collection<? extends Keywords> newValues) {
+    public void setDescriptiveKeywords(final Collection<? extends Keywords> newValues) {
         descriptiveKeywords = writeCollection(newValues, descriptiveKeywords, Keywords.class);
     }
 
@@ -402,7 +402,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      */
     @Override
     @XmlElement(name = "resourceSpecificUsage")
-    public synchronized Collection<Usage> getResourceSpecificUsages() {
+    public Collection<Usage> getResourceSpecificUsages() {
         return resourceSpecificUsages = nonNullCollection(resourceSpecificUsages, Usage.class);
     }
 
@@ -411,7 +411,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      *
      * @param newValues The new resource specific usages.
      */
-    public synchronized void setResourceSpecificUsages(final Collection<? extends Usage> newValues) {
+    public void setResourceSpecificUsages(final Collection<? extends Usage> newValues) {
         resourceSpecificUsages = writeCollection(newValues, resourceSpecificUsages, Usage.class);
     }
 
@@ -420,7 +420,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      */
     @Override
     @XmlElement(name = "resourceConstraints")
-    public synchronized Collection<Constraints> getResourceConstraints() {
+    public Collection<Constraints> getResourceConstraints() {
         return resourceConstraints = nonNullCollection(resourceConstraints, Constraints.class);
     }
 
@@ -429,7 +429,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      *
      * @param newValues The new resource constraints.
      */
-    public synchronized void setResourceConstraints(final Collection<? extends Constraints> newValues) {
+    public void setResourceConstraints(final Collection<? extends Constraints> newValues) {
         resourceConstraints = writeCollection(newValues, resourceConstraints, Constraints.class);
     }
 
@@ -438,7 +438,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      */
     @Override
     @XmlElement(name = "aggregationInfo")
-    public synchronized Collection<AggregateInformation> getAggregationInfo() {
+    public Collection<AggregateInformation> getAggregationInfo() {
         return aggregationInfo = nonNullCollection(aggregationInfo, AggregateInformation.class);
     }
 
@@ -447,7 +447,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      *
      * @param newValues The new aggregation info.
      */
-    public synchronized void setAggregationInfo(final Collection<? extends AggregateInformation> newValues) {
+    public void setAggregationInfo(final Collection<? extends AggregateInformation> newValues) {
         aggregationInfo = writeCollection(newValues, aggregationInfo, AggregateInformation.class);
     }
 }

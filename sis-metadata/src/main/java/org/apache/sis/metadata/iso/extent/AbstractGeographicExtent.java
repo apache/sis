@@ -145,7 +145,7 @@ public class AbstractGeographicExtent extends ISOMetadata implements GeographicE
      */
     @Override
     @XmlElement(name = "extentTypeCode")
-    public synchronized Boolean getInclusion() {
+    public Boolean getInclusion() {
         return getBoolean(booleans, INCLUSION_MASK);
     }
 
@@ -155,7 +155,7 @@ public class AbstractGeographicExtent extends ISOMetadata implements GeographicE
      *
      * @param newValue {@code true} if the bounding polygon encompasses an area covered by the data.
      */
-    public synchronized void setInclusion(final Boolean newValue) {
+    public void setInclusion(final Boolean newValue) {
         checkWritePermission();
         booleans = (byte) setBoolean(booleans, INCLUSION_MASK, newValue);
     }

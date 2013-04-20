@@ -128,7 +128,7 @@ public class DefaultPlatform extends ISOMetadata implements Platform {
      */
     @Override
     @XmlElement(name = "citation")
-    public synchronized Citation getCitation() {
+    public Citation getCitation() {
         return citation;
     }
 
@@ -137,7 +137,7 @@ public class DefaultPlatform extends ISOMetadata implements Platform {
      *
      * @param newValue The new citation value.
      */
-    public synchronized void setCitation(final Citation newValue) {
+    public void setCitation(final Citation newValue) {
         checkWritePermission();
         citation = newValue;
     }
@@ -156,7 +156,7 @@ public class DefaultPlatform extends ISOMetadata implements Platform {
      *
      * @param newValue The new identifier value.
      */
-    public synchronized void setIdentifier(final Identifier newValue) {
+    public void setIdentifier(final Identifier newValue) {
         checkWritePermission();
         identifiers = nonNullCollection(identifiers, Identifier.class);
         NonMarshalledAuthority.setMarshallable(identifiers, newValue);
@@ -167,7 +167,7 @@ public class DefaultPlatform extends ISOMetadata implements Platform {
      */
     @Override
     @XmlElement(name = "description", required = true)
-    public synchronized InternationalString getDescription() {
+    public InternationalString getDescription() {
         return description;
     }
 
@@ -176,7 +176,7 @@ public class DefaultPlatform extends ISOMetadata implements Platform {
      *
      * @param newValue The new description value.
      */
-    public synchronized void setDescription(final InternationalString newValue) {
+    public void setDescription(final InternationalString newValue) {
         checkWritePermission();
         description = newValue;
     }
@@ -186,7 +186,7 @@ public class DefaultPlatform extends ISOMetadata implements Platform {
      */
     @Override
     @XmlElement(name = "sponsor")
-    public synchronized Collection<ResponsibleParty> getSponsors() {
+    public Collection<ResponsibleParty> getSponsors() {
         return sponsors = nonNullCollection(sponsors, ResponsibleParty.class);
     }
 
@@ -195,7 +195,7 @@ public class DefaultPlatform extends ISOMetadata implements Platform {
      *
      * @param newValues The new sponsors values;
      */
-    public synchronized void setSponsors(final Collection<? extends ResponsibleParty> newValues) {
+    public void setSponsors(final Collection<? extends ResponsibleParty> newValues) {
         sponsors = writeCollection(newValues, sponsors, ResponsibleParty.class);
     }
 
@@ -204,7 +204,7 @@ public class DefaultPlatform extends ISOMetadata implements Platform {
      */
     @Override
     @XmlElement(name = "instrument", required = true)
-    public synchronized Collection<Instrument> getInstruments() {
+    public Collection<Instrument> getInstruments() {
         return instruments = nonNullCollection(instruments, Instrument.class);
     }
 
@@ -213,7 +213,7 @@ public class DefaultPlatform extends ISOMetadata implements Platform {
      *
      * @param newValues The new instruments values.
      */
-    public synchronized void setInstruments(final Collection<? extends Instrument> newValues) {
+    public void setInstruments(final Collection<? extends Instrument> newValues) {
         instruments = writeCollection(newValues, instruments, Instrument.class);
     }
 }

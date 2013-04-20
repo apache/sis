@@ -115,7 +115,7 @@ public class DefaultFeatureTypeList extends ISOMetadata implements FeatureTypeLi
      */
     @Override
     @XmlElement(name = "spatialObject", required = true)
-    public synchronized String getSpatialObject() {
+    public String getSpatialObject() {
         return spatialObject;
     }
 
@@ -124,7 +124,7 @@ public class DefaultFeatureTypeList extends ISOMetadata implements FeatureTypeLi
      *
      * @param newValue The new spatial object.
      */
-    public synchronized void setSpatialObject(final String newValue) {
+    public void setSpatialObject(final String newValue) {
         checkWritePermission();
         spatialObject = newValue;
     }
@@ -134,7 +134,7 @@ public class DefaultFeatureTypeList extends ISOMetadata implements FeatureTypeLi
      */
     @Override
     @XmlElement(name = "spatialSchemaName", required = true)
-    public synchronized String getSpatialSchemaName() {
+    public String getSpatialSchemaName() {
         return spatialSchemaName;
     }
 
@@ -143,7 +143,7 @@ public class DefaultFeatureTypeList extends ISOMetadata implements FeatureTypeLi
      *
      * @param newValue The new spatial schema.
      */
-    public synchronized void setSpatialSchemaName(final String newValue) {
+    public void setSpatialSchemaName(final String newValue) {
         checkWritePermission();
         spatialSchemaName = newValue;
     }

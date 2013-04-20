@@ -125,7 +125,7 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      */
     @Override
     @XmlElement(name = "extent", required = true)
-    public synchronized TemporalPrimitive getExtent() {
+    public TemporalPrimitive getExtent() {
         return extent;
     }
 
@@ -134,7 +134,7 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      *
      * @param newValue The new content date.
      */
-    public synchronized void setExtent(final TemporalPrimitive newValue) {
+    public void setExtent(final TemporalPrimitive newValue) {
         checkWritePermission();
         extent = newValue;
     }
@@ -165,7 +165,7 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      *
      * @return The start time, or {@code null} if none.
      */
-    public synchronized Date getStartTime() {
+    public Date getStartTime() {
         return getTime(true);
     }
 
@@ -175,7 +175,7 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      *
      * @return The end time, or {@code null} if none.
      */
-    public synchronized Date getEndTime() {
+    public Date getEndTime() {
         return getTime(false);
     }
 
@@ -194,7 +194,7 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      * @see DefaultGeographicBoundingBox#setBounds(Envelope)
      * @see DefaultVerticalExtent#setBounds(Envelope)
      */
-    public synchronized void setBounds(final Envelope envelope) throws TransformException {
+    public void setBounds(final Envelope envelope) throws TransformException {
         checkWritePermission();
         ReferencingServices.getInstance().setBounds(envelope, this);
     }

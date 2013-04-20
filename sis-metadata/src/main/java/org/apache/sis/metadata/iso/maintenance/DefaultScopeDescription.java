@@ -230,7 +230,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * Otherwise, this method returns an unmodifiable empty collection.
      */
     @Override
-    public synchronized Set<AttributeType> getAttributes() {
+    public Set<AttributeType> getAttributes() {
         return getProperty(AttributeType.class, ATTRIBUTES);
     }
 
@@ -243,7 +243,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      *
      * @param newValues The new attributes.
      */
-    public synchronized void setAttributes(final Set<? extends AttributeType> newValues) {
+    public void setAttributes(final Set<? extends AttributeType> newValues) {
         setProperty(newValues, AttributeType.class, ATTRIBUTES);
     }
 
@@ -255,7 +255,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * Otherwise, this method returns an unmodifiable empty collection.
      */
     @Override
-    public synchronized Set<FeatureType> getFeatures() {
+    public Set<FeatureType> getFeatures() {
         return getProperty(FeatureType.class, FEATURES);
     }
 
@@ -268,7 +268,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      *
      * @param newValues The new features.
      */
-    public synchronized void setFeatures(final Set<? extends FeatureType> newValues) {
+    public void setFeatures(final Set<? extends FeatureType> newValues) {
         setProperty(newValues, FeatureType.class, FEATURES);
     }
 
@@ -280,7 +280,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * Otherwise, this method returns an unmodifiable empty collection.
      */
     @Override
-    public synchronized Set<FeatureType> getFeatureInstances() {
+    public Set<FeatureType> getFeatureInstances() {
         return getProperty(FeatureType.class, FEATURE_INSTANCES);
     }
 
@@ -293,7 +293,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      *
      * @param newValues The new feature instances.
      */
-    public synchronized void setFeatureInstances(final Set<? extends FeatureType> newValues) {
+    public void setFeatureInstances(final Set<? extends FeatureType> newValues) {
         setProperty(newValues, FeatureType.class, FEATURE_INSTANCES);
     }
 
@@ -305,7 +305,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * Otherwise, this method returns an unmodifiable empty collection.
      */
     @Override
-    public synchronized Set<AttributeType> getAttributeInstances() {
+    public Set<AttributeType> getAttributeInstances() {
         return getProperty(AttributeType.class, ATTRIBUTE_INSTANCES);
     }
 
@@ -318,7 +318,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      *
      * @param newValues The new attribute instances.
      */
-    public synchronized void setAttributeInstances(final Set<? extends AttributeType> newValues) {
+    public void setAttributeInstances(final Set<? extends AttributeType> newValues) {
         setProperty(newValues, AttributeType.class, ATTRIBUTE_INSTANCES);
     }
 
@@ -327,7 +327,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      */
     @Override
     @XmlElement(name = "dataset")
-    public synchronized String getDataset() {
+    public String getDataset() {
         return (property == DATASET) ? (String) value : null;
     }
 
@@ -340,7 +340,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      *
      * @param newValue The new dataset.
      */
-    public synchronized void setDataset(final String newValue) {
+    public void setDataset(final String newValue) {
         checkWritePermission();
         if (newValue != null || property == DATASET) {
             value = newValue;
@@ -353,7 +353,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      */
     @Override
     @XmlElement(name = "other")
-    public synchronized String getOther() {
+    public String getOther() {
         return (property == OTHER) ? (String) value : null;
     }
 
@@ -367,7 +367,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      *
      * @param newValue Other class of information.
      */
-    public synchronized void setOther(final String newValue) {
+    public void setOther(final String newValue) {
         checkWritePermission();
         if (newValue != null || property == OTHER) {
             value = newValue;

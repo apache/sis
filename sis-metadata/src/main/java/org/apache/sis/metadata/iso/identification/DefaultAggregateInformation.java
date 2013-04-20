@@ -129,7 +129,7 @@ public class DefaultAggregateInformation extends ISOMetadata implements Aggregat
      */
     @Override
     @XmlElement(name = "aggregateDataSetName")
-    public synchronized Citation getAggregateDataSetName() {
+    public Citation getAggregateDataSetName() {
         return aggregateDataSetName;
     }
 
@@ -138,7 +138,7 @@ public class DefaultAggregateInformation extends ISOMetadata implements Aggregat
      *
      * @param newValue The new citation.
      */
-    public synchronized void setAggregateDataSetName(final Citation newValue) {
+    public void setAggregateDataSetName(final Citation newValue) {
         checkWritePermission();
         aggregateDataSetName = newValue;
     }
@@ -150,7 +150,7 @@ public class DefaultAggregateInformation extends ISOMetadata implements Aggregat
      */
     @Override
     @XmlElement(name = "aggregateDataSetIdentifier")
-    public synchronized Identifier getAggregateDataSetIdentifier() {
+    public Identifier getAggregateDataSetIdentifier() {
         return aggregateDataSetIdentifier;
     }
 
@@ -159,7 +159,7 @@ public class DefaultAggregateInformation extends ISOMetadata implements Aggregat
      *
      * @param newValue The new identifier.
      */
-    public synchronized void setAggregateDataSetIdentifier(final Identifier newValue) {
+    public void setAggregateDataSetIdentifier(final Identifier newValue) {
         checkWritePermission();
         aggregateDataSetIdentifier = newValue;
     }
@@ -171,7 +171,7 @@ public class DefaultAggregateInformation extends ISOMetadata implements Aggregat
      */
     @Override
     @XmlElement(name = "associationType", required = true)
-    public synchronized AssociationType getAssociationType() {
+    public AssociationType getAssociationType() {
         return associationType;
     }
 
@@ -180,7 +180,7 @@ public class DefaultAggregateInformation extends ISOMetadata implements Aggregat
      *
      * @param newValue The new association type.
      */
-    public synchronized void setAssociationType(final AssociationType newValue) {
+    public void setAssociationType(final AssociationType newValue) {
         checkWritePermission();
         associationType = newValue;
     }
@@ -192,7 +192,7 @@ public class DefaultAggregateInformation extends ISOMetadata implements Aggregat
      */
     @Override
     @XmlElement(name = "initiativeType")
-    public synchronized InitiativeType getInitiativeType() {
+    public InitiativeType getInitiativeType() {
         return initiativeType;
     }
 
@@ -201,7 +201,7 @@ public class DefaultAggregateInformation extends ISOMetadata implements Aggregat
      *
      * @param newValue The new initiative.
      */
-    public synchronized void setInitiativeType(final InitiativeType newValue) {
+    public void setInitiativeType(final InitiativeType newValue) {
         checkWritePermission();
         initiativeType = newValue;
     }
