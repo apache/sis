@@ -139,7 +139,7 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
      */
     @Override
     @XmlElement(name = "minimumValue", required = true)
-    public synchronized Double getMinimumValue() {
+    public Double getMinimumValue() {
         return minimumValue;
     }
 
@@ -148,7 +148,7 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
      *
      * @param newValue The new minimum value.
      */
-    public synchronized void setMinimumValue(final Double newValue) {
+    public void setMinimumValue(final Double newValue) {
         checkWritePermission();
         minimumValue = newValue;
     }
@@ -158,7 +158,7 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
      */
     @Override
     @XmlElement(name = "maximumValue", required = true)
-    public synchronized Double getMaximumValue() {
+    public Double getMaximumValue() {
         return maximumValue;
     }
 
@@ -167,7 +167,7 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
      *
      * @param newValue The new maximum value.
      */
-    public synchronized void setMaximumValue(final Double newValue) {
+    public void setMaximumValue(final Double newValue) {
         checkWritePermission();
         maximumValue = newValue;
     }
@@ -179,7 +179,7 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
      */
     @Override
     @XmlElement(name = "verticalCRS", required = true)
-    public synchronized VerticalCRS getVerticalCRS() {
+    public VerticalCRS getVerticalCRS() {
         return verticalCRS;
     }
 
@@ -189,7 +189,7 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
      *
      * @param newValue The new vertical CRS.
      */
-    public synchronized void setVerticalCRS(final VerticalCRS newValue) {
+    public void setVerticalCRS(final VerticalCRS newValue) {
         checkWritePermission();
         verticalCRS = newValue;
     }
@@ -209,7 +209,7 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
      * @see DefaultGeographicBoundingBox#setBounds(Envelope)
      * @see DefaultTemporalExtent#setBounds(Envelope)
      */
-    public synchronized void setBounds(final Envelope envelope) throws TransformException {
+    public void setBounds(final Envelope envelope) throws TransformException {
         checkWritePermission();
         ReferencingServices.getInstance().setBounds(envelope, this);
     }

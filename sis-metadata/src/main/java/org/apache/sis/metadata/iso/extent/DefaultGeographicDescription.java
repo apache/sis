@@ -114,7 +114,7 @@ public class DefaultGeographicDescription extends AbstractGeographicExtent
      */
     @Override
     @XmlElement(name = "geographicIdentifier", required = true)
-    public synchronized Identifier getGeographicIdentifier() {
+    public Identifier getGeographicIdentifier() {
         return geographicIdentifier;
     }
 
@@ -123,7 +123,7 @@ public class DefaultGeographicDescription extends AbstractGeographicExtent
      *
      * @param newValue The new geographic identifier.
      */
-    public synchronized void setGeographicIdentifier(final Identifier newValue) {
+    public void setGeographicIdentifier(final Identifier newValue) {
         checkWritePermission();
         geographicIdentifier = newValue;
     }

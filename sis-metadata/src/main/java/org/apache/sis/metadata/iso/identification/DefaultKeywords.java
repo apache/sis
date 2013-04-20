@@ -128,7 +128,7 @@ public class DefaultKeywords extends ISOMetadata implements Keywords {
      */
     @Override
     @XmlElement(name = "keyword", required = true)
-    public synchronized Collection<InternationalString> getKeywords() {
+    public Collection<InternationalString> getKeywords() {
         return keywords = nonNullCollection(keywords, InternationalString.class);
     }
 
@@ -137,7 +137,7 @@ public class DefaultKeywords extends ISOMetadata implements Keywords {
      *
      * @param newValues The new keywords.
      */
-    public synchronized void setKeywords(final Collection<? extends InternationalString> newValues) {
+    public void setKeywords(final Collection<? extends InternationalString> newValues) {
         keywords = writeCollection(newValues, keywords, InternationalString.class);
     }
 
@@ -146,7 +146,7 @@ public class DefaultKeywords extends ISOMetadata implements Keywords {
      */
     @Override
     @XmlElement(name = "type")
-    public synchronized KeywordType getType() {
+    public KeywordType getType() {
         return type;
     }
 
@@ -155,7 +155,7 @@ public class DefaultKeywords extends ISOMetadata implements Keywords {
      *
      * @param newValue The new keyword type.
      */
-    public synchronized void setType(final KeywordType newValue) {
+    public void setType(final KeywordType newValue) {
         checkWritePermission();
         type = newValue;
     }
@@ -166,7 +166,7 @@ public class DefaultKeywords extends ISOMetadata implements Keywords {
      */
     @Override
     @XmlElement(name = "thesaurusName")
-    public synchronized Citation getThesaurusName() {
+    public Citation getThesaurusName() {
         return thesaurusName;
     }
 
@@ -176,7 +176,7 @@ public class DefaultKeywords extends ISOMetadata implements Keywords {
      *
      * @param newValue The new thesaurus name.
      */
-    public synchronized void setThesaurusName(final Citation newValue) {
+    public void setThesaurusName(final Citation newValue) {
         checkWritePermission();
         thesaurusName = newValue;
     }

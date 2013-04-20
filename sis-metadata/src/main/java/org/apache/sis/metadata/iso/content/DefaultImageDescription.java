@@ -220,7 +220,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     @Override
     @ValueRange(minimum=0, maximum=180)
     @XmlElement(name = "illuminationElevationAngle")
-    public synchronized Double getIlluminationElevationAngle() {
+    public Double getIlluminationElevationAngle() {
         return illuminationElevationAngle;
     }
 
@@ -231,7 +231,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      *
      * @param newValue The new illumination elevation angle.
      */
-    public synchronized void setIlluminationElevationAngle(final Double newValue) {
+    public void setIlluminationElevationAngle(final Double newValue) {
         checkWritePermission();
         illuminationElevationAngle = newValue;
     }
@@ -244,7 +244,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     @Override
     @ValueRange(minimum=0, maximum=360)
     @XmlElement(name = "illuminationAzimuthAngle")
-    public synchronized Double getIlluminationAzimuthAngle() {
+    public Double getIlluminationAzimuthAngle() {
         return illuminationAzimuthAngle;
     }
 
@@ -254,7 +254,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      *
      * @param newValue The new illumination azimuth angle.
      */
-    public synchronized void setIlluminationAzimuthAngle(final Double newValue) {
+    public void setIlluminationAzimuthAngle(final Double newValue) {
         checkWritePermission();
         illuminationAzimuthAngle = newValue;
     }
@@ -264,7 +264,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      */
     @Override
     @XmlElement(name = "imagingCondition")
-    public synchronized ImagingCondition getImagingCondition() {
+    public ImagingCondition getImagingCondition() {
         return imagingCondition;
     }
 
@@ -273,7 +273,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      *
      * @param newValue The new imaging condition.
      */
-    public synchronized void setImagingCondition(final ImagingCondition newValue) {
+    public void setImagingCondition(final ImagingCondition newValue) {
         checkWritePermission();
         imagingCondition = newValue;
     }
@@ -283,7 +283,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      */
     @Override
     @XmlElement(name = "imageQualityCode")
-    public synchronized Identifier getImageQualityCode() {
+    public Identifier getImageQualityCode() {
         return imageQualityCode;
     }
 
@@ -292,7 +292,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      *
      * @param newValue The new image quality code.
      */
-    public synchronized void setImageQualityCode(final Identifier newValue) {
+    public void setImageQualityCode(final Identifier newValue) {
         checkWritePermission();
         imageQualityCode = newValue;
     }
@@ -303,7 +303,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     @Override
     @ValueRange(minimum=0, maximum=100)
     @XmlElement(name = "cloudCoverPercentage")
-    public synchronized Double getCloudCoverPercentage() {
+    public Double getCloudCoverPercentage() {
         return cloudCoverPercentage;
     }
 
@@ -312,7 +312,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      *
      * @param newValue The new cloud cover percentage.
      */
-    public synchronized void setCloudCoverPercentage(final Double newValue) {
+    public void setCloudCoverPercentage(final Double newValue) {
         checkWritePermission();
         cloudCoverPercentage = newValue;
     }
@@ -323,7 +323,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      */
     @Override
     @XmlElement(name = "processingLevelCode")
-    public synchronized Identifier getProcessingLevelCode() {
+    public Identifier getProcessingLevelCode() {
         return processingLevelCode;
     }
 
@@ -333,7 +333,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      *
      * @param newValue The new processing level code.
      */
-    public synchronized void setProcessingLevelCode(final Identifier newValue) {
+    public void setProcessingLevelCode(final Identifier newValue) {
         checkWritePermission();
         processingLevelCode = newValue;
     }
@@ -344,7 +344,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     @Override
     @ValueRange(minimum=0)
     @XmlElement(name = "compressionGenerationQuantity")
-    public synchronized Integer getCompressionGenerationQuantity() {
+    public Integer getCompressionGenerationQuantity() {
         return compressionGenerationQuantity;
     }
 
@@ -353,7 +353,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      *
      * @param newValue The new compression generation quantity.
      */
-    public synchronized void setCompressionGenerationQuantity(final Integer newValue) {
+    public void setCompressionGenerationQuantity(final Integer newValue) {
         checkWritePermission();
         compressionGenerationQuantity = newValue;
     }
@@ -363,7 +363,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      */
     @Override
     @XmlElement(name = "triangulationIndicator")
-    public synchronized Boolean getTriangulationIndicator() {
+    public Boolean getTriangulationIndicator() {
         return getBoolean(booleans, TRIANGULATION_MASK);
     }
 
@@ -372,7 +372,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      *
      * @param newValue The new triangulation indicator.
      */
-    public synchronized void setTriangulationIndicator(final Boolean newValue) {
+    public void setTriangulationIndicator(final Boolean newValue) {
         checkWritePermission();
         booleans = (short) setBoolean(booleans, TRIANGULATION_MASK, newValue);
     }
@@ -383,7 +383,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      */
     @Override
     @XmlElement(name = "radiometricCalibrationDataAvailability")
-    public synchronized Boolean isRadiometricCalibrationDataAvailable() {
+    public Boolean isRadiometricCalibrationDataAvailable() {
         return getBoolean(booleans, RADIOMETRIC_MASK);
     }
 
@@ -393,7 +393,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      *
      * @param newValue {@code true} if radiometric calibration data are available.
      */
-    public synchronized void setRadiometricCalibrationDataAvailable(final Boolean newValue) {
+    public void setRadiometricCalibrationDataAvailable(final Boolean newValue) {
         checkWritePermission();
         booleans = (short) setBoolean(booleans, RADIOMETRIC_MASK, newValue);
     }
@@ -404,7 +404,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      */
     @Override
     @XmlElement(name = "cameraCalibrationInformationAvailability")
-    public synchronized Boolean isCameraCalibrationInformationAvailable() {
+    public Boolean isCameraCalibrationInformationAvailable() {
         return getBoolean(booleans, CAMERA_MASK);
     }
 
@@ -414,7 +414,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      *
      * @param newValue {@code true} if camera calibration information are available.
      */
-    public synchronized void setCameraCalibrationInformationAvailable(final Boolean newValue) {
+    public void setCameraCalibrationInformationAvailable(final Boolean newValue) {
         checkWritePermission();
         booleans = (short) setBoolean(booleans, CAMERA_MASK, newValue);
     }
@@ -424,7 +424,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      */
     @Override
     @XmlElement(name = "filmDistortionInformationAvailability")
-    public synchronized Boolean isFilmDistortionInformationAvailable() {
+    public Boolean isFilmDistortionInformationAvailable() {
         return getBoolean(booleans, FILM_MASK);
     }
 
@@ -433,7 +433,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      *
      * @param newValue {@code true} if film distortion information are available.
      */
-    public synchronized void setFilmDistortionInformationAvailable(final Boolean newValue) {
+    public void setFilmDistortionInformationAvailable(final Boolean newValue) {
         checkWritePermission();
         booleans = (short) setBoolean(booleans, FILM_MASK, newValue);
     }
@@ -443,7 +443,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      */
     @Override
     @XmlElement(name = "lensDistortionInformationAvailability")
-    public synchronized Boolean isLensDistortionInformationAvailable() {
+    public Boolean isLensDistortionInformationAvailable() {
         return getBoolean(booleans, LENS_MASK);
     }
 
@@ -452,7 +452,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      *
      * @param newValue {@code true} if lens distortion information are available.
      */
-    public synchronized void setLensDistortionInformationAvailable(final Boolean newValue) {
+    public void setLensDistortionInformationAvailable(final Boolean newValue) {
         checkWritePermission();
         booleans = (short) setBoolean(booleans, LENS_MASK, newValue);
     }

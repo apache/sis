@@ -164,7 +164,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
      *
      * @param newValue The event identifier value.
      */
-    public synchronized void setIdentifier(final Identifier newValue) {
+    public void setIdentifier(final Identifier newValue) {
         checkWritePermission();
         identifiers = nonNullCollection(identifiers, Identifier.class);
         NonMarshalledAuthority.setMarshallable(identifiers, newValue);
@@ -175,7 +175,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
      */
     @Override
     @XmlElement(name = "trigger", required = true)
-    public synchronized Trigger getTrigger() {
+    public Trigger getTrigger() {
         return trigger;
     }
 
@@ -184,7 +184,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
      *
      * @param newValue The new trigger value.
      */
-    public synchronized void setTrigger(final Trigger newValue) {
+    public void setTrigger(final Trigger newValue) {
         checkWritePermission();
         trigger = newValue;
     }
@@ -194,7 +194,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
      */
     @Override
     @XmlElement(name = "context", required = true)
-    public synchronized Context getContext() {
+    public Context getContext() {
         return context;
     }
 
@@ -203,7 +203,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
      *
      * @param newValue The new context value.
      */
-    public synchronized void setContext(final Context newValue) {
+    public void setContext(final Context newValue) {
         checkWritePermission();
         context = newValue;
     }
@@ -213,7 +213,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
      */
     @Override
     @XmlElement(name = "sequence", required = true)
-    public synchronized Sequence getSequence() {
+    public Sequence getSequence() {
         return sequence;
     }
 
@@ -222,7 +222,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
      *
      * @param newValue The new sequence value.
      */
-    public synchronized void setSequence(final Sequence newValue) {
+    public void setSequence(final Sequence newValue) {
         checkWritePermission();
         sequence = newValue;
     }
@@ -232,7 +232,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
      */
     @Override
     @XmlElement(name = "time", required = true)
-    public synchronized Date getTime() {
+    public Date getTime() {
         return toDate(time);
     }
 
@@ -241,7 +241,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
      *
      * @param newValue The new time value.
      */
-    public synchronized void setTime(final Date newValue) {
+    public void setTime(final Date newValue) {
         checkWritePermission();
         time = toMilliseconds(newValue);
     }
@@ -251,7 +251,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
      */
     @Override
     @XmlElement(name = "expectedObjective")
-    public synchronized Collection<Objective> getExpectedObjectives() {
+    public Collection<Objective> getExpectedObjectives() {
         return expectedObjectives = nonNullCollection(expectedObjectives, Objective.class);
     }
 
@@ -260,7 +260,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
      *
      * @param newValues The new expected objectives values.
      */
-    public synchronized void setExpectedObjectives(final Collection<? extends Objective> newValues) {
+    public void setExpectedObjectives(final Collection<? extends Objective> newValues) {
         expectedObjectives = writeCollection(newValues, expectedObjectives, Objective.class);
     }
 
@@ -269,7 +269,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
      */
     @Override
     @XmlElement(name = "relatedPass")
-    public synchronized PlatformPass getRelatedPass() {
+    public PlatformPass getRelatedPass() {
         return relatedPass;
     }
 
@@ -278,7 +278,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
      *
      * @param newValue The new platform pass value.
      */
-    public synchronized void setRelatedPass(final PlatformPass newValue) {
+    public void setRelatedPass(final PlatformPass newValue) {
         relatedPass = newValue;
     }
 
@@ -287,7 +287,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
      */
     @Override
     @XmlElement(name = "relatedSensor")
-    public synchronized Collection<? extends Instrument> getRelatedSensors() {
+    public Collection<? extends Instrument> getRelatedSensors() {
         return relatedSensors = nonNullCollection(relatedSensors, Instrument.class);
     }
 
@@ -296,7 +296,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
      *
      * @param newValues The new instrument values.
      */
-    public synchronized void setRelatedSensors(final Collection<? extends Instrument> newValues) {
+    public void setRelatedSensors(final Collection<? extends Instrument> newValues) {
         relatedSensors = writeCollection(newValues, relatedSensors, Instrument.class);
     }
 }

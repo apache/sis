@@ -231,7 +231,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      */
     @Override
     @XmlElement(name = "name", required = true)
-    public synchronized String getName() {
+    public String getName() {
         return name;
     }
 
@@ -240,7 +240,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      *
      * @param newValue The new name.
      */
-    public synchronized void setName(final String newValue) {
+    public void setName(final String newValue) {
         checkWritePermission();
         name = newValue;
     }
@@ -250,7 +250,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      */
     @Override
     @XmlElement(name = "shortName")
-    public synchronized String getShortName()  {
+    public String getShortName()  {
         return shortName;
     }
 
@@ -259,7 +259,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      *
      * @param newValue The new short name.
      */
-    public synchronized void setShortName(final String newValue)  {
+    public void setShortName(final String newValue)  {
         checkWritePermission();
         shortName = newValue;
     }
@@ -271,7 +271,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      */
     @Override
     @XmlElement(name = "domainCode")
-    public synchronized Integer getDomainCode() {
+    public Integer getDomainCode() {
         return domainCode;
     }
 
@@ -280,7 +280,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      *
      * @param newValue The new domain code.
      */
-    public synchronized void setDomainCode(final Integer newValue) {
+    public void setDomainCode(final Integer newValue) {
         checkWritePermission();
         domainCode = newValue;
     }
@@ -290,7 +290,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      */
     @Override
     @XmlElement(name = "definition", required = true)
-    public synchronized InternationalString getDefinition()  {
+    public InternationalString getDefinition()  {
         return definition;
     }
 
@@ -299,7 +299,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      *
      * @param newValue The new definition.
      */
-    public synchronized void setDefinition(final InternationalString newValue)  {
+    public void setDefinition(final InternationalString newValue)  {
         checkWritePermission();
         definition = newValue;
     }
@@ -309,7 +309,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      */
     @Override
     @XmlElement(name = "obligation")
-    public synchronized Obligation getObligation()  {
+    public Obligation getObligation()  {
         return obligation;
     }
 
@@ -318,7 +318,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      *
      * @param newValue The new obligation.
      */
-    public synchronized void setObligation(final Obligation newValue)  {
+    public void setObligation(final Obligation newValue)  {
         checkWritePermission();
         obligation = newValue;
     }
@@ -330,7 +330,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      */
     @Override
     @XmlElement(name = "condition")
-    public synchronized InternationalString getCondition() {
+    public InternationalString getCondition() {
         return condition;
     }
 
@@ -339,7 +339,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      *
      * @param newValue The new condition.
      */
-    public synchronized void setCondition(final InternationalString newValue) {
+    public void setCondition(final InternationalString newValue) {
         checkWritePermission();
         condition = newValue;
     }
@@ -349,7 +349,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      */
     @Override
     @XmlElement(name = "dataType", required = true)
-    public synchronized Datatype getDataType() {
+    public Datatype getDataType() {
         return dataType;
     }
 
@@ -358,7 +358,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      *
      * @param newValue The new data type.
      */
-    public synchronized void setDataType(final Datatype newValue) {
+    public void setDataType(final Datatype newValue) {
         checkWritePermission();
         dataType = newValue;
     }
@@ -373,7 +373,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata
     @Override
     @ValueRange(minimum=0)
     @XmlElement(name = "maximumOccurrence")
-    public synchronized Integer getMaximumOccurrence() {
+    public Integer getMaximumOccurrence() {
         return maximumOccurrence;
     }
 
@@ -382,7 +382,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      *
      * @param newValue The new maximum occurrence.
      */
-    public synchronized void setMaximumOccurrence(final Integer newValue) {
+    public void setMaximumOccurrence(final Integer newValue) {
         checkWritePermission();
         maximumOccurrence = newValue;
     }
@@ -396,7 +396,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      */
     @Override
     @XmlElement(name = "domainValue")
-    public synchronized InternationalString getDomainValue() {
+    public InternationalString getDomainValue() {
         return domainValue;
     }
 
@@ -405,7 +405,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      *
      * @param newValue The new domain value.
      */
-    public synchronized void setDomainValue(final InternationalString newValue) {
+    public void setDomainValue(final InternationalString newValue) {
         checkWritePermission();
         domainValue = newValue;
     }
@@ -416,7 +416,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      */
     @Override
     @XmlElement(name = "parentEntity", required = true)
-    public synchronized Collection<String> getParentEntity() {
+    public Collection<String> getParentEntity() {
         return parentEntity = nonNullCollection(parentEntity, String.class);
     }
 
@@ -425,7 +425,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      *
      * @param newValues The new parent entity.
      */
-    public synchronized void setParentEntity(final Collection<? extends String> newValues) {
+    public void setParentEntity(final Collection<? extends String> newValues) {
         parentEntity = writeCollection(newValues, parentEntity, String.class);
     }
 
@@ -434,7 +434,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      */
     @Override
     @XmlElement(name = "rule", required = true)
-    public synchronized InternationalString getRule() {
+    public InternationalString getRule() {
         return rule;
     }
 
@@ -443,7 +443,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      *
      * @param newValue The new rule.
      */
-    public synchronized void setRule(final InternationalString newValue) {
+    public void setRule(final InternationalString newValue) {
         checkWritePermission();
         rule = newValue;
     }
@@ -453,7 +453,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      */
     @Override
     @XmlElement(name = "rationale")
-    public synchronized Collection<InternationalString> getRationales() {
+    public Collection<InternationalString> getRationales() {
         return rationales = nonNullCollection(rationales, InternationalString.class);
     }
 
@@ -462,7 +462,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      *
      * @param newValues The new rationales.
      */
-    public synchronized void setRationales(final Collection<? extends InternationalString> newValues) {
+    public void setRationales(final Collection<? extends InternationalString> newValues) {
         rationales = writeCollection(newValues, rationales, InternationalString.class);
     }
 
@@ -471,7 +471,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      */
     @Override
     @XmlElement(name = "source", required = true)
-    public synchronized Collection<ResponsibleParty> getSources() {
+    public Collection<ResponsibleParty> getSources() {
         return sources = nonNullCollection(sources, ResponsibleParty.class);
     }
 
@@ -480,7 +480,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      *
      * @param newValues The new sources.
      */
-    public synchronized void setSources(final Collection<? extends ResponsibleParty> newValues) {
+    public void setSources(final Collection<? extends ResponsibleParty> newValues) {
         sources = writeCollection(newValues, sources, ResponsibleParty.class);
     }
 }

@@ -39,11 +39,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * Those methods are implemented using Java reflection for invoking the getter methods
  * defined by the {@code MetadataStandard}.</p>
  *
- * {@note This class does not synchronize the methods that perform deep traversal of the metadata tree
- * (like <code>equals(Object)</code>, <code>hashCode()</code> or <code>toString()</code>) because such
- * synchronizations are deadlock prone. For example if subclasses synchronize their getter methods,
- * then many locks may be acquired in various orders.}
- *
  * {@code AbstractMetadata} subclasses may be read-only or read/write, at implementation choice.
  * The methods that modify the metadata may throw {@link UnmodifiableMetadataException} if the
  * metadata does not support the operation. Those methods are:
@@ -62,6 +57,11 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *   <li>{@link #asTreeTable()}</li>
  *   <li>{@link #equals(Object, ComparisonMode)}</li>
  * </ul>
+ *
+ * Instances of this class are <strong>not</strong> synchronized for multi-threading.
+ * Synchronization, if needed, is caller's responsibility. Note that synchronization locks
+ * are not necessarily the metadata instances. For example an other common approach is to
+ * use a single lock for the whole metadata tree (including children).
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.4)
@@ -194,7 +194,7 @@ public abstract class AbstractMetadata implements LenientComparable {
      *
      * @see MetadataStandard#asValueMap(Object, KeyNamePolicy, ValueExistencePolicy)
      */
-    public synchronized Map<String,Object> asMap() {
+    public Map<String,Object> asMap() {
         if (asMap == null) {
             asMap = getStandard().asValueMap(this, KeyNamePolicy.JAVABEANS_PROPERTY, ValueExistencePolicy.NON_EMPTY);
         }
@@ -241,17 +241,6 @@ public abstract class AbstractMetadata implements LenientComparable {
                 return false;
             }
         }
-        /*
-         * DEADLOCK WARNING: A deadlock may occur if the same pair of objects is being compared
-         * in an other thread (see http://jira.codehaus.org/browse/GEOT-1777). Ideally we would
-         * synchronize on 'this' and 'object' atomically (RFE #4210659). Since we can't in Java
-         * a workaround is to always get the locks in the same order. Unfortunately we have no
-         * guarantee that the caller didn't looked the object himself. For now the safest approach
-         * is to not synchronize at all.
-         *
-         * Edit: actually, even if we could synchronize the two objects atomically, a deadlock
-         *       risk would still exists for the reason documented in this class's javadoc.
-         */
         return standard.equals(this, object, mode);
     }
 

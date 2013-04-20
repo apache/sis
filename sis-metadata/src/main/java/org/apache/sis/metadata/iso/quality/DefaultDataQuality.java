@@ -132,7 +132,7 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
      */
     @Override
     @XmlElement(name = "scope", required = true)
-    public synchronized Scope getScope() {
+    public Scope getScope() {
         return scope;
     }
 
@@ -141,7 +141,7 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
      *
      * @param newValue The new scope.
      */
-    public synchronized void setScope(final Scope newValue) {
+    public void setScope(final Scope newValue) {
         checkWritePermission();
         scope = newValue;
     }
@@ -153,7 +153,7 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
      */
     @Override
     @XmlElement(name = "report")
-    public synchronized Collection<Element> getReports() {
+    public Collection<Element> getReports() {
         return reports = nonNullCollection(reports, Element.class);
     }
 
@@ -162,7 +162,7 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
      *
      * @param newValues The new reports.
      */
-    public synchronized void setReports(final Collection<? extends Element> newValues) {
+    public void setReports(final Collection<? extends Element> newValues) {
         reports = writeCollection(newValues, reports, Element.class);
     }
 
@@ -172,7 +172,7 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
      */
     @Override
     @XmlElement(name = "lineage")
-    public synchronized Lineage getLineage() {
+    public Lineage getLineage() {
         return lineage;
     }
 
@@ -182,7 +182,7 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
      *
      * @param newValue The new lineage.
      */
-    public synchronized void setLineage(final Lineage newValue) {
+    public void setLineage(final Lineage newValue) {
         checkWritePermission();
         lineage = newValue;
     }

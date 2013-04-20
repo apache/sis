@@ -149,7 +149,7 @@ public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation im
      */
     @Override
     @XmlElement(name = "controlPointAvailability", required = true)
-    public synchronized boolean isControlPointAvailable() {
+    public boolean isControlPointAvailable() {
         return (booleans & CONTROL_POINT_MASK) != 0;
     }
 
@@ -158,7 +158,7 @@ public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation im
      *
      * @param newValue {@code true} if control points are available.
      */
-    public synchronized void setControlPointAvailable(final boolean newValue) {
+    public void setControlPointAvailable(final boolean newValue) {
        checkWritePermission();
         if (newValue) {
             booleans |= CONTROL_POINT_MASK;
@@ -172,7 +172,7 @@ public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation im
      */
     @Override
     @XmlElement(name = "orientationParameterAvailability", required = true)
-    public synchronized boolean isOrientationParameterAvailable() {
+    public boolean isOrientationParameterAvailable() {
         return (booleans & OPERATION_MASK) != 0;
     }
 
@@ -181,7 +181,7 @@ public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation im
      *
      * @param newValue {@code true} if orientation parameter are available.
      */
-    public synchronized void setOrientationParameterAvailable(final boolean newValue) {
+    public void setOrientationParameterAvailable(final boolean newValue) {
         checkWritePermission();
         if (newValue) {
             booleans |= OPERATION_MASK;
@@ -195,7 +195,7 @@ public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation im
      */
     @Override
     @XmlElement(name = "orientationParameterDescription")
-    public synchronized InternationalString getOrientationParameterDescription() {
+    public InternationalString getOrientationParameterDescription() {
         return orientationParameterDescription;
     }
 
@@ -204,7 +204,7 @@ public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation im
      *
      * @param newValue The new orientation parameter description.
      */
-    public synchronized void setOrientationParameterDescription(final InternationalString newValue) {
+    public void setOrientationParameterDescription(final InternationalString newValue) {
         checkWritePermission();
         orientationParameterDescription = newValue;
     }
@@ -214,7 +214,7 @@ public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation im
      */
     @Override
 /// @XmlElement(name = "georeferencedParameters", required = true)
-    public synchronized Record getGeoreferencedParameters() {
+    public Record getGeoreferencedParameters() {
         return georeferencedParameters;
     }
 
@@ -223,7 +223,7 @@ public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation im
      *
      * @param newValue The new georeferenced parameters.
      */
-    public synchronized void setGeoreferencedParameters(final Record newValue) {
+    public void setGeoreferencedParameters(final Record newValue) {
         checkWritePermission();
         georeferencedParameters = newValue;
     }
@@ -233,7 +233,7 @@ public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation im
      */
     @Override
     @XmlElement(name = "parameterCitation")
-    public synchronized Collection<Citation> getParameterCitations() {
+    public Collection<Citation> getParameterCitations() {
         return parameterCitations = nonNullCollection(parameterCitations, Citation.class);
     }
 
@@ -242,7 +242,7 @@ public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation im
      *
      * @param newValues The new parameter citations.
      */
-    public synchronized void setParameterCitations(final Collection<? extends Citation> newValues) {
+    public void setParameterCitations(final Collection<? extends Citation> newValues) {
         parameterCitations = writeCollection(newValues, parameterCitations, Citation.class);
     }
 
@@ -255,7 +255,7 @@ public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation im
      */
     @Override
     @XmlElement(name = "geolocationInformation", namespace = Namespaces.GMI, required = true)
-    public synchronized Collection<GeolocationInformation> getGeolocationInformation() {
+    public Collection<GeolocationInformation> getGeolocationInformation() {
         return geolocationInformation = nonNullCollection(geolocationInformation, GeolocationInformation.class);
     }
 
@@ -264,7 +264,7 @@ public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation im
      *
      * @param newValues The new geolocation information values.
      */
-    public synchronized void setGeolocationInformation(final Collection<? extends GeolocationInformation> newValues) {
+    public void setGeolocationInformation(final Collection<? extends GeolocationInformation> newValues) {
         geolocationInformation = writeCollection(newValues, geolocationInformation, GeolocationInformation.class);
     }
 }

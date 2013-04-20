@@ -126,7 +126,7 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
      */
     @Override
     @XmlElement(name = "statement")
-    public synchronized InternationalString getStatement() {
+    public InternationalString getStatement() {
         return statement;
     }
 
@@ -135,7 +135,7 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
      *
      * @param newValue The new statement.
      */
-    public synchronized void setStatement(final InternationalString newValue) {
+    public void setStatement(final InternationalString newValue) {
         checkWritePermission();
         statement = newValue;
     }
@@ -145,7 +145,7 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
      */
     @Override
     @XmlElement(name = "processStep")
-    public synchronized Collection<ProcessStep> getProcessSteps() {
+    public Collection<ProcessStep> getProcessSteps() {
         return processSteps = nonNullCollection(processSteps, ProcessStep.class);
     }
 
@@ -154,7 +154,7 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
      *
      * @param newValues The new process steps.
      */
-    public synchronized void setProcessSteps(final Collection<? extends ProcessStep> newValues)  {
+    public void setProcessSteps(final Collection<? extends ProcessStep> newValues)  {
         processSteps = writeCollection(newValues, processSteps, ProcessStep.class);
     }
 
@@ -163,7 +163,7 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
      */
     @Override
     @XmlElement(name = "source")
-    public synchronized Collection<Source> getSources() {
+    public Collection<Source> getSources() {
         return sources = nonNullCollection(sources, Source.class);
     }
 
@@ -172,7 +172,7 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
      *
      * @param newValues The new sources.
      */
-    public synchronized void setSources(final Collection<? extends Source> newValues) {
+    public void setSources(final Collection<? extends Source> newValues) {
         sources = writeCollection(newValues, sources, Source.class);
     }
 }

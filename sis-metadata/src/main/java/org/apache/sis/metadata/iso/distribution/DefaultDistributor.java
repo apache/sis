@@ -134,7 +134,7 @@ public class DefaultDistributor extends ISOMetadata implements Distributor {
      */
     @Override
     @XmlElement(name = "distributorContact", required = true)
-    public synchronized ResponsibleParty getDistributorContact() {
+    public ResponsibleParty getDistributorContact() {
         return distributorContact;
     }
 
@@ -143,7 +143,7 @@ public class DefaultDistributor extends ISOMetadata implements Distributor {
      *
      * @param newValue The new distributor contact.
      */
-    public synchronized void setDistributorContact(final ResponsibleParty newValue) {
+    public void setDistributorContact(final ResponsibleParty newValue) {
         checkWritePermission();
         distributorContact = newValue;
     }
@@ -154,7 +154,7 @@ public class DefaultDistributor extends ISOMetadata implements Distributor {
      */
     @Override
     @XmlElement(name = "distributionOrderProcess")
-    public synchronized Collection<StandardOrderProcess> getDistributionOrderProcesses() {
+    public Collection<StandardOrderProcess> getDistributionOrderProcesses() {
         return distributionOrderProcesses = nonNullCollection(distributionOrderProcesses, StandardOrderProcess.class);
     }
 
@@ -164,7 +164,7 @@ public class DefaultDistributor extends ISOMetadata implements Distributor {
      *
      * @param newValues The new distribution order processes.
      */
-    public synchronized void setDistributionOrderProcesses(final Collection<? extends StandardOrderProcess> newValues) {
+    public void setDistributionOrderProcesses(final Collection<? extends StandardOrderProcess> newValues) {
         distributionOrderProcesses = writeCollection(newValues, distributionOrderProcesses, StandardOrderProcess.class);
     }
 
@@ -173,7 +173,7 @@ public class DefaultDistributor extends ISOMetadata implements Distributor {
      */
     @Override
     @XmlElement(name = "distributorFormat")
-    public synchronized Collection<Format> getDistributorFormats() {
+    public Collection<Format> getDistributorFormats() {
         return distributorFormats = nonNullCollection(distributorFormats, Format.class);
     }
 
@@ -182,7 +182,7 @@ public class DefaultDistributor extends ISOMetadata implements Distributor {
      *
      * @param newValues The new distributor formats.
      */
-    public synchronized void setDistributorFormats(final Collection<? extends Format> newValues) {
+    public void setDistributorFormats(final Collection<? extends Format> newValues) {
         distributorFormats = writeCollection(newValues, distributorFormats, Format.class);
     }
 
@@ -191,7 +191,7 @@ public class DefaultDistributor extends ISOMetadata implements Distributor {
      */
     @Override
     @XmlElement(name = "distributorTransferOptions")
-    public synchronized Collection<DigitalTransferOptions> getDistributorTransferOptions() {
+    public Collection<DigitalTransferOptions> getDistributorTransferOptions() {
         return distributorTransferOptions = nonNullCollection(distributorTransferOptions, DigitalTransferOptions.class);
     }
 
@@ -200,7 +200,7 @@ public class DefaultDistributor extends ISOMetadata implements Distributor {
      *
      * @param newValues The new distributor transfer options.
      */
-    public synchronized void setDistributorTransferOptions(final Collection<? extends DigitalTransferOptions> newValues) {
+    public void setDistributorTransferOptions(final Collection<? extends DigitalTransferOptions> newValues) {
         distributorTransferOptions = writeCollection(newValues, distributorTransferOptions, DigitalTransferOptions.class);
     }
 }

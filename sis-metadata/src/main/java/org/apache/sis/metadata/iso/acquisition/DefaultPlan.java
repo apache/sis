@@ -132,7 +132,7 @@ public class DefaultPlan extends ISOMetadata implements Plan {
      */
     @Override
     @XmlElement(name = "type")
-    public synchronized GeometryType getType() {
+    public GeometryType getType() {
         return type;
     }
 
@@ -142,7 +142,7 @@ public class DefaultPlan extends ISOMetadata implements Plan {
      *
      * @param newValue The new type value.
      */
-    public synchronized void setType(final GeometryType newValue) {
+    public void setType(final GeometryType newValue) {
         checkWritePermission();
         type = newValue;
     }
@@ -152,7 +152,7 @@ public class DefaultPlan extends ISOMetadata implements Plan {
      */
     @Override
     @XmlElement(name = "status", required = true)
-    public synchronized Progress getStatus() {
+    public Progress getStatus() {
         return status;
     }
 
@@ -161,7 +161,7 @@ public class DefaultPlan extends ISOMetadata implements Plan {
      *
      * @param newValue The new status value.
      */
-    public synchronized void setStatus(final Progress newValue) {
+    public void setStatus(final Progress newValue) {
         checkWritePermission();
         status = newValue;
     }
@@ -171,7 +171,7 @@ public class DefaultPlan extends ISOMetadata implements Plan {
      */
     @Override
     @XmlElement(name = "citation", required = true)
-    public synchronized Citation getCitation() {
+    public Citation getCitation() {
         return citation;
     }
 
@@ -180,7 +180,7 @@ public class DefaultPlan extends ISOMetadata implements Plan {
      *
      * @param newValue The new citation value.
      */
-    public synchronized void setCitation(final Citation newValue) {
+    public void setCitation(final Citation newValue) {
         checkWritePermission();
         citation = newValue;
     }
@@ -190,7 +190,7 @@ public class DefaultPlan extends ISOMetadata implements Plan {
      */
     @Override
     @XmlElement(name = "operation")
-    public synchronized Collection<Operation> getOperations() {
+    public Collection<Operation> getOperations() {
         return operations = nonNullCollection(operations, Operation.class);
     }
 
@@ -199,7 +199,7 @@ public class DefaultPlan extends ISOMetadata implements Plan {
      *
      * @param newValues The new identifications of the activity.
      */
-    public synchronized void setOperations(final Collection<? extends Operation> newValues) {
+    public void setOperations(final Collection<? extends Operation> newValues) {
         operations = writeCollection(newValues, operations, Operation.class);
     }
 
@@ -208,7 +208,7 @@ public class DefaultPlan extends ISOMetadata implements Plan {
      */
     @Override
     @XmlElement(name = "satisfiedRequirement")
-    public synchronized Collection<Requirement> getSatisfiedRequirements() {
+    public Collection<Requirement> getSatisfiedRequirements() {
         return satisfiedRequirements = nonNullCollection(satisfiedRequirements, Requirement.class);
     }
 
@@ -217,7 +217,7 @@ public class DefaultPlan extends ISOMetadata implements Plan {
      *
      * @param newValues The new satisfied requirements.
      */
-    public synchronized void setSatisfiedRequirements(final Collection<? extends Requirement> newValues) {
+    public void setSatisfiedRequirements(final Collection<? extends Requirement> newValues) {
         satisfiedRequirements = writeCollection(newValues, satisfiedRequirements, Requirement.class);
     }
 }

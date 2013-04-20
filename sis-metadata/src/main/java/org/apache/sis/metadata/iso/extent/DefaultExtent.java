@@ -154,7 +154,7 @@ public class DefaultExtent extends ISOMetadata implements Extent {
      */
     @Override
     @XmlElement(name = "description")
-    public synchronized InternationalString getDescription() {
+    public InternationalString getDescription() {
         return description;
     }
 
@@ -163,7 +163,7 @@ public class DefaultExtent extends ISOMetadata implements Extent {
      *
      * @param newValue The new description.
      */
-    public synchronized void setDescription(final InternationalString newValue) {
+    public void setDescription(final InternationalString newValue) {
         checkWritePermission();
         description = newValue;
     }
@@ -173,7 +173,7 @@ public class DefaultExtent extends ISOMetadata implements Extent {
      */
     @Override
     @XmlElement(name = "geographicElement")
-    public synchronized Collection<GeographicExtent> getGeographicElements() {
+    public Collection<GeographicExtent> getGeographicElements() {
         return geographicElements = nonNullCollection(geographicElements, GeographicExtent.class);
     }
 
@@ -182,7 +182,7 @@ public class DefaultExtent extends ISOMetadata implements Extent {
      *
      * @param newValues The new geographic elements.
      */
-    public synchronized void setGeographicElements(final Collection<? extends GeographicExtent> newValues) {
+    public void setGeographicElements(final Collection<? extends GeographicExtent> newValues) {
         geographicElements = writeCollection(newValues, geographicElements, GeographicExtent.class);
     }
 
@@ -191,7 +191,7 @@ public class DefaultExtent extends ISOMetadata implements Extent {
      */
     @Override
     @XmlElement(name = "temporalElement")
-    public synchronized Collection<TemporalExtent> getTemporalElements() {
+    public Collection<TemporalExtent> getTemporalElements() {
         return temporalElements = nonNullCollection(temporalElements, TemporalExtent.class);
     }
 
@@ -200,7 +200,7 @@ public class DefaultExtent extends ISOMetadata implements Extent {
      *
      * @param newValues The new temporal elements.
      */
-    public synchronized void setTemporalElements(final Collection<? extends TemporalExtent> newValues) {
+    public void setTemporalElements(final Collection<? extends TemporalExtent> newValues) {
         temporalElements = writeCollection(newValues, temporalElements, TemporalExtent.class);
     }
 
@@ -209,7 +209,7 @@ public class DefaultExtent extends ISOMetadata implements Extent {
      */
     @Override
     @XmlElement(name = "verticalElement")
-    public synchronized Collection<VerticalExtent> getVerticalElements() {
+    public Collection<VerticalExtent> getVerticalElements() {
         return verticalElements = nonNullCollection(verticalElements, VerticalExtent.class);
     }
 
@@ -218,7 +218,7 @@ public class DefaultExtent extends ISOMetadata implements Extent {
      *
      * @param newValues The new vertical elements.
      */
-    public synchronized void setVerticalElements(final Collection<? extends VerticalExtent> newValues) {
+    public void setVerticalElements(final Collection<? extends VerticalExtent> newValues) {
         verticalElements = writeCollection(newValues, verticalElements, VerticalExtent.class);
     }
 
@@ -238,7 +238,7 @@ public class DefaultExtent extends ISOMetadata implements Extent {
      * @see DefaultVerticalExtent#setBounds(Envelope)
      * @see DefaultTemporalExtent#setBounds(Envelope)
      */
-    public synchronized void addElements(final Envelope envelope) throws TransformException {
+    public void addElements(final Envelope envelope) throws TransformException {
         checkWritePermission();
         ReferencingServices.getInstance().addElements(envelope, this);
     }

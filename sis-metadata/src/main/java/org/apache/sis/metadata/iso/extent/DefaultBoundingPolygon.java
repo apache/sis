@@ -109,7 +109,7 @@ public class DefaultBoundingPolygon extends AbstractGeographicExtent implements 
      */
     @Override
     @XmlElement(name = "polygon", required = true)
-    public synchronized Collection<Geometry> getPolygons() {
+    public Collection<Geometry> getPolygons() {
         return polygons = nonNullCollection(polygons, Geometry.class);
     }
 
@@ -118,7 +118,7 @@ public class DefaultBoundingPolygon extends AbstractGeographicExtent implements 
      *
      * @param newValues The new polygons.
      */
-    public synchronized void setPolygons(final Collection<? extends Geometry> newValues) {
+    public void setPolygons(final Collection<? extends Geometry> newValues) {
         polygons = writeCollection(newValues, polygons, Geometry.class);
     }
 }

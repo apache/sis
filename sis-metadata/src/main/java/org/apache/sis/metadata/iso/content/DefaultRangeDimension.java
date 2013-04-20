@@ -117,7 +117,7 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
      */
     @Override
     @XmlElement(name = "sequenceIdentifier")
-    public synchronized MemberName getSequenceIdentifier() {
+    public MemberName getSequenceIdentifier() {
         return sequenceIdentifier;
     }
 
@@ -127,7 +127,7 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
      *
      * @param newValue The new sequence identifier.
      */
-    public synchronized void setSequenceIdentifier(final MemberName newValue) {
+    public void setSequenceIdentifier(final MemberName newValue) {
         checkWritePermission();
         sequenceIdentifier = newValue;
     }
@@ -137,7 +137,7 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
      */
     @Override
     @XmlElement(name = "descriptor")
-    public synchronized InternationalString getDescriptor() {
+    public InternationalString getDescriptor() {
         return descriptor;
     }
 
@@ -146,7 +146,7 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
      *
      * @param newValue The new descriptor.
      */
-    public synchronized void setDescriptor(final InternationalString newValue) {
+    public void setDescriptor(final InternationalString newValue) {
         checkWritePermission();
         descriptor = newValue;
     }

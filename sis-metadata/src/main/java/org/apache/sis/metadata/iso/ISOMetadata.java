@@ -95,7 +95,7 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
      * {@inheritDoc}
      */
     @Override
-    public synchronized Collection<Identifier> getIdentifiers() {
+    public Collection<Identifier> getIdentifiers() {
         return identifiers = nonNullCollection(identifiers, Identifier.class);
     }
 
@@ -107,7 +107,7 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
      * and conversely.</p>
      */
     @Override
-    public synchronized IdentifierMap getIdentifierMap() {
+    public IdentifierMap getIdentifierMap() {
         if (identifierMap == null) {
             final Collection<Identifier> identifiers = getIdentifiers();
             if (identifiers == null) {

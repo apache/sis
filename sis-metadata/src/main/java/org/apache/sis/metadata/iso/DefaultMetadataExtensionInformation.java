@@ -112,7 +112,7 @@ public class DefaultMetadataExtensionInformation extends ISOMetadata
      */
     @Override
     @XmlElement(name = "extensionOnLineResource")
-    public synchronized OnlineResource getExtensionOnLineResource() {
+    public OnlineResource getExtensionOnLineResource() {
         return extensionOnLineResource;
     }
 
@@ -121,7 +121,7 @@ public class DefaultMetadataExtensionInformation extends ISOMetadata
      *
      * @param newValue The new extension online resource.
      */
-    public synchronized void setExtensionOnLineResource(final OnlineResource newValue) {
+    public void setExtensionOnLineResource(final OnlineResource newValue) {
         checkWritePermission();
         this.extensionOnLineResource = newValue;
     }
@@ -132,7 +132,7 @@ public class DefaultMetadataExtensionInformation extends ISOMetadata
      */
     @Override
     @XmlElement(name = "extendedElementInformation")
-    public synchronized Collection<ExtendedElementInformation> getExtendedElementInformation() {
+    public Collection<ExtendedElementInformation> getExtendedElementInformation() {
         return extendedElementInformation = nonNullCollection(extendedElementInformation, ExtendedElementInformation.class);
     }
 
@@ -141,7 +141,7 @@ public class DefaultMetadataExtensionInformation extends ISOMetadata
      *
      * @param newValues The new extended element information.
      */
-    public synchronized void setExtendedElementInformation(final Collection<? extends ExtendedElementInformation> newValues) {
+    public void setExtendedElementInformation(final Collection<? extends ExtendedElementInformation> newValues) {
         extendedElementInformation = writeCollection(newValues, extendedElementInformation, ExtendedElementInformation.class);
     }
 }
