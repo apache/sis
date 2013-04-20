@@ -572,8 +572,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
     }
 
     /**
-     * A checked set synchronized on the enclosing {@link ModifiableMetadata}.
-     * Used for mutable sets only.
+     * A set checking element validity and write permission before to change any value.
      */
     private final class MutableSet<E> extends CheckedHashSet<E> {
         private static final long serialVersionUID = 3032602282358733056L;
@@ -584,11 +583,6 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
 
         MutableSet(Class<E> type, int capacity) {
             super(type, hashMapCapacity(capacity));
-        }
-
-        @Override
-        protected Object getLock() {
-            return ModifiableMetadata.this;
         }
 
         @Override
@@ -604,8 +598,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
     }
 
     /**
-     * A checked list synchronized on the enclosing {@link ModifiableMetadata}.
-     * Used for mutable lists only.
+     * A list checking element validity and write permission before to change any value.
      */
     private final class MutableList<E> extends CheckedArrayList<E> {
         private static final long serialVersionUID = 5800381255701183058L;
@@ -616,11 +609,6 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
 
         MutableList(Class<E> type, int capacity) {
             super(type, capacity);
-        }
-
-        @Override
-        protected Object getLock() {
-            return ModifiableMetadata.this;
         }
 
         @Override
