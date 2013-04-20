@@ -146,7 +146,7 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      */
     @Override
     @XmlElement(name = "specificUsage", required = true)
-    public synchronized InternationalString getSpecificUsage() {
+    public InternationalString getSpecificUsage() {
         return specificUsage;
     }
 
@@ -155,7 +155,7 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      *
      * @param newValue The new specific usage.
      */
-    public synchronized void setSpecificUsage(final InternationalString newValue) {
+    public void setSpecificUsage(final InternationalString newValue) {
         checkWritePermission();
         specificUsage = newValue;
     }
@@ -166,7 +166,7 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      */
     @Override
     @XmlElement(name = "usageDateTime")
-    public synchronized Date getUsageDate() {
+    public Date getUsageDate() {
         return toDate(usageDate);
     }
 
@@ -175,7 +175,7 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      *
      * @param newValue The new usage date.
      */
-    public synchronized void setUsageDate(final Date newValue)  {
+    public void setUsageDate(final Date newValue)  {
         checkWritePermission();
         usageDate = toMilliseconds(newValue);
     }
@@ -186,7 +186,7 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      */
     @Override
     @XmlElement(name = "userDeterminedLimitations")
-    public synchronized InternationalString getUserDeterminedLimitations() {
+    public InternationalString getUserDeterminedLimitations() {
         return userDeterminedLimitations;
     }
 
@@ -196,7 +196,7 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      *
      * @param newValue The new user determined limitations.
      */
-    public synchronized void setUserDeterminedLimitations(final InternationalString newValue) {
+    public void setUserDeterminedLimitations(final InternationalString newValue) {
         checkWritePermission();
         this.userDeterminedLimitations = newValue;
     }
@@ -207,7 +207,7 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      */
     @Override
     @XmlElement(name = "userContactInfo", required = true)
-    public synchronized Collection<ResponsibleParty> getUserContactInfo() {
+    public Collection<ResponsibleParty> getUserContactInfo() {
         return userContactInfo = nonNullCollection(userContactInfo, ResponsibleParty.class);
     }
 
@@ -217,7 +217,7 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      *
      * @param newValues The new user contact info.
      */
-    public synchronized void setUserContactInfo(final Collection<? extends ResponsibleParty> newValues) {
+    public void setUserContactInfo(final Collection<? extends ResponsibleParty> newValues) {
         userContactInfo = writeCollection(newValues, userContactInfo, ResponsibleParty.class);
     }
 }

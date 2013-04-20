@@ -177,7 +177,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      */
     @Override
     @XmlElement(name = "description", required = true)
-    public synchronized InternationalString getDescription() {
+    public InternationalString getDescription() {
         return description;
     }
 
@@ -186,7 +186,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      *
      * @param newValue The new description.
      */
-    public synchronized void setDescription(final InternationalString newValue) {
+    public void setDescription(final InternationalString newValue) {
         checkWritePermission();
         description = newValue;
     }
@@ -196,7 +196,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      */
     @Override
     @XmlElement(name = "rationale")
-    public synchronized InternationalString getRationale() {
+    public InternationalString getRationale() {
         return rationale;
     }
 
@@ -205,7 +205,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      *
      * @param newValue The new rationale.
      */
-    public synchronized void setRationale(final InternationalString newValue) {
+    public void setRationale(final InternationalString newValue) {
         checkWritePermission();
         rationale = newValue;
     }
@@ -216,7 +216,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      */
     @Override
     @XmlElement(name = "dateTime")
-    public synchronized Date getDate() {
+    public Date getDate() {
         return toDate(date);
     }
 
@@ -226,7 +226,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      *
      * @param newValue The new date.
      */
-    public synchronized void setDate(final Date newValue) {
+    public void setDate(final Date newValue) {
         checkWritePermission();
         date = toMilliseconds(newValue);
     }
@@ -237,7 +237,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      */
     @Override
     @XmlElement(name = "processor")
-    public synchronized Collection<ResponsibleParty> getProcessors() {
+    public Collection<ResponsibleParty> getProcessors() {
         return processors = nonNullCollection(processors, ResponsibleParty.class);
     }
 
@@ -247,7 +247,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      *
      * @param newValues The new processors.
      */
-    public synchronized void setProcessors(final Collection<? extends ResponsibleParty> newValues) {
+    public void setProcessors(final Collection<? extends ResponsibleParty> newValues) {
         processors = writeCollection(newValues, processors, ResponsibleParty.class);
     }
 
@@ -257,7 +257,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      */
     @Override
     @XmlElement(name = "source")
-    public synchronized Collection<Source> getSources() {
+    public Collection<Source> getSources() {
         return sources = nonNullCollection(sources, Source.class);
     }
 
@@ -266,7 +266,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      *
      * @param newValues The new sources.
      */
-    public synchronized void setSources(final Collection<? extends Source> newValues) {
+    public void setSources(final Collection<? extends Source> newValues) {
         sources = writeCollection(newValues, sources, Source.class);
     }
 
@@ -275,7 +275,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      */
     @Override
     @XmlElement(name = "output", namespace = Namespaces.GMI)
-    public synchronized Collection<Source> getOutputs() {
+    public Collection<Source> getOutputs() {
         return outputs = nonNullCollection(outputs, Source.class);
     }
 
@@ -284,7 +284,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      *
      * @param newValues The new output values.
      */
-    public synchronized void setOutputs(final Collection<? extends Source> newValues) {
+    public void setOutputs(final Collection<? extends Source> newValues) {
         outputs = writeCollection(newValues, outputs, Source.class);
     }
 
@@ -295,7 +295,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      */
     @Override
     @XmlElement(name = "processingInformation", namespace = Namespaces.GMI)
-    public synchronized Processing getProcessingInformation() {
+    public Processing getProcessingInformation() {
         return processingInformation;
     }
 
@@ -306,7 +306,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      *
      * @param newValue The new processing information value.
      */
-    public synchronized void setProcessingInformation(final Processing newValue) {
+    public void setProcessingInformation(final Processing newValue) {
         checkWritePermission();
         processingInformation = newValue;
     }
@@ -316,7 +316,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      */
     @Override
     @XmlElement(name = "report", namespace = Namespaces.GMI)
-    public synchronized Collection<ProcessStepReport> getReports() {
+    public Collection<ProcessStepReport> getReports() {
         return reports = nonNullCollection(reports, ProcessStepReport.class);
     }
 
@@ -325,7 +325,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      *
      * @param newValues The new process step report values.
      */
-    public synchronized void setReports(final Collection<? extends ProcessStepReport> newValues) {
+    public void setReports(final Collection<? extends ProcessStepReport> newValues) {
         reports = writeCollection(newValues, reports, ProcessStepReport.class);
     }
 }

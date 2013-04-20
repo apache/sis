@@ -110,7 +110,7 @@ public class DefaultNominalResolution extends ISOMetadata implements NominalReso
     @Override
     @ValueRange(minimum=0, isMinIncluded=false)
     @XmlElement(name = "scanningResolution", namespace = Namespaces.GMI, required = true)
-    public synchronized Double getScanningResolution() {
+    public Double getScanningResolution() {
         return scanningResolution;
     }
 
@@ -120,7 +120,7 @@ public class DefaultNominalResolution extends ISOMetadata implements NominalReso
      *
      * @param newValue The new scanning resolution value.
      */
-    public synchronized void setScanningResolution(final Double newValue) {
+    public void setScanningResolution(final Double newValue) {
         checkWritePermission();
         scanningResolution = newValue;
     }
@@ -132,7 +132,7 @@ public class DefaultNominalResolution extends ISOMetadata implements NominalReso
     @Override
     @ValueRange(minimum=0, isMinIncluded=false)
     @XmlElement(name = "groundResolution", namespace = Namespaces.GMI, required = true)
-    public synchronized Double getGroundResolution() {
+    public Double getGroundResolution() {
         return groundResolution;
     }
 
@@ -142,7 +142,7 @@ public class DefaultNominalResolution extends ISOMetadata implements NominalReso
      *
      * @param newValue The new ground resolution value.
      */
-    public synchronized void setGroundResolution(final Double newValue) {
+    public void setGroundResolution(final Double newValue) {
         checkWritePermission();
         groundResolution = newValue;
     }

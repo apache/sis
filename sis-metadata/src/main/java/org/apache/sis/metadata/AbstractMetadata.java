@@ -194,7 +194,7 @@ public abstract class AbstractMetadata implements LenientComparable {
      *
      * @see MetadataStandard#asValueMap(Object, KeyNamePolicy, ValueExistencePolicy)
      */
-    public synchronized Map<String,Object> asMap() {
+    public Map<String,Object> asMap() {
         if (asMap == null) {
             asMap = getStandard().asValueMap(this, KeyNamePolicy.JAVABEANS_PROPERTY, ValueExistencePolicy.NON_EMPTY);
         }

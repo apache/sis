@@ -123,7 +123,7 @@ public class DefaultLegalConstraints extends DefaultConstraints implements Legal
      */
     @Override
     @XmlElement(name = "accessConstraints")
-    public synchronized Collection<Restriction> getAccessConstraints() {
+    public Collection<Restriction> getAccessConstraints() {
         return accessConstraints = nonNullCollection(accessConstraints, Restriction.class);
     }
 
@@ -133,7 +133,7 @@ public class DefaultLegalConstraints extends DefaultConstraints implements Legal
      *
      * @param newValues The new access constraints.
      */
-    public synchronized void setAccessConstraints(final Collection<? extends Restriction> newValues) {
+    public void setAccessConstraints(final Collection<? extends Restriction> newValues) {
         accessConstraints = writeCollection(newValues, accessConstraints, Restriction.class);
     }
 
@@ -143,7 +143,7 @@ public class DefaultLegalConstraints extends DefaultConstraints implements Legal
      */
     @Override
     @XmlElement(name = "useConstraints")
-    public synchronized Collection<Restriction> getUseConstraints() {
+    public Collection<Restriction> getUseConstraints() {
         return useConstraints = nonNullCollection(useConstraints, Restriction.class);
     }
 
@@ -153,7 +153,7 @@ public class DefaultLegalConstraints extends DefaultConstraints implements Legal
      *
      * @param newValues The new use constraints.
      */
-    public synchronized void setUseConstraints(final Collection<? extends Restriction> newValues) {
+    public void setUseConstraints(final Collection<? extends Restriction> newValues) {
         useConstraints = writeCollection(newValues, useConstraints, Restriction.class);
     }
 
@@ -165,7 +165,7 @@ public class DefaultLegalConstraints extends DefaultConstraints implements Legal
      */
     @Override
     @XmlElement(name = "otherConstraints")
-    public synchronized Collection<InternationalString> getOtherConstraints() {
+    public Collection<InternationalString> getOtherConstraints() {
         return otherConstraints = nonNullCollection(otherConstraints, InternationalString.class);
     }
 
@@ -174,7 +174,7 @@ public class DefaultLegalConstraints extends DefaultConstraints implements Legal
      *
      * @param newValues Other constraints.
      */
-    public synchronized void setOtherConstraints(final Collection<? extends InternationalString> newValues) {
+    public void setOtherConstraints(final Collection<? extends InternationalString> newValues) {
         otherConstraints = writeCollection(newValues, otherConstraints, InternationalString.class);
     }
 }

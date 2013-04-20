@@ -215,7 +215,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
     @Override
     @ValueRange(minimum=-180, maximum=180)
     @XmlElement(name = "westBoundLongitude", required = true)
-    public synchronized double getWestBoundLongitude() {
+    public double getWestBoundLongitude() {
         return westBoundLongitude;
     }
 
@@ -226,7 +226,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
      * @param newValue The western-most longitude between -180 and +180°,
      *        or {@linkplain Double#NaN NaN} to undefine.
      */
-    public synchronized void setWestBoundLongitude(final double newValue) {
+    public void setWestBoundLongitude(final double newValue) {
         checkWritePermission();
         westBoundLongitude = newValue;
     }
@@ -241,7 +241,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
     @Override
     @ValueRange(minimum=-180, maximum=180)
     @XmlElement(name = "eastBoundLongitude", required = true)
-    public synchronized double getEastBoundLongitude() {
+    public double getEastBoundLongitude() {
         return eastBoundLongitude;
     }
 
@@ -252,7 +252,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
      * @param newValue The eastern-most longitude between -180 and +180°,
      *        or {@linkplain Double#NaN NaN} to undefine.
      */
-    public synchronized void setEastBoundLongitude(final double newValue) {
+    public void setEastBoundLongitude(final double newValue) {
         checkWritePermission();
         eastBoundLongitude = newValue;
     }
@@ -267,7 +267,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
     @Override
     @ValueRange(minimum=-90, maximum=90)
     @XmlElement(name = "southBoundLatitude", required = true)
-    public synchronized double getSouthBoundLatitude()  {
+    public double getSouthBoundLatitude()  {
         return southBoundLatitude;
     }
 
@@ -278,7 +278,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
      * @param newValue The southern-most latitude between -90 and +90°,
      *        or {@linkplain Double#NaN NaN} to undefine.
      */
-    public synchronized void setSouthBoundLatitude(final double newValue) {
+    public void setSouthBoundLatitude(final double newValue) {
         checkWritePermission();
         southBoundLatitude = newValue;
     }
@@ -293,7 +293,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
     @Override
     @ValueRange(minimum=-90, maximum=90)
     @XmlElement(name = "northBoundLatitude", required = true)
-    public synchronized double getNorthBoundLatitude()   {
+    public double getNorthBoundLatitude()   {
         return northBoundLatitude;
     }
 
@@ -304,7 +304,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
      * @param newValue The northern-most latitude between -90 and +90°,
      *        or {@linkplain Double#NaN NaN} to undefine.
      */
-    public synchronized void setNorthBoundLatitude(final double newValue) {
+    public void setNorthBoundLatitude(final double newValue) {
         checkWritePermission();
         northBoundLatitude = newValue;
     }
@@ -327,7 +327,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
      *         or (<var>south bound</var> &gt; <var>north bound</var>).
      *         Note that {@linkplain Double#NaN NaN} values are allowed.
      */
-    public synchronized void setBounds(final double westBoundLongitude,
+    public void setBounds(final double westBoundLongitude,
                                        final double eastBoundLongitude,
                                        final double southBoundLatitude,
                                        final double northBoundLatitude)
@@ -375,7 +375,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
      * @see DefaultVerticalExtent#setBounds(Envelope)
      * @see DefaultTemporalExtent#setBounds(Envelope)
      */
-    public synchronized void setBounds(final Envelope envelope) throws TransformException {
+    public void setBounds(final Envelope envelope) throws TransformException {
         ArgumentChecks.ensureNonNull("envelope", envelope);
         checkWritePermission();
         ReferencingServices.getInstance().setBounds(envelope, this);
@@ -387,7 +387,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
      *
      * @param box The geographic bounding box to use for setting the values of this box.
      */
-    public synchronized void setBounds(final GeographicBoundingBox box) {
+    public void setBounds(final GeographicBoundingBox box) {
         ArgumentChecks.ensureNonNull("box", box);
         setBounds(box.getWestBoundLongitude(), box.getEastBoundLongitude(),
                   box.getSouthBoundLatitude(), box.getNorthBoundLatitude());
@@ -403,7 +403,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
      *
      * @param box The geographic bounding box to add to this box.
      */
-    public synchronized void add(final GeographicBoundingBox box) {
+    public void add(final GeographicBoundingBox box) {
         checkWritePermission();
         final double λmin = box.getWestBoundLongitude();
         final double λmax = box.getEastBoundLongitude();
@@ -439,7 +439,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
      *
      * @param box The geographic bounding box to intersect with this box.
      */
-    public synchronized void intersect(final GeographicBoundingBox box) {
+    public void intersect(final GeographicBoundingBox box) {
         checkWritePermission();
         if (MetadataUtilities.getInclusion(    getInclusion()) !=
             MetadataUtilities.getInclusion(box.getInclusion()))
@@ -474,7 +474,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
      * @see org.apache.sis.geometry.AbstractEnvelope#isAllNaN()
      */
     @Override
-    public synchronized boolean isEmpty() {
+    public boolean isEmpty() {
         return Double.isNaN(eastBoundLongitude) &&
                Double.isNaN(westBoundLongitude) &&
                Double.isNaN(northBoundLatitude) &&
@@ -488,7 +488,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
      * @return {@code true} if the given object is equal to this box.
      */
     @Override
-    public synchronized boolean equals(final Object object, final ComparisonMode mode) {
+    public boolean equals(final Object object, final ComparisonMode mode) {
         if (object == this) {
             return true;
         }

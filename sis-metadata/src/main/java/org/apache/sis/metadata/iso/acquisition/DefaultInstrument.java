@@ -126,7 +126,7 @@ public class DefaultInstrument extends ISOMetadata implements Instrument {
      */
     @Override
     @XmlElement(name = "citation")
-    public synchronized Collection<Citation> getCitations() {
+    public Collection<Citation> getCitations() {
         return citations = nonNullCollection(citations, Citation.class);
     }
 
@@ -135,7 +135,7 @@ public class DefaultInstrument extends ISOMetadata implements Instrument {
      *
      * @param newValues The new citation values.
      */
-    public synchronized void setCitations(final Collection<? extends Citation> newValues) {
+    public void setCitations(final Collection<? extends Citation> newValues) {
         citations = writeCollection(newValues, citations, Citation.class);
     }
 
@@ -153,7 +153,7 @@ public class DefaultInstrument extends ISOMetadata implements Instrument {
      *
      * @param newValue The new identifier value.
      */
-    public synchronized void setIdentifier(final Identifier newValue) {
+    public void setIdentifier(final Identifier newValue) {
         checkWritePermission();
         identifiers = nonNullCollection(identifiers, Identifier.class);
         NonMarshalledAuthority.setMarshallable(identifiers, newValue);
@@ -164,7 +164,7 @@ public class DefaultInstrument extends ISOMetadata implements Instrument {
      */
     @Override
     @XmlElement(name = "type", required = true)
-    public synchronized InternationalString getType() {
+    public InternationalString getType() {
         return type;
     }
 
@@ -173,7 +173,7 @@ public class DefaultInstrument extends ISOMetadata implements Instrument {
      *
      * @param newValue The new type value.
      */
-    public synchronized void setType(final InternationalString newValue) {
+    public void setType(final InternationalString newValue) {
         checkWritePermission();
         type = newValue;
     }
@@ -183,7 +183,7 @@ public class DefaultInstrument extends ISOMetadata implements Instrument {
      */
     @Override
     @XmlElement(name = "description")
-    public synchronized InternationalString getDescription() {
+    public InternationalString getDescription() {
         return description;
     }
 
@@ -192,7 +192,7 @@ public class DefaultInstrument extends ISOMetadata implements Instrument {
      *
      * @param newValue The new description value.
      */
-    public synchronized void setDescription(final InternationalString newValue) {
+    public void setDescription(final InternationalString newValue) {
         checkWritePermission();
         description = newValue;
     }
@@ -202,7 +202,7 @@ public class DefaultInstrument extends ISOMetadata implements Instrument {
      */
     @Override
     @XmlElement(name = "mountedOn")
-    public synchronized Platform getMountedOn() {
+    public Platform getMountedOn() {
         return mountedOn;
     }
 
@@ -211,7 +211,7 @@ public class DefaultInstrument extends ISOMetadata implements Instrument {
      *
      * @param newValue The new platform value.
      */
-    public synchronized void setMountedOn(final Platform newValue) {
+    public void setMountedOn(final Platform newValue) {
         checkWritePermission();
         mountedOn = newValue;
     }

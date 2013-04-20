@@ -122,7 +122,7 @@ public class DefaultGCPCollection extends AbstractGeolocationInformation impleme
      */
     @Override
     @XmlElement(name = "collectionIdentification", namespace = Namespaces.GMI, required = true)
-    public synchronized Integer getCollectionIdentification() {
+    public Integer getCollectionIdentification() {
         return collectionIdentification;
     }
 
@@ -131,7 +131,7 @@ public class DefaultGCPCollection extends AbstractGeolocationInformation impleme
      *
      * @param newValue The new collection identifier value.
      */
-    public synchronized void setCollectionIdentification(final Integer newValue) {
+    public void setCollectionIdentification(final Integer newValue) {
         checkWritePermission();
         collectionIdentification = newValue;
     }
@@ -141,7 +141,7 @@ public class DefaultGCPCollection extends AbstractGeolocationInformation impleme
      */
     @Override
     @XmlElement(name = "collectionName", namespace = Namespaces.GMI, required = true)
-    public synchronized InternationalString getCollectionName() {
+    public InternationalString getCollectionName() {
         return collectionName;
     }
 
@@ -150,7 +150,7 @@ public class DefaultGCPCollection extends AbstractGeolocationInformation impleme
      *
      * @param newValue The new collection name.
      */
-    public synchronized void setCollectionName(final InternationalString newValue) {
+    public void setCollectionName(final InternationalString newValue) {
         checkWritePermission();
         collectionName = newValue;
     }
@@ -160,7 +160,7 @@ public class DefaultGCPCollection extends AbstractGeolocationInformation impleme
      */
     @Override
     @XmlElement(name = "coordinateReferenceSystem", namespace = Namespaces.GMI, required = true)
-    public synchronized ReferenceSystem getCoordinateReferenceSystem() {
+    public ReferenceSystem getCoordinateReferenceSystem() {
         return coordinateReferenceSystem;
     }
 
@@ -169,7 +169,7 @@ public class DefaultGCPCollection extends AbstractGeolocationInformation impleme
      *
      * @param newValue The new coordinate reference system value.
      */
-    public synchronized void setCoordinateReferenceSystem(final ReferenceSystem newValue) {
+    public void setCoordinateReferenceSystem(final ReferenceSystem newValue) {
         checkWritePermission();
         coordinateReferenceSystem = newValue;
     }
@@ -179,7 +179,7 @@ public class DefaultGCPCollection extends AbstractGeolocationInformation impleme
      */
     @Override
     @XmlElement(name = "gcp", namespace = Namespaces.GMI, required = true)
-    public synchronized Collection<GCP> getGCPs() {
+    public Collection<GCP> getGCPs() {
         return GCPs = nonNullCollection(GCPs, GCP.class);
     }
 
@@ -188,7 +188,7 @@ public class DefaultGCPCollection extends AbstractGeolocationInformation impleme
      *
      * @param newValues The new ground control points values.
      */
-    public synchronized void setGCPs(final Collection<? extends GCP> newValues) {
+    public void setGCPs(final Collection<? extends GCP> newValues) {
         GCPs = writeCollection(newValues, GCPs, GCP.class);
     }
 }

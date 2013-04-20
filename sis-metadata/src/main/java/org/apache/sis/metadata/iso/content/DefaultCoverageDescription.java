@@ -136,7 +136,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
      */
     @Override
     @XmlElement(name = "attributeDescription", required = true)
-    public synchronized RecordType getAttributeDescription() {
+    public RecordType getAttributeDescription() {
         return attributeDescription;
     }
 
@@ -145,7 +145,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
      *
      * @param newValue The new attribute description.
      */
-    public synchronized void setAttributeDescription(final RecordType newValue) {
+    public void setAttributeDescription(final RecordType newValue) {
         checkWritePermission();
         attributeDescription = newValue;
     }
@@ -155,7 +155,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
      */
     @Override
     @XmlElement(name = "contentType", required = true)
-    public synchronized CoverageContentType getContentType() {
+    public CoverageContentType getContentType() {
         return contentType;
     }
 
@@ -164,7 +164,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
      *
      * @param newValue The new content type.
      */
-    public synchronized void setContentType(final CoverageContentType newValue) {
+    public void setContentType(final CoverageContentType newValue) {
         checkWritePermission();
         contentType = newValue;
     }
@@ -174,7 +174,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
      */
     @Override
     @XmlElement(name = "dimension")
-    public synchronized Collection<RangeDimension> getDimensions() {
+    public Collection<RangeDimension> getDimensions() {
         return dimensions = nonNullCollection(dimensions, RangeDimension.class);
     }
 
@@ -183,7 +183,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
      *
      * @param newValues The new dimensions.
      */
-    public synchronized void setDimensions(final Collection<? extends RangeDimension> newValues) {
+    public void setDimensions(final Collection<? extends RangeDimension> newValues) {
         dimensions = writeCollection(newValues, dimensions, RangeDimension.class);
     }
 
@@ -194,7 +194,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
      */
     @Override
     @XmlElement(name = "rangeElementDescription", namespace = Namespaces.GMI)
-    public synchronized Collection<RangeElementDescription> getRangeElementDescriptions() {
+    public Collection<RangeElementDescription> getRangeElementDescriptions() {
         return rangeElementDescriptions = nonNullCollection(rangeElementDescriptions, RangeElementDescription.class);
     }
 
@@ -203,7 +203,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
      *
      * @param newValues The new range element description.
      */
-    public synchronized void setRangeElementDescriptions(final Collection<? extends RangeElementDescription> newValues) {
+    public void setRangeElementDescriptions(final Collection<? extends RangeElementDescription> newValues) {
         rangeElementDescriptions = writeCollection(newValues, rangeElementDescriptions, RangeElementDescription.class);
     }
 }

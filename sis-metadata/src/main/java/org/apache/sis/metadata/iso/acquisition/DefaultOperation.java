@@ -175,7 +175,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
      */
     @Override
     @XmlElement(name = "description")
-    public synchronized InternationalString getDescription() {
+    public InternationalString getDescription() {
         return description;
     }
 
@@ -185,7 +185,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
      *
      * @param newValue The new description value.
      */
-    public synchronized void setDescription(final InternationalString newValue) {
+    public void setDescription(final InternationalString newValue) {
         checkWritePermission();
         description = newValue;
     }
@@ -195,7 +195,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
      */
     @Override
     @XmlElement(name = "citation")
-    public synchronized Citation getCitation() {
+    public Citation getCitation() {
         return citation;
     }
 
@@ -204,7 +204,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
      *
      * @param newValue The new citation value.
      */
-    public synchronized void setCitation(final Citation newValue) {
+    public void setCitation(final Citation newValue) {
         checkWritePermission();
         citation = newValue;
     }
@@ -223,7 +223,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
      *
      * @param newValue The new identifier value.
      */
-    public synchronized void setIdentifier(final Identifier newValue) {
+    public void setIdentifier(final Identifier newValue) {
         checkWritePermission();
         identifiers = nonNullCollection(identifiers, Identifier.class);
         NonMarshalledAuthority.setMarshallable(identifiers, newValue);
@@ -234,7 +234,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
      */
     @Override
     @XmlElement(name = "status", required = true)
-    public synchronized Progress getStatus() {
+    public Progress getStatus() {
         return status;
     }
 
@@ -243,7 +243,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
      *
      * @param newValue The new status value.
      */
-    public synchronized void setStatus(final Progress newValue) {
+    public void setStatus(final Progress newValue) {
         checkWritePermission();
         status = newValue;
     }
@@ -253,7 +253,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
      */
     @Override
     @XmlElement(name = "type")
-    public synchronized OperationType getType() {
+    public OperationType getType() {
         return type;
     }
 
@@ -262,7 +262,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
      *
      * @param newValue The new type value.
      */
-    public synchronized void setType(final OperationType newValue) {
+    public void setType(final OperationType newValue) {
         checkWritePermission();
         type = newValue;
     }
@@ -272,7 +272,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
      */
     @Override
     @XmlElement(name = "childOperation")
-    public synchronized Collection<Operation> getChildOperations() {
+    public Collection<Operation> getChildOperations() {
         return childOperations = nonNullCollection(childOperations, Operation.class);
     }
 
@@ -281,7 +281,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
      *
      * @param newValues The new child operations values.
      */
-    public synchronized void setChildOperations(final Collection<? extends Operation> newValues) {
+    public void setChildOperations(final Collection<? extends Operation> newValues) {
         childOperations = writeCollection(newValues, childOperations, Operation.class);
     }
 
@@ -290,7 +290,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
      */
     @Override
     @XmlElement(name = "objective")
-    public synchronized Collection<Objective> getObjectives() {
+    public Collection<Objective> getObjectives() {
         return objectives = nonNullCollection(objectives, Objective.class);
     }
 
@@ -299,7 +299,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
      *
      * @param newValues The new objectives values.
      */
-    public synchronized void setObjectives(final Collection<? extends Objective> newValues) {
+    public void setObjectives(final Collection<? extends Objective> newValues) {
         objectives = writeCollection(newValues, objectives, Objective.class);
     }
 
@@ -308,7 +308,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
      */
     @Override
     @XmlElement(name = "parentOperation", required = true)
-    public synchronized Operation getParentOperation() {
+    public Operation getParentOperation() {
         return parentOperation;
     }
 
@@ -317,7 +317,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
      *
      * @param newValue The new parent operation value.
      */
-    public synchronized void setParentOperation(final Operation newValue) {
+    public void setParentOperation(final Operation newValue) {
         checkWritePermission();
         parentOperation = newValue;
     }
@@ -327,7 +327,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
      */
     @Override
     @XmlElement(name = "plan")
-    public synchronized Plan getPlan() {
+    public Plan getPlan() {
         return plan;
     }
 
@@ -336,7 +336,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
      *
      * @param newValue The new plan value.
      */
-    public synchronized void setPlan(final Plan newValue) {
+    public void setPlan(final Plan newValue) {
         checkWritePermission();
         plan = newValue;
     }
@@ -346,7 +346,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
      */
     @Override
     @XmlElement(name = "platform")
-    public synchronized Collection<Platform> getPlatforms() {
+    public Collection<Platform> getPlatforms() {
         return platforms = nonNullCollection(platforms, Platform.class);
     }
 
@@ -355,7 +355,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
      *
      * @param newValues The new platforms values.
      */
-    public synchronized void setPlatforms(final Collection<? extends Platform> newValues) {
+    public void setPlatforms(final Collection<? extends Platform> newValues) {
         platforms = writeCollection(newValues, platforms, Platform.class);
     }
 
@@ -364,7 +364,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
      */
     @Override
     @XmlElement(name = "significantEvent")
-    public synchronized Collection<Event> getSignificantEvents() {
+    public Collection<Event> getSignificantEvents() {
         return significantEvents = nonNullCollection(significantEvents, Event.class);
     }
 
@@ -373,7 +373,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
      *
      * @param newValues The new significant events value.
      */
-    public synchronized void setSignificantEvents(final Collection<? extends Event> newValues) {
+    public void setSignificantEvents(final Collection<? extends Event> newValues) {
         significantEvents = writeCollection(newValues, significantEvents, Event.class);
     }
 }

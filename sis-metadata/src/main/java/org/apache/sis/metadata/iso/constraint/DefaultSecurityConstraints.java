@@ -130,7 +130,7 @@ public class DefaultSecurityConstraints extends DefaultConstraints implements Se
      */
     @Override
     @XmlElement(name = "classification", required = true)
-    public synchronized Classification getClassification() {
+    public Classification getClassification() {
         return classification;
     }
 
@@ -139,7 +139,7 @@ public class DefaultSecurityConstraints extends DefaultConstraints implements Se
      *
      * @param newValue The new classification.
      */
-    public synchronized void setClassification(final Classification newValue) {
+    public void setClassification(final Classification newValue) {
         checkWritePermission();
         classification = newValue;
     }
@@ -150,7 +150,7 @@ public class DefaultSecurityConstraints extends DefaultConstraints implements Se
      */
     @Override
     @XmlElement(name = "userNote")
-    public synchronized InternationalString getUserNote() {
+    public InternationalString getUserNote() {
         return userNote;
     }
 
@@ -160,7 +160,7 @@ public class DefaultSecurityConstraints extends DefaultConstraints implements Se
      *
      * @param newValue The new user note.
      */
-    public synchronized void setUserNote(final InternationalString newValue) {
+    public void setUserNote(final InternationalString newValue) {
         checkWritePermission();
         userNote = newValue;
     }
@@ -170,7 +170,7 @@ public class DefaultSecurityConstraints extends DefaultConstraints implements Se
      */
     @Override
     @XmlElement(name = "classificationSystem")
-    public synchronized InternationalString getClassificationSystem() {
+    public InternationalString getClassificationSystem() {
         return classificationSystem;
     }
 
@@ -179,7 +179,7 @@ public class DefaultSecurityConstraints extends DefaultConstraints implements Se
      *
      * @param newValue The new classification system.
      */
-    public synchronized void setClassificationSystem(final InternationalString newValue) {
+    public void setClassificationSystem(final InternationalString newValue) {
         checkWritePermission();
         classificationSystem = newValue;
     }
@@ -189,7 +189,7 @@ public class DefaultSecurityConstraints extends DefaultConstraints implements Se
      */
     @Override
     @XmlElement(name = "handlingDescription")
-    public synchronized InternationalString getHandlingDescription() {
+    public InternationalString getHandlingDescription() {
         return handlingDescription;
     }
 
@@ -198,7 +198,7 @@ public class DefaultSecurityConstraints extends DefaultConstraints implements Se
      *
      * @param newValue The new handling description.
      */
-    public synchronized void setHandlingDescription(final InternationalString newValue) {
+    public void setHandlingDescription(final InternationalString newValue) {
         checkWritePermission();
         handlingDescription = newValue;
     }

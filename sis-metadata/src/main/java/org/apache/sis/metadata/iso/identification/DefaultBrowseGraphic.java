@@ -124,7 +124,7 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
      */
     @Override
     @XmlElement(name = "fileName", required = true)
-    public synchronized URI getFileName() {
+    public URI getFileName() {
         return fileName;
     }
 
@@ -133,7 +133,7 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
      *
      * @param newValue The new filename.
      */
-    public synchronized void setFileName(final URI newValue) {
+    public void setFileName(final URI newValue) {
         checkWritePermission();
         fileName = newValue;
     }
@@ -143,7 +143,7 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
      */
     @Override
     @XmlElement(name = "fileDescription")
-    public synchronized InternationalString getFileDescription() {
+    public InternationalString getFileDescription() {
         return fileDescription;
     }
 
@@ -152,7 +152,7 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
      *
      * @param newValue The new file description.
      */
-    public synchronized void setFileDescription(final InternationalString newValue)  {
+    public void setFileDescription(final InternationalString newValue)  {
         checkWritePermission();
         fileDescription = newValue;
     }
@@ -163,7 +163,7 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
      */
     @Override
     @XmlElement(name = "fileType")
-    public synchronized String getFileType() {
+    public String getFileType() {
         return fileType;
     }
 
@@ -172,7 +172,7 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
      *
      * @param newValue The new file type.
      */
-    public synchronized void setFileType(final String newValue)  {
+    public void setFileType(final String newValue)  {
         checkWritePermission();
         fileType = newValue;
     }

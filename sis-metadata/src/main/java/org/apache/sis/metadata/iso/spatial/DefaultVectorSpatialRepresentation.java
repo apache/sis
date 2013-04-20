@@ -109,7 +109,7 @@ public class DefaultVectorSpatialRepresentation extends AbstractSpatialRepresent
      */
     @Override
     @XmlElement(name = "topologyLevel")
-    public synchronized TopologyLevel getTopologyLevel() {
+    public TopologyLevel getTopologyLevel() {
         return topologyLevel;
     }
 
@@ -118,7 +118,7 @@ public class DefaultVectorSpatialRepresentation extends AbstractSpatialRepresent
      *
      * @param newValue The new topology level.
      */
-    public synchronized void setTopologyLevel(final TopologyLevel newValue) {
+    public void setTopologyLevel(final TopologyLevel newValue) {
         checkWritePermission();
         topologyLevel = newValue;
     }
@@ -128,7 +128,7 @@ public class DefaultVectorSpatialRepresentation extends AbstractSpatialRepresent
      */
     @Override
     @XmlElement(name = "geometricObjects")
-    public synchronized Collection<GeometricObjects> getGeometricObjects() {
+    public Collection<GeometricObjects> getGeometricObjects() {
         return geometricObjects = nonNullCollection(geometricObjects, GeometricObjects.class);
     }
 
@@ -137,7 +137,7 @@ public class DefaultVectorSpatialRepresentation extends AbstractSpatialRepresent
      *
      * @param newValues The new geometric objects.
      */
-    public synchronized void setGeometricObjects(final Collection<? extends GeometricObjects> newValues) {
+    public void setGeometricObjects(final Collection<? extends GeometricObjects> newValues) {
         geometricObjects = writeCollection(newValues, geometricObjects, GeometricObjects.class);
     }
 }

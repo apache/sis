@@ -115,7 +115,7 @@ public class DefaultRangeElementDescription extends ISOMetadata implements Range
      */
     @Override
     @XmlElement(name = "name", namespace = Namespaces.GMI, required = true)
-    public synchronized InternationalString getName() {
+    public InternationalString getName() {
         return name;
     }
 
@@ -124,7 +124,7 @@ public class DefaultRangeElementDescription extends ISOMetadata implements Range
      *
      * @param newValue The new name value.
      */
-    public synchronized void setName(final InternationalString newValue) {
+    public void setName(final InternationalString newValue) {
         checkWritePermission();
         name = newValue;
     }
@@ -134,7 +134,7 @@ public class DefaultRangeElementDescription extends ISOMetadata implements Range
      */
     @Override
     @XmlElement(name = "definition", namespace = Namespaces.GMI, required = true)
-    public synchronized InternationalString getDefinition() {
+    public InternationalString getDefinition() {
         return definition;
     }
 
@@ -143,7 +143,7 @@ public class DefaultRangeElementDescription extends ISOMetadata implements Range
      *
      * @param newValue The new definition value.
      */
-    public synchronized void setDefinition(final InternationalString newValue) {
+    public void setDefinition(final InternationalString newValue) {
         checkWritePermission();
         definition = newValue;
     }
@@ -156,7 +156,7 @@ public class DefaultRangeElementDescription extends ISOMetadata implements Range
      */
     @Override
     //@XmlElement(name = "rangeElement", namespace = Namespaces.GMI, required = true)
-    public synchronized Collection<Record> getRangeElements() {
+    public Collection<Record> getRangeElements() {
         return rangeElements = nonNullCollection(rangeElements, Record.class);
     }
 
@@ -166,7 +166,7 @@ public class DefaultRangeElementDescription extends ISOMetadata implements Range
      *
      * @param newValues The new range element values.
      */
-    public synchronized void setRangeElements(final Collection<? extends Record> newValues) {
+    public void setRangeElements(final Collection<? extends Record> newValues) {
         rangeElements = writeCollection(newValues, rangeElements, Record.class);
     }
 }
