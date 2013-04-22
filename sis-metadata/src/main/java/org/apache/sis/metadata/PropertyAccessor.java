@@ -124,7 +124,8 @@ final class PropertyAccessor {
     final Class<?> type;
 
     /**
-     * The implementation class. The following condition must hold:
+     * The implementation class, or {@link #type} if none.
+     * The following condition must hold:
      *
      * {@preformat java
      *     type.isAssignableFrom(implementation);
@@ -218,7 +219,7 @@ final class PropertyAccessor {
      * @param  standard The standard which define the {@code type} interface.
      * @param  type The interface implemented by the metadata, which must be
      *         the value returned by {@link #getStandardType(Class, String)}.
-     * @param  implementation The class of metadata implementations.
+     * @param  implementation The class of metadata implementations, or {@code type} if none.
      */
     PropertyAccessor(final Citation standard, final Class<?> type, final Class<?> implementation) {
         assert type.isAssignableFrom(implementation) : implementation;
@@ -587,6 +588,13 @@ final class PropertyAccessor {
             informations[index] = information;
         }
         return information;
+    }
+
+    /**
+     * Returns {@code true} if the property at the given index is writable.
+     */
+    final boolean isWritable(final int index) {
+        return (index >= 0) && (index < standardCount) && (setters != null) && (setters[index] != null);
     }
 
     /**

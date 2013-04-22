@@ -222,7 +222,7 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
 
     /**
      * Returns the location (address) for on-line access using a Uniform Resource Locator address or
-     * similar addressing scheme such as @{@code http://www.statkart.no/isotc211}".
+     * similar addressing scheme such as "{@code http://www.statkart.no/isotc211}".
      */
     @Override
     @XmlElement(name = "linkage", required = true)
@@ -242,11 +242,16 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
     }
 
     /**
-     * Returns the connection protocol to be used.
+     * Returns the connection protocol to be used. If no protocol has been {@linkplain #setProtocol(String)
+     * explicitely set}, then this method returns the {@linkplain #getLinkage() linkage}
+     * {@linkplain URI#getScheme() scheme} (if any).
      */
     @Override
     @XmlElement(name = "protocol")
     public String getProtocol() {
+        if (protocol == null && linkage != null) {
+            return linkage.getScheme();
+        }
         return protocol;
     }
 
