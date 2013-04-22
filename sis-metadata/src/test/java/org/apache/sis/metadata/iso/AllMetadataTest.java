@@ -22,8 +22,8 @@ import org.opengis.annotation.UML;
 import org.opengis.annotation.Specification;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.MetadataTestCase;
-import org.apache.sis.metadata.iso.quality.AbstractElement;
 import org.apache.sis.metadata.iso.identification.DefaultRepresentativeFraction;
+import org.apache.sis.test.DependsOn;
 import org.apache.sis.xml.Namespaces;
 
 import static org.junit.Assert.*;
@@ -37,6 +37,12 @@ import static org.junit.Assert.*;
  * @version 0.3
  * @module
  */
+@DependsOn({
+    org.apache.sis.metadata.PropertyAccessorTest.class,
+    org.apache.sis.metadata.iso.citation.DefaultCitationTest.class,
+    org.apache.sis.metadata.iso.citation.DefaultCitationDateTest.class,
+    org.apache.sis.metadata.iso.quality.AbstractElementTest.class
+})
 public final strictfp class AllMetadataTest extends MetadataTestCase {
     /**
      * Creates a new test case with all GeoAPI interfaces and code lists to test.
@@ -256,11 +262,6 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
     protected boolean isWritable(final Class<?> impl, final String property) {
         if (DefaultRepresentativeFraction.class.isAssignableFrom(impl)) {
             if (property.equals("doubleValue")) {
-                return false;
-            }
-        }
-        if (AbstractElement.class.isAssignableFrom(impl)) {
-            if (property.equals("dates")) {
                 return false;
             }
         }
