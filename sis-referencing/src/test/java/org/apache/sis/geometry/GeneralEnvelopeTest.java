@@ -20,6 +20,7 @@ import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.test.DependsOnMethod;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -451,9 +452,25 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
     }
 
     /**
+     * Tests the {@link GeneralEnvelope#toString()} method.
+     */
+    @Test
+    public void testToString() {
+        GeneralEnvelope envelope = new GeneralEnvelope(new double[] {-180, -90}, new double[] {180, 90});
+        assertEquals("BOX(-180 -90, 180 90)", envelope.toString());
+
+        envelope = new GeneralEnvelope(3);
+        envelope.setRange(0, -180, +180);
+        envelope.setRange(1,  -90,  +90);
+        envelope.setRange(2,   10,   30);
+        assertEquals("BOX3D(-180 -90 10, 180 90 30)", envelope.toString());
+    }
+
+    /**
      * Tests the {@link GeneralEnvelope#GeneralEnvelope(CharSequence)} constructor.
      */
     @Test
+    @DependsOnMethod("testToString")
     public void testWktParsing() {
         GeneralEnvelope envelope = new GeneralEnvelope("BOX(-180 -90,180 90)");
         assertEquals(2, envelope.getDimension());

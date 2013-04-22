@@ -42,7 +42,8 @@ import org.junit.BeforeClass;
     org.apache.sis.metadata.InformationMapTest.class,
     org.apache.sis.metadata.ValueMapTest.class,
     org.apache.sis.metadata.MetadataStandardTest.class,
-    org.apache.sis.metadata.PrunerTest.class
+    org.apache.sis.metadata.PrunerTest.class,
+    org.apache.sis.metadata.iso.AllMetadataTest.class
 })
 public final strictfp class MetadataTestSuite extends TestSuite {
     /**
