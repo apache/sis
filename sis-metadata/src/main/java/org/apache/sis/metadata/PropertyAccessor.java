@@ -674,25 +674,28 @@ final class PropertyAccessor {
             final Method getter = getters[index];
             final Method setter = setters[index];
             if (setter != null) {
-                Object old;
+                final Object old;
+                final Object copy;
                 if (getOld) {
                     old = get(getter, metadata);
                     if (old instanceof Collection<?>) {
                         if (old instanceof List<?>) {
-                            old = snapshot((List<?>) old);
+                            copy = snapshot((List<?>) old);
                         } else {
-                            old = modifiableCopy((Collection<?>) old);
+                            copy = modifiableCopy((Collection<?>) old);
                         }
                     } else if (old instanceof Map<?,?>) {
-                        old = modifiableCopy((Map<?,?>) old);
+                        copy = modifiableCopy((Map<?,?>) old);
+                    } else {
+                        copy = old;
                     }
                 } else {
-                    old = null;
+                    copy = old = null;
                 }
                 final Object[] newValues = new Object[] {value};
-                converter = convert(getter, metadata, newValues, elementTypes[index], converter);
+                converter = convert(getter, metadata, old, newValues, elementTypes[index], converter);
                 set(setter, metadata, newValues);
-                return old;
+                return copy;
             }
         }
         throw new UnmodifiableMetadataException(Errors.format(Errors.Keys.CanNotSetPropertyValue_1, names[index]));
@@ -740,6 +743,9 @@ final class PropertyAccessor {
      *
      * @param getter      The method to use for fetching the previous value.
      * @param metadata    The metadata object to query.
+     * @param oldValue    The value returned by {@code get(getter, metadata)}, or {@code null} if unknown.
+     *                    This parameter is only an optimization for avoiding to invoke the getter method
+     *                    twice if the value is already known.
      * @param newValues   The argument to convert. It must be an array of length 1.
      *                    The content of this array will be modified in-place.
      * @param elementType The type required by the setter method.
@@ -750,8 +756,8 @@ final class PropertyAccessor {
      * @throws BackingStoreException If the implementation threw a checked exception.
      */
     private static ObjectConverter<?,?> convert(final Method getter, final Object metadata,
-            final Object[] newValues, Class<?> elementType, ObjectConverter<?,?> converter)
-            throws ClassCastException, BackingStoreException
+            final Object oldValue, final Object[] newValues, Class<?> elementType,
+            ObjectConverter<?,?> converter) throws ClassCastException, BackingStoreException
     {
         assert newValues.length == 1;
         Object newValue = newValues[0];
@@ -812,7 +818,7 @@ final class PropertyAccessor {
                     addTo = null;
                 } else {
                     elements = new Object[] {newValue};
-                    newValue = addTo = (Collection<?>) get(getter, metadata);
+                    newValue = addTo = (Collection<?>) (oldValue != null ? oldValue : get(getter, metadata));
                     if (addTo == null) {
                         // No previous collection. Create one.
                         newValue = Arrays.asList(elements);
@@ -961,7 +967,7 @@ final class PropertyAccessor {
                 }
                 final Method setter = setters[i];
                 if (setter != null) {
-                    converter = convert(getter, target, arguments, elementTypes[i], converter);
+                    converter = convert(getter, target, null, arguments, elementTypes[i], converter);
                     set(setter, target, arguments);
                 } else {
                     success = false;

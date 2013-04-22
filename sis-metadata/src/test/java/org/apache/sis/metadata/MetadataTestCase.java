@@ -112,8 +112,8 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
             return "Dummy value for " + property + '.';
         }
         switch (Numbers.getEnumConstant(type)) {
-            case Numbers.DOUBLE:  return         random.nextDouble() * 100;
-            case Numbers.FLOAT:   return         random.nextFloat()  * 100f;
+            case Numbers.DOUBLE:  return         random.nextDouble() * 90;
+            case Numbers.FLOAT:   return         random.nextFloat()  * 90f;
             case Numbers.LONG:    return (long)  random.nextInt(1000000) + 1;
             case Numbers.INTEGER: return         random.nextInt(  10000) + 1;
             case Numbers.SHORT:   return (short) random.nextInt(   1000) + 1;
@@ -247,8 +247,9 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
             /*
              * Try to write a value.
              */
-            if (isWritable(accessor.implementation, property)) {
-                assertTrue(property, accessor.isWritable(i));
+            final boolean isWritable = isWritable(accessor.implementation, property);
+            assertEquals("isWritable", isWritable, accessor.isWritable(i));
+            if (isWritable) {
                 final Object newValue = valueFor(property, elementType);
                 final Object oldValue = accessor.set(i, instance, newValue, true);
                 assertEquals("PropertyAccessor.set(…) shall return the value previously returned by get(…).", value, oldValue);

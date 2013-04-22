@@ -33,6 +33,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.metadata.MetadataUtilitiesTest.class,
     org.apache.sis.metadata.iso.citation.DefaultCitationDateTest.class,
     org.apache.sis.metadata.iso.citation.DefaultCitationTest.class,
+    org.apache.sis.metadata.iso.quality.AbstractElementTest.class,
 
     // Classes using Java reflection.
     org.apache.sis.metadata.PropertyInformationTest.class,
