@@ -193,6 +193,7 @@ public class AbstractElement extends ISOMetadata implements Element {
                 case 0: date1 = date; break;
                 case 1: date2 = date; break;
             }
+            modCount++;
             return previous;
         }
 
@@ -207,6 +208,7 @@ public class AbstractElement extends ISOMetadata implements Element {
                 case 0: date1 = date2; // Fallthrough
                 case 1: date2 = Long.MIN_VALUE; break;
             }
+            modCount++;
             return previous;
         }
 
@@ -222,14 +224,16 @@ public class AbstractElement extends ISOMetadata implements Element {
                     case 0: {
                         date2 = date1;
                         date1 = date;
+                        modCount++;
                         return;
                     }
                     case 1: {
-                        if (date1 != Long.MIN_VALUE) {
-                            date2 = date;
-                            return;
+                        if (date1 == Long.MIN_VALUE) {
+                            break; // Exception will be thrown below.
                         }
-                        break;
+                        date2 = date;
+                        modCount++;
+                        return;
                     }
                 }
             }
@@ -240,25 +244,24 @@ public class AbstractElement extends ISOMetadata implements Element {
          * Adds all content from the given collection into this collection.
          */
         @Override
+        @SuppressWarnings("fallthrough")
         public boolean addAll(final Collection<? extends Date> dates) {
+            final int c = modCount;
             if (dates != null) {
-                if (date1 != Long.MIN_VALUE) {
-                    return super.addAll(dates);
-                }
                 final Iterator<? extends Date> it = dates.iterator();
-                if (it.hasNext()) {
-                    date1 = it.next().getTime();
-                    if (it.hasNext()) {
-                        date2 = it.next().getTime();
-                        if (it.hasNext()) {
-                            throw new IllegalArgumentException(Errors.format(
-                                    Errors.Keys.ExcessiveArgumentSize_3, "dates", 2, dates.size()));
-                        }
-                    }
-                    return true;
+                switch (size()) { // Fallthrough everywhere.
+                    case 0:  if (!it.hasNext()) break;
+                             date1 = it.next().getTime();
+                             modCount++;
+                    case 1:  if (!it.hasNext()) break;
+                             date2 = it.next().getTime();
+                             modCount++;
+                    default: if (!it.hasNext()) break;
+                             throw new IllegalArgumentException(Errors.format(
+                                     Errors.Keys.ExcessiveArgumentSize_3, "dates", 2, dates.size()));
                 }
             }
-            return false;
+            return modCount != c;
         }
 
         /**
