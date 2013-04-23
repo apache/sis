@@ -245,6 +245,8 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
      * Returns the connection protocol to be used. If no protocol has been {@linkplain #setProtocol(String)
      * explicitely set}, then this method returns the {@linkplain #getLinkage() linkage}
      * {@linkplain URI#getScheme() scheme} (if any).
+     *
+     * @see <a href="../doc-files/auto-properties.html">List of automatic properties</a>
      */
     @Override
     @XmlElement(name = "protocol")
