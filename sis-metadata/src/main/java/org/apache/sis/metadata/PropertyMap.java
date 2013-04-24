@@ -43,7 +43,7 @@ import java.util.Iterator;
  */
 abstract class PropertyMap<V> extends AbstractMap<String,V> {
     /**
-     * The accessor to use for the metadata.
+     * The accessor to use for accessing the property names, types or values.
      */
     final PropertyAccessor accessor;
 

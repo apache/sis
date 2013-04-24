@@ -79,14 +79,17 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
      * <p>This constructor is for sub-classing only. Users should invoke the {@link #wrap(Object[])}
      * static method instead.</p>
      *
+     * <p>The argument type is intentionally {@code E[]} instead than {@code E...} in order to force
+     * the caller to instantiate the array explicitely, in order to make sure that the array type is
+     * the intended one.</p>
+     *
      * {@section WARNING! Type safety hole}
      * Callers <strong>must</strong> ensure that the type of array elements in exactly {@code E},
      * not a subtype of {@code E}. See class javadoc for more information.
      *
      * @param array The array to wrap.
      */
-    @SafeVarargs
-    protected UnmodifiableArrayList(final E... array) {
+    protected UnmodifiableArrayList(final E[] array) { // NOT "E..." - see javadoc.
         this.array = Objects.requireNonNull(array);
     }
 
@@ -101,13 +104,16 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
      * should use {@link org.apache.sis.util.collection.Containers#unmodifiableList(E[])} instead.
      * See class javadoc for more information.
      *
+     * <p>The argument type is intentionally {@code E[]} instead than {@code E...} in order to force
+     * the caller to instantiate the array explicitely, in order to make sure that the array type is
+     * the intended one.</p>
+     *
      * @param  <E> The type of elements in the list.
      * @param  array The array to wrap, or {@code null} if none.
      * @return The given array wrapped in an unmodifiable list, or {@code null} if the given
      *         array was null.
      */
-    @SafeVarargs
-    public static <E> UnmodifiableArrayList<E> wrap(final E... array) {
+    public static <E> UnmodifiableArrayList<E> wrap(final E[] array) { // NOT "E..." - see javadoc.
         return (array != null) ? new UnmodifiableArrayList<>(array) : null;
     }
 
@@ -132,9 +138,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
      * @param  upper High endpoint (exclusive) of the sublist.
      * @return The given array wrapped in an unmodifiable list.
      */
-    public static <E> UnmodifiableArrayList<E> wrap(final E[] array, final int lower, final int upper)
-            throws IndexOutOfBoundsException
-    {
+    public static <E> UnmodifiableArrayList<E> wrap(final E[] array, final int lower, final int upper) {
         if (lower == 0 && upper == array.length) {
             return new UnmodifiableArrayList<>(array);
         }

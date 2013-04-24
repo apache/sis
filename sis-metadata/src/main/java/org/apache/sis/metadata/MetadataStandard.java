@@ -431,13 +431,13 @@ public class MetadataStandard {
      * {@linkplain KeyNamePolicy#METHOD_NAME method names} or {@linkplain KeyNamePolicy#SENTENCE
      * sentences} (usually in English).
      *
-     * <p><b>Example:</b> The {@code value} in the following code is
-     * <code>"alternateTitle<u>s</u>"</code> (note the plural):</p>
+     * <p><b>Example:</b> the following code prints <code>"alternateTitle<u>s</u>"</code> (note the plural):</p>
      *
      * {@preformat java
      *   MetadataStandard standard = MetadataStandard.ISO_19115;
      *   Map<String, String> names = standard.asNameMap(Citation.class, UML_IDENTIFIER, JAVABEANS_PROPERTY);
-     *   String value = names.get("alternateTitle");  // alternateTitles
+     *   String value = names.get("alternateTitle");
+     *   System.out.println(value); // alternateTitles
      * }
      *
      * The {@code keyPolicy} argument specify only the string representation of keys returned by the iterators.
@@ -471,12 +471,14 @@ public class MetadataStandard {
      * argument, which can be {@linkplain TypeValuePolicy#ELEMENT_TYPE element type} or the
      * {@linkplain TypeValuePolicy#DECLARING_INTERFACE declaring interface} among others.
      *
-     * <p><b>Example:</b> The {@code value} in the following code is {@code InternationalString.class}:</p>
+     * <p><b>Example:</b> the following code prints the
+     * {@link org.opengis.util.InternationalString} class name:</p>
      *
      * {@preformat java
      *   MetadataStandard  standard = MetadataStandard.ISO_19115;
      *   Map<String,Class<?>> types = standard.asTypeMap(Citation.class, UML_IDENTIFIER, ELEMENT_TYPE);
-     *   Class<?> value = names.get("alternateTitle");  // InternationalString.class
+     *   Class<?> value = types.get("alternateTitle");
+     *   System.out.println(value);  // class org.opengis.util.InternationalString
      * }
      *
      * @param  type        The interface or implementation class of a metadata.
@@ -521,14 +523,14 @@ public class MetadataStandard {
      *     <ul>
      *       <li>The {@linkplain CheckedContainer#getElementType() element type} is the type of property values
      *           as defined by {@link TypeValuePolicy#ELEMENT_TYPE}.</li>
-     *
-     *       {@note The rational for implementing <code>CheckedContainer</code> is to consider each
-     *       <code>ExtendedElementInformation</code> instance as the set of all possible values for
-     *       the property. If the information had a <code>contains(E)</code> method, it would return
-     *       <code>true</code> if the given value is valid for that property.}
      *     </ul>
      *   </li>
      * </ul>
+     *
+     * {@note The rational for implementing <code>CheckedContainer</code> is to consider each
+     * <code>ExtendedElementInformation</code> instance as the set of all possible values for
+     * the property. If the information had a <code>contains(E)</code> method, it would return
+     * <code>true</code> if the given value is valid for that property.}
      *
      * In addition, for each map entry the value returned by {@link ExtendedElementInformation#getDomainValue()}
      * may optionally be an instance of any of the following classes:
@@ -542,6 +544,8 @@ public class MetadataStandard {
      * @return Information about all properties defined in the given metadata type.
      * @throws ClassCastException if the given type doesn't implement a metadata
      *         interface of the expected package.
+     *
+     * @see org.apache.sis.metadata.iso.DefaultExtendedElementInformation
      */
     public Map<String,ExtendedElementInformation> asInformationMap(Class<?> type,
             final KeyNamePolicy keyPolicy) throws ClassCastException

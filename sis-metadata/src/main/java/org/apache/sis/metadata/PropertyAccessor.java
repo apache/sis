@@ -432,6 +432,8 @@ final class PropertyAccessor {
 
     /**
      * Returns the number of properties that can be read.
+     *
+     * @see #count(Object, ValueExistencePolicy, int)
      */
     final int count() {
         return standardCount;
@@ -897,6 +899,34 @@ final class PropertyAccessor {
     }
 
     /**
+     * Counts the number of non-null or non-empty properties.
+     *
+     * @param  max Stop the count if we reach that value (indicative purpose only).
+     * @param  valuePolicy The behavior of the count toward null or empty values.
+     * @throws BackingStoreException If the implementation threw a checked exception.
+     *
+     * @see #count()
+     */
+    public int count(final Object metadata, final ValueExistencePolicy valuePolicy, final int max)
+            throws BackingStoreException
+    {
+        assert type.isInstance(metadata) : metadata;
+        if (valuePolicy == ValueExistencePolicy.ALL) {
+            return count();
+        }
+        int count = 0;
+        for (int i=0; i<standardCount; i++) {
+            final Object value = get(getters[i], metadata);
+            if (!valuePolicy.isSkipped(value)) {
+                if (++count >= max) {
+                    break;
+                }
+            }
+        }
+        return count;
+    }
+
+    /**
      * Compares the two specified metadata objects. This method implements a <cite>shallow</cite>
      * comparison, i.e. all metadata properties are compared using their {@code properties.equals(…)}
      * method without explicit calls to this {@code accessor.equals(…)} method for children.
@@ -1032,24 +1062,5 @@ final class PropertyAccessor {
             }
         }
         return code;
-    }
-
-    /**
-     * Counts the number of non-empty properties.
-     *
-     * @param  max Stop the count if we reach that value.
-     * @throws BackingStoreException If the implementation threw a checked exception.
-     */
-    public int count(final Object metadata, final int max) throws BackingStoreException {
-        assert type.isInstance(metadata) : metadata;
-        int count = 0;
-        for (int i=0; i<standardCount; i++) {
-            if (!isNullOrEmpty(get(getters[i], metadata))) {
-                if (++count >= max) {
-                    break;
-                }
-            }
-        }
-        return count;
     }
 }

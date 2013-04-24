@@ -61,7 +61,7 @@ public final class Classes extends Static {
     private static final Class<?>[] EMPTY_ARRAY = new Class<?>[0];
 
     /**
-     * Methods to be rejected by {@link #isGetter(Method)}. They are mostly methods inherited
+     * Methods to be rejected by {@link #isPossibleGetter(Method)}. They are mostly methods inherited
      * from {@link Object}. Only no-argument methods having a non-void return value need to be
      * declared in this list.
      *

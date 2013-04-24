@@ -23,9 +23,9 @@ import java.lang.reflect.Array;
 
 /**
  * Whatever {@link MetadataStandard#asValueMap MetadataStandard.asValueMap(…)} shall contain
- * entries for null values or empty collections. By default the map does not provide
+ * entries for null or empty values. By default the map does not provide
  * {@linkplain java.util.Map.Entry entries} for {@code null} metadata properties or
- * {@linkplain java.util.Collection#isEmpty() empty} collections.
+ * {@linkplain java.util.Collection#isEmpty() empty collections}.
  * This enumeration allows control on this behavior.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -40,21 +40,45 @@ public enum ValueExistencePolicy {
      * Includes all entries in the map, including those having a null value or an
      * empty collection.
      */
-    ALL,
+    ALL() {
+        @Override boolean isSkipped(final Object value) {
+            return false;
+        }
+    },
 
     /**
      * Includes only the non-null properties.
      * Collections are included no matter if they are empty or not.
      */
-    NON_NULL,
+    NON_NULL() {
+        @Override boolean isSkipped(final Object value) {
+            return (value == null);
+        }
+    },
 
     /**
-     * Includes only the properties that are non-null and, in the case of collections,
-     * non-{@linkplain java.util.Collection#isEmpty() empty}.
+     * Includes only the properties that are non-null and non empty.
+     * A non-null property is considered empty if:
+     *
+     * <ul>
+     *   <li>It is a character sequence containing only {@linkplain Character#isWhitespace(int) whitespaces}.</li>
+     *   <li>It is an {@linkplain Collection#isEmpty() empty collection}.</li>
+     *   <li>It is an {@linkplain Map#isEmpty() empty map}.</li>
+     *   <li>It is an empty array (of length 0).</li>
+     * </ul>
+     *
      * This is the default behavior of {@link AbstractMetadata#asMap()}.
      */
-    NON_EMPTY;
+    NON_EMPTY() {
+        @Override boolean isSkipped(final Object value) {
+            return isNullOrEmpty(value);
+        }
+    };
 
+    /**
+     * Returns {@code true} if the given value shall be skipped for this policy.
+     */
+    abstract boolean isSkipped(Object value);
 
     /**
      * Returns {@code true} if the specified object is null or an empty collection, array or string.
