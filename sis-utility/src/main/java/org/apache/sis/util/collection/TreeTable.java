@@ -157,8 +157,9 @@ public interface TreeTable {
          * at whatever position they see fit.
          *
          * @return The new child.
+         * @throws UnsupportedOperationException If this node can not add new children.
          */
-        Node newChild();
+        Node newChild() throws UnsupportedOperationException;
 
         /**
          * Returns the value in the given column, or {@code null} if none.
@@ -187,7 +188,7 @@ public interface TreeTable {
          * @see #isEditable(TableColumn)
          * @category table
          */
-        <V> void setValue(TableColumn<V> column, V value);
+        <V> void setValue(TableColumn<V> column, V value) throws IllegalArgumentException, UnsupportedOperationException;
 
         /**
          * Determines whether the value in the specified column is editable. If the given

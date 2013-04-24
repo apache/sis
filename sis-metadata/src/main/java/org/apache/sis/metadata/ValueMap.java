@@ -49,7 +49,7 @@ final class ValueMap extends PropertyMap<Object> {
     final ValueExistencePolicy valuePolicy;
 
     /**
-     * Creates a property map for the specified metadata and accessor.
+     * Creates a map of values for the specified metadata and accessor.
      *
      * @param metadata    The metadata object to wrap.
      * @param accessor    The accessor to use for the metadata.
@@ -65,18 +65,11 @@ final class ValueMap extends PropertyMap<Object> {
     }
 
     /**
-     * Returns {@code true} if the given value should be ignored.
-     */
-    final boolean ignore(final Object value) {
-        return valuePolicy == ValueExistencePolicy.NON_EMPTY && ValueExistencePolicy.isNullOrEmpty(value);
-    }
-
-    /**
      * Returns {@code true} if this map contains no key-value mappings.
      */
     @Override
     public boolean isEmpty() {
-        return accessor.count(metadata, 1) == 0;
+        return accessor.count(metadata, valuePolicy, 1) == 0;
     }
 
     /**
@@ -84,7 +77,7 @@ final class ValueMap extends PropertyMap<Object> {
      */
     @Override
     public int size() {
-        return accessor.count(metadata, Integer.MAX_VALUE);
+        return accessor.count(metadata, valuePolicy, Integer.MAX_VALUE);
     }
 
     /**
@@ -103,7 +96,7 @@ final class ValueMap extends PropertyMap<Object> {
     public Object get(final Object key) {
         if (key instanceof String) {
             final Object value = accessor.get(accessor.indexOf((String) key, false), metadata);
-            if (!ignore(value)) {
+            if (!valuePolicy.isSkipped(value)) {
                 return value;
             }
         }
@@ -120,7 +113,7 @@ final class ValueMap extends PropertyMap<Object> {
     @Override
     public Object put(final String key, final Object value) {
         final Object old = accessor.set(accessor.indexOf(key, true), metadata, value, true);
-        return ignore(old) ? null : old;
+        return valuePolicy.isSkipped(old) ? null : old;
     }
 
     /**
@@ -147,7 +140,7 @@ final class ValueMap extends PropertyMap<Object> {
     public Object remove(final Object key) throws UnsupportedOperationException {
         if (key instanceof String) {
             final Object old = accessor.set(accessor.indexOf((String) key, false), metadata, null, true);
-            if (!ignore(old)) {
+            if (!valuePolicy.isSkipped(old)) {
                 return old;
             }
         }
@@ -219,7 +212,7 @@ final class ValueMap extends PropertyMap<Object> {
         @Override
         public Object getValue() {
             final Object value = accessor.get(index, metadata);
-            return ignore(value) ? null : value;
+            return valuePolicy.isSkipped(value) ? null : value;
         }
 
         /**
@@ -299,26 +292,7 @@ final class ValueMap extends PropertyMap<Object> {
         private void move(int index) {
             final int count = accessor.count();
             while (index < count) {
-                final Object value = accessor.get(index, metadata);
-                final boolean skip;
-                switch (valuePolicy) {
-                    case ALL: {
-                        skip = false; // Never skip entries.
-                        break;
-                    }
-                    case NON_NULL: {
-                        skip = (value == null); // Skip only null values (not empty collections).
-                        break;
-                    }
-                    case NON_EMPTY: {
-                        skip = ValueExistencePolicy.isNullOrEmpty(value);
-                        break;
-                    }
-                    default: {
-                        throw new AssertionError(valuePolicy);
-                    }
-                }
-                if (!skip) {
+                if (!valuePolicy.isSkipped(accessor.get(index, metadata))) {
                     next = new Property(index);
                     return;
                 }

@@ -286,7 +286,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
 
     /**
      * Returns a string representation of this tree table.
-     * The default implementation performs the same work than {@link TreeTables#toString(TreeTable)}.
+     * The current implementation uses a shared instance of {@link TreeTableFormat}.
      * This is okay for debugging or occasional usages. However for more extensive usages,
      * developers are encouraged to create and configure their own {@link TreeTableFormat}
      * instance.
@@ -568,7 +568,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
          * @see #isEditable(TableColumn)
          */
         @Override
-        public <V> void setValue(final TableColumn<V> column, final V value) {
+        public <V> void setValue(final TableColumn<V> column, final V value) throws IllegalArgumentException {
             ArgumentChecks.ensureNonNull("column", column);
             final Integer index = columnIndices.get(column);
             if (index == null) {

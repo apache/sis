@@ -251,7 +251,7 @@ public final class TreeTables extends Static {
 
     /**
      * Returns a string representation of the given tree table.
-     * The default implementation uses a shared instance of {@link TreeTableFormat}.
+     * The current implementation uses a shared instance of {@link TreeTableFormat}.
      * This is okay for debugging or occasional usages. However for more extensive usages,
      * developers are encouraged to create and configure their own {@code TreeTableFormat}
      * instance.
