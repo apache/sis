@@ -570,11 +570,11 @@ cmp:    for (final Class<?> c : c1) {
      *
      * <table class="sis">
      *   <tr>
-     *     <td>Class</td>
-     *     <td>{@code getName()}</td>
-     *     <td>{@code getSimpleName()}</td>
-     *     <td>{@code getCanonicalName()}</td>
-     *     <td>{@code getShortName()}</td>
+     *     <th>Class</th>
+     *     <th>{@code getName()}</th>
+     *     <th>{@code getSimpleName()}</th>
+     *     <th>{@code getCanonicalName()}</th>
+     *     <th>{@code getShortName()}</th>
      *   </tr>
      *   <tr>
      *     <td>{@link String}</td>
