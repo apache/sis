@@ -69,7 +69,7 @@ final class ValueMap extends PropertyMap<Object> {
      */
     @Override
     public boolean isEmpty() {
-        return accessor.count(metadata, valuePolicy, 1) == 0;
+        return accessor.count(metadata, valuePolicy, PropertyAccessor.COUNT_FIRST) == 0;
     }
 
     /**
@@ -77,7 +77,7 @@ final class ValueMap extends PropertyMap<Object> {
      */
     @Override
     public int size() {
-        return accessor.count(metadata, valuePolicy, Integer.MAX_VALUE);
+        return accessor.count(metadata, valuePolicy, PropertyAccessor.COUNT_SHALLOW);
     }
 
     /**

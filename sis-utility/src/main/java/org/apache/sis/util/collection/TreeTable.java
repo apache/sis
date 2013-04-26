@@ -135,6 +135,18 @@ public interface TreeTable {
         Node getParent();
 
         /**
+         * Returns {@code true} if this node can not have any children. The {@linkplain #getChildren()
+         * children list} of a leaf node can only be empty, and adding {@linkplain #newChild() new child}
+         * is an unsupported operation.
+         *
+         * <p>This value is provided as a tip for graphical user interfaces, in order to determine if
+         * a node is expandable (even if empty). {@link TreeTableFormat} does not use this value.</p>
+         *
+         * @return {@code true} if this node can not have any children.
+         */
+        boolean isLeaf();
+
+        /**
          * Returns the children of this node. The returned list may or may not be modifiable, at
          * implementation choice. If the list is modifiable, then it shall be <cite>live</cite>,
          * i.e. any modification to the returned list are reflected immediately in the tree.

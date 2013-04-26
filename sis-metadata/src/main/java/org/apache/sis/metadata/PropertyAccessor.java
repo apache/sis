@@ -16,7 +16,6 @@
  */
 package org.apache.sis.metadata;
 
-import java.util.Set;
 import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
@@ -95,6 +94,12 @@ final class PropertyAccessor {
      *        of objects created by <code>HashMap</code>.}
      */
     private static final Map<Class<?>, Method[]> SHARED_GETTERS = new IdentityHashMap<>();
+
+    /**
+     * Enumeration constants for the {@code mode} argument in the
+     * {@link #count(Object, ValueExistencePolicy, int)} method.
+     */
+    static final int COUNT_FIRST=0, COUNT_SHALLOW=1, COUNT_DEEP=2;
 
     /**
      * Additional getter to declare in every list of getter methods that do not already provide
@@ -551,6 +556,16 @@ final class PropertyAccessor {
     }
 
     /**
+     * Returns {@code true} if the type at the given index is {@link Collection}.
+     */
+    final boolean isCollection(final int index) {
+        if (index >= 0 && index < standardCount) {
+            return Collection.class.isAssignableFrom(getters[index].getReturnType());
+        }
+        return false;
+    }
+
+    /**
      * Returns the information for the property at the given index.
      * The information are created when first needed.
      *
@@ -900,26 +915,48 @@ final class PropertyAccessor {
 
     /**
      * Counts the number of non-null or non-empty properties.
+     * The {@code mode} argument can be one of the following:
      *
-     * @param  max Stop the count if we reach that value (indicative purpose only).
+     * <ul>
+     *   <li>COUNT_FIRST:   stop at the first property found. This mode is used for testing if a
+     *                      metadata is empty or not, without the need to known the exact count.</li>
+     *   <li>COUNT_SHALLOW: count all properties, counting collections as one property.</li>
+     *   <li>COUNT_DEEP:    count all properties, counting collections as the number of
+     *                      properties returned by {@link Collection#size()}.</li>
+     * </ul>
+     *
+     * @param  mode Kinds of count, as described above.
      * @param  valuePolicy The behavior of the count toward null or empty values.
      * @throws BackingStoreException If the implementation threw a checked exception.
      *
      * @see #count()
      */
-    public int count(final Object metadata, final ValueExistencePolicy valuePolicy, final int max)
+    public int count(final Object metadata, final ValueExistencePolicy valuePolicy, final int mode)
             throws BackingStoreException
     {
         assert type.isInstance(metadata) : metadata;
-        if (valuePolicy == ValueExistencePolicy.ALL) {
+        if (valuePolicy == ValueExistencePolicy.ALL && mode != COUNT_DEEP) {
             return count();
         }
         int count = 0;
         for (int i=0; i<standardCount; i++) {
             final Object value = get(getters[i], metadata);
             if (!valuePolicy.isSkipped(value)) {
-                if (++count >= max) {
-                    break;
+                switch (mode) {
+                    case COUNT_FIRST:{
+                        return 1;
+                    }
+                    case COUNT_SHALLOW:{
+                        count++;
+                        break;
+                    }
+                    case COUNT_DEEP: {
+                        if (value != null) {
+                            count += isCollection(i) ? ((Collection<?>) value).size() : 1;
+                        }
+                        break;
+                    }
+                    default: throw new AssertionError(mode);
                 }
             }
         }
