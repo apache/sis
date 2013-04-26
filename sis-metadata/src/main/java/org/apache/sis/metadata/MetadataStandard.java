@@ -595,18 +595,24 @@ public class MetadataStandard {
 
     /**
      * Returns the specified metadata object as a tree table.
-     * In the current implementation, the tree is not live (i.e. changes in metadata are not
-     * reflected in the tree). However it may be improved in a future SIS implementation.
+     * The tree table is backed by the metadata object using Java reflection, so changes in the
+     * underlying metadata object are immediately reflected in the tree table and conversely.
      *
-     * @param  metadata The metadata object to formats as a tree table.
+     * @param  metadata The metadata object to view as a tree table.
+     * @param  valuePolicy Whether the property having null value or empty collection shall be
+     *         included in the tree.
      * @return A tree table representation of the specified metadata.
      * @throws ClassCastException if the metadata object doesn't implement a metadata
      *         interface of the expected package.
      *
      * @see AbstractMetadata#asTreeTable()
      */
-    public TreeTable asTreeTable(final Object metadata) throws ClassCastException {
-        throw new UnsupportedOperationException("Not yet implemented"); // TODO
+    public TreeTable asTreeTable(final Object metadata, final ValueExistencePolicy valuePolicy)
+            throws ClassCastException
+    {
+        ensureNonNull("metadata",    metadata);
+        ensureNonNull("valuePolicy", valuePolicy);
+        return new MetadataTreeTable(this, metadata, valuePolicy);
     }
 
     /**
