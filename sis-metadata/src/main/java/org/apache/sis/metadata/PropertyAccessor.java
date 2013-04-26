@@ -30,7 +30,9 @@ import net.jcip.annotations.ThreadSafe;
 import org.opengis.annotation.UML;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.ExtendedElementInformation;
+import org.apache.sis.internal.util.Citations;
 import org.apache.sis.measure.ValueRange;
+import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArraysExt;
@@ -1099,5 +1101,29 @@ final class PropertyAccessor {
             }
         }
         return code;
+    }
+
+    /**
+     * Returns a string representation of this accessor for debugging purpose.
+     * Output example:
+     *
+     * {@preformat text
+     *     PropertyAccessor[13 properties in DefaultCitation:Citation from “ISO 19115”]
+     * }
+     */
+    @Debug
+    @Override
+    public String toString() {
+        final StringBuilder buffer = new StringBuilder(60);
+        buffer.append("PropertyAccessor[").append(standardCount).append(" properties");
+        final int extra = allCount - standardCount;
+        if (extra != 0) {
+            buffer.append(" (+").append(extra).append(" ext.)");
+        }
+        buffer.append(" in ").append(Classes.getShortName(implementation));
+        if (type != implementation) {
+            buffer.append(':').append(Classes.getShortName(type));
+        }
+        return buffer.append(" from “").append(Citations.getIdentifier(standard)).append("”]").toString();
     }
 }
