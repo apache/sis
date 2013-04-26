@@ -953,9 +953,9 @@ final class PropertyAccessor {
                         break;
                     }
                     case COUNT_DEEP: {
-                        if (value != null) {
-                            count += isCollection(i) ? ((Collection<?>) value).size() : 1;
-                        }
+                        // Count always at least one element because if the user wanted to skip null or empty
+                        // collections, then 'valuePolicy.isSkipped(value)' above would have returned 'true'.
+                        count += (value != null && isCollection(i)) ? Math.max(((Collection<?>) value).size(), 1) : 1;
                         break;
                     }
                     default: throw new AssertionError(mode);
