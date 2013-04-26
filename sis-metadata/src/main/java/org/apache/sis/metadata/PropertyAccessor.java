@@ -1108,17 +1108,26 @@ final class PropertyAccessor {
      * Output example:
      *
      * {@preformat text
-     *     PropertyAccessor[13 properties in DefaultCitation:Citation from “ISO 19115”]
+     *     PropertyAccessor[13 getters & 13 setters in DefaultCitation:Citation from “ISO 19115”]
      * }
      */
     @Debug
     @Override
     public String toString() {
         final StringBuilder buffer = new StringBuilder(60);
-        buffer.append("PropertyAccessor[").append(standardCount).append(" properties");
+        buffer.append("PropertyAccessor[").append(standardCount).append(" getters");
         final int extra = allCount - standardCount;
         if (extra != 0) {
             buffer.append(" (+").append(extra).append(" ext.)");
+        }
+        if (setters != null) {
+            int c = 0;
+            for (final Method setter : setters) {
+                if (setter != null) {
+                    c++;
+                }
+            }
+            buffer.append(" & ").append(c).append(" setters");
         }
         buffer.append(" in ").append(Classes.getShortName(implementation));
         if (type != implementation) {

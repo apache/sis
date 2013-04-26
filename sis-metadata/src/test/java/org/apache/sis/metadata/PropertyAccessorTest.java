@@ -407,6 +407,6 @@ public final strictfp class PropertyAccessorTest extends TestCase {
     @Test
     public void testToString() {
         final PropertyAccessor accessor = createPropertyAccessor();
-        assertEquals("PropertyAccessor[13 properties in DefaultCitation:Citation from “ISO 19115”]", accessor.toString());
+        assertEquals("PropertyAccessor[13 getters & 13 setters in DefaultCitation:Citation from “ISO 19115”]", accessor.toString());
     }
 }

@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.NoSuchElementException;
+import java.util.ConcurrentModificationException;
 import java.io.Serializable;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
@@ -328,15 +330,18 @@ class MetadataTreeNode implements TreeTable.Node, Serializable {
         @Override
         public Object getUserObject() {
             final Collection<?> values = (Collection<?>) super.getUserObject();
-            if (values instanceof List<?>) {
-                return ((List<?>) values).get(indexInList);
+            try {
+                if (values instanceof List<?>) {
+                    return ((List<?>) values).get(indexInList);
+                }
+                final Iterator<?> it = values.iterator();
+                for (int i=0; i<indexInList; i++) {
+                    it.next();
+                }
+                return it.next();
+            } catch (IndexOutOfBoundsException | NoSuchElementException e) {
+                throw new ConcurrentModificationException(e);
             }
-            // TODO: following fallback is inefficient.
-            final Iterator<?> it = values.iterator();
-            for (int i=0; i<indexInList; i++) {
-                it.next();
-            }
-            return it.next();
         }
     }
 
