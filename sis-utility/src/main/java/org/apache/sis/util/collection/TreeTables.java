@@ -66,16 +66,19 @@ import org.apache.sis.util.ArgumentChecks;
  * </td></tr></table>
  * There is no pre-defined method for this task because there is too many parameters that
  * developers may want to customize (columns to merge, conditions for accepting the merge,
- * kind of objects to merge, name separator, <i>etc.</i>). The following code snippet concatenates
- * the {@code NAME} column only if the {@code VALUE} column has no value (for avoiding data lost
- * when the node is discarded) and use the system file separator as name separator:
+ * kind of objects to merge, name separator, <i>etc.</i>). In the following code snippet,
+ * the content of the {@code NAME} columns are concatenated only if the {@code VALUE} column
+ * has no value (for avoiding data lost when the node is discarded) and use the system file
+ * separator as name separator:
  *
  * {@preformat java
  *     final TableColumn columnToProtect = TableColumn.VALUE;
  *     final TableColumn columnToConcatenate = TableColumn.NAME;
  *
  *     TreeTable.Node concatenateSingletons(final TreeTable.Node node) {
- *         final List<TreeTable.Node> children = node.getChildren();
+ *         // This simple example is restricted to nodes which are known to handle
+ *         // their children in a list instead than some other kind of collection.
+ *         final List<TreeTable.Node> children = (List<TreeTable.Node>) node.getChildren();
  *         final int size = children.size();
  *         for (int i=0; i<size; i++) {
  *             children.set(i, concatenateSingletons(children.get(i)));
@@ -111,7 +114,7 @@ public final class TreeTables extends Static {
     /**
      * Finds the node for the given path, or creates a new node if none exists.
      * First, this method searches in the node {@linkplain TreeTable.Node#getChildren()
-     * children list} for the root element of the given path. If no such node is found,
+     * children collection} for the root element of the given path. If no such node is found,
      * a {@linkplain TreeTable.Node#newChild() new child} is created. Then this method
      * repeats the process (searching in the children of the child for the second path
      * element), until the last path element is reached.
