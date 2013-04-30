@@ -38,16 +38,14 @@ import org.apache.sis.util.ArgumentChecks;
  * Developers can copy and adapt those examples as they see fit.</p>
  *
  * {@section Example 1: Reduce the depth of a tree}
- * For every branch containing only one child and no value, the following method merges in-place
- * that branch and the node together. This method can be used for simplifying depth trees into
- * something less verbose. However for any column other than {@code NAME}, this method preserves
- * the values of the child node but lost all value of the parent node. For this reason, we perform
- * the merge only if the parent has no value.
+ * For every branch containing exactly one child, the following method concatenates in-place
+ * that branch and its child together. This method can be used for simplifying depth trees into
+ * something less verbose. For example given the tree on the left side, this method transforms
+ * it into the tree on the right side:
  *
- * <p>For example given the tree on the left side, this method transforms it into the tree on the
- * right side:</p>
- *
- * <table class="compact"><tr><td>
+ * <table class="sis">
+ * <tr><th>Before</th><th class="sep">After</th></tr>
+ * <tr><td>
  * {@preformat text
  *   root
  *     ├─users
@@ -57,7 +55,7 @@ import org.apache.sis.util.ArgumentChecks;
  *     │       └─document
  *     └─lib
  * }
- * </td><td>
+ * </td><td class="sep">
  * {@preformat text
  *   root
  *     ├─users/alice
@@ -66,38 +64,42 @@ import org.apache.sis.util.ArgumentChecks;
  *     └─lib
  * }
  * </td></tr></table>
- * {@preformat java
- *   import static org.apache.sis.util.collection.TableColumn.NAME;          // The column to merge
- *   import static org.apache.sis.util.collection.TableColumn.VALUE_AS_TEXT; // The column which must be empty
- *
- *   public class MyClass {
- *       private static TreeTable.Node concatenateSingletons(final TreeTable.Node node) {
- *           final List<TreeTable.Node> children = node.getChildren();
- *           final int size = children.size();
- *           for (int i=0; i<size; i++) {
- *               children.set(i, concatenateSingletons(children.get(i)));
- *           }
- *           if (size == 1) {
- *               final TreeTable.Node child = children.get(0);
- *               if (node.getValue(VALUE_AS_TEXT) == null) {
- *                   children.remove(0);
- *                   child.setValue(NAME, node.getValue(NAME) + File.separator + child.getValue(NAME));
- *                   return child;
- *               }
- *           }
- *           return node;
- *       }
- *   }
- * }
- *
  * There is no pre-defined method for this task because there is too many parameters that
  * developers may want to customize (columns to merge, conditions for accepting the merge,
- * kind of objects to merge, name separator).
+ * kind of objects to merge, name separator, <i>etc.</i>). The following code snippet concatenates
+ * the {@code NAME} column only if the {@code VALUE} column has no value (for avoiding data lost
+ * when the node is discarded) and use the system file separator as name separator:
+ *
+ * {@preformat java
+ *     final TableColumn columnToProtect = TableColumn.VALUE;
+ *     final TableColumn columnToConcatenate = TableColumn.NAME;
+ *
+ *     TreeTable.Node concatenateSingletons(final TreeTable.Node node) {
+ *         final List<TreeTable.Node> children = node.getChildren();
+ *         final int size = children.size();
+ *         for (int i=0; i<size; i++) {
+ *             children.set(i, concatenateSingletons(children.get(i)));
+ *         }
+ *         if (size == 1) {
+ *             final TreeTable.Node child = children.get(0);
+ *             if (node.getValue(columnToProtect) == null) {
+ *                 children.remove(0);
+ *                 child.setValue(columnToConcatenate,
+ *                         node .getValue(columnToConcatenate) + File.separator +
+ *                         child.getValue(columnToConcatenate));
+ *                 return child;
+ *             }
+ *         }
+ *         return node;
+ *     }
+ * }
  *
  * @author  Martin Desruisseaux
  * @since   0.3
  * @version 0.3
  * @module
+ *
+ * @see TreeTable
  */
 public final class TreeTables extends Static {
     /**
@@ -184,8 +186,8 @@ public final class TreeTables extends Static {
     }
 
     /**
-     * For every columns having values {@linkplain Class#isAssignableFrom(Class) assignable from}
-     * {@code String}, converts the values to {@code String}s. During conversions, this method also
+     * For every columns having values of type {@link CharSequence} or {@link String},
+     * converts the values to localized {@code String}s. During conversions, this method also
      * replaces duplicated {@code String} instances by references to the same singleton instance.
      *
      * <p>This method may be invoked before to serialize the table in order to reduce the
@@ -196,7 +198,7 @@ public final class TreeTables extends Static {
      * @return Number of replacements done.
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public static int valuesAsStrings(final TreeTable table, final Locale locale) {
+    public static int replaceCharSequences(final TreeTable table, final Locale locale) {
         ArgumentChecks.ensureNonNull("table", table);
         final List<TableColumn<?>> columns = table.getColumns();
         TableColumn<? super String>[] filtered = new TableColumn[columns.size()];
@@ -207,11 +209,11 @@ public final class TreeTables extends Static {
             }
         }
         filtered = ArraysExt.resize(filtered, count);
-        return valuesAsStrings(table.getRoot(), filtered, locale, new HashMap<String,String>());
+        return replaceCharSequences(table.getRoot(), filtered, locale, new HashMap<String,String>());
     }
 
     /**
-     * Implementation of the public {@link #valuesAsStrings(TreeTable, Locale)} method.
+     * Implementation of the public {@link #replaceCharSequences(TreeTable, Locale)} method.
      *
      * @param  node    The node in which to replace values by their string representations.
      * @param  columns The columns where to perform the replacements.
@@ -219,12 +221,12 @@ public final class TreeTables extends Static {
      * @param  pool    An initially empty pool of string representations, to be filled by this method.
      * @return Number of replacements done.
      */
-    private static int valuesAsStrings(final TreeTable.Node node, final TableColumn<? super String>[] columns,
+    private static int replaceCharSequences(final TreeTable.Node node, final TableColumn<? super String>[] columns,
             final Locale locale, final Map<String,String> pool)
     {
         int changes = 0;
         for (final TreeTable.Node child : node.getChildren()) {
-            changes += valuesAsStrings(child, columns, locale, pool);
+            changes += replaceCharSequences(child, columns, locale, pool);
         }
         for (final TableColumn<? super String> column : columns) {
             final Object value = node.getValue(column);
@@ -271,27 +273,27 @@ public final class TreeTables extends Static {
      * This helper method is sometime useful for quick tests or debugging purposes.
      * For more extensive use, consider using {@link TreeTableFormat} instead.
      *
-     * @param  text   The string representation to parse.
-     * @param  nodes  The columns where to store the node labels. This is often {@link TableColumn#NAME}.
-     * @param  values Optional columns where to store the values, if any.
+     * @param  tree         The string representation of the tree to parse.
+     * @param  labelColumn  The columns where to store the node labels. This is often {@link TableColumn#NAME}.
+     * @param  otherColumns Optional columns where to store the values, if any.
      * @return A tree parsed from the given string.
      * @throws ParseException If an error occurred while parsing the tree.
      */
-    public static TreeTable parse(final String text, final TableColumn<?> nodes,
-            final TableColumn<?>... values) throws ParseException
+    public static TreeTable parse(final String tree, final TableColumn<?> labelColumn,
+            final TableColumn<?>... otherColumns) throws ParseException
     {
-        ArgumentChecks.ensureNonNull("text",  text);
-        ArgumentChecks.ensureNonNull("nodes", nodes);
+        ArgumentChecks.ensureNonNull("tree", tree);
+        ArgumentChecks.ensureNonNull("labelColumn", labelColumn);
         TableColumn<?>[] columns = null; // Default to singleton(NAME).
-        if (values.length != 0 || nodes != TableColumn.NAME) {
-            columns = ArraysExt.insert(values, 0, 1);
-            columns[0] = nodes;
+        if (otherColumns.length != 0 || labelColumn != TableColumn.NAME) {
+            columns = ArraysExt.insert(otherColumns, 0, 1);
+            columns[0] = labelColumn;
         }
         final TreeTableFormat format = TreeTableFormat.INSTANCE;
         synchronized (format) {
             try {
                 format.setColumns(columns);
-                return format.parseObject(text);
+                return format.parseObject(tree);
             } finally {
                 format.setColumns((TableColumn<?>[]) null);
             }
