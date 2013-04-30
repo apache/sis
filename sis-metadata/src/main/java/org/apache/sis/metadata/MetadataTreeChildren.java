@@ -16,30 +16,39 @@
  */
 package org.apache.sis.metadata;
 
-import java.util.Arrays;
 import java.util.Iterator;
-import java.util.ListIterator;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.AbstractSequentialList;
+import java.util.AbstractCollection;
 import java.util.NoSuchElementException;
 import java.util.ConcurrentModificationException;
 import org.apache.sis.util.collection.TreeTable;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Debug;
 
 
 /**
- * The list of children to be returned by {@link MetadataTreeNode#getChildren()}.
- * This list holds a reference to the metadata object at creation time; it does
+ * The collection of children to be returned by {@link MetadataTreeNode#getChildren()}.
+ * This collection holds a reference to the metadata object at creation time; it does
  * not track changes in {@code parent.getUserObject()}.
+ *
+ * {@section Note on value existence policy}
+ * It is better to use this class with {@link ValueExistencePolicy#NON_EMPTY} in order
+ * to avoid code complication and surprising behavior of {@link Iter#remove()} operation.
+ * If the policy is set to another value, we need to keep the following aspects in mind:
+ *
+ * <ul>
+ *   <li>When {@link Iter#hasNext()} finds a null or empty collection, it may needs to
+ *       simulate a singleton with a null value.</li>
+ *   <li>In {@link MetadataTreeNode#getUserObject()}, we need the same check than above
+ *       for simulating a singleton collection with a null value if the node is for the
+ *       element at index 0.</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
  * @version 0.3
  * @module
  */
-final class MetadataTreeChildren extends AbstractSequentialList<TreeTable.Node> {
+final class MetadataTreeChildren extends AbstractCollection<TreeTable.Node> {
     /**
      * The parent of the children to be returned by the iterator.
      * Some useful information are available indirectly through this parent:
@@ -53,15 +62,15 @@ final class MetadataTreeChildren extends AbstractSequentialList<TreeTable.Node> 
     private final MetadataTreeNode parent;
 
     /**
-     * The metadata object for which property values will be the elements of this list.
+     * The metadata object for which property values will be the elements of this collection.
      * This is typically an {@link AbstractMetadata} instance, but not necessarily.
      * Any type for which {@link MetadataStandard#isMetadata(Class)} returns {@code true} is okay.
      *
-     * <p>This field is a snapshot of the {@linkplain #parent} {@link MetadataTreeNode#getUserObject()}
-     * at creation time. This list does not track changes in the reference returned by the above-cited
+     * <p>This field is a snapshot of the {@linkplain #parent} {@link MetadataTreeNode#getUserObject()} at
+     * creation time. This collection does not track changes in the reference returned by the above-cited
      * {@code getUserObject()}. In other words, changes in the {@code metadata} object will be reflected
-     * in this list, but if {@code parent.getUserObject()} returns a reference to another object, this
-     * change will not be reflected in this list.
+     * in this collection, but if {@code parent.getUserObject()} returns a reference to another object,
+     * this change will not be reflected in this collection.
      */
     final Object metadata;
 
@@ -77,19 +86,26 @@ final class MetadataTreeChildren extends AbstractSequentialList<TreeTable.Node> 
     private final PropertyAccessor accessor;
 
     /**
-     * The children to be returned by this list. All elements in this list are initially
-     * {@code null}, then created by {@link #childAt(int)} when first needed.
+     * The children to be returned by this collection. All elements in this collection are
+     * initially {@code null}, then created by {@link #childAt(int)} when first needed.
      *
-     * <p>Not all elements in this array will be returned by the list iterator.
+     * <p>Not all elements in this array will be returned by the iterator.
      * The value needs to be verified for the {@link ValueExistencePolicy}.</p>
      */
     private final MetadataTreeNode[] children;
 
     /**
-     * Creates a list of children for the specified metadata.
+     * Modification count, incremented when the content of this collection is modified. This check
+     * is done on a <cite>best effort basis</cite> only, since we can't not track the changes which
+     * are done independently in the {@linkplain #metadata} object.
+     */
+    int modCount;
+
+    /**
+     * Creates a collection of children for the specified metadata.
      *
      * @param parent   The parent for which this node is an element.
-     * @param metadata The metadata object for which property values will be the elements of this list.
+     * @param metadata The metadata object for which property values will be the elements of this collection.
      * @param accessor The accessor to use for accessing the property names, types and values of the metadata object.
      */
     MetadataTreeChildren(final MetadataTreeNode parent, final Object metadata, final PropertyAccessor accessor) {
@@ -101,17 +117,13 @@ final class MetadataTreeChildren extends AbstractSequentialList<TreeTable.Node> 
 
     /**
      * Clears the value at the given index. The given {@code index} is relative to
-     * the {@link #accessor} indexing, <strong>not</strong> to this list index.
+     * the {@link #accessor} indexing, <strong>not</strong> to this collection.
      *
      * <p>The cleared elements may or may not be considered as removed, depending on the
      * value policy. To check if the element shall be considered as removed (for example
      * in order to update index), invoke {@code isSkipped(value)} after this method.</p>
      *
-     * {@note We do not provide setter method because this <code>List</code> contract
-     *        requires the values to be instances of {@code TreeTable.Node}, which is
-     *        not very convenient in the case of our list view.}
-     *
-     * @param index The index in the accessor (<em>not</em> the index in this list).
+     * @param index The index in the accessor (<em>not</em> the index in this collection).
      */
     final void clearAt(final int index) {
         accessor.set(index, metadata, null, false);
@@ -119,9 +131,9 @@ final class MetadataTreeChildren extends AbstractSequentialList<TreeTable.Node> 
 
     /**
      * Returns the value at the given index. The given {@code index} is relative to
-     * the {@link #accessor} indexing, <strong>not</strong> to this list index.
+     * the {@link #accessor} indexing, <strong>not</strong> to this collection.
      *
-     * @param  index The index in the accessor (<em>not</em> the index in this list).
+     * @param  index The index in the accessor (<em>not</em> the index in this collection).
      * @return The value at the given index. May be {@code null} or a collection.
      */
     final Object valueAt(final int index) {
@@ -131,13 +143,13 @@ final class MetadataTreeChildren extends AbstractSequentialList<TreeTable.Node> 
     /**
      * Returns {@code true} if the type at the given index is a collection. The given
      * {@code index} is relative to the {@link #accessor} indexing, <strong>not</strong>
-     * to this list index.
+     * to this collection.
      *
      * {@note We do not test <code>(value instanceof Collection)</code> because the value
      *        could be any user's implementation. Nothing prevent users from implementing
      *        the collection interface even for singleton elements if they wish.}
      *
-     * @param  index The index in the accessor (<em>not</em> the index in this list).
+     * @param  index The index in the accessor (<em>not</em> the index in this collection).
      * @return {@code true} if the value at the given index is a collection.
      */
     final boolean isCollection(final int index) {
@@ -157,26 +169,26 @@ final class MetadataTreeChildren extends AbstractSequentialList<TreeTable.Node> 
 
     /**
      * Returns the child at the given index, creating it if needed. The given {@code index}
-     * is relative to the {@link #accessor} indexing, <strong>not</strong> to this list index.
+     * is relative to the {@link #accessor} indexing, <strong>not</strong> to this collection.
      *
      * <p>This method does not check if the child at the given index should be skipped.
      * It is caller responsibility to do such verification before this method call.</p>
      *
-     * @param  index The index in the accessor (<em>not</em> the index in this list).
-     * @param  childIndex If the property at {@link #index} is a collection, the index
-     *         in that collection (<em>not</em> the index in this list). Otherwise -1.
-     * @return The node to be returned by pulic API.
+     * @param  index The index in the accessor (<em>not</em> the index in this collection).
+     * @param  subIndex If the property at {@link #index} is a collection, the index in that
+     *         collection (<em>not</em> the index in <em>this</em> collection). Otherwise -1.
+     * @return The node to be returned by public API.
      */
-    final MetadataTreeNode childAt(final int index, final int childIndex) {
+    final MetadataTreeNode childAt(final int index, final int subIndex) {
         MetadataTreeNode node = children[index];
-        if (childIndex >= 0) {
+        if (subIndex >= 0) {
             /*
              * If the value is an element of a collection, we will cache only the last used value.
              * We don't cache all elements in order to avoid yet more complex code, and this cover
              * the majority of cases where the collection has only one element anyway.
              */
-            if (node == null || ((MetadataTreeNode.CollectionElement) node).indexInList != childIndex) {
-                node = new MetadataTreeNode.CollectionElement(parent, metadata, accessor, index, childIndex);
+            if (node == null || ((MetadataTreeNode.CollectionElement) node).indexInList != subIndex) {
+                node = new MetadataTreeNode.CollectionElement(parent, metadata, accessor, index, subIndex);
             }
         } else {
             /*
@@ -195,15 +207,15 @@ final class MetadataTreeChildren extends AbstractSequentialList<TreeTable.Node> 
     /**
      * Returns the maximal number of children. This is the number of all possible elements
      * according the {@link #accessor}, including {@linkplain #isSkipped(Object) skipped}
-     * ones. This is <strong>not</strong> the list size.
+     * ones. This is <strong>not</strong> the collection size.
      */
     final int childCount() {
         return children.length;
     }
 
     /**
-     * Returns the number of elements in this list, ignoring the {@link #isSkipped(Object)
-     * skipped} ones.
+     * Returns the number of elements in this collection,
+     * ignoring the {@link #isSkipped(Object) skipped} ones.
      */
     @Override
     public int size() {
@@ -211,7 +223,7 @@ final class MetadataTreeChildren extends AbstractSequentialList<TreeTable.Node> 
     }
 
     /**
-     * Returns {@code true} if this list contains no elements. Invoking this method is more efficient
+     * Returns {@code true} if this collection contains no elements. Invoking this method is more efficient
      * than testing {@code size() == 0} because this method does not iterate over all properties.
      */
     @Override
@@ -220,7 +232,7 @@ final class MetadataTreeChildren extends AbstractSequentialList<TreeTable.Node> 
     }
 
     /**
-     * Returns an iterator over the nodes in the list of children.
+     * Returns an iterator over the nodes in the collection of children.
      */
     @Override
     public Iterator<TreeTable.Node> iterator() {
@@ -228,32 +240,22 @@ final class MetadataTreeChildren extends AbstractSequentialList<TreeTable.Node> 
     }
 
     /**
-     * Returns a bidirectional iterator over the nodes in the list of children.
+     * The iterator over the elements in the enclosing {@link MetadataTreeChildren} collection.
+     * Each element is identified by its index in the {@link PropertyAccessor}, together with
+     * its position in its sub-iterator when the metadata property is a collection.
+     *
+     * {@section Implementation note}
+     * It could be cheaper to not take an iterator for the properties that are collections,
+     * and instead just increment a "sub-index" from 0 to the collection size.  It would be
+     * cheaper because we don't really need to extract the values of those collections (i.e.
+     * the {@link #nextValue} field is not really needed). Nevertheless we prefer (for now)
+     * the iterator approach anyway because it makes easier to implement the {@link #remove()}
+     * method and has the desired side-effect to check for concurrent modifications. It also
+     * keeps the {@link #nextValue} field up-to-date in case we would like to use it in a
+     * future SIS version. We do that on the assumption that sub-iterators are cheap since
+     * they are {@code ArrayList} iterators in the majority of cases.
      */
-    @Override
-    public ListIterator<TreeTable.Node> listIterator() {
-        return new BiIter();
-    }
-
-    /**
-     * Returns an iterator over the nodes in the list of children, starting at the given index.
-     */
-    @Override
-    public ListIterator<TreeTable.Node> listIterator(final int index) {
-        if (index >= 0) {
-            final BiIter it = new BiIter();
-            if (it.skip(index)) {
-                return it;
-            }
-        }
-        throw new IndexOutOfBoundsException(Errors.format(Errors.Keys.IndexOutOfBounds_1, index));
-    }
-
-    /**
-     * The iterator returned by {@link #iterator()}. This iterator fetches metadata property
-     * values and creates the nodes only when first needed.
-     */
-    private class Iter implements Iterator<TreeTable.Node> {
+    private final class Iter implements Iterator<TreeTable.Node> {
         /**
          * Index in {@link MetadataTreeChildren#accessor} of the next element to be
          * returned by {@link #next()}, or {@link PropertyAccessor#count()} if we
@@ -274,9 +276,14 @@ final class MetadataTreeChildren extends AbstractSequentialList<TreeTable.Node> 
         private boolean isNextVerified;
 
         /**
-         * The value to be returned by {@link #next()} method. This value is computed ahead
-         * of time by {@link #hasNext()} since we need that information in order to determine
+         * The value of the node to be returned by the {@link #next()} method. This value is computed
+         * ahead of time by {@link #hasNext()} since we need that information in order to determine
          * if the value needs to be skipped or not.
+         *
+         * {@note Actually we don't really need to keep this value, since it is not used outside the
+         *        <code>hasNext()</code> method. We keep it for now as an opportunist information,
+         *        in case we have some need for it in a future version. For example we may consider
+         *        to add an "original value" column in the table.}
          */
         private Object nextValue;
 
@@ -284,21 +291,20 @@ final class MetadataTreeChildren extends AbstractSequentialList<TreeTable.Node> 
          * If the call to {@link #next()} found a collection, the iterator over the elements
          * in that collection. Otherwise {@code null}.
          *
-         * <p>A non-null value (even if that child iterator has no next elements) means that
-         * {@link #nextValue} is an element of that child iteration.</p>
+         * <p>A non-null value (even if that sub-iterator has no next elements)
+         * means that {@link #nextValue} is an element of that sub-iteration.</p>
          */
-        private Iterator<?> childIterator;
+        private Iterator<?> subIterator;
 
         /**
-         * Position of the {@link #nextValue} in the {@link #childIterator}.
-         * This field has no meaning if the child iterator is null.
+         * Position of the {@link #nextValue} in the {@link #subIterator},
+         * or -1 if the sub-iterator is null.
          */
-        private int childIndex;
+        private int subIndex = -1;
 
         /**
-         * The value of {@link AbstractSequentialList#modCount} at construction time or
-         * after the last change done by this iterator. Used for concurrent modification
-         * checks.
+         * The value of {@link MetadataTreeChildren#modCount} at construction time or after
+         * the last change done by this iterator. Used for concurrent modification checks.
          *
          * {@note Actually this iterator should be robust to most concurrent modifications.
          *        But we check anyway in order to prevent concurrent modifications in user
@@ -326,7 +332,7 @@ final class MetadataTreeChildren extends AbstractSequentialList<TreeTable.Node> 
          * Ensures that {@link #nextInAccessor} is valid. If the index has not been validated, then this method
          * moves the iterator to the next valid element, starting at the current {@link #nextInAccessor} value.
          *
-         * @return {@code true} on success, or {@code false} if we reached the end of the list.
+         * @return {@code true} on success, or {@code false} if we reached the end of the iteration.
          */
         @Override
         public boolean hasNext() {
@@ -335,23 +341,24 @@ final class MetadataTreeChildren extends AbstractSequentialList<TreeTable.Node> 
                 return true;
             }
             /*
-             * If an iteration was under progress, move to the next element from that iteration.
-             * We do not check for 'isSkipped(value)' here because empty elements in collections
-             * are probably mistakes, and we want to see them.
+             * If we were iterating over the elements of a sub-collection, move to the next element
+             * in that iteration. We do not check for 'isSkipped(value)' here because null or empty
+             * elements in collections are probably mistakes, and we want to see them.
              */
-            if (childIterator != null) {
-                if (childIterator.hasNext()) {
-                    childIndex++;
-                    nextValue = childIterator.next();
+            if (subIterator != null) {
+                if (subIterator.hasNext()) {
+                    nextValue = subIterator.next();
+                    subIndex++;
                     isNextVerified = true;
                     return true;
                 }
-                childIterator = null;
+                subIterator = null;
+                subIndex = -1;
                 nextInAccessor++; // See the comment before nextInAccessor++ in the next() method.
             }
             /*
              * Search for the next property, which may be either a singleton or the first element
-             * of a collection. In the later case, we will create a child iterator.
+             * of a sub-collection. In the later case, we will create a sub-iterator.
              */
             final int count = childCount();
             while (nextInAccessor < count) {
@@ -365,16 +372,16 @@ final class MetadataTreeChildren extends AbstractSequentialList<TreeTable.Node> 
                          * would have returned 'true'.
                          */
                         if (nextValue != null) {
-                            childIterator = ((Collection<?>) nextValue).iterator();
+                            subIterator = ((Iterable<?>) nextValue).iterator();
                         } else {
-                            childIterator = Collections.emptyIterator();
+                            subIterator = Collections.emptyIterator();
                             // Null collections are illegal (it shall be empty collections instead),
                             // but we try to keep the iterator robut to ill-formed metadata, because
                             // we want AbstractMetadata.toString() to work so we can spot problems.
                         }
-                        childIndex = 0;
-                        if (childIterator.hasNext()) {
-                            nextValue = childIterator.next();
+                        subIndex = 0;
+                        if (subIterator.hasNext()) {
+                            nextValue = subIterator.next();
                         } else {
                             nextValue = null;
                             // Do not set 'childIterator' to null, since the above 'nextValue'
@@ -397,10 +404,9 @@ final class MetadataTreeChildren extends AbstractSequentialList<TreeTable.Node> 
         @Override
         public TreeTable.Node next() {
             if (hasNext()) {
-                final boolean isElementOfCollection = (childIterator != null);
-                final MetadataTreeNode node = childAt(nextInAccessor, isElementOfCollection ? childIndex : -1);
+                final MetadataTreeNode node = childAt(nextInAccessor, subIndex);
                 previousInAccessor = nextInAccessor;
-                if (!isElementOfCollection) {
+                if (subIterator == null) {
                     /*
                      * If we are iterating over the elements in a collection, the PropertyAccessor index
                      * still the same and will be incremented by 'hasNext()' only when the iteration is
@@ -419,7 +425,8 @@ final class MetadataTreeChildren extends AbstractSequentialList<TreeTable.Node> 
         /**
          * Clears the element returned by the last call to {@link #next()}.
          * Whether the cleared element is considered removed or not depends
-         * on the value policy and on the element type.
+         * on the value policy and on the element type. With the default
+         * {@code NON_EMPTY} policy, the effect is a removal.
          */
         @Override
         public void remove() {
@@ -427,8 +434,8 @@ final class MetadataTreeChildren extends AbstractSequentialList<TreeTable.Node> 
                 throw new IllegalStateException();
             }
             checkConcurrentModification();
-            if (childIterator != null) {
-                childIterator.remove();
+            if (subIterator != null) {
+                subIterator.remove();
             } else {
                 clearAt(previousInAccessor);
                 previousInAccessor = -1;
@@ -438,146 +445,9 @@ final class MetadataTreeChildren extends AbstractSequentialList<TreeTable.Node> 
     }
 
     /**
-     * The bidirectional iterator returned by {@link #listIterator(int)}.
-     */
-    private final class BiIter extends Iter implements ListIterator<TreeTable.Node> {
-        /**
-         * The previous elements returned by this iterator.
-         */
-        private TreeTable.Node[] previous;
-
-        /**
-         * Number of valid elements in the {@link #previous} array.
-         * This is the position of the {@link Iter} super-class.
-         */
-        private int position;
-
-        /**
-         * Index to be returned by {@link #nextIndex()}.
-         *
-         * @see #nextIndex()
-         * @see #previousIndex()
-         */
-        private int nextIndex;
-
-        /**
-         * Creates a new iterator.
-         */
-        BiIter() {
-            previous = new TreeTable.Node[childCount()];
-        }
-
-        /**
-         * Skips the given amount of elements. This is a convenience method
-         * for implementation of {@link MetadataTreeChildren#listIterator(int)}.
-         *
-         * @param  n Number of elements to skip.
-         * @return {@code true} on success, or {@code false} if the list doesn't contain enough elements.
-         */
-        boolean skip(int n) {
-            while (--n >= 0) {
-                if (!super.hasNext()) {
-                    return false;
-                }
-                next();
-            }
-            return true;
-        }
-
-        /**
-         * Returns the index of the element to be returned by {@link #next()},
-         * or the list size if the iterator is at the end of the list.
-         */
-        @Override
-        public int nextIndex() {
-            return nextIndex;
-        }
-
-        /**
-         * Returns the index of the element to be returned by {@link #previous()},
-         * or -1 if the iterator is at the beginning of the list.
-         */
-        @Override
-        public int previousIndex() {
-            return nextIndex - 1;
-        }
-
-        /**
-         * Returns {@code true} if {@link #next()} can return an element.
-         */
-        @Override
-        public boolean hasNext() {
-            return (nextIndex < position) || super.hasNext();
-        }
-
-        /**
-         * Returns {@code true} if {@link #previous()} can return an element.
-         */
-        @Override
-        public boolean hasPrevious() {
-            checkConcurrentModification();
-            return nextIndex != 0;
-        }
-
-        /**
-         * Returns the next element.
-         */
-        @Override
-        public TreeTable.Node next() {
-            if (nextIndex < position) {
-                checkConcurrentModification();
-                return previous[nextIndex++];
-            }
-            final TreeTable.Node node = super.next();
-            if (nextIndex == previous.length) {
-                previous = Arrays.copyOf(previous, nextIndex*2);
-            }
-            previous[nextIndex++] = node;
-            position = nextIndex;
-            return node;
-        }
-
-        /**
-         * Returns the previous element.
-         */
-        @Override
-        public TreeTable.Node previous() {
-            if (hasPrevious()) {
-                return previous[--nextIndex];
-            }
-            throw new NoSuchElementException();
-        }
-
-        /**
-         * Current implementation does not support removal after {@link #previous()}.
-         */
-        @Override
-        public void remove() {
-            if (nextIndex != position) {
-                throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnsupportedOperation_1, "remove"));
-            }
-            super.remove();
-        }
-
-        /**
-         * Unsupported operation.
-         */
-        @Override
-        public void set(TreeTable.Node e) {
-            throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnsupportedOperation_1, "set"));
-        }
-
-        /**
-         * Unsupported operation.
-         */
-        @Override
-        public void add(TreeTable.Node e) {
-            throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnsupportedOperation_1, "add"));
-        }
-    }
-
-    /**
-     * Returns a string representation of this list for debugging purpose.
+     * Returns a string representation of this collection for debugging purpose.
+     * This string representation uses one line per element instead of formatting
+     * everything on a single line.
      */
     @Debug
     @Override

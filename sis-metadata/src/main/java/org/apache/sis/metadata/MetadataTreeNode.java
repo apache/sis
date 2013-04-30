@@ -101,11 +101,11 @@ class MetadataTreeNode implements TreeTable.Node, Serializable {
     /**
      * The children of this node, or {@code null} if not yet computed. If and only if the node
      * can not have children (i.e. {@linkplain #isLeaf() is a leaf}), then this field is set to
-     * {@link Collections#EMPTY_LIST}.
+     * {@link Collections#EMPTY_SET}.
      *
      * @see #getChildren()
      */
-    private transient List<TreeTable.Node> children;
+    private transient Collection<TreeTable.Node> children;
 
     /**
      * Creates the root node of a new metadata tree table.
@@ -325,21 +325,37 @@ class MetadataTreeNode implements TreeTable.Node, Serializable {
         }
 
         /**
-         * Fetches the node value from the metadata object.
+         * Fetches the property value from the metadata object, which is expected to be a collection,
+         * then fetch the element at the index represented by this node.
          */
         @Override
         public Object getUserObject() {
             final Collection<?> values = (Collection<?>) super.getUserObject();
+            /*
+             * If the collection is null or empty but the value existence policy tells
+             * us that such elements shall be shown, behave as if the collection was a
+             * singleton containing a null element, in order to make the property
+             * visible in the tree.
+             */
+            if (indexInList == 0 && table.valuePolicy.substituteByNullElement(values)) {
+                return null;
+            }
             try {
                 if (values instanceof List<?>) {
                     return ((List<?>) values).get(indexInList);
                 }
                 final Iterator<?> it = values.iterator();
                 for (int i=0; i<indexInList; i++) {
-                    it.next();
+                    it.next(); // Inefficient way to move at the desired index, but hopefully rare.
                 }
                 return it.next();
-            } catch (IndexOutOfBoundsException | NoSuchElementException e) {
+            } catch (NullPointerException | IndexOutOfBoundsException | NoSuchElementException e) {
+                /*
+                 * May happen if the collection for this metadata property changed after the iteration
+                 * in the MetadataTreeChildren. Users should not keep MetadataTreeNode references
+                 * instances for a long time, but instead iterate again over MetadataTreeChildren
+                 * when needed.
+                 */
                 throw new ConcurrentModificationException(e);
             }
         }
@@ -363,28 +379,28 @@ class MetadataTreeNode implements TreeTable.Node, Serializable {
     }
 
     /**
-     * Returns the children of this node, or an empty list if none.
+     * Returns the children of this node, or an empty set if none.
      * Only metadata object can have children.
      */
     @Override
-    public final List<TreeTable.Node> getChildren() {
+    public final Collection<TreeTable.Node> getChildren() {
         /*
-         * 'children' is set to EMPTY_LIST if an only if the node *can not* have children,
+         * 'children' is set to EMPTY_SET if an only if the node *can not* have children,
          * in which case we do not need to check for changes in the underlying metadata.
          */
-        if (children != Collections.EMPTY_LIST) {
+        if (children != Collections.EMPTY_SET) {
             final Object value = getUserObject();
             if (value == null) {
                 /*
-                 * If there is no value, returns an empty list but *do not* set 'children'
-                 * to that list, in order to allow this method to check again the next time
+                 * If there is no value, returns an empty set but *do not* set 'children'
+                 * to that set, in order to allow this method to check again the next time
                  * that this method is invoked.
                  */
                 children = null; // Let GC do its work.
-                return Collections.emptyList();
+                return Collections.emptySet();
             }
             /*
-             * If there is a value, check if the cached list is still applicable.
+             * If there is a value, check if the cached collection is still applicable.
              */
             if (children instanceof MetadataTreeChildren) {
                 final MetadataTreeChildren candidate = (MetadataTreeChildren) children;
@@ -393,15 +409,15 @@ class MetadataTreeNode implements TreeTable.Node, Serializable {
                 }
             }
             /*
-             * At this point, we need to create a new list. The property accessor will be
-             * null if the value is not a metadata object, in which case we will remember
-             * that fact by setting the children list definitively to an empty list.
+             * At this point, we need to create a new collection. The property accessor will
+             * be null if the value is not a metadata object, in which case we will remember
+             * that fact by setting the children collection definitively to an empty set.
              */
             final PropertyAccessor accessor = table.standard.getAccessor(value.getClass(), false);
             if (accessor != null) {
                 children = new MetadataTreeChildren(this, value, accessor);
             } else {
-                children = Collections.emptyList();
+                children = Collections.emptySet();
             }
         }
         return children;
