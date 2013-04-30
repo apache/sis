@@ -194,6 +194,20 @@ public final strictfp class MetadataTreeChildrenTest extends TestCase {
         testRemove(createRandomNumberGenerator("testRemoveWithMultiOccurrences"), children);
     }
 
+    /**
+     * Tests the {@link MetadataTreeChildren#clear()} method.
+     */
+    @Test
+    public void testClear() {
+        final DefaultCitation      citation = metadataWithSingletonInCollections();
+        final MetadataTreeChildren children = create(citation, ValueExistencePolicy.NON_EMPTY);
+        assertFalse(children.isEmpty());
+        children.clear();
+        assertTrue(children.isEmpty());
+        assertNull(citation.getTitle());
+        assertTrue(citation.getAlternateTitles().isEmpty());
+    }
+
 
     // ------------------------ Support methods for the above tests ------------------------
 
@@ -259,5 +273,6 @@ public final strictfp class MetadataTreeChildrenTest extends TestCase {
                 }
             }
         } while (!reference.isEmpty());
+        assertTrue(children.isEmpty());
     }
 }

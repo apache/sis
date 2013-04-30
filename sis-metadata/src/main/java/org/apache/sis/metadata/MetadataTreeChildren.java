@@ -123,6 +123,13 @@ final class MetadataTreeChildren extends AbstractCollection<TreeTable.Node> {
      * value policy. To check if the element shall be considered as removed (for example
      * in order to update index), invoke {@code isSkipped(value)} after this method.</p>
      *
+     * {@section Implementation note}
+     * This method sets the property to {@code null}. This is not strictly correct for collections,
+     * since we should rather set the property to an empty collection. However this approach would
+     * force us to check if the expected collection type is actually a list, a set or any other type.
+     * Passing null avoid the type check and is safe at least with SIS implementation. We may revisit
+     * later if this appears to be a problem with other implementations.
+     *
      * @param index The index in the accessor (<em>not</em> the index in this collection).
      */
     final void clearAt(final int index) {
@@ -229,6 +236,18 @@ final class MetadataTreeChildren extends AbstractCollection<TreeTable.Node> {
     @Override
     public boolean isEmpty() {
         return accessor.count(metadata, parent.table.valuePolicy, PropertyAccessor.COUNT_FIRST) == 0;
+    }
+
+    /**
+     * Clears all properties in the metadata object. Note that this collection will effectively
+     * by empty after this method call only if the value existence policy is {@code NON_EMPTY},
+     * which is the default.
+     */
+    @Override
+    public void clear() {
+        for (int i=childCount(); --i>=0;) {
+            clearAt(i);
+        }
     }
 
     /**
