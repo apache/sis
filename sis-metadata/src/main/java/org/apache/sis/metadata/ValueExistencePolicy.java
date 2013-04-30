@@ -41,8 +41,15 @@ public enum ValueExistencePolicy {
      * empty collection.
      */
     ALL() {
+        /** Never skip values. */
         @Override boolean isSkipped(final Object value) {
             return false;
+        }
+
+        /** Substitutes null or empty collections by a null singleton element
+            in order to make the property visible in {@link MetadataTreeNode}. */
+        @Override boolean substituteByNullElement(final Collection<?> values) {
+            return (values == null) || values.isEmpty();
         }
     },
 
@@ -51,8 +58,15 @@ public enum ValueExistencePolicy {
      * Collections are included no matter if they are empty or not.
      */
     NON_NULL() {
+        /** Skips all null values. */
         @Override boolean isSkipped(final Object value) {
             return (value == null);
+        }
+
+        /** Substitutes empty collections by a null singleton element, but not
+            null references since they are supposed to be skipped by this policy. */
+        @Override boolean substituteByNullElement(final Collection<?> values) {
+            return (values != null) && values.isEmpty();
         }
     },
 
@@ -70,8 +84,14 @@ public enum ValueExistencePolicy {
      * This is the default behavior of {@link AbstractMetadata#asMap()}.
      */
     NON_EMPTY() {
+        /** Skips all null or empty values. */
         @Override boolean isSkipped(final Object value) {
             return isNullOrEmpty(value);
+        }
+
+        /** Never substitute null or empty collections since they should be skipped. */
+        @Override boolean substituteByNullElement(final Collection<?> values) {
+            return false;
         }
     };
 
@@ -79,6 +99,16 @@ public enum ValueExistencePolicy {
      * Returns {@code true} if the given value shall be skipped for this policy.
      */
     abstract boolean isSkipped(Object value);
+
+    /**
+     * Returns {@code true} if {@link MetadataTreeNode} shall substitute the given collection by
+     * a singleton containing only a null element.
+     *
+     * <p><b>Purpose:</b>
+     * When a collection is null or empty, while not excluded according this {@code ValueExistencePolicy},
+     * we need an empty space for making the metadata property visible in {@code MetadataTreeNode}.</p>
+     */
+    abstract boolean substituteByNullElement(Collection<?> values);
 
     /**
      * Returns {@code true} if the specified object is null or an empty collection, array or string.

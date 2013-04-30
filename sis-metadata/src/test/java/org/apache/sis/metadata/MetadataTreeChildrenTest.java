@@ -17,10 +17,7 @@
 package org.apache.sis.metadata;
 
 import java.util.Random;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.ListIterator;
 import org.opengis.metadata.citation.PresentationForm;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.util.iso.SimpleInternationalString;
@@ -98,7 +95,6 @@ public final strictfp class MetadataTreeChildrenTest extends TestCase {
      */
     @Test
     public void testReadOnlyWithoutCollections() {
-        random = createRandomNumberGenerator("testReadOnlyWithoutCollections");
         final DefaultCitation      citation = metadataWithoutCollections();
         final MetadataTreeChildren children = create(citation, ValueExistencePolicy.NON_EMPTY);
         final String[] expected = {
@@ -108,10 +104,7 @@ public final strictfp class MetadataTreeChildrenTest extends TestCase {
         };
         assertFalse ("isEmpty()", children.isEmpty());
         assertEquals("size()", expected.length, children.size());
-
         assertAllNextEqual(expected, children.iterator());
-        assertAllEqual(true, expected, children.listIterator());
-        testGet(expected, children);
     }
 
     /**
@@ -121,7 +114,6 @@ public final strictfp class MetadataTreeChildrenTest extends TestCase {
     @Test
     @DependsOnMethod("testReadOnlyWithoutCollections")
     public void testReadOnlyWithSingletonInCollections() {
-        random = createRandomNumberGenerator("testReadOnlyWithSingletonInCollections");
         final DefaultCitation      citation = metadataWithSingletonInCollections();
         final MetadataTreeChildren children = create(citation, ValueExistencePolicy.NON_EMPTY);
         final String[] expected = {
@@ -133,10 +125,7 @@ public final strictfp class MetadataTreeChildrenTest extends TestCase {
         };
         assertFalse ("isEmpty()", children.isEmpty());
         assertEquals("size()", expected.length, children.size());
-
         assertAllNextEqual(expected, children.iterator());
-        assertAllEqual(true, expected, children.listIterator());
-        testGet(expected, children);
     }
 
     /**
@@ -146,7 +135,6 @@ public final strictfp class MetadataTreeChildrenTest extends TestCase {
     @Test
     @DependsOnMethod("testReadOnlyWithSingletonInCollections")
     public void testReadOnlyWithMultiOccurrences() {
-        random = createRandomNumberGenerator("testReadOnlyWithMultiOccurrences");
         final DefaultCitation      citation = metadataWithMultiOccurrences();
         final MetadataTreeChildren children = create(citation, ValueExistencePolicy.NON_EMPTY);
         final String[] expected = {
@@ -160,21 +148,11 @@ public final strictfp class MetadataTreeChildrenTest extends TestCase {
         };
         assertFalse ("isEmpty()", children.isEmpty());
         assertEquals("size()", expected.length, children.size());
-
         assertAllNextEqual(expected, children.iterator());
-        assertAllEqual(false, expected, children.listIterator());
-        testGet(expected, children);
     }
 
 
     // ------------------------ Support methods for the above tests ------------------------
-
-
-    /**
-     * Random number generator used by the {@code assert*} methods.
-     * Must be initialized by the public test methods.
-     */
-    private Random random;
 
     /**
      * Returns the string representation of the user object in the given node.
@@ -197,83 +175,5 @@ public final strictfp class MetadataTreeChildrenTest extends TestCase {
             assertEquals("Iterator.next()", e, valueOf(it.next()));
         }
         assertFalse("Iterator.hasNext()", it.hasNext());
-    }
-
-    /**
-     * Same assertion than {@link #assertAllNextEqual(String[], Iterator)},
-     * but move randomly forward and backward.
-     *
-     * @param cached {@code true} if all nodes returned by the iterator are expected to be cached,
-     *               i.e. if asking for the element at the same index shall return the same instance.
-     */
-    private void assertAllEqual(final boolean cached, final String[] expected, final ListIterator<TreeTable.Node> it) {
-        final TreeTable.Node[] cache = cached ? new TreeTable.Node[expected.length] : null;
-        int index = 0; // For verification purpose only.
-        boolean forward = true;
-        for (int i=0; i<50; i++) {
-            /*
-             * Select randomly a traversal direction for this step. We reverse the
-             * direction only 1/3 of time in order to give the iterator more chances
-             * to span the full range of expected values.
-             */
-            if (index == 0) {
-                assertFalse(it.hasPrevious());
-                forward = true;
-            } else if (index == expected.length) {
-                assertFalse(it.hasNext());
-                forward = false;
-            } else if (random.nextInt(3) == 0) {
-                forward = !forward;
-            }
-            /*
-             * Get the next or previous node, depe,ding on the current traversal direction.
-             */
-            final TreeTable.Node node;
-            final String message;
-            final int at;
-            if (forward) {
-                message = "next index=" + index + " iter="+i;
-                assertEquals(message, index, it.nextIndex());
-                assertTrue(message, it.hasNext());
-                node = it.next();
-                assertEquals(message, index, it.previousIndex());
-                at = index++;
-            } else {
-                at = --index;
-                message = "previous index=" + index + " iter="+i;
-                assertEquals(message, index, it.previousIndex());
-                assertTrue(message, it.hasPrevious());
-                node = it.previous();
-                assertEquals(message, index, it.nextIndex());
-            }
-            assertEquals(message, expected[at], valueOf(node));
-            /*
-             * If the nodes are expected to be cached, verify that.
-             */
-            if (cached) {
-                if (cache[at] == null) {
-                    cache[at] = node;
-                } else {
-                    assertSame(message, cache[at], node);
-                }
-            }
-        }
-    }
-
-    /**
-     * Tests {@link MetadataTreeChildren#get(int)}, which will indirectly tests
-     * {@link MetadataTreeChildren#listIterator(int)}. The indices will be tested
-     * in random order.
-     */
-    private void testGet(final String[] expected, final MetadataTreeChildren children) {
-        final Integer[] index = new Integer[expected.length];
-        for (int i=0; i<index.length; i++) {
-            index[i] = i;
-        }
-        Collections.shuffle(Arrays.asList(index), random);
-        for (int j=0; j<index.length; j++) {
-            final int i = index[j];
-            assertEquals(expected[i], valueOf(children.get(i)));
-        }
     }
 }
