@@ -451,7 +451,7 @@ pathTree:   for (int j=0; ; j++) {
                 }
             }
         }
-        TreeTables.valuesAsStrings(table, locale);
+        TreeTables.replaceCharSequences(table, locale);
         return table;
     }
 
