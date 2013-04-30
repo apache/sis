@@ -18,6 +18,8 @@ package org.apache.sis.metadata;
 
 import java.util.Random;
 import java.util.Iterator;
+import java.util.List;
+import java.util.ArrayList;
 import org.opengis.metadata.citation.PresentationForm;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.util.iso.SimpleInternationalString;
@@ -151,6 +153,47 @@ public final strictfp class MetadataTreeChildrenTest extends TestCase {
         assertAllNextEqual(expected, children.iterator());
     }
 
+    /**
+     * Tests the {@link Iterator#remove()} operation on a list of properties without collections.
+     */
+    @Test
+    @DependsOnMethod("testReadOnlyWithoutCollections")
+    public void testRemoveWithoutCollections() {
+        final DefaultCitation      citation = metadataWithoutCollections();
+        final MetadataTreeChildren children = create(citation, ValueExistencePolicy.NON_EMPTY);
+        testRemove(createRandomNumberGenerator("testRemoveWithoutCollections"), children);
+    }
+
+    /**
+     * Tests the {@link Iterator#remove()} operation on a list of properties with
+     * collections containing only one element.
+     */
+    @Test
+    @DependsOnMethod({
+        "testRemoveWithoutCollections",
+        "testReadOnlyWithSingletonInCollections"
+    })
+    public void testRemoveWithSingletonInCollections() {
+        final DefaultCitation      citation = metadataWithSingletonInCollections();
+        final MetadataTreeChildren children = create(citation, ValueExistencePolicy.NON_EMPTY);
+        testRemove(createRandomNumberGenerator("testRemoveWithSingletonInCollections"), children);
+    }
+
+    /**
+     * Tests the {@link Iterator#remove()} operation on a list of properties with
+     * collections containing more than one element.
+     */
+    @Test
+    @DependsOnMethod({
+        "testRemoveWithSingletonInCollections",
+        "testReadOnlyWithMultiOccurrences"
+    })
+    public void testRemoveWithMultiOccurrences() {
+        final DefaultCitation      citation = metadataWithSingletonInCollections();
+        final MetadataTreeChildren children = create(citation, ValueExistencePolicy.NON_EMPTY);
+        testRemove(createRandomNumberGenerator("testRemoveWithMultiOccurrences"), children);
+    }
+
 
     // ------------------------ Support methods for the above tests ------------------------
 
@@ -175,5 +218,46 @@ public final strictfp class MetadataTreeChildrenTest extends TestCase {
             assertEquals("Iterator.next()", e, valueOf(it.next()));
         }
         assertFalse("Iterator.hasNext()", it.hasNext());
+    }
+
+    /**
+     * Asserts that all next elements traversed by the {@code actual} iterator are equal
+     * to the next elements traversed by {@code expected}.
+     *
+     * @param expected The iterator over expected values.
+     * @param actual   The iterator over actual values.
+     */
+    private static void assertAllNextEqual(final Iterator<?> expected, final Iterator<?> actual) {
+        while (expected.hasNext()) {
+            assertTrue("Iterator.hasNext()", actual.hasNext());
+            assertEquals("Iterator.next()", expected.next(), actual.next());
+        }
+        assertFalse("Iterator.hasNext()", actual.hasNext());
+    }
+
+    /**
+     * Tests the {@link Iterator#remove()} operation on the given collection of children.
+     * Elements are removed randomly until the collection is empty. After each removal,
+     * the remaining elements are compared with the content of a standard Java collection.
+     *
+     * @param random   A random number generator.
+     * @param children The collection from which to remove elements.
+     */
+    private static void testRemove(final Random random, final MetadataTreeChildren children) {
+        final List<TreeTable.Node> reference = new ArrayList<>(children);
+        assertFalse("The collection shall not be initially empty.", reference.isEmpty());
+        do {
+            final Iterator<TreeTable.Node> rit = reference.iterator(); // The reference iterator.
+            final Iterator<TreeTable.Node> cit = children .iterator(); // The children iterator to be tested.
+            while (rit.hasNext()) {
+                assertTrue(cit.hasNext());
+                assertSame(rit.next(), cit.next());
+                if (random.nextInt(3) == 0) { // Remove only 1/3 of entries on each pass.
+                    rit.remove();
+                    cit.remove();
+                    assertAllNextEqual(reference.iterator(), children.iterator());
+                }
+            }
+        } while (!reference.isEmpty());
     }
 }
