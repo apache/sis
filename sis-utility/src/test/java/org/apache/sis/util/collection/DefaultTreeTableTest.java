@@ -17,6 +17,7 @@
 package org.apache.sis.util.collection;
 
 import java.util.List;
+import java.util.Collection;
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestStep;
@@ -114,7 +115,7 @@ public final strictfp class DefaultTreeTableTest extends TestCase {
      */
     @TestStep
     private static void testNodeDisplacement(final TreeTable.Node root) {
-        final List<TreeTable.Node> rootChildren, nodeChildren;
+        final Collection<TreeTable.Node> rootChildren, nodeChildren;
         final TreeTable.Node node1 = getSingleton(rootChildren = root .getChildren());
         final TreeTable.Node node2 = getSingleton(nodeChildren = node1.getChildren());
         try {
@@ -149,7 +150,7 @@ public final strictfp class DefaultTreeTableTest extends TestCase {
         assertNotSame("clone", table, newTable);
         assertEquals("newTable.equals(table)", table, newTable);
         assertEquals("hashCode", table.hashCode(), newTable.hashCode());
-        newTable.getRoot().getChildren().get(1).setValue(NAME, "New name");
+        getChildrenList(newTable).get(1).setValue(NAME, "New name");
         assertFalse("newTable.equals(table)", newTable.equals(table));
     }
 
@@ -162,8 +163,19 @@ public final strictfp class DefaultTreeTableTest extends TestCase {
     @TestStep
     private void testSerialization(final TreeTable table) {
         final TreeTable newTable = assertSerializedEquals(table);
-        newTable.getRoot().getChildren().get(1).setValue(NAME, "New name");
+        getChildrenList(newTable).get(1).setValue(NAME, "New name");
         assertFalse("newTable.equals(table)", newTable.equals(table));
+    }
+
+    /**
+     * Returns the children of the root of the given table as a list.
+     * Instances of {@link DefaultTreeTable.Node} shall be guaranteed
+     * to store their children in a list.
+     */
+    private static List<TreeTable.Node> getChildrenList(final TreeTable table) {
+        final Collection<TreeTable.Node> children = table.getRoot().getChildren();
+        assertInstanceOf("TreeTable.Node.getChildren()", List.class, children);
+        return (List<TreeTable.Node>) children;
     }
 
     /**

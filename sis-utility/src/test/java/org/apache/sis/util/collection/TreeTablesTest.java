@@ -45,12 +45,13 @@ import static org.apache.sis.util.collection.TableColumn.*;
 public final strictfp class TreeTablesTest extends TestCase {
     /**
      * The {@code concatenateSingletons(…)} example documented in the {@link TreeTables} class javadoc.
+     * This simple code assumes that the children collection in the given node is a {@link List}.
      *
      * @param  node The root of the node to simplify.
      * @return The root of the simplified tree. May be the given {@code node} or a child.
      */
     public static TreeTable.Node concatenateSingletons(final TreeTable.Node node) {
-        final List<TreeTable.Node> children = node.getChildren();
+        final List<TreeTable.Node> children = (List<TreeTable.Node>) node.getChildren();
         final int size = children.size();
         for (int i=0; i<size; i++) {
             children.set(i, concatenateSingletons(children.get(i)));

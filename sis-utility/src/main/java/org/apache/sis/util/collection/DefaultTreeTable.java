@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.LinkedHashMap;
+import java.util.Collection;
 import java.util.Collections;
 import java.io.Serializable;
 import net.jcip.annotations.NotThreadSafe;
@@ -756,7 +757,10 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
             }
             String name = getClass().getSimpleName();
             if (parent != null) {
-                name = name + '-' + parent.getChildren().indexOf(this);
+                final Collection<TreeTable.Node> children = parent.getChildren();
+                if (children instanceof List<?>) {
+                    name = name + '-' + ((List<TreeTable.Node>) children).indexOf(this);
+                }
             }
             return name;
         }
