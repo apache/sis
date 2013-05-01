@@ -275,6 +275,15 @@ public final strictfp class CharSequencesTest extends TestCase {
     }
 
     /**
+     * Tests the {@link CharSequences#upperCaseToSentence(CharSequence)} method.
+     */
+    @Test
+    public void testUpperCaseToSentence() {
+        final CharSequence convert = upperCaseToSentence("HALF_DOWN");
+        assertEquals("Half down", convert.toString());
+    }
+
+    /**
      * Tests the {@link CharSequences#camelCaseToWords(CharSequence, boolean)} method.
      */
     @Test

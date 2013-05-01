@@ -31,6 +31,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
@@ -116,7 +117,7 @@ class MetadataTreeNode implements TreeTable.Node, Serializable {
      *
      * @see #getName()
      */
-    private transient String name;
+    private transient CharSequence name;
 
     /**
      * The children of this node, or {@code null} if not yet computed. If and only if the node
@@ -153,18 +154,30 @@ class MetadataTreeNode implements TreeTable.Node, Serializable {
     }
 
     /**
+     * Returns the UML identifier defined by the standard. The default implementation is suitable
+     * only for the root node, since it returns the class identifier. Subclasses must override in
+     * order to return the property identifier instead.
+     */
+    String getIdentifier() {
+        final Class<?> type = table.standard.getInterface(metadata.getClass());
+        final String id = Types.getStandardName(type);
+        return (id != null) ? id : Classes.getShortName(type);
+    }
+
+    /**
      * Gets the name of this node. The name shall be stable, since it will be cached by the caller.
      * The default implementation is suitable only for the root node - subclasses must override.
      */
-    String getName() {
-        final Class<?> type = metadata.getClass();
-        final String name = Types.getStandardName(type);
-        return (name != null) ? name : Classes.getShortName(type);
+    CharSequence getName() {
+        return Classes.getShortClassName(metadata);
     }
 
     /**
      * Appends an identifier for this node in the given buffer, for {@link #toString()} implementation.
-     * The default implementation is suitable only for the root node - subclasses must override.
+     * The appended value is similar to the value returned by {@link #getIdentifier()} (except for the
+     * root node), but may contains additional information like the index in a collection.
+     *
+     * <p>The default implementation is suitable only for the root node - subclasses must override.</p>
      */
     void appendIdentifier(final StringBuilder buffer) {
         buffer.append(Classes.getShortClassName(metadata));
@@ -253,6 +266,14 @@ class MetadataTreeNode implements TreeTable.Node, Serializable {
         }
 
         /**
+         * The property identifier to be returned in the {@link TableColumn#IDENTIFIER} cells.
+         */
+        @Override
+        final String getIdentifier() {
+            return accessor.name(indexInData, KeyNamePolicy.UML_IDENTIFIER);
+        }
+
+        /**
          * Appends an identifier for this node in the given buffer, for {@link #toString()} implementation.
          */
         @Override
@@ -268,8 +289,8 @@ class MetadataTreeNode implements TreeTable.Node, Serializable {
          * node for each element in a collection.
          */
         @Override
-        String getName() {
-            return CharSequences.camelCaseToSentence(accessor.name(indexInData, KeyNamePolicy.UML_IDENTIFIER)).toString();
+        CharSequence getName() {
+            return CharSequences.camelCaseToSentence(getIdentifier()).toString();
         }
 
         /**
@@ -345,6 +366,22 @@ class MetadataTreeNode implements TreeTable.Node, Serializable {
         void appendIdentifier(final StringBuilder buffer) {
             super.appendIdentifier(buffer);
             buffer.append('[').append(indexInList).append(']');
+        }
+
+        /**
+         * Appends the index of this property, if there is more than one.
+         */
+        @Override
+        CharSequence getName() {
+            CharSequence name = super.getName();
+            final Collection<?> values = (Collection<?>) super.getUserObject();
+            if (values != null) {
+                final int size = values.size();
+                if (size >= 2) {
+                    name = Vocabulary.formatInternational(Vocabulary.Keys.Of_3, name, indexInList+1, size);
+                }
+            }
+            return name;
         }
 
         /**
@@ -483,6 +520,8 @@ class MetadataTreeNode implements TreeTable.Node, Serializable {
             }
         } else if (column == TableColumn.TYPE) {
             value = getElementType();
+        } else if (column == TableColumn.IDENTIFIER) {
+            value = getIdentifier();
         }
         return column.getElementType().cast(value);
     }
