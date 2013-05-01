@@ -28,10 +28,13 @@ import java.text.ParsePosition;
 import java.text.ParseException;
 import java.util.regex.Matcher;
 import net.jcip.annotations.NotThreadSafe;
+import org.opengis.util.CodeList;
+import org.opengis.util.InternationalString;
 import org.apache.sis.io.LineAppender;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.io.TabularFormat;
 import org.apache.sis.io.CompoundFormat;
+import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
@@ -579,6 +582,12 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
                     return;
                 }
                 text = format.format(value);
+            } else if (value instanceof InternationalString) {
+                text = ((InternationalString) value).toString(locale);
+            } else if (value instanceof CodeList<?>) {
+                text = Types.getCodeTitle((CodeList<?>) value).toString(locale);
+            } else if (value instanceof Enum<?>) {
+                text = CharSequences.upperCaseToSentence(((Enum<?>) value).name());
             } else {
                 text = String.valueOf(value);
             }

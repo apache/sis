@@ -24,8 +24,8 @@ import org.opengis.metadata.citation.PresentationForm;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.collection.TreeTable;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -52,6 +52,13 @@ import static org.apache.sis.test.TestUtilities.createRandomNumberGenerator;
 public final strictfp class MetadataTreeChildrenTest extends TestCase {
     /**
      * Creates a shallow metadata object without collections.
+     *
+     * {@preformat text
+     *   DefaultCitation
+     *     ├─Title………………………………………………… Some title
+     *     ├─Edition…………………………………………… Some edition
+     *     └─Other citation details…… Some other details
+     * }
      */
     static DefaultCitation metadataWithoutCollections() {
         final DefaultCitation citation = new DefaultCitation("Some title");
@@ -62,6 +69,16 @@ public final strictfp class MetadataTreeChildrenTest extends TestCase {
 
     /**
      * Creates a shallow metadata object with singleton value in collections.
+     * This method creates the following metadata:
+     *
+     * {@preformat text
+     *   DefaultCitation
+     *     ├─Title………………………………………………… Some title
+     *     ├─Alternate title……………………… First alternate title
+     *     ├─Edition…………………………………………… Some edition
+     *     ├─Presentation form………………… Map digital
+     *     └─Other citation details…… Some other details
+     * }
      */
     static DefaultCitation metadataWithSingletonInCollections() {
         final DefaultCitation citation = metadataWithoutCollections();
@@ -71,8 +88,19 @@ public final strictfp class MetadataTreeChildrenTest extends TestCase {
     }
 
     /**
-     * Creates a shallow metadata object with multi-occurrences
-     * (i.e. more than one value in collections).
+     * Creates a shallow metadata object with multi-occurrences (i.e. more than one value in collections).
+     * This method creates the following metadata:
+     *
+     * {@preformat text
+     *   DefaultCitation
+     *     ├─Title………………………………………………………… Some title
+     *     ├─Alternate title (1 of 2)……… First alternate title
+     *     ├─Alternate title (2 of 2)……… Second alternate title
+     *     ├─Edition…………………………………………………… Some edition
+     *     ├─Presentation form (1 of 2)… Map digital
+     *     ├─Presentation form (2 of 2)… map hardcopy
+     *     └─Other citation details…………… Some other details
+     * }
      */
     static DefaultCitation metadataWithMultiOccurrences() {
         final DefaultCitation citation = metadataWithSingletonInCollections();
@@ -82,7 +110,7 @@ public final strictfp class MetadataTreeChildrenTest extends TestCase {
     }
 
     /**
-     * Creates a list to be tested for the given metadata object and value policy.
+     * Creates a collection to be tested for the given metadata object and value policy.
      */
     private static MetadataTreeChildren create(final AbstractMetadata metadata, final ValueExistencePolicy valuePolicy) {
         final MetadataStandard  standard = MetadataStandard.ISO_19115;

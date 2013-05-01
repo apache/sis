@@ -16,11 +16,15 @@
  */
 package org.apache.sis.util.collection;
 
+import java.util.Locale;
+import java.math.RoundingMode;
 import java.text.ParseException;
-import org.junit.Test;
+import org.opengis.metadata.citation.Role;
+import org.apache.sis.util.iso.DefaultInternationalString;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
+import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
 import static org.apache.sis.util.collection.TableColumn.*;
@@ -195,5 +199,56 @@ public final strictfp class TreeTableFormatTest extends TestCase {
         tf.setColumnSeparatorPattern("?……[…] /\\w*│+\\w*");
         assertEquals("?……[…] /\\w*│+\\w*", tf.getColumnSeparatorPattern());
         assertEquals(table, tf.parseObject(text));
+    }
+
+    /**
+     * Tests the parsing of a tree containing a code list, an enumeration and an international string.
+     * Those types shall be handled in a special way.
+     */
+    @Test
+    @DependsOnMethod("testTreeTableFormat")
+    public void testLocalizedFormat() {
+        final DefaultInternationalString i18n = new DefaultInternationalString();
+        i18n.add(Locale.ENGLISH,  "An English sentence");
+        i18n.add(Locale.FRENCH,   "Une phrase en français");
+        i18n.add(Locale.JAPANESE, "日本語の言葉");
+
+        final DefaultTreeTable table  = new DefaultTreeTable(NAME, VALUE);
+        final TreeTable.Node   root   = table.getRoot();
+        root.setValue(NAME, "Root");
+
+        TreeTable.Node child;
+        child = root.newChild();
+        child.setValue(NAME, "CodeList");
+        child.setValue(VALUE, Role.POINT_OF_CONTACT);
+
+        child = root.newChild();
+        child.setValue(NAME, "Enum");
+        child.setValue(VALUE, RoundingMode.HALF_DOWN);
+
+        child = root.newChild();
+        child.setValue(NAME, "i18n");
+        child.setValue(VALUE, i18n);
+
+        TreeTableFormat tf = new TreeTableFormat(null, null);
+        assertMultilinesEquals(
+                "Root\n" +
+                "  ├─CodeList…… Point of contact\n" +
+                "  ├─Enum……………… Half down\n" +
+                "  └─i18n……………… An English sentence\n", tf.format(table));
+
+        tf = new TreeTableFormat(Locale.FRENCH, null);
+        assertMultilinesEquals(
+                "Root\n" +
+                "  ├─CodeList…… Point of contact\n" + // Not yet localized.
+                "  ├─Enum……………… Half down\n" +        // No localization provided.
+                "  └─i18n……………… Une phrase en français\n", tf.format(table));
+
+        tf = new TreeTableFormat(Locale.JAPANESE, null);
+        assertMultilinesEquals(
+                "Root\n" +
+                "  ├─CodeList…… Point of contact\n" + // Not yet localized.
+                "  ├─Enum……………… Half down\n" +        // No localization provided.
+                "  └─i18n……………… 日本語の言葉\n", tf.format(table));
     }
 }

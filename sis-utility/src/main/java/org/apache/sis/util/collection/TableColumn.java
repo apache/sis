@@ -108,6 +108,14 @@ public class TableColumn<V> implements CheckedContainer<V> {
             CharSequence.class, Vocabulary.Keys.Name);
 
     /**
+     * Frequently-used constant for a column of object identifiers.
+     * The column {@linkplain #getHeader() header} is "<cite>Identifier</cite>" (eventually localized)
+     * and the column elements are instances of {@link String}.
+     */
+    public static final TableColumn<String> IDENTIFIER = new Constant<>("IDENTIFIER",
+            String.class, Vocabulary.Keys.Identifier);
+
+    /**
      * Frequently-used constant for a column of object types.
      * The column {@linkplain #getHeader() header} is "<cite>Type</cite>" (eventually localized).
      */

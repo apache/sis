@@ -30,9 +30,10 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * The tree table is made of three columns:
  *
  * <ul>
- *   <li>{@link TableColumn#NAME}  - the metadata property name.</li>
- *   <li>{@link TableColumn#TYPE}  - the metadata element type.</li>
- *   <li>{@link TableColumn#VALUE} - the metadata property value.</li>
+ *   <li>{@link TableColumn#IDENTIFIER} - the property standard identifier.</li>
+ *   <li>{@link TableColumn#NAME}       - the property name.</li>
+ *   <li>{@link TableColumn#TYPE}       - the element type.</li>
+ *   <li>{@link TableColumn#VALUE}      - the property value.</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -50,6 +51,7 @@ final class MetadataTreeTable implements TreeTable, Serializable {
      * The columns to be returned by {@link #getColumns()}.
      */
     static final List<TableColumn<?>> COLUMNS = UnmodifiableArrayList.wrap(new TableColumn<?>[] {
+        TableColumn.IDENTIFIER,
         TableColumn.NAME,
         TableColumn.TYPE,
         TableColumn.VALUE
