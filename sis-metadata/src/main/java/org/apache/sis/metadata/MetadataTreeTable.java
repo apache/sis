@@ -17,6 +17,7 @@
 package org.apache.sis.metadata;
 
 import java.util.List;
+import java.text.Format;
 import java.io.Serializable;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
@@ -53,6 +54,12 @@ final class MetadataTreeTable implements TreeTable, Serializable {
         TableColumn.TYPE,
         TableColumn.VALUE
     });
+
+    /**
+     * The {@link TreeTableFormat} to use for the {@link #toString()} method implementation.
+     * Created when first needed.
+     */
+    private static Format format;
 
     /**
      * The root of the metadata tree.
@@ -109,6 +116,13 @@ final class MetadataTreeTable implements TreeTable, Serializable {
      */
     @Override
     public String toString() {
-        return ""; // TODO TreeTableFormat.toString(this);
+        synchronized (MetadataTreeTable.class) {
+            if (format == null) {
+                final TreeTableFormat f = new TreeTableFormat(null, null);
+                f.setColumns(TableColumn.NAME, TableColumn.VALUE);
+                format = f;
+            }
+            return format.format(this);
+        }
     }
 }

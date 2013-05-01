@@ -56,6 +56,26 @@ class MetadataTreeNode implements TreeTable.Node, Serializable {
     private static final long serialVersionUID = -3499128444388320L;
 
     /**
+     * The collection of {@linkplain #children} to return when the node does not allow children
+     * (i.e. is a leaf). This constant is also used as a sentinel value by {@link #isLeaf()}.
+     *
+     * <p>We choose an empty set instead than an empty list because {@link MetadataTreeChildren}
+     * does not implement the {@link List} interface. So we are better to never give to the user
+     * a collection implementing {@code List} in order to signal incorrect casts sooner.</p>
+     */
+    private static final Collection<TreeTable.Node> LEAF = Collections.emptySet();
+
+    /**
+     * A sentinel value meaning that the node is known to allow {@linkplain #children}, but
+     * the children collection have not yet been created. This is different than {@code null}
+     * which means that we don't even know if the node can have children or not.
+     *
+     * <p>Any value distinct than {@link #LEAF} is okay. This value will never be visible
+     * to the user.</p>
+     */
+    private static final Collection<TreeTable.Node> PENDING = Collections.emptyList();
+
+    /**
      * The table for which this node is an element. Contains information like
      * the metadata standard and the value existence policy.
      *
@@ -77,10 +97,10 @@ class MetadataTreeNode implements TreeTable.Node, Serializable {
      * The value is fetched in different ways, which depend on the {@code MetadataTreeNode} subclass:
      *
      * <ul>
-     *   <li>For {@code MetadataTreeNode} (usually the root of the tree),
-     *       this is the value to return directly.</li>
-     *   <li>For {@link Element} (a metadata property which is not a collection)
-     *       The value is {@code accessor.get(indexInData, metadata)}.</li>
+     *   <li>For {@code MetadataTreeNode} (the root of the tree),
+     *       the value is directly {@link #metadata}.</li>
+     *   <li>For {@link Element} (a metadata property which is not a collection),
+     *       the value is {@code accessor.get(indexInData, metadata)}.</li>
      *   <li>For {@link CollectionElement} (an element in a collection),
      *       an other index is used for fetching the element in that collection.</li>
      * </ul>
@@ -101,7 +121,7 @@ class MetadataTreeNode implements TreeTable.Node, Serializable {
     /**
      * The children of this node, or {@code null} if not yet computed. If and only if the node
      * can not have children (i.e. {@linkplain #isLeaf() is a leaf}), then this field is set to
-     * {@link Collections#EMPTY_SET}.
+     * {@link #LEAF}.
      *
      * @see #getChildren()
      */
@@ -121,6 +141,7 @@ class MetadataTreeNode implements TreeTable.Node, Serializable {
 
     /**
      * Creates a new child for an element of the given metadata.
+     * This constructor is for the {@link Element} subclass only.
      *
      * @param  parent   The parent of this node.
      * @param  metadata The metadata object for which this node will be a value.
@@ -137,18 +158,15 @@ class MetadataTreeNode implements TreeTable.Node, Serializable {
      */
     String getName() {
         final Class<?> type = metadata.getClass();
-        String name = Types.getStandardName(type);
-        if (name == null) {
-            name = Classes.getShortName(type);
-        }
-        return name;
+        final String name = Types.getStandardName(type);
+        return (name != null) ? name : Classes.getShortName(type);
     }
 
     /**
      * Appends an identifier for this node in the given buffer, for {@link #toString()} implementation.
      * The default implementation is suitable only for the root node - subclasses must override.
      */
-    void identifier(final StringBuilder buffer) {
+    void appendIdentifier(final StringBuilder buffer) {
         buffer.append(Classes.getShortClassName(metadata));
     }
 
@@ -175,8 +193,7 @@ class MetadataTreeNode implements TreeTable.Node, Serializable {
      * @throws UnsupportedOperationException If the metadata value is not writable.
      */
     void setUserObject(final Object value) throws UnsupportedOperationException {
-        throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnmodifiableCellValue_2,
-                getValue(TableColumn.NAME), TableColumn.VALUE.getHeader()));
+        throw new UnsupportedOperationException(unmodifiableCellValue(TableColumn.VALUE));
     }
 
     /**
@@ -186,6 +203,9 @@ class MetadataTreeNode implements TreeTable.Node, Serializable {
     boolean isWritable() {
         return false;
     }
+
+
+
 
     /**
      * A node for a metadata property value. This class does not store the property value directly.
@@ -236,8 +256,8 @@ class MetadataTreeNode implements TreeTable.Node, Serializable {
          * Appends an identifier for this node in the given buffer, for {@link #toString()} implementation.
          */
         @Override
-        void identifier(final StringBuilder buffer) {
-            super.identifier(buffer);
+        void appendIdentifier(final StringBuilder buffer) {
+            super.appendIdentifier(buffer);
             buffer.append('.').append(accessor.name(indexInData, KeyNamePolicy.JAVABEANS_PROPERTY));
         }
 
@@ -285,6 +305,9 @@ class MetadataTreeNode implements TreeTable.Node, Serializable {
         }
     }
 
+
+
+
     /**
      * A node for an element in a collection. This class needs the iteration order to be stable.
      */
@@ -319,8 +342,8 @@ class MetadataTreeNode implements TreeTable.Node, Serializable {
          * Appends an identifier for this node in the given buffer, for {@link #toString()} implementation.
          */
         @Override
-        void identifier(final StringBuilder buffer) {
-            super.identifier(buffer);
+        void appendIdentifier(final StringBuilder buffer) {
+            super.appendIdentifier(buffer);
             buffer.append('[').append(indexInList).append(']');
         }
 
@@ -361,6 +384,10 @@ class MetadataTreeNode implements TreeTable.Node, Serializable {
         }
     }
 
+
+    // -------- Final methods (defined in terms of above methods only) ----------------------------
+
+
     /**
      * Returns the parent node, or {@code null} if this node is the root of the tree.
      */
@@ -375,7 +402,17 @@ class MetadataTreeNode implements TreeTable.Node, Serializable {
      */
     @Override
     public final boolean isLeaf() {
-        return !table.standard.isMetadata(getElementType());
+        if (children == LEAF) {
+            return true;
+        }
+        if (children == null) {
+            if (!table.standard.isMetadata(getElementType())) {
+                children = LEAF;
+                return true;
+            }
+            children = PENDING;
+        }
+        return false;
     }
 
     /**
@@ -385,10 +422,10 @@ class MetadataTreeNode implements TreeTable.Node, Serializable {
     @Override
     public final Collection<TreeTable.Node> getChildren() {
         /*
-         * 'children' is set to EMPTY_SET if an only if the node *can not* have children,
+         * 'children' is set to LEAF if an only if the node *can not* have children,
          * in which case we do not need to check for changes in the underlying metadata.
          */
-        if (children != Collections.EMPTY_SET) {
+        if (!isLeaf()) {
             final Object value = getUserObject();
             if (value == null) {
                 /*
@@ -396,8 +433,8 @@ class MetadataTreeNode implements TreeTable.Node, Serializable {
                  * to that set, in order to allow this method to check again the next time
                  * that this method is invoked.
                  */
-                children = null; // Let GC do its work.
-                return Collections.emptySet();
+                children = PENDING; // Let GC do its work.
+                return LEAF;
             }
             /*
              * If there is a value, check if the cached collection is still applicable.
@@ -409,16 +446,10 @@ class MetadataTreeNode implements TreeTable.Node, Serializable {
                 }
             }
             /*
-             * At this point, we need to create a new collection. The property accessor will
-             * be null if the value is not a metadata object, in which case we will remember
-             * that fact by setting the children collection definitively to an empty set.
+             * At this point, we need to create a new collection. The property accessor shall
+             * exist, otherwise the call to 'isLeaf()' above would have returned 'true'.
              */
-            final PropertyAccessor accessor = table.standard.getAccessor(value.getClass(), false);
-            if (accessor != null) {
-                children = new MetadataTreeChildren(this, value, accessor);
-            } else {
-                children = Collections.emptySet();
-            }
+            children = new MetadataTreeChildren(this, value, table.standard.getAccessor(value.getClass(), true));
         }
         return children;
     }
@@ -447,7 +478,9 @@ class MetadataTreeNode implements TreeTable.Node, Serializable {
                 value = name = getName();
             }
         } else if (column == TableColumn.VALUE) {
-            value = getUserObject();
+            if (isLeaf()) {
+                value = getUserObject();
+            }
         } else if (column == TableColumn.TYPE) {
             value = getElementType();
         }
@@ -464,11 +497,17 @@ class MetadataTreeNode implements TreeTable.Node, Serializable {
         if (column == TableColumn.VALUE) {
             setUserObject(value);
         } else if (MetadataTreeTable.COLUMNS.contains(column)) {
-            throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnmodifiableCellValue_2,
-                    getValue(TableColumn.NAME), column.getHeader()));
+            throw new UnsupportedOperationException(unmodifiableCellValue(column));
         } else {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "column", column));
         }
+    }
+
+    /**
+     * Returns the error message for an unmodifiable cell value in the given column.
+     */
+    private String unmodifiableCellValue(final TableColumn<?> column) {
+        return Errors.format(Errors.Keys.UnmodifiableCellValue_2, getValue(TableColumn.NAME), column.getHeader());
     }
 
     /**
@@ -477,7 +516,7 @@ class MetadataTreeNode implements TreeTable.Node, Serializable {
      * to {@link #isWritable()}.
      */
     @Override
-    public boolean isEditable(final TableColumn<?> column) {
+    public final boolean isEditable(final TableColumn<?> column) {
         ArgumentChecks.ensureNonNull("column", column);
         return (column == TableColumn.VALUE) && isWritable();
     }
@@ -498,7 +537,7 @@ class MetadataTreeNode implements TreeTable.Node, Serializable {
      * in the given buffer.
      */
     final void toString(final StringBuilder buffer) {
-        identifier(buffer.append("Node["));
+        appendIdentifier(buffer.append("Node["));
         buffer.append(" : ").append(Classes.getShortName(getElementType())).append(']');
     }
 }
