@@ -186,6 +186,7 @@ public abstract class AbstractMetadata implements LenientComparable {
      * the UML identifier.</p>
      *
      * <p>The default implementation is equivalent to the following method call:</p>
+     *
      * {@preformat java
      *   return getStandard().asValueMap(this, KeyNamePolicy.JAVABEANS_PROPERTY, ValueExistencePolicy.NON_EMPTY);
      * }
@@ -203,13 +204,21 @@ public abstract class AbstractMetadata implements LenientComparable {
 
     /**
      * Returns the property types and values as a tree table.
-     * In the current implementation, the tree is not live (i.e. changes in metadata are not
-     * reflected in the tree). However it may be improved in a future SIS implementation.
+     * The tree table is backed by the metadata object using Java reflection, so changes in the
+     * underlying metadata object are immediately reflected in the tree table and conversely.
      *
-     * @return The property types and values as a tree table.
+     * <p>The default implementation is equivalent to the following method call:</p>
+     *
+     * {@preformat java
+     *   return getStandard().asTreeTable(this, ValueExistencePolicy.NON_EMPTY);
+     * }
+     *
+     * @return A tree table representation of the specified metadata.
+     *
+     * @see MetadataStandard#asTreeTable(Object, ValueExistencePolicy)
      */
     public TreeTable asTreeTable() {
-        return getStandard().asTreeTable(this);
+        return getStandard().asTreeTable(this, ValueExistencePolicy.NON_EMPTY);
     }
 
     /**

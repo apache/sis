@@ -100,14 +100,7 @@ public abstract class AbstractInternationalString implements InternationalString
      */
     @Override
     public CharSequence subSequence(final int start, final int end) {
-        final String text = toString();
-        if (text == null) {
-            if (start == 0 && end == 0) {
-                return "";
-            }
-            throw new StringIndexOutOfBoundsException();
-        }
-        return text.substring(start, end);
+        return toString().substring(start, end);
     }
 
     /**

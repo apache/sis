@@ -200,6 +200,20 @@ public final strictfp class TestUtilities extends Static {
     }
 
     /**
+     * Returns the single element from the given array. If the given array is null or
+     * does not contains exactly one element, then an {@link AssertionError} is thrown.
+     *
+     * @param  <E> The type of array elements.
+     * @param  array The array from which to get the singleton.
+     * @return The singleton element from the array.
+     */
+    public static <E> E getSingleton(final E[] array) {
+        assertNotNull("Null array.", array);
+        assertEquals("Not a singleton array.", 1, array.length);
+        return array[0];
+    }
+
+    /**
      * Returns the single element from the given collection. If the given collection is null
      * or does not contains exactly one element, then an {@link AssertionError} is thrown.
      *

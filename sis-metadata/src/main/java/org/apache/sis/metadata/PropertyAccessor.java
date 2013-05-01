@@ -16,7 +16,6 @@
  */
 package org.apache.sis.metadata;
 
-import java.util.Set;
 import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
@@ -31,7 +30,9 @@ import net.jcip.annotations.ThreadSafe;
 import org.opengis.annotation.UML;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.ExtendedElementInformation;
+import org.apache.sis.internal.util.Citations;
 import org.apache.sis.measure.ValueRange;
+import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArraysExt;
@@ -97,6 +98,12 @@ final class PropertyAccessor {
     private static final Map<Class<?>, Method[]> SHARED_GETTERS = new IdentityHashMap<Class<?>, Method[]>();
 
     /**
+     * Enumeration constants for the {@code mode} argument in the
+     * {@link #count(Object, ValueExistencePolicy, int)} method.
+     */
+    static final int COUNT_FIRST=0, COUNT_SHALLOW=1, COUNT_DEEP=2;
+
+    /**
      * Additional getter to declare in every list of getter methods that do not already provide
      * their own {@code getIdentifiers()} method. We handle this method specially because it is
      * needed for XML marshalling in ISO 19139 compliant document, while not part of abstract
@@ -124,7 +131,8 @@ final class PropertyAccessor {
     final Class<?> type;
 
     /**
-     * The implementation class. The following condition must hold:
+     * The implementation class, or {@link #type} if none.
+     * The following condition must hold:
      *
      * {@preformat java
      *     type.isAssignableFrom(implementation);
@@ -218,7 +226,7 @@ final class PropertyAccessor {
      * @param  standard The standard which define the {@code type} interface.
      * @param  type The interface implemented by the metadata, which must be
      *         the value returned by {@link #getStandardType(Class, String)}.
-     * @param  implementation The class of metadata implementations.
+     * @param  implementation The class of metadata implementations, or {@code type} if none.
      */
     PropertyAccessor(final Citation standard, final Class<?> type, final Class<?> implementation) {
         assert type.isAssignableFrom(implementation) : implementation;
@@ -431,6 +439,8 @@ final class PropertyAccessor {
 
     /**
      * Returns the number of properties that can be read.
+     *
+     * @see #count(Object, ValueExistencePolicy, int)
      */
     final int count() {
         return standardCount;
@@ -548,6 +558,16 @@ final class PropertyAccessor {
     }
 
     /**
+     * Returns {@code true} if the type at the given index is {@link Collection}.
+     */
+    final boolean isCollection(final int index) {
+        if (index >= 0 && index < standardCount) {
+            return Collection.class.isAssignableFrom(getters[index].getReturnType());
+        }
+        return false;
+    }
+
+    /**
      * Returns the information for the property at the given index.
      * The information are created when first needed.
      *
@@ -587,6 +607,13 @@ final class PropertyAccessor {
             informations[index] = information;
         }
         return information;
+    }
+
+    /**
+     * Returns {@code true} if the property at the given index is writable.
+     */
+    final boolean isWritable(final int index) {
+        return (index >= 0) && (index < standardCount) && (setters != null) && (setters[index] != null);
     }
 
     /**
@@ -666,25 +693,28 @@ final class PropertyAccessor {
             final Method getter = getters[index];
             final Method setter = setters[index];
             if (setter != null) {
-                Object old;
+                final Object old;
+                final Object copy;
                 if (getOld) {
                     old = get(getter, metadata);
                     if (old instanceof Collection<?>) {
                         if (old instanceof List<?>) {
-                            old = snapshot((List<?>) old);
+                            copy = snapshot((List<?>) old);
                         } else {
-                            old = modifiableCopy((Collection<?>) old);
+                            copy = modifiableCopy((Collection<?>) old);
                         }
                     } else if (old instanceof Map<?,?>) {
-                        old = modifiableCopy((Map<?,?>) old);
+                        copy = modifiableCopy((Map<?,?>) old);
+                    } else {
+                        copy = old;
                     }
                 } else {
-                    old = null;
+                    copy = old = null;
                 }
                 final Object[] newValues = new Object[] {value};
-                converter = convert(getter, metadata, newValues, elementTypes[index], converter);
+                converter = convert(getter, metadata, old, newValues, elementTypes[index], converter);
                 set(setter, metadata, newValues);
-                return old;
+                return copy;
             }
         }
         throw new UnmodifiableMetadataException(Errors.format(Errors.Keys.CanNotSetPropertyValue_1, names[index]));
@@ -732,6 +762,9 @@ final class PropertyAccessor {
      *
      * @param getter      The method to use for fetching the previous value.
      * @param metadata    The metadata object to query.
+     * @param oldValue    The value returned by {@code get(getter, metadata)}, or {@code null} if unknown.
+     *                    This parameter is only an optimization for avoiding to invoke the getter method
+     *                    twice if the value is already known.
      * @param newValues   The argument to convert. It must be an array of length 1.
      *                    The content of this array will be modified in-place.
      * @param elementType The type required by the setter method.
@@ -742,8 +775,8 @@ final class PropertyAccessor {
      * @throws BackingStoreException If the implementation threw a checked exception.
      */
     private static ObjectConverter<?,?> convert(final Method getter, final Object metadata,
-            final Object[] newValues, Class<?> elementType, ObjectConverter<?,?> converter)
-            throws ClassCastException, BackingStoreException
+            final Object oldValue, final Object[] newValues, Class<?> elementType,
+            ObjectConverter<?,?> converter) throws ClassCastException, BackingStoreException
     {
         assert newValues.length == 1;
         Object newValue = newValues[0];
@@ -804,7 +837,7 @@ final class PropertyAccessor {
                     addTo = null;
                 } else {
                     elements = new Object[] {newValue};
-                    newValue = addTo = (Collection<?>) get(getter, metadata);
+                    newValue = addTo = (Collection<?>) (oldValue != null ? oldValue : get(getter, metadata));
                     if (addTo == null) {
                         // No previous collection. Create one.
                         newValue = Arrays.asList(elements);
@@ -883,6 +916,56 @@ final class PropertyAccessor {
     }
 
     /**
+     * Counts the number of non-null or non-empty properties.
+     * The {@code mode} argument can be one of the following:
+     *
+     * <ul>
+     *   <li>COUNT_FIRST:   stop at the first property found. This mode is used for testing if a
+     *                      metadata is empty or not, without the need to known the exact count.</li>
+     *   <li>COUNT_SHALLOW: count all properties, counting collections as one property.</li>
+     *   <li>COUNT_DEEP:    count all properties, counting collections as the number of
+     *                      properties returned by {@link Collection#size()}.</li>
+     * </ul>
+     *
+     * @param  mode Kinds of count, as described above.
+     * @param  valuePolicy The behavior of the count toward null or empty values.
+     * @throws BackingStoreException If the implementation threw a checked exception.
+     *
+     * @see #count()
+     */
+    public int count(final Object metadata, final ValueExistencePolicy valuePolicy, final int mode)
+            throws BackingStoreException
+    {
+        assert type.isInstance(metadata) : metadata;
+        if (valuePolicy == ValueExistencePolicy.ALL && mode != COUNT_DEEP) {
+            return count();
+        }
+        int count = 0;
+        for (int i=0; i<standardCount; i++) {
+            final Object value = get(getters[i], metadata);
+            if (!valuePolicy.isSkipped(value)) {
+                switch (mode) {
+                    case COUNT_FIRST:{
+                        return 1;
+                    }
+                    case COUNT_SHALLOW:{
+                        count++;
+                        break;
+                    }
+                    case COUNT_DEEP: {
+                        // Count always at least one element because if the user wanted to skip null or empty
+                        // collections, then 'valuePolicy.isSkipped(value)' above would have returned 'true'.
+                        count += (value != null && isCollection(i)) ? Math.max(((Collection<?>) value).size(), 1) : 1;
+                        break;
+                    }
+                    default: throw new AssertionError(mode);
+                }
+            }
+        }
+        return count;
+    }
+
+    /**
      * Compares the two specified metadata objects. This method implements a <cite>shallow</cite>
      * comparison, i.e. all metadata properties are compared using their {@code properties.equals(…)}
      * method without explicit calls to this {@code accessor.equals(…)} method for children.
@@ -953,7 +1036,7 @@ final class PropertyAccessor {
                 }
                 final Method setter = setters[i];
                 if (setter != null) {
-                    converter = convert(getter, target, arguments, elementTypes[i], converter);
+                    converter = convert(getter, target, null, arguments, elementTypes[i], converter);
                     set(setter, target, arguments);
                 } else {
                     success = false;
@@ -1021,21 +1104,35 @@ final class PropertyAccessor {
     }
 
     /**
-     * Counts the number of non-empty properties.
+     * Returns a string representation of this accessor for debugging purpose.
+     * Output example:
      *
-     * @param  max Stop the count if we reach that value.
-     * @throws BackingStoreException If the implementation threw a checked exception.
+     * {@preformat text
+     *     PropertyAccessor[13 getters & 13 setters in DefaultCitation:Citation from “ISO 19115”]
+     * }
      */
-    public int count(final Object metadata, final int max) throws BackingStoreException {
-        assert type.isInstance(metadata) : metadata;
-        int count = 0;
-        for (int i=0; i<standardCount; i++) {
-            if (!isNullOrEmpty(get(getters[i], metadata))) {
-                if (++count >= max) {
-                    break;
+    @Debug
+    @Override
+    public String toString() {
+        final StringBuilder buffer = new StringBuilder(60);
+        buffer.append("PropertyAccessor[").append(standardCount).append(" getters");
+        final int extra = allCount - standardCount;
+        if (extra != 0) {
+            buffer.append(" (+").append(extra).append(" ext.)");
+        }
+        if (setters != null) {
+            int c = 0;
+            for (final Method setter : setters) {
+                if (setter != null) {
+                    c++;
                 }
             }
+            buffer.append(" & ").append(c).append(" setters");
         }
-        return count;
+        buffer.append(" in ").append(Classes.getShortName(implementation));
+        if (type != implementation) {
+            buffer.append(':').append(Classes.getShortName(type));
+        }
+        return buffer.append(" from “").append(Citations.getIdentifier(standard)).append("”]").toString();
     }
 }
