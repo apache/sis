@@ -33,6 +33,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.metadata.MetadataUtilitiesTest.class,
     org.apache.sis.metadata.iso.citation.DefaultCitationDateTest.class,
     org.apache.sis.metadata.iso.citation.DefaultCitationTest.class,
+    org.apache.sis.metadata.iso.quality.AbstractElementTest.class,
 
     // Classes using Java reflection.
     org.apache.sis.metadata.PropertyInformationTest.class,
@@ -41,8 +42,11 @@ import org.junit.BeforeClass;
     org.apache.sis.metadata.TypeMapTest.class,
     org.apache.sis.metadata.InformationMapTest.class,
     org.apache.sis.metadata.ValueMapTest.class,
+    org.apache.sis.metadata.MetadataTreeChildrenTest.class,
+    org.apache.sis.metadata.MetadataTreeNodeTest.class,
     org.apache.sis.metadata.MetadataStandardTest.class,
-    org.apache.sis.metadata.PrunerTest.class
+    org.apache.sis.metadata.PrunerTest.class,
+    org.apache.sis.metadata.iso.AllMetadataTest.class
 })
 public final strictfp class MetadataTestSuite extends TestSuite {
     /**

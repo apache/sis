@@ -451,6 +451,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int UnmodifiableAffineTransform = 23;
 
         /**
+         * The cell at column “{1}” of row “{0}” is unmodifiable.
+         */
+        public static final int UnmodifiableCellValue_2 = 89;
+
+        /**
          * This geometry is unmodifiable.
          */
         public static final int UnmodifiableGeometry = 24;

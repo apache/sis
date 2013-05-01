@@ -218,6 +218,8 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
             c = cast(value, type);
         } else if (isNullOrEmpty(newValue)) {
             return;
+        } else {
+            property = code;
         }
         value = writeSet(newValue, c, type);
     }
@@ -343,6 +345,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
     public void setDataset(final String newValue) {
         checkWritePermission();
         if (newValue != null || property == DATASET) {
+            property = DATASET;
             value = newValue;
         }
     }
@@ -370,6 +373,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
     public void setOther(final String newValue) {
         checkWritePermission();
         if (newValue != null || property == OTHER) {
+            property = OTHER;
             value = newValue;
         }
     }

@@ -64,6 +64,11 @@
  * except at XML marshalling time (for ISO 19139 compliance).
  * See {@link org.apache.sis.xml.IdentifierMap} for more information.
  *
+ * {@section Automatic properties}
+ * Some properties provide default value based on the value of other properties.
+ * See the <a href="../doc-files/auto-properties.html">list of automatic properties</a>
+ * page for more information.
+ *
  * {@section Null values, nil objects and collections}
  * All constructors (except the <cite>copy constructors</cite>) and setter methods accept {@code null} arguments.
  * A null argument value means that the metadata element can not be provided, and the reason for that is unspecified.

@@ -17,6 +17,7 @@
 package org.apache.sis.util.collection;
 
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.List;
 import java.util.Locale;
@@ -27,10 +28,13 @@ import java.text.ParsePosition;
 import java.text.ParseException;
 import java.util.regex.Matcher;
 import net.jcip.annotations.NotThreadSafe;
+import org.opengis.util.CodeList;
+import org.opengis.util.InternationalString;
 import org.apache.sis.io.LineAppender;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.io.TabularFormat;
 import org.apache.sis.io.CompoundFormat;
+import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
@@ -581,6 +585,12 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
                     return;
                 }
                 text = format.format(value);
+            } else if (value instanceof InternationalString) {
+                text = ((InternationalString) value).toString(locale);
+            } else if (value instanceof CodeList<?>) {
+                text = Types.getCodeTitle((CodeList<?>) value).toString(locale);
+            } else if (value instanceof Enum<?>) {
+                text = CharSequences.upperCaseToSentence(((Enum<?>) value).name());
             } else {
                 text = String.valueOf(value);
             }
@@ -626,11 +636,13 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
             if (level >= isLast.length) {
                 isLast = Arrays.copyOf(isLast, level*2);
             }
-            final List<? extends TreeTable.Node> children = node.getChildren();
-            final int count = children.size();
-            for (int i=0; i<count; i++) {
-                isLast[level] = (i == count-1);
-                format(children.get(i), level+1);
+            final Iterator<? extends TreeTable.Node> it = node.getChildren().iterator();
+            boolean hasNext = it.hasNext();
+            while (hasNext) {
+                final TreeTable.Node child = it.next();
+                hasNext = it.hasNext();
+                isLast[level] = !hasNext; // Must be set before the call to 'format' below.
+                format(child, level+1);
             }
         }
     }
