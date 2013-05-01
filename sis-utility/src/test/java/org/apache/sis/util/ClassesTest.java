@@ -43,6 +43,7 @@ import java.io.ObjectStreamException;
 import java.io.InvalidObjectException;
 import java.io.NotSerializableException;
 import java.io.Serializable;
+import java.awt.geom.Point2D;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.GeographicCRS;
@@ -223,5 +224,37 @@ public final strictfp class ClassesTest extends TestCase {
         public void setter1(Set<         String> dummy) {}
         public void setter2(Set<? extends Short> dummy) {}
         public void setter3(Set<? super  Double> dummy) {}
+    }
+
+    /**
+     * Tests the {@link Classes#getShortName(Class)}, in particular the example values
+     * given in the javadoc.
+     */
+    @Test
+    public void testGetShortName() {
+        assertEquals("java.lang.String", String.class.getName());
+        assertEquals("String",           String.class.getSimpleName());
+        assertEquals("java.lang.String", String.class.getCanonicalName());
+        assertEquals("String",           getShortName(String.class));
+
+        assertEquals("[D",       double[].class.getName());
+        assertEquals("double[]", double[].class.getSimpleName());
+        assertEquals("double[]", double[].class.getCanonicalName());
+        assertEquals("double[]", getShortName(double[].class));
+
+        assertEquals("java.awt.geom.Point2D$Double", Point2D.Double.class.getName());
+        assertEquals("Double",                       Point2D.Double.class.getSimpleName());
+        assertEquals("java.awt.geom.Point2D.Double", Point2D.Double.class.getCanonicalName());
+        assertEquals("Point2D.Double",               getShortName(Point2D.Double.class));
+
+        final Class<?> anonymous = new Comparable<Object>() {
+            @Override public int compareTo(final Object o) {
+                return 0; // Not the purpose of this test.
+            }
+        }.getClass();
+        assertTrue(anonymous.getName().startsWith("org.apache.sis.util.ClassesTest$"));
+        assertEquals("",       anonymous.getSimpleName());
+        assertEquals(null,     anonymous.getCanonicalName());
+        assertEquals("Object", getShortName(anonymous));
     }
 }

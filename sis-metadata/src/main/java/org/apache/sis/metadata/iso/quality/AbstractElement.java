@@ -17,10 +17,10 @@
 package org.apache.sis.metadata.iso.quality;
 
 import java.util.Date;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.AbstractList;
+import java.io.Serializable;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -38,7 +38,11 @@ import org.opengis.metadata.quality.LogicalConsistency;
 import org.opengis.metadata.quality.EvaluationMethodType;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.resources.Errors;
+
+import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
+import static org.apache.sis.internal.jaxb.MarshalContext.isMarshalling;
 
 
 /**
@@ -107,10 +111,171 @@ public class AbstractElement extends ISOMetadata implements Element {
     private Citation evaluationProcedure;
 
     /**
-     * Start time ({@code date1}) and end time ({@code date2}) on which a data quality measure
-     * was applied. Value is {@link Long#MIN_VALUE} if this information is not available.
+     * Start time ({@code date1}) and end time ({@code date2}) on which a data quality measure was applied.
      */
-    private long date1, date2;
+    private Dates dates;
+
+    /**
+     * The start and end times as a list of O, 1 or 2 elements.
+     */
+    private static final class Dates extends AbstractList<Date>
+            implements CheckedContainer<Date>, Cloneable, Serializable
+    {
+        /**
+         * For cross-version compatibility.
+         */
+        private static final long serialVersionUID = 1210175223467194009L;
+
+        /**
+         * Start time ({@code date1}) and end time ({@code date2}) on which a data quality measure
+         * was applied. Value is {@link Long#MIN_VALUE} if this information is not available.
+         */
+        private long date1, date2;
+
+        /**
+         * Creates a new list initialized with no dates.
+         */
+        Dates() {
+            clear();
+        }
+
+        /**
+         * Returns the type of elements in this list.
+         * @return
+         */
+        @Override
+        public Class<Date> getElementType() {
+            return Date.class;
+        }
+
+        /**
+         * Removes all dates in this list.
+         */
+        @Override
+        public void clear() {
+            date1 = Long.MIN_VALUE;
+            date2 = Long.MIN_VALUE;
+        }
+
+        /**
+         * Returns the number of elements in this list.
+         */
+        @Override
+        public int size() {
+            if (date2 != Long.MIN_VALUE) return 2;
+            if (date1 != Long.MIN_VALUE) return 1;
+            return 0;
+        }
+
+        /**
+         * Returns the value at the given index.
+         */
+        @Override
+        @SuppressWarnings("fallthrough")
+        public Date get(final int index) {
+            long date = date1;
+            switch (index) {
+                case 1:  date = date2; // Fall through
+                case 0:  if (date != Long.MIN_VALUE) return new Date(date); // else fallthrough.
+                default: throw new IndexOutOfBoundsException(Errors.format(Errors.Keys.IndexOutOfBounds_1, index));
+            }
+        }
+
+        /**
+         * Sets the value at the given index.
+         * Null values are not allowed.
+         */
+        @Override
+        public Date set(final int index, final Date value) {
+            final long date = value.getTime();
+            final Date previous = get(index);
+            switch (index) {
+                case 0: date1 = date; break;
+                case 1: date2 = date; break;
+            }
+            modCount++;
+            return previous;
+        }
+
+        /**
+         * Removes the value at the given index.
+         */
+        @Override
+        @SuppressWarnings("fallthrough")
+        public Date remove(final int index) {
+            final Date previous = get(index);
+            switch (index) {
+                case 0: date1 = date2; // Fallthrough
+                case 1: date2 = Long.MIN_VALUE; break;
+            }
+            modCount++;
+            return previous;
+        }
+
+        /**
+         * Adds a date at the given position.
+         * Null values are not allowed.
+         */
+        @Override
+        public void add(final int index, final Date value) {
+            final long date = value.getTime();
+            if (date2 == Long.MIN_VALUE) {
+                switch (index) {
+                    case 0: {
+                        date2 = date1;
+                        date1 = date;
+                        modCount++;
+                        return;
+                    }
+                    case 1: {
+                        if (date1 == Long.MIN_VALUE) {
+                            break; // Exception will be thrown below.
+                        }
+                        date2 = date;
+                        modCount++;
+                        return;
+                    }
+                }
+            }
+            throw new IndexOutOfBoundsException(Errors.format(Errors.Keys.IndexOutOfBounds_1, index));
+        }
+
+        /**
+         * Adds all content from the given collection into this collection.
+         */
+        @Override
+        @SuppressWarnings("fallthrough")
+        public boolean addAll(final Collection<? extends Date> dates) {
+            final int c = modCount;
+            if (dates != null) {
+                final Iterator<? extends Date> it = dates.iterator();
+                switch (size()) { // Fallthrough everywhere.
+                    case 0:  if (!it.hasNext()) break;
+                             date1 = it.next().getTime();
+                             modCount++;
+                    case 1:  if (!it.hasNext()) break;
+                             date2 = it.next().getTime();
+                             modCount++;
+                    default: if (!it.hasNext()) break;
+                             throw new IllegalArgumentException(Errors.format(
+                                     Errors.Keys.ExcessiveArgumentSize_3, "dates", 2, dates.size()));
+                }
+            }
+            return modCount != c;
+        }
+
+        /**
+         * Returns a clone of this list.
+         */
+        @Override
+        public Object clone() {
+            try {
+                return super.clone();
+            } catch (CloneNotSupportedException e) {
+                throw new AssertionError(e);
+            }
+        }
+    }
 
     /**
      * Value (or set of values) obtained from applying a data quality measure or the out
@@ -123,8 +288,6 @@ public class AbstractElement extends ISOMetadata implements Element {
      * Constructs an initially empty element.
      */
     public AbstractElement() {
-        date1 = Long.MIN_VALUE;
-        date2 = Long.MIN_VALUE;
     }
 
     /**
@@ -331,15 +494,13 @@ public class AbstractElement extends ISOMetadata implements Element {
     @Override
     @XmlElement(name = "dateTime")
     public Collection<Date> getDates() {
-        if (date1 == Long.MIN_VALUE) {
-            return Collections.emptyList();
+        if (isMarshalling()) {
+            return isNullOrEmpty(dates) ? null : dates;
         }
-        if (date2 == Long.MIN_VALUE) {
-            return Collections.singleton(new Date(date1));
+        if (dates == null) {
+            dates = new Dates();
         }
-        return Arrays.asList(
-            new Date[] {new Date(date1), new Date(date2)}
-        );
+        return dates;
     }
 
     /**
@@ -350,26 +511,23 @@ public class AbstractElement extends ISOMetadata implements Element {
      */
     public void setDates(final Collection<? extends Date> newValues) {
         checkWritePermission();
-        writeDates(newValues);
+        if (newValues != dates) { // Mandatory check for avoiding the call to 'dates.clear()'.
+            writeDates(newValues);
+        }
     }
 
     /**
      * Implementation of {@link #setDates(Collection)}.
      */
     private void writeDates(final Collection<? extends Date> newValues) {
-        date1 = date2 = Long.MIN_VALUE;
-        if (newValues != null) {
-            final Iterator<? extends Date> it = newValues.iterator();
-            if (it.hasNext()) {
-                date1 = it.next().getTime();
-                if (it.hasNext()) {
-                    date2 = it.next().getTime();
-                    if (it.hasNext()) {
-                        throw new IllegalArgumentException(Errors.format(
-                                Errors.Keys.ExcessiveArgumentSize_3, "dates", 2, newValues.size()));
-                    }
-                }
+        if (isNullOrEmpty(newValues)) {
+            dates = null;
+        } else {
+            if (dates == null) {
+                dates = new Dates();
             }
+            dates.clear();
+            dates.addAll(newValues);
         }
     }
 

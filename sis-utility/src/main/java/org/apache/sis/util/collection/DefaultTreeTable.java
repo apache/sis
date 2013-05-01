@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.LinkedHashMap;
+import java.util.Collection;
 import java.util.Collections;
 import java.io.Serializable;
 import net.jcip.annotations.NotThreadSafe;
@@ -286,7 +287,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
 
     /**
      * Returns a string representation of this tree table.
-     * The default implementation performs the same work than {@link TreeTables#toString(TreeTable)}.
+     * The current implementation uses a shared instance of {@link TreeTableFormat}.
      * This is okay for debugging or occasional usages. However for more extensive usages,
      * developers are encouraged to create and configure their own {@link TreeTableFormat}
      * instance.
@@ -502,9 +503,27 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
         }
 
         /**
-         * Returns the node children. This list is modifiable and updates automatically the
-         * {@linkplain #getParent() parent} reference of any {@code Node} instance added to
-         * ore removed from this list.
+         * Returns {@code true} if this node can not have any children. The default implementation
+         * unconditionally returns {@code false} even if the list of children is empty, because the
+         * list is allowed to grow at any time.
+         *
+         * <p>Subclasses can override this method if they can determine which nodes are leaves.
+         * In the current implementation, the return value shall be stable (i.e. a node can not
+         * alternate between leaf and non-leaf state). However this restriction may be relaxed
+         * in a future SIS version.</p>
+         */
+        @Override
+        public boolean isLeaf() {
+            return false;
+        }
+
+        /**
+         * Returns the children of this node. For non-leaf nodes, the list is modifiable and will
+         * automatically updates the {@linkplain #getParent() parent} reference of any {@code Node}
+         * instance added to or removed from the list.
+         *
+         * <p>For leaf nodes, this method returns an unmodifiable
+         * {@linkplain Collections#emptyList() empty list}.</p>
          */
         /* NOTE: If a future version removes the "final" keyword, then search for calls to
          * this method where the return value is casted to TreeNodeList. Any unconditional
@@ -513,7 +532,11 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
         @Override
         public final List<TreeTable.Node> getChildren() {
             if (children == null) {
-                children = new Children(this);
+                if (isLeaf()) {
+                    children = Collections.emptyList();
+                } else {
+                    children = new Children(this);
+                }
             }
             return children;
         }
@@ -568,7 +591,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
          * @see #isEditable(TableColumn)
          */
         @Override
-        public <V> void setValue(final TableColumn<V> column, final V value) {
+        public <V> void setValue(final TableColumn<V> column, final V value) throws IllegalArgumentException {
             ArgumentChecks.ensureNonNull("column", column);
             final Integer index = columnIndices.get(column);
             if (index == null) {
@@ -734,7 +757,10 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
             }
             String name = getClass().getSimpleName();
             if (parent != null) {
-                name = name + '-' + parent.getChildren().indexOf(this);
+                final Collection<TreeTable.Node> children = parent.getChildren();
+                if (children instanceof List<?>) {
+                    name = name + '-' + ((List<TreeTable.Node>) children).indexOf(this);
+                }
             }
             return name;
         }

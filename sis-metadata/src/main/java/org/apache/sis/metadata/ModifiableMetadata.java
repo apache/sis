@@ -28,9 +28,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.CheckedHashSet;
 import org.apache.sis.internal.util.CheckedArrayList;
 
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
-import static org.apache.sis.util.collection.Containers.hashMapCapacity;
 import static org.apache.sis.internal.jaxb.MarshalContext.isMarshalling;
 
 
@@ -84,6 +82,12 @@ import static org.apache.sis.internal.jaxb.MarshalContext.isMarshalling;
  */
 @ThreadSafe
 public abstract class ModifiableMetadata extends AbstractMetadata implements Cloneable {
+    /**
+     * Initial capacity of lists and sets. We use a small value because those
+     * collections will typically contain few elements (often just a singleton).
+     */
+    private static final int INITIAL_CAPACITY = 4;
+
     /**
      * A null implementation for the {@link #FREEZING} constant.
      */
@@ -266,7 +270,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
                 if (target != null) {
                     target.clear();
                 } else {
-                    target = new MutableList<E>(elementType, source.size());
+                    target = new CheckedArrayList<E>(elementType, source.size());
                 }
                 target.addAll(source);
             }
@@ -314,7 +318,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
                 if (target != null) {
                     target.clear();
                 } else {
-                    target = new MutableSet<E>(elementType, source.size());
+                    target = new CheckedHashSet<E>(elementType, source.size());
                 }
                 target.addAll(source);
             }
@@ -379,9 +383,9 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
                 } else {
                     final int capacity = source.size();
                     if (useSet(elementType)) {
-                        target = new MutableSet<E>(elementType, capacity);
+                        target = new CheckedHashSet<E>(elementType, capacity);
                     } else {
-                        target = new MutableList<E>(elementType, capacity);
+                        target = new CheckedArrayList<E>(elementType, capacity);
                     }
                 }
                 target.addAll(source);
@@ -405,7 +409,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
         if (isNullOrEmpty(source)) {
             return null;
         }
-        final List<E> target = new MutableList<E>(elementType, source.size());
+        final List<E> target = new CheckedArrayList<E>(elementType, source.size());
         target.addAll(source);
         return target;
     }
@@ -425,7 +429,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
         if (isNullOrEmpty(source)) {
             return null;
         }
-        final Set<E> target = new MutableSet<E>(elementType, source.size());
+        final Set<E> target = new CheckedHashSet<E>(elementType, source.size());
         target.addAll(source);
         return target;
     }
@@ -451,9 +455,9 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
         final Collection<E> target;
         final int capacity = source.size();
         if (useSet(elementType)) {
-            target = new MutableSet<E>(elementType, capacity);
+            target = new CheckedHashSet<E>(elementType, capacity);
         } else {
-            target = new MutableList<E>(elementType, capacity);
+            target = new CheckedArrayList<E>(elementType, capacity);
         }
         target.addAll(source);
         return target;
@@ -478,9 +482,9 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
         }
         final Collection<E> collection;
         if (useSet(elementType)) {
-            collection = new MutableSet<E>(elementType);
+            collection = new CheckedHashSet<E>(elementType, INITIAL_CAPACITY);
         } else {
-            collection = new MutableList<E>(elementType);
+            collection = new CheckedArrayList<E>(elementType, INITIAL_CAPACITY);
         }
         collection.add(value);
         return collection;
@@ -503,7 +507,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
             return null;
         }
         if (isModifiable()) {
-            return new MutableList<E>(elementType);
+            return new CheckedArrayList<E>(elementType, INITIAL_CAPACITY);
         }
         return Collections.emptyList();
     }
@@ -525,7 +529,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
             return null;
         }
         if (isModifiable()) {
-            return new MutableSet<E>(elementType);
+            return new CheckedHashSet<E>(elementType, INITIAL_CAPACITY);
         }
         return Collections.emptySet();
     }
@@ -558,68 +562,16 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
         final boolean isModifiable = isModifiable();
         if (useSet(elementType)) {
             if (isModifiable) {
-                return new MutableSet<E>(elementType);
+                return new CheckedHashSet<E>(elementType, INITIAL_CAPACITY);
             } else {
                 return Collections.emptySet();
             }
         } else {
             if (isModifiable) {
-                return new MutableList<E>(elementType);
+                return new CheckedArrayList<E>(elementType, INITIAL_CAPACITY);
             } else {
                 return Collections.emptyList();
             }
-        }
-    }
-
-    /**
-     * A set checking element validity and write permission before to change any value.
-     */
-    private final class MutableSet<E> extends CheckedHashSet<E> {
-        private static final long serialVersionUID = 3032602282358733056L;
-
-        MutableSet(Class<E> type) {
-            super(type, 4); // Use a small capacity because we typically have few elements.
-        }
-
-        MutableSet(Class<E> type, int capacity) {
-            super(type, hashMapCapacity(capacity));
-        }
-
-        @Override
-        protected void checkWritePermission() throws UnsupportedOperationException {
-            ModifiableMetadata.this.checkWritePermission();
-        }
-
-        @Override
-        protected void ensureValid(final E element) throws IllegalArgumentException {
-            ensureNonNull("element", element);
-            super.ensureValid(element);
-        }
-    }
-
-    /**
-     * A list checking element validity and write permission before to change any value.
-     */
-    private final class MutableList<E> extends CheckedArrayList<E> {
-        private static final long serialVersionUID = 5800381255701183058L;
-
-        MutableList(Class<E> type) {
-            super(type, 4); // Use a small capacity because we typically have few elements.
-        }
-
-        MutableList(Class<E> type, int capacity) {
-            super(type, capacity);
-        }
-
-        @Override
-        protected void checkWritePermission() throws UnsupportedOperationException {
-            ModifiableMetadata.this.checkWritePermission();
-        }
-
-        @Override
-        protected void ensureValid(final E element) throws IllegalArgumentException {
-            ensureNonNull("element", element);
-            super.ensureValid(element);
         }
     }
 

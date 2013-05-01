@@ -42,13 +42,14 @@ import static org.apache.sis.util.collection.TableColumn.*;
 })
 public final strictfp class TreeTablesTest extends TestCase {
     /**
-     * The example documented in the {@code TreeTable} javadoc.
+     * The {@code concatenateSingletons(…)} example documented in the {@link TreeTables} class javadoc.
+     * This simple code assumes that the children collection in the given node is a {@link List}.
      *
      * @param  node The root of the node to simplify.
      * @return The root of the simplified tree. May be the given {@code node} or a child.
      */
     public static TreeTable.Node concatenateSingletons(final TreeTable.Node node) {
-        final List<TreeTable.Node> children = node.getChildren();
+        final List<TreeTable.Node> children = (List<TreeTable.Node>) node.getChildren();
         final int size = children.size();
         for (int i=0; i<size; i++) {
             children.set(i, concatenateSingletons(children.get(i)));
@@ -115,10 +116,10 @@ public final strictfp class TreeTablesTest extends TestCase {
     }
 
     /**
-     * Tests the {@link TreeTables#valuesAsStrings(TreeTable, Locale)} method.
+     * Tests the {@link TreeTables#replaceCharSequences(TreeTable, Locale)} method.
      */
     @Test
-    public void testValuesAsStrings() {
+    public void testReplaceCharSequences() {
         final TreeTable table = new DefaultTreeTable(NAME, VALUE_AS_NUMBER);
         final TreeTable.Node root   = table .getRoot();
         final TreeTable.Node parent = root  .newChild();
@@ -132,11 +133,11 @@ public final strictfp class TreeTablesTest extends TestCase {
         parent.setValue(VALUE_AS_NUMBER, 4);
 
         final String asString = table.toString();
-        assertEquals(3, valuesAsStrings(table, null));
-        assertInstanceOf("valuesAsStrings:", String.class, root  .getValue(NAME));
-        assertInstanceOf("valuesAsStrings:", String.class, parent.getValue(NAME));
-        assertInstanceOf("valuesAsStrings:", String.class, child1.getValue(NAME));
-        assertInstanceOf("valuesAsStrings:", String.class, child2.getValue(NAME));
+        assertEquals(3, replaceCharSequences(table, null));
+        assertInstanceOf("replaceCharSequences:", String.class, root  .getValue(NAME));
+        assertInstanceOf("replaceCharSequences:", String.class, parent.getValue(NAME));
+        assertInstanceOf("replaceCharSequences:", String.class, child1.getValue(NAME));
+        assertInstanceOf("replaceCharSequences:", String.class, child2.getValue(NAME));
         assertSame("Expected unique instance of String.", child1.getValue(NAME), child2.getValue(NAME));
         assertEquals("String representation shall be the same.", asString, table.toString());
     }
