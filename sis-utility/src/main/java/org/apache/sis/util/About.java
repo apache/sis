@@ -454,7 +454,7 @@ pathTree:   for (int j=0; ; j++) {
                 }
             }
         }
-        TreeTables.valuesAsStrings(table, locale);
+        TreeTables.replaceCharSequences(table, locale);
         return table;
     }
 
@@ -600,15 +600,17 @@ pathTree:   for (int j=0; ; j++) {
      * node but lost all value of the parent node. For this reason, we perform the merge only if the
      * parent has no value.
      *
-     * <p>See the "<cite>Reduce the depth of a tree</cite>" example in {@link TreeTables}
-     * for more information.</p>
+     * <p>See the "<cite>Reduce the depth of a tree</cite>" example in {@link TreeTables} for more information.
+     * In particular, note that this implementation assumes that children collections are {@link List} (this is
+     * guaranteed for {@link DefaultTreeTable.Node} implementations).</p>
      *
      * @param  node The root of the node to simplify.
      * @param  skip {@code true} for disabling concatenation of root node.
      * @return The root of the simplified tree. May be the given {@code node} or a child.
      */
     private static TreeTable.Node concatenateSingletons(final TreeTable.Node node, final boolean skip) {
-        final List<TreeTable.Node> children = node.getChildren();
+        // DefaultTreeTable.Node instances are known to handle their children in a List.
+        final List<TreeTable.Node> children = (List<TreeTable.Node>) node.getChildren();
         final int size = children.size();
         for (int i=0; i<size; i++) {
             children.set(i, concatenateSingletons(children.get(i), false));

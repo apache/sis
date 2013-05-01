@@ -1121,7 +1121,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
                 }
                 int upper = lower;
                 boolean forward = false;
-                do { // Do be run as long as we need to remove more characters.
+                do { // To be run as long as we need to remove more characters.
                     int nc=0, type=UNASSIGNED;
                     forward = !forward;
 searchWordBreak:    while (true) {
@@ -1173,6 +1173,47 @@ searchWordBreak:    while (true) {
             }
         }
         return text;
+    }
+
+    /**
+     * Given a string in upper cases (typically a Java constant), returns a string formatted
+     * like an English sentence. This heuristic method performs the following steps:
+     *
+     * <ol>
+     *   <li>Replace all occurrences of {@code '_'} by spaces.</li>
+     *   <li>Converts all letters except the first one to lower case letters using
+     *       {@link Character#toLowerCase(int)}. Note that this method does not use
+     *       the {@link String#toLowerCase()} method. Consequently the system locale
+     *       is ignored. This method behaves as if the conversion were done in the
+     *       {@linkplain java.util.Locale#ROOT root} locale.</li>
+     * </ol>
+     *
+     * <p>Note that those heuristic rules may be modified in future SIS versions,
+     * depending on the practical experience gained.</p>
+     *
+     * @param  identifier The name of a Java constant, or {@code null}.
+     * @return The identifier like an English sentence, or {@code null}
+     *         if the given {@code identifier} argument was null.
+     */
+    public static CharSequence upperCaseToSentence(final CharSequence identifier) {
+        if (identifier == null) {
+            return null;
+        }
+        final StringBuilder buffer = new StringBuilder(identifier.length());
+        final int length = identifier.length();
+        for (int i=0; i<length;) {
+            int c = Character.codePointAt(identifier, i);
+            if (i != 0) {
+                if (c == '_') {
+                    c = ' ';
+                } else {
+                    c = Character.toLowerCase(c);
+                }
+            }
+            buffer.appendCodePoint(c);
+            i += Character.charCount(c);
+        }
+        return buffer;
     }
 
     /**

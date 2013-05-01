@@ -399,4 +399,14 @@ public final strictfp class PropertyAccessorTest extends TestCase {
         hashCode = accessor.hashCode(instance);
         assertEquals("Metadata with two values.", baseCode + title.hashCode() + Arrays.asList(alternateTitle).hashCode(), hashCode);
     }
+
+    /**
+     * Tests {@link PropertyAccessor#toString()}. The {@code toString()}
+     * method is only for debugging purpose, but we test it anyway.
+     */
+    @Test
+    public void testToString() {
+        final PropertyAccessor accessor = createPropertyAccessor();
+        assertEquals("PropertyAccessor[13 getters & 13 setters in DefaultCitation:Citation from “ISO 19115”]", accessor.toString());
+    }
 }

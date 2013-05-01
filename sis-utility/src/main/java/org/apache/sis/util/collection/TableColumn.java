@@ -108,12 +108,31 @@ public class TableColumn<V> implements CheckedContainer<V> {
             CharSequence.class, Vocabulary.Keys.Name);
 
     /**
+     * Frequently-used constant for a column of object identifiers.
+     * The column {@linkplain #getHeader() header} is "<cite>Identifier</cite>" (eventually localized)
+     * and the column elements are instances of {@link String}.
+     */
+    public static final TableColumn<String> IDENTIFIER = new Constant<String>("IDENTIFIER",
+            String.class, Vocabulary.Keys.Identifier);
+
+    /**
      * Frequently-used constant for a column of object types.
      * The column {@linkplain #getHeader() header} is "<cite>Type</cite>" (eventually localized).
      */
     @SuppressWarnings("unchecked")
     public static final TableColumn<Class<?>> TYPE = new Constant<Class<?>>("TYPE",
             (Class) Class.class, Vocabulary.Keys.Type);
+
+    /**
+     * Frequently-used constant for a column of object values.
+     * The column {@linkplain #getHeader() header} is "<cite>Value</cite>" (eventually localized) and
+     * the column elements can be instance of any kind of objects.
+     *
+     * @see #VALUE_AS_TEXT
+     * @see #VALUE_AS_NUMBER
+     */
+    public static final TableColumn<Object> VALUE = new Constant<Object>("VALUE",
+            Object.class, Vocabulary.Keys.Value);
 
     /**
      * Frequently-used constant for a column of object textual values.

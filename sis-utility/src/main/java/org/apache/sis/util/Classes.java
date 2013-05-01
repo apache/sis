@@ -61,7 +61,7 @@ public final class Classes extends Static {
     private static final Class<?>[] EMPTY_ARRAY = new Class<?>[0];
 
     /**
-     * Methods to be rejected by {@link #isGetter(Method)}. They are mostly methods inherited
+     * Methods to be rejected by {@link #isPossibleGetter(Method)}. They are mostly methods inherited
      * from {@link Object}. Only no-argument methods having a non-void return value need to be
      * declared in this list.
      *
@@ -560,20 +560,55 @@ cmp:    for (final Class<?> c : c1) {
     }
 
     /**
-     * Returns a short class name for the specified class. This method will
-     * omit the package name.  For example, it will return {@code "String"} instead
-     * of {@code "java.lang.String"} for a {@link String} object. It will also name
-     * array according Java language usage,  for example {@code "double[]"} instead
-     * of {@code "[D"}.
+     * Returns the name of the given class without package name, but including the names of enclosing
+     * classes if any. This method is similar to the {@link Class#getSimpleName()} method, except that
+     * if the given class is an inner class, then the returned value is prefixed with the outer class
+     * name. An other difference is that if the given class is local or anonymous, then this method
+     * returns the name of the parent class.
      *
-     * <p>This method is similar to the {@link Class#getSimpleName()} method, except that
-     * if the given class is an inner class, then the returned value is prefixed with the
-     * outer class name. For example this method returns {@code "Point2D.Double"} instead
-     * of {@code "Double"}.</p>
+     * <p>The following table compares the various kind of names for some examples:</p>
+     *
+     * <table class="sis">
+     *   <tr>
+     *     <th>Class</th>
+     *     <th>{@code getName()}</th>
+     *     <th>{@code getSimpleName()}</th>
+     *     <th>{@code getCanonicalName()}</th>
+     *     <th>{@code getShortName()}</th>
+     *   </tr>
+     *   <tr>
+     *     <td>{@link String}</td>
+     *     <td>{@code "java.lang.String"}</td>
+     *     <td>{@code "String"}</td>
+     *     <td>{@code "java.lang.String"}</td>
+     *     <td>{@code "String"}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@link double[]}</td>
+     *     <td>{@code "[D"}</td>
+     *     <td>{@code "double[]"}</td>
+     *     <td>{@code "double[]"}</td>
+     *     <td>{@code "double[]"}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@link java.awt.geom.Point2D.Double}</td>
+     *     <td>{@code "java.awt.geom.Point2D$Double"}</td>
+     *     <td>{@code "Double"}</td>
+     *     <td>{@code "java.awt.geom.Point2D.Double"}</td>
+     *     <td>{@code "Point2D.Double"}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>Anonymous {@link Comparable}</td>
+     *     <td>{@code "com.mycompany.myclass$1"}</td>
+     *     <td>{@code ""}</td>
+     *     <td>{@code null}</td>
+     *     <td>{@code "Object"}</td>
+     *   </tr>
+     * </table>
      *
      * @param  classe The object class (may be {@code null}).
-     * @return A short class name for the specified object, or {@code "<*>"} if the
-     *         given class was null.
+     * @return The simple name with outer class name (if any) of the first non-anonymous
+     *         class in the hierarchy, or {@code "<*>"} if the given class is null.
      *
      * @see #getShortClassName(Object)
      * @see Class#getSimpleName()
@@ -594,12 +629,14 @@ cmp:    for (final Class<?> c : c1) {
     }
 
     /**
-     * Returns a short class name for the specified object. This method will
-     * omit the package name. For example, it will return {@code "String"}
-     * instead of {@code "java.lang.String"} for a {@link String} object.
+     * Returns the class name of the given object without package name, but including the enclosing class names
+     * if any. Invoking this method is equivalent to invoking {@code getShortName(object.getClass())} except for
+     * {@code null} value. See {@link #getShortName(Class)} for more information on the class name returned by
+     * this method.
      *
      * @param  object The object (may be {@code null}).
-     * @return A short class name for the specified object.
+     * @return The simple class name with outer class name (if any) of the first non-anonymous
+     *         class in the hierarchy, or {@code "<*>"} if the given object is null.
      *
      * @see #getShortName(Class)
      */
