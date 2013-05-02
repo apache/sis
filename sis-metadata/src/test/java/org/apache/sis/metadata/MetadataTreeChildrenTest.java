@@ -280,6 +280,36 @@ public final strictfp class MetadataTreeChildrenTest extends TestCase {
         assertTrue(citation.getAlternateTitles().isEmpty());
     }
 
+    /**
+     * Tests the children list with the {@link ValueExistencePolicy#ALL}.
+     */
+    @Test
+    @DependsOnMethod("testReadOnlyWithMultiOccurrences")
+    public void testShowAll() {
+        final DefaultCitation      citation = metadataWithMultiOccurrences();
+        final MetadataTreeChildren children = create(citation, ValueExistencePolicy.ALL);
+        final String[] expected = {
+            "Some title",
+            "First alternate title",
+            "Second alternate title",
+            null, // dates (collection)
+            "Some edition",
+            null, // edition date
+            null, // identifiers (collection)
+            null, // cited responsibly parties (collection)
+            "PresentationForm[MAP_DIGITAL]",
+            "PresentationForm[MAP_HARDCOPY]",
+            null, // series
+            "Some other details",
+            null, // collective title
+            null, // ISBN
+            null  // ISSN
+        };
+        assertFalse ("isEmpty()", children.isEmpty());
+        assertEquals("size()", expected.length, children.size());
+        assertAllNextEqual(expected, children.iterator());
+    }
+
 
     // ------------------------ Support methods for the above tests ------------------------
 
@@ -291,7 +321,8 @@ public final strictfp class MetadataTreeChildrenTest extends TestCase {
      * because the purpose of this class is not to test {@link MetadataTreeNode}.</p>
      */
     private static String valueOf(final TreeTable.Node node) {
-        return String.valueOf(node.getUserObject());
+        final Object value = node.getUserObject();
+        return (value != null) ? value.toString() : null;
     }
 
     /**
