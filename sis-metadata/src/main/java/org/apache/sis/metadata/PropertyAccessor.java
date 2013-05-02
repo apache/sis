@@ -68,7 +68,7 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  *   <li>The standard properties defined by the GeoAPI (or other standard) interfaces.
  *       Those properties are the only one accessible by most methods in this class,
  *       except {@link #equals(Object, Object, ComparisonMode, boolean)},
- *       {@link #shallowCopy(Object, Object)} and {@link #freeze(Object)}.</li>
+ *       {@link #append(Object, Object)} and {@link #freeze(Object)}.</li>
  *
  *   <li>Extra properties defined by the {@link IdentifiedObject} interface. Those properties
  *       invisible in the ISO 19115 model, but appears in ISO 19139 XML marshalling. So we do
@@ -207,9 +207,9 @@ final class PropertyAccessor {
      * looking for a converter, and also reduce thread contention since it reduces the number
      * of calls to the synchronized {@link ObjectConverters#find(Class, Class)} method.
      *
-     * @see #set(int, Object, Object, boolean)
+     * @see #convert(Object[], Class)
      */
-    private transient volatile ObjectConverter<?,?> converter;
+    private transient volatile ObjectConverter<?,?> lastConverter;
 
     /**
      * The property information, including the name and restrictions on valid values.
@@ -298,7 +298,7 @@ final class PropertyAccessor {
                  * If we found no setter method expecting an argument of the same type than the
                  * argument returned by the GeoAPI method,  try again with the type returned by
                  * the implementation class. It is typically the same type, but sometime it may
-                 * be a subtype.
+                 * be a parent type.
                  *
                  * It is a necessary condition that the type returned by the getter is assignable
                  * to the type expected by the setter.  This contract is required by the 'freeze'
@@ -712,7 +712,7 @@ final class PropertyAccessor {
                     copy = old = null;
                 }
                 final Object[] newValues = new Object[] {value};
-                converter = convert(getter, metadata, old, newValues, elementTypes[index], converter);
+                convert(getter, metadata, old, newValues, elementTypes[index], false);
                 set(setter, metadata, newValues);
                 return copy;
             }
@@ -759,149 +759,172 @@ final class PropertyAccessor {
 
     /**
      * Converts a value to the type required by a setter method.
+     * The values are converted in-place in the {@code newValues} array. We use an array instead
+     * of a single argument and return value because an array will be needed anyway for invoking
+     * the {@link #convert(Object[], Class)} and {@link Method#invoke(Object, Object[])} methods.
+     *
+     * {@section The collection special case}
+     * If the metadata property is a collection, then there is a choice:
+     *
+     * <ul>
+     *   <li>If {@code append} is {@code true}, then the new value (which may itself be a collection)
+     *       is unconditionally added to the previous collection.</li>
+     *   <li>If {@code append} is {@code false} and the new value is <strong>not</strong> a collection,
+     *       then the new value is added to the existing collection. In other words, we behave as a
+     *       <cite>multi-values map</cite> for the properties that allow multi-values.</li>
+     *   <li>Otherwise the new collection replaces the previous collection. All previous values
+     *       are discarded.</li>
+     * </ul>
+     *
+     * Adding new values to the previous collection may or may not change the original metadata
+     * depending on whether those collections are live or not. In Apache SIS implementation,
+     * those collections are live. However this method can be though as if the collections were
+     * not live, since the caller will invoke the setter method with the collection anyway.
      *
      * @param getter      The method to use for fetching the previous value.
-     * @param metadata    The metadata object to query.
+     * @param metadata    The metadata object to query and modify.
      * @param oldValue    The value returned by {@code get(getter, metadata)}, or {@code null} if unknown.
      *                    This parameter is only an optimization for avoiding to invoke the getter method
      *                    twice if the value is already known.
-     * @param newValues   The argument to convert. It must be an array of length 1.
-     *                    The content of this array will be modified in-place.
-     * @param elementType The type required by the setter method.
-     * @param converter   The last converter used, or {@code null} if none.
-     *                    This converter is provided only as a hint and doesn't need to be accurate.
-     * @return The last converter used, or {@code null}.
+     * @param newValues   The argument to convert. The content of this array will be modified in-place.
+     *                    Current implementation requires an array of length 1, however this restriction
+     *                    may be relaxed in a future SIS version if needed.
+     * @param elementType The target type (if singleton) or the type of elements in the collection.
+     * @param append      If {@code true} and the value is a collection, then that collection will be added
+     *                    to any previously existing collection instead of replacing it.
      * @throws ClassCastException if the element of the {@code arguments} array is not of the expected type.
      * @throws BackingStoreException If the implementation threw a checked exception.
      */
-    private static ObjectConverter<?,?> convert(final Method getter, final Object metadata,
-            final Object oldValue, final Object[] newValues, Class<?> elementType,
-            ObjectConverter<?,?> converter) throws ClassCastException, BackingStoreException
+    private void convert(final Method getter, final Object metadata, Object oldValue, final Object[] newValues,
+            Class<?> elementType, final boolean append) throws ClassCastException, BackingStoreException
     {
         assert newValues.length == 1;
         Object newValue = newValues[0];
+        Class<?> targetType = getter.getReturnType();
         if (newValue == null) {
             // Can't test elementType, because it has been converted to the wrapper class.
-            final Class<?> type = getter.getReturnType();
-            if (type.isPrimitive()) {
-                newValues[0] = Numbers.valueOfNil(type);
+            if (targetType.isPrimitive()) {
+                newValues[0] = Numbers.valueOfNil(targetType);
             }
-        } else {
-            Class<?> targetType = getter.getReturnType();
-            if (!Collection.class.isAssignableFrom(targetType)) {
-                /*
-                 * We do not expect a collection. The provided argument should not be a
-                 * collection neither. It should be some class convertible to targetType.
-                 *
-                 * If nevertheless the user provided a collection and this collection contains
-                 * no more than 1 element, then as a convenience we will extract the singleton
-                 * element and process it as if it had been directly provided in argument.
-                 */
-                if (newValue instanceof Collection<?>) {
-                    final Iterator<?> it = ((Collection<?>) newValue).iterator();
-                    if (!it.hasNext()) { // If empty, process like null argument.
-                        newValues[0] = null;
-                        return converter;
-                    }
-                    final Object next = it.next();
-                    if (!it.hasNext()) { // Singleton
-                        newValue = next;
-                    }
-                    // Other cases: let the collection unchanged. It is likely to
-                    // cause an exception later. The message should be appropriate.
+            return;
+        }
+        if (!Collection.class.isAssignableFrom(targetType)) {
+            /*
+             * We do not expect a collection. The provided argument should not be a
+             * collection neither. It should be some class convertible to targetType.
+             *
+             * If nevertheless the user provided a collection and this collection contains
+             * no more than 1 element, then as a convenience we will extract the singleton
+             * element and process it as if it had been directly provided in argument.
+             */
+            if (newValue instanceof Collection<?>) {
+                final Iterator<?> it = ((Collection<?>) newValue).iterator();
+                if (!it.hasNext()) { // If empty, process like null argument.
+                    newValues[0] = null;
+                    return;
                 }
-                // Getter type (targetType) shall be the same than the setter type (elementType).
-                assert elementType == Numbers.primitiveToWrapper(targetType) : elementType;
-                targetType = elementType; // Ensure that we use primitive wrapper.
-            } else {
-                /*
-                 * We expect a collection. Collections are handled in one of the two ways below:
-                 *
-                 *   - If the user gives a collection, the user's collection replaces any
-                 *     previous one. The content of the previous collection is discarded.
-                 *
-                 *   - If the user gives a single value, it will be added to the existing
-                 *     collection (if any). The previous values are not discarded. This
-                 *     allow for incremental filling of a property.
-                 *
-                 * The code below prepares an array of elements to be converted and wraps that
-                 * array in a List (to be converted to a Set after this block if required). It
-                 * is okay to convert the elements after the List creation since the list is a
-                 * wrapper.
-                 */
-                final Collection<?> addTo;
-                final Object[] elements;
-                if (newValue instanceof Collection<?>) {
-                    elements = ((Collection<?>) newValue).toArray();
-                    newValue = Arrays.asList(elements); // Content will be converted later.
-                    addTo = null;
-                } else {
-                    elements = new Object[] {newValue};
-                    newValue = addTo = (Collection<?>) (oldValue != null ? oldValue : get(getter, metadata));
-                    if (addTo == null) {
-                        // No previous collection. Create one.
-                        newValue = Arrays.asList(elements);
-                    } else if (addTo instanceof CheckedContainer<?>) {
+                final Object next = it.next();
+                if (!it.hasNext()) { // Singleton
+                    newValue = next;
+                }
+                // Other cases: let the collection unchanged. It is likely to
+                // cause an exception later. The message should be appropriate.
+            }
+            // Getter type (targetType) shall be the same than the setter type (elementType).
+            assert elementType == Numbers.primitiveToWrapper(targetType) : elementType;
+            targetType = elementType; // Ensure that we use primitive wrapper.
+        } else {
+            /*
+             * We expect a collection. Collections are handled in one of the two ways below:
+             *
+             *   - If the user gives a collection, the user's collection replaces any
+             *     previous one. The content of the previous collection is discarded.
+             *
+             *   - If the user gives a single value, it will be added to the existing
+             *     collection (if any). The previous values are not discarded. This
+             *     allow for incremental filling of a property.
+             *
+             * The code below prepares an array of elements to be converted and wraps that
+             * array in a List (to be converted to a Set after this block if required). It
+             * is okay to convert the elements after the List creation since the list is a
+             * wrapper.
+             */
+            final boolean isCollection = (newValue instanceof Collection<?>);
+            final Object[] elements = isCollection ? ((Collection<?>) newValue).toArray() : new Object[] {newValue};
+            final List<Object> elementList = Arrays.asList(elements); // Converted later (see above comment).
+            newValue = elementList; // Still contains the same values, but now guaranteed to be a collection.
+            Collection<?> addTo = null;
+            if (!isCollection || append) {
+                if (oldValue == null) {
+                    oldValue = get(getter, metadata);
+                }
+                if (oldValue != null) {
+                    addTo = (Collection<?>) oldValue;
+                    if (addTo instanceof CheckedContainer<?>) {
                         // Get the explicitly-specified element type.
                         elementType = ((CheckedContainer<?>) addTo).getElementType();
                     }
-                }
-                if (elementType != null) {
-                    converter = convert(elements, elementType, converter);
-                }
-                /*
-                 * We now have objects of the appropriate type. If we have a singleton to be added
-                 * in an existing collection, add it now. In that case the 'newValue' should refer
-                 * to the 'addTo' collection. We rely on the ModifiableMetadata.writeCollection(…)
-                 * optimization for detecting that the new collection is the same instance than
-                 * the old one so there is nothing to do. We could exit from the method, but let
-                 * it continues in case the user override the 'setFoo(...)' method.
-                 */
-                if (addTo != null) {
-                    /*
-                     * Unsafe addition into a collection. In SIS implementation, the collection is
-                     * actually an instance of CheckedCollection, so the check will be performed at
-                     * runtime. However other implementations could use unchecked collection.
-                     * There is not much we can do...
-                     */
-                    // No @SuppressWarnings because this is a real hole.
-                    ((Collection<Object>) addTo).add(elements[0]);
+                    newValue = addTo;
                 }
             }
+            if (elementType != null) {
+                convert(elements, elementType);
+            }
             /*
-             * If the expected type was not a collection, the conversion of user value happen
-             * here. Otherwise conversion from List to Set (if needed) happen here.
+             * We now have objects of the appropriate type. If we have a singleton to be added
+             * in an existing collection, add it now. In that case the 'newValue' should refer
+             * to the 'addTo' collection. We rely on the ModifiableMetadata.writeCollection(…)
+             * optimization for detecting that the new collection is the same instance than
+             * the old one so there is nothing to do. We could exit from the method, but let
+             * it continues in case the user override the 'setFoo(…)' method.
              */
-            newValues[0] = newValue;
-            converter = convert(newValues, targetType, converter);
+            if (addTo != null) {
+                /*
+                 * Unsafe addition into a collection. In SIS implementation, the collection is
+                 * actually an instance of CheckedCollection, so the check will be performed at
+                 * runtime. However other implementations could use unchecked collection.
+                 * There is not much we can do...
+                 */
+                // No @SuppressWarnings because this is a real hole.
+                ((Collection) addTo).addAll(elementList);
+            }
         }
-        return converter;
+        /*
+         * If the expected type was not a collection, the conversion of user value happen
+         * here. Otherwise conversion from List to Set (if needed) happen here.
+         */
+        newValues[0] = newValue;
+        convert(newValues, targetType);
     }
 
     /**
      * Converts values in the specified array to the given type.
-     * The given converter will be used if suitable, or a new one fetched otherwise.
+     * The array content is modified in-place. This method accepts an array instead than
+     * a single value because the values to convert may be the content of a collection.
      *
      * @param  elements   The array which contains element to convert.
      * @param  targetType The base type of target elements.
-     * @param  converter  The proposed converter, or {@code null}.
-     * @return The last converter used, or {@code null}.
      * @throws ClassCastException If an element can't be converted.
      */
     @SuppressWarnings({"unchecked","rawtypes"})
-    private static ObjectConverter<?,?> convert(final Object[] elements, final Class<?> targetType,
-            ObjectConverter<?,?> converter) throws ClassCastException
-    {
+    private void convert(final Object[] elements, final Class<?> targetType) throws ClassCastException {
+        boolean hasNewConverter = false;
+        ObjectConverter<?,?> converter = null;
         for (int i=0; i<elements.length; i++) {
             final Object value = elements[i];
             if (value != null) {
                 final Class<?> sourceType = value.getClass();
                 if (!targetType.isAssignableFrom(sourceType)) try {
-                    if (converter == null
-                            || !converter.getSourceClass().isAssignableFrom(sourceType)
-                            || !targetType.isAssignableFrom(converter.getTargetClass()))
+                    if (converter == null) {
+                        converter = lastConverter; // Volatile field - read only if needed.
+                    }
+                    // Require the exact same classes, not parent or subclass,
+                    // otherwise the converter could be stricter than necessary.
+                    if (converter == null || converter.getSourceClass() != sourceType
+                                          || converter.getTargetClass() != targetType)
                     {
                         converter = ObjectConverters.find(sourceType, targetType);
+                        hasNewConverter = true;
                     }
                     elements[i] = ((ObjectConverter) converter).convert(value);
                 } catch (UnconvertibleObjectException cause) {
@@ -912,7 +935,9 @@ final class PropertyAccessor {
                 }
             }
         }
-        return converter;
+        if (hasNewConverter) {
+            lastConverter = converter; // Volatile field - store only if needed.
+        }
     }
 
     /**
@@ -1005,27 +1030,26 @@ final class PropertyAccessor {
     }
 
     /**
-     * Copies all non-empty metadata from source to target. The source can be any implementation
+     * Appends all non-empty metadata from source to target. The source can be any implementation
      * of the metadata interface, but the target must be the implementation expected by this class.
      *
      * <p>If the source contains any null or empty properties, then those properties will
-     * <strong>not</strong> overwrite the corresponding properties in the destination metadata.</p>
+     * not overwrite the corresponding properties in the destination metadata.</p>
      *
      * @param  source The metadata to copy.
-     * @param  target The target metadata.
+     * @param  target The target metadata where to append.
      * @return {@code true} in case of success, or {@code false} if at least
      *         one setter method was not found.
      * @throws UnmodifiableMetadataException if the target metadata is unmodifiable.
      * @throws BackingStoreException If the implementation threw a checked exception.
      */
-    public boolean shallowCopy(final Object source, final Object target)
+    public boolean append(final Object source, final Object target)
             throws UnmodifiableMetadataException, BackingStoreException
     {
         // Because this PropertyAccesssor is designed for the target, we must
         // check if the extra methods are suitable for the source object.
-        ObjectConverter<?,?> converter = this.converter;
-        boolean success = true;
         assert type.isInstance(source) : Classes.getClass(source);
+        boolean success = true;
         final Object[] arguments = new Object[1];
         for (int i=0; i<standardCount; i++) {
             final Method getter = getters[i];
@@ -1036,14 +1060,13 @@ final class PropertyAccessor {
                 }
                 final Method setter = setters[i];
                 if (setter != null) {
-                    converter = convert(getter, target, null, arguments, elementTypes[i], converter);
+                    convert(getter, target, null, arguments, elementTypes[i], true);
                     set(setter, target, arguments);
                 } else {
                     success = false;
                 }
             }
         }
-        this.converter = converter;
         return success;
     }
 

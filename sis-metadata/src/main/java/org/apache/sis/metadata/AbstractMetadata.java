@@ -45,7 +45,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * <ul>
  *   <li>{@link #prune()}</li>
- *   <li>{@link #shallowCopy(Object)}</li>
+ *   <li>{@link #append(Object)}</li>
  *   <li>{@link #asMap()} with {@code put} operations</li>
  * </ul>
  *
@@ -154,14 +154,10 @@ public abstract class AbstractMetadata implements LenientComparable {
     }
 
     /**
-     * Copies the values from the specified metadata. The {@code source} metadata must implements
-     * the same metadata interface (defined by the {@linkplain #getStandard() standard}) than this
-     * class, but doesn't need to be the same implementation class.
+     * Appends to this metadata all non-empty values from the specified metadata. The {@code source} metadata
+     * must implements the same metadata interface (defined by the {@linkplain #getStandard() standard}) than
+     * this class, but doesn't need to be the same implementation class.
      * The default implementation performs the copy using Java reflections.
-     *
-     * {@note This method is intended to provide the functionality of a <cite>copy constructor</cite>.
-     * We do not provide copy constructor directly because usage of Java reflection in this context
-     * is unsafe (we could invoke subclass methods before the subclasses construction is completed).}
      *
      * @param  source The metadata to copy values from.
      * @throws ClassCastException if the specified metadata doesn't implements the expected
@@ -170,9 +166,9 @@ public abstract class AbstractMetadata implements LenientComparable {
      *         corresponding to the {@code get*()} methods found in the implemented interface, or
      *         if this instance is not modifiable for some other reason.
      */
-    public void shallowCopy(final Object source) throws ClassCastException, UnmodifiableMetadataException {
+    public void append(final Object source) throws ClassCastException, UnmodifiableMetadataException {
         ensureNonNull("source", source);
-        getStandard().shallowCopy(source, this);
+        getStandard().append(source, this);
     }
 
     /**
@@ -182,8 +178,21 @@ public abstract class AbstractMetadata implements LenientComparable {
      *
      * <p>The map supports the {@link Map#put(Object, Object) put(…)} and {@link Map#remove(Object)
      * remove(…)} operations if the underlying metadata object contains setter methods.
-     * The keys are case-insensitive and can be either the JavaBeans property name or
-     * the UML identifier.</p>
+     * The {@code remove(…)} method is implemented by a call to {@code put(…, null)}.</p>
+     *
+     * <p>The keys are case-insensitive and can be either the JavaBeans property name, the getter method name
+     * or the {@linkplain org.opengis.annotation.UML#identifier() UML identifier}. The value given to a call
+     * to the {@code put(…)} method shall be an instance of the type expected by the corresponding setter method,
+     * or an instance of a type {@linkplain org.apache.sis.util.ObjectConverters#find(Class, Class) convertible}
+     * to the expected type.</p>
+     *
+     * <p>Calls to {@code put(…)} replace the previous value, with one noticeable exception: if the metadata
+     * property associated to the given key is a {@link java.util.Collection} but the given value is a single
+     * element (not a collection), then the given value is {@linkplain java.util.Collection#add(Object) added}
+     * to the existing collection. In other words, the returned map behaves as a <cite>multi-values map</cite>
+     * for the properties that allow multiple values. If the intend is to unconditionally discard all previous
+     * values, then make sure that the given value is a collection when the associated metadata property expects
+     * such collection.</p>
      *
      * <p>The default implementation is equivalent to the following method call:</p>
      *

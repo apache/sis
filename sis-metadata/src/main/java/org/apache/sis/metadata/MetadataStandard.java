@@ -571,8 +571,23 @@ public class MetadataStandard {
      *
      * <p>The map supports the {@link Map#put(Object, Object) put(…)} and {@link Map#remove(Object)
      * remove(…)} operations if the underlying metadata object contains setter methods.
-     * The keys are case-insensitive and can be either the JavaBeans property name or
-     * the UML identifier.</p>
+     * The {@code remove(…)} method is implemented by a call to {@code put(…, null)}.
+     * Note that whether the entry appears as effectively removed from the map or just cleared
+     * (i.e. associated to a null value) depends on the {@code valuePolicy} argument.</p>
+     *
+     * <p>The keys are case-insensitive and can be either the JavaBeans property name, the getter method name
+     * or the {@linkplain org.opengis.annotation.UML#identifier() UML identifier}. The value given to a call
+     * to the {@code put(…)} method shall be an instance of the type expected by the corresponding setter method,
+     * or an instance of a type {@linkplain org.apache.sis.util.ObjectConverters#find(Class, Class) convertible}
+     * to the expected type.</p>
+     *
+     * <p>Calls to {@code put(…)} replace the previous value, with one noticeable exception: if the metadata
+     * property associated to the given key is a {@link java.util.Collection} but the given value is a single
+     * element (not a collection), then the given value is {@linkplain java.util.Collection#add(Object) added}
+     * to the existing collection. In other words, the returned map behaves as a <cite>multi-values map</cite>
+     * for the properties that allow multiple values. If the intend is to unconditionally discard all previous
+     * values, then make sure that the given value is a collection when the associated metadata property expects
+     * such collection.</p>
      *
      * @param  metadata The metadata object to view as a map.
      * @param  keyPolicy Determines the string representation of map keys.
@@ -629,11 +644,11 @@ public class MetadataStandard {
     }
 
     /**
-     * Copies all metadata from source to target.
+     * Appends all non-empty metadata from source to target.
      * The source must implements the same metadata interface than the target.
      *
      * <p>If the source contains any null or empty properties, then those properties will
-     * <strong>not</strong> overwrite the corresponding properties in the destination metadata.</p>
+     * not overwrite the corresponding properties in the destination metadata.</p>
      *
      * @param  source The metadata to copy.
      * @param  target The target metadata.
@@ -644,7 +659,7 @@ public class MetadataStandard {
      *
      * @see ModifiableMetadata#clone()
      */
-    public void shallowCopy(final Object source, final Object target)
+    public void append(final Object source, final Object target)
             throws ClassCastException, UnmodifiableMetadataException
     {
         ensureNonNull("target", target);
@@ -654,7 +669,7 @@ public class MetadataStandard {
             throw new ClassCastException(Errors.format(Errors.Keys.IllegalArgumentClass_3,
                     "source", accessor.type, source.getClass()));
         }
-        if (!accessor.shallowCopy(source, target)) {
+        if (!accessor.append(source, target)) {
             throw new UnmodifiableMetadataException(Errors.format(Errors.Keys.UnmodifiableMetadata));
         }
     }

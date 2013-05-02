@@ -327,14 +327,14 @@ public final strictfp class PropertyAccessorTest extends TestCase {
     }
 
     /**
-     * Tests the {@link PropertyAccessor#shallowCopy(Object, Object)} method.
+     * Tests the {@link PropertyAccessor#append(Object, Object)} method.
      */
     @Test
-    public void testShallowCopy() {
+    public void testAppend() {
         final DefaultCitation original = HardCodedCitations.ISO;
         final DefaultCitation copy = new DefaultCitation();
         final PropertyAccessor accessor = createPropertyAccessor();
-        assertTrue("The copy should have modified the destination.", accessor.shallowCopy(original, copy));
+        assertTrue("The copy should have modified the destination.", accessor.append(original, copy));
         assertEquals("International Organization for Standardization", copy.getTitle().toString());
 
         Collection<?> values = copy.getAlternateTitles();
