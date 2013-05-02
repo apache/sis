@@ -644,37 +644,6 @@ public class MetadataStandard {
     }
 
     /**
-     * Appends all non-empty metadata from source to target.
-     * The source must implements the same metadata interface than the target.
-     *
-     * <p>If the source contains any null or empty properties, then those properties will
-     * not overwrite the corresponding properties in the destination metadata.</p>
-     *
-     * @param  source The metadata to copy.
-     * @param  target The target metadata.
-     * @throws ClassCastException if the source or target object don't
-     *         implements a metadata interface of the expected package.
-     * @throws UnmodifiableMetadataException if the target metadata is unmodifiable,
-     *         or if at least one setter method was required but not found.
-     *
-     * @see ModifiableMetadata#clone()
-     */
-    public void append(final Object source, final Object target)
-            throws ClassCastException, UnmodifiableMetadataException
-    {
-        ensureNonNull("target", target);
-        final PropertyAccessor accessor = getAccessor(target.getClass(), true);
-        if (!accessor.type.isInstance(source)) {
-            ensureNonNull("source", source);
-            throw new ClassCastException(Errors.format(Errors.Keys.IllegalArgumentClass_3,
-                    "source", accessor.type, source.getClass()));
-        }
-        if (!accessor.append(source, target)) {
-            throw new UnmodifiableMetadataException(Errors.format(Errors.Keys.UnmodifiableMetadata));
-        }
-    }
-
-    /**
      * Compares the two specified metadata objects.
      * The two metadata arguments shall be implementations of a metadata interface defined by
      * this {@code MetadataStandard}, otherwise an exception will be thrown. However the two

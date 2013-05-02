@@ -327,26 +327,6 @@ public final strictfp class PropertyAccessorTest extends TestCase {
     }
 
     /**
-     * Tests the {@link PropertyAccessor#append(Object, Object)} method.
-     */
-    @Test
-    public void testAppend() {
-        final DefaultCitation original = HardCodedCitations.ISO;
-        final DefaultCitation copy = new DefaultCitation();
-        final PropertyAccessor accessor = createPropertyAccessor();
-        assertTrue("The copy should have modified the destination.", accessor.append(original, copy));
-        assertEquals("International Organization for Standardization", copy.getTitle().toString());
-
-        Collection<?> values = copy.getAlternateTitles();
-        assertNotSame("Collections shall have been copied.", original.getAlternateTitles(), values);
-        assertEquals("ISO", getSingleton(values).toString());
-
-        values = copy.getPresentationForms();
-        assertNotSame("Collections shall have been copied.", original.getPresentationForms(), values);
-        assertEquals(PresentationForm.DOCUMENT_DIGITAL, getSingleton(values));
-    }
-
-    /**
      * Tests the equals methods.
      */
     @Test
