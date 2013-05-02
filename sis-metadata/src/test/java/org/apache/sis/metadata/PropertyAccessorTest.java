@@ -19,6 +19,7 @@ package org.apache.sis.metadata;
 import java.util.Set;
 import java.util.List;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.Date;
@@ -52,6 +53,8 @@ import org.junit.Test;
 import static java.util.Collections.singleton;
 import static org.opengis.test.Assert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.metadata.PropertyAccessor.RETURN_CHANGED;
+import static org.apache.sis.metadata.PropertyAccessor.RETURN_PREVIOUS;
 
 
 /**
@@ -194,6 +197,7 @@ public final strictfp class PropertyAccessorTest extends TestCase {
 
     /**
      * Tests the {@link PropertyAccessor#descriptor(int)} method.
+     * This method delegates to some {@link PropertyInformationTest} methods.
      */
     @Test
     @DependsOnMethod("testConstructor")
@@ -204,7 +208,17 @@ public final strictfp class PropertyAccessorTest extends TestCase {
     }
 
     /**
-     * Tests the {@link PropertyAccessor#get(int, Object)} method.
+     * Tests the {@link PropertyAccessor#get(int, Object)} method on the {@link HardCodedCitations#ISO}
+     * constant. The metadata object read by this test is:
+     *
+     * {@preformat text
+     *   DefaultCitation
+     *     ├─Title…………………………………… International Organization for Standardization
+     *     ├─Alternate title………… ISO
+     *     ├─Identifier
+     *     │   └─Code…………………………… ISO
+     *     └─Presentation form…… Document digital
+     * }
      */
     @Test
     @DependsOnMethod("testConstructor")
@@ -229,8 +243,19 @@ public final strictfp class PropertyAccessorTest extends TestCase {
     }
 
     /**
-     * Tests the {@link PropertyAccessor#set(int, Object, Object, boolean)} method
-     * with a value to be stored <cite>as-is</cite>.
+     * Tests the {@link PropertyAccessor#set(int, Object, Object, int)} method
+     * with a value to be stored <cite>as-is</cite> (without conversion).
+     * The metadata object created by this test is:
+     *
+     * {@preformat text
+     *   DefaultCitation
+     *     ├─Title………………………… Some title
+     *     ├─Identifier
+     *     │   ├─Code………………… Some ISBN code
+     *     │   └─Authority
+     *     │       └─Title…… ISBN
+     *     └─ISBN…………………………… Some ISBN code
+     * }
      */
     @Test
     @DependsOnMethod("testGet")
@@ -242,21 +267,26 @@ public final strictfp class PropertyAccessorTest extends TestCase {
 
         newValue = new SimpleInternationalString("Some title");
         index = accessor.indexOf("title", true);
-        assertNull("title", accessor.set(index, instance, newValue, true));
+        assertNull("title", accessor.set(index, instance, newValue, RETURN_PREVIOUS));
         assertSame("title", newValue, accessor.get(index, instance));
         assertSame("title", newValue, instance.getTitle());
 
         newValue = "Some ISBN code";
         index = accessor.indexOf("ISBN", true);
-        assertNull("ISBN", accessor.set(index, instance, newValue, true));
+        assertNull("ISBN", accessor.set(index, instance, newValue, RETURN_PREVIOUS));
         assertSame("ISBN", newValue, accessor.get(index, instance));
         assertSame("ISBN", newValue, instance.getISBN());
     }
 
     /**
-     * Tests the {@link PropertyAccessor#set(int, Object, Object, boolean)} method
+     * Tests the {@link PropertyAccessor#set(int, Object, Object, int)} method
      * with a value that will need to be converted. The conversion will be from
-     * {@link String} to {@link InternationalString}.
+     * {@link String} to {@link InternationalString}. The created metadata object is:
+     *
+     * {@preformat text
+     *   DefaultCitation
+     *     └─Title……………… Some title
+     * }
      */
     @Test
     @DependsOnMethod("testSet")
@@ -265,55 +295,110 @@ public final strictfp class PropertyAccessorTest extends TestCase {
         final DefaultCitation  instance = new DefaultCitation();
         final PropertyAccessor accessor = createPropertyAccessor();
         final int              index    = accessor.indexOf("title", true);
-        final Object           oldValue = accessor.set(index, instance, expected, true);
+        final Object           oldValue = accessor.set(index, instance, expected, RETURN_PREVIOUS);
         final Object           value    = accessor.get(index, instance);
 
-        assertNull("title", oldValue);
+        assertNull      ("title", oldValue);
         assertInstanceOf("title", InternationalString.class, value);
-        assertSame("title", expected, value.toString());
-        assertSame("title", value, instance.getTitle());
+        assertSame      ("title", expected, value.toString());
+        assertSame      ("title", value, instance.getTitle());
     }
 
     /**
-     * Tests the {@link PropertyAccessor#set(int, Object, Object, boolean)} method
+     * Tests the {@link PropertyAccessor#set(int, Object, Object, int)} method when the value
+     * is a collection. The new collection shall replace the previous one (no merge expected).
+     * The metadata object created by this test after the replacement is:
+     *
+     * {@preformat text
+     *   DefaultCitation
+     *     ├─Title……………………………………………………… Ignored title
+     *     ├─Alternate title (1 of 2)…… New title 1
+     *     └─Alternate title (2 of 2)…… New title 2
+     * }
+     *
+     * @see #testSetInAppendMode()
+     */
+    @Test
+    @DependsOnMethod("testSet")
+    public void testSetCollection() {
+        final DefaultCitation instance = new DefaultCitation("Ignored title");
+        final List<InternationalString> oldTitles = Arrays.<InternationalString>asList(
+                new SimpleInternationalString("Old title 1"),
+                new SimpleInternationalString("Old title 2"));
+        final List<InternationalString> newTitles = Arrays.<InternationalString>asList(
+                new SimpleInternationalString("New title 1"),
+                new SimpleInternationalString("New title 2"));
+
+        // Set the alternate titles.
+        instance.setAlternateTitles(oldTitles);
+        final PropertyAccessor accessor = createPropertyAccessor();
+        final int              index    = accessor.indexOf("alternateTitles", true);
+        final Object           oldValue = accessor.set(index, instance, newTitles, RETURN_PREVIOUS);
+        final Object           newValue = accessor.get(index, instance);
+
+        // Verify the values.
+        assertEquals("set(…, RETURN_PREVIOUS)", oldTitles, oldValue);
+        assertEquals("get(…)",                  newTitles, newValue);
+        assertSame  ("alternateTitles",         newValue, instance.getAlternateTitles());
+        assertEquals("title",                   "Ignored title", instance.getTitle().toString());
+    }
+
+    /**
+     * Tests the {@link PropertyAccessor#set(int, Object, Object, int)} method
      * when adding elements in a collection, without conversion of type.
+     * The metadata object created by this test is:
+     *
+     * {@preformat text
+     *   DefaultCitation
+     *     ├─Title……………………………………………………… Ignored title
+     *     ├─Alternate title (1 of 2)…… An other title
+     *     └─Alternate title (2 of 2)…… Yet an other title
+     * }
      */
     @Test
     @DependsOnMethod("testSet")
-    public void testSetInCollection() {
-        testSetInCollection(false);
+    public void testSetIntoCollection() {
+        testSetIntoCollection(false);
     }
 
     /**
-     * Tests the {@link PropertyAccessor#set(int, Object, Object, boolean)} method
+     * Tests the {@link PropertyAccessor#set(int, Object, Object, int)} method
      * when adding elements in a collection, with conversion of type.
+     * The metadata object created by this test is:
+     *
+     * {@preformat text
+     *   DefaultCitation
+     *     ├─Title……………………………………………………… Ignored title
+     *     ├─Alternate title (1 of 2)…… An other title
+     *     └─Alternate title (2 of 2)…… Yet an other title
+     * }
      */
     @Test
-    @DependsOnMethod("testSet")
-    public void testSetInCollectionWithConversion() {
-        testSetInCollection(true);
+    @DependsOnMethod("testSetIntoCollection")
+    public void testSetIntoCollectionWithConversion() {
+        testSetIntoCollection(true);
     }
 
     /**
-     * Tests the {@link PropertyAccessor#set(int, Object, Object, boolean)} method
+     * Tests the {@link PropertyAccessor#set(int, Object, Object, int)} method
      * when adding elements in a collection, with or without conversion of type.
      */
-    private void testSetInCollection(final boolean conversion) {
+    private static void testSetIntoCollection(final boolean conversion) {
         final String              text1    = "An other title";
         final String              text2    = "Yet an other title";
         final InternationalString title1   = new SimpleInternationalString(text1);
         final InternationalString title2   = new SimpleInternationalString(text2);
-        final DefaultCitation     instance = new DefaultCitation();
+        final DefaultCitation     instance = new DefaultCitation("Ignored title");
         final PropertyAccessor    accessor = createPropertyAccessor();
         final int                 index    = accessor.indexOf("alternateTitles", true);
 
         // Insert the first value. Old collection shall be empty.
-        Object oldValue = accessor.set(index, instance, conversion ? text1 : title1, true);
+        Object oldValue = accessor.set(index, instance, conversion ? text1 : title1, RETURN_PREVIOUS);
         assertInstanceOf("alternateTitles", Collection.class, oldValue);
         assertTrue("alternateTitles", ((Collection<?>) oldValue).isEmpty());
 
         // Insert the second value. Old collection shall contains the first value.
-        oldValue = accessor.set(index, instance, conversion ? text2 : title2, true);
+        oldValue = accessor.set(index, instance, conversion ? text2 : title2, RETURN_PREVIOUS);
         assertInstanceOf("alternateTitles", Collection.class, oldValue);
         oldValue = getSingleton((Collection<?>) oldValue);
         assertSame("alternateTitles", text1, oldValue.toString());
@@ -324,6 +409,58 @@ public final strictfp class PropertyAccessorTest extends TestCase {
         // Check final collection content.
         final List<InternationalString> expected = Arrays.asList(title1, title2);
         assertEquals("alternateTitles", expected, accessor.get(index, instance));
+        assertEquals("title", "Ignored title", instance.getTitle().toString());
+    }
+
+    /**
+     * Tests the {@link PropertyAccessor#set(int, Object, Object, int)} method in
+     * {@link PropertyAccessor#RETURN_CHANGED} mode. In this mode, new collections
+     * are added into existing collections instead than replacing them.
+     * The metadata object created by this test after the merge is:
+     *
+     * {@preformat text
+     *   DefaultCitation
+     *     ├─Title……………………………………………………… Added title
+     *     ├─Alternate title (1 of 4)…… Old title 1
+     *     ├─Alternate title (2 of 4)…… Old title 2
+     *     ├─Alternate title (3 of 4)…… New title 1
+     *     └─Alternate title (4 of 4)…… New title 2
+     * }
+     *
+     * @see #testSetCollection()
+     */
+    public void testSetInAppendMode() {
+        final DefaultCitation instance = new DefaultCitation();
+        final List<InternationalString> oldTitles = Arrays.<InternationalString>asList(
+                new SimpleInternationalString("Old title 1"),
+                new SimpleInternationalString("Old title 2"));
+        final List<InternationalString> newTitles = Arrays.<InternationalString>asList(
+                new SimpleInternationalString("New title 1"),
+                new SimpleInternationalString("New title 2"));
+        final List<InternationalString> merged = new ArrayList<>(oldTitles);
+        assertTrue(merged.addAll(newTitles));
+
+        // Set the title.
+        instance.setAlternateTitles(oldTitles);
+        final PropertyAccessor accessor = createPropertyAccessor();
+        final int titleIndex = accessor.indexOf("title", true);
+        Object titleChanged = accessor.set(titleIndex, instance, "Added title", RETURN_CHANGED);
+
+        // Set the alternate titles.
+        final int    index    = accessor.indexOf("alternateTitles", true);
+        final Object changed  = accessor.set(index, instance, newTitles, RETURN_CHANGED);
+        final Object newValue = accessor.get(index, instance);
+
+        // Verify the values.
+        assertEquals("set(…, RETURN_CHANGED)", Boolean.TRUE, titleChanged);
+        assertEquals("set(…, RETURN_CHANGED)", Boolean.TRUE, changed);
+        assertEquals("get(…)",                 merged, newValue);
+        assertSame  ("alternateTitles",        newValue, instance.getAlternateTitles());
+        assertEquals("title", "Added title", instance.getTitle().toString());
+
+        // Test setting again the title to the same value.
+        titleChanged = accessor.set(titleIndex, instance, "Added title", RETURN_CHANGED);
+        assertEquals("set(…, RETURN_CHANGED)", Boolean.FALSE, titleChanged);
     }
 
     /**
@@ -352,7 +489,7 @@ public final strictfp class PropertyAccessorTest extends TestCase {
         HardCodedCitations.assertIdentifiersFor("EPSG", (Collection<?>) target);
 
         // Set the identifiers to null, which should clear the collection.
-        assertEquals("Expected the previous value.", source, accessor.set(index, citation, null, true));
+        assertEquals("Expected the previous value.", source, accessor.set(index, citation, null, RETURN_PREVIOUS));
         final Object value = accessor.get(index, citation);
         assertNotNull("Should have replaced null by an empty collection.", value);
         assertTrue("Should have replaced null by an empty collection.", ((Collection<?>) value).isEmpty());

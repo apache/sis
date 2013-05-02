@@ -21,7 +21,9 @@ import java.util.Collections;
 import java.util.AbstractCollection;
 import java.util.NoSuchElementException;
 import java.util.ConcurrentModificationException;
+import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Debug;
 
 
@@ -133,7 +135,7 @@ final class MetadataTreeChildren extends AbstractCollection<TreeTable.Node> {
      * @param index The index in the accessor (<em>not</em> the index in this collection).
      */
     final void clearAt(final int index) {
-        accessor.set(index, metadata, null, false);
+        accessor.set(index, metadata, null, PropertyAccessor.RETURN_NULL);
     }
 
     /**
@@ -461,6 +463,44 @@ final class MetadataTreeChildren extends AbstractCollection<TreeTable.Node> {
             }
             modCountCheck = ++modCount;
         }
+    }
+
+    /**
+     * Adds the given node to this list. This method fetches the object from {@link TableColumn#VALUE}
+     * and assigns it to the property identified by {@link TableColumn#IDENTIFIER}. All other columns
+     * are ignored.
+     *
+     * <p>If the identified property is a collection, then this method adds the value to that collection.
+     * Otherwise the new value will overwrite the value that existed prior this method call.</p>
+     *
+     * <p>This method does not iterate explicitly through the children list, because adding a metadata
+     * object implicitly adds all its children.</p>
+     *
+     * @param  node The node from which to get the values.
+     * @return {@code true} if the metadata changed as a result of this method call.
+     * @throws NullPointerException if the given node is null.
+     * @throws IllegalArgumentException if this list does not have a property for the node identifier.
+     * @throws UnmodifiableMetadataException if the property for the node identifier is read-only.
+     * @throws ClassCastException if the node value is not of the expected type.
+     * @throws BackingStoreException if the metadata implementation threw a checked exception.
+     */
+    @Override
+    public boolean add(final TreeTable.Node node) {
+        final String identifier = node.getValue(TableColumn.IDENTIFIER);
+        if (identifier == null) {
+            throw new IllegalArgumentException(Errors.format(
+                    Errors.Keys.MissingValueInColumn_1, TableColumn.IDENTIFIER.getHeader()));
+        }
+        final Object value = node.getValue(TableColumn.VALUE);
+        if (ValueExistencePolicy.isNullOrEmpty(value)) {
+            return false;
+        }
+        final int index = accessor.indexOf(identifier, true);
+        if ((Boolean) accessor.set(index, metadata, value, PropertyAccessor.RETURN_CHANGED)) {
+            modCount++;
+            return true;
+        }
+        return false;
     }
 
     /**
