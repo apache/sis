@@ -89,26 +89,6 @@ public final strictfp class MetadataStandardTest extends TestCase {
     }
 
     /**
-     * Tests appending values. For this test, we need to use a class that doesn't have any {@code getIdentifiers()}
-     * method inherited from GeoAPI interfaces. The class will inherit the {@code getIdentifiers()} method defined
-     * by SIS in the parent class, which doesn't have corresponding {@code setIdentifiers(...)} method.
-     */
-    @Test
-    public void testAppend() {
-        final AbstractCompleteness source = new AbstractCompleteness();
-        final AbstractCompleteness target = new AbstractCompleteness();
-        source.setMeasureDescription(new SimpleInternationalString("Some description"));
-        target.getStandard().append(source, target);
-        assertEquals("Copy of measureDescription:", "Some description", target.getMeasureDescription().toString());
-        assertEquals("Copy of measureDescription:", source, target);
-
-        source.setMeasureDescription(null);
-        target.getStandard().append(source, target);
-        assertEquals("Measure description should not have been removed, since we skipped null values.",
-                "Some description", target.getMeasureDescription().toString());
-    }
-
-    /**
      * Tests the {@link MetadataStandard#equals(Object, Object, ComparisonMode)} method.
      */
     @Test

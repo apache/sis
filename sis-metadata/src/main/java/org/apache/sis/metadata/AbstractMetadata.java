@@ -23,8 +23,6 @@ import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.logging.Logging;
 
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-
 
 /**
  * Provides basic operations using Java reflection for metadata implementations.
@@ -45,7 +43,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * <ul>
  *   <li>{@link #prune()}</li>
- *   <li>{@link #append(Object)}</li>
  *   <li>{@link #asMap()} with {@code put} operations</li>
  * </ul>
  *
@@ -151,24 +148,6 @@ public abstract class AbstractMetadata implements LenientComparable {
      */
     public void prune() {
         Pruner.isEmpty(this, true);
-    }
-
-    /**
-     * Appends to this metadata all non-empty values from the specified metadata. The {@code source} metadata
-     * must implements the same metadata interface (defined by the {@linkplain #getStandard() standard}) than
-     * this class, but doesn't need to be the same implementation class.
-     * The default implementation performs the copy using Java reflections.
-     *
-     * @param  source The metadata to copy values from.
-     * @throws ClassCastException if the specified metadata doesn't implements the expected
-     *         metadata interface.
-     * @throws UnmodifiableMetadataException if this class doesn't define {@code set*(…)} methods
-     *         corresponding to the {@code get*()} methods found in the implemented interface, or
-     *         if this instance is not modifiable for some other reason.
-     */
-    public void append(final Object source) throws ClassCastException, UnmodifiableMetadataException {
-        ensureNonNull("source", source);
-        getStandard().append(source, this);
     }
 
     /**

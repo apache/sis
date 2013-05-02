@@ -67,8 +67,8 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * <ul>
  *   <li>The standard properties defined by the GeoAPI (or other standard) interfaces.
  *       Those properties are the only one accessible by most methods in this class,
- *       except {@link #equals(Object, Object, ComparisonMode, boolean)},
- *       {@link #append(Object, Object)} and {@link #freeze(Object)}.</li>
+ *       except {@link #equals(Object, Object, ComparisonMode, boolean)} and
+ *       {@link #freeze(Object)}.</li>
  *
  *   <li>Extra properties defined by the {@link IdentifiedObject} interface. Those properties
  *       invisible in the ISO 19115 model, but appears in ISO 19139 XML marshalling. So we do
