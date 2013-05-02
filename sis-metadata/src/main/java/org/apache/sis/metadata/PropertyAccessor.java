@@ -104,6 +104,12 @@ final class PropertyAccessor {
     static final int COUNT_FIRST=0, COUNT_SHALLOW=1, COUNT_DEEP=2;
 
     /**
+     * Enumeration constants for the {@code mode} argument
+     * in the {@link #set(int, Object, Object, int)} method.
+     */
+    static final int RETURN_NULL=0, RETURN_CHANGED=1, RETURN_PREVIOUS=2;
+
+    /**
      * Additional getter to declare in every list of getter methods that do not already provide
      * their own {@code getIdentifiers()} method. We handle this method specially because it is
      * needed for XML marshalling in ISO 19139 compliant document, while not part of abstract
@@ -663,10 +669,23 @@ final class PropertyAccessor {
     }
 
     /**
-     * Sets a value for the specified metadata and returns the old value if {@code getOld} is
-     * {@code true}. If the old value was a collection or a map, then this value is copied in
-     * a new collection or map before the new value is set, because the setter methods typically
-     * copy the new collection in their existing instance.
+     * Sets a value for the specified metadata and returns the old value if {@code mode} is
+     * {@link #RETURN_PREVIOUS}. The {@code mode} argument can be one of the following, from
+     * cheapest to more expensive mode:
+     *
+     * <ul>
+     *   <li>RETURN_NULL:     Set the value and returns {@code null}.</li>
+     *   <li>RETURN_CHANGED:  Set the value and returns {@link Boolean#TRUE} if the metadata changed
+     *                        as a result of this method call, or {@code Boolean#FALSE} otherwise.</li>
+     *   <li>RETURN_PREVIOUS: Set the value and returns the previous value. If the previous value was a
+     *                        collection or a map, then that value is copied in a new collection or map
+     *                        before the new value is set because the setter methods typically copy the
+     *                        new collection in their existing instance.</li>
+     * </ul>
+     *
+     * <p>The {@code RETURN_CHANGED} mode has an additional side effect: it sets the {@code append} argument
+     * to {@code true} in the call to the {@link #convert(Method, Object, Object, Object[], Class, boolean)}
+     * method. See the {@code convert} javadoc for more information.</p>
      *
      * <p>If the given index is out of bounds, then this method does nothing and return {@code null}.
      * We do that because the {@link ValueMap#remove(Object)} method may invoke this method with
@@ -674,16 +693,17 @@ final class PropertyAccessor {
      * However the given value will be silently discarded, so index out-of-bounds shall be used only
      * in the context of {@code remove} operations (this is not verified).</p>
      *
-     * @param  index    The index of the property to set.
-     * @param  metadata The metadata object on which to set the value.
-     * @param  value    The new value.
-     * @param  getOld   {@code true} if this method should first fetches the old value.
-     * @return The old value, or {@code null} if {@code getOld} was {@code false}.
+     * @param  index       The index of the property to set.
+     * @param  metadata    The metadata object on which to set the value.
+     * @param  value       The new value.
+     * @param  mode Whether this method should first fetches the old value,
+     *                     as one of the {@code RETURN_*} constants.
+     * @return The old value, or {@code null} if {@code returnValue} was {@code RETURN_NULL}.
      * @throws UnmodifiableMetadataException if the property for the given key is read-only.
      * @throws ClassCastException if the given value is not of the expected type.
      * @throws BackingStoreException if the implementation threw a checked exception.
      */
-    final Object set(final int index, final Object metadata, final Object value, final boolean getOld)
+    final Object set(final int index, final Object metadata, final Object value, final int mode)
             throws UnmodifiableMetadataException, ClassCastException, BackingStoreException
     {
         if (index < 0 || index >= standardCount) {
@@ -693,27 +713,32 @@ final class PropertyAccessor {
             final Method getter = getters[index];
             final Method setter = setters[index];
             if (setter != null) {
-                final Object old;
-                final Object copy;
-                if (getOld) {
-                    old = get(getter, metadata);
-                    if (old instanceof Collection<?>) {
-                        if (old instanceof List<?>) {
-                            copy = snapshot((List<?>) old);
-                        } else {
-                            copy = modifiableCopy((Collection<?>) old);
+                Object old  = null;
+                Object copy = null;
+                if (mode != RETURN_NULL) {
+                    old  = get(getter, metadata);
+                    copy = old;
+                    if (mode == RETURN_PREVIOUS) {
+                        if (old instanceof Collection<?>) {
+                            if (old instanceof List<?>) {
+                                copy = snapshot((List<?>) old);
+                            } else {
+                                copy = modifiableCopy((Collection<?>) old);
+                            }
+                        } else if (old instanceof Map<?,?>) {
+                            copy = modifiableCopy((Map<?,?>) old);
                         }
-                    } else if (old instanceof Map<?,?>) {
-                        copy = modifiableCopy((Map<?,?>) old);
-                    } else {
-                        copy = old;
                     }
-                } else {
-                    copy = old = null;
                 }
                 final Object[] newValues = new Object[] {value};
-                convert(getter, metadata, old, newValues, elementTypes[index], false);
+                Boolean changed = convert(getter, metadata, old, newValues, elementTypes[index], mode == RETURN_CHANGED);
                 set(setter, metadata, newValues);
+                if (mode == RETURN_CHANGED) {
+                    if (changed == null) {
+                        changed = (newValues[0] != old);
+                    }
+                    return changed;
+                }
                 return copy;
             }
         }
@@ -792,10 +817,12 @@ final class PropertyAccessor {
      * @param elementType The target type (if singleton) or the type of elements in the collection.
      * @param append      If {@code true} and the value is a collection, then that collection will be added
      *                    to any previously existing collection instead of replacing it.
+     * @return If the given value has been added to an existing collection, then whether that existing
+     *         collection has been modified as a result of this method call. Otherwise {@code null}.
      * @throws ClassCastException if the element of the {@code arguments} array is not of the expected type.
      * @throws BackingStoreException If the implementation threw a checked exception.
      */
-    private void convert(final Method getter, final Object metadata, Object oldValue, final Object[] newValues,
+    private Boolean convert(final Method getter, final Object metadata, Object oldValue, final Object[] newValues,
             Class<?> elementType, final boolean append) throws ClassCastException, BackingStoreException
     {
         assert newValues.length == 1;
@@ -806,8 +833,9 @@ final class PropertyAccessor {
             if (targetType.isPrimitive()) {
                 newValues[0] = Numbers.valueOfNil(targetType);
             }
-            return;
+            return null;
         }
+        Boolean changed = null;
         if (!Collection.class.isAssignableFrom(targetType)) {
             /*
              * We do not expect a collection. The provided argument should not be a
@@ -821,7 +849,7 @@ final class PropertyAccessor {
                 final Iterator<?> it = ((Collection<?>) newValue).iterator();
                 if (!it.hasNext()) { // If empty, process like null argument.
                     newValues[0] = null;
-                    return;
+                    return null;
                 }
                 final Object next = it.next();
                 if (!it.hasNext()) { // Singleton
@@ -886,7 +914,7 @@ final class PropertyAccessor {
                  * There is not much we can do...
                  */
                 // No @SuppressWarnings because this is a real hole.
-                ((Collection) addTo).addAll(elementList);
+                changed = ((Collection) addTo).addAll(elementList);
             }
         }
         /*
@@ -895,6 +923,7 @@ final class PropertyAccessor {
          */
         newValues[0] = newValue;
         convert(newValues, targetType);
+        return changed;
     }
 
     /**

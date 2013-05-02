@@ -251,7 +251,7 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
             assertEquals("isWritable", isWritable, accessor.isWritable(i));
             if (isWritable) {
                 final Object newValue = valueFor(property, elementType);
-                final Object oldValue = accessor.set(i, instance, newValue, true);
+                final Object oldValue = accessor.set(i, instance, newValue, PropertyAccessor.RETURN_PREVIOUS);
                 assertEquals("PropertyAccessor.set(…) shall return the value previously returned by get(…).", value, oldValue);
                 value = accessor.get(i, instance);
                 if (isCollection) {

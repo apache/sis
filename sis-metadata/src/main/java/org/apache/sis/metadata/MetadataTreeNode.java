@@ -314,7 +314,7 @@ class MetadataTreeNode implements TreeTable.Node, Serializable {
          */
         @Override
         void setUserObject(final Object value) {
-            accessor.set(indexInData, metadata, value, false);
+            accessor.set(indexInData, metadata, value, PropertyAccessor.RETURN_NULL);
         }
 
         /**
