@@ -32,7 +32,7 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.opengis.test.Assert.*;
+import static org.apache.sis.test.Assert.*;
 
 
 /**
@@ -84,26 +84,6 @@ public final strictfp class MetadataStandardTest extends TestCase {
             // This is the expected exception.
             assertTrue(e.getMessage().contains("DefaultCitation"));
         }
-    }
-
-    /**
-     * Tests the shallow copy. For this test, we need to use a class that doesn't have any {@code getIdentifiers()}
-     * method inherited from GeoAPI interfaces. The class will inherit the {@code getIdentifiers()} method defined
-     * by SIS in the parent class, which doesn't have corresponding {@code setIdentifiers(...)} method.
-     */
-    @Test
-    public void testShallowCopy() {
-        final AbstractCompleteness source = new AbstractCompleteness();
-        final AbstractCompleteness target = new AbstractCompleteness();
-        source.setMeasureDescription(new SimpleInternationalString("Some description"));
-        target.getStandard().shallowCopy(source, target);
-        assertEquals("Copy of measureDescription:", "Some description", target.getMeasureDescription().toString());
-        assertEquals("Copy of measureDescription:", source, target);
-
-        source.setMeasureDescription(null);
-        target.getStandard().shallowCopy(source, target);
-        assertEquals("Measure description should not have been removed, since we skipped null values.",
-                "Some description", target.getMeasureDescription().toString());
     }
 
     /**
@@ -181,5 +161,14 @@ public final strictfp class MetadataStandardTest extends TestCase {
         assertFalse(map.isEmpty()); // Actually 'testValueMap()' job, but verified for safety.
         assertEquals("hashCode()", new HashSet<Object>(map.values()).hashCode() + Citation.class.hashCode(),
                 std.hashCode(instance));
+    }
+
+    /**
+     * Tests serialization of pre-defined constants.
+     */
+    @Test
+    public void testSerialization() {
+        assertSame(MetadataStandard.ISO_19111, assertSerializedEquals(MetadataStandard.ISO_19111));
+        assertSame(MetadataStandard.ISO_19115, assertSerializedEquals(MetadataStandard.ISO_19115));
     }
 }
