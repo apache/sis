@@ -94,7 +94,30 @@ public final class ObjectConverters extends Static {
     public static <S,T> ObjectConverter<? super S, ? extends T> find(final Class<S> source, final Class<T> target)
             throws UnconvertibleObjectException
     {
+        ArgumentChecks.ensureNonNull("source", source);
+        ArgumentChecks.ensureNonNull("target", target);
         return SystemRegistry.INSTANCE.find(source, target);
+    }
+
+    /**
+     * Converts the given value to the given type. This convenience method shall be used only for
+     * rare conversions. For converting many instances between the same source and target classes,
+     * consider invoking {@link #find(Class, Class)} instead in order to reuse the same converter
+     * for all values to convert.
+     *
+     * @param  <T>    The type of the {@code target} class.
+     * @param  value  The value to convert, or {@code null}.
+     * @param  target The target class.
+     * @return The converted value (may be {@code null}).
+     * @throws UnconvertibleObjectException if the given value can not be converted.
+     */
+    @SuppressWarnings({"unchecked","rawtypes"})
+    public static <T> T convert(Object value, final Class<T> target) throws UnconvertibleObjectException {
+        ArgumentChecks.ensureNonNull("target", target);
+        if (!target.isInstance(value) && value != null) {
+            value = ((ObjectConverter) SystemRegistry.INSTANCE.find(value.getClass(), target)).convert(value);
+        }
+        return (T) value;
     }
 
     /**

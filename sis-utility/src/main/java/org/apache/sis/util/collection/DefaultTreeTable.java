@@ -543,8 +543,9 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
 
         /**
          * Adds a new child in the {@linkplain #getChildren() children list}.
-         * The default implementation delegates to {@code Node(Node)} constructor,
-         * which has the following implications:
+         * The default implementation first checks that this node is not a leaf,
+         * then delegates to the {@code Node(Node)} constructor.
+         * That constructor call has the following implications:
          *
          * <ul>
          *   <li>The new node inherits the columns of this node, on the assumption that
@@ -553,9 +554,14 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
          * </ul>
          *
          * Subclasses may override this method with different behavior.
+         *
+         * @throws UnsupportedOperationException If this node {@linkplain #isLeaf() is a leaf}.
          */
         @Override
         public Node newChild() {
+            if (isLeaf()) {
+                throw new UnsupportedOperationException(Errors.format(Errors.Keys.NodeIsLeaf_1, this));
+            }
             return new Node(this);
         }
 

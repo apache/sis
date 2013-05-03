@@ -85,7 +85,7 @@ final class MetadataTreeChildren extends AbstractCollection<TreeTable.Node> {
      *     accessor = parent.table.standard.getAccessor(metadata.getClass(), true);
      * }
      */
-    private final PropertyAccessor accessor;
+    final PropertyAccessor accessor;
 
     /**
      * The children to be returned by this collection. All elements in this collection are
@@ -482,24 +482,36 @@ final class MetadataTreeChildren extends AbstractCollection<TreeTable.Node> {
      * @throws IllegalArgumentException if this list does not have a property for the node identifier.
      * @throws IllegalStateException if a value already exists and no more value can be added for the node identifier.
      * @throws UnmodifiableMetadataException if the property for the node identifier is read-only.
-     * @throws ClassCastException if the node value is not of the expected type.
+     * @throws ClassCastException if the node value can not be converted to the expected type.
      * @throws BackingStoreException if the metadata implementation threw a checked exception.
      */
     @Override
-    public boolean add(final TreeTable.Node node) {
+    public boolean add(final TreeTable.Node node) throws IllegalStateException {
         final String identifier = node.getValue(TableColumn.IDENTIFIER);
         if (identifier == null) {
             throw new IllegalArgumentException(Errors.format(
                     Errors.Keys.MissingValueInColumn_1, TableColumn.IDENTIFIER.getHeader()));
         }
-        final Object value = node.getValue(TableColumn.VALUE);
+        return add(accessor.indexOf(identifier, true), node.getValue(TableColumn.VALUE));
+    }
+
+    /**
+     * Implementation of {@link #add(TreeTable.Node)}, also invoked by {@link MetadataTreeNode.NewChild}.
+     * This method will attempt to convert the given {@code value} to the expected type.
+     *
+     * @param  index The index in the accessor (<em>not</em> the index in this collection).
+     * @param  value The property value to add.
+     * @return {@code true} if the metadata changed as a result of this method call.
+     */
+    final boolean add(final int index, final Object value) throws IllegalStateException {
         if (ValueExistencePolicy.isNullOrEmpty(value)) {
             return false;
         }
-        final int index = accessor.indexOf(identifier, true);
+        // Conversion attempt happen in the PropertyAccessor.set(…) method.
         final Boolean changed = (Boolean) accessor.set(index, metadata, value, PropertyAccessor.APPEND);
         if (changed == null) {
-            throw new IllegalStateException(Errors.format(Errors.Keys.ValueAlreadyDefined_1, identifier));
+            throw new IllegalStateException(Errors.format(Errors.Keys.ValueAlreadyDefined_1,
+                    accessor.name(index, KeyNamePolicy.UML_IDENTIFIER)));
         }
         if (changed) {
             modCount++;
