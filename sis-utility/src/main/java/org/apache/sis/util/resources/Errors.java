@@ -331,6 +331,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int NodeHasNoParent_1 = 34;
 
         /**
+         * Node “{0}” is a leaf.
+         */
+        public static final int NodeIsLeaf_1 = 90;
+
+        /**
          * No “{0}” node found.
          */
         public static final int NodeNotFound_1 = 39;

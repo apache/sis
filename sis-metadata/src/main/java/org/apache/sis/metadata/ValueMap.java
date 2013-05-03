@@ -22,6 +22,9 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import org.apache.sis.util.CharSequences;
 
+import static org.apache.sis.metadata.PropertyAccessor.RETURN_NULL;
+import static org.apache.sis.metadata.PropertyAccessor.RETURN_PREVIOUS;
+
 // Related to JDK7
 import org.apache.sis.internal.jdk7.Objects;
 
@@ -112,7 +115,7 @@ final class ValueMap extends PropertyMap<Object> {
      */
     @Override
     public Object put(final String key, final Object value) {
-        final Object old = accessor.set(accessor.indexOf(key, true), metadata, value, true);
+        final Object old = accessor.set(accessor.indexOf(key, true), metadata, value, RETURN_PREVIOUS);
         return valuePolicy.isSkipped(old) ? null : old;
     }
 
@@ -127,7 +130,7 @@ final class ValueMap extends PropertyMap<Object> {
     @Override
     public void putAll(final Map<? extends String, ?> map) {
         for (final Map.Entry<? extends String, ?> e : map.entrySet()) {
-            accessor.set(accessor.indexOf(e.getKey(), true), metadata, e.getValue(), false);
+            accessor.set(accessor.indexOf(e.getKey(), true), metadata, e.getValue(), RETURN_NULL);
         }
     }
 
@@ -139,7 +142,7 @@ final class ValueMap extends PropertyMap<Object> {
     @Override
     public Object remove(final Object key) throws UnsupportedOperationException {
         if (key instanceof String) {
-            final Object old = accessor.set(accessor.indexOf((String) key, false), metadata, null, true);
+            final Object old = accessor.set(accessor.indexOf((String) key, false), metadata, null, RETURN_PREVIOUS);
             if (!valuePolicy.isSkipped(old)) {
                 return old;
             }
@@ -223,7 +226,7 @@ final class ValueMap extends PropertyMap<Object> {
          */
         @Override
         public Object setValue(final Object value) {
-            return accessor.set(index, metadata, value, true);
+            return accessor.set(index, metadata, value, RETURN_PREVIOUS);
         }
 
         /**

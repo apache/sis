@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import org.opengis.metadata.citation.PresentationForm;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.util.collection.DefaultTreeTable;
+import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -182,6 +184,55 @@ public final strictfp class MetadataTreeChildrenTest extends TestCase {
     }
 
     /**
+     * Tests the {@link MetadataTreeChildren#add(TreeTable.Node)} method.
+     */
+    @Test
+    @DependsOnMethod("testReadOnlyWithMultiOccurrences")
+    public void testAdd() {
+        final DefaultCitation      citation = metadataWithMultiOccurrences();
+        final MetadataTreeChildren children = create(citation, ValueExistencePolicy.NON_EMPTY);
+        final DefaultTreeTable.Node   toAdd = new DefaultTreeTable.Node(new DefaultTreeTable(
+                TableColumn.IDENTIFIER,
+                TableColumn.VALUE));
+        final String[] expected = {
+            "Some title",
+            "First alternate title",
+            "Second alternate title",
+            "Third alternate title",  // After addition
+            "New edition", // After "addition" (actually change).
+            "PresentationForm[MAP_DIGITAL]",
+            "PresentationForm[MAP_HARDCOPY]",
+            "PresentationForm[IMAGE_DIGITAL]", // After addition
+            "Some other details"
+        };
+        toAdd.setValue(TableColumn.IDENTIFIER, "edition");
+        toAdd.setValue(TableColumn.VALUE, citation.getEdition());
+        assertFalse("Adding the same value shall be a no-op.", children.add(toAdd));
+        toAdd.setValue(TableColumn.VALUE, "New edition");
+        try {
+            children.add(toAdd);
+            fail("Setting a different value shall be refused.");
+        } catch (IllegalStateException e) {
+            assertTrue(e.getMessage().contains("edition"));
+        }
+        citation.setEdition(null); // Clears so we are allowed to add.
+        assertTrue("Setting a new value shall be a change.", children.add(toAdd));
+
+        toAdd.setValue(TableColumn.IDENTIFIER, "presentationForm");
+        toAdd.setValue(TableColumn.VALUE, PresentationForm.MAP_DIGITAL);
+        assertFalse("Adding the same value shall be a no-op.", children.add(toAdd));
+        toAdd.setValue(TableColumn.VALUE, PresentationForm.IMAGE_DIGITAL);
+        assertTrue("Adding a new value shall be a change.", children.add(toAdd));
+
+        toAdd.setValue(TableColumn.IDENTIFIER, "alternateTitle");
+        toAdd.setValue(TableColumn.VALUE, "Third alternate title");
+        assertTrue("Adding a new value shall be a change.", children.add(toAdd));
+
+        assertEquals("size()", expected.length, children.size());
+        assertAllNextEqual(expected, children.iterator());
+    }
+
+    /**
      * Tests the {@link Iterator#remove()} operation on a list of properties without collections.
      */
     @Test
@@ -236,6 +287,36 @@ public final strictfp class MetadataTreeChildrenTest extends TestCase {
         assertTrue(citation.getAlternateTitles().isEmpty());
     }
 
+    /**
+     * Tests the children list with the {@link ValueExistencePolicy#ALL}.
+     */
+    @Test
+    @DependsOnMethod("testReadOnlyWithMultiOccurrences")
+    public void testShowAll() {
+        final DefaultCitation      citation = metadataWithMultiOccurrences();
+        final MetadataTreeChildren children = create(citation, ValueExistencePolicy.ALL);
+        final String[] expected = {
+            "Some title",
+            "First alternate title",
+            "Second alternate title",
+            null, // dates (collection)
+            "Some edition",
+            null, // edition date
+            null, // identifiers (collection)
+            null, // cited responsibly parties (collection)
+            "PresentationForm[MAP_DIGITAL]",
+            "PresentationForm[MAP_HARDCOPY]",
+            null, // series
+            "Some other details",
+            null, // collective title
+            null, // ISBN
+            null  // ISSN
+        };
+        assertFalse ("isEmpty()", children.isEmpty());
+        assertEquals("size()", expected.length, children.size());
+        assertAllNextEqual(expected, children.iterator());
+    }
+
 
     // ------------------------ Support methods for the above tests ------------------------
 
@@ -247,7 +328,8 @@ public final strictfp class MetadataTreeChildrenTest extends TestCase {
      * because the purpose of this class is not to test {@link MetadataTreeNode}.</p>
      */
     private static String valueOf(final TreeTable.Node node) {
-        return String.valueOf(node.getUserObject());
+        final Object value = node.getUserObject();
+        return (value != null) ? value.toString() : null;
     }
 
     /**

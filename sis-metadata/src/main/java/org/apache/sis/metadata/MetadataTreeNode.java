@@ -28,8 +28,10 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.collection.TreeTable;
+import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.collection.TableColumn;
+import org.apache.sis.util.collection.TreeTable.Node;
+import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 
@@ -45,12 +47,16 @@ import org.apache.sis.util.resources.Vocabulary;
  * If a metadata property is a collection, then there is an instance of the {@link CollectionElement}
  * subclass for each element in the collection.</p>
  *
+ * <p>The {@link #newChild()} operation is supported if the node is not a leaf. The user shall
+ * set the identifier and the value, in that order, before any other operation on the new child.
+ * See {@code newChild()} javadpc for an example.</p>
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
  * @version 0.3
  * @module
  */
-class MetadataTreeNode implements TreeTable.Node, Serializable {
+class MetadataTreeNode implements Node, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -64,7 +70,7 @@ class MetadataTreeNode implements TreeTable.Node, Serializable {
      * does not implement the {@link List} interface. So we are better to never give to the user
      * a collection implementing {@code List} in order to signal incorrect casts sooner.</p>
      */
-    private static final Collection<TreeTable.Node> LEAF = Collections.emptySet();
+    private static final Collection<Node> LEAF = Collections.emptySet();
 
     /**
      * A sentinel value meaning that the node is known to allow {@linkplain #children}, but
@@ -74,7 +80,7 @@ class MetadataTreeNode implements TreeTable.Node, Serializable {
      * <p>Any value distinct than {@link #LEAF} is okay. This value will never be visible
      * to the user.</p>
      */
-    private static final Collection<TreeTable.Node> PENDING = Collections.emptyList();
+    private static final Collection<Node> PENDING = Collections.emptyList();
 
     /**
      * The table for which this node is an element. Contains information like
@@ -126,7 +132,7 @@ class MetadataTreeNode implements TreeTable.Node, Serializable {
      *
      * @see #getChildren()
      */
-    private transient Collection<TreeTable.Node> children;
+    private transient Collection<Node> children;
 
     /**
      * Creates the root node of a new metadata tree table.
@@ -310,11 +316,11 @@ class MetadataTreeNode implements TreeTable.Node, Serializable {
         }
 
         /**
-         * Sets the metadata value for this node.
+         * Sets the property value for this node.
          */
         @Override
         void setUserObject(final Object value) {
-            accessor.set(indexInData, metadata, value, false);
+            accessor.set(indexInData, metadata, value, PropertyAccessor.RETURN_NULL);
         }
 
         /**
@@ -423,6 +429,41 @@ class MetadataTreeNode implements TreeTable.Node, Serializable {
                 throw new ConcurrentModificationException();
             }
         }
+
+        /**
+         * Sets the property value for this node.
+         */
+        @Override
+        void setUserObject(Object value) {
+            final Collection<?> values = (Collection<?>) super.getUserObject();
+            if (!(values instanceof List<?>)) {
+                // 'setValue' is the public method which invoked this one.
+                throw new UnsupportedOperationException(Errors.format(
+                        Errors.Keys.UnsupportedOperation_1, "setValue"));
+            }
+            final Class<?> targetType;
+            if (values instanceof CheckedContainer<?>) {
+                // Typically the same than getElementType(), but let be safe
+                // in case some implementations have stricter requirements.
+                targetType = ((CheckedContainer<?>) values).getElementType();
+            } else {
+                targetType = getElementType();
+            }
+            value = ObjectConverters.convert(value, targetType);
+            try {
+                /*
+                 * Unsafe addition into a collection. In SIS implementation, the collection is
+                 * actually an instance of CheckedCollection, so the check will be performed at
+                 * runtime. However other implementations could use unchecked collection. We have
+                 * done our best for converting the type above, there is not much more we can do...
+                 */
+                // No @SuppressWarnings because this is a real hole.
+                ((List) values).set(indexInList, value);
+            } catch (IndexOutOfBoundsException e) {
+                // Same rational than in the getUserObject() method.
+                throw new ConcurrentModificationException();
+            }
+        }
     }
 
 
@@ -433,7 +474,7 @@ class MetadataTreeNode implements TreeTable.Node, Serializable {
      * Returns the parent node, or {@code null} if this node is the root of the tree.
      */
     @Override
-    public final TreeTable.Node getParent() {
+    public final Node getParent() {
         return parent;
     }
 
@@ -461,7 +502,7 @@ class MetadataTreeNode implements TreeTable.Node, Serializable {
      * Only metadata object can have children.
      */
     @Override
-    public final Collection<TreeTable.Node> getChildren() {
+    public final Collection<Node> getChildren() {
         /*
          * 'children' is set to LEAF if an only if the node *can not* have children,
          * in which case we do not need to check for changes in the underlying metadata.
@@ -496,12 +537,127 @@ class MetadataTreeNode implements TreeTable.Node, Serializable {
     }
 
     /**
-     * Unconditionally throws {@link UnsupportedOperationException}, because there is no
-     * way we can safely determine which metadata property a new child would be for.
+     * Returns a proxy for a new property to be defined in the metadata object.
+     * The user shall set the identifier and the value, in that order, before
+     * any other operation on the new child. Example:
+     *
+     * {@preformat java
+     *     TreeTable.Node node = ...;
+     *     TreeTable.Node child = node.newChild();
+     *     child.setValue(TableColumn.IDENTIFIER, "title");
+     *     child.setValue(TableColumn.VALUE, "Le petit prince");
+     *     // Nothing else to do - node has been added.
+     * }
+     *
+     * Do not keep a reference to the returned node for a long time, since it is only
+     * a proxy toward the real node to be created once the identifier is known.
+     *
+     * @throws UnsupportedOperationException If this node {@linkplain #isLeaf() is a leaf}.
      */
     @Override
-    public final TreeTable.Node newChild() {
-        throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnsupportedOperation_1, "newChild"));
+    public final Node newChild() throws UnsupportedOperationException {
+        if (isLeaf()) {
+            throw new UnsupportedOperationException(Errors.format(Errors.Keys.NodeIsLeaf_1, this));
+        }
+        return new NewChild();
+    }
+
+    /**
+     * The proxy to be returned by {@link MetadataTreeNode#newChild()}.
+     * User shall not keep a reference to this proxy for a long time.
+     */
+    private final class NewChild implements Node {
+        /**
+         * Index in the {@link PropertyAccessor} for the property to be set.
+         * This index is known only after a value has been specified for the
+         * {@link TableColumn#IDENTIFIER}.
+         */
+        private int indexInData = -1;
+
+        /**
+         * The real node created after the identifier and the value have been specified.
+         * All operations will be delegated to that node after it has been determined.
+         */
+        private MetadataTreeNode delegate;
+
+        /**
+         * Returns the {@link #delegate} node if non-null, or throw an exception otherwise.
+         *
+         * @throws IllegalStateException if the identifier and value columns have not yet been defined.
+         */
+        private MetadataTreeNode delegate() throws IllegalStateException {
+            if (delegate != null) {
+                return delegate;
+            }
+            throw new IllegalStateException(Errors.format(Errors.Keys.MissingValueInColumn_1,
+                    (indexInData < 0 ? TableColumn.IDENTIFIER : TableColumn.VALUE).getHeader()));
+        }
+
+        /**
+         * Returns all children of the parent node. The new child will be added to that list.
+         */
+        private MetadataTreeChildren getSiblings() {
+            return (MetadataTreeChildren) MetadataTreeNode.this.getChildren();
+        }
+
+        /**
+         * If the {@link #delegate} is not yet known, set the identifier or the value.
+         * After the identifier and value have been specified, delegates to the real node.
+         */
+        @Override
+        public <V> void setValue(final TableColumn<V> column, final V value) {
+            if (delegate == null) {
+                /*
+                 * For the given identifier, get the index in the property accessor.
+                 * This can be done only before the 'delegate' is found - after that
+                 * point, the identifier will become unmodifiable.
+                 */
+                if (column == TableColumn.IDENTIFIER) {
+                    ArgumentChecks.ensureNonNull("value", value);
+                    indexInData = getSiblings().accessor.indexOf((String) value, true);
+                    return;
+                }
+                /*
+                 * Set the value for the property specified by the above identifier,
+                 * then get the 'delegate' on the assumption that the new value will
+                 * be added at the end of collection (if the property is a collection).
+                 */
+                if (column == TableColumn.VALUE) {
+                    ArgumentChecks.ensureNonNull("value", value);
+                    if (indexInData < 0) {
+                        throw new IllegalStateException(Errors.format(Errors.Keys.MissingValueInColumn_1,
+                                TableColumn.IDENTIFIER.getHeader()));
+                    }
+                    final MetadataTreeChildren siblings = getSiblings();
+                    final int indexInList;
+                    if (siblings.isCollection(indexInData)) {
+                        indexInList = ((Collection<?>) siblings.valueAt(indexInData)).size();
+                    } else {
+                        indexInList = -1;
+                    }
+                    if (!siblings.add(indexInData, value)) {
+                        throw new IllegalArgumentException(Errors.format(Errors.Keys.ElementAlreadyPresent_1, value));
+                    }
+                    delegate = siblings.childAt(indexInData, indexInList);
+                    return;
+                }
+            }
+            delegate().setValue(column, value);
+        }
+
+        /**
+         * For all operations other than {@code setValue(…)}, delegates to the {@link #delegate} node
+         * or to some code functionally equivalent.
+         *
+         * @throws IllegalStateException if the identifier and value columns have not yet been defined.
+         */
+        @Override public Node             getParent()                       {return MetadataTreeNode.this;}
+        @Override public boolean          isLeaf()                          {return delegate().isLeaf();}
+        @Override public Collection<Node> getChildren()                     {return delegate().getChildren();}
+        @Override public Node             newChild()                        {return delegate().newChild();}
+        @Override public <V> V            getValue(TableColumn<V> column)   {return delegate().getValue(column);}
+        @Override public boolean          isEditable(TableColumn<?> column) {return delegate().isEditable(column);}
+        @Override public Object           getUserObject()                   {return delegate().getUserObject();}
     }
 
     /**
@@ -533,11 +689,17 @@ class MetadataTreeNode implements TreeTable.Node, Serializable {
     /**
      * Sets the value if the given column is {@link TableColumn#VALUE}. This method verifies
      * the {@code column} argument, then delegates to {@link #setUserObject(Object)}.
+     *
+     * <p>This method does not accept null value, because setting a singleton property to null
+     * with {@link ValueExistencePolicy#NON_EMPTY} is equivalent to removing the property, and
+     * setting a collection element to null is not allowed. Those various behavior are at risk
+     * of causing confusion, so we are better to never allow null.</p>
      */
     @Override
     public final <V> void setValue(final TableColumn<V> column, final V value) throws UnsupportedOperationException {
         ArgumentChecks.ensureNonNull("column", column);
         if (column == TableColumn.VALUE) {
+            ArgumentChecks.ensureNonNull("value", value);
             setUserObject(value);
         } else if (MetadataTreeTable.COLUMNS.contains(column)) {
             throw new UnsupportedOperationException(unmodifiableCellValue(column));

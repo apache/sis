@@ -18,6 +18,7 @@ package org.apache.sis.metadata;
 
 import java.util.Map;
 import java.util.IdentityHashMap;
+import java.io.ObjectStreamException;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
 
@@ -31,6 +32,11 @@ import org.apache.sis.util.logging.Logging;
  * @module
  */
 final class StandardImplementation extends MetadataStandard {
+    /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = 855786625369724248L;
+
     /**
      * The root packages for metadata implementations, or {@code null} if none.
      * If non-null, then this string must ends with a trailing {@code "."}.
@@ -63,7 +69,7 @@ final class StandardImplementation extends MetadataStandard {
      *        less objects since <code>IdentityHashMap</code> implementation doesn't need the chain
      *        of objects created by <code>HashMap</code>.}
      */
-    private final Map<Class<?>,Class<?>> implementations;
+    private final transient Map<Class<?>,Class<?>> implementations; // written by reflection on deserialization.
 
     /**
      * Creates a new instance working on implementation of interfaces defined in the
@@ -150,5 +156,20 @@ final class StandardImplementation extends MetadataStandard {
             }
         }
         return null;
+    }
+
+    /**
+     * Invoked on deserialization. Returns one of the pre-existing constants if possible.
+     */
+    Object readResolve() throws ObjectStreamException {
+        if (ISO_19111.citation.equals(citation)) return ISO_19111;
+        if (ISO_19115.citation.equals(citation)) return ISO_19115;
+        /*
+         * Following should not occurs, unless we are deserializing an instance created by a
+         * newer version of the Apache SIS library. The newer version could contains constants
+         * not yet declared in this older SIS version, so we have to use this instance.
+         */
+        setMapForField(StandardImplementation.class, "implementations");
+        return this;
     }
 }
