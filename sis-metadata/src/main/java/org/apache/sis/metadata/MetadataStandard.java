@@ -638,7 +638,7 @@ public class MetadataStandard implements Serializable {
     {
         ensureNonNull("metadata",    metadata);
         ensureNonNull("valuePolicy", valuePolicy);
-        return new MetadataTreeTable(this, metadata, valuePolicy);
+        return new TreeTableView(this, metadata, valuePolicy);
     }
 
     /**

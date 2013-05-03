@@ -28,9 +28,9 @@ import org.apache.sis.util.Debug;
 
 
 /**
- * The collection of children to be returned by {@link MetadataTreeNode#getChildren()}.
- * This collection holds a reference to the metadata object at creation time; it does
- * not track changes in {@code parent.getUserObject()}.
+ * The collection of children to be returned by {@link TreeNode#getChildren()}.
+ * This collection holds a reference to the metadata object at creation time;
+ * it does not track changes in {@code parent.getUserObject()}.
  *
  * {@section Note on value existence policy}
  * It is better to use this class with {@link ValueExistencePolicy#NON_EMPTY} in order
@@ -38,11 +38,11 @@ import org.apache.sis.util.Debug;
  * If the policy is set to another value, we need to keep the following aspects in mind:
  *
  * <ul>
- *   <li>When {@link Iter#hasNext()} finds a null or empty collection, it may needs to
- *       simulate a singleton with a null value.</li>
- *   <li>In {@link MetadataTreeNode#getUserObject()}, we need the same check than above
- *       for simulating a singleton collection with a null value if the node is for the
- *       element at index 0.</li>
+ *   <li>When {@link Iter#hasNext()} finds a null or empty collection,
+ *       it may needs to simulate a singleton with a null value.</li>
+ *   <li>In {@link TreeNode#getUserObject()}, we need the same check than above
+ *       for simulating a singleton collection with a null value if the node is
+ *       for the element at index 0.</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -50,7 +50,7 @@ import org.apache.sis.util.Debug;
  * @version 0.3
  * @module
  */
-final class MetadataTreeChildren extends AbstractCollection<TreeTable.Node> {
+final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
     /**
      * The parent of the children to be returned by the iterator.
      * Some useful information are available indirectly through this parent:
@@ -61,14 +61,14 @@ final class MetadataTreeChildren extends AbstractCollection<TreeTable.Node> {
      *
      * @see #childAt(int)
      */
-    private final MetadataTreeNode parent;
+    private final TreeNode parent;
 
     /**
      * The metadata object for which property values will be the elements of this collection.
      * This is typically an {@link AbstractMetadata} instance, but not necessarily.
      * Any type for which {@link MetadataStandard#isMetadata(Class)} returns {@code true} is okay.
      *
-     * <p>This field is a snapshot of the {@linkplain #parent} {@link MetadataTreeNode#getUserObject()} at
+     * <p>This field is a snapshot of the {@linkplain #parent} {@link TreeNode#getUserObject()} at
      * creation time. This collection does not track changes in the reference returned by the above-cited
      * {@code getUserObject()}. In other words, changes in the {@code metadata} object will be reflected
      * in this collection, but if {@code parent.getUserObject()} returns a reference to another object,
@@ -94,7 +94,7 @@ final class MetadataTreeChildren extends AbstractCollection<TreeTable.Node> {
      * <p>Not all elements in this array will be returned by the iterator.
      * The value needs to be verified for the {@link ValueExistencePolicy}.</p>
      */
-    private final MetadataTreeNode[] children;
+    private final TreeNode[] children;
 
     /**
      * Modification count, incremented when the content of this collection is modified. This check
@@ -110,11 +110,11 @@ final class MetadataTreeChildren extends AbstractCollection<TreeTable.Node> {
      * @param metadata The metadata object for which property values will be the elements of this collection.
      * @param accessor The accessor to use for accessing the property names, types and values of the metadata object.
      */
-    MetadataTreeChildren(final MetadataTreeNode parent, final Object metadata, final PropertyAccessor accessor) {
+    TreeNodeChildren(final TreeNode parent, final Object metadata, final PropertyAccessor accessor) {
         this.parent   = parent;
         this.metadata = metadata;
         this.accessor = accessor;
-        children = new MetadataTreeNode[accessor.count()];
+        children = new TreeNode[accessor.count()];
     }
 
     /**
@@ -188,16 +188,16 @@ final class MetadataTreeChildren extends AbstractCollection<TreeTable.Node> {
      *         collection (<em>not</em> the index in <em>this</em> collection). Otherwise -1.
      * @return The node to be returned by public API.
      */
-    final MetadataTreeNode childAt(final int index, final int subIndex) {
-        MetadataTreeNode node = children[index];
+    final TreeNode childAt(final int index, final int subIndex) {
+        TreeNode node = children[index];
         if (subIndex >= 0) {
             /*
              * If the value is an element of a collection, we will cache only the last used value.
              * We don't cache all elements in order to avoid yet more complex code, and this cover
              * the majority of cases where the collection has only one element anyway.
              */
-            if (node == null || ((MetadataTreeNode.CollectionElement) node).indexInList != subIndex) {
-                node = new MetadataTreeNode.CollectionElement(parent, metadata, accessor, index, subIndex);
+            if (node == null || ((TreeNode.CollectionElement) node).indexInList != subIndex) {
+                node = new TreeNode.CollectionElement(parent, metadata, accessor, index, subIndex);
             }
         } else {
             /*
@@ -206,7 +206,7 @@ final class MetadataTreeChildren extends AbstractCollection<TreeTable.Node> {
              * the node to reflect changes in the metadata object, and conversely.
              */
             if (node == null) {
-                node = new MetadataTreeNode.Element(parent, metadata, accessor, index);
+                node = new TreeNode.Element(parent, metadata, accessor, index);
             }
         }
         children[index] = node;
@@ -261,7 +261,7 @@ final class MetadataTreeChildren extends AbstractCollection<TreeTable.Node> {
     }
 
     /**
-     * The iterator over the elements in the enclosing {@link MetadataTreeChildren} collection.
+     * The iterator over the elements in the enclosing {@link TreeNodeChildren} collection.
      * Each element is identified by its index in the {@link PropertyAccessor}, together with
      * its position in its sub-iterator when the metadata property is a collection.
      *
@@ -278,14 +278,14 @@ final class MetadataTreeChildren extends AbstractCollection<TreeTable.Node> {
      */
     private final class Iter implements Iterator<TreeTable.Node> {
         /**
-         * Index in {@link MetadataTreeChildren#accessor} of the next element to be
-         * returned by {@link #next()}, or {@link PropertyAccessor#count()} if we
-         * have reached the end of the list.
+         * Index in {@link TreeNodeChildren#accessor} of the next element to be
+         * returned by {@link #next()}, or {@link PropertyAccessor#count()} if
+         * we have reached the end of the list.
          */
         private int nextInAccessor;
 
         /**
-         * Index in {@link MetadataTreeChildren#accessor} of the element returned by
+         * Index in {@link TreeNodeChildren#accessor} of the element returned by
          * the last call to {@link #next()}, or -1 if none.
          */
         private int previousInAccessor = -1;
@@ -324,7 +324,7 @@ final class MetadataTreeChildren extends AbstractCollection<TreeTable.Node> {
         private int subIndex = -1;
 
         /**
-         * The value of {@link MetadataTreeChildren#modCount} at construction time or after
+         * The value of {@link TreeNodeChildren#modCount} at construction time or after
          * the last change done by this iterator. Used for concurrent modification checks.
          *
          * {@note Actually this iterator should be robust to most concurrent modifications.
@@ -425,7 +425,7 @@ final class MetadataTreeChildren extends AbstractCollection<TreeTable.Node> {
         @Override
         public TreeTable.Node next() {
             if (hasNext()) {
-                final MetadataTreeNode node = childAt(nextInAccessor, subIndex);
+                final TreeNode node = childAt(nextInAccessor, subIndex);
                 previousInAccessor = nextInAccessor;
                 if (subIterator == null) {
                     /*
@@ -496,7 +496,7 @@ final class MetadataTreeChildren extends AbstractCollection<TreeTable.Node> {
     }
 
     /**
-     * Implementation of {@link #add(TreeTable.Node)}, also invoked by {@link MetadataTreeNode.NewChild}.
+     * Implementation of {@link #add(TreeTable.Node)}, also invoked by {@link TreeNode.NewChild}.
      * This method will attempt to convert the given {@code value} to the expected type.
      *
      * @param  index The index in the accessor (<em>not</em> the index in this collection).
@@ -533,7 +533,7 @@ final class MetadataTreeChildren extends AbstractCollection<TreeTable.Node> {
         buffer.append(lineSeparator);
         for (final TreeTable.Node node : this) {
             buffer.append("  ");
-            ((MetadataTreeNode) node).toString(buffer);
+            ((TreeNode) node).toString(buffer);
             buffer.append(lineSeparator);
         }
         return buffer.toString();

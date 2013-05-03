@@ -37,13 +37,13 @@ import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
- * A node in a {@link MetadataTreeTable} view. The {@code MetadataTreeTable} class is used directly
+ * A node in a {@link TreeTableView} view. The {@code TreeTableView} class is used directly
  * only for the root node, or for nodes containing a fixed value instead than a value fetched from
  * the metadata object. For all other nodes, the actual node class shall be either {@link Element}
  * or {@link CollectionElement}.
  *
  * <p>The value of a node is extracted from the {@linkplain #metadata} object by {@link #getUserObject()}.
- * For each instance of {@code MetadataTreeTable}, that value is always a singleton, never a collection.
+ * For each instance of {@code TreeTableView}, that value is always a singleton, never a collection.
  * If a metadata property is a collection, then there is an instance of the {@link CollectionElement}
  * subclass for each element in the collection.</p>
  *
@@ -56,7 +56,7 @@ import org.apache.sis.util.resources.Vocabulary;
  * @version 0.3
  * @module
  */
-class MetadataTreeNode implements Node, Serializable {
+class TreeNode implements Node, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -66,7 +66,7 @@ class MetadataTreeNode implements Node, Serializable {
      * The collection of {@linkplain #children} to return when the node does not allow children
      * (i.e. is a leaf). This constant is also used as a sentinel value by {@link #isLeaf()}.
      *
-     * <p>We choose an empty set instead than an empty list because {@link MetadataTreeChildren}
+     * <p>We choose an empty set instead than an empty list because {@link TreeNodeChildren}
      * does not implement the {@link List} interface. So we are better to never give to the user
      * a collection implementing {@code List} in order to signal incorrect casts sooner.</p>
      */
@@ -86,10 +86,10 @@ class MetadataTreeNode implements Node, Serializable {
      * The table for which this node is an element. Contains information like
      * the metadata standard and the value existence policy.
      *
-     * <p>All {@code MetadataTreeNode} instances in the same tree have
-     * a reference to the same {@code MetadataTreeTable} instance.</p>
+     * <p>All {@code TreeNode} instances in the same tree have
+     * a reference to the same {@code TreeTableView} instance.</p>
      */
-    final MetadataTreeTable table;
+    final TreeTableView table;
 
     /**
      * The parent of this node to be returned by {@link #getParent()},
@@ -97,14 +97,14 @@ class MetadataTreeNode implements Node, Serializable {
      *
      * @see #getParent()
      */
-    private final MetadataTreeNode parent;
+    private final TreeNode parent;
 
     /**
      * The metadata object from which the {@link #getUserObject()} method will fetch the value.
-     * The value is fetched in different ways, which depend on the {@code MetadataTreeNode} subclass:
+     * The value is fetched in different ways, which depend on the {@code TreeNode} subclass:
      *
      * <ul>
-     *   <li>For {@code MetadataTreeNode} (the root of the tree),
+     *   <li>For {@code TreeNode} (the root of the tree),
      *       the value is directly {@link #metadata}.</li>
      *   <li>For {@link Element} (a metadata property which is not a collection),
      *       the value is {@code accessor.get(indexInData, metadata)}.</li>
@@ -140,7 +140,7 @@ class MetadataTreeNode implements Node, Serializable {
      * @param  table    The table which is creating this root node.
      * @param  metadata The root metadata object (can not be null).
      */
-    MetadataTreeNode(final MetadataTreeTable table, final Object metadata) {
+    TreeNode(final TreeTableView table, final Object metadata) {
         this.table    = table;
         this.parent   = null;
         this.metadata = metadata;
@@ -153,7 +153,7 @@ class MetadataTreeNode implements Node, Serializable {
      * @param  parent   The parent of this node.
      * @param  metadata The metadata object for which this node will be a value.
      */
-    MetadataTreeNode(final MetadataTreeNode parent, final Object metadata) {
+    TreeNode(final TreeNode parent, final Object metadata) {
         this.table    = parent.table;
         this.parent   = parent;
         this.metadata = metadata;
@@ -230,13 +230,13 @@ class MetadataTreeNode implements Node, Serializable {
      * A node for a metadata property value. This class does not store the property value directly.
      * Instead, is stores a reference to the metadata object that contains the property values,
      * together with the index for fetching the value in that object. That way, the real storage
-     * objects still the metadata object, which allow {@link MetadataTreeTable} to be a dynamic view.
+     * objects still the metadata object, which allow {@link TreeTableView} to be a dynamic view.
      *
      * <p>Instances of this class shall be instantiated only for metadata singletons. If a metadata
      * property is a collection, then the {@link CollectionElement} subclass shall be instantiated
      * instead.</p>
      */
-    static class Element extends MetadataTreeNode {
+    static class Element extends TreeNode {
         /**
          * For cross-version compatibility.
          */
@@ -263,7 +263,7 @@ class MetadataTreeNode implements Node, Serializable {
          * @param  accessor    Accessor to use for fetching the name, type and value.
          * @param  indexInData Index to be given to the accessor of fetching the value.
          */
-        Element(final MetadataTreeNode parent, final Object metadata,
+        Element(final TreeNode parent, final Object metadata,
                 final PropertyAccessor accessor, final int indexInData)
         {
             super(parent, metadata);
@@ -358,7 +358,7 @@ class MetadataTreeNode implements Node, Serializable {
          * @param  indexInData Index to be given to the accessor of fetching the collection.
          * @param  indexInList Index of the element in the collection, in iteration order.
          */
-        CollectionElement(final MetadataTreeNode parent, final Object metadata,
+        CollectionElement(final TreeNode parent, final Object metadata,
                 final PropertyAccessor accessor, final int indexInData, final int indexInList)
         {
             super(parent, metadata, accessor, indexInData);
@@ -418,9 +418,8 @@ class MetadataTreeNode implements Node, Serializable {
             } catch (NullPointerException | IndexOutOfBoundsException | NoSuchElementException e) {
                 /*
                  * May happen if the collection for this metadata property changed after the iteration
-                 * in the MetadataTreeChildren. Users should not keep MetadataTreeNode references
-                 * instances for a long time, but instead iterate again over MetadataTreeChildren
-                 * when needed.
+                 * in the TreeNodeChildren. Users should not keep TreeNode references instances for a
+                 * long time, but instead iterate again over TreeNodeChildren when needed.
                  */
                 throw new ConcurrentModificationException(e);
             }
@@ -517,8 +516,8 @@ class MetadataTreeNode implements Node, Serializable {
             /*
              * If there is a value, check if the cached collection is still applicable.
              */
-            if (children instanceof MetadataTreeChildren) {
-                final MetadataTreeChildren candidate = (MetadataTreeChildren) children;
+            if (children instanceof TreeNodeChildren) {
+                final TreeNodeChildren candidate = (TreeNodeChildren) children;
                 if (candidate.metadata == value) {
                     return candidate;
                 }
@@ -527,7 +526,7 @@ class MetadataTreeNode implements Node, Serializable {
              * At this point, we need to create a new collection. The property accessor shall
              * exist, otherwise the call to 'isLeaf()' above would have returned 'true'.
              */
-            children = new MetadataTreeChildren(this, value, table.standard.getAccessor(value.getClass(), true));
+            children = new TreeNodeChildren(this, value, table.standard.getAccessor(value.getClass(), true));
         }
         return children;
     }
@@ -559,7 +558,7 @@ class MetadataTreeNode implements Node, Serializable {
     }
 
     /**
-     * The proxy to be returned by {@link MetadataTreeNode#newChild()}.
+     * The proxy to be returned by {@link TreeNode#newChild()}.
      * User shall not keep a reference to this proxy for a long time.
      */
     private final class NewChild implements Node {
@@ -574,14 +573,14 @@ class MetadataTreeNode implements Node, Serializable {
          * The real node created after the identifier and the value have been specified.
          * All operations will be delegated to that node after it has been determined.
          */
-        private MetadataTreeNode delegate;
+        private TreeNode delegate;
 
         /**
          * Returns the {@link #delegate} node if non-null, or throw an exception otherwise.
          *
          * @throws IllegalStateException if the identifier and value columns have not yet been defined.
          */
-        private MetadataTreeNode delegate() throws IllegalStateException {
+        private TreeNode delegate() throws IllegalStateException {
             if (delegate != null) {
                 return delegate;
             }
@@ -592,8 +591,8 @@ class MetadataTreeNode implements Node, Serializable {
         /**
          * Returns all children of the parent node. The new child will be added to that list.
          */
-        private MetadataTreeChildren getSiblings() {
-            return (MetadataTreeChildren) MetadataTreeNode.this.getChildren();
+        private TreeNodeChildren getSiblings() {
+            return (TreeNodeChildren) TreeNode.this.getChildren();
         }
 
         /**
@@ -624,7 +623,7 @@ class MetadataTreeNode implements Node, Serializable {
                         throw new IllegalStateException(Errors.format(Errors.Keys.MissingValueInColumn_1,
                                 TableColumn.IDENTIFIER.getHeader()));
                     }
-                    final MetadataTreeChildren siblings = getSiblings();
+                    final TreeNodeChildren siblings = getSiblings();
                     final int indexInList;
                     if (siblings.isCollection(indexInData)) {
                         indexInList = ((Collection<?>) siblings.valueAt(indexInData)).size();
@@ -647,7 +646,7 @@ class MetadataTreeNode implements Node, Serializable {
          *
          * @throws IllegalStateException if the identifier and value columns have not yet been defined.
          */
-        @Override public Node             getParent()                       {return MetadataTreeNode.this;}
+        @Override public Node             getParent()                       {return TreeNode.this;}
         @Override public boolean          isLeaf()                          {return delegate().isLeaf();}
         @Override public Collection<Node> getChildren()                     {return delegate().getChildren();}
         @Override public Node             newChild()                        {return delegate().newChild();}
@@ -697,7 +696,7 @@ class MetadataTreeNode implements Node, Serializable {
         if (column == TableColumn.VALUE) {
             ArgumentChecks.ensureNonNull("value", value);
             setUserObject(value);
-        } else if (MetadataTreeTable.COLUMNS.contains(column)) {
+        } else if (TreeTableView.COLUMNS.contains(column)) {
             throw new UnsupportedOperationException(unmodifiableCellValue(column));
         } else {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "column", column));

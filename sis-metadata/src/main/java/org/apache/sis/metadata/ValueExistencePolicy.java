@@ -47,7 +47,7 @@ public enum ValueExistencePolicy {
         }
 
         /** Substitutes null or empty collections by a null singleton element
-            in order to make the property visible in {@link MetadataTreeNode}. */
+            in order to make the property visible in {@link TreeNode}. */
         @Override boolean substituteByNullElement(final Collection<?> values) {
             return (values == null) || values.isEmpty();
         }
@@ -101,12 +101,12 @@ public enum ValueExistencePolicy {
     abstract boolean isSkipped(Object value);
 
     /**
-     * Returns {@code true} if {@link MetadataTreeNode} shall substitute the given collection by
+     * Returns {@code true} if {@link TreeNode} shall substitute the given collection by
      * a singleton containing only a null element.
      *
      * <p><b>Purpose:</b>
      * When a collection is null or empty, while not excluded according this {@code ValueExistencePolicy},
-     * we need an empty space for making the metadata property visible in {@code MetadataTreeNode}.</p>
+     * we need an empty space for making the metadata property visible in {@code TreeNode}.</p>
      */
     abstract boolean substituteByNullElement(Collection<?> values);
 

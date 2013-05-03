@@ -40,7 +40,7 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests the {@link MetadataTreeNode} class.
+ * Tests the {@link TreeNode} class.
  * Unless otherwise specified, all tests use the {@link MetadataStandard#ISO_19115} constant.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -48,8 +48,8 @@ import static org.junit.Assert.*;
  * @version 0.3
  * @module
  */
-@DependsOn(MetadataTreeChildrenTest.class)
-public final strictfp class MetadataTreeNodeTest extends TestCase {
+@DependsOn(TreeNodeChildrenTest.class)
+public final strictfp class TreeNodeTest extends TestCase {
     /**
      * Creates a metadata hierarchy to be used for the tests.
      * This method creates the following metadata:
@@ -75,7 +75,7 @@ public final strictfp class MetadataTreeNodeTest extends TestCase {
      * }
      */
     static DefaultCitation metadataWithHierarchy() {
-        final DefaultCitation citation = MetadataTreeChildrenTest.metadataWithMultiOccurrences();
+        final DefaultCitation citation = TreeNodeChildrenTest.metadataWithMultiOccurrences();
         DefaultResponsibleParty party = new DefaultResponsibleParty(Role.DISTRIBUTOR);
         party.setOrganisationName(new SimpleInternationalString("Some organisation"));
         citation.getCitedResponsibleParties().add(party);
@@ -95,10 +95,10 @@ public final strictfp class MetadataTreeNodeTest extends TestCase {
     /**
      * Creates a node to be tested for the given metadata object and value policy.
      */
-    private static MetadataTreeNode create(final AbstractMetadata metadata, final ValueExistencePolicy valuePolicy) {
+    private static TreeNode create(final AbstractMetadata metadata, final ValueExistencePolicy valuePolicy) {
         final MetadataStandard  standard = MetadataStandard.ISO_19115;
-        final MetadataTreeTable table    = new MetadataTreeTable(standard, metadata, valuePolicy);
-        return (MetadataTreeNode) table.getRoot();
+        final TreeTableView table = new TreeTableView(standard, metadata, valuePolicy);
+        return (TreeNode) table.getRoot();
     }
 
     /**
@@ -106,8 +106,8 @@ public final strictfp class MetadataTreeNodeTest extends TestCase {
      */
     @Test
     public void testRootNode() {
-        final DefaultCitation citation = MetadataTreeChildrenTest.metadataWithoutCollections();
-        final MetadataTreeNode node = create(citation, ValueExistencePolicy.NON_EMPTY);
+        final DefaultCitation citation = TreeNodeChildrenTest.metadataWithoutCollections();
+        final TreeNode node = create(citation, ValueExistencePolicy.NON_EMPTY);
         assertEquals("getName()",        "DefaultCitation", node.getName());
         assertEquals("getIdentifier()",  "CI_Citation",     node.getIdentifier());
         assertEquals("getElementType()", Citation.class,    node.getElementType());
@@ -116,20 +116,20 @@ public final strictfp class MetadataTreeNodeTest extends TestCase {
         assertNull  ("getParent()",                         node.getParent());
         assertFalse ("isLeaf()",                            node.isLeaf());
 
-        final MetadataTreeChildren children = (MetadataTreeChildren) node.getChildren();
+        final TreeNodeChildren children = (TreeNodeChildren) node.getChildren();
         assertSame ("children.metadata", citation, children.metadata);
         assertFalse("children.isEmpty()", node.getChildren().isEmpty());
         assertSame ("children.parent", node, children.iterator().next().getParent());
     }
 
     /**
-     * Tests {@link MetadataTreeNode#getName()} on a metadata with only one entry in collections.
+     * Tests {@link TreeNode#getName()} on a metadata with only one entry in collections.
      * Those names shall <em>not</em> contain numbering like "<cite>(1 of 2)</cite>".
      */
     @Test
     @DependsOnMethod("testRootNode") // Because tested more basic methods than 'getValue(TableColumn)'.
     public void testGetNameForSingleton() {
-        final DefaultCitation citation = MetadataTreeChildrenTest.metadataWithSingletonInCollections();
+        final DefaultCitation citation = TreeNodeChildrenTest.metadataWithSingletonInCollections();
         assertColumnContentEquals(create(citation, ValueExistencePolicy.NON_EMPTY), TableColumn.NAME,
             "DefaultCitation",
               "Title",
@@ -140,13 +140,13 @@ public final strictfp class MetadataTreeNodeTest extends TestCase {
     }
 
     /**
-     * Tests {@link MetadataTreeNode#getName()} on a metadata with more than one entry in collections.
+     * Tests {@link TreeNode#getName()} on a metadata with more than one entry in collections.
      * Those names <em>shall</em> contain numbering like "<cite>(1 of 2)</cite>".
      */
     @Test
     @DependsOnMethod("testGetNameForSingleton")
     public void testGetNameForMultiOccurrences() {
-        final DefaultCitation citation = MetadataTreeChildrenTest.metadataWithMultiOccurrences();
+        final DefaultCitation citation = TreeNodeChildrenTest.metadataWithMultiOccurrences();
         assertColumnContentEquals(create(citation, ValueExistencePolicy.NON_EMPTY), TableColumn.NAME,
             "DefaultCitation",
               "Title",
@@ -159,7 +159,7 @@ public final strictfp class MetadataTreeNodeTest extends TestCase {
     }
 
     /**
-     * Tests {@link MetadataTreeNode#getName()} on a metadata with a deeper hierarchy.
+     * Tests {@link TreeNode#getName()} on a metadata with a deeper hierarchy.
      */
     @Test
     @DependsOnMethod("testGetNameForMultiOccurrences")
@@ -186,7 +186,7 @@ public final strictfp class MetadataTreeNodeTest extends TestCase {
     }
 
     /**
-     * Tests {@link MetadataTreeNode#getIdentifier()} on a metadata with a hierarchy.
+     * Tests {@link TreeNode#getIdentifier()} on a metadata with a hierarchy.
      * Those names shall <em>not</em> contain numbering like "<cite>(1 of 2)</cite>", even if the same
      * identifiers are repeated. Those identifiers are not intended to be unique in a list of children.
      * The repetition of the same identifier means that they shall be part of a collection.
@@ -216,7 +216,7 @@ public final strictfp class MetadataTreeNodeTest extends TestCase {
     }
 
     /**
-     * Tests {@link MetadataTreeNode#getElementType()} on a metadata with a hierarchy.
+     * Tests {@link TreeNode#getElementType()} on a metadata with a hierarchy.
      */
     @Test
     @DependsOnMethod("testGetIdentifier") // Because if identifiers are wrong, we are looking at wrong properties.
@@ -243,7 +243,7 @@ public final strictfp class MetadataTreeNodeTest extends TestCase {
     }
 
     /**
-     * Tests {@link MetadataTreeNode#getValue(TableColumn)} for the value column.
+     * Tests {@link TreeNode#getValue(TableColumn)} for the value column.
      */
     @Test
     @DependsOnMethod("testGetIdentifier") // Because if identifiers are wrong, we are looking at wrong properties.
@@ -270,13 +270,13 @@ public final strictfp class MetadataTreeNodeTest extends TestCase {
     }
 
     /**
-     * Tests {@link MetadataTreeNode#newChild()}.
+     * Tests {@link TreeNode#newChild()}.
      */
     @Test
     @DependsOnMethod("testGetValue")
     public void testNewChild() {
         final DefaultCitation citation = metadataWithHierarchy();
-        final MetadataTreeNode node = create(citation, ValueExistencePolicy.NON_EMPTY);
+        final TreeNode node = create(citation, ValueExistencePolicy.NON_EMPTY);
         /*
          * Ensure that we can not overwrite existing nodes.
          */
@@ -319,7 +319,7 @@ public final strictfp class MetadataTreeNodeTest extends TestCase {
      *                 applied on the given node, and all other values are the result of the
      *                 getter method applied on the children, in iteration order.
      */
-    private static void assertColumnContentEquals(final MetadataTreeNode node,
+    private static void assertColumnContentEquals(final TreeNode node,
             final TableColumn<?> column, final Object... values)
     {
         assertEquals("Missing values in the tested metadata.", values.length,
