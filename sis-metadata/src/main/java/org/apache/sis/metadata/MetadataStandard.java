@@ -22,6 +22,10 @@ import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.Collection;
 import java.util.Iterator;
+import java.io.IOException;
+import java.io.Serializable;
+import java.io.ObjectInputStream;
+import java.lang.reflect.Field;
 import net.jcip.annotations.ThreadSafe;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.ExtendedElementInformation;
@@ -81,7 +85,12 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @module
  */
 @ThreadSafe
-public class MetadataStandard {
+public class MetadataStandard implements Serializable {
+    /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = 7549790450195184843L;
+
     /**
      * Metadata instances defined in this class. The current implementation does not yet
      * contains the user-defined instances. However this may be something we will need to
@@ -115,6 +124,8 @@ public class MetadataStandard {
     static {
         final String[] prefix = {"Default", "Abstract"};
         final String[] acronyms = {"CoordinateSystem", "CS", "CoordinateReferenceSystem", "CRS"};
+
+        // If new StandardImplementation instances are added below, please update StandardImplementation.readResolve().
         ISO_19111 = new StandardImplementation("ISO 19111", "org.opengis.referencing.", "org.apache.sis.referencing.", prefix, acronyms);
         ISO_19115 = new StandardImplementation("ISO 19115", "org.opengis.metadata.", "org.apache.sis.metadata.iso.", prefix, null);
         ISO_19119 = new MetadataStandard      ("ISO 19119", "org.opengis.service.");
@@ -137,7 +148,7 @@ public class MetadataStandard {
      *
      * @see #getCitation()
      */
-    private final Citation citation;
+    final Citation citation;
 
     /**
      * The root packages for metadata interfaces. Must have a trailing {@code '.'}.
@@ -154,7 +165,7 @@ public class MetadataStandard {
      *   <li>{@link PropertyAccessor} otherwise.</li>
      * </ul>
      */
-    private final Map<Class<?>, Object> accessors;
+    private final transient Map<Class<?>, Object> accessors; // written by reflection on deserialization.
 
     /**
      * Creates a new instance working on implementation of interfaces defined in the specified package.
@@ -170,7 +181,7 @@ public class MetadataStandard {
         ensureNonNull("interfacePackage", interfacePackage);
         this.citation         = citation;
         this.interfacePackage = interfacePackage.getName() + '.';
-        this.accessors        = new IdentityHashMap<>();
+        this.accessors        = new IdentityHashMap<>(); // Also defined in readObject(…)
     }
 
     /**
@@ -706,5 +717,27 @@ public class MetadataStandard {
     @Override
     public String toString() {
         return Classes.getShortClassName(this) + '[' + citation.getTitle() + ']';
+    }
+
+    /**
+     * Assigns an {@link IdentityHashMap} instance to the given field.
+     * Used on deserialization only.
+     */
+    final void setMapForField(final Class<?> classe, final String name) {
+        try {
+            final Field field = classe.getDeclaredField(name);
+            field.setAccessible(true);
+            field.set(this, new IdentityHashMap<>());
+        } catch (ReflectiveOperationException e) {
+            throw new AssertionError(e); // Should never happen (tested by MetadataStandardTest).
+        }
+    }
+
+    /**
+     * Invoked during deserialization for restoring the transient fields.
+     */
+    private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        setMapForField(MetadataStandard.class, "accessors");
     }
 }

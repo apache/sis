@@ -34,7 +34,7 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.opengis.test.Assert.*;
+import static org.apache.sis.test.Assert.*;
 
 
 /**
@@ -194,5 +194,14 @@ public final strictfp class MetadataStandardTest extends TestCase {
         types = std.asTypeMap(RectifiedGrid.class, KeyNamePolicy.UML_IDENTIFIER, TypeValuePolicy.ELEMENT_TYPE);
         assertEquals("As elements in a list of dimensions.",       Integer.class,  types.get("dimension"));
         assertEquals("As elements in the list of offset vectors.", double[].class, types.get("offsetVectors"));
+    }
+
+    /**
+     * Tests serialization of pre-defined constants.
+     */
+    @Test
+    public void testSerialization() {
+        assertSame(MetadataStandard.ISO_19111, assertSerializedEquals(MetadataStandard.ISO_19111));
+        assertSame(MetadataStandard.ISO_19115, assertSerializedEquals(MetadataStandard.ISO_19115));
     }
 }
