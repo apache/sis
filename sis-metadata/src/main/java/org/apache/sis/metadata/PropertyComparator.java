@@ -41,9 +41,6 @@ import org.opengis.annotation.Obligation;
  *       fallbacks on alphabetical order.</li>
  * </ol>
  *
- * The first criterion (mandatory methods first) is necessary for reducing the risk
- * of ambiguity in the {@link MetadataTreeTable#parse} method.
- *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.4)
  * @version 0.3

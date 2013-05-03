@@ -41,7 +41,7 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * @version 0.3
  * @module
  */
-final class MetadataTreeTable implements TreeTable, Serializable {
+final class TreeTableView implements TreeTable, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -85,10 +85,10 @@ final class MetadataTreeTable implements TreeTable, Serializable {
      * @param metadata    The metadata object to wrap.
      * @param valuePolicy The behavior of this map toward null or empty values.
      */
-    MetadataTreeTable(final MetadataStandard standard, final Object metadata, final ValueExistencePolicy valuePolicy) {
+    TreeTableView(final MetadataStandard standard, final Object metadata, final ValueExistencePolicy valuePolicy) {
         this.standard    = standard;
         this.valuePolicy = valuePolicy;
-        this.root = new MetadataTreeNode(this, metadata);
+        this.root = new TreeNode(this, metadata);
     }
 
     /**
@@ -118,7 +118,7 @@ final class MetadataTreeTable implements TreeTable, Serializable {
      */
     @Override
     public String toString() {
-        synchronized (MetadataTreeTable.class) {
+        synchronized (TreeTableView.class) {
             if (format == null) {
                 final TreeTableFormat f = new TreeTableFormat(null, null);
                 f.setColumns(TableColumn.NAME, TableColumn.VALUE);
