@@ -107,7 +107,7 @@ final class PropertyAccessor {
      * Enumeration constants for the {@code mode} argument
      * in the {@link #set(int, Object, Object, int)} method.
      */
-    static final int RETURN_NULL=0, RETURN_CHANGED=1, RETURN_PREVIOUS=2;
+    static final int RETURN_NULL=0, RETURN_PREVIOUS=1, APPEND=2;
 
     /**
      * Additional getter to declare in every list of getter methods that do not already provide
@@ -670,21 +670,22 @@ final class PropertyAccessor {
 
     /**
      * Sets a value for the specified metadata and returns the old value if {@code mode} is
-     * {@link #RETURN_PREVIOUS}. The {@code mode} argument can be one of the following, from
-     * cheapest to more expensive mode:
+     * {@link #RETURN_PREVIOUS}. The {@code mode} argument can be one of the following:
      *
      * <ul>
      *   <li>RETURN_NULL:     Set the value and returns {@code null}.</li>
-     *   <li>RETURN_CHANGED:  Set the value and returns {@link Boolean#TRUE} if the metadata changed
-     *                        as a result of this method call, or {@code Boolean#FALSE} otherwise.</li>
      *   <li>RETURN_PREVIOUS: Set the value and returns the previous value. If the previous value was a
      *                        collection or a map, then that value is copied in a new collection or map
      *                        before the new value is set because the setter methods typically copy the
      *                        new collection in their existing instance.</li>
+     *   <li>APPEND:          Set the value only if it doesn't overwrite an existing value, then returns
+     *                        {@link Boolean#TRUE} if the metadata changed as a result of this method call,
+     *                        {@code Boolean#FALSE} if the metadata didn't changed or {@code null} if the
+     *                        value can not be set because an other value already exists.</li>
      * </ul>
      *
-     * <p>The {@code RETURN_CHANGED} mode has an additional side effect: it sets the {@code append} argument
-     * to {@code true} in the call to the {@link #convert(Method, Object, Object, Object[], Class, boolean)}
+     * <p>The {@code APPEND} mode has an additional side effect: it sets the {@code append} argument to
+     * {@code true} in the call to the {@link #convert(Method, Object, Object, Object[], Class, boolean)}
      * method. See the {@code convert} javadoc for more information.</p>
      *
      * <p>If the given index is out of bounds, then this method does nothing and return {@code null}.
@@ -696,7 +697,7 @@ final class PropertyAccessor {
      * @param  index       The index of the property to set.
      * @param  metadata    The metadata object on which to set the value.
      * @param  value       The new value.
-     * @param  mode Whether this method should first fetches the old value,
+     * @param  mode        Whether this method should first fetches the old value,
      *                     as one of the {@code RETURN_*} constants.
      * @return The old value, or {@code null} if {@code returnValue} was {@code RETURN_NULL}.
      * @throws UnmodifiableMetadataException if the property for the given key is read-only.
@@ -713,33 +714,58 @@ final class PropertyAccessor {
             final Method getter = getters[index];
             final Method setter = setters[index];
             if (setter != null) {
-                Object old  = null;
-                Object copy = null;
-                if (mode != RETURN_NULL) {
-                    old  = get(getter, metadata);
-                    copy = old;
-                    if (mode == RETURN_PREVIOUS) {
-                        if (old instanceof Collection<?>) {
-                            if (old instanceof List<?>) {
-                                copy = snapshot((List<?>) old);
+                final Object oldValue;
+                final Object snapshot; // Copy of oldValue before modification.
+                switch (mode) {
+                    case RETURN_NULL: {
+                        oldValue = null;
+                        snapshot = null;
+                        break;
+                    }
+                    case APPEND: {
+                        oldValue = get(getter, metadata);
+                        snapshot = null;
+                        break;
+                    }
+                    case RETURN_PREVIOUS: {
+                        oldValue = get(getter, metadata);
+                        if (oldValue instanceof Collection<?>) {
+                            if (oldValue instanceof List<?>) {
+                                snapshot = snapshot((List<?>) oldValue);
                             } else {
-                                copy = modifiableCopy((Collection<?>) old);
+                                snapshot = modifiableCopy((Collection<?>) oldValue);
                             }
-                        } else if (old instanceof Map<?,?>) {
-                            copy = modifiableCopy((Map<?,?>) old);
+                        } else if (oldValue instanceof Map<?,?>) {
+                            snapshot = modifiableCopy((Map<?,?>) oldValue);
+                        } else {
+                            snapshot = oldValue;
                         }
+                        break;
                     }
+                    default: throw new AssertionError(mode);
                 }
+                /*
+                 * Converts the new value to a type acceptable for the setter method (if possible).
+                 * If the new value is a singleton while the expected type is a collection, then the 'convert'
+                 * method added the singleton in the existing collection, which may result in no change if the
+                 * collection is a Set and the new value already exists in that Set. If we detect that there is
+                 * no change, then we don't need to invoke the setter method. Note that we conservatively assume
+                 * that there is always a change in RETURN_NULL mode since we don't know the previous value.
+                 */
                 final Object[] newValues = new Object[] {value};
-                Boolean changed = convert(getter, metadata, old, newValues, elementTypes[index], mode == RETURN_CHANGED);
-                set(setter, metadata, newValues);
-                if (mode == RETURN_CHANGED) {
-                    if (changed == null) {
-                        changed = (newValues[0] != old);
+                Boolean changed = convert(getter, metadata, oldValue, newValues, elementTypes[index], mode == APPEND);
+                if (changed == null) {
+                    changed = (mode == RETURN_NULL) || (newValues[0] != oldValue);
+                    if (changed && mode == APPEND && !ValueExistencePolicy.isNullOrEmpty(oldValue)) {
+                        // If 'convert' did not added the value in a collection and if a value already
+                        // exists, do not modify the existing value. Exit now with "no change" status.
+                        return null;
                     }
-                    return changed;
                 }
-                return copy;
+                if (changed) {
+                    set(setter, metadata, newValues);
+                }
+                return (mode == APPEND) ? changed : snapshot;
             }
         }
         throw new UnmodifiableMetadataException(Errors.format(Errors.Keys.CanNotSetPropertyValue_1, names[index]));

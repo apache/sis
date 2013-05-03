@@ -53,7 +53,8 @@ import org.junit.Test;
 import static java.util.Collections.singleton;
 import static org.opengis.test.Assert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
-import static org.apache.sis.metadata.PropertyAccessor.RETURN_CHANGED;
+import static org.apache.sis.metadata.PropertyAccessor.APPEND;
+import static org.apache.sis.metadata.PropertyAccessor.RETURN_NULL;
 import static org.apache.sis.metadata.PropertyAccessor.RETURN_PREVIOUS;
 
 
@@ -279,6 +280,33 @@ public final strictfp class PropertyAccessorTest extends TestCase {
     }
 
     /**
+     * Tests the {@link PropertyAccessor#set(int, Object, Object, int)} method with a {@code null} value.
+     * Setting a property to {@code null} is equivalent to removing that property value.
+     * The metadata object used by this test (before removal) is:
+     *
+     * {@preformat text
+     *   DefaultCitation
+     *     └─Title………………………… Some title
+     * }
+     */
+    @Test
+    @DependsOnMethod("testSet")
+    public void testSetNull() {
+        final DefaultCitation  instance = new DefaultCitation("Some title");
+        final PropertyAccessor accessor = createPropertyAccessor();
+        final InternationalString title = instance.getTitle();
+        final int index = accessor.indexOf("title", true);
+
+        assertEquals("Some title", title.toString()); // Sanity check before to continue.
+        assertNull("title", accessor.set(index, instance, null, RETURN_NULL));
+        assertNull("title", instance.getTitle());
+
+        instance.setTitle(title);
+        assertSame("title", title, accessor.set(index, instance, null, RETURN_PREVIOUS));
+        assertNull("title", instance.getTitle());
+    }
+
+    /**
      * Tests the {@link PropertyAccessor#set(int, Object, Object, int)} method
      * with a value that will need to be converted. The conversion will be from
      * {@link String} to {@link InternationalString}. The created metadata object is:
@@ -414,7 +442,7 @@ public final strictfp class PropertyAccessorTest extends TestCase {
 
     /**
      * Tests the {@link PropertyAccessor#set(int, Object, Object, int)} method in
-     * {@link PropertyAccessor#RETURN_CHANGED} mode. In this mode, new collections
+     * {@link PropertyAccessor#APPEND} mode. In this mode, new collections
      * are added into existing collections instead than replacing them.
      * The metadata object created by this test after the merge is:
      *
@@ -444,23 +472,29 @@ public final strictfp class PropertyAccessorTest extends TestCase {
         instance.setAlternateTitles(oldTitles);
         final PropertyAccessor accessor = createPropertyAccessor();
         final int titleIndex = accessor.indexOf("title", true);
-        Object titleChanged = accessor.set(titleIndex, instance, "Added title", RETURN_CHANGED);
+        Object titleChanged = accessor.set(titleIndex, instance, "Added title", APPEND);
 
         // Set the alternate titles.
         final int    index    = accessor.indexOf("alternateTitles", true);
-        final Object changed  = accessor.set(index, instance, newTitles, RETURN_CHANGED);
+        final Object changed  = accessor.set(index, instance, newTitles, APPEND);
         final Object newValue = accessor.get(index, instance);
 
         // Verify the values.
-        assertEquals("set(…, RETURN_CHANGED)", Boolean.TRUE, titleChanged);
-        assertEquals("set(…, RETURN_CHANGED)", Boolean.TRUE, changed);
-        assertEquals("get(…)",                 merged, newValue);
-        assertSame  ("alternateTitles",        newValue, instance.getAlternateTitles());
+        assertEquals("set(…, APPEND)",  Boolean.TRUE, titleChanged);
+        assertEquals("set(…, APPEND)",  Boolean.TRUE, changed);
+        assertEquals("get(…)",          merged, newValue);
+        assertSame  ("alternateTitles", newValue, instance.getAlternateTitles());
         assertEquals("title", "Added title", instance.getTitle().toString());
 
         // Test setting again the title to the same value.
-        titleChanged = accessor.set(titleIndex, instance, "Added title", RETURN_CHANGED);
-        assertEquals("set(…, RETURN_CHANGED)", Boolean.FALSE, titleChanged);
+        titleChanged = accessor.set(titleIndex, instance, "Added title", APPEND);
+        assertEquals("set(…, APPEND)", Boolean.FALSE, titleChanged);
+        assertEquals("title", "Added title", instance.getTitle().toString());
+
+        // Test setting the title to a different value.
+        titleChanged = accessor.set(titleIndex, instance, "Different title", APPEND);
+        assertNull("set(…, APPEND)", titleChanged); // Operation shall be refused.
+        assertEquals("title", "Added title", instance.getTitle().toString());
     }
 
     /**

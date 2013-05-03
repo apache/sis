@@ -209,7 +209,14 @@ public final strictfp class MetadataTreeChildrenTest extends TestCase {
         toAdd.setValue(TableColumn.VALUE, citation.getEdition());
         assertFalse("Adding the same value shall be a no-op.", children.add(toAdd));
         toAdd.setValue(TableColumn.VALUE, "New edition");
-        assertTrue("Setting a different value shall be a change.", children.add(toAdd));
+        try {
+            children.add(toAdd);
+            fail("Setting a different value shall be refused.");
+        } catch (IllegalStateException e) {
+            assertTrue(e.getMessage().contains("edition"));
+        }
+        citation.setEdition(null); // Clears so we are allowed to add.
+        assertTrue("Setting a new value shall be a change.", children.add(toAdd));
 
         toAdd.setValue(TableColumn.IDENTIFIER, "presentationForm");
         toAdd.setValue(TableColumn.VALUE, PresentationForm.MAP_DIGITAL);

@@ -471,7 +471,7 @@ final class MetadataTreeChildren extends AbstractCollection<TreeTable.Node> {
      * are ignored.
      *
      * <p>If the identified property is a collection, then this method adds the value to that collection.
-     * Otherwise the new value will overwrite the value that existed prior this method call.</p>
+     * Otherwise the new value will be set only if the previous value is null or empty.</p>
      *
      * <p>This method does not iterate explicitly through the children list, because adding a metadata
      * object implicitly adds all its children.</p>
@@ -480,6 +480,7 @@ final class MetadataTreeChildren extends AbstractCollection<TreeTable.Node> {
      * @return {@code true} if the metadata changed as a result of this method call.
      * @throws NullPointerException if the given node is null.
      * @throws IllegalArgumentException if this list does not have a property for the node identifier.
+     * @throws IllegalStateException if a value already exists and no more value can be added for the node identifier.
      * @throws UnmodifiableMetadataException if the property for the node identifier is read-only.
      * @throws ClassCastException if the node value is not of the expected type.
      * @throws BackingStoreException if the metadata implementation threw a checked exception.
@@ -496,11 +497,14 @@ final class MetadataTreeChildren extends AbstractCollection<TreeTable.Node> {
             return false;
         }
         final int index = accessor.indexOf(identifier, true);
-        if ((Boolean) accessor.set(index, metadata, value, PropertyAccessor.RETURN_CHANGED)) {
-            modCount++;
-            return true;
+        final Boolean changed = (Boolean) accessor.set(index, metadata, value, PropertyAccessor.APPEND);
+        if (changed == null) {
+            throw new IllegalStateException(Errors.format(Errors.Keys.ValueAlreadyDefined_1, identifier));
         }
-        return false;
+        if (changed) {
+            modCount++;
+        }
+        return changed;
     }
 
     /**
