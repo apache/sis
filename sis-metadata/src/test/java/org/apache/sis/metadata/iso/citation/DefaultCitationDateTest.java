@@ -41,7 +41,7 @@ public final strictfp class DefaultCitationDateTest extends TestCase {
      * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-170">GEOTK-170</a>
      */
     @Test
-    public void testShallowCopy() {
+    public void testCopyConstructor() {
         final CitationDate original = new CitationDate() {
             @Override public Date     getDate()     {return new Date(1305716658508L);}
             @Override public DateType getDateType() {return DateType.CREATION;}

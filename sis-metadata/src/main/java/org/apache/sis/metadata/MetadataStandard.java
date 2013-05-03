@@ -22,6 +22,10 @@ import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.Collection;
 import java.util.Iterator;
+import java.io.IOException;
+import java.io.Serializable;
+import java.io.ObjectInputStream;
+import java.lang.reflect.Field;
 import net.jcip.annotations.ThreadSafe;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.ExtendedElementInformation;
@@ -81,7 +85,12 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @module
  */
 @ThreadSafe
-public class MetadataStandard {
+public class MetadataStandard implements Serializable {
+    /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = 7549790450195184843L;
+
     /**
      * Metadata instances defined in this class. The current implementation does not yet
      * contains the user-defined instances. However this may be something we will need to
@@ -115,6 +124,8 @@ public class MetadataStandard {
     static {
         final String[] prefix = {"Default", "Abstract"};
         final String[] acronyms = {"CoordinateSystem", "CS", "CoordinateReferenceSystem", "CRS"};
+
+        // If new StandardImplementation instances are added below, please update StandardImplementation.readResolve().
         ISO_19111 = new StandardImplementation("ISO 19111", "org.opengis.referencing.", "org.apache.sis.referencing.", prefix, acronyms);
         ISO_19115 = new StandardImplementation("ISO 19115", "org.opengis.metadata.", "org.apache.sis.metadata.iso.", prefix, null);
         ISO_19119 = new MetadataStandard      ("ISO 19119", "org.opengis.service.");
@@ -137,7 +148,7 @@ public class MetadataStandard {
      *
      * @see #getCitation()
      */
-    private final Citation citation;
+    final Citation citation;
 
     /**
      * The root packages for metadata interfaces. Must have a trailing {@code '.'}.
@@ -154,7 +165,7 @@ public class MetadataStandard {
      *   <li>{@link PropertyAccessor} otherwise.</li>
      * </ul>
      */
-    private final Map<Class<?>, Object> accessors;
+    private final transient Map<Class<?>, Object> accessors; // written by reflection on deserialization.
 
     /**
      * Creates a new instance working on implementation of interfaces defined in the specified package.
@@ -170,7 +181,7 @@ public class MetadataStandard {
         ensureNonNull("interfacePackage", interfacePackage);
         this.citation         = citation;
         this.interfacePackage = interfacePackage.getName() + '.';
-        this.accessors        = new IdentityHashMap<Class<?>,Object>();
+        this.accessors        = new IdentityHashMap<Class<?>,Object>(); // Also defined in readObject(…)
     }
 
     /**
@@ -571,8 +582,23 @@ public class MetadataStandard {
      *
      * <p>The map supports the {@link Map#put(Object, Object) put(…)} and {@link Map#remove(Object)
      * remove(…)} operations if the underlying metadata object contains setter methods.
-     * The keys are case-insensitive and can be either the JavaBeans property name or
-     * the UML identifier.</p>
+     * The {@code remove(…)} method is implemented by a call to {@code put(…, null)}.
+     * Note that whether the entry appears as effectively removed from the map or just cleared
+     * (i.e. associated to a null value) depends on the {@code valuePolicy} argument.</p>
+     *
+     * <p>The keys are case-insensitive and can be either the JavaBeans property name, the getter method name
+     * or the {@linkplain org.opengis.annotation.UML#identifier() UML identifier}. The value given to a call
+     * to the {@code put(…)} method shall be an instance of the type expected by the corresponding setter method,
+     * or an instance of a type {@linkplain org.apache.sis.util.ObjectConverters#find(Class, Class) convertible}
+     * to the expected type.</p>
+     *
+     * <p>Calls to {@code put(…)} replace the previous value, with one noticeable exception: if the metadata
+     * property associated to the given key is a {@link java.util.Collection} but the given value is a single
+     * element (not a collection), then the given value is {@linkplain java.util.Collection#add(Object) added}
+     * to the existing collection. In other words, the returned map behaves as a <cite>multi-values map</cite>
+     * for the properties that allow multiple values. If the intend is to unconditionally discard all previous
+     * values, then make sure that the given value is a collection when the associated metadata property expects
+     * such collection.</p>
      *
      * @param  metadata The metadata object to view as a map.
      * @param  keyPolicy Determines the string representation of map keys.
@@ -626,37 +652,6 @@ public class MetadataStandard {
      */
     final void freeze(final Object metadata) throws ClassCastException {
         getAccessor(metadata.getClass(), true).freeze(metadata);
-    }
-
-    /**
-     * Copies all metadata from source to target.
-     * The source must implements the same metadata interface than the target.
-     *
-     * <p>If the source contains any null or empty properties, then those properties will
-     * <strong>not</strong> overwrite the corresponding properties in the destination metadata.</p>
-     *
-     * @param  source The metadata to copy.
-     * @param  target The target metadata.
-     * @throws ClassCastException if the source or target object don't
-     *         implements a metadata interface of the expected package.
-     * @throws UnmodifiableMetadataException if the target metadata is unmodifiable,
-     *         or if at least one setter method was required but not found.
-     *
-     * @see ModifiableMetadata#clone()
-     */
-    public void shallowCopy(final Object source, final Object target)
-            throws ClassCastException, UnmodifiableMetadataException
-    {
-        ensureNonNull("target", target);
-        final PropertyAccessor accessor = getAccessor(target.getClass(), true);
-        if (!accessor.type.isInstance(source)) {
-            ensureNonNull("source", source);
-            throw new ClassCastException(Errors.format(Errors.Keys.IllegalArgumentClass_3,
-                    "source", accessor.type, source.getClass()));
-        }
-        if (!accessor.shallowCopy(source, target)) {
-            throw new UnmodifiableMetadataException(Errors.format(Errors.Keys.UnmodifiableMetadata));
-        }
     }
 
     /**
@@ -722,5 +717,27 @@ public class MetadataStandard {
     @Override
     public String toString() {
         return Classes.getShortClassName(this) + '[' + citation.getTitle() + ']';
+    }
+
+    /**
+     * Assigns an {@link IdentityHashMap} instance to the given field.
+     * Used on deserialization only.
+     */
+    final void setMapForField(final Class<?> classe, final String name) {
+        try {
+            final Field field = classe.getDeclaredField(name);
+            field.setAccessible(true);
+            field.set(this, new IdentityHashMap());
+        } catch (Exception e) { // (ReflectiveOperationException) on JDK7 branch.
+            throw new AssertionError(e); // Should never happen (tested by MetadataStandardTest).
+        }
+    }
+
+    /**
+     * Invoked during deserialization for restoring the transient fields.
+     */
+    private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        setMapForField(MetadataStandard.class, "accessors");
     }
 }

@@ -21,7 +21,9 @@ import java.util.Collections;
 import java.util.AbstractCollection;
 import java.util.NoSuchElementException;
 import java.util.ConcurrentModificationException;
+import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Debug;
 
 // Related to JDK7
@@ -86,7 +88,7 @@ final class MetadataTreeChildren extends AbstractCollection<TreeTable.Node> {
      *     accessor = parent.table.standard.getAccessor(metadata.getClass(), true);
      * }
      */
-    private final PropertyAccessor accessor;
+    final PropertyAccessor accessor;
 
     /**
      * The children to be returned by this collection. All elements in this collection are
@@ -136,7 +138,7 @@ final class MetadataTreeChildren extends AbstractCollection<TreeTable.Node> {
      * @param index The index in the accessor (<em>not</em> the index in this collection).
      */
     final void clearAt(final int index) {
-        accessor.set(index, metadata, null, false);
+        accessor.set(index, metadata, null, PropertyAccessor.RETURN_NULL);
     }
 
     /**
@@ -464,6 +466,60 @@ final class MetadataTreeChildren extends AbstractCollection<TreeTable.Node> {
             }
             modCountCheck = ++modCount;
         }
+    }
+
+    /**
+     * Adds the given node to this list. This method fetches the object from {@link TableColumn#VALUE}
+     * and assigns it to the property identified by {@link TableColumn#IDENTIFIER}. All other columns
+     * are ignored.
+     *
+     * <p>If the identified property is a collection, then this method adds the value to that collection.
+     * Otherwise the new value will be set only if the previous value is null or empty.</p>
+     *
+     * <p>This method does not iterate explicitly through the children list, because adding a metadata
+     * object implicitly adds all its children.</p>
+     *
+     * @param  node The node from which to get the values.
+     * @return {@code true} if the metadata changed as a result of this method call.
+     * @throws NullPointerException if the given node is null.
+     * @throws IllegalArgumentException if this list does not have a property for the node identifier.
+     * @throws IllegalStateException if a value already exists and no more value can be added for the node identifier.
+     * @throws UnmodifiableMetadataException if the property for the node identifier is read-only.
+     * @throws ClassCastException if the node value can not be converted to the expected type.
+     * @throws BackingStoreException if the metadata implementation threw a checked exception.
+     */
+    @Override
+    public boolean add(final TreeTable.Node node) throws IllegalStateException {
+        final String identifier = node.getValue(TableColumn.IDENTIFIER);
+        if (identifier == null) {
+            throw new IllegalArgumentException(Errors.format(
+                    Errors.Keys.MissingValueInColumn_1, TableColumn.IDENTIFIER.getHeader()));
+        }
+        return add(accessor.indexOf(identifier, true), node.getValue(TableColumn.VALUE));
+    }
+
+    /**
+     * Implementation of {@link #add(TreeTable.Node)}, also invoked by {@link MetadataTreeNode.NewChild}.
+     * This method will attempt to convert the given {@code value} to the expected type.
+     *
+     * @param  index The index in the accessor (<em>not</em> the index in this collection).
+     * @param  value The property value to add.
+     * @return {@code true} if the metadata changed as a result of this method call.
+     */
+    final boolean add(final int index, final Object value) throws IllegalStateException {
+        if (ValueExistencePolicy.isNullOrEmpty(value)) {
+            return false;
+        }
+        // Conversion attempt happen in the PropertyAccessor.set(…) method.
+        final Boolean changed = (Boolean) accessor.set(index, metadata, value, PropertyAccessor.APPEND);
+        if (changed == null) {
+            throw new IllegalStateException(Errors.format(Errors.Keys.ValueAlreadyDefined_1,
+                    accessor.name(index, KeyNamePolicy.UML_IDENTIFIER)));
+        }
+        if (changed) {
+            modCount++;
+        }
+        return changed;
     }
 
     /**
