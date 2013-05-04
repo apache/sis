@@ -216,6 +216,35 @@ public final strictfp class TreeNodeTest extends TestCase {
     }
 
     /**
+     * Tests {@link TreeNode#getIndex()} on a metadata with a hierarchy.
+     */
+    @Test
+    @DependsOnMethod("testGetIdentifier")
+    public void testGetIndex() {
+        final Integer ZERO = Integer.valueOf(0);
+        final Integer ONE  = Integer.valueOf(1);
+        final DefaultCitation citation = metadataWithHierarchy();
+        assertColumnContentEquals(create(citation, ValueExistencePolicy.NON_EMPTY), TableColumn.INDEX,
+            null,           // CI_Citation
+              null,         // title
+              ZERO,         // alternateTitle
+              ONE,          // alternateTitle
+              null,         // edition
+              ZERO,         // citedResponsibleParty
+                null,       // organisationName
+                null,       // role
+              ONE,          // citedResponsibleParty
+                null,       // individualName
+                null,       // contactInfo
+                  null,     // address
+                    ZERO,   // electronicMailAddress
+                null,       // role
+              ZERO,         // presentationForm
+              ONE,          // presentationForm
+              null);        // otherCitationDetails
+    }
+
+    /**
      * Tests {@link TreeNode#getElementType()} on a metadata with a hierarchy.
      */
     @Test

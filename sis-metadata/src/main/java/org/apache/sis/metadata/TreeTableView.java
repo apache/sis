@@ -33,9 +33,10 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * The tree table is made of three columns:
  *
  * <ul>
- *   <li>{@link TableColumn#IDENTIFIER} - the property standard identifier.</li>
- *   <li>{@link TableColumn#NAME}       - the property name.</li>
- *   <li>{@link TableColumn#TYPE}       - the element type.</li>
+ *   <li>{@link TableColumn#IDENTIFIER} - the property identifier as defined by the UML (if any).</li>
+ *   <li>{@link TableColumn#INDEX}      - the index in the collection, or null if the property is not a collection.</li>
+ *   <li>{@link TableColumn#NAME}       - the human-readable property name, inferred from the identifier and index.</li>
+ *   <li>{@link TableColumn#TYPE}       - the base interface of property values.</li>
  *   <li>{@link TableColumn#VALUE}      - the property value.</li>
  * </ul>
  *
@@ -55,6 +56,7 @@ final class TreeTableView implements TreeTable, Serializable {
      */
     static final List<TableColumn<?>> COLUMNS = UnmodifiableArrayList.wrap(new TableColumn<?>[] {
         TableColumn.IDENTIFIER,
+        TableColumn.INDEX,
         TableColumn.NAME,
         TableColumn.TYPE,
         TableColumn.VALUE
