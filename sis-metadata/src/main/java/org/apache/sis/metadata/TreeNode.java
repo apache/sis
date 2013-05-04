@@ -22,7 +22,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.ConcurrentModificationException;
-import java.io.Serializable;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.iso.Types;
@@ -49,19 +48,21 @@ import org.apache.sis.util.resources.Vocabulary;
  *
  * <p>The {@link #newChild()} operation is supported if the node is not a leaf. The user shall
  * set the identifier and the value, in that order, before any other operation on the new child.
- * See {@code newChild()} javadpc for an example.</p>
+ * See {@code newChild()} javadoc for an example.</p>
+ *
+ * {@note This class is not serializable because the values of the <code>indexInData</code> and
+ *        <code>indexInList</code> fields may not be stable. The former may be invalid if the node
+ *        is serialized and deserialized by two different versions of Apache SIS having properties
+ *        in different order. The second may be invalid if the collection is not guaranteed to
+ *        preserve order on serialization (e.g. <code>CodeListSet</code> with user-supplied elements,
+ *        in which case the elements order depends on the instantiation order).}
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
  * @version 0.3
  * @module
  */
-class TreeNode implements Node, Serializable {
-    /**
-     * For cross-version compatibility.
-     */
-    private static final long serialVersionUID = -3499128444388320L;
-
+class TreeNode implements Node {
     /**
      * The collection of {@linkplain #children} to return when the node does not allow children
      * (i.e. is a leaf). This constant is also used as a sentinel value by {@link #isLeaf()}.
@@ -238,11 +239,6 @@ class TreeNode implements Node, Serializable {
      */
     static class Element extends TreeNode {
         /**
-         * For cross-version compatibility.
-         */
-        private static final long serialVersionUID = -1837090036924521907L;
-
-        /**
          * The accessor to use for fetching the property names, types and values from the
          * {@link #metadata} object. Note that the value of this field is the same for all
          * siblings.
@@ -339,11 +335,6 @@ class TreeNode implements Node, Serializable {
      * A node for an element in a collection. This class needs the iteration order to be stable.
      */
     static final class CollectionElement extends Element {
-        /**
-         * For cross-version compatibility.
-         */
-        private static final long serialVersionUID = -1156865958960250473L;
-
         /**
          * Index of the element in the collection, in iteration order.
          */

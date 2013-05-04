@@ -19,6 +19,9 @@ package org.apache.sis.metadata;
 import java.util.List;
 import java.text.Format;
 import java.io.Serializable;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTableFormat;
@@ -65,8 +68,10 @@ final class TreeTableView implements TreeTable, Serializable {
 
     /**
      * The root of the metadata tree.
+     * Consider this field as final - it is modified only on
+     * deserialization by {@link #readObject(ObjectInputStream)}.
      */
-    private final Node root;
+    private transient TreeNode root;
 
     /**
      * The metadata standard implemented by the metadata objects.
@@ -126,5 +131,21 @@ final class TreeTableView implements TreeTable, Serializable {
             }
             return format.format(this);
         }
+    }
+
+    /**
+     * Invoked on serialization. Write the metadata object instead of the {@linkplain #root} node.
+     */
+    private void writeObject(final ObjectOutputStream out) throws IOException {
+        out.defaultWriteObject();
+        out.writeObject(root.metadata);
+    }
+
+    /**
+     * Invoked on deserialization. Recreate the {@linkplain #root} node from the metadata object.
+     */
+    private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        root = new TreeNode(this, in.readObject());
     }
 }
