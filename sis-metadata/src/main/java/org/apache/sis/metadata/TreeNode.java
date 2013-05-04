@@ -172,8 +172,20 @@ class TreeNode implements Node {
     }
 
     /**
-     * Gets the name of this node. The name shall be stable, since it will be cached by the caller.
-     * The default implementation is suitable only for the root node - subclasses must override.
+     * Returns the index in the collection if the metadata property type is a collection,
+     * or {@code null} otherwise. The (<var>identifier</var>, <var>index</var>) pair can
+     * be used as a primary key for identifying this node among its siblings.
+     */
+    Integer getIndex() {
+        return null;
+    }
+
+    /**
+     * Gets the human-readable name of this node. The name shall be stable, since it will be cached
+     * by the caller. The name typically contains {@linkplain #getIdentifier() identifier} and
+     * {@linkplain #getIndex() index} information, eventually localized.
+     *
+     * <p>The default implementation is suitable only for the root node - subclasses must override.</p>
      */
     CharSequence getName() {
         return Classes.getShortClassName(metadata);
@@ -366,7 +378,16 @@ class TreeNode implements Node {
         }
 
         /**
+         * Returns the zero-based index of this node in the metadata property.
+         */
+        @Override
+        Integer getIndex() {
+            return indexInList;
+        }
+
+        /**
          * Appends the index of this property, if there is more than one.
+         * Index numbering begins at 1, since this name if for human reading.
          */
         @Override
         CharSequence getName() {
@@ -655,19 +676,24 @@ class TreeNode implements Node {
     public final <V> V getValue(final TableColumn<V> column) {
         ArgumentChecks.ensureNonNull("column", column);
         Object value = null;
-        if (column == TableColumn.NAME) {
-            value = name;
-            if (value == null) {
-                value = name = getName();
-            }
-        } else if (column == TableColumn.VALUE) {
+
+        // Check the columns in what we think may be the most frequently
+        // asked columns first, and less frequently asked columns last.
+        if (column == TableColumn.VALUE) {
             if (isLeaf()) {
                 value = getUserObject();
             }
-        } else if (column == TableColumn.TYPE) {
-            value = getElementType();
+        } else if (column == TableColumn.NAME) {
+            if (name == null) {
+                name = getName();
+            }
+            value = name;
         } else if (column == TableColumn.IDENTIFIER) {
             value = getIdentifier();
+        } else if (column == TableColumn.INDEX) {
+            value = getIndex();
+        } else if (column == TableColumn.TYPE) {
+            value = getElementType();
         }
         return column.getElementType().cast(value);
     }
