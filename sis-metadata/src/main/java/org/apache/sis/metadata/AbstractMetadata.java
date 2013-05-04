@@ -78,13 +78,6 @@ public abstract class AbstractMetadata implements LenientComparable {
     protected static final Logger LOGGER = Logging.getLogger(AbstractMetadata.class);
 
     /**
-     * A view of this metadata as a map. Will be created only when first needed.
-     *
-     * @see #asMap()
-     */
-    private transient Map<String,Object> asMap;
-
-    /**
      * Creates an initially empty metadata.
      */
     protected AbstractMetadata() {
@@ -194,10 +187,7 @@ public abstract class AbstractMetadata implements LenientComparable {
      * @see MetadataStandard#asValueMap(Object, KeyNamePolicy, ValueExistencePolicy)
      */
     public Map<String,Object> asMap() {
-        if (asMap == null) {
-            asMap = getStandard().asValueMap(this, KeyNamePolicy.JAVABEANS_PROPERTY, ValueExistencePolicy.NON_EMPTY);
-        }
-        return asMap;
+        return getStandard().asValueMap(this, KeyNamePolicy.JAVABEANS_PROPERTY, ValueExistencePolicy.NON_EMPTY);
     }
 
     /**

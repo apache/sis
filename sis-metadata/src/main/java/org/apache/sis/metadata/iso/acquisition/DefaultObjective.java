@@ -162,8 +162,7 @@ public class DefaultObjective extends ISOMetadata implements Objective {
     @Override
     @XmlElement(name = "identifier", required = true)
     public Collection<Identifier> getIdentifiers() {
-        identifiers = nonNullCollection(identifiers, Identifier.class);
-        return NonMarshalledAuthority.excludeOnMarshalling(identifiers);
+        return NonMarshalledAuthority.excludeOnMarshalling(super.getIdentifiers());
     }
 
     /**

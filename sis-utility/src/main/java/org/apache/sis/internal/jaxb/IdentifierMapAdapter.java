@@ -101,11 +101,6 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
     public final Collection<Identifier> identifiers;
 
     /**
-     * A view over the entries, created only when first needed.
-     */
-    private transient Set<Entry<Citation,String>> entries;
-
-    /**
      * Creates a new map which will be a view over the given identifiers.
      *
      * @param identifiers The identifiers to wrap in a map view.
@@ -329,11 +324,14 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
      * @return A view over the collection of identifiers.
      */
     @Override
-    public synchronized Set<Entry<Citation,String>> entrySet() {
-        if (entries == null) {
-            entries = new Entries(identifiers);
-        }
-        return entries;
+    public Set<Entry<Citation,String>> entrySet() {
+        /*
+         * Do not cache the entries set because if is very cheap to create and not needed very often.
+         * Not caching allows this implementation to be thread-safe without synchronization or volatile
+         * fields if the underlying list is thread-safe. Furthermore, IdentifierMapAdapter are temporary
+         * objects anyway in the current ISOMetadata implementation.
+         */
+        return new Entries(identifiers);
     }
 
     /**
