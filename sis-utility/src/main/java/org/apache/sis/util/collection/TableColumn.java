@@ -237,7 +237,7 @@ public class TableColumn<V> implements CheckedContainer<V> {
         private Object readResolve() throws InvalidObjectException {
             try {
                 return TableColumn.class.getField(field).get(null);
-            } catch (Exception cause) { // Many exceptions, including unchecked ones.
+            } catch (ReflectiveOperationException cause) {
                 InvalidObjectException e = new InvalidObjectException(cause.toString());
                 e.initCause(cause);
                 throw e;

@@ -74,16 +74,6 @@ class TreeNode implements Node {
     private static final Collection<Node> LEAF = Collections.emptySet();
 
     /**
-     * A sentinel value meaning that the node is known to allow {@linkplain #children}, but
-     * the children collection have not yet been created. This is different than {@code null}
-     * which means that we don't even know if the node can have children or not.
-     *
-     * <p>Any value distinct than {@link #LEAF} is okay. This value will never be visible
-     * to the user.</p>
-     */
-    private static final Collection<Node> PENDING = Collections.emptyList();
-
-    /**
      * The table for which this node is an element. Contains information like
      * the metadata standard and the value existence policy.
      *
@@ -136,6 +126,18 @@ class TreeNode implements Node {
     private transient Collection<Node> children;
 
     /**
+     * The value which existed when the {@link TreeNodeChildren#iterator()} traversed this node.
+     * This value is cached on the assumption that users will ask for value or for children soon
+     * after they iterated over this node. The cached value is cleared after its first use.
+     *
+     * <p>The purpose of this cache is to avoid invoking (by reflection) the same getter methods
+     * twice in common situations like the {@link TreeTableView#toString()} implementation or in
+     * Graphical User Interface. However we may remove this field in any future SIS version if
+     * experience shows that it is more problematic than helpful.</p>
+     */
+    transient Object cachedValue;
+
+    /**
      * Creates the root node of a new metadata tree table.
      *
      * @param  table    The table which is creating this root node.
@@ -150,6 +152,7 @@ class TreeNode implements Node {
     /**
      * Creates a new child for an element of the given metadata.
      * This constructor is for the {@link Element} subclass only.
+     * Callers must invoke {@link #init()} after construction.
      *
      * @param  parent   The parent of this node.
      * @param  metadata The metadata object for which this node will be a value.
@@ -158,6 +161,17 @@ class TreeNode implements Node {
         this.table    = parent.table;
         this.parent   = parent;
         this.metadata = metadata;
+    }
+
+    /**
+     * Must be invoked after construction. The work performed by this method can not be done
+     * in the {@code TreeNode} constructor, because it needs the subclasses to finish their
+     * construction first.
+     */
+    final void init() {
+        if (!table.standard.isMetadata(getElementType())) {
+            children = LEAF;
+        }
     }
 
     /**
@@ -265,6 +279,7 @@ class TreeNode implements Node {
 
         /**
          * Creates a new child for a property of the given metadata at the given index.
+         * Callers must invoke {@link #init()} after construction.
          *
          * @param  parent      The parent of this node.
          * @param  metadata    The metadata object for which this node will be a value.
@@ -354,6 +369,7 @@ class TreeNode implements Node {
 
         /**
          * Creates a new node for the given collection element.
+         * Callers must invoke {@link #init()} after construction.
          *
          * @param  parent      The parent of this node.
          * @param  metadata    The metadata object for which this node will be a value.
@@ -491,17 +507,7 @@ class TreeNode implements Node {
      */
     @Override
     public final boolean isLeaf() {
-        if (children == LEAF) {
-            return true;
-        }
-        if (children == null) {
-            if (!table.standard.isMetadata(getElementType())) {
-                children = LEAF;
-                return true;
-            }
-            children = PENDING;
-        }
-        return false;
+        return (children == LEAF);
     }
 
     /**
@@ -515,16 +521,20 @@ class TreeNode implements Node {
          * in which case we do not need to check for changes in the underlying metadata.
          */
         if (!isLeaf()) {
-            final Object value = getUserObject();
+            Object value = cachedValue;
             if (value == null) {
-                /*
-                 * If there is no value, returns an empty set but *do not* set 'children'
-                 * to that set, in order to allow this method to check again the next time
-                 * that this method is invoked.
-                 */
-                children = PENDING; // Let GC do its work.
-                return LEAF;
+                value = getUserObject();
+                if (value == null) {
+                    /*
+                     * If there is no value, returns an empty set but *do not* set 'children'
+                     * to that set, in order to allow this method to check again the next time
+                     * that this method is invoked.
+                     */
+                    children = null; // Let GC do its work.
+                    return LEAF;
+                }
             }
+            cachedValue = null; // Use the cached value only once after iteration.
             /*
              * If there is a value, check if the cached collection is still applicable.
              */
@@ -646,6 +656,7 @@ class TreeNode implements Node {
                         throw new IllegalArgumentException(Errors.format(Errors.Keys.ElementAlreadyPresent_1, value));
                     }
                     delegate = siblings.childAt(indexInData, indexInList);
+                    // Do not set cachedValue, since 'value' may have been converted.
                     return;
                 }
             }
@@ -681,7 +692,11 @@ class TreeNode implements Node {
         // asked columns first, and less frequently asked columns last.
         if (column == TableColumn.VALUE) {
             if (isLeaf()) {
-                value = getUserObject();
+                value = cachedValue;
+                cachedValue = null; // Use the cached value only once after iteration.
+                if (value == null) {
+                    value = getUserObject();
+                }
             }
         } else if (column == TableColumn.NAME) {
             if (name == null) {
@@ -712,6 +727,7 @@ class TreeNode implements Node {
         ArgumentChecks.ensureNonNull("column", column);
         if (column == TableColumn.VALUE) {
             ArgumentChecks.ensureNonNull("value", value);
+            cachedValue = null;
             setUserObject(value);
         } else if (TreeTableView.COLUMNS.contains(column)) {
             throw new UnsupportedOperationException(unmodifiableCellValue(column));
