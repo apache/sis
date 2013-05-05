@@ -198,6 +198,7 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
              */
             if (node == null || ((TreeNode.CollectionElement) node).indexInList != subIndex) {
                 node = new TreeNode.CollectionElement(parent, metadata, accessor, index, subIndex);
+                node.init();
             }
         } else {
             /*
@@ -207,6 +208,7 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
              */
             if (node == null) {
                 node = new TreeNode.Element(parent, metadata, accessor, index);
+                node.init();
             }
         }
         children[index] = node;
@@ -302,9 +304,8 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
          * if the value needs to be skipped or not.
          *
          * {@note Actually we don't really need to keep this value, since it is not used outside the
-         *        <code>hasNext()</code> method. We keep it for now as an opportunist information,
-         *        in case we have some need for it in a future version. For example we may consider
-         *        to add an "original value" column in the table.}
+         *        <code>hasNext()</code> method. But we keep it for allowing the <code>next()</code>
+         *        method to opportunistically update the <code>TreeNode.cachedValue</code> field.}
          */
         private Object nextValue;
 
@@ -426,6 +427,7 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
         public TreeTable.Node next() {
             if (hasNext()) {
                 final TreeNode node = childAt(nextInAccessor, subIndex);
+                node.cachedValue = nextValue;
                 previousInAccessor = nextInAccessor;
                 if (subIterator == null) {
                     /*
