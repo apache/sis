@@ -116,6 +116,14 @@ public class TableColumn<V> implements CheckedContainer<V> {
             String.class, Vocabulary.Keys.Identifier);
 
     /**
+     * Frequently-used constant for a column of index values.
+     * The column {@linkplain #getHeader() header} is "<cite>Index</cite>" (eventually localized)
+     * and the column elements are instances of {@link Integer}.
+     */
+    public static final TableColumn<Integer> INDEX = new Constant<Integer>("INDEX",
+            Integer.class, Vocabulary.Keys.Index);
+
+    /**
      * Frequently-used constant for a column of object types.
      * The column {@linkplain #getHeader() header} is "<cite>Type</cite>" (eventually localized).
      */
@@ -229,7 +237,7 @@ public class TableColumn<V> implements CheckedContainer<V> {
         private Object readResolve() throws InvalidObjectException {
             try {
                 return TableColumn.class.getField(field).get(null);
-            } catch (Exception cause) { // Many exceptions, including unchecked ones.
+            } catch (Exception cause) { // (ReflectiveOperationException) on JDK7 branch.
                 InvalidObjectException e = new InvalidObjectException(cause.toString());
                 e.initCause(cause);
                 throw e;
