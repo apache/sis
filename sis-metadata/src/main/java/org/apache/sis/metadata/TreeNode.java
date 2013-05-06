@@ -130,6 +130,10 @@ class TreeNode implements Node {
      * This value is cached on the assumption that users will ask for value or for children soon
      * after they iterated over this node. The cached value is cleared after its first use.
      *
+     * <p>This value shall be either {@code null}, or the exact same value than what a call to
+     * {@link #getUserObject()} would return, assuming that the underlying {@linkplain #metadata}
+     * object didn't changed.</p>
+     *
      * <p>The purpose of this cache is to avoid invoking (by reflection) the same getter methods
      * twice in common situations like the {@link TreeTableView#toString()} implementation or in
      * Graphical User Interface. However we may remove this field in any future SIS version if
@@ -656,7 +660,8 @@ class TreeNode implements Node {
                         throw new IllegalArgumentException(Errors.format(Errors.Keys.ElementAlreadyPresent_1, value));
                     }
                     delegate = siblings.childAt(indexInData, indexInList);
-                    // Do not set cachedValue, since 'value' may have been converted.
+                    // Do not set 'delegate.cachedValue = value', since 'value' may
+                    // have been converted by the setter method to an other value.
                     return;
                 }
             }

@@ -361,14 +361,16 @@ public final strictfp class TreeNodeTest extends TestCase {
     private static int assertColumnContentEquals(final TreeTable.Node node, final TableColumn<?> column,
             final Object[] values, int index)
     {
-        Object actual = node.getValue(column);
-        if (actual instanceof InternationalString) {
-            actual = ((InternationalString) actual).toString(Locale.ROOT);
+        final Object actual = node.getValue(column);
+        Object unlocalized = actual;
+        if (unlocalized instanceof InternationalString) {
+            unlocalized = ((InternationalString) unlocalized).toString(Locale.ROOT);
         }
-        assertEquals("values[" + index + ']', values[index++], actual);
+        assertEquals("values[" + index + ']', values[index++], unlocalized);
         for (final TreeTable.Node child : node.getChildren()) {
             index = assertColumnContentEquals(child, column, values, index);
         }
+        assertSame("Value shall be stable.", actual, node.getValue(column));
         return index;
     }
 }
