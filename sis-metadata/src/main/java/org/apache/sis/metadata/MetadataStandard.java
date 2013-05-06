@@ -580,25 +580,28 @@ public class MetadataStandard implements Serializable {
      * {@code valuePolicy} determines whether entries having a null value or an empty collection
      * shall be included in the map.</p>
      *
-     * <p>The map supports the {@link Map#put(Object, Object) put(…)} and {@link Map#remove(Object)
+     * {@section Supported operations}
+     * The map supports the {@link Map#put(Object, Object) put(…)} and {@link Map#remove(Object)
      * remove(…)} operations if the underlying metadata object contains setter methods.
      * The {@code remove(…)} method is implemented by a call to {@code put(…, null)}.
      * Note that whether the entry appears as effectively removed from the map or just cleared
-     * (i.e. associated to a null value) depends on the {@code valuePolicy} argument.</p>
+     * (i.e. associated to a null value) depends on the {@code valuePolicy} argument.
      *
-     * <p>The keys are case-insensitive and can be either the JavaBeans property name, the getter method name
+     * {@section Keys and values}
+     * The keys are case-insensitive and can be either the JavaBeans property name, the getter method name
      * or the {@linkplain org.opengis.annotation.UML#identifier() UML identifier}. The value given to a call
      * to the {@code put(…)} method shall be an instance of the type expected by the corresponding setter method,
      * or an instance of a type {@linkplain org.apache.sis.util.ObjectConverters#find(Class, Class) convertible}
-     * to the expected type.</p>
+     * to the expected type.
      *
-     * <p>Calls to {@code put(…)} replace the previous value, with one noticeable exception: if the metadata
+     * {@section Multi-values entries}
+     * Calls to {@code put(…)} replace the previous value, with one noticeable exception: if the metadata
      * property associated to the given key is a {@link java.util.Collection} but the given value is a single
      * element (not a collection), then the given value is {@linkplain java.util.Collection#add(Object) added}
      * to the existing collection. In other words, the returned map behaves as a <cite>multi-values map</cite>
      * for the properties that allow multiple values. If the intend is to unconditionally discard all previous
      * values, then make sure that the given value is a collection when the associated metadata property expects
-     * such collection.</p>
+     * such collection.
      *
      * @param  metadata The metadata object to view as a map.
      * @param  keyPolicy Determines the string representation of map keys.
@@ -624,6 +627,55 @@ public class MetadataStandard implements Serializable {
      * The tree table is backed by the metadata object using Java reflection, so changes in the
      * underlying metadata object are immediately reflected in the tree table and conversely.
      *
+     * <p>The returned {@code TreeTable} instance contains the following columns:</p>
+     * <ul>
+     *   <li><p>{@link org.apache.sis.util.collection.TableColumn#IDENTIFIER}<br>
+     *       The {@linkplain org.opengis.annotation.UML#identifier() UML identifier} if any,
+     *       or the Java Beans property name otherwise, of a metadata property. For example
+     *       in a tree table view of {@link org.apache.sis.metadata.iso.citation.DefaultCitation},
+     *       there is a node having the {@code "title"} identifier.</p></li>
+     *
+     *   <li><p>{@link org.apache.sis.util.collection.TableColumn#INDEX}<br>
+     *       If the metadata property is a collection, then the zero-based index of the element in that collection.
+     *       Otherwise {@code null}. For example in a tree table view of {@code DefaultCitation}, if the
+     *       {@code "alternateTitle"} collection contains two elements, then there is a node with index 0
+     *       for the first element and an other node with index 1 for the second element.</p>
+     *
+     *       <p>The {@code (IDENTIFIER, INDEX)} pair can be used as a primary key for uniquely identifying
+     *       a node in a list of children. Note that the uniqueness is guaranteed only for the children of
+     *       a given node; the same keys may appear in the children of any other nodes.</p></li>
+     *
+     *   <li><p>{@link org.apache.sis.util.collection.TableColumn#NAME}<br>
+     *       A human-readable name for the node, derived from the identifier and the index.
+     *       This is the column shown in the default {@link #toString()} implementation and
+     *       may be localizable.</p></li>
+     *
+     *   <li><p>{@link org.apache.sis.util.collection.TableColumn#TYPE}<br>
+     *       The base type of the value (usually an interface).</p></li>
+     *
+     *   <li><p>{@link org.apache.sis.util.collection.TableColumn#VALUE}<br>
+     *       The metadata value for the node. Values in this column are writable if the underlying
+     *       metadata class have a setter method for the property represented by the node.</p></li>
+     * </ul>
+     *
+     * {@section Write operations}
+     * Only the {@code VALUE} column may be writable, with one exception: newly created children need
+     * to have their {@code IDENTIFIER} set before any other operation. For example the following code
+     * adds a title to a citation:
+     *
+     * {@preformat java
+     *     TreeTable.Node node = ...; // The node for a DefaultCitation.
+     *     TreeTable.Node child = node.newChild();
+     *     child.setValue(TableColumn.IDENTIFIER, "title");
+     *     child.setValue(TableColumn.VALUE, "Le petit prince");
+     *     // Nothing else to do - the child node has been added.
+     * }
+     *
+     * Nodes can be removed by invoking the {@link java.util.Iterator#remove()} method on the
+     * {@linkplain org.apache.sis.util.collection.TreeTable.Node#getChildren() children} iterator.
+     * Note that whether the child appears as effectively removed from the node or just cleared
+     * (i.e. associated to a null value) depends on the {@code valuePolicy} argument.
+     *
      * @param  metadata The metadata object to view as a tree table.
      * @param  valuePolicy Whether the property having null value or empty collection shall be
      *         included in the tree.
@@ -638,7 +690,7 @@ public class MetadataStandard implements Serializable {
     {
         ensureNonNull("metadata",    metadata);
         ensureNonNull("valuePolicy", valuePolicy);
-        return new MetadataTreeTable(this, metadata, valuePolicy);
+        return new TreeTableView(this, metadata, valuePolicy);
     }
 
     /**

@@ -29,7 +29,7 @@ import static org.apache.sis.test.Assert.*;
 
 
 /**
- * Tests the {@link MetadataTreeTable} class.
+ * Tests the {@link TreeTableView} class.
  * Unless otherwise specified, all tests use the {@link MetadataStandard#ISO_19115} constant.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -37,19 +37,19 @@ import static org.apache.sis.test.Assert.*;
  * @version 0.3
  * @module
  */
-@DependsOn(MetadataTreeNodeTest.class)
-public final strictfp class MetadataTreeTableTest extends TestCase {
+@DependsOn(TreeNodeTest.class)
+public final strictfp class TreeTableViewTest extends TestCase {
     /**
      * Creates a table to be tested for the given value policy.
      */
-    private static MetadataTreeTable create(final ValueExistencePolicy valuePolicy) {
-        return new MetadataTreeTable(MetadataStandard.ISO_19115, MetadataTreeNodeTest.metadataWithHierarchy(), valuePolicy);
+    private static TreeTableView create(final ValueExistencePolicy valuePolicy) {
+        return new TreeTableView(MetadataStandard.ISO_19115, TreeNodeTest.metadataWithHierarchy(), valuePolicy);
     }
 
     /**
      * Asserts that the given metadata object has the expected string representation.
      */
-    private static void assertExpectedString(final MetadataTreeTable metadata) {
+    private static void assertExpectedString(final TreeTableView metadata) {
         assertMultilinesEquals("toString()",
                 "DefaultCitation\n" +
                 "  ├─Title…………………………………………………………………………………… Some title\n" +
@@ -72,7 +72,7 @@ public final strictfp class MetadataTreeTableTest extends TestCase {
     }
 
     /**
-     * Tests {@link MetadataTreeTable#toString()}.
+     * Tests {@link TreeTableView#toString()}.
      */
     @Test
     public void testToString() {
@@ -104,6 +104,6 @@ public final strictfp class MetadataTreeTableTest extends TestCase {
         } finally {
             in.close();
         }
-        assertExpectedString((MetadataTreeTable) deserialized);
+        assertExpectedString((TreeTableView) deserialized);
     }
 }
