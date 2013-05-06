@@ -584,7 +584,7 @@ cmp:    for (final Class<?> c : c1) {
      *     <td>{@code "String"}</td>
      *   </tr>
      *   <tr>
-     *     <td>{@link double[]}</td>
+     *     <td>{@code double[]}</td>
      *     <td>{@code "[D"}</td>
      *     <td>{@code "double[]"}</td>
      *     <td>{@code "double[]"}</td>
