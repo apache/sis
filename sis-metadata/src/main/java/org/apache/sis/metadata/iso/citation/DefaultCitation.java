@@ -365,8 +365,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
     @Override
     @XmlElement(name = "identifier")
     public Collection<Identifier> getIdentifiers() {
-        identifiers = nonNullCollection(identifiers, Identifier.class);
-        return NonMarshalledAuthority.excludeOnMarshalling(identifiers);
+        return NonMarshalledAuthority.excludeOnMarshalling(super.getIdentifiers());
     }
 
     /**
