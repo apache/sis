@@ -36,14 +36,14 @@ import static org.apache.sis.test.TestUtilities.createRandomNumberGenerator;
 
 
 /**
- * Tests the {@link MetadataTreeChildren} class.
+ * Tests the {@link TreeNodeChildren} class.
  * Unless otherwise specified, all tests use the {@link MetadataStandard#ISO_19115} constant.
  *
  * {@section Test dependency}
- * This class uses the {@link MetadataTreeNode#getUserObject()} method for comparing the values.
- * We can hardly avoid to use some {@code MetadataTreeNode} methods because of the cross-dependencies.
- * However we try to use nothing else than {@code getUserObject()} because the purpose of this class
- * is not to test {@link MetadataTreeNode}.
+ * This class uses the {@link TreeNode#getUserObject()} method for comparing the values.
+ * We can hardly avoid to use some {@code TreeNode} methods because of the cross-dependencies.
+ * However we try to use nothing else than {@code getUserObject()} because the purpose of this
+ * class is not to test {@link TreeNode}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
@@ -51,7 +51,7 @@ import static org.apache.sis.test.TestUtilities.createRandomNumberGenerator;
  * @module
  */
 @DependsOn(PropertyAccessorTest.class)
-public final strictfp class MetadataTreeChildrenTest extends TestCase {
+public final strictfp class TreeNodeChildrenTest extends TestCase {
     /**
      * Creates a shallow metadata object without collections.
      *
@@ -114,12 +114,12 @@ public final strictfp class MetadataTreeChildrenTest extends TestCase {
     /**
      * Creates a collection to be tested for the given metadata object and value policy.
      */
-    private static MetadataTreeChildren create(final AbstractMetadata metadata, final ValueExistencePolicy valuePolicy) {
-        final MetadataStandard  standard = MetadataStandard.ISO_19115;
-        final MetadataTreeTable table    = new MetadataTreeTable(standard, metadata, valuePolicy);
-        final MetadataTreeNode  node     = (MetadataTreeNode) table.getRoot();
-        final PropertyAccessor  accessor = standard.getAccessor(metadata.getClass(), true);
-        return new MetadataTreeChildren(node, metadata, accessor);
+    private static TreeNodeChildren create(final AbstractMetadata metadata, final ValueExistencePolicy valuePolicy) {
+        final MetadataStandard standard = MetadataStandard.ISO_19115;
+        final TreeTableView    table    = new TreeTableView(standard, metadata, valuePolicy);
+        final TreeNode         node     = (TreeNode) table.getRoot();
+        final PropertyAccessor accessor = standard.getAccessor(metadata.getClass(), true);
+        return new TreeNodeChildren(node, metadata, accessor);
     }
 
     /**
@@ -127,8 +127,8 @@ public final strictfp class MetadataTreeChildrenTest extends TestCase {
      */
     @Test
     public void testReadOnlyWithoutCollections() {
-        final DefaultCitation      citation = metadataWithoutCollections();
-        final MetadataTreeChildren children = create(citation, ValueExistencePolicy.NON_EMPTY);
+        final DefaultCitation  citation = metadataWithoutCollections();
+        final TreeNodeChildren children = create(citation, ValueExistencePolicy.NON_EMPTY);
         final String[] expected = {
             "Some title",
             "Some edition",
@@ -146,8 +146,8 @@ public final strictfp class MetadataTreeChildrenTest extends TestCase {
     @Test
     @DependsOnMethod("testReadOnlyWithoutCollections")
     public void testReadOnlyWithSingletonInCollections() {
-        final DefaultCitation      citation = metadataWithSingletonInCollections();
-        final MetadataTreeChildren children = create(citation, ValueExistencePolicy.NON_EMPTY);
+        final DefaultCitation  citation = metadataWithSingletonInCollections();
+        final TreeNodeChildren children = create(citation, ValueExistencePolicy.NON_EMPTY);
         final String[] expected = {
             "Some title",
             "First alternate title",
@@ -167,8 +167,8 @@ public final strictfp class MetadataTreeChildrenTest extends TestCase {
     @Test
     @DependsOnMethod("testReadOnlyWithSingletonInCollections")
     public void testReadOnlyWithMultiOccurrences() {
-        final DefaultCitation      citation = metadataWithMultiOccurrences();
-        final MetadataTreeChildren children = create(citation, ValueExistencePolicy.NON_EMPTY);
+        final DefaultCitation  citation = metadataWithMultiOccurrences();
+        final TreeNodeChildren children = create(citation, ValueExistencePolicy.NON_EMPTY);
         final String[] expected = {
             "Some title",
             "First alternate title",
@@ -184,14 +184,14 @@ public final strictfp class MetadataTreeChildrenTest extends TestCase {
     }
 
     /**
-     * Tests the {@link MetadataTreeChildren#add(TreeTable.Node)} method.
+     * Tests the {@link TreeNodeChildren#add(TreeTable.Node)} method.
      */
     @Test
     @DependsOnMethod("testReadOnlyWithMultiOccurrences")
     public void testAdd() {
-        final DefaultCitation      citation = metadataWithMultiOccurrences();
-        final MetadataTreeChildren children = create(citation, ValueExistencePolicy.NON_EMPTY);
-        final DefaultTreeTable.Node   toAdd = new DefaultTreeTable.Node(new DefaultTreeTable(
+        final DefaultCitation  citation = metadataWithMultiOccurrences();
+        final TreeNodeChildren children = create(citation, ValueExistencePolicy.NON_EMPTY);
+        final DefaultTreeTable.Node toAdd = new DefaultTreeTable.Node(new DefaultTreeTable(
                 TableColumn.IDENTIFIER,
                 TableColumn.VALUE));
         final String[] expected = {
@@ -238,8 +238,8 @@ public final strictfp class MetadataTreeChildrenTest extends TestCase {
     @Test
     @DependsOnMethod("testReadOnlyWithoutCollections")
     public void testRemoveWithoutCollections() {
-        final DefaultCitation      citation = metadataWithoutCollections();
-        final MetadataTreeChildren children = create(citation, ValueExistencePolicy.NON_EMPTY);
+        final DefaultCitation  citation = metadataWithoutCollections();
+        final TreeNodeChildren children = create(citation, ValueExistencePolicy.NON_EMPTY);
         testRemove(createRandomNumberGenerator("testRemoveWithoutCollections"), children);
     }
 
@@ -253,8 +253,8 @@ public final strictfp class MetadataTreeChildrenTest extends TestCase {
         "testReadOnlyWithSingletonInCollections"
     })
     public void testRemoveWithSingletonInCollections() {
-        final DefaultCitation      citation = metadataWithSingletonInCollections();
-        final MetadataTreeChildren children = create(citation, ValueExistencePolicy.NON_EMPTY);
+        final DefaultCitation  citation = metadataWithSingletonInCollections();
+        final TreeNodeChildren children = create(citation, ValueExistencePolicy.NON_EMPTY);
         testRemove(createRandomNumberGenerator("testRemoveWithSingletonInCollections"), children);
     }
 
@@ -268,18 +268,18 @@ public final strictfp class MetadataTreeChildrenTest extends TestCase {
         "testReadOnlyWithMultiOccurrences"
     })
     public void testRemoveWithMultiOccurrences() {
-        final DefaultCitation      citation = metadataWithSingletonInCollections();
-        final MetadataTreeChildren children = create(citation, ValueExistencePolicy.NON_EMPTY);
+        final DefaultCitation  citation = metadataWithSingletonInCollections();
+        final TreeNodeChildren children = create(citation, ValueExistencePolicy.NON_EMPTY);
         testRemove(createRandomNumberGenerator("testRemoveWithMultiOccurrences"), children);
     }
 
     /**
-     * Tests the {@link MetadataTreeChildren#clear()} method.
+     * Tests the {@link TreeNodeChildren#clear()} method.
      */
     @Test
     public void testClear() {
-        final DefaultCitation      citation = metadataWithSingletonInCollections();
-        final MetadataTreeChildren children = create(citation, ValueExistencePolicy.NON_EMPTY);
+        final DefaultCitation  citation = metadataWithSingletonInCollections();
+        final TreeNodeChildren children = create(citation, ValueExistencePolicy.NON_EMPTY);
         assertFalse(children.isEmpty());
         children.clear();
         assertTrue(children.isEmpty());
@@ -293,8 +293,8 @@ public final strictfp class MetadataTreeChildrenTest extends TestCase {
     @Test
     @DependsOnMethod("testReadOnlyWithMultiOccurrences")
     public void testShowAll() {
-        final DefaultCitation      citation = metadataWithMultiOccurrences();
-        final MetadataTreeChildren children = create(citation, ValueExistencePolicy.ALL);
+        final DefaultCitation  citation = metadataWithMultiOccurrences();
+        final TreeNodeChildren children = create(citation, ValueExistencePolicy.ALL);
         final String[] expected = {
             "Some title",
             "First alternate title",
@@ -324,8 +324,8 @@ public final strictfp class MetadataTreeChildrenTest extends TestCase {
      * Returns the string representation of the user object in the given node.
      * This is the value that we are going compare in the assertion methods below.
      *
-     * <p>We use only {@link MetadataTreeNode#getUserObject()}, nothing else,
-     * because the purpose of this class is not to test {@link MetadataTreeNode}.</p>
+     * <p>We use only {@link TreeNode#getUserObject()}, nothing else,
+     * because the purpose of this class is not to test {@link TreeNode}.</p>
      */
     private static String valueOf(final TreeTable.Node node) {
         final Object value = node.getUserObject();
@@ -367,7 +367,7 @@ public final strictfp class MetadataTreeChildrenTest extends TestCase {
      * @param random   A random number generator.
      * @param children The collection from which to remove elements.
      */
-    private static void testRemove(final Random random, final MetadataTreeChildren children) {
+    private static void testRemove(final Random random, final TreeNodeChildren children) {
         final List<TreeTable.Node> reference = new ArrayList<TreeTable.Node>(children);
         assertFalse("The collection shall not be initially empty.", reference.isEmpty());
         do {

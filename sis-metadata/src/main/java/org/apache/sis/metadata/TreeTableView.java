@@ -19,6 +19,9 @@ package org.apache.sis.metadata;
 import java.util.List;
 import java.text.Format;
 import java.io.Serializable;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTableFormat;
@@ -30,9 +33,10 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * The tree table is made of three columns:
  *
  * <ul>
- *   <li>{@link TableColumn#IDENTIFIER} - the property standard identifier.</li>
- *   <li>{@link TableColumn#NAME}       - the property name.</li>
- *   <li>{@link TableColumn#TYPE}       - the element type.</li>
+ *   <li>{@link TableColumn#IDENTIFIER} - the property identifier as defined by the UML (if any).</li>
+ *   <li>{@link TableColumn#INDEX}      - the index in the collection, or null if the property is not a collection.</li>
+ *   <li>{@link TableColumn#NAME}       - the human-readable property name, inferred from the identifier and index.</li>
+ *   <li>{@link TableColumn#TYPE}       - the base interface of property values.</li>
  *   <li>{@link TableColumn#VALUE}      - the property value.</li>
  * </ul>
  *
@@ -41,7 +45,7 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * @version 0.3
  * @module
  */
-final class MetadataTreeTable implements TreeTable, Serializable {
+final class TreeTableView implements TreeTable, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -52,6 +56,7 @@ final class MetadataTreeTable implements TreeTable, Serializable {
      */
     static final List<TableColumn<?>> COLUMNS = UnmodifiableArrayList.wrap(new TableColumn<?>[] {
         TableColumn.IDENTIFIER,
+        TableColumn.INDEX,
         TableColumn.NAME,
         TableColumn.TYPE,
         TableColumn.VALUE
@@ -65,8 +70,10 @@ final class MetadataTreeTable implements TreeTable, Serializable {
 
     /**
      * The root of the metadata tree.
+     * Consider this field as final - it is modified only on
+     * deserialization by {@link #readObject(ObjectInputStream)}.
      */
-    private final Node root;
+    private transient TreeNode root;
 
     /**
      * The metadata standard implemented by the metadata objects.
@@ -85,10 +92,10 @@ final class MetadataTreeTable implements TreeTable, Serializable {
      * @param metadata    The metadata object to wrap.
      * @param valuePolicy The behavior of this map toward null or empty values.
      */
-    MetadataTreeTable(final MetadataStandard standard, final Object metadata, final ValueExistencePolicy valuePolicy) {
+    TreeTableView(final MetadataStandard standard, final Object metadata, final ValueExistencePolicy valuePolicy) {
         this.standard    = standard;
         this.valuePolicy = valuePolicy;
-        this.root = new MetadataTreeNode(this, metadata);
+        this.root = new TreeNode(this, metadata);
     }
 
     /**
@@ -118,7 +125,7 @@ final class MetadataTreeTable implements TreeTable, Serializable {
      */
     @Override
     public String toString() {
-        synchronized (MetadataTreeTable.class) {
+        synchronized (TreeTableView.class) {
             if (format == null) {
                 final TreeTableFormat f = new TreeTableFormat(null, null);
                 f.setColumns(TableColumn.NAME, TableColumn.VALUE);
@@ -126,5 +133,21 @@ final class MetadataTreeTable implements TreeTable, Serializable {
             }
             return format.format(this);
         }
+    }
+
+    /**
+     * Invoked on serialization. Write the metadata object instead of the {@linkplain #root} node.
+     */
+    private void writeObject(final ObjectOutputStream out) throws IOException {
+        out.defaultWriteObject();
+        out.writeObject(root.metadata);
+    }
+
+    /**
+     * Invoked on deserialization. Recreate the {@linkplain #root} node from the metadata object.
+     */
+    private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        root = new TreeNode(this, in.readObject());
     }
 }

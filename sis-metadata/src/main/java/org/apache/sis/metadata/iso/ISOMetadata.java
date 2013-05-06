@@ -51,14 +51,6 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
     protected Collection<Identifier> identifiers;
 
     /**
-     * The {@linkplain #getIdentifierMap() identifier map} as a wrapper around the
-     * {@linkplain #identifiers} collection. This map is created only when first needed.
-     *
-     * @see #getIdentifierMap()
-     */
-    private transient IdentifierMap identifierMap;
-
-    /**
      * Constructs an initially empty metadata.
      */
     protected ISOMetadata() {
@@ -102,19 +94,20 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
     /**
      * {@inheritDoc}
      *
-     * <p>The default implementation returns a wrapper around the {@linkplain #identifiers} list.
+     * <p>The default implementation returns a wrapper around the list returned by {@link #getIdentifiers()}.
      * That map is <cite>live</cite>: changes in the identifiers list will be reflected in the map,
      * and conversely.</p>
      */
     @Override
     public IdentifierMap getIdentifierMap() {
-        if (identifierMap == null) {
-            final Collection<Identifier> identifiers = getIdentifiers();
-            if (identifiers == null) {
-                return IdentifierMapWithSpecialCases.EMPTY;
-            }
-            identifierMap = new IdentifierMapWithSpecialCases(identifiers);
+        /*
+         * We do not cache (for now) the IdentifierMap because it is cheap to create, and if were
+         * caching it we would need anyway to check if 'identifiers' still references the same list.
+         */
+        final Collection<Identifier> identifiers = getIdentifiers();
+        if (identifiers == null) {
+            return IdentifierMapWithSpecialCases.EMPTY;
         }
-        return identifierMap;
+        return new IdentifierMapWithSpecialCases(identifiers);
     }
 }

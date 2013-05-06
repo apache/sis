@@ -120,6 +120,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final int Identifier = 42;
 
         /**
+         * Index
+         */
+        public static final int Index = 44;
+
+        /**
          * Java extensions
          */
         public static final int JavaExtensions = 26;
