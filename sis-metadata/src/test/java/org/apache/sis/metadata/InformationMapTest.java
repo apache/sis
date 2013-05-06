@@ -24,6 +24,7 @@ import java.util.Locale;
 import org.opengis.metadata.ExtendedElementInformation;
 import org.opengis.metadata.acquisition.EnvironmentalRecord;
 import org.opengis.metadata.citation.Citation;
+import org.opengis.metadata.content.CoverageDescription;
 import org.opengis.metadata.content.ImageDescription;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;

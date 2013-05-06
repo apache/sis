@@ -161,7 +161,7 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
 
     /**
      * Validates the given newly constructed metadata. The default implementation ensures that
-     * {@link AbstractMetadata.isEmpty()} returns {@code true}.
+     * {@link AbstractMetadata#isEmpty()} returns {@code true}.
      *
      * @param metadata The metadata to validate.
      */
