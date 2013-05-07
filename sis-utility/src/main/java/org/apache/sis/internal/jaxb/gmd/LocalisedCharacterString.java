@@ -19,7 +19,7 @@ package org.apache.sis.internal.jaxb.gmd;
 import java.util.Locale;
 import javax.xml.bind.annotation.XmlValue;
 import javax.xml.bind.annotation.XmlAttribute;
-import org.apache.sis.internal.jaxb.MarshalContext;
+import org.apache.sis.internal.jaxb.Context;
 
 // Related to JDK7
 import java.util.Objects;
@@ -59,7 +59,7 @@ final class LocalisedCharacterString {
     /**
      * Empty constructor only used by JAXB.
      */
-    public LocalisedCharacterString() {
+    LocalisedCharacterString() {
     }
 
     /**
@@ -84,8 +84,8 @@ final class LocalisedCharacterString {
         if (locale == null) {
             return null;
         }
-        final MarshalContext context = MarshalContext.current();
-        return LOCALE.concat(MarshalContext.converter(context).toLanguageCode(context, locale));
+        final Context context = Context.current();
+        return LOCALE.concat(Context.converter(context).toLanguageCode(context, locale));
     }
 
     /**
@@ -96,8 +96,8 @@ final class LocalisedCharacterString {
      */
     public void setLocale(final String localeId) {
         if (localeId != null) {
-            final MarshalContext context = MarshalContext.current();
-            locale = MarshalContext.converter(context).toLocale(context, localeId.substring(localeId.indexOf('-') + 1));
+            final Context context = Context.current();
+            locale = Context.converter(context).toLocale(context, localeId.substring(localeId.indexOf('-') + 1));
         } else {
             locale = null;
         }

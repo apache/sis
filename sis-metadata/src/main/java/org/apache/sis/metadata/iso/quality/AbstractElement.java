@@ -42,7 +42,7 @@ import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
-import static org.apache.sis.internal.jaxb.MarshalContext.isMarshalling;
+import static org.apache.sis.internal.jaxb.Context.isMarshalling;
 
 
 /**

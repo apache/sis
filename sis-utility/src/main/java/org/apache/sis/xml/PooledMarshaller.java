@@ -32,7 +32,7 @@ import javax.xml.validation.Schema;
 import org.xml.sax.ContentHandler;
 import org.w3c.dom.Node;
 import org.apache.sis.util.Decorator;
-import org.apache.sis.internal.jaxb.MarshalContext;
+import org.apache.sis.internal.jaxb.Context;
 
 
 /**
@@ -42,7 +42,7 @@ import org.apache.sis.internal.jaxb.MarshalContext;
  * <ul>
  *   <li>Save properties before modification, in order to restore them to their original values
  *       when the marshaller is recycled.</li>
- *   <li>Constructs a SIS {@link MarshalContext} object on marshalling, in order to give
+ *   <li>Constructs a SIS {@link Context} object on marshalling, in order to give
  *       additional information to the SIS object being marshalled.</li>
  * </ul>
  *
@@ -106,7 +106,7 @@ final class PooledMarshaller extends Pooled implements Marshaller {
      */
     @Override
     public void marshal(final Object object, final Result output) throws JAXBException {
-        final MarshalContext context = begin();
+        final Context context = begin();
         try {
             marshaller.marshal(object, output);
         } finally {
@@ -119,7 +119,7 @@ final class PooledMarshaller extends Pooled implements Marshaller {
      */
     @Override
     public void marshal(final Object object, final OutputStream output) throws JAXBException {
-        final MarshalContext context = begin();
+        final Context context = begin();
         try {
             marshaller.marshal(object, output);
         } finally {
@@ -132,7 +132,7 @@ final class PooledMarshaller extends Pooled implements Marshaller {
      */
     @Override
     public void marshal(final Object object, final File output) throws JAXBException {
-        final MarshalContext context = begin();
+        final Context context = begin();
         try {
             marshaller.marshal(object, output);
         } finally {
@@ -145,7 +145,7 @@ final class PooledMarshaller extends Pooled implements Marshaller {
      */
     @Override
     public void marshal(final Object object, final Writer output) throws JAXBException {
-        final MarshalContext context = begin();
+        final Context context = begin();
         try {
             marshaller.marshal(object, output);
         } finally {
@@ -158,7 +158,7 @@ final class PooledMarshaller extends Pooled implements Marshaller {
      */
     @Override
     public void marshal(final Object object, final ContentHandler output) throws JAXBException {
-        final MarshalContext context = begin();
+        final Context context = begin();
         try {
             marshaller.marshal(object, output);
         } finally {
@@ -171,7 +171,7 @@ final class PooledMarshaller extends Pooled implements Marshaller {
      */
     @Override
     public void marshal(final Object object, final Node output) throws JAXBException {
-        final MarshalContext context = begin();
+        final Context context = begin();
         try {
             marshaller.marshal(object, output);
         } finally {
@@ -184,7 +184,7 @@ final class PooledMarshaller extends Pooled implements Marshaller {
      */
     @Override
     public void marshal(final Object object, final XMLStreamWriter output) throws JAXBException {
-        final MarshalContext context = begin();
+        final Context context = begin();
         try {
             marshaller.marshal(object, output);
         } finally {
@@ -197,7 +197,7 @@ final class PooledMarshaller extends Pooled implements Marshaller {
      */
     @Override
     public void marshal(final Object object, final XMLEventWriter output) throws JAXBException {
-        final MarshalContext context = begin();
+        final Context context = begin();
         try {
             marshaller.marshal(object, output);
         } finally {
@@ -210,7 +210,7 @@ final class PooledMarshaller extends Pooled implements Marshaller {
      */
     @Override
     public Node getNode(final Object object) throws JAXBException {
-        final MarshalContext context = begin();
+        final Context context = begin();
         try {
             return marshaller.getNode(object);
         } finally {
