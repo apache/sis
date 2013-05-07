@@ -20,23 +20,28 @@ import java.util.Map;
 import java.util.Locale;
 import java.util.TimeZone;
 import org.apache.sis.util.Version;
+import org.apache.sis.xml.MarshalContext;
 import org.apache.sis.xml.ValueConverter;
 import org.apache.sis.xml.ReferenceResolver;
 
 
 /**
- * Thread-local status of a marshalling or unmarshalling process.
+ * Thread-local status of a marshalling or unmarshalling processes, also occasionally used for other processes.
  * All non-static methods in this class except {@link #finish()} are implementation of public API.
- * All static methods are internal API. Those methods expect a {@code MarshalContext} instance as
- * their first argument. They should be though as if they were normal member methods, except that
- * they accept {@code null} instance if no (un)marshalling is in progress.
+ * All static methods are internal API. Those methods expect a {@code Context} instance as their first argument.
+ * They should be though as if they were normal member methods, except that they accept {@code null} instance
+ * if no (un)marshalling is in progress.
+ *
+ * <p>While this class is primarily used for (un)marshalling processes, it may also be opportunistically used
+ * for other processes like {@link org.apache.sis.metadata.AbstractMetadata#equals(Object)}. The class name is
+ * only "{@code Context}" for that reason.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.07)
  * @version 0.3
  * @module
  */
-public final class MarshalContext extends org.apache.sis.xml.MarshalContext {
+public final class Context extends MarshalContext {
     /**
      * The bit flag telling if a marshalling process is under progress.
      * This flag is unset for unmarshalling processes.
@@ -62,7 +67,7 @@ public final class MarshalContext extends org.apache.sis.xml.MarshalContext {
      * {@code finally} block by the {@link #finish()} method. This {@code ThreadLocal} shall
      * not contain any value when no (un)marshalling is in progress.
      */
-    private static final ThreadLocal<MarshalContext> CURRENT = new ThreadLocal<>();
+    private static final ThreadLocal<Context> CURRENT = new ThreadLocal<>();
 
     /**
      * The value converter currently in use, or {@code null} for {@link ValueConverter#DEFAULT}.
@@ -107,14 +112,14 @@ public final class MarshalContext extends org.apache.sis.xml.MarshalContext {
      * to push properties (e.g. {@link #pushLocale(Locale)}) and pull back the
      * context to its previous state once finished.
      */
-    private final MarshalContext previous;
+    private final Context previous;
 
     /**
      * Invoked when a marshalling or unmarshalling process is about to begin.
      * Must be followed by a call to {@link #finish()} in a {@code finally} block.
      *
      * {@preformat java
-     *     MarshalContext context = new MarshalContext(…);
+     *     Context context = new Context(…);
      *     try {
      *         ...
      *     } finally {
@@ -131,7 +136,7 @@ public final class MarshalContext extends org.apache.sis.xml.MarshalContext {
      * @param  bitMasks   A combination of {@link #MARSHALLING}, {@link #SUBSTITUTE_LANGUAGE},
      *                    {@link #SUBSTITUTE_COUNTRY} or other bit masks.
      */
-    public MarshalContext(final ValueConverter converter, final ReferenceResolver resolver,
+    public Context(final ValueConverter converter, final ReferenceResolver resolver,
             final Version versionGML, final Map<String,String> schemas,
             final Locale locale, final TimeZone timezone, final int bitMasks)
     {
@@ -153,7 +158,7 @@ public final class MarshalContext extends org.apache.sis.xml.MarshalContext {
      *
      * @see #push(Locale)
      */
-    private MarshalContext(final MarshalContext previous) {
+    private Context(final Context previous) {
         if (previous != null) {
             converter  = previous.converter;
             resolver   = previous.resolver;
@@ -201,7 +206,7 @@ public final class MarshalContext extends org.apache.sis.xml.MarshalContext {
     /*
      * ---- END OF PUBLIC API --------------------------------------------------------------
      *
-     * Following are internal API. They are provided as static methods with a MarshalContext
+     * Following are internal API. They are provided as static methods with a Context
      * argument rather than normal member methods in order to accept null context.
      */
 
@@ -211,7 +216,7 @@ public final class MarshalContext extends org.apache.sis.xml.MarshalContext {
      *
      * @return The current (un)marshalling context, or {@code null} if none.
      */
-    public static MarshalContext current() {
+    public static Context current() {
         return CURRENT.get();
     }
 
@@ -223,8 +228,8 @@ public final class MarshalContext extends org.apache.sis.xml.MarshalContext {
      *     return isFlagSet(current(), MARSHALLING);
      * }
      *
-     * Callers should use the {@link #isFlagSet(MarshalContext, int)} method instead if the
-     * {@code MarshalContext} instance is known, for avoiding a call to {@link #current()}.
+     * Callers should use the {@link #isFlagSet(Context, int)} method instead if the
+     * {@code Context} instance is known, for avoiding a call to {@link #current()}.
      *
      * @return {@code true} if XML marshalling is under progress.
      */
@@ -240,7 +245,7 @@ public final class MarshalContext extends org.apache.sis.xml.MarshalContext {
      *         {@link #SUBSTITUTE_COUNTRY} or other bit masks.
      * @return {@code true} if the given flag is set.
      */
-    public static boolean isFlagSet(final MarshalContext context, final int flag) {
+    public static boolean isFlagSet(final Context context, final int flag) {
         return (context != null) && (context.bitMasks & flag) != 0;
     }
 
@@ -253,7 +258,7 @@ public final class MarshalContext extends org.apache.sis.xml.MarshalContext {
      * @param  context The current context, or {@code null} if none.
      * @return The current value converter (never null).
      */
-    public static ValueConverter converter(final MarshalContext context) {
+    public static ValueConverter converter(final Context context) {
         if (context != null) {
             final ValueConverter converter = context.converter;
             if (converter != null) {
@@ -272,7 +277,7 @@ public final class MarshalContext extends org.apache.sis.xml.MarshalContext {
      * @param  context The current context, or {@code null} if none.
      * @return The current reference resolver (never null).
      */
-    public static ReferenceResolver resolver(final MarshalContext context) {
+    public static ReferenceResolver resolver(final Context context) {
         if (context != null) {
             final ReferenceResolver resolver = context.resolver;
             if (resolver != null) {
@@ -294,7 +299,7 @@ public final class MarshalContext extends org.apache.sis.xml.MarshalContext {
      * @param  defaultSchema The value to return if no schema is found for the given key.
      * @return The base URL of the schema, or {@code null} if none were specified.
      */
-    public static String schema(final MarshalContext context, final String key, final String defaultSchema) {
+    public static String schema(final Context context, final String key, final String defaultSchema) {
         if (context != null) {
             final Map<String,String> schemas = context.schemas;
             if (schemas != null) {
@@ -320,7 +325,7 @@ public final class MarshalContext extends org.apache.sis.xml.MarshalContext {
      *
      * @see #getVersion(String)
      */
-    public static boolean isGMLVersion(final MarshalContext context, final Version version) {
+    public static boolean isGMLVersion(final Context context, final Version version) {
         if (context != null) {
             final Version versionGML = context.versionGML;
             if (versionGML != null) {
@@ -338,18 +343,18 @@ public final class MarshalContext extends org.apache.sis.xml.MarshalContext {
      *
      * {@preformat java
      *     private void beforeMarshal(Marshaller marshaller) {
-     *         MarshalContext.push(language);
+     *         Context.push(language);
      *     }
      *
      *     private void afterMarshal(Marshaller marshaller) {
-     *         MarshalContext.pull();
+     *         Context.pull();
      *     }
      * }
      *
      * @param locale The locale to set, or {@code null}.
      */
     public static void push(final Locale locale) {
-        final MarshalContext context = new MarshalContext(current());
+        final Context context = new Context(current());
         if (locale != null) {
             context.locale = locale;
         }
@@ -358,11 +363,11 @@ public final class MarshalContext extends org.apache.sis.xml.MarshalContext {
     /**
      * Restores the locale (or any other setting) which was used prior the call
      * to {@link #push(Locale)}. It is not necessary to invoke this method in a
-     * {@code finally} block if the parent {@code MarshalContext} is itself
+     * {@code finally} block if the parent {@code Context} is itself
      * disposed in a {@code finally} block.
      */
     public static void pull() {
-        final MarshalContext current = current();
+        final Context current = current();
         if (current != null) {
             current.finish();
         }
