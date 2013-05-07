@@ -27,6 +27,8 @@ import org.opengis.metadata.spatial.Georectified;
 import org.opengis.metadata.spatial.PixelOrientation;
 import org.opengis.geometry.primitive.Point;
 import org.opengis.util.InternationalString;
+import org.apache.sis.internal.util.WarningListeners;
+import org.apache.sis.util.resources.Messages;
 import org.apache.sis.xml.Namespaces;
 
 
@@ -185,8 +187,9 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      * accuracy of the georeferenced grid data.
      *
      * {@section Effect on other properties}
-     * If and only if the given {@code newValue} is {@code false}, then this method automatically sets
-     * the {@linkplain #setCheckPointDescription check point description} property to {@code null}.
+     * If and only if the given {@code newValue} is {@code false}, then this method automatically hides
+     * the {@linkplain #setCheckPointDescription check point description} property. The description can
+     * be shown again by reverting {@code checkPointAvailability} to {@code true}.
      *
      * @param newValue {@code true} if check points are available.
      */
@@ -195,8 +198,11 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
         if (newValue) {
             booleans |= CHECK_POINT_MASK;
         } else {
+            if (checkPointDescription != null && (booleans & CHECK_POINT_MASK) != 0) {
+                WarningListeners.message(null, null, DefaultGeorectified.class, "setCheckPointAvailable",
+                        Messages.Keys.PropertyHiddenBy_2, "checkPointDescription", "checkPointAvailability");
+            }
             booleans &= ~CHECK_POINT_MASK;
-            checkPointDescription = null;
         }
     }
 
@@ -208,7 +214,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
     @Override
     @XmlElement(name = "checkPointDescription")
     public InternationalString getCheckPointDescription() {
-        return checkPointDescription;
+        return (booleans & CHECK_POINT_MASK) != 0 ? checkPointDescription : null;
     }
 
     /**

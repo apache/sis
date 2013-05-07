@@ -25,6 +25,8 @@ import org.opengis.metadata.identification.Resolution;
 // import org.apache.sis.internal.jaxb.gco.GO_Distance; // TODO
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.measure.ValueRange;
+import org.apache.sis.util.resources.Messages;
+import org.apache.sis.internal.util.WarningListeners;
 
 
 /**
@@ -122,6 +124,14 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
     }
 
     /**
+     * Invoked when setting a property discards the other one.
+     */
+    private static void warning(final String method, final String oldName, final String newName) {
+        WarningListeners.message(null, null, DefaultResolution.class, method,
+                Messages.Keys.DiscardedExclusiveProperty_2, oldName, newName);
+    }
+
+    /**
      * Returns the level of detail expressed as the scale of a comparable hardcopy map or chart.
      * Only one of {@linkplain #getEquivalentScale() equivalent scale} and
      * {@linkplain #getDistance() ground sample distance} may be provided.
@@ -143,9 +153,13 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      */
     public void setEquivalentScale(final RepresentativeFraction newValue) {
         checkWritePermission();
-        if (newValue != null || !isDistance()) {
-            scaleOrDistance = newValue;
+        if (isDistance()) {
+            if (newValue == null) {
+                return; // Do not erase the other property.
+            }
+            warning("setEquivalentScale", "distance", "equivalentScale");
         }
+        scaleOrDistance = newValue;
     }
 
     /**
@@ -168,8 +182,12 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      */
     public void setDistance(final Double newValue) {
         checkWritePermission();
-        if (newValue != null || isDistance()) {
-            scaleOrDistance = newValue;
+        if (scaleOrDistance != null && !isDistance()) {
+            if (newValue == null) {
+                return; // Do not erase the other property.
+            }
+            warning("setDistance", "equivalentScale", "distance");
         }
+        scaleOrDistance = newValue;
     }
 }
