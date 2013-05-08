@@ -26,7 +26,7 @@ import org.opengis.metadata.identification.Resolution;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.util.resources.Messages;
-import org.apache.sis.internal.util.WarningListeners;
+import org.apache.sis.internal.metadata.MetadataUtilities;
 
 
 /**
@@ -127,7 +127,7 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      * Invoked when setting a property discards the other one.
      */
     private static void warning(final String method, final String oldName, final String newName) {
-        WarningListeners.message(null, null, DefaultResolution.class, method,
+        MetadataUtilities.warning(DefaultResolution.class, method,
                 Messages.Keys.DiscardedExclusiveProperty_2, oldName, newName);
     }
 

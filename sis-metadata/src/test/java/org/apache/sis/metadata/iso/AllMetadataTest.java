@@ -25,6 +25,8 @@ import org.apache.sis.metadata.MetadataTestCase;
 import org.apache.sis.metadata.iso.identification.DefaultRepresentativeFraction;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.xml.Namespaces;
+import org.junit.Rule;
+import org.junit.Test;
 
 import static org.junit.Assert.*;
 
@@ -44,6 +46,14 @@ import static org.junit.Assert.*;
     org.apache.sis.metadata.iso.quality.AbstractElementTest.class
 })
 public final strictfp class AllMetadataTest extends MetadataTestCase {
+    /**
+     * A JUnit {@linkplain Rule rule} for listening to log events. This field is public
+     * because JUnit requires us to do so, but should be considered as an implementation
+     * details (it should have been a private field).
+     */
+    @Rule
+    public final LoggingWatcher listener = new LoggingWatcher();
+
     /**
      * Creates a new test case with all GeoAPI interfaces and code lists to test.
      */
@@ -193,6 +203,16 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
             org.opengis.metadata.spatial.SpatialRepresentationType.class,
             org.opengis.metadata.spatial.TopologyLevel.class,
             org.opengis.metadata.spatial.VectorSpatialRepresentation.class);
+    }
+
+    /**
+     * Performs the test documente in the {@link MetadataTestCase} javadoc.
+     */
+    @Test
+    @Override
+    public void testPropertyValues() {
+        listener.maximumLogCount = 3;
+        super.testPropertyValues();
     }
 
     /**
