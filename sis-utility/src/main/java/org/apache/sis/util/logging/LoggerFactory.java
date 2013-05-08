@@ -31,7 +31,7 @@ import org.apache.sis.util.collection.WeakValueHashMap;
  *       in the {@code META-INF/services/org.apache.sis.util.logging.LoggerFactory} file.
  *       Note that the {@code sis-logging-commons.jar} and {@code sis-logging-log4j.jar}
  *       files provide such declaration.</li>
- *   <li>By explicit invocation of {@link Logging#setLoggerFactory(String, LoggerFactory)}
+ *   <li>By explicit invocation of {@link Logging#setLoggerFactory(LoggerFactory)}
  *       at application initialization time.</li>
  * </ul>
  *
