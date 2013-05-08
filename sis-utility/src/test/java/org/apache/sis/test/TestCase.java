@@ -92,7 +92,7 @@ public abstract strictfp class TestCase {
      * {@code true} if the {@value org.apache.sis.test.TestConfiguration#VERBOSE_OUTPUT_KEY}
      * system property is set to {@code true}.
      */
-    protected static final boolean verbose;
+    public static final boolean verbose;
 
     /**
      * Sets the {@link #out} writer and its underlying {@link #buffer}.
