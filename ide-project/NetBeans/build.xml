@@ -13,7 +13,7 @@
   -->
   <target name="-pre-jar">
     <copy todir="${build.classes.dir}/org/apache/sis/util/iso">
-      <fileset dir="${project.root}/sis-utility/src/main/resources/org/apache/sis/util/iso">
+      <fileset dir="${project.root}/core/sis-utility/src/main/resources/org/apache/sis/util/iso">
         <include name="class-index.properties"/>
       </fileset>
     </copy>
