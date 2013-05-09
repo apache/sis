@@ -14,26 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.test;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Target;
-
-
-/**
- * A marker annotation for platform-dependent tests. The platform-dependent part may
- * be the Operating System, or whether some dependencies are present or not.
- *
- * <p>This annotation is used in order to remember which part of the SIS library
- * (or its test suite) need to be revisited for better portability.</p>
- *
- * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.14)
- * @version 0.3
- * @module
+/*
+ * Inherit all the styles from the parent site.css,
+ * with only the URL to the images modified.
  */
-@Documented
-@Target(ElementType.METHOD)
-public @interface PlatformDependentTest {
+@import url("../../css/site.css");
+
+h2 {
+  background: url(../../images/h2.png) repeat-x;
+}
+#breadcrumbs {
+  background: url(../../images/bar.png) repeat-x;
 }
