@@ -25,7 +25,7 @@ import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.UnconvertibleObjectException;
-import org.apache.sis.test.PlatformDependentTest;
+import org.apache.sis.test.PlatformDependent;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -83,7 +83,7 @@ public final strictfp class PathConverterTest extends TestCase {
      * @throws URISyntaxException Should never happen.
      */
     @Test
-    @PlatformDependentTest
+    @PlatformDependent
     public void testFile_URI() throws URISyntaxException {
         assumeUnixRoot();
         final ObjectConverter<File,URI> c = PathConverter.FileURI.INSTANCE;
@@ -97,7 +97,7 @@ public final strictfp class PathConverterTest extends TestCase {
      * @throws MalformedURLException Should never happen.
      */
     @Test
-    @PlatformDependentTest
+    @PlatformDependent
     public void testFile_URL() throws MalformedURLException {
         assumeUnixRoot();
         final ObjectConverter<File,URL> c = PathConverter.FileURL.INSTANCE;
@@ -136,7 +136,7 @@ public final strictfp class PathConverterTest extends TestCase {
      * @throws URISyntaxException Should never happen.
      */
     @Test
-    @PlatformDependentTest
+    @PlatformDependent
     public void testURI_File() throws URISyntaxException {
         PathConverterTest.assumeUnixRoot();
         final ObjectConverter<URI,File> c = PathConverter.URIFile.INSTANCE;
@@ -175,7 +175,7 @@ public final strictfp class PathConverterTest extends TestCase {
      * @throws MalformedURLException Should never happen.
      */
     @Test
-    @PlatformDependentTest
+    @PlatformDependent
     public void testURL_File() throws MalformedURLException {
         PathConverterTest.assumeUnixRoot();
         final ObjectConverter<URL,File> c = PathConverter.URLFile.INSTANCE;
