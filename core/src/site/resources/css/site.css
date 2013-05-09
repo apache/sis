@@ -22,8 +22,8 @@
 @import url("../../css/site.css");
 
 h2 {
-  background: url(../../../images/h2.png) repeat-x;
+  background: url(../../images/h2.png) repeat-x;
 }
 #breadcrumbs {
-  background: url(../../../images/bar.png) repeat-x;
+  background: url(../../images/bar.png) repeat-x;
 }
