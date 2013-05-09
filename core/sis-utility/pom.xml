@@ -27,7 +27,7 @@
 
   <parent>
     <groupId>org.apache.sis</groupId>
-    <artifactId>sis-parent</artifactId>
+    <artifactId>core</artifactId>
     <version>0.3-jdk6-SNAPSHOT</version>
   </parent>
 
@@ -35,15 +35,13 @@
   <!-- ===========================================================
            Module Description
        =========================================================== -->
-  <artifactId>sis-metadata</artifactId>
+  <artifactId>sis-utility</artifactId>
   <packaging>bundle</packaging>
-  <name>Apache SIS metadata</name>
+  <name>Apache SIS utilities</name>
   <description>
   <!-- Left alignment because this description will be copied in META-INF/MANIFEST.MF
        The leading space after the first line is necessary for proper formatting. -->
-Implementations of metadata derived from ISO 19115. This module provides both an implementation
- of the metadata interfaces defined in GeoAPI, and a framework for handling those metadata through
- Java reflection.
+Miscellaneous utilities.
   </description>
 
 
@@ -58,6 +56,13 @@ Implementations of metadata derived from ISO 19115. This module provides both an
       <organization>Geomatys</organization>
       <organizationUrl>http://www.geomatys.com</organizationUrl>
       <timezone>+1</timezone>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Joseph F. White</name>
+      <id>jwhite</id>
       <roles>
         <role>developer</role>
       </roles>
@@ -103,14 +108,63 @@ Implementations of metadata derived from ISO 19115. This module provides both an
 
 
   <!-- ===========================================================
+           Build configuration
+       =========================================================== -->
+  <build>
+    <plugins>
+
+      <!-- Delete the "com/sun/xml/..." directory after compilation. -->
+      <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>process-test-classes</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <delete dir="${project.build.outputDirectory}/com"/>
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Compile properties files into resources UTF files. -->
+      <plugin>
+        <groupId>org.apache.sis</groupId>
+        <artifactId>sis-build-helper</artifactId>
+        <version>${sis.plugin.version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>compile-resources</goal>
+              <!-- The "collect-jars" goal declared in the JDK7 branch is omitted
+                   in the JDK6 branch, because much more costly on JDK6 platforms. -->
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Package as OSGi bundle -->
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <configuration>
+          <instructions>
+            <Bundle-Activator>org.apache.sis.internal.util.OSGiActivator</Bundle-Activator>
+          </instructions>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+
+  <!-- ===========================================================
            Dependencies
        =========================================================== -->
   <dependencies>
-    <dependency>
-      <groupId>org.apache.sis</groupId>
-      <artifactId>sis-utility</artifactId>
-      <version>${project.version}</version>
-    </dependency>
     <dependency>
       <groupId>org.opengis</groupId>
       <artifactId>geoapi-pending</artifactId>
@@ -119,14 +173,19 @@ Implementations of metadata derived from ISO 19115. This module provides both an
       <groupId>org.opengis</groupId>
       <artifactId>geoapi-conformance</artifactId>
     </dependency>
-
-    <!-- Test dependencies -->
     <dependency>
-      <groupId>org.apache.sis</groupId>
-      <artifactId>sis-utility</artifactId>
-      <version>${project.version}</version>
-      <type>test-jar</type>
-      <scope>test</scope>
+      <groupId>net.jcip</groupId>
+      <artifactId>jcip-annotations</artifactId>
+    </dependency>
+
+    <!-- Optional dependencies (provided scope) -->
+    <dependency>
+      <groupId>org.osgi</groupId>
+      <artifactId>org.osgi.core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>javax</groupId>
+      <artifactId>javaee-api</artifactId>
     </dependency>
   </dependencies>
 
