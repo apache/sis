@@ -128,7 +128,7 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
      *   </CI_ResponsibleParty>
      * }
      *
-     * To reflect that fact, this method shall return the {@link org.apache.sis.internal.jaxb.metadata.CI_Contact}
+     * To reflect that fact, this method shall return the internal {@code CI_Contact}
      * wrapper class for the {@link org.apache.sis.metadata.iso.citation.DefaultCitation} argument.
      * If no wrapper is expected for the given class, then this method shall return {@code null}.
      *

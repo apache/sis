@@ -41,8 +41,8 @@ import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.quality.DataQuality;
 import org.opengis.metadata.spatial.SpatialRepresentation;
 import org.opengis.referencing.ReferenceSystem;
-import org.apache.sis.internal.jaxb.MarshalContext;
 //import org.apache.sis.internal.jaxb.gmd.PT_Locale; // TODO
+import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.xml.Namespaces;
 
 import static org.apache.sis.internal.metadata.MetadataUtilities.toDate;
@@ -774,7 +774,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * This method sets the locale to be used for XML marshalling to the metadata language.
      */
     private void beforeMarshal(final Marshaller marshaller) {
-        MarshalContext.push(language);
+        Context.push(language);
     }
 
     /**
@@ -782,6 +782,6 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * XML. This method restores the locale to be used for XML marshalling to its previous value.
      */
     private void afterMarshal(final Marshaller marshaller) {
-        MarshalContext.pull();
+        Context.pull();
     }
 }

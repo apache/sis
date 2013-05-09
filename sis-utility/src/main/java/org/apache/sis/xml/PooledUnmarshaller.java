@@ -35,7 +35,7 @@ import javax.xml.validation.Schema;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.apache.sis.util.Decorator;
-import org.apache.sis.internal.jaxb.MarshalContext;
+import org.apache.sis.internal.jaxb.Context;
 
 
 /**
@@ -45,7 +45,7 @@ import org.apache.sis.internal.jaxb.MarshalContext;
  * <ul>
  *   <li>Save properties before modification, in order to restore them to their original values
  *       when the unmarshaller is recycled.</li>
- *   <li>Constructs a SIS {@link MarshalContext} object on unmarshalling, in order to give
+ *   <li>Constructs a SIS {@link Context} object on unmarshalling, in order to give
  *       additional information to the SIS object being unmarshalled.</li>
  * </ul>
  *
@@ -107,7 +107,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
      */
     @Override
     public Object unmarshal(final InputStream input) throws JAXBException {
-        final MarshalContext context = begin();
+        final Context context = begin();
         try {
             return unmarshaller.unmarshal(input);
         } finally {
@@ -120,7 +120,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
      */
     @Override
     public Object unmarshal(final URL input) throws JAXBException {
-        final MarshalContext context = begin();
+        final Context context = begin();
         try {
             return unmarshaller.unmarshal(input);
         } finally {
@@ -133,7 +133,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
      */
     @Override
     public Object unmarshal(final File input) throws JAXBException {
-        final MarshalContext context = begin();
+        final Context context = begin();
         try {
             return unmarshaller.unmarshal(input);
         } finally {
@@ -146,7 +146,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
      */
     @Override
     public Object unmarshal(final Reader input) throws JAXBException {
-        final MarshalContext context = begin();
+        final Context context = begin();
         try {
             return unmarshaller.unmarshal(input);
         } finally {
@@ -159,7 +159,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
      */
     @Override
     public Object unmarshal(final InputSource input) throws JAXBException {
-        final MarshalContext context = begin();
+        final Context context = begin();
         try {
             return unmarshaller.unmarshal(input);
         } finally {
@@ -172,7 +172,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
      */
     @Override
     public Object unmarshal(final Node input) throws JAXBException {
-        final MarshalContext context = begin();
+        final Context context = begin();
         try {
             return unmarshaller.unmarshal(input);
         } finally {
@@ -185,7 +185,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
      */
     @Override
     public <T> JAXBElement<T> unmarshal(final Node input, final Class<T> declaredType) throws JAXBException {
-        final MarshalContext context = begin();
+        final Context context = begin();
         try {
             return unmarshaller.unmarshal(input, declaredType);
         } finally {
@@ -198,7 +198,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
      */
     @Override
     public Object unmarshal(final Source input) throws JAXBException {
-        final MarshalContext context = begin();
+        final Context context = begin();
         try {
             return unmarshaller.unmarshal(input);
         } finally {
@@ -211,7 +211,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
      */
     @Override
     public <T> JAXBElement<T> unmarshal(final Source input, final Class<T> declaredType) throws JAXBException {
-        final MarshalContext context = begin();
+        final Context context = begin();
         try {
             return unmarshaller.unmarshal(input, declaredType);
         } finally {
@@ -224,7 +224,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
      */
     @Override
     public Object unmarshal(final XMLStreamReader input) throws JAXBException {
-        final MarshalContext context = begin();
+        final Context context = begin();
         try {
             return unmarshaller.unmarshal(input);
         } finally {
@@ -237,7 +237,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
      */
     @Override
     public <T> JAXBElement<T> unmarshal(final XMLStreamReader input, final Class<T> declaredType) throws JAXBException {
-        final MarshalContext context = begin();
+        final Context context = begin();
         try {
             return unmarshaller.unmarshal(input, declaredType);
         } finally {
@@ -250,7 +250,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
      */
     @Override
     public Object unmarshal(final XMLEventReader input) throws JAXBException {
-        final MarshalContext context = begin();
+        final Context context = begin();
         try {
             return unmarshaller.unmarshal(input);
         } finally {
@@ -263,7 +263,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
      */
     @Override
     public <T> JAXBElement<T> unmarshal(final XMLEventReader input, final Class<T> declaredType) throws JAXBException {
-        final MarshalContext context = begin();
+        final Context context = begin();
         try {
             return unmarshaller.unmarshal(input, declaredType);
         } finally {

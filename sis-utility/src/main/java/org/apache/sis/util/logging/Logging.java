@@ -16,41 +16,34 @@
  */
 package org.apache.sis.util.logging;
 
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.ServiceLoader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 
 import org.apache.sis.util.Configuration;
 import org.apache.sis.util.Static;
-import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Classes;
 
 
 /**
  * A set of utilities method for configuring loggings in SIS. Library implementors shall fetch
- * their logger using the {@link #getLogger(Class)} static method provided in this class rather
- * than {@link Logger#getLogger(String)}, in order to give SIS a chance to redirect the logging
- * to an other framework like <A HREF="http://commons.apache.org/logging/">Commons-logging</A> or
- * <A HREF="http://logging.apache.org/log4j">Log4J</A>.
+ * their loggers using the {@link #getLogger(Class)} static method defined in this {@code Logging}
+ * class rather than the one defined in the standard {@link Logger} class, in order to give SIS a
+ * chance to redirect the logs to an other framework like
+ * <a href="http://commons.apache.org/logging/">Commons-logging</a> or
+ * <a href="http://logging.apache.org/log4j">Log4J</a>.
  *
- * <p>This method provides also a {@link #log(Class, String, LogRecord)} convenience static method,
- * which {@linkplain LogRecord#setLoggerName set the logger name} of the given record before to log
- * it. An other worthy static method is {@link #unexpectedException(Class, String, Throwable)}, for
- * reporting an anomalous but nevertheless non-fatal exception.</p>
- *
- * {@section Configuration}
- * The log records can be redirected explicitly to an other logging framework using the
- * {@link #setLoggerFactory(LoggerFactory)} method.
- * Note however that this method call is performed automatically if the
- * {@code sis-logging-commons.jar} or the {@code sis-logging-log4j.jar} file is
- * found on the classpath, so it usually doesn't need to be invoked explicitely.
- * See the {@link #scanLoggerFactory()} method for more details on automatic logger
- * factory registration.
+ * <p>This class provides also some convenience static methods, including:</p>
+ * <ul>
+ *   <li>{@link #log(Class, String, LogRecord)} for {@linkplain LogRecord#setLoggerName(String) setting
+ *       the logger name}, {@linkplain LogRecord#setSourceClassName(String) source class name} and
+ *       {@linkplain LogRecord#setSourceMethodName(String) source method name} of the given record
+ *       before to log it.</li>
+ *   <li>{@link #unexpectedException(Class, String, Throwable)} for reporting an anomalous but
+ *       nevertheless non-fatal exception.</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.4)
@@ -59,82 +52,113 @@ import org.apache.sis.util.Classes;
  */
 public final class Logging extends Static {
     /**
-     * Compares {@link Logging} or {@link String} objects for alphabetical order.
-     */
-    private static final Comparator<Object> COMPARATOR = new Comparator<Object>() {
-        @Override public int compare(final Object o1, final Object o2) {
-            final String n1 = (o1 instanceof Logging) ? ((Logging) o1).name : o1.toString();
-            final String n2 = (o2 instanceof Logging) ? ((Logging) o2).name : o2.toString();
-            return n1.compareTo(n2);
-        }
-    };
-
-    /**
-     * An empty array of loggings. Also used for locks.
-     */
-    private static final Logging[] EMPTY = new Logging[0];
-
-    /**
-     * Logging configuration that apply to all packages.
-     */
-    public static final Logging ALL = new Logging();
-    static { // Must be run after ALL assignation and before SIS (or any other Logging) creation.
-        ALL.scanLoggerFactory();
-    }
-
-    /**
-     * Logging configuration that apply only to "{@code org.apache.sis}" packages.
-     */
-    public static final Logging SIS = getLogging("org.apache.sis");
-
-    /**
-     * The name of the base package.
-     */
-    public final String name;
-
-    /**
-     * The children {@link Logging} objects.
+     * The factory for obtaining {@link Logger} instances, or {@code null} if none.
+     * If {@code null} (the default), then the standard JDK logging framework will be used.
+     * {@code Logging} scans the classpath for logger factories on class initialization.
+     * The fully qualified factory classname shall be declared in the following file:
      *
-     * {@note The array used there is not efficient for adding new items (<code>ArrayList</code>
-     *        would be more efficient), but we assume that very few new items will be added.
-     *        Furthermore a plain array is efficient for reading, and the later is way more
-     *        common than the former.}
-     */
-    private Logging[] children = EMPTY;
-
-    /**
-     * The factory for creating loggers, or {@code null} if none. If {@code null}
-     * (the default), then the standard JDK logging framework will be used.
+     * {@preformat text
+     *     META-INF/services/org.apache.sis.util.logging.LoggerFactory
+     * }
+     *
+     * The factory found on the classpath is assigned to the {@link #factory} field. If more than one factory
+     * is found, then the log messages will be sent to the logging frameworks managed by all those factories.
+     *
+     * {@note A previous version was providing a <code>scanForPlugins()</code> method allowing developers to
+     *        refresh the object state when new <code>LoggerFactory</code> instances become available on the
+     *        classpath of a running JVM. However it usually doesn't work since loggers are typically stored
+     *        in static final fields.}
      *
      * @see #setLoggerFactory(LoggerFactory)
      */
-    private LoggerFactory<?> factory;
-
-    /**
-     * {@code true} if every {@link Logging} instances use the same {@link LoggerFactory}.
-     * This is an optimization for a very common case.
-     */
-    private static boolean sameLoggerFactory = true;
-
-    /**
-     * Creates an instance for the root logger. This constructor should not be used for anything
-     * else than {@link #ALL} construction; use the {@link #getLogging(String)} method instead.
-     */
-    private Logging() {
-        name = "";
+    private static volatile LoggerFactory<?> factory;
+    static {
+        LoggerFactory<?> factory = null;
+        for (final LoggerFactory<?> found : ServiceLoader.load(LoggerFactory.class)) {
+            if (factory == null) {
+                factory = found;
+            } else {
+                factory = new DualLoggerFactory(factory, found);
+            }
+        }
+        Logging.factory = factory;
     }
 
     /**
-     * Creates an instance for the specified base logger. This constructor should
-     * not be public; use the {@link #getLogging(String)} method instead.
-     *
-     * @param parent The parent {@code Logging} instance.
-     * @param name   The logger name for the new instance.
+     * Do not allow instantiation of this class.
      */
-    private Logging(final Logging parent, final String name) {
-        this.name = name;
-        factory = parent.factory;
-        assert name.startsWith(parent.name) : name;
+    private Logging() {
+    }
+
+    /**
+     * Sets a new factory to use for obtaining {@link Logger} instances.
+     * If the given {@code factory} argument is {@code null} (the default),
+     * then the standard Logging framework will be used.
+     *
+     * {@section Limitation}
+     * SIS classes typically declare a logger constant like below:
+     *
+     * {@preformat java
+     *     public static final Logger LOGGER = Logging.getLogger(TheClass.class);
+     * }
+     *
+     * Factory changes will take effect only if this method is invoked before the initialization
+     * of such classes.
+     *
+     * @param factory The new logger factory, or {@code null} if none.
+     */
+    @Configuration
+    public static void setLoggerFactory(final LoggerFactory<?> factory) {
+        Logging.factory = factory;
+    }
+
+    /**
+     * Returns the factory used for obtaining {@link Logger} instances, or {@code null} if none.
+     *
+     * @return The current logger factory, or {@code null} if none.
+     */
+    public static LoggerFactory<?> getLoggerFactory() {
+        return factory;
+    }
+
+    /**
+     * Returns a logger for the specified name. If a {@linkplain LoggerFactory logger factory} has
+     * been set, then this method first {@linkplain LoggerFactory#getLogger asks to the factory}.
+     * This rule gives SIS a chance to redirect logging events to
+     * <a href="http://commons.apache.org/logging/">commons-logging</a> or some equivalent framework.
+     * Only if no factory was found or if the factory choose to not redirect the loggings, then this
+     * method delegate to <code>{@linkplain Logger#getLogger Logger.getLogger}(name)</code>.
+     *
+     * @param  name The logger name.
+     * @return A logger for the specified name.
+     */
+    public static Logger getLogger(final String name) {
+        final LoggerFactory<?> factory = Logging.factory;
+        if (factory != null) {
+            final Logger logger = factory.getLogger(name);
+            if (logger != null) {
+                return logger;
+            }
+        }
+        return Logger.getLogger(name);
+    }
+
+    /**
+     * Returns a logger for the specified class. This convenience method invokes
+     * {@link #getLogger(String)} with the package name as the logger name.
+     *
+     * @param  classe The class for which to obtain a logger.
+     * @return A logger for the specified class.
+     */
+    public static Logger getLogger(Class<?> classe) {
+        Class<?> outer;
+        while ((outer = classe.getEnclosingClass()) != null) {
+            classe = outer;
+        }
+        String name = classe.getName();
+        final int separator = name.lastIndexOf('.');
+        name = (separator >= 1) ? name.substring(0, separator) : "";
+        return getLogger(name);
     }
 
     /**
@@ -164,208 +188,6 @@ public final class Logging extends Static {
             record.setLoggerName(logger.getName());
         }
         logger.log(record);
-    }
-
-    /**
-     * Returns a logger for the specified class. This convenience method invokes
-     * {@link #getLogger(String)} with the package name as the logger name.
-     *
-     * @param  classe The class for which to obtain a logger.
-     * @return A logger for the specified class.
-     */
-    public static Logger getLogger(Class<?> classe) {
-        Class<?> outer;
-        while ((outer = classe.getEnclosingClass()) != null) {
-            classe = outer;
-        }
-        String name = classe.getName();
-        final int separator = name.lastIndexOf('.');
-        name = (separator >= 1) ? name.substring(0, separator) : "";
-        return getLogger(name);
-    }
-
-    /**
-     * Returns a logger for the specified name. If a {@linkplain LoggerFactory logger factory} has
-     * been set, then this method first {@linkplain LoggerFactory#getLogger ask to the factory}.
-     * It gives SIS a chance to redirect logging events to
-     * <A HREF="http://commons.apache.org/logging/">commons-logging</A>
-     * or some equivalent framework.
-     *
-     * <p>If no factory was found or if the factory choose to not redirect the loggings, then this
-     * method returns the usual <code>{@linkplain Logger#getLogger Logger.getLogger}(name)</code>.</p>
-     *
-     * @param  name The logger name.
-     * @return A logger for the specified name.
-     */
-    public static Logger getLogger(final String name) {
-        synchronized (EMPTY) {
-            final Logging logging = sameLoggerFactory ? ALL : getLogging(name, false);
-            if (logging != null) { // Paranoiac check ('getLogging' should not returns null).
-                final LoggerFactory<?> factory = logging.factory;
-                assert getLogging(name, false).factory == factory : name;
-                if (factory != null) {
-                    final Logger logger = factory.getLogger(name);
-                    if (logger != null) {
-                        return logger;
-                    }
-                }
-            }
-        }
-        return Logger.getLogger(name);
-    }
-
-    /**
-     * Returns a {@code Logging} instance for the specified base logger.
-     * This instance can be used for controlling logging configuration in SIS.
-     *
-     * <p>{@code Logging} instances follow the same hierarchy than {@link Logger}, i.e.
-     * {@code "org.apache.sis"} is the parent of {@code "org.apache.sis.referencing"},
-     * {@code "org.apache.sis.metadata"}, <i>etc</i>.</p>
-     *
-     * @param name The base logger name.
-     * @return The logging instance for the given name.
-     */
-    public static Logging getLogging(final String name) {
-        synchronized (EMPTY) {
-            return getLogging(name, true);
-        }
-    }
-
-    /**
-     * Returns a logging instance for the specified base logger. If no instance is found for
-     * the specified name and {@code create} is {@code true}, then a new instance will be
-     * created. Otherwise the nearest parent is returned.
-     *
-     * @param base The root logger name.
-     * @param create {@code true} if this method is allowed to create new {@code Logging} instance.
-     * @return The logging instance for the given name.
-     */
-    private static Logging getLogging(final String base, final boolean create) {
-        assert Thread.holdsLock(EMPTY);
-        Logging logging = ALL;
-        if (!base.isEmpty()) {
-            int offset = 0;
-            do {
-                Logging[] children = logging.children;
-                offset = base.indexOf('.', offset);
-                final String name = (offset >= 0) ? base.substring(0, offset) : base;
-                int i = Arrays.binarySearch(children, name, COMPARATOR);
-                if (i < 0) {
-                    // No exact match found.
-                    if (!create) {
-                        // We are not allowed to create new Logging instance.
-                        // 'logging' is the nearest parent, so stop the loop now.
-                        break;
-                    }
-                    i = ~i;
-                    children = ArraysExt.insert(children, i, 1);
-                    children[i] = new Logging(logging, name);
-                    logging.children = children;
-                }
-                logging = children[i];
-            } while (++offset != 0);
-        }
-        return logging;
-    }
-
-    /**
-     * Returns the logger factory, or {@code null} if none. This method returns the logger set
-     * by the last call to {@link #setLoggerFactory(LoggerFactory)} on this {@code Logging}
-     * instance or on one of its parent.
-     *
-     * @return The current logger factory.
-     */
-    public LoggerFactory<?> getLoggerFactory() {
-        synchronized (EMPTY) {
-            return factory;
-        }
-    }
-
-    /**
-     * Sets a new logger factory for this {@code Logging} instance and every children. The
-     * specified factory will be used by <code>{@linkplain #getLogger(String) getLogger}(name)</code>
-     * when {@code name} is this {@code Logging} name or one of its children.
-     *
-     * <p>If the factory is set to {@code null} (the default), then the standard Logging framework
-     * will be used.</p>
-     *
-     * @param factory The new logger factory, or {@code null} if none.
-     */
-    @Configuration
-    public void setLoggerFactory(final LoggerFactory<?> factory) {
-        synchronized (EMPTY) {
-            this.factory = factory;
-            for (int i=0; i<children.length; i++) {
-                children[i].setLoggerFactory(factory);
-            }
-            sameLoggerFactory = sameLoggerFactory(ALL.children, ALL.factory); // NOSONAR: really want static field.
-        }
-    }
-
-    /**
-     * Returns {@code true} if all children use the specified factory.
-     * Used in order to detect a possible optimization for this very common case.
-     */
-    private static boolean sameLoggerFactory(final Logging[] children, final LoggerFactory<?> factory) {
-        assert Thread.holdsLock(EMPTY);
-        for (int i=0; i<children.length; i++) {
-            final Logging logging = children[i];
-            if (logging.factory != factory || !sameLoggerFactory(logging.children, factory)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Scans the classpath for logger factories. The fully qualified factory classname shall be
-     * declared in the following file:
-     *
-     * {@preformat text
-     *     META-INF/services/org.apache.sis.util.logging.LoggerFactory
-     * }
-     *
-     * The factory found on the classpath is given to {@link #setLoggerFactory(LoggerFactory)}.
-     * If more than one factory is found, then the log messages will be sent to the logging
-     * frameworks managed by all those factories.
-     *
-     * <p>This method usually doesn't need to be invoked explicitly, since it is automatically
-     * invoked on {@code Logging} class initialization. However developers may invoke it if
-     * new {@code LoggerFactory}s are added later on the classpath of a running JVM.</p>
-     */
-    @Configuration
-    public void scanLoggerFactory() {
-        LoggerFactory<?> factory = null;
-        for (final LoggerFactory<?> found : ServiceLoader.load(LoggerFactory.class)) {
-            if (factory == null) {
-                factory = found;
-            } else {
-                factory = new DualLoggerFactory(factory, found);
-            }
-        }
-        setLoggerFactory(factory);
-    }
-
-    /**
-     * Flushes all {@linkplain Handler handlers} used by the logger named {@link #name}.
-     * If that logger {@linkplain Logger#getUseParentHandlers() uses parent handlers},
-     * then those handlers will be flushed as well.
-     *
-     * <p>If the log records seem to be interleaved with the content of {@link System#out}
-     * or {@link System#err}, invoking this method before to write to the standard streams
-     * may help.</p>
-     *
-     * @see Handler#flush()
-     */
-    public void flush() {
-        for (Logger logger=getLogger(name); logger!=null; logger=logger.getParent()) {
-            for (final Handler handler : logger.getHandlers()) {
-                handler.flush();
-            }
-            if (!logger.getUseParentHandlers()) {
-                break;
-            }
-        }
     }
 
     /**

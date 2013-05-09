@@ -33,19 +33,25 @@
  * The SIS project uses the standard {@link java.util.logging.Logger} API for its logging,
  * but this package allows redirection of logging messages to some other frameworks like
  * <a href="http://logging.apache.org/log4j/">Log4J</a>.
- *
- * <p>We recommend to stick to standard JDK logging when possible. However if inter-operability
+ * We recommend to stick to standard JDK logging when possible. However if inter-operability
  * with an other logging framework is required, then the only action needed is to include
- * <strong>one</strong> of the following JAR on the classpath:</p>
+ * <strong>one</strong> of the following JAR on the classpath:
  *
  * <ul>
- *   <li>{@code geotk-logging-commons.jar} for Apache logging</li>
- *   <li>{@code geotk-logging-log4j.jar} for Log4J logging</li>
+ *   <li>{@code sis-logging-commons.jar} for Apache logging</li>
+ *   <li>{@code sis-logging-log4j.jar} for Log4J logging</li>
+ *   <li>Any other JAR registering a {@link org.apache.sis.util.logging.LoggerFactory} implementation.</li>
+ * </ul>
+ *
+ * {@section Apache SIS logger constants}
+ * Some static final {@code Logger} constant defined in Apache SIS are:
+ * <ul>
+ *   <li>{@link org.apache.sis.metadata.iso.ISOMetadata#LOGGER} for the {@code org.apache.sis.metadata.iso.*} packages</li>
  * </ul>
  *
  * {@section Note for SIS developers}
  * All SIS code should fetch their logger through a call to our custom
- * {@link org.apache.sis.util.logging.Logging#getLogger(String)} method, <strong>not</strong>
+ * {@link org.apache.sis.util.logging.Logging#getLogger(String)} method instead than
  * the standard {@link java.util.logging.Logger#getLogger(String)} method. This is necessary in
  * order to give SIS a chance to redirect log events to an other logging framework.
  *

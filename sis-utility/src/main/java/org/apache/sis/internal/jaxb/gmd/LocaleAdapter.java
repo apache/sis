@@ -18,8 +18,8 @@ package org.apache.sis.internal.jaxb.gmd;
 
 import java.util.Locale;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
-import org.apache.sis.internal.jaxb.MarshalContext;
 import org.apache.sis.internal.jaxb.gco.StringAdapter;
+import org.apache.sis.internal.jaxb.Context;
 
 
 /**
@@ -57,13 +57,13 @@ public final class LocaleAdapter extends XmlAdapter<LanguageCode, Locale> {
      */
     @Override
     public Locale unmarshal(final LanguageCode value) {
-        final MarshalContext context = MarshalContext.current();
+        final Context context = Context.current();
         final Locale candidate = LanguageCode.getLocale(context, value, false);
         if (candidate != null) {
             return candidate;
         }
         final String text = StringAdapter.toString(value);
-        return (text != null) ? MarshalContext.converter(context).toLocale(context, text) : null;
+        return (text != null) ? Context.converter(context).toLocale(context, text) : null;
     }
 
     /**
@@ -75,6 +75,6 @@ public final class LocaleAdapter extends XmlAdapter<LanguageCode, Locale> {
      */
     @Override
     public LanguageCode marshal(final Locale value) {
-        return LanguageCode.create(MarshalContext.current(), value);
+        return LanguageCode.create(Context.current(), value);
     }
 }

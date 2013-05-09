@@ -91,7 +91,7 @@ public final class Containers extends Static {
      * @return The given array wrapped in an unmodifiable list, or {@code null} if the given
      *         array was null.
      *
-     * @see java.util.Arrays#asList(T[])
+     * @see java.util.Arrays#asList(Object[])
      */
     public static <E> List<? extends E> unmodifiableList(final E... array) {
         return UnmodifiableArrayList.wrap(array);
