@@ -27,7 +27,7 @@
 
   <parent>
     <groupId>org.apache.sis</groupId>
-    <artifactId>sis-parent</artifactId>
+    <artifactId>application</artifactId>
     <version>0.3-android-SNAPSHOT</version>
   </parent>
 
