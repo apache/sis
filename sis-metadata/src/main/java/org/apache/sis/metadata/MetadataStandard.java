@@ -641,9 +641,9 @@ public class MetadataStandard implements Serializable {
      *       {@code "alternateTitle"} collection contains two elements, then there is a node with index 0
      *       for the first element and an other node with index 1 for the second element.</p>
      *
-     *       <p>The {@code (IDENTIFIER, INDEX)} pair can be used as a primary key for uniquely identifying
-     *       a node in a list of children. Note that the uniqueness is guaranteed only for the children of
-     *       a given node; the same keys may appear in the children of any other nodes.</p></li>
+     *       {@note The <code>(IDENTIFIER, INDEX)</code> pair can be used as a primary key for uniquely identifying
+     *              a node in a list of children. That uniqueness is guaranteed only for the children of a given
+     *              node; the same keys may appear in the children of any other nodes.}</li>
      *
      *   <li><p>{@link org.apache.sis.util.collection.TableColumn#NAME}<br>
      *       A human-readable name for the node, derived from the identifier and the index.

@@ -22,10 +22,21 @@ import org.apache.sis.util.collection.WeakValueHashMap;
 
 
 /**
- * A factory for Java {@link Logger} wrapping an other logging framework. This factory is used
- * only when wanting to log to an other framework than JDK logging. The {@link #getLogger(String)}
- * method returns some subclass of {@link Logger} (typically {@link LoggerAdapter}) that forward
- * directly all log methods to an other framework.
+ * A factory for Java {@link Logger} wrapping an other logging framework.
+ * This factory is used only when an application wants to redirect SIS logs to an other framework
+ * than JDK logging. An instance of {@code LoggerFactory} can be registered to SIS in two ways:
+ *
+ * <ul>
+ *   <li>By declaring the fully qualified classname of the {@code LoggerFactory} implementation
+ *       in the {@code META-INF/services/org.apache.sis.util.logging.LoggerFactory} file.
+ *       Note that the {@code sis-logging-commons.jar} and {@code sis-logging-log4j.jar}
+ *       files provide such declaration.</li>
+ *   <li>By explicit invocation of {@link Logging#setLoggerFactory(LoggerFactory)}
+ *       at application initialization time.</li>
+ * </ul>
+ *
+ * The {@link #getLogger(String)} method shall return some {@link Logger} subclass
+ * (typically {@link LoggerAdapter}) which forwards directly all log methods to the other framework.
  *
  * @param <L> The type of loggers used for the implementation backend.
  *            This is the type used by external frameworks like Log4J.

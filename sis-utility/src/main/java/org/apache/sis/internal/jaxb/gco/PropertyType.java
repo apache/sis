@@ -28,7 +28,7 @@ import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.IdentifiedObject;
-import org.apache.sis.internal.jaxb.MarshalContext;
+import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.util.iso.SimpleInternationalString;
 
 
@@ -150,11 +150,11 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
             UUID   uuid = map.getSpecialized(IdentifierSpace.UUID);
             String anyUUID = (uuid != null) ? uuid.toString() : map.get(IdentifierSpace.UUID);
             if (anyUUID != null || link != null) {
-                final MarshalContext context = MarshalContext.current();
+                final Context context = Context.current();
                 if (uuid == null) {
                     uuid = ObjectReference.toUUID(context, anyUUID); // May still null.
                 }
-                if (uuid == null || MarshalContext.resolver(context).canSubstituteByReference(context, getBoundType(), metadata, uuid)) {
+                if (uuid == null || Context.resolver(context).canSubstituteByReference(context, getBoundType(), metadata, uuid)) {
                     reference = new ObjectReference(uuid, anyUUID, link);
                     return;
                 }
@@ -285,8 +285,8 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
      * Parses the given URI, or returns {@code null} if the given argument is null or empty.
      */
     private static URI toURI(final String uri) throws URISyntaxException {
-        final MarshalContext context = MarshalContext.current();
-        return MarshalContext.converter(context).toURI(context, uri);
+        final Context context = Context.current();
+        return Context.converter(context).toURI(context, uri);
     }
 
     /**
@@ -499,7 +499,7 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
      */
     @Override
     public final BoundType unmarshal(final ValueType value) throws URISyntaxException {
-        return (value != null) ? value.resolve(MarshalContext.current()) : null;
+        return (value != null) ? value.resolve(Context.current()) : null;
     }
 
     /**
@@ -509,7 +509,7 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
      * @throws URISyntaxException If a URI can not be parsed.
      * @throws IllegalArgumentException If the UUID can not be parsed.
      */
-    final BoundType resolve(final MarshalContext context) throws URISyntaxException, IllegalArgumentException {
+    final BoundType resolve(final Context context) throws URISyntaxException, IllegalArgumentException {
         final ObjectReference ref = reference(false);
         if (ref != null) {
             metadata = ref.resolve(context, getBoundType(), metadata);
@@ -517,7 +517,7 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
         if (metadata == null) {
             final String value = getNilReason();
             if (value != null) {
-                final NilReason nilReason = MarshalContext.converter(context).toNilReason(context, value);
+                final NilReason nilReason = Context.converter(context).toNilReason(context, value);
                 if (nilReason != null) {
                     metadata = nilReason.createNilObject(getBoundType());
                 }

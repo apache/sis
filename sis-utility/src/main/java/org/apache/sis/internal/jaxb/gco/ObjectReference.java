@@ -24,7 +24,7 @@ import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.IdentifiedObject;
 import org.apache.sis.xml.ReferenceResolver;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.internal.jaxb.MarshalContext;
+import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.IdentifierMapAdapter;
 import org.apache.sis.internal.jaxb.SpecializedIdentifier;
 
@@ -92,8 +92,8 @@ final class ObjectReference {
      * @return The parsed UUID, or {@code null}.
      * @throws IllegalArgumentException If {@code anyUUID} can not be parsed.
      */
-    static UUID toUUID(final MarshalContext context, final String anyUUID) throws IllegalArgumentException {
-        return (anyUUID != null) ? MarshalContext.converter(context).toUUID(context, anyUUID) : null;
+    static UUID toUUID(final Context context, final String anyUUID) throws IllegalArgumentException {
+        return (anyUUID != null) ? Context.converter(context).toUUID(context, anyUUID) : null;
     }
 
     /**
@@ -110,12 +110,12 @@ final class ObjectReference {
      * @return A metadata object for the identifiers, or {@code null}
      * @throws IllegalArgumentException If the {@link #anyUUID} field can not be parsed.
      */
-    final <T> T resolve(final MarshalContext context, final Class<T> type, T metadata) throws IllegalArgumentException {
+    final <T> T resolve(final Context context, final Class<T> type, T metadata) throws IllegalArgumentException {
         if (uuid == null) {
             uuid = toUUID(context, anyUUID);
         }
         if (metadata == null) {
-            final ReferenceResolver resolver = MarshalContext.resolver(context);
+            final ReferenceResolver resolver = Context.resolver(context);
             if ((uuid  == null || (metadata = resolver.resolve(context, type, uuid )) == null) &&
                 (xlink == null || (metadata = resolver.resolve(context, type, xlink)) == null))
             {

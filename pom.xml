@@ -253,6 +253,16 @@ Apache SIS is a toolkit for describing location information, including points,
       </roles>
     </contributor>
     <contributor>
+      <name>Johann Sorel</name>
+      <email>johann.sorel@geomatys.com</email>
+      <organization>Geomatys</organization>
+      <organizationUrl>http://www.geomatys.com/</organizationUrl>
+      <timezone>+1</timezone>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </contributor>
+    <contributor>
       <name>Kevan Miller</name>
       <roles>
         <role>mentor</role>
@@ -334,6 +344,12 @@ Apache SIS is a toolkit for describing location information, including points,
         <version>5.0.0</version>
         <scope>provided</scope>
       </dependency>
+      <dependency>
+        <groupId>edu.ucar</groupId>
+        <artifactId>netcdf</artifactId>
+        <version>${netcdf.version}</version>
+        <scope>provided</scope>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -358,6 +374,7 @@ Apache SIS is a toolkit for describing location information, including points,
        =================================================================== -->
   <properties>
     <geoapi.version>3.0.0</geoapi.version>
+    <netcdf.version>4.3.16</netcdf.version>
     <findbugs.version>2.5.2</findbugs.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <website.encoding>UTF-8</website.encoding>
@@ -681,6 +698,7 @@ Apache SIS is a toolkit for describing location information, including points,
     <module>sis-utility</module>
     <module>sis-metadata</module>
     <module>sis-referencing</module>
+    <module>storage</module>
     <module>sis-webapp</module>
     <module>sis-app</module>
   </modules>

@@ -23,9 +23,9 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
 import org.opengis.util.CodeList;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.iso.Types;
-import org.apache.sis.internal.jaxb.MarshalContext;
+import org.apache.sis.util.logging.Logging;
+import org.apache.sis.internal.jaxb.Context;
 
 
 /**
@@ -53,8 +53,8 @@ public final class CodeListProxy {
      * @param  identifier The UML identifier of the code list.
      * @return The URL to the given code list in the given schema.
      */
-    private static String schema(final MarshalContext context, final String file, final String identifier) {
-        return schema(MarshalContext.schema(context, "gmd", "http://schemas.opengis.net/iso/19139/20070417/"),
+    private static String schema(final Context context, final String file, final String identifier) {
+        return schema(Context.schema(context, "gmd", "http://schemas.opengis.net/iso/19139/20070417/"),
                 "resources/Codelist", file, identifier);
     }
 
@@ -70,7 +70,7 @@ public final class CodeListProxy {
      * </ul>
      *
      * @param  schema     The schema, typically as a result of a call to
-     *                    {@link MarshalContext#schema(MarshalContext, String, String)}.
+     *                    {@link Context#schema(Context, String, String)}.
      * @param  directory  The directory to concatenate, for example {@code "resources/uom"}
      *                    or {@code "resources/Codelist"} (<strong>no trailing {@code '/'}</strong>).
      * @param  file       The XML file, for example {@code "gmxUom.xml"}, {@code "gmxCodelists.xml"}
@@ -149,7 +149,7 @@ public final class CodeListProxy {
      * @param codeSpace     The 3-letters language code of the {@code value} attribute, or {@code null} if none.
      * @param value         The value in the language specified by the {@code codeSpace} attribute, or {@code null} if none.
      */
-    CodeListProxy(final MarshalContext context, final String catalog,
+    CodeListProxy(final Context context, final String catalog,
             final String codeList, final String codeListValue, final String codeSpace, final String value)
     {
         this.codeList      = schema(context, catalog, codeList);
@@ -165,7 +165,7 @@ public final class CodeListProxy {
      * @param context The current (un)marshalling context, or {@code null} if none.
      * @param code    The code list to wrap.
      */
-    CodeListProxy(final MarshalContext context, final CodeList<?> code) {
+    CodeListProxy(final Context context, final CodeList<?> code) {
         final String classID = Types.getListName(code);
         final String fieldID = Types.getCodeName(code);
         codeList = schema(context, "gmxCodelists.xml", classID);
@@ -187,7 +187,7 @@ public final class CodeListProxy {
             }
         }
         if (value != null) {
-            codeSpace = MarshalContext.converter(context).toLanguageCode(context, locale);
+            codeSpace = Context.converter(context).toLanguageCode(context, locale);
         } else {
             // Fallback when no value is defined for the code list. Build a value from the
             // most descriptive name (excluding the field name), which is usually the UML

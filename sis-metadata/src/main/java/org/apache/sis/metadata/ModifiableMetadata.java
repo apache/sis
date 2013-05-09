@@ -29,7 +29,7 @@ import org.apache.sis.internal.util.CheckedHashSet;
 import org.apache.sis.internal.util.CheckedArrayList;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
-import static org.apache.sis.internal.jaxb.MarshalContext.isMarshalling;
+import static org.apache.sis.internal.jaxb.Context.isMarshalling;
 
 
 /**
