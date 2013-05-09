@@ -37,7 +37,7 @@
        =========================================================== -->
   <groupId>org.apache.sis.storage</groupId>
   <artifactId>sis-netcdf</artifactId>
-  <packaging>apklib</packaging>
+  <packaging>jar</packaging>
   <name>Apache SIS NetCDF storage</name>
   <description>
   <!-- Left alignment because this description will be copied in META-INF/MANIFEST.MF

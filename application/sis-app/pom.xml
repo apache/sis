@@ -32,25 +32,8 @@
   </parent>
 
   <artifactId>sis-app</artifactId>
-  <packaging>apklib</packaging>
+  <packaging>jar</packaging>
   <name>Apache SIS app</name>
   <url>http://incubator.apache.org/sis/</url>
-
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.felix</groupId>
-        <artifactId>maven-bundle-plugin</artifactId>
-        <configuration>
-          <instructions>
-            <Export-Package>
-              org.apache.sis.cli
-            </Export-Package>
-            <Main-Class>org.apache.sis.cli.SISCLI</Main-Class>
-          </instructions>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
 
 </project>

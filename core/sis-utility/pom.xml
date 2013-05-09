@@ -36,7 +36,7 @@
            Module Description
        =========================================================== -->
   <artifactId>sis-utility</artifactId>
-  <packaging>apklib</packaging>
+  <packaging>jar</packaging>
   <name>Apache SIS utilities</name>
   <description>
   <!-- Left alignment because this description will be copied in META-INF/MANIFEST.MF
