@@ -35,13 +35,12 @@
   <!-- ===========================================================
            Module Description
        =========================================================== -->
-  <artifactId>sis-utility</artifactId>
-  <packaging>bundle</packaging>
-  <name>Apache SIS utilities</name>
+  <artifactId>core</artifactId>
+  <packaging>pom</packaging>
+  <name>Apache SIS core modules</name>
   <description>
-  <!-- Left alignment because this description will be copied in META-INF/MANIFEST.MF
-       The leading space after the first line is necessary for proper formatting. -->
-Miscellaneous utilities.
+    Group of modules providing the core of Apache SIS services:
+    metadata, referencing, geometry, feature, coverage, rendering.
   </description>
 
 
@@ -96,6 +95,16 @@ Miscellaneous utilities.
       </roles>
     </contributor>
     <contributor>
+      <name>Johann Sorel</name>
+      <email>johann.sorel@geomatys.com</email>
+      <organization>Geomatys</organization>
+      <organizationUrl>http://www.geomatys.com/</organizationUrl>
+      <timezone>+1</timezone>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </contributor>
+    <contributor>
       <name>Touraïvane</name>
       <organization>Institut de Recherche pour le Développement (IRD)</organization>
       <organizationUrl>http://www.ird.fr</organizationUrl>
@@ -108,84 +117,13 @@ Miscellaneous utilities.
 
 
   <!-- ===========================================================
-           Build configuration
+           Sub-modules included in the build in dependency order
        =========================================================== -->
-  <build>
-    <plugins>
-
-      <!-- Delete the "com/sun/xml/..." directory after compilation. -->
-      <plugin>
-        <artifactId>maven-antrun-plugin</artifactId>
-        <executions>
-          <execution>
-            <phase>process-test-classes</phase>
-            <goals>
-              <goal>run</goal>
-            </goals>
-            <configuration>
-              <target>
-                <delete dir="${project.build.outputDirectory}/com"/>
-              </target>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
-      <!-- Compile properties files into resources UTF files and collect JAR files. -->
-      <plugin>
-        <groupId>org.apache.sis</groupId>
-        <artifactId>sis-build-helper</artifactId>
-        <version>${sis.plugin.version}</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>compile-resources</goal>
-              <goal>collect-jars</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-
-      <!-- Package as OSGi bundle -->
-      <plugin>
-        <groupId>org.apache.felix</groupId>
-        <artifactId>maven-bundle-plugin</artifactId>
-        <configuration>
-          <instructions>
-            <Bundle-Activator>org.apache.sis.internal.util.OSGiActivator</Bundle-Activator>
-          </instructions>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
-
-
-  <!-- ===========================================================
-           Dependencies
-       =========================================================== -->
-  <dependencies>
-    <dependency>
-      <groupId>org.opengis</groupId>
-      <artifactId>geoapi-pending</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.opengis</groupId>
-      <artifactId>geoapi-conformance</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>net.jcip</groupId>
-      <artifactId>jcip-annotations</artifactId>
-    </dependency>
-
-    <!-- Optional dependencies (provided scope) -->
-    <dependency>
-      <groupId>org.osgi</groupId>
-      <artifactId>org.osgi.core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>javax</groupId>
-      <artifactId>javaee-api</artifactId>
-    </dependency>
-  </dependencies>
+  <modules>
+    <module>sis-build-helper</module>
+    <module>sis-utility</module>
+    <module>sis-metadata</module>
+    <module>sis-referencing</module>
+  </modules>
 
 </project>

@@ -27,30 +27,50 @@
 
   <parent>
     <groupId>org.apache.sis</groupId>
-    <artifactId>sis-parent</artifactId>
+    <artifactId>core</artifactId>
     <version>0.3-jdk7-SNAPSHOT</version>
   </parent>
 
-  <artifactId>sis-app</artifactId>
+  <artifactId>sis-referencing</artifactId>
   <packaging>bundle</packaging>
-  <name>Apache SIS app</name>
+  <name>Apache SIS referencing</name>
   <url>http://incubator.apache.org/sis/</url>
 
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.felix</groupId>
-        <artifactId>maven-bundle-plugin</artifactId>
-        <configuration>
-          <instructions>
-            <Export-Package>
-              org.apache.sis.cli
-            </Export-Package>
-            <Main-Class>org.apache.sis.cli.SISCLI</Main-Class>
-          </instructions>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
+
+  <!-- ===========================================================
+           Dependencies
+       =========================================================== -->
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.sis</groupId>
+      <artifactId>sis-utility</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.opengis</groupId>
+      <artifactId>geoapi-pending</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.opengis</groupId>
+      <artifactId>geoapi-conformance</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>net.jcip</groupId>
+      <artifactId>jcip-annotations</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.geonames</groupId>
+      <artifactId>georss-rome</artifactId>
+    </dependency>
+
+    <!-- Test dependencies -->
+    <dependency>
+      <groupId>org.apache.sis</groupId>
+      <artifactId>sis-utility</artifactId>
+      <version>${project.version}</version>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
 
 </project>
