@@ -19,7 +19,7 @@ package org.apache.sis.internal.jaxb.gco;
 import java.util.Locale;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import org.opengis.util.InternationalString;
-import org.apache.sis.internal.jaxb.MarshalContext;
+import org.apache.sis.internal.jaxb.Context;
 
 
 /**
@@ -56,7 +56,7 @@ public final class StringAdapter extends XmlAdapter<GO_CharacterString, String> 
             final CharSequence text = value.toCharSequence();
             if (text != null) {
                 if (text instanceof InternationalString) {
-                    final MarshalContext context = MarshalContext.current();
+                    final Context context = Context.current();
                     if (context != null) {
                         final Locale locale = context.getLocale();
                         if (locale != null) {

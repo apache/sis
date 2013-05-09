@@ -23,7 +23,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 
 import org.opengis.util.InternationalString;
-import org.apache.sis.internal.jaxb.MarshalContext;
+import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gco.GO_CharacterString;
 import org.apache.sis.util.iso.DefaultInternationalString;
 import org.apache.sis.util.iso.SimpleInternationalString;
@@ -113,7 +113,7 @@ public final class PT_FreeText extends GO_CharacterString {
      *         or {@code null} otherwise.
      */
     @SuppressWarnings("fallthrough")
-    public static PT_FreeText create(final MarshalContext context, final InternationalString text) {
+    public static PT_FreeText create(final Context context, final InternationalString text) {
         if (text instanceof DefaultInternationalString) {
             final DefaultInternationalString df = (DefaultInternationalString) text;
             final Set<Locale> locales = df.getLocales();

@@ -25,9 +25,11 @@ import org.opengis.feature.type.FeatureType;
 import org.opengis.metadata.maintenance.ScopeDescription;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.internal.metadata.ExcludedSet;
+import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.util.collection.CheckedContainer;
+import org.apache.sis.util.resources.Messages;
 
-import static org.apache.sis.internal.jaxb.MarshalContext.isMarshalling;
+import static org.apache.sis.internal.jaxb.Context.isMarshalling;
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 
 
@@ -38,8 +40,6 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  * ISO 19115 defines {@code ScopeDescription} as an <cite>union</cite> (in the C/C++ sense):
  * only one of the properties in this class can be set to a non-empty value.
  * Setting any property to a non-empty value discard all the other ones.
- * See the {@linkplain #DefaultScopeDescription(ScopeDescription) constructor javadoc}
- * for information about which property has precedence on copy operations.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
@@ -75,6 +75,18 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
         "attributeInstances",
         "dataset",
         "other"
+    };
+
+    /**
+     * The names of the setter methods, for logging purpose only.
+     */
+    private static final String[] SETTERS = {
+        "setAttributes",
+        "setFeatures",
+        "setFeatureInstances",
+        "setAttributeInstances",
+        "setDataset",
+        "setOther"
     };
 
     /**
@@ -211,6 +223,9 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
     /**
      * Sets the properties identified by the {@code code} argument, if non-null and non-empty.
      * This discards any other properties.
+     *
+     * @param caller The caller method, for logging purpose.
+     * @param code   The property which is going to be set.
      */
     private <E> void setProperty(final Set<? extends E> newValue, final Class<E> type, final byte code) {
         Set<E> c = null;
@@ -219,9 +234,22 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
         } else if (isNullOrEmpty(newValue)) {
             return;
         } else {
+            warningOnOverwrite(code);
             property = code;
         }
         value = writeSet(newValue, c, type);
+    }
+
+    /**
+     * Sends a warning if setting the value for the given property would overwrite an existing property.
+     *
+     * @param code The property which is going to be set.
+     */
+    private void warningOnOverwrite(final byte code) {
+        if (value != null && property != code) {
+            MetadataUtilities.warning(DefaultScopeDescription.class, SETTERS[code-1],
+                    Messages.Keys.DiscardedExclusiveProperty_2, NAMES[property-1], NAMES[code-1]);
+        }
     }
 
     /**
@@ -345,6 +373,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
     public void setDataset(final String newValue) {
         checkWritePermission();
         if (newValue != null || property == DATASET) {
+            warningOnOverwrite(DATASET);
             property = DATASET;
             value = newValue;
         }
@@ -373,6 +402,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
     public void setOther(final String newValue) {
         checkWritePermission();
         if (newValue != null || property == OTHER) {
+            warningOnOverwrite(OTHER);
             property = OTHER;
             value = newValue;
         }

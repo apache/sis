@@ -37,7 +37,7 @@ import static org.opengis.test.Validators.validate;
 @DependsOn(GeneralEnvelopeTest.class)
 public final strictfp class EnvelopesTest extends TestCase {
     /**
-     * Tests {@link Envelopes#fromWKT(String)}. This test is provided as a matter of principle,
+     * Tests {@link Envelopes#fromWKT(CharSequence)}. This test is provided as a matter of principle,
      * but the real test is done by {@link GeneralEnvelopeTest#testWktParsing()}.
      *
      * @throws FactoryException Should never happen.

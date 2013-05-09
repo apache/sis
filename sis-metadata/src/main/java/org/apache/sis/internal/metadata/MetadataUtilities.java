@@ -17,9 +17,14 @@
 package org.apache.sis.internal.metadata;
 
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.resources.Messages;
 import org.apache.sis.metadata.InvalidMetadataException;
+
+import static org.apache.sis.metadata.iso.ISOMetadata.LOGGER;
 
 // Related to JDK7
 import org.apache.sis.internal.jdk7.Objects;
@@ -116,5 +121,22 @@ public final class MetadataUtilities extends Static {
             throw new InvalidMetadataException(Errors.format(Errors.Keys.MissingValueForProperty_1, "inclusion"));
         }
         return value;
+    }
+
+    /**
+     * Convenience method for logging a warning to the {@code ISOMetadata} logger.
+     * The message will be produced using the {@link Messages} resources bundle.
+     *
+     * @param  caller    The public class which is invoking this method.
+     * @param  method    The public method which is invoking this method.
+     * @param  key       The key from the message resource bundle to use for creating a message.
+     * @param  arguments The arguments to be used together with the key for building the message.
+     */
+    public static void warning(final Class<?> caller, final String method, final int key, final Object... arguments) {
+        final LogRecord record = Messages.getResources(null).getLogRecord(Level.WARNING, key, arguments);
+        record.setSourceClassName(caller.getCanonicalName());
+        record.setSourceMethodName(method);
+        record.setLoggerName(LOGGER.getName());
+        LOGGER.log(record);
     }
 }
