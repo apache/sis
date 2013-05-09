@@ -122,7 +122,6 @@ Apache SIS is a toolkit for describing location information, including points,
       <organization>NASA Jet Propulsion Laboratory</organization>
       <organizationUrl>http://www.jpl.nasa.gov</organizationUrl>
       <timezone>-8</timezone>
-      <properties />
       <roles>
         <role>committer</role>
       </roles>
@@ -152,7 +151,6 @@ Apache SIS is a toolkit for describing location information, including points,
       <organization>AT&amp;T Interactive</organization>
       <organizationUrl>http://www.attinteractive.com</organizationUrl>
       <timezone>-8</timezone>
-      <properties />
       <roles>
         <role>committer</role>
       </roles>
@@ -165,7 +163,6 @@ Apache SIS is a toolkit for describing location information, including points,
       <organization>NASA Jet Propulsion Laboratory</organization>
       <organizationUrl>http://www.jpl.nasa.gov</organizationUrl>
       <timezone>-8</timezone>
-      <properties />
       <roles>
         <role>committer</role>
       </roles>
@@ -177,7 +174,6 @@ Apache SIS is a toolkit for describing location information, including points,
       <organization>NASA Jet Propulsion Laboratory</organization>
       <organizationUrl>http://www.jpl.nasa.gov</organizationUrl>
       <timezone>-8</timezone>
-      <properties />
       <roles>
         <role>committer</role>
       </roles>
@@ -189,7 +185,6 @@ Apache SIS is a toolkit for describing location information, including points,
       <organization>NASA Jet Propulsion Laboratory</organization>
       <organizationUrl>http://www.jpl.nasa.gov</organizationUrl>
       <timezone>-8</timezone>
-      <properties />
       <roles>
         <role>committer</role>
       </roles>
