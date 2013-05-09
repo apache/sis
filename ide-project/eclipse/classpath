@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="trunk/sis-webapp/src/main/java"/>
-	<classpathentry kind="src" path="trunk/sis-app/src/main/java"/>
-	<classpathentry kind="src" path="trunk/sis-metadata/src/main/java"/>
-	<classpathentry kind="src" path="trunk/sis-webapp/src/main/resources"/>
-	<classpathentry kind="src" path="trunk/sis-utility/src/test/java"/>
-	<classpathentry kind="src" path="trunk/sis-utility/src/main/resources"/>
-	<classpathentry kind="src" path="trunk/sis-utility/src/main/javadoc"/>
-	<classpathentry kind="src" path="trunk/sis-utility/src/main/java"/>
-	<classpathentry kind="src" path="trunk/sis-build-helper/src/main/resources"/>
-	<classpathentry kind="src" path="trunk/sis-build-helper/src/main/javadoc"/>
-	<classpathentry kind="src" path="trunk/sis-build-helper/src/main/java"/>
-	<classpathentry kind="src" path="trunk/sis-referencing/src/main/resources"/>
-	<classpathentry kind="src" path="trunk/sis-referencing/src/main/java"/>
+	<classpathentry kind="src" path="trunk/application/sis-webapp/src/main/java"/>
+	<classpathentry kind="src" path="trunk/application/sis-webapp/src/main/resources"/>
+	<classpathentry kind="src" path="trunk/application/sis-app/src/main/java"/>
+	<classpathentry kind="src" path="trunk/core/sis-build-helper/src/main/java"/>
+	<classpathentry kind="src" path="trunk/core/sis-build-helper/src/main/resources"/>
+	<classpathentry kind="src" path="trunk/core/sis-build-helper/src/main/javadoc"/>
+	<classpathentry kind="src" path="trunk/core/sis-utility/src/main/java"/>
+	<classpathentry kind="src" path="trunk/core/sis-utility/src/main/resources"/>
+	<classpathentry kind="src" path="trunk/core/sis-utility/src/main/javadoc"/>
+	<classpathentry kind="src" path="trunk/core/sis-utility/src/test/java"/>
+	<classpathentry kind="src" path="trunk/core/sis-metadata/src/main/java"/>
+	<classpathentry kind="src" path="trunk/core/sis-referencing/src/main/java"/>
+	<classpathentry kind="src" path="trunk/core/sis-referencing/src/main/resources"/>
 	<classpathentry kind="var" path="M2_REPO/org/geonames/georss-rome/0.9.8/georss-rome-0.9.8.jar"/>
 	<classpathentry kind="var" path="M2_REPO/rome/rome/0.9/rome-0.9.jar"/>
 	<classpathentry kind="var" path="M2_REPO/jdom/jdom/1.0/jdom-1.0.jar"/>
