@@ -21,7 +21,7 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.xml.XLink;
 import org.apache.sis.xml.ReferenceResolver;
-import org.apache.sis.internal.jaxb.MarshalContext;
+import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gmx.Anchor;
 import org.apache.sis.internal.jaxb.gmd.PT_FreeText;
 
@@ -98,7 +98,7 @@ public final class CharSequenceAdapter extends XmlAdapter<GO_CharacterString, Ch
          * </gmd:someElement>
          */
         if (value instanceof InternationalString) {
-            final PT_FreeText ft = PT_FreeText.create(MarshalContext.current(), (InternationalString) value);
+            final PT_FreeText ft = PT_FreeText.create(Context.current(), (InternationalString) value);
             if (ft != null) {
                 return ft;
             }
@@ -118,8 +118,8 @@ public final class CharSequenceAdapter extends XmlAdapter<GO_CharacterString, Ch
         if (!(value instanceof Anchor)) {
             final String key = CharSequences.trimWhitespaces(value.toString());
             if (key != null && !key.isEmpty()) {
-                final MarshalContext context = MarshalContext.current();
-                final XLink linkage = MarshalContext.resolver(context).anchor(context, value, key);
+                final Context context = Context.current();
+                final XLink linkage = Context.resolver(context).anchor(context, value, key);
                 if (linkage != null) {
                     if (linkage instanceof Anchor) {
                         value = (Anchor) linkage;
@@ -157,8 +157,8 @@ public final class CharSequenceAdapter extends XmlAdapter<GO_CharacterString, Ch
             return null;
         }
         CharSequence value = string;
-        final MarshalContext context = MarshalContext.current();
-        final XLink linkage = MarshalContext.resolver(context).anchor(context, object, string);
+        final Context context = Context.current();
+        final XLink linkage = Context.resolver(context).anchor(context, object, string);
         if (linkage != null) {
             if (linkage instanceof Anchor) {
                 value = (Anchor) linkage;

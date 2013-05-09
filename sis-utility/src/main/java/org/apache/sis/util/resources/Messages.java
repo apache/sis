@@ -60,9 +60,20 @@ public final class Messages extends IndexedResourceBundle {
         public static final int ChangedContainerCapacity_2 = 0;
 
         /**
+         * Property “{0}” has been discarded in favor of “{1}”, because those two properties are
+         * mutually exclusive.
+         */
+        public static final int DiscardedExclusiveProperty_2 = 4;
+
+        /**
          * Text were discarded for some locales.
          */
         public static final int LocalesDiscarded = 2;
+
+        /**
+         * Property “{0}” is hidden by “{1}”.
+         */
+        public static final int PropertyHiddenBy_2 = 3;
 
         /**
          * Unavailable content.

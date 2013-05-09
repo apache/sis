@@ -197,7 +197,7 @@ public final strictfp class PropertyAccessorTest extends TestCase {
     }
 
     /**
-     * Tests the {@link PropertyAccessor#descriptor(int)} method.
+     * Tests the {@link PropertyAccessor#information(int)} method.
      * This method delegates to some {@link PropertyInformationTest} methods.
      */
     @Test
