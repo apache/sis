@@ -38,7 +38,7 @@
          elements are inherited from the parent Apache pom.xml.
        ============================================================== -->
   <groupId>org.apache.sis</groupId>
-  <artifactId>sis-parent</artifactId>
+  <artifactId>parent</artifactId>
   <version>0.3-jdk7-SNAPSHOT</version>
   <packaging>pom</packaging>
 
