@@ -28,17 +28,17 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.RangeMeaning;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 
 import static java.lang.Double.doubleToLongBits;
-import static org.apache.sis.util.Arrays.resize;
 import static org.apache.sis.util.StringBuilders.trimFractionalPart;
 import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
 
 // Related to JDK7
-import org.apache.sis.internal.util.Objects;
+import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
@@ -213,7 +213,7 @@ public abstract class AbstractDirectPosition implements DirectPosition {
     }
 
     /**
-     * Implementation of the public {@link #toString()} and {@link Envelope2D#toString()} methods
+     * Implementation of the public {@link #toString()} and {@link DirectPosition2D#toString()} methods
      * for formatting a {@code POINT} element from a direct position in <cite>Well Known Text</cite>
      * (WKT) format.
      *
@@ -341,7 +341,7 @@ parse:  while (i < length) {
                 c = Character.codePointAt(wkt, i);
             }
         }
-        return resize(ordinates, dimension);
+        return ArraysExt.resize(ordinates, dimension);
     }
 
     /**

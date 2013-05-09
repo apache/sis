@@ -31,6 +31,7 @@ import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.test.Performance;
 import org.junit.Test;
 
 import static java.lang.StrictMath.*;
@@ -191,7 +192,7 @@ public final strictfp class CacheTest extends TestCase {
             final int key = entry.getKey();
             final int value = entry.getValue();
             assertEquals(key*key, value);
-            statistics.add(key);
+            statistics.accept(key);
         }
         return statistics;
     }
@@ -203,6 +204,7 @@ public final strictfp class CacheTest extends TestCase {
      * @throws InterruptedException If the test has been interrupted.
      */
     @Test
+    @Performance
     @DependsOnMethod("testThreadBlocking")
     public void stress() throws InterruptedException {
         final int count = 10000;
@@ -269,54 +271,53 @@ public final strictfp class CacheTest extends TestCase {
          * properly tuned, most values should be non-zero.
          */
         final PrintWriter out = CacheTest.out;
-        if (out != null) {
-            TestUtilities.printSeparator("CacheTest.stress() - testing concurrent accesses");
-            out.print("There is "); out.print(threads.length); out.print(" threads, each of them"
-                    + " fetching or creating "); out.print(count); out.println(" values.");
-            out.println("Number of times a new value has been created, for each thread:");
-            for (int i=0; i<threads.length;) {
-                final String n = String.valueOf(threads[i++].addCount);
-                out.print(CharSequences.spaces(6 - n.length()));
-                out.print(n);
-                if ((i % 10) == 0) {
-                    out.println();
-                }
+        TestUtilities.printSeparator("CacheTest.stress() - testing concurrent accesses");
+        out.print("There is "); out.print(threads.length); out.print(" threads, each of them"
+                + " fetching or creating "); out.print(count); out.println(" values.");
+        out.println("Number of times a new value has been created, for each thread:");
+        for (int i=0; i<threads.length;) {
+            final String n = String.valueOf(threads[i++].addCount);
+            out.print(CharSequences.spaces(6 - n.length()));
+            out.print(n);
+            if ((i % 10) == 0) {
+                out.println();
             }
-            out.println();
-            out.println("Now observe how the background thread cleans the cache.");
-            long time = System.nanoTime();
-            for (int i=0; i<10; i++) {
-                final long t = System.nanoTime();
-                out.printf("Cache size: %4d (after %3d ms)%n", cache.size(), round((t - time) / 1E+6));
-                time = t;
-                Thread.sleep(250);
-                if (i >= 2) {
-                    System.gc();
-                }
-            }
-            out.println();
-            out.flush();
         }
+        out.println();
+        out.println("Now observe how the background thread cleans the cache.");
+        long time = System.nanoTime();
+        for (int i=0; i<10; i++) {
+            final long t = System.nanoTime();
+            out.printf("Cache size: %4d (after %3d ms)%n", cache.size(), round((t - time) / 1E+6));
+            time = t;
+            Thread.sleep(250);
+            if (i >= 2) {
+                System.gc();
+            }
+        }
+        out.println();
         /*
-         * Gets the statistics of key values after garbage collection. The mean value should
+         * Gets the statistics of key values after garbage collection. Most values should
          * be higher, because oldest values (which should have been garbage collected first)
          * have lower values. If verbose output is enabled, then we will print the statistics
          * before to perform the actual check in order to allow the developer to have more
          * information in case of failure.
+         *
+         * The mean value is often greater, but not always. Since we have fewer remaining values
+         * (100 instead of 10000), the remaining low values will have a much greater impact on
+         * the mean. Only the check on the minimal value is fully reliable.
          */
-        System.gc();
         final Statistics afterGC = validateStressEntries("After GC", cache);
-        if (out != null) {
-            out.println("Statistics on the keys before and after garbage collection.");
-            out.println("The minimum and the mean values should be greater after GC.");
-            final StatisticsFormat format = StatisticsFormat.getInstance();
-            format.setBorderWidth(1);
-            try {
-                format.format(new Statistics[] {beforeGC, afterGC}, out);
-            } catch (IOException e) {
-                throw new AssertionError(e);
-            }
+        out.println("Statistics on the keys before and after garbage collection.");
+        out.println("The minimum value should be greater after GC.");
+        final StatisticsFormat format = StatisticsFormat.getInstance();
+        format.setBorderWidth(1);
+        try {
+            format.format(new Statistics[] {beforeGC, afterGC}, out);
+        } catch (IOException e) {
+            throw new AssertionError(e);
         }
-        assertTrue("Mean key value should be greater after garbage collection.", afterGC.mean() >= beforeGC.mean());
+        assertTrue("Minimum key value should be greater after garbage collection.",
+                afterGC.minimum() >= beforeGC.minimum());
     }
 }

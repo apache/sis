@@ -20,7 +20,7 @@ import java.util.Locale;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 
-import org.apache.sis.internal.jaxb.MarshalContext;
+import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gco.GO_CharacterString;
 import org.apache.sis.internal.jaxb.gco.CharSequenceAdapter;
 
@@ -62,7 +62,7 @@ public final class LanguageCode extends GO_CharacterString {
 
     /**
      * Builds a {@code <gco:CharacterString>} element.
-     * For private use by {@link #create(MarshalContext, Locale)} only.
+     * For private use by {@link #create(Context, Locale)} only.
      */
     private LanguageCode(final GO_CharacterString code) {
         super(code);
@@ -70,14 +70,14 @@ public final class LanguageCode extends GO_CharacterString {
 
     /**
      * Builds a {@code <LanguageCode>} element.
-     * For private use by {@link #create(MarshalContext, Locale)} only.
+     * For private use by {@link #create(Context, Locale)} only.
      *
      * @param context       The current (un)marshalling context, or {@code null} if none.
      * @param codeListValue The {@code codeListValue} attribute in the XML element.
      * @param codeSpace     The 3-letters language code of the {@code value} attribute, or {@code null} if none.
      * @param value         The value in the language specified by the {@code codeSpace} attribute, or {@code null} if none.
      */
-    private LanguageCode(final MarshalContext context, final String codeListValue, final String codeSpace, final String value) {
+    private LanguageCode(final Context context, final String codeListValue, final String codeSpace, final String value) {
         proxy = new CodeListProxy(context, "ML_gmxCodelists.xml", "LanguageCode", codeListValue, codeSpace, value);
     }
 
@@ -89,10 +89,10 @@ public final class LanguageCode extends GO_CharacterString {
      * @return The language to marshal, or {@code null} if the given locale was null
      *         or if its {@link Locale#getLanguage()} attribute is the empty string.
      */
-    static LanguageCode create(final MarshalContext context, final Locale locale) {
+    static LanguageCode create(final Context context, final Locale locale) {
         if (locale != null) {
-            final String codeListValue = MarshalContext.converter(context).toLanguageCode(context, locale);
-            if (!codeListValue.isEmpty() && MarshalContext.isFlagSet(context, MarshalContext.SUBSTITUTE_LANGUAGE)) {
+            final String codeListValue = Context.converter(context).toLanguageCode(context, locale);
+            if (!codeListValue.isEmpty() && Context.isFlagSet(context, Context.SUBSTITUTE_LANGUAGE)) {
                 /*
                  * Marshal the locale as a <gco:CharacterString> instead than <LanguageCode>,
                  * using the user-supplied anchors if any.
@@ -107,7 +107,7 @@ public final class LanguageCode extends GO_CharacterString {
             if (context != null) {
                 final Locale marshalLocale = context.getLocale();
                 if (marshalLocale != null) {
-                    codeSpace = MarshalContext.converter(context).toLanguageCode(context, locale);
+                    codeSpace = Context.converter(context).toLanguageCode(context, locale);
                     value = locale.getDisplayLanguage(marshalLocale);
                     if (value.isEmpty()) {
                         value = null;
@@ -132,17 +132,17 @@ public final class LanguageCode extends GO_CharacterString {
      *
      * @see Country#getLocale(Country)
      */
-    static Locale getLocale(final MarshalContext context, final LanguageCode value, final boolean useCharSequence) {
+    static Locale getLocale(final Context context, final LanguageCode value, final boolean useCharSequence) {
         if (value != null) {
             final CodeListProxy proxy = value.proxy;
             if (proxy != null) {
-                final Locale locale = MarshalContext.converter(context).toLocale(context, proxy.codeListValue);
+                final Locale locale = Context.converter(context).toLocale(context, proxy.codeListValue);
                 if (locale != null) {
                     return locale;
                 }
             }
             if (useCharSequence) {
-                return MarshalContext.converter(context).toLocale(context, value.toString());
+                return Context.converter(context).toLocale(context, value.toString());
             }
         }
         return null;

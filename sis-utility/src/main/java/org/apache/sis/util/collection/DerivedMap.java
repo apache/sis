@@ -73,7 +73,7 @@ class DerivedMap<SK,SV,K,V> extends AbstractMap<K,V> implements
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -6994867383669885934L;
+    private static final long serialVersionUID = -4760466188643114727L;
 
     /**
      * The storage map whose keys are derived from.
@@ -200,7 +200,7 @@ class DerivedMap<SK,SV,K,V> extends AbstractMap<K,V> implements
      * to the {@linkplain #storage} map instead than iterating over all entries.
      */
     private static class InvertibleKey<SK,SV,K,V> extends DerivedMap<SK,SV,K,V> {
-        private static final long serialVersionUID = -7770446176017835821L;
+        private static final long serialVersionUID = 3499911507293121425L;
 
         /** The inverse of {@link #keyConverter}. */
         protected final ObjectConverter<K,SK> keyInverse;
@@ -238,7 +238,7 @@ class DerivedMap<SK,SV,K,V> extends AbstractMap<K,V> implements
      * to the {@linkplain #storage} map instead than iterating over all entries.
      */
     private static final class InvertibleValue<SK,SV,K,V> extends DerivedMap<SK,SV,K,V> {
-        private static final long serialVersionUID = 6249800498911409046L;
+        private static final long serialVersionUID = -8290698486357636366L;
 
         /** The inverse of {@link #valueConverter}. */
         private final ObjectConverter<V,SV> valueInverse;
@@ -264,7 +264,7 @@ class DerivedMap<SK,SV,K,V> extends AbstractMap<K,V> implements
      * to the {@linkplain #storage} map instead than iterating over all entries.
      */
     private static final class Invertible<SK,SV,K,V> extends InvertibleKey<SK,SV,K,V> {
-        private static final long serialVersionUID = 3830322680676020356L;
+        private static final long serialVersionUID = -6625938922337246124L;
 
         /** The inverse of {@link #valueConverter}. */
         private final ObjectConverter<V,SV> valueInverse;

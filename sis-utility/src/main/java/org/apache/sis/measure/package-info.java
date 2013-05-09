@@ -24,6 +24,10 @@
  *   <li>{@link org.apache.sis.measure.Angle} and its subclasses
  *      ({@link org.apache.sis.measure.Longitude},
  *       {@link org.apache.sis.measure.Latitude})</li>
+ *   <li>{@link org.apache.sis.measure.Range} and its subclasses
+ *      ({@link org.apache.sis.measure.NumberRange},
+ *       {@link org.apache.sis.measure.MeasurementRange}) or annotation
+ *      ({@link org.apache.sis.measure.ValueRange}</li>
  *   <li>Formatters
  *      ({@link org.apache.sis.measure.AngleFormat},
  *       {@link org.apache.sis.measure.CoordinateFormat},

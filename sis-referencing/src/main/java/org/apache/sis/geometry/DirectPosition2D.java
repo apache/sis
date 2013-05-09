@@ -28,7 +28,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
 
 // Related to JDK7
-import org.apache.sis.internal.util.Objects;
+import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
@@ -71,7 +71,7 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 835130287438466996L;
+    private static final long serialVersionUID = 6063110617109934018L;
 
     /**
      * The coordinate reference system for this position;
@@ -116,11 +116,11 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
      * The actual axis orientations are determined by the specified CRS.
      * See the <a href="#skip-navbar_top">class javadoc</a> for details.
      *
+     * @param crs The coordinate reference system, or {@code null}.
      * @param x   The first ordinate value (not necessarily horizontal).
      * @param y   The second ordinate value (not necessarily vertical).
-     * @param crs The coordinate reference system, or {@code null}.
      */
-    public DirectPosition2D(final double x, final double y, final CoordinateReferenceSystem crs) {
+    public DirectPosition2D(final CoordinateReferenceSystem crs, final double x, final double y) {
         super(x, y);
         this.crs = crs;
         ensureDimensionMatches("crs", 2, crs);

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.util.resources;
 
+import java.net.URL;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import org.opengis.util.InternationalString;
@@ -104,9 +105,24 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final int DaylightTime = 24;
 
         /**
+         * Destination
+         */
+        public static final int Destination = 38;
+
+        /**
          * Directory
          */
         public static final int Directory = 36;
+
+        /**
+         * Identifier
+         */
+        public static final int Identifier = 42;
+
+        /**
+         * Index
+         */
+        public static final int Index = 44;
 
         /**
          * Java extensions
@@ -117,6 +133,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Java home directory
          */
         public static final int JavaHome = 30;
+
+        /**
+         * Latitude
+         */
+        public static final int Latitude = 40;
 
         /**
          * Libraries
@@ -137,6 +158,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Localization
          */
         public static final int Localization = 19;
+
+        /**
+         * Longitude
+         */
+        public static final int Longitude = 41;
 
         /**
          * Maximum value
@@ -167,6 +193,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Number of values
          */
         public static final int NumberOfValues = 2;
+
+        /**
+         * {0} ({1} of {2})
+         */
+        public static final int Of_3 = 43;
 
         /**
          * Offset
@@ -202,6 +233,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Scale
          */
         public static final int Scale = 23;
+
+        /**
+         * Source
+         */
+        public static final int Source = 39;
 
         /**
          * Standard deviation
@@ -247,10 +283,11 @@ public final class Vocabulary extends IndexedResourceBundle {
     /**
      * Constructs a new resource bundle loading data from the given UTF file.
      *
-     * @param filename The file or the JAR entry containing resources.
+     * @param resources The path of the binary file containing resources, or {@code null} if
+     *        there is no resources. The resources may be a file or an entry in a JAR file.
      */
-    Vocabulary(final String filename) {
-        super(filename);
+    Vocabulary(final URL resources) {
+        super(resources);
     }
 
     /**
@@ -287,7 +324,7 @@ public final class Vocabulary extends IndexedResourceBundle {
      * The international string to be returned by {@link formatInternational}.
      */
     private static final class International extends ResourceInternationalString {
-        private static final long serialVersionUID = 8360132666298806838L;
+        private static final long serialVersionUID = -5423999784169092823L;
 
         International(int key)                   {super(key);}
         International(int key, Object args)      {super(key, args);}
@@ -307,5 +344,35 @@ public final class Vocabulary extends IndexedResourceBundle {
      */
     public static InternationalString formatInternational(final int key) {
         return new International(key);
+    }
+
+    /**
+     * Gets an international string for the given key. This method does not check for the key
+     * validity. If the key is invalid, then a {@link MissingResourceException} may be thrown
+     * when a {@link InternationalString#toString(Locale)} method is invoked.
+     *
+     * {@note This method is redundant with the one expecting <code>Object...</code>, but avoid
+     *        the creation of a temporary array. There is no risk of confusion since the two
+     *        methods delegate their work to the same <code>format</code> method anyway.}
+     *
+     * @param  key The key for the desired string.
+     * @param  arg Values to substitute to "{0}".
+     * @return An international string for the given key.
+     */
+    public static InternationalString formatInternational(final int key, final Object arg) {
+        return new International(key, arg);
+    }
+
+    /**
+     * Gets an international string for the given key. This method does not check for the key
+     * validity. If the key is invalid, then a {@link MissingResourceException} may be thrown
+     * when a {@link InternationalString#toString(Locale)} method is invoked.
+     *
+     * @param  key  The key for the desired string.
+     * @param  args Values to substitute to "{0}", "{1}", <i>etc</i>.
+     * @return An international string for the given key.
+     */
+    public static InternationalString formatInternational(final int key, final Object... args) {
+        return new International(key, args);
     }
 }

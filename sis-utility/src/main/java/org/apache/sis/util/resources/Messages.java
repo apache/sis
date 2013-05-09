@@ -16,6 +16,7 @@
  */
 package org.apache.sis.util.resources;
 
+import java.net.URL;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import org.opengis.util.InternationalString;
@@ -59,6 +60,22 @@ public final class Messages extends IndexedResourceBundle {
         public static final int ChangedContainerCapacity_2 = 0;
 
         /**
+         * Property “{0}” has been discarded in favor of “{1}”, because those two properties are
+         * mutually exclusive.
+         */
+        public static final int DiscardedExclusiveProperty_2 = 4;
+
+        /**
+         * Text were discarded for some locales.
+         */
+        public static final int LocalesDiscarded = 2;
+
+        /**
+         * Property “{0}” is hidden by “{1}”.
+         */
+        public static final int PropertyHiddenBy_2 = 3;
+
+        /**
          * Unavailable content.
          */
         public static final int UnavailableContent = 1;
@@ -67,10 +84,11 @@ public final class Messages extends IndexedResourceBundle {
     /**
      * Constructs a new resource bundle loading data from the given UTF file.
      *
-     * @param filename The file or the JAR entry containing resources.
+     * @param resources The path of the binary file containing resources, or {@code null} if
+     *        there is no resources. The resources may be a file or an entry in a JAR file.
      */
-    Messages(final String filename) {
-        super(filename);
+    Messages(final URL resources) {
+        super(resources);
     }
 
     /**
@@ -179,7 +197,7 @@ public final class Messages extends IndexedResourceBundle {
      * The international string to be returned by {@link formatInternational}.
      */
     private static final class International extends ResourceInternationalString {
-        private static final long serialVersionUID = -229348959712294903L;
+        private static final long serialVersionUID = 4553487496835099424L;
 
         International(int key)                   {super(key);}
         International(int key, Object args)      {super(key, args);}

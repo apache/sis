@@ -18,16 +18,14 @@ package org.apache.sis.internal.jaxb;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.UUID;
 import java.util.Collection;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.xml.IdentifierSpace;
-import org.apache.sis.xml.IdentifierAlreadyBoundException;
 import org.apache.sis.xml.XLink;
 
 // Related to JDK7
-import org.apache.sis.internal.util.Objects;
+import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
@@ -36,7 +34,6 @@ import org.apache.sis.internal.util.Objects;
  *
  * <ul>
  *   <li>{@link IdentifierSpace#HREF}: handled as a shortcut to {@link XLink#getHRef()}.</li>
- *   <li>{@link IdentifierSpace#UUID}: {@code put} operations register the UUID in a shared map.</li>
  * </ul>
  *
  * See usages of {@link #specialCase(Object)} for identifying the code locations where a special
@@ -51,22 +48,15 @@ public final class IdentifierMapWithSpecialCases extends IdentifierMapAdapter {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 5139573827448780289L;
-
-    /**
-     * The object being referenced by the identifiers, or {@code null} if not applicable.
-     */
-    private final Object referent;
+    private static final long serialVersionUID = 8135179749011991090L;
 
     /**
      * Creates a new map which will be a view over the given identifiers.
      *
      * @param identifiers The identifiers to wrap in a map view.
-     * @param referent    The object being referenced by the identifiers.
      */
-    public IdentifierMapWithSpecialCases(final Collection<Identifier> identifiers, final Object referent) {
+    public IdentifierMapWithSpecialCases(final Collection<Identifier> identifiers) {
         super(identifiers);
-        this.referent = referent;
     }
 
     /**
@@ -78,7 +68,6 @@ public final class IdentifierMapWithSpecialCases extends IdentifierMapAdapter {
      */
     private static int specialCase(final Object authority) {
         if (authority == IdentifierSpace.HREF) return NonMarshalledAuthority.HREF;
-        if (authority == IdentifierSpace.UUID) return NonMarshalledAuthority.UUID;
         // A future Apache SIS version may add more special cases here.
         return -1;
     }
@@ -117,29 +106,6 @@ public final class IdentifierMapWithSpecialCases extends IdentifierMapAdapter {
             link = new XLink();
             link.setHRef(href);
             super.putSpecialized(IdentifierSpace.XLINK, link);
-        }
-        return old;
-    }
-
-    /**
-     * Sets the {@code "gco:uuid"} value, which may be null. This method stores the UUID-object
-     * association in a shared map, if no value existed previously.
-     *
-     * @param  uuid The UUID to assign to the object.
-     * @return The previous value, or {@code null} if none.
-     * @throws IdentifierAlreadyBoundException If the given identifier is already associated to another object.
-     */
-    private UUID setUUID(final UUID uuid) throws IdentifierAlreadyBoundException {
-        if (referent == null) {
-            return super.putSpecialized(IdentifierSpace.UUID, uuid);
-        }
-        if (uuid != null) {
-            UUIDs.bind(uuid, referent); // May throws IdentifierAlreadyBoundException
-        }
-        // Invoke 'put' only if UUIDs.bind(…) has been succesful.
-        final UUID old = super.putSpecialized(IdentifierSpace.UUID, uuid);
-        if (old != null && !old.equals(uuid)) {
-            UUIDs.unbind(old, referent);
         }
         return old;
     }
@@ -212,7 +178,7 @@ public final class IdentifierMapWithSpecialCases extends IdentifierMapAdapter {
      */
     @Override
     public String put(final Citation authority, final String code)
-            throws IdentifierAlreadyBoundException, UnsupportedOperationException
+            throws UnsupportedOperationException
     {
         final Exception exception;
         switch (specialCase(authority)) {
@@ -231,18 +197,6 @@ public final class IdentifierMapWithSpecialCases extends IdentifierMapAdapter {
                 id = setHRef(id);
                 return (id != null) ? id.toString() : old;
             }
-            case NonMarshalledAuthority.UUID: {
-                UUID id = null;
-                if (code != null) try {
-                    id = UUID.fromString(code);
-                } catch (IllegalArgumentException e) {
-                    exception = e;
-                    break;
-                }
-                final String old = getUnspecialized(authority);
-                id = setUUID(id);
-                return (id != null) ? id.toString() : old;
-            }
         }
         SpecializedIdentifier.parseFailure(exception);
         return super.put(authority, code);
@@ -254,12 +208,11 @@ public final class IdentifierMapWithSpecialCases extends IdentifierMapAdapter {
     @Override
     @SuppressWarnings("unchecked")
     public <T> T putSpecialized(final IdentifierSpace<T> authority, final T value)
-            throws IdentifierAlreadyBoundException, UnsupportedOperationException
+            throws UnsupportedOperationException
     {
         switch (specialCase(authority)) {
             default: return super.putSpecialized(authority, value);
             case NonMarshalledAuthority.HREF: return (T) setHRef((URI)  value);
-            case NonMarshalledAuthority.UUID: return (T) setUUID((UUID) value);
         }
     }
 }

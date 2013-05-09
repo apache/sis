@@ -18,10 +18,11 @@ package org.apache.sis.test.suite;
 
 import org.apache.sis.test.TestSuite;
 import org.junit.runners.Suite;
+import org.junit.BeforeClass;
 
 
 /**
- * All tests from the {@code sis-utility} module, in approximative dependency order.
+ * All tests from the {@code sis-referencing} module, in approximative dependency order.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
@@ -35,8 +36,17 @@ import org.junit.runners.Suite;
     org.apache.sis.geometry.DirectPosition2DTest.class,
     org.apache.sis.geometry.AbstractEnvelopeTest.class,
     org.apache.sis.geometry.GeneralEnvelopeTest.class,
+    org.apache.sis.geometry.SubEnvelopeTest.class,
     org.apache.sis.geometry.ImmutableEnvelopeTest.class,
     org.apache.sis.geometry.Envelope2DTest.class
 })
 public final strictfp class ReferencingTestSuite extends TestSuite {
+    /**
+     * Verifies the list of tests before to run the suite.
+     * See {@link #verifyTestList(Class)} for more information.
+     */
+    @BeforeClass
+    public static void verifyTestList() {
+        verifyTestList(ReferencingTestSuite.class);
+    }
 }

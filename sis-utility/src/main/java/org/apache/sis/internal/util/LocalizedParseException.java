@@ -46,7 +46,7 @@ public final class LocalizedParseException extends ParseException implements Loc
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 8240939095802384277L;
+    private static final long serialVersionUID = -1467571540435486742L;
 
     /**
      * The locale to use for formatting the localized error message.

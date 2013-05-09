@@ -20,6 +20,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.Iterator;
+import java.util.Random;
 import java.util.concurrent.Callable;
 import java.io.PrintWriter;
 import java.lang.reflect.UndeclaredThrowableException;
@@ -79,14 +80,16 @@ public final strictfp class TestUtilities extends Static {
     }
 
     /**
-     * Prints the given title to {@link TestCase#out} in a box. This method is invoked for
-     * writing a clear visual separator between the verbose output of different test cases.
+     * If verbose output are enabled, prints the given title to {@link TestCase#out} in a box.
+     * This method is invoked for writing a clear visual separator between the verbose output
+     * of different test cases. This method does nothing if verbose output is not enabled,
+     * because only the output of failed tests should be printed in such case.
      *
      * @param title The title to write.
      */
     public static void printSeparator(final String title) {
-        final PrintWriter out = TestCase.out;
-        if (out != null) {
+        if (TestCase.verbose) {
+            final PrintWriter out = TestCase.out;
             final boolean isAnsiSupported = X364.isAnsiSupported();
             if (isAnsiSupported) {
                 out.print(X364.FOREGROUND_CYAN.sequence());
@@ -111,6 +114,38 @@ public final strictfp class TestUtilities extends Static {
                 out.print(X364.FOREGROUND_DEFAULT.sequence());
             }
         }
+    }
+
+    /**
+     * Returns a new random number generator with a random seed. This method logs the seed value
+     * to the {@link TestCase#out} stream, in order to allow reproducing a test in case of failure.
+     *
+     * <p>This method doesn't need to be used in every cases. For example test cases using
+     * {@link Random#nextGaussian()} should create their own random numbers generator with
+     * the {@link Random#Random(long)} constructor instead
+     * (see {@link org.apache.sis.math.StatisticsTest} for more explanation).
+     * Or test cases that are mostly insensitive to the exact sequence of numbers
+     * can use the {@link Random#Random()} constructor instead.</p>
+     *
+     * <p>This method is rather for testing relatively complex code which are likely to behave
+     * differently depending on the exact sequence of numbers. We want to use random sequence
+     * of numbers in order to test the code in a wider range of scenarios. However in case of
+     * test failure, we need to know the <cite>seed</cite> which has been used in order to allow
+     * the developer to reproduce the test with the exact same sequence of numbers.
+     * Using this method, the seed can be retrieved in the messages sent to the output stream.</p>
+     *
+     * @param  testMethod The name of the method which need a random number generator.
+     * @return A new random number generator initialized with a random seed.
+     */
+    public static Random createRandomNumberGenerator(final String testMethod) {
+        final long seed = Math.round(Math.random() * (1L << 48));
+        final PrintWriter out = TestCase.out;
+        out.print("Random number generator for ");
+        out.print(testMethod);
+        out.print(" created with seed ");
+        out.print(seed);
+        out.println('.');
+        return new Random(seed);
     }
 
     /**
@@ -162,6 +197,20 @@ public final strictfp class TestUtilities extends Static {
         }
         assertEquals("Parsed text not equal to the original value", value, parsed);
         return text;
+    }
+
+    /**
+     * Returns the single element from the given array. If the given array is null or
+     * does not contains exactly one element, then an {@link AssertionError} is thrown.
+     *
+     * @param  <E> The type of array elements.
+     * @param  array The array from which to get the singleton.
+     * @return The singleton element from the array.
+     */
+    public static <E> E getSingleton(final E[] array) {
+        assertNotNull("Null array.", array);
+        assertEquals("Not a singleton array.", 1, array.length);
+        return array[0];
     }
 
     /**

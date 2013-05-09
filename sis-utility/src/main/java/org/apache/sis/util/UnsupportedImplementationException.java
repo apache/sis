@@ -34,7 +34,7 @@ public class UnsupportedImplementationException extends UnsupportedOperationExce
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -649050339146622730L;
+    private static final long serialVersionUID = 8871937175259200449L;
 
     /**
      * Constructs an exception with the specified detail message.

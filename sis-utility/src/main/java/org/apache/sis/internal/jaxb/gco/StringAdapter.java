@@ -16,9 +16,10 @@
  */
 package org.apache.sis.internal.jaxb.gco;
 
+import java.util.Locale;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import org.opengis.util.InternationalString;
-import org.apache.sis.internal.jaxb.MarshalContext;
+import org.apache.sis.internal.jaxb.Context;
 
 
 /**
@@ -44,6 +45,8 @@ public final class StringAdapter extends XmlAdapter<GO_CharacterString, String> 
      * Returns a string representation of the given character sequence. If the given
      * sequence is an instance of {@link InternationalString}, then the locale from
      * the current unmashalling context is used in order to get a string.
+     * If the context is {@code null} or does not specify any locale, then the choice
+     * of locale is left to the {@link InternationalString#toString()} implementation.
      *
      * @param  value The wrapper for the value, or {@code null}.
      * @return The string representation of the given text, or {@code null}.
@@ -53,8 +56,15 @@ public final class StringAdapter extends XmlAdapter<GO_CharacterString, String> 
             final CharSequence text = value.toCharSequence();
             if (text != null) {
                 if (text instanceof InternationalString) {
-                    final MarshalContext context = MarshalContext.current();
-                    return ((InternationalString) text).toString(context != null ? context.getLocale() : null);
+                    final Context context = Context.current();
+                    if (context != null) {
+                        final Locale locale = context.getLocale();
+                        if (locale != null) {
+                            // While Apache SIS accepts null locale, foreigner
+                            // implementations are not guaranteed to support null.
+                            return ((InternationalString) text).toString(locale);
+                        }
+                    }
                 }
                 return text.toString();
             }

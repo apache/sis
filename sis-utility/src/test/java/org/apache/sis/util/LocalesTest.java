@@ -19,6 +19,7 @@ package org.apache.sis.util;
 import java.util.Locale;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.DependsOnMethod;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -32,7 +33,7 @@ import static org.junit.Assert.*;
  * @version 0.3
  * @module
  */
-@DependsOn(Arrays.class)
+@DependsOn(ArraysExtTest.class)
 public final strictfp class LocalesTest extends TestCase {
     /**
      * Tests the {@link Locales#getAvailableLanguages()} method.
@@ -40,8 +41,8 @@ public final strictfp class LocalesTest extends TestCase {
     @Test
     public void testGetAvailableLanguages() {
         final Locale[] locales = Locales.ALL.getAvailableLanguages();
-        assertTrue ("Expected English locale.",         Arrays.contains(locales, Locale.ENGLISH));
-        assertFalse("US is a country, not a language.", Arrays.contains(locales, Locale.US));
+        assertTrue ("Expected English locale.",         ArraysExt.contains(locales, Locale.ENGLISH));
+        assertFalse("US is a country, not a language.", ArraysExt.contains(locales, Locale.US));
     }
 
     /**
@@ -50,18 +51,27 @@ public final strictfp class LocalesTest extends TestCase {
     @Test
     public void testGetAvailableLocales() {
         final Locale[] locales = Locales.SIS.getAvailableLocales();
-        assertTrue(Arrays.contains(locales, Locale.ENGLISH));
-        assertTrue(Arrays.contains(locales, Locale.US));
-        assertTrue(Arrays.contains(locales, Locale.CANADA));
-        assertTrue(Arrays.contains(locales, Locale.FRANCE));
-        assertTrue(Arrays.contains(locales, Locale.CANADA_FRENCH));
+        assertTrue(ArraysExt.contains(locales, Locale.ENGLISH));
+        assertTrue(ArraysExt.contains(locales, Locale.US));
+        assertTrue(ArraysExt.contains(locales, Locale.CANADA));
+        assertTrue(ArraysExt.contains(locales, Locale.FRANCE));
+        assertTrue(ArraysExt.contains(locales, Locale.CANADA_FRENCH));
+    }
+
+    /**
+     * Tests the {@link Locales#unique(Locale)} method.
+     */
+    @Test
+    public void testUnique() {
+        assertSame(Locale.ENGLISH, Locales.unique(new Locale("en")));
+        assertSame(Locale.FRENCH,  Locales.unique(new Locale("fr")));
     }
 
     /**
      * Tests the {@link Locales#parse(String)} method.
-     * Depends on {@link #testUnique()}.
      */
     @Test
+    @DependsOnMethod("testUnique")
     public void testParse() {
         assertSame(Locale.FRENCH,        Locales.parse("fr"));
         assertSame(Locale.FRENCH,        Locales.parse("fra"));
@@ -79,11 +89,16 @@ public final strictfp class LocalesTest extends TestCase {
     }
 
     /**
-     * Tests the {@link Locales#unique(Locale)} method.
+     * Tests the {@link Locales#parseSuffix(String, String)} method.
      */
     @Test
-    public void testUnique() {
-        assertSame(Locale.ENGLISH, Locales.unique(new Locale("en")));
-        assertSame(Locale.FRENCH,  Locales.unique(new Locale("fr")));
+    @DependsOnMethod("testParse")
+    public void testParseSuffix() {
+        assertSame(null,           Locales.parseSuffix("remarks", "remark"));
+        assertSame(Locale.ROOT,    Locales.parseSuffix("remarks", "remarks"));
+        assertSame(Locale.ENGLISH, Locales.parseSuffix("remarks", "remarks_en"));
+        assertSame(Locale.FRENCH,  Locales.parseSuffix("remarks", "remarks_fr"));
+        assertSame(Locale.FRENCH,  Locales.parseSuffix("remarks", "remarks_fra"));
+        assertSame(null,           Locales.parseSuffix("remarks", "remarks2_en"));
     }
 }

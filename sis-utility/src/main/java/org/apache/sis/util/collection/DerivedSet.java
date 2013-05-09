@@ -67,7 +67,7 @@ class DerivedSet<S,E> extends AbstractSet<E> implements CheckedContainer<E>, Ser
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -4662336508586424581L;
+    private static final long serialVersionUID = 6309535868745970619L;
 
     /**
      * The storage set whose values are derived from.
@@ -198,7 +198,7 @@ class DerivedSet<S,E> extends AbstractSet<E> implements CheckedContainer<E>, Ser
         /**
          * For cross-version compatibility.
          */
-        private static final long serialVersionUID = 5957167307119709856L;
+        private static final long serialVersionUID = -5336633027232952482L;
 
         /**
          * The converter from the derived to the storage type.

@@ -24,9 +24,10 @@ import java.text.Format;
 import java.text.ParseException;
 import java.io.Serializable;
 import net.jcip.annotations.Immutable;
-import org.apache.sis.math.MathFunctions;
+import org.apache.sis.internal.util.Utilities;
 
 import static java.lang.Double.doubleToLongBits;
+import static org.apache.sis.math.MathFunctions.isNegative;
 
 
 /**
@@ -54,7 +55,7 @@ public class Angle implements Comparable<Angle>, Formattable, Serializable {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 1158747349433104534L;
+    private static final long serialVersionUID = 3701568577051191744L;
 
     /**
      * A shared instance of {@link AngleFormat}.
@@ -102,7 +103,7 @@ public class Angle implements Comparable<Angle>, Formattable, Serializable {
         } catch (ParseException exception) {
             /*
              * Use Exception.getMessage() instead than getLocalizedMessage() because the later
-             * is formatted in the AngleFormat locale, which is hard-coded to Locale.US in our
+             * is formatted in the AngleFormat locale, which is hard-coded to Locale.ROOT in our
              * 'getAngleFormat()' implementation. The getMessage() method uses the system locale,
              * which is what we actually want.
              */
@@ -204,7 +205,7 @@ public class Angle implements Comparable<Angle>, Formattable, Serializable {
         double m = Math.abs(θ);
         final boolean isSmall = m <= (1 / 3600E+3); // 1E-3 arc-second.
         if (isSmall || m > maximum()) {
-            final char h = hemisphere(MathFunctions.isNegative(θ));
+            final char h = hemisphere(isNegative(θ));
             if (h == 0) {
                 m = θ;  // Restore the sign.
             }
@@ -240,7 +241,7 @@ public class Angle implements Comparable<Angle>, Formattable, Serializable {
     private static Format getAngleFormat() {
         assert Thread.holdsLock(Angle.class);
         if (format == null) {
-            format = AngleFormat.getInstance(Locale.US);
+            format = AngleFormat.getInstance(Locale.ROOT);
         }
         return format;
     }
@@ -255,9 +256,7 @@ public class Angle implements Comparable<Angle>, Formattable, Serializable {
      *   <li>If the precision is 0, then this method formats an empty string.</li>
      *   <li>If the precision is 1 and this angle is a {@link Latitude} or {@link Longitude},
      *       then this method formats only the hemisphere symbol.</li>
-     *   <li>Otherwise the precision, if positive, is given to {@link AngleFormat#setMaximumWidth(int)}.
-     *       That formatter will try to respect the precision limit, but the formatted angle may
-     *       still be wider if the precision is too small or the angle magnitude too large.</li>
+     *   <li>Otherwise the precision, if positive, is given to {@link AngleFormat#setMaximumWidth(int)}.</li>
      * </ul>
      *
      * @param formatter The formatter in which to format this angle.
@@ -266,24 +265,23 @@ public class Angle implements Comparable<Angle>, Formattable, Serializable {
      * @param precision Maximal number of characters to write, or -1 if no limit.
      */
     @Override
-    public void formatTo(final Formatter formatter, final int flags, final int width, int precision) {
+    public void formatTo(final Formatter formatter, final int flags, final int width, final int precision) {
         final String value;
         if (precision == 0) {
             value = "";
         } else {
-            if (precision > 0) {
-                final char h = hemisphere(MathFunctions.isNegative(θ));
-                if (h != 0 && --precision == 0) {
-                    formatter.format("%c", h);
-                    return;
+            final char h;
+            int w = precision; // To be decremented only if we may truncate and an hemisphere symbol exist.
+            if (w > 0 && (h = hemisphere(isNegative(θ))) != 0 && --w == 0) {
+                value = Character.toString(h);
+            } else {
+                final AngleFormat format = new AngleFormat(formatter.locale());
+                if (w > 0) {
+                    format.setMaximumWidth(w);
                 }
+                value = format.format(this, new StringBuffer(), null).toString();
             }
-            final AngleFormat format = new AngleFormat(formatter.locale());
-            if (precision > 0) {
-                format.setMaximumWidth(precision);
-            }
-            value = format.format(this, new StringBuffer(), null).toString();
         }
-        org.apache.sis.internal.util.Utilities.formatTo(formatter, flags, width, value);
+        Utilities.formatTo(formatter, flags, width, precision, value);
     }
 }

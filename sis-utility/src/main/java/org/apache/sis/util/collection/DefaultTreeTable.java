@@ -16,22 +16,25 @@
  */
 package org.apache.sis.util.collection;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.LinkedHashMap;
+import java.util.Collection;
 import java.util.Collections;
 import java.io.Serializable;
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Cloner;
+import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 import static org.apache.sis.util.CharSequences.trimWhitespaces;
-import static org.apache.sis.util.collection.Collections.isNullOrEmpty;
-import static org.apache.sis.util.collection.Collections.hashMapCapacity;
+import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
+import static org.apache.sis.util.collection.Containers.hashMapCapacity;
 
 // Related to JDK7
-import org.apache.sis.internal.util.Objects;
+import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
@@ -66,13 +69,16 @@ import org.apache.sis.internal.util.Objects;
  * @since   0.3
  * @version 0.3
  * @module
+ *
+ * @see Node
+ * @see TableColumn
  */
 @NotThreadSafe
 public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 1951201018202846555L;
+    private static final long serialVersionUID = 7991792044044382191L;
 
     /**
      * The root node, or {@code null} if not yet specified.
@@ -121,7 +127,9 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
         if (columns.length == 0) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "columns"));
         }
-        columns = columns.clone();
+        // Copy the array for safety against user changes, and also for forcing the element type
+        // to TableColumn, not a subclass, because of the UnmodifiableArrayList.wrap(E[]) contract.
+        columns = Arrays.copyOf(columns, columns.length, TableColumn[].class);
         this.columnIndices = createColumnIndices(columns);
         this.columns = UnmodifiableArrayList.wrap(columns);
     }
@@ -168,6 +176,10 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
     /**
      * Returns all columns in the given map, sorted by increasing index value.
      * This method relies on {@link LinkedHashSet} preserving insertion order.
+     *
+     * @return The columns in an array of elements of type {@code TableColumn},
+     *         <strong>not a subtype</strong> for allowing usage in
+     *         {@link UnmodifiableArrayList#wrap(E[])}.
      */
     static TableColumn<?>[] getColumns(final Map<TableColumn<?>,Integer> columnIndices) {
         return columnIndices.keySet().toArray(new TableColumn<?>[columnIndices.size()]);
@@ -275,7 +287,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
 
     /**
      * Returns a string representation of this tree table.
-     * The default implementation performs the same work than {@link TreeTables#toString(TreeTable)}.
+     * The current implementation uses a shared instance of {@link TreeTableFormat}.
      * This is okay for debugging or occasional usages. However for more extensive usages,
      * developers are encouraged to create and configure their own {@link TreeTableFormat}
      * instance.
@@ -308,13 +320,16 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
      * @since   0.3
      * @version 0.3
      * @module
+     *
+     * @see DefaultTreeTable
+     * @see TableColumn
      */
     @NotThreadSafe
     public static class Node implements TreeTable.Node, Cloneable, Serializable {
         /**
          * For cross-version compatibility.
          */
-        private static final long serialVersionUID = 2931274954865719140L;
+        private static final long serialVersionUID = -5729029633479218691L;
 
         /**
          * Implementation of {@link Node} children list. This list updates automatically the
@@ -443,7 +458,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
         }
 
         /**
-         * Creates a node with a single column for object names (c<cite>convenience constructor</cite>).
+         * Creates a node with a single column for object names (<cite>convenience constructor</cite>).
          * The node will have the following columns:
          *
          * <table class="sis">
@@ -488,9 +503,27 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
         }
 
         /**
-         * Returns the node children. This list is modifiable and updates automatically the
-         * {@linkplain #getParent() parent} reference of any {@code Node} instance added to
-         * ore removed from this list.
+         * Returns {@code true} if this node can not have any children. The default implementation
+         * unconditionally returns {@code false} even if the list of children is empty, because the
+         * list is allowed to grow at any time.
+         *
+         * <p>Subclasses can override this method if they can determine which nodes are leaves.
+         * In the current implementation, the return value shall be stable (i.e. a node can not
+         * alternate between leaf and non-leaf state). However this restriction may be relaxed
+         * in a future SIS version.</p>
+         */
+        @Override
+        public boolean isLeaf() {
+            return false;
+        }
+
+        /**
+         * Returns the children of this node. For non-leaf nodes, the list is modifiable and will
+         * automatically updates the {@linkplain #getParent() parent} reference of any {@code Node}
+         * instance added to or removed from the list.
+         *
+         * <p>For leaf nodes, this method returns an unmodifiable
+         * {@linkplain Collections#emptyList() empty list}.</p>
          */
         /* NOTE: If a future version removes the "final" keyword, then search for calls to
          * this method where the return value is casted to TreeNodeList. Any unconditional
@@ -499,15 +532,20 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
         @Override
         public final List<TreeTable.Node> getChildren() {
             if (children == null) {
-                children = new Children(this);
+                if (isLeaf()) {
+                    children = Collections.emptyList();
+                } else {
+                    children = new Children(this);
+                }
             }
             return children;
         }
 
         /**
          * Adds a new child in the {@linkplain #getChildren() children list}.
-         * The default implementation delegates to {@link #Node(Node)}, which
-         * has the following implications:
+         * The default implementation first checks that this node is not a leaf,
+         * then delegates to the {@code Node(Node)} constructor.
+         * That constructor call has the following implications:
          *
          * <ul>
          *   <li>The new node inherits the columns of this node, on the assumption that
@@ -516,9 +554,14 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
          * </ul>
          *
          * Subclasses may override this method with different behavior.
+         *
+         * @throws UnsupportedOperationException If this node {@linkplain #isLeaf() is a leaf}.
          */
         @Override
         public Node newChild() {
+            if (isLeaf()) {
+                throw new UnsupportedOperationException(Errors.format(Errors.Keys.NodeIsLeaf_1, this));
+            }
             return new Node(this);
         }
 
@@ -554,7 +597,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
          * @see #isEditable(TableColumn)
          */
         @Override
-        public <V> void setValue(final TableColumn<V> column, final V value) {
+        public <V> void setValue(final TableColumn<V> column, final V value) throws IllegalArgumentException {
             ArgumentChecks.ensureNonNull("column", column);
             final Integer index = columnIndices.get(column);
             if (index == null) {
@@ -720,7 +763,10 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
             }
             String name = getClass().getSimpleName();
             if (parent != null) {
-                name = name + '-' + parent.getChildren().indexOf(this);
+                final Collection<TreeTable.Node> children = parent.getChildren();
+                if (children instanceof List<?>) {
+                    name = name + '-' + ((List<TreeTable.Node>) children).indexOf(this);
+                }
             }
             return name;
         }

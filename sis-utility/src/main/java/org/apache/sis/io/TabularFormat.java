@@ -27,7 +27,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
 // Related to JK7
-import org.apache.sis.internal.util.JDK7;
+import org.apache.sis.internal.jdk7.JDK7;
 
 
 /**
@@ -80,7 +80,7 @@ public abstract class TabularFormat<T> extends CompoundFormat<T> {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -1599411687892965650L;
+    private static final long serialVersionUID = -4556687020021477908L;
 
     /**
      * The line separator to use for formatting the tree.
@@ -135,7 +135,8 @@ public abstract class TabularFormat<T> extends CompoundFormat<T> {
     /**
      * Creates a new tabular format.
      *
-     * @param locale   The locale to use for numbers, dates and angles formatting.
+     * @param locale   The locale to use for numbers, dates and angles formatting,
+     *                 or {@code null} for the {@linkplain Locale#ROOT root locale}.
      * @param timezone The timezone, or {@code null} for UTC.
      */
     public TabularFormat(final Locale locale, final TimeZone timezone) {

@@ -31,7 +31,7 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 
 // Related to JDK7
-import org.apache.sis.internal.util.Objects;
+import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
@@ -86,7 +86,7 @@ public class XLink implements Serializable {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -4349950135677857725L;
+    private static final long serialVersionUID = 4046720871882443681L;
 
     /**
      * The type of link. If {@code null}, then the type will be inferred by {@link #getType()}.
@@ -301,7 +301,7 @@ public class XLink implements Serializable {
          * Returns the attribute name for this type.
          */
         final String identifier() {
-            return name().toLowerCase(Locale.US);
+            return name().toLowerCase(Locale.ROOT);
         }
     }
 

@@ -22,7 +22,7 @@ package org.apache.sis.util;
  * purpose only. The list below summarizes some of the utility classes:
  *
  * <table class="sis">
- * <tr><th colspan="2">Basic classes of the Java language</th></tr>
+ * <tr><th colspan="2">Classes of the Java language</th></tr>
  * <tr><td>{@link Characters}</td>
  *     <td>Find subscript and superscript digit characters.</td></tr>
  * <tr><td>{@link CharSequences}</td>
@@ -30,9 +30,15 @@ package org.apache.sis.util;
  * <tr><td>{@link StringBuilders}</td>
  *     <td>Methods modifying {@link StringBuilder} content in-place.</td></tr>
  * <tr><td>{@link Numbers}</td>
- *     <td>Conversions between different kind of {@link Number}.</td></tr>
+ *     <td>Methods working with {@link Number} instances (include conversions between different types).</td></tr>
  * <tr><td>{@link Classes}</td>
- *     <td>Methods working on {@link Class} instances.</td></tr>
+ *     <td>Methods working with {@link Class} instances.</td></tr>
+ * <tr><td>{@link org.apache.sis.util.collection.Containers}</td>
+ *     <td>Additions to the JDK {@link java.util.Collections} methods, also related to the
+ *         {@link org.apache.sis.util.collection.CheckedContainer} interface.</td></tr>
+ * <tr><td>{@link ArraysExt}</td>
+ *     <td>Additions to the JDK {@link java.util.Arrays} methods
+ *         (include insert or remove of elements in the middle of arrays).</td></tr>
  *
  * <tr><th colspan="2" class="hsep">Mathematics and units of measurement</th></tr>
  * <tr><td>{@link org.apache.sis.math.MathFunctions}</td>
@@ -41,11 +47,11 @@ package org.apache.sis.util;
  *     <td>Get a {@linkplain javax.measure.unit.Unit unit} from a symbol or EPSG code,
  *         and test if a unit is angular, linear or temporal.</td></tr>
  *
- * <tr><th colspan="2" class="hsep">Structures (trees, collections, arrays, parameters)</th></tr>
- * <tr><td>{@link org.apache.sis.util.collection.Collections}</td>
- *     <td>Additions to the JDK {@link java.util.Collections} methods.</td></tr>
- * <tr><td>{@link Arrays}</td>
- *     <td>Insert or remove elements in the middle of arrays.</td></tr>
+ * <tr><th colspan="2" class="hsep">OGC/ISO objects (metadata, referencing, geometries)</th></tr>
+ * <tr><td>{@link org.apache.sis.metadata.iso.extent.Extents}</td>
+ *     <td>Extract information from {@link org.opengis.metadata.extent.Extent} objects.</td></tr>
+ * <tr><td>{@link org.apache.sis.geometry.Envelopes}</td>
+ *     <td>Parse, format and transform {@linkplain org.opengis.geometry.Envelope envelopes}.</td></tr>
  *
  * <tr><th colspan="2" class="hsep">Input / Output (including CRS, XML, images)</th></tr>
  * <tr><td>{@link org.apache.sis.io.IO}</td>
@@ -74,9 +80,8 @@ package org.apache.sis.util;
  */
 public class Static {
     /**
-     * Do not allow instantiation. This construction is defined only in order to allow
-     * subclassing. Subclasses shall declare their own private constructor in order to
-     * prevent instantiation.
+     * For subclasses only.
+     * Subclasses shall declare a private constructor for preventing instantiation.
      */
     protected Static() {
     }

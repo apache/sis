@@ -40,7 +40,7 @@ import static org.apache.sis.test.Assert.*;
  * @since   0.3 (derived from geotk-2.2)
  * @version 0.3
  */
-@DependsOn(org.apache.sis.util.ArraysTest.class)
+@DependsOn(LoaderTest.class)
 public final strictfp class IndexedResourceBundleTest extends TestCase {
     /**
      * The resource bundle in process of being tested. Shall be reset to {@code null} after every
@@ -56,14 +56,18 @@ public final strictfp class IndexedResourceBundleTest extends TestCase {
     public void testGetResources() {
         final Errors english = Errors.getResources(Locale.ENGLISH);
         final Errors french  = Errors.getResources(Locale.FRENCH);
+        final Errors canada  = Errors.getResources(Locale.CANADA);
+        final Errors quebec  = Errors.getResources(Locale.CANADA_FRENCH);
+        assertNotSame(english, Errors.getResources(Locale.US));
+        assertNotSame(english, Errors.getResources(Locale.UK));
         assertNotSame(english, french);
+        assertNotSame(english, canada);
+        assertNotSame(french,  quebec);
 
         assertSame(english, Errors.getResources(Locale.ENGLISH));
-        assertSame(english, Errors.getResources(Locale.US));
-        assertSame(english, Errors.getResources(Locale.UK));
-        assertSame(english, Errors.getResources(Locale.CANADA));
+        assertSame(canada,  Errors.getResources(Locale.CANADA));
         assertSame(french,  Errors.getResources(Locale.FRENCH));
-        assertSame(french,  Errors.getResources(Locale.CANADA_FRENCH));
+        assertSame(quebec,  Errors.getResources(Locale.CANADA_FRENCH));
     }
 
     /**
@@ -153,11 +157,13 @@ public final strictfp class IndexedResourceBundleTest extends TestCase {
     @DependsOnMethod("testGetResources")
     public void testFormatInternational() {
         InternationalString i18n = Errors.formatInternational(Errors.Keys.NullArgument_1);
+        assertEquals("Argument ‘{0}’ shall not be null.",      i18n.toString(Locale.ROOT));
         assertEquals("Argument ‘{0}’ shall not be null.",      i18n.toString(Locale.ENGLISH));
         assertEquals("L’argument ‘{0}’ ne doit pas être nul.", i18n.toString(Locale.FRENCH));
         assertNotSame(i18n, assertSerializedEquals(i18n));
 
         i18n = Errors.formatInternational(Errors.Keys.NullArgument_1, "CRS");
+        assertEquals("Argument ‘CRS’ shall not be null.",      i18n.toString(Locale.ROOT));
         assertEquals("Argument ‘CRS’ shall not be null.",      i18n.toString(Locale.ENGLISH));
         assertEquals("L’argument ‘CRS’ ne doit pas être nul.", i18n.toString(Locale.FRENCH));
         assertNotSame(i18n, assertSerializedEquals(i18n));

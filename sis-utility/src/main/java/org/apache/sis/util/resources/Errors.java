@@ -16,6 +16,7 @@
  */
 package org.apache.sis.util.resources;
 
+import java.net.URL;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import org.opengis.util.InternationalString;
@@ -62,9 +63,40 @@ public final class Errors extends IndexedResourceBundle {
         }
 
         /**
+         * No element can be added to this set because properties ‘{0}’ and ‘{1}’ are mutually
+         * exclusive.
+         */
+        public static final int CanNotAddToExclusiveSet_2 = 87;
+
+        /**
          * Can not compute the derivative.
          */
         public static final int CanNotComputeDerivative = 44;
+
+        /**
+         * Can not convert from type ‘{0}’ to type ‘{1}’.
+         */
+        public static final int CanNotConvertFromType_2 = 72;
+
+        /**
+         * Can not convert value “{0}” to type ‘{1}’.
+         */
+        public static final int CanNotConvertValue_2 = 74;
+
+        /**
+         * Can not instantiate an object of type ‘{0}’.
+         */
+        public static final int CanNotInstantiate_1 = 81;
+
+        /**
+         * Can not set a value for property “{0}”.
+         */
+        public static final int CanNotSetPropertyValue_1 = 75;
+
+        /**
+         * Class ‘{0}’ is not final.
+         */
+        public static final int ClassNotFinal_1 = 71;
 
         /**
          * Can not clone an object of type ‘{0}’.
@@ -82,6 +114,16 @@ public final class Errors extends IndexedResourceBundle {
         public static final int DuplicatedValue_1 = 38;
 
         /**
+         * Found {0} duplicated values.
+         */
+        public static final int DuplicatedValuesCount_1 = 78;
+
+        /**
+         * Duplicated values for the “{0}” property.
+         */
+        public static final int DuplicatedValuesForProperty_1 = 79;
+
+        /**
          * Element “{0}” is already present.
          */
         public static final int ElementAlreadyPresent_1 = 36;
@@ -95,6 +137,11 @@ public final class Errors extends IndexedResourceBundle {
          * The dictionary shall contains at least one entry.
          */
         public static final int EmptyDictionary = 54;
+
+        /**
+         * Envelope must be at least two-dimensional and non-empty.
+         */
+        public static final int EmptyEnvelope2D = 88;
 
         /**
          * Property named “{0}” shall not be empty.
@@ -174,6 +221,16 @@ public final class Errors extends IndexedResourceBundle {
         public static final int IllegalRange_2 = 11;
 
         /**
+         * Property “{0}” has an incompatible value.
+         */
+        public static final int IncompatiblePropertyValue_1 = 86;
+
+        /**
+         * Units “{0}” and “{1}” are incompatible.
+         */
+        public static final int IncompatibleUnits_2 = 67;
+
+        /**
          * Value “{1}” of attribute ‘{0}’ is inconsistent with other attributes.
          */
         public static final int InconsistentAttribute_2 = 27;
@@ -229,9 +286,34 @@ public final class Errors extends IndexedResourceBundle {
         public static final int MismatchedDimension_3 = 58;
 
         /**
+         * This operation requires the “{0}” module.
+         */
+        public static final int MissingRequiredModule_1 = 84;
+
+        /**
+         * Missing value for property “{0}”.
+         */
+        public static final int MissingValueForProperty_1 = 85;
+
+        /**
+         * Missing value in the “{0}” column.
+         */
+        public static final int MissingValueInColumn_1 = 77;
+
+        /**
          * Argument ‘{0}’ shall not be negative. The given value was {1}.
          */
         public static final int NegativeArgument_2 = 8;
+
+        /**
+         * No property named “{0}” has been found in “{1}”.
+         */
+        public static final int NoSuchProperty_2 = 73;
+
+        /**
+         * No unit of measurement has been specified.
+         */
+        public static final int NoUnit = 68;
 
         /**
          * Node “{0}” can not be a child of itself.
@@ -249,6 +331,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int NodeHasNoParent_1 = 34;
 
         /**
+         * Node “{0}” is a leaf.
+         */
+        public static final int NodeIsLeaf_1 = 90;
+
+        /**
          * No “{0}” node found.
          */
         public static final int NodeNotFound_1 = 39;
@@ -262,6 +349,16 @@ public final class Errors extends IndexedResourceBundle {
          * Missing a ‘{1}’ parenthesis in “{0}”.
          */
         public static final int NonEquilibratedParenthesis_2 = 59;
+
+        /**
+         * Conversion is not invertible.
+         */
+        public static final int NonInvertibleConversion = 82;
+
+        /**
+         * Transform is not invertible.
+         */
+        public static final int NonInvertibleTransform = 83;
 
         /**
          * “{0}” is not a linear unit.
@@ -289,9 +386,24 @@ public final class Errors extends IndexedResourceBundle {
         public static final int NotAPrimitiveWrapper_1 = 10;
 
         /**
+         * Class ‘{0}’ is not a comparable.
+         */
+        public static final int NotComparableClass_1 = 66;
+
+        /**
          * Argument ‘{0}’ shall not be null.
          */
         public static final int NullArgument_1 = 0;
+
+        /**
+         * Null key is not allowed in this dictionary.
+         */
+        public static final int NullMapKey = 64;
+
+        /**
+         * Null values are not allowed in this dictionary.
+         */
+        public static final int NullMapValue = 65;
 
         /**
          * Array length is {0}, while we expected an even length.
@@ -309,6 +421,16 @@ public final class Errors extends IndexedResourceBundle {
         public static final int RequireDecimalSeparator = 33;
 
         /**
+         * Thread “{0}” seems stalled.
+         */
+        public static final int StalledThread_1 = 63;
+
+        /**
+         * Ordering between “{0}” and “{1}” elements is undefined.
+         */
+        public static final int UndefinedOrderingForElements_2 = 70;
+
+        /**
          * Unexpected change in ‘{0}’.
          */
         public static final int UnexpectedChange_1 = 56;
@@ -319,9 +441,24 @@ public final class Errors extends IndexedResourceBundle {
         public static final int UnexpectedEndOfString_1 = 30;
 
         /**
+         * Type of the “{0}” property is unknown.
+         */
+        public static final int UnknownTypeForProperty_1 = 80;
+
+        /**
+         * Type ‘{0}’ is unknown in this context.
+         */
+        public static final int UnknownType_1 = 76;
+
+        /**
          * This affine transform is unmodifiable.
          */
         public static final int UnmodifiableAffineTransform = 23;
+
+        /**
+         * The cell at column “{1}” of row “{0}” is unmodifiable.
+         */
+        public static final int UnmodifiableCellValue_2 = 89;
 
         /**
          * This geometry is unmodifiable.
@@ -364,6 +501,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int UnsupportedOperation_1 = 20;
 
         /**
+         * The ‘{0}’ type is unsupported.
+         */
+        public static final int UnsupportedType_1 = 69;
+
+        /**
          * A value is already defined for “{0}”.
          */
         public static final int ValueAlreadyDefined_1 = 13;
@@ -382,10 +524,11 @@ public final class Errors extends IndexedResourceBundle {
     /**
      * Constructs a new resource bundle loading data from the given UTF file.
      *
-     * @param filename The file or the JAR entry containing resources.
+     * @param resources The path of the binary file containing resources, or {@code null} if
+     *        there is no resources. The resources may be a file or an entry in a JAR file.
      */
-    Errors(final String filename) {
-        super(filename);
+    Errors(final URL resources) {
+        super(resources);
     }
 
     /**
@@ -494,7 +637,7 @@ public final class Errors extends IndexedResourceBundle {
      * The international string to be returned by {@link formatInternational}.
      */
     private static final class International extends ResourceInternationalString {
-        private static final long serialVersionUID = -229348959712294902L;
+        private static final long serialVersionUID = -5355796215044405012L;
 
         International(int key)                   {super(key);}
         International(int key, Object args)      {super(key, args);}

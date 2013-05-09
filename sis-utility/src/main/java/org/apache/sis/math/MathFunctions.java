@@ -18,6 +18,7 @@ package org.apache.sis.math;
 
 import java.util.Arrays;
 import org.apache.sis.util.Static;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
@@ -26,9 +27,6 @@ import static java.lang.Float.intBitsToFloat;
 import static java.lang.Float.floatToRawIntBits;
 import static java.lang.Double.longBitsToDouble;
 import static java.lang.Double.doubleToRawLongBits;
-import static org.apache.sis.util.Arrays.resize;
-import static org.apache.sis.util.Arrays.isSorted;
-import static org.apache.sis.util.Arrays.EMPTY_INT;
 import static org.apache.sis.internal.util.Utilities.SIGN_BIT_MASK;
 
 
@@ -60,6 +58,8 @@ import static org.apache.sis.internal.util.Utilities.SIGN_BIT_MASK;
  * @since   0.3 (derived from geotk-1.0)
  * @version 0.3
  * @module
+ *
+ * @see org.apache.sis.util.Numbers
  */
 public final class MathFunctions extends Static {
     /**
@@ -727,7 +727,7 @@ testNextNumber:         while (true) { // Simulate a "goto" statement (usually n
      */
     public static int[] divisors(int number) {
         if (number == 0) {
-            return EMPTY_INT;
+            return ArraysExt.EMPTY_INT;
         }
         number = Math.abs(number);
         int[] divisors = new int[16];
@@ -788,8 +788,8 @@ testNextNumber:         while (true) { // Simulate a "goto" statement (usually n
                 }
             }
         }
-        divisors = resize(divisors, count);
-        assert isSorted(divisors, true);
+        divisors = ArraysExt.resize(divisors, count);
+        assert ArraysExt.isSorted(divisors, true);
         return divisors;
     }
 
@@ -801,7 +801,7 @@ testNextNumber:         while (true) { // Simulate a "goto" statement (usually n
      */
     public static int[] commonDivisors(final int... numbers) {
         if (numbers.length == 0) {
-            return EMPTY_INT;
+            return ArraysExt.EMPTY_INT;
         }
         /*
          * Get the smallest value. We will compute the divisors only for this value,
@@ -831,6 +831,6 @@ testNextNumber:         while (true) { // Simulate a "goto" statement (usually n
                 }
             }
         }
-        return resize(divisors, count);
+        return ArraysExt.resize(divisors, count);
     }
 }

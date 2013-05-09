@@ -8,18 +8,22 @@
                 <root id="src.local-src.dir" name="Local sources (unversioned)"/>
                 <root id="src.webapp.dir" name="Web application"/>
                 <root id="src.app.dir" name="Application"/>
+                <root id="src.netcdf.dir" name="NetCDF"/>
                 <root id="src.referencing.dir" name="Referencing"/>
                 <root id="src.metadata.dir" name="Metadata"/>
                 <root id="src.utility.dir" name="Utility"/>
             </source-roots>
             <test-roots>
+                <root id="test.netcdf.dir" name="NetCDF tests"/>
                 <root id="test.referencing.dir" name="Referencing tests"/>
+                <root id="test.metadata.dir" name="Metadata tests"/>
                 <root id="test.utility.dir" name="Utility tests"/>
             </test-roots>
         </data>
         <spellchecker-wordlist xmlns="http://www.netbeans.org/ns/spellchecker-wordlist/1">
             <word>bitmask</word>
             <word>classname</word>
+            <word>classnames</word>
             <word>classpath</word>
             <word>deserialization</word>
             <word>deserialized</word>
@@ -28,6 +32,8 @@
             <word>loggings</word>
             <word>marshallable</word>
             <word>marshalled</word>
+            <word>marshaller</word>
+            <word>marshallers</word>
             <word>marshalling</word>
             <word>metadata</word>
             <word>monospaced</word>
@@ -36,6 +42,8 @@
             <word>timezone</word>
             <word>Unicode</word>
             <word>unmarshal</word>
+            <word>unmarshaller</word>
+            <word>unmarshallers</word>
             <word>unmarshalling</word>
             <word>whitespaces</word>
         </spellchecker-wordlist>

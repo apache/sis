@@ -69,7 +69,7 @@ abstract class TreeNodeList extends AbstractList<TreeTable.Node>
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 9210230622796007350L;
+    private static final long serialVersionUID = -8723469207489667631L;
 
     /**
      * Enumeration constant for {@link #setParentOf(TreeTable.Node, int)}.

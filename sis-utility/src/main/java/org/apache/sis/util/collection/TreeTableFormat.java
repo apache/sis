@@ -17,6 +17,7 @@
 package org.apache.sis.util.collection;
 
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.List;
 import java.util.Locale;
@@ -27,10 +28,13 @@ import java.text.ParsePosition;
 import java.text.ParseException;
 import java.util.regex.Matcher;
 import net.jcip.annotations.NotThreadSafe;
+import org.opengis.util.CodeList;
+import org.opengis.util.InternationalString;
 import org.apache.sis.io.LineAppender;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.io.TabularFormat;
 import org.apache.sis.io.CompoundFormat;
+import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
@@ -40,7 +44,7 @@ import org.apache.sis.internal.util.LocalizedParseException;
 import static org.apache.sis.util.Characters.NO_BREAK_SPACE;
 
 // Related to JDK7
-import org.apache.sis.internal.util.JDK7;
+import org.apache.sis.internal.jdk7.JDK7;
 
 
 /**
@@ -52,9 +56,9 @@ import org.apache.sis.internal.util.JDK7;
  *
  * {@preformat text
  *   Node #1
- *   ├───Node #2
- *   │   └───Node #4
- *   └───Node #3
+ *     ├─Node #2
+ *     │   └─Node #4
+ *     └─Node #3
  * }
  *
  * If the same {@code TreeTable} is formatted with two columns,
@@ -62,9 +66,9 @@ import org.apache.sis.internal.util.JDK7;
  *
  * {@preformat text
  *   Node #1……………………… More #1
- *   ├───Node #2…………… More #2
- *   │   └───Node #4… More #4
- *   └───Node #3…………… More #3
+ *     ├─Node #2…………… More #2
+ *     │   └─Node #4… More #4
+ *     └─Node #3…………… More #3
  * }
  *
  * This representation can be printed to the {@linkplain java.io.Console#writer() console output}
@@ -89,7 +93,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -4476366905386037025L;
+    private static final long serialVersionUID = 147992015470098561L;
 
     /**
      * Shared {@code TreeTableFormat} instance for {@link TreeTable#toString()} implementation.
@@ -118,7 +122,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
 
     /**
      * The position of the vertical line, relative to the position of the label of the parent node.
-     * The default value is 0, which means that the vertical line is drawn below the first letter
+     * The default value is 2, which means that the vertical line is drawn below the third letter
      * of the node label.
      *
      * @see #getVerticalLinePosition()
@@ -132,9 +136,9 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
      *
      * <ul>
      *   <li>{@code treeBlank} = {@code "    "}</li>
-     *   <li>{@code treeLine}  = {@code "│   "}</li>
-     *   <li>{@code treeCross} = {@code "├───"}</li>
-     *   <li>{@code treeEnd}   = {@code "└───"}</li>
+     *   <li>{@code treeLine}  = {@code "  │ "}</li>
+     *   <li>{@code treeCross} = {@code "  ├─"}</li>
+     *   <li>{@code treeEnd}   = {@code "  └─"}</li>
      * </ul>
      *
      * @see #clearTreeSymbols()
@@ -145,15 +149,17 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
     /**
      * Creates a new tree table format.
      *
-     * @param locale   The locale to use for numbers, dates and angles formatting.
+     * @param locale   The locale to use for numbers, dates and angles formatting,
+     *                 or {@code null} for the {@linkplain Locale#ROOT root locale}.
      * @param timezone The timezone, or {@code null} for UTC.
      */
     public TreeTableFormat(final Locale locale, final TimeZone timezone) {
         super(locale, timezone);
-        indentation       = 4;
-        beforeFill        = "……";
-        fillCharacter     = '…';
-        omitTrailingNulls = true;
+        indentation          = 4;
+        verticalLinePosition = 2;
+        beforeFill           = "……";
+        fillCharacter        = '…';
+        omitTrailingNulls    = true;
     }
 
     /**
@@ -240,7 +246,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
 
     /**
      * Returns the position of the vertical line, relative to the position of the root label.
-     * The default value is 0, which means that the vertical line is drawn below the first
+     * The default value is 2, which means that the vertical line is drawn below the third
      * letter of the root label.
      *
      * @return The current vertical line position.
@@ -579,6 +585,12 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
                     return;
                 }
                 text = format.format(value);
+            } else if (value instanceof InternationalString) {
+                text = ((InternationalString) value).toString(locale);
+            } else if (value instanceof CodeList<?>) {
+                text = Types.getCodeTitle((CodeList<?>) value).toString(locale);
+            } else if (value instanceof Enum<?>) {
+                text = CharSequences.upperCaseToSentence(((Enum<?>) value).name());
             } else {
                 text = String.valueOf(value);
             }
@@ -624,11 +636,13 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
             if (level >= isLast.length) {
                 isLast = Arrays.copyOf(isLast, level*2);
             }
-            final List<? extends TreeTable.Node> children = node.getChildren();
-            final int count = children.size();
-            for (int i=0; i<count; i++) {
-                isLast[level] = (i == count-1);
-                format(children.get(i), level+1);
+            final Iterator<? extends TreeTable.Node> it = node.getChildren().iterator();
+            boolean hasNext = it.hasNext();
+            while (hasNext) {
+                final TreeTable.Node child = it.next();
+                hasNext = it.hasNext();
+                isLast[level] = !hasNext; // Must be set before the call to 'format' below.
+                format(child, level+1);
             }
         }
     }

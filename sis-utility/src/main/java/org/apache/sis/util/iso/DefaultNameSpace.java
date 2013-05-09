@@ -19,6 +19,7 @@ package org.apache.sis.util.iso;
 import java.util.Map;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Locale;
 import java.io.Serializable;
 import java.io.ObjectStreamException;
 import net.jcip.annotations.Immutable;
@@ -28,12 +29,12 @@ import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.collection.WeakValueHashMap;
-import org.apache.sis.util.collection.UnmodifiableArrayList;
+import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 // Related to JDK7
-import org.apache.sis.internal.util.Objects;
+import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
@@ -56,7 +57,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -3064358267398624306L;
+    private static final long serialVersionUID = 8272640747799127007L;
 
     /**
      * The default separator, which is {@value}. The separator is inserted between the
@@ -344,7 +345,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
      */
     private static String key(final CharSequence name) {
         return (name instanceof InternationalString) ?
-                ((InternationalString) name).toString(null) : name.toString();
+                ((InternationalString) name).toString(Locale.ROOT) : name.toString();
     }
 
     /**

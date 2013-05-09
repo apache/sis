@@ -16,6 +16,7 @@
  */
 package org.apache.sis.util.collection;
 
+import java.util.Collection;
 import java.util.List;
 
 
@@ -30,17 +31,17 @@ import java.util.List;
  *
  * {@preformat text
  *   Citation
- *   ├───Title…………………………………………………………… Open Geospatial Consortium
- *   ├───Presentation Forms………………………… document digital
- *   ├───Cited Responsible Parties
- *   │   ├───Organisation Name………………… Open Geospatial Consortium
- *   │   ├───Role…………………………………………………… resource provider
- *   │   └───Contact Info
- *   │       └───Online Resource
- *   │           ├───Linkage……………………… http://www.opengeospatial.org/
- *   │           └───Function…………………… information
- *   └───Identifiers
- *       └───Code…………………………………………………… OGC
+ *     ├─Title…………………………………………………………… Open Geospatial Consortium
+ *     ├─Presentation Forms………………………… document digital
+ *     ├─Cited Responsible Parties
+ *     │   ├─Organisation Name………………… Open Geospatial Consortium
+ *     │   ├─Role…………………………………………………… resource provider
+ *     │   └─Contact Info
+ *     │       └─Online Resource
+ *     │           ├─Linkage……………………… http://www.opengeospatial.org/
+ *     │           └─Function…………………… information
+ *     └─Identifiers
+ *         └─Code…………………………………………………… OGC
  * }
  *
  * <p>In many cases, the columns are known in advance as hard-coded static constants.
@@ -124,10 +125,10 @@ public interface TreeTable {
         /**
          * Returns the parent node, or {@code null} if this node is the root of the tree.
          *
-         * <p>There is intentionally no {@code setParent(Node)} method, as children and parent
-         * managements are highly implementation-dependant. If the {@linkplain #getChildren()
-         * children list} is modifiable, then implementations are encouraged to update automatically
-         * the parent when a child is <em>added to</em> or <em>removed from</em> the children list.</p>
+         * <p>There is intentionally no {@code setParent(Node)} method, as children and parent managements
+         * are highly implementation-dependant. If the {@linkplain #getChildren() children collection} is
+         * modifiable, then implementations are encouraged to update automatically the parent when a child
+         * is <em>added to</em> or <em>removed from</em> that collection.</p>
          *
          * @return The parent, or {@code null} if none.
          * @category tree
@@ -135,9 +136,21 @@ public interface TreeTable {
         Node getParent();
 
         /**
-         * Returns the children of this node. The returned list may or may not be modifiable, at
-         * implementation choice. If the list is modifiable, then it shall be <cite>live</cite>,
-         * i.e. any modification to the returned list are reflected immediately in the tree.
+         * Returns {@code true} if this node can not have any children. The {@linkplain #getChildren() children
+         * collection} of a leaf node can only be empty, and adding {@linkplain #newChild() new child}
+         * is an unsupported operation.
+         *
+         * <p>This value is provided as a tip for graphical user interfaces, in order to determine if
+         * a node is expandable (even if empty). {@link TreeTableFormat} does not use this value.</p>
+         *
+         * @return {@code true} if this node can not have any children.
+         */
+        boolean isLeaf();
+
+        /**
+         * Returns the children of this node. The returned collection may or may not be modifiable, at
+         * implementation choice. If the collection is modifiable, then it shall be <cite>live</cite>,
+         * i.e. any modification to the returned collection are reflected immediately in the tree.
          * This allows addition or removal of child nodes as below:
          *
          * {@preformat java
@@ -145,20 +158,25 @@ public interface TreeTable {
          *     parent.getChildren().add(newNode);
          * }
          *
-         * @return The children, or an empty list if none.
+         * The collection is often a {@link List}, but not necessarily. For some implementations like the
+         * {@linkplain org.apache.sis.metadata.AbstractMetadata#asTreeTable() metadata tree table view},
+         * compliance to the {@code List} contract is impractical or inefficient.
+         *
+         * @return The children, or an empty collection if none.
          * @category tree
          */
-        List<Node> getChildren();
+        Collection<Node> getChildren();
 
         /**
-         * Creates a new child with the same columns than the other children, and add it to
-         * the {@linkplain #getChildren() children list}. The new child is typically added at
-         * the end of the list, but this is not mandatory: implementations can add the child
+         * Creates a new child with the same columns than the other children, and adds it to
+         * the {@linkplain #getChildren() children collection}. The new child is typically added at
+         * the end of the collection, but this is not mandatory: implementations can add the child
          * at whatever position they see fit.
          *
          * @return The new child.
+         * @throws UnsupportedOperationException If this node can not add new children.
          */
-        Node newChild();
+        Node newChild() throws UnsupportedOperationException;
 
         /**
          * Returns the value in the given column, or {@code null} if none.
@@ -187,7 +205,7 @@ public interface TreeTable {
          * @see #isEditable(TableColumn)
          * @category table
          */
-        <V> void setValue(TableColumn<V> column, V value);
+        <V> void setValue(TableColumn<V> column, V value) throws IllegalArgumentException, UnsupportedOperationException;
 
         /**
          * Determines whether the value in the specified column is editable. If the given

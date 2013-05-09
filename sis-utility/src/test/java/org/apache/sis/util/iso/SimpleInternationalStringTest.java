@@ -16,6 +16,7 @@
  */
 package org.apache.sis.util.iso;
 
+import java.util.Locale;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -41,6 +42,8 @@ public final strictfp class SimpleInternationalStringTest extends TestCase {
         final SimpleInternationalString toTest = new SimpleInternationalString(MESSAGE);
         assertSame(MESSAGE, toTest.toString());
         assertSame(MESSAGE, toTest.toString(null));
+        assertSame(MESSAGE, toTest.toString(Locale.ROOT));
+        assertSame(MESSAGE, toTest.toString(Locale.JAPANESE));
         validate(toTest);
     }
 
@@ -53,6 +56,21 @@ public final strictfp class SimpleInternationalStringTest extends TestCase {
         final SimpleInternationalString after  = assertSerializedEquals(before);
         assertEquals(MESSAGE, after.toString());
         assertEquals(MESSAGE, after.toString(null));
+        assertEquals(MESSAGE, after.toString(Locale.ROOT));
+        assertEquals(MESSAGE, after.toString(Locale.JAPANESE));
         validate(after);
+    }
+
+    /**
+     * Tests the formatting in a {@code printf} statement.
+     */
+    @Test
+    public void testPrintf() {
+        final SimpleInternationalString toTest = new SimpleInternationalString(MESSAGE);
+        assertEquals(MESSAGE,                               String.format("%s", toTest));
+        assertEquals("    This is an unlocalized message.", String.format("%35s", toTest));
+        assertEquals("This is an unlocalized message.    ", String.format("%-35s", toTest));
+        assertEquals("This is a…",                          String.format("%1.10s", toTest));
+        assertEquals("This is a…  ",                        String.format("%-12.10s", toTest));
     }
 }

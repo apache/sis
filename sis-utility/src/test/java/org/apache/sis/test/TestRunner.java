@@ -37,9 +37,10 @@ import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
 
-import static org.apache.sis.util.Arrays.resize;
-import static org.apache.sis.util.collection.Collections.isNullOrEmpty;
-import static org.apache.sis.util.collection.Collections.hashMapCapacity;
+import org.apache.sis.util.ArraysExt;
+
+import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
+import static org.apache.sis.util.collection.Containers.hashMapCapacity;
 
 
 /**
@@ -92,16 +93,49 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
      * The listener to use for keeping trace of methods that failed.
      */
     final RunListener listener = new RunListener() {
+        /**
+         * Clears the buffer if it was not already done by {@link #testFinished(Description)}.
+         */
+        @Override
+        public void testStarted(final Description description) {
+            if (!TestCase.verbose) {
+                TestCase.clearBuffer();
+            }
+        }
+
+        /**
+         * Prints output only in verbose mode.
+         * Otherwise silently discard the output.
+         */
+        @Override
+        public void testFinished(final Description description) {
+            if (TestCase.verbose) {
+                TestCase.flushOutput();
+            }
+        }
+
+        /**
+         * Remember that a test failed, and prints output if it was not already done
+         */
         @Override
         public void testFailure(final Failure failure) {
             addDependencyFailure(failure.getDescription().getMethodName());
+            if (!TestCase.verbose) {
+                TestCase.flushOutput();
+            }
         }
 
+        /**
+         * Silently record skipped test as if it failed, without printing the output.
+         */
         @Override
         public void testAssumptionFailure(final Failure failure) {
             addDependencyFailure(failure.getDescription().getMethodName());
         }
 
+        /**
+         * Silently record ignored test as if it failed, without printing the output.
+         */
         @Override
         public void testIgnored(final Description description) {
             addDependencyFailure(description.getMethodName());
@@ -109,13 +143,13 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
     };
 
     /**
-     * Creates a {@code Corollaries} to run {@code klass}.
+     * Creates a new test runner for the given class.
      *
-     * @param  klass The class to run.
+     * @param  testClass The class to run.
      * @throws InitializationError If the test class is malformed.
      */
-    public TestRunner(final Class<?> klass) throws InitializationError {
-        super(klass);
+    public TestRunner(final Class<?> testClass) throws InitializationError {
+        super(testClass);
     }
 
     /**
@@ -247,12 +281,12 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
         if (count == 0) {
             throw new NoTestsRemainException();
         }
-        filteredChildren = resize(children, count);
+        filteredChildren = ArraysExt.resize(children, count);
     }
 
     /**
      * Returns the {@link Statement} which will execute all the tests in the class given
-     * to the constructor.
+     * to the {@linkplain #TestRunner(Class) constructor}.
      *
      * @param  notifier The object to notify about test results.
      * @return The statement to execute for running the tests.

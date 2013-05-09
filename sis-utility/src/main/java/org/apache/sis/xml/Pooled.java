@@ -31,9 +31,8 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 import org.apache.sis.util.Version;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.jaxb.MarshalContext;
-
-import static org.apache.sis.util.collection.Collections.unmodifiableOrCopy;
+import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.jaxb.Context;
 
 
 /**
@@ -62,7 +61,7 @@ abstract class Pooled {
      *
      * @see #convertPropertyKey(String)
      */
-    private static final String ENDORSED_PREFIX = "com.sun.xml.bind.";
+    static final String ENDORSED_PREFIX = "com.sun.xml.bind.";
 
     /**
      * {@code true} if the JAXB implementation is the one bundled in JDK 6, or {@code false}
@@ -132,6 +131,13 @@ abstract class Pooled {
     private int bitMasks;
 
     /**
+     * The {@link System#nanoTime()} value of the last call to {@link #reset()}.
+     * This is used for disposing (un)marshallers that have not been used for a while,
+     * since {@code reset()} is invoked just before to push a (un)marshaller in the pool.
+     */
+    volatile long resetTime;
+
+    /**
      * Default constructor.
      *
      * @param internal {@code true} if the JAXB implementation is the one bundled in JDK 6,
@@ -145,15 +151,17 @@ abstract class Pooled {
     }
 
     /**
-     * Returns the initial value of {@link MarshalContext#bitMasks}. Shall be 0 if this object is
-     * an unmarshaller, or {@link MarshalContext#MARSHALING} if it is an {@link Unmarshaller}.
+     * Returns the initial value of {@link Context#bitMasks}. Shall be 0 if this object is
+     * an unmarshaller, or {@link Context#MARSHALLING} if it is an {@link Unmarshaller}.
      */
     private int initialBitMasks() {
-        return (this instanceof Marshaller) ? MarshalContext.MARSHALING : 0;
+        return (this instanceof Marshaller) ? Context.MARSHALLING : 0;
     }
 
     /**
-     * Resets the (un)marshaller to its initial state.
+     * Releases resources and resets the (un)marshaller to its initial state.
+     * This method is invoked by {@link MarshallerPool} just before to push a
+     * (un)marshaller in the pool after its usage.
      *
      * @throws JAXBException If an error occurred while restoring a property.
      */
@@ -169,6 +177,7 @@ abstract class Pooled {
         locale     = null;
         timezone   = null;
         bitMasks   = initialBitMasks();
+        resetTime  = System.nanoTime();
     }
 
     /**
@@ -255,7 +264,7 @@ abstract class Pooled {
                                 copy.put(key, (String) schema);
                             }
                         }
-                        copy = unmodifiableOrCopy(copy);
+                        copy = CollectionsExt.unmodifiableOrCopy(copy);
                     }
                     schemas = copy;
                     return;
@@ -278,9 +287,9 @@ abstract class Pooled {
                     if (substitutes != null) {
                         for (final CharSequence substitute : substitutes) {
                             if (CharSequences.equalsIgnoreCase(substitute, "language")) {
-                                mask |= MarshalContext.SUBSTITUTE_LANGUAGE;
+                                mask |= Context.SUBSTITUTE_LANGUAGE;
                             } else if (CharSequences.equalsIgnoreCase(substitute, "country")) {
-                                mask |= MarshalContext.SUBSTITUTE_COUNTRY;
+                                mask |= Context.SUBSTITUTE_COUNTRY;
                             }
                         }
                     }
@@ -315,8 +324,8 @@ abstract class Pooled {
             if (name.equals(XML.TIMEZONE))    return timezone;
             if (name.equals(XML.STRING_SUBSTITUTES)) {
                 final StringBuilder buffer = new StringBuilder();
-                if ((bitMasks & MarshalContext.SUBSTITUTE_LANGUAGE) != 0) buffer.append("language,");
-                if ((bitMasks & MarshalContext.SUBSTITUTE_COUNTRY)  != 0) buffer.append("country,");
+                if ((bitMasks & Context.SUBSTITUTE_LANGUAGE) != 0) buffer.append("language,");
+                if ((bitMasks & Context.SUBSTITUTE_COUNTRY)  != 0) buffer.append("country,");
                 final int length = buffer.length();
                 if (length != 0) {
                     buffer.setLength(length - 1); // Remove the last coma.
@@ -408,7 +417,7 @@ abstract class Pooled {
      * operation. Must be followed by a call to {@code finish()} in a {@code finally} block.
      *
      * {@preformat java
-     *     MarshalContext context = begin();
+     *     Context context = begin();
      *     try {
      *         ...
      *     } finally {
@@ -416,9 +425,9 @@ abstract class Pooled {
      *     }
      * }
      *
-     * @see MarshalContext#finish();
+     * @see Context#finish();
      */
-    final MarshalContext begin() {
-        return new MarshalContext(converter, resolver, gmlVersion, schemas, locale, timezone, bitMasks);
+    final Context begin() {
+        return new Context(converter, resolver, gmlVersion, schemas, locale, timezone, bitMasks);
     }
 }

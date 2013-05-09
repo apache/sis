@@ -32,7 +32,7 @@ import org.apache.sis.util.resources.Errors;
 import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
 
 // JDK7 related
-import org.apache.sis.internal.util.Objects;
+import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
@@ -61,7 +61,7 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 9071833698385715524L;
+    private static final long serialVersionUID = -5524426558018300122L;
 
     /**
      * The ordinates of the direct position. The length of this array is the
