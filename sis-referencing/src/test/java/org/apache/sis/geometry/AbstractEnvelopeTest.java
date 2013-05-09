@@ -50,7 +50,7 @@ public final strictfp class AbstractEnvelopeTest extends TestCase {
      * Enumeration of implementations to be tested.
      * The {@code LAST} constant is for stopping the loops.
      */
-    private static final int GENERAL=0, IMMUTABLE=1, RECTANGLE=2, LAST=3;
+    private static final int GENERAL=0, IMMUTABLE=1, RECTANGLE=2, SUBENVELOPE=3, LAST=4;
 
     /**
      * The coordinate reference system used for the tests.
@@ -82,7 +82,18 @@ public final strictfp class AbstractEnvelopeTest extends TestCase {
                 break;
             }
             case RECTANGLE: {
-                envelope = new Envelope2D(xmin, ymin, xmax - xmin, ymax - ymin, WGS84);
+                envelope = new Envelope2D(WGS84, xmin, ymin, xmax - xmin, ymax - ymin);
+                break;
+            }
+            case SUBENVELOPE: {
+                final GeneralEnvelope ge = new GeneralEnvelope(5);
+                ge.setCoordinateReferenceSystem(WGS84);
+                ge.setRange(1, xmin, xmax);
+                ge.setRange(2, ymin, ymax);
+                ge.setRange(0, 2, 3); // Following values will be verified in verifyInvariants(…)
+                ge.setRange(3, 4, 6);
+                ge.setRange(4, 8, 9);
+                envelope = ge.subEnvelope(1, 3);
                 break;
             }
             default: throw new IllegalArgumentException(String.valueOf(type));
@@ -91,6 +102,26 @@ public final strictfp class AbstractEnvelopeTest extends TestCase {
             validate(envelope);
         }
         return envelope;
+    }
+
+    /**
+     * Verifies some invariants for the given envelope of the given type.
+     */
+    private static void verifyInvariants(final int type, final Envelope envelope) {
+        assertSame(WGS84, envelope.getCoordinateReferenceSystem());
+        switch (type) {
+            case SUBENVELOPE: {
+                // Asserts that other dimensions in the original envelope has not been modified.
+                final double[] ordinates = ((SubEnvelope) envelope).ordinates;
+                assertEquals(2, ordinates[0], STRICT);
+                assertEquals(3, ordinates[5], STRICT);
+                assertEquals(4, ordinates[3], STRICT);
+                assertEquals(6, ordinates[8], STRICT);
+                assertEquals(8, ordinates[4], STRICT);
+                assertEquals(9, ordinates[9], STRICT);
+                break;
+            }
+        }
     }
 
     /**
@@ -121,24 +152,29 @@ public final strictfp class AbstractEnvelopeTest extends TestCase {
             assertEquals(label, 12, envelope.getMaximum(0), STRICT);
             assertEquals(label,  4, envelope.getMedian (0), STRICT);
             assertEquals(label, 16, envelope.getSpan   (0), STRICT);
-            if (envelope instanceof AbstractEnvelope) {
-                final AbstractEnvelope ext = (AbstractEnvelope) envelope;
-                assertTrue (label, ext.contains  (inside));
-                assertFalse(label, ext.contains  (outside));
-                assertFalse(label, ext.contains  (intersect, false));
-                assertTrue (label, ext.intersects(intersect, false));
-                assertDisjoint(ext, disjoint);
-                assertContains(ext, contained);
+            switch (type) {
+                default: {
+                    final AbstractEnvelope ext = (AbstractEnvelope) envelope;
+                    assertTrue (label, ext.contains  (inside));
+                    assertFalse(label, ext.contains  (outside));
+                    assertFalse(label, ext.contains  (intersect, false));
+                    assertTrue (label, ext.intersects(intersect, false));
+                    assertDisjoint(ext, disjoint);
+                    assertContains(ext, contained);
+                    break;
+                }
+                case RECTANGLE: {
+                    final Rectangle2D ext = (Rectangle2D) envelope;
+                    assertTrue (label, ext.contains  (inside));
+                    assertFalse(label, ext.contains  (outside));
+                    assertFalse(label, ext.contains  (intersect));
+                    assertTrue (label, ext.intersects(intersect));
+                    assertDisjoint(ext, disjoint);
+                    assertContains(ext, contained);
+                    break;
+                }
             }
-            if (envelope instanceof Rectangle2D) {
-                final Rectangle2D ext = (Rectangle2D) envelope;
-                assertTrue (label, ext.contains  (inside));
-                assertFalse(label, ext.contains  (outside));
-                assertFalse(label, ext.contains  (intersect));
-                assertTrue (label, ext.intersects(intersect));
-                assertDisjoint(ext, disjoint);
-                assertContains(ext, contained);
-            }
+            verifyInvariants(type, envelope);
         }
     }
 
@@ -176,26 +212,31 @@ public final strictfp class AbstractEnvelopeTest extends TestCase {
             assertEquals(label, +180, envelope.getMaximum (0), STRICT);
             assertEquals(label, -176, envelope.getMedian  (0), STRICT);
             assertEquals(label,  344, envelope.getSpan    (0), STRICT); // 360° - testSimpleEnvelope()
-            if (envelope instanceof AbstractEnvelope) {
-                final AbstractEnvelope ext = (AbstractEnvelope) envelope;
-                assertTrue (label, ext.contains  (inside));
-                assertFalse(label, ext.contains  (outside));
-                assertFalse(label, ext.contains  (intersect, false));
-                assertTrue (label, ext.intersects(intersect, false));
-                assertDisjoint(ext, disjoint);
-                assertContains(ext, contained);
-                assertContains(ext, spanning);
+            switch (type) {
+                default: {
+                    final AbstractEnvelope ext = (AbstractEnvelope) envelope;
+                    assertTrue (label, ext.contains  (inside));
+                    assertFalse(label, ext.contains  (outside));
+                    assertFalse(label, ext.contains  (intersect, false));
+                    assertTrue (label, ext.intersects(intersect, false));
+                    assertDisjoint(ext, disjoint);
+                    assertContains(ext, contained);
+                    assertContains(ext, spanning);
+                    break;
+                }
+                case RECTANGLE: {
+                    final Rectangle2D ext = (Rectangle2D) envelope;
+                    assertTrue (label, ext.contains  (inside));
+                    assertFalse(label, ext.contains  (outside));
+                    assertFalse(label, ext.contains  (intersect));
+                    assertTrue (label, ext.intersects(intersect));
+                    assertDisjoint(ext, disjoint);
+                    assertContains(ext, contained);
+                    assertContains(ext, spanning);
+                    break;
+                }
             }
-            if (envelope instanceof Rectangle2D) {
-                final Rectangle2D ext = (Rectangle2D) envelope;
-                assertTrue (label, ext.contains  (inside));
-                assertFalse(label, ext.contains  (outside));
-                assertFalse(label, ext.contains  (intersect));
-                assertTrue (label, ext.intersects(intersect));
-                assertDisjoint(ext, disjoint);
-                assertContains(ext, contained);
-                assertContains(ext, spanning);
-            }
+            verifyInvariants(type, envelope);
         }
     }
 
@@ -244,6 +285,7 @@ public final strictfp class AbstractEnvelopeTest extends TestCase {
                 assertTrue (label, ext.intersects(spanning,  false));
                 assertDisjoint(ext, disjoint);
                 assertContains(ext, contained);
+                break;
             }
             if (envelope instanceof Rectangle2D) {
                 final Rectangle2D ext = (Rectangle2D) envelope;
@@ -255,7 +297,9 @@ public final strictfp class AbstractEnvelopeTest extends TestCase {
                 assertTrue (label, ext.intersects(spanning));
                 assertDisjoint(ext, disjoint);
                 assertContains(ext, contained);
+                break;
             }
+            verifyInvariants(type, envelope);
         }
     }
 
@@ -287,26 +331,31 @@ public final strictfp class AbstractEnvelopeTest extends TestCase {
             assertEquals(label, +180, envelope.getMaximum (0), STRICT);
             assertEquals(label, -176, envelope.getMedian  (0), STRICT); // Note the alternance with the previous test methods.
             assertEquals(label,  NaN, envelope.getSpan    (0), STRICT); // testCrossingAntiMeridianTwice() + 360°.
-            if (envelope instanceof AbstractEnvelope) {
-                final AbstractEnvelope ext = (AbstractEnvelope) envelope;
-                assertFalse(label, ext.contains  (wasInside));
-                assertFalse(label, ext.contains  (outside));
-                assertFalse(label, ext.contains  (spanning,  false));
-                assertTrue (label, ext.intersects(spanning,  false));
-                assertDisjoint(ext, wasIntersect);
-                assertDisjoint(ext, disjoint);
-                assertDisjoint(ext, wasContained);
+            switch (type) {
+                default: {
+                    final AbstractEnvelope ext = (AbstractEnvelope) envelope;
+                    assertFalse(label, ext.contains  (wasInside));
+                    assertFalse(label, ext.contains  (outside));
+                    assertFalse(label, ext.contains  (spanning,  false));
+                    assertTrue (label, ext.intersects(spanning,  false));
+                    assertDisjoint(ext, wasIntersect);
+                    assertDisjoint(ext, disjoint);
+                    assertDisjoint(ext, wasContained);
+                    break;
+                }
+                case RECTANGLE: {
+                    final Rectangle2D ext = (Rectangle2D) envelope;
+                    assertFalse(label, ext.contains  (wasInside));
+                    assertFalse(label, ext.contains  (outside));
+                    assertFalse(label, ext.contains  (spanning));
+                    assertTrue (label, ext.intersects(spanning));
+                    assertDisjoint(ext, wasIntersect);
+                    assertDisjoint(ext, disjoint);
+                    assertDisjoint(ext, wasContained);
+                    break;
+                }
             }
-            if (envelope instanceof Rectangle2D) {
-                final Rectangle2D ext = (Rectangle2D) envelope;
-                assertFalse(label, ext.contains  (wasInside));
-                assertFalse(label, ext.contains  (outside));
-                assertFalse(label, ext.contains  (spanning));
-                assertTrue (label, ext.intersects(spanning));
-                assertDisjoint(ext, wasIntersect);
-                assertDisjoint(ext, disjoint);
-                assertDisjoint(ext, wasContained);
-            }
+            verifyInvariants(type, envelope);
         }
     }
 
@@ -331,28 +380,33 @@ public final strictfp class AbstractEnvelopeTest extends TestCase {
             assertEquals(label,  0.0, envelope.getMaximum(0), STRICT);
             assertEquals(label,    0, envelope.getMedian (0), STRICT);
             assertEquals(label,    0, envelope.getSpan   (0), STRICT);
-            if (envelope instanceof AbstractEnvelope) {
-                final AbstractEnvelope ext = (AbstractEnvelope) envelope;
-                assertFalse(label, ext.contains  (wasInside));
-                assertFalse(label, ext.contains  (outside));
-                assertFalse(label, ext.contains  (intersect, false));
-                assertTrue (label, ext.intersects(intersect, false));
-                assertFalse(label, ext.contains  (spanning,  false));
-                assertFalse(label, ext.intersects(spanning,  false));
-                assertFalse(label, ext.intersects(spanning,  false));
-                assertDisjoint(ext, wasContained);
+            switch (type) {
+                default: {
+                    final AbstractEnvelope ext = (AbstractEnvelope) envelope;
+                    assertFalse(label, ext.contains  (wasInside));
+                    assertFalse(label, ext.contains  (outside));
+                    assertFalse(label, ext.contains  (intersect, false));
+                    assertTrue (label, ext.intersects(intersect, false));
+                    assertFalse(label, ext.contains  (spanning,  false));
+                    assertFalse(label, ext.intersects(spanning,  false));
+                    assertFalse(label, ext.intersects(spanning,  false));
+                    assertDisjoint(ext, wasContained);
+                    break;
+                }
+                case RECTANGLE: {
+                    final Rectangle2D ext = (Rectangle2D) envelope;
+                    assertFalse(label, ext.contains  (wasInside));
+                    assertFalse(label, ext.contains  (outside));
+                    assertFalse(label, ext.contains  (intersect));
+                    assertTrue (label, ext.intersects(intersect));
+                    assertFalse(label, ext.contains  (spanning));
+                    assertFalse(label, ext.intersects(spanning));
+                    assertFalse(label, ext.intersects(spanning));
+                    assertDisjoint(ext, wasContained);
+                    break;
+                }
             }
-            if (envelope instanceof Rectangle2D) {
-                final Rectangle2D ext = (Rectangle2D) envelope;
-                assertFalse(label, ext.contains  (wasInside));
-                assertFalse(label, ext.contains  (outside));
-                assertFalse(label, ext.contains  (intersect));
-                assertTrue (label, ext.intersects(intersect));
-                assertFalse(label, ext.contains  (spanning));
-                assertFalse(label, ext.intersects(spanning));
-                assertFalse(label, ext.intersects(spanning));
-                assertDisjoint(ext, wasContained);
-            }
+            verifyInvariants(type, envelope);
         }
     }
 
@@ -382,22 +436,27 @@ public final strictfp class AbstractEnvelopeTest extends TestCase {
             assertEquals(label, +180, envelope.getMaximum (0), STRICT);
             assertEquals(label,  180, envelope.getMedian  (0), STRICT);
             assertEquals(label,  360, envelope.getSpan    (0), STRICT);
-            if (envelope instanceof AbstractEnvelope) {
-                final AbstractEnvelope ext = (AbstractEnvelope) envelope;
-                assertTrue(label, ext.contains(inside));
-                assertTrue(label, ext.contains(wasOutside));
-                assertTrue(label, ext.intersects(intersect, false));
-                assertContains(ext, contained);
-                assertContains(ext, spanning);
+            switch (type) {
+                default: {
+                    final AbstractEnvelope ext = (AbstractEnvelope) envelope;
+                    assertTrue(label, ext.contains(inside));
+                    assertTrue(label, ext.contains(wasOutside));
+                    assertTrue(label, ext.intersects(intersect, false));
+                    assertContains(ext, contained);
+                    assertContains(ext, spanning);
+                    break;
+                }
+                case RECTANGLE: {
+                    final Rectangle2D ext = (Rectangle2D) envelope;
+                    assertTrue(label, ext.contains(inside));
+                    assertTrue(label, ext.contains(wasOutside));
+                    assertTrue(label, ext.intersects(intersect));
+                    assertContains(ext, contained);
+                    assertContains(ext, spanning);
+                    break;
+                }
             }
-            if (envelope instanceof Rectangle2D) {
-                final Rectangle2D ext = (Rectangle2D) envelope;
-                assertTrue(label, ext.contains(inside));
-                assertTrue(label, ext.contains(wasOutside));
-                assertTrue(label, ext.intersects(intersect));
-                assertContains(ext, contained);
-                assertContains(ext, spanning);
-            }
+            verifyInvariants(type, envelope);
         }
     }
 }

@@ -42,7 +42,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @version 0.3
  * @module
  */
-@DependsOn(IdentifierMapAdapter.class)
+@DependsOn(IdentifierMapAdapterTest.class)
 public final strictfp class IdentifierMapWithSpecialCasesTest extends IdentifierMapAdapterTest {
     /**
      * The HREF string to replace by {@link XLink#toString()}.
@@ -57,7 +57,7 @@ public final strictfp class IdentifierMapWithSpecialCasesTest extends Identifier
      */
     @Override
     IdentifierMapAdapter create(final Collection<Identifier> identifiers) {
-        return new IdentifierMapWithSpecialCases(identifiers, null);
+        return new IdentifierMapWithSpecialCases(identifiers);
     }
 
     /**
@@ -110,25 +110,19 @@ public final strictfp class IdentifierMapWithSpecialCasesTest extends Identifier
     }
 
     /**
-     * Tests the binding of UUID.
+     * Tests with UUIDs.
      */
     @Test
     public void testUUIDs() {
-        final String object = "IdentifiedObject";
         final List<Identifier> identifiers = new ArrayList<Identifier>();
-        final IdentifierMap map = new IdentifierMapWithSpecialCases(identifiers, object);
+        final IdentifierMap map = new IdentifierMapWithSpecialCases(identifiers);
         final UUID id1 = UUID.fromString("434f3107-c6d2-4c8c-bb25-553f68641c5c");
         final UUID id2 = UUID.fromString("42924124-032a-4dfe-b06e-113e3cb81cf0");
 
         // Add first UUID.
-        assertNull("Shall not contain UUID before put.", UUIDs.lookup(id1));
         assertNull(map.putSpecialized(IdentifierSpace.UUID, id1));
-        assertSame("Object sholl be associated to UUID.", object, UUIDs.lookup(id1));
 
         // Replace UUID by a new one.
-        assertNull("Shall not contain UUID before put.", UUIDs.lookup(id2));
         assertSame(id1, map.putSpecialized(IdentifierSpace.UUID, id2));
-        assertNull("Shall not contain the removed UUID.", UUIDs.lookup(id1));
-        assertSame("Object sholl be associated to UUID.", object, UUIDs.lookup(id2));
     }
 }

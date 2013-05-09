@@ -99,6 +99,18 @@ abstract class DaemonThread extends Thread {
     public abstract void run();
 
     /**
+     * Returns {@code true} if this thread seems to be blocked for a time long enough for suspecting
+     * a problem. The default implementation always returns {@code false}. Subclasses are encouraged
+     * to provide some problem detection mechanism here if they can. For example if the head of a
+     * queue seems to be never removed, then maybe the process consuming that queue is blocked.
+     *
+     * @return {@code true} if this thread seems to be stalled.
+     */
+    protected boolean isStalled() {
+        return false;
+    }
+
+    /**
      * Returns {@code true} if this daemon thread shall terminate.
      * This happen at shutdown time.
      *
@@ -137,26 +149,24 @@ abstract class DaemonThread extends Thread {
     }
 
     /**
-     * Returns the names of dead threads, or {@code null} if none. The returned list should
-     * always be null. A non-empty list would be a symptom for a severe problem, probably
+     * Returns the list of stalled or dead threads, or {@code null} if none. The returned list
+     * should always be null. A non-empty list would be a symptom for a severe problem, probably
      * requiring an application reboot.
      *
      * <p><strong>This method is for internal use by Apache SIS only.</strong>
      * Users should never invoke this method explicitely.</p>
      *
      * @param  thread The first thread in the chain of threads to verify.
-     * @return The name of dead threads, or {@code null} if none.
-     *
-     * @see Threads#listDeadThreads()
+     * @return The list of stalled or dead threads, or {@code null} if none.
      */
-    static List<String> listDeadThreads(DaemonThread thread) {
-        List<String> list = null;
+    static List<Thread> listStalledThreads(DaemonThread thread) {
+        List<Thread> list = null;
         while (thread != null) {
-            if (!thread.isAlive()) {
+            if (!thread.isAlive() || thread.isStalled()) {
                 if (list == null) {
-                    list = new ArrayList<String>();
+                    list = new ArrayList<Thread>();
                 }
-                list.add(thread.getName());
+                list.add(thread);
             }
             thread = thread.previous;
         }

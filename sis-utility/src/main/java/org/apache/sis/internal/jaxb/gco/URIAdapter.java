@@ -19,7 +19,7 @@ package org.apache.sis.internal.jaxb.gco;
 import java.net.URI;
 import java.net.URISyntaxException;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
-import org.apache.sis.internal.jaxb.MarshalContext;
+import org.apache.sis.internal.jaxb.Context;
 
 
 /**
@@ -51,8 +51,8 @@ public final class URIAdapter extends XmlAdapter<GO_CharacterString, URI> {
     public URI unmarshal(final GO_CharacterString value) throws URISyntaxException {
         final String text = StringAdapter.toString(value);
         if (text != null) {
-            final MarshalContext context = MarshalContext.current();
-            return MarshalContext.converter(context).toURI(context, text);
+            final Context context = Context.current();
+            return Context.converter(context).toURI(context, text);
         }
         return null;
     }

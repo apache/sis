@@ -94,7 +94,7 @@ public final strictfp class CharactersTest extends TestCase {
     }
 
     /**
-     * Tests the pre-defined {@link Characters.Filter} constants.
+     * Tests the pre-defined {@link org.apache.sis.util.Characters.Filter} constants.
      */
     @Test
     public void testPredefinedFilters() {
@@ -107,7 +107,7 @@ public final strictfp class CharactersTest extends TestCase {
     }
 
     /**
-     * Tests the {@link Characters.Filter#forTypes(byte[])} method.
+     * Tests the {@link org.apache.sis.util.Characters.Filter#forTypes(byte[])} method.
      */
     @Test
     public void testFilterForTypes() {
@@ -118,7 +118,8 @@ public final strictfp class CharactersTest extends TestCase {
     }
 
     /**
-     * Scans the full {@code char} range in order to check for {@link Character.Filter} consistency.
+     * Scans the full {@code char} range in order to check for
+     * {@link org.apache.sis.util.Characters.Filter} consistency.
      */
     @Test
     public void scanCharacterRange() {

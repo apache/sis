@@ -31,7 +31,7 @@ public final strictfp class TestConfiguration extends Static {
     /**
      * The {@value} system property for enabling verbose outputs.
      * If this {@linkplain System#getProperties() system property} is set to {@code true},
-     * then the {@link TestCase#out} field will be set to a non-null value.
+     * then the content sent to the {@link TestCase#out} field will be printed after each test.
      */
     public static final String VERBOSE_OUTPUT_KEY = "org.apache.sis.test.verbose";
 

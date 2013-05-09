@@ -29,7 +29,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.iso.AbstractInternationalString;
 
 // Related to JDK7
-import org.apache.sis.internal.util.Objects;
+import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
@@ -47,7 +47,7 @@ abstract class ResourceInternationalString extends AbstractInternationalString i
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 4744571031462678126L;
+    private static final long serialVersionUID = -3910920973710535738L;
 
     /**
      * The key for the resource to fetch. A negative value means that the resource takes no
@@ -106,23 +106,15 @@ abstract class ResourceInternationalString extends AbstractInternationalString i
     /**
      * Returns a string in the specified locale.
      *
-     * @param  locale The locale to look for, or {@code null} for an unlocalized version.
-     * @return The string in the specified locale, or in a default locale.
+     * @param  locale The desired locale for the string to be returned.
+     * @return The string in the specified locale, or in a fallback locale.
      * @throws MissingResourceException is the key given to the constructor is invalid.
      */
     @Override
-    public String toString(Locale locale) throws MissingResourceException {
-        if (locale == null) {
-            // The English locale (NOT the system default) is often used
-            // as the real identifier in OGC IdentifiedObject naming. If
-            // a user wants a string in the system default locale, he
-            // should invokes the 'toString()' method instead.
-            locale = Locale.ENGLISH;
-        }
+    public String toString(final Locale locale) throws MissingResourceException {
         final IndexedResourceBundle resources = getBundle(locale);
-        return (key < 0)
-                ? resources.getString(~key)
-                : resources.getString(key, arguments);
+        return (key < 0) ? resources.getString(~key)
+                         : resources.getString(key, arguments);
     }
 
     /**

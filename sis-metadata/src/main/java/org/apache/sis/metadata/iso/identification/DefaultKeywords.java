@@ -1,0 +1,183 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.sis.metadata.iso.identification;
+
+import java.util.Collection;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import org.opengis.util.InternationalString;
+import org.opengis.metadata.citation.Citation;
+import org.opengis.metadata.identification.Keywords;
+import org.opengis.metadata.identification.KeywordType;
+import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.util.iso.Types;
+
+
+/**
+ * Keywords, their type and reference source.
+ *
+ * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @author  Touraïvane (IRD)
+ * @author  Cédric Briançon (Geomatys)
+ * @since   0.3 (derived from geotk-2.1)
+ * @version 0.3
+ * @module
+ */
+@XmlType(name = "MD_Keywords_Type", propOrder = {
+    "keywords",
+    "type",
+    "thesaurusName"
+})
+@XmlRootElement(name = "MD_Keywords")
+public class DefaultKeywords extends ISOMetadata implements Keywords {
+    /**
+     * Serial number for compatibility with different versions.
+     */
+    private static final long serialVersionUID = -2765705888428016211L;
+
+    /**
+     * Commonly used word(s) or formalised word(s) or phrase(s) used to describe the subject.
+     */
+    private Collection<InternationalString> keywords;
+
+    /**
+     * Subject matter used to group similar keywords.
+     */
+    private KeywordType type;
+
+    /**
+     * Name of the formally registered thesaurus or a similar authoritative source of keywords.
+     */
+    private Citation thesaurusName;
+
+    /**
+     * Constructs an initially empty keywords.
+     */
+    public DefaultKeywords() {
+        super();
+    }
+
+    /**
+     * Creates keywords initialized to the given key word.
+     *
+     * @param keyword Commonly used word or formalised word or phrase used to describe
+     *                the subject, or {@code null} if none.
+     */
+    public DefaultKeywords(final CharSequence keyword) {
+        keywords = singleton(Types.toInternationalString(keyword), InternationalString.class);
+    }
+
+    /**
+     * Constructs a new instance initialized with the values from the specified metadata object.
+     * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
+     * given object are not recursively copied.
+     *
+     * @param object The metadata to copy values from.
+     *
+     * @see #castOrCopy(Keywords)
+     */
+    public DefaultKeywords(final Keywords object) {
+        super(object);
+        keywords      = copyCollection(object.getKeywords(), InternationalString.class);
+        type          = object.getType();
+        thesaurusName = object.getThesaurusName();
+    }
+
+    /**
+     * Returns a SIS metadata implementation with the values of the given arbitrary implementation.
+     * This method performs the first applicable actions in the following choices:
+     *
+     * <ul>
+     *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
+     *   <li>Otherwise if the given object is already an instance of
+     *       {@code DefaultKeywords}, then it is returned unchanged.</li>
+     *   <li>Otherwise a new {@code DefaultKeywords} instance is created using the
+     *       {@linkplain #DefaultKeywords(Keywords) copy constructor}
+     *       and returned. Note that this is a <cite>shallow</cite> copy operation, since the other
+     *       metadata contained in the given object are not recursively copied.</li>
+     * </ul>
+     *
+     * @param  object The object to get as a SIS implementation, or {@code null} if none.
+     * @return A SIS implementation containing the values of the given object (may be the
+     *         given object itself), or {@code null} if the argument was null.
+     */
+    public static DefaultKeywords castOrCopy(final Keywords object) {
+        if (object == null || object instanceof DefaultKeywords) {
+            return (DefaultKeywords) object;
+        }
+        return new DefaultKeywords(object);
+    }
+
+    /**
+     * Returns commonly used word(s) or formalised word(s) or phrase(s) used to describe the subject.
+     */
+    @Override
+    @XmlElement(name = "keyword", required = true)
+    public Collection<InternationalString> getKeywords() {
+        return keywords = nonNullCollection(keywords, InternationalString.class);
+    }
+
+    /**
+     * Sets commonly used word(s) or formalised word(s) or phrase(s) used to describe the subject.
+     *
+     * @param newValues The new keywords.
+     */
+    public void setKeywords(final Collection<? extends InternationalString> newValues) {
+        keywords = writeCollection(newValues, keywords, InternationalString.class);
+    }
+
+    /**
+     * Returns the subject matter used to group similar keywords.
+     */
+    @Override
+    @XmlElement(name = "type")
+    public KeywordType getType() {
+        return type;
+    }
+
+    /**
+     * Sets the subject matter used to group similar keywords.
+     *
+     * @param newValue The new keyword type.
+     */
+    public void setType(final KeywordType newValue) {
+        checkWritePermission();
+        type = newValue;
+    }
+
+    /**
+     * Returns the name of the formally registered thesaurus
+     * or a similar authoritative source of keywords.
+     */
+    @Override
+    @XmlElement(name = "thesaurusName")
+    public Citation getThesaurusName() {
+        return thesaurusName;
+    }
+
+    /**
+     * Sets the name of the formally registered thesaurus or a similar authoritative source
+     * of keywords.
+     *
+     * @param newValue The new thesaurus name.
+     */
+    public void setThesaurusName(final Citation newValue) {
+        checkWritePermission();
+        thesaurusName = newValue;
+    }
+}

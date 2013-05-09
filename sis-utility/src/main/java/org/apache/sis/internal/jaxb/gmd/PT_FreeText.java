@@ -23,10 +23,11 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 
 import org.opengis.util.InternationalString;
-import org.apache.sis.internal.jaxb.MarshalContext;
+import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gco.GO_CharacterString;
 import org.apache.sis.util.iso.DefaultInternationalString;
 import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.util.ArraysExt;
 
 
 /**
@@ -80,42 +81,29 @@ public final class PT_FreeText extends GO_CharacterString {
     }
 
     /**
-     * Constructs a {@linkplain TextGroup text group} from a {@link DefaultInternationalString}
-     * which could contains several localized strings.
+     * Constructs a {@code PT_FreeText} containing the given text groups.
      *
-     * <p>The {@code <gco:CharacterString> element will typically be set for the {@code null} locale,
+     * <p>The {@code <gco:CharacterString>} element will typically be set for the {@link Locale#ROOT},
      * which is the "unlocalized" string (not the same thing than the string in the default locale).
      * Note that the {@link TextGroup} constructor works better if the {@code <gco:CharacterString>}
-     * have been set for the {@code null} locale (the default behavior). If a different locale were
+     * have been set for the {@code ROOT} locale (the default behavior). If a different locale were
      * set, the list of localized strings in {@code TextGroup} may contains an element which
      * duplicate the {@code <gco:CharacterString>} element, or the unlocalized string normally
      * written in {@code <gco:CharacterString>} may be missing.</p>
      *
-     * @param context The current (un)marshalling context, or {@code null} if none.
-     * @param text    An international string which could have several translations
-     *                embedded for the same text.
+     * @param text The text to write in the {@code <gco:CharacterString>} element.
+     * @param textGroup The text group elements.
      *
      * @see org.apache.sis.xml.XML#LOCALE
      */
-    private PT_FreeText(final MarshalContext context, final DefaultInternationalString text) {
-        super(text.toString(context != null ? context.getLocale() : null));
-        final Set<Locale> locales = text.getLocales();
-        int n = locales.size();
-        if (locales.contains(null)) {
-            n--;
-        }
-        textGroup = new TextGroup[n];
-        int i = 0;
-        for (final Locale locale : locales) {
-            if (locale != null) {
-                textGroup[i++] = new TextGroup(locale, text.toString(locale));
-            }
-        }
+    private PT_FreeText(final String text, final TextGroup[] textGroup) {
+        super(text);
+        this.textGroup = textGroup;
     }
 
     /**
      * Constructs a {@linkplain TextGroup text group} from the given {@link InternationalString}
-     * if it contains at least one non-null locale. Otherwise returns {@code null}, meaning that
+     * if it contains at least one non-root locale. Otherwise returns {@code null}, meaning that
      * the simpler {@link GO_CharacterString} construct should be used instead.
      *
      * @param context The current (un)marshalling context, or {@code null} if none.
@@ -125,14 +113,26 @@ public final class PT_FreeText extends GO_CharacterString {
      *         or {@code null} otherwise.
      */
     @SuppressWarnings("fallthrough")
-    public static PT_FreeText create(final MarshalContext context, final InternationalString text) {
+    public static PT_FreeText create(final Context context, final InternationalString text) {
         if (text instanceof DefaultInternationalString) {
             final DefaultInternationalString df = (DefaultInternationalString) text;
             final Set<Locale> locales = df.getLocales();
-            switch (locales.size()) {
-                case 0:  break;
-                case 1:  if (locales.contains(null)) break; // Otherwise fallthrough
-                default: return new PT_FreeText(context, df);
+            final TextGroup[] textGroup = new TextGroup[locales.size()];
+            int n = 0;
+            for (final Locale locale : locales) {
+                if (locale != null && !locale.equals(Locale.ROOT)) {
+                    textGroup[n++] = new TextGroup(locale, text.toString(locale));
+                }
+            }
+            if (n != 0) {
+                /*
+                 * Invoke toString(Locale) instead than toString() even if the locale is null,
+                 * since the desired fallback is typically Locale.ROOT instead than the system
+                 * default. It is usually safer to avoid null value, but in this particular case
+                 * the implementation (DefaultInternationalString) is known to support null.
+                 */
+                return new PT_FreeText(df.toString(context != null ? context.getLocale() : null),
+                        ArraysExt.resize(textGroup, n));
             }
         }
         return null;

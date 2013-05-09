@@ -18,6 +18,7 @@ package org.apache.sis.test.suite;
 
 import org.apache.sis.test.TestSuite;
 import org.junit.runners.Suite;
+import org.junit.BeforeClass;
 
 
 /**
@@ -34,14 +35,16 @@ import org.junit.runners.Suite;
     org.apache.sis.internal.test.XMLComparatorTest.class,
 
     // Most basic functions of SIS library.
-    org.apache.sis.util.ArraysTest.class,
+    org.apache.sis.util.ArraysExtTest.class,
     org.apache.sis.util.CharactersTest.class,
     org.apache.sis.util.CharSequencesTest.class,
     org.apache.sis.util.StringBuildersTest.class,
     org.apache.sis.util.UtilitiesTest.class,
+    org.apache.sis.util.NumbersTest.class,
     org.apache.sis.util.ClassesTest.class,
     org.apache.sis.util.VersionTest.class,
     org.apache.sis.util.LocalesTest.class,
+    org.apache.sis.util.resources.LoaderTest.class,
     org.apache.sis.util.resources.IndexedResourceBundleTest.class,
     org.apache.sis.util.logging.PerformanceLevelTest.class,
     org.apache.sis.math.MathFunctionsTest.class,
@@ -58,6 +61,7 @@ import org.junit.runners.Suite;
     org.apache.sis.util.collection.TableColumnTest.class,
     org.apache.sis.util.collection.DefaultTreeTableTest.class,
     org.apache.sis.util.collection.TreeTablesTest.class,
+    org.apache.sis.util.collection.CodeListSetTest.class,
 
     // GeoAPI most basic types.
     org.apache.sis.util.iso.TypesTest.class,
@@ -69,7 +73,12 @@ import org.junit.runners.Suite;
 
     // Measurements and formatting.
     org.apache.sis.measure.UnitsTest.class,
+    org.apache.sis.measure.RangeTest.class,
+    org.apache.sis.measure.DateRangeTest.class,
+    org.apache.sis.measure.NumberRangeTest.class,
+    org.apache.sis.measure.MeasurementRangeTest.class,
     org.apache.sis.measure.FormattedCharacterIteratorTest.class,
+    org.apache.sis.measure.RangeFormatTest.class,
     org.apache.sis.measure.AngleFormatTest.class,
     org.apache.sis.measure.AngleTest.class,
     org.apache.sis.internal.util.X364Test.class,
@@ -80,12 +89,32 @@ import org.junit.runners.Suite;
     org.apache.sis.io.WordWrapWithLineSeparatorTest.class,
     org.apache.sis.io.TableAppenderTest.class,
     org.apache.sis.util.collection.TreeTableFormatTest.class,
+    org.apache.sis.util.collection.RangeSetTest.class,
+
+    // Converters
+    org.apache.sis.internal.converter.AngleConverterTest.class,
+    org.apache.sis.internal.converter.StringConverterTest.class,
+    org.apache.sis.internal.converter.PathConverterTest.class,
+    org.apache.sis.internal.converter.FallbackConverterTest.class,
+    org.apache.sis.internal.converter.ConverterRegistryTest.class,
+    org.apache.sis.internal.converter.SystemRegistryTest.class,
+    org.apache.sis.internal.converter.NumberConverterTest.class, // Shall be after SystemRegistryTest.
 
     // XML most basic types.
     org.apache.sis.xml.XLinkTest.class,
     org.apache.sis.xml.NilReasonTest.class,
+    org.apache.sis.xml.OGCNamespacePrefixMapperTest.class,
+    org.apache.sis.xml.MarshallerPoolTest.class,
     org.apache.sis.internal.jaxb.IdentifierMapAdapterTest.class,
     org.apache.sis.internal.jaxb.IdentifierMapWithSpecialCasesTest.class
 })
 public final strictfp class UtilityTestSuite extends TestSuite {
+    /**
+     * Verifies the list of tests before to run the suite.
+     * See {@link #verifyTestList(Class)} for more information.
+     */
+    @BeforeClass
+    public static void verifyTestList() {
+        verifyTestList(UtilityTestSuite.class);
+    }
 }

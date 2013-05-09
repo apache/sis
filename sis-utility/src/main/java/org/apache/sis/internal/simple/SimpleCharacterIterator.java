@@ -36,7 +36,7 @@ public class SimpleCharacterIterator implements CharacterIterator, CharSequence,
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -7041748809395493953L;
+    private static final long serialVersionUID = 4211374670559434445L;
 
     /**
      * The wrapped character sequence.

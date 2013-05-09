@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="trunk/sis-webapp/src/main/java"/>
+	<classpathentry kind="src" path="trunk/sis-app/src/main/java"/>
+	<classpathentry kind="src" path="trunk/sis-metadata/src/main/java"/>
+	<classpathentry kind="src" path="trunk/sis-webapp/src/main/resources"/>
+	<classpathentry kind="src" path="trunk/sis-utility/src/test/java"/>
+	<classpathentry kind="src" path="trunk/sis-utility/src/main/resources"/>
+	<classpathentry kind="src" path="trunk/sis-utility/src/main/javadoc"/>
+	<classpathentry kind="src" path="trunk/sis-utility/src/main/java"/>
+	<classpathentry kind="src" path="trunk/sis-build-helper/src/main/resources"/>
+	<classpathentry kind="src" path="trunk/sis-build-helper/src/main/javadoc"/>
+	<classpathentry kind="src" path="trunk/sis-build-helper/src/main/java"/>
+	<classpathentry kind="src" path="trunk/sis-referencing/src/main/resources"/>
+	<classpathentry kind="src" path="trunk/sis-referencing/src/main/java"/>
+	<classpathentry kind="var" path="M2_REPO/org/geonames/georss-rome/0.9.8/georss-rome-0.9.8.jar"/>
+	<classpathentry kind="var" path="M2_REPO/rome/rome/0.9/rome-0.9.jar"/>
+	<classpathentry kind="var" path="M2_REPO/jdom/jdom/1.0/jdom-1.0.jar"/>
+	<classpathentry kind="var" path="M2_REPO/javax/javaee-api/6.0/javaee-api-6.0.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="var" path="M2_REPO/org/opengis/geoapi/3.0.0/geoapi-3.0.0.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/opengis/geoapi-conformance/3.0.0/geoapi-conformance-3.0.0.jar"/>
+	<classpathentry kind="var" path="M2_REPO/javax/measure/jsr-275/0.9.3/jsr-275-0.9.3.jar"/>
+	<classpathentry kind="var" path="M2_REPO/net/jcip/jcip-annotations/1.0/jcip-annotations-1.0.jar"/>
+	<classpathentry kind="var" path="M2_REPO/junit/junit/4.8.1/junit-4.8.1.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/osgi/org.osgi.core/5.0.0/org.osgi.core-5.0.0.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/apache/maven/maven-core/3.0.4/maven-core-3.0.4.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/apache/maven/maven-plugin-api/3.0.4/maven-plugin-api-3.0.4.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/apache/maven/maven-artifact/3.0.4/maven-artifact-3.0.4.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/apache/maven/maven-model/3.0.4/maven-model-3.0.4.jar"/>
+	<classpathentry kind="output" path="trunk/target/classes"/>
+</classpath>

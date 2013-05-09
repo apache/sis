@@ -28,7 +28,7 @@
   <parent>
     <groupId>org.apache</groupId>
     <artifactId>apache</artifactId>
-    <version>12</version>
+    <version>13</version>
   </parent>
 
 
@@ -108,10 +108,17 @@ Apache SIS is a toolkit for describing location information, including points,
        ============================================================== -->
   <developers>
     <developer>
+      <name>Adam Estrada</name>
+      <id>aestrada</id>
+      <roles>
+        <role>lead</role>
+      </roles>
+    </developer>
+    <developer>
       <name>Chris A. Mattmann</name>
       <id>mattmann</id>
       <email>mattmann@apache.org</email>
-      <url>http://people.apache.org/~mattmann/</url>
+      <url>http://sunset.usc.edu/~mattmann/</url>
       <organization>NASA Jet Propulsion Laboratory</organization>
       <organizationUrl>http://www.jpl.nasa.gov</organizationUrl>
       <timezone>-8</timezone>
@@ -121,12 +128,29 @@ Apache SIS is a toolkit for describing location information, including points,
       </roles>
     </developer>
     <developer>
+      <name>Joseph F. White</name>
+      <id>jwhite</id>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Martin Desruisseaux</name>
+      <id>desruisseaux</id>
+      <email>desruisseaux@apache.org</email>
+      <organization>Geomatys</organization>
+      <organizationUrl>http://www.geomatys.com</organizationUrl>
+      <timezone>+1</timezone>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
+    <developer>
       <name>Patrick O'Leary</name>
       <id>pjaol</id>
       <email>pjaol@apache.org</email>
-      <url>http://people.apache.org/~pjaol/</url>
       <organization>AT&amp;T Interactive</organization>
-      <organizationUrl>http://www.attinteractive.com/</organizationUrl>
+      <organizationUrl>http://www.attinteractive.com</organizationUrl>
       <timezone>-8</timezone>
       <properties />
       <roles>
@@ -134,7 +158,7 @@ Apache SIS is a toolkit for describing location information, including points,
       </roles>
     </developer>
     <developer>
-      <name>Paul Ramirez</name>
+      <name>Paul Michael Ramirez</name>
       <id>pramirez</id>
       <email>pramirez@apache.org</email>
       <url>http://people.apache.org/~pramirez/</url>
@@ -150,7 +174,6 @@ Apache SIS is a toolkit for describing location information, including points,
       <name>Sean McCleese</name>
       <id>smcclees</id>
       <email>smcclees@apache.org</email>
-      <url>http://people.apache.org/~smcclees/</url>
       <organization>NASA Jet Propulsion Laboratory</organization>
       <organizationUrl>http://www.jpl.nasa.gov</organizationUrl>
       <timezone>-8</timezone>
@@ -163,7 +186,6 @@ Apache SIS is a toolkit for describing location information, including points,
       <name>Nga Chung</name>
       <id>nchung</id>
       <email>nchung@apache.org</email>
-      <url>http://people.apache.org/~nchung/</url>
       <organization>NASA Jet Propulsion Laboratory</organization>
       <organizationUrl>http://www.jpl.nasa.gov</organizationUrl>
       <timezone>-8</timezone>
@@ -173,29 +195,94 @@ Apache SIS is a toolkit for describing location information, including points,
       </roles>
     </developer>
   </developers>
+
   <contributors>
     <contributor>
-      <name>Greg Reddin</name>
+      <name>Adrian Custer</name>
+      <roles>
+        <role>documentation</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Andrew Hart</name>
+      <!-- id>ahart</id -->
+    </contributor>
+    <contributor>
+      <name>Charitha</name>
+      <!-- id>charithcc</id -->
+    </contributor>
+    <contributor>
+      <name>Cédric Briançon</name>
+      <email>cedric.briancon@geomatys.com</email>
+      <organization>Geomatys</organization>
+      <organizationUrl>http://www.geomatys.com</organizationUrl>
+      <timezone>+1</timezone>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Gregory D. Reddin</name>
+      <!-- id>greddin</id -->
       <roles>
         <role>mentor</role>
       </roles>
     </contributor>
     <contributor>
+      <name>Guilhem Legal</name>
+      <email>guilhem.legal@geomatys.com</email>
+      <organization>Geomatys</organization>
+      <organizationUrl>http://www.geomatys.com</organizationUrl>
+      <timezone>+1</timezone>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </contributor>
+    <contributor>
       <name>Ian Holsman</name>
+      <!-- id>ianh</id -->
       <roles>
         <role>mentor</role>
       </roles>
     </contributor>
     <contributor>
       <name>Joe Schaefer</name>
+      <!-- id>joes</id -->
       <roles>
         <role>mentor</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Johann Sorel</name>
+      <email>johann.sorel@geomatys.com</email>
+      <organization>Geomatys</organization>
+      <organizationUrl>http://www.geomatys.com/</organizationUrl>
+      <timezone>+1</timezone>
+      <roles>
+        <role>developer</role>
       </roles>
     </contributor>
     <contributor>
       <name>Kevan Miller</name>
       <roles>
         <role>mentor</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Peter Karich</name>
+      <!-- id>pk</id -->
+    </contributor>
+    <contributor>
+      <name>Ross Laidlaw</name>
+      <!-- id>rlaidlaw</id -->
+    </contributor>
+    <contributor>
+      <name>Touraïvane</name>
+      <organization>Institut de Recherche pour le Développement (IRD)</organization>
+      <organizationUrl>http://www.ird.fr</organizationUrl>
+      <timezone>+11</timezone>
+      <roles>
+        <role>developer</role>
       </roles>
     </contributor>
   </contributors>
@@ -234,9 +321,10 @@ Apache SIS is a toolkit for describing location information, including points,
 
       <!-- Libraries (language, XML, network) -->
       <dependency>
-        <groupId>javax.servlet</groupId>
-        <artifactId>servlet-api</artifactId>
-        <version>2.4</version>
+        <groupId>javax</groupId>
+        <artifactId>javaee-api</artifactId>
+        <version>6.0</version>
+        <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>org.geonames</groupId>
@@ -254,6 +342,12 @@ Apache SIS is a toolkit for describing location information, including points,
         <groupId>org.osgi</groupId>
         <artifactId>org.osgi.core</artifactId>
         <version>5.0.0</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>edu.ucar</groupId>
+        <artifactId>netcdf</artifactId>
+        <version>${netcdf.version}</version>
         <scope>provided</scope>
       </dependency>
     </dependencies>
@@ -280,6 +374,7 @@ Apache SIS is a toolkit for describing location information, including points,
        =================================================================== -->
   <properties>
     <geoapi.version>3.0.0</geoapi.version>
+    <netcdf.version>4.3.16</netcdf.version>
     <findbugs.version>2.5.2</findbugs.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <website.encoding>UTF-8</website.encoding>
@@ -327,7 +422,6 @@ Apache SIS is a toolkit for describing location information, including points,
            INDEX.LIST file is incomplete (which seem to happen in practice).
       -->
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
         <configuration>
           <archive>
@@ -345,14 +439,15 @@ Apache SIS is a toolkit for describing location information, including points,
               <Specification-Vendor>Open Geospatial Consortium</Specification-Vendor>
             </manifestEntries>
           </archive>
+          <skipIfEmpty>true</skipIfEmpty>
         </configuration>
         <executions>
-         <execution>
-           <goals>
-             <goal>test-jar</goal>
-           </goals>
-         </execution>
-       </executions>
+          <execution>
+            <goals>
+              <goal>test-jar</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
 
       <!-- Android packaging -->
@@ -444,7 +539,7 @@ Apache SIS is a toolkit for describing location information, including points,
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>build-helper-maven-plugin</artifactId>
-          <version>1.7</version>
+          <version>1.8</version>
         </plugin>
         <plugin>
           <groupId>org.mortbay.jetty</groupId>
@@ -466,7 +561,6 @@ Apache SIS is a toolkit for describing location information, including points,
            in order to use version 2.5.1 instead than 2.5. This is necessary
            for avoiding a NullPointerException (http://jira.codehaus.org/browse/MPIR-248) -->
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-project-info-reports-plugin</artifactId>
         <version>2.6</version>
       </plugin>
@@ -481,6 +575,7 @@ Apache SIS is a toolkit for describing location information, including points,
           <docencoding>${website.encoding}</docencoding>        <!-- Encoding of the generated HTML files. -->
           <charset>${website.encoding}</charset>                <!-- Encoding to declare in the HTML META tag. -->
           <locale>${website.locale}</locale>                    <!-- Locale for navigation bar, help file contents, etc. -->
+          <author>false</author>                                <!-- Excludes the authors text in the generated docs. -->
           <version>false</version>                              <!-- Excludes the version text in the generated docs. -->
           <nosince>true</nosince>                               <!-- Omits the "Since" sections associated with the since tags. -->
           <noqualifier>all</noqualifier>                        <!-- Omit qualifying package name before class names in output. -->
@@ -514,7 +609,7 @@ Apache SIS is a toolkit for describing location information, including points,
           </groups>
 
           <!-- Internal packages to hide from javadoc. -->
-          <excludePackageNames>org.apache.sis.internal</excludePackageNames>
+          <excludePackageNames>org.apache.sis.internal:com</excludePackageNames>
 
           <!-- Custom taglets, some of them implemented in Java. -->
           <tags>
@@ -600,9 +695,10 @@ Apache SIS is a toolkit for describing location information, including points,
        ============================================================== -->
   <modules>
     <module>sis-build-helper</module>
-    <module>sis-referencing</module>
     <module>sis-utility</module>
     <module>sis-metadata</module>
+    <module>sis-referencing</module>
+    <module>storage</module>
     <module>sis-webapp</module>
     <module>sis-app</module>
   </modules>

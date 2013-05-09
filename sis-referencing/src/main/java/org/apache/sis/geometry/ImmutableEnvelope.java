@@ -37,6 +37,11 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * This class is final in order to ensure that the immutability contract can not be broken
  * (assuming not using <cite>Java Native Interface</cite> or reflections).
  *
+ * {@note While <code>ImmutableEnvelope</code> objects are immutable, they contain references to
+ *        <code>CoordinateReferenceSystem</code> objects which are not guaranteed to be immutable.
+ *        For better safety, factory codes are encouraged to pass only immutable instances of
+ *        coordinate reference systems to the constructors.}
+ *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-3.00)
@@ -48,7 +53,7 @@ public final class ImmutableEnvelope extends ArrayEnvelope implements Serializab
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 5593936512712449234L;
+    private static final long serialVersionUID = 8740224085449107870L;
 
     /**
      * Constructs an envelope defined by two corners given as direct positions.
@@ -115,12 +120,12 @@ public final class ImmutableEnvelope extends ArrayEnvelope implements Serializab
      * <p>The main purpose of this method is to assign a non-null CRS when the envelope to
      * copy has a null CRS.</p>
      *
-     * @param  envelope The envelope from which to copy ordinate values.
      * @param  crs      The CRS to assign to this envelope, or {@code null}.
+     * @param  envelope The envelope from which to copy ordinate values.
      * @throws MismatchedDimensionException If the dimension of the given CRS is not equals
      *         to the dimension of the given envelope.
      */
-    public ImmutableEnvelope(final Envelope envelope, final CoordinateReferenceSystem crs)
+    public ImmutableEnvelope(final CoordinateReferenceSystem crs, final Envelope envelope)
             throws MismatchedDimensionException
     {
         super(envelope);
@@ -130,24 +135,24 @@ public final class ImmutableEnvelope extends ArrayEnvelope implements Serializab
 
     /**
      * Constructs a new envelope initialized to the values parsed from the given string in
-     * <cite>Well Known Text</cite> (WKT) format. The given string is typically a {@code BOX}
-     * element like below:
+     * {@code BOX} or <cite>Well Known Text</cite> (WKT) format. The given string is typically
+     * a {@code BOX} element like below:
      *
      * {@preformat wkt
      *     BOX(-180 -90, 180 90)
      * }
      *
      * However this constructor is lenient to other geometry types like {@code POLYGON}.
-     * See the javadoc of the {@link GeneralEnvelope#GeneralEnvelope(String) GeneralEnvelope}
+     * See the javadoc of the {@link GeneralEnvelope#GeneralEnvelope(CharSequence) GeneralEnvelope}
      * constructor for more information.
      *
-     * @param  wkt The {@code BOX}, {@code POLYGON} or other kind of element to parse.
      * @param  crs The coordinate reference system, or {@code null} if none.
+     * @param  wkt The {@code BOX}, {@code POLYGON} or other kind of element to parse.
      * @throws IllegalArgumentException If the given string can not be parsed.
      * @throws MismatchedDimensionException If the dimension of the given CRS is not equals
      *         to the dimension of the parsed envelope.
      */
-    public ImmutableEnvelope(final CharSequence wkt, final CoordinateReferenceSystem crs)
+    public ImmutableEnvelope(final CoordinateReferenceSystem crs, final CharSequence wkt)
             throws IllegalArgumentException, MismatchedDimensionException
     {
         super(wkt);

@@ -29,7 +29,7 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.util.Citations;
 
 // Related to JDK7
-import org.apache.sis.internal.util.Objects;
+import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
@@ -48,7 +48,7 @@ public final class SpecializedIdentifier<T> implements Identifier, Serializable 
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 1673231050676950993L;
+    private static final long serialVersionUID = -1699757455535495848L;
 
     /**
      * The authority, typically as a {@link NonMarshalledAuthority) instance.

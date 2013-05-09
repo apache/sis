@@ -22,6 +22,7 @@ import java.util.Formattable;
 import java.util.FormattableFlags;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.util.Utilities;
+import org.apache.sis.util.CharSequences;
 
 
 /**
@@ -44,12 +45,16 @@ public abstract class AbstractInternationalString implements InternationalString
      * The string in the {@linkplain Locale#getDefault() system default} locale, or {@code null}
      * if this string has not yet been determined. This is the default string returned by
      * {@link #toString()} and others methods from the {@link CharSequence} interface.
-     * <P>
+     *
+     * {@section Thread safety}
+     * For thread safety this field shall either be read and written in a synchronized block,
+     * or be fixed at construction time and never changed after than point. All other usages
+     * are prohibited.
+     *
+     * {@section Serialization}
      * This field is not serialized because serialization is often used for data transmission
      * between a server and a client, and the client may not use the same locale than the server.
      * We want the locale to be examined again on the client side.
-     * <P>
-     * This field is read and written by {@link SimpleInternationalString}.
      */
     transient String defaultValue;
 
@@ -67,15 +72,7 @@ public abstract class AbstractInternationalString implements InternationalString
      */
     @Override
     public int length() {
-        String text = defaultValue;
-        if (text == null) {
-            text = toString();
-            if (text == null) {
-                return 0;
-            }
-            defaultValue = text;
-        }
-        return text.length();
+        return CharSequences.length(toString());
     }
 
     /**
@@ -88,15 +85,7 @@ public abstract class AbstractInternationalString implements InternationalString
      */
     @Override
     public char charAt(final int index) throws IndexOutOfBoundsException {
-        String text = defaultValue;
-        if (text == null) {
-            text = toString();
-            if (text == null) {
-                throw new StringIndexOutOfBoundsException();
-            }
-            defaultValue = text;
-        }
-        return text.charAt(index);
+        return toString().charAt(index);
     }
 
     /**
@@ -111,31 +100,38 @@ public abstract class AbstractInternationalString implements InternationalString
      */
     @Override
     public CharSequence subSequence(final int start, final int end) {
-        String text = defaultValue;
-        if (text == null) {
-            text = toString();
-            if (text == null) {
-                if (start == 0 && end == 0) {
-                    return "";
-                }
-                throw new StringIndexOutOfBoundsException();
-            }
-            defaultValue = text;
-        }
-        return text.substring(start, end);
+        return toString().substring(start, end);
     }
 
     /**
      * Returns this string in the given locale. If no string is available in the given locale,
-     * then some default locale is used. The default locale is implementation-dependent.
-     * It may or may not be the {@linkplain Locale#getDefault() system default}.
+     * then some fallback locale is used. The fallback locale is implementation-dependent, and
+     * is not necessarily the same than the default locale used by the {@link #toString()} method.
      *
-     * @param  locale The desired locale for the string to be returned,
-     *         or {@code null} for a string in the implementation default locale.
-     * @return The string in the given locale if available, or in the default locale otherwise.
+     * {@section Handling of <code>Locale.ROOT</code> argument value}
+     * {@link Locale#ROOT} can be given to this method for requesting a "unlocalized" string,
+     * typically some programmatic values like enumerations or identifiers. While identifiers
+     * often look like English words, {@code Locale.ROOT} is not considered synonymous to
+     * {@link Locale#ENGLISH} because the values may differ in the way numbers and dates are
+     * formatted (e.g. using the ISO 8601 standard for dates instead than English conventions).
+     *
+     * {@section Handling of <code>null</code> argument value}
+     * The {@code Locale.ROOT} constant is new in Java 6. Some other libraries designed for Java 5
+     * use the {@code null} value for "unlocalized" strings. Apache SIS accepts {@code null} value
+     * for inter-operability with those libraries. However the behavior is implementation dependent:
+     * some subclasses will take {@code null} as a synonymous of the system default locale, while
+     * other subclasses will take {@code null} as a synonymous of the root locale. In order to
+     * ensure determinist behavior, client code are encouraged to specify only non-null values.
+     *
+     * @param  locale The desired locale for the string to be returned.
+     * @return The string in the given locale if available, or in an
+     *         implementation-dependent fallback locale otherwise.
+     *
+     * @see Locale#getDefault()
+     * @see Locale#ROOT
      */
     @Override
-    public abstract String toString(final Locale locale);
+    public abstract String toString(Locale locale);
 
     /**
      * Returns this string in the default locale. Invoking this method is equivalent to invoking
@@ -147,7 +143,7 @@ public abstract class AbstractInternationalString implements InternationalString
      * @return The string in the default locale.
      */
     @Override
-    public String toString() {
+    public synchronized String toString() {
         String text = defaultValue;
         if (text == null) {
             text = toString(Locale.getDefault());
@@ -174,28 +170,8 @@ public abstract class AbstractInternationalString implements InternationalString
      *                  or -1 for no restriction.
      */
     @Override
-    public void formatTo(final Formatter formatter, int flags, final int width, int precision) {
-        final Locale locale = formatter.locale();
-        String value = toString(locale);
-        if (precision >= 0) {
-            if ((flags & FormattableFlags.UPPERCASE) != 0) {
-                value = value.toUpperCase(locale); // May change the length in some locales.
-                flags &= ~FormattableFlags.UPPERCASE;
-            }
-            final int length = value.length();
-            if (precision < length) {
-                try {
-                    precision = value.offsetByCodePoints(0, precision);
-                } catch (IndexOutOfBoundsException e) {
-                    precision = length;
-                    // Happen if the string has fewer code-points than 'precision'. We could
-                    // avoid the try-catch block by checking value.codePointCount(…), but it
-                    // would result in scanning the string twice.
-                }
-                value = value.substring(0, precision);
-            }
-        }
-        Utilities.formatTo(formatter, flags, width, value);
+    public void formatTo(final Formatter formatter, final int flags, final int width, final int precision) {
+        Utilities.formatTo(formatter, flags, width, precision, toString(formatter.locale()));
     }
 
     /**

@@ -18,6 +18,7 @@ package org.apache.sis.util.iso;
 
 import java.util.List;
 import java.util.Collections;
+import java.util.Locale;
 import java.io.ObjectStreamException;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -32,7 +33,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.internal.jaxb.gco.CharSequenceAdapter;
 
 // Related to JDK7
-import org.apache.sis.internal.util.Objects;
+import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
@@ -59,7 +60,7 @@ public class DefaultLocalName extends AbstractName implements LocalName {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 8747478206456790138L;
+    private static final long serialVersionUID = -697839568997068872L;
 
     /**
      * The scope of this name, or {@code null} if the scope is the unique {@code GLOBAL} instance.
@@ -89,7 +90,7 @@ public class DefaultLocalName extends AbstractName implements LocalName {
     /**
      * Constructs a local name from the given character sequence.
      * If the character sequence is an instance of {@link InternationalString},
-     * then its {@link InternationalString#toString(java.util.Locale) toString(null)}
+     * then its {@link InternationalString#toString(java.util.Locale) toString(Locale.ROOT)}
      * method will be invoked for fetching an unlocalized name.
      * Otherwise the {@link CharSequence#toString()} method will be used.
      *
@@ -182,13 +183,12 @@ public class DefaultLocalName extends AbstractName implements LocalName {
     public synchronized String toString() {
         if (asString == null) {
             if (name instanceof InternationalString) {
-                // We really want the 'null' locale, not the system default one.
-                asString = ((InternationalString) name).toString(null);
+                asString = ((InternationalString) name).toString(Locale.ROOT);
             } else {
                 asString = name.toString();
             }
         } else if (asString instanceof InternationalString) {
-            return ((InternationalString) asString).toString(null);
+            return ((InternationalString) asString).toString(Locale.ROOT);
         }
         return asString.toString();
     }

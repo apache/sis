@@ -45,7 +45,7 @@ import static org.apache.sis.math.MathFunctions.isNegative;
 import static org.apache.sis.math.MathFunctions.isPositive;
 
 // Related to JDK7
-import org.apache.sis.internal.util.Objects;
+import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
@@ -496,8 +496,8 @@ public abstract class AbstractEnvelope implements Envelope {
     /**
      * Determines whether or not this envelope is empty. An envelope is non-empty only if it has
      * at least one {@linkplain #getDimension() dimension}, and the {@linkplain #getSpan(int) span}
-     * is greater than 0 along all dimensions. Note that a non-empty envelope is always
-     * non-{@linkplain #isNull() null}, but the converse is not always true.
+     * is greater than 0 along all dimensions. Note that {@link #isAllNaN()} always returns
+     * {@code false} for a non-empty envelope, but the converse is not always true.
      *
      * @return {@code true} if this envelope is empty.
      *
@@ -514,28 +514,32 @@ public abstract class AbstractEnvelope implements Envelope {
                 return true;
             }
         }
-        assert !isNull() : this;
+        assert !isAllNaN() : this;
         return false;
     }
 
     /**
      * Returns {@code false} if at least one ordinate value is not {@linkplain Double#NaN NaN}.
-     * This {@code isNull()} check is a little bit different than the {@link #isEmpty()} check
+     * This {@code isAllNaN()} check is a little bit different than the {@link #isEmpty()} check
      * since it returns {@code false} for a partially initialized envelope, while {@code isEmpty()}
      * returns {@code false} only after all dimensions have been initialized. More specifically,
      * the following rules apply:
      *
      * <ul>
-     *   <li>If {@code isNull() == true}, then {@code isEmpty() == true}</li>
-     *   <li>If {@code isEmpty() == false}, then {@code isNull() == false}</li>
+     *   <li>If {@code isAllNaN() == true}, then {@code isEmpty() == true}</li>
+     *   <li>If {@code isEmpty() == false}, then {@code isAllNaN() == false}</li>
      *   <li>The converse of the above-cited rules are not always true.</li>
      * </ul>
      *
+     * Note that a all-NaN envelope can still have a non-null
+     * {@linkplain #getCoordinateReferenceSystem() coordinate reference system}.
+     *
      * @return {@code true} if this envelope has NaN values.
      *
-     * @see GeneralEnvelope#setToNull()
+     * @see GeneralEnvelope#setToNaN()
+     * @see org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#isEmpty()
      */
-    public boolean isNull() {
+    public boolean isAllNaN() {
         final int dimension = getDimension();
         for (int i=0; i<dimension; i++) {
             if (!Double.isNaN(getLower(i)) || !Double.isNaN(getUpper(i))) {
@@ -909,20 +913,26 @@ public abstract class AbstractEnvelope implements Envelope {
     }
 
     /**
-     * Formats this envelope in the <cite>Well Known Text</cite> (WKT) format.
+     * Formats this envelope as a "{@code BOX}" element.
      * The output is of the form "{@code BOX}<var>n</var>{@code D(}{@linkplain #getLowerCorner()
      * lower corner}{@code ,}{@linkplain #getUpperCorner() upper corner}{@code )}"
      * where <var>n</var> is the {@linkplain #getDimension() number of dimensions}.
-     * Example:
+     * The number of dimension is written only if different than 2.
+     *
+     * <p>Example:</p>
      *
      * {@preformat wkt
+     *   BOX(-90 -180, 90 180)
      *   BOX3D(-90 -180 0, 90 180 1)
      * }
+     *
+     * {@note The <code>BOX</code> element is not part of the standard <cite>Well Known Text</cite>
+     *        (WKT) format. However it is understood by many softwares, for example GDAL and PostGIS.}
      *
      * The string returned by this method can be {@linkplain GeneralEnvelope#GeneralEnvelope(CharSequence) parsed}
      * by the {@code GeneralEnvelope} constructor.
      *
-     * @return This envelope as a {@code BOX2D} or {@code BOX3D} (most typical dimensions) in WKT format.
+     * @return This envelope as a {@code BOX} or {@code BOX3D} (most typical dimensions) element.
      */
     @Override
     public String toString() {
@@ -930,20 +940,23 @@ public abstract class AbstractEnvelope implements Envelope {
     }
 
     /**
-     * Implementation of the public {@link #toString()} and {@link Envelopes#toWKT(Envelope)} methods
-     * for formatting a {@code BOX} element from an envelope in <cite>Well Known Text</cite> (WKT) format.
+     * Implementation of the public {@link #toString()} and {@link Envelopes#toString(Envelope)}
+     * methods for formatting a {@code BOX} element from an envelope.
      *
      * @param  envelope The envelope to format.
      * @param  isSimplePrecision {@code true} if every lower and upper corner values can be casted to {@code float}.
-     * @return The envelope as a {@code BOX2D} or {@code BOX3D} (most typical dimensions) in WKT format.
+     * @return This envelope as a {@code BOX} or {@code BOX3D} (most typical dimensions) element.
      *
-     * @see GeneralEnvelope#GeneralEnvelope(String)
+     * @see GeneralEnvelope#GeneralEnvelope(CharSequence)
      * @see org.apache.sis.measure.CoordinateFormat
      * @see org.apache.sis.io.wkt
      */
     static String toString(final Envelope envelope, final boolean isSimplePrecision) {
         final int dimension = envelope.getDimension();
-        final StringBuilder buffer = new StringBuilder(64).append("BOX").append(dimension).append('D');
+        final StringBuilder buffer = new StringBuilder(64).append("BOX");
+        if (dimension != 2) {
+            buffer.append(dimension).append('D');
+        }
         if (dimension == 0) {
             buffer.append("()");
         } else {
@@ -980,7 +993,7 @@ public abstract class AbstractEnvelope implements Envelope {
      * @module
      */
     private abstract class Point extends AbstractDirectPosition implements Serializable {
-        private static final long serialVersionUID = 9051824576982927750L;
+        private static final long serialVersionUID = -4868610696294317932L;
 
         /** The coordinate reference system in which the coordinate is given. */
         @Override public final CoordinateReferenceSystem getCoordinateReferenceSystem() {
@@ -997,7 +1010,7 @@ public abstract class AbstractEnvelope implements Envelope {
      * The corner returned by {@link AbstractEnvelope#getLowerCorner()}.
      */
     private final class LowerCorner extends Point {
-        private static final long serialVersionUID = 1342844299471364436L;
+        private static final long serialVersionUID = 1310741484466506178L;
 
         @Override public double getOrdinate(final int dimension) throws IndexOutOfBoundsException {
             return getLower(dimension);
@@ -1013,7 +1026,7 @@ public abstract class AbstractEnvelope implements Envelope {
      * The corner returned by {@link AbstractEnvelope#getUpperCorner()}.
      */
     private final class UpperCorner extends Point {
-        private static final long serialVersionUID = 8999737674570427517L;
+        private static final long serialVersionUID = -6458663549974061472L;
 
         @Override public double getOrdinate(final int dimension) throws IndexOutOfBoundsException {
             return getUpper(dimension);
@@ -1029,7 +1042,7 @@ public abstract class AbstractEnvelope implements Envelope {
      * The point returned by {@link AbstractEnvelope#getMedian()}.
      */
     private final class Median extends Point {
-        private static final long serialVersionUID = 4204675972453668922L;
+        private static final long serialVersionUID = -5826011018957321729L;
 
         @Override public double getOrdinate(final int dimension) throws IndexOutOfBoundsException {
             return getMedian(dimension);

@@ -17,9 +17,17 @@
 package org.apache.sis.xml;
 
 import java.util.Locale;
+import java.io.File;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.StringReader;
+import java.io.StringWriter;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.JAXBException;
 import org.apache.sis.util.Static;
+import org.apache.sis.internal.util.SystemListener;
+import org.apache.sis.internal.jaxb.TypeRegistration;
 
 
 /**
@@ -139,7 +147,7 @@ public final class XML extends Static {
      *     Unmarshaller um = marshallerPool.acquireUnmarshaller();
      *     um.setProperty(XML.RESOLVER, myResolver);
      *     Object obj = um.unmarshal(xml);
-     *     marshallerPool.release(um);
+     *     marshallerPool.recycle(um);
      * }
      *
      * @see Unmarshaller#setProperty(String, Object)
@@ -187,7 +195,7 @@ public final class XML extends Static {
      *     Unmarshaller um = marshallerPool.acquireUnmarshaller();
      *     um.setProperty(XML.CONVERTER, myWarningList);
      *     Object obj = um.unmarshal(xml);
-     *     marshallerPool.release(um);
+     *     marshallerPool.recycle(um);
      *     if (!myWarningList.isEmpty()) {
      *         // Report here the warnings to the user.
      *     }
@@ -227,8 +235,144 @@ public final class XML extends Static {
     public static final String STRING_SUBSTITUTES = "org.apache.sis.xml.stringSubstitutes";
 
     /**
+     * The pool of marshallers and unmarshallers used by this class.
+     * The field name uses the uppercase convention because this field is almost constant:
+     * this field is initially null, then created by {@link #getPool()} when first needed.
+     * Once created the field value usually doesn't change. However the field may be reset
+     * to {@code null} in an OSGi context when modules are loaded or unloaded, because the
+     * set of classes returned by {@link TypeRegistration#defaultClassesToBeBound()} may
+     * have changed.
+     *
+     * @see #getPool()
+     */
+    private static volatile MarshallerPool POOL;
+
+    /**
+     * Registers a listener for classpath changes. In such case, a new pool will need to
+     * be created because the {@code JAXBContext} may be different.
+     */
+    static {
+        SystemListener.add(new SystemListener() {
+            @Override protected void classpathChanged() {
+                POOL = null;
+            }
+        });
+    }
+
+    /**
      * Do not allow instantiation on this class.
      */
     private XML() {
+    }
+
+    /**
+     * Returns the default (un)marshaller pool used by all methods in this class.
+     *
+     * {@note Current implementation uses the double-check idiom. This is usually a deprecated
+     * practice (the recommended alterative is to use static class initialization), but in this
+     * particular case the field may be reset to <code>null</code> if OSGi modules are loaded
+     * or unloaded, so static class initialization would be a little bit too rigid.}
+     */
+    private static MarshallerPool getPool() throws JAXBException {
+        MarshallerPool pool = POOL;
+        if (pool == null) {
+            synchronized (XML.class) {
+                pool = POOL; // Double-check idiom: see javadoc.
+                if (pool == null) {
+                    POOL = pool = new MarshallerPool(TypeRegistration.defaultClassesToBeBound());
+                }
+            }
+        }
+        return pool;
+    }
+
+    /**
+     * Marshall the given object into a string.
+     *
+     * @param  object The root of content tree to be marshalled.
+     * @return The XML representation of the given object.
+     * @throws JAXBException If an error occurred during the marshalling.
+     */
+    public static String marshal(final Object object) throws JAXBException {
+        final StringWriter output = new StringWriter();
+        final MarshallerPool pool = getPool();
+        final Marshaller marshaller = pool.acquireMarshaller();
+        marshaller.marshal(object, output);
+        pool.recycle(marshaller);
+        return output.toString();
+    }
+
+    /**
+     * Marshall the given object into a stream.
+     *
+     * @param  object The root of content tree to be marshalled.
+     * @param  output The stream where to write.
+     * @throws JAXBException If an error occurred during the marshalling.
+     */
+    public static void marshal(final Object object, final OutputStream output) throws JAXBException {
+        final MarshallerPool pool = getPool();
+        final Marshaller marshaller = pool.acquireMarshaller();
+        marshaller.marshal(object, output);
+        pool.recycle(marshaller);
+    }
+
+    /**
+     * Marshall the given object into a file.
+     *
+     * @param  object The root of content tree to be marshalled.
+     * @param  output The file to be written.
+     * @throws JAXBException If an error occurred during the marshalling.
+     */
+    public static void marshal(final Object object, final File output) throws JAXBException {
+        final MarshallerPool pool = getPool();
+        final Marshaller marshaller = pool.acquireMarshaller();
+        marshaller.marshal(object, output);
+        pool.recycle(marshaller);
+    }
+
+    /**
+     * Unmarshall an object from the given string.
+     *
+     * @param  input The XML representation of an object.
+     * @return The object unmarshalled from the given input.
+     * @throws JAXBException If an error occurred during the unmarshalling.
+     */
+    public static Object unmarshal(final String input) throws JAXBException {
+        final StringReader in = new StringReader(input);
+        final MarshallerPool pool = getPool();
+        final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
+        final Object object = unmarshaller.unmarshal(in);
+        pool.recycle(unmarshaller);
+        return object;
+    }
+
+    /**
+     * Unmarshall an object from the given stream.
+     *
+     * @param  input The stream from which to read a XML representation.
+     * @return The object unmarshalled from the given input.
+     * @throws JAXBException If an error occurred during the unmarshalling.
+     */
+    public static Object unmarshal(final InputStream input) throws JAXBException {
+        final MarshallerPool pool = getPool();
+        final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
+        final Object object = unmarshaller.unmarshal(input);
+        pool.recycle(unmarshaller);
+        return object;
+    }
+
+    /**
+     * Unmarshall an object from the given file.
+     *
+     * @param  input The file from which to read a XML representation.
+     * @return The object unmarshalled from the given input.
+     * @throws JAXBException If an error occurred during the unmarshalling.
+     */
+    public static Object unmarshal(final File input) throws JAXBException {
+        final MarshallerPool pool = getPool();
+        final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
+        final Object object = unmarshaller.unmarshal(input);
+        pool.recycle(unmarshaller);
+        return object;
     }
 }

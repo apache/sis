@@ -16,11 +16,10 @@
  */
 package org.apache.sis.util.resources;
 
+import java.net.URL;
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.text.MessageFormat;
 import java.util.Enumeration;
 import java.util.Locale;
@@ -35,12 +34,13 @@ import org.opengis.util.InternationalString;
 
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.Localized;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
 
 // Related to JDK7
-import org.apache.sis.internal.util.JDK7;
+import org.apache.sis.internal.jdk7.JDK7;
 
 
 /**
@@ -60,7 +60,7 @@ import org.apache.sis.internal.util.JDK7;
  * @module
  */
 @ThreadSafe
-public class IndexedResourceBundle extends ResourceBundle {
+public class IndexedResourceBundle extends ResourceBundle implements Localized {
     /**
      * Maximum string length for text inserted into another text. This parameter is used by
      * {@link #summarize}. Resource strings are never cut to this length. However, text replacing
@@ -69,33 +69,23 @@ public class IndexedResourceBundle extends ResourceBundle {
     private static final int MAX_STRING_LENGTH = 200;
 
     /**
-     * The resource name of the binary file containing resources. It may be a file name or an
-     * entry in a JAR file. The path must be relative to the package containing the subclass
-     * of {@code IndexedResourceBundle}.
+     * The path of the binary file containing resources, or {@code null} if there is no resources
+     * of if the resources have already been loaded. The resources may be a file or an entry in a
+     * JAR file.
      */
-    private final String filename;
+    private URL resources;
 
     /**
      * The array of resources. Keys are an array index. For example, the value for key "14" is
      * {@code values[14]}. This array will be loaded only when first needed. We should not load
      * it at construction time, because some {@code ResourceBundle} objects will never ask for
-     * values. This is particularly the case for ancestor classes of {@code Resources_fr_CA},
+     * values. This is particularly the case for parent resources of {@code Resources_fr_CA},
      * {@code Resources_en}, {@code Resources_de}, etc., which will only be used if a key has
-     * not been found in the subclass.
+     * not been found in the child resources.
      *
      * @see #ensureLoaded(String)
      */
-    private String[] values;
-
-    /**
-     * The locale for formatting objects like number, date, etc. There are two possible Locales
-     * we could use: default locale or resource bundle locale. If the default locale uses the same
-     * language as this ResourceBundle's locale, then we will use the default locale. This allows
-     * dates and numbers to be formatted according to user conventions (e.g. French Canada) even
-     * if the ResourceBundle locale is different (e.g. standard French). However, if languages
-     * don't match, then we will use ResourceBundle locale for better coherence.
-     */
-    private transient Locale formatLocale;
+    private volatile String[] values;
 
     /**
      * The object to use for formatting messages. This object
@@ -113,11 +103,11 @@ public class IndexedResourceBundle extends ResourceBundle {
     /**
      * Constructs a new resource bundle loading data from the given UTF file.
      *
-     * @param filename The file or the JAR entry containing resources. The path must be relative
-     *        to the package of the {@code IndexedResourceBundle} subclass being constructed.
+     * @param resources The path of the binary file containing resources, or {@code null} if
+     *        there is no resources. The resources may be a file or an entry in a JAR file.
      */
-    protected IndexedResourceBundle(final String filename) {
-        this.filename = filename;
+    protected IndexedResourceBundle(final URL resources) {
+        this.resources = resources;
     }
 
     /**
@@ -140,24 +130,6 @@ public class IndexedResourceBundle extends ResourceBundle {
         }
         // No caching; we rely on the one implemented in ResourceBundle.
         return base.cast(getBundle(base.getName(), locale, base.getClassLoader(), Loader.INSTANCE));
-    }
-
-    /**
-     * Returns the locale to use for formatters. It is often the same than {@link #getLocale()},
-     * except if the later has the same language than the default locale, in which case this
-     * method returns the default locale. For example if this {@code IndexResourceBundle} is
-     * for the French locale but the user is French Canadian, we will format the dates using
-     * Canada French conventions rather than France conventions.
-     */
-    private Locale getFormatLocale() {
-        if (formatLocale == null) {
-            formatLocale = Locale.getDefault();
-            final Locale rl = getLocale(); // Sometime null with IBM's JDK.
-            if (rl != null && !formatLocale.getLanguage().equalsIgnoreCase(rl.getLanguage())) {
-                formatLocale = rl;
-            }
-        }
-        return formatLocale;
     }
 
     /**
@@ -271,78 +243,75 @@ public class IndexedResourceBundle extends ResourceBundle {
      * @throws MissingResourceException if this method failed to load resources.
      */
     private String[] ensureLoaded(final String key) throws MissingResourceException {
-        final String methodName = (key != null) ? "getObject" : "getKeys";
-        LogRecord record = null;
-        try {
-            String[] values;
-            synchronized (this) {
-                values = this.values;
-                if (values != null) {
-                    return values;
-                }
+        String[] values = this.values;
+        if (values == null) synchronized (this) {
+            values = this.values;
+            if (values == null) {
                 /*
-                 * Prepares a log record.  We will wait for successful loading before
-                 * posting this record.  If loading fails, the record will be changed
-                 * into an error record. Note that the message must be logged outside
-                 * the synchronized block, otherwise there is dead locks!
+                 * If there is no explicit resources for this instance, inherit the resources
+                 * from the parent. Note that this IndexedResourceBundle instance may still
+                 * differ from its parent in the way date and numbers are formatted.
                  */
-                record = new LogRecord(Level.FINER, "Loaded resources for {0} from bundle \"{1}\".");
-                /*
-                 * Loads resources from the UTF file.
-                 */
-                InputStream in;
-                String name = filename;
-                while ((in = getClass().getResourceAsStream(name)) == null) { // NOSONAR
-                    final int ext  = name.lastIndexOf('.');
-                    final int lang = name.lastIndexOf('_', ext-1);
-                    if (lang <= 0) {
-                        throw new FileNotFoundException(filename);
-                    }
-                    final int length = name.length();
-                    name = new StringBuilder(lang + (length-ext))
-                            .append(name, 0, lang).append(name, ext, length).toString();
-                }
-                final DataInputStream input = new DataInputStream(new BufferedInputStream(in));
-                try {
-                    this.values = values = new String[input.readInt()];
-                    for (int i=0; i<values.length; i++) {
-                        values[i] = input.readUTF();
-                        if (values[i].isEmpty()) {
-                            values[i] = null;
+                if (resources == null) {
+                    // If we get a NullPointerException or ClassCastException here,
+                    // it would be a bug in the way we create the chain of parents.
+                    values = ((IndexedResourceBundle) parent).ensureLoaded(key);
+                } else {
+                    /*
+                     * Prepares a log record.  We will wait for successful loading before
+                     * posting this record.  If loading fails, the record will be changed
+                     * into an error record. Note that the message must be logged outside
+                     * the synchronized block, otherwise there is dead locks!
+                     */
+                    final Locale    locale     = getLocale(); // Sometime null with IBM's JDK.
+                    final String    baseName   = getClass().getCanonicalName();
+                    final String    methodName = (key != null) ? "getObject" : "getKeys";
+                    final LogRecord record     = new LogRecord(Level.FINER, "Loaded resources for {0} from bundle \"{1}\".");
+                    /*
+                     * Loads resources from the UTF file.
+                     */
+                    try {
+                        DataInputStream input = new DataInputStream(new BufferedInputStream(resources.openStream()));
+                        values = new String[input.readInt()];
+                        for (int i=0; i<values.length; i++) {
+                            values[i] = input.readUTF();
+                            if (values[i].isEmpty()) {
+                                values[i] = null;
+                            }
                         }
+                        input.close();
+                    } catch (IOException exception) {
+                        record.setLevel  (Level.WARNING);
+                        record.setMessage(exception.getMessage()); // For administrator, use system locale.
+                        record.setThrown (exception);
+                        Logging.log(IndexedResourceBundle.class, methodName, record);
+                        final MissingResourceException error = new MissingResourceException(
+                                Exceptions.getLocalizedMessage(exception, locale), // For users, use requested locale.
+                                baseName, key);
+                        error.initCause(exception);
+                        throw error;
                     }
-                } finally {
-                    input.close();
+                    /*
+                     * Now, logs the message. This message is provided only in English.
+                     * Note that Locale.getDisplayName() may return different string on
+                     * different Java implementation, but it doesn't matter here since
+                     * we use the result only for logging purpose.
+                     */
+                    String language = null;
+                    if (locale != null) {
+                        language = locale.getDisplayName(Locale.US);
+                    }
+                    if (language == null || language.isEmpty()) {
+                        language = "<root>";
+                    }
+                    record.setParameters(new String[] {language, baseName});
+                    Logging.log(IndexedResourceBundle.class, methodName, record);
+                    resources = null; // Not needed anymore, let GC do its job.
                 }
-                /*
-                 * Now, logs the message. This message is not localized.  Note that
-                 * Locale.getDisplayName() may return different string on different
-                 * Java implementation, but it doesn't matter here since we use the
-                 * result only for logging purpose.
-                 */
-                String language = null;
-                final Locale rl = getLocale(); // Sometime null with IBM's JDK.
-                if (rl != null) {
-                    language = rl.getDisplayName(Locale.US);
-                }
-                if (language == null || language.isEmpty()) {
-                    language = "<default>";
-                }
-                record.setParameters(new String[] {language, getClass().getCanonicalName()});
+                this.values = values;
             }
-            Logging.log(IndexedResourceBundle.class, methodName, record);
-            return values;
-        } catch (IOException exception) {
-            record.setLevel  (Level.WARNING);
-            record.setMessage(exception.getMessage()); // For administrator, use system locale.
-            record.setThrown (exception);
-            Logging.log(IndexedResourceBundle.class, methodName, record);
-            final MissingResourceException error = new MissingResourceException(
-                    Exceptions.getLocalizedMessage(exception, getLocale()), // For users, use requested locale.
-                    getClass().getCanonicalName(), key);
-            error.initCause(exception);
-            throw error;
         }
+        return values;
     }
 
     /**
@@ -404,11 +373,11 @@ public class IndexedResourceBundle extends ResourceBundle {
             if (element instanceof CharSequence) {
                 CharSequence text = (CharSequence) element;
                 if (text instanceof InternationalString) {
-                    text = ((InternationalString) element).toString(getFormatLocale());
+                    text = ((InternationalString) element).toString(getLocale());
                 }
                 replacement = CharSequences.shortSentence(text, MAX_STRING_LENGTH);
             } else if (element instanceof Throwable) {
-                String message = Exceptions.getLocalizedMessage((Throwable) element, getFormatLocale());
+                String message = Exceptions.getLocalizedMessage((Throwable) element, getLocale());
                 if (message == null) {
                     message = Classes.getShortClassName(element);
                 }
@@ -496,7 +465,7 @@ public class IndexedResourceBundle extends ResourceBundle {
                 /*
                  * Constructs a new MessageFormat for formatting the arguments.
                  */
-                format = new MessageFormat(pattern, getFormatLocale());
+                format = new MessageFormat(pattern, getLocale());
                 lastKey = key;
             } else if (key != lastKey) {
                 /*

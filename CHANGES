@@ -3,6 +3,14 @@ Apache SIS Change Log
 
 Release 0.3-incubating - Current Development
 
+* SIS-31 Website needs a facelift (aestrada, Ross Laidlaw,
+  Suresh Marru, mattmann)
+
+* SIS-95: Explicitly specify Typed extends Object parameters
+  in FallbackConverterTest (mattmann, desruisseaux)
+
+* SIS-77: Provide an IDE build for Eclipse (mattmann)
+
 * SIS-70: Make QuadTreeNode and associated classes package private
   (Martin Desruisseaux, mattmann)
 

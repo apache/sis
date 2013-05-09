@@ -49,6 +49,7 @@ public final strictfp class DefaultInternationalStringTest extends TestCase {
         toTest.add(Locale.ENGLISH, MESSAGE);
         assertSame(MESSAGE, toTest.toString());
         assertSame(MESSAGE, toTest.toString(null));
+        assertSame(MESSAGE, toTest.toString(Locale.ROOT));
         validate(toTest);
     }
 
@@ -85,6 +86,7 @@ public final strictfp class DefaultInternationalStringTest extends TestCase {
      */
     private static void assertLocalized(final InternationalString toTest, final String quebecker) {
         assertEquals ("Unlocalized message:", MESSAGE,    toTest.toString(null));
+        assertEquals ("Unlocalized message:", MESSAGE,    toTest.toString(Locale.ROOT));
         assertEquals ("English message:",     MESSAGE_en, toTest.toString(Locale.ENGLISH));
         assertEquals ("French message:",      MESSAGE_fr, toTest.toString(Locale.FRENCH));
         assertEquals ("Quebecker message:",   quebecker,  toTest.toString(Locale.CANADA_FRENCH));
@@ -102,13 +104,15 @@ public final strictfp class DefaultInternationalStringTest extends TestCase {
         toTest.add(Locale.FRENCH,        MESSAGE_fr);
         toTest.add(Locale.CANADA_FRENCH, MESSAGE_fr_CA);
 
-        assertEquals("Unlocalized message:", MESSAGE,    String.format((Locale) null,  "%s", toTest));
+        assertEquals("Unlocalized message:", MESSAGE,    String.format(Locale.ROOT,    "%s", toTest));
         assertEquals("English message:",     MESSAGE_en, String.format(Locale.ENGLISH, "%s", toTest));
         assertEquals("French message:",      MESSAGE_fr, String.format(Locale.FRENCH,  "%s", toTest));
 
-        assertEquals("  This", String.format(Locale.ENGLISH, "%6.4s",  toTest));
-        assertEquals(" Voici", String.format(Locale.FRENCH,  "%6.5s",  toTest));
-        assertEquals("THIS  ", String.format(Locale.ENGLISH, "%-6.5S", toTest));
-        assertEquals("VOICI ", String.format(Locale.FRENCH,  "%-6.5S", toTest));
+        assertEquals("  Thi…", String.format(Locale.ROOT,    "%6.4s",  toTest));
+        assertEquals("  Thi…", String.format(Locale.ENGLISH, "%6.4s",  toTest));
+        assertEquals(" Voic…", String.format(Locale.FRENCH,  "%6.5s",  toTest));
+        assertEquals("THIS… ", String.format(Locale.ROOT,    "%-6.5S", toTest));
+        assertEquals("THIS… ", String.format(Locale.ENGLISH, "%-6.5S", toTest));
+        assertEquals("VOIC… ", String.format(Locale.FRENCH,  "%-6.5S", toTest));
     }
 }

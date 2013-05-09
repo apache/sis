@@ -16,6 +16,7 @@
  */
 package org.apache.sis.util;
 
+import java.lang.reflect.Field;
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
 
@@ -42,6 +43,7 @@ import java.io.ObjectStreamException;
 import java.io.InvalidObjectException;
 import java.io.NotSerializableException;
 import java.io.Serializable;
+import java.awt.geom.Point2D;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.GeographicCRS;
@@ -87,7 +89,7 @@ public final strictfp class ClassesTest extends TestCase {
      */
     @Test
     public void testGetAllInterfaces() {
-        final Set<Class<?>> interfaces = getAllInterfaces(ArrayList.class);
+        final Set<Class<?>> interfaces = getInterfaceSet(ArrayList.class);
         assertTrue(interfaces.contains(List        .class));
         assertTrue(interfaces.contains(Collection  .class));
         assertTrue(interfaces.contains(Iterable    .class));
@@ -122,8 +124,8 @@ public final strictfp class ClassesTest extends TestCase {
     private static abstract class T3 extends T2 implements Transformation {}
 
     /**
-     * Tests {@link Classes#findCommonClass(Collection)}
-     * and {@link Classes#findSpecializedClass(Collection)}.
+     * Tests {@link Classes#findCommonClass(Iterable)}
+     * and {@link Classes#findSpecializedClass(Iterable)}.
      */
     @Test
     public void testFindCommonParent() {
@@ -184,30 +186,30 @@ public final strictfp class ClassesTest extends TestCase {
     }
 
     /**
-     * Tests the {@link #boundOfParameterizedAttribute} method.
+     * Tests the {@link Classes#boundOfParameterizedProperty(Field)} method.
      *
      * @throws NoSuchFieldException  Should never occur.
      * @throws NoSuchMethodException Should never occur.
      */
     @Test
-    public void testBoundOfParameterizedAttribute() throws NoSuchFieldException, NoSuchMethodException {
+    public void testBoundOfParameterizedProperty() throws NoSuchFieldException, NoSuchMethodException {
         final Class<?>[] g = null;
         final Class<?>[] s = new Class<?>[] {Set.class};
         final Class<Parameterized> c = Parameterized.class;
-        assertNull(                 boundOfParameterizedAttribute(c.getMethod("getter0", g)));
-        assertNull(                 boundOfParameterizedAttribute(c.getMethod("setter0", s)));
-        assertEquals(Long   .class, boundOfParameterizedAttribute(c.getField ("attrib2"   )));
-        assertEquals(Integer.class, boundOfParameterizedAttribute(c.getMethod("getter1", g)));
-        assertEquals(Byte   .class, boundOfParameterizedAttribute(c.getMethod("getter2", g)));
-        assertEquals(Object .class, boundOfParameterizedAttribute(c.getMethod("getter3", g)));
-        assertEquals(short[].class, boundOfParameterizedAttribute(c.getMethod("getter4", g)));
-        assertEquals(String .class, boundOfParameterizedAttribute(c.getMethod("setter1", s)));
-        assertEquals(Short  .class, boundOfParameterizedAttribute(c.getMethod("setter2", s)));
-        assertEquals(Object .class, boundOfParameterizedAttribute(c.getMethod("setter3", s)));
+        assertNull(                 boundOfParameterizedProperty(c.getMethod("getter0", g)));
+        assertNull(                 boundOfParameterizedProperty(c.getMethod("setter0", s)));
+        assertEquals(Long   .class, boundOfParameterizedProperty(c.getField ("attrib2"   )));
+        assertEquals(Integer.class, boundOfParameterizedProperty(c.getMethod("getter1", g)));
+        assertEquals(Byte   .class, boundOfParameterizedProperty(c.getMethod("getter2", g)));
+        assertEquals(Object .class, boundOfParameterizedProperty(c.getMethod("getter3", g)));
+        assertEquals(short[].class, boundOfParameterizedProperty(c.getMethod("getter4", g)));
+        assertEquals(String .class, boundOfParameterizedProperty(c.getMethod("setter1", s)));
+        assertEquals(Short  .class, boundOfParameterizedProperty(c.getMethod("setter2", s)));
+        assertEquals(Object .class, boundOfParameterizedProperty(c.getMethod("setter3", s)));
     }
 
     /**
-     * Dummy class for {@link #testBoundOfParameterizedAttribute()} usage only.
+     * Dummy class for {@link #testBoundOfParameterizedProperty()} usage only.
      */
     private static final class Parameterized {
         public Set<? extends Long> attrib2 = null;
@@ -222,5 +224,37 @@ public final strictfp class ClassesTest extends TestCase {
         public void setter1(Set<         String> dummy) {}
         public void setter2(Set<? extends Short> dummy) {}
         public void setter3(Set<? super  Double> dummy) {}
+    }
+
+    /**
+     * Tests the {@link Classes#getShortName(Class)}, in particular the example values
+     * given in the javadoc.
+     */
+    @Test
+    public void testGetShortName() {
+        assertEquals("java.lang.String", String.class.getName());
+        assertEquals("String",           String.class.getSimpleName());
+        assertEquals("java.lang.String", String.class.getCanonicalName());
+        assertEquals("String",           getShortName(String.class));
+
+        assertEquals("[D",       double[].class.getName());
+        assertEquals("double[]", double[].class.getSimpleName());
+        assertEquals("double[]", double[].class.getCanonicalName());
+        assertEquals("double[]", getShortName(double[].class));
+
+        assertEquals("java.awt.geom.Point2D$Double", Point2D.Double.class.getName());
+        assertEquals("Double",                       Point2D.Double.class.getSimpleName());
+        assertEquals("java.awt.geom.Point2D.Double", Point2D.Double.class.getCanonicalName());
+        assertEquals("Point2D.Double",               getShortName(Point2D.Double.class));
+
+        final Class<?> anonymous = new Comparable<Object>() {
+            @Override public int compareTo(final Object o) {
+                return 0; // Not the purpose of this test.
+            }
+        }.getClass();
+        assertTrue(anonymous.getName().startsWith("org.apache.sis.util.ClassesTest$"));
+        assertEquals("",       anonymous.getSimpleName());
+        assertEquals(null,     anonymous.getCanonicalName());
+        assertEquals("Object", getShortName(anonymous));
     }
 }

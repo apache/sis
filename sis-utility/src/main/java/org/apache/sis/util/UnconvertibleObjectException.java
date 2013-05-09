@@ -35,7 +35,7 @@ public class UnconvertibleObjectException extends IllegalArgumentException {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 3434744387048059588L;
+    private static final long serialVersionUID = 4436966248421454692L;
 
     /**
      * Constructs a new exception with no message.

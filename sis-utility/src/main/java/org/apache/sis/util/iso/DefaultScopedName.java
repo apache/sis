@@ -29,7 +29,7 @@ import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.collection.UnmodifiableArrayList;
+import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 
 
@@ -55,7 +55,7 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -5215955533541748481L;
+    private static final long serialVersionUID = 1363103337249930577L;
 
     /**
      * The immutable list of parsed names.
@@ -103,8 +103,8 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
     /**
      * Constructs a scoped name from the specified list of strings.
      * If any of the given names is an instance of {@link InternationalString}, then its
-     * {@link InternationalString#toString(java.util.Locale) toString(null)} method will
-     * be invoked for fetching an unlocalized name.
+     * {@link InternationalString#toString(java.util.Locale) toString(Locale.ROOT)}
+     * method will be invoked for fetching an unlocalized name.
      * Otherwise the {@link CharSequence#toString()} method will be used.
      *
      * @param scope The scope of this name, or {@code null} for the global scope.
@@ -146,6 +146,7 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
         if (i != size) { // Paranoiac check.
             throw new ConcurrentModificationException(Errors.format(Errors.Keys.UnexpectedChange_1, "names"));
         }
+        // Following line is safe because 'parsedNames' type is <? extends LocalName>.
         parsedNames = UnmodifiableArrayList.wrap(locals);
     }
 
@@ -210,6 +211,7 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
         if (index != locals.length) { // Paranoiac check.
             throw new ConcurrentModificationException(Errors.format(Errors.Keys.UnexpectedChange_1, "tail"));
         }
+        // Following line is safe because 'parsedNames' type is <? extends LocalName>.
         parsedNames = UnmodifiableArrayList.wrap(locals);
         if (tail instanceof LocalName) {
             this.path = path;

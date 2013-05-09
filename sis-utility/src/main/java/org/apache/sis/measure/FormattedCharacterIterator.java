@@ -26,10 +26,9 @@ import java.util.Set;
 import java.text.Format;
 import java.text.AttributedCharacterIterator;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.internal.util.SurjectiveConverter;
+import org.apache.sis.util.collection.Containers;
+import org.apache.sis.internal.converter.SurjectiveConverter;
 import org.apache.sis.internal.simple.SimpleCharacterIterator;
-
-import static org.apache.sis.util.collection.Collections.derivedMap;
 
 
 /**
@@ -56,7 +55,7 @@ final class FormattedCharacterIterator extends SimpleCharacterIterator implement
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 360841752298264186L;
+    private static final long serialVersionUID = -5864519830922231670L;
 
     /**
      * Holds a field value, together with the run range in which this value is valid.
@@ -397,7 +396,7 @@ final class FormattedCharacterIterator extends SimpleCharacterIterator implement
     @Override
     public Map<Attribute, Object> getAttributes() {
         final int index = getIndex();
-        return derivedMap(attributes, new Filter(attributes, index), new Selector(index));
+        return Containers.derivedMap(attributes, new Filter(attributes, index), new Selector(index));
     }
 
     /**

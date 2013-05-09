@@ -38,7 +38,7 @@ import static org.apache.sis.util.CharSequences.*;
  * @module
  */
 @DependsOn({
-    ArraysTest.class,
+    ArraysExtTest.class,
     CharactersTest.class
 })
 public final strictfp class CharSequencesTest extends TestCase {
@@ -76,8 +76,8 @@ public final strictfp class CharSequencesTest extends TestCase {
     }
 
     /**
-     * Tests the {@link CharSequences#indexOf(CharSequence, CharSequence, int)} method.
-     * We test four time with different kind of character sequences.
+     * Tests the {@link CharSequences#indexOf(CharSequence, CharSequence, int, int)} method.
+     * We test four times with different kind of character sequences.
      */
     @Test
     public void testIndexOf() {
@@ -100,9 +100,9 @@ public final strictfp class CharSequencesTest extends TestCase {
     }
 
     /**
-     * Tests the {@link CharSequences#indexOf(CharSequence, int, int)} and
-     * {@link CharSequences#lastIndexOf(CharSequence, int, int)} methods.
-     * We test two time with different kind of character sequences, in order
+     * Tests the {@link CharSequences#indexOf(CharSequence, int, int, int)} and
+     * {@link CharSequences#lastIndexOf(CharSequence, int, int, int)} methods.
+     * We test two times with different kind of character sequences, in order
      * to test the {@link String} optimization case.
      */
     @Test
@@ -275,6 +275,15 @@ public final strictfp class CharSequencesTest extends TestCase {
     }
 
     /**
+     * Tests the {@link CharSequences#upperCaseToSentence(CharSequence)} method.
+     */
+    @Test
+    public void testUpperCaseToSentence() {
+        final CharSequence convert = upperCaseToSentence("HALF_DOWN");
+        assertEquals("Half down", convert.toString());
+    }
+
+    /**
      * Tests the {@link CharSequences#camelCaseToWords(CharSequence, boolean)} method.
      */
     @Test
@@ -359,7 +368,7 @@ public final strictfp class CharSequencesTest extends TestCase {
     }
 
     /**
-     * Tests the {@link CharSequences#isUpperCase(CharSequence)} method.
+     * Tests the {@link CharSequences#isUpperCase(CharSequence, int, int)} method.
      */
     @Test
     public void testIsUpperCase() {

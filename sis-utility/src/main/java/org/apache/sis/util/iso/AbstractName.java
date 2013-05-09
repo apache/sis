@@ -30,7 +30,7 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.util.resources.Errors;
 
 // Related to JDK7
-import org.apache.sis.internal.util.Objects;
+import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
@@ -61,7 +61,7 @@ public abstract class AbstractName implements GenericName, Serializable {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 3362498790089164525L;
+    private static final long serialVersionUID = 667242702456713391L;
 
     /**
      * A view of this name as a fully-qualified one.
@@ -234,8 +234,8 @@ public abstract class AbstractName implements GenericName, Serializable {
             }
             asString = buffer.toString();
         }
-        // Note: there is no need to invoke InternationalString.toString(null) for the
-        // unlocalized version, because our International inner class is implemented in
+        // Note: there is no need to invoke InternationalString.toString(Locale.ROOT) for
+        // the unlocalized version, because our International inner class is implemented in
         // such a way that InternationalString.toString() returns AbstractName.toString().
         return asString.toString();
     }
@@ -268,7 +268,7 @@ public abstract class AbstractName implements GenericName, Serializable {
         /**
          * Serial number for inter-operability with different versions.
          */
-        private static final long serialVersionUID = -6422809765366372062L;
+        private static final long serialVersionUID = -5259001179796274879L;
 
         /**
          * The sequence of {@linkplain DefaultLocalName local names} making this generic name.

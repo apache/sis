@@ -24,10 +24,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
-
 import org.apache.sis.util.logging.Logging;
-
-import org.junit.After;
 import org.junit.runner.RunWith;
 
 import static org.apache.sis.test.TestConfiguration.VERBOSE_OUTPUT_KEY;
@@ -37,26 +34,19 @@ import static org.apache.sis.test.TestConfiguration.OUTPUT_ENCODING_KEY;
 /**
  * Base class of Apache SIS tests (except the ones that extend GeoAPI tests).
  * This base class provides an {@link #out} field that sub-classes can use
- * <strong>if non-null</strong> for printing debugging information. This {@code out}
- * field shall be used instead of {@link System#out} for the following reasons:
+ * for printing debugging information. This {@code out} field shall be used
+ * instead of {@link System#out} for the following reasons:
  *
  * <ul>
- *   <li>It is {@code null} by default and enabled only if a system property is set as
- *     described in the {@linkplain org.apache.sis.test package javadoc}. This allows more
- *     quiet (and sometime faster) Maven executions for those who are not SIS developers.</li>
- *   <li>The outputs are collected and printed only after each test completion.
+ *   <li>By default, the contents sent to {@code out} are ignored for successful tests
+ *     and printed only when a test fail. This avoid polluting the console output during
+ *     successful Maven builds, and print only the information related to failed tests.</li>
+ *   <li>Printing information for all tests can be enabled if a system property is set as
+ *     described in the {@linkplain org.apache.sis.test package javadoc}.</li>
+ *   <li>The outputs are collected and printed only after test completion.
  *     This avoid the problem of logging messages interleaved with the output.
  *     If such interleaving is really wanted, then use the logging framework instead.</li>
  * </ul>
- *
- * Usage example:
- *
- * {@preformat java
- *     if (out != null) {
- *         // Performs here some potentially costly calculation to be printed.
- *         out.println("Write here some information of particular interest.");
- *     }
- * }
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.16)
@@ -82,32 +72,34 @@ public abstract strictfp class TestCase {
     public static final boolean PENDING_NEXT_GEOAPI_RELEASE = false;
 
     /**
-     * If non-null, the output writer where to print debugging information.
-     * This field is non-null if the {@value org.apache.sis.test.TestConfiguration#VERBOSE_OUTPUT_KEY}
-     * system property is set to {@code true}. This writer will use the system default encoding, unless
-     * the {@value org.apache.sis.test.TestConfiguration#OUTPUT_ENCODING_KEY} system property has been
-     * set to a different value.
+     * The output writer where to print debugging information (never {@code null}).
+     * Texts sent to this printer will be show only if the test fails, or if the
+     * {@value org.apache.sis.test.TestConfiguration#VERBOSE_OUTPUT_KEY} system property
+     * is set to {@code true}. This writer will use the system default encoding, unless
+     * the {@value org.apache.sis.test.TestConfiguration#OUTPUT_ENCODING_KEY} system
+     * property has been set to a different value.
      *
      * @see org.apache.sis.test
-     * @see #flushVerboseOutput()
      */
     public static final PrintWriter out;
 
     /**
-     * The buffer which is backing the {@linkplain #out} stream, or {@code null} if none.
+     * The buffer which is backing the {@linkplain #out} stream.
      */
     private static final StringWriter buffer;
+
+    /**
+     * {@code true} if the {@value org.apache.sis.test.TestConfiguration#VERBOSE_OUTPUT_KEY}
+     * system property is set to {@code true}.
+     */
+    public static final boolean verbose;
 
     /**
      * Sets the {@link #out} writer and its underlying {@link #buffer}.
      */
     static {
-        if (Boolean.getBoolean(VERBOSE_OUTPUT_KEY)) {
-            out = new PrintWriter(buffer = new StringWriter());
-        } else {
-            buffer = null;
-            out = null;
-        }
+        verbose = Boolean.getBoolean(VERBOSE_OUTPUT_KEY);
+        out = new PrintWriter(buffer = new StringWriter());
     }
 
     /**
@@ -144,21 +136,29 @@ public abstract strictfp class TestCase {
     }
 
     /**
-     * If verbose output is enabled, flushes the {@link #out} stream after each test.
-     * The stream will be flushed to the {@linkplain System#console() console} if
-     * available, or to the {@linkplain System#out standard output stream} otherwise.
-     *
-     * <p>This method is invoked automatically by JUnit and doesn't need to be invoked
-     * explicitely, unless the developer wants to flush the output at some specific
-     * point.</p>
+     * Invoked by {@link TestRunner} in order to clear the buffer before a new test begin.
+     * This is necessary when the previous test succeeded and the {@link #verbose} flag is
+     * {@code false}, since the {@link #flushOutput()} method has not been invoked in such
+     * case.
      */
-    @After
-    public void flushVerboseOutput() {
+    static void clearBuffer() {
+        synchronized (buffer) { // This is the lock used by the 'out' PrintWriter.
+            out.flush();
+            buffer.getBuffer().setLength(0);
+        }
+    }
+
+    /**
+     * Invoked by {@link TestRunner} in order to flush the {@link #out} stream.
+     * The stream content will be flushed to the {@linkplain System#console() console}
+     * if available, or to the {@linkplain System#out standard output stream} otherwise.
+     * This method clears the stream buffer.
+     *
+     * @param success {@code true} if this method is invoked on build success,
+     */
+    static void flushOutput() {
         System.out.flush();
         System.err.flush();
-        if (out == null) {
-            return;
-        }
         synchronized (buffer) { // This is the lock used by the 'out' PrintWriter.
             out.flush();
             /*

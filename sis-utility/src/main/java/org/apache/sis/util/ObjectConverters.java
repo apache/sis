@@ -18,10 +18,44 @@ package org.apache.sis.util;
 
 import java.util.Map;
 import java.util.Set;
+import org.apache.sis.util.collection.Containers;
+import org.apache.sis.internal.converter.IdentityConverter;
+import org.apache.sis.internal.converter.SystemRegistry;
 
 
 /**
  * Creates {@link ObjectConverter} instances, or uses them for creating collection views.
+ * Converters are created by the following methods:
+ *
+ * <ul>
+ *   <li>{@link #identity(Class)}</li>
+ *   <li>{@link #find(Class, Class)}</li>
+ * </ul>
+ *
+ * Converters can be used for creating derived collections by the following methods:
+ *
+ * <ul>
+ *   <li>{@link #derivedSet(Set, ObjectConverter)}</li>
+ *   <li>{@link #derivedMap(Map, ObjectConverter, ObjectConverter)}</li>
+ *   <li>{@link #derivedKeys(Map, ObjectConverter, Class)}</li>
+ *   <li>{@link #derivedValues(Map, Class, ObjectConverter)}</li>
+ * </ul>
+ *
+ * {@section Example}
+ * The following code convert instances in a collection from type {@code S} to type {@code T},
+ * where the types are unknown at compile-time. Note that the converter is obtained only once
+ * before to be applied to every elements in the loop.
+ *
+ * {@preformat java
+ *     Class<S> sourceType = ...
+ *     Class<T> targetType = ...
+ *     Collection<S> sources = ...;
+ *     Collection<T> targets = ...;
+ *     ObjectConverter<S,T> converter = ObjectConverters.find(sourceType, targetType);
+ *     for (S source : sources) {
+ *         targets.add(converter.convert(source));
+ *     }
+ * }
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-3.00)
@@ -44,7 +78,46 @@ public final class ObjectConverters extends Static {
      */
     public static <T> ObjectConverter<T,T> identity(final Class<T> type) {
         ArgumentChecks.ensureNonNull("type", type);
-        return IdentityConverter.create(type);
+        return new IdentityConverter<T,T>(type, type, null).unique();
+    }
+
+    /**
+     * Returns a converter for the specified source and target classes.
+     *
+     * @param  <S> The source class.
+     * @param  <T> The target class.
+     * @param  source The source class.
+     * @param  target The target class, or {@code Object.class} for any.
+     * @return The converter from the specified source class to the target class.
+     * @throws UnconvertibleObjectException if no converter is found.
+     */
+    public static <S,T> ObjectConverter<? super S, ? extends T> find(final Class<S> source, final Class<T> target)
+            throws UnconvertibleObjectException
+    {
+        ArgumentChecks.ensureNonNull("source", source);
+        ArgumentChecks.ensureNonNull("target", target);
+        return SystemRegistry.INSTANCE.find(source, target);
+    }
+
+    /**
+     * Converts the given value to the given type. This convenience method shall be used only for
+     * rare conversions. For converting many instances between the same source and target classes,
+     * consider invoking {@link #find(Class, Class)} instead in order to reuse the same converter
+     * for all values to convert.
+     *
+     * @param  <T>    The type of the {@code target} class.
+     * @param  value  The value to convert, or {@code null}.
+     * @param  target The target class.
+     * @return The converted value (may be {@code null}).
+     * @throws UnconvertibleObjectException if the given value can not be converted.
+     */
+    @SuppressWarnings({"unchecked","rawtypes"})
+    public static <T> T convert(Object value, final Class<T> target) throws UnconvertibleObjectException {
+        ArgumentChecks.ensureNonNull("target", target);
+        if (!target.isInstance(value) && value != null) {
+            value = ((ObjectConverter) SystemRegistry.INSTANCE.find(value.getClass(), target)).convert(value);
+        }
+        return (T) value;
     }
 
     /**
@@ -53,7 +126,7 @@ public final class ObjectConverters extends Static {
      * by invoking the {@link ObjectConverter#convert(Object)} method on the given converter.
      *
      * <p>This convenience method delegates to
-     * {@link org.apache.sis.util.collection.Collections#derivedSet Collections.derivedSet(…)}.
+     * {@link Containers#derivedSet Containers.derivedSet(…)}.
      * See the javadoc of the above method for more information.
      *
      * @param  <S>       The type of elements in the storage (original) set.
@@ -64,10 +137,10 @@ public final class ObjectConverters extends Static {
      * @return A view over the {@code storage} set containing all elements converted by the given
      *         converter, or {@code null} if {@code storage} was null.
      *
-     * @see org.apache.sis.util.collection.Collections#derivedSet(Set, ObjectConverter)
+     * @see Containers#derivedSet(Set, ObjectConverter)
      */
     public static <S,E> Set<E> derivedSet(final Set<S> storage, final ObjectConverter<S,E> converter) {
-        return org.apache.sis.util.collection.Collections.derivedSet(storage, converter);
+        return Containers.derivedSet(storage, converter);
     }
 
     /**
@@ -76,7 +149,7 @@ public final class ObjectConverters extends Static {
      * by invoking the {@link ObjectConverter#convert(Object)} method on the given converters.
      *
      * <p>This convenience method delegates to
-     * {@link org.apache.sis.util.collection.Collections#derivedMap Collections.derivedMap(…)}.
+     * {@link Containers#derivedMap Containers.derivedMap(…)}.
      * See the javadoc of the above method for more information.
      *
      * @param <SK>         The type of keys   in the storage map.
@@ -89,13 +162,13 @@ public final class ObjectConverters extends Static {
      * @return A view over the {@code storage} map containing all entries converted by the given
      *         converters, or {@code null} if {@code storage} was null.
      *
-     * @see org.apache.sis.util.collection.Collections#derivedMap(Map, ObjectConverter, ObjectConverter)
+     * @see Containers#derivedMap(Map, ObjectConverter, ObjectConverter)
      */
     public static <SK,SV,K,V> Map<K,V> derivedMap(final Map<SK,SV> storage,
                                                   final ObjectConverter<SK,K> keyConverter,
                                                   final ObjectConverter<SV,V> valueConverter)
     {
-        return org.apache.sis.util.collection.Collections.derivedMap(storage, keyConverter, valueConverter);
+        return Containers.derivedMap(storage, keyConverter, valueConverter);
     }
 
     /**
@@ -104,7 +177,7 @@ public final class ObjectConverters extends Static {
      * invoking the {@link ObjectConverter#convert(Object)} method on the given converter.
      *
      * <p>This convenience method delegates to
-     * {@link org.apache.sis.util.collection.Collections#derivedMap Collections.derivedMap(…)}.
+     * {@link Containers#derivedMap Containers.derivedMap(…)}.
      * See the javadoc of the above method for more information.
      *
      * @param <SK>         The type of keys   in the storage map.
@@ -116,15 +189,14 @@ public final class ObjectConverters extends Static {
      * @return A view over the {@code storage} map containing all entries with the keys converted
      *         by the given converter, or {@code null} if {@code storage} was null.
      *
-     * @see org.apache.sis.util.collection.Collections#derivedMap(Map, ObjectConverter, ObjectConverter)
+     * @see Containers#derivedMap(Map, ObjectConverter, ObjectConverter)
      */
     public static <SK,K,V> Map<K,V> derivedKeys(final Map<SK,V> storage,
                                                 final ObjectConverter<SK,K> keyConverter,
                                                 final Class<V> valueType)
     {
         ArgumentChecks.ensureNonNull("valueType", valueType);
-        return org.apache.sis.util.collection.Collections.derivedMap(storage,
-                keyConverter, IdentityConverter.create(valueType));
+        return Containers.derivedMap(storage, keyConverter, identity(valueType));
     }
 
     /**
@@ -133,7 +205,7 @@ public final class ObjectConverters extends Static {
      * invoking the {@link ObjectConverter#convert(Object)} method on the given converter.
      *
      * <p>This convenience method delegates to
-     * {@link org.apache.sis.util.collection.Collections#derivedMap Collections.derivedMap(…)}.
+     * {@link Containers#derivedMap Containers.derivedMap(…)}.
      * See the javadoc of the above method for more information.
      *
      * @param <K>          The type of keys in the storage and derived map.
@@ -145,14 +217,13 @@ public final class ObjectConverters extends Static {
      * @return A view over the {@code storage} map containing all entries with the values converted
      *         by the given converter, or {@code null} if {@code storage} was null.
      *
-     * @see org.apache.sis.util.collection.Collections#derivedMap(Map, ObjectConverter, ObjectConverter)
+     * @see Containers#derivedMap(Map, ObjectConverter, ObjectConverter)
      */
     public static <K,SV,V> Map<K,V> derivedValues(final Map<K,SV> storage,
                                                   final Class<K> keyType,
                                                   final ObjectConverter<SV,V> valueConverter)
     {
         ArgumentChecks.ensureNonNull("keyType", keyType);
-        return org.apache.sis.util.collection.Collections.derivedMap(storage,
-                IdentityConverter.create(keyType), valueConverter);
+        return Containers.derivedMap(storage, identity(keyType), valueConverter);
     }
 }

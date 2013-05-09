@@ -20,6 +20,7 @@ import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.test.DependsOnMethod;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -43,11 +44,11 @@ import static org.apache.sis.geometry.AbstractEnvelopeTest.WGS84;
  * @module
  */
 @DependsOn(AbstractEnvelopeTest.class)
-public final strictfp class GeneralEnvelopeTest extends TestCase {
+public strictfp class GeneralEnvelopeTest extends TestCase {
     /**
      * The comparison threshold for strict comparisons.
      */
-    private static final double STRICT = 0;
+    static final double STRICT = 0;
 
     /**
      * Tolerance threshold for floating point comparisons.
@@ -56,8 +57,9 @@ public final strictfp class GeneralEnvelopeTest extends TestCase {
 
     /**
      * Creates a new geographic envelope for the given ordinate values.
+     * This method is overridden by {@link SubEnvelopeTest}.
      */
-    private static GeneralEnvelope create(final double xmin, final double ymin, final double xmax, final double ymax) {
+    GeneralEnvelope create(final double xmin, final double ymin, final double xmax, final double ymax) {
         final GeneralEnvelope envelope = new GeneralEnvelope(2);
         envelope.setCoordinateReferenceSystem(WGS84);
         envelope.setEnvelope(xmin, ymin, xmax, ymax);
@@ -65,6 +67,14 @@ public final strictfp class GeneralEnvelopeTest extends TestCase {
             validate(envelope);
         }
         return envelope;
+    }
+
+    /**
+     * Verifies invariants for the given envelope after each test.
+     * This method is overridden by {@link SubEnvelopeTest}.
+     */
+    void verifyInvariants(final GeneralEnvelope envelope) {
+        assertSame(WGS84, envelope.getCoordinateReferenceSystem());
     }
 
     /**
@@ -263,6 +273,10 @@ public final strictfp class GeneralEnvelopeTest extends TestCase {
         //  ─────┘     └─────
         e2.setRange(0, 10, 90);
         assertIntersectEquals(e1, e2, NaN, ymin, NaN, ymax);
+
+        // Post-test verification, mostly for SubEnvelope.
+        verifyInvariants(e1);
+        verifyInvariants(e2);
     }
 
     /**
@@ -324,6 +338,10 @@ public final strictfp class GeneralEnvelopeTest extends TestCase {
         //  ─────┘     └─────
         e2.setRange(0, 10, 90);
         assertUnionEquals(e1, e2, +0.0, ymin, -0.0, ymax, true, true);
+
+        // Post-test verification, mostly for SubEnvelope.
+        verifyInvariants(e1);
+        verifyInvariants(e2);
     }
 
     /**
@@ -353,6 +371,8 @@ public final strictfp class GeneralEnvelopeTest extends TestCase {
 
         p.x = 30; // Add on the left side.
         assertAddEquals(e, p, 80, ymin, 30, ymax);
+
+        verifyInvariants(e);
     }
 
     /**
@@ -377,6 +397,7 @@ public final strictfp class GeneralEnvelopeTest extends TestCase {
         assertTrue(e.normalize());
         assertEquals("Expect positive zero", Double.doubleToLongBits(+0.0), Double.doubleToLongBits(e.getLower(0)));
         assertEquals("Expect negative zero", Double.doubleToLongBits(-0.0), Double.doubleToLongBits(e.getUpper(0)));
+        verifyInvariants(e);
     }
 
     /**
@@ -389,6 +410,7 @@ public final strictfp class GeneralEnvelopeTest extends TestCase {
         GeneralEnvelope e = create(-195, -90, +170, +90); // -195° is equivalent to 165°
         assertTrue(e.normalize());
         assertEnvelopeEquals(e, -180, -90, +180, +90);
+        verifyInvariants(e);
     }
 
     /**
@@ -411,6 +433,7 @@ public final strictfp class GeneralEnvelopeTest extends TestCase {
         e = create(0.0, -10, -0.0, 10);
         assertTrue(e.simplify());
         assertEnvelopeEquals(e, -180, -10, 180, 10);
+        verifyInvariants(e);
     }
 
     /**
@@ -425,12 +448,29 @@ public final strictfp class GeneralEnvelopeTest extends TestCase {
         assertEquals(-2.0, e.getLower(1), 0.0);
         assertEquals( 3.0, e.getUpper(0), 0.0);
         assertEquals(-1.0, e.getUpper(1), 0.0);
+        verifyInvariants(e);
     }
 
     /**
-     * Tests the {@link GeneralEnvelope#GeneralEnvelope(String)} constructor.
+     * Tests the {@link GeneralEnvelope#toString()} method.
      */
     @Test
+    public void testToString() {
+        GeneralEnvelope envelope = new GeneralEnvelope(new double[] {-180, -90}, new double[] {180, 90});
+        assertEquals("BOX(-180 -90, 180 90)", envelope.toString());
+
+        envelope = new GeneralEnvelope(3);
+        envelope.setRange(0, -180, +180);
+        envelope.setRange(1,  -90,  +90);
+        envelope.setRange(2,   10,   30);
+        assertEquals("BOX3D(-180 -90 10, 180 90 30)", envelope.toString());
+    }
+
+    /**
+     * Tests the {@link GeneralEnvelope#GeneralEnvelope(CharSequence)} constructor.
+     */
+    @Test
+    @DependsOnMethod("testToString")
     public void testWktParsing() {
         GeneralEnvelope envelope = new GeneralEnvelope("BOX(-180 -90,180 90)");
         assertEquals(2, envelope.getDimension());
@@ -457,20 +497,20 @@ public final strictfp class GeneralEnvelopeTest extends TestCase {
         assertEquals(  40, envelope.getUpper(1), STRICT);
         validate(envelope);
 
-        assertEquals("BOX2D(6 10, 6 10)",     new GeneralEnvelope("POINT(6 10)").toString());
+        assertEquals("BOX(6 10, 6 10)",       new GeneralEnvelope("POINT(6 10)").toString());
         assertEquals("BOX3D(6 10 3, 6 10 3)", new GeneralEnvelope("POINT M [ 6 10 3 ] ").toString());
-        assertEquals("BOX2D(3 4, 20 50)",     new GeneralEnvelope("LINESTRING(3 4,10 50,20 25)").toString());
-        assertEquals("BOX2D(1 1, 6 5)",       new GeneralEnvelope(
+        assertEquals("BOX(3 4, 20 50)",       new GeneralEnvelope("LINESTRING(3 4,10 50,20 25)").toString());
+        assertEquals("BOX(1 1, 6 5)",         new GeneralEnvelope(
                 "MULTIPOLYGON(((1 1,5 1,5 5,1 5,1 1),(2 2, 3 2, 3 3, 2 3,2 2)),((3 3,6 2,6 4,3 3)))").toString());
-        assertEquals("BOX2D(3 6, 7 10)", new GeneralEnvelope("GEOMETRYCOLLECTION(POINT(4 6),LINESTRING(3 8,7 10))").toString());
+        assertEquals("BOX(3 6, 7 10)", new GeneralEnvelope("GEOMETRYCOLLECTION(POINT(4 6),LINESTRING(3 8,7 10))").toString());
         assertEquals(0, new GeneralEnvelope("BOX()").getDimension());
 
         try {
-            new GeneralEnvelope("BOX2D(3 4");
+            new GeneralEnvelope("BOX(3 4");
             fail("Parsing should fails because of missing parenthesis.");
         } catch (IllegalArgumentException e) {
             // This is the expected exception.
-            assertTrue(e.getMessage().contains("BOX2D"));
+            assertTrue(e.getMessage().contains("BOX"));
         }
         try {
             new GeneralEnvelope("LINESTRING(3 4,10 50),20 25)");
@@ -482,7 +522,8 @@ public final strictfp class GeneralEnvelopeTest extends TestCase {
     }
 
     /**
-     * Tests the {@link GeneralEnvelope#equals} method.
+     * Tests the {@link GeneralEnvelope#equals(Object)} and
+     * {@link GeneralEnvelope#equals(Envelope, double, boolean)} methods.
      */
     @Test
     public void testEquals() {
@@ -492,7 +533,7 @@ public final strictfp class GeneralEnvelopeTest extends TestCase {
          */
         final GeneralEnvelope e1 = new GeneralEnvelope(4);
         assertTrue  (e1.isEmpty());
-        assertFalse (e1.isNull());
+        assertFalse (e1.isAllNaN());
         assertEquals(e1.getLowerCorner(), e1.getUpperCorner());
         /*
          * Initializes with arbitrary coordinate values.
@@ -501,7 +542,7 @@ public final strictfp class GeneralEnvelopeTest extends TestCase {
         for (int i=e1.getDimension(); --i>=0;) {
             e1.setRange(i, i*5 + 2, i*6 + 5);
         }
-        assertFalse(e1.isNull ());
+        assertFalse(e1.isAllNaN ());
         assertFalse(e1.isEmpty());
         assertFalse(e1.getLowerCorner().equals(e1.getUpperCorner()));
         /*
@@ -573,10 +614,8 @@ public final strictfp class GeneralEnvelopeTest extends TestCase {
      * Tests {@code GeneralEnvelope} serialization.
      */
     @Test
-    public void testSerialization() {
-        final GeneralEnvelope e1 = new GeneralEnvelope(
-                new double[] {-20, -10},
-                new double[] { 20,  10});
+    public final void testSerialization() {
+        final GeneralEnvelope e1 = create(-20, -10, 20, 10);
         final GeneralEnvelope e2 = assertSerializedEquals(e1);
         assertNotSame(e1, e2);
         validate(e2);

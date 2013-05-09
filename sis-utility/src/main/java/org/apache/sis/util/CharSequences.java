@@ -16,17 +16,15 @@
  */
 package org.apache.sis.util;
 
+import java.util.Arrays;
 import java.nio.CharBuffer;
 
 import static java.lang.Character.*;
-import static java.util.Arrays.fill;
-import static java.util.Arrays.copyOf;
-import static org.apache.sis.util.Arrays.resize;
 import static org.apache.sis.util.StringBuilders.replace;
 
 // Related to JDK7
-import static org.apache.sis.internal.util.JDK7.lowSurrogate;
-import static org.apache.sis.internal.util.JDK7.highSurrogate;
+import static org.apache.sis.internal.jdk7.JDK7.lowSurrogate;
+import static org.apache.sis.internal.jdk7.JDK7.highSurrogate;
 
 
 /**
@@ -105,7 +103,7 @@ public final class CharSequences extends Static {
         // this strategy and build the char[] array on the fly.
         final int last = SPACES.length - 1;
         final char[] spaces = new char[last+1];
-        fill(spaces, ' ');
+        Arrays.fill(spaces, ' ');
         SPACES[last] = new String(spaces).intern();
     }
 
@@ -172,7 +170,7 @@ public final class CharSequences extends Static {
 
             @Override public String toString() {
                 final char[] array = new char[length];
-                fill(array, ' ');
+                Arrays.fill(array, ' ');
                 return new String(array);
             }
         };
@@ -655,7 +653,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
             final CharSequence item = trimWhitespaces(text, last, i);
             if (!excludeEmpty || item.length() != 0) {
                 if (count == strings.length) {
-                    strings = copyOf(strings, count << 1);
+                    strings = Arrays.copyOf(strings, count << 1);
                 }
                 strings[count++] = item;
             }
@@ -665,11 +663,11 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
         final CharSequence item = trimWhitespaces(text, last, length);
         if (!excludeEmpty || item.length() != 0) {
             if (count == strings.length) {
-                strings = copyOf(strings, count + 1);
+                strings = Arrays.copyOf(strings, count + 1);
             }
             strings[count++] = item;
         }
-        return resize(strings, count);
+        return ArraysExt.resize(strings, count);
     }
 
     /**
@@ -751,7 +749,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
                 }
             }
             if (count >= splitted.length) {
-                splitted = copyOf(splitted, count*2);
+                splitted = Arrays.copyOf(splitted, count*2);
             }
             splitted[count++] = text.subSequence(last, splitAt);
             last = splitAt + skip;
@@ -760,10 +758,10 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
          * Add the remaining string and we are done.
          */
         if (count >= splitted.length) {
-            splitted = copyOf(splitted, count+1);
+            splitted = Arrays.copyOf(splitted, count+1);
         }
         splitted[count++] = text.subSequence(last, text.length());
-        return resize(splitted, count);
+        return ArraysExt.resize(splitted, count);
     }
 
     /**
@@ -1123,7 +1121,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
                 }
                 int upper = lower;
                 boolean forward = false;
-                do { // Do be run as long as we need to remove more characters.
+                do { // To be run as long as we need to remove more characters.
                     int nc=0, type=UNASSIGNED;
                     forward = !forward;
 searchWordBreak:    while (true) {
@@ -1175,6 +1173,47 @@ searchWordBreak:    while (true) {
             }
         }
         return text;
+    }
+
+    /**
+     * Given a string in upper cases (typically a Java constant), returns a string formatted
+     * like an English sentence. This heuristic method performs the following steps:
+     *
+     * <ol>
+     *   <li>Replace all occurrences of {@code '_'} by spaces.</li>
+     *   <li>Converts all letters except the first one to lower case letters using
+     *       {@link Character#toLowerCase(int)}. Note that this method does not use
+     *       the {@link String#toLowerCase()} method. Consequently the system locale
+     *       is ignored. This method behaves as if the conversion were done in the
+     *       {@linkplain java.util.Locale#ROOT root} locale.</li>
+     * </ol>
+     *
+     * <p>Note that those heuristic rules may be modified in future SIS versions,
+     * depending on the practical experience gained.</p>
+     *
+     * @param  identifier The name of a Java constant, or {@code null}.
+     * @return The identifier like an English sentence, or {@code null}
+     *         if the given {@code identifier} argument was null.
+     */
+    public static CharSequence upperCaseToSentence(final CharSequence identifier) {
+        if (identifier == null) {
+            return null;
+        }
+        final StringBuilder buffer = new StringBuilder(identifier.length());
+        final int length = identifier.length();
+        for (int i=0; i<length;) {
+            int c = Character.codePointAt(identifier, i);
+            if (i != 0) {
+                if (c == '_') {
+                    c = ' ';
+                } else {
+                    c = Character.toLowerCase(c);
+                }
+            }
+            buffer.appendCodePoint(c);
+            i += Character.charCount(c);
+        }
+        return buffer;
     }
 
     /**

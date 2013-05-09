@@ -21,6 +21,9 @@ import java.util.FormattableFlags;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.CharSequences;
 
+import static java.lang.Math.abs;
+import static java.lang.Math.max;
+
 
 /**
  * Miscellaneous utilities which should not be put in public API.
@@ -31,6 +34,31 @@ import org.apache.sis.util.CharSequences;
  * @module
  */
 public final class Utilities extends Static {
+    /**
+     * Relative difference tolerated when comparing floating point numbers using
+     * {@link org.apache.sis.util.ComparisonMode#APPROXIMATIVE}.
+     *
+     * <p>Historically, this was the relative tolerance threshold for considering two
+     * matrixes as equal. This value has been determined empirically in order to allow
+     * {@link org.apache.sis.referencing.operation.transform.ConcatenatedTransform} to
+     * detect the cases where two {@link org.apache.sis.referencing.operation.transform.LinearTransform}
+     * are equal for practical purpose. This threshold can be used as below:</p>
+     *
+     * {@preformat java
+     *     Matrix m1 = ...;
+     *     Matrix m2 = ...;
+     *     if (Matrices.epsilonEqual(m1, m2, EQUIVALENT_THRESHOLD, true)) {
+     *         // Consider that matrixes are equal.
+     *     }
+     * }
+     *
+     * By extension, the same threshold value is used for comparing other floating point values.
+     *
+     * @see org.apache.sis.internal.referencing.Utilities#LINEAR_TOLERANCE
+     * @see org.apache.sis.internal.referencing.Utilities#ANGULAR_TOLERANCE
+     */
+    public static final double COMPARISON_THRESHOLD = 1E-14;
+
     /**
      * Bit mask to isolate the sign bit of non-{@linkplain Double#isNaN(double) NaN} values in a
      * {@code double}. For any real value, the following code evaluate to 0 if the given value is
@@ -57,24 +85,76 @@ public final class Utilities extends Static {
     }
 
     /**
+     * Returns {@code true} if the given values are approximatively equal,
+     * up to the {@linkplain #COMPARISON_THRESHOLD comparison threshold}.
+     *
+     * @param  v1 The first value to compare.
+     * @param  v2 The second value to compare.
+     * @return {@code true} If both values are approximatively equal.
+     */
+    public static boolean epsilonEqual(final double v1, final double v2) {
+        final double threshold = COMPARISON_THRESHOLD * max(abs(v1), abs(v2));
+        if (threshold == Double.POSITIVE_INFINITY || Double.isNaN(threshold)) {
+            return Double.doubleToLongBits(v1) == Double.doubleToLongBits(v2);
+        }
+        return abs(v1 - v2) <= threshold;
+    }
+
+    /**
+     * Returns {@code true} if the following objects are floating point numbers ({@link Float} or
+     * {@link Double} types) and approximatively equal. If the given object are not floating point
+     * numbers, then this method returns {@code false} unconditionally on the assumption that
+     * strict equality has already been checked before this method call.
+     *
+     * @param  v1 The first value to compare.
+     * @param  v2 The second value to compare.
+     * @return {@code true} If both values are real number and approximatively equal.
+     */
+    public static boolean floatEpsilonEqual(final Object v1, final Object v2) {
+        return (v1 instanceof Float || v1 instanceof Double) &&
+               (v2 instanceof Float || v2 instanceof Double) &&
+               epsilonEqual(((Number) v1).doubleValue(), ((Number) v2).doubleValue());
+    }
+
+    /**
      * Formats the given character sequence to the given formatter. This method takes in account
      * the {@link FormattableFlags#UPPERCASE} and {@link FormattableFlags#LEFT_JUSTIFY} flags.
      *
      * @param formatter The formatter in which to format the value.
      * @param flags     The formatting flags.
      * @param width     Minimal number of characters to write, padding with {@code ' '} if necessary.
+     * @param precision Number of characters to keep before truncation, or -1 if no limit.
      * @param value     The text to format.
      */
-    public static void formatTo(final Formatter formatter, final int flags, int width, String value) {
+    public static void formatTo(final Formatter formatter, final int flags,
+            int width, int precision, String value)
+    {
         final String format;
         final Object[] args;
         boolean isUpperCase = (flags & FormattableFlags.UPPERCASE) != 0;
         if (isUpperCase && width > 0) {
             // May change the string length in some locales.
             value = value.toUpperCase(formatter.locale());
-            isUpperCase = false;
+            isUpperCase = false; // Because conversion has already been done.
         }
-        final int length = value.length();
+        int length = value.length();
+        if (precision >= 0) {
+            for (int i=0,n=0; i<length; i += n) {
+                if (--precision < 0) {
+                    // Found the amount of characters to keep. The 'n' variable can be
+                    // zero only if precision == 0, in which case the string is empty.
+                    if (n == 0) {
+                        value = "";
+                    } else {
+                        length = (i -= n) + 1;
+                        final StringBuilder buffer = new StringBuilder(length);
+                        value = buffer.append(value, 0, i).append('…').toString();
+                    }
+                    break;
+                }
+                n = Character.charCount(value.codePointAt(i));
+            }
+        }
         // Double check since length() is faster than codePointCount(...).
         if (width > length && (width -= value.codePointCount(0, length)) > 0) {
             format = "%s%s";

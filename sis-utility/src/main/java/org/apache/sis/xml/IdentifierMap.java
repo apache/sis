@@ -64,10 +64,8 @@ public interface IdentifierMap extends Map<Citation,String> {
      * @param  value The identifier to be associated with the given namespace.
      * @return The previous identifier associated with {@code authority}, or {@code null}
      *         if there was no mapping of the specialized type for {@code authority}.
-     * @throws IdentifierAlreadyBoundException If this map expects unique identifiers for the
-     *         given authority, and the given value is already associated to another object.
      * @throws UnsupportedOperationException If the identifier map is unmodifiable.
      */
     <T> T putSpecialized(IdentifierSpace<T> authority, T value)
-            throws IdentifierAlreadyBoundException, UnsupportedOperationException;
+            throws UnsupportedOperationException;
 }

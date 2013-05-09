@@ -43,7 +43,7 @@ public final strictfp class Envelope2DTest extends TestCase {
      */
     @Test
     public void testSerialization() {
-        final Envelope2D e1 = new Envelope2D(-20, -10, 40, 20, WGS84);
+        final Envelope2D e1 = new Envelope2D(WGS84, -20, -10, 40, 20);
         final Envelope2D e2 = assertSerializedEquals(e1);
         assertNotSame(e1, e2);
         validate(e2);

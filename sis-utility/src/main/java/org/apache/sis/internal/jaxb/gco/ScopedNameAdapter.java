@@ -17,6 +17,7 @@
 package org.apache.sis.internal.jaxb.gco;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.ConcurrentModificationException;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import org.opengis.util.LocalName;
@@ -64,7 +65,7 @@ public final class ScopedNameAdapter extends XmlAdapter<DefaultScopedName,Scoped
         int i=0;
         for (final LocalName name : parsedNames) {
             // Asks for the unlocalized name, since we are going to marshal that.
-            names[i++] = name.toInternationalString().toString(null);
+            names[i++] = name.toInternationalString().toString(Locale.ROOT);
         }
         if (i != names.length) {
             throw new ConcurrentModificationException(Errors.format(Errors.Keys.UnexpectedChange_1, "parsedNames"));

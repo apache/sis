@@ -30,12 +30,11 @@ import org.opengis.metadata.citation.Citation;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
-import org.apache.sis.xml.IdentifierAlreadyBoundException;
 
-import static org.apache.sis.util.collection.Collections.hashMapCapacity;
+import static org.apache.sis.util.collection.Containers.hashMapCapacity;
 
 // Related to JDK7
-import org.apache.sis.internal.util.Objects;
+import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
@@ -89,7 +88,7 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 2661044384787218964L;
+    private static final long serialVersionUID = -1445849218952061605L;
 
     /**
      * An immutable empty instance.
@@ -100,11 +99,6 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
      * The identifiers to wrap in a map view.
      */
     public final Collection<Identifier> identifiers;
-
-    /**
-     * A view over the entries, created only when first needed.
-     */
-    private transient Set<Entry<Citation,String>> entries;
 
     /**
      * Creates a new map which will be a view over the given identifiers.
@@ -250,12 +244,10 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
      * @param  authority The authority for which to set the code.
      * @param  code The new code for the given authority, or {@code null} for removing the entry.
      * @return The previous code for the given authority, or {@code null} if none.
-     * @throws IdentifierAlreadyBoundException If this map expects unique identifiers for the
-     *         given authority, and the given value is already associated to another object.
      */
     @Override
     public String put(final Citation authority, final String code)
-            throws IdentifierAlreadyBoundException, UnsupportedOperationException
+            throws UnsupportedOperationException
     {
         ArgumentChecks.ensureNonNull("authority", authority);
         String old = null;
@@ -290,7 +282,7 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
      */
     @Override
     public <T> T putSpecialized(final IdentifierSpace<T> authority, final T value)
-            throws IdentifierAlreadyBoundException, UnsupportedOperationException
+            throws UnsupportedOperationException
     {
         ArgumentChecks.ensureNonNull("authority", authority);
         T old = null;
@@ -332,11 +324,14 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
      * @return A view over the collection of identifiers.
      */
     @Override
-    public synchronized Set<Entry<Citation,String>> entrySet() {
-        if (entries == null) {
-            entries = new Entries(identifiers);
-        }
-        return entries;
+    public Set<Entry<Citation,String>> entrySet() {
+        /*
+         * Do not cache the entries set because if is very cheap to create and not needed very often.
+         * Not caching allows this implementation to be thread-safe without synchronization or volatile
+         * fields if the underlying list is thread-safe. Furthermore, IdentifierMapAdapter are temporary
+         * objects anyway in the current ISOMetadata implementation.
+         */
+        return new Entries(identifiers);
     }
 
     /**

@@ -34,7 +34,7 @@ import org.apache.sis.internal.jaxb.IdentifierMapAdapter;
 import org.apache.sis.internal.jaxb.IdentifierMapWithSpecialCases;
 
 // Related to JDK7
-import org.apache.sis.internal.util.Objects;
+import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
@@ -72,7 +72,7 @@ final class NilObjectHandler implements InvocationHandler {
                 asList.add(identifier);
             }
         }
-        attribute = new IdentifierMapWithSpecialCases(asList, null);
+        attribute = new IdentifierMapWithSpecialCases(asList);
     }
 
     /**

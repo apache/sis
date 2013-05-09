@@ -17,6 +17,7 @@
 package org.apache.sis.util;
 
 import java.util.Set;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
@@ -28,10 +29,7 @@ import java.lang.reflect.WildcardType;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
 
-import static java.util.Arrays.copyOf;
-import static org.apache.sis.util.Arrays.resize;
-import static org.apache.sis.util.Arrays.contains;
-import static org.apache.sis.util.collection.Collections.hashMapCapacity;
+import static org.apache.sis.util.collection.Containers.hashMapCapacity;
 
 
 /**
@@ -46,7 +44,7 @@ import static org.apache.sis.util.collection.Collections.hashMapCapacity;
  *       ({@link #findCommonClass(Class, Class) findCommonClass},
  *        {@link #findCommonInterfaces(Class, Class) findCommonInterfaces})</li>
  *   <li>Getting the bounds of a parameterized field or method
- *       ({@link #boundOfParameterizedAttribute(Method) boundOfParameterizedAttribute})</li>
+ *       ({@link #boundOfParameterizedProperty(Method) boundOfParameterizedProperty})</li>
  *   <li>Getting a short class name ({@link #getShortName(Class) getShortName},
  *       {@link #getShortClassName(Object) getShortClassName})</li>
  * </ul>
@@ -63,7 +61,7 @@ public final class Classes extends Static {
     private static final Class<?>[] EMPTY_ARRAY = new Class<?>[0];
 
     /**
-     * Methods to be rejected by {@link #isGetter(Method)}. They are mostly methods inherited
+     * Methods to be rejected by {@link #isPossibleGetter(Method)}. They are mostly methods inherited
      * from {@link Object}. Only no-argument methods having a non-void return value need to be
      * declared in this list.
      *
@@ -139,8 +137,8 @@ public final class Classes extends Static {
     }
 
     /**
-     * Returns the upper bounds of the parameterized type of the given attribute.
-     * If the attribute does not have a parameterized type, returns {@code null}.
+     * Returns the upper bounds of the parameterized type of the given property.
+     * If the property does not have a parameterized type, returns {@code null}.
      *
      * <p>This method is typically used for fetching the type of elements in a collection.
      * We do not provide a method working from a {@link Class} instance because of the way
@@ -164,14 +162,14 @@ public final class Classes extends Static {
      * @return The upper bound of parameterized type, or {@code null} if the given field
      *         is not of a parameterized type.
      */
-    public static Class<?> boundOfParameterizedAttribute(final Field field) {
+    public static Class<?> boundOfParameterizedProperty(final Field field) {
         return getActualTypeArgument(field.getGenericType());
     }
 
     /**
-     * If the given method is a getter or a setter for a parameterized attribute, returns the
+     * If the given method is a getter or a setter for a parameterized property, returns the
      * upper bounds of the parameterized type. Otherwise returns {@code null}. This method
-     * provides the same semantic than {@link #boundOfParameterizedAttribute(Field)}, but
+     * provides the same semantic than {@link #boundOfParameterizedProperty(Field)}, but
      * works on a getter or setter method rather then the field. See the javadoc of above
      * method for more details.
      *
@@ -183,7 +181,7 @@ public final class Classes extends Static {
      * @return The upper bound of parameterized type, or {@code null} if the given method
      *         do not operate on an object of a parameterized type.
      */
-    public static Class<?> boundOfParameterizedAttribute(final Method method) {
+    public static Class<?> boundOfParameterizedProperty(final Method method) {
         Class<?> c = getActualTypeArgument(method.getGenericReturnType());
         if (c == null) {
             final Type[] parameters = method.getGenericParameterTypes();
@@ -227,32 +225,6 @@ public final class Classes extends Static {
     }
 
     /**
-     * Casts the {@code type} class to represent a subclass of the class represented by the
-     * {@code sub} argument. Checks that the cast is valid, and returns {@code null} if it
-     * is not.
-     *
-     * <p>This method performs the same work than
-     * <code>type.{@linkplain Class#asSubclass(Class) asSubclass}(sub)</code>,
-     * except that {@code null} is returned instead than throwing an exception
-     * if the cast is not valid or if any of the argument is {@code null}.</p>
-     *
-     * @param  <U>  The compile-time bounds of the {@code sub} argument.
-     * @param  type The class to cast to a sub-class, or {@code null}.
-     * @param  sub  The subclass to cast to, or {@code null}.
-     * @return The {@code type} argument casted to a subclass of the {@code sub} argument,
-     *         or {@code null} if this cast can not be performed.
-     *
-     * @see Class#asSubclass(Class)
-     */
-    @SuppressWarnings({"unchecked","rawtypes"})
-    public static <U> Class<? extends U> asSubclassOrNull(final Class<?> type, final Class<U> sub) {
-        // Design note: We are required to return null if 'sub' is null (not to return 'type'
-        // unchanged), because if we returned 'type', we would have an unsafe cast if this
-        // method is invoked indirectly from a parameterized method.
-        return (type != null && sub != null && sub.isAssignableFrom(type)) ? (Class) type : null;
-    }
-
-    /**
      * Returns the class of the specified object, or {@code null} if {@code object} is null.
      * This method is also useful for fetching the class of an object known only by its bound
      * type. As of Java 6, the usual pattern:
@@ -269,6 +241,7 @@ public final class Classes extends Static {
      * @return The class of the given object, or {@code null} if the given object was null.
      */
     @SuppressWarnings("unchecked")
+    @Workaround(library="JDK", version="1.7")
     public static <T> Class<? extends T> getClass(final T object) {
         return (object != null) ? (Class<? extends T>) object.getClass() : null;
     }
@@ -284,7 +257,7 @@ public final class Classes extends Static {
      * @param  objects The collection of objects.
      * @return The set of classes of all objects in the given collection.
      */
-    public static <T> Set<Class<? extends T>> getClasses(final Collection<? extends T> objects) {
+    private static <T> Set<Class<? extends T>> getClasses(final Iterable<? extends T> objects) {
         final Set<Class<? extends T>> types = new LinkedHashSet<Class<? extends T>>();
         for (final T object : objects) {
             types.add(getClass(object));
@@ -293,23 +266,49 @@ public final class Classes extends Static {
     }
 
     /**
-     * Returns the set of every interfaces implemented by the given class or interface. This is
-     * similar to {@link Class#getInterfaces()} except that this method searches recursively in
-     * the super-interfaces. For example if the given type is {@link java.util.ArrayList}, then
+     * Returns every interfaces implemented, directly or indirectly, by the given class or interface.
+     * This is similar to {@link Class#getInterfaces()} except that this method searches recursively
+     * in the super-interfaces. For example if the given type is {@link java.util.ArrayList}, then
      * the returned set will contains {@link java.util.List} (which is implemented directly)
      * together with its parent interfaces {@link Collection} and {@link Iterable}.
      *
+     * @param  <T>  The compile-time type of the {@code Class} argument.
      * @param  type The class or interface for which to get all implemented interfaces.
      * @return All implemented interfaces (not including the given {@code type} if it was an
-     *         interface), or an empty set if none. Callers can freely modify the returned set.
+     *         interface), or an empty array if none.
+     *
+     * @see Class#getInterfaces()
      */
-    public static Set<Class<?>> getAllInterfaces(Class<?> type) {
+    @SuppressWarnings({"unchecked","rawtypes"}) // Generic array creation.
+    public static <T> Class<? super T>[] getAllInterfaces(final Class<T> type) {
+        final Set<Class<?>> interfaces = getInterfaceSet(type);
+        return (interfaces != null) ? interfaces.toArray(new Class[interfaces.size()]) : EMPTY_ARRAY;
+    }
+
+    /**
+     * Implementation of {@link #getAllInterfaces(Class)} returning a {@link Set}.
+     * The public API exposes the method returning an array instead than a set for
+     * the following reasons:
+     *
+     * <ul>
+     *   <li>Consistency with other methods ({@link #getLeafInterfaces(Class, Class)},
+     *       {@link Class#getInterfaces()}).</li>
+     *   <li>Because arrays in Java are covariant, while the {@code Set} are not.
+     *       Consequently callers can cast {@code Class<? super T>[]} to {@code Class<?>[]}
+     *       while they can not cast {@code Set<Class<? super T>>} to {@code Set<Class<?>>}.</li>
+     * </ul>
+     *
+     * @param  type The class or interface for which to get all implemented interfaces.
+     * @return All implemented interfaces (not including the given {@code type} if it was an
+     *         interface), or {@code null} if none. Callers can freely modify the returned set.
+     */
+    static Set<Class<?>> getInterfaceSet(Class<?> type) {
         Set<Class<?>> interfaces = null;
         while (type != null) {
-            interfaces = getAllInterfaces(type, interfaces);
+            interfaces = getInterfaceSet(type, interfaces);
             type = type.getSuperclass();
         }
-        return (interfaces != null) ? interfaces : Collections.<Class<?>>emptySet();
+        return interfaces;
     }
 
     /**
@@ -320,15 +319,15 @@ public final class Classes extends Static {
      * @return The given set (may be {@code null}), or a new set if the given set was null
      *         and at least one interface has been found.
      */
-    private static Set<Class<?>> getAllInterfaces(final Class<?> type, Set<Class<?>> addTo) {
+    private static Set<Class<?>> getInterfaceSet(final Class<?> type, Set<Class<?>> addTo) {
         final Class<?>[] interfaces = type.getInterfaces();
         for (int i=0; i<interfaces.length; i++) {
             final Class<?> candidate = interfaces[i];
             if (addTo == null) {
-                addTo = new LinkedHashSet<Class<?>>(hashMapCapacity(interfaces.length - i));
+                addTo = new LinkedHashSet<Class<?>>(hashMapCapacity(interfaces.length));
             }
             if (addTo.add(candidate)) {
-                getAllInterfaces(candidate, addTo);
+                getInterfaceSet(candidate, addTo);
             }
         }
         return addTo;
@@ -377,14 +376,14 @@ next:       for (final Class<?> candidate : candidates) {
                         types = candidates;
                     }
                     if (count >= types.length) {
-                        types = copyOf(types, types.length + candidates.length);
+                        types = Arrays.copyOf(types, types.length + candidates.length);
                     }
                     types[count++] = candidate;
                 }
             }
             type = type.getSuperclass();
         }
-        return (Class[]) resize(types, count);
+        return (Class[]) ArraysExt.resize(types, count);
     }
 
     /**
@@ -398,7 +397,7 @@ next:       for (final Class<?> candidate : candidates) {
      * @return The most specialized class, or {@code null} if the given collection does not contain
      *         at least one non-null element.
      */
-    public static Class<?> findSpecializedClass(final Collection<?> objects) {
+    public static Class<?> findSpecializedClass(final Iterable<?> objects) {
         final Set<Class<?>> types = getClasses(objects);
         types.remove(null);
         /*
@@ -450,7 +449,7 @@ next:       for (final Class<?> candidate : candidates) {
      * @return The most specific class common to all supplied objects, or {@code null} if the
      *         given collection does not contain at least one non-null element.
      */
-    public static Class<?> findCommonClass(final Collection<?> objects) {
+    public static Class<?> findCommonClass(final Iterable<?> objects) {
         final Set<Class<?>> types = getClasses(objects);
         types.remove(null);
         return common(types);
@@ -496,13 +495,16 @@ next:       for (final Class<?> candidate : candidates) {
      *         Callers can freely modify the returned set.
      */
     public static Set<Class<?>> findCommonInterfaces(final Class<?> c1, final Class<?> c2) {
-        final Set<Class<?>> interfaces = getAllInterfaces(c1);
-        final Set<Class<?>> buffer     = getAllInterfaces(c2); // To be recycled.
+        final Set<Class<?>> interfaces = getInterfaceSet(c1);
+        final Set<Class<?>> buffer     = getInterfaceSet(c2); // To be recycled.
+        if (interfaces == null || buffer == null) {
+            return Collections.emptySet();
+        }
         interfaces.retainAll(buffer);
         for (Iterator<Class<?>> it=interfaces.iterator(); it.hasNext();) {
             final Class<?> candidate = it.next();
             buffer.clear(); // Safe because the buffer can not be Collections.EMPTY_SET at this point.
-            getAllInterfaces(candidate, buffer);
+            getInterfaceSet(candidate, buffer);
             if (interfaces.removeAll(buffer)) {
                 it = interfaces.iterator();
             }
@@ -558,20 +560,55 @@ cmp:    for (final Class<?> c : c1) {
     }
 
     /**
-     * Returns a short class name for the specified class. This method will
-     * omit the package name.  For example, it will return {@code "String"} instead
-     * of {@code "java.lang.String"} for a {@link String} object. It will also name
-     * array according Java language usage,  for example {@code "double[]"} instead
-     * of {@code "[D"}.
+     * Returns the name of the given class without package name, but including the names of enclosing
+     * classes if any. This method is similar to the {@link Class#getSimpleName()} method, except that
+     * if the given class is an inner class, then the returned value is prefixed with the outer class
+     * name. An other difference is that if the given class is local or anonymous, then this method
+     * returns the name of the parent class.
      *
-     * <p>This method is similar to the {@link Class#getSimpleName()} method, except that
-     * if the given class is an inner class, then the returned value is prefixed with the
-     * outer class name. For example this method returns {@code "Point2D.Double"} instead
-     * of {@code "Double"}.</p>
+     * <p>The following table compares the various kind of names for some examples:</p>
+     *
+     * <table class="sis">
+     *   <tr>
+     *     <th>Class</th>
+     *     <th>{@code getName()}</th>
+     *     <th>{@code getSimpleName()}</th>
+     *     <th>{@code getCanonicalName()}</th>
+     *     <th>{@code getShortName()}</th>
+     *   </tr>
+     *   <tr>
+     *     <td>{@link String}</td>
+     *     <td>{@code "java.lang.String"}</td>
+     *     <td>{@code "String"}</td>
+     *     <td>{@code "java.lang.String"}</td>
+     *     <td>{@code "String"}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@code double[]}</td>
+     *     <td>{@code "[D"}</td>
+     *     <td>{@code "double[]"}</td>
+     *     <td>{@code "double[]"}</td>
+     *     <td>{@code "double[]"}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@link java.awt.geom.Point2D.Double}</td>
+     *     <td>{@code "java.awt.geom.Point2D$Double"}</td>
+     *     <td>{@code "Double"}</td>
+     *     <td>{@code "java.awt.geom.Point2D.Double"}</td>
+     *     <td>{@code "Point2D.Double"}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>Anonymous {@link Comparable}</td>
+     *     <td>{@code "com.mycompany.myclass$1"}</td>
+     *     <td>{@code ""}</td>
+     *     <td>{@code null}</td>
+     *     <td>{@code "Object"}</td>
+     *   </tr>
+     * </table>
      *
      * @param  classe The object class (may be {@code null}).
-     * @return A short class name for the specified object, or {@code "<*>"} if the
-     *         given class was null.
+     * @return The simple name with outer class name (if any) of the first non-anonymous
+     *         class in the hierarchy, or {@code "<*>"} if the given class is null.
      *
      * @see #getShortClassName(Object)
      * @see Class#getSimpleName()
@@ -580,11 +617,11 @@ cmp:    for (final Class<?> c : c1) {
         if (classe == null) {
             return "<*>";
         }
-        Class<?> enclosing = classe.getEnclosingClass();
         while (classe.isAnonymousClass()) {
             classe = classe.getSuperclass();
         }
         String name = classe.getSimpleName();
+        final Class<?> enclosing = classe.getEnclosingClass();
         if (enclosing != null) {
             name = getShortName(enclosing) + '.' + name;
         }
@@ -592,12 +629,14 @@ cmp:    for (final Class<?> c : c1) {
     }
 
     /**
-     * Returns a short class name for the specified object. This method will
-     * omit the package name. For example, it will return {@code "String"}
-     * instead of {@code "java.lang.String"} for a {@link String} object.
+     * Returns the class name of the given object without package name, but including the enclosing class names
+     * if any. Invoking this method is equivalent to invoking {@code getShortName(object.getClass())} except for
+     * {@code null} value. See {@link #getShortName(Class)} for more information on the class name returned by
+     * this method.
      *
      * @param  object The object (may be {@code null}).
-     * @return A short class name for the specified object.
+     * @return The simple class name with outer class name (if any) of the first non-anonymous
+     *         class in the hierarchy, or {@code "<*>"} if the given object is null.
      *
      * @see #getShortName(Class)
      */
@@ -623,7 +662,7 @@ cmp:    for (final Class<?> c : c1) {
      * @param  allowedTypes The allowed types.
      * @return {@code true} if the given type is assignable to one of the allowed types.
      */
-    public static boolean isAssignableTo(final Class<?> type, final Class<?>... allowedTypes) {
+    public static boolean isAssignableToAny(final Class<?> type, final Class<?>... allowedTypes) {
         if (type != null) {
             if (allowedTypes == null) {
                 return true;
@@ -638,7 +677,7 @@ cmp:    for (final Class<?> c : c1) {
     }
 
     /**
-     * Returns {@code true} if the given method may possibly be the getter method for an attribute.
+     * Returns {@code true} if the given method may possibly be the getter method for a property.
      * This method implements the algorithm used by SIS in order to identify getter methods in
      * {@linkplain org.opengis.metadata metadata} interfaces. We do not rely on naming convention
      * (method names starting with "{@code get}" or "{@code is}" prefixes) because not every methods
@@ -669,6 +708,6 @@ cmp:    for (final Class<?> c : c1) {
                method.getParameterTypes().length == 0 &&
               !method.isSynthetic() &&
               !method.isAnnotationPresent(Deprecated.class) &&
-              !contains(EXCLUDES, method.getName());
+              !ArraysExt.contains(EXCLUDES, method.getName());
     }
 }
