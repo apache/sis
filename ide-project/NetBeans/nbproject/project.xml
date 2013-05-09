@@ -3,9 +3,11 @@
     <type>org.netbeans.modules.java.j2seproject</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/j2se-project/3">
-            <name>Apache SIS on GeoAPI 3.0</name>
+            <name>Apache SIS on Android</name>
             <source-roots>
                 <root id="src.local-src.dir" name="Local sources (unversioned)"/>
+                <root id="src.android.dir" name="Android application"/>
+                <root id="src.android.gen" name="Android generated resources"/>
                 <root id="src.webapp.dir" name="Web application"/>
                 <root id="src.app.dir" name="Application"/>
                 <root id="src.netcdf.dir" name="NetCDF"/>

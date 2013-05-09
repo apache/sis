@@ -19,7 +19,7 @@ is divided into following sections:
   - cleanup
 
         -->
-<project xmlns:j2seproject1="http://www.netbeans.org/ns/j2se-project/1" xmlns:j2seproject3="http://www.netbeans.org/ns/j2se-project/3" xmlns:jaxrpc="http://www.netbeans.org/ns/j2se-project/jax-rpc" basedir=".." default="default" name="Apache_SIS_on_Android-impl">
+<project xmlns:j2seproject1="http://www.netbeans.org/ns/j2se-project/1" xmlns:j2seproject3="http://www.netbeans.org/ns/j2se-project/3" xmlns:jaxrpc="http://www.netbeans.org/ns/j2se-project/jax-rpc" basedir=".." default="default" name="Apache_SIS_on_GeoAPI_3.0-impl">
     <fail message="Please build using Ant 1.8.0 or higher.">
         <condition>
             <not>
@@ -144,8 +144,6 @@ is divided into following sections:
         <condition property="have.sources">
             <or>
                 <available file="${src.local-src.dir}"/>
-                <available file="${src.android.dir}"/>
-                <available file="${src.android.gen}"/>
                 <available file="${src.webapp.dir}"/>
                 <available file="${src.app.dir}"/>
                 <available file="${src.netcdf.dir}"/>
@@ -240,8 +238,6 @@ is divided into following sections:
     </target>
     <target depends="-pre-init,-init-private,-init-user,-init-project,-do-init" name="-init-check">
         <fail unless="src.local-src.dir">Must set src.local-src.dir</fail>
-        <fail unless="src.android.dir">Must set src.android.dir</fail>
-        <fail unless="src.android.gen">Must set src.android.gen</fail>
         <fail unless="src.webapp.dir">Must set src.webapp.dir</fail>
         <fail unless="src.app.dir">Must set src.app.dir</fail>
         <fail unless="src.netcdf.dir">Must set src.netcdf.dir</fail>
@@ -272,7 +268,7 @@ is divided into following sections:
     </target>
     <target depends="-init-ap-cmdline-properties" if="ap.supported.internal" name="-init-macrodef-javac-with-processors">
         <macrodef name="javac" uri="http://www.netbeans.org/ns/j2se-project/3">
-            <attribute default="${src.local-src.dir}:${src.android.dir}:${src.android.gen}:${src.webapp.dir}:${src.app.dir}:${src.netcdf.dir}:${src.referencing.dir}:${src.metadata.dir}:${src.utility.dir}" name="srcdir"/>
+            <attribute default="${src.local-src.dir}:${src.webapp.dir}:${src.app.dir}:${src.netcdf.dir}:${src.referencing.dir}:${src.metadata.dir}:${src.utility.dir}" name="srcdir"/>
             <attribute default="${build.classes.dir}" name="destdir"/>
             <attribute default="${javac.classpath}" name="classpath"/>
             <attribute default="${javac.processorpath}" name="processorpath"/>
@@ -312,7 +308,7 @@ is divided into following sections:
     </target>
     <target depends="-init-ap-cmdline-properties" name="-init-macrodef-javac-without-processors" unless="ap.supported.internal">
         <macrodef name="javac" uri="http://www.netbeans.org/ns/j2se-project/3">
-            <attribute default="${src.local-src.dir}:${src.android.dir}:${src.android.gen}:${src.webapp.dir}:${src.app.dir}:${src.netcdf.dir}:${src.referencing.dir}:${src.metadata.dir}:${src.utility.dir}" name="srcdir"/>
+            <attribute default="${src.local-src.dir}:${src.webapp.dir}:${src.app.dir}:${src.netcdf.dir}:${src.referencing.dir}:${src.metadata.dir}:${src.utility.dir}" name="srcdir"/>
             <attribute default="${build.classes.dir}" name="destdir"/>
             <attribute default="${javac.classpath}" name="classpath"/>
             <attribute default="${javac.processorpath}" name="processorpath"/>
@@ -344,7 +340,7 @@ is divided into following sections:
     </target>
     <target depends="-init-macrodef-javac-with-processors,-init-macrodef-javac-without-processors" name="-init-macrodef-javac">
         <macrodef name="depend" uri="http://www.netbeans.org/ns/j2se-project/3">
-            <attribute default="${src.local-src.dir}:${src.android.dir}:${src.android.gen}:${src.webapp.dir}:${src.app.dir}:${src.netcdf.dir}:${src.referencing.dir}:${src.metadata.dir}:${src.utility.dir}" name="srcdir"/>
+            <attribute default="${src.local-src.dir}:${src.webapp.dir}:${src.app.dir}:${src.netcdf.dir}:${src.referencing.dir}:${src.metadata.dir}:${src.utility.dir}" name="srcdir"/>
             <attribute default="${build.classes.dir}" name="destdir"/>
             <attribute default="${javac.classpath}" name="classpath"/>
             <sequential>
@@ -486,7 +482,7 @@ is divided into following sections:
                     </fileset>
                 </union>
                 <taskdef classname="org.testng.TestNGAntTask" classpath="${run.test.classpath}" name="testng"/>
-                <testng classfilesetref="test.set" failureProperty="tests.failed" methods="${testng.methods.arg}" mode="${testng.mode}" outputdir="${build.test.results.dir}" suitename="Apache_SIS_on_Android" testname="TestNG tests" workingDir="${work.dir}">
+                <testng classfilesetref="test.set" failureProperty="tests.failed" methods="${testng.methods.arg}" mode="${testng.mode}" outputdir="${build.test.results.dir}" suitename="Apache_SIS_on_GeoAPI_3.0" testname="TestNG tests" workingDir="${work.dir}">
                     <xmlfileset dir="${build.test.classes.dir}" includes="@{testincludes}"/>
                     <propertyset>
                         <propertyref prefix="test-sys-prop."/>
@@ -646,7 +642,7 @@ is divided into following sections:
                 <condition else="-testclass @{testClass}" property="test.class.or.method" value="-methods @{testClass}.@{testMethod}">
                     <isset property="test.method"/>
                 </condition>
-                <condition else="-suitename Apache_SIS_on_Android -testname @{testClass} ${test.class.or.method}" property="testng.cmd.args" value="@{testClass}">
+                <condition else="-suitename Apache_SIS_on_GeoAPI_3.0 -testname @{testClass} ${test.class.or.method}" property="testng.cmd.args" value="@{testClass}">
                     <matches pattern=".*\.xml" string="@{testClass}"/>
                 </condition>
                 <delete dir="${build.test.results.dir}" quiet="true"/>
@@ -938,7 +934,7 @@ is divided into following sections:
         <delete file="${built-jar.properties}" quiet="true"/>
     </target>
     <target if="already.built.jar.${basedir}" name="-warn-already-built-jar">
-        <echo level="warn" message="Cycle detected: Apache SIS on Android was already built"/>
+        <echo level="warn" message="Cycle detected: Apache SIS on GeoAPI 3.0 was already built"/>
     </target>
     <target depends="init,-deps-jar-init" name="deps-jar" unless="no.deps">
         <mkdir dir="${build.dir}"/>
@@ -969,14 +965,12 @@ is divided into following sections:
                 <include name="*"/>
             </dirset>
         </pathconvert>
-        <j2seproject3:depend srcdir="${src.local-src.dir}:${src.android.dir}:${src.android.gen}:${src.webapp.dir}:${src.app.dir}:${src.netcdf.dir}:${src.referencing.dir}:${src.metadata.dir}:${src.utility.dir}:${build.generated.subdirs}"/>
+        <j2seproject3:depend srcdir="${src.local-src.dir}:${src.webapp.dir}:${src.app.dir}:${src.netcdf.dir}:${src.referencing.dir}:${src.metadata.dir}:${src.utility.dir}:${build.generated.subdirs}"/>
     </target>
     <target depends="init,deps-jar,-pre-pre-compile,-pre-compile, -copy-persistence-xml,-compile-depend" if="have.sources" name="-do-compile">
         <j2seproject3:javac gensrcdir="${build.generated.sources.dir}"/>
         <copy todir="${build.classes.dir}">
             <fileset dir="${src.local-src.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
-            <fileset dir="${src.android.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
-            <fileset dir="${src.android.gen}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${src.webapp.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${src.app.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${src.netcdf.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
@@ -1003,7 +997,7 @@ is divided into following sections:
     <target depends="init,deps-jar,-pre-pre-compile" name="-do-compile-single">
         <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
         <j2seproject3:force-recompile/>
-        <j2seproject3:javac excludes="" gensrcdir="${build.generated.sources.dir}" includes="${javac.includes}" sourcepath="${src.local-src.dir}:${src.android.dir}:${src.android.gen}:${src.webapp.dir}:${src.app.dir}:${src.netcdf.dir}:${src.referencing.dir}:${src.metadata.dir}:${src.utility.dir}"/>
+        <j2seproject3:javac excludes="" gensrcdir="${build.generated.sources.dir}" includes="${javac.includes}" sourcepath="${src.local-src.dir}:${src.webapp.dir}:${src.app.dir}:${src.netcdf.dir}:${src.referencing.dir}:${src.metadata.dir}:${src.utility.dir}"/>
     </target>
     <target name="-post-compile-single">
         <!-- Empty placeholder for easier customization. -->
@@ -1267,12 +1261,6 @@ is divided into following sections:
             <fileset dir="${src.local-src.dir}" excludes="*.java,${excludes}" includes="${includes}">
                 <filename name="**/*.java"/>
             </fileset>
-            <fileset dir="${src.android.dir}" excludes="*.java,${excludes}" includes="${includes}">
-                <filename name="**/*.java"/>
-            </fileset>
-            <fileset dir="${src.android.gen}" excludes="*.java,${excludes}" includes="${includes}">
-                <filename name="**/*.java"/>
-            </fileset>
             <fileset dir="${src.webapp.dir}" excludes="*.java,${excludes}" includes="${includes}">
                 <filename name="**/*.java"/>
             </fileset>
@@ -1299,12 +1287,6 @@ is divided into following sections:
         </javadoc>
         <copy todir="${dist.javadoc.dir}">
             <fileset dir="${src.local-src.dir}" excludes="${excludes}" includes="${includes}">
-                <filename name="**/doc-files/**"/>
-            </fileset>
-            <fileset dir="${src.android.dir}" excludes="${excludes}" includes="${includes}">
-                <filename name="**/doc-files/**"/>
-            </fileset>
-            <fileset dir="${src.android.gen}" excludes="${excludes}" includes="${includes}">
                 <filename name="**/doc-files/**"/>
             </fileset>
             <fileset dir="${src.webapp.dir}" excludes="${excludes}" includes="${includes}">
@@ -1480,7 +1462,7 @@ is divided into following sections:
         <delete file="${built-clean.properties}" quiet="true"/>
     </target>
     <target if="already.built.clean.${basedir}" name="-warn-already-built-clean">
-        <echo level="warn" message="Cycle detected: Apache SIS on Android was already built"/>
+        <echo level="warn" message="Cycle detected: Apache SIS on GeoAPI 3.0 was already built"/>
     </target>
     <target depends="init,-deps-clean-init" name="deps-clean" unless="no.deps">
         <mkdir dir="${build.dir}"/>
