@@ -92,15 +92,18 @@ public class ResourceCompilerMojo extends AbstractMojo implements FilenameFilter
      */
     private int processAllResourceDirectories(final File directory) throws ResourceCompilerException {
         int errors = 0;
-        for (final File subdir : directory.listFiles()) {
-            if (subdir.isDirectory()) {
-                if (subdir.getName().equals("resources")) {
-                    final File[] resourcesToProcess = subdir.listFiles(this);
-                    if (resourcesToProcess != null && resourcesToProcess.length != 0) {
-                        errors += new Compiler(resourcesToProcess).run();
+        final File[] subdirs = directory.listFiles();
+        if (subdirs != null) { // Appears to be sometime null with auto-generated sub-directories.
+            for (final File subdir : subdirs) {
+                if (subdir.isDirectory()) {
+                    if (subdir.getName().equals("resources")) {
+                        final File[] resourcesToProcess = subdir.listFiles(this);
+                        if (resourcesToProcess != null && resourcesToProcess.length != 0) {
+                            errors += new Compiler(resourcesToProcess).run();
+                        }
+                    } else {
+                        errors += processAllResourceDirectories(subdir);
                     }
-                } else {
-                    errors += processAllResourceDirectories(subdir);
                 }
             }
         }
