@@ -450,19 +450,6 @@ Apache SIS is a toolkit for describing location information, including points,
         </executions>
       </plugin>
 
-      <!-- Android packaging -->
-      <plugin>
-        <groupId>com.jayway.maven.plugins.android.generation2</groupId>
-        <artifactId>android-maven-plugin</artifactId>
-        <version>3.5.3</version>
-        <extensions>true</extensions>
-        <configuration>
-          <sdk>
-            <platform>17</platform>
-          </sdk>
-        </configuration>
-      </plugin>
-
       <!-- Build XHTML pages from the DocBook files
            See src/main/docbook/README.txt -->
       <plugin>
