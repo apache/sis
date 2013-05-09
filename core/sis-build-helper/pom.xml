@@ -43,7 +43,7 @@
 
   <parent>
     <groupId>org.apache.sis</groupId>
-    <artifactId>sis-parent</artifactId>
+    <artifactId>core</artifactId>
     <version>0.3-jdk7-SNAPSHOT</version>
   </parent>
 
