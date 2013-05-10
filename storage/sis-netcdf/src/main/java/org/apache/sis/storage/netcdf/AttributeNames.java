@@ -16,6 +16,11 @@
  */
 package org.apache.sis.storage.netcdf;
 
+/*
+ * All imports below except "CF" are for javadoc only. The "CF" import is used only
+ * for its static final String constants, which are inlined by javac. Consequently
+ * the compiled file of this class should have no dependency to the UCAR packages.
+ */
 import ucar.nc2.Group;
 import ucar.nc2.NetcdfFile;
 import ucar.nc2.VariableSimpleIF;
@@ -45,9 +50,16 @@ import org.opengis.metadata.extent.GeographicDescription;
 
 
 /**
- * Mapping from/to NetCDF metadata to ISO 19115-2 metadata.
- * This class defines the names of attributes used by the reader and writer sub-classes.
- * The NetCDF attributes defined by this class are:
+ * Name of attributes used in the mapping from/to NetCDF metadata to ISO 19115 metadata.
+ * The mapping is defined in the following web pages:
+ *
+ * <ul>
+ *   <li><a href="https://geo-ide.noaa.gov/wiki/index.php?title=NetCDF_Attribute_Convention_for_Dataset_Discovery">NetCDF
+ *       Attribute Convention for Dataset Discovery</a> wiki</li>
+ *   <li><a href="http://ngdc.noaa.gov/metadata/published/xsl/nciso2.0/UnidataDD2MI.xsl">UnidataDD2MI.xsl</a> file</li>
+ * </ul>
+ *
+ * The attributes recognized by SIS are listed below:
  *
  * <p>{@value #ACCESS_CONSTRAINT}, {@value #ACKNOWLEDGMENT}, {@value #COMMENT},
  * {@linkplain #CONTRIBUTOR "contributor_email"},
@@ -94,11 +106,11 @@ import org.opengis.metadata.extent.GeographicDescription;
  * @version 0.3
  * @module
  */
-public abstract class NetcdfMetadata /* implements WarningProducer*/ {
+public final class AttributeNames {
     /**
      * The {@value} attribute name for a short description of the dataset
      * (<em>Highly Recommended</em>). If no {@value} attribute is provided,
-     * then {@code NetcdfMetadata} will look for "full_name" and "name".
+     * then {@code AttributeNames} will look for "full_name" and "name".
      *
      * <p><b>Path:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
@@ -135,7 +147,7 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
      * {@link Citation#getIdentifiers() identifier} /
      * {@link Identifier#getCode() code}</li></ul></p>
      *
-     * @see NetcdfMetadataReader#getFileIdentifier()
+     * @see MetadataReader#getFileIdentifier()
      * @see NetcdfFile#getId()
      * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html#id_Attribute">UCAR reference</a>
      */
@@ -155,7 +167,7 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
      * {@link Identifier#getAuthority() authority}</li></ul></p>
      *
      * @see #IDENTIFIER
-     * @see NetcdfMetadataReader#getFileIdentifier()
+     * @see MetadataReader#getFileIdentifier()
      * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html#id_Attribute">UCAR reference</a>
      */
     public static final String NAMING_AUTHORITY = "naming_authority";
@@ -338,11 +350,11 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
      * Holds the attribute names describing a responsible party.
      * Values are:
      *
-     * <table border="1" cellspacing="0"><tr bgcolor="lightblue">
+     * <table class="sis"><tr>
      *   <th>Attribute</th>
-     *   <th>{@link NetcdfMetadata#CREATOR}</th>
-     *   <th>{@link NetcdfMetadata#CONTRIBUTOR}</th>
-     *   <th>{@link NetcdfMetadata#PUBLISHER}</th>
+     *   <th>{@link AttributeNames#CREATOR}</th>
+     *   <th>{@link AttributeNames#CONTRIBUTOR}</th>
+     *   <th>{@link AttributeNames#PUBLISHER}</th>
      * </tr><tr>
      *   <td>{@link #NAME}</td>
      *   <td>{@code "creator_name"}</td>
@@ -376,7 +388,7 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
      * </tr></table>
      *
      * {@note The member names in this class are upper-cases because they should be considered
-     *        as constants. For example <code>NetcdfMetadata.CREATOR.EMAIL</code> maps exactly to the
+     *        as constants. For example <code>AttributeNames.CREATOR.EMAIL</code> maps exactly to the
      *        <code>"creator_email"</code> string and nothing else. A lower-case <code>email</code>
      *        member name could be misleading since it would suggest that the field contains the
      *        actual name value rather than the key by which the value is identified in a NetCDF file.}
@@ -614,12 +626,12 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
      * Holds the attribute names describing a simple latitude, longitude, and vertical bounding box.
      * Values are:
      *
-     * <table border="1" cellspacing="0"><tr bgcolor="lightblue">
+     * <table class="sis"><tr>
      *   <th>Attributes</th>
-     *   <th>{@link NetcdfMetadata#LATITUDE}</th>
-     *   <th>{@link NetcdfMetadata#LONGITUDE}</th>
-     *   <th>{@link NetcdfMetadata#VERTICAL}</th>
-     *   <th>{@link NetcdfMetadata#TIME}</th>
+     *   <th>{@link AttributeNames#LATITUDE}</th>
+     *   <th>{@link AttributeNames#LONGITUDE}</th>
+     *   <th>{@link AttributeNames#VERTICAL}</th>
+     *   <th>{@link AttributeNames#TIME}</th>
      * </tr><tr>
      *   <td>{@link #MINIMUM}</td>
      *   <td>{@code "geospatial_lat_min"}</td>
@@ -659,7 +671,7 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
      * </tr></table>
      *
      * {@note The member names in this class are upper-cases because they should be considered
-     *        as constants. For example <code>NetcdfMetadata.LATITUDE.MINIMUM</code> maps exactly to
+     *        as constants. For example <code>AttributeNames.LATITUDE.MINIMUM</code> maps exactly to
      *        the <code>"geospatial_lat_min"</code> string and nothing else. A lower-case
      *        <code>minimum</code> member name could be misleading since it would suggest that
      *        the field contains the actual name value rather than the key by which the value
@@ -861,8 +873,8 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
 
     /**
      * The {@value} attribute name for the designation associated with a range element.
-     * This attribute can be associated to {@linkplain VariableSimpleIF variables}. If
-     * specified, they shall be one flag name for each {@linkplain #FLAG_MASKS flag mask},
+     * This attribute can be associated to {@linkplain VariableSimpleIF variables}.
+     * If specified, they shall be one flag name for each {@linkplain #FLAG_MASKS flag mask},
      * {@linkplain #FLAG_VALUES flag value} and {@linkplain #FLAG_MEANINGS flag meaning}.
      *
      * <p><b>Path:</b> <ul><li>{@link Metadata} /
@@ -909,8 +921,8 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
     public static final String FLAG_MEANINGS = "flag_meanings";
 
     /**
-     * Creates a new metadata reader or writer.
+     * Do not allow instantiation of this class.
      */
-    NetcdfMetadata() {
+    private AttributeNames() {
     }
 }
