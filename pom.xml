@@ -590,6 +590,14 @@ Apache SIS is a toolkit for describing location information, including points,
               <packages>org.apache.sis.test*</packages>
             </group>
             <group>
+              <title>Data storage</title>
+              <packages>org.apache.sis.storage*</packages>
+            </group>
+            <group>
+              <title>Geometry</title>
+              <packages>org.apache.sis.geometry*</packages>
+            </group>
+            <group>
               <title>Referencing</title>
               <packages>org.apache.sis.core*:org.apache.sis.distance*:org.apache.sis.referencing*:org.apache.sis.parameter*</packages>
             </group>
