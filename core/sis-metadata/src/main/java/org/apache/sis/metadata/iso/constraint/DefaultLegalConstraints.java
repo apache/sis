@@ -77,6 +77,16 @@ public class DefaultLegalConstraints extends DefaultConstraints implements Legal
     }
 
     /**
+     * Constructs a new constraints with the given {@linkplain #getUseLimitations() use limitation}.
+     *
+     * @param useLimitation The use limitation, or {@code null} if none.
+     */
+    public DefaultLegalConstraints(final CharSequence useLimitation) {
+        super(useLimitation);
+    }
+
+
+    /**
      * Constructs a new instance initialized with the values from the specified metadata object.
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
