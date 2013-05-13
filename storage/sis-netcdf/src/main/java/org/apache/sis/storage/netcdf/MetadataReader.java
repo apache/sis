@@ -35,9 +35,6 @@ import javax.measure.unit.NonSI;
 import javax.measure.converter.UnitConverter;
 import javax.measure.converter.ConversionException;
 
-import ucar.nc2.constants.CF;
-import ucar.nc2.units.DateUnit;
-
 import org.opengis.util.NameFactory;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Metadata;
@@ -68,6 +65,10 @@ import org.apache.sis.metadata.iso.identification.*;
 import org.apache.sis.metadata.iso.lineage.DefaultLineage;
 import org.apache.sis.metadata.iso.quality.DefaultDataQuality;
 import org.apache.sis.metadata.iso.constraint.DefaultLegalConstraints;
+
+// The following dependency is used only for static final String constants.
+// Consequently the compiled class files should not have this dependency.
+import ucar.nc2.constants.CF;
 
 import static org.apache.sis.storage.netcdf.AttributeNames.*;
 
@@ -594,18 +595,21 @@ final class MetadataReader {
         final Number ymax = decoder.numericValue(LATITUDE .MAXIMUM);
         final Number zmin = decoder.numericValue(VERTICAL .MINIMUM);
         final Number zmax = decoder.numericValue(VERTICAL .MAXIMUM);
+        /*
+         * If at least one geographic ordinates above is available, add a GeographicBoundingBox.
+         */
         if (xmin != null || xmax != null || ymin != null || ymax != null) {
-            extent = new DefaultExtent();
             final UnitConverter xConv = getConverterTo(decoder.unitValue(LONGITUDE.UNITS), NonSI.DEGREE_ANGLE);
             final UnitConverter yConv = getConverterTo(decoder.unitValue(LATITUDE .UNITS), NonSI.DEGREE_ANGLE);
+            extent = new DefaultExtent();
             extent.getGeographicElements().add(new DefaultGeographicBoundingBox(
                     valueOf(xmin, xConv), valueOf(xmax, xConv),
                     valueOf(ymin, yConv), valueOf(ymax, yConv)));
         }
+        /*
+         * If at least one vertical ordinates above is available, add a VerticalExtent.
+         */
         if (zmin != null || zmax != null) {
-            if (extent == null) {
-                extent = new DefaultExtent();
-            }
             final UnitConverter c = getConverterTo(decoder.unitValue(VERTICAL.UNITS), SI.METRE);
             double min = valueOf(zmin, c);
             double max = valueOf(zmax, c);
@@ -614,10 +618,14 @@ final class MetadataReader {
                 min = -max;
                 max = -tmp;
             }
+            if (extent == null) {
+                extent = new DefaultExtent();
+            }
             extent.getVerticalElements().add(new DefaultVerticalExtent(min, max, VERTICAL_CRS));
         }
         /*
-         * Temporal extent.
+         * Get the start and end times as Date objects if available, or as numeric values otherwise.
+         * In the later case, the unit symbol tells how to convert to Date objects.
          */
         Date startTime = decoder.dateValue(TIME.MINIMUM);
         Date endTime   = decoder.dateValue(TIME.MAXIMUM);
@@ -626,21 +634,31 @@ final class MetadataReader {
             final Number tmax = decoder.numericValue(TIME.MAXIMUM);
             if (tmin != null || tmax != null) {
                 final String symbol = decoder.stringValue(TIME.UNITS);
-                if (symbol != null) try {
-                    final DateUnit unit = new DateUnit(symbol);
-                    if (tmin != null) startTime = unit.makeDate(tmin.doubleValue());
-                    if (tmax != null)   endTime = unit.makeDate(tmax.doubleValue());
-                } catch (Exception e) { // Declared by the DateUnit constructor.
-                    warning("createExtent", e);
+                if (symbol != null) {
+                    final Date[] dates = decoder.numberToDate(symbol, tmin, tmax);
+                    startTime = dates[0];
+                    endTime   = dates[1];
                 }
             }
         }
-        if (startTime != null || endTime != null) {
+        /*
+         * If at least one time values above is available, add a temporal extent.
+         * This operation requires the the sis-temporal module. If not available,
+         * we will report a warning and leave the temporal extent missing.
+         */
+        if (startTime != null || endTime != null) try {
+            final DefaultTemporalExtent t = new DefaultTemporalExtent();
+            t.setBounds(startTime, endTime);
             if (extent == null) {
                 extent = new DefaultExtent();
             }
-            extent.getTemporalElements().add(new DefaultTemporalExtent(/*startTime, endTime*/)); // TODO
+            extent.getTemporalElements().add(t);
+        } catch (UnsupportedOperationException e) {
+            warning("createExtent", e);
         }
+        /*
+         * Add the geographic identifier, if present.
+         */
         final String identifier = decoder.stringValue(GEOGRAPHIC_IDENTIFIER);
         if (identifier != null) {
             if (extent == null) {
