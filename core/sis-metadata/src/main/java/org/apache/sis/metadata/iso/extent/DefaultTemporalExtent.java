@@ -29,6 +29,7 @@ import org.opengis.metadata.extent.TemporalExtent;
 import org.opengis.metadata.extent.SpatialTemporalExtent;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.internal.util.TemporalUtilities;
 import org.apache.sis.internal.metadata.ReferencingServices;
 
 
@@ -180,15 +181,42 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
     }
 
     /**
+     * Sets the temporal extent to the specified values. This convenience method creates a temporal
+     * primitive for the given dates, then invokes {@link #setExtent(TemporalPrimitive)}.
+     *
+     * <p><b>Note:</b> This method is available only if the {@code sis-temporal} module is available on the classpath,
+     * or any other module providing an implementation of the {@link org.opengis.temporal.TemporalFactory} interface.</p>
+     *
+     * @param  startTime The start date and time for the content of the dataset, or {@code null} if none.
+     * @param  endTime   The end date and time for the content of the dataset, or {@code null} if none.
+     * @throws UnsupportedOperationException If no implementation of {@code TemporalFactory} has been found
+     *         on the classpath.
+     */
+    public void setBounds(final Date startTime, final Date endTime) throws UnsupportedOperationException {
+        TemporalPrimitive value = null;
+        if (startTime != null || endTime != null) {
+            if (endTime == null || endTime.equals(startTime)) {
+                value = TemporalUtilities.createInstant(startTime);
+            } else if (startTime == null) {
+                value = TemporalUtilities.createInstant(endTime);
+            } else {
+                value = TemporalUtilities.createPeriod(startTime, endTime);
+            }
+        }
+        setExtent(value);
+    }
+
+    /**
      * Sets this temporal extent to values inferred from the specified envelope. The envelope can
      * be multi-dimensional, in which case the {@linkplain Envelope#getCoordinateReferenceSystem()
      * envelope CRS} must have a temporal component.
      *
-     * <p><b>Note:</b> This method is available only if the referencing module is on the classpath.</p>
+     * <p><b>Note:</b> This method is available only if the {@code sis-referencing} module is
+     * available on the classpath.</p>
      *
      * @param  envelope The envelope to use for setting this temporal extent.
      * @throws UnsupportedOperationException if the referencing module is not on the classpath.
-     * @throws TransformException if the envelope can't be transformed to a temporal extent.
+     * @throws TransformException if the envelope can not be transformed to a temporal extent.
      *
      * @see DefaultExtent#addElements(Envelope)
      * @see DefaultGeographicBoundingBox#setBounds(Envelope)
