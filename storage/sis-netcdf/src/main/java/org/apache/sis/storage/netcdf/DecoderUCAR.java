@@ -20,6 +20,7 @@ import java.util.Date;
 import ucar.nc2.Group;
 import ucar.nc2.Attribute;
 import ucar.nc2.NetcdfFile;
+import ucar.nc2.units.DateUnit;
 import ucar.nc2.time.Calendar;
 import ucar.nc2.time.CalendarDate;
 import ucar.nc2.time.CalendarDateFormatter;
@@ -207,6 +208,32 @@ final class DecoderUCAR extends Decoder {
             }
         }
         return null;
+    }
+
+    /**
+     * Converts the given numerical values to date, using the information provided in the given unit symbol.
+     * The unit symbol is typically a string like "<cite>days since 1970-01-01T00:00:00Z</cite>".
+     *
+     * @param  values The values to convert. May contains {@code null} elements.
+     * @return The converted values. May contains {@code null} elements.
+     */
+    @Override
+    public Date[] numberToDate(final String symbol, final Number... values) {
+        final Date[] dates = new Date[values.length];
+        final DateUnit unit;
+        try {
+            unit = new DateUnit(symbol);
+        } catch (Exception e) { // Declared by the DateUnit constructor.
+            warning("numberToDate", e);
+            return dates;
+        }
+        for (int i=0; i<values.length; i++) {
+            final Number value = values[i];
+            if (value != null) {
+                dates[i] = unit.makeDate(value.doubleValue());
+            }
+        }
+        return dates;
     }
 
     /**

@@ -131,6 +131,15 @@ abstract class Decoder {
     }
 
     /**
+     * Converts the given numerical values to date, using the information provided in the given unit symbol.
+     * The unit symbol is typically a string like "<cite>days since 1970-01-01T00:00:00Z</cite>".
+     *
+     * @param  values The values to convert. May contains {@code null} elements.
+     * @return The converted values. May contains {@code null} elements.
+     */
+    public abstract Date[] numberToDate(final String symbol, final Number... values);
+
+    /**
      * Returns the value of the {@code "_Id"} global attribute. The UCAR library defines a
      * {@link ucar.nc2.NetcdfFile#getId()} method for that purpose, which we will use when
      * possible in case that {@code getId()} method is defined in an other way.

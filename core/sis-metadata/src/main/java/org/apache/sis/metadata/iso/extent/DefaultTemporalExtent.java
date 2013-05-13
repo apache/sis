@@ -40,6 +40,7 @@ import org.apache.sis.internal.metadata.ReferencingServices;
  * <ul>
  *   <li>{@link #getStartTime()} for fetching the start time from the temporal primitive.</li>
  *   <li>{@link #getEndTime()} for fetching the end time from the temporal primitive.</li>
+ *   <li>{@link #setBounds(Date, Date)} for setting the extent from the given start and end time.</li>
  *   <li>{@link #setBounds(Envelope)} for setting the extent from the given envelope.</li>
  * </ul>
  *
