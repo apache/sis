@@ -21,13 +21,10 @@ import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
-import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collection;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.io.IOException;
 import javax.measure.unit.Unit;
 import javax.measure.unit.SI;
@@ -48,16 +45,14 @@ import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.constraint.Restriction;
 import org.opengis.referencing.crs.VerticalCRS;
 
-import org.apache.sis.util.Exceptions;
-import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.internal.util.DefaultFactories;
+import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.iso.extent.*;
-import org.apache.sis.metadata.iso.spatial.*;
 import org.apache.sis.metadata.iso.content.*;
 import org.apache.sis.metadata.iso.citation.*;
 import org.apache.sis.metadata.iso.distribution.*;
@@ -103,7 +98,7 @@ import static org.apache.sis.storage.netcdf.AttributeNames.*;
  * @version 0.3
  * @module
  */
-final class MetadataReader {
+final class MetadataReader extends WarningProducer {
     /**
      * Names of groups where to search for metadata, in precedence order.
      * The {@code null} value stands for global attributes.
@@ -113,10 +108,11 @@ final class MetadataReader {
     private static final String[] SEARCH_PATH = {"NCISOMetadata", "CFMetadata", null, "THREDDSMetadata"};
 
     /**
-     * The character to use as a keyword separator. This separator is used for parsing the
+     * The string to use as a keyword separator. This separator is used for parsing the
      * {@value org.apache.sis.metadata.netcdf.AttributeNames#KEYWORDS} attribute value.
+     * This is a regular expression.
      */
-    private static final char KEYWORD_SEPARATOR = ',';
+    private static final String KEYWORD_SEPARATOR = ",";
 
     /**
      * The vertical coordinate reference system to be given to the object created by {@link #createExtent()}.
@@ -166,25 +162,15 @@ final class MetadataReader {
     /**
      * Creates a new <cite>NetCDF to ISO</cite> mapper for the given source.
      *
+     * @param  parent Where to send the warnings, or {@code null} if none.
      * @param  decoder The source of NetCDF attributes.
      * @throws IOException If an I/O operation was necessary but failed.
      */
-    MetadataReader(final Decoder decoder) throws IOException {
+    MetadataReader(final WarningProducer parent, final Decoder decoder) throws IOException {
+        super(parent);
         this.decoder = decoder;
         decoder.setSearchPath(SEARCH_PATH);
         searchPath = decoder.getSearchPath();
-    }
-
-    /**
-     * Reports a warning. The current implementation just logs the warning. However if we want
-     * to implement a listener mechanism in a future version, this could be done here.
-     *
-     * @param method    The method in which the warning occurred.
-     * @param exception The exception to log.
-     */
-    private static void warning(final String method, final Exception exception) {
-        final LogRecord record = new LogRecord(Level.WARNING, Exceptions.formatChainedMessages(null, null, exception));
-        Logging.log(MetadataReader.class, method, record);
     }
 
     /**
@@ -495,13 +481,13 @@ final class MetadataReader {
                 if (credits  != null) addIfAbsent(identification.getCredits(), credits);
                 if (license  != null) addIfAbsent(identification.getResourceConstraints(), constraints = new DefaultLegalConstraints(license));
                 if (access   != null) {
-                    for (final CharSequence token : CharSequences.split(access, ',')) {
-                        final String t = token.toString();
-                        if (!t.isEmpty()) {
+                    for (String keyword : access.split(KEYWORD_SEPARATOR)) {
+                        keyword = keyword.trim();
+                        if (!keyword.isEmpty()) {
                             if (constraints == null) {
                                 identification.getResourceConstraints().add(constraints = new DefaultLegalConstraints());
                             }
-                            addIfAbsent(constraints.getAccessConstraints(), Types.forCodeName(Restriction.class, t, true));
+                            addIfAbsent(constraints.getAccessConstraints(), Types.forCodeName(Restriction.class, keyword, true));
                         }
                     }
                 }
@@ -563,8 +549,8 @@ final class MetadataReader {
         DefaultKeywords keywords = null;
         if (list != null) {
             final Set<InternationalString> words = new LinkedHashSet<>();
-            for (CharSequence token : CharSequences.split(list, KEYWORD_SEPARATOR)) {
-                final String keyword = token.toString().trim();
+            for (String keyword : list.split(KEYWORD_SEPARATOR)) {
+                keyword = keyword.trim();
                 if (!keyword.isEmpty()) {
                     words.add(new SimpleInternationalString(keyword));
                 }
@@ -673,7 +659,7 @@ final class MetadataReader {
      * Returns the converter from the given source unit (which may be {@code null}) to the
      * given target unit, or {@code null} if none or incompatible.
      */
-    private static UnitConverter getConverterTo(final Unit<?> source, final Unit<?> target) {
+    private UnitConverter getConverterTo(final Unit<?> source, final Unit<?> target) {
         if (source != null) try {
             return source.getConverterToAny(target);
         } catch (ConversionException e) {
@@ -695,5 +681,206 @@ final class MetadataReader {
             }
         }
         return n;
+    }
+
+    /**
+     * Creates a {@code <gmd:contentInfo>} elements from all applicable NetCDF attributes.
+     *
+     * @return The content information.
+     * @throws IOException If an I/O operation was necessary but failed.
+     */
+    private Collection<DefaultCoverageDescription> createContentInfo() throws IOException {
+        final Map<List<String>, DefaultCoverageDescription> contents = new HashMap<>(4);
+        final String processingLevel = decoder.stringValue(PROCESSING_LEVEL);
+        final List<? extends Variable> variables = decoder.getVariables();
+        for (final Variable variable : variables) {
+            if (!variable.isCoverage(2)) {
+                continue;
+            }
+            /*
+             * Instantiate a CoverageDescription for each distinct set of NetCDF dimensions
+             * (e.g. longitude,latitude,time). This separation is based on the fact that a
+             * coverage has only one domain for every range of values.
+             */
+            final List<String> dimensions = variable.getDimensions();
+            DefaultCoverageDescription content = contents.get(dimensions);
+            if (content == null) {
+                /*
+                 * If there is some NetCDF attributes that can be stored only in the ImageDescription
+                 * subclass, instantiate that subclass. Otherwise instantiate the more generic class.
+                 */
+                if (processingLevel != null) {
+                    content = new DefaultImageDescription();
+                    ((DefaultImageDescription) content).setProcessingLevelCode(new DefaultIdentifier(processingLevel));
+                } else {
+                    content = new DefaultCoverageDescription();
+                }
+                contents.put(dimensions, content);
+            }
+            content.getDimensions().add(createSampleDimension(variable));
+            final Object[] names    = variable.getAttributeValues(FLAG_NAMES,    false);
+            final Object[] meanings = variable.getAttributeValues(FLAG_MEANINGS, false);
+            final Object[] masks    = variable.getAttributeValues(FLAG_MASKS,    true);
+            final Object[] values   = variable.getAttributeValues(FLAG_VALUES,   true);
+            final int length = Math.max(masks.length, Math.max(values.length, Math.max(names.length, meanings.length)));
+            for (int i=0; i<length; i++) {
+                final RangeElementDescription element = createRangeElementDescription(variable,
+                        i < names   .length ? (String) names   [i] : null,
+                        i < meanings.length ? (String) meanings[i] : null,
+                        i < masks   .length ? (Number) masks   [i] : null,
+                        i < values  .length ? (Number) values  [i] : null);
+                if (element != null) {
+                    content.getRangeElementDescriptions().add(element);
+                }
+            }
+        }
+        return contents.values();
+    }
+
+    /**
+     * Creates a {@code <gmd:dimension>} element from the given variable.
+     *
+     * @param  variable The NetCDF variable.
+     * @return The sample dimension information.
+     * @throws IOException If an I/O operation was necessary but failed.
+     */
+    private Band createSampleDimension(final Variable variable) throws IOException {
+        final DefaultBand band = new DefaultBand();
+        String name = variable.getName();
+        if (name != null && !(name = name.trim()).isEmpty()) {
+            if (nameFactory == null) {
+                nameFactory = DefaultFactories.forClass(NameFactory.class);
+            }
+            // TODO: should be band.setName(...) with ISO 19115:2011.
+            // Sequence identifiers are supposed to be numbers only.
+            band.setSequenceIdentifier(nameFactory.createMemberName(null, name,
+                    nameFactory.createTypeName(null, variable.getDataTypeName())));
+        }
+        String description = variable.getDescription();
+        if (description != null && !(description = description.trim()).isEmpty() && !description.equals(name)) {
+            band.setDescriptor(toInternationalString(description));
+        }
+//TODO: Can't store the units, because the Band interface restricts it to length.
+//      We need the SampleDimension interface proposed in ISO 19115 revision draft.
+//      band.setUnits(Units.valueOf(variable.getUnitsString()));
+        return band;
+    }
+
+    /**
+     * Creates a {@code <gmd:rangeElementDescription>} elements from the given information.
+     *
+     * <p><b>Note:</b> ISO 19115 range elements are approximatively equivalent to
+     * {@link org.apache.sis.coverage.Category} in the {@code sis-coverage} module.</p>
+     *
+     * @param  variable The NetCDF variable.
+     * @param  name     One of the elements in the {@link AttributeNames#FLAG_NAMES} attribute, or {@code null}.
+     * @param  meaning  One of the elements in the {@link AttributeNames#FLAG_MEANINGS} attribute or {@code null}.
+     * @param  mask     One of the elements in the {@link AttributeNames#FLAG_MASKS} attribute or {@code null}.
+     * @param  value    One of the elements in the {@link AttributeNames#FLAG_VALUES} attribute or {@code null}.
+     * @return The sample dimension information or {@code null} if none.
+     * @throws IOException If an I/O operation was necessary but failed.
+     */
+    private RangeElementDescription createRangeElementDescription(final Variable variable,
+            final String name, final String meaning, final Number mask, final Number value) throws IOException
+    {
+        if (name != null && meaning != null) {
+            final DefaultRangeElementDescription element = new DefaultRangeElementDescription();
+            element.setName(toInternationalString(name));
+            element.setDefinition(toInternationalString(meaning));
+            // TODO: create a record from values (and possibly from the masks).
+            //       if (pixel & mask == value) then we have that range element.
+            return element;
+        }
+        return null;
+    }
+
+    /**
+     * Creates an ISO {@code Metadata} object from the information found in the NetCDF file.
+     *
+     * @return The ISO metadata object.
+     * @throws IOException If an I/O operation was necessary but failed.
+     */
+    public Metadata read() throws IOException {
+        final DefaultMetadata metadata = new DefaultMetadata();
+        metadata.setMetadataStandardName(MetadataUtilities.STANDARD_NAME_2);
+        metadata.setMetadataStandardVersion(MetadataUtilities.STANDARD_VERSION_2);
+        final Identifier identifier = getFileIdentifier();
+        if (identifier != null) {
+            String code = identifier.getCode();
+            final Citation authority = identifier.getAuthority();
+            if (authority != null) {
+                final InternationalString title = authority.getTitle();
+                if (title != null) {
+                    code = title.toString() + DefaultNameSpace.DEFAULT_SEPARATOR + code;
+                }
+            }
+            metadata.setFileIdentifier(code);
+        }
+        metadata.setDateStamp(decoder.dateValue(METADATA_CREATION));
+        metadata.getHierarchyLevels().add(ScopeCode.DATASET);
+        final String wms = decoder.stringValue("wms_service");
+        final String wcs = decoder.stringValue("wcs_service");
+        if (wms != null || wcs != null) {
+            metadata.getHierarchyLevels().add(ScopeCode.SERVICE);
+        }
+        /*
+         * Add the ResponsibleParty which is declared in global attributes, or in
+         * the THREDDS attributes if no information was found in global attributes.
+         */
+        for (final String path : searchPath) {
+            decoder.setSearchPath(path);
+            final ResponsibleParty party = createResponsibleParty(CREATOR, true);
+            if (party != null && party != pointOfContact) {
+                addIfAbsent(metadata.getContacts(), party);
+                if (pointOfContact == null) {
+                    pointOfContact = party;
+                }
+            }
+        }
+        /*
+         * Add the publisher AFTER the creator, because this method may
+         * reuse the 'creator' field (if non-null and if applicable).
+         */
+        Set<InternationalString> publisher = null;
+        DefaultDistribution distribution   = null;
+        for (final String path : searchPath) {
+            decoder.setSearchPath(path);
+            final ResponsibleParty party = createResponsibleParty(PUBLISHER, false);
+            if (party != null) {
+                if (distribution == null) {
+                    distribution = new DefaultDistribution();
+                    metadata.setDistributionInfo(distribution);
+                }
+                final DefaultDistributor distributor = new DefaultDistributor(party);
+                // TODO: There is some transfert option, etc. that we could set there.
+                // See UnidataDD2MI.xsl for options for OPeNDAP, THREDDS, etc.
+                addIfAbsent(distribution.getDistributors(), distributor);
+                publisher = addIfNonNull(publisher, toInternationalString(party.getIndividualName()));
+            }
+            // Also add history.
+            final String history = decoder.stringValue(HISTORY);
+            if (history != null) {
+                final DefaultDataQuality quality = new DefaultDataQuality();
+                final DefaultLineage lineage = new DefaultLineage();
+                lineage.setStatement(new SimpleInternationalString(history));
+                quality.setLineage(lineage);
+                addIfAbsent(metadata.getDataQualityInfo(), quality);
+            }
+        }
+        /*
+         * Add the identification info AFTER the responsible parties (both creator and publisher),
+         * because this method will reuse the 'creator' and 'publisher' information (if non-null).
+         */
+        final DataIdentification identification = createIdentificationInfo(identifier, publisher);
+        if (identification != null) {
+            metadata.getIdentificationInfo().add(identification);
+        }
+        metadata.setContentInfo(createContentInfo());
+        /*
+         * Add the dimension information, if any. This metadata node
+         * is built from the NetCDF CoordinateSystem objects.
+         */
+        decoder.addSpatialRepresentationInfo(metadata);
+        return metadata;
     }
 }

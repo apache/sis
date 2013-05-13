@@ -17,13 +17,11 @@
 package org.apache.sis.storage.netcdf;
 
 import java.util.Date;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
+import java.util.List;
 import java.io.IOException;
 import javax.measure.unit.Unit;
 import org.apache.sis.measure.Units;
-import org.apache.sis.util.Exceptions;
-import org.apache.sis.util.logging.Logging;
+import org.apache.sis.metadata.iso.DefaultMetadata;
 
 
 /**
@@ -43,23 +41,14 @@ import org.apache.sis.util.logging.Logging;
  * @version 0.3
  * @module
  */
-abstract class Decoder {
+abstract class Decoder extends WarningProducer {
     /**
      * Creates a new decoder.
-     */
-    Decoder() {
-    }
-
-    /**
-     * Reports a warning. The current implementation just logs the warning. However if we want
-     * to implement a listener mechanism in a future version, this could be done here.
      *
-     * @param method    The method in which the warning occurred.
-     * @param exception The exception to log.
+     * @param parent Where to send the warnings, or {@code null} if none.
      */
-    static void warning(final String method, final Exception exception) {
-        final LogRecord record = new LogRecord(Level.WARNING, Exceptions.formatChainedMessages(null, null, exception));
-        Logging.log(Decoder.class, method, record);
+    Decoder(final WarningProducer parent) {
+        super(parent);
     }
 
     /**
@@ -136,8 +125,9 @@ abstract class Decoder {
      *
      * @param  values The values to convert. May contains {@code null} elements.
      * @return The converted values. May contains {@code null} elements.
+     * @throws IOException If an I/O operation was necessary but failed.
      */
-    public abstract Date[] numberToDate(final String symbol, final Number... values);
+    public abstract Date[] numberToDate(final String symbol, final Number... values) throws IOException;
 
     /**
      * Returns the value of the {@code "_Id"} global attribute. The UCAR library defines a
@@ -160,4 +150,20 @@ abstract class Decoder {
     public String getTitle() throws IOException {
         return stringValue("_Title");
     }
+
+    /**
+     * Returns all variables found in the NetCDF file.
+     *
+     * @return All variables, or an empty list if none.
+     * @throws IOException If an I/O operation was necessary but failed.
+     */
+    public abstract List<Variable> getVariables() throws IOException;
+
+    /**
+     * Adds the spatial information inferred from the the NetCDF {@code CoordinateSystem} objects.
+     *
+     * @param  metadata Where to add the spatial information.
+     * @throws IOException If an I/O operation was necessary but failed.
+     */
+    public abstract void addSpatialRepresentationInfo(DefaultMetadata metadata) throws IOException;
 }
