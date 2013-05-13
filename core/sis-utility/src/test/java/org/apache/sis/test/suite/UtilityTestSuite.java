@@ -115,6 +115,6 @@ public final strictfp class UtilityTestSuite extends TestSuite {
      */
     @BeforeClass
     public static void verifyTestList() {
-        verifyTestList(UtilityTestSuite.class);
+        verifyTestList(UtilityTestSuite.class, BASE_TEST_CLASSES);
     }
 }

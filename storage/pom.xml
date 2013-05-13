@@ -87,6 +87,15 @@
       <groupId>org.opengis</groupId>
       <artifactId>geoapi-pending</artifactId>
     </dependency>
+
+    <!-- Test dependencies -->
+    <dependency>
+      <groupId>org.apache.sis</groupId>
+      <artifactId>sis-utility</artifactId>
+      <version>${project.version}</version>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
 
