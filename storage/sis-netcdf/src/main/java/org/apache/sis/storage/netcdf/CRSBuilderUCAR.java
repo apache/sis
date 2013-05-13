@@ -58,14 +58,6 @@ final class CRSBuilderUCAR extends WarningProducer {
     private List<CoordinateAxis> axes;
 
     /**
-     * Domain of the variable for which we are wrapping a coordinate system, in natural
-     * order (reverse of NetCDF order). This are often, but not necessarily, the NetCDF
-     * {@linkplain CoordinateSystem#getDomain() coordinate system domain} except for the
-     * dimension ordering. If {@code null}, will be inferred from the {@link #netcdfCS}.
-     */
-    private List<Dimension> domain;
-
-    /**
      * Creates a new CRS builder.
      *
      * @param parent Where to send the warnings, or {@code null} if none.
@@ -109,24 +101,6 @@ final class CRSBuilderUCAR extends WarningProducer {
             Collections.reverse(axes = new ArrayList<>(netcdfCS.getCoordinateAxes()));
         }
         return axes;
-    }
-
-    /**
-     * Returns the domain of the variable for which we are wrapping a coordinate system. This is often,
-     * but not necessarily, the NetCDF {@linkplain CoordinateSystem#getDomain() coordinate system domain}
-     * except for the dimension ordering.
-     *
-     * <p>By default, the returned list is modifiable. Any changes in the content of this list will be
-     * reflected in the wrappers to be {@linkplain #build() build}. This is useful if the caller
-     * wants to reduce the domain rank.</p>
-     *
-     * @return The domain in natural order (reverse of NetCDF order), or {@code null} if unknown.
-     */
-    private List<Dimension> getDomain() {
-        if (domain == null && netcdfCS != null) {
-            Collections.reverse(domain = new ArrayList<>(netcdfCS.getDomain()));
-        }
-        return domain;
     }
 
     /**

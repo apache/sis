@@ -83,6 +83,26 @@ Bridge between NetCDF CF convention and ISO 19115 metadata.
       <groupId>edu.ucar</groupId>
       <artifactId>netcdf</artifactId>
     </dependency>
+
+    <!-- Leverage GeoAPI tests. -->
+    <dependency>
+      <groupId>org.opengis.wrapper</groupId>
+      <artifactId>geoapi-netcdf</artifactId>
+      <version>${geoapi.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.opengis.wrapper</groupId>
+      <artifactId>geoapi-netcdf</artifactId>
+      <version>${geoapi.version}</version>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-jdk14</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <!--  UCAR repository from which to download the NetCDF library. -->

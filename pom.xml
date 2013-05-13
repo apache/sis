@@ -345,6 +345,12 @@ Apache SIS is a toolkit for describing location information, including points,
         <version>${netcdf.version}</version>
         <scope>provided</scope>
       </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-jdk14</artifactId>
+        <version>1.6.4</version> <!-- Must matches the version used by NetCDF. -->
+        <scope>runtime</scope> <!-- Should never be needed at compile time. -->
+      </dependency>
     </dependencies>
   </dependencyManagement>
 

@@ -59,6 +59,6 @@ public final strictfp class MetadataTestSuite extends TestSuite {
      */
     @BeforeClass
     public static void verifyTestList() {
-        verifyTestList(MetadataTestSuite.class);
+        verifyTestList(MetadataTestSuite.class, BASE_TEST_CLASSES);
     }
 }

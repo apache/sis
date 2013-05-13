@@ -18,6 +18,7 @@ package org.apache.sis.test;
 
 import java.util.Map;
 import java.util.IdentityHashMap;
+import org.apache.sis.util.Classes;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
@@ -34,6 +35,15 @@ import static org.junit.Assert.*;
  */
 @RunWith(Suite.class)
 public abstract strictfp class TestSuite {
+    /**
+     * The default set of base classes that all test cases are expected to extends.
+     * This is the usual argument value to the {@link #verifyTestList(Class, Class<?>[])} method.
+     */
+    protected static final Class<?>[] BASE_TEST_CLASSES = {
+        TestCase.class,
+        org.opengis.test.TestCase.class
+    };
+
     /**
      * Creates a new test suite.
      */
@@ -60,12 +70,14 @@ public abstract strictfp class TestSuite {
      * }
      *
      * @param suite The suite for which to verify order.
+     * @param baseTestClasses The set of base classes that all test cases are expected to extends.
+     *        This is usually {@link #BASE_TEST_CLASSES}.
      */
-    protected static void verifyTestList(final Class<? extends TestSuite> suite) {
+    protected static void verifyTestList(final Class<? extends TestSuite> suite, final Class<?>[] baseTestClasses) {
         final Class<?>[] testCases = suite.getAnnotation(Suite.SuiteClasses.class).value();
         final Map<Class<?>,Boolean> done = new IdentityHashMap<>(testCases.length);
         for (final Class<?> testCase : testCases) {
-            if (!TestCase.class.isAssignableFrom(testCase) && !org.opengis.test.TestCase.class.isAssignableFrom(testCase)) {
+            if (!Classes.isAssignableToAny(testCase, baseTestClasses)) {
                 fail("Class " + testCase.getCanonicalName() + " does not extends TestCase.");
             }
             final DependsOn dependencies = testCase.getAnnotation(DependsOn.class);

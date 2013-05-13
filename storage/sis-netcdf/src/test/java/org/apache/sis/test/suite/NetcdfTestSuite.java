@@ -16,6 +16,7 @@
  */
 package org.apache.sis.test.suite;
 
+import org.opengis.wrapper.netcdf.IOTestCase;
 import org.apache.sis.test.TestSuite;
 import org.junit.runners.Suite;
 import org.junit.BeforeClass;
@@ -30,23 +31,17 @@ import org.junit.BeforeClass;
  * @module
  */
 @Suite.SuiteClasses({
-    org.apache.sis.geometry.AbstractDirectPositionTest.class,
-    org.apache.sis.geometry.GeneralDirectPositionTest.class,
-    org.apache.sis.geometry.DirectPosition1DTest.class,
-    org.apache.sis.geometry.DirectPosition2DTest.class,
-    org.apache.sis.geometry.AbstractEnvelopeTest.class,
-    org.apache.sis.geometry.GeneralEnvelopeTest.class,
-    org.apache.sis.geometry.SubEnvelopeTest.class,
-    org.apache.sis.geometry.ImmutableEnvelopeTest.class,
-    org.apache.sis.geometry.Envelope2DTest.class
+    org.apache.sis.storage.netcdf.DecoderTest.class
 })
-public final strictfp class ReferencingTestSuite extends TestSuite {
+public final strictfp class NetcdfTestSuite extends TestSuite {
     /**
      * Verifies the list of tests before to run the suite.
      * See {@link #verifyTestList(Class)} for more information.
      */
     @BeforeClass
     public static void verifyTestList() {
-        verifyTestList(ReferencingTestSuite.class, BASE_TEST_CLASSES);
+        verifyTestList(NetcdfTestSuite.class, new Class<?>[] {
+            IOTestCase.class
+        });
     }
 }
