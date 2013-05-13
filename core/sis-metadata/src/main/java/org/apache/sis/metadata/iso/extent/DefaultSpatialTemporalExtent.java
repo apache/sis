@@ -20,8 +20,12 @@ import java.util.Collection;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.opengis.geometry.Envelope;
 import org.opengis.metadata.extent.GeographicExtent;
+import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.extent.SpatialTemporalExtent;
+import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.internal.metadata.ReferencingServices;
 
 
 /**
@@ -111,5 +115,31 @@ public class DefaultSpatialTemporalExtent extends DefaultTemporalExtent implemen
      */
     public void setSpatialExtent(final Collection<? extends GeographicExtent> newValues) {
         spatialExtent = writeCollection(newValues, spatialExtent, GeographicExtent.class);
+    }
+
+    /**
+     * Sets this spatio-temporal extent to values inferred from the specified envelope.
+     * The envelope shall have at least a temporal component. If a spatial component is
+     * also found, then:
+     *
+     * <ul>
+     *   <li>If the collection of {@link #getSpatialExtent() spatial extents} contains a
+     *       {@link GeographicBoundingBox}, then that bounding box will be updated or replaced
+     *       by a bounding box containing the spatial component of the given envelope.</li>
+     *   <li>Otherwise a new {@link DefaultGeographicBoundingBox} with the spatial component
+     *       of the given envelope is added to the list of spatial extents.</li>
+     * </ul>
+     *
+     * <b>Note:</b> This method is available only if the {@code sis-referencing} module is
+     * available on the classpath.
+     *
+     * @param  envelope The envelope to use for setting this spatio-temporal extent.
+     * @throws UnsupportedOperationException if the referencing module is not on the classpath.
+     * @throws TransformException if the envelope can not be transformed to a temporal extent.
+     */
+    @Override
+    public void setBounds(final Envelope envelope) throws TransformException {
+        checkWritePermission();
+        ReferencingServices.getInstance().setBounds(envelope, this);
     }
 }

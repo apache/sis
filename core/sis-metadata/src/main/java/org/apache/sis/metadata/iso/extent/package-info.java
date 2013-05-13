@@ -51,41 +51,61 @@
  *
  * <p>In addition to the standard properties, SIS provides the following methods:</p>
  * <ul>
- *   <li>{@link org.apache.sis.metadata.iso.extent.Extents#getGeographicBoundingBox
- *       Extents.getGeographicBoundingBox(Extent)}
+ *   <li>{@link org.apache.sis.metadata.iso.extent.Extents}
+ *     <ul>
+ *       <li>{@link org.apache.sis.metadata.iso.extent.Extents#getGeographicBoundingBox
+ *       getGeographicBoundingBox(Extent)}
  *       for extracting a global geographic bounding box.</li>
- *
- *   <li>{@link org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#setBounds(double, double, double, double)
- *       DefaultGeographicBoundingBox.setBounds(double, double, double, double)}
+ *     </ul>
+ *   </li>
+ *   <li>{@link org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox}
+ *     <ul>
+ *       <li>{@link org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#setBounds(double, double, double, double)
+ *       setBounds(double, double, double, double)}
  *       for setting the extent from (λ,φ) values.</li>
  *
  *   <li>{@link org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#setBounds(org.opengis.geometry.Envelope)
- *       DefaultGeographicBoundingBox.setBounds(Envelope)}
+ *       setBounds(Envelope)}
  *       for setting the extent from the given envelope.</li>
  *
  *   <li>{@link org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#setBounds(org.opengis.metadata.extent.GeographicBoundingBox)
- *       DefaultGeographicBoundingBox.setBounds(GeographicBoundingBox)}
+ *       setBounds(GeographicBoundingBox)}
  *       for setting the extent from an other bounding box.</li>
  *
  *   <li>{@link org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#add
- *       DefaultGeographicBoundingBox.add(GeographicBoundingBox)}
+ *       add(GeographicBoundingBox)}
  *       for expanding this extent to include an other bounding box.</li>
  *
  *   <li>{@link org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#intersect
- *       DefaultGeographicBoundingBox.intersect(GeographicBoundingBox)}
+ *       intersect(GeographicBoundingBox)}
  *       for the intersection between the two bounding boxes.</li>
- *
- *   <li>{@link org.apache.sis.metadata.iso.extent.DefaultVerticalExtent#setBounds
- *       DefaultVerticalExtent.setBounds(Envelope)}
+ *     </ul>
+ *   </li>
+ *   <li>{@link org.apache.sis.metadata.iso.extent.DefaultVerticalExtent}
+ *     <ul>
+ *       <li>{@link org.apache.sis.metadata.iso.extent.DefaultVerticalExtent#setBounds
+ *       setBounds(Envelope)}
  *       for setting the vertical element from the given envelope.</li>
+ *     </ul>
+ *   </li>
+ *   <li>{@link org.apache.sis.metadata.iso.extent.DefaultTemporalExtent}
+ *     <ul>
+ *       <li>{@link org.apache.sis.metadata.iso.extent.DefaultTemporalExtent#setBounds(java.util.Date, java.util.Date)
+ *       setBounds(Date, Date)}
+ *       for setting the temporal element from the start time and end time.</li>
  *
- *   <li>{@link org.apache.sis.metadata.iso.extent.DefaultTemporalExtent#setBounds
- *       DefaultTemporalExtent.setBounds(Envelope)}
+ *       <li>{@link org.apache.sis.metadata.iso.extent.DefaultTemporalExtent#setBounds(org.opengis.geometry.Envelope)
+ *       setBounds(Envelope)}
  *       for setting the temporal element from the given envelope.</li>
- *
- *   <li>{@link org.apache.sis.metadata.iso.extent.DefaultExtent#addElements
- *       DefaultExtent.addElements(Extent)}
+ *     </ul>
+ *   </li>
+ *   <li>{@link org.apache.sis.metadata.iso.extent.DefaultExtent}
+ *     <ul>
+ *       <li>{@link org.apache.sis.metadata.iso.extent.DefaultExtent#addElements
+ *       addElements(Extent)}
  *       for adding extent elements inferred from the given envelope.</li>
+ *     </ul>
+ *   </li>
  * </ul>
  *
  * {@section Null values, nil objects and collections}

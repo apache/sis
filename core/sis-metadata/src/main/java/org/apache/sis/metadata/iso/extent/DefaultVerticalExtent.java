@@ -203,7 +203,7 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
      *
      * @param  envelope The envelope to use for setting this vertical extent.
      * @throws UnsupportedOperationException if the referencing module is not on the classpath.
-     * @throws TransformException if the envelope can't be transformed to a vertical extent.
+     * @throws TransformException if the envelope can not be transformed to a vertical extent.
      *
      * @see DefaultExtent#addElements(Envelope)
      * @see DefaultGeographicBoundingBox#setBounds(Envelope)
