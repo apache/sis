@@ -14,8 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.netcdf;
+package org.apache.sis.internal.netcdf.ucar;
 
+import org.apache.sis.internal.netcdf.Variable;
 import java.util.List;
 import java.util.ArrayList;
 import java.awt.image.DataBuffer;
@@ -34,7 +35,7 @@ import org.apache.sis.util.CharSequences;
  * @version 0.3
  * @module
  */
-final class VariableUCAR extends Variable {
+final class VariableWrapper extends Variable {
     /**
      * The NetCDF variable.
      */
@@ -49,7 +50,7 @@ final class VariableUCAR extends Variable {
     /**
      * Creates a new variable wrapping the given NetCDF interface.
      */
-    VariableUCAR(final VariableIF variable, List<? extends VariableIF> all) {
+    VariableWrapper(final VariableIF variable, List<? extends VariableIF> all) {
         this.variable = variable;
         this.all = all;
     }

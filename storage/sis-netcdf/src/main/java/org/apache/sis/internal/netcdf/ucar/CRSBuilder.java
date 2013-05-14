@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.netcdf;
+package org.apache.sis.internal.netcdf.ucar;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,6 +32,7 @@ import ucar.nc2.dataset.CoordinateAxis2D;
 import ucar.nc2.dataset.CoordinateSystem;
 
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.netcdf.WarningProducer;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 import static org.apache.sis.util.collection.Containers.hashMapCapacity;
@@ -45,7 +46,7 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * @version 0.3
  * @module
  */
-final class CRSBuilderUCAR extends WarningProducer {
+final class CRSBuilder extends WarningProducer {
     /**
      * The NetCDF coordinate system to wrap.
      */
@@ -63,7 +64,7 @@ final class CRSBuilderUCAR extends WarningProducer {
      * @param parent Where to send the warnings, or {@code null} if none.
      * @param cs The NetCDF coordinate system, or {@code null} if none.
      */
-    CRSBuilderUCAR(final WarningProducer parent, final CoordinateSystem cs) {
+    CRSBuilder(final WarningProducer parent, final CoordinateSystem cs) {
         super(parent);
         netcdfCS = cs;
     }

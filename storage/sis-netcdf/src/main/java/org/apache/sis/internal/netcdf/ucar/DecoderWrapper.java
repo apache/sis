@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.netcdf;
+package org.apache.sis.internal.netcdf.ucar;
 
 import java.util.Date;
 import java.util.List;
@@ -37,10 +37,14 @@ import ucar.nc2.time.CalendarDateFormatter;
 
 import org.opengis.metadata.spatial.CellGeometry;
 import org.opengis.metadata.spatial.GridSpatialRepresentation;
+
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.iso.spatial.DefaultDimension;
 import org.apache.sis.metadata.iso.spatial.DefaultGridSpatialRepresentation;
+import org.apache.sis.internal.netcdf.Decoder;
+import org.apache.sis.internal.netcdf.Variable;
+import org.apache.sis.internal.netcdf.WarningProducer;
 
 import static org.apache.sis.storage.netcdf.AttributeNames.*;
 
@@ -53,12 +57,12 @@ import static org.apache.sis.storage.netcdf.AttributeNames.*;
  * @version 0.3
  * @module
  */
-final class DecoderUCAR extends Decoder {
+public final class DecoderWrapper extends Decoder {
     /**
      * The NetCDF file to read.
      * This file is set at construction time.
      *
-     * <p>This {@code DecoderUCAR} class does <strong>not</strong> close this file.
+     * <p>This {@code DecoderWrapper} class does <strong>not</strong> close this file.
      * Closing this file after usage is the user responsibility.</p>
      */
     private final NetcdfFile file;
@@ -81,7 +85,7 @@ final class DecoderUCAR extends Decoder {
      * @param parent Where to send the warnings, or {@code null} if none.
      * @param file The NetCDF file from which to parse metadata.
      */
-    DecoderUCAR(final WarningProducer parent, final NetcdfFile file) {
+    public DecoderWrapper(final WarningProducer parent, final NetcdfFile file) {
         super(parent);
         this.file = file;
     }
@@ -282,7 +286,7 @@ final class DecoderUCAR extends Decoder {
         final List<? extends VariableIF> all = file.getVariables();
         final List<Variable> variables = new ArrayList<>(all.size());
         for (final VariableIF variable : all) {
-            variables.add(new VariableUCAR(variable, all));
+            variables.add(new VariableWrapper(variable, all));
         }
         return variables;
     }
@@ -317,7 +321,7 @@ final class DecoderUCAR extends Decoder {
     private GridSpatialRepresentation createSpatialRepresentationInfo(final CoordinateSystem cs) throws IOException {
         final DefaultGridSpatialRepresentation grid = new DefaultGridSpatialRepresentation();
         grid.setNumberOfDimensions(cs.getRankDomain());
-        final CRSBuilderUCAR builder = new CRSBuilderUCAR(this, cs);
+        final CRSBuilder builder = new CRSBuilder(this, cs);
         for (final Map.Entry<ucar.nc2.Dimension, CoordinateAxis> entry : builder.getAxesDomain().entrySet()) {
             final CoordinateAxis axis = entry.getValue();
             final int i = axis.getDimensions().indexOf(entry.getKey());
@@ -346,7 +350,7 @@ final class DecoderUCAR extends Decoder {
             }
             final DefaultDimension dimension = new DefaultDimension();
             if (rsat != null) {
-                dimension.setDimensionName(rsat.TYPE);
+                dimension.setDimensionName(rsat.DEFAULT_NAME_TYPE);
                 dimension.setResolution(resolution);
             }
             dimension.setDimensionSize(axis.getShape(i));

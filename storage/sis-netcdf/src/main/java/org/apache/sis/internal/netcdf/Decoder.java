@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.netcdf;
+package org.apache.sis.internal.netcdf;
 
 import java.util.Date;
 import java.util.List;
@@ -25,29 +25,20 @@ import org.apache.sis.metadata.iso.DefaultMetadata;
 
 
 /**
- * The API used internally by Apache SIS for fetching all data from NetCDF files.
- * We use this API for isolating Apache SIS from the library used for reading the
- * NetCDF file: it can be either the UCAR library, or our own internal library.
- *
- * <p>We do not use systematically the UCAR library because it is quite large (especially when including
- * all dependencies) while SIS uses only a fraction of it. This is because the UCAR library provides some
- * features like referencing services which overlap with SIS services. In addition, SIS often needs "raw"
- * data instead of "high level" data. For example we need the minimal and maximal values of a variable in
- * its raw format, while the UCAR high level API provides the values converted by the offset and scale
- * factors.</p>
+ * The API used internally by Apache SIS for fetching variables and attribute values from a NetCDF file.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
  * @version 0.3
  * @module
  */
-abstract class Decoder extends WarningProducer {
+public abstract class Decoder extends WarningProducer {
     /**
      * Creates a new decoder.
      *
      * @param parent Where to send the warnings, or {@code null} if none.
      */
-    Decoder(final WarningProducer parent) {
+    protected Decoder(final WarningProducer parent) {
         super(parent);
     }
 
@@ -65,6 +56,7 @@ abstract class Decoder extends WarningProducer {
      * a subset of the array given to {@link #setSearchPath(String[])} since only the name of
      * groups which have been found in the NetCDF file are returned by this method.
      *
+     * @return The current search path.
      * @throws IOException If an I/O operation was necessary but failed.
      */
     public abstract String[] getSearchPath() throws IOException;
@@ -123,6 +115,7 @@ abstract class Decoder extends WarningProducer {
      * Converts the given numerical values to date, using the information provided in the given unit symbol.
      * The unit symbol is typically a string like "<cite>days since 1970-01-01T00:00:00Z</cite>".
      *
+     * @param  symbol The temporal unit name or symbol, followed by the epoch.
      * @param  values The values to convert. May contains {@code null} elements.
      * @return The converted values. May contains {@code null} elements.
      * @throws IOException If an I/O operation was necessary but failed.
@@ -134,6 +127,7 @@ abstract class Decoder extends WarningProducer {
      * {@link ucar.nc2.NetcdfFile#getId()} method for that purpose, which we will use when
      * possible in case that {@code getId()} method is defined in an other way.
      *
+     * @return The global dataset identifier, or {@code null} if none.
      * @throws IOException If an I/O operation was necessary but failed.
      */
     public String getId() throws IOException {
@@ -145,6 +139,7 @@ abstract class Decoder extends WarningProducer {
      * {@link ucar.nc2.NetcdfFile#getTitle()} method for that purpose, which we will use when
      * possible in case that {@code getTitle()} method is defined in an other way.
      *
+     * @return The dataset title, or {@code null} if none.
      * @throws IOException If an I/O operation was necessary but failed.
      */
     public String getTitle() throws IOException {
