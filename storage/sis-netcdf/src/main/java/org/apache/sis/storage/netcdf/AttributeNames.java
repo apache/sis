@@ -131,7 +131,7 @@ import org.opengis.metadata.extent.GeographicDescription;
  * @version 0.3
  * @module
  */
-public final class AttributeNames {
+public class AttributeNames {
     /**
      * The {@value} attribute name for a short description of the dataset
      * (<em>Highly Recommended</em>). If no {@value} attribute is provided,
@@ -938,8 +938,9 @@ public final class AttributeNames {
     public static final String FLAG_MEANINGS = "flag_meanings";
 
     /**
-     * Do not allow instantiation of this class.
+     * For subclass constructors only. {@code AttributeNames} may be sub-classed by communities
+     * defining domain-specific attributes in addition to the ones defined by the CF convention.
      */
-    private AttributeNames() {
+    protected AttributeNames() {
     }
 }
