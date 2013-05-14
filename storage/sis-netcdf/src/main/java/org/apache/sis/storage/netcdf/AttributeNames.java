@@ -51,14 +51,6 @@ import org.opengis.metadata.extent.GeographicDescription;
 
 /**
  * Name of attributes used in the mapping from/to NetCDF metadata to ISO 19115 metadata.
- * The mapping is defined in the following web pages:
- *
- * <ul>
- *   <li><a href="https://geo-ide.noaa.gov/wiki/index.php?title=NetCDF_Attribute_Convention_for_Dataset_Discovery">NetCDF
- *       Attribute Convention for Dataset Discovery</a> wiki</li>
- *   <li><a href="http://ngdc.noaa.gov/metadata/published/xsl/nciso2.0/UnidataDD2MI.xsl">UnidataDD2MI.xsl</a> file</li>
- * </ul>
- *
  * The attributes recognized by SIS are listed below:
  *
  * <table class="compact"><tr valign="top" width="25%"><td>
@@ -125,6 +117,13 @@ import org.opengis.metadata.extent.GeographicDescription;
  * {@value     #TITLE}<br>
  * {@value     #TOPIC_CATEGORY}<br>
  * </td></tr></table>
+ *
+ * <p><b>References:</b></p>
+ * <ul>
+ *   <li><a href="https://geo-ide.noaa.gov/wiki/index.php?title=NetCDF_Attribute_Convention_for_Dataset_Discovery">NetCDF
+ *       Attribute Convention for Dataset Discovery</a> wiki</li>
+ *   <li><a href="http://ngdc.noaa.gov/metadata/published/xsl/nciso2.0/UnidataDD2MI.xsl">UnidataDD2MI.xsl</a> file</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.20)
