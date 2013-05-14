@@ -322,11 +322,6 @@ Apache SIS is a toolkit for describing location information, including points,
         <scope>provided</scope>
       </dependency>
       <dependency>
-        <groupId>org.geonames</groupId>
-        <artifactId>georss-rome</artifactId>
-        <version>0.9.8</version>
-      </dependency>
-      <dependency>
         <groupId>net.jcip</groupId>
         <artifactId>jcip-annotations</artifactId>
         <version>1.0</version>
