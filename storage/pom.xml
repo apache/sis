@@ -39,8 +39,8 @@
   <packaging>pom</packaging>
   <name>Apache SIS storage</name>
   <description>
-    Group of services for reading and writing data from/to storage.
-    Storage are typically file formats or a database schemas.
+    Group of modules for reading and writing data from/to various storages.
+    Storages are typically file formats or a database schemas.
   </description>
 
 
