@@ -137,7 +137,7 @@ public final class AttributeNames {
      * (<em>Highly Recommended</em>). If no {@value} attribute is provided,
      * then {@code AttributeNames} will look for "full_name" and "name".
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getCitation() citation} /
      * {@link Citation#getTitle() title}</li></ul></p>
@@ -151,7 +151,7 @@ public final class AttributeNames {
      * The {@value} attribute name for a paragraph describing the dataset
      * (<em>Highly Recommended</em>).
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getAbstract() abstract}</li></ul></p>
      *
@@ -164,7 +164,7 @@ public final class AttributeNames {
      * The combination of the {@value #NAMING_AUTHORITY} and the {@value}
      * should be a globally unique identifier for the dataset.
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getFileIdentifier() fileIdentifier}</li>
      * <li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
@@ -183,7 +183,7 @@ public final class AttributeNames {
      * The combination of the {@value} and the {@value #IDENTIFIER} should be a globally
      * unique identifier for the dataset.
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getFileIdentifier() fileIdentifier}</li>
      * <li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
@@ -202,7 +202,7 @@ public final class AttributeNames {
      * vocabulary of variable names. This is actually a {@linkplain VariableSimpleIF variable} attribute,
      * but sometime appears also in {@linkplain NetcdfFile#findGlobalAttribute(String) global attributes}.
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getDescriptiveKeywords() descriptiveKeywords} /
      * {@link Keywords#getKeywords() keyword} with {@link KeywordType#THEME}</li></ul></p>
@@ -217,7 +217,7 @@ public final class AttributeNames {
      * The {@value} attribute name for indicating which controlled list of variable names has been
      * used in the {@value #STANDARD_NAME} attribute.
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getDescriptiveKeywords() descriptiveKeywords} /
      * {@link Keywords#getThesaurusName() thesaurusName} /
@@ -233,7 +233,7 @@ public final class AttributeNames {
      * The {@value} attribute name for a comma separated list of key words and phrases
      * (<em>Highly Recommended</em>).
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getDescriptiveKeywords() descriptiveKeywords} /
      * {@link Keywords#getKeywords() keyword} with {@link KeywordType#THEME}</li></ul></p>
@@ -249,7 +249,7 @@ public final class AttributeNames {
      * The {@value} attribute name for the guideline for the words/phrases in the
      * {@value #KEYWORDS} attribute (<em>Recommended</em>).
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getDescriptiveKeywords() descriptiveKeywords} /
      * {@link Keywords#getThesaurusName() thesaurusName} /
@@ -271,7 +271,7 @@ public final class AttributeNames {
      * {@code "society"}, {@code "structure"}, {@code "transportation"} and
      * {@code "utilitiesCommunication"}.
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getTopicCategories() topicCategory}</li></ul></p>
      *
@@ -285,7 +285,7 @@ public final class AttributeNames {
      * {@code "Image"}, {@code "Video"}, {@code "Tin"}, {@code "StereoModel"}, {@code "Station"},
      * {@code "Swath"} or {@code "Trajectory"}.
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getSpatialRepresentationTypes() spatialRepresentationType}</li></ul></p>
      *
@@ -298,7 +298,7 @@ public final class AttributeNames {
      * The {@value} attribute name for providing an audit trail for modifications to the
      * original data (<em>Recommended</em>).
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getDataQualityInfo() dataQualityInfo} /
      * {@link DataQuality#getLineage() lineage} /
      * {@link Lineage#getStatement() statement}</li></ul></p>
@@ -311,7 +311,7 @@ public final class AttributeNames {
      * The {@value} attribute name for miscellaneous information about the data
      * (<em>Recommended</em>).
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getSupplementalInformation() supplementalInformation}</li></ul></p>
      *
@@ -324,7 +324,7 @@ public final class AttributeNames {
      * (<em>Suggested</em>). This is actually defined in the "{@code NCISOMetadata}"
      * subgroup.
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getDateStamp() dateStamp}</li></ul></p>
      */
     public static final String METADATA_CREATION = "metadata_creation";
@@ -333,7 +333,7 @@ public final class AttributeNames {
      * The {@value} attribute name for the date on which the data was created
      * (<em>Recommended</em>).
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getCitation() citation} /
      * {@link Citation#getDates() date} /
@@ -347,7 +347,7 @@ public final class AttributeNames {
      * The {@value} attribute name for the date on which this data was last modified
      * (<em>Suggested</em>).
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getCitation() citation} /
      * {@link Citation#getDates() date} /
@@ -361,7 +361,7 @@ public final class AttributeNames {
      * The {@value} attribute name for a date on which this data was formally issued
      * (<em>Suggested</em>).
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getCitation() citation} /
      * {@link Citation#getDates() date} /
@@ -428,7 +428,7 @@ public final class AttributeNames {
          * The attribute name for the responsible's name. Possible values are
          * {@code "creator_name"}, {@code "contributor_name"} or {@code "publisher_name"}.
          *
-         * <p><b>Path:</b> <ul><li>{@link ResponsibleParty} /
+         * <p><b>Path in ISO 19115:</b> <ul><li>{@link ResponsibleParty} /
          * {@link ResponsibleParty#getIndividualName() individualName}</li></ul></p>
          */
         public final String NAME;
@@ -437,7 +437,7 @@ public final class AttributeNames {
          * The attribute name for the responsible's institution, or {@code null} if none.
          * Possible value is {@code "institution"}.
          *
-         * <p><b>Path:</b> <ul><li>{@link ResponsibleParty} /
+         * <p><b>Path in ISO 19115:</b> <ul><li>{@link ResponsibleParty} /
          * {@link ResponsibleParty#getOrganisationName() organisationName}</li></ul></p>
          */
         public final String INSTITUTION;
@@ -446,7 +446,7 @@ public final class AttributeNames {
          * The attribute name for the responsible's URL. Possible values are
          * {@code "creator_url"}, {@code "contributor_url"} or {@code "publisher_url"}.
          *
-         * <p><b>Path:</b> <ul><li>{@link ResponsibleParty} /
+         * <p><b>Path in ISO 19115:</b> <ul><li>{@link ResponsibleParty} /
          * {@link ResponsibleParty#getContactInfo() contactInfo} /
          * {@link Contact#getOnlineResource() onlineResource} /
          * {@link OnlineResource#getLinkage() linkage}</li></ul></p>
@@ -457,7 +457,7 @@ public final class AttributeNames {
          * The attribute name for the responsible's email address. Possible values are
          * {@code "creator_email"}, {@code "contributor_email"} or {@code "publisher_email"}.
          *
-         * <p><b>Path:</b> <ul><li>{@link ResponsibleParty} /
+         * <p><b>Path in ISO 19115:</b> <ul><li>{@link ResponsibleParty} /
          * {@link ResponsibleParty#getContactInfo() contactInfo} /
          * {@link Contact#getAddress() address} /
          * {@link Address#getElectronicMailAddresses() electronicMailAddress}</li></ul></p>
@@ -468,7 +468,7 @@ public final class AttributeNames {
          * The attribute name for the responsible's role, or {@code null} if none.
          * Possible value is {@code "contributor_role"}.
          *
-         * <p><b>Path:</b> <ul><li>{@link ResponsibleParty} /
+         * <p><b>Path in ISO 19115:</b> <ul><li>{@link ResponsibleParty} /
          * {@link ResponsibleParty#getRole()}</li></ul></p>
          *
          * @see Role
@@ -506,7 +506,7 @@ public final class AttributeNames {
     /**
      * The set of attribute names for the creator (<em>Recommended</em>).
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getCitation() citation} with {@link Role#ORIGINATOR}</li></ul></p>
      *
@@ -520,7 +520,7 @@ public final class AttributeNames {
     /**
      * The set of attribute names for the contributor (<em>Suggested</em>).
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getCitation() citation}</li></ul></p>
      *
@@ -534,7 +534,7 @@ public final class AttributeNames {
     /**
      * The set of attribute names for the publisher (<em>Suggested</em>).
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getDistributionInfo() distributionInfo} /
      * {@link Distribution#getDistributors() distributors} /
      * {@link Distributor#getDistributorContact() distributorContact} with {@link Role#PUBLISHER}</li>
@@ -554,7 +554,7 @@ public final class AttributeNames {
      * The {@value} attribute name for the scientific project that produced the data
      * (<em>Recommended</em>).
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getDescriptiveKeywords() descriptiveKeywords} /
      * {@link Keywords#getKeywords() keyword} with the {@code "project"} {@link KeywordType}</li></ul></p>
@@ -567,7 +567,7 @@ public final class AttributeNames {
      * The {@value} attribute name for the summary of the intentions with which the resource(s)
      * was developed.
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getPurpose() purpose}</li></ul></p>
      */
@@ -576,7 +576,7 @@ public final class AttributeNames {
     /**
      * The {@value} attribute name for bibliographical references.
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getCitation() citation} /
      * {@link Citation#getOtherCitationDetails() otherCitationDetails}</li></ul></p>
@@ -587,7 +587,7 @@ public final class AttributeNames {
      * The {@value} attribute name for a textual description of the processing (or quality control)
      * level of the data.
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getContentInfo() contentInfo} /
      * {@link ImageDescription#getProcessingLevelCode() processingLevelCode}</li></ul></p>
      *
@@ -599,7 +599,7 @@ public final class AttributeNames {
      * The {@value} attribute name for a place to acknowledge various type of support for
      * the project that produced this data (<em>Recommended</em>).
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getCredits() credit}</li></ul></p>
      *
@@ -611,7 +611,7 @@ public final class AttributeNames {
      * The {@value} attribute name for a description of the restrictions to data access
      * and distribution (<em>Recommended</em>).
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getResourceConstraints() resourceConstraints} /
      * {@link LegalConstraints#getUseLimitations() useLimitation}</li></ul></p>
@@ -626,7 +626,7 @@ public final class AttributeNames {
      * {@code "patent pending"}, {@code "trademark"}, {@code "license"},
      * {@code "intellectual property rights"} or {@code "restricted"}.
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getResourceConstraints() resourceConstraints} /
      * {@link LegalConstraints#getAccessConstraints() accessConstraints}</li></ul></p>
@@ -638,7 +638,7 @@ public final class AttributeNames {
     /**
      * The {@value} attribute name for an identifier of the geographic area.
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getExtents() extent} /
      * {@link Extent#getGeographicElements() geographicElement} /
@@ -795,7 +795,7 @@ public final class AttributeNames {
      * resolution and units. Latitudes are assumed to be in decimal degrees north, unless a
      * units attribute is specified.
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getExtents() extent} /
      * {@link Extent#getGeographicElements() geographicElement} /
@@ -820,7 +820,7 @@ public final class AttributeNames {
      * resolution and units. Longitudes are assumed to be in decimal degrees east, unless a
      * units attribute is specified.
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getExtents() extent} /
      * {@link Extent#getGeographicElements() geographicElement} /
@@ -845,7 +845,7 @@ public final class AttributeNames {
      * resolution and units. Elevations are assumed to be in metres above the ground, unless a
      * units attribute is specified.
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getExtents() extent} /
      * {@link Extent#getVerticalElements() verticalElement} /
@@ -869,7 +869,7 @@ public final class AttributeNames {
      * The set of attribute names for the start and end times of the bounding box, resolution and
      * units.
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getExtents() extent} /
      * {@link Extent#getTemporalElements() temporalElement} /
@@ -894,7 +894,7 @@ public final class AttributeNames {
      * If specified, they shall be one flag name for each {@linkplain #FLAG_MASKS flag mask},
      * {@linkplain #FLAG_VALUES flag value} and {@linkplain #FLAG_MEANINGS flag meaning}.
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getContentInfo() contentInfo} /
      * {@link CoverageDescription#getRangeElementDescriptions() rangeElementDescription} /
      * {@link RangeElementDescription#getName() name}</li></ul></p>
@@ -905,7 +905,7 @@ public final class AttributeNames {
      * The {@value} attribute name for bitmask to apply on sample values before to compare
      * them to the {@linkplain #FLAG_VALUES flag values}.
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getContentInfo() contentInfo} /
      * {@link CoverageDescription#getRangeElementDescriptions() rangeElementDescription} /
      * {@link RangeElementDescription#getRangeElements() rangeElement}</li></ul></p>
@@ -919,7 +919,7 @@ public final class AttributeNames {
      * A flagged condition is identified by a bitwise AND of the variable value and each flag masks
      * value; a result that matches the flag values value indicates a true condition.
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getContentInfo() contentInfo} /
      * {@link CoverageDescription#getRangeElementDescriptions() rangeElementDescription} /
      * {@link RangeElementDescription#getRangeElements() rangeElement}</li></ul></p>
@@ -930,7 +930,7 @@ public final class AttributeNames {
      * The {@value} attribute name for the meaning of {@linkplain #FLAG_VALUES flag values}.
      * Each flag values and flag masks must coincide with a flag meanings.
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getContentInfo() contentInfo} /
      * {@link CoverageDescription#getRangeElementDescriptions() rangeElementDescription} /
      * {@link RangeElementDescription#getDefinition() definition}</li></ul></p>
