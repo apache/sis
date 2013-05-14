@@ -37,7 +37,7 @@
        =========================================================== -->
   <artifactId>application</artifactId>
   <packaging>pom</packaging>
-  <name>Apache SIS core modules</name>
+  <name>Apache SIS applications</name>
   <description>
     Group of modules providing applications built on top of Apache SIS.
   </description>
