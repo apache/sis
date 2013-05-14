@@ -58,10 +58,6 @@
       <groupId>net.jcip</groupId>
       <artifactId>jcip-annotations</artifactId>
     </dependency>
-    <dependency>
-      <groupId>org.geonames</groupId>
-      <artifactId>georss-rome</artifactId>
-    </dependency>
 
     <!-- Test dependencies -->
     <dependency>

@@ -44,6 +44,13 @@
     <dependency>
       <groupId>org.geonames</groupId>
       <artifactId>georss-rome</artifactId>
+      <version>0.9.8</version>
+      <!-- We have to specify the version here because georss-rome is intentionally excluded from
+           the dependency management of the root pom.xml. The problem is that the artefact filename
+           is "georss-rome", but the <artefactId> element in its pom.xml declares "georss" without
+           the "-rome" suffix, which causes some environments to complain about this inconsistency.
+           Omitting the declaration from the root pom.xml limits the inconvenience to this "sis-webapp"
+           module only. -->
     </dependency>
     <dependency>
       <groupId>org.apache.sis</groupId>
