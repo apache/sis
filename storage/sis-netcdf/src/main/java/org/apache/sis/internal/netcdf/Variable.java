@@ -56,6 +56,7 @@ public abstract class Variable {
     /**
      * Returns the name of the variable data type as the name of the primitive type
      * followed by the span of each dimension (in unit of grid cells) between brackets.
+     * Example: {@code "short[180][360]"}.
      *
      * @return The name of the variable data type.
      */

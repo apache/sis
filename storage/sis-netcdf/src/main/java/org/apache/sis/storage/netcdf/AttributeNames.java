@@ -61,45 +61,70 @@ import org.opengis.metadata.extent.GeographicDescription;
  *
  * The attributes recognized by SIS are listed below:
  *
- * <p>{@value #ACCESS_CONSTRAINT}, {@value #ACKNOWLEDGMENT}, {@value #COMMENT},
- * {@linkplain #CONTRIBUTOR "contributor_email"},
- * {@linkplain #CONTRIBUTOR "contributor_name"},
- * {@linkplain #CONTRIBUTOR "contributor_role"},
- * {@linkplain #CONTRIBUTOR "contributor_url"},
- * {@linkplain #CREATOR     "creator_email"},
- * {@linkplain #CREATOR     "creator_name"},
- * {@linkplain #CREATOR     "creator_url"},
- * {@value #DATA_TYPE}, {@value #DATE_CREATED}, {@value #DATE_ISSUED}, {@value #DATE_MODIFIED},
- * {@value #FLAG_MASKS}, {@value #FLAG_MEANINGS}, {@value #FLAG_NAMES}, {@value #FLAG_VALUES},
- * {@linkplain #TITLE "full_name"},
- * {@linkplain #GEOGRAPHIC_IDENTIFIER "geographic_identifier"},
- * {@linkplain #LATITUDE  "geospatial_lat_max"},
- * {@linkplain #LATITUDE  "geospatial_lat_min"},
- * {@linkplain #LATITUDE  "geospatial_lat_resolution"},
- * {@linkplain #LATITUDE  "geospatial_lat_units"},
- * {@linkplain #LONGITUDE "geospatial_lon_max"},
- * {@linkplain #LONGITUDE "geospatial_lon_min"},
- * {@linkplain #LONGITUDE "geospatial_lon_resolution"},
- * {@linkplain #LONGITUDE "geospatial_lon_units"},
- * {@linkplain #VERTICAL  "geospatial_vertical_max"},
- * {@linkplain #VERTICAL  "geospatial_vertical_min"},
- * {@linkplain #VERTICAL  "geospatial_vertical_positive"},
- * {@linkplain #VERTICAL  "geospatial_vertical_resolution"},
- * {@linkplain #VERTICAL  "geospatial_vertical_units"},
- * {@value #HISTORY}, {@value #IDENTIFIER}, {@linkplain #CREATOR "institution"}, {@value #KEYWORDS},
- * {@value #LICENSE}, {@value #METADATA_CREATION}, {@linkplain #TITLE "name"}, {@value #NAMING_AUTHORITY},
- * {@value #PROCESSING_LEVEL}, {@value #PROJECT},
- * {@linkplain #PUBLISHER "publisher_email"},
- * {@linkplain #PUBLISHER "publisher_name"},
- * {@linkplain #PUBLISHER "publisher_url"},
- * {@value #PURPOSE}, {@value #REFERENCES}, {@value #STANDARD_NAME},
- * {@value #STANDARD_NAME_VOCABULARY}, {@value #SUMMARY},
- * {@linkplain #TIME "time_coverage_duration"},
- * {@linkplain #TIME "time_coverage_end"},
- * {@linkplain #TIME "time_coverage_resolution"},
- * {@linkplain #TIME "time_coverage_start"},
- * {@linkplain #TIME "time_coverage_units"},
- * {@value #TITLE}, {@value #TOPIC_CATEGORY} and {@value #VOCABULARY}.</p>
+ * <table class="compact"><tr valign="top" width="25%"><td>
+ * {@value     #ACCESS_CONSTRAINT}<br>
+ * {@value     #ACKNOWLEDGMENT}<br>
+ * {@value     #COMMENT}<br>
+ * {@linkplain #CONTRIBUTOR "contributor_email"}<br>
+ * {@linkplain #CONTRIBUTOR "contributor_name"}<br>
+ * {@linkplain #CONTRIBUTOR "contributor_role"}<br>
+ * {@linkplain #CONTRIBUTOR "contributor_url"}<br>
+ * {@linkplain #CREATOR     "creator_email"}<br>
+ * {@linkplain #CREATOR     "creator_name"}<br>
+ * {@linkplain #CREATOR     "creator_url"}<br>
+ * {@value     #DATA_TYPE}<br>
+ * {@value     #DATE_CREATED}<br>
+ * {@value     #DATE_ISSUED}<br>
+ * {@value     #DATE_MODIFIED}<br>
+ * {@value     #FLAG_MASKS}<br>
+ * {@value     #FLAG_MEANINGS}<br>
+ * {@value     #FLAG_NAMES}<br>
+ * {@value     #FLAG_VALUES}<br>
+ * </td><td width="25%">
+ * {@linkplain #TITLE "full_name"}<br>
+ * {@linkplain #GEOGRAPHIC_IDENTIFIER "geographic_identifier"}<br>
+ * {@linkplain #LATITUDE  "geospatial_lat_max"}<br>
+ * {@linkplain #LATITUDE  "geospatial_lat_min"}<br>
+ * {@linkplain #LATITUDE  "geospatial_lat_resolution"}<br>
+ * {@linkplain #LATITUDE  "geospatial_lat_units"}<br>
+ * {@linkplain #LONGITUDE "geospatial_lon_max"}<br>
+ * {@linkplain #LONGITUDE "geospatial_lon_min"}<br>
+ * {@linkplain #LONGITUDE "geospatial_lon_resolution"}<br>
+ * {@linkplain #LONGITUDE "geospatial_lon_units"}<br>
+ * {@linkplain #VERTICAL  "geospatial_vertical_max"}<br>
+ * {@linkplain #VERTICAL  "geospatial_vertical_min"}<br>
+ * {@linkplain #VERTICAL  "geospatial_vertical_positive"}<br>
+ * {@linkplain #VERTICAL  "geospatial_vertical_resolution"}<br>
+ * {@linkplain #VERTICAL  "geospatial_vertical_units"}<br>
+ * </td><td width="25%">
+ * {@value     #HISTORY}<br>
+ * {@value     #IDENTIFIER}<br>
+ * {@linkplain #CREATOR "institution"}<br>
+ * {@value     #KEYWORDS}<br>
+ * {@value     #VOCABULARY}<br>
+ * {@value     #LICENSE}<br>
+ * {@value     #METADATA_CREATION}<br>
+ * {@linkplain #TITLE "name"}<br>
+ * {@value     #NAMING_AUTHORITY}<br>
+ * {@value     #PROCESSING_LEVEL}<br>
+ * {@value     #PROJECT}<br>
+ * {@linkplain #PUBLISHER "publisher_email"}<br>
+ * {@linkplain #PUBLISHER "publisher_name"}<br>
+ * {@linkplain #PUBLISHER "publisher_url"}<br>
+ * {@value     #PURPOSE}<br>
+ * {@value     #REFERENCES}<br>
+ * </td><td width="25%">
+ * {@value     #STANDARD_NAME}<br>
+ * {@value     #STANDARD_NAME_VOCABULARY}<br>
+ * {@value     #SUMMARY}<br>
+ * {@linkplain #TIME "time_coverage_duration"}<br>
+ * {@linkplain #TIME "time_coverage_end"}<br>
+ * {@linkplain #TIME "time_coverage_resolution"}<br>
+ * {@linkplain #TIME "time_coverage_start"}<br>
+ * {@linkplain #TIME "time_coverage_units"}<br>
+ * {@value     #TITLE}<br>
+ * {@value     #TOPIC_CATEGORY}<br>
+ * </td></tr></table>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.20)

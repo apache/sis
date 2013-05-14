@@ -48,11 +48,10 @@ import org.opengis.referencing.crs.VerticalCRS;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.iso.SimpleInternationalString;
-import org.apache.sis.internal.util.DefaultFactories;
-import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.iso.extent.*;
+import org.apache.sis.metadata.iso.spatial.*;
 import org.apache.sis.metadata.iso.content.*;
 import org.apache.sis.metadata.iso.citation.*;
 import org.apache.sis.metadata.iso.distribution.*;
@@ -60,9 +59,13 @@ import org.apache.sis.metadata.iso.identification.*;
 import org.apache.sis.metadata.iso.lineage.DefaultLineage;
 import org.apache.sis.metadata.iso.quality.DefaultDataQuality;
 import org.apache.sis.metadata.iso.constraint.DefaultLegalConstraints;
+import org.apache.sis.internal.netcdf.Axis;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Variable;
+import org.apache.sis.internal.netcdf.GridGeometry;
 import org.apache.sis.internal.netcdf.WarningProducer;
+import org.apache.sis.internal.util.DefaultFactories;
+import org.apache.sis.internal.metadata.MetadataUtilities;
 
 // The following dependency is used only for static final String constants.
 // Consequently the compiled class files should not have this dependency.
@@ -572,6 +575,35 @@ final class MetadataReader extends WarningProducer {
     }
 
     /**
+     * Creates a {@code <gmd:spatialRepresentationInfo>} element from the given grid geometries.
+     *
+     * @param  cs The grid geometry (related to the NetCDF coordinate system).
+     * @return The grid spatial representation info.
+     * @throws IOException If an I/O operation was necessary but failed.
+     */
+    private GridSpatialRepresentation createSpatialRepresentationInfo(final GridGeometry cs) throws IOException {
+        final DefaultGridSpatialRepresentation grid = new DefaultGridSpatialRepresentation();
+        grid.setNumberOfDimensions(cs.getTargetDimensions());
+        for (final Axis axis : cs.getAxes()) {
+            if (axis.sourceDimensions.length != 0) {
+                final DefaultDimension dimension = new DefaultDimension();
+                dimension.setDimensionSize(axis.sourceSizes[0]);
+                final AttributeNames.Dimension attributeNames = axis.attributeNames;
+                if (attributeNames != null) {
+                    dimension.setDimensionName(attributeNames.DEFAULT_NAME_TYPE);
+                    final Number value = decoder.numericValue(attributeNames.RESOLUTION);
+                    if (value != null) {
+                        dimension.setResolution((value instanceof Double) ? (Double) value : value.doubleValue());
+                    }
+                }
+                grid.getAxisDimensionProperties().add(dimension);
+            }
+        }
+        grid.setCellGeometry(CellGeometry.AREA);
+        return grid;
+    }
+
+    /**
      * Returns the extent declared in the given group, or {@code null} if none. For more consistent results,
      * the caller should restrict the {@linkplain Decoder#setSearchPath search path} to a single group before
      * invoking this method.
@@ -883,7 +915,11 @@ final class MetadataReader extends WarningProducer {
          * Add the dimension information, if any. This metadata node
          * is built from the NetCDF CoordinateSystem objects.
          */
-        decoder.addSpatialRepresentationInfo(metadata);
+        for (final GridGeometry cs : decoder.getGridGeometries()) {
+            if (cs.getSourceDimensions() >= Variable.MIN_DIMENSION && cs.getTargetDimensions() >= Variable.MIN_DIMENSION) {
+                metadata.getSpatialRepresentationInfo().add(createSpatialRepresentationInfo(cs));
+            }
+        }
         return metadata;
     }
 }

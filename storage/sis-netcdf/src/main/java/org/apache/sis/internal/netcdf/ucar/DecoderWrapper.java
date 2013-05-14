@@ -19,34 +19,24 @@ package org.apache.sis.internal.netcdf.ucar;
 import java.util.Date;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumSet;
-import java.util.Map;
 import java.io.IOException;
 import ucar.nc2.Group;
 import ucar.nc2.Attribute;
 import ucar.nc2.VariableIF;
 import ucar.nc2.NetcdfFile;
 import ucar.nc2.dataset.NetcdfDataset;
-import ucar.nc2.dataset.CoordinateAxis;
 import ucar.nc2.dataset.CoordinateSystem;
-import ucar.nc2.constants.AxisType;
 import ucar.nc2.units.DateUnit;
 import ucar.nc2.time.Calendar;
 import ucar.nc2.time.CalendarDate;
 import ucar.nc2.time.CalendarDateFormatter;
-
-import org.opengis.metadata.spatial.CellGeometry;
-import org.opengis.metadata.spatial.GridSpatialRepresentation;
-
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.metadata.iso.DefaultMetadata;
-import org.apache.sis.metadata.iso.spatial.DefaultDimension;
-import org.apache.sis.metadata.iso.spatial.DefaultGridSpatialRepresentation;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Variable;
+import org.apache.sis.internal.netcdf.GridGeometry;
 import org.apache.sis.internal.netcdf.WarningProducer;
-
-import static org.apache.sis.storage.netcdf.AttributeNames.*;
 
 
 /**
@@ -278,12 +268,13 @@ public final class DecoderWrapper extends Decoder {
 
     /**
      * Returns all variables found in the NetCDF file.
-     *
-     * @return All variables, or an empty list if none.
      */
     @Override
     public List<Variable> getVariables() {
         final List<? extends VariableIF> all = file.getVariables();
+        if (all == null) {
+            return Collections.emptyList();
+        }
         final List<Variable> variables = new ArrayList<>(all.size());
         for (final VariableIF variable : all) {
             variables.add(new VariableWrapper(variable, all));
@@ -292,71 +283,25 @@ public final class DecoderWrapper extends Decoder {
     }
 
     /**
-     * Adds the spatial information inferred from the the NetCDF {@link CoordinateSystem} objects.
+     * Returns all grid geometries (related to coordinate systems) found in the NetCDF file.
      */
     @Override
-    public void addSpatialRepresentationInfo(final DefaultMetadata metadata) throws IOException {
+    public List<GridGeometry> getGridGeometries() throws IOException {
         if (file instanceof NetcdfDataset) {
             final NetcdfDataset ds = (NetcdfDataset) file;
             final EnumSet<NetcdfDataset.Enhance> mode = EnumSet.copyOf(ds.getEnhanceMode());
             if (mode.add(NetcdfDataset.Enhance.CoordSystems)) {
                 ds.enhance(mode);
             }
-            for (final CoordinateSystem cs : ds.getCoordinateSystems()) {
-                if (cs.getRankDomain() >= Variable.MIN_DIMENSION && cs.getRankRange() >= Variable.MIN_DIMENSION) {
-                    metadata.getSpatialRepresentationInfo().add(createSpatialRepresentationInfo(cs));
+            final List<CoordinateSystem> systems = ds.getCoordinateSystems();
+            if (systems != null) {
+                final List<GridGeometry> geometries = new ArrayList<>(systems.size());
+                for (final CoordinateSystem cs : systems) {
+                    geometries.add(new GridGeometryWrapper(this, cs));
                 }
+                return geometries;
             }
         }
-    }
-
-    /**
-     * Creates a {@code <gmd:spatialRepresentationInfo>} element from the given NetCDF coordinate system.
-     *
-     * @param  cs The NetCDF coordinate system.
-     * @return The grid spatial representation info.
-     * @throws IOException If an I/O operation was necessary but failed.
-     */
-    @SuppressWarnings("fallthrough")
-    private GridSpatialRepresentation createSpatialRepresentationInfo(final CoordinateSystem cs) throws IOException {
-        final DefaultGridSpatialRepresentation grid = new DefaultGridSpatialRepresentation();
-        grid.setNumberOfDimensions(cs.getRankDomain());
-        final CRSBuilder builder = new CRSBuilder(this, cs);
-        for (final Map.Entry<ucar.nc2.Dimension, CoordinateAxis> entry : builder.getAxesDomain().entrySet()) {
-            final CoordinateAxis axis = entry.getValue();
-            final int i = axis.getDimensions().indexOf(entry.getKey());
-            Dimension rsat = null;
-            Double resolution = null;
-            final AxisType at = axis.getAxisType();
-            if (at != null) {
-                boolean valid = false;
-                switch (at) {
-                    case Lon:      valid = true; // fallthrough
-                    case GeoX:     rsat  = LONGITUDE; break;
-                    case Lat:      valid = true; // fallthrough
-                    case GeoY:     rsat  = LATITUDE; break;
-                    case Height:   valid = true; // fallthrough
-                    case GeoZ:
-                    case Pressure: rsat  = VERTICAL; break;
-                    case Time:     valid = true; // fallthrough
-                    case RunTime:  rsat  = TIME; break;
-                }
-                if (valid) {
-                    final Number res = numericValue(rsat.RESOLUTION);
-                    if (res != null) {
-                        resolution = (res instanceof Double) ? (Double) res : res.doubleValue();
-                    }
-                }
-            }
-            final DefaultDimension dimension = new DefaultDimension();
-            if (rsat != null) {
-                dimension.setDimensionName(rsat.DEFAULT_NAME_TYPE);
-                dimension.setResolution(resolution);
-            }
-            dimension.setDimensionSize(axis.getShape(i));
-            grid.getAxisDimensionProperties().add(dimension);
-        }
-        grid.setCellGeometry(CellGeometry.AREA);
-        return grid;
+        return Collections.emptyList();
     }
 }

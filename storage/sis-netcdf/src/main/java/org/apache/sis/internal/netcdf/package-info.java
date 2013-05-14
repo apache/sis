@@ -27,6 +27,16 @@
  * its raw format, while the UCAR high level API provides the values converted by the offset and scale
  * factors.</p>
  *
+ * <p>A side effect of this isolation layer is also to adapt NetCDF vocabulary to Apache SIS one.
+ * For example what NetCDF calls "<cite>coordinate system</cite>" is actually a mix of what OGC/ISO
+ * specifications call "<cite>coordinate system</cite>", "<cite>coordinate reference system</cite>"
+ * and "<cite>grid geometry</cite>". The NetCDF coordinate system "<cite>range</cite>" is closer to
+ * ISO 19123 "<cite>domain</cite>", the NetCDF coordinate system "<cite>domain</cite>" is closer to
+ * ISO 19123 "<cite>grid envelope</cite>" and the ISO 19123 "<cite>range</cite>" is rather related
+ * to the NetCDF variable minimum and maximum values. Trying to use OGC/ISO and NetCDF objects in
+ * the same code appears to be <strong>very</strong> confusing. This isolation layer allows our code
+ * use a more consistent vocabulary (compared to the rest of Apache SIS).</p>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3
  * @version 0.3
