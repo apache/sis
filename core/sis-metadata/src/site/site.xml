@@ -23,11 +23,17 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/DECORATION/1.0.0
                              http://maven.apache.org/xsd/decoration-1.0.0.xsd">
+
+  <!-- ====================================================
+           Site descriptor for Apache SIS metadata module
+       ==================================================== -->
   <body>
     <menu name="Quick links">
       <item name="Module Javadoc"  href="apidocs/index.html"/>
       <item name="FAQ"             href="faq.html"/>
       <item name="Apache SIS home" href="../index.html"/>
     </menu>
+
+    <menu ref="reports"/> <!-- Replaced by menus for any configured reports (mailing lists, etc.) -->
   </body>
 </project>

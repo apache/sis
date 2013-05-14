@@ -25,42 +25,20 @@
                              http://maven.apache.org/xsd/decoration-1.0.0.xsd">
 
   <!-- ====================================================
-           Root site descriptor for Apache SIS project
+           Site descriptor for Apache SIS core modules
        ==================================================== -->
-  <bannerLeft>
-    <name>Apache SIS</name>
-    <href>http://builds.apache.org/job/sis-trunk/site/index.html</href>
-  </bannerLeft>
-
   <body>
     <!--
-        Links to appears just below the right banner.
-        Those links will be inherited by all modules;
-        they will not be repeated.
-    -->
-    <links>
-      <item name="Apache" href="http://www.apache.org"/>
-      <item name="Open Geospatial Consortium (OGC)" href="http://www.opengeospatial.org"/>
-      <item name="GeoAPI" href="http://www.geoapi.org"/>
-      <item name="Javadoc" href="http://builds.apache.org/job/sis-trunk/site/apidocs/index.html"/>
-      <!-- Absolute URL in order to point to the aggregated Javadoc instead than module Javadoc. -->
-    </links>
-
-    <!--
-        Menus to appears on the left side of home page.
+        Menus to appears on the left side of the module page.
         Those menus are NOT inherited - all modules must defines their own.
-        We proceeded that way because the content will vary: some modules
-        have FAQ sections, other not, etc.
     -->
     <menu name="Quick links" inherit="none">
-      <item name="Aggregated Javadoc" href="apidocs/index.html"/>
-      <item name="Mailing list"       href="mail-lists.html"/>
-      <item name="Who we are"         href="team-list.html"/>
+      <item name="Aggregated Javadoc" href="../apidocs/index.html"/>
       <item name="License"            href="http://www.apache.org/licenses/"/>
     </menu>
 
+    <menu ref="parent"/>  <!-- Replaced by a link to the parent. -->
     <menu ref="modules"/> <!-- Replaced by menu for submodules. -->
-    <menu ref="reports"/> <!-- Replaced by menus for any configured reports (mailing lists, etc.) -->
 
   </body>
 </project>
