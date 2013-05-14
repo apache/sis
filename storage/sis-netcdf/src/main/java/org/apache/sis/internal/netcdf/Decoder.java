@@ -21,7 +21,6 @@ import java.util.List;
 import java.io.IOException;
 import javax.measure.unit.Unit;
 import org.apache.sis.measure.Units;
-import org.apache.sis.metadata.iso.DefaultMetadata;
 
 
 /**
@@ -155,10 +154,10 @@ public abstract class Decoder extends WarningProducer {
     public abstract List<Variable> getVariables() throws IOException;
 
     /**
-     * Adds the spatial information inferred from the the NetCDF {@code CoordinateSystem} objects.
+     * Returns all grid geometries (related to coordinate systems) found in the NetCDF file.
      *
-     * @param  metadata Where to add the spatial information.
+     * @return All grid geometries, or an empty list if none.
      * @throws IOException If an I/O operation was necessary but failed.
      */
-    public abstract void addSpatialRepresentationInfo(DefaultMetadata metadata) throws IOException;
+    public abstract List<GridGeometry> getGridGeometries() throws IOException;
 }
