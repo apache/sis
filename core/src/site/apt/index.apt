@@ -1,0 +1,17 @@
+                             ------------------------------
+                                Apache SIS core modules
+                             ------------------------------
+
+Apache SIS core modules
+
+  This group of modules provides the core of Apache SIS services:
+
+   * {{{./sis-utility/index.html}Utilities}} -
+     Simple data objects and miscellaneous utilities.
+     The services provided by this module include internationalization,
+     operations on common Java types like Arrays and character strings,
+     logging, and more.
+
+   * {{{./sis-metadata/index.html}Metadata}} -
+     Implementation of ISO 19115 metadata.
+     Those metadata are used by most other OGC/ISO standards implemented by Apache SIS.
