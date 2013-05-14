@@ -14,11 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.netcdf;
+package org.apache.sis.internal.netcdf;
 
 import java.io.IOException;
 import ucar.nc2.NetcdfFile;
 import org.opengis.wrapper.netcdf.IOTestCase;
+import org.apache.sis.storage.netcdf.AttributeNames;
+import org.apache.sis.internal.netcdf.ucar.DecoderWrapper;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -39,7 +41,7 @@ public final strictfp class DecoderTest extends IOTestCase {
     private Decoder decoder;
 
     /**
-     * Tests the {@link DecoderUCAR} implementation.
+     * Tests the {@link DecoderWrapper} implementation.
      *
      * @throws IOException If an error occurred while reading the NetCDF file.
      */
@@ -47,7 +49,7 @@ public final strictfp class DecoderTest extends IOTestCase {
     public void testUCAR() throws IOException {
         final NetcdfFile file = open(IOTestCase.NCEP);
         try {
-            decoder = new DecoderUCAR(null, file);
+            decoder = new DecoderWrapper(null, file);
             runAllTests();
         } finally {
             file.close();

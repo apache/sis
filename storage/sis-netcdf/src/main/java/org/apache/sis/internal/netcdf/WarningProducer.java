@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.netcdf;
+package org.apache.sis.internal.netcdf;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -31,7 +31,7 @@ import org.apache.sis.util.logging.Logging;
  * @version 0.3
  * @module
  */
-class WarningProducer {
+public class WarningProducer {
     /**
      * Where to send the warnings, or {@code null} if none.
      */
@@ -42,7 +42,7 @@ class WarningProducer {
      *
      * @param parent Where to send the warnings, or {@code null} if none.
      */
-    WarningProducer(final WarningProducer parent) {
+    protected WarningProducer(final WarningProducer parent) {
         this.parent = parent;
     }
 
@@ -68,7 +68,7 @@ class WarningProducer {
      * @param methodName The name of the method in which the warning occurred.
      * @param exception  The exception to log.
      */
-    final void warning(final String methodName, final Exception exception) {
+    protected final void warning(final String methodName, final Exception exception) {
         final LogRecord record = new LogRecord(Level.WARNING, Exceptions.formatChainedMessages(null, null, exception));
         record.setSourceClassName(getClass().getCanonicalName());
         record.setSourceMethodName(methodName);

@@ -60,6 +60,9 @@ import org.apache.sis.metadata.iso.identification.*;
 import org.apache.sis.metadata.iso.lineage.DefaultLineage;
 import org.apache.sis.metadata.iso.quality.DefaultDataQuality;
 import org.apache.sis.metadata.iso.constraint.DefaultLegalConstraints;
+import org.apache.sis.internal.netcdf.Decoder;
+import org.apache.sis.internal.netcdf.Variable;
+import org.apache.sis.internal.netcdf.WarningProducer;
 
 // The following dependency is used only for static final String constants.
 // Consequently the compiled class files should not have this dependency.

@@ -14,34 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.test.suite;
-
-import org.opengis.wrapper.netcdf.IOTestCase;
-import org.apache.sis.test.TestSuite;
-import org.junit.runners.Suite;
-import org.junit.BeforeClass;
-
 
 /**
- * All tests from the {@code sis-referencing} module, in approximative dependency order.
+ * Implementation of the {@link org.apache.sis.internal.netcdf} API
+ * as wrappers around the UCAR NetCDF library.
  *
- * @author  Martin Desruisseaux (Geomatys)
+ * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3
  * @version 0.3
  * @module
  */
-@Suite.SuiteClasses({
-    org.apache.sis.internal.netcdf.DecoderTest.class
-})
-public final strictfp class NetcdfTestSuite extends TestSuite {
-    /**
-     * Verifies the list of tests before to run the suite.
-     * See {@link #verifyTestList(Class)} for more information.
-     */
-    @BeforeClass
-    public static void verifyTestList() {
-        verifyTestList(NetcdfTestSuite.class, new Class<?>[] {
-            IOTestCase.class
-        });
-    }
-}
+package org.apache.sis.internal.netcdf.ucar;

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.netcdf;
+package org.apache.sis.internal.netcdf;
 
 import java.util.List;
 
@@ -27,7 +27,7 @@ import java.util.List;
  * @version 0.3
  * @module
  */
-abstract class Variable {
+public abstract class Variable {
     /**
      * Minimal number of dimension for accepting a variable as a coverage variable.
      */
@@ -36,7 +36,7 @@ abstract class Variable {
     /**
      * Creates a new variable.
      */
-    Variable() {
+    protected Variable() {
     }
 
     /**
@@ -95,8 +95,9 @@ abstract class Variable {
      * The elements will be of class {@link String} if {@code numeric} is {@code false},
      * or {@link Number} if {@code numeric} is {@code true}.
      *
-     * @param attributeName The name of the attribute for which to get the values.
-     * @param numeric {@code true} if the values are expected to be numeric, or {@code false} for strings.
+     * @param  attributeName The name of the attribute for which to get the values.
+     * @param  numeric {@code true} if the values are expected to be numeric, or {@code false} for strings.
+     * @return The sequence of {@link String} or {@link Number} values for the named attribute.
      */
     public abstract Object[] getAttributeValues(String attributeName, boolean numeric);
 }

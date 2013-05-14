@@ -456,8 +456,7 @@ public final class AttributeNames {
         public final Role DEFAULT_ROLE;
 
         /**
-         * Creates a new set of attribute names. Any argument can be {@code null}
-         * if not applicable.
+         * Creates a new set of attribute names. Any argument can be {@code null} if not applicable.
          *
          * @param name        The attribute name for the responsible's name.
          * @param institution The attribute name for the responsible's institution.
@@ -668,6 +667,12 @@ public final class AttributeNames {
      *   <td></td>
      *   <td>{@code "geospatial_vertical_positive"}</td>
      *   <td></td>
+     * </tr><tr>
+     *   <td>{@link #DEFAULT_NAME_TYPE}</td>
+     *   <td>{@link DimensionNameType#ROW}</td>
+     *   <td>{@link DimensionNameType#COLUMN}</td>
+     *   <td>{@link DimensionNameType#VERTICAL}</td>
+     *   <td>{@link DimensionNameType#TIME}</td>
      * </tr></table>
      *
      * {@note The member names in this class are upper-cases because they should be considered
@@ -683,16 +688,6 @@ public final class AttributeNames {
      * @module
      */
     public static class Dimension {
-        /**
-         * The ISO-19115 dimension type, or {@code null} if none.
-         * Current implementation assigns {@link DimensionNameType#COLUMN} to longitudes and
-         * {@link DimensionNameType#ROW} to latitude, which is not strictly correct since the
-         * columns and rows can be anything. The problem is that we relate this type to the
-         * coordinate system, while it should be related to the grid geometry. We may need to
-         * remove this field in a future version.
-         */
-        final DimensionNameType TYPE;
-
         /**
          * The attribute name for the minimal value of the bounding box (<em>Recommended</em>).
          * Possible values are {@code "geospatial_lat_min"}, {@code "geospatial_lon_min"},
@@ -735,8 +730,21 @@ public final class AttributeNames {
         public final String POSITIVE;
 
         /**
+         * The default ISO-19115 dimension name type, or {@code null} if none.
+         * By default, {@link DimensionNameType#COLUMN} is associated to longitudes and {@link DimensionNameType#ROW}
+         * to latitudes since geographic maps in NetCDF files are typically shown horizontally.
+         *
+         * <p>The default associations may not be always correct since the columns and rows can be anything.
+         * Strictly speaking, the dimension name types shall be associated to the <em>grid axes</em> rather
+         * than the <em>coordinate system axes</em>. However the default association is correct in the common case
+         * (for NetCDF files) where there is no axis swapping in the <cite>grid to CRS</cite> conversion.</p>
+         */
+        public final DimensionNameType DEFAULT_NAME_TYPE;
+
+        /**
          * Creates a new set of attribute names.
          *
+         * @param type       The default ISO-19115 dimension name type, or {@code null} if none.
          * @param min        The attribute name for the minimal value of the bounding box.
          * @param max        The attribute name for the maximal value of the bounding box.
          * @param span       The attribute name for the difference between the minimal and maximal values.
@@ -744,32 +752,16 @@ public final class AttributeNames {
          * @param units      The attribute name for the bounding box units of measurement.
          * @param positive   The attribute name for indicating which direction is positive.
          */
-        public Dimension(final String min, final String max, final String span,
+        public Dimension(final DimensionNameType type, final String min, final String max, final String span,
                 final String resolution,final String units, final String positive)
         {
-            TYPE       = null;
-            MINIMUM    = min;
-            MAXIMUM    = max;
-            SPAN       = span;
-            RESOLUTION = resolution;
-            UNITS      = units;
-            POSITIVE   = positive;
-        }
-
-        /**
-         * Same constructor than above, but allows to specify the type. See {@link #TYPE}
-         * for an explanation about why this field is not public.
-         */
-        Dimension(final DimensionNameType type, final String min, final String max, final String span,
-                final String resolution,final String units, final String positive)
-        {
-            TYPE       = type;
-            MINIMUM    = min;
-            MAXIMUM    = max;
-            SPAN       = span;
-            RESOLUTION = resolution;
-            UNITS      = units;
-            POSITIVE   = positive;
+            DEFAULT_NAME_TYPE = type;
+            MINIMUM           = min;
+            MAXIMUM           = max;
+            SPAN              = span;
+            RESOLUTION        = resolution;
+            UNITS             = units;
+            POSITIVE          = positive;
         }
     }
 
