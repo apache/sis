@@ -75,6 +75,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final int AngularSeconds = 12;
 
         /**
+         * Attributes
+         */
+        public static final int Attributes = 45;
+
+        /**
          * Character encoding
          */
         public static final int CharacterEncoding = 17;
@@ -108,6 +113,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Destination
          */
         public static final int Destination = 38;
+
+        /**
+         * Dimensions
+         */
+        public static final int Dimensions = 46;
 
         /**
          * Directory
@@ -273,6 +283,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Value
          */
         public static final int Value = 13;
+
+        /**
+         * Variables
+         */
+        public static final int Variables = 47;
 
         /**
          * Versions

@@ -154,6 +154,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int ExcessiveArgumentSize_3 = 52;
 
         /**
+         * A size of {1} elements is excessive for the “{0}” list.
+         */
+        public static final int ExcessiveListSize_2 = 94;
+
+        /**
          * Attribute “{0}” is not allowed for an object of type ‘{1}’.
          */
         public static final int ForbiddenAttribute_2 = 21;
@@ -436,9 +441,19 @@ public final class Errors extends IndexedResourceBundle {
         public static final int UnexpectedChange_1 = 56;
 
         /**
+         * Unexpected end of file while reading “{0}”.
+         */
+        public static final int UnexpectedEndOfFile_1 = 91;
+
+        /**
          * More characters were expected at the end of “{0}”.
          */
         public static final int UnexpectedEndOfString_1 = 30;
+
+        /**
+         * File “{1}” does not seem to be encoded in the “{0}” format.
+         */
+        public static final int UnexpectedFileFormat_2 = 92;
 
         /**
          * Type of the “{0}” property is unknown.
@@ -504,6 +519,11 @@ public final class Errors extends IndexedResourceBundle {
          * The ‘{0}’ type is unsupported.
          */
         public static final int UnsupportedType_1 = 69;
+
+        /**
+         * Version {0} is not supported.
+         */
+        public static final int UnsupportedVersion_1 = 93;
 
         /**
          * A value is already defined for “{0}”.
