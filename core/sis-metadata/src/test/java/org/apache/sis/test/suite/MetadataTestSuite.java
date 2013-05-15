@@ -33,6 +33,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.metadata.MetadataUtilitiesTest.class,
     org.apache.sis.metadata.iso.citation.DefaultCitationDateTest.class,
     org.apache.sis.metadata.iso.citation.DefaultCitationTest.class,
+    org.apache.sis.metadata.iso.identification.DefaultKeywordsTest.class,
     org.apache.sis.metadata.iso.identification.DefaultResolutionTest.class,
     org.apache.sis.metadata.iso.spatial.DefaultGeorectifiedTest.class,
     org.apache.sis.metadata.iso.maintenance.DefaultScopeDescriptionTest.class,
