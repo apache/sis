@@ -18,6 +18,7 @@ package org.apache.sis.internal.netcdf;
 
 import java.util.Date;
 import java.util.List;
+import java.io.Closeable;
 import java.io.IOException;
 import javax.measure.unit.Unit;
 import org.apache.sis.measure.Units;
@@ -31,7 +32,7 @@ import org.apache.sis.measure.Units;
  * @version 0.3
  * @module
  */
-public abstract class Decoder extends WarningProducer {
+public abstract class Decoder extends WarningProducer implements Closeable {
     /**
      * Creates a new decoder.
      *

@@ -304,4 +304,14 @@ public final class DecoderWrapper extends Decoder {
         }
         return Collections.emptyList();
     }
+
+    /**
+     * Closes the NetCDF file.
+     *
+     * @throws IOException If an error occurred while closing the file.
+     */
+    @Override
+    public void close() throws IOException {
+        file.close();
+    }
 }

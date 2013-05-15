@@ -16,58 +16,72 @@
  */
 package org.apache.sis.internal.netcdf;
 
+import java.util.Date;
 import java.io.IOException;
-import ucar.nc2.NetcdfFile;
-import org.opengis.wrapper.netcdf.IOTestCase;
-import org.apache.sis.storage.netcdf.AttributeNames;
-import org.apache.sis.internal.netcdf.ucar.DecoderWrapper;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+import static org.apache.sis.test.TestUtilities.date;
+import static org.apache.sis.storage.netcdf.AttributeNames.*;
 
 
 /**
- * Tests the {@link Decoder} implementations.
+ * Tests the {@link Decoder} implementation. The default implementation tests
+ * {@link org.apache.sis.internal.netcdf.ucar.DecoderWrapper} since the UCAR
+ * library is our reference implementation. However subclasses can override the
+ * {@link #createDecoder(String)} method in order to test a different implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
  * @version 0.3
  * @module
  */
-public final strictfp class DecoderTest extends IOTestCase {
+public strictfp class DecoderTest extends TestCase {
     /**
-     * The decoder to test.
-     */
-    private Decoder decoder;
-
-    /**
-     * Tests the {@link DecoderWrapper} implementation.
+     * Tests {@link Decoder#stringValue(String)} with global attributes.
      *
      * @throws IOException If an error occurred while reading the NetCDF file.
      */
     @Test
-    public void testUCAR() throws IOException {
-        final NetcdfFile file = open(IOTestCase.NCEP);
-        try {
-            decoder = new DecoderWrapper(null, file);
-            runAllTests();
-        } finally {
-            file.close();
-        }
+    public void testStringValue() throws IOException {
+        selectDataset(NCEP);
+        assertAttributeEquals("Sea Surface Temperature Analysis Model",      TITLE);
+        assertAttributeEquals("NCEP SST Global 5.0 x 2.5 degree model data", SUMMARY);
+        assertAttributeEquals("NOAA/NWS/NCEP",                               CREATOR.NAME);
+        assertAttributeEquals(/* Empty string in file   */ (String) null,    CREATOR.EMAIL);
+        assertAttributeEquals(/* Non-existent attribute */ (String) null,    CONTRIBUTOR.NAME);
+
+        selectDataset(CIP);
+        assertAttributeEquals(/* Only control character */ (String) null,    TITLE);
+        assertAttributeEquals("UCAR",                                        CREATOR.INSTITUTION);
+        assertAttributeEquals("U.S. National Weather Service - NCEP (WMC)",  HISTORY);
     }
 
     /**
-     * Runs all the tests defined below this method.
+     * Tests {@link Decoder#numericValue(String)} with global attributes.
+     *
+     * @throws IOException If an error occurred while reading the NetCDF file.
      */
-    private void runAllTests() throws IOException {
-        decoder.setSearchPath(new String[1]);
-        testStringValue();
+    @Test
+    public void testNumericValue() throws IOException {
+        selectDataset(NCEP);
+        assertAttributeEquals(Double.valueOf( -90), LATITUDE .MINIMUM);
+        assertAttributeEquals(Double.valueOf( +90), LATITUDE .MAXIMUM);
+        assertAttributeEquals(Double.valueOf(-180), LONGITUDE.MINIMUM);
+        assertAttributeEquals(Double.valueOf(+180), LONGITUDE.MAXIMUM);
+        assertAttributeEquals((Double) null,        LATITUDE .RESOLUTION);
+        assertAttributeEquals((Double) null,        LONGITUDE.RESOLUTION);
     }
 
     /**
-     * Tests {@link Decoder#stringValue(String)}.
+     * Tests {@link Decoder#dateValue(String)} with global attributes.
+     *
+     * @throws IOException If an error occurred while reading the NetCDF file.
      */
-    private void testStringValue() throws IOException {
-        assertEquals("Sea Surface Temperature Analysis Model", decoder.stringValue(AttributeNames.TITLE));
+    @Test
+    public void testDateValue() throws IOException {
+        selectDataset(NCEP);
+        assertAttributeEquals(date("2005-09-22 00:00:00"), DATE_CREATED);
+        assertAttributeEquals((Date) null,                 DATE_MODIFIED);
     }
 }
