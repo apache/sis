@@ -21,6 +21,7 @@ package org.apache.sis.storage.netcdf;
  * for its static final String constants, which are inlined by javac. Consequently
  * the compiled file of this class should have no dependency to the UCAR packages.
  */
+import java.io.Serializable;
 import ucar.nc2.Group;
 import ucar.nc2.NetcdfFile;
 import ucar.nc2.VariableSimpleIF;
@@ -372,43 +373,44 @@ public class AttributeNames {
 
     /**
      * Holds the attribute names describing a responsible party.
-     * Values are:
+     * In the following table, the header lists the constants defined in the {@link AttributeNames}
+     * class and the other cells give the values assigned in this class fields for those constants.
      *
      * <table class="sis"><tr>
-     *   <th>Attribute</th>
-     *   <th>{@link AttributeNames#CREATOR}</th>
-     *   <th>{@link AttributeNames#CONTRIBUTOR}</th>
-     *   <th>{@link AttributeNames#PUBLISHER}</th>
+     *   <th            >Field in this class</th>
+     *   <th class="sep">{@link AttributeNames#CREATOR     CREATOR}</th>
+     *   <th            >{@link AttributeNames#CONTRIBUTOR CONTRIBUTOR}</th>
+     *   <th            >{@link AttributeNames#PUBLISHER   PUBLISHER}</th>
      * </tr><tr>
-     *   <td>{@link #NAME}</td>
-     *   <td>{@code "creator_name"}</td>
-     *   <td>{@code "contributor_name"}</td>
-     *   <td>{@code "publisher_name"}</td>
+     *   <td            >{@link #NAME}</td>
+     *   <td class="sep">{@code "creator_name"}</td>
+     *   <td            >{@code "contributor_name"}</td>
+     *   <td            >{@code "publisher_name"}</td>
      * </tr><tr>
-     *   <td>{@link #INSTITUTION}</td>
-     *   <td>{@code "institution"}</td>
-     *   <td></td>
-     *   <td></td>
+     *   <td            >{@link #INSTITUTION}</td>
+     *   <td class="sep">{@code "institution"}</td>
+     *   <td            ></td>
+     *   <td            ></td>
      * </tr><tr>
-     *   <td>{@link #URL}</td>
-     *   <td>{@code "creator_url"}</td>
-     *   <td>{@code "contributor_url"}</td>
-     *   <td>{@code "publisher_url"}</td>
+     *   <td            >{@link #URL}</td>
+     *   <td class="sep">{@code "creator_url"}</td>
+     *   <td            >{@code "contributor_url"}</td>
+     *   <td            >{@code "publisher_url"}</td>
      * </tr><tr>
-     *   <td>{@link #EMAIL}</td>
-     *   <td>{@code "creator_email"}</td>
-     *   <td>{@code "contributor_email"}</td>
-     *   <td>{@code "publisher_email"}</td>
+     *   <td            >{@link #EMAIL}</td>
+     *   <td class="sep">{@code "creator_email"}</td>
+     *   <td            >{@code "contributor_email"}</td>
+     *   <td            >{@code "publisher_email"}</td>
      * </tr><tr>
-     *   <td>{@link #ROLE}</td>
-     *   <td></td>
-     *   <td>{@code "contributor_role"}</td>
-     *   <td></td>
+     *   <td            >{@link #ROLE}</td>
+     *   <td class="sep"></td>
+     *   <td            >{@code "contributor_role"}</td>
+     *   <td            ></td>
      * </tr><tr>
-     *   <td>{@link #DEFAULT_ROLE}</td>
-     *   <td>{@link Role#ORIGINATOR}</td>
-     *   <td></td>
-     *   <td>{@link Role#PUBLISHER}</td>
+     *   <td            >{@link #DEFAULT_ROLE}</td>
+     *   <td class="sep">{@link Role#ORIGINATOR}</td>
+     *   <td            ></td>
+     *   <td>           {@link Role#PUBLISHER}</td>
      * </tr></table>
      *
      * {@note The member names in this class are upper-cases because they should be considered
@@ -421,8 +423,15 @@ public class AttributeNames {
      * @since   0.3 (derived from geotk-3.20)
      * @version 0.3
      * @module
+     *
+     * @see org.apache.sis.storage.netcdf.AttributeNames.Dimension
      */
-    public static class Responsible {
+    public static class Responsible implements Serializable {
+        /**
+         * For cross-version compatibility.
+         */
+        private static final long serialVersionUID = 2680152633273321012L;
+
         /**
          * The attribute name for the responsible's name. Possible values are
          * {@code "creator_name"}, {@code "contributor_name"} or {@code "publisher_name"}.
@@ -647,56 +656,57 @@ public class AttributeNames {
 
     /**
      * Holds the attribute names describing a simple latitude, longitude, and vertical bounding box.
-     * Values are:
+     * In the following table, the header lists the constants defined in the {@link AttributeNames}
+     * class and the other cells give the values assigned in this class fields for those constants.
      *
      * <table class="sis"><tr>
-     *   <th>Attributes</th>
-     *   <th>{@link AttributeNames#LATITUDE}</th>
-     *   <th>{@link AttributeNames#LONGITUDE}</th>
-     *   <th>{@link AttributeNames#VERTICAL}</th>
-     *   <th>{@link AttributeNames#TIME}</th>
+     *   <th            >Field in this class</th>
+     *   <th class="sep">{@link AttributeNames#LATITUDE  LATITUDE}</th>
+     *   <th            >{@link AttributeNames#LONGITUDE LONGITUDE}</th>
+     *   <th            >{@link AttributeNames#VERTICAL  VERTICAL}</th>
+     *   <th            >{@link AttributeNames#TIME      TIME}</th>
      * </tr><tr>
-     *   <td>{@link #MINIMUM}</td>
-     *   <td>{@code "geospatial_lat_min"}</td>
-     *   <td>{@code "geospatial_lon_min"}</td>
-     *   <td>{@code "geospatial_vertical_min"}</td>
-     *   <td>{@code "time_coverage_start"}</td>
+     *   <td            >{@link #MINIMUM}</td>
+     *   <td class="sep">{@code "geospatial_lat_min"}</td>
+     *   <td            >{@code "geospatial_lon_min"}</td>
+     *   <td            >{@code "geospatial_vertical_min"}</td>
+     *   <td            >{@code "time_coverage_start"}</td>
      * </tr><tr>
-     *   <td>{@link #MAXIMUM}</td>
-     *   <td>{@code "geospatial_lat_max"}</td>
-     *   <td>{@code "geospatial_lon_max"}</td>
-     *   <td>{@code "geospatial_vertical_max"}</td>
-     *   <td>{@code "time_coverage_end"}</td>
+     *   <td            >{@link #MAXIMUM}</td>
+     *   <td class="sep">{@code "geospatial_lat_max"}</td>
+     *   <td            >{@code "geospatial_lon_max"}</td>
+     *   <td            >{@code "geospatial_vertical_max"}</td>
+     *   <td            >{@code "time_coverage_end"}</td>
      * </tr><tr>
-     *   <td>{@link #SPAN}</td>
+     *   <td            >{@link #SPAN}</td>
+     *   <td class="sep"></td>
+     *   <td            ></td>
+     *   <td            ></td>
+     *   <td            >{@code "time_coverage_duration"}</td>
+     * </tr><tr>
+     *   <td            >{@link #RESOLUTION}</td>
+     *   <td class="sep">{@code "geospatial_lat_resolution"}</td>
+     *   <td            >{@code "geospatial_lon_resolution"}</td>
+     *   <td            >{@code "geospatial_vertical_resolution"}</td>
+     *   <td            >{@code "time_coverage_resolution"}</td>
+     * </tr><tr>
+     *   <td            >{@link #UNITS}</td>
+     *   <td class="sep">{@code "geospatial_lat_units"}</td>
+     *   <td            >{@code "geospatial_lon_units"}</td>
+     *   <td            >{@code "geospatial_vertical_units"}</td>
+     *   <td            >{@code "time_coverage_units"}</td>
+     * </tr><tr>
+     *   <td            >{@link #POSITIVE}</td>
+     *   <td class="sep"></td>
+     *   <td            ></td>
+     *   <td            >{@code "geospatial_vertical_positive"}</td>
      *   <td></td>
-     *   <td></td>
-     *   <td></td>
-     *   <td>{@code "time_coverage_duration"}</td>
      * </tr><tr>
-     *   <td>{@link #RESOLUTION}</td>
-     *   <td>{@code "geospatial_lat_resolution"}</td>
-     *   <td>{@code "geospatial_lon_resolution"}</td>
-     *   <td>{@code "geospatial_vertical_resolution"}</td>
-     *   <td>{@code "time_coverage_resolution"}</td>
-     * </tr><tr>
-     *   <td>{@link #UNITS}</td>
-     *   <td>{@code "geospatial_lat_units"}</td>
-     *   <td>{@code "geospatial_lon_units"}</td>
-     *   <td>{@code "geospatial_vertical_units"}</td>
-     *   <td>{@code "time_coverage_units"}</td>
-     * </tr><tr>
-     *   <td>{@link #POSITIVE}</td>
-     *   <td></td>
-     *   <td></td>
-     *   <td>{@code "geospatial_vertical_positive"}</td>
-     *   <td></td>
-     * </tr><tr>
-     *   <td>{@link #DEFAULT_NAME_TYPE}</td>
-     *   <td>{@link DimensionNameType#ROW}</td>
-     *   <td>{@link DimensionNameType#COLUMN}</td>
-     *   <td>{@link DimensionNameType#VERTICAL}</td>
-     *   <td>{@link DimensionNameType#TIME}</td>
+     *   <td            >{@link #DEFAULT_NAME_TYPE}</td>
+     *   <td class="sep">{@link DimensionNameType#ROW}</td>
+     *   <td            >{@link DimensionNameType#COLUMN}</td>
+     *   <td            >{@link DimensionNameType#VERTICAL}</td>
+     *   <td            >{@link DimensionNameType#TIME}</td>
      * </tr></table>
      *
      * {@note The member names in this class are upper-cases because they should be considered
@@ -710,8 +720,15 @@ public class AttributeNames {
      * @since   0.3 (derived from geotk-3.20)
      * @version 0.3
      * @module
+     *
+     * @see org.apache.sis.storage.netcdf.AttributeNames.Responsible
      */
-    public static class Dimension {
+    public static class Dimension implements Serializable {
+        /**
+         * For cross-version compatibility.
+         */
+        private static final long serialVersionUID = 5063525623830032591L;
+
         /**
          * The attribute name for the minimal value of the bounding box (<em>Recommended</em>).
          * Possible values are {@code "geospatial_lat_min"}, {@code "geospatial_lon_min"},
