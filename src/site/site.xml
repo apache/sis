@@ -56,7 +56,7 @@
       <item name="Aggregated Javadoc" href="apidocs/index.html"/>
       <item name="Mailing list"       href="mail-lists.html"/>
       <item name="Who we are"         href="team-list.html"/>
-      <item name="License"            href="http://www.apache.org/licenses/"/>
+      <item name="License"            href="license.html"/>
     </menu>
 
     <menu ref="modules"/> <!-- Replaced by menu for submodules. -->
