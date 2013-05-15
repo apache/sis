@@ -14,35 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.test.suite;
-
-import org.opengis.wrapper.netcdf.IOTestCase;
-import org.apache.sis.test.TestSuite;
-import org.junit.runners.Suite;
-import org.junit.BeforeClass;
-
 
 /**
- * All tests from the {@code sis-referencing} module, in approximative dependency order.
+ * Implementation of the {@link org.apache.sis.internal.netcdf} API as a standalone library.
+ * This is useful only for the NetCDF binary format (no NcML, no GRIB, no BUFR).
+ * This package works with channels instead than files, which is a little bit easier to use
+ * in some environments.
  *
+ * <p><b>Reference:</b></p>
+ * <ul>
+ *   <li><a href="http://www.opengeospatial.org/standards/netcdf">NetCDF standards on OGC web site</a></li>
+ *   <li><a href="http://portal.opengeospatial.org/files/?artifact_id=43734">NetCDF Classic and 64-bit Offset Format (1.0)</a></li>
+ * </ul>
+ *
+ * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
  * @version 0.3
  * @module
  */
-@Suite.SuiteClasses({
-    org.apache.sis.internal.netcdf.DecoderTest.class,
-    org.apache.sis.internal.netcdf.impl.ChannelDecoderTest.class
-})
-public final strictfp class NetcdfTestSuite extends TestSuite {
-    /**
-     * Verifies the list of tests before to run the suite.
-     * See {@link #verifyTestList(Class)} for more information.
-     */
-    @BeforeClass
-    public static void verifyTestList() {
-        verifyTestList(NetcdfTestSuite.class, new Class<?>[] {
-            IOTestCase.class
-        });
-    }
-}
+package org.apache.sis.internal.netcdf.impl;
