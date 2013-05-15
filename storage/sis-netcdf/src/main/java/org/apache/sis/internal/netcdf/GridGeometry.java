@@ -69,7 +69,7 @@ public abstract class GridGeometry extends WarningProducer {
      *
      * @param  j The fastest varying (right-most) index.
      * @param  i The slowest varying (left-most) index.
-     * @return The coordinate at the given index.
+     * @return The coordinate at the given index, or {@link Double#NaN} if it can not be computed.
      */
     protected abstract double coordinateForCurrentAxis(final int j, final int i);
 }
