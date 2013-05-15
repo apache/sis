@@ -75,11 +75,20 @@ public class DefaultKeywords extends ISOMetadata implements Keywords {
     /**
      * Creates keywords initialized to the given key word.
      *
-     * @param keyword Commonly used word or formalised word or phrase used to describe
-     *                the subject, or {@code null} if none.
+     * @param keywords Commonly used words or formalised words or phrases used to describe
+     *                 the subject, or {@code null} if none.
      */
-    public DefaultKeywords(final CharSequence keyword) {
-        keywords = singleton(Types.toInternationalString(keyword), InternationalString.class);
+    public DefaultKeywords(final CharSequence... keywords) {
+        if (keywords != null) {
+            for (final CharSequence keyword : keywords) {
+                final InternationalString i18n = Types.toInternationalString(keyword);
+                if (this.keywords == null) {
+                    this.keywords = singleton(i18n, InternationalString.class);
+                } else {
+                    this.keywords.add(i18n);
+                }
+            }
+        }
     }
 
     /**
