@@ -71,6 +71,7 @@ public strictfp class DecoderTest extends TestCase {
         assertAttributeEquals(Double.valueOf(+180), LONGITUDE.MAXIMUM);
         assertAttributeEquals((Double) null,        LATITUDE .RESOLUTION);
         assertAttributeEquals((Double) null,        LONGITUDE.RESOLUTION);
+        assertAttributeEquals(Double.valueOf(1),    "version"); // Specific to the NCEP file.
     }
 
     /**

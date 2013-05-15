@@ -177,17 +177,7 @@ public final class DecoderWrapper extends Decoder {
                     }
                     String asString = attribute.getStringValue();
                     if (asString != null && !(asString = asString.trim()).isEmpty()) {
-                        final int s = asString.indexOf(' ');
-                        if (s >= 0) {
-                            // Sometime, numeric values as string are followed by
-                            // a unit of measurement. We ignore that unit for now...
-                            asString = asString.substring(0, s);
-                        }
-                        try {
-                            return Double.valueOf(asString);
-                        } catch (NumberFormatException e) {
-                            warning("numericValue", e);
-                        }
+                        return parseNumber(asString);
                     }
                 }
             }

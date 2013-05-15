@@ -82,6 +82,27 @@ public abstract class Decoder extends WarningProducer implements Closeable {
     public abstract Number numericValue(final String name) throws IOException;
 
     /**
+     * Convenience method for {@link #numericValue(String)} implementation.
+     *
+     * @param  value The attribute value to parse.
+     * @return The parsed attribute value, or {@code null} if the given value can not be parsed.
+     */
+    protected final Number parseNumber(String value) {
+        final int s = value.indexOf(' ');
+        if (s >= 0) {
+            // Sometime, numeric values as string are followed by
+            // a unit of measurement. We ignore that unit for now...
+            value = value.substring(0, s);
+        }
+        try {
+            return Double.valueOf(value);
+        } catch (NumberFormatException e) {
+            warning("numericValue", e);
+        }
+        return null;
+    }
+
+    /**
      * Returns the value of the attribute of the given name as a date, or {@code null} if none.
      *
      * @param  name The name of the attribute to search, or {@code null}.

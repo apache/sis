@@ -89,6 +89,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int CanNotInstantiate_1 = 81;
 
         /**
+         * Can not parse “{1}” as a file in the {0} format.
+         */
+        public static final int CanNotParseFile_2 = 95;
+
+        /**
          * Can not set a value for property “{0}”.
          */
         public static final int CanNotSetPropertyValue_1 = 75;
@@ -451,7 +456,7 @@ public final class Errors extends IndexedResourceBundle {
         public static final int UnexpectedEndOfString_1 = 30;
 
         /**
-         * File “{1}” does not seem to be encoded in the “{0}” format.
+         * File “{1}” seems to be encoded in an other format than {0}.
          */
         public static final int UnexpectedFileFormat_2 = 92;
 
