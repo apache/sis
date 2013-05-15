@@ -18,7 +18,6 @@ package org.apache.sis.internal.netcdf.ucar;
 
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Collections;
 import ucar.nc2.Dimension;
 import ucar.nc2.constants.AxisType;
 import ucar.nc2.dataset.CoordinateAxis;
@@ -28,6 +27,7 @@ import org.apache.sis.internal.netcdf.Axis;
 import org.apache.sis.internal.netcdf.GridGeometry;
 import org.apache.sis.internal.netcdf.WarningProducer;
 import org.apache.sis.storage.netcdf.AttributeNames;
+import org.apache.sis.util.ArraysExt;
 
 
 /**
@@ -89,12 +89,17 @@ final class GridGeometryWrapper extends GridGeometry {
      * of {@link CoordinateAxis2D}.</p>
      */
     @Override
-    @SuppressWarnings("fallthrough")
     public List<Axis> getAxes() {
         final List<Dimension> sourceDimensions = netcdfCS.getDomain();
         final List<CoordinateAxis> netcdfAxes = netcdfCS.getCoordinateAxes();
-        final List<Axis> axes = new ArrayList<>(netcdfAxes.size());
-        for (final CoordinateAxis netcdfAxis : netcdfAxes) {
+        int targetDim = netcdfAxes.size();
+        final List<Axis> axes = new ArrayList<>(targetDim);
+        /*
+         * NetCDF files declare axes in reverse order, so we iterate in the 'netcdfAxes'
+         * list in reverse order for adding to the 'axes' list in "natural" order.
+         */
+        while (--targetDim >= 0) {
+            final CoordinateAxis netcdfAxis = netcdfAxes.get(targetDim);
             final List<Dimension> dimensions = netcdfAxis.getDimensions();
             AttributeNames.Dimension attributeNames = null;
             final AxisType type = netcdfAxis.getAxisType();
@@ -106,54 +111,30 @@ final class GridGeometryWrapper extends GridGeometry {
                 case RunTime:  // Fallthrough: consider as Time
                 case Time:     attributeNames = AttributeNames.TIME; break;
             }
-            final Axis axis;
-            switch (dimensions.size()) {
-                case 0: {
-                    // Should never happen, but defined by paranoia.
-                    axis = new Axis(attributeNames);
-                    break;
+            /*
+             * Get the grid dimensions (part of the "domain" in UCAR terminology) used for computing
+             * the ordinate values along the current axis. There is exactly 1 such grid dimension in
+             * straightforward NetCDF files. However some more complex files may have 2 dimensions.
+             */
+            int i = 0;
+            final int[] indices = new int[dimensions.size()];
+            final int[] sizes   = new int[indices.length];
+            for (final Dimension dimension : dimensions) {
+                final int sourceDim = sourceDimensions.indexOf(dimension);
+                if (sourceDim >= 0) {
+                    indices[i] = sourceDim;
+                    sizes[i++] = dimension.getLength();
                 }
-                case 1: {
-                    // The most common case where one source axis == one target axis.
-                    final Dimension dim = dimensions.get(0);
-                    axis = new Axis(attributeNames,
-                            sourceDimensions.indexOf(dim), dim.getLength());
-                    break;
-                }
-                case 2: {
-                    // An other case managed by the UCAR API.
-                    if (netcdfAxis instanceof CoordinateAxis2D) {
-                        axis2D = (CoordinateAxis2D) netcdfAxis;
-                        final CoordinateAxis2D a2 = (CoordinateAxis2D) netcdfAxis;
-                        final Dimension dim0 = dimensions.get(0);
-                        final Dimension dim1 = dimensions.get(1);
-                        axis = new Axis(attributeNames,
-                                sourceDimensions.indexOf(dim0), dim0.getLength(),
-                                sourceDimensions.indexOf(dim1), dim1.getLength(),
-                                this);
-                        break;
-                    }
-                    // Fallthrough: use the generic case as a fallback.
-                }
-                default: {
-                    // Uncommon case.
-                    final int[] indices = new int[dimensions.size()];
-                    final int[] sizes   = new int[indices.length];
-                    for (int i=indices.length; --i>=0;) {
-                        final Dimension dimension = dimensions.get(i);
-                        indices[i] = sourceDimensions.indexOf(dimension);
-                        sizes[i] = dimension.getLength();
-                    }
-                    axis = new Axis(attributeNames, indices, sizes);
-                    break;
-                }
+                /*
+                 * If the axis dimension has not been found in the coordinate system (sourceDim < 0),
+                 * then there is maybe a problem with the NetCDF file. However for the purpose of this
+                 * package, we can proceed as if the dimension does not exist.
+                 */
             }
+            axis2D = (netcdfAxis instanceof CoordinateAxis2D) ? (CoordinateAxis2D) netcdfAxis : null;
+            axes.add(new Axis(this, attributeNames, ArraysExt.resize(indices, i), ArraysExt.resize(sizes, i)));
         }
-        /*
-         * NetCDF files define the axes in reverse order.
-         * Retores them in "natural" order.
-         */
-        Collections.reverse(axes);
+        axis2D = null;
         return axes;
     }
 
@@ -163,6 +144,6 @@ final class GridGeometryWrapper extends GridGeometry {
      */
     @Override
     protected double coordinateForCurrentAxis(final int j, final int i) {
-        return axis2D.getCoordValue(j, i);
+        return (axis2D != null) ? axis2D.getCoordValue(j, i) : Double.NaN;
     }
 }

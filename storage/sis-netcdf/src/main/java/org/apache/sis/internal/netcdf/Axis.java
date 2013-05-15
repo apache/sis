@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.netcdf;
 
-import org.apache.sis.util.ArraysExt;
 import org.apache.sis.storage.netcdf.AttributeNames;
 
 
@@ -59,72 +58,35 @@ public final class Axis {
     public final int[] sourceSizes;
 
     /**
-     * Constructs a new axis associated to no grid dimension.
-     * Actually this should never happen, but we try to be safe.
-     *
-     * @param attributeNames The attributes to use for fetching dimension information, or {@code null} if unknown.
-     */
-    public Axis(final AttributeNames.Dimension attributeNames) {
-        this.attributeNames   = attributeNames;
-        this.sourceDimensions = ArraysExt.EMPTY_INT;
-        this.sourceSizes      = ArraysExt.EMPTY_INT;
-    }
-
-    /**
-     * Constructs a new axis associated to a single grid dimension.
-     *
-     * @param attributeNames The attributes to use for fetching dimension information, or {@code null} if unknown.
-     * @param sourceDim      The index of the grid dimension associated to this axis.
-     * @param sourceSize     The number of cell elements along that axis.
-     */
-    public Axis(final AttributeNames.Dimension attributeNames, final int sourceDim, final int sourceSize) {
-        this.attributeNames   = attributeNames;
-        this.sourceDimensions = new int[] {sourceDim};
-        this.sourceSizes      = new int[] {sourceSize};
-    }
-
-    /**
-     * Constructs a new axis associated to exactly two grid dimensions.
-     * This constructor will detects by itself which grid dimension varies fastest.
-     *
-     * @param attributeNames The attributes to use for fetching dimension information, or {@code null} if unknown.
-     * @param sourceDim1     The index of a first grid dimension associated to this axis.
-     * @param sourceSize1    The number of cell elements along the first grid dimension.
-     * @param sourceDim2     The index of a second grid dimension associated to this axis.
-     * @param sourceSize2    The number of cell elements along the second grid dimension.
-     * @param toTarget       The conversion from grid coordinates to geodetic coordinates.
-     */
-    public Axis(final AttributeNames.Dimension attributeNames,
-                final int sourceDim1, final int sourceSize1,
-                final int sourceDim2, final int sourceSize2,
-                final GridGeometry toTarget)
-    {
-        this.attributeNames = attributeNames;
-        final int mid1 = sourceSize1 / 2;
-        final int mid2 = sourceSize2 / 2;
-        final double d1 = (toTarget.coordinateForCurrentAxis(0, mid2) - toTarget.coordinateForCurrentAxis(sourceSize1-1, mid2)) / sourceSize1;
-        final double d2 = (toTarget.coordinateForCurrentAxis(mid1, 0) - toTarget.coordinateForCurrentAxis(mid1, sourceSize2-1)) / sourceSize2;
-        if (Math.abs(d2) > Math.abs(d1)) {
-            sourceDimensions  = new int[] {sourceDim2,  sourceDim1};
-            sourceSizes       = new int[] {sourceSize2, sourceSize1};
-        } else {
-            sourceDimensions = new int[] {sourceDim1,  sourceDim2};
-            sourceSizes      = new int[] {sourceSize1, sourceSize2};
-        }
-    }
-
-    /**
      * Constructs a new axis associated to an arbitrary number of grid dimension.
-     * Current implementation does not try to identify the "main" dimension
-     * (we may try to improve that in a future SIS version).
+     * In the particular case where the number of dimensions is equals to 2, this
+     * his constructor will detects by itself which grid dimension varies fastest.
      *
+     * @param owner            Provides callback for the conversion from grid coordinates to geodetic coordinates.
      * @param attributeNames   The attributes to use for fetching dimension information, or {@code null} if unknown.
      * @param sourceDimensions The index of the grid dimension associated to this axis.
      * @param sourceSizes      The number of cell elements along that axis.
      */
-    public Axis(final AttributeNames.Dimension attributeNames, final int[] sourceDimensions, final int[] sourceSizes) {
+    public Axis(final GridGeometry owner, final AttributeNames.Dimension attributeNames,
+            final int[] sourceDimensions, final int[] sourceSizes)
+    {
         this.attributeNames   = attributeNames;
         this.sourceDimensions = sourceDimensions;
         this.sourceSizes      = sourceSizes;
+        if (sourceDimensions.length == 2) {
+            final int up0  = sourceSizes[0];
+            final int up1  = sourceSizes[1];
+            final int mid0 = up0 / 2;
+            final int mid1 = up1 / 2;
+            final double d1 = (owner.coordinateForCurrentAxis(0, mid1) - owner.coordinateForCurrentAxis(up0-1, mid1)) / up0;
+            final double d2 = (owner.coordinateForCurrentAxis(mid0, 0) - owner.coordinateForCurrentAxis(mid0, up1-1)) / up1;
+            if (Math.abs(d2) > Math.abs(d1)) {
+                sourceSizes[0] = up1;
+                sourceSizes[1] = up0;
+                final int swap = sourceDimensions[0];
+                sourceDimensions[0] = sourceDimensions[1];
+                sourceDimensions[1] = swap;
+            }
+        }
     }
 }
