@@ -5,3 +5,29 @@
 Apache SIS NetCDF storage
 
   Bridge between NetCDF Climate and Forecast (CF) convention and ISO 19115 metadata.
+
+  NetCDF files can be read and written by the {{{http://www.unidata.ucar.edu/software/netcdf-java/}UCAR NetCDF library}}
+  among others. The <<<sis-netcdf>>> module uses the UCAR library for fetching attribute values and information about
+  coordinate systems, then associates those attribute to the corresponding elements in the ISO 19115 specification.
+
+
+* Note on the definition of terms
+
+  The UCAR library sometime uses the same words than the ISO/OGC standards for different things.
+  In particular the words "<domain>" and "<range>" can be applied to arbitrary functions, and the
+  UCAR library chooses to apply it to the function that converts grid indices to geodetic coordinates.
+  The ISO 19123 standard on the other hand considers coverage as a function, and applies those <domain>
+  and <range> words to that function. More specifically:
+
+    * UCAR "<coordinate system>" is actually a mix of <coordinate system>, <coordinate reference system>
+      and <grid geometry> in OGC sense.
+
+    * UCAR coordinate system "<domain>" is not equivalent to ISO 19123 coverage domain,
+      but is rather related to <grid envelope>.
+
+    * ISO 19123 coverage <domain> is related to UCAR coordinate system "<range>".
+
+    * ISO 19123 coverage <range> is not equivalent to UCAR "<range>", but is rather related to the
+      NetCDF variable's minimum and maximum values.
+
+  Care must be taken for avoiding confusion when using SIS and UCAR libraries together.
