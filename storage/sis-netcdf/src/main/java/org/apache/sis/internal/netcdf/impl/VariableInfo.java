@@ -84,4 +84,11 @@ final class VariableInfo {
         this.offset     = offset;
         // TODO: verify 'size'.
     }
+
+    /**
+     * Returns the size of the given data type, or 0 if unknown.
+     */
+    static int sizeOf(int datatype) {
+        return (--datatype >= 0 && datatype < SIZES.length) ? SIZES[datatype] : 0;
+    }
 }
