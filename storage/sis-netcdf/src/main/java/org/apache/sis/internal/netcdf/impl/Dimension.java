@@ -56,6 +56,6 @@ final class Dimension {
     @Debug
     @Override
     public String toString() {
-        return "Dimension[“" + name + "”, " + length + ']';
+        return name + '[' + length + ']';
     }
 }
