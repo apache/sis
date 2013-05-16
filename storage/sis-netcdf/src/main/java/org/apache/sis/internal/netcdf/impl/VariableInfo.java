@@ -28,7 +28,7 @@ package org.apache.sis.internal.netcdf.impl;
  */
 final class VariableInfo {
     /**
-     * The type of data. Number of bits and endianess are same as in the Java language
+     * The type of data. Number of bits and endianness are same as in the Java language
      * except {@code CHAR}, which is defined as an unsigned 8-bits value.
      */
     static final int BYTE=1, CHAR=2, SHORT=3, INT=4, FLOAT=5, DOUBLE=6;

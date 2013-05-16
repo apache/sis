@@ -173,18 +173,15 @@ public final class ChannelDecoder extends Decoder {
         VariableInfo[] variables  = null;
         Attribute[]    attributes = null;
         for (int i=0; i<3; i++) {
-            long nelems = readLong(); // Not yet the actual value (the 'tag' part is separated later).
-            if (nelems != 0) {
-                final int tag = (int) (nelems >>> Integer.SIZE);
-                nelems &= 0xFFFFFFFFL;
-                if (nelems > Integer.MAX_VALUE) {
-                    throw new DataStoreException(Errors.format(Errors.Keys.ExcessiveListSize_2,
-                            filename + DefaultNameSpace.DEFAULT_SEPARATOR + tagName(tag), nelems));
-                }
+            final long tn = readLong(); // Combination of tag and nelems
+            if (tn != 0) {
+                final int tag = (int) (tn >>> Integer.SIZE);
+                final int nelems = (int) tn;
+                ensureNonNegative(nelems, tag);
                 switch (tag) {
-                    case DIMENSION: dimensions = readDimensions((int) nelems); break;
-                    case VARIABLE:  variables  = readVariables ((int) nelems, dimensions); break;
-                    case ATTRIBUTE: attributes = readAttributes((int) nelems); break;
+                    case DIMENSION: dimensions = readDimensions(nelems); break;
+                    case VARIABLE:  variables  = readVariables (nelems, dimensions); break;
+                    case ATTRIBUTE: attributes = readAttributes(nelems); break;
                     default:        throw malformedHeader();
                 }
             }
@@ -219,6 +216,16 @@ public final class ChannelDecoder extends Decoder {
     }
 
     /**
+     * Ensures that {@code nelems} is not a negative value.
+     */
+    private void ensureNonNegative(final int nelems, final int tag) throws DataStoreException {
+        if (nelems < 0) {
+            throw new DataStoreException(Errors.format(Errors.Keys.NegativeArrayLength_1,
+                    filename + DefaultNameSpace.DEFAULT_SEPARATOR + tagName(tag)));
+        }
+    }
+
+    /**
      * Makes sure that the buffer contains at least <var>n</var> remaining elements of the given size.
      * If the buffer does not have enough bytes available, more bytes will be read from the channel.
      * If the buffer capacity is not sufficient for reading the given amount of data, an exception
@@ -232,15 +239,17 @@ public final class ChannelDecoder extends Decoder {
      * @param  name     The name of the element to read, used only in case of error for formatting the message.
      * @return The number of bytes to read, rounded to the next multiple of 4.
      */
-    private int require(final int n, final int dataSize, final String name) throws IOException, DataStoreException {
+    private int require(final int n, final int dataSize, String name) throws IOException, DataStoreException {
         // (n+3) & ~3  is a trick for rounding 'n' to the next multiple of 4.
-        final int size = (n * dataSize + 3) & ~3;
+        final long size = ((n & 0xFFFFFFFFL) * dataSize + 3) & ~3;
         if (size > buffer.capacity()) {
-            throw new DataStoreException(Errors.format(Errors.Keys.ExcessiveListSize_2,
-                    filename + DefaultNameSpace.DEFAULT_SEPARATOR + name, n));
+            name = filename + DefaultNameSpace.DEFAULT_SEPARATOR + name;
+            throw new DataStoreException(n < 0 ?
+                    Errors.format(Errors.Keys.NegativeArrayLength_1, name) :
+                    Errors.format(Errors.Keys.ExcessiveListSize_2, name, n));
         }
-        require(size);
-        return size;
+        require((int) size);
+        return (int) size;
     }
 
     /**
@@ -443,17 +452,14 @@ public final class ChannelDecoder extends Decoder {
              * but with less cases in the "switch" statements.
              */
             Attribute[] attributes = null;
-            long na = readLong();
-            if (na != 0) {
-                final int tag = (int) (na >>> Integer.SIZE);
-                na &= 0xFFFFFFFFL;
-                if (na > Integer.MAX_VALUE) {
-                    throw new DataStoreException(Errors.format(Errors.Keys.ExcessiveListSize_2,
-                            filename + DefaultNameSpace.DEFAULT_SEPARATOR + tagName(tag), na));
-                }
+            final long tn = readLong();
+            if (tn != 0) {
+                final int tag = (int) (tn >>> Integer.SIZE);
+                final int na  = (int) tn;
+                ensureNonNegative(na, tag);
                 switch (tag) {
                     // More cases may be added later if it appears to exist.
-                    case ATTRIBUTE: attributes = readAttributes((int) na); break;
+                    case ATTRIBUTE: attributes = readAttributes(na); break;
                     default:        throw malformedHeader();
                 }
             }

@@ -316,6 +316,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int NegativeArgument_2 = 8;
 
         /**
+         * Can not create a “{0}” array of negative length.
+         */
+        public static final int NegativeArrayLength_1 = 96;
+
+        /**
          * No property named “{0}” has been found in “{1}”.
          */
         public static final int NoSuchProperty_2 = 73;
