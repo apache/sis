@@ -29,6 +29,9 @@ import static java.lang.Double.doubleToLongBits;
 // Related to JDK7
 import java.util.Objects;
 
+// Related to JDK8
+import org.apache.sis.internal.jdk8.DoubleConsumer;
+
 
 /**
  * Holds some statistics derived from a series of sample values.
@@ -88,7 +91,7 @@ import java.util.Objects;
  * @version 0.3
  * @module
  */
-public class Statistics implements Cloneable, Serializable {
+public class Statistics implements DoubleConsumer, Cloneable, Serializable {
     /**
      * Serial number for compatibility with different versions.
      */
@@ -253,6 +256,7 @@ public class Statistics implements Cloneable, Serializable {
      * @see #accept(long)
      * @see #combine(Statistics)
      */
+    @Override
     public void accept(final double sample) {
         if (isNaN(sample)) {
             countNaN++;
