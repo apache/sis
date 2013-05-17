@@ -26,6 +26,8 @@ import java.io.EOFException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.lang.reflect.Array;
+import javax.measure.converter.UnitConverter;
+import javax.measure.converter.ConversionException;
 import org.opengis.parameter.InvalidParameterCardinalityException;
 import org.apache.sis.internal.jdk8.Function;
 import org.apache.sis.internal.netcdf.Decoder;
@@ -33,10 +35,12 @@ import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.GridGeometry;
 import org.apache.sis.internal.netcdf.WarningProducer;
 import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.util.Utilities;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.measure.Units;
 
 
 /**
@@ -69,6 +73,12 @@ public final class ChannelDecoder extends Decoder {
      * @see #findAttribute(String)
      */
     private static final Locale NAME_LOCALE = Locale.US;
+
+    /**
+     * {@code true} if the default timezone is UTC, or {@code false} if it shall be the
+     * {@linkplain java.util.TimeZone#getDefault() system default}.
+     */
+    private static final boolean DEFAULT_TIMEZONE_IS_UTC = true;
 
     /*
      * NOTE: the names of the static constants below this point match the names used in the Backus-Naur Form (BNF)
@@ -586,14 +596,47 @@ public final class ChannelDecoder extends Decoder {
         return null;
     }
 
+    /**
+     * Returns the value of the attribute of the given name as a date, or {@code null} if none.
+     * If there is more than one numeric value, only the first one is returned.
+     */
     @Override
-    public Date dateValue(String name) throws IOException {
-        throw new UnsupportedOperationException();
+    public Date dateValue(final String name) throws IOException {
+        final Attribute attribute = findAttribute(name);
+        if (attribute != null && attribute.value != null) {
+            if (attribute.value instanceof String) try {
+                return Utilities.parseDateTime((String) attribute.value, DEFAULT_TIMEZONE_IS_UTC);
+            } catch (IllegalArgumentException e) {
+                warning("dateValue", e);
+            }
+        }
+        return null;
     }
 
+    /**
+     * Converts the given numerical values to date, using the information provided in the given unit symbol.
+     * The unit symbol is typically a string like "<cite>days since 1970-01-01T00:00:00Z</cite>".
+     *
+     * @param  values The values to convert. May contains {@code null} elements.
+     * @return The converted values. May contains {@code null} elements.
+     */
     @Override
-    public Date[] numberToDate(String symbol, Number... values) throws IOException {
-        throw new UnsupportedOperationException();
+    public Date[] numberToDate(final String symbol, final Number... values) throws IOException {
+        final Date[] dates = new Date[values.length];
+        final String[] parts = symbol.split("(?i)\\bsince\\b");
+        if (parts.length == 2) try {
+            final UnitConverter converter = Units.valueOf(parts[0]).getConverterToAny(Units.MILLISECOND);
+            final long epoch = Utilities.parseDateTime(parts[1], DEFAULT_TIMEZONE_IS_UTC).getTime();
+            for (int i=0; i<values.length; i++) {
+                final Number value = values[i];
+                if (value != null) {
+                    dates[i] = new Date(epoch + Math.round(converter.convert(value.doubleValue())));
+                }
+            }
+        } catch (ConversionException | IllegalArgumentException e) {
+            warning("numberToDate", e);
+        }
+        return dates;
     }
 
     @Override

@@ -50,6 +50,7 @@ import org.junit.BeforeClass;
     org.apache.sis.math.MathFunctionsTest.class,
     org.apache.sis.math.StatisticsTest.class,
     org.apache.sis.math.StatisticsFormatTest.class,
+    org.apache.sis.internal.util.UtilitiesTest.class,
 
     // Collections.
     org.apache.sis.internal.util.ReferenceQueueConsumerTest.class,

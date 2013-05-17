@@ -62,9 +62,4 @@ public final strictfp class ChannelDecoderTest extends DecoderTest {
     protected boolean isSupplementalFormatSupported(final String format) {
         return false;
     }
-
-    @Override
-    public void testDateValue() {
-        // Disabled for now
-    }
 }

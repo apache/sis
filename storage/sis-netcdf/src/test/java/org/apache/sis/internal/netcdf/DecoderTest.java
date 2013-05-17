@@ -18,11 +18,13 @@ package org.apache.sis.internal.netcdf;
 
 import java.util.Date;
 import java.io.IOException;
+import static org.opengis.wrapper.netcdf.IOTestCase.NCEP;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.test.TestUtilities.date;
 import static org.apache.sis.storage.netcdf.AttributeNames.*;
+import static org.apache.sis.test.TestUtilities.date;
 
 
 /**
@@ -87,5 +89,24 @@ public strictfp class DecoderTest extends TestCase {
         selectDataset(NCEP);
         assertAttributeEquals(date("2005-09-22 00:00:00"), DATE_CREATED);
         assertAttributeEquals((Date) null,                 DATE_MODIFIED);
+    }
+
+    /**
+     * Tests {@link Decoder#numberToDate(String, Number[])}.
+     *
+     * @throws IOException If an error occurred while reading the NetCDF file.
+     */
+    @Test
+    public void testNumberToDate() throws IOException {
+        final Decoder decoder = selectDataset(NCEP);
+        assertArrayEquals(new Date[] {
+            date("2005-09-22 00:00:00")
+        }, decoder.numberToDate("hours since 1992-1-1", 120312));
+
+        assertArrayEquals(new Date[] {
+            date("1970-01-09 18:00:00"),
+            date("1969-12-29 06:00:00"),
+            date("1993-04-10 00:00:00")
+        }, decoder.numberToDate("days since 1970-01-01T00:00:00Z", 8.75, -2.75, 8500));
     }
 }
