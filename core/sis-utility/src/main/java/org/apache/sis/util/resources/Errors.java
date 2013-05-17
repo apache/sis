@@ -91,7 +91,7 @@ public final class Errors extends IndexedResourceBundle {
         /**
          * Can not parse “{1}” as a file in the {0} format.
          */
-        public static final int CanNotParseFile_2 = 95;
+        public static final int CanNotParseFile_2 = 79;
 
         /**
          * Can not set a value for property “{0}”.
@@ -114,19 +114,9 @@ public final class Errors extends IndexedResourceBundle {
         public static final int DeadThread_1 = 43;
 
         /**
-         * Value “{0}” is duplicated.
+         * Identifier “{0}” is duplicated.
          */
-        public static final int DuplicatedValue_1 = 38;
-
-        /**
-         * Found {0} duplicated values.
-         */
-        public static final int DuplicatedValuesCount_1 = 78;
-
-        /**
-         * Duplicated values for the “{0}” property.
-         */
-        public static final int DuplicatedValuesForProperty_1 = 79;
+        public static final int DuplicatedIdentifier_1 = 38;
 
         /**
          * Element “{0}” is already present.
@@ -318,7 +308,7 @@ public final class Errors extends IndexedResourceBundle {
         /**
          * Can not create a “{0}” array of negative length.
          */
-        public static final int NegativeArrayLength_1 = 96;
+        public static final int NegativeArrayLength_1 = 78;
 
         /**
          * No property named “{0}” has been found in “{1}”.

@@ -54,9 +54,13 @@ public final strictfp class ChannelDecoderTest extends DecoderTest {
         }
     }
 
+    /**
+     * Unconditionally returns {@code false} since {@link ChannelDecoder}
+     * supports only the classic and 64 bits NetCDF formats.
+     */
     @Override
-    public void testStringValue() {
-        // Disabled for now
+    protected boolean isSupplementalFormatSupported(final String format) {
+        return false;
     }
 
     @Override

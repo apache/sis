@@ -16,18 +16,23 @@
  */
 package org.apache.sis.internal.netcdf.impl;
 
-import java.util.Date;
-import java.util.List;
 import java.util.Map;
+import java.util.List;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Locale;
 import java.io.IOException;
 import java.io.EOFException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.lang.reflect.Array;
+import org.opengis.parameter.InvalidParameterCardinalityException;
+import org.apache.sis.internal.jdk8.Function;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.GridGeometry;
 import org.apache.sis.internal.netcdf.WarningProducer;
+import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.resources.Errors;
@@ -56,6 +61,14 @@ public final class ChannelDecoder extends Decoder {
      * @see #readName()
      */
     private static final String NAME_ENCODING = "UTF-8";
+
+    /**
+     * The locale of dimension, variable and attribute names. This is used for the conversion to
+     * lower-cases before case-insensitive searches.
+     *
+     * @see #findAttribute(String)
+     */
+    private static final Locale NAME_LOCALE = Locale.US;
 
     /*
      * NOTE: the names of the static constants below this point match the names used in the Backus-Naur Form (BNF)
@@ -186,7 +199,7 @@ public final class ChannelDecoder extends Decoder {
                 }
             }
         }
-        attributeMap = Attribute.toMap(attributes);
+        attributeMap = toMap(attributes, Attribute.NAME_FUNCTION);
     }
 
     /**
@@ -388,7 +401,8 @@ public final class ChannelDecoder extends Decoder {
     }
 
     /**
-     * Reads attribute values from the NetCDF file header. The record structure is:
+     * Reads attribute values from the NetCDF file header. Current implementation has no restriction on
+     * the location in the header where the NetCDF attribute can be declared. The record structure is:
      *
      * <ul>
      *   <li>The attribute name                             (use {@link #readName()})</li>
@@ -410,6 +424,7 @@ public final class ChannelDecoder extends Decoder {
 
     /**
      * Reads information (not data) about all variables from the NetCDF file header.
+     * The current implementation requires the dimensions to be read before the variables.
      * The record structure is:
      *
      * <ul>
@@ -468,6 +483,30 @@ public final class ChannelDecoder extends Decoder {
         return variables;
     }
 
+    /**
+     * Creates a (<cite>name</cite>, <cite>element</cite>) mapping for the given array of elements.
+     * If the name of an element is not all lower cases, then this method also adds an entry for the
+     * lower cases version of that name in order to allow case-insensitive searches.
+     *
+     * <p>Code searching in the returned map shall ask for the original (non lower-case) name
+     * <strong>before</strong> to ask for the lower-cases version of that name.</p>
+     *
+     * @param  <E>          The type of elements.
+     * @param  elements     The elements to store in the map, or {@code null} if none.
+     * @param  nameFunction The function for computing a name from an element.
+     * @return A (<cite>name</cite>, <cite>element</cite>) mapping with lower cases entries where possible.
+     * @throws DataStoreException If the same name is used for more than one element.
+     *
+     * @see #findAttribute(String)
+     */
+    private static <E> Map<String,E> toMap(final E[] elements, final Function<E,String> nameFunction) throws DataStoreException {
+        try {
+            return CollectionsExt.toCaseInsensitiveNameMap(Arrays.asList(elements), nameFunction, NAME_LOCALE);
+        } catch (InvalidParameterCardinalityException e) {
+            throw new DataStoreException(Errors.format(Errors.Keys.ValueAlreadyDefined_1, e.getParameterName()));
+        }
+    }
+
 
 
     // --------------------------------------------------------------------------------------------
@@ -504,7 +543,14 @@ public final class ChannelDecoder extends Decoder {
      * @return The attribute, or {@code null} if none.
      */
     private Attribute findAttribute(final String name) {
-        return attributeMap.get(name);
+        Attribute attribute = attributeMap.get(name);
+        if (attribute == null) {
+            final String lower = name.toLowerCase(NAME_LOCALE);
+            if (lower != name) { // Identity comparison is ok since this check is only an optimization for a common case.
+                attribute = attributeMap.get(lower);
+            }
+        }
+        return attribute;
     }
 
     /**
