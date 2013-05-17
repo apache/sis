@@ -342,7 +342,7 @@ final class FormattedCharacterIterator extends SimpleCharacterIterator implement
 
         /** Returns the value for the given entry, or {@code null} if none. */
         @Override
-        public Object convert(Entry entry) {
+        public Object apply(Entry entry) {
             while (entry != null) {
                 if (index >= entry.start && index < entry.limit) {
                     return entry.value;
@@ -377,7 +377,7 @@ final class FormattedCharacterIterator extends SimpleCharacterIterator implement
 
         /** Returns {@code attribute} if it shall be included in the derived map, or {@code null} otherwise. */
         @Override
-        public Attribute convert(final Attribute attribute) {
+        public Attribute apply(final Attribute attribute) {
             for (Entry e=attributes.get(attribute); e!=null; e=e.previous) {
                 if (index >= e.start && index < e.limit) {
                     return attribute;

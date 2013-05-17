@@ -122,7 +122,7 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
      * @throws UnconvertibleObjectException If an error occurred during the conversion.
      */
     @Override
-    public final T convert(String source) throws UnconvertibleObjectException {
+    public final T apply(String source) throws UnconvertibleObjectException {
         source = CharSequences.trimWhitespaces(source);
         if (source == null || source.isEmpty()) {
             return null;
@@ -137,7 +137,7 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
     }
 
     /**
-     * Invoked by {@link #convert(String)} for converting the given string to the target
+     * Invoked by {@link #apply(String)} for converting the given string to the target
      * type of this converter.
      *
      * @param  source The string to convert, guaranteed to be non-null and non-empty.

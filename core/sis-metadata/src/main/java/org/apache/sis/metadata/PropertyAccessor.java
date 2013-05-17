@@ -981,7 +981,7 @@ final class PropertyAccessor {
                         converter = ObjectConverters.find(sourceType, targetType);
                         hasNewConverter = true;
                     }
-                    elements[i] = ((ObjectConverter) converter).convert(value);
+                    elements[i] = ((ObjectConverter) converter).apply(value);
                 } catch (UnconvertibleObjectException cause) {
                     final ClassCastException e = new ClassCastException(Errors.format(
                             Errors.Keys.IllegalClass_2, targetType, sourceType));
