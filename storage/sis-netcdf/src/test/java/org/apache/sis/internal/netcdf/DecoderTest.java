@@ -47,14 +47,17 @@ public strictfp class DecoderTest extends TestCase {
         selectDataset(NCEP);
         assertAttributeEquals("Sea Surface Temperature Analysis Model",      TITLE);
         assertAttributeEquals("NCEP SST Global 5.0 x 2.5 degree model data", SUMMARY);
+        assertAttributeEquals("NCEP SST Global 5.0 x 2.5 degree model data", "SUMMARY"); // test case-insensitive search
         assertAttributeEquals("NOAA/NWS/NCEP",                               CREATOR.NAME);
         assertAttributeEquals(/* Empty string in file   */ (String) null,    CREATOR.EMAIL);
         assertAttributeEquals(/* Non-existent attribute */ (String) null,    CONTRIBUTOR.NAME);
 
-        selectDataset(CIP);
-        assertAttributeEquals(/* Only control character */ (String) null,    TITLE);
-        assertAttributeEquals("UCAR",                                        CREATOR.INSTITUTION);
-        assertAttributeEquals("U.S. National Weather Service - NCEP (WMC)",  HISTORY);
+        if (isSupplementalFormatSupported("HDF5")) {
+            selectDataset(CIP);
+            assertAttributeEquals(/* Only control character */ (String) null,   TITLE);
+            assertAttributeEquals("UCAR",                                       CREATOR.INSTITUTION);
+            assertAttributeEquals("U.S. National Weather Service - NCEP (WMC)", HISTORY);
+        }
     }
 
     /**

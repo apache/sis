@@ -64,6 +64,19 @@ public abstract strictfp class TestCase extends IOTestCase {
     }
 
     /**
+     * Returns {@code true} if the given supplemental formats (THREDDS, HDF5) is supported.
+     * The default implementation returns {@code true} since the UCAR library supports all
+     * supplemental formats tested in this suite. Subclasses working only with the NetCDF
+     * classic or 64-bits format can unconditionally returns {@code false}.
+     *
+     * @param  format Either {@code "THREDDS"} or {@code "HDF5"}.
+     * @return {@code true} if the given supplemental format is supported.
+     */
+    protected boolean isSupplementalFormatSupported(final String format) {
+        return true;
+    }
+
+    /**
      * Invoked when a new {@link Decoder} instance needs to be created for the given name.
      * The {@code name} parameter can be one of the following values:
      *

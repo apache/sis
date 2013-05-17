@@ -356,7 +356,7 @@ final class PropertyAccessor {
         if (!name.isEmpty()) {
             final Integer old = mapping.put(name, index);
             if (old != null && !old.equals(index)) {
-                throw new IllegalStateException(Errors.format(Errors.Keys.DuplicatedValue_1,
+                throw new IllegalStateException(Errors.format(Errors.Keys.DuplicatedIdentifier_1,
                         Classes.getShortName(type) + '.' + name));
             }
         }
@@ -368,7 +368,7 @@ final class PropertyAccessor {
     private void addMappingWithLowerCase(final String name, final Integer index) {
         addMapping(name, index);
         final String lower = name.toLowerCase(Locale.ROOT);
-        if (lower != name) { // Identity comparison is okay here.
+        if (!lower.equals(name)) {
             addMapping(lower, index);
         }
     }

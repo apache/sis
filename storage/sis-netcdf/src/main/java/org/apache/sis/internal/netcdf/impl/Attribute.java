@@ -16,12 +16,9 @@
  */
 package org.apache.sis.internal.netcdf.impl;
 
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Collections;
-import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.util.collection.Containers;
-import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.Debug;
+import org.apache.sis.util.Utilities;
+import org.apache.sis.internal.jdk8.Function;
 
 
 /**
@@ -34,6 +31,15 @@ import org.apache.sis.util.resources.Errors;
  * @module
  */
 final class Attribute {
+    /**
+     * The function for obtaining the name of an attribute.
+     */
+    static final Function<Attribute,String> NAME_FUNCTION = new Function<Attribute,String>() {
+        @Override public String apply(final Attribute value) {
+            return value.name;
+        }
+    };
+
     /**
      * The attribute name.
      */
@@ -53,20 +59,11 @@ final class Attribute {
     }
 
     /**
-     * Creates a (<cite>name</cite>, <cite>attribute</cite>) mapping for the given array of attributes.
-     *
-     * @throws DataStoreException If an attribute is defined twice.
+     * A string representation of this dimension for debugging purpose only.
      */
-    static Map<String,Attribute> toMap(final Attribute[] attributes) throws DataStoreException {
-        if (attributes == null) {
-            return Collections.emptyMap();
-        }
-        final Map<String,Attribute> map = new HashMap<>(Containers.hashMapCapacity(attributes.length));
-        for (final Attribute attribute : attributes) {
-            if (map.put(attribute.name, attribute) != null) {
-                throw new DataStoreException(Errors.format(Errors.Keys.ValueAlreadyDefined_1, attribute.name));
-            }
-        }
-        return map;
+    @Debug
+    @Override
+    public String toString() {
+        return name + " = " + Utilities.deepToString(value);
     }
 }
