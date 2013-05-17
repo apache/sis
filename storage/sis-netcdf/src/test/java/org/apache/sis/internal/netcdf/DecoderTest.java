@@ -18,13 +18,11 @@ package org.apache.sis.internal.netcdf;
 
 import java.util.Date;
 import java.io.IOException;
-import static org.opengis.wrapper.netcdf.IOTestCase.NCEP;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.test.TestUtilities.date;
 import static org.apache.sis.storage.netcdf.AttributeNames.*;
-import static org.apache.sis.test.TestUtilities.date;
 
 
 /**

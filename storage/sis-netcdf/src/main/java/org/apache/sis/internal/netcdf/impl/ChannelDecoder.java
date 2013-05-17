@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
+import java.util.regex.Pattern;
 import java.io.IOException;
 import java.io.EOFException;
 import java.nio.ByteBuffer;
@@ -73,6 +74,14 @@ public final class ChannelDecoder extends Decoder {
      * @see #findAttribute(String)
      */
     private static final Locale NAME_LOCALE = Locale.US;
+
+    /**
+     * The pattern to use for separating the component of a time unit.
+     * An example of time unit is "<cite>days since 1970-01-01T00:00:00Z</cite>".
+     *
+     * @see #numberToDate(String, Number[])
+     */
+    private static final Pattern TIME_UNIT_PATTERN = Pattern.compile("(?i)\\bsince\\b");
 
     /**
      * {@code true} if the default timezone is UTC, or {@code false} if it shall be the
@@ -623,7 +632,7 @@ public final class ChannelDecoder extends Decoder {
     @Override
     public Date[] numberToDate(final String symbol, final Number... values) throws IOException {
         final Date[] dates = new Date[values.length];
-        final String[] parts = symbol.split("(?i)\\bsince\\b");
+        final String[] parts = TIME_UNIT_PATTERN.split(symbol);
         if (parts.length == 2) try {
             final UnitConverter converter = Units.valueOf(parts[0]).getConverterToAny(Units.MILLISECOND);
             final long epoch = Utilities.parseDateTime(parts[1], DEFAULT_TIMEZONE_IS_UTC).getTime();
