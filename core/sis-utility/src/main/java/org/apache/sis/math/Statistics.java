@@ -26,10 +26,9 @@ import static java.lang.Double.NaN;
 import static java.lang.Double.isNaN;
 import static java.lang.Double.doubleToLongBits;
 
-// Related to JDK7
+// Related to JDK7 and JDK8
 import java.util.Objects;
-
-// Related to JDK8
+import org.apache.sis.internal.jdk8.LongConsumer;
 import org.apache.sis.internal.jdk8.DoubleConsumer;
 
 
@@ -91,7 +90,7 @@ import org.apache.sis.internal.jdk8.DoubleConsumer;
  * @version 0.3
  * @module
  */
-public class Statistics implements DoubleConsumer, Cloneable, Serializable {
+public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Serializable {
     /**
      * Serial number for compatibility with different versions.
      */
@@ -248,9 +247,6 @@ public class Statistics implements DoubleConsumer, Cloneable, Serializable {
      * {@link Double#NaN NaN} values increment the {@linkplain #countNaN() NaN count},
      * but are otherwise ignored.
      *
-     * {@note This method is named <code>accept</code> for compatibility with the
-     *        <code>java.util.function.DoubleConsumer</code> interface in JDK8.}
-     *
      * @param sample The sample value (may be NaN).
      *
      * @see #accept(long)
@@ -291,14 +287,12 @@ public class Statistics implements DoubleConsumer, Cloneable, Serializable {
      * For very large integer values (greater than 2<sup>52</sup> in magnitude),
      * this method may be more accurate than the {@link #accept(double)} version.
      *
-     * {@note This method is named <code>accept</code> for compatibility with the
-     *        <code>java.util.function.LongConsumer</code> interface in JDK8.}
-     *
      * @param sample The sample value.
      *
      * @see #accept(double)
      * @see #combine(Statistics)
      */
+    @Override
     public void accept(final long sample) {
         real(sample);
     }
