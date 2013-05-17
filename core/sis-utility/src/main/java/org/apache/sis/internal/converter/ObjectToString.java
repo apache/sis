@@ -75,7 +75,7 @@ class ObjectToString<S> extends SystemConverter<S,String> {
      * Converts the given number to a string.
      */
     @Override
-    public String convert(final S source) {
+    public String apply(final S source) {
         return (source != null) ? source.toString() : null;
     }
 
@@ -120,7 +120,7 @@ class ObjectToString<S> extends SystemConverter<S,String> {
         }
 
         /** Returns the name of the given code list element. */
-        @Override public String convert(final S source) {
+        @Override public String apply(final S source) {
             return (source != null) ? source.name() : null;
         }
     }

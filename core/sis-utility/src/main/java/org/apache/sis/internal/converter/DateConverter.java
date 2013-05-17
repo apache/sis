@@ -106,7 +106,7 @@ abstract class DateConverter<T> extends SystemConverter<Date,T> {
             return inverse.properties();
         }
 
-        @Override public java.util.Date convert(final java.lang.Long target) {
+        @Override public java.util.Date apply(final java.lang.Long target) {
             return (target != null) ? new java.util.Date(target) : null;
         }
     }
@@ -126,7 +126,7 @@ abstract class DateConverter<T> extends SystemConverter<Date,T> {
             return bijective();
         }
 
-        @Override public java.lang.Long convert(final Date source) {
+        @Override public java.lang.Long apply(final Date source) {
             return (source != null) ? source.getTime() : null;
         }
     }
@@ -143,7 +143,7 @@ abstract class DateConverter<T> extends SystemConverter<Date,T> {
             inverse = new IdentityConverter<>(targetClass, Date.class, this);
         }
 
-        @Override public java.sql.Date convert(final Date source) {
+        @Override public java.sql.Date apply(final Date source) {
             if (source == null || source instanceof java.sql.Date) {
                 return (java.sql.Date) source;
             }
@@ -163,7 +163,7 @@ abstract class DateConverter<T> extends SystemConverter<Date,T> {
             inverse = new IdentityConverter<>(targetClass, Date.class, this);
         }
 
-        @Override public java.sql.Timestamp convert(final Date source) {
+        @Override public java.sql.Timestamp apply(final Date source) {
             if (source == null || source instanceof java.sql.Timestamp) {
                 return (java.sql.Timestamp) source;
             }

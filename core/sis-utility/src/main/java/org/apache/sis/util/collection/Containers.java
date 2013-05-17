@@ -125,7 +125,7 @@ public final class Containers extends Static {
     /**
      * Returns a set whose elements are derived <cite>on-the-fly</cite> from the given set.
      * Conversions from the original elements to the derived elements are performed when needed
-     * by invoking the {@link ObjectConverter#convert(Object)} method on the given converter.
+     * by invoking the {@link ObjectConverter#apply(Object)} method on the given converter.
      * Those conversions are repeated every time a {@code Set} method is invoked; there is no cache.
      * Consequently, any change in the original set is immediately visible in the derived set,
      * and conversely.
@@ -138,7 +138,7 @@ public final class Containers extends Static {
      *
      * <p>The derived set may contain fewer elements than the original set if some elements
      * are not convertible. Non-convertible elements are <var>S</var> values for which
-     * {@code converter.convert(S)} returns {@code null}. As a consequence of this sentinel
+     * {@code converter.apply(S)} returns {@code null}. As a consequence of this sentinel
      * value usage, the derived set can not contain {@code null} elements.</p>
      *
      * <p>The returned set can be serialized if the given set and converter are serializable.
@@ -166,7 +166,7 @@ public final class Containers extends Static {
     /**
      * Returns a map whose whose keys and values are derived <cite>on-the-fly</cite> from the given map.
      * Conversions from the original entries to the derived entries are performed when needed
-     * by invoking the {@link ObjectConverter#convert(Object)} method on the given converters.
+     * by invoking the {@link ObjectConverter#apply(Object)} method on the given converters.
      * Those conversions are repeated every time a {@code Map} method is invoked; there is no cache.
      * Consequently, any change in the original map is immediately visible in the derived map,
      * and conversely.
@@ -178,7 +178,7 @@ public final class Containers extends Static {
      *
      * <p>The derived map may contain fewer entries than the original map if some keys
      * are not convertible. Non-convertible keys are <var>K</var> values for which
-     * {@code keyConverter.convert(K)} returns {@code null}. As a consequence of this sentinel
+     * {@code keyConverter.apply(K)} returns {@code null}. As a consequence of this sentinel
      * value usage, the derived map can not contain {@code null} keys.
      * It may contain {@code null} values however.</p>
      *

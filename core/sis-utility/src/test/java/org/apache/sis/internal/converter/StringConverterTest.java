@@ -61,8 +61,8 @@ public final strictfp class StringConverterTest extends TestCase {
     private static <T> void runInvertibleConversion(final ObjectConverter<String,T> c,
             final String source, final T target) throws UnconvertibleObjectException
     {
-        assertEquals("Forward conversion.", target, c.convert(source));
-        assertEquals("Inverse conversion.", source, c.inverse().convert(target));
+        assertEquals("Forward conversion.", target, c.apply(source));
+        assertEquals("Inverse conversion.", source, c.inverse().apply(target));
         assertSame("Inconsistent inverse.", c, c.inverse().inverse());
         assertTrue("Invertible converters shall declare this capability.",
                 c.properties().contains(FunctionProperty.INVERTIBLE));
@@ -73,7 +73,7 @@ public final strictfp class StringConverterTest extends TestCase {
      */
     private static void tryUnconvertibleValue(final ObjectConverter<String,?> c) {
         try {
-            c.convert("Saturday");
+            c.apply("Saturday");
             fail("Should not accept a text.");
         } catch (UnconvertibleObjectException e) {
             // This is the expected exception.
@@ -202,12 +202,12 @@ public final strictfp class StringConverterTest extends TestCase {
         final ObjectConverter<String,Boolean> c = new StringConverter.Boolean();
         runInvertibleConversion(c, "true",  Boolean.TRUE);
         runInvertibleConversion(c, "false", Boolean.FALSE);
-        assertEquals(Boolean.TRUE,  c.convert("yes"));
-        assertEquals(Boolean.FALSE, c.convert("no"));
-        assertEquals(Boolean.TRUE,  c.convert("ON"));  // Test upper-case.
-        assertEquals(Boolean.FALSE, c.convert("OFF"));
-        assertEquals(Boolean.TRUE,  c.convert("1"));
-        assertEquals(Boolean.FALSE, c.convert("0"));
+        assertEquals(Boolean.TRUE,  c.apply("yes"));
+        assertEquals(Boolean.FALSE, c.apply("no"));
+        assertEquals(Boolean.TRUE,  c.apply("ON"));  // Test upper-case.
+        assertEquals(Boolean.FALSE, c.apply("OFF"));
+        assertEquals(Boolean.TRUE,  c.apply("1"));
+        assertEquals(Boolean.FALSE, c.apply("0"));
         tryUnconvertibleValue(c);
         assertSerializedEquals(c);
     }

@@ -42,7 +42,7 @@ import org.apache.sis.internal.converter.SystemRegistry;
  * </ul>
  *
  * {@section Example}
- * The following code convert instances in a collection from type {@code S} to type {@code T},
+ * The following code converts instances in a collection from type {@code S} to type {@code T},
  * where the types are unknown at compile-time. Note that the converter is obtained only once
  * before to be applied to every elements in the loop.
  *
@@ -53,7 +53,7 @@ import org.apache.sis.internal.converter.SystemRegistry;
  *     Collection<T> targets = ...;
  *     ObjectConverter<S,T> converter = ObjectConverters.find(sourceType, targetType);
  *     for (S source : sources) {
- *         targets.add(converter.convert(source));
+ *         targets.add(converter.apply(source));
  *     }
  * }
  *
@@ -115,7 +115,7 @@ public final class ObjectConverters extends Static {
     public static <T> T convert(Object value, final Class<T> target) throws UnconvertibleObjectException {
         ArgumentChecks.ensureNonNull("target", target);
         if (!target.isInstance(value) && value != null) {
-            value = ((ObjectConverter) SystemRegistry.INSTANCE.find(value.getClass(), target)).convert(value);
+            value = ((ObjectConverter) SystemRegistry.INSTANCE.find(value.getClass(), target)).apply(value);
         }
         return (T) value;
     }
@@ -123,7 +123,7 @@ public final class ObjectConverters extends Static {
     /**
      * Returns a set whose elements are derived <cite>on-the-fly</cite> from the given set.
      * Conversions from the original elements to the derived elements are performed when needed
-     * by invoking the {@link ObjectConverter#convert(Object)} method on the given converter.
+     * by invoking the {@link ObjectConverter#apply(Object)} method on the given converter.
      *
      * <p>This convenience method delegates to
      * {@link Containers#derivedSet Containers.derivedSet(…)}.
@@ -146,7 +146,7 @@ public final class ObjectConverters extends Static {
     /**
      * Returns a map whose whose keys and values are derived <cite>on-the-fly</cite> from the given map.
      * Conversions from the original entries to the derived entries are performed when needed
-     * by invoking the {@link ObjectConverter#convert(Object)} method on the given converters.
+     * by invoking the {@link ObjectConverter#apply(Object)} method on the given converters.
      *
      * <p>This convenience method delegates to
      * {@link Containers#derivedMap Containers.derivedMap(…)}.
@@ -174,7 +174,7 @@ public final class ObjectConverters extends Static {
     /**
      * Returns a map whose whose keys are derived <cite>on-the-fly</cite> from the given map.
      * Conversions from the original keys to the derived keys are performed when needed by
-     * invoking the {@link ObjectConverter#convert(Object)} method on the given converter.
+     * invoking the {@link ObjectConverter#apply(Object)} method on the given converter.
      *
      * <p>This convenience method delegates to
      * {@link Containers#derivedMap Containers.derivedMap(…)}.
@@ -202,7 +202,7 @@ public final class ObjectConverters extends Static {
     /**
      * Returns a map whose whose values are derived <cite>on-the-fly</cite> from the given map.
      * Conversions from the original values to the derived values are performed when needed by
-     * invoking the {@link ObjectConverter#convert(Object)} method on the given converter.
+     * invoking the {@link ObjectConverter#apply(Object)} method on the given converter.
      *
      * <p>This convenience method delegates to
      * {@link Containers#derivedMap Containers.derivedMap(…)}.

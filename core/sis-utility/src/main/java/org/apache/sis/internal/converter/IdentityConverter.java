@@ -97,7 +97,7 @@ public final class IdentityConverter<S extends T, T> extends SystemConverter<S,T
      * @param source The value to convert.
      */
     @Override
-    public T convert(final S source) {
+    public T apply(final S source) {
         return source;
     }
 }

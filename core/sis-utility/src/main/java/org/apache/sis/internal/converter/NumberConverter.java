@@ -107,7 +107,7 @@ final class NumberConverter<S extends Number, T extends Number> extends SystemCo
      * subclass for each number type. See class javadoc for more details.
      */
     @Override
-    public T convert(final S source) {
+    public T apply(final S source) {
         final T target = Numbers.cast(source, targetClass);
         if (target.longValue() != source.longValue() ||
                 Double.doubleToLongBits(target.doubleValue()) !=
@@ -153,7 +153,7 @@ final class NumberConverter<S extends Number, T extends Number> extends SystemCo
          * Converts the given number to a {@code Comparable} if its type is different.
          */
         @Override
-        public java.lang.Comparable<?> convert(final Number source) {
+        public java.lang.Comparable<?> apply(final Number source) {
             if (source == null || source instanceof java.lang.Comparable<?>) {
                 return (java.lang.Comparable<?>) source;
             }
