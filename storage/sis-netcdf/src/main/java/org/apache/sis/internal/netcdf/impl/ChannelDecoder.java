@@ -36,7 +36,7 @@ import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.GridGeometry;
 import org.apache.sis.internal.netcdf.WarningProducer;
 import org.apache.sis.internal.util.CollectionsExt;
-import org.apache.sis.internal.util.Utilities;
+import org.apache.sis.internal.jdk8.JDK8;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.resources.Errors;
@@ -614,7 +614,7 @@ public final class ChannelDecoder extends Decoder {
         final Attribute attribute = findAttribute(name);
         if (attribute != null && attribute.value != null) {
             if (attribute.value instanceof String) try {
-                return Utilities.parseDateTime((String) attribute.value, DEFAULT_TIMEZONE_IS_UTC);
+                return JDK8.parseDateTime((String) attribute.value, DEFAULT_TIMEZONE_IS_UTC);
             } catch (IllegalArgumentException e) {
                 warning("dateValue", e);
             }
@@ -635,7 +635,7 @@ public final class ChannelDecoder extends Decoder {
         final String[] parts = TIME_UNIT_PATTERN.split(symbol);
         if (parts.length == 2) try {
             final UnitConverter converter = Units.valueOf(parts[0]).getConverterToAny(Units.MILLISECOND);
-            final long epoch = Utilities.parseDateTime(parts[1], DEFAULT_TIMEZONE_IS_UTC).getTime();
+            final long epoch = JDK8.parseDateTime(parts[1], DEFAULT_TIMEZONE_IS_UTC).getTime();
             for (int i=0; i<values.length; i++) {
                 final Number value = values[i];
                 if (value != null) {

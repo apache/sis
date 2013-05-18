@@ -16,12 +16,14 @@
  */
 package org.apache.sis.internal.util;
 
-import java.util.Date;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
+import static java.lang.Double.NaN;
+import static java.lang.Double.POSITIVE_INFINITY;
+import static java.lang.Double.NEGATIVE_INFINITY;
+import static org.apache.sis.internal.util.Utilities.*;
 import static org.apache.sis.test.Assert.*;
-import static org.apache.sis.test.TestUtilities.date;
 
 
 /**
@@ -34,28 +36,19 @@ import static org.apache.sis.test.TestUtilities.date;
  */
 public final strictfp class UtilitiesTest extends TestCase {
     /**
-     * Tests the {@link Utilities#parseDateTime(String)} method with an explicit time zone.
+     * Tests the {@link Utilities#epsilonEqual(double, double)} method.
      */
     @Test
-    public void testParseDateTime() {
-        final Date expected = date("2009-01-01 05:00:00");
-        assertEquals(expected, Utilities.parseDateTime("2009-01-01T06:00:00+01:00", false));
-        assertEquals(expected, Utilities.parseDateTime("2009-01-01T06:00:00+01:00", true));
-    }
-
-    /**
-     * Tests the {@link Utilities#parseDateTime(String)} method for a date in UTC time zone,
-     * either explicit or implicit.
-     */
-    @Test
-    public void testParseDateTimeUTC() {
-        final Date expected = date("2005-09-22 00:00:00");
-        assertEquals(expected, Utilities.parseDateTime("2005-09-22T00:00:00Z", false));
-        assertEquals(expected, Utilities.parseDateTime("2005-09-22T00:00:00Z", true));
-        assertEquals(expected, Utilities.parseDateTime("2005-09-22T00:00:00",  true));
-        assertEquals(expected, Utilities.parseDateTime("2005-09-22T00:00",     true));
-        assertEquals(expected, Utilities.parseDateTime("2005-09-22T00",        true));
-        assertEquals(expected, Utilities.parseDateTime("2005-09-22",           true));
-        assertEquals(expected, Utilities.parseDateTime("2005-9-22",            true));
+    public void testEpsilonEqual() {
+        assertTrue (epsilonEqual(POSITIVE_INFINITY, POSITIVE_INFINITY));
+        assertTrue (epsilonEqual(NEGATIVE_INFINITY, NEGATIVE_INFINITY));
+        assertFalse(epsilonEqual(POSITIVE_INFINITY, NEGATIVE_INFINITY));
+        assertFalse(epsilonEqual(POSITIVE_INFINITY, NaN));
+        assertTrue (epsilonEqual(NaN,               NaN));
+        assertFalse(epsilonEqual(   0,        COMPARISON_THRESHOLD / 2));
+        assertTrue (epsilonEqual(   1,    1 + COMPARISON_THRESHOLD / 2));
+        assertFalse(epsilonEqual(   1,    1 + COMPARISON_THRESHOLD * 2));
+        assertTrue (epsilonEqual(-100, -100 + COMPARISON_THRESHOLD * 50));
+        assertFalse(epsilonEqual( 100,  100 + COMPARISON_THRESHOLD * 150));
     }
 }
