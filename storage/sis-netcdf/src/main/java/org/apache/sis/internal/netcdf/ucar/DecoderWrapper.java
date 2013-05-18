@@ -18,8 +18,6 @@ package org.apache.sis.internal.netcdf.ucar;
 
 import java.util.Date;
 import java.util.List;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.io.IOException;
 import ucar.nc2.Group;
@@ -73,6 +71,13 @@ public final class DecoderWrapper extends Decoder {
      * @see #getVariables()
      */
     private transient Variable[] variables;
+
+    /**
+     * The grid geometries, computed when first needed.
+     *
+     * @see #getGridGeometries()
+     */
+    private transient GridGeometry[] geometries;
 
     /**
      * Creates a new decoder for the given NetCDF file. While this constructor accepts arbitrary
@@ -265,16 +270,13 @@ public final class DecoderWrapper extends Decoder {
 
     /**
      * Returns all variables found in the NetCDF file.
-     * This method returns a direct reference to its internal array - do not modify.
+     * This method returns a direct reference to an internal array - do not modify.
      */
     @Override
     public Variable[] getVariables() {
         if (variables == null) {
             List<? extends VariableIF> all = file.getVariables();
-            if (all == null) {
-                all = Collections.emptyList();
-            }
-            variables = new Variable[all.size()];
+            variables = new Variable[(all != null) ? all.size() : 0];
             for (int i=0; i<variables.length; i++) {
                 variables[i] = new VariableWrapper(all.get(i), all);
             }
@@ -284,25 +286,26 @@ public final class DecoderWrapper extends Decoder {
 
     /**
      * Returns all grid geometries (related to coordinate systems) found in the NetCDF file.
+     * This method returns a direct reference to an internal array - do not modify.
      */
     @Override
-    public List<GridGeometry> getGridGeometries() throws IOException {
-        if (file instanceof NetcdfDataset) {
-            final NetcdfDataset ds = (NetcdfDataset) file;
-            final EnumSet<NetcdfDataset.Enhance> mode = EnumSet.copyOf(ds.getEnhanceMode());
-            if (mode.add(NetcdfDataset.Enhance.CoordSystems)) {
-                ds.enhance(mode);
-            }
-            final List<CoordinateSystem> systems = ds.getCoordinateSystems();
-            if (systems != null) {
-                final List<GridGeometry> geometries = new ArrayList<>(systems.size());
-                for (final CoordinateSystem cs : systems) {
-                    geometries.add(new GridGeometryWrapper(this, cs));
+    public GridGeometry[] getGridGeometries() throws IOException {
+        if (geometries == null) {
+            List<CoordinateSystem> systems = null;
+            if (file instanceof NetcdfDataset) {
+                final NetcdfDataset ds = (NetcdfDataset) file;
+                final EnumSet<NetcdfDataset.Enhance> mode = EnumSet.copyOf(ds.getEnhanceMode());
+                if (mode.add(NetcdfDataset.Enhance.CoordSystems)) {
+                    ds.enhance(mode);
                 }
-                return geometries;
+                systems = ds.getCoordinateSystems();
+            }
+            geometries = new GridGeometry[(systems != null) ? systems.size() : 0];
+            for (int i=0; i<geometries.length; i++) {
+                geometries[i] = new GridGeometryWrapper(this, systems.get(i));
             }
         }
-        return Collections.emptyList();
+        return geometries;
     }
 
     /**
