@@ -18,7 +18,6 @@ package org.apache.sis.internal.netcdf.ucar;
 
 import org.apache.sis.internal.netcdf.Variable;
 import java.util.List;
-import java.util.ArrayList;
 import java.awt.image.DataBuffer;
 import ucar.ma2.DataType;
 import ucar.nc2.Attribute;
@@ -72,17 +71,12 @@ final class VariableWrapper extends Variable {
     }
 
     /**
-     * Returns the name of the variable data type as the name of the primitive type
-     * followed by the span of each dimension (in unit of grid cells) between brackets.
+     * Returns the variable data type, as a primitive type if possible.
+     * This method may return {@code null}.
      */
     @Override
-    public String getDataTypeName() {
-        final StringBuilder buffer = new StringBuilder(variable.getDataType().getPrimitiveClassType().getSimpleName());
-        final int[] shape = variable.getShape();
-        for (int i=shape.length; --i>=0;) {
-            buffer.append('[').append(shape[i]).append(']');
-        }
-        return buffer.toString();
+    public Class<?> getDataType() {
+        return variable.getDataType().getPrimitiveClassType();
     }
 
     /**
@@ -145,13 +139,21 @@ final class VariableWrapper extends Variable {
      * @return The dimension names.
      */
     @Override
-    public List<String> getDimensions() {
+    public String[] getDimensionNames() {
         final List<Dimension> dimensions = variable.getDimensions();
-        final List<String> names = new ArrayList<>(dimensions.size());
-        for (final Dimension dimension : dimensions) {
-            names.add(dimension.getShortName());
+        final String[] names = new String[dimensions.size()];
+        for (int i=0; i<names.length; i++) {
+            names[i] = dimensions.get(i).getShortName();
         }
         return names;
+    }
+
+    /**
+     * Returns the length (number of cells) of each dimension.
+     */
+    @Override
+    public int[] getDimensionLengths() {
+        return variable.getShape();
     }
 
     /**

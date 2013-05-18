@@ -649,7 +649,7 @@ public final class ChannelDecoder extends Decoder {
     }
 
     @Override
-    public List<Variable> getVariables() throws IOException {
+    public Variable[] getVariables() throws IOException {
         throw new UnsupportedOperationException();
     }
 
