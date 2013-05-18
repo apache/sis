@@ -178,9 +178,10 @@ public abstract class Decoder extends WarningProducer implements Closeable {
 
     /**
      * Returns all grid geometries (related to coordinate systems) found in the NetCDF file.
+     * This method may return a direct reference to an internal array - do not modify.
      *
-     * @return All grid geometries, or an empty list if none.
+     * @return All grid geometries, or an empty array if none.
      * @throws IOException If an I/O operation was necessary but failed.
      */
-    public abstract List<GridGeometry> getGridGeometries() throws IOException;
+    public abstract GridGeometry[] getGridGeometries() throws IOException;
 }

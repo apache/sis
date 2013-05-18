@@ -17,7 +17,6 @@
 package org.apache.sis.internal.netcdf.impl;
 
 import java.util.Map;
-import java.util.List;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
@@ -654,7 +653,7 @@ public final class ChannelDecoder extends Decoder {
     }
 
     @Override
-    public List<GridGeometry> getGridGeometries() throws IOException {
+    public GridGeometry[] getGridGeometries() throws IOException {
         throw new UnsupportedOperationException();
     }
 

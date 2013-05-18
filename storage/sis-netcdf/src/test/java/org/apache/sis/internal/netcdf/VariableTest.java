@@ -56,7 +56,7 @@ public strictfp class VariableTest extends TestCase {
      * @throws IOException If an error occurred while reading the NetCDF file.
      */
     @Test
-    public void testGetName() throws IOException {
+    public void testBasicProperties() throws IOException {
         assertBasicPropertiesEqual(new Object[] {
         // __name______________description_________________________________data type____dim_raster?
             "reftime",        "reference time",                            double.class, 1, false,
