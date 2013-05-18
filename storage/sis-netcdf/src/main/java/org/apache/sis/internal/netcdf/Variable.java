@@ -16,7 +16,8 @@
  */
 package org.apache.sis.internal.netcdf;
 
-import java.util.List;
+import org.apache.sis.util.Classes;
+import org.apache.sis.util.Debug;
 
 
 /**
@@ -54,13 +55,27 @@ public abstract class Variable {
     public abstract String getDescription();
 
     /**
+     * Returns the variable data type, as a primitive type if possible.
+     *
+     * @return The variable data type, or {@code null} if unknown.
+     */
+    public abstract Class<?> getDataType();
+
+    /**
      * Returns the name of the variable data type as the name of the primitive type
      * followed by the span of each dimension (in unit of grid cells) between brackets.
      * Example: {@code "short[180][360]"}.
      *
      * @return The name of the variable data type.
      */
-    public abstract String getDataTypeName();
+    public final String getDataTypeName() {
+        final StringBuilder buffer = new StringBuilder(Classes.getShortName(getDataType()));
+        final int[] shape = getDimensionLengths();
+        for (int i=shape.length; --i>=0;) {
+            buffer.append('[').append(shape[i]).append(']');
+        }
+        return buffer.toString();
+    }
 
     /**
      * Returns {@code true} if the given variable can be used for generating an image.
@@ -89,7 +104,15 @@ public abstract class Variable {
      *
      * @return The dimension names.
      */
-    public abstract List<String> getDimensions();
+    public abstract String[] getDimensionNames();
+
+    /**
+     * Returns the length (number of cells) of each dimension.
+     * The length of this array shall be equals to the length of the {@link #getDimensionNames()} array.
+     *
+     * @return The number of grid cells for each dimension.
+     */
+    public abstract int[] getDimensionLengths();
 
     /**
      * Returns the sequence of values for the given attribute, or an empty array if none.
@@ -101,4 +124,19 @@ public abstract class Variable {
      * @return The sequence of {@link String} or {@link Number} values for the named attribute.
      */
     public abstract Object[] getAttributeValues(String attributeName, boolean numeric);
+
+    /**
+     * Returns a string representation of this variable for debugging purpose.
+     */
+    @Debug
+    @Override
+    public String toString() {
+        final StringBuilder buffer = new StringBuilder(getName())
+                .append(" : ").append(Classes.getShortName(getDataType()));
+        final int[] shape = getDimensionLengths();
+        for (int i=shape.length; --i>=0;) {
+            buffer.append('[').append(shape[i]).append(']');
+        }
+        return buffer.toString();
+    }
 }

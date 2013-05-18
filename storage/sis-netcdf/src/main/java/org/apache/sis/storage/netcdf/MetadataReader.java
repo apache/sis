@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Arrays;
 import java.util.Collection;
 import java.io.IOException;
 import javax.measure.unit.Unit;
@@ -727,8 +728,7 @@ final class MetadataReader extends WarningProducer {
     private Collection<DefaultCoverageDescription> createContentInfo() throws IOException {
         final Map<List<String>, DefaultCoverageDescription> contents = new HashMap<>(4);
         final String processingLevel = decoder.stringValue(PROCESSING_LEVEL);
-        final List<? extends Variable> variables = decoder.getVariables();
-        for (final Variable variable : variables) {
+        for (final Variable variable : decoder.getVariables()) {
             if (!variable.isCoverage(2)) {
                 continue;
             }
@@ -737,7 +737,7 @@ final class MetadataReader extends WarningProducer {
              * (e.g. longitude,latitude,time). This separation is based on the fact that a
              * coverage has only one domain for every range of values.
              */
-            final List<String> dimensions = variable.getDimensions();
+            final List<String> dimensions = Arrays.asList(variable.getDimensionNames());
             DefaultCoverageDescription content = contents.get(dimensions);
             if (content == null) {
                 /*
@@ -786,8 +786,6 @@ final class MetadataReader extends WarningProducer {
             if (nameFactory == null) {
                 nameFactory = DefaultFactories.forClass(NameFactory.class);
             }
-            // TODO: should be band.setName(...) with ISO 19115:2011.
-            // Sequence identifiers are supposed to be numbers only.
             band.setSequenceIdentifier(nameFactory.createMemberName(null, name,
                     nameFactory.createTypeName(null, variable.getDataTypeName())));
         }

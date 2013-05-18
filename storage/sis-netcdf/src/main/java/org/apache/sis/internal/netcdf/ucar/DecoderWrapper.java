@@ -68,6 +68,13 @@ public final class DecoderWrapper extends Decoder {
     private Group[] groups;
 
     /**
+     * The variables, computed when first needed.
+     *
+     * @see #getVariables()
+     */
+    private transient Variable[] variables;
+
+    /**
      * Creates a new decoder for the given NetCDF file. While this constructor accepts arbitrary
      * {@link NetcdfFile} instance, the {@link NetcdfDataset} subclass is necessary in order to
      * get coordinate system information.
@@ -258,16 +265,19 @@ public final class DecoderWrapper extends Decoder {
 
     /**
      * Returns all variables found in the NetCDF file.
+     * This method returns a direct reference to its internal array - do not modify.
      */
     @Override
-    public List<Variable> getVariables() {
-        final List<? extends VariableIF> all = file.getVariables();
-        if (all == null) {
-            return Collections.emptyList();
-        }
-        final List<Variable> variables = new ArrayList<>(all.size());
-        for (final VariableIF variable : all) {
-            variables.add(new VariableWrapper(variable, all));
+    public Variable[] getVariables() {
+        if (variables == null) {
+            List<? extends VariableIF> all = file.getVariables();
+            if (all == null) {
+                all = Collections.emptyList();
+            }
+            variables = new Variable[all.size()];
+            for (int i=0; i<variables.length; i++) {
+                variables[i] = new VariableWrapper(all.get(i), all);
+            }
         }
         return variables;
     }

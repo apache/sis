@@ -169,11 +169,12 @@ public abstract class Decoder extends WarningProducer implements Closeable {
 
     /**
      * Returns all variables found in the NetCDF file.
+     * This method may return a direct reference to an internal array - do not modify.
      *
-     * @return All variables, or an empty list if none.
+     * @return All variables, or an empty array if none.
      * @throws IOException If an I/O operation was necessary but failed.
      */
-    public abstract List<Variable> getVariables() throws IOException;
+    public abstract Variable[] getVariables() throws IOException;
 
     /**
      * Returns all grid geometries (related to coordinate systems) found in the NetCDF file.
