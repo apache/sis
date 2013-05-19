@@ -35,6 +35,7 @@ import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.GridGeometry;
 import org.apache.sis.internal.netcdf.WarningProducer;
+import ucar.nc2.Dimension;
 
 
 /**
@@ -275,10 +276,11 @@ public final class DecoderWrapper extends Decoder {
     @Override
     public Variable[] getVariables() {
         if (variables == null) {
-            List<? extends VariableIF> all = file.getVariables();
+            final List<Dimension> dimensions = file.getDimensions();
+            final List<? extends VariableIF> all = file.getVariables();
             variables = new Variable[(all != null) ? all.size() : 0];
             for (int i=0; i<variables.length; i++) {
-                variables[i] = new VariableWrapper(all.get(i), all);
+                variables[i] = new VariableWrapper(all.get(i), dimensions);
             }
         }
         return variables;

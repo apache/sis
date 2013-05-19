@@ -40,6 +40,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.measure.Units;
 
 
@@ -155,6 +156,11 @@ public final class ChannelDecoder extends Decoder {
     private final String encoding = "ISO-8859-1";
 
     /**
+     * The variables found in the NetCDF file.
+     */
+    private final VariableInfo[] variables;
+
+    /**
      * The attributes found in the NetCDF file.
      */
     private final Map<String,Attribute> attributeMap;
@@ -218,6 +224,7 @@ public final class ChannelDecoder extends Decoder {
             }
         }
         attributeMap = toMap(attributes, Attribute.NAME_FUNCTION);
+        this.variables = variables;
     }
 
     /**
@@ -351,8 +358,13 @@ public final class ChannelDecoder extends Decoder {
      * Returns the values of the given type. In the given type is {@code CHAR}, then this method returns the values
      * as a {@link String}. Otherwise this method returns the value as an array of the corresponding primitive type
      * and the given length.
+     *
+     * @return The value, or {@code null} if it was an empty string or an empty array.
      */
     private Object readValues(final String name, final int type, final int length) throws IOException, DataStoreException {
+        if (length == 0) {
+            return null;
+        }
         final int size = require(length, VariableInfo.sizeOf(type), name);
         final int position = buffer.position(); // Must be after 'require'
         final Object result;
@@ -433,11 +445,15 @@ public final class ChannelDecoder extends Decoder {
      */
     private Attribute[] readAttributes(final int nelems) throws IOException, DataStoreException {
         final Attribute[] attributes = new Attribute[nelems];
+        int count = 0;
         for (int i=0; i<nelems; i++) {
             final String name = readName();
-            attributes[i] = new Attribute(name, readValues(name, readInt(), readInt()));
+            final Object value = readValues(name, readInt(), readInt());
+            if (value != null) {
+                attributes[count++] = new Attribute(name, value);
+            }
         }
-        return attributes;
+        return ArraysExt.resize(attributes, count);
     }
 
     /**
@@ -496,7 +512,8 @@ public final class ChannelDecoder extends Decoder {
                     default:        throw malformedHeader();
                 }
             }
-            variables[j] = new VariableInfo(name, varDims, attributes, readInt(), readInt(), readOffset());
+            variables[j] = new VariableInfo(name, varDims, dimensions,
+                    toMap(attributes, Attribute.NAME_FUNCTION), readInt(), readInt(), readOffset());
         }
         return variables;
     }
@@ -580,7 +597,7 @@ public final class ChannelDecoder extends Decoder {
     @Override
     public String stringValue(final String name) throws IOException {
         final Attribute attribute = findAttribute(name);
-        if (attribute != null && attribute.value != null) {
+        if (attribute != null) {
             return attribute.value.toString();
         }
         return null;
@@ -597,9 +614,7 @@ public final class ChannelDecoder extends Decoder {
             if (attribute.value instanceof String) {
                 return parseNumber((String) attribute.value);
             }
-            if (Array.getLength(attribute.value) != 0) {
-                return (Number) Array.get(attribute.value, 0);
-            }
+            return (Number) Array.get(attribute.value, 0);
         }
         return null;
     }
@@ -611,7 +626,7 @@ public final class ChannelDecoder extends Decoder {
     @Override
     public Date dateValue(final String name) throws IOException {
         final Attribute attribute = findAttribute(name);
-        if (attribute != null && attribute.value != null) {
+        if (attribute != null) {
             if (attribute.value instanceof String) try {
                 return JDK8.parseDateTime((String) attribute.value, DEFAULT_TIMEZONE_IS_UTC);
             } catch (IllegalArgumentException e) {
@@ -647,9 +662,13 @@ public final class ChannelDecoder extends Decoder {
         return dates;
     }
 
+    /**
+     * Returns all variables found in the NetCDF file.
+     * This method returns a direct reference to an internal array - do not modify.
+     */
     @Override
     public Variable[] getVariables() throws IOException {
-        throw new UnsupportedOperationException();
+        return variables;
     }
 
     @Override

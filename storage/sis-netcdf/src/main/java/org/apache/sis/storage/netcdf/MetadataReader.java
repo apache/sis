@@ -737,7 +737,7 @@ final class MetadataReader extends WarningProducer {
              * (e.g. longitude,latitude,time). This separation is based on the fact that a
              * coverage has only one domain for every range of values.
              */
-            final List<String> dimensions = Arrays.asList(variable.getDimensionNames());
+            final List<String> dimensions = Arrays.asList(variable.getGridDimensionNames());
             DefaultCoverageDescription content = contents.get(dimensions);
             if (content == null) {
                 /*
@@ -760,10 +760,10 @@ final class MetadataReader extends WarningProducer {
             final int length = Math.max(masks.length, Math.max(values.length, Math.max(names.length, meanings.length)));
             for (int i=0; i<length; i++) {
                 final RangeElementDescription element = createRangeElementDescription(variable,
-                        i < names   .length ? (String) names   [i] : null,
-                        i < meanings.length ? (String) meanings[i] : null,
-                        i < masks   .length ? (Number) masks   [i] : null,
-                        i < values  .length ? (Number) values  [i] : null);
+                        (i < names   .length) ? (String) names   [i] : null,
+                        (i < meanings.length) ? (String) meanings[i] : null,
+                        (i < masks   .length) ? (Number) masks   [i] : null,
+                        (i < values  .length) ? (Number) values  [i] : null);
                 if (element != null) {
                     content.getRangeElementDescriptions().add(element);
                 }

@@ -16,14 +16,11 @@
  */
 package org.apache.sis.internal.netcdf.ucar;
 
-import org.apache.sis.internal.netcdf.Variable;
 import java.util.List;
-import java.awt.image.DataBuffer;
-import ucar.ma2.DataType;
 import ucar.nc2.Attribute;
 import ucar.nc2.Dimension;
 import ucar.nc2.VariableIF;
-import org.apache.sis.util.CharSequences;
+import org.apache.sis.internal.netcdf.Variable;
 
 
 /**
@@ -41,15 +38,14 @@ final class VariableWrapper extends Variable {
     private final VariableIF variable;
 
     /**
-     * The list of all variables, used in order to determine
-     * if this variable seems to be a coverage.
+     * The list of all dimensions in the NetCDF file.
      */
-    private final List<? extends VariableIF> all;
+    private final List<? extends Dimension> all;
 
     /**
      * Creates a new variable wrapping the given NetCDF interface.
      */
-    VariableWrapper(final VariableIF variable, List<? extends VariableIF> all) {
+    VariableWrapper(final VariableIF variable, List<? extends Dimension> all) {
         this.variable = variable;
         this.all = all;
     }
@@ -72,7 +68,7 @@ final class VariableWrapper extends Variable {
 
     /**
      * Returns the variable data type, as a primitive type if possible.
-     * This method may return {@code null}.
+     * This method may return {@code null} (UCAR code seems to allow that).
      */
     @Override
     public Class<?> getDataType() {
@@ -80,66 +76,35 @@ final class VariableWrapper extends Variable {
     }
 
     /**
-     * Returns the {@link DataBuffer} constant which most closely represents
-     * the "raw" internal data of the variable.
-     *
-     * {@note There is no converse of this method because the unsigned values type
-     *        need to be handled in a special way (through a "_Unigned" attribute).}
-     *
-     * @param  variable The variable for which to get the {@link DataBuffer} constant, or {@code null}.
-     * @return The data type, or {@link DataBuffer#TYPE_UNDEFINED} if unknown.
+     * Returns {@code true} if the integer values shall be considered as unsigned.
      */
-    private static int getRawDataType(final VariableIF variable) {
-        if (variable != null) {
-            final DataType type = variable.getDataType();
-            if (type != null) switch (type) {
-                case BOOLEAN: // Fall through
-                case BYTE:    return DataBuffer.TYPE_BYTE;
-                case SHORT:   return variable.isUnsigned() ? DataBuffer.TYPE_USHORT : DataBuffer.TYPE_SHORT;
-                case INT:     return DataBuffer.TYPE_INT;
-                case FLOAT:   return DataBuffer.TYPE_FLOAT;
-                case DOUBLE:  return DataBuffer.TYPE_DOUBLE;
-            }
-        }
-        return DataBuffer.TYPE_UNDEFINED;
+    @Override
+    public boolean isUnsigned() {
+        return variable.isUnsigned();
     }
 
     /**
-     * Returns {@code true} if the given variable can be used for generating an image.
+     * Returns {@code true} if this variable seems to be a coordinate system axis,
+     * determined by comparing its name with the name of all dimensions in the NetCDF file.
      */
     @Override
-    public boolean isCoverage(final int minSpan) {
-        int numVectors = 0; // Number of dimension having more than 1 value.
-        for (final int length : variable.getShape()) {
-            if (length >= minSpan) {
-                numVectors++;
+    public boolean isCoordinateSystemAxis() {
+        final String name = getName();
+        for (final Dimension dimension : all) {
+            if (name.equals(dimension.getShortName())) {
+                // This variable is a dimension of another variable.
+                return true;
             }
-        }
-        if (numVectors >= MIN_DIMENSION && getRawDataType(variable) != DataBuffer.TYPE_UNDEFINED) {
-            final String name = getName();
-            for (final VariableIF var : all) {
-                if (var != variable) {
-                    Dimension dim;
-                    for (int d=0; (dim=var.getDimension(d)) != null; d++) {
-                        if (name.equals(dim.getShortName())) {
-                            // This variable is a dimension of another variable.
-                            return false;
-                        }
-                    }
-                }
-            }
-            return true;
         }
         return false;
     }
 
     /**
      * Returns the names of the dimensions of this variable.
-     *
-     * @return The dimension names.
+     * The dimensions are those of the grid, not the dimensions of the coordinate system.
      */
     @Override
-    public String[] getDimensionNames() {
+    public String[] getGridDimensionNames() {
         final List<Dimension> dimensions = variable.getDimensions();
         final String[] names = new String[dimensions.size()];
         for (int i=0; i<names.length; i++) {
@@ -149,10 +114,11 @@ final class VariableWrapper extends Variable {
     }
 
     /**
-     * Returns the length (number of cells) of each dimension.
+     * Returns the length (number of cells) of each grid dimension. In ISO 19123 terminology, this method
+     * returns the upper corner of the grid envelope plus one. The lower corner is always (0,0,…,0).
      */
     @Override
-    public int[] getDimensionLengths() {
+    public int[] getGridEnvelope() {
         return variable.getShape();
     }
 
@@ -184,6 +150,6 @@ final class VariableWrapper extends Variable {
                 return values;
             }
         }
-        return CharSequences.EMPTY_ARRAY;
+        return new Object[0];
     }
 }

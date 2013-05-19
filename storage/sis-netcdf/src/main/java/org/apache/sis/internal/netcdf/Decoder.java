@@ -17,7 +17,6 @@
 package org.apache.sis.internal.netcdf;
 
 import java.util.Date;
-import java.util.List;
 import java.io.Closeable;
 import java.io.IOException;
 import javax.measure.unit.Unit;

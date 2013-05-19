@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.netcdf;
 
+import java.awt.image.DataBuffer;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
 
@@ -69,13 +70,46 @@ public abstract class Variable {
      * @return The name of the variable data type.
      */
     public final String getDataTypeName() {
-        final StringBuilder buffer = new StringBuilder(Classes.getShortName(getDataType()));
-        final int[] shape = getDimensionLengths();
+        final StringBuilder buffer = new StringBuilder(20);
+        if (isUnsigned()) {
+            buffer.append("unsigned ");
+        }
+        buffer.append(Classes.getShortName(getDataType()));
+        final int[] shape = getGridEnvelope();
         for (int i=shape.length; --i>=0;) {
             buffer.append('[').append(shape[i]).append(']');
         }
         return buffer.toString();
     }
+
+    /**
+     * Returns the {@link DataBuffer} constant which most closely represents the "raw" internal data of the variable.
+     * This is the value to be returned by {@link java.awt.image.SampleModel#getDataType()} for the Java2D rasters
+     * created from this variable data.
+     *
+     * @return The Java2D data type, or {@link DataBuffer#TYPE_UNDEFINED} if this variable data type
+     *         can not be mapped to a Java2D data type.
+     */
+    public final int getRasterDataType() {
+        final Class<?> type = getDataType();
+        if (type == boolean.class || type == byte.class) {
+            return DataBuffer.TYPE_BYTE;
+        }
+        if (type == short .class) return isUnsigned() ? DataBuffer.TYPE_USHORT : DataBuffer.TYPE_SHORT;
+        if (type == int   .class) return DataBuffer.TYPE_INT;
+        if (type == float .class) return DataBuffer.TYPE_FLOAT;
+        if (type == double.class) return DataBuffer.TYPE_DOUBLE;
+        return DataBuffer.TYPE_UNDEFINED;
+    }
+
+    /**
+     * Returns {@code true} if the integer values shall be considered as unsigned. The OGC NetCDF standard version 1.0
+     * does not define unsigned data types. However some data providers attach an {@code "_Unsigned = true"} attribute
+     * to the variable.
+     *
+     * @return {@code false} for signed data type (the default), or {@code true} for unsigned data type.
+     */
+    public abstract boolean isUnsigned();
 
     /**
      * Returns {@code true} if the given variable can be used for generating an image.
@@ -97,22 +131,46 @@ public abstract class Variable {
      * @param  minSpan Minimal span (in unit of grid cells) along the dimensions.
      * @return {@code true} if the variable can be considered a coverage.
      */
-    public abstract boolean isCoverage(int minSpan);
+    public final boolean isCoverage(final int minSpan) {
+        int numVectors = 0; // Number of dimension having more than 1 value.
+        for (final int length : getGridEnvelope()) {
+            if (length >= minSpan) {
+                numVectors++;
+            }
+        }
+        if (numVectors >= MIN_DIMENSION && getRasterDataType() != DataBuffer.TYPE_UNDEFINED) {
+            return !isCoordinateSystemAxis();
+        }
+        return false;
+    }
+
+    /**
+     * Returns {@code true} if this variable seems to be a coordinate system axis instead than
+     * the actual data. By NetCDF convention, coordinate system axes have the name of one of the
+     * dimensions defined in the NetCDF header.
+     *
+     * @return {@code true} if this variable seems to be a coordinate system axis.
+     */
+    public abstract boolean isCoordinateSystemAxis();
 
     /**
      * Returns the names of the dimensions of this variable.
+     * The dimensions are those of the grid, not the dimensions of the coordinate system.
      *
-     * @return The dimension names.
+     * @return The names of all dimension of the grid.
      */
-    public abstract String[] getDimensionNames();
+    public abstract String[] getGridDimensionNames();
 
     /**
-     * Returns the length (number of cells) of each dimension.
-     * The length of this array shall be equals to the length of the {@link #getDimensionNames()} array.
+     * Returns the length (number of cells) of each grid dimension.
+     * The length of this array shall be equals to the length of the {@link #getGridDimensionNames()} array.
+     *
+     * <p>In ISO 19123 terminology, this method returns the upper corner of the grid envelope plus one.
+     * The lower corner is always (0,0,…,0).</p>
      *
      * @return The number of grid cells for each dimension.
      */
-    public abstract int[] getDimensionLengths();
+    public abstract int[] getGridEnvelope();
 
     /**
      * Returns the sequence of values for the given attribute, or an empty array if none.
@@ -133,7 +191,7 @@ public abstract class Variable {
     public String toString() {
         final StringBuilder buffer = new StringBuilder(getName())
                 .append(" : ").append(Classes.getShortName(getDataType()));
-        final int[] shape = getDimensionLengths();
+        final int[] shape = getGridEnvelope();
         for (int i=shape.length; --i>=0;) {
             buffer.append('[').append(shape[i]).append(']');
         }

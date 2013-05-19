@@ -17,7 +17,6 @@
 package org.apache.sis.internal.netcdf;
 
 import java.io.IOException;
-import static org.opengis.wrapper.netcdf.IOTestCase.NCEP;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -49,7 +48,7 @@ public strictfp class VariableTest extends TestCase {
      *   <li>{@link Variable#getName()}</li>
      *   <li>{@link Variable#getDescription()}</li>
      *   <li>{@link Variable#getDataType()}</li>
-     *   <li>{@link Variable#getDimensionLengths()}</li>
+     *   <li>{@link Variable#getGridEnvelope()}</li>
      *   <li>{@link Variable#isCoverage(int)}</li>
      * </ul>
      *
@@ -101,7 +100,7 @@ public strictfp class VariableTest extends TestCase {
             assertEquals("getName()",             expected[propertyIndex++], variable.getName());
             assertEquals("getDescription()",      expected[propertyIndex++], variable.getDescription());
             assertEquals("getDataType()",         expected[propertyIndex++], variable.getDataType());
-            assertEquals("getDimensionLengths()", expected[propertyIndex++], variable.getDimensionLengths().length);
+            assertEquals("getDimensionLengths()", expected[propertyIndex++], variable.getGridEnvelope().length);
             assertEquals("isCoverage(2)",         expected[propertyIndex++], variable.isCoverage(2));
             assertEquals(0, propertyIndex % NUM_BASIC_PROPERTY_COLUMNS); // Sanity check for VariableTest itself.
         }
