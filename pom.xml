@@ -122,7 +122,6 @@ Apache SIS is a toolkit for describing location information, including points,
       <organization>NASA Jet Propulsion Laboratory</organization>
       <organizationUrl>http://www.jpl.nasa.gov</organizationUrl>
       <timezone>-8</timezone>
-      <properties />
       <roles>
         <role>committer</role>
       </roles>
@@ -152,7 +151,6 @@ Apache SIS is a toolkit for describing location information, including points,
       <organization>AT&amp;T Interactive</organization>
       <organizationUrl>http://www.attinteractive.com</organizationUrl>
       <timezone>-8</timezone>
-      <properties />
       <roles>
         <role>committer</role>
       </roles>
@@ -165,7 +163,6 @@ Apache SIS is a toolkit for describing location information, including points,
       <organization>NASA Jet Propulsion Laboratory</organization>
       <organizationUrl>http://www.jpl.nasa.gov</organizationUrl>
       <timezone>-8</timezone>
-      <properties />
       <roles>
         <role>committer</role>
       </roles>
@@ -177,7 +174,6 @@ Apache SIS is a toolkit for describing location information, including points,
       <organization>NASA Jet Propulsion Laboratory</organization>
       <organizationUrl>http://www.jpl.nasa.gov</organizationUrl>
       <timezone>-8</timezone>
-      <properties />
       <roles>
         <role>committer</role>
       </roles>
@@ -189,7 +185,6 @@ Apache SIS is a toolkit for describing location information, including points,
       <organization>NASA Jet Propulsion Laboratory</organization>
       <organizationUrl>http://www.jpl.nasa.gov</organizationUrl>
       <timezone>-8</timezone>
-      <properties />
       <roles>
         <role>committer</role>
       </roles>
@@ -327,11 +322,6 @@ Apache SIS is a toolkit for describing location information, including points,
         <scope>provided</scope>
       </dependency>
       <dependency>
-        <groupId>org.geonames</groupId>
-        <artifactId>georss-rome</artifactId>
-        <version>0.9.8</version>
-      </dependency>
-      <dependency>
         <groupId>net.jcip</groupId>
         <artifactId>jcip-annotations</artifactId>
         <version>1.0</version>
@@ -349,6 +339,12 @@ Apache SIS is a toolkit for describing location information, including points,
         <artifactId>netcdf</artifactId>
         <version>${netcdf.version}</version>
         <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-jdk14</artifactId>
+        <version>1.6.4</version> <!-- Must matches the version used by NetCDF. -->
+        <scope>runtime</scope> <!-- Should never be needed at compile time. -->
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -593,6 +589,14 @@ Apache SIS is a toolkit for describing location information, including points,
             <group>
               <title>Testing tools</title> <!-- Exists in test javadoc only. -->
               <packages>org.apache.sis.test*</packages>
+            </group>
+            <group>
+              <title>Data storage</title>
+              <packages>org.apache.sis.storage*</packages>
+            </group>
+            <group>
+              <title>Geometry</title>
+              <packages>org.apache.sis.geometry*</packages>
             </group>
             <group>
               <title>Referencing</title>
