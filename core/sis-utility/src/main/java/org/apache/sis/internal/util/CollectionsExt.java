@@ -19,6 +19,14 @@ package org.apache.sis.internal.util;
 import java.util.*;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.collection.CodeListSet;
+import org.apache.sis.util.resources.Errors;
+import org.opengis.parameter.InvalidParameterCardinalityException;
+
+import static org.apache.sis.util.collection.Containers.hashMapCapacity;
+
+// Related to JDK7 and JDK8
+import org.apache.sis.internal.jdk7.Objects;
+import org.apache.sis.internal.jdk8.Function;
 
 
 /**
@@ -380,5 +388,74 @@ public final class CollectionsExt extends Static {
             return (List<T>) collection;
         }
         return new ArrayList<T>(collection);
+    }
+
+    /**
+     * Creates a (<cite>name</cite>, <cite>element</cite>) mapping for the given collection of elements.
+     * If the name of an element is not all lower cases, then this method also adds an entry for the
+     * lower cases version of that name in order to allow case-insensitive searches.
+     *
+     * <p>Code searching in the returned map shall ask for the original (non lower-case) name
+     * <strong>before</strong> to ask for the lower-cases version of that name.</p>
+     *
+     * @param  <E>          The type of elements.
+     * @param  elements     The elements to store in the map, or {@code null} if none.
+     * @param  nameFunction The function for computing a name from an element.
+     * @param  namesLocale  The locale to use for creating the "all lower cases" names.
+     * @return A (<cite>name</cite>, <cite>element</cite>) mapping with lower cases entries where possible.
+     * @throws InvalidParameterCardinalityException If the same name is used for more than one element.
+     */
+    public static <E> Map<String,E> toCaseInsensitiveNameMap(final Collection<? extends E> elements,
+            final Function<E,String> nameFunction, final Locale namesLocale)
+    {
+        if (elements == null) {
+            return Collections.emptyMap();
+        }
+        final Map<String,E> map = new HashMap<String,E>(hashMapCapacity(elements.size()));
+        Set<String> excludes = null;
+        for (final E e : elements) {
+            final String name = nameFunction.apply(e);
+            E old = map.put(name, e);
+            if (old != null) {
+                /*
+                 * If two elements use exactly the same name, this is considered an error. Otherwise the previous
+                 * mapping was using a lower case name version of its original name, so we can discard that lower
+                 * case version (the original name is still present in the map).
+                 */
+                final String oldName = nameFunction.apply(old);
+                if (Objects.equals(name, oldName)) {
+                    throw new InvalidParameterCardinalityException(Errors.format(Errors.Keys.ValueAlreadyDefined_1, name), name);
+                }
+            }
+            /*
+             * Add lower-cases versions of the above element names, only if that name is not already used.
+             * If a name was already used, then the original mapping will have precedence.
+             */
+            final String lower = name.toLowerCase(namesLocale);
+            if (!name.equals(lower) && (excludes == null || !excludes.contains(lower))) {
+                old = map.put(lower, e);
+                if (old != null) {
+                    final String oldName = nameFunction.apply(old);
+                    if (lower.equals(oldName)) {
+                        /*
+                         * An entry already exists with a lower case name. Keep that previous entry unchanged.
+                         */
+                        map.put(oldName, old);
+                    } else {
+                        /*
+                         * Two entries having non-lower case names got the same name after conversion to
+                         * lower cases. Retains none of them, since doing so would introduce an ambiguity.
+                         * Remember that we can not use that lower cases name for any other entries.
+                         */
+                        map.remove(lower);
+                        if (excludes == null) {
+                            excludes = new HashSet<String>();
+                        }
+                        excludes.add(lower);
+                    }
+                }
+            }
+        }
+        return map;
     }
 }

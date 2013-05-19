@@ -69,7 +69,7 @@ abstract class PathConverter<S,T> extends SystemConverter<S,T> {
      * @throws UnconvertibleObjectException If an error occurred during the conversion.
      */
     @Override
-    public final T convert(final S source) throws UnconvertibleObjectException {
+    public final T apply(final S source) throws UnconvertibleObjectException {
         if (source == null) {
             return null;
         }
@@ -81,7 +81,7 @@ abstract class PathConverter<S,T> extends SystemConverter<S,T> {
     }
 
     /**
-     * Invoked by {@link #convert(S)} for converting the given path to the target
+     * Invoked by {@link #apply(Object)} for converting the given path to the target
      * type of this converter.
      *
      * @param  source The path to convert, guaranteed to be non-null.

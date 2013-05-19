@@ -160,7 +160,7 @@ class DerivedSet<S,E> extends AbstractSet<E> implements CheckedContainer<E>, Ser
      * then delegates to the {@link #storage} set like below:
      *
      * {@preformat java
-     *     return storage.add(inverse.convert(element));
+     *     return storage.add(inverse.apply(element));
      * }
      *
      * @param  element element whose presence in this set is to be ensured.
@@ -170,7 +170,7 @@ class DerivedSet<S,E> extends AbstractSet<E> implements CheckedContainer<E>, Ser
      */
     @Override
     public boolean add(final E element) throws UnsupportedOperationException {
-        return add(element, converter.inverse().convert(element));
+        return add(element, converter.inverse().apply(element));
     }
 
     /**
@@ -221,7 +221,7 @@ class DerivedSet<S,E> extends AbstractSet<E> implements CheckedContainer<E>, Ser
          */
         @Override
         public final boolean add(final E element) throws UnsupportedOperationException {
-            return add(element, inverse.convert(element));
+            return add(element, inverse.apply(element));
         }
 
         /**
@@ -230,7 +230,7 @@ class DerivedSet<S,E> extends AbstractSet<E> implements CheckedContainer<E>, Ser
          * then delegates to the {@link #storage} set like below:
          *
          * {@preformat java
-         *     return storage.contains(inverse.convert(element));
+         *     return storage.contains(inverse.apply(element));
          * }
          *
          * @param  element object to be checked for containment in this set.
@@ -239,7 +239,7 @@ class DerivedSet<S,E> extends AbstractSet<E> implements CheckedContainer<E>, Ser
         @Override
         public final boolean contains(final Object element) {
             final Class<E> type = getElementType();
-            return type.isInstance(element) && storage.contains(inverse.convert(type.cast(element)));
+            return type.isInstance(element) && storage.contains(inverse.apply(type.cast(element)));
         }
 
         /**
@@ -248,7 +248,7 @@ class DerivedSet<S,E> extends AbstractSet<E> implements CheckedContainer<E>, Ser
          * then delegates to the {@link #storage} set like below:
          *
          * {@preformat java
-         *     return storage.remove(inverse.convert(element));
+         *     return storage.remove(inverse.apply(element));
          * }
          *
          * @param  element element to be removed from this set, if present.
@@ -259,7 +259,7 @@ class DerivedSet<S,E> extends AbstractSet<E> implements CheckedContainer<E>, Ser
         @Override
         public final boolean remove(final Object element) throws UnsupportedOperationException {
             final Class<E> type = getElementType();
-            return type.isInstance(element) && storage.remove(inverse.convert(type.cast(element)));
+            return type.isInstance(element) && storage.remove(inverse.apply(type.cast(element)));
         }
     }
 
