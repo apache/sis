@@ -23,6 +23,7 @@ import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.internal.util.SystemListener;
+import org.apache.sis.metadata.iso.extent.DefaultSpatialTemporalExtent;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -84,7 +85,7 @@ public abstract class ReferencingServices extends SystemListener {
     }
 
     /**
-     * Initializes a geographic bounding box from the specified envelope. If the envelope contains
+     * Sets a geographic bounding box from the specified envelope. If the envelope contains
      * a CRS, then the bounding box will be projected to a geographic CRS. Otherwise, the envelope
      * is assumed already in appropriate CRS.
      *
@@ -96,7 +97,7 @@ public abstract class ReferencingServices extends SystemListener {
             throws TransformException;
 
     /**
-     * Initializes a vertical extent with the value inferred from the given envelope.
+     * Sets a vertical extent with the value inferred from the given envelope.
      * Only the vertical ordinates are extracted; all other ordinates are ignored.
      *
      * @param  envelope The source envelope.
@@ -107,14 +108,25 @@ public abstract class ReferencingServices extends SystemListener {
             throws TransformException;
 
     /**
-     * Initializes a temporal extent with the value inferred from the given envelope.
-     * Only the vertical ordinates are extracted; all other ordinates are ignored.
+     * Sets a temporal extent with the value inferred from the given envelope.
+     * Only the temporal ordinates are extracted; all other ordinates are ignored.
      *
      * @param  envelope The source envelope.
      * @param  target The target temporal extent.
      * @throws TransformException If no temporal component can be extracted from the given envelope.
      */
     public abstract void setBounds(Envelope envelope, DefaultTemporalExtent target)
+            throws TransformException;
+
+    /**
+     * Sets a temporal extent with the value inferred from the given envelope,
+     * and optionally sets a geographic bounding box if a spatial component if found.
+     *
+     * @param  envelope The source envelope.
+     * @param  target The target spatio-temporal extent.
+     * @throws TransformException If no temporal component can be extracted from the given envelope.
+     */
+    public abstract void setBounds(Envelope envelope, DefaultSpatialTemporalExtent target)
             throws TransformException;
 
     /**

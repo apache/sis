@@ -69,7 +69,7 @@ abstract class CollectionConverter<T> extends SystemConverter<Collection<?>,T> {
         }
 
         @Override
-        public java.util.List<?> convert(final Collection<?> source) {
+        public java.util.List<?> apply(final Collection<?> source) {
             if (source == null) {
                 return null;
             }
@@ -93,7 +93,7 @@ abstract class CollectionConverter<T> extends SystemConverter<Collection<?>,T> {
         }
 
         @Override
-        public java.util.Set<?> convert(final Collection<?> source) {
+        public java.util.Set<?> apply(final Collection<?> source) {
             if (source == null) {
                 return null;
             }

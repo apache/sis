@@ -1,0 +1,8 @@
+                             ------------------------------
+                               Apache SIS storage modules
+                             ------------------------------
+
+Apache SIS storage modules
+
+  Group of modules for reading and writing data from/to various storages.
+  Storages are typically file formats or a database schemas.

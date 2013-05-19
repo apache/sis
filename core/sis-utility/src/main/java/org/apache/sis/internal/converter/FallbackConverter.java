@@ -311,12 +311,12 @@ final class FallbackConverter<S,T> extends SystemConverter<S,T> {
      * Converts the given object, using the fallback if needed.
      */
     @Override
-    public T convert(final S source) throws UnconvertibleObjectException {
+    public T apply(final S source) throws UnconvertibleObjectException {
         try {
-            return primary.convert(source);
+            return primary.apply(source);
         } catch (UnconvertibleObjectException exception) {
             try {
-                return fallback.convert(source);
+                return fallback.apply(source);
             } catch (UnconvertibleObjectException failure) {
                 // addSuppressed(failure) on the JDK7 branch.
                 throw exception;

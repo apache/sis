@@ -395,4 +395,29 @@
       </tgroup>
     </table>
   </section>
+
+  <section>
+    <title>Définitions des termes</title>
+    <para>
+      Les standards privilégient parfois l’application de certains termes génériques à des contextes particuliers,
+      qui peuvent différer du contexte dans lequel d’autres communautés emploient ces termes.
+      Par exemple les termes <foreignphrase>domain</foreignphrase> et <foreignphrase>range</foreignphrase> peuvent
+      s’appliquer à des fonctions arbitraires pour désigner l’ensemble des valeurs possibles en entrés et en sorties
+      respectivement.
+      Mais les fonctions auxquelles certains standards <acronym>ISO</acronym> les appliquent ne sont pas les mêmes
+      que les fonctions auxquelles d’autres bibliothèques les appliquent.
+      Par exemple <acronym>ISO</acronym> 19123 applique ces termes aux objets <classname role="OGC">CV_Coverage</classname>,
+      vus comme des fonctions dont le domaine est l’ensemble des coordonnées spatio-temporelles de la couverture de données
+      et le <foreignphrase>range</foreignphrase> l’ensemble des valeurs de la couverture.
+      Mais la bibliothèque NetCDF de l’<acronym>UCAR</acronym> applique plutôt ces termes à la fonction convertissant
+      les indices de pixels (son domaine) vers les coordonnées spatio-temporelles (son <foreignphrase>range</foreignphrase>).
+      Ainsi, un <foreignphrase>range</foreignphrase> de la bibliothèque de l’<acronym>UCAR</acronym> peut être le domaine de
+      <acronym>ISO</acronym> 19123.
+    </para>
+    <para>
+      La bibliothèque Apache <acronym>SIS</acronym> privilégie autant que possible l’utilisation des termes dans le sens
+      des normes <acronym>OGC</acronym> et <acronym>ISO</acronym>. Mais un soin particulier doit être apporté aux interfaces
+      entre <acronym>SIS</acronym> et certaines bibliothèques externes, afin de réduire les risques de confusions.
+    </para>
+  </section>
 </chapter>

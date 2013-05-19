@@ -89,6 +89,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int CanNotInstantiate_1 = 81;
 
         /**
+         * Can not parse “{1}” as a file in the {0} format.
+         */
+        public static final int CanNotParseFile_2 = 79;
+
+        /**
          * Can not set a value for property “{0}”.
          */
         public static final int CanNotSetPropertyValue_1 = 75;
@@ -109,19 +114,9 @@ public final class Errors extends IndexedResourceBundle {
         public static final int DeadThread_1 = 43;
 
         /**
-         * Value “{0}” is duplicated.
+         * Identifier “{0}” is duplicated.
          */
-        public static final int DuplicatedValue_1 = 38;
-
-        /**
-         * Found {0} duplicated values.
-         */
-        public static final int DuplicatedValuesCount_1 = 78;
-
-        /**
-         * Duplicated values for the “{0}” property.
-         */
-        public static final int DuplicatedValuesForProperty_1 = 79;
+        public static final int DuplicatedIdentifier_1 = 38;
 
         /**
          * Element “{0}” is already present.
@@ -152,6 +147,11 @@ public final class Errors extends IndexedResourceBundle {
          * Argument ‘{0}’ shall not contain more than {1} elements. A number of {2} is excessive.
          */
         public static final int ExcessiveArgumentSize_3 = 52;
+
+        /**
+         * A size of {1} elements is excessive for the “{0}” list.
+         */
+        public static final int ExcessiveListSize_2 = 94;
 
         /**
          * Attribute “{0}” is not allowed for an object of type ‘{1}’.
@@ -306,6 +306,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int NegativeArgument_2 = 8;
 
         /**
+         * Can not create a “{0}” array of negative length.
+         */
+        public static final int NegativeArrayLength_1 = 78;
+
+        /**
          * No property named “{0}” has been found in “{1}”.
          */
         public static final int NoSuchProperty_2 = 73;
@@ -436,9 +441,19 @@ public final class Errors extends IndexedResourceBundle {
         public static final int UnexpectedChange_1 = 56;
 
         /**
+         * Unexpected end of file while reading “{0}”.
+         */
+        public static final int UnexpectedEndOfFile_1 = 91;
+
+        /**
          * More characters were expected at the end of “{0}”.
          */
         public static final int UnexpectedEndOfString_1 = 30;
+
+        /**
+         * File “{1}” seems to be encoded in an other format than {0}.
+         */
+        public static final int UnexpectedFileFormat_2 = 92;
 
         /**
          * Type of the “{0}” property is unknown.
@@ -504,6 +519,11 @@ public final class Errors extends IndexedResourceBundle {
          * The ‘{0}’ type is unsupported.
          */
         public static final int UnsupportedType_1 = 69;
+
+        /**
+         * Version {0} is not supported.
+         */
+        public static final int UnsupportedVersion_1 = 93;
 
         /**
          * A value is already defined for “{0}”.

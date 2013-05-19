@@ -69,7 +69,7 @@ final class DerivedIterator<S,E> implements Iterator<E> {
             if (!iterator.hasNext()) {
                 return false;
             }
-            next = converter.convert(iterator.next());
+            next = converter.apply(iterator.next());
         }
         return true;
     }
@@ -82,7 +82,7 @@ final class DerivedIterator<S,E> implements Iterator<E> {
         E value = next;
         next = null;
         while (value == null) {
-            value = converter.convert(iterator.next());
+            value = converter.apply(iterator.next());
         }
         return value;
     }

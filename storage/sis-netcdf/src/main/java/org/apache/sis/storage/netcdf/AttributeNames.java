@@ -16,6 +16,12 @@
  */
 package org.apache.sis.storage.netcdf;
 
+/*
+ * All imports below except "CF" are for javadoc only. The "CF" import is used only
+ * for its static final String constants, which are inlined by javac. Consequently
+ * the compiled file of this class should have no dependency to the UCAR packages.
+ */
+import java.io.Serializable;
 import ucar.nc2.Group;
 import ucar.nc2.NetcdfFile;
 import ucar.nc2.VariableSimpleIF;
@@ -45,62 +51,93 @@ import org.opengis.metadata.extent.GeographicDescription;
 
 
 /**
- * Mapping from/to NetCDF metadata to ISO 19115-2 metadata.
- * This class defines the names of attributes used by the reader and writer sub-classes.
- * The NetCDF attributes defined by this class are:
+ * Name of attributes used in the mapping from/to NetCDF metadata to ISO 19115 metadata.
+ * The attributes recognized by SIS are listed below:
  *
- * <p>{@value #ACCESS_CONSTRAINT}, {@value #ACKNOWLEDGMENT}, {@value #COMMENT},
- * {@linkplain #CONTRIBUTOR "contributor_email"},
- * {@linkplain #CONTRIBUTOR "contributor_name"},
- * {@linkplain #CONTRIBUTOR "contributor_role"},
- * {@linkplain #CONTRIBUTOR "contributor_url"},
- * {@linkplain #CREATOR     "creator_email"},
- * {@linkplain #CREATOR     "creator_name"},
- * {@linkplain #CREATOR     "creator_url"},
- * {@value #DATA_TYPE}, {@value #DATE_CREATED}, {@value #DATE_ISSUED}, {@value #DATE_MODIFIED},
- * {@value #FLAG_MASKS}, {@value #FLAG_MEANINGS}, {@value #FLAG_NAMES}, {@value #FLAG_VALUES},
- * {@linkplain #TITLE "full_name"},
- * {@linkplain #GEOGRAPHIC_IDENTIFIER "geographic_identifier"},
- * {@linkplain #LATITUDE  "geospatial_lat_max"},
- * {@linkplain #LATITUDE  "geospatial_lat_min"},
- * {@linkplain #LATITUDE  "geospatial_lat_resolution"},
- * {@linkplain #LATITUDE  "geospatial_lat_units"},
- * {@linkplain #LONGITUDE "geospatial_lon_max"},
- * {@linkplain #LONGITUDE "geospatial_lon_min"},
- * {@linkplain #LONGITUDE "geospatial_lon_resolution"},
- * {@linkplain #LONGITUDE "geospatial_lon_units"},
- * {@linkplain #VERTICAL  "geospatial_vertical_max"},
- * {@linkplain #VERTICAL  "geospatial_vertical_min"},
- * {@linkplain #VERTICAL  "geospatial_vertical_positive"},
- * {@linkplain #VERTICAL  "geospatial_vertical_resolution"},
- * {@linkplain #VERTICAL  "geospatial_vertical_units"},
- * {@value #HISTORY}, {@value #IDENTIFIER}, {@linkplain #CREATOR "institution"}, {@value #KEYWORDS},
- * {@value #LICENSE}, {@value #METADATA_CREATION}, {@linkplain #TITLE "name"}, {@value #NAMING_AUTHORITY},
- * {@value #PROCESSING_LEVEL}, {@value #PROJECT},
- * {@linkplain #PUBLISHER "publisher_email"},
- * {@linkplain #PUBLISHER "publisher_name"},
- * {@linkplain #PUBLISHER "publisher_url"},
- * {@value #PURPOSE}, {@value #REFERENCES}, {@value #STANDARD_NAME},
- * {@value #STANDARD_NAME_VOCABULARY}, {@value #SUMMARY},
- * {@linkplain #TIME "time_coverage_duration"},
- * {@linkplain #TIME "time_coverage_end"},
- * {@linkplain #TIME "time_coverage_resolution"},
- * {@linkplain #TIME "time_coverage_start"},
- * {@linkplain #TIME "time_coverage_units"},
- * {@value #TITLE}, {@value #TOPIC_CATEGORY} and {@value #VOCABULARY}.</p>
+ * <blockquote><table class="compact"><tr valign="top" width="25%"><td>
+ * {@value     #ACCESS_CONSTRAINT}<br>
+ * {@value     #ACKNOWLEDGMENT}<br>
+ * {@value     #COMMENT}<br>
+ * {@linkplain #CONTRIBUTOR "contributor_email"}<br>
+ * {@linkplain #CONTRIBUTOR "contributor_name"}<br>
+ * {@linkplain #CONTRIBUTOR "contributor_role"}<br>
+ * {@linkplain #CONTRIBUTOR "contributor_url"}<br>
+ * {@linkplain #CREATOR     "creator_email"}<br>
+ * {@linkplain #CREATOR     "creator_name"}<br>
+ * {@linkplain #CREATOR     "creator_url"}<br>
+ * {@value     #DATA_TYPE}<br>
+ * {@value     #DATE_CREATED}<br>
+ * {@value     #DATE_ISSUED}<br>
+ * {@value     #DATE_MODIFIED}<br>
+ * {@value     #FLAG_MASKS}<br>
+ * {@value     #FLAG_MEANINGS}<br>
+ * {@value     #FLAG_NAMES}<br>
+ * {@value     #FLAG_VALUES}<br>
+ * </td><td width="25%">
+ * {@linkplain #TITLE "full_name"}<br>
+ * {@linkplain #GEOGRAPHIC_IDENTIFIER "geographic_identifier"}<br>
+ * {@linkplain #LATITUDE  "geospatial_lat_max"}<br>
+ * {@linkplain #LATITUDE  "geospatial_lat_min"}<br>
+ * {@linkplain #LATITUDE  "geospatial_lat_resolution"}<br>
+ * {@linkplain #LATITUDE  "geospatial_lat_units"}<br>
+ * {@linkplain #LONGITUDE "geospatial_lon_max"}<br>
+ * {@linkplain #LONGITUDE "geospatial_lon_min"}<br>
+ * {@linkplain #LONGITUDE "geospatial_lon_resolution"}<br>
+ * {@linkplain #LONGITUDE "geospatial_lon_units"}<br>
+ * {@linkplain #VERTICAL  "geospatial_vertical_max"}<br>
+ * {@linkplain #VERTICAL  "geospatial_vertical_min"}<br>
+ * {@linkplain #VERTICAL  "geospatial_vertical_positive"}<br>
+ * {@linkplain #VERTICAL  "geospatial_vertical_resolution"}<br>
+ * {@linkplain #VERTICAL  "geospatial_vertical_units"}<br>
+ * </td><td width="25%">
+ * {@value     #HISTORY}<br>
+ * {@value     #IDENTIFIER}<br>
+ * {@linkplain #CREATOR "institution"}<br>
+ * {@value     #KEYWORDS}<br>
+ * {@value     #VOCABULARY}<br>
+ * {@value     #LICENSE}<br>
+ * {@value     #METADATA_CREATION}<br>
+ * {@linkplain #TITLE "name"}<br>
+ * {@value     #NAMING_AUTHORITY}<br>
+ * {@value     #PROCESSING_LEVEL}<br>
+ * {@value     #PROJECT}<br>
+ * {@linkplain #PUBLISHER "publisher_email"}<br>
+ * {@linkplain #PUBLISHER "publisher_name"}<br>
+ * {@linkplain #PUBLISHER "publisher_url"}<br>
+ * {@value     #PURPOSE}<br>
+ * {@value     #REFERENCES}<br>
+ * </td><td width="25%">
+ * {@value     #STANDARD_NAME}<br>
+ * {@value     #STANDARD_NAME_VOCABULARY}<br>
+ * {@value     #SUMMARY}<br>
+ * {@linkplain #TIME "time_coverage_duration"}<br>
+ * {@linkplain #TIME "time_coverage_end"}<br>
+ * {@linkplain #TIME "time_coverage_resolution"}<br>
+ * {@linkplain #TIME "time_coverage_start"}<br>
+ * {@linkplain #TIME "time_coverage_units"}<br>
+ * {@value     #TITLE}<br>
+ * {@value     #TOPIC_CATEGORY}<br>
+ * </td></tr></table></blockquote>
+ *
+ * <p><b>References:</b></p>
+ * <ul>
+ *   <li><a href="https://geo-ide.noaa.gov/wiki/index.php?title=NetCDF_Attribute_Convention_for_Dataset_Discovery">NetCDF
+ *       Attribute Convention for Dataset Discovery</a> wiki</li>
+ *   <li><a href="http://ngdc.noaa.gov/metadata/published/xsl/nciso2.0/UnidataDD2MI.xsl">UnidataDD2MI.xsl</a> file</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.20)
  * @version 0.3
  * @module
  */
-public abstract class NetcdfMetadata /* implements WarningProducer*/ {
+public class AttributeNames {
     /**
      * The {@value} attribute name for a short description of the dataset
      * (<em>Highly Recommended</em>). If no {@value} attribute is provided,
-     * then {@code NetcdfMetadata} will look for "full_name" and "name".
+     * then {@code AttributeNames} will look for "full_name" and "name".
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getCitation() citation} /
      * {@link Citation#getTitle() title}</li></ul></p>
@@ -114,7 +151,7 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
      * The {@value} attribute name for a paragraph describing the dataset
      * (<em>Highly Recommended</em>).
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getAbstract() abstract}</li></ul></p>
      *
@@ -127,7 +164,7 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
      * The combination of the {@value #NAMING_AUTHORITY} and the {@value}
      * should be a globally unique identifier for the dataset.
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getFileIdentifier() fileIdentifier}</li>
      * <li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
@@ -135,7 +172,7 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
      * {@link Citation#getIdentifiers() identifier} /
      * {@link Identifier#getCode() code}</li></ul></p>
      *
-     * @see NetcdfMetadataReader#getFileIdentifier()
+     * @see MetadataReader#getFileIdentifier()
      * @see NetcdfFile#getId()
      * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html#id_Attribute">UCAR reference</a>
      */
@@ -146,7 +183,7 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
      * The combination of the {@value} and the {@value #IDENTIFIER} should be a globally
      * unique identifier for the dataset.
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getFileIdentifier() fileIdentifier}</li>
      * <li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
@@ -155,7 +192,7 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
      * {@link Identifier#getAuthority() authority}</li></ul></p>
      *
      * @see #IDENTIFIER
-     * @see NetcdfMetadataReader#getFileIdentifier()
+     * @see MetadataReader#getFileIdentifier()
      * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html#id_Attribute">UCAR reference</a>
      */
     public static final String NAMING_AUTHORITY = "naming_authority";
@@ -165,7 +202,7 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
      * vocabulary of variable names. This is actually a {@linkplain VariableSimpleIF variable} attribute,
      * but sometime appears also in {@linkplain NetcdfFile#findGlobalAttribute(String) global attributes}.
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getDescriptiveKeywords() descriptiveKeywords} /
      * {@link Keywords#getKeywords() keyword} with {@link KeywordType#THEME}</li></ul></p>
@@ -180,7 +217,7 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
      * The {@value} attribute name for indicating which controlled list of variable names has been
      * used in the {@value #STANDARD_NAME} attribute.
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getDescriptiveKeywords() descriptiveKeywords} /
      * {@link Keywords#getThesaurusName() thesaurusName} /
@@ -196,7 +233,7 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
      * The {@value} attribute name for a comma separated list of key words and phrases
      * (<em>Highly Recommended</em>).
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getDescriptiveKeywords() descriptiveKeywords} /
      * {@link Keywords#getKeywords() keyword} with {@link KeywordType#THEME}</li></ul></p>
@@ -212,7 +249,7 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
      * The {@value} attribute name for the guideline for the words/phrases in the
      * {@value #KEYWORDS} attribute (<em>Recommended</em>).
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getDescriptiveKeywords() descriptiveKeywords} /
      * {@link Keywords#getThesaurusName() thesaurusName} /
@@ -234,7 +271,7 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
      * {@code "society"}, {@code "structure"}, {@code "transportation"} and
      * {@code "utilitiesCommunication"}.
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getTopicCategories() topicCategory}</li></ul></p>
      *
@@ -248,7 +285,7 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
      * {@code "Image"}, {@code "Video"}, {@code "Tin"}, {@code "StereoModel"}, {@code "Station"},
      * {@code "Swath"} or {@code "Trajectory"}.
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getSpatialRepresentationTypes() spatialRepresentationType}</li></ul></p>
      *
@@ -261,7 +298,7 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
      * The {@value} attribute name for providing an audit trail for modifications to the
      * original data (<em>Recommended</em>).
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getDataQualityInfo() dataQualityInfo} /
      * {@link DataQuality#getLineage() lineage} /
      * {@link Lineage#getStatement() statement}</li></ul></p>
@@ -274,7 +311,7 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
      * The {@value} attribute name for miscellaneous information about the data
      * (<em>Recommended</em>).
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getSupplementalInformation() supplementalInformation}</li></ul></p>
      *
@@ -287,7 +324,7 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
      * (<em>Suggested</em>). This is actually defined in the "{@code NCISOMetadata}"
      * subgroup.
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getDateStamp() dateStamp}</li></ul></p>
      */
     public static final String METADATA_CREATION = "metadata_creation";
@@ -296,7 +333,7 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
      * The {@value} attribute name for the date on which the data was created
      * (<em>Recommended</em>).
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getCitation() citation} /
      * {@link Citation#getDates() date} /
@@ -310,7 +347,7 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
      * The {@value} attribute name for the date on which this data was last modified
      * (<em>Suggested</em>).
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getCitation() citation} /
      * {@link Citation#getDates() date} /
@@ -324,7 +361,7 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
      * The {@value} attribute name for a date on which this data was formally issued
      * (<em>Suggested</em>).
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getCitation() citation} /
      * {@link Citation#getDates() date} /
@@ -336,47 +373,48 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
 
     /**
      * Holds the attribute names describing a responsible party.
-     * Values are:
+     * In the following table, the header lists the constants defined in the {@link AttributeNames}
+     * class and the other cells give the values assigned in this class fields for those constants.
      *
-     * <table border="1" cellspacing="0"><tr bgcolor="lightblue">
-     *   <th>Attribute</th>
-     *   <th>{@link NetcdfMetadata#CREATOR}</th>
-     *   <th>{@link NetcdfMetadata#CONTRIBUTOR}</th>
-     *   <th>{@link NetcdfMetadata#PUBLISHER}</th>
+     * <table class="sis"><tr>
+     *   <th            >Field in this class</th>
+     *   <th class="sep">{@link AttributeNames#CREATOR     CREATOR}</th>
+     *   <th            >{@link AttributeNames#CONTRIBUTOR CONTRIBUTOR}</th>
+     *   <th            >{@link AttributeNames#PUBLISHER   PUBLISHER}</th>
      * </tr><tr>
-     *   <td>{@link #NAME}</td>
-     *   <td>{@code "creator_name"}</td>
-     *   <td>{@code "contributor_name"}</td>
-     *   <td>{@code "publisher_name"}</td>
+     *   <td            >{@link #NAME}</td>
+     *   <td class="sep">{@code "creator_name"}</td>
+     *   <td            >{@code "contributor_name"}</td>
+     *   <td            >{@code "publisher_name"}</td>
      * </tr><tr>
-     *   <td>{@link #INSTITUTION}</td>
-     *   <td>{@code "institution"}</td>
-     *   <td></td>
-     *   <td></td>
+     *   <td            >{@link #INSTITUTION}</td>
+     *   <td class="sep">{@code "institution"}</td>
+     *   <td            ></td>
+     *   <td            ></td>
      * </tr><tr>
-     *   <td>{@link #URL}</td>
-     *   <td>{@code "creator_url"}</td>
-     *   <td>{@code "contributor_url"}</td>
-     *   <td>{@code "publisher_url"}</td>
+     *   <td            >{@link #URL}</td>
+     *   <td class="sep">{@code "creator_url"}</td>
+     *   <td            >{@code "contributor_url"}</td>
+     *   <td            >{@code "publisher_url"}</td>
      * </tr><tr>
-     *   <td>{@link #EMAIL}</td>
-     *   <td>{@code "creator_email"}</td>
-     *   <td>{@code "contributor_email"}</td>
-     *   <td>{@code "publisher_email"}</td>
+     *   <td            >{@link #EMAIL}</td>
+     *   <td class="sep">{@code "creator_email"}</td>
+     *   <td            >{@code "contributor_email"}</td>
+     *   <td            >{@code "publisher_email"}</td>
      * </tr><tr>
-     *   <td>{@link #ROLE}</td>
-     *   <td></td>
-     *   <td>{@code "contributor_role"}</td>
-     *   <td></td>
+     *   <td            >{@link #ROLE}</td>
+     *   <td class="sep"></td>
+     *   <td            >{@code "contributor_role"}</td>
+     *   <td            ></td>
      * </tr><tr>
-     *   <td>{@link #DEFAULT_ROLE}</td>
-     *   <td>{@link Role#ORIGINATOR}</td>
-     *   <td></td>
-     *   <td>{@link Role#PUBLISHER}</td>
+     *   <td            >{@link #DEFAULT_ROLE}</td>
+     *   <td class="sep">{@link Role#ORIGINATOR}</td>
+     *   <td            ></td>
+     *   <td>           {@link Role#PUBLISHER}</td>
      * </tr></table>
      *
      * {@note The member names in this class are upper-cases because they should be considered
-     *        as constants. For example <code>NetcdfMetadata.CREATOR.EMAIL</code> maps exactly to the
+     *        as constants. For example <code>AttributeNames.CREATOR.EMAIL</code> maps exactly to the
      *        <code>"creator_email"</code> string and nothing else. A lower-case <code>email</code>
      *        member name could be misleading since it would suggest that the field contains the
      *        actual name value rather than the key by which the value is identified in a NetCDF file.}
@@ -385,13 +423,20 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
      * @since   0.3 (derived from geotk-3.20)
      * @version 0.3
      * @module
+     *
+     * @see org.apache.sis.storage.netcdf.AttributeNames.Dimension
      */
-    public static class Responsible {
+    public static class Responsible implements Serializable {
+        /**
+         * For cross-version compatibility.
+         */
+        private static final long serialVersionUID = 2680152633273321012L;
+
         /**
          * The attribute name for the responsible's name. Possible values are
          * {@code "creator_name"}, {@code "contributor_name"} or {@code "publisher_name"}.
          *
-         * <p><b>Path:</b> <ul><li>{@link ResponsibleParty} /
+         * <p><b>Path in ISO 19115:</b> <ul><li>{@link ResponsibleParty} /
          * {@link ResponsibleParty#getIndividualName() individualName}</li></ul></p>
          */
         public final String NAME;
@@ -400,7 +445,7 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
          * The attribute name for the responsible's institution, or {@code null} if none.
          * Possible value is {@code "institution"}.
          *
-         * <p><b>Path:</b> <ul><li>{@link ResponsibleParty} /
+         * <p><b>Path in ISO 19115:</b> <ul><li>{@link ResponsibleParty} /
          * {@link ResponsibleParty#getOrganisationName() organisationName}</li></ul></p>
          */
         public final String INSTITUTION;
@@ -409,7 +454,7 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
          * The attribute name for the responsible's URL. Possible values are
          * {@code "creator_url"}, {@code "contributor_url"} or {@code "publisher_url"}.
          *
-         * <p><b>Path:</b> <ul><li>{@link ResponsibleParty} /
+         * <p><b>Path in ISO 19115:</b> <ul><li>{@link ResponsibleParty} /
          * {@link ResponsibleParty#getContactInfo() contactInfo} /
          * {@link Contact#getOnlineResource() onlineResource} /
          * {@link OnlineResource#getLinkage() linkage}</li></ul></p>
@@ -420,7 +465,7 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
          * The attribute name for the responsible's email address. Possible values are
          * {@code "creator_email"}, {@code "contributor_email"} or {@code "publisher_email"}.
          *
-         * <p><b>Path:</b> <ul><li>{@link ResponsibleParty} /
+         * <p><b>Path in ISO 19115:</b> <ul><li>{@link ResponsibleParty} /
          * {@link ResponsibleParty#getContactInfo() contactInfo} /
          * {@link Contact#getAddress() address} /
          * {@link Address#getElectronicMailAddresses() electronicMailAddress}</li></ul></p>
@@ -431,7 +476,7 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
          * The attribute name for the responsible's role, or {@code null} if none.
          * Possible value is {@code "contributor_role"}.
          *
-         * <p><b>Path:</b> <ul><li>{@link ResponsibleParty} /
+         * <p><b>Path in ISO 19115:</b> <ul><li>{@link ResponsibleParty} /
          * {@link ResponsibleParty#getRole()}</li></ul></p>
          *
          * @see Role
@@ -444,8 +489,7 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
         public final Role DEFAULT_ROLE;
 
         /**
-         * Creates a new set of attribute names. Any argument can be {@code null}
-         * if not applicable.
+         * Creates a new set of attribute names. Any argument can be {@code null} if not applicable.
          *
          * @param name        The attribute name for the responsible's name.
          * @param institution The attribute name for the responsible's institution.
@@ -470,7 +514,7 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
     /**
      * The set of attribute names for the creator (<em>Recommended</em>).
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getCitation() citation} with {@link Role#ORIGINATOR}</li></ul></p>
      *
@@ -484,7 +528,7 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
     /**
      * The set of attribute names for the contributor (<em>Suggested</em>).
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getCitation() citation}</li></ul></p>
      *
@@ -498,7 +542,7 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
     /**
      * The set of attribute names for the publisher (<em>Suggested</em>).
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getDistributionInfo() distributionInfo} /
      * {@link Distribution#getDistributors() distributors} /
      * {@link Distributor#getDistributorContact() distributorContact} with {@link Role#PUBLISHER}</li>
@@ -518,7 +562,7 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
      * The {@value} attribute name for the scientific project that produced the data
      * (<em>Recommended</em>).
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getDescriptiveKeywords() descriptiveKeywords} /
      * {@link Keywords#getKeywords() keyword} with the {@code "project"} {@link KeywordType}</li></ul></p>
@@ -531,7 +575,7 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
      * The {@value} attribute name for the summary of the intentions with which the resource(s)
      * was developed.
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getPurpose() purpose}</li></ul></p>
      */
@@ -540,7 +584,7 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
     /**
      * The {@value} attribute name for bibliographical references.
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getCitation() citation} /
      * {@link Citation#getOtherCitationDetails() otherCitationDetails}</li></ul></p>
@@ -551,7 +595,7 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
      * The {@value} attribute name for a textual description of the processing (or quality control)
      * level of the data.
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getContentInfo() contentInfo} /
      * {@link ImageDescription#getProcessingLevelCode() processingLevelCode}</li></ul></p>
      *
@@ -563,7 +607,7 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
      * The {@value} attribute name for a place to acknowledge various type of support for
      * the project that produced this data (<em>Recommended</em>).
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getCredits() credit}</li></ul></p>
      *
@@ -575,7 +619,7 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
      * The {@value} attribute name for a description of the restrictions to data access
      * and distribution (<em>Recommended</em>).
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getResourceConstraints() resourceConstraints} /
      * {@link LegalConstraints#getUseLimitations() useLimitation}</li></ul></p>
@@ -590,7 +634,7 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
      * {@code "patent pending"}, {@code "trademark"}, {@code "license"},
      * {@code "intellectual property rights"} or {@code "restricted"}.
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getResourceConstraints() resourceConstraints} /
      * {@link LegalConstraints#getAccessConstraints() accessConstraints}</li></ul></p>
@@ -602,7 +646,7 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
     /**
      * The {@value} attribute name for an identifier of the geographic area.
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getExtents() extent} /
      * {@link Extent#getGeographicElements() geographicElement} /
@@ -612,54 +656,61 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
 
     /**
      * Holds the attribute names describing a simple latitude, longitude, and vertical bounding box.
-     * Values are:
+     * In the following table, the header lists the constants defined in the {@link AttributeNames}
+     * class and the other cells give the values assigned in this class fields for those constants.
      *
-     * <table border="1" cellspacing="0"><tr bgcolor="lightblue">
-     *   <th>Attributes</th>
-     *   <th>{@link NetcdfMetadata#LATITUDE}</th>
-     *   <th>{@link NetcdfMetadata#LONGITUDE}</th>
-     *   <th>{@link NetcdfMetadata#VERTICAL}</th>
-     *   <th>{@link NetcdfMetadata#TIME}</th>
+     * <table class="sis"><tr>
+     *   <th            >Field in this class</th>
+     *   <th class="sep">{@link AttributeNames#LATITUDE  LATITUDE}</th>
+     *   <th            >{@link AttributeNames#LONGITUDE LONGITUDE}</th>
+     *   <th            >{@link AttributeNames#VERTICAL  VERTICAL}</th>
+     *   <th            >{@link AttributeNames#TIME      TIME}</th>
      * </tr><tr>
-     *   <td>{@link #MINIMUM}</td>
-     *   <td>{@code "geospatial_lat_min"}</td>
-     *   <td>{@code "geospatial_lon_min"}</td>
-     *   <td>{@code "geospatial_vertical_min"}</td>
-     *   <td>{@code "time_coverage_start"}</td>
+     *   <td            >{@link #MINIMUM}</td>
+     *   <td class="sep">{@code "geospatial_lat_min"}</td>
+     *   <td            >{@code "geospatial_lon_min"}</td>
+     *   <td            >{@code "geospatial_vertical_min"}</td>
+     *   <td            >{@code "time_coverage_start"}</td>
      * </tr><tr>
-     *   <td>{@link #MAXIMUM}</td>
-     *   <td>{@code "geospatial_lat_max"}</td>
-     *   <td>{@code "geospatial_lon_max"}</td>
-     *   <td>{@code "geospatial_vertical_max"}</td>
-     *   <td>{@code "time_coverage_end"}</td>
+     *   <td            >{@link #MAXIMUM}</td>
+     *   <td class="sep">{@code "geospatial_lat_max"}</td>
+     *   <td            >{@code "geospatial_lon_max"}</td>
+     *   <td            >{@code "geospatial_vertical_max"}</td>
+     *   <td            >{@code "time_coverage_end"}</td>
      * </tr><tr>
-     *   <td>{@link #SPAN}</td>
-     *   <td></td>
-     *   <td></td>
-     *   <td></td>
-     *   <td>{@code "time_coverage_duration"}</td>
+     *   <td            >{@link #SPAN}</td>
+     *   <td class="sep"></td>
+     *   <td            ></td>
+     *   <td            ></td>
+     *   <td            >{@code "time_coverage_duration"}</td>
      * </tr><tr>
-     *   <td>{@link #RESOLUTION}</td>
-     *   <td>{@code "geospatial_lat_resolution"}</td>
-     *   <td>{@code "geospatial_lon_resolution"}</td>
-     *   <td>{@code "geospatial_vertical_resolution"}</td>
-     *   <td>{@code "time_coverage_resolution"}</td>
+     *   <td            >{@link #RESOLUTION}</td>
+     *   <td class="sep">{@code "geospatial_lat_resolution"}</td>
+     *   <td            >{@code "geospatial_lon_resolution"}</td>
+     *   <td            >{@code "geospatial_vertical_resolution"}</td>
+     *   <td            >{@code "time_coverage_resolution"}</td>
      * </tr><tr>
-     *   <td>{@link #UNITS}</td>
-     *   <td>{@code "geospatial_lat_units"}</td>
-     *   <td>{@code "geospatial_lon_units"}</td>
-     *   <td>{@code "geospatial_vertical_units"}</td>
-     *   <td>{@code "time_coverage_units"}</td>
+     *   <td            >{@link #UNITS}</td>
+     *   <td class="sep">{@code "geospatial_lat_units"}</td>
+     *   <td            >{@code "geospatial_lon_units"}</td>
+     *   <td            >{@code "geospatial_vertical_units"}</td>
+     *   <td            >{@code "time_coverage_units"}</td>
      * </tr><tr>
-     *   <td>{@link #POSITIVE}</td>
+     *   <td            >{@link #POSITIVE}</td>
+     *   <td class="sep"></td>
+     *   <td            ></td>
+     *   <td            >{@code "geospatial_vertical_positive"}</td>
      *   <td></td>
-     *   <td></td>
-     *   <td>{@code "geospatial_vertical_positive"}</td>
-     *   <td></td>
+     * </tr><tr>
+     *   <td            >{@link #DEFAULT_NAME_TYPE}</td>
+     *   <td class="sep">{@link DimensionNameType#ROW}</td>
+     *   <td            >{@link DimensionNameType#COLUMN}</td>
+     *   <td            >{@link DimensionNameType#VERTICAL}</td>
+     *   <td            >{@link DimensionNameType#TIME}</td>
      * </tr></table>
      *
      * {@note The member names in this class are upper-cases because they should be considered
-     *        as constants. For example <code>NetcdfMetadata.LATITUDE.MINIMUM</code> maps exactly to
+     *        as constants. For example <code>AttributeNames.LATITUDE.MINIMUM</code> maps exactly to
      *        the <code>"geospatial_lat_min"</code> string and nothing else. A lower-case
      *        <code>minimum</code> member name could be misleading since it would suggest that
      *        the field contains the actual name value rather than the key by which the value
@@ -669,17 +720,14 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
      * @since   0.3 (derived from geotk-3.20)
      * @version 0.3
      * @module
+     *
+     * @see org.apache.sis.storage.netcdf.AttributeNames.Responsible
      */
-    public static class Dimension {
+    public static class Dimension implements Serializable {
         /**
-         * The ISO-19115 dimension type, or {@code null} if none.
-         * Current implementation assigns {@link DimensionNameType#COLUMN} to longitudes and
-         * {@link DimensionNameType#ROW} to latitude, which is not strictly correct since the
-         * columns and rows can be anything. The problem is that we relate this type to the
-         * coordinate system, while it should be related to the grid geometry. We may need to
-         * remove this field in a future version.
+         * For cross-version compatibility.
          */
-        final DimensionNameType TYPE;
+        private static final long serialVersionUID = 5063525623830032591L;
 
         /**
          * The attribute name for the minimal value of the bounding box (<em>Recommended</em>).
@@ -723,8 +771,21 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
         public final String POSITIVE;
 
         /**
+         * The default ISO-19115 dimension name type, or {@code null} if none.
+         * By default, {@link DimensionNameType#COLUMN} is associated to longitudes and {@link DimensionNameType#ROW}
+         * to latitudes since geographic maps in NetCDF files are typically shown horizontally.
+         *
+         * <p>The default associations may not be always correct since the columns and rows can be anything.
+         * Strictly speaking, the dimension name types shall be associated to the <em>grid axes</em> rather
+         * than the <em>coordinate system axes</em>. However the default association is correct in the common case
+         * (for NetCDF files) where there is no axis swapping in the <cite>grid to CRS</cite> conversion.</p>
+         */
+        public final DimensionNameType DEFAULT_NAME_TYPE;
+
+        /**
          * Creates a new set of attribute names.
          *
+         * @param type       The default ISO-19115 dimension name type, or {@code null} if none.
          * @param min        The attribute name for the minimal value of the bounding box.
          * @param max        The attribute name for the maximal value of the bounding box.
          * @param span       The attribute name for the difference between the minimal and maximal values.
@@ -732,32 +793,16 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
          * @param units      The attribute name for the bounding box units of measurement.
          * @param positive   The attribute name for indicating which direction is positive.
          */
-        public Dimension(final String min, final String max, final String span,
+        public Dimension(final DimensionNameType type, final String min, final String max, final String span,
                 final String resolution,final String units, final String positive)
         {
-            TYPE       = null;
-            MINIMUM    = min;
-            MAXIMUM    = max;
-            SPAN       = span;
-            RESOLUTION = resolution;
-            UNITS      = units;
-            POSITIVE   = positive;
-        }
-
-        /**
-         * Same constructor than above, but allows to specify the type. See {@link #TYPE}
-         * for an explanation about why this field is not public.
-         */
-        Dimension(final DimensionNameType type, final String min, final String max, final String span,
-                final String resolution,final String units, final String positive)
-        {
-            TYPE       = type;
-            MINIMUM    = min;
-            MAXIMUM    = max;
-            SPAN       = span;
-            RESOLUTION = resolution;
-            UNITS      = units;
-            POSITIVE   = positive;
+            DEFAULT_NAME_TYPE = type;
+            MINIMUM           = min;
+            MAXIMUM           = max;
+            SPAN              = span;
+            RESOLUTION        = resolution;
+            UNITS             = units;
+            POSITIVE          = positive;
         }
     }
 
@@ -766,7 +811,7 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
      * resolution and units. Latitudes are assumed to be in decimal degrees north, unless a
      * units attribute is specified.
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getExtents() extent} /
      * {@link Extent#getGeographicElements() geographicElement} /
@@ -791,7 +836,7 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
      * resolution and units. Longitudes are assumed to be in decimal degrees east, unless a
      * units attribute is specified.
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getExtents() extent} /
      * {@link Extent#getGeographicElements() geographicElement} /
@@ -816,7 +861,7 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
      * resolution and units. Elevations are assumed to be in metres above the ground, unless a
      * units attribute is specified.
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getExtents() extent} /
      * {@link Extent#getVerticalElements() verticalElement} /
@@ -840,7 +885,7 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
      * The set of attribute names for the start and end times of the bounding box, resolution and
      * units.
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getIdentificationInfo() identificationInfo} /
      * {@link DataIdentification#getExtents() extent} /
      * {@link Extent#getTemporalElements() temporalElement} /
@@ -861,11 +906,11 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
 
     /**
      * The {@value} attribute name for the designation associated with a range element.
-     * This attribute can be associated to {@linkplain VariableSimpleIF variables}. If
-     * specified, they shall be one flag name for each {@linkplain #FLAG_MASKS flag mask},
+     * This attribute can be associated to {@linkplain VariableSimpleIF variables}.
+     * If specified, they shall be one flag name for each {@linkplain #FLAG_MASKS flag mask},
      * {@linkplain #FLAG_VALUES flag value} and {@linkplain #FLAG_MEANINGS flag meaning}.
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getContentInfo() contentInfo} /
      * {@link CoverageDescription#getRangeElementDescriptions() rangeElementDescription} /
      * {@link RangeElementDescription#getName() name}</li></ul></p>
@@ -876,7 +921,7 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
      * The {@value} attribute name for bitmask to apply on sample values before to compare
      * them to the {@linkplain #FLAG_VALUES flag values}.
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getContentInfo() contentInfo} /
      * {@link CoverageDescription#getRangeElementDescriptions() rangeElementDescription} /
      * {@link RangeElementDescription#getRangeElements() rangeElement}</li></ul></p>
@@ -890,7 +935,7 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
      * A flagged condition is identified by a bitwise AND of the variable value and each flag masks
      * value; a result that matches the flag values value indicates a true condition.
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getContentInfo() contentInfo} /
      * {@link CoverageDescription#getRangeElementDescriptions() rangeElementDescription} /
      * {@link RangeElementDescription#getRangeElements() rangeElement}</li></ul></p>
@@ -901,7 +946,7 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
      * The {@value} attribute name for the meaning of {@linkplain #FLAG_VALUES flag values}.
      * Each flag values and flag masks must coincide with a flag meanings.
      *
-     * <p><b>Path:</b> <ul><li>{@link Metadata} /
+     * <p><b>Path in ISO 19115:</b> <ul><li>{@link Metadata} /
      * {@link Metadata#getContentInfo() contentInfo} /
      * {@link CoverageDescription#getRangeElementDescriptions() rangeElementDescription} /
      * {@link RangeElementDescription#getDefinition() definition}</li></ul></p>
@@ -909,8 +954,9 @@ public abstract class NetcdfMetadata /* implements WarningProducer*/ {
     public static final String FLAG_MEANINGS = "flag_meanings";
 
     /**
-     * Creates a new metadata reader or writer.
+     * For subclass constructors only. {@code AttributeNames} may be sub-classed by communities
+     * defining domain-specific attributes in addition to the ones defined by the CF convention.
      */
-    NetcdfMetadata() {
+    protected AttributeNames() {
     }
 }

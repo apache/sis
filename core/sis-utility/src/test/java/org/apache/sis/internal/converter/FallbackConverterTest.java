@@ -163,7 +163,7 @@ public final strictfp class FallbackConverterTest extends TestCase {
     {
         final Object result;
         try {
-            result = converter.convert(value);
+            result = converter.apply(value);
         } catch (UnconvertibleObjectException exception) {
             if (expected != null) {
                 throw exception;

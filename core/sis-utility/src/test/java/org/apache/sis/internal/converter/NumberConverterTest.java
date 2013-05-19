@@ -61,8 +61,8 @@ public final strictfp class NumberConverterTest extends TestCase {
             final ObjectConverter<S,T> c, final S source, final T target)
             throws UnconvertibleObjectException
     {
-        assertEquals("Forward conversion.", target, c.convert(source));
-        assertEquals("Inverse conversion.", source, c.inverse().convert(target));
+        assertEquals("Forward conversion.", target, c.apply(source));
+        assertEquals("Inverse conversion.", source, c.inverse().apply(target));
         assertSame("Inconsistent inverse.", c, c.inverse().inverse());
         assertTrue("Invertible converters shall declare this capability.",
                 c.properties().contains(FunctionProperty.INVERTIBLE));
@@ -73,7 +73,7 @@ public final strictfp class NumberConverterTest extends TestCase {
      */
     private static <S extends Number> void tryUnconvertibleValue(final ObjectConverter<S,?> c, final S source) {
         try {
-            c.convert(source);
+            c.apply(source);
             fail("Should not accept the value.");
         } catch (UnconvertibleObjectException e) {
             // This is the expected exception.
@@ -180,7 +180,7 @@ public final strictfp class NumberConverterTest extends TestCase {
         @SuppressWarnings("unchecked")
         final ObjectConverter<Number,Comparable<?>> c = create(Number.class, (Class) Comparable.class);
         final Integer value = 8;
-        assertSame(value, c.convert(value));
+        assertSame(value, c.apply(value));
         assertSame("Deserialization shall resolves to the singleton instance.", c, assertSerializedEquals(c));
     }
 }

@@ -369,7 +369,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
      *
      * @param  envelope The envelope to use for setting this geographic bounding box.
      * @throws UnsupportedOperationException if the referencing module is not on the classpath.
-     * @throws TransformException if the envelope can't be transformed.
+     * @throws TransformException if the envelope can not be transformed to a geographic extent.
      *
      * @see DefaultExtent#addElements(Envelope)
      * @see DefaultVerticalExtent#setBounds(Envelope)
