@@ -177,8 +177,8 @@ class DerivedMap<SK,SV,K,V> extends AbstractMap<K,V> implements
      */
     @Override
     public V put(final K key, final V value) throws UnsupportedOperationException {
-        return put(key, keyConverter.inverse().convert(key),
-                      valueConverter.inverse().convert(value));
+        return put(key, keyConverter.inverse().apply(key),
+                      valueConverter.inverse().apply(value));
     }
 
     /**
@@ -191,7 +191,7 @@ class DerivedMap<SK,SV,K,V> extends AbstractMap<K,V> implements
             throw new UnconvertibleObjectException(Errors.format(
                     Errors.Keys.IllegalArgumentValue_2, "key", original));
         }
-        return valueConverter.convert(storage.put(key, value));
+        return valueConverter.apply(storage.put(key, value));
     }
 
     /**
@@ -216,19 +216,19 @@ class DerivedMap<SK,SV,K,V> extends AbstractMap<K,V> implements
         @Override
         public final V get(final Object key) {
             final Class<K> type = keyConverter.getTargetClass();
-            return type.isInstance(key) ? valueConverter.convert(storage.get(keyInverse.convert(type.cast(key)))) : null;
+            return type.isInstance(key) ? valueConverter.apply(storage.get(keyInverse.apply(type.cast(key)))) : null;
         }
 
         @Override
         public final V remove(final Object key) throws UnsupportedOperationException {
             final Class<K> type = keyConverter.getTargetClass();
-            return type.isInstance(key) ? valueConverter.convert(storage.remove(keyInverse.convert(type.cast(key)))) : null;
+            return type.isInstance(key) ? valueConverter.apply(storage.remove(keyInverse.apply(type.cast(key)))) : null;
         }
 
         @Override
         public final boolean containsKey(final Object key) {
             final Class<K> type = keyConverter.getTargetClass();
-            return type.isInstance(key) && storage.containsKey(keyInverse.convert(type.cast(key)));
+            return type.isInstance(key) && storage.containsKey(keyInverse.apply(type.cast(key)));
         }
     }
 
@@ -254,7 +254,7 @@ class DerivedMap<SK,SV,K,V> extends AbstractMap<K,V> implements
         @Override
         public boolean containsValue(final Object value) {
             final Class<V> type = valueConverter.getTargetClass();
-            return type.isInstance(value) && storage.containsValue(valueInverse.convert(type.cast(value)));
+            return type.isInstance(value) && storage.containsValue(valueInverse.apply(type.cast(value)));
         }
     }
 
@@ -283,13 +283,13 @@ class DerivedMap<SK,SV,K,V> extends AbstractMap<K,V> implements
         @Override
         public boolean containsValue(final Object value) {
             final Class<V> type = valueConverter.getTargetClass();
-            return type.isInstance(value) && storage.containsValue(valueInverse.convert(type.cast(value)));
+            return type.isInstance(value) && storage.containsValue(valueInverse.apply(type.cast(value)));
         }
 
         @Override
         public V put(final K key, final V value) {
-            return put(key, keyInverse.convert(key),
-                          valueInverse.convert(value));
+            return put(key, keyInverse.apply(key),
+                          valueInverse.apply(value));
         }
 
         @Override
@@ -362,9 +362,9 @@ class DerivedMap<SK,SV,K,V> extends AbstractMap<K,V> implements
      * Converts the given entry.
      */
     @Override
-    public final Entry<K,V> convert(final Entry<SK,SV> entry) {
-        final K key   =   keyConverter.convert(entry.getKey());
-        final V value = valueConverter.convert(entry.getValue());
+    public final Entry<K,V> apply(final Entry<SK,SV> entry) {
+        final K key   =   keyConverter.apply(entry.getKey());
+        final V value = valueConverter.apply(entry.getValue());
         return (key != null) ? new SimpleEntry<K,V>(key, value) : null;
     }
 

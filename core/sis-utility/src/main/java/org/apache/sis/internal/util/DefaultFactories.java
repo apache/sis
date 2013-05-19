@@ -16,8 +16,10 @@
  */
 package org.apache.sis.internal.util;
 
+import java.util.Map;
+import java.util.IdentityHashMap;
+import java.util.ServiceLoader;
 import org.opengis.util.NameFactory;
-import org.apache.sis.util.Static;
 import org.apache.sis.util.iso.DefaultNameFactory;
 
 
@@ -30,15 +32,60 @@ import org.apache.sis.util.iso.DefaultNameFactory;
  * @version 0.3
  * @module
  */
-public final class DefaultFactories extends Static {
+public final class DefaultFactories extends SystemListener {
     /**
      * The factory to use for creating names.
      */
-    public static final NameFactory NAMES = new DefaultNameFactory();
+    public static final DefaultNameFactory NAMES = new DefaultNameFactory();
 
     /**
-     * Do not allow instantiation of this class.
+     * Cache of factories which are found by {@code META-INF/services}.
+     */
+    private static final Map<Class<?>, Object> FACTORIES = new IdentityHashMap<Class<?>, Object>(4);
+    static {
+        FACTORIES.put(NameFactory.class, NAMES);
+        SystemListener.add(new DefaultFactories());
+    }
+
+    /**
+     * For the singleton system listener only.
      */
     private DefaultFactories() {
+    }
+
+    /**
+     * Discards cached factories when the classpath has changed.
+     */
+    @Override
+    protected void classpathChanged() {
+        synchronized (DefaultFactories.class) {
+            FACTORIES.clear();
+            FACTORIES.put(NameFactory.class, NAMES);
+        }
+    }
+
+    /**
+     * Return the default factory implementing the given interface.
+     * This method will give preference to Apache SIS factories if any.
+     *
+     * @param  <T>  The interface type.
+     * @param  type The interface type.
+     * @return A factory implementing the given interface, or {@code null} if none.
+     */
+    public static synchronized <T> T forClass(final Class<T> type) {
+        T factory = type.cast(FACTORIES.get(type));
+        if (factory == null && !FACTORIES.containsKey(type)) {
+            for (final T candidate : ServiceLoader.load(type)) {
+                if (candidate.getClass().getName().startsWith("org.apache.sis.")) {
+                    factory = candidate;
+                    break;
+                }
+                if (factory == null) {
+                    factory = candidate;
+                }
+            }
+            FACTORIES.put(type, factory);
+        }
+        return factory;
     }
 }

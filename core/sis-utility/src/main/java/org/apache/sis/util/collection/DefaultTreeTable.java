@@ -167,7 +167,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
             if (map == null) {
                 map = Collections.<TableColumn<?>,Integer>singletonMap(column, pos);
             } else if (map.put(column, pos) != null) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.DuplicatedValue_1, column));
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.DuplicatedIdentifier_1, column));
             }
         }
         return map;

@@ -47,6 +47,6 @@ public final strictfp class ReferencingTestSuite extends TestSuite {
      */
     @BeforeClass
     public static void verifyTestList() {
-        verifyTestList(ReferencingTestSuite.class);
+        verifyTestList(ReferencingTestSuite.class, BASE_TEST_CLASSES);
     }
 }

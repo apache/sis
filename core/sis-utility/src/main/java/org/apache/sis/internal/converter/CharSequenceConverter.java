@@ -65,11 +65,11 @@ final class CharSequenceConverter<T> extends SystemConverter<CharSequence,T> {
      * Converts an object to an object of the target type.
      */
     @Override
-    public T convert(final CharSequence source) throws UnconvertibleObjectException {
+    public T apply(final CharSequence source) throws UnconvertibleObjectException {
         if (targetClass.isInstance(source)) {
             return targetClass.cast(source);
         }
-        return next.convert(source != null ? source.toString() : null);
+        return next.apply(source != null ? source.toString() : null);
     }
 
     /**

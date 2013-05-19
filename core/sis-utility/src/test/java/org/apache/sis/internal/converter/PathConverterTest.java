@@ -60,8 +60,8 @@ public final strictfp class PathConverterTest extends TestCase {
     private static <S,T> void runInvertibleConversion(final ObjectConverter<S,T> c,
             final S source, final T target) throws UnconvertibleObjectException
     {
-        assertEquals("Forward conversion.", target, c.convert(source));
-        assertEquals("Inverse conversion.", source, c.inverse().convert(target));
+        assertEquals("Forward conversion.", target, c.apply(source));
+        assertEquals("Inverse conversion.", source, c.inverse().apply(target));
         assertSame("Inconsistent inverse.", c, c.inverse().inverse());
         assertTrue("Invertible converters shall declare this capability.",
                 c.properties().contains(FunctionProperty.INVERTIBLE));

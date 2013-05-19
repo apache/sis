@@ -60,7 +60,7 @@ public final class AngleConverter extends SystemConverter<Angle,Double> {
     }
 
     /** Converts the given angle. */
-    @Override public Double convert(final Angle object) {
+    @Override public Double apply(final Angle object) {
         return object.degrees();
     }
 
@@ -97,7 +97,7 @@ public final class AngleConverter extends SystemConverter<Angle,Double> {
         }
 
         /** Converts the given angle. */
-        @Override public Angle convert(final Double object) {
+        @Override public Angle apply(final Double object) {
             return new Angle(object);
         }
     }
