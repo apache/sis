@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.netcdf.impl;
 
+import java.lang.reflect.Array;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.internal.jdk8.Function;
@@ -47,6 +48,7 @@ final class Attribute {
 
     /**
      * The value, either as a {@link String} or as an array of primitive type.
+     * Never {@code null} and never an empty string or empty array.
      */
     final Object value;
 
@@ -56,6 +58,47 @@ final class Attribute {
     Attribute(final String name, final Object value) {
         this.name  = name;
         this.value = value;
+    }
+
+    /**
+     * Returns the attribute values as an array of {@link String}.
+     *
+     * @see VariableInfo#getAttributeValues(String, boolean)
+     */
+    final String[] stringValues() {
+        if (value instanceof String) {
+            return new String[] {(String) value};
+        }
+        final String[] values = new String[Array.getLength(value)];
+        for (int i=0; i<values.length; i++) {
+            values[i] = Array.get(value, i).toString();
+        }
+        return values;
+    }
+
+    /**
+     * Returns the attribute values as an array of {@link Number}, or {@code null} if none.
+     *
+     * @see VariableInfo#getAttributeValues(String, boolean)
+     */
+    final Number[] numberValues() {
+        if (value instanceof String) {
+            return null;
+        }
+        final Number[] values = new Number[Array.getLength(value)];
+        for (int i=0; i<values.length; i++) {
+            values[i] = (Number) Array.get(value, i);
+        }
+        return values;
+    }
+
+    /**
+     * Returns the attribute value as a boolean, or {@code false} if the attribute is not a boolean.
+     *
+     * @see VariableInfo#isUnsigned()
+     */
+    final boolean booleanValue() {
+        return (value instanceof String) && Boolean.valueOf((String) value);
     }
 
     /**

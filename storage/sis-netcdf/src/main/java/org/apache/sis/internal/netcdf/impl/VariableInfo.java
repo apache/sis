@@ -16,6 +16,11 @@
  */
 package org.apache.sis.internal.netcdf.impl;
 
+import java.util.Map;
+import ucar.nc2.constants.CF;
+import ucar.nc2.constants.CDM;
+import org.apache.sis.internal.netcdf.Variable;
+
 
 /**
  * Description of a variable found in a NetCDF file.
@@ -26,7 +31,18 @@ package org.apache.sis.internal.netcdf.impl;
  * @version 0.3
  * @module
  */
-final class VariableInfo {
+final class VariableInfo extends Variable {
+    /**
+     * The names of attributes where to look for the description to be returned by {@link #getDescription()}.
+     * We use the same attributes than the one documented in the {@link ucar.nc2.Variable#getDescription()} javadoc.
+     */
+    private static final String[] DESCRIPTION_ATTRIBUTES = {
+        CDM.LONG_NAME,
+        CDM.DESCRIPTION,
+        CDM.TITLE,
+        CF.STANDARD_NAME
+    };
+
     /**
      * The type of data. Number of bits and endianness are same as in the Java language
      * except {@code CHAR}, which is defined as an unsigned 8-bits value.
@@ -35,6 +51,8 @@ final class VariableInfo {
 
     /**
      * The size in bytes of the above constants.
+     *
+     * @see #sizeOf(int)
      */
     private static final int[] SIZES = new int[] {
         Byte   .SIZE / Byte.SIZE,
@@ -46,43 +64,97 @@ final class VariableInfo {
     };
 
     /**
+     * The Java primitive type of the above constants.
+     *
+     * @see #getDataType()
+     */
+    private static final Class<?>[] TYPES = new Class<?>[] {
+       byte  .class,
+       char  .class,
+       short .class,
+       int   .class,
+       float .class,
+       double.class
+    };
+
+    /**
      * The variable name.
      */
-    final String name;
+    private final String name;
 
     /**
      * The dimensions of that variable.
      */
-    final Dimension[] dimensions;
+    private final Dimension[] dimensions;
 
     /**
-     * The attributes associates to the variable, or {@code null} if none.
+     * All dimensions in the NetCDF files.
      */
-    final Attribute[] attributes;
+    private final Dimension[] allDimensions;
+
+    /**
+     * The attributes associates to the variable, or an empty map if none.
+     */
+    private final Map<String,Attribute> attributes;
 
     /**
      * The type of data, as one of the {@code BYTE}, {@code SHORT} and similar constants defined
      * in {@link ChannelDecoder}.
      */
-    final int datatype;
+    private final int datatype;
 
     /**
      * The offset where the variable data begins in the NetCDF file.
      */
-    final long offset;
+    private final long offset;
 
     /**
      * Creates a new variable.
      */
-    VariableInfo(final String name, final Dimension[] dimensions, final Attribute[] attributes,
-            final int datatype, final int size, final long offset)
+    VariableInfo(final String name, final Dimension[] dimensions, final Dimension[] allDimensions,
+            final Map<String,Attribute> attributes, final int datatype, final int size, final long offset)
     {
-        this.name       = name;
-        this.dimensions = dimensions;
-        this.attributes = attributes;
-        this.datatype   = datatype;
-        this.offset     = offset;
+        this.name          = name;
+        this.dimensions    = dimensions;
+        this.allDimensions = allDimensions;
+        this.attributes    = attributes;
+        this.datatype      = datatype;
+        this.offset        = offset;
         // TODO: verify 'size'.
+    }
+
+    /**
+     * Returns the name of this variable.
+     */
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * Returns the description of this variable, or {@code null} if none.
+     * This method searches for the first attribute named {@code "long_name"},
+     * {@code "description"}, {@code "title"} or {@code "standard_name"}.
+     */
+    @Override
+    public String getDescription() {
+        for (final String attributeName : DESCRIPTION_ATTRIBUTES) {
+            Attribute attribute = attributes.get(attributeName);
+            if (attribute != null && attribute.value instanceof String) {
+                return (String) attribute.value;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns the type of data as a Java primitive type if possible,
+     * or {@code null} if the data type is unknown to this method.
+     */
+    @Override
+    public Class<?> getDataType() {
+        final int i = datatype - 1;
+        return (i >= 0 && i < TYPES.length) ? TYPES[i] : null;
     }
 
     /**
@@ -90,5 +162,70 @@ final class VariableInfo {
      */
     static int sizeOf(int datatype) {
         return (--datatype >= 0 && datatype < SIZES.length) ? SIZES[datatype] : 0;
+    }
+
+    /**
+     * Returns {@code true} if the integer values shall be considered as unsigned.
+     * Current implementation searches for an {@code "_Unsigned = true"} attribute.
+     */
+    @Override
+    public boolean isUnsigned() {
+        final Attribute attribute = attributes.get(CDM.UNSIGNED);
+        return (attribute != null) && attribute.booleanValue();
+    }
+
+    /**
+     * Returns {@code true} if this variable seems to be a coordinate system axis,
+     * determined by comparing its name with the name of all dimensions in the NetCDF file.
+     */
+    @Override
+    public boolean isCoordinateSystemAxis() {
+        for (final Dimension dimension : allDimensions) {
+            if (name.equals(dimension.name)) {
+                // This variable is a dimension of another variable.
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns the names of the dimensions of this variable.
+     * The dimensions are those of the grid, not the dimensions of the coordinate system.
+     */
+    @Override
+    public String[] getGridDimensionNames() {
+        final String[] names = new String[dimensions.length];
+        for (int i=0; i<names.length; i++) {
+            names[i] = dimensions[i].name;
+        }
+        return names;
+    }
+
+    /**
+     * Returns the length (number of cells) of each grid dimension. In ISO 19123 terminology, this method
+     * returns the upper corner of the grid envelope plus one. The lower corner is always (0,0,…,0).
+     */
+    @Override
+    public int[] getGridEnvelope() {
+        final int[] shape = new int[dimensions.length];
+        for (int i=0; i<shape.length; i++) {
+            shape[i] = dimensions[i].length;
+        }
+        return shape;
+    }
+
+    /**
+     * Returns the sequence of values for the given attribute, or an empty array if none.
+     * The elements will be of class {@link String} if {@code numeric} is {@code false},
+     * or {@link Number} if {@code numeric} is {@code true}.
+     */
+    @Override
+    public Object[] getAttributeValues(final String attributeName, final boolean numeric) {
+        Attribute attribute = attributes.get(attributeName);
+        if (attribute != null) {
+            return numeric ? attribute.numberValues() : attribute.stringValues();
+        }
+        return new Object[0];
     }
 }
