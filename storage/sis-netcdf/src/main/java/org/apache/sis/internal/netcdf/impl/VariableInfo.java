@@ -180,6 +180,11 @@ final class VariableInfo extends Variable {
      */
     @Override
     public boolean isCoordinateSystemAxis() {
+        String name = this.name;
+        final Attribute attribute = attributes.get(_CoordinateVariableAlias);
+        if (attribute != null && attribute.value instanceof String) {
+            name = (String) attribute.value;
+        }
         for (final Dimension dimension : allDimensions) {
             if (name.equals(dimension.name)) {
                 // This variable is a dimension of another variable.

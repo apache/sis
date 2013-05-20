@@ -89,7 +89,14 @@ final class VariableWrapper extends Variable {
      */
     @Override
     public boolean isCoordinateSystemAxis() {
-        final String name = getName();
+        String name = null;
+        final Attribute attribute = variable.findAttributeIgnoreCase(_CoordinateVariableAlias);
+        if (attribute != null) {
+            name = attribute.getStringValue();
+        }
+        if (name == null) {
+            name = getName();
+        }
         for (final Dimension dimension : all) {
             if (name.equals(dimension.getShortName())) {
                 // This variable is a dimension of another variable.
