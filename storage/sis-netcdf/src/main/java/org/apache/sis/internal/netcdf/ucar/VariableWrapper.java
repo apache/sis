@@ -146,10 +146,13 @@ final class VariableWrapper extends Variable {
                         hasValues = true;
                     }
                 } else {
-                    String value = attribute.getStringValue(i);
-                    if (value != null && !(value = value.trim()).isEmpty()) {
-                        values[i] = value.replace('_', ' ');
-                        hasValues = true;
+                    Object value = attribute.getValue(i);
+                    if (value != null) {
+                        String text = value.toString().trim();
+                        if (!text.isEmpty()) {
+                            values[i] = text;
+                            hasValues = true;
+                        }
                     }
                 }
             }

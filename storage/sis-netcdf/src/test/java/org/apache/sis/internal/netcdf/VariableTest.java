@@ -136,4 +136,25 @@ public strictfp class VariableTest extends TestCase {
             1, 73, 73
         }, variable.getGridEnvelope());
     }
+
+    /**
+     * Tests {@link Variable#getAttributeValues(String, boolean)}.
+     *
+     * @throws IOException If an error occurred while reading the NetCDF file.
+     */
+    @Test
+    public void testGetAttributes() throws IOException {
+        final Variable[] variables = selectDataset(NCEP).getVariables();
+        Variable variable = variables[9];
+        assertEquals("grid_number", variable.getName());
+        assertArrayEquals("grid_number:_FillValue", new Number[] { -9999 }, variable.getAttributeValues("_FillValue", true));
+        assertArrayEquals("grid_number:_FillValue", new String[] {"-9999"}, variable.getAttributeValues("_FillValue", false));
+
+        variable = variables[21];
+        assertEquals("SST", variable.getName());
+        assertArrayEquals("SST:_FillValue", new Number[] { -9999f  }, variable.getAttributeValues("_FillValue", true));
+        assertArrayEquals("SST:_FillValue", new String[] {"-9999.0"}, variable.getAttributeValues("_FillValue", false));
+        assertArrayEquals("SST:units",      new String[] {"degK"},    variable.getAttributeValues("units",      false));
+        assertArrayEquals("SST:units",      new Number[] {      },    variable.getAttributeValues("units",      true));
+    }
 }
