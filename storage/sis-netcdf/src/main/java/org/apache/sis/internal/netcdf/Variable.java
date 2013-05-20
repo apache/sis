@@ -164,21 +164,21 @@ public abstract class Variable {
     public abstract boolean isCoordinateSystemAxis();
 
     /**
-     * Returns the names of the dimensions of this variable.
+     * Returns the names of the dimensions of this variable, in the order they are declared in the NetCDF file.
      * The dimensions are those of the grid, not the dimensions of the coordinate system.
      *
-     * @return The names of all dimension of the grid.
+     * @return The names of all dimension of the grid, in NetCDF order (reverse of "natural" order).
      */
     public abstract String[] getGridDimensionNames();
 
     /**
-     * Returns the length (number of cells) of each grid dimension.
+     * Returns the length (number of cells) of each grid dimension, in the order they are declared in the NetCDF file.
      * The length of this array shall be equals to the length of the {@link #getGridDimensionNames()} array.
      *
      * <p>In ISO 19123 terminology, this method returns the upper corner of the grid envelope plus one.
      * The lower corner is always (0,0,…,0).</p>
      *
-     * @return The number of grid cells for each dimension.
+     * @return The number of grid cells for each dimension, in NetCDF order (reverse of "natural" order).
      */
     public abstract int[] getGridEnvelope();
 

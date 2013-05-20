@@ -421,6 +421,7 @@ public final class ChannelDecoder extends Decoder {
      * </ul>
      *
      * @param nelems The number of dimensions to read.
+     * @return The dimensions in the order they are declared in the NetCDF file.
      */
     private Dimension[] readDimensions(final int nelems) throws IOException, DataStoreException {
         final Dimension[] dimensions = new Dimension[nelems];

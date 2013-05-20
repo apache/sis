@@ -17,7 +17,6 @@
 package org.apache.sis.internal.netcdf.ucar;
 
 import java.util.List;
-import java.util.ArrayList;
 import ucar.nc2.Dimension;
 import ucar.nc2.constants.AxisType;
 import ucar.nc2.dataset.CoordinateAxis;
@@ -89,11 +88,11 @@ final class GridGeometryWrapper extends GridGeometry {
      * of {@link CoordinateAxis2D}.</p>
      */
     @Override
-    public List<Axis> getAxes() {
+    public Axis[] getAxes() {
         final List<Dimension> sourceDimensions = netcdfCS.getDomain();
         final List<CoordinateAxis> netcdfAxes = netcdfCS.getCoordinateAxes();
         int targetDim = netcdfAxes.size();
-        final List<Axis> axes = new ArrayList<>(targetDim);
+        final Axis[] axes = new Axis[targetDim];
         /*
          * NetCDF files declare axes in reverse order, so we iterate in the 'netcdfAxes'
          * list in reverse order for adding to the 'axes' list in "natural" order.
@@ -132,7 +131,7 @@ final class GridGeometryWrapper extends GridGeometry {
                  */
             }
             axis2D = (netcdfAxis instanceof CoordinateAxis2D) ? (CoordinateAxis2D) netcdfAxis : null;
-            axes.add(new Axis(this, attributeNames, ArraysExt.resize(indices, i), ArraysExt.resize(sizes, i)));
+            axes[targetDim] = new Axis(this, attributeNames, ArraysExt.resize(indices, i), ArraysExt.resize(sizes, i));
         }
         axis2D = null;
         return axes;
