@@ -136,7 +136,7 @@ public final class ChannelDecoder extends Decoder {
     private final boolean is64bits;
 
     /**
-     * Number of records as an unsigned integer, or {@value #STREAMING} if unlimited.
+     * Number of records as an unsigned integer, or {@value #STREAMING} if undetermined.
      */
     private final int numrecs;
 
@@ -425,7 +425,15 @@ public final class ChannelDecoder extends Decoder {
     private Dimension[] readDimensions(final int nelems) throws IOException, DataStoreException {
         final Dimension[] dimensions = new Dimension[nelems];
         for (int i=0; i<nelems; i++) {
-            dimensions[i] = new Dimension(readName(), readInt());
+            final String name = readName();
+            int length = readInt();
+            if (length == 0) {
+                length = numrecs;
+                if (length == STREAMING) {
+                    throw new DataStoreException(Errors.format(Errors.Keys.MissingValueForProperty_1, "numrecs"));
+                }
+            }
+            dimensions[i] = new Dimension(name, length);
         }
         return dimensions;
     }
