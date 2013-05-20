@@ -585,7 +585,9 @@ final class MetadataReader extends WarningProducer {
     private GridSpatialRepresentation createSpatialRepresentationInfo(final GridGeometry cs) throws IOException {
         final DefaultGridSpatialRepresentation grid = new DefaultGridSpatialRepresentation();
         grid.setNumberOfDimensions(cs.getTargetDimensions());
-        for (final Axis axis : cs.getAxes()) {
+        final Axis[] axes = cs.getAxes();
+        for (int i=axes.length; --i>=0;) {
+            final Axis axis = axes[i];
             if (axis.sourceDimensions.length != 0) {
                 final DefaultDimension dimension = new DefaultDimension();
                 dimension.setDimensionSize(axis.sourceSizes[0]);

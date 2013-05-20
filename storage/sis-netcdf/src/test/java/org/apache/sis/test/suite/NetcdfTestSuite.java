@@ -33,6 +33,7 @@ import org.junit.BeforeClass;
 @Suite.SuiteClasses({
     org.apache.sis.internal.netcdf.DecoderTest.class,
     org.apache.sis.internal.netcdf.VariableTest.class,
+    org.apache.sis.internal.netcdf.GridGeometryTest.class,
     org.apache.sis.internal.netcdf.impl.ChannelDecoderTest.class,
     org.apache.sis.internal.netcdf.impl.VariableInfoTest.class
 })
