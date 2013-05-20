@@ -38,7 +38,7 @@ final class Dimension {
     final String name;
 
     /**
-     * The number of grid cell value along that dimension.
+     * The number of grid cell value along that dimension, as an unsigned number.
      */
     final int length;
 
@@ -56,6 +56,6 @@ final class Dimension {
     @Debug
     @Override
     public String toString() {
-        return name + '[' + length + ']';
+        return name + '[' + (length & 0xFFFFFFFFL) + ']';
     }
 }

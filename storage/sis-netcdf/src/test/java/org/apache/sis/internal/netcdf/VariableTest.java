@@ -50,8 +50,10 @@ public strictfp class VariableTest extends TestCase {
      *   <li>{@link Variable#getName()}</li>
      *   <li>{@link Variable#getDescription()}</li>
      *   <li>{@link Variable#getDataType()}</li>
-     *   <li>{@link Variable#getGridEnvelope()}</li>
+     *   <li>{@link Variable#getGridEnvelope()} length</li>
+     *   <li>{@link Variable#isCoordinateSystemAxis()}</li>
      *   <li>{@link Variable#isCoverage(int)}</li>
+     *   <li>{@link Variable#isUnsigned()}</li>
      * </ul>
      *
      * @throws IOException If an error occurred while reading the NetCDF file.
@@ -106,9 +108,32 @@ public strictfp class VariableTest extends TestCase {
             assertEquals("isCoordinateSystemAxis()", expected[propertyIndex++], variable.isCoordinateSystemAxis());
             assertEquals("isCoverage(2)",            expected[propertyIndex++], variable.isCoverage(2));
             assertEquals(0, propertyIndex % NUM_BASIC_PROPERTY_COLUMNS); // Sanity check for VariableTest itself.
+
+            // All variable in our current test dataset are unsigned.
+            assertFalse("isUnsigned()", variable.isUnsigned());
         }
         assertEquals("Expected more variables.",
                 expected.length / NUM_BASIC_PROPERTY_COLUMNS,
                 propertyIndex   / NUM_BASIC_PROPERTY_COLUMNS);
+    }
+
+    /**
+     * Tests {@link Variable#getGridDimensionNames()} and {@link Variable#getGridEnvelope()}.
+     * Current implementation tests on the {@code "SST"} variable.
+     *
+     * @throws IOException If an error occurred while reading the NetCDF file.
+     */
+    @Test
+    public void testGridDimensions() throws IOException {
+        final Variable variable = selectDataset(NCEP).getVariables()[21];
+        assertEquals("SST", variable.getName());
+
+        assertArrayEquals("getGridDimensionNames()", new String[] {
+            "record", "lat", "lon"
+        }, variable.getGridDimensionNames());
+
+        assertArrayEquals("getGridEnvelope()", new int[] {
+            1, 73, 73
+        }, variable.getGridEnvelope());
     }
 }
