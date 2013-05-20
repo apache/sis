@@ -36,6 +36,16 @@ public abstract class Variable {
     public static final int MIN_DIMENSION = 2;
 
     /**
+     * The {@value} attribute name, used by {@link #isCoordinateSystemAxis()} implementations.
+     * If this attribute is defined, then that name will be used as the variable name when
+     * determining if the variable is a coordinate system axis.
+     *
+     * <p>This constants may be removed in any future SIS version if it is added to the
+     * {@link ucar.nc2.constants._Coordinate} class.</p>
+     */
+    protected static final String _CoordinateVariableAlias = "_CoordinateVariableAlias";
+
+    /**
      * Creates a new variable.
      */
     protected Variable() {

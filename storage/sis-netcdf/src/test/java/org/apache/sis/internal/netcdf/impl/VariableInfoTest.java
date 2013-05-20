@@ -17,15 +17,9 @@
 package org.apache.sis.internal.netcdf.impl;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.channels.Channels;
-import org.opengis.wrapper.netcdf.IOTestCase;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.VariableTest;
-import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.test.DependsOn;
-
-import static org.junit.Assert.*;
 
 
 /**
@@ -38,20 +32,14 @@ import static org.junit.Assert.*;
  * @version 0.3
  * @module
  */
-@DependsOn(VariableTest.class)
+@DependsOn({ChannelDecoderTest.class, VariableTest.class})
 public final strictfp class VariableInfoTest extends VariableTest {
     /**
-     * Creates a new decoder of the given name.
+     * Creates a new decoder for dataset of the given name.
      */
     @Override
     protected Decoder createDecoder(final String name) throws IOException {
-        final InputStream in = IOTestCase.class.getResourceAsStream(name);
-        assertNotNull(name, in);
-        try {
-            return new ChannelDecoder(null, name, Channels.newChannel(in));
-        } catch (DataStoreException e) {
-            throw new AssertionError(e);
-        }
+        return ChannelDecoderTest.createChannelDecoder(name);
     }
 
     /**

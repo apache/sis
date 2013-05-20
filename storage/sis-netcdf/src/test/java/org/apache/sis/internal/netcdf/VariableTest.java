@@ -17,6 +17,7 @@
 package org.apache.sis.internal.netcdf;
 
 import java.io.IOException;
+import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -33,12 +34,13 @@ import static org.junit.Assert.*;
  * @version 0.3
  * @module
  */
+@DependsOn(DecoderTest.class)
 public strictfp class VariableTest extends TestCase {
     /**
      * Expected number of columns per variables for the {@code expected} argument
      * given to the {@link #assertBasicPropertiesEqual(Object[], Variable[])} method.
      */
-    private static final int NUM_BASIC_PROPERTY_COLUMNS = 5;
+    private static final int NUM_BASIC_PROPERTY_COLUMNS = 6;
 
     /**
      * Tests the basic properties of all variables found in the {@link #NCEP} file.
@@ -57,33 +59,33 @@ public strictfp class VariableTest extends TestCase {
     @Test
     public void testBasicProperties() throws IOException {
         assertBasicPropertiesEqual(new Object[] {
-        // __name______________description_________________________________data type____dim_raster?
-            "reftime",        "reference time",                            double.class, 1, false,
-            "datetime",       "reference date and time",                   char  .class, 2, false,
-            "forecasttime",   "forecast date and time",                    char  .class, 2, false,
-            "model_id",       "generating process ID number",              int   .class, 1, false,
-            "nav_model",      "navigation model name",                     char  .class, 2, false,
-            "grid_type_code", "GRIB-1 GDS data representation type",       int   .class, 1, false,
-            "grid_type",      "GRIB-1 grid type",                          char  .class, 2, false,
-            "grid_name",      "grid name",                                 char  .class, 2, false,
-            "grid_center",    "GRIB-1 originating center ID",              int   .class, 1, false,
-            "grid_number",    "GRIB-1 catalogued grid numbers",            int   .class, 2, false,
-            "i_dim",          "longitude dimension name",                  char  .class, 2, false,
-            "j_dim",          "latitude dimension name",                   char  .class, 2, false,
-            "Ni",             "number of points along a latitude circle",  int   .class, 1, false,
-            "Nj",             "number of points along a longitude circle", int   .class, 1, false,
-            "La1",            "latitude of first grid point",              float .class, 1, false,
-            "Lo1",            "longitude of first grid point",             float .class, 1, false,
-            "La2",            "latitude of last grid point",               float .class, 1, false,
-            "Lo2",            "longitude of last grid point",              float .class, 1, false,
-            "Di",             "longitudinal direction increment",          float .class, 1, false,
-            "Dj",             "latitudinal direction increment",           float .class, 1, false,
-            "ResCompFlag",    "resolution and component flags",            byte  .class, 1, false,
-            "SST",            "Sea temperature",                           float .class, 3, true,
-            "valtime",        "valid time",                                double.class, 1, false,
-            "valtime_offset", "hours from reference time",                 double.class, 1, false,
-            "lat",            "latitude",                                  float .class, 1, false,
-            "lon",            "longitude",                                 float .class, 1, false
+        // __name______________description_________________________________datatype____dim__axis?__raster?
+            "reftime",        "reference time",                            double.class, 1, false, false,
+            "datetime",       "reference date and time",                   char  .class, 2, false, false,
+            "forecasttime",   "forecast date and time",                    char  .class, 2, false, false,
+            "model_id",       "generating process ID number",              int   .class, 1, false, false,
+            "nav_model",      "navigation model name",                     char  .class, 2, false, false,
+            "grid_type_code", "GRIB-1 GDS data representation type",       int   .class, 1, false, false,
+            "grid_type",      "GRIB-1 grid type",                          char  .class, 2, false, false,
+            "grid_name",      "grid name",                                 char  .class, 2, false, false,
+            "grid_center",    "GRIB-1 originating center ID",              int   .class, 1, false, false,
+            "grid_number",    "GRIB-1 catalogued grid numbers",            int   .class, 2, false, false,
+            "i_dim",          "longitude dimension name",                  char  .class, 2, false, false,
+            "j_dim",          "latitude dimension name",                   char  .class, 2, false, false,
+            "Ni",             "number of points along a latitude circle",  int   .class, 1, false, false,
+            "Nj",             "number of points along a longitude circle", int   .class, 1, false, false,
+            "La1",            "latitude of first grid point",              float .class, 1, false, false,
+            "Lo1",            "longitude of first grid point",             float .class, 1, false, false,
+            "La2",            "latitude of last grid point",               float .class, 1, false, false,
+            "Lo2",            "longitude of last grid point",              float .class, 1, false, false,
+            "Di",             "longitudinal direction increment",          float .class, 1, false, false,
+            "Dj",             "latitudinal direction increment",           float .class, 1, false, false,
+            "ResCompFlag",    "resolution and component flags",            byte  .class, 1, false, false,
+            "SST",            "Sea temperature",                           float .class, 3, false, true,
+            "valtime",        "valid time",                                double.class, 1, true,  false,
+            "valtime_offset", "hours from reference time",                 double.class, 1, true,  false,
+            "lat",            "latitude",                                  float .class, 1, true,  false,
+            "lon",            "longitude",                                 float .class, 1, true,  false
         }, selectDataset(NCEP).getVariables());
     }
 
@@ -97,11 +99,12 @@ public strictfp class VariableTest extends TestCase {
         int propertyIndex = 0;
         for (final Variable variable : variables) {
             assertFalse("Too many variables.", propertyIndex == expected.length);
-            assertEquals("getName()",             expected[propertyIndex++], variable.getName());
-            assertEquals("getDescription()",      expected[propertyIndex++], variable.getDescription());
-            assertEquals("getDataType()",         expected[propertyIndex++], variable.getDataType());
-            assertEquals("getDimensionLengths()", expected[propertyIndex++], variable.getGridEnvelope().length);
-            assertEquals("isCoverage(2)",         expected[propertyIndex++], variable.isCoverage(2));
+            assertEquals("getName()",                expected[propertyIndex++], variable.getName());
+            assertEquals("getDescription()",         expected[propertyIndex++], variable.getDescription());
+            assertEquals("getDataType()",            expected[propertyIndex++], variable.getDataType());
+            assertEquals("getDimensionLengths()",    expected[propertyIndex++], variable.getGridEnvelope().length);
+            assertEquals("isCoordinateSystemAxis()", expected[propertyIndex++], variable.isCoordinateSystemAxis());
+            assertEquals("isCoverage(2)",            expected[propertyIndex++], variable.isCoverage(2));
             assertEquals(0, propertyIndex % NUM_BASIC_PROPERTY_COLUMNS); // Sanity check for VariableTest itself.
         }
         assertEquals("Expected more variables.",
