@@ -35,7 +35,8 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.netcdf.VariableTest.class,
     org.apache.sis.internal.netcdf.GridGeometryTest.class,
     org.apache.sis.internal.netcdf.impl.ChannelDecoderTest.class,
-    org.apache.sis.internal.netcdf.impl.VariableInfoTest.class
+    org.apache.sis.internal.netcdf.impl.VariableInfoTest.class,
+    org.apache.sis.internal.netcdf.impl.GridGeometryInfoTest.class
 })
 public final strictfp class NetcdfTestSuite extends TestSuite {
     /**

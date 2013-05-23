@@ -17,10 +17,12 @@
 package org.apache.sis.internal.netcdf.impl;
 
 import java.util.Map;
+import java.io.IOException;
 import ucar.nc2.constants.CF;
 import ucar.nc2.constants.CDM;
 import ucar.nc2.constants._Coordinate;
 import org.apache.sis.internal.netcdf.Variable;
+import org.apache.sis.internal.storage.DataInputChannel;
 
 
 /**
@@ -79,6 +81,13 @@ final class VariableInfo extends Variable {
     };
 
     /**
+     * The channel together with a buffer for reading the variable data.
+     *
+     * @see #read()
+     */
+    private final DataInputChannel input;
+
+    /**
      * The variable name.
      */
     private final String name;
@@ -118,16 +127,21 @@ final class VariableInfo extends Variable {
     /**
      * Creates a new variable.
      */
-    VariableInfo(final String name, final Dimension[] dimensions, final Dimension[] allDimensions,
+    VariableInfo(final DataInputChannel input, final String name,
+            final Dimension[] dimensions, final Dimension[] allDimensions,
             final Map<String,Attribute> attributes, final int datatype, final int size, final long offset)
     {
+        this.input         = input;
         this.name          = name;
         this.dimensions    = dimensions;
         this.allDimensions = allDimensions;
         this.attributes    = attributes;
         this.datatype      = datatype;
         this.offset        = offset;
-        // TODO: verify 'size'.
+        /*
+         * The 'size' value is provided in the NetCDF files, but doesn't need to be stored since it
+         * is redundant with the dimension lengths and is not large enough for big variables anyway.
+         */
     }
 
     /**
@@ -250,5 +264,14 @@ final class VariableInfo extends Variable {
             return numeric ? attribute.numberValues() : attribute.stringValues();
         }
         return new Object[0];
+    }
+
+    /**
+     * Reads all the data for this variable and returns them as an array of a Java primitive type.
+     */
+    @Override
+    public Object read() throws IOException {
+        input.seek(offset);
+        throw new UnsupportedOperationException(); // TODO
     }
 }
