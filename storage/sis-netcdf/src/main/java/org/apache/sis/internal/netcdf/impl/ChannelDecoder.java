@@ -16,7 +16,12 @@
  */
 package org.apache.sis.internal.netcdf.impl;
 
+import java.util.Set;
 import java.util.Map;
+import java.util.LinkedHashSet;
+import java.util.LinkedHashMap;
+import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
@@ -157,13 +162,24 @@ public final class ChannelDecoder extends Decoder {
 
     /**
      * The variables found in the NetCDF file.
+     *
+     * @see #getVariables()
      */
     private final VariableInfo[] variables;
 
     /**
      * The attributes found in the NetCDF file.
+     *
+     * @see #findAttribute(String)
      */
     private final Map<String,Attribute> attributeMap;
+
+    /**
+     * The grid geometries, created when first needed.
+     *
+     * @see #getGridGeometries()
+     */
+    private transient GridGeometry[] gridGeometries;
 
     /**
      * Creates a new decoder for the given file.
@@ -680,9 +696,63 @@ public final class ChannelDecoder extends Decoder {
         return variables;
     }
 
+    /**
+     * Returns all grid geometries found in the NetCDF file.
+     * This method returns a direct reference to an internal array - do not modify.
+     */
     @Override
     public GridGeometry[] getGridGeometries() throws IOException {
-        throw new UnsupportedOperationException();
+        if (gridGeometries == null) {
+            /*
+             * First, find all variables which are used as coordinate system axis. The keys are the
+             * grid dimensions which are the domain of the variable (i.e. the sources of the conversion
+             * from grid coordinates to CRS coordinates).
+             */
+            final Map<Dimension, List<VariableInfo>> dimToAxes = new IdentityHashMap<>();
+            for (final VariableInfo variable : variables) {
+                if (variable.isCoordinateSystemAxis()) {
+                    for (final Dimension dimension : variable.dimensions) {
+                        CollectionsExt.addToMultiValuesMap(dimToAxes, dimension, variable);
+                    }
+                }
+            }
+            /*
+             * For each variables, gets the list of all axes associated to their dimensions. The association
+             * is given by the above 'dimToVars' map. More than one variable may have the same dimensions,
+             * and consequently the same axes, so we will remember the previously created instances in order
+             * to share them.
+             */
+            final Set<VariableInfo> axes = new LinkedHashSet<>(4);
+            final Map<List<Dimension>, GridGeometryInfo> dimsToGG = new LinkedHashMap<>();
+nextVar:    for (final VariableInfo variable : variables) {
+                if (variable.isCoordinateSystemAxis()) {
+                    continue;
+                }
+                final List<Dimension> dimensions = Arrays.asList(variable.dimensions);
+                GridGeometryInfo gridGeometry = dimsToGG.get(dimensions);
+                if (gridGeometry == null) {
+                    /*
+                     * Found a new list of dimensions for which no axes have been created yet.
+                     * If and only if we can find all axes, then create the GridGeometryInfo.
+                     * This is a "all or nothing" operation.
+                     */
+                    for (final Dimension dimension : variable.dimensions) {
+                        final List<VariableInfo> axis = dimToAxes.get(dimension);
+                        if (axis == null) {
+                            axes.clear();
+                            continue nextVar;
+                        }
+                        axes.addAll(axis);
+                    }
+                    gridGeometry = new GridGeometryInfo(variable.dimensions, axes.toArray(new VariableInfo[axes.size()]));
+                    dimsToGG.put(dimensions, gridGeometry);
+                    axes.clear();
+                }
+                variable.gridGeometry = gridGeometry;
+            }
+            gridGeometries = dimsToGG.values().toArray(new GridGeometry[dimsToGG.size()]);
+        }
+        return gridGeometries;
     }
 
     /**

@@ -25,14 +25,11 @@ package org.apache.sis.internal.netcdf;
  * @version 0.3
  * @module
  */
-public abstract class GridGeometry extends WarningProducer {
+public abstract class GridGeometry {
     /**
-     * Constructs a new conversion information.
-     *
-     * @param parent Where to send the warnings, or {@code null} if none.
+     * Constructs a new grid geometry information.
      */
-    protected GridGeometry(final WarningProducer parent) {
-        super(parent);
+    protected GridGeometry() {
     }
 
     /**

@@ -40,13 +40,26 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 @DependsOn(VariableTest.class)
 public strictfp class GridGeometryTest extends TestCase {
     /**
+     * Optionally filters out some grid geometries that shall be ignored by the tests.
+     * The default implementation returns the given array unmodified. This method is overridden by
+     * {@code GridGeometryInfoTest} in order to ignore one-dimensional coordinate systems created
+     * by {@code GridGeometry} but not by the UCAR library.
+     *
+     * @param  geometries The grid geometries created by {@link Decoder}.
+     * @return The grid geometries to test.
+     */
+    protected GridGeometry[] filter(final GridGeometry[] geometries) {
+        return geometries;
+    }
+
+    /**
      * Tests {@link GridGeometry#getSourceDimensions()} and {@link GridGeometry#getTargetDimensions()}.
      *
      * @throws IOException If an error occurred while reading the NetCDF file.
      */
     @Test
     public void testDimensions() throws IOException {
-        final GridGeometry geometry = getSingleton(selectDataset(NCEP).getGridGeometries());
+        final GridGeometry geometry = getSingleton(filter(selectDataset(NCEP).getGridGeometries()));
         assertEquals("getSourceDimensions()", 3, geometry.getSourceDimensions());
         assertEquals("getTargetDimensions()", 3, geometry.getTargetDimensions());
     }
@@ -59,7 +72,7 @@ public strictfp class GridGeometryTest extends TestCase {
     @Test
     @DependsOnMethod("testDimensions")
     public void testAxes() throws IOException {
-        final Axis[] axes = getSingleton(selectDataset(NCEP).getGridGeometries()).getAxes();
+        final Axis[] axes = getSingleton(filter(selectDataset(NCEP).getGridGeometries())).getAxes();
         assertEquals(3, axes.length);
         final Axis x = axes[2];
         final Axis y = axes[1];
