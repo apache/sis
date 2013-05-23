@@ -19,6 +19,7 @@ package org.apache.sis.internal.netcdf.impl;
 import java.util.Map;
 import ucar.nc2.constants.CF;
 import ucar.nc2.constants.CDM;
+import ucar.nc2.constants._Coordinate;
 import org.apache.sis.internal.netcdf.Variable;
 
 
@@ -85,7 +86,7 @@ final class VariableInfo extends Variable {
     /**
      * The dimensions of that variable.
      */
-    private final Dimension[] dimensions;
+    final Dimension[] dimensions;
 
     /**
      * All dimensions in the NetCDF files.
@@ -107,6 +108,12 @@ final class VariableInfo extends Variable {
      * The offset where the variable data begins in the NetCDF file.
      */
     private final long offset;
+
+    /**
+     * The grid geometry associated to this variable,
+     * computed by {@link ChannelDecoder#getGridGeometries()} when first needed.
+     */
+    GridGeometryInfo gridGeometry;
 
     /**
      * Creates a new variable.
@@ -192,6 +199,17 @@ final class VariableInfo extends Variable {
             }
         }
         return false;
+    }
+
+    /**
+     * Returns the value of the {@code "_CoordinateAxisType"} attribute, or {@code null} if none.
+     */
+    final String getAxisType() {
+        final Attribute attribute = attributes.get(_Coordinate.AxisType);
+        if (attribute != null && attribute.value instanceof String) {
+            return (String) attribute.value;
+        }
+        return null;
     }
 
     /**

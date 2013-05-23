@@ -304,7 +304,7 @@ public final class DecoderWrapper extends Decoder {
             }
             geometries = new GridGeometry[(systems != null) ? systems.size() : 0];
             for (int i=0; i<geometries.length; i++) {
-                geometries[i] = new GridGeometryWrapper(this, systems.get(i));
+                geometries[i] = new GridGeometryWrapper(systems.get(i));
             }
         }
         return geometries;

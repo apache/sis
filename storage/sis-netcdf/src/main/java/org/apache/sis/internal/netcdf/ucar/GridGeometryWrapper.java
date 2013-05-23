@@ -24,7 +24,6 @@ import ucar.nc2.dataset.CoordinateAxis2D;
 import ucar.nc2.dataset.CoordinateSystem;
 import org.apache.sis.internal.netcdf.Axis;
 import org.apache.sis.internal.netcdf.GridGeometry;
-import org.apache.sis.internal.netcdf.WarningProducer;
 import org.apache.sis.storage.netcdf.AttributeNames;
 import org.apache.sis.util.ArraysExt;
 
@@ -52,13 +51,11 @@ final class GridGeometryWrapper extends GridGeometry {
     private transient CoordinateAxis2D axis2D;
 
     /**
-     * Creates a new CRS builder.
+     * Creates a new grid geometry for the given NetCDF coordinate system.
      *
-     * @param parent Where to send the warnings, or {@code null} if none.
      * @param cs The NetCDF coordinate system, or {@code null} if none.
      */
-    GridGeometryWrapper(final WarningProducer parent, final CoordinateSystem cs) {
-        super(parent);
+    GridGeometryWrapper(final CoordinateSystem cs) {
         netcdfCS = cs;
     }
 
@@ -82,6 +79,9 @@ final class GridGeometryWrapper extends GridGeometry {
      * Returns all axes of the NetCDF coordinate system, together with the grid dimension to which the axis
      * is associated.
      *
+     * <p>In this method, the words "domain" and "range" are used in the NetCDF sense: they are the input
+     * (domain) and output (range) of the function that convert grid indices to geodetic coordinates.</p>
+     *
      * <p>The domain of all axes (or the {@linkplain CoordinateSystem#getDomain() coordinate system domain})
      * is often the same than the {@linkplain #getDomain() domain of the variable}, but not necessarily.
      * In particular, the relationship is not straightforward when the coordinate system contains instances
@@ -89,19 +89,19 @@ final class GridGeometryWrapper extends GridGeometry {
      */
     @Override
     public Axis[] getAxes() {
-        final List<Dimension> sourceDimensions = netcdfCS.getDomain();
-        final List<CoordinateAxis> netcdfAxes = netcdfCS.getCoordinateAxes();
-        int targetDim = netcdfAxes.size();
+        final List<Dimension> domain = netcdfCS.getDomain();
+        final List<CoordinateAxis> range = netcdfCS.getCoordinateAxes();
+        int targetDim = range.size();
         final Axis[] axes = new Axis[targetDim];
         /*
          * NetCDF files declare axes in reverse order, so we iterate in the 'netcdfAxes'
          * list in reverse order for adding to the 'axes' list in "natural" order.
          */
         while (--targetDim >= 0) {
-            final CoordinateAxis netcdfAxis = netcdfAxes.get(targetDim);
-            final List<Dimension> dimensions = netcdfAxis.getDimensions();
+            final CoordinateAxis  axis = range.get(targetDim);
+            final List<Dimension> axisDomain = axis.getDimensions();
             AttributeNames.Dimension attributeNames = null;
-            final AxisType type = netcdfAxis.getAxisType();
+            final AxisType type = axis.getAxisType();
             if (type != null) switch (type) {
                 case Lon:      attributeNames = AttributeNames.LONGITUDE; break;
                 case Lat:      attributeNames = AttributeNames.LATITUDE; break;
@@ -116,10 +116,10 @@ final class GridGeometryWrapper extends GridGeometry {
              * straightforward NetCDF files. However some more complex files may have 2 dimensions.
              */
             int i = 0;
-            final int[] indices = new int[dimensions.size()];
+            final int[] indices = new int[axisDomain.size()];
             final int[] sizes   = new int[indices.length];
-            for (final Dimension dimension : dimensions) {
-                final int sourceDim = sourceDimensions.indexOf(dimension);
+            for (final Dimension dimension : axisDomain) {
+                final int sourceDim = domain.lastIndexOf(dimension);
                 if (sourceDim >= 0) {
                     indices[i] = sourceDim;
                     sizes[i++] = dimension.getLength();
@@ -130,8 +130,10 @@ final class GridGeometryWrapper extends GridGeometry {
                  * package, we can proceed as if the dimension does not exist.
                  */
             }
-            axis2D = (netcdfAxis instanceof CoordinateAxis2D) ? (CoordinateAxis2D) netcdfAxis : null;
-            axes[targetDim] = new Axis(this, attributeNames, ArraysExt.resize(indices, i), ArraysExt.resize(sizes, i));
+            axis2D = (axis instanceof CoordinateAxis2D) ? (CoordinateAxis2D) axis : null;
+            axes[targetDim] = new Axis(this, attributeNames,
+                    ArraysExt.resize(indices, i),
+                    ArraysExt.resize(sizes, i));
         }
         axis2D = null;
         return axes;
