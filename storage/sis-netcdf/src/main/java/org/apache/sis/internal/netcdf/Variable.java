@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.netcdf;
 
+import java.io.IOException;
 import java.awt.image.DataBuffer;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
@@ -192,6 +193,14 @@ public abstract class Variable {
      * @return The sequence of {@link String} or {@link Number} values for the named attribute.
      */
     public abstract Object[] getAttributeValues(String attributeName, boolean numeric);
+
+    /**
+     * Reads all the data for this variable and returns them as an array of a Java primitive type.
+     *
+     * @return The data as an array of a Java primitive type.
+     * @throws IOException If an error occurred while reading the data.
+     */
+    public abstract Object read() throws IOException;
 
     /**
      * Returns a string representation of this variable for debugging purpose.

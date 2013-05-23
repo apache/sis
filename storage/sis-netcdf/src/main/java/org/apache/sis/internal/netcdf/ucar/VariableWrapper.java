@@ -17,6 +17,8 @@
 package org.apache.sis.internal.netcdf.ucar;
 
 import java.util.List;
+import java.io.IOException;
+import ucar.ma2.Array;
 import ucar.nc2.Attribute;
 import ucar.nc2.Dimension;
 import ucar.nc2.VariableIF;
@@ -161,5 +163,14 @@ final class VariableWrapper extends Variable {
             }
         }
         return new Object[0];
+    }
+
+    /**
+     * Reads all the data for this variable and returns them as an array of a Java primitive type.
+     */
+    @Override
+    public Object read() throws IOException {
+        final Array array = variable.read();
+        return array.get1DJavaArray(array.getElementType());
     }
 }
