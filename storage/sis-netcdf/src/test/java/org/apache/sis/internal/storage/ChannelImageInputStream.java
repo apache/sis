@@ -19,12 +19,14 @@ package org.apache.sis.internal.storage;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import javax.imageio.stream.IIOByteBuffer;
 import javax.imageio.stream.ImageInputStream;
 
 import static org.apache.sis.util.ArgumentChecks.ensureBetween;
+
+// Related to JDK7
+import java.nio.channels.SeekableByteChannel;
 
 
 /**
@@ -127,8 +129,8 @@ public class ChannelImageInputStream extends ChannelDataInputCompleted implement
      */
     @Override
     public final long length() throws IOException {
-        if (channel instanceof FileChannel) {
-            return ((FileChannel) channel).size();
+        if (channel instanceof SeekableByteChannel) {
+            return ((SeekableByteChannel) channel).size();
         }
         return -1;
     }
