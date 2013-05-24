@@ -90,6 +90,10 @@
 
     <!-- Test dependencies -->
     <dependency>
+      <groupId>org.opengis</groupId>
+      <artifactId>geoapi-conformance</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.apache.sis</groupId>
       <artifactId>sis-utility</artifactId>
       <version>${project.version}</version>

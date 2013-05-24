@@ -18,6 +18,7 @@ package org.apache.sis.internal.netcdf;
 
 import java.io.IOException;
 import java.awt.image.DataBuffer;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
 
@@ -199,8 +200,9 @@ public abstract class Variable {
      *
      * @return The data as an array of a Java primitive type.
      * @throws IOException If an error occurred while reading the data.
+     * @throws DataStoreException If a logical error occurred.
      */
-    public abstract Object read() throws IOException;
+    public abstract Object read() throws IOException, DataStoreException;
 
     /**
      * Returns a string representation of this variable for debugging purpose.

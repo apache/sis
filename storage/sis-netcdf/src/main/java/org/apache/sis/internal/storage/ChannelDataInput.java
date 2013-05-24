@@ -18,7 +18,14 @@ package org.apache.sis.internal.storage;
 
 import java.io.IOException;
 import java.io.EOFException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.ShortBuffer;
+import java.nio.IntBuffer;
+import java.nio.LongBuffer;
+import java.nio.FloatBuffer;
+import java.nio.DoubleBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SeekableByteChannel;
 import org.apache.sis.util.resources.Errors;
@@ -71,8 +78,12 @@ public class ChannelDataInput {
 
     /**
      * The position in {@link #channel} where is located the {@link #buffer} value at index 0.
-     * This is initially zero and shall be updated every time {@link ByteBuffer#compact()} or
-     * {@link ByteBuffer#clear()} is invoked.
+     * This is initially zero and shall be incremented as below:
+     *
+     * <ul>
+     *   <li>By {@link Buffer#position()} every time {@link ByteBuffer#compact()} is invoked.</li>
+     *   <li>By {@link Buffer#limit()}    every time {@link ByteBuffer#clear()}   is invoked.</li>
+     * </ul>
      */
     private long bufferOffset;
 
@@ -134,7 +145,7 @@ public class ChannelDataInput {
         if (buffer.hasRemaining()) {
             return true;
         }
-        bufferOffset += buffer.position();
+        bufferOffset += buffer.limit();
         buffer.clear();
         int c = channel.read(buffer);
         while (c == 0) {
@@ -364,6 +375,160 @@ public class ChannelDataInput {
     }
 
     /**
+     * Helper class for the {@code readFully(…)} methods,
+     * in order to avoid duplicating almost identical code many times.
+     */
+    private abstract class ArrayReader {
+        /**
+         * Creates a new buffer of the type required by the array to fill.
+         * This method is guaranteed to be invoked exactly once, after the
+         * {@link ChannelDataInput#buffer} contains enough data.
+         */
+        abstract Buffer createView();
+
+        /**
+         * Transfers the data from the buffer created by {@link #createView()} to array
+         * of primitive Java type known by the subclass. This method may be invoked an
+         * arbitrary amount of time.
+         */
+        abstract void transfer(int offset, int n);
+
+        /**
+         * Skips the given amount of bytes in the buffer. It is caller responsibility to ensure
+         * that there is enough bytes remaining in the buffer.
+         */
+        private void skipInBuffer(final int n) {
+            buffer.position(buffer.position() + n);
+        }
+
+        /**
+         * Reads {@code length} characters from the stream, and stores them into the array
+         * known to subclass, starting at index {@code offset}.
+         *
+         * @param  dataSize The size of the Java primitive type which is the element of the array.
+         * @param  offset   The starting position within {@code dest} to write.
+         * @param  length   The number of characters to read.
+         * @throws IOException If an error (including EOF) occurred while reading the stream.
+         */
+        final void readFully(final int dataSize, int offset, int length) throws IOException {
+            ensureBufferContains(Math.min(length * dataSize, buffer.capacity()));
+            final Buffer view = createView(); // Must be after ensureBufferContains
+            int n = Math.min(view.remaining(), length);
+            transfer(offset, n);
+            skipInBuffer(n * dataSize);
+            while ((length -= n) != 0) {
+                offset += n;
+                ensureBufferContains(dataSize);
+                view.position(0).limit(buffer.remaining() / dataSize);
+                transfer(offset, n = Math.min(view.remaining(), length));
+                skipInBuffer(n * dataSize);
+            }
+        }
+    }
+
+    /**
+     * Reads {@code length} characters from the stream, and stores them into
+     * {@code dest} starting at index {@code offset}.
+     *
+     * @param  dest   An array of characters to be written to.
+     * @param  offset The starting position within {@code dest} to write.
+     * @param  length The number of characters to read.
+     * @throws IOException If an error (including EOF) occurred while reading the stream.
+     */
+    public final void readFully(final char[] dest, final int offset, final int length) throws IOException {
+        new ArrayReader() {
+            private CharBuffer view;
+            @Override Buffer createView() {return view = buffer.asCharBuffer();}
+            @Override void transfer(int offset, int n) {view.get(dest, offset, n);}
+        }.readFully(Character.SIZE / Byte.SIZE, offset, length);
+    }
+
+    /**
+     * Reads {@code length} short integers from the stream, and stores them into
+     * {@code dest} starting at index {@code offset}.
+     *
+     * @param  dest   An array of short integers to be written to.
+     * @param  offset The starting position within {@code dest} to write.
+     * @param  length The number of short integers to read.
+     * @throws IOException If an error (including EOF) occurred while reading the stream.
+     */
+    public final void readFully(final short[] dest, final int offset, final int length) throws IOException {
+        new ArrayReader() {
+            private ShortBuffer view;
+            @Override Buffer createView() {return view = buffer.asShortBuffer();}
+            @Override void transfer(int offset, int n) {view.get(dest, offset, n);}
+        }.readFully(Short.SIZE / Byte.SIZE, offset, length);
+    }
+
+    /**
+     * Reads {@code length} integers from the stream, and stores them into
+     * {@code dest} starting at index {@code offset}.
+     *
+     * @param  dest   An array of integers to be written to.
+     * @param  offset The starting position within {@code dest} to write.
+     * @param  length The number of integers to read.
+     * @throws IOException If an error (including EOF) occurred while reading the stream.
+     */
+    public final void readFully(final int[] dest, final int offset, final int length) throws IOException {
+        new ArrayReader() {
+            private IntBuffer view;
+            @Override Buffer createView() {return view = buffer.asIntBuffer();}
+            @Override void transfer(int offset, int n) {view.get(dest, offset, n);}
+        }.readFully(Integer.SIZE / Byte.SIZE, offset, length);
+    }
+
+    /**
+     * Reads {@code length} long integers from the stream, and stores them into
+     * {@code dest} starting at index {@code offset}.
+     *
+     * @param  dest   An array of long integers to be written to.
+     * @param  offset The starting position within {@code dest} to write.
+     * @param  length The number of long integers to read.
+     * @throws IOException If an error (including EOF) occurred while reading the stream.
+     */
+    public final void readFully(final long[] dest, final int offset, final int length) throws IOException {
+        new ArrayReader() {
+            private LongBuffer view;
+            @Override Buffer createView() {return view = buffer.asLongBuffer();}
+            @Override void transfer(int offset, int n) {view.get(dest, offset, n);}
+        }.readFully(Long.SIZE / Byte.SIZE, offset, length);
+    }
+
+    /**
+     * Reads {@code length} floats from the stream, and stores them into
+     * {@code dest} starting at index {@code offset}.
+     *
+     * @param  dest   An array of floats to be written to.
+     * @param  offset The starting position within {@code dest} to write.
+     * @param  length The number of floats to read.
+     * @throws IOException If an error (including EOF) occurred while reading the stream.
+     */
+    public final void readFully(final float[] dest, final int offset, final int length) throws IOException {
+        new ArrayReader() {
+            private FloatBuffer view;
+            @Override Buffer createView() {return view = buffer.asFloatBuffer();}
+            @Override void transfer(int offset, int n) {view.get(dest, offset, n);}
+        }.readFully(Float.SIZE / Byte.SIZE, offset, length);
+    }
+
+    /**
+     * Reads {@code length} doubles from the stream, and stores them into
+     * {@code dest} starting at index {@code offset}.
+     *
+     * @param  dest   An array of doubles to be written to.
+     * @param  offset The starting position within {@code dest} to write.
+     * @param  length The number of doubles to read.
+     * @throws IOException If an error (including EOF) occurred while reading the stream.
+     */
+    public final void readFully(final double[] dest, final int offset, final int length) throws IOException {
+        new ArrayReader() {
+            private DoubleBuffer view;
+            @Override Buffer createView() {return view = buffer.asDoubleBuffer();}
+            @Override void transfer(int offset, int n) {view.get(dest, offset, n);}
+        }.readFully(Double.SIZE / Byte.SIZE, offset, length);
+    }
+
+    /**
      * Moves to the given position in the stream, relative to the stream position at construction time.
      *
      * @param  position The position where to move.
@@ -392,13 +557,16 @@ public class ChannelDataInput {
              * we can not seek, so we have to read everything before.
              */
             do {
-                bufferOffset += buffer.position();
+                bufferOffset += buffer.limit();
+                p -= buffer.limit();
                 buffer.clear();
                 final int c = channel.read(buffer);
-                if (c < 0) {
-                    throw new EOFException(eof());
+                if (c <= 0) {
+                    if (c != 0) {
+                        throw new EOFException(eof());
+                    }
+                    onEmptyChannelBuffer();
                 }
-                p -= c;
             } while (p > buffer.limit());
             buffer.flip().position((int) p);
         } else {
@@ -411,11 +579,20 @@ public class ChannelDataInput {
     }
 
     /**
+     * Returns the current byte position of the stream.
+     *
+     * @return The position of the stream.
+     */
+    public final long getStreamPosition() {
+        return bufferOffset + buffer.position();
+    }
+
+    /**
      * Returns a string representation of this object for debugging purpose.
      */
     @Debug
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[“" + filename + "” at " + bufferOffset + buffer.position() + ']';
+        return getClass().getSimpleName() + "[“" + filename + "” at " + getStreamPosition() + ']';
     }
 }

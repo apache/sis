@@ -23,6 +23,8 @@ import ucar.nc2.constants.CDM;
 import ucar.nc2.constants._Coordinate;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.storage.ChannelDataInput;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -270,8 +272,44 @@ final class VariableInfo extends Variable {
      * Reads all the data for this variable and returns them as an array of a Java primitive type.
      */
     @Override
-    public Object read() throws IOException {
+    public Object read() throws IOException, DataStoreException {
+        long length = 1;
+        for (final Dimension dimension : dimensions) {
+            length *= dimension.length;
+        }
+        if (length > Integer.MAX_VALUE) {
+            throw new DataStoreException(Errors.format(Errors.Keys.ExcessiveListSize_2, name, length));
+        }
         input.seek(offset);
-        throw new UnsupportedOperationException(); // TODO
+        switch (datatype) {
+            case BYTE: {
+                final byte[] array = new byte[(int) length];
+                input.readFully(array, 0, array.length);
+                return array;
+            }
+            case SHORT: {
+                final short[] array = new short[(int) length];
+                input.readFully(array, 0, array.length);
+                return array;
+            }
+            case INT: {
+                final int[] array = new int[(int) length];
+                input.readFully(array, 0, array.length);
+                return array;
+            }
+            case FLOAT: {
+                final float[] array = new float[(int) length];
+                input.readFully(array, 0, array.length);
+                return array;
+            }
+            case DOUBLE: {
+                final double[] array = new double[(int) length];
+                input.readFully(array, 0, array.length);
+                return array;
+            }
+            default: {
+                throw new DataStoreException(Errors.format(Errors.Keys.UnknownType_1, datatype));
+            }
+        }
     }
 }
