@@ -140,9 +140,9 @@ public final strictfp class TestUtilities extends Static {
     public static Random createRandomNumberGenerator(final String testMethod) {
         final long seed = Math.round(Math.random() * (1L << 48));
         final PrintWriter out = TestCase.out;
-        out.print("Random number generator for ");
+        out.print("Random number generator for “");
         out.print(testMethod);
-        out.print(" created with seed ");
+        out.print("” created with seed ");
         out.print(seed);
         out.println('.');
         return new Random(seed);
