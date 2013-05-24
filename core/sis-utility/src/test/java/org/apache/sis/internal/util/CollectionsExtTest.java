@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
@@ -42,6 +43,30 @@ import org.apache.sis.internal.jdk8.Function;
  * @module
  */
 public final strictfp class CollectionsExtTest extends TestCase {
+    /**
+     * Tests {@link CollectionsExt#addToMultiValuesMap(Map, Object, Object)}.
+     */
+    @Test
+    public void testAddToMultiValuesMap() {
+        final Map<String, List<Integer>> map = new LinkedHashMap<String, List<Integer>>();
+        final Integer A1 = 2;
+        final Integer A2 = 4;
+        final Integer B1 = 3;
+        final Integer B2 = 6;
+        final Integer B3 = 9;
+        assertArrayEquals(new Integer[] {A1},
+                CollectionsExt.addToMultiValuesMap(map, "A", A1).toArray());
+        assertArrayEquals(new Integer[] {B1},
+                CollectionsExt.addToMultiValuesMap(map, "B", B1).toArray());
+        assertArrayEquals(new Integer[] {B1, B2},
+                CollectionsExt.addToMultiValuesMap(map, "B", B2).toArray());
+        assertArrayEquals(new Integer[] {A1, A2},
+                CollectionsExt.addToMultiValuesMap(map, "A", A2).toArray());
+        assertArrayEquals(new Integer[] {B1, B2, B3},
+                CollectionsExt.addToMultiValuesMap(map, "B", B3).toArray());
+        assertArrayEquals(new String[] {"A", "B"}, map.keySet().toArray());
+    }
+
     /**
      * Tests {@link CollectionsExt#toCaseInsensitiveNameMap(Collection, Function, Locale)}.
      */

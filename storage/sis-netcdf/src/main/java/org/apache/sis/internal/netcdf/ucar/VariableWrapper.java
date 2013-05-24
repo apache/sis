@@ -17,6 +17,8 @@
 package org.apache.sis.internal.netcdf.ucar;
 
 import java.util.List;
+import java.io.IOException;
+import ucar.ma2.Array;
 import ucar.nc2.Attribute;
 import ucar.nc2.Dimension;
 import ucar.nc2.VariableIF;
@@ -89,7 +91,14 @@ final class VariableWrapper extends Variable {
      */
     @Override
     public boolean isCoordinateSystemAxis() {
-        final String name = getName();
+        String name = null;
+        final Attribute attribute = variable.findAttributeIgnoreCase(_CoordinateVariableAlias);
+        if (attribute != null) {
+            name = attribute.getStringValue();
+        }
+        if (name == null) {
+            name = getName();
+        }
         for (final Dimension dimension : all) {
             if (name.equals(dimension.getShortName())) {
                 // This variable is a dimension of another variable.
@@ -139,10 +148,13 @@ final class VariableWrapper extends Variable {
                         hasValues = true;
                     }
                 } else {
-                    String value = attribute.getStringValue(i);
-                    if (value != null && !(value = value.trim()).isEmpty()) {
-                        values[i] = value.replace('_', ' ');
-                        hasValues = true;
+                    Object value = attribute.getValue(i);
+                    if (value != null) {
+                        String text = value.toString().trim();
+                        if (!text.isEmpty()) {
+                            values[i] = text;
+                            hasValues = true;
+                        }
                     }
                 }
             }
@@ -151,5 +163,14 @@ final class VariableWrapper extends Variable {
             }
         }
         return new Object[0];
+    }
+
+    /**
+     * Reads all the data for this variable and returns them as an array of a Java primitive type.
+     */
+    @Override
+    public Object read() throws IOException {
+        final Array array = variable.read();
+        return array.get1DJavaArray(array.getElementType());
     }
 }

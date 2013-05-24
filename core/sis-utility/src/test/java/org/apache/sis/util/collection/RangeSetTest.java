@@ -327,7 +327,7 @@ public final strictfp class RangeSetTest extends TestCase {
     @Performance
     public void stress() throws InterruptedException {
         final PrintWriter out = TestCase.out;
-        final Random r = TestUtilities.createRandomNumberGenerator("RangeSetTest.stress()");
+        final Random r = TestUtilities.createRandomNumberGenerator("stress");
         for (int p=0; p<10; p++) {
             final long start = System.nanoTime();
             final RangeSet<Integer> set = RangeSet.create(Integer.class, true, false);

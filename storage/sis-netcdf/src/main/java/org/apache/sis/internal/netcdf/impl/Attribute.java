@@ -77,15 +77,12 @@ final class Attribute {
     }
 
     /**
-     * Returns the attribute values as an array of {@link Number}, or {@code null} if none.
+     * Returns the attribute values as an array of {@link Number}, or an empty array if none.
      *
      * @see VariableInfo#getAttributeValues(String, boolean)
      */
     final Number[] numberValues() {
-        if (value instanceof String) {
-            return null;
-        }
-        final Number[] values = new Number[Array.getLength(value)];
+        final Number[] values = new Number[(value instanceof String) ? 0 : Array.getLength(value)];
         for (int i=0; i<values.length; i++) {
             values[i] = (Number) Array.get(value, i);
         }

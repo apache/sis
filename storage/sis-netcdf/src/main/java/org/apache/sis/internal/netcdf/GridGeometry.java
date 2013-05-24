@@ -16,8 +16,6 @@
  */
 package org.apache.sis.internal.netcdf;
 
-import java.util.List;
-
 
 /**
  * Information about the grid geometry and the conversion from grid coordinates to geodetic coordinates.
@@ -27,14 +25,11 @@ import java.util.List;
  * @version 0.3
  * @module
  */
-public abstract class GridGeometry extends WarningProducer {
+public abstract class GridGeometry {
     /**
-     * Constructs a new conversion information.
-     *
-     * @param parent Where to send the warnings, or {@code null} if none.
+     * Constructs a new grid geometry information.
      */
-    protected GridGeometry(final WarningProducer parent) {
-        super(parent);
+    protected GridGeometry() {
     }
 
     /**
@@ -58,9 +53,9 @@ public abstract class GridGeometry extends WarningProducer {
      * Returns the axes of the coordinate reference system. The size of this list is expected equals to the
      * value returned by {@link #getTargetDimensions()}, however the caller should be robust to inconsistencies.
      *
-     * @return The CRS axes.
+     * @return The CRS axes, in NetCDF order (reverse of "natural" order).
      */
-    public abstract List<Axis> getAxes();
+    public abstract Axis[] getAxes();
 
     /**
      * Returns the coordinate for the given grid coordinate of an axis in the process of being constructed.
