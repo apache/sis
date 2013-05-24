@@ -92,63 +92,51 @@ public final strictfp class ChannelDataInputTest extends TestCase {
                 case  8: assertEquals("readDouble()",        data.readDouble(),            input.readDouble(), 0d);    break;
                 case  9: {
                     final int n = random.nextInt(ARRAY_MAX_SIZE);
-                    final byte[] tmp = new byte[n];  data.readFully(tmp);
-                    final byte[] buf = new byte[n]; input.readFully(buf);
-                    assertArrayEquals("readFully(byte[])", tmp, buf);
+                    final byte[] tmp = new byte[n];
+                    data.readFully(tmp);
+                    assertArrayEquals("readBytes(int)", tmp, input.readBytes(n));
                     break;
                 }
                 case 10: {
                     final int n = random.nextInt(ARRAY_MAX_SIZE / (Character.SIZE / Byte.SIZE));
-                    final char[] buf = new char[n];
                     final char[] tmp = new char[n];
-                    input.readFully(buf, 0, n);
                     for (int i=0; i<n; i++) tmp[i] = data.readChar();
-                    assertArrayEquals("readFully(char[])", tmp, buf);
+                    assertArrayEquals("readChars(int)", tmp, input.readChars(n));
                     break;
                 }
                 case 11: {
                     final int n = random.nextInt(ARRAY_MAX_SIZE / (Short.SIZE / Byte.SIZE));
-                    final short[] buf = new short[n];
                     final short[] tmp = new short[n];
-                    input.readFully(buf, 0, n);
                     for (int i=0; i<n; i++) tmp[i] = data.readShort();
-                    assertArrayEquals("readFully(short[])", tmp, buf);
+                    assertArrayEquals("readShorts(int)", tmp, input.readShorts(n));
                     break;
                 }
                 case 12: {
                     final int n = random.nextInt(ARRAY_MAX_SIZE / (Integer.SIZE / Byte.SIZE));
-                    final int[] buf = new int[n];
                     final int[] tmp = new int[n];
-                    input.readFully(buf, 0, n);
                     for (int i=0; i<n; i++) tmp[i] = data.readInt();
-                    assertArrayEquals("readFully(int[])", tmp, buf);
+                    assertArrayEquals("readInts(int)", tmp, input.readInts(n));
                     break;
                 }
                 case 13: {
                     final int n = random.nextInt(ARRAY_MAX_SIZE / (Long.SIZE / Byte.SIZE));
-                    final long[] buf = new long[n];
                     final long[] tmp = new long[n];
-                    input.readFully(buf, 0, n);
                     for (int i=0; i<n; i++) tmp[i] = data.readLong();
-                    assertArrayEquals("readFully(long[])", tmp, buf);
+                    assertArrayEquals("readLongs(int)", tmp, input.readLongs(n));
                     break;
                 }
                 case 14: {
                     final int n = random.nextInt(ARRAY_MAX_SIZE / (Float.SIZE / Byte.SIZE));
-                    final float[] buf = new float[n];
                     final float[] tmp = new float[n];
-                    input.readFully(buf, 0, n);
                     for (int i=0; i<n; i++) tmp[i] = data.readFloat();
-                    assertArrayEquals("readFully(float[])", tmp, buf, 0);
+                    assertArrayEquals("readFloats(int)", tmp, input.readFloats(n), 0);
                     break;
                 }
                 case 15: {
                     final int n = random.nextInt(ARRAY_MAX_SIZE / (Double.SIZE / Byte.SIZE));
-                    final double[] buf = new double[n];
                     final double[] tmp = new double[n];
-                    input.readFully(buf, 0, n);
                     for (int i=0; i<n; i++) tmp[i] = data.readDouble();
-                    assertArrayEquals("readFully(double[])", tmp, buf, 0);
+                    assertArrayEquals("readDoubles(int)", tmp, input.readDoubles(n), 0);
                     break;
                 }
             }

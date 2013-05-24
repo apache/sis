@@ -353,6 +353,104 @@ public class ChannelDataInput {
     }
 
     /**
+     * Reads the given amount of bytes from the stream and returns them in a newly allocated array.
+     * This is a convenience method for {@link #readFully(byte[], int, int)} with a new array.
+     *
+     * @param  length The number of bytes to read.
+     * @return The next bytes in a newly allocated array of the given length.
+     * @throws IOException If an error (including EOF) occurred while reading the stream.
+     */
+    public final byte[] readBytes(final int length) throws IOException {
+        final byte[] array = new byte[length];
+        readFully(array);
+        return array;
+    }
+
+    /**
+     * Reads the given amount of characters from the stream and returns them in a newly allocated array.
+     * This is a convenience method for {@link #readFully(char[], int, int)} with a new array.
+     *
+     * @param  length The number of characters to read.
+     * @return The next characters in a newly allocated array of the given length.
+     * @throws IOException If an error (including EOF) occurred while reading the stream.
+     */
+    public final char[] readChars(final int length) throws IOException {
+        final char[] array = new char[length];
+        readFully(array, 0, length);
+        return array;
+    }
+
+    /**
+     * Reads the given amount of shorts from the stream and returns them in a newly allocated array.
+     * This is a convenience method for {@link #readFully(short[], int, int)} with a new array.
+     *
+     * @param  length The number of shorts to read.
+     * @return The next shorts in a newly allocated array of the given length.
+     * @throws IOException If an error (including EOF) occurred while reading the stream.
+     */
+    public final short[] readShorts(final int length) throws IOException {
+        final short[] array = new short[length];
+        readFully(array, 0, length);
+        return array;
+    }
+
+    /**
+     * Reads the given amount of integers from the stream and returns them in a newly allocated array.
+     * This is a convenience method for {@link #readFully(int[], int, int)} with a new array.
+     *
+     * @param  length The number of integers to read.
+     * @return The next integers in a newly allocated array of the given length.
+     * @throws IOException If an error (including EOF) occurred while reading the stream.
+     */
+    public final int[] readInts(final int length) throws IOException {
+        final int[] array = new int[length];
+        readFully(array, 0, length);
+        return array;
+    }
+
+    /**
+     * Reads the given amount of longs from the stream and returns them in a newly allocated array.
+     * This is a convenience method for {@link #readFully(long[], int, int)} with a new array.
+     *
+     * @param  length The number of longs to read.
+     * @return The next longs in a newly allocated array of the given length.
+     * @throws IOException If an error (including EOF) occurred while reading the stream.
+     */
+    public final long[] readLongs(final int length) throws IOException {
+        final long[] array = new long[length];
+        readFully(array, 0, length);
+        return array;
+    }
+
+    /**
+     * Reads the given amount of floats from the stream and returns them in a newly allocated array.
+     * This is a convenience method for {@link #readFully(float[], int, int)} with a new array.
+     *
+     * @param  length The number of floats to read.
+     * @return The next floats in a newly allocated array of the given length.
+     * @throws IOException If an error (including EOF) occurred while reading the stream.
+     */
+    public final float[] readFloats(final int length) throws IOException {
+        final float[] array = new float[length];
+        readFully(array, 0, length);
+        return array;
+    }
+
+    /**
+     * Reads the given amount of doubles from the stream and returns them in a newly allocated array.
+     * This is a convenience method for {@link #readFully(double[], int, int)} with a new array.
+     *
+     * @param  length The number of doubles to read.
+     * @return The next doubles in a newly allocated array of the given length.
+     * @throws IOException If an error (including EOF) occurred while reading the stream.
+     */
+    public final double[] readDoubles(final int length) throws IOException {
+        final double[] array = new double[length];
+        readFully(array, 0, length);
+        return array;
+    }
+
+    /**
      * Reads {@code dest.length} bytes from the stream, and stores them into
      * {@code dest} starting at index 0. The implementation is as below:
      *
