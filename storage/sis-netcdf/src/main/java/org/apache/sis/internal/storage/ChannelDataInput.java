@@ -37,7 +37,15 @@ import org.apache.sis.util.Debug;
  * The channel and the buffer must be supplied by the caller. It is okay if they have already been used
  * before {@code ChannelDataInput} creation.
  *
- * {@note This class provides no <code>close()</code> method since it doesn't "own" the channel.}
+ * {@section Encapsulation}
+ * This class exposes publicly the {@linkplain #channel} and the {@linkplain #buffer} because it is not expected
+ * to perform all possible data manipulations that we can do with the buffers. This class is only a helper tool,
+ * which often needs to be completed by specialized operations performed directly on the buffer. However, users
+ * are encouraged to transfer data from the channel to the buffer using only the methods provided in this class
+ * if they want to keep the {@link #seek(long)} and {@link #getStreamPosition()} values accurate.
+ *
+ * <p>Since this class is only a helper tool, it does not "own" the channel and consequently does not provide
+ * {@code close()} method. It is users responsibility to close the channel after usage.</p>
  *
  * {@section Relationship with <code>DataInput</code>}
  * This class API is compatibly with the {@link java.io.DataInput} interface, so subclasses can implement that
@@ -46,6 +54,10 @@ import org.apache.sis.util.Debug;
  * However the {@code ChannelDataInputCompleted} class in the test directory implements the {@code DataInput}
  * interface, both for testing API compatibility and in case we choose to implement that interface after all
  * in a future SIS version.
+ *
+ * <p>The API of this class is also compatible with {@link javax.imageio.stream.ImageInputStream}.
+ * See {@code ChannelImageInputStream} in the test directory if a channel-based implementation of
+ * image input stream is desired in a future SIS version.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.07)
