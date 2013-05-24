@@ -22,7 +22,7 @@ import ucar.nc2.constants.CF;
 import ucar.nc2.constants.CDM;
 import ucar.nc2.constants._Coordinate;
 import org.apache.sis.internal.netcdf.Variable;
-import org.apache.sis.internal.storage.DataInputChannel;
+import org.apache.sis.internal.storage.ChannelDataInput;
 
 
 /**
@@ -85,7 +85,7 @@ final class VariableInfo extends Variable {
      *
      * @see #read()
      */
-    private final DataInputChannel input;
+    private final ChannelDataInput input;
 
     /**
      * The variable name.
@@ -127,7 +127,7 @@ final class VariableInfo extends Variable {
     /**
      * Creates a new variable.
      */
-    VariableInfo(final DataInputChannel input, final String name,
+    VariableInfo(final ChannelDataInput input, final String name,
             final Dimension[] dimensions, final Dimension[] allDimensions,
             final Map<String,Attribute> attributes, final int datatype, final int size, final long offset)
     {
