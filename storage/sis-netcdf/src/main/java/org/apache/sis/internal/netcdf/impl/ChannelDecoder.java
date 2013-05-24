@@ -16,13 +16,17 @@
  */
 package org.apache.sis.internal.netcdf.impl;
 
+import java.util.Set;
 import java.util.Map;
+import java.util.LinkedHashSet;
+import java.util.LinkedHashMap;
+import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
 import java.util.regex.Pattern;
 import java.io.IOException;
-import java.io.EOFException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.lang.reflect.Array;
@@ -34,6 +38,7 @@ import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.GridGeometry;
 import org.apache.sis.internal.netcdf.WarningProducer;
+import org.apache.sis.internal.storage.ChannelDataInput;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.jdk8.JDK8;
 import org.apache.sis.storage.DataStoreException;
@@ -113,21 +118,9 @@ public final class ChannelDecoder extends Decoder {
     private static final int DIMENSION = 0x0A, VARIABLE = 0x0B, ATTRIBUTE = 0x0C;
 
     /**
-     * A file identifier used only for formatting error message.
+     * The {@link ReadableByteChannel} together with a {@link ByteBuffer} for reading the data.
      */
-    private final String filename;
-
-    /**
-     * The channel from where data are read.
-     * This is supplied at construction time.
-     */
-    private final ReadableByteChannel channel;
-
-    /**
-     * The buffer to use for transferring data from the channel to memory, mostly at header reading time.
-     * Must be backed by a Java {@code byte[]} array, because we will occasionally reference that array.
-     */
-    private final ByteBuffer buffer;
+    private final ChannelDataInput input;
 
     /**
      * {@code false} if the file is the classic format, or
@@ -136,7 +129,7 @@ public final class ChannelDecoder extends Decoder {
     private final boolean is64bits;
 
     /**
-     * Number of records as an unsigned integer, or {@value #STREAMING} if unlimited.
+     * Number of records as an unsigned integer, or {@value #STREAMING} if undetermined.
      */
     private final int numrecs;
 
@@ -157,13 +150,24 @@ public final class ChannelDecoder extends Decoder {
 
     /**
      * The variables found in the NetCDF file.
+     *
+     * @see #getVariables()
      */
     private final VariableInfo[] variables;
 
     /**
      * The attributes found in the NetCDF file.
+     *
+     * @see #findAttribute(String)
      */
     private final Map<String,Attribute> attributeMap;
+
+    /**
+     * The grid geometries, created when first needed.
+     *
+     * @see #getGridGeometries()
+     */
+    private transient GridGeometry[] gridGeometries;
 
     /**
      * Creates a new decoder for the given file.
@@ -179,16 +183,14 @@ public final class ChannelDecoder extends Decoder {
             throws IOException, DataStoreException
     {
         super(parent);
-        this.filename = filename;
-        this.channel  = channel;
-        this.buffer   = ByteBuffer.allocate(1024);
-        channel.read(buffer);
-        buffer.flip();
+        // The buffer must be backed by a Java {@code byte[]} array,
+        // because we will occasionally reference that array.
+        input = new ChannelDataInput(filename, channel, ByteBuffer.allocate(4096), false);
         /*
          * Check the magic number, which is expected to be exactly 3 bytes forming the "CDF" string.
          * The 4th byte is the version number, which we opportunistically use after the magic number check.
          */
-        int version = readInt();
+        int version = input.readInt();
         if ((version & 0xFFFFFF00) != (('C' << 24) | ('D' << 16) | ('F' <<  8))) {
             throw new DataStoreException(Errors.format(Errors.Keys.UnexpectedFileFormat_2, "NetCDF", filename));
         }
@@ -201,7 +203,7 @@ public final class ChannelDecoder extends Decoder {
             case 2:  is64bits = true;  break;
             default: throw new DataStoreException(Errors.format(Errors.Keys.UnsupportedVersion_1, version));
         }
-        numrecs = readInt();
+        numrecs = input.readInt();
         /*
          * Read the dimension, attribute and variable declarations. We expect exactly 3 lists,
          * where any of them can be flagged as absent by a long (64 bits) 0.
@@ -210,7 +212,7 @@ public final class ChannelDecoder extends Decoder {
         VariableInfo[] variables  = null;
         Attribute[]    attributes = null;
         for (int i=0; i<3; i++) {
-            final long tn = readLong(); // Combination of tag and nelems
+            final long tn = input.readLong(); // Combination of tag and nelems
             if (tn != 0) {
                 final int tag = (int) (tn >>> Integer.SIZE);
                 final int nelems = (int) tn;
@@ -250,7 +252,7 @@ public final class ChannelDecoder extends Decoder {
      * that the file should be a NetCDF one, but we found some inconsistency or unknown tags.
      */
     private DataStoreException malformedHeader() {
-        return new DataStoreException(Errors.format(Errors.Keys.CanNotParseFile_2, "NetCDF", filename));
+        return new DataStoreException(Errors.format(Errors.Keys.CanNotParseFile_2, "NetCDF", input.filename));
     }
 
     /**
@@ -259,7 +261,7 @@ public final class ChannelDecoder extends Decoder {
     private void ensureNonNegative(final int nelems, final int tag) throws DataStoreException {
         if (nelems < 0) {
             throw new DataStoreException(Errors.format(Errors.Keys.NegativeArrayLength_1,
-                    filename + DefaultNameSpace.DEFAULT_SEPARATOR + tagName(tag)));
+                    input.filename + DefaultNameSpace.DEFAULT_SEPARATOR + tagName(tag)));
         }
     }
 
@@ -277,65 +279,24 @@ public final class ChannelDecoder extends Decoder {
      * @param  name     The name of the element to read, used only in case of error for formatting the message.
      * @return The number of bytes to read, rounded to the next multiple of 4.
      */
-    private int require(final int n, final int dataSize, String name) throws IOException, DataStoreException {
+    private int ensureBufferContains(final int n, final int dataSize, String name) throws IOException, DataStoreException {
         // (n+3) & ~3  is a trick for rounding 'n' to the next multiple of 4.
         final long size = ((n & 0xFFFFFFFFL) * dataSize + 3) & ~3;
-        if (size > buffer.capacity()) {
-            name = filename + DefaultNameSpace.DEFAULT_SEPARATOR + name;
+        if (size > input.buffer.capacity()) {
+            name = input.filename + DefaultNameSpace.DEFAULT_SEPARATOR + name;
             throw new DataStoreException(n < 0 ?
                     Errors.format(Errors.Keys.NegativeArrayLength_1, name) :
                     Errors.format(Errors.Keys.ExcessiveListSize_2, name, n));
         }
-        require((int) size);
+        input.ensureBufferContains((int) size);
         return (int) size;
-    }
-
-    /**
-     * Makes sure that the buffer contains at least <var>n</var> remaining bytes.
-     * It is caller's responsibility to ensure that the given number of bytes is
-     * not greater than the buffer capacity.
-     *
-     * @param  n The minimal number of bytes needed in the {@linkplain #buffer}.
-     * @throws EOFException If the channel has reached the end of stream.
-     * @throws IOException If an other kind of error occurred while reading.
-     */
-    private void require(int n) throws IOException {
-        assert n <= buffer.capacity() : n;
-        n -= buffer.remaining();
-        if (n > 0) {
-            buffer.compact();
-            do {
-                final int c = channel.read(buffer);
-                if (c < 0) {
-                    throw new EOFException(Errors.format(Errors.Keys.UnexpectedEndOfFile_1, filename));
-                }
-                n -= c;
-            } while (n > 0);
-            buffer.flip();
-        }
-    }
-
-    /**
-     * Reads the next integer value from the buffer.
-     */
-    private int readInt() throws IOException {
-        require(Integer.SIZE / Byte.SIZE);
-        return buffer.getInt();
-    }
-
-    /**
-     * Reads the next long value from the buffer.
-     */
-    private long readLong() throws IOException {
-        require(Long.SIZE / Byte.SIZE);
-        return buffer.getLong();
     }
 
     /**
      * Reads the next offset, which may be encoded on 32 or 64 bits depending on the file format.
      */
     private long readOffset() throws IOException {
-        return is64bits ? readLong() : (readInt() & 0xFFFFFFFFL);
+        return is64bits ? input.readLong() : input.readUnsignedInt();
     }
 
     /**
@@ -343,11 +304,12 @@ public final class ChannelDecoder extends Decoder {
      * variable and attribute names in the header. Note that attribute value may have a different encoding.
      */
     private String readName() throws IOException, DataStoreException {
-        final int length = readInt();
+        final int length = input.readInt();
         if (length < 0) {
             throw malformedHeader();
         }
-        final int size = require(length, 1, "<name>");
+        final ByteBuffer buffer = input.buffer;
+        final int size = ensureBufferContains(length, 1, "<name>");
         final int position = buffer.position(); // Must be after 'require'
         final String text = new String(buffer.array(), position, length, NAME_ENCODING);
         buffer.position(position + size);
@@ -365,7 +327,8 @@ public final class ChannelDecoder extends Decoder {
         if (length == 0) {
             return null;
         }
-        final int size = require(length, VariableInfo.sizeOf(type), name);
+        final ByteBuffer buffer = input.buffer;
+        final int size = ensureBufferContains(length, VariableInfo.sizeOf(type), name);
         final int position = buffer.position(); // Must be after 'require'
         final Object result;
         switch (type) {
@@ -421,11 +384,20 @@ public final class ChannelDecoder extends Decoder {
      * </ul>
      *
      * @param nelems The number of dimensions to read.
+     * @return The dimensions in the order they are declared in the NetCDF file.
      */
     private Dimension[] readDimensions(final int nelems) throws IOException, DataStoreException {
         final Dimension[] dimensions = new Dimension[nelems];
         for (int i=0; i<nelems; i++) {
-            dimensions[i] = new Dimension(readName(), readInt());
+            final String name = readName();
+            int length = input.readInt();
+            if (length == 0) {
+                length = numrecs;
+                if (length == STREAMING) {
+                    throw new DataStoreException(Errors.format(Errors.Keys.MissingValueForProperty_1, "numrecs"));
+                }
+            }
+            dimensions[i] = new Dimension(name, length);
         }
         return dimensions;
     }
@@ -448,7 +420,7 @@ public final class ChannelDecoder extends Decoder {
         int count = 0;
         for (int i=0; i<nelems; i++) {
             final String name = readName();
-            final Object value = readValues(name, readInt(), readInt());
+            final Object value = readValues(name, input.readInt(), input.readInt());
             if (value != null) {
                 attributes[count++] = new Attribute(name, value);
             }
@@ -485,11 +457,11 @@ public final class ChannelDecoder extends Decoder {
         final VariableInfo[] variables = new VariableInfo[nelems];
         for (int j=0; j<nelems; j++) {
             final String name = readName();
-            final int n = readInt();
+            final int n = input.readInt();
             final Dimension[] varDims = new Dimension[n];
             try {
                 for (int i=0; i<n; i++) {
-                    varDims[i] = dimensions[readInt()];
+                    varDims[i] = dimensions[input.readInt()];
                 }
             } catch (IndexOutOfBoundsException cause) {
                 final DataStoreException e = malformedHeader();
@@ -501,7 +473,7 @@ public final class ChannelDecoder extends Decoder {
              * but with less cases in the "switch" statements.
              */
             Attribute[] attributes = null;
-            final long tn = readLong();
+            final long tn = input.readLong();
             if (tn != 0) {
                 final int tag = (int) (tn >>> Integer.SIZE);
                 final int na  = (int) tn;
@@ -512,8 +484,8 @@ public final class ChannelDecoder extends Decoder {
                     default:        throw malformedHeader();
                 }
             }
-            variables[j] = new VariableInfo(name, varDims, dimensions,
-                    toMap(attributes, Attribute.NAME_FUNCTION), readInt(), readInt(), readOffset());
+            variables[j] = new VariableInfo(input, name, varDims, dimensions,
+                    toMap(attributes, Attribute.NAME_FUNCTION), input.readInt(), input.readInt(), readOffset());
         }
         return variables;
     }
@@ -673,9 +645,63 @@ public final class ChannelDecoder extends Decoder {
         return variables;
     }
 
+    /**
+     * Returns all grid geometries found in the NetCDF file.
+     * This method returns a direct reference to an internal array - do not modify.
+     */
     @Override
     public GridGeometry[] getGridGeometries() throws IOException {
-        throw new UnsupportedOperationException();
+        if (gridGeometries == null) {
+            /*
+             * First, find all variables which are used as coordinate system axis. The keys are the
+             * grid dimensions which are the domain of the variable (i.e. the sources of the conversion
+             * from grid coordinates to CRS coordinates).
+             */
+            final Map<Dimension, List<VariableInfo>> dimToAxes = new IdentityHashMap<Dimension, List<VariableInfo>>();
+            for (final VariableInfo variable : variables) {
+                if (variable.isCoordinateSystemAxis()) {
+                    for (final Dimension dimension : variable.dimensions) {
+                        CollectionsExt.addToMultiValuesMap(dimToAxes, dimension, variable);
+                    }
+                }
+            }
+            /*
+             * For each variables, gets the list of all axes associated to their dimensions. The association
+             * is given by the above 'dimToVars' map. More than one variable may have the same dimensions,
+             * and consequently the same axes, so we will remember the previously created instances in order
+             * to share them.
+             */
+            final Set<VariableInfo> axes = new LinkedHashSet<VariableInfo>(4);
+            final Map<List<Dimension>, GridGeometryInfo> dimsToGG = new LinkedHashMap<List<Dimension>, GridGeometryInfo>();
+nextVar:    for (final VariableInfo variable : variables) {
+                if (variable.isCoordinateSystemAxis()) {
+                    continue;
+                }
+                final List<Dimension> dimensions = Arrays.asList(variable.dimensions);
+                GridGeometryInfo gridGeometry = dimsToGG.get(dimensions);
+                if (gridGeometry == null) {
+                    /*
+                     * Found a new list of dimensions for which no axes have been created yet.
+                     * If and only if we can find all axes, then create the GridGeometryInfo.
+                     * This is a "all or nothing" operation.
+                     */
+                    for (final Dimension dimension : variable.dimensions) {
+                        final List<VariableInfo> axis = dimToAxes.get(dimension);
+                        if (axis == null) {
+                            axes.clear();
+                            continue nextVar;
+                        }
+                        axes.addAll(axis);
+                    }
+                    gridGeometry = new GridGeometryInfo(variable.dimensions, axes.toArray(new VariableInfo[axes.size()]));
+                    dimsToGG.put(dimensions, gridGeometry);
+                    axes.clear();
+                }
+                variable.gridGeometry = gridGeometry;
+            }
+            gridGeometries = dimsToGG.values().toArray(new GridGeometry[dimsToGG.size()]);
+        }
+        return gridGeometries;
     }
 
     /**
@@ -685,6 +711,6 @@ public final class ChannelDecoder extends Decoder {
      */
     @Override
     public void close() throws IOException {
-        channel.close();
+        input.channel.close();
     }
 }

@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.io.IOException;
 import java.lang.reflect.UndeclaredThrowableException;
 import org.apache.sis.internal.netcdf.ucar.DecoderWrapper;
+import ucar.nc2.dataset.NetcdfDataset;
 import org.junit.AfterClass;
 
 import static org.junit.Assert.*;
@@ -76,7 +77,7 @@ public abstract strictfp class TestCase extends IOTestCase {
     }
 
     /**
-     * Invoked when a new {@link Decoder} instance needs to be created for the given name.
+     * Invoked when a new {@link Decoder} instance needs to be created for dataset of the given name.
      * The {@code name} parameter can be one of the following values:
      *
      * <ul>
@@ -95,8 +96,8 @@ public abstract strictfp class TestCase extends IOTestCase {
      * @return The decoder for the given name.
      * @throws IOException If an error occurred while opening the file.
      */
-    protected Decoder createDecoder(String name) throws IOException {
-        return new DecoderWrapper(null, open(name));
+    protected Decoder createDecoder(final String name) throws IOException {
+        return new DecoderWrapper(null, new NetcdfDataset(open(name)));
     }
 
     /**

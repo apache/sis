@@ -18,6 +18,7 @@ package org.apache.sis.test.suite;
 
 import org.apache.sis.internal.netcdf.IOTestCase;
 import org.apache.sis.test.TestSuite;
+import org.apache.sis.test.TestCase;
 import org.junit.runners.Suite;
 import org.junit.BeforeClass;
 
@@ -31,10 +32,13 @@ import org.junit.BeforeClass;
  * @module
  */
 @Suite.SuiteClasses({
+    org.apache.sis.internal.storage.ChannelDataInputTest.class,
     org.apache.sis.internal.netcdf.DecoderTest.class,
     org.apache.sis.internal.netcdf.VariableTest.class,
+    org.apache.sis.internal.netcdf.GridGeometryTest.class,
     org.apache.sis.internal.netcdf.impl.ChannelDecoderTest.class,
-    org.apache.sis.internal.netcdf.impl.VariableInfoTest.class
+    org.apache.sis.internal.netcdf.impl.VariableInfoTest.class,
+    org.apache.sis.internal.netcdf.impl.GridGeometryInfoTest.class
 })
 public final strictfp class NetcdfTestSuite extends TestSuite {
     /**
@@ -44,6 +48,7 @@ public final strictfp class NetcdfTestSuite extends TestSuite {
     @BeforeClass
     public static void verifyTestList() {
         verifyTestList(NetcdfTestSuite.class, new Class<?>[] {
+            TestCase.class,
             IOTestCase.class
         });
     }

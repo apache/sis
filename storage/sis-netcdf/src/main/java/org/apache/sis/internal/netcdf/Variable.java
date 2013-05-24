@@ -16,7 +16,9 @@
  */
 package org.apache.sis.internal.netcdf;
 
+import java.io.IOException;
 import java.awt.image.DataBuffer;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
 
@@ -34,6 +36,16 @@ public abstract class Variable {
      * Minimal number of dimension for accepting a variable as a coverage variable.
      */
     public static final int MIN_DIMENSION = 2;
+
+    /**
+     * The {@value} attribute name, used by {@link #isCoordinateSystemAxis()} implementations.
+     * If this attribute is defined, then that name will be used as the variable name when
+     * determining if the variable is a coordinate system axis.
+     *
+     * <p>This constants may be removed in any future SIS version if it is added to the
+     * {@link ucar.nc2.constants._Coordinate} class.</p>
+     */
+    protected static final String _CoordinateVariableAlias = "_CoordinateVariableAlias";
 
     /**
      * Creates a new variable.
@@ -77,7 +89,7 @@ public abstract class Variable {
         buffer.append(Classes.getShortName(getDataType()));
         final int[] shape = getGridEnvelope();
         for (int i=shape.length; --i>=0;) {
-            buffer.append('[').append(shape[i]).append(']');
+            buffer.append('[').append(shape[i] & 0xFFFFFFFFL).append(']');
         }
         return buffer.toString();
     }
@@ -134,7 +146,7 @@ public abstract class Variable {
     public final boolean isCoverage(final int minSpan) {
         int numVectors = 0; // Number of dimension having more than 1 value.
         for (final int length : getGridEnvelope()) {
-            if (length >= minSpan) {
+            if ((length & 0xFFFFFFFFL) >= minSpan) {
                 numVectors++;
             }
         }
@@ -154,21 +166,21 @@ public abstract class Variable {
     public abstract boolean isCoordinateSystemAxis();
 
     /**
-     * Returns the names of the dimensions of this variable.
+     * Returns the names of the dimensions of this variable, in the order they are declared in the NetCDF file.
      * The dimensions are those of the grid, not the dimensions of the coordinate system.
      *
-     * @return The names of all dimension of the grid.
+     * @return The names of all dimension of the grid, in NetCDF order (reverse of "natural" order).
      */
     public abstract String[] getGridDimensionNames();
 
     /**
-     * Returns the length (number of cells) of each grid dimension.
+     * Returns the length (number of cells) of each grid dimension, in the order they are declared in the NetCDF file.
      * The length of this array shall be equals to the length of the {@link #getGridDimensionNames()} array.
      *
      * <p>In ISO 19123 terminology, this method returns the upper corner of the grid envelope plus one.
      * The lower corner is always (0,0,…,0).</p>
      *
-     * @return The number of grid cells for each dimension.
+     * @return The number of grid cells for each dimension, in NetCDF order (reverse of "natural" order).
      */
     public abstract int[] getGridEnvelope();
 
@@ -184,6 +196,15 @@ public abstract class Variable {
     public abstract Object[] getAttributeValues(String attributeName, boolean numeric);
 
     /**
+     * Reads all the data for this variable and returns them as an array of a Java primitive type.
+     *
+     * @return The data as an array of a Java primitive type.
+     * @throws IOException If an error occurred while reading the data.
+     * @throws DataStoreException If a logical error occurred.
+     */
+    public abstract Object read() throws IOException, DataStoreException;
+
+    /**
      * Returns a string representation of this variable for debugging purpose.
      */
     @Debug
@@ -193,7 +214,7 @@ public abstract class Variable {
                 .append(" : ").append(Classes.getShortName(getDataType()));
         final int[] shape = getGridEnvelope();
         for (int i=shape.length; --i>=0;) {
-            buffer.append('[').append(shape[i]).append(']');
+            buffer.append('[').append(shape[i] & 0xFFFFFFFFL).append(']');
         }
         return buffer.toString();
     }
