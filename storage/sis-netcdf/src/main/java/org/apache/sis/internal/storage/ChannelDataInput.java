@@ -28,7 +28,7 @@ import org.apache.sis.util.Debug;
 /**
  * Provides convenience methods for working with a ({@link ReadableByteChannel}, {@link ByteBuffer}) pair.
  * The channel and the buffer must be supplied by the caller. It is okay if they have already been used
- * before {@code DataInputChannel} creation.
+ * before {@code ChannelDataInput} creation.
  *
  * {@note This class provides no <code>close()</code> method since it doesn't "own" the channel.}
  *
@@ -36,7 +36,7 @@ import org.apache.sis.util.Debug;
  * This class API is compatibly with the {@link java.io.DataInput} interface, so subclasses can implement that
  * interface if they wish. This class does not implement {@code DataInput} itself because it is not needed for
  * SIS purposes, and because {@code DataInput} has undesirable methods ({@code readLine()} and {@code readUTF()}).
- * However the {@code DataInputChannelCompleted} class in the test directory implements the {@code DataInput}
+ * However the {@code ChannelDataInputCompleted} class in the test directory implements the {@code DataInput}
  * interface, both for testing API compatibility and in case we choose to implement that interface after all
  * in a future SIS version.
  *
@@ -45,7 +45,7 @@ import org.apache.sis.util.Debug;
  * @version 0.3
  * @module
  */
-public class DataInputChannel {
+public class ChannelDataInput {
     /**
      * A file identifier used only for formatting error message.
      */
@@ -63,7 +63,7 @@ public class DataInputChannel {
     public final ByteBuffer buffer;
 
     /**
-     * The position of the channel when this {@code DataInputChannel} has been created.
+     * The position of the channel when this {@code ChannelDataInput} has been created.
      * This is almost always 0, but we allow other values in case the data to read are
      * encompassed inside a bigger file.
      */
@@ -88,7 +88,7 @@ public class DataInputChannel {
      *                  to be initially filled with some content read from the channel.
      * @throws IOException If an error occurred while reading the channel.
      */
-    public DataInputChannel(final String filename, final ReadableByteChannel channel, final ByteBuffer buffer,
+    public ChannelDataInput(final String filename, final ReadableByteChannel channel, final ByteBuffer buffer,
             final boolean filled) throws IOException
     {
         this.filename      = filename;

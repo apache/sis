@@ -25,8 +25,8 @@ import java.nio.channels.ReadableByteChannel;
 
 
 /**
- * Adds the missing methods in {@code DataInputChannel} for implementing the {@code DataInput} interface.
- * This class is provided for testing the compatibility of {@code DataInputChannel} API with {@code DataInput},
+ * Adds the missing methods in {@code ChannelDataInput} for implementing the {@code DataInput} interface.
+ * This class is provided for testing the compatibility of {@code ChannelDataInput} API with {@code DataInput},
  * and as a placeholder in case we want to move this implementation in the main code in a future SIS version.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -34,7 +34,7 @@ import java.nio.channels.ReadableByteChannel;
  * @version 0.3
  * @module
  */
-public class DataInputChannelCompleted extends DataInputChannel implements DataInput {
+public class ChannelDataInputCompleted extends ChannelDataInput implements DataInput {
     /**
      * Creates a new input source for the given channel and using the given buffer.
      *
@@ -45,7 +45,7 @@ public class DataInputChannelCompleted extends DataInputChannel implements DataI
      *                  to be initially filled with some content read from the channel.
      * @throws IOException If an error occurred while reading the channel.
      */
-    public DataInputChannelCompleted(final String filename, final ReadableByteChannel channel,
+    public ChannelDataInputCompleted(final String filename, final ReadableByteChannel channel,
             final ByteBuffer buffer, final boolean filled) throws IOException
     {
         super(filename, channel, buffer, filled);

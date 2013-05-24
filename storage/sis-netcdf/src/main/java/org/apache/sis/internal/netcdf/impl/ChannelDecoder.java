@@ -38,7 +38,7 @@ import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.GridGeometry;
 import org.apache.sis.internal.netcdf.WarningProducer;
-import org.apache.sis.internal.storage.DataInputChannel;
+import org.apache.sis.internal.storage.ChannelDataInput;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.jdk8.JDK8;
 import org.apache.sis.storage.DataStoreException;
@@ -120,7 +120,7 @@ public final class ChannelDecoder extends Decoder {
     /**
      * The {@link ReadableByteChannel} together with a {@link ByteBuffer} for reading the data.
      */
-    private final DataInputChannel input;
+    private final ChannelDataInput input;
 
     /**
      * {@code false} if the file is the classic format, or
@@ -185,7 +185,7 @@ public final class ChannelDecoder extends Decoder {
         super(parent);
         // The buffer must be backed by a Java {@code byte[]} array,
         // because we will occasionally reference that array.
-        input = new DataInputChannel(filename, channel, ByteBuffer.allocate(4096), false);
+        input = new ChannelDataInput(filename, channel, ByteBuffer.allocate(4096), false);
         /*
          * Check the magic number, which is expected to be exactly 3 bytes forming the "CDF" string.
          * The 4th byte is the version number, which we opportunistically use after the magic number check.
