@@ -27,9 +27,11 @@ import java.nio.LongBuffer;
 import java.nio.FloatBuffer;
 import java.nio.DoubleBuffer;
 import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.SeekableByteChannel;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Debug;
+
+// Related to JDK7
+import java.nio.channels.SeekableByteChannel;
 
 
 /**
