@@ -17,10 +17,11 @@
 package org.apache.sis.internal.netcdf;
 
 import java.io.IOException;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.opengis.test.Assert.*;
 
 
 /**
@@ -156,5 +157,24 @@ public strictfp class VariableTest extends TestCase {
         assertArrayEquals("SST:_FillValue", new String[] {"-9999.0"}, variable.getAttributeValues("_FillValue", false));
         assertArrayEquals("SST:units",      new String[] {"degK"},    variable.getAttributeValues("units",      false));
         assertArrayEquals("SST:units",      new Number[] {      },    variable.getAttributeValues("units",      true));
+    }
+
+    /**
+     * Tests {@link Variable#read()} on a one-dimensional variable.
+     *
+     * @throws IOException If an error occurred while reading the NetCDF file.
+     * @throws DataStoreException Should never happen.
+     */
+    @Test
+    public void testRead1D() throws IOException, DataStoreException {
+        final Variable variable = selectDataset(NCEP).getVariables()[25];
+        assertEquals("lon", variable.getName());
+        final Object data = variable.read();
+        assertInstanceOf("lon", float[].class, data);
+        final float[] array = (float[]) data;
+        assertEquals(73, array.length);
+        for (int i=0; i<array.length; i++) {
+            assertEquals("Longitude value", -180 + 5*i, array[i], 0f);
+        }
     }
 }
