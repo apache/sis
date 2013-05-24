@@ -431,6 +431,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int StalledThread_1 = 63;
 
         /**
+         * Can not move backward in the “{0}” stream.
+         */
+        public static final int StreamIsForwardOnly_1 = 95;
+
+        /**
          * Ordering between “{0}” and “{1}” elements is undefined.
          */
         public static final int UndefinedOrderingForElements_2 = 70;

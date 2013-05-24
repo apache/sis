@@ -41,10 +41,17 @@ import static org.junit.Assert.*;
 @DependsOn(DecoderTest.class)
 public final strictfp class ChannelDecoderTest extends DecoderTest {
     /**
-     * Creates a new decoder of the given name.
+     * Creates a new decoder for dataset of the given name.
      */
     @Override
     protected Decoder createDecoder(final String name) throws IOException {
+        return createChannelDecoder(name);
+    }
+
+    /**
+     * Implementation of {@link #createDecoder(String)} for creating {@link ChannelDecoder} instances.
+     */
+    static Decoder createChannelDecoder(final String name) throws IOException {
         final InputStream in = IOTestCase.class.getResourceAsStream(name);
         assertNotNull(name, in);
         try {

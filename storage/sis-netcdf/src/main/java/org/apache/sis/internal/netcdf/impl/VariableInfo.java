@@ -17,9 +17,14 @@
 package org.apache.sis.internal.netcdf.impl;
 
 import java.util.Map;
+import java.io.IOException;
 import ucar.nc2.constants.CF;
 import ucar.nc2.constants.CDM;
+import ucar.nc2.constants._Coordinate;
 import org.apache.sis.internal.netcdf.Variable;
+import org.apache.sis.internal.storage.ChannelDataInput;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -78,6 +83,13 @@ final class VariableInfo extends Variable {
     };
 
     /**
+     * The channel together with a buffer for reading the variable data.
+     *
+     * @see #read()
+     */
+    private final ChannelDataInput input;
+
+    /**
      * The variable name.
      */
     private final String name;
@@ -85,7 +97,7 @@ final class VariableInfo extends Variable {
     /**
      * The dimensions of that variable.
      */
-    private final Dimension[] dimensions;
+    final Dimension[] dimensions;
 
     /**
      * All dimensions in the NetCDF files.
@@ -109,18 +121,29 @@ final class VariableInfo extends Variable {
     private final long offset;
 
     /**
+     * The grid geometry associated to this variable,
+     * computed by {@link ChannelDecoder#getGridGeometries()} when first needed.
+     */
+    GridGeometryInfo gridGeometry;
+
+    /**
      * Creates a new variable.
      */
-    VariableInfo(final String name, final Dimension[] dimensions, final Dimension[] allDimensions,
+    VariableInfo(final ChannelDataInput input, final String name,
+            final Dimension[] dimensions, final Dimension[] allDimensions,
             final Map<String,Attribute> attributes, final int datatype, final int size, final long offset)
     {
+        this.input         = input;
         this.name          = name;
         this.dimensions    = dimensions;
         this.allDimensions = allDimensions;
         this.attributes    = attributes;
         this.datatype      = datatype;
         this.offset        = offset;
-        // TODO: verify 'size'.
+        /*
+         * The 'size' value is provided in the NetCDF files, but doesn't need to be stored since it
+         * is redundant with the dimension lengths and is not large enough for big variables anyway.
+         */
     }
 
     /**
@@ -180,6 +203,11 @@ final class VariableInfo extends Variable {
      */
     @Override
     public boolean isCoordinateSystemAxis() {
+        String name = this.name;
+        final Attribute attribute = attributes.get(_CoordinateVariableAlias);
+        if (attribute != null && attribute.value instanceof String) {
+            name = (String) attribute.value;
+        }
         for (final Dimension dimension : allDimensions) {
             if (name.equals(dimension.name)) {
                 // This variable is a dimension of another variable.
@@ -187,6 +215,17 @@ final class VariableInfo extends Variable {
             }
         }
         return false;
+    }
+
+    /**
+     * Returns the value of the {@code "_CoordinateAxisType"} attribute, or {@code null} if none.
+     */
+    final String getAxisType() {
+        final Attribute attribute = attributes.get(_Coordinate.AxisType);
+        if (attribute != null && attribute.value instanceof String) {
+            return (String) attribute.value;
+        }
+        return null;
     }
 
     /**
@@ -227,5 +266,28 @@ final class VariableInfo extends Variable {
             return numeric ? attribute.numberValues() : attribute.stringValues();
         }
         return new Object[0];
+    }
+
+    /**
+     * Reads all the data for this variable and returns them as an array of a Java primitive type.
+     */
+    @Override
+    public Object read() throws IOException, DataStoreException {
+        long length = 1;
+        for (final Dimension dimension : dimensions) {
+            length *= dimension.length;
+        }
+        if (length > Integer.MAX_VALUE) {
+            throw new DataStoreException(Errors.format(Errors.Keys.ExcessiveListSize_2, name, length));
+        }
+        input.seek(offset);
+        switch (datatype) {
+            case BYTE:   return input.readBytes  ((int) length);
+            case SHORT:  return input.readShorts ((int) length);
+            case INT:    return input.readInts   ((int) length);
+            case FLOAT:  return input.readFloats ((int) length);
+            case DOUBLE: return input.readDoubles((int) length);
+            default: throw new DataStoreException(Errors.format(Errors.Keys.UnknownType_1, datatype));
+        }
     }
 }
