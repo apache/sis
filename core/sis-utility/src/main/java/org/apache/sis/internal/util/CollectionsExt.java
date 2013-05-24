@@ -391,6 +391,33 @@ public final class CollectionsExt extends Static {
     }
 
     /**
+     * Adds a value in a pseudo multi-values map. The multi-values map is simulated by a map of lists.
+     * The map can be initially empty - lists will be created as needed.
+     *
+     * @param  <K>   The type of key elements in the map.
+     * @param  <V>   The type of value elements in the lists.
+     * @param  map   The multi-values map where to add an element.
+     * @param  key   The key of the element to add. Can be null if the given map supports null keys.
+     * @param  value The value of the element to add. Can be null.
+     * @return The list where the given value has been added. May be unmodifiable.
+     */
+    public static <K,V> List<V> addToMultiValuesMap(final Map<K,List<V>> map, final K key, final V value) {
+        final List<V> singleton = Collections.singletonList(value);
+        List<V> values = map.put(key, singleton);
+        if (values == null) {
+            return singleton;
+        }
+        if (values.size() <= 1) {
+            values = new ArrayList<V>(values);
+            if (map.put(key, values) != singleton) {
+                throw new ConcurrentModificationException();
+            }
+        }
+        values.add(value);
+        return values;
+    }
+
+    /**
      * Creates a (<cite>name</cite>, <cite>element</cite>) mapping for the given collection of elements.
      * If the name of an element is not all lower cases, then this method also adds an entry for the
      * lower cases version of that name in order to allow case-insensitive searches.

@@ -18,13 +18,15 @@ package org.apache.sis.internal.netcdf.impl;
 
 import java.io.IOException;
 import org.apache.sis.internal.netcdf.Decoder;
-import org.apache.sis.internal.netcdf.VariableTest;
+import org.apache.sis.internal.netcdf.GridGeometry;
+import org.apache.sis.internal.netcdf.GridGeometryTest;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.test.DependsOn;
 
 
 /**
- * Tests the {@link VariableInfo} implementation. This test shall be executed only if the
- * {@link VariableTest} tests, which use the UCAR library has a reference implementation,
+ * Tests the {@link GridGeometry} implementation. This test shall be executed only if the
+ * {@link GridGeometryTest} tests, which use the UCAR library has a reference implementation,
  * passed.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -32,8 +34,8 @@ import org.apache.sis.test.DependsOn;
  * @version 0.3
  * @module
  */
-@DependsOn({ChannelDecoderTest.class, VariableTest.class})
-public final strictfp class VariableInfoTest extends VariableTest {
+@DependsOn({VariableInfoTest.class, GridGeometryTest.class})
+public final strictfp class GridGeometryInfoTest extends GridGeometryTest {
     /**
      * Creates a new decoder for dataset of the given name.
      */
@@ -49,5 +51,21 @@ public final strictfp class VariableInfoTest extends VariableTest {
     @Override
     protected boolean isSupplementalFormatSupported(final String format) {
         return false;
+    }
+
+    /**
+     * Filters out the one-dimensional coordinate systems created by {@code GridGeometry}
+     * but not by the UCAR library.
+     */
+    @Override
+    protected GridGeometry[] filter(final GridGeometry[] geometries) {
+        final GridGeometry[] copy = new GridGeometry[geometries.length];
+        int count = 0;
+        for (final GridGeometry geometry : geometries) {
+            if (geometry.getSourceDimensions() != 1 || geometry.getTargetDimensions() != 1) {
+                copy[count++] = geometry;
+            }
+        }
+        return ArraysExt.resize(copy, count);
     }
 }
