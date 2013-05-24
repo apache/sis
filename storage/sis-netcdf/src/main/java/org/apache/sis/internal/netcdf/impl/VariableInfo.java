@@ -282,34 +282,12 @@ final class VariableInfo extends Variable {
         }
         input.seek(offset);
         switch (datatype) {
-            case BYTE: {
-                final byte[] array = new byte[(int) length];
-                input.readFully(array, 0, array.length);
-                return array;
-            }
-            case SHORT: {
-                final short[] array = new short[(int) length];
-                input.readFully(array, 0, array.length);
-                return array;
-            }
-            case INT: {
-                final int[] array = new int[(int) length];
-                input.readFully(array, 0, array.length);
-                return array;
-            }
-            case FLOAT: {
-                final float[] array = new float[(int) length];
-                input.readFully(array, 0, array.length);
-                return array;
-            }
-            case DOUBLE: {
-                final double[] array = new double[(int) length];
-                input.readFully(array, 0, array.length);
-                return array;
-            }
-            default: {
-                throw new DataStoreException(Errors.format(Errors.Keys.UnknownType_1, datatype));
-            }
+            case BYTE:   return input.readBytes  ((int) length);
+            case SHORT:  return input.readShorts ((int) length);
+            case INT:    return input.readInts   ((int) length);
+            case FLOAT:  return input.readFloats ((int) length);
+            case DOUBLE: return input.readDoubles((int) length);
+            default: throw new DataStoreException(Errors.format(Errors.Keys.UnknownType_1, datatype));
         }
     }
 }
