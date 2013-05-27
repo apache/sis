@@ -523,12 +523,13 @@ public final class ChannelDecoder extends Decoder {
     /**
      * Defines the groups where to search for named attributes, in preference order.
      * The {@code null} group name stands for the global attributes.
+     *
+     * <p>Current implementation does nothing, since the NetCDF binary files that {@code ChannelDecoder}
+     * can read do not have groups anyway. Future SIS implementations may honor the given group names if
+     * groups support is added.</p>
      */
     @Override
     public void setSearchPath(final String... groupNames) throws IOException {
-        if (groupNames.length != 1 || groupNames[0] != null) {
-            throw new UnsupportedOperationException();
-        }
     }
 
     /**
@@ -551,7 +552,7 @@ public final class ChannelDecoder extends Decoder {
      */
     private Attribute findAttribute(final String name) {
         Attribute attribute = attributeMap.get(name);
-        if (attribute == null) {
+        if (attribute == null && name != null) {
             final String lower = name.toLowerCase(NAME_LOCALE);
             if (lower != name) { // Identity comparison is ok since this check is only an optimization for a common case.
                 attribute = attributeMap.get(lower);
