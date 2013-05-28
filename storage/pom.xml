@@ -107,6 +107,7 @@
            Sub-modules included in the build
        =========================================================== -->
   <modules>
+    <module>sis-storage</module>
     <module>sis-netcdf</module>
   </modules>
 

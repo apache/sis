@@ -36,13 +36,13 @@
            Module Description
        =========================================================== -->
   <groupId>org.apache.sis.storage</groupId>
-  <artifactId>sis-netcdf</artifactId>
+  <artifactId>sis-storage</artifactId>
   <packaging>bundle</packaging>
-  <name>Apache SIS NetCDF storage</name>
+  <name>Apache SIS common storage</name>
   <description>
   <!-- Left alignment because this description will be copied in META-INF/MANIFEST.MF
        The leading space after the first line is necessary for proper formatting. -->
-Bridge between NetCDF Climate and Forecast (CF) convention and ISO 19115 metadata.
+DataStore API and base storage classes.
   </description>
 
 
@@ -64,15 +64,6 @@ Bridge between NetCDF Climate and Forecast (CF) convention and ISO 19115 metadat
   </developers>
   <contributors>
     <contributor>
-      <name>Antoine Hnawia</name>
-      <organization>Institut de Recherche pour le Développement</organization>
-      <organizationUrl>http://www.ird.fr/</organizationUrl>
-      <timezone>+11</timezone>
-      <roles>
-        <role>developer</role>
-      </roles>
-    </contributor>
-    <contributor>
       <name>Johann Sorel</name>
       <email>johann.sorel@geomatys.com</email>
       <organization>Geomatys</organization>
@@ -83,50 +74,5 @@ Bridge between NetCDF Climate and Forecast (CF) convention and ISO 19115 metadat
       </roles>
     </contributor>
   </contributors>
-
-
-  <!-- ===========================================================
-           Dependencies
-       =========================================================== -->
-  <dependencies>
-    <dependency>
-      <groupId>org.apache.sis.storage</groupId>
-      <artifactId>sis-storage</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>edu.ucar</groupId>
-      <artifactId>netcdf</artifactId>
-    </dependency>
-
-    <!-- Leverage GeoAPI tests. -->
-    <dependency>
-      <groupId>org.opengis.wrapper</groupId>
-      <artifactId>geoapi-netcdf</artifactId>
-      <version>${geoapi.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.opengis.wrapper</groupId>
-      <artifactId>geoapi-netcdf</artifactId>
-      <version>${geoapi.version}</version>
-      <type>test-jar</type>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-jdk14</artifactId>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
-
-  <!--  UCAR repository from which to download the NetCDF library. -->
-  <repositories>
-    <repository>
-      <id>UCAR</id>
-      <name>UCAR repository</name>
-      <url>https://artifacts.unidata.ucar.edu/content/repositories/unidata-releases</url>
-    </repository>
-  </repositories>
 
 </project>
