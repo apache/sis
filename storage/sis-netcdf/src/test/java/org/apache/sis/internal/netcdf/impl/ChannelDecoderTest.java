@@ -49,9 +49,21 @@ public final strictfp class ChannelDecoderTest extends DecoderTest {
     }
 
     /**
-     * Implementation of {@link #createDecoder(String)} for creating {@link ChannelDecoder} instances.
+     * Creates a new {@link ChannelDecoder} instance for dataset of the given name.
+     * The {@code name} parameter can be one of the following values:
+     *
+     * <ul>
+     *   <li>{@link #THREDDS} for a NcML file.</li>
+     *   <li>{@link #NCEP}    for a NetCDF binary file.</li>
+     *   <li>{@link #CIP}     for a NetCDF binary file.</li>
+     *   <li>{@link #LANDSAT} for a NetCDF binary file.</li>
+     * </ul>
+     *
+     * @param  name The file name as one of the above-cited constants.
+     * @return The decoder for the given name.
+     * @throws IOException If an error occurred while opening the file.
      */
-    static Decoder createChannelDecoder(final String name) throws IOException {
+    public static Decoder createChannelDecoder(final String name) throws IOException {
         final InputStream in = IOTestCase.class.getResourceAsStream(name);
         assumeNotNull(name, in);
         try {

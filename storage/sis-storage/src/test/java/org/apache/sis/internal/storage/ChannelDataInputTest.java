@@ -173,7 +173,7 @@ public final strictfp class ChannelDataInputTest extends TestCase {
      * @param length The length of the array to create.
      * @param random The random number generator to use.
      */
-    private static byte[] createRandomArray(final int length, final Random random) {
+    static byte[] createRandomArray(final int length, final Random random) {
         final byte[] array = new byte[length];
         for (int i=0; i<length; i++) {
             array[i] = (byte) random.nextInt(256);
