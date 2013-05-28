@@ -29,6 +29,7 @@
        ==================================================== -->
   <bannerLeft>
     <name>Apache SIS</name>
+    <src>http://builds.apache.org/job/sis-trunk/site/images/banner.png</src>
     <href>http://builds.apache.org/job/sis-trunk/site/index.html</href>
   </bannerLeft>
 
