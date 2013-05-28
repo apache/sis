@@ -142,7 +142,13 @@ public class ChannelDataInput {
         try {
             Thread.sleep(200);
         } catch (InterruptedException e) {
-            // Someone doesn't want to let us sleep. Go back to work.
+            /*
+             * Someone doesn't want to let us sleep. Stop the reading process. We don't try to go back to work,
+             * because the waiting time was short and this method is invoked in loops. Consequently if the user
+             * interrupted us, it is probably because he waited for a long time and we still have not received
+             * any new data.
+             */
+            throw new IOException(e);
         }
     }
 
