@@ -5,8 +5,20 @@
 
 The Apache SIS™ library
 
-  Apache SIS is a toolkit for describing location information, including points, bounding boxes,
-  polygons, and for computing distances on that information.
+  Apache SIS is a free software, Java language library for developing geospatial applications.
+  The library can be used for desktop or server applications.
+  SIS is an implementation of GeoAPI 3.0 interfaces.
+
+  SIS provides data structures for geographic data and associated metadata along with methods
+  to manipulate those data structures. The SIS metadata module forms the base of the library
+  and enables the creation of metadata objects which comply with the ISO 19115 metadata model
+  and which can be read from or written to ISO 19139 compliant XML documents.
+  The SIS referencing module will enable the construction of geodetic data structures for
+  geospatial referencing based on the ISO 19111 model such as axis, projection and coordinate
+  reference system definitions, along with the associated operations which enable the mathematical
+  conversion of coordinates between different systems of reference.
+  The SIS storage modules will provide a common approach to the reading and writing of grid coverages
+  applicable to simple imagery as to many dimensional data structures.
 
   SIS is a project of the {{{http://www.apache.org}Apache Software Foundation}}.
 

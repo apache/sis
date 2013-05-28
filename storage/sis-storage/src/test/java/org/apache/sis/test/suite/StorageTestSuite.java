@@ -22,7 +22,7 @@ import org.junit.BeforeClass;
 
 
 /**
- * All tests from the {@code sis-referencing} module, in approximative dependency order.
+ * All tests from the {@code sis-storage} module, in approximative dependency order.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
@@ -30,23 +30,16 @@ import org.junit.BeforeClass;
  * @module
  */
 @Suite.SuiteClasses({
-    org.apache.sis.geometry.AbstractDirectPositionTest.class,
-    org.apache.sis.geometry.GeneralDirectPositionTest.class,
-    org.apache.sis.geometry.DirectPosition1DTest.class,
-    org.apache.sis.geometry.DirectPosition2DTest.class,
-    org.apache.sis.geometry.AbstractEnvelopeTest.class,
-    org.apache.sis.geometry.GeneralEnvelopeTest.class,
-    org.apache.sis.geometry.SubEnvelopeTest.class,
-    org.apache.sis.geometry.ImmutableEnvelopeTest.class,
-    org.apache.sis.geometry.Envelope2DTest.class
+    org.apache.sis.internal.storage.ChannelDataInputTest.class,
+    org.apache.sis.internal.storage.ChannelImageInputStreamTest.class
 })
-public final strictfp class ReferencingTestSuite extends TestSuite {
+public final strictfp class StorageTestSuite extends TestSuite {
     /**
      * Verifies the list of tests before to run the suite.
      * See {@link #verifyTestList(Class, Class<?>[])} for more information.
      */
     @BeforeClass
     public static void verifyTestList() {
-        verifyTestList(ReferencingTestSuite.class, BASE_TEST_CLASSES);
+        verifyTestList(StorageTestSuite.class, BASE_TEST_CLASSES);
     }
 }
