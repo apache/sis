@@ -53,13 +53,9 @@ import java.nio.channels.SeekableByteChannel;
  * This class API is compatibly with the {@link java.io.DataInput} interface, so subclasses can implement that
  * interface if they wish. This class does not implement {@code DataInput} itself because it is not needed for
  * SIS purposes, and because {@code DataInput} has undesirable methods ({@code readLine()} and {@code readUTF()}).
- * However the {@code ChannelDataInputCompleted} class in the test directory implements the {@code DataInput}
- * interface, both for testing API compatibility and in case we choose to implement that interface after all
- * in a future SIS version.
- *
- * <p>The API of this class is also compatible with {@link javax.imageio.stream.ImageInputStream}.
- * See {@code ChannelImageInputStream} in the test directory if a channel-based implementation of
- * image input stream is desired in a future SIS version.</p>
+ * However the {@link ChannelImageInputStream} class implements the {@code DataInput} interface, together with
+ * the {@link javax.imageio.stream.ImageInputStream} one, mostly for situations when inter-operability with
+ * {@link javax.imageio} is needed.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.07)
@@ -694,6 +690,21 @@ public class ChannelDataInput {
              */
             throw new IOException(Errors.format(Errors.Keys.StreamIsForwardOnly_1, filename));
         }
+    }
+
+    /**
+     * Sets the current byte position of the stream. This method does <strong>not</strong> seeks the stream;
+     * this method only modifies the value to be returned by {@link #getStreamPosition()}. This method can
+     * be invoked when some external code has performed some work with the {@linkplain #channel} and wants
+     * to inform this {@code ChannelDataInput} about the new position resulting from this work.
+     *
+     * <p>This method does not need to be invoked when only the {@linkplain Buffer#position() buffer position}
+     * has changed.</p>
+     *
+     * @param position The new position of the stream.
+     */
+    public final void setStreamPosition(final long position) {
+        bufferOffset = position - buffer.position();
     }
 
     /**

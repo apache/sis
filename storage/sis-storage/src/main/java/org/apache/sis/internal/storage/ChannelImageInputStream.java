@@ -16,12 +16,14 @@
  */
 package org.apache.sis.internal.storage;
 
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.ReadableByteChannel;
 import javax.imageio.stream.IIOByteBuffer;
 import javax.imageio.stream.ImageInputStream;
+import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.ArgumentChecks.ensureBetween;
 
@@ -31,10 +33,7 @@ import java.nio.channels.SeekableByteChannel;
 
 /**
  * Adds the missing methods in {@code ChannelDataInput} for implementing the {@code ImageInputStream} interface.
- * This class is provided for testing the compatibility of {@code ChannelDataInput} API with {@code ImageInputStream},
- * and as a placeholder in case we want to move this implementation in the main code in a future SIS version.
- *
- * <p>Note that the JDK approach for creating an image input stream from a channel would be as below:</p>
+ * The JDK approach for creating an image input stream from a channel would be as below:
  *
  * {@preformat java
  *     ReadableByteChannel channel = ...;
@@ -43,13 +42,10 @@ import java.nio.channels.SeekableByteChannel;
  *
  * However the standard {@link javax.imageio.stream.ImageInputStreamImpl} implementation performs many work by itself,
  * including supporting various {@linkplain ByteOrder byte order}, which could be more efficiently done by NIO.
+ * Furthermore, this class allows us to reuse an existing buffer (especially direct buffer, which are costly to create)
+ * and allow subclasses to store additional information, for example the file path.
  *
- * <p>This class is provided as a <em>proof of concept</em> only - it is not intended to be used in the main SIS code.
- * This class lives in the {@code test} directory for that reason, where the "test" is to ensure that the API of the
- * {@link ChannelDataInput} base class is compatible with the {@link ImageInputStream} API.</p>
- *
- * <p>Note in particular that the {@link #readBit()} and {@link #readBits(int)} methods are not strictly compliant
- * to the {@code ImageInputStream} contract.</p>
+ * <p>This class is used when compatibility with {@link javax.imageio.ImageReader} is needed.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.07)
@@ -60,16 +56,29 @@ import java.nio.channels.SeekableByteChannel;
  * @see javax.imageio.ImageIO#createImageInputStream(Object)
  * @see java.nio.channels.Channels#newInputStream(ReadableByteChannel)
  */
-public class ChannelImageInputStream extends ChannelDataInputCompleted implements ImageInputStream {
+public class ChannelImageInputStream extends ChannelDataInput implements ImageInputStream {
     /**
-     * The current bit offset within the stream.
+     * Number of bits needed for storing the bit offset in {@link #bitPosition}.
+     * The following condition must hold:
+     *
+     * {@preformat java
+     *     (1 << BIT_OFFSET_SIZE) == Byte.SIZE
+     * }
+     */
+    private static final int BIT_OFFSET_SIZE = 3;
+
+    /**
+     * The current bit position within the stream. The 3 lowest bits are the bit offset,
+     * and the remaining of the {@code long} value is the stream position where the bit
+     * offset is valid.
      *
      * @see #getBitOffset()
      */
-    private int bitOffset;
+    private long bitPosition;
 
     /**
      * The most recent mark, or {@code null} if none.
+     * This is the tail of a chained list of marks.
      */
     private Mark mark;
 
@@ -158,73 +167,46 @@ public class ChannelImageInputStream extends ChannelDataInputCompleted implement
     /**
      * Returns the current bit offset, as an integer between 0 and 7 inclusive.
      *
-     * {@section Contract violation}
-     * According {@link ImageInputStream} contract, the bit offset shall be reset to 0 by every call to
-     * any {@code read} method except {@code readBit()} and {@link #readBits(int)}. This is not done in
-     * this {@code ChannelImageInputStream} class because the {@code read} methods are final, and we
-     * don't want to alter the main SIS code just for this "proof of concept" class.
+     * <p>According {@link ImageInputStream} contract, the bit offset shall be reset to 0 by every call to
+     * any {@code read} method except {@code readBit()} and {@link #readBits(int)}.</p>
      *
      * @return The bit offset of the stream.
-     * @throws IOException if an I/O error occurs.
      */
     @Override
-    public final int getBitOffset() throws IOException {
-        return bitOffset;
+    public final int getBitOffset() {
+        final long currentPosition = getStreamPosition();
+        if ((bitPosition >>> BIT_OFFSET_SIZE) != currentPosition) {
+            bitPosition = currentPosition << BIT_OFFSET_SIZE;
+        }
+        return (int) (bitPosition & (Byte.SIZE - 1));
     }
 
     /**
      * Sets the bit offset to the given value.
      *
-     * {@section Contract violation}
-     * According {@link ImageInputStream} contract, the bit offset shall be reset to 0 by every call to
-     * any {@code read} method except {@code readBit()} and {@link #readBits(int)}. This is not done in
-     * this {@code ChannelImageInputStream} class because the {@code read} methods are final, and we
-     * don't want to alter the main SIS code just for this "proof of concept" class.
-     *
      * @param bitOffset The new bit offset of the stream.
-     * @throws IOException if an I/O error occurs.
      */
     @Override
-    public final void setBitOffset(final int bitOffset) throws IOException {
-        ensureBetween("bitOffset", 0, Byte.SIZE-1, bitOffset);
-        this.bitOffset = bitOffset;
+    public final void setBitOffset(final int bitOffset) {
+        ensureBetween("bitOffset", 0, Byte.SIZE - 1, bitOffset);
+        bitPosition = (getStreamPosition() << BIT_OFFSET_SIZE) | bitOffset;
     }
 
     /**
      * Reads a single bit from the stream. The bit to be read depends on the
      * {@linkplain #getBitOffset() current bit offset}.
      *
-     * {@section Contract violation}
-     * According {@link ImageInputStream} contract, the bit offset shall be reset to 0 by every call to
-     * any {@code read} method except {@code readBit()} and {@link #readBits(int)}. This is not done in
-     * this {@code ChannelImageInputStream} class because the {@code read} methods are final, and we
-     * don't want to alter the main SIS code just for this "proof of concept" class.
-     *
      * @return The value of the next bit from the stream.
      * @throws IOException If an error occurred while reading (including EOF).
      */
     @Override
     public final int readBit() throws IOException {
-        int value = readUnsignedByte();
-        final int toShift = (Byte.SIZE - ++bitOffset);
-        if (toShift == 0) {
-            bitOffset = 0;
-        } else {
-            pushBack();
-            value >>= toShift;
-        }
-        return value & 1;
+        return (int) (readBits(1) & 1);
     }
 
     /**
      * Reads many bits from the stream. The first bit to be read depends on the
      * {@linkplain #getBitOffset() current bit offset}.
-     *
-     * {@section Contract violation}
-     * According {@link ImageInputStream} contract, the bit offset shall be reset to 0 by every call to
-     * any {@code read} method except {@code readBit()} and {@link #readBits(int)}. This is not done in
-     * this {@code ChannelImageInputStream} class because the {@code read} methods are final, and we
-     * don't want to alter the main SIS code just for this "proof of concept" class.
      *
      * @param  numBits The number of bits to read.
      * @return The value of the next bits from the stream.
@@ -241,6 +223,7 @@ public class ChannelImageInputStream extends ChannelDataInputCompleted implement
          * and compute the number of bits that still need to be read. That number may
          * be negative if we have read too many bits.
          */
+        final int bitOffset = getBitOffset();
         long value = readByte() & (0xFF >>> bitOffset);
         numBits -= (Byte.SIZE - bitOffset);
         while (numBits > 0) {
@@ -249,30 +232,90 @@ public class ChannelImageInputStream extends ChannelDataInputCompleted implement
         }
         if (numBits != 0) {
             value >>>= (-numBits); // Discard the unwanted bits.
-            bitOffset = Byte.SIZE + numBits;
+            numBits += Byte.SIZE;
             pushBack();
-        } else {
-            bitOffset = 0;
         }
+        setBitOffset(numBits);
         return value;
     }
 
     /**
-     * Reads up to {@code length} bytes from the stream, and modifies the supplied
-     * {@code IIOByteBuffer} to indicate the byte array, offset, and length where
-     * the data may be found.
+     * Reads a byte from the stream and returns a {@code true} if it is nonzero, {@code false} otherwise.
+     * The implementation is as below:
      *
-     * @param  dest The buffer to be written to.
-     * @param  length The maximum number of bytes to read.
+     * {@preformat java
+     *     return readByte() != 0;
+     * }
+     *
+     * @return The value of the next boolean from the stream.
+     * @throws IOException If an error (including EOF) occurred while reading the stream.
+     */
+    @Override
+    public final boolean readBoolean() throws IOException {
+        return readByte() != 0;
+    }
+
+    /**
+     * Reads in a string that has been encoded using a UTF-8 string.
+     *
+     * @return The string reads from the stream.
+     * @throws IOException If an error (including EOF) occurred while reading the stream.
+     */
+    @Override
+    public final String readUTF() throws IOException {
+        final ByteOrder oldOrder = buffer.order();
+        buffer.order(ByteOrder.BIG_ENDIAN);
+        try {
+            return DataInputStream.readUTF(this);
+        } finally {
+            buffer.order(oldOrder);
+        }
+    }
+
+    /**
+     * Reads the new bytes until the next EOL. This method can read only US-ASCII strings.
+     * This method is provided for compliance with the {@link DataInput} interface,
+     * but is generally not recommended.
+     *
+     * @return The next line, or {@code null} if the EOF has been reached.
      * @throws IOException If an error occurred while reading.
      */
     @Override
-    public final void readBytes(final IIOByteBuffer dest, int length) throws IOException {
-        final byte[] data = new byte[length];
-        length = read(data);
-        dest.setData(data);
-        dest.setOffset(0);
-        dest.setLength(length);
+    public final String readLine() throws IOException {
+        int c = read();
+        if (c < 0) {
+            return null;
+        }
+        StringBuilder line = new StringBuilder();
+        line.append((char) c);
+loop:   while ((c = read()) >= 0) {
+            switch (c) {
+                case '\r': {
+                    c = read();
+                    if (c >= 0 && c != '\n') {
+                        pushBack();
+                    }
+                    break loop;
+                }
+                case '\n': {
+                    break loop;
+                }
+            }
+            line.append((char) c);
+        }
+        return line.toString();
+    }
+
+    /**
+     * Returns the next byte from the stream as an unsigned integer between 0 and 255,
+     * or -1 if we reached the end of stream.
+     *
+     * @return The next byte as an unsigned integer, or -1 on end of stream.
+     * @throws IOException If an error occurred while reading the stream.
+     */
+    @Override
+    public final int read() throws IOException {
+        return hasRemaining() ? buffer.get() & 0xFF : -1;
     }
 
     /**
@@ -308,7 +351,6 @@ public class ChannelImageInputStream extends ChannelDataInputCompleted implement
         if (!hasRemaining()) {
             return -1;
         }
-        bitOffset = 0;
         final int requested = length;
         while (length != 0 && hasRemaining()) {
             final int n = Math.min(buffer.remaining(), length);
@@ -320,20 +362,55 @@ public class ChannelImageInputStream extends ChannelDataInputCompleted implement
     }
 
     /**
+     * Reads up to {@code length} bytes from the stream, and modifies the supplied
+     * {@code IIOByteBuffer} to indicate the byte array, offset, and length where
+     * the data may be found.
+     *
+     * @param  dest The buffer to be written to.
+     * @param  length The maximum number of bytes to read.
+     * @throws IOException If an error occurred while reading.
+     */
+    @Override
+    public final void readBytes(final IIOByteBuffer dest, int length) throws IOException {
+        final byte[] data = new byte[length];
+        length = read(data);
+        dest.setData(data);
+        dest.setOffset(0);
+        dest.setLength(length);
+    }
+
+    /**
+     * Skips over <var>n</var> bytes of data from the input stream.
+     * This implementation does not skip more bytes than the buffer capacity.
+     *
+     * @param  n Maximal number of bytes to skip.
+     * @return Number of bytes actually skipped.
+     * @throws IOException If an error occurred while reading.
+     */
+    @Override
+    public final int skipBytes(int n) throws IOException {
+        if (!hasRemaining()) {
+            return 0;
+        }
+        int r = buffer.remaining();
+        if (n >= r) {
+            n = r;
+        }
+        buffer.position(buffer.position() + n);
+        return n;
+    }
+
+    /**
      * Advances the current stream position by the given amount of bytes.
      * The bit offset is reset to 0 by this method.
      *
      * @param  n The number of bytes to seek forward.
      * @return The number of bytes skipped.
-     * @throws IOException If an error occurred while skiping.
+     * @throws IOException If an error occurred while skipping.
      */
     @Override
     public final long skipBytes(final long n) throws IOException {
-        bitOffset = 0;
-        if (n > Integer.MAX_VALUE) {
-            throw new UnsupportedOperationException();
-        }
-        return skipBytes((int) n);
+        return skipBytes(Math.min((int) n, Integer.MAX_VALUE));
     }
 
     /**
@@ -341,7 +418,7 @@ public class ChannelImageInputStream extends ChannelDataInputCompleted implement
      */
     @Override
     public final void mark() {
-        mark = new Mark(getStreamPosition(), bitOffset, mark);
+        mark = new Mark(getStreamPosition(), getBitOffset(), mark);
     }
 
     /**
@@ -357,7 +434,7 @@ public class ChannelImageInputStream extends ChannelDataInputCompleted implement
             throw new IOException("No marked position.");
         }
         seek(mark.position);
-        bitOffset = mark.bitOffset;
+        setBitOffset(mark.bitOffset);
         mark = mark.next;
     }
 
@@ -381,12 +458,23 @@ public class ChannelImageInputStream extends ChannelDataInputCompleted implement
      * Attempting to {@linkplain #seek(long) seek} to an offset within the flushed
      * portion of the stream will result in an {@link IndexOutOfBoundsException}.
      *
-     * @param  pos The length of the stream prefix that may be flushed.
+     * @param  position The length of the stream prefix that may be flushed.
      * @throws IOException If an I/O error occurred.
      */
     @Override
-    public final void flushBefore(long pos) throws IOException {
-        // No-op for now.
+    public final void flushBefore(final long position) throws IOException {
+        final long bufferOffset    = getFlushedPosition();
+        final long currentPosition = getStreamPosition();
+        if (position < bufferOffset || position > currentPosition) {
+            throw new IndexOutOfBoundsException(Errors.format(Errors.Keys.ValueOutOfRange_4,
+                    "position", bufferOffset, currentPosition, position));
+        }
+        final int n = (int) (position - bufferOffset);
+        final int p = buffer.position() - n;
+        final int r = buffer.limit() - n;
+        buffer.position(n); // Number of bytes to forget.
+        buffer.compact().position(p).limit(r);
+        setStreamPosition(currentPosition);
     }
 
     /**
