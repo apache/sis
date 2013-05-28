@@ -24,7 +24,7 @@ import org.junit.BeforeClass;
 
 
 /**
- * All tests from the {@code sis-referencing} module, in approximative dependency order.
+ * All tests from the {@code sis-netcdf} module, in approximative dependency order.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
@@ -32,18 +32,18 @@ import org.junit.BeforeClass;
  * @module
  */
 @Suite.SuiteClasses({
-    org.apache.sis.internal.storage.ChannelDataInputTest.class,
     org.apache.sis.internal.netcdf.DecoderTest.class,
     org.apache.sis.internal.netcdf.VariableTest.class,
     org.apache.sis.internal.netcdf.GridGeometryTest.class,
     org.apache.sis.internal.netcdf.impl.ChannelDecoderTest.class,
     org.apache.sis.internal.netcdf.impl.VariableInfoTest.class,
-    org.apache.sis.internal.netcdf.impl.GridGeometryInfoTest.class
+    org.apache.sis.internal.netcdf.impl.GridGeometryInfoTest.class,
+    org.apache.sis.storage.netcdf.MetadataReaderTest.class
 })
 public final strictfp class NetcdfTestSuite extends TestSuite {
     /**
      * Verifies the list of tests before to run the suite.
-     * See {@link #verifyTestList(Class)} for more information.
+     * See {@link #verifyTestList(Class, Class<?>[])} for more information.
      */
     @BeforeClass
     public static void verifyTestList() {

@@ -9,12 +9,14 @@
                 <root id="src.webapp.dir" name="Web application"/>
                 <root id="src.app.dir" name="Application"/>
                 <root id="src.netcdf.dir" name="NetCDF"/>
+                <root id="src.storage.dir" name="Storage"/>
                 <root id="src.referencing.dir" name="Referencing"/>
                 <root id="src.metadata.dir" name="Metadata"/>
                 <root id="src.utility.dir" name="Utility"/>
             </source-roots>
             <test-roots>
                 <root id="test.netcdf.dir" name="NetCDF tests"/>
+                <root id="test.storage.dir" name="Storage tests"/>
                 <root id="test.referencing.dir" name="Referencing tests"/>
                 <root id="test.metadata.dir" name="Metadata tests"/>
                 <root id="test.utility.dir" name="Utility tests"/>

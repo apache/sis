@@ -27,7 +27,7 @@
 
   <parent>
     <groupId>org.apache.sis</groupId>
-    <artifactId>parent</artifactId>
+    <artifactId>storage</artifactId>
     <version>0.3-geoapi3.0-SNAPSHOT</version>
   </parent>
 
@@ -35,12 +35,14 @@
   <!-- ===========================================================
            Module Description
        =========================================================== -->
-  <artifactId>storage</artifactId>
-  <packaging>pom</packaging>
-  <name>Apache SIS storage</name>
+  <groupId>org.apache.sis.storage</groupId>
+  <artifactId>sis-storage</artifactId>
+  <packaging>bundle</packaging>
+  <name>Apache SIS common storage</name>
   <description>
-    Group of modules for reading and writing data from/to various storages.
-    Storages are typically file formats or a database schemas.
+  <!-- Left alignment because this description will be copied in META-INF/MANIFEST.MF
+       The leading space after the first line is necessary for proper formatting. -->
+DataStore API and base storage classes.
   </description>
 
 
@@ -72,43 +74,5 @@
       </roles>
     </contributor>
   </contributors>
-
-
-  <!-- ===========================================================
-           Dependencies
-       =========================================================== -->
-  <dependencies>
-    <dependency>
-      <groupId>org.apache.sis</groupId>
-      <artifactId>sis-metadata</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.opengis</groupId>
-      <artifactId>geoapi</artifactId>
-    </dependency>
-
-    <!-- Test dependencies -->
-    <dependency>
-      <groupId>org.opengis</groupId>
-      <artifactId>geoapi-conformance</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.sis</groupId>
-      <artifactId>sis-utility</artifactId>
-      <version>${project.version}</version>
-      <type>test-jar</type>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
-
-
-  <!-- ===========================================================
-           Sub-modules included in the build
-       =========================================================== -->
-  <modules>
-    <module>sis-storage</module>
-    <module>sis-netcdf</module>
-  </modules>
 
 </project>
