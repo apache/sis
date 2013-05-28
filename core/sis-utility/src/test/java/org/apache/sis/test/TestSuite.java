@@ -65,7 +65,7 @@ public abstract strictfp class TestSuite {
      * {@preformat java
      *    &#64;BeforeClass
      *    public static void verifyTestList() {
-     *        verifyTestList(MetadataTestSuite.class);
+     *        verifyTestList(MetadataTestSuite.class, BASE_TEST_CLASSES);
      *    }
      * }
      *

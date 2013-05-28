@@ -90,6 +90,11 @@ Bridge between NetCDF Climate and Forecast (CF) convention and ISO 19115 metadat
        =========================================================== -->
   <dependencies>
     <dependency>
+      <groupId>org.apache.sis.storage</groupId>
+      <artifactId>sis-storage</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
       <groupId>edu.ucar</groupId>
       <artifactId>netcdf</artifactId>
     </dependency>
