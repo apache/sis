@@ -33,7 +33,7 @@ public final class WebSite extends InlineTaglet {
     /**
      * URL to the web site, <strong>without</strong> trailing slash.
      */
-    static final String URL = "http://builds.apache.org/job/sis-trunk/site";
+    static final String URL = "http://builds.apache.org/job/sis-jdk7/site";
 
     /**
      * Register this taglet.
