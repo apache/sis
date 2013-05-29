@@ -110,7 +110,7 @@ public final class Exceptions extends Static {
      * {@linkplain Throwable#getLocalizedMessage() localized message} of the given exception
      * on the next line. If the exception has a {@linkplain Throwable#getCause() causes}, then
      * the localized message of the cause is formatted on the next line and the process is
-     * repeated for the whole cause chain.
+     * repeated for the whole cause chain, omitting duplicated messages.
      *
      * <p>{@link SQLException} is handled especially in order to process the
      * {@linkplain SQLException#getNextException() next exception} instead than the cause.</p>
