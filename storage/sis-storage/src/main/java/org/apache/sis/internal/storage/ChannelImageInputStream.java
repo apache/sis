@@ -88,10 +88,10 @@ public class ChannelImageInputStream extends ChannelDataInput implements ImageIn
      */
     private static final class Mark {
         final long position;
-        final int  bitOffset;
-        final Mark next;
+        final byte bitOffset;
+        Mark next;
 
-        Mark(long position, int bitOffset, Mark next) {
+        Mark(long position, byte bitOffset, Mark next) {
             this.position  = position;
             this.bitOffset = bitOffset;
             this.next      = next;
@@ -418,7 +418,7 @@ loop:   while ((c = read()) >= 0) {
      */
     @Override
     public final void mark() {
-        mark = new Mark(getStreamPosition(), getBitOffset(), mark);
+        mark = new Mark(getStreamPosition(), (byte) getBitOffset(), mark);
     }
 
     /**
@@ -478,6 +478,20 @@ loop:   while ((c = read()) >= 0) {
         buffer.position(n); // Number of bytes to forget.
         buffer.compact().position(p).limit(r);
         setStreamPosition(currentPosition);
+
+        // Discard obolete marks.
+        Mark parent = null;
+        for (Mark m = mark; m != null; m = m.next) {
+            if (m.position < position) {
+                if (parent != null) {
+                    parent.next = null;
+                } else {
+                    mark = null;
+                }
+                break;
+            }
+            parent = m;
+        }
     }
 
     /**
