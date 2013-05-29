@@ -42,7 +42,7 @@
   <description>
   <!-- Left alignment because this description will be copied in META-INF/MANIFEST.MF
        The leading space after the first line is necessary for proper formatting. -->
-DataStore API and base storage classes.
+Provides the interfaces and base classes to be implemented by various storage formats.
   </description>
 
 
