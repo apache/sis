@@ -31,7 +31,7 @@ import static org.apache.sis.util.Numbers.*;
  * @version 0.3
  * @module
  */
-public final class NumbersTest extends TestCase {
+public final strictfp class NumbersTest extends TestCase {
     /**
      * Tests {@link Numbers#isInteger(Class)}.
      */
