@@ -161,7 +161,7 @@ public final class NumbersTest extends TestCase {
         assertEquals(Integer.class, narrowestClass(-100000  ));
         assertEquals(Integer.class, narrowestClass((double) (1L << 30)));
         assertEquals(Float  .class, narrowestClass((double) (1L << 40)));
-        assertEquals(Double .class, narrowestClass(Math.PI));
+        assertEquals(Double .class, narrowestClass(StrictMath.PI));
     }
 
     /**
@@ -169,16 +169,16 @@ public final class NumbersTest extends TestCase {
      */
     @Test
     public void testNarrowestNumber() {
-        assertEquals(Byte   .valueOf((byte)   127), narrowestNumber(    127.0));
-        assertEquals(Short  .valueOf((short)  128), narrowestNumber(    128.0));
-        assertEquals(Integer.valueOf(      100000), narrowestNumber( 100000.0));
-        assertEquals(Float  .valueOf(       10.5f), narrowestNumber(     10.5));
-        assertEquals(Byte   .valueOf((byte)  -128), narrowestNumber(   -128  ));
-        assertEquals(Short  .valueOf((short) -129), narrowestNumber(   -129  ));
-        assertEquals(Integer.valueOf(     -100000), narrowestNumber(-100000  ));
-        assertEquals(Integer.valueOf(1  << 30),     narrowestNumber((double) (1L << 30)));
-        assertEquals(Float  .valueOf(1L << 40),     narrowestNumber((double) (1L << 40)));
-        assertEquals(Double .valueOf(Math.PI),      narrowestNumber(Math.PI));
+        assertEquals(Byte   .valueOf((byte)   127),  narrowestNumber(    127.0));
+        assertEquals(Short  .valueOf((short)  128),  narrowestNumber(    128.0));
+        assertEquals(Integer.valueOf(      100000),  narrowestNumber( 100000.0));
+        assertEquals(Float  .valueOf(       10.5f),  narrowestNumber(     10.5));
+        assertEquals(Byte   .valueOf((byte)  -128),  narrowestNumber(   -128  ));
+        assertEquals(Short  .valueOf((short) -129),  narrowestNumber(   -129  ));
+        assertEquals(Integer.valueOf(     -100000),  narrowestNumber(-100000  ));
+        assertEquals(Integer.valueOf(1  << 30),      narrowestNumber((double) (1L << 30)));
+        assertEquals(Float  .valueOf(1L << 40),      narrowestNumber((double) (1L << 40)));
+        assertEquals(Double .valueOf(StrictMath.PI), narrowestNumber(StrictMath.PI));
     }
 
     /**
