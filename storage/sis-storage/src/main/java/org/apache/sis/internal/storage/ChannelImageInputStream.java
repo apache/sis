@@ -458,6 +458,9 @@ loop:   while ((c = read()) >= 0) {
      * Attempting to {@linkplain #seek(long) seek} to an offset within the flushed
      * portion of the stream will result in an {@link IndexOutOfBoundsException}.
      *
+     * <p>This method moves the data starting at the given position to the beginning of the {@link #buffer},
+     * thus making more room for new data before the data at the given position is discarded.</p>
+     *
      * @param  position The length of the stream prefix that may be flushed.
      * @throws IOException If an I/O error occurred.
      */
@@ -478,24 +481,25 @@ loop:   while ((c = read()) >= 0) {
     }
 
     /**
-     * Returns {@code true} if this {@code ImageInputStream} caches data itself in order to
-     * allow {@linkplain #seek(long) seeking} backwards.
-     *
-     * @return {@code true} If this {@code ImageInputStream} caches data.
+     * Synonymous of {@link #isCachedMemory()} since the caching behavior of this class is uniquely determined
+     * by the policy that we choose for {@code isCachedMemory()}. This class never creates temporary files.
      *
      * @see #isCachedMemory()
      * @see #isCachedFile()
      */
     @Override
     public final boolean isCached() {
-        return false;
+        return isCachedMemory();
     }
 
     /**
-     * Returns {@code true} if this {@code ImageInputStream} caches data itself in order to
-     * allow {@linkplain #seek(long) seeking} backwards, and the cache is kept in main memory.
+     * Returns {@code false} since this {@code ImageInputStream} does not cache data itself in order to
+     * allow {@linkplain #seek(long) seeking} backwards. Actually, we could consider the {@link #buffer}
+     * as a cache in main memory. But this buffer has a maximal capacity, which would be a violation of
+     * {@code ImageInputStream} contract.
      *
-     * @return {@code true} if this {@code ImageInputStream} caches data in main memory.
+     * @return {@code false} since this {@code ImageInputStream} does not caches data in main memory
+     *         (ignoring the {@link #buffer}).
      */
     @Override
     public final boolean isCachedMemory() {
@@ -503,10 +507,9 @@ loop:   while ((c = read()) >= 0) {
     }
 
     /**
-     * Returns {@code true} if this {@code ImageInputStream} caches data itself in order to allow
-     * {@linkplain #seek(long) seeking} backwards, and the cache is kept in a temporary file.
+     * Returns {@code false} since this {@code ImageInputStream} does not cache data in a temporary file.
      *
-     * @return {@code true} if this {@code ImageInputStream} caches data in a temporary file.
+     * @return {@code false} since this {@code ImageInputStream} does not cache data in a temporary file.
      */
     @Override
     public final boolean isCachedFile() {
