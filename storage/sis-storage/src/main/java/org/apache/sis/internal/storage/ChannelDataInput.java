@@ -658,7 +658,9 @@ public class ChannelDataInput {
         } else if (channel instanceof SeekableByteChannel) {
             /*
              * Requested position is outside the current limits of the buffer,
-             * but we can set the new position directly in the channel.
+             * but we can set the new position directly in the channel. Note
+             * that DataStoreConnection.rewind() needs the buffer content to
+             * be valid as a result of this seek, so we reload it immediately.
              */
             ((SeekableByteChannel) channel).position(channelOffset + position);
             bufferOffset = position;
