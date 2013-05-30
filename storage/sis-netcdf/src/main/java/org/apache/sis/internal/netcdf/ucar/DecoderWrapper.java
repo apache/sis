@@ -21,11 +21,13 @@ import java.util.List;
 import java.util.EnumSet;
 import java.io.IOException;
 import ucar.nc2.Group;
+import ucar.nc2.Dimension;
 import ucar.nc2.Attribute;
 import ucar.nc2.VariableIF;
 import ucar.nc2.NetcdfFile;
 import ucar.nc2.dataset.NetcdfDataset;
 import ucar.nc2.dataset.CoordinateSystem;
+import ucar.nc2.util.CancelTask;
 import ucar.nc2.units.DateUnit;
 import ucar.nc2.time.Calendar;
 import ucar.nc2.time.CalendarDate;
@@ -34,8 +36,7 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.GridGeometry;
-import org.apache.sis.internal.netcdf.WarningProducer;
-import ucar.nc2.Dimension;
+import org.apache.sis.internal.storage.WarningProducer;
 
 
 /**
@@ -46,7 +47,7 @@ import ucar.nc2.Dimension;
  * @version 0.3
  * @module
  */
-public final class DecoderWrapper extends Decoder {
+public final class DecoderWrapper extends Decoder implements CancelTask {
     /**
      * The NetCDF file to read.
      * This file is set at construction time.
@@ -85,12 +86,24 @@ public final class DecoderWrapper extends Decoder {
      * {@link NetcdfFile} instance, the {@link NetcdfDataset} subclass is necessary in order to
      * get coordinate system information.
      *
-     * @param parent Where to send the warnings, or {@code null} if none.
-     * @param file The NetCDF file from which to parse metadata.
+     * @param sink Where to send the warnings, or {@code null} if none.
+     * @param file The NetCDF file from which to read data.
      */
-    public DecoderWrapper(final WarningProducer parent, final NetcdfFile file) {
-        super(parent);
+    public DecoderWrapper(final WarningProducer sink, final NetcdfFile file) {
+        super(sink);
         this.file = file;
+    }
+
+    /**
+     * Creates a new decoder for the given filename.
+     *
+     * @param  sink     Where to send the warnings, or {@code null} if none.
+     * @param  filename The name of the NetCDF file from which to read data.
+     * @throws IOException If an error occurred while opening the NetCDF file.
+     */
+    public DecoderWrapper(final WarningProducer sink, final String filename) throws IOException {
+        super(sink);
+        file = NetcdfDataset.openDataset(filename, false, this);
     }
 
     /**
@@ -308,6 +321,27 @@ public final class DecoderWrapper extends Decoder {
             }
         }
         return geometries;
+    }
+
+    /**
+     * Invoked by the UCAR NetCDF library for checking if the reading process has been canceled.
+     * This method returns the {@link #canceled} flag.
+     *
+     * @return The {@link #canceled} flag.
+     */
+    @Override
+    public boolean isCancel() {
+        return canceled;
+    }
+
+    /**
+     * Invoked by the UCAR NetCDF library when an error occurred.
+     *
+     * @param message The error message.
+     */
+    @Override
+    public void setError(final String message) {
+        warning(null, message);
     }
 
     /**

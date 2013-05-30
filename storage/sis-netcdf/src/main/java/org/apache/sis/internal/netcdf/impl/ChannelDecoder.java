@@ -37,7 +37,7 @@ import org.apache.sis.internal.jdk8.Function;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.GridGeometry;
-import org.apache.sis.internal.netcdf.WarningProducer;
+import org.apache.sis.internal.storage.WarningProducer;
 import org.apache.sis.internal.storage.ChannelDataInput;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.jdk8.JDK8;
@@ -173,16 +173,16 @@ public final class ChannelDecoder extends Decoder {
      * Creates a new decoder for the given file.
      * This constructor parses immediately the header.
      *
-     * @param  parent   Where to send the warnings, or {@code null} if none.
+     * @param  sink     Where to send the warnings, or {@code null} if none.
      * @param  filename A file identifier used only for formatting error message.
      * @param  channel  The channel from where data are read.
      * @throws IOException If an error occurred while reading the channel.
      * @throws DataStoreException If the content of the given channel is not a NetCDF file.
      */
-    public ChannelDecoder(final WarningProducer parent, final String filename, final ReadableByteChannel channel)
+    public ChannelDecoder(final WarningProducer sink, final String filename, final ReadableByteChannel channel)
             throws IOException, DataStoreException
     {
-        super(parent);
+        super(sink);
         // The buffer must be backed by a Java {@code byte[]} array,
         // because we will occasionally reference that array.
         input = new ChannelDataInput(filename, channel, ByteBuffer.allocate(4096), false);

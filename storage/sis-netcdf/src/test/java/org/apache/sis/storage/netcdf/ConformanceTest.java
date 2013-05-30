@@ -66,7 +66,7 @@ public final strictfp class ConformanceTest extends NetcdfMetadataTest {
     @Override
     protected Metadata wrap(final NetcdfFile file) throws IOException {
         final Decoder decoder = new DecoderWrapper(null, file);
-        final MetadataReader ncISO = new MetadataReader(null, decoder);
+        final MetadataReader ncISO = new MetadataReader(decoder);
         return ncISO.read();
         // Do not close the file, as this will be done by the parent test class.
     }
