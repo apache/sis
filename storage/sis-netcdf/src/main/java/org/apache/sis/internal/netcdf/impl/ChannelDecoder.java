@@ -507,11 +507,11 @@ public final class ChannelDecoder extends Decoder {
      *
      * @see #findAttribute(String)
      */
-    private static <E> Map<String,E> toMap(final E[] elements, final Function<E,String> nameFunction) throws DataStoreException {
+    private <E> Map<String,E> toMap(final E[] elements, final Function<E,String> nameFunction) throws DataStoreException {
         try {
             return CollectionsExt.toCaseInsensitiveNameMap(Arrays.asList(elements), nameFunction, NAME_LOCALE);
         } catch (InvalidParameterCardinalityException e) {
-            throw new DataStoreException(Errors.format(Errors.Keys.ValueAlreadyDefined_1, e.getParameterName()));
+            throw new DataStoreException(errors().getString(Errors.Keys.ValueAlreadyDefined_1, e.getParameterName()));
         }
     }
 
