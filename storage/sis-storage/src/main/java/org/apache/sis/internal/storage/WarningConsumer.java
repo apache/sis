@@ -16,9 +16,11 @@
  */
 package org.apache.sis.internal.storage;
 
+import java.util.Locale;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
 import java.util.NoSuchElementException;
+import org.apache.sis.util.Localized;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.WarningListener;
@@ -64,6 +66,16 @@ public final class WarningConsumer<T> extends WarningProducer {
         super(null);
         this.source = source;
         this.logger = logger;
+    }
+
+    /**
+     * The locale to use for formatting warning messages, or {@code null} for the default locale.
+     * This method returns the {@link #source} locale if it implements the {@link Localized} interface,
+     * or {@code null} otherwise.
+     */
+    @Override
+    public Locale getLocale() {
+        return (source instanceof Localized) ? ((Localized) source).getLocale() : null;
     }
 
     /**

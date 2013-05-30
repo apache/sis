@@ -192,7 +192,7 @@ public final class ChannelDecoder extends Decoder {
          */
         int version = input.readInt();
         if ((version & 0xFFFFFF00) != (('C' << 24) | ('D' << 16) | ('F' <<  8))) {
-            throw new DataStoreException(Errors.format(Errors.Keys.UnexpectedFileFormat_2, "NetCDF", filename));
+            throw new DataStoreException(errors().getString(Errors.Keys.UnexpectedFileFormat_2, "NetCDF", filename));
         }
         /*
          * Check the version number.
@@ -201,7 +201,7 @@ public final class ChannelDecoder extends Decoder {
         switch (version) {
             case 1:  is64bits = false; break;
             case 2:  is64bits = true;  break;
-            default: throw new DataStoreException(Errors.format(Errors.Keys.UnsupportedVersion_1, version));
+            default: throw new DataStoreException(errors().getString(Errors.Keys.UnsupportedVersion_1, version));
         }
         numrecs = input.readInt();
         /*
@@ -252,7 +252,7 @@ public final class ChannelDecoder extends Decoder {
      * that the file should be a NetCDF one, but we found some inconsistency or unknown tags.
      */
     private DataStoreException malformedHeader() {
-        return new DataStoreException(Errors.format(Errors.Keys.CanNotParseFile_2, "NetCDF", input.filename));
+        return new DataStoreException(errors().getString(Errors.Keys.CanNotParseFile_2, "NetCDF", input.filename));
     }
 
     /**
@@ -260,7 +260,7 @@ public final class ChannelDecoder extends Decoder {
      */
     private void ensureNonNegative(final int nelems, final int tag) throws DataStoreException {
         if (nelems < 0) {
-            throw new DataStoreException(Errors.format(Errors.Keys.NegativeArrayLength_1,
+            throw new DataStoreException(errors().getString(Errors.Keys.NegativeArrayLength_1,
                     input.filename + DefaultNameSpace.DEFAULT_SEPARATOR + tagName(tag)));
         }
     }
@@ -284,9 +284,10 @@ public final class ChannelDecoder extends Decoder {
         final long size = ((n & 0xFFFFFFFFL) * dataSize + 3) & ~3;
         if (size > input.buffer.capacity()) {
             name = input.filename + DefaultNameSpace.DEFAULT_SEPARATOR + name;
+            final Errors errors = errors();
             throw new DataStoreException(n < 0 ?
-                    Errors.format(Errors.Keys.NegativeArrayLength_1, name) :
-                    Errors.format(Errors.Keys.ExcessiveListSize_2, name, n));
+                    errors.getString(Errors.Keys.NegativeArrayLength_1, name) :
+                    errors.getString(Errors.Keys.ExcessiveListSize_2, name, n));
         }
         input.ensureBufferContains((int) size);
         return (int) size;
@@ -394,7 +395,7 @@ public final class ChannelDecoder extends Decoder {
             if (length == 0) {
                 length = numrecs;
                 if (length == STREAMING) {
-                    throw new DataStoreException(Errors.format(Errors.Keys.MissingValueForProperty_1, "numrecs"));
+                    throw new DataStoreException(errors().getString(Errors.Keys.MissingValueForProperty_1, "numrecs"));
                 }
             }
             dimensions[i] = new Dimension(name, length);
@@ -603,7 +604,7 @@ public final class ChannelDecoder extends Decoder {
             if (attribute.value instanceof String) try {
                 return JDK8.parseDateTime((String) attribute.value, DEFAULT_TIMEZONE_IS_UTC);
             } catch (IllegalArgumentException e) {
-                warning("dateValue", e);
+                warning("dateValue", null, e);
             }
         }
         return null;
@@ -630,7 +631,7 @@ public final class ChannelDecoder extends Decoder {
                 }
             }
         } catch (ConversionException | IllegalArgumentException e) {
-            warning("numberToDate", e);
+            warning("numberToDate", null, e);
         }
         return dates;
     }

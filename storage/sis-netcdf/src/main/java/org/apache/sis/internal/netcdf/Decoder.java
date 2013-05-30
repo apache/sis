@@ -103,7 +103,7 @@ public abstract class Decoder extends WarningProducer implements Closeable {
         try {
             return Double.valueOf(value);
         } catch (NumberFormatException e) {
-            warning("numericValue", e);
+            warning("numericValue", null, e);
         }
         return null;
     }
@@ -133,7 +133,7 @@ public abstract class Decoder extends WarningProducer implements Closeable {
         if (unit != null) try {
             return Units.valueOf(unit);
         } catch (IllegalArgumentException e) {
-            warning("unitValue", e);
+            warning("unitValue", null, e);
         }
         return null;
     }
