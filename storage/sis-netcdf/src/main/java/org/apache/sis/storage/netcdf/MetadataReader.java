@@ -64,7 +64,7 @@ import org.apache.sis.internal.netcdf.Axis;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.GridGeometry;
-import org.apache.sis.internal.netcdf.WarningProducer;
+import org.apache.sis.internal.storage.WarningProducer;
 import org.apache.sis.internal.util.DefaultFactories;
 import org.apache.sis.internal.metadata.MetadataUtilities;
 
@@ -169,12 +169,11 @@ final class MetadataReader extends WarningProducer {
     /**
      * Creates a new <cite>NetCDF to ISO</cite> mapper for the given source.
      *
-     * @param  parent Where to send the warnings, or {@code null} if none.
      * @param  decoder The source of NetCDF attributes.
      * @throws IOException If an I/O operation was necessary but failed.
      */
-    MetadataReader(final WarningProducer parent, final Decoder decoder) throws IOException {
-        super(parent);
+    MetadataReader(final Decoder decoder) throws IOException {
+        super(decoder.sink);
         this.decoder = decoder;
         decoder.setSearchPath(SEARCH_PATH);
         searchPath = decoder.getSearchPath();

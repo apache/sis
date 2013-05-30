@@ -16,7 +16,9 @@
  */
 package org.apache.sis.storage;
 
+import java.util.NoSuchElementException;
 import org.opengis.metadata.Metadata;
+import org.apache.sis.util.logging.WarningListener;
 
 
 /**
@@ -38,6 +40,42 @@ public interface DataStore extends AutoCloseable {
      * @throws DataStoreException If an error occurred while reading the data.
      */
     Metadata getMetadata() throws DataStoreException;
+
+    /**
+     * Adds a listener to be notified when a warning occurred while reading from or writing to the storage.
+     * When a warning occurs, there is a choice:
+     *
+     * <ul>
+     *   <li>If this data store has no warning listener, then the warning is logged at
+     *       {@link java.util.logging.Level#WARNING}.</li>
+     *   <li>If this data store has at least one warning listener, then all listeners are notified
+     *       and the warning is <strong>not</strong> logged by this data store instance.</li>
+     * </ul>
+     *
+     * Consider invoking this method in a {@code try} … {@code finally} block if the {@code DataStore}
+     * lifetime is longer than the listener lifetime, as below:
+     *
+     * {@preformat java
+     *     datastore.addWarningListener(listener);
+     *     try {
+     *         // Do some work...
+     *     } finally {
+     *         datastore.removeWarningListener(listener);
+     *     }
+     * }
+     *
+     * @param  listener The listener to add.
+     * @throws IllegalArgumentException If the given listener is already registered in this data store.
+     */
+    void addWarningListener(WarningListener<? super DataStore> listener) throws IllegalArgumentException;
+
+    /**
+     * Removes a previously registered listener.
+     *
+     * @param  listener The listener to remove.
+     * @throws NoSuchElementException If the given listener is not registered in this data store.
+     */
+    void removeWarningListener(WarningListener<? super DataStore> listener) throws NoSuchElementException;
 
     /**
      * Closes this data store and releases any underlying resources.

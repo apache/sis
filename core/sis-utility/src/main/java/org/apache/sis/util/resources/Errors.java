@@ -311,6 +311,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int NegativeArrayLength_1 = 78;
 
         /**
+         * Element “{0}” has not been found.
+         */
+        public static final int NoSuchElement_1 = 96;
+
+        /**
          * No property named “{0}” has been found in “{1}”.
          */
         public static final int NoSuchProperty_2 = 73;
