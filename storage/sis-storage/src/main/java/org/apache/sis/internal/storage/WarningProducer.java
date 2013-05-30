@@ -16,11 +16,15 @@
  */
 package org.apache.sis.internal.storage;
 
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import org.apache.sis.util.Localized;
 import org.apache.sis.util.Exceptions;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.logging.WarningListener;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -45,7 +49,7 @@ import org.apache.sis.util.logging.WarningListener;
  * @version 0.3
  * @module
  */
-public class WarningProducer {
+public class WarningProducer implements Localized {
     /**
      * Where to send the warnings, or {@code null} if none. This field is always {@code null} for
      * {@link WarningConsumer}, since the later will redirect warnings to the listeners (if any).
@@ -59,6 +63,19 @@ public class WarningProducer {
      */
     protected WarningProducer(final WarningProducer sink) {
         this.sink = sink;
+    }
+
+    /**
+     * The locale to use for formatting warning messages, or {@code null} for the default locale.
+     * The default implementation returns the {@link #sink} locale if any, or {@code null} otherwise.
+     * Subclasses can override this method if they are configured for formatting the error messages
+     * is some specific locale.
+     *
+     * @return The locale for formatting warning messages, or {@code null} for the default.
+     */
+    @Override
+    public Locale getLocale() {
+        return (sink != null) ? sink.getLocale() : null;
     }
 
     /**
@@ -78,12 +95,21 @@ public class WarningProducer {
     }
 
     /**
-     * Reports a warning represented by the given message.
+     * Reports a warning represented by the given message and exception.
+     * At least one of {@code message} and {@code exception} shall be non-null.
      *
      * @param methodName The name of the method in which the warning occurred.
-     * @param message    The message to log.
+     * @param message    The message to log, or {@code null} if none.
+     * @param exception  The exception to log, or {@code null} if none.
      */
-    protected final void warning(final String methodName, final String message) {
+    protected final void warning(final String methodName, String message, final Exception exception) {
+        if (exception != null) {
+            message = Exceptions.formatChainedMessages(getLocale(), message, exception);
+            if (message == null) {
+                message = exception.toString();
+            }
+        }
+        ArgumentChecks.ensureNonEmpty("message", message);
         final LogRecord record = new LogRecord(Level.WARNING, message);
         record.setSourceClassName(getClass().getCanonicalName());
         record.setSourceMethodName(methodName);
@@ -91,12 +117,11 @@ public class WarningProducer {
     }
 
     /**
-     * Reports a warning represented by the given exception.
+     * Returns the localized error resource bundle for the locale given by {@link #getLocale()}.
      *
-     * @param methodName The name of the method in which the warning occurred.
-     * @param exception  The exception to log.
+     * @return The localized error resource bundle.
      */
-    protected final void warning(final String methodName, final Exception exception) {
-        warning(methodName, Exceptions.formatChainedMessages(null, null, exception));
+    protected final Errors errors() {
+        return Errors.getResources(getLocale());
     }
 }

@@ -272,7 +272,7 @@ final class MetadataReader extends WarningProducer {
             resource.setFunction(OnLineFunction.INFORMATION);
             return resource;
         } catch (URISyntaxException e) {
-            warning("createOnlineResource", e);
+            warning("createOnlineResource", null, e);
         }
         return null;
     }
@@ -677,7 +677,7 @@ final class MetadataReader extends WarningProducer {
             }
             extent.getTemporalElements().add(t);
         } catch (UnsupportedOperationException e) {
-            warning("createExtent", e);
+            warning("createExtent", null, e);
         }
         /*
          * Add the geographic identifier, if present.
@@ -700,7 +700,7 @@ final class MetadataReader extends WarningProducer {
         if (source != null) try {
             return source.getConverterToAny(target);
         } catch (ConversionException e) {
-            warning("getConverterTo", e);
+            warning("getConverterTo", null, e);
         }
         return null;
     }
