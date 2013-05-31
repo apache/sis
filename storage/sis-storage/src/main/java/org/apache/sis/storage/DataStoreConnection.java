@@ -111,9 +111,9 @@ public class DataStoreConnection implements Serializable {
      * </ul>
      *
      * A non-existent entry means that the value has not yet been computed. A {@link Void#TYPE} value means the value
-     * has been computed and we have determined that {@link #viewAs(Class)} shall returns {@code null} for that type.
+     * has been computed and we have determined that {@link #openAs(Class)} shall returns {@code null} for that type.
      *
-     * @see #viewAs(Class)
+     * @see #openAs(Class)
      */
     private transient Map<Class<?>, Object> views;
 
@@ -255,7 +255,7 @@ public class DataStoreConnection implements Serializable {
      *         <li>Otherwise this method returns {@code null}.</li>
      *       </ul></p></li>
      *
-     *   <li><p>{@link DataInput}:
+     *   <li><p>{@link Connection}:
      *       Performs the following choice based on the type of the {@linkplain #getStorage() storage} object:
      *       <ul>
      *         <li>If the storage is already an instance of {@link Connection}, then it is returned unchanged.</li>
@@ -267,17 +267,20 @@ public class DataStoreConnection implements Serializable {
      *       </ul></p></li>
      * </ul>
      *
-     * Multiple invocations of this method on the same {@code DataStoreConnection} instance will return the same view
-     * instance. Consequently, callers shall not close the stream or database connection returned by this method.
+     * Callers shall not close the stream or database connection returned by this method. Multiple invocations
+     * of this method on the same {@code DataStoreConnection} instance will try to return the same instance on
+     * a <cite>best effort</cite> basis.
      *
      * @param  <T>  The compile-time type of the {@code type} argument.
-     * @param  type The type of desired view, as one of {@code ByteBuffer}, {@code DataInput}, {@code Connection}
+     * @param  type The desired type as one of {@code ByteBuffer}, {@code DataInput}, {@code Connection}
      *         class or other type supported by {@code DataStoreConnection} subclasses.
      * @return The storage as a view of the given type, or {@code null} if no view can be created for the given type.
      * @throws IllegalArgumentException If the given {@code type} argument is not a known type.
      * @throws DataStoreException If an error occurred while opening a stream or database connection.
+     *
+     * @see #closeAllExcept(Object)
      */
-    public <T> T viewAs(final Class<T> type) throws IllegalArgumentException, DataStoreException {
+    public <T> T openAs(final Class<T> type) throws IllegalArgumentException, DataStoreException {
         ArgumentChecks.ensureNonNull("type", type);
         if (views != null) {
             final Object view = views.get(type);
@@ -317,7 +320,7 @@ public class DataStoreConnection implements Serializable {
 
     /**
      * Creates a view for the input as a {@link DataInput} if possible. This method performs the choice
-     * documented in the {@link #viewAs(Class)} method for the {@code DataInput} case, and create the
+     * documented in the {@link #openAs(Class)} method for the {@code DataInput} case, and create the
      * {@code ByteBuffer} in same time if possible.
      *
      * @throws IOException If an error occurred while opening a stream for the input.
@@ -335,9 +338,12 @@ public class DataStoreConnection implements Serializable {
              */
             final ReadableByteChannel channel = IOUtilities.open(storage, getOption(OptionKey.URL_ENCODING));
             if (channel != null) {
-                ByteBuffer buffer = getOption(OptionKey.BYTE_BUFFER);
+                ByteBuffer buffer = getView(ByteBuffer.class);
                 if (buffer == null) {
-                    buffer = ByteBuffer.allocate(DEFAULT_BUFFER_SIZE);
+                    buffer = getOption(OptionKey.BYTE_BUFFER);
+                    if (buffer == null) {
+                        buffer = ByteBuffer.allocate(DEFAULT_BUFFER_SIZE);
+                    }
                 }
                 asDataInput = new ChannelImageInputStream(getStorageName(), channel, buffer, false);
                 asByteBuffer = buffer.asReadOnlyBuffer();
@@ -354,10 +360,10 @@ public class DataStoreConnection implements Serializable {
 
     /**
      * Creates a storage view of the given type if possible, or returns {@code null} otherwise.
-     * This method is invoked by {@link #viewAs(Class)} when first needed, and the result is cached.
+     * This method is invoked by {@link #openAs(Class)} when first needed, and the result is cached.
      *
      * @param  <T>  The compile-time type of the {@code type} argument.
-     * @param  type The type of desired view.
+     * @param  type The type of the view to create.
      * @return The storage as a view of the given type, or {@code null} if no view can be created for the given type.
      * @throws IllegalArgumentException If the given {@code type} argument is not a known type.
      * @throws Exception If an error occurred while opening a stream or database connection.
@@ -432,7 +438,7 @@ public class DataStoreConnection implements Serializable {
 
     /**
      * Closes all streams and connections created by this {@code DataStoreConnection} except the given view.
-     * This method closes all objects created by the {@link #viewAs(Class)} method, leaving only {@code view} open.
+     * This method closes all objects created by the {@link #openAs(Class)} method, leaving only {@code view} open.
      * If {@code view} is {@code null}, then this method closes everything including the {@linkplain #getStorage()
      * storage} if it is closeable.
      *
@@ -440,15 +446,17 @@ public class DataStoreConnection implements Serializable {
      * by the data store is given in argument to this method - or when no suitable {@code DataStore} has been
      * found - in which case the {@code view} argument is null.</p>
      *
+     * <p>This {@code DataStoreConnection} instance shall not be used anymore after invocation of this method.</p>
+     *
      * @param  view The view to leave open, or {@code null} if none.
      * @throws DataStoreException If an error occurred while closing the stream or database connection.
+     *
+     * @see #openAs(Class)
      */
     public void closeAllExcept(final Object view) throws DataStoreException {
-        final Map<Class<?>, Object> map = views;
-        views = Collections.emptyMap();
         boolean close = (view == null);
         try {
-            for (final Object value : map.values()) {
+            for (final Object value : views.values()) {
                 if (value != view) {
                     if (value instanceof AutoCloseable) {
                         ((AutoCloseable) value).close();
@@ -472,6 +480,8 @@ public class DataStoreConnection implements Serializable {
             }
         } catch (Exception e) {
             throw new DataStoreException(e);
+        } finally {
+            views = Collections.emptyMap();
         }
     }
 
