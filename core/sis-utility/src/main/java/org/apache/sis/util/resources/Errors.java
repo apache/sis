@@ -89,6 +89,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int CanNotInstantiate_1 = 81;
 
         /**
+         * Can not open “{0}”.
+         */
+        public static final int CanNotOpen_1 = 97;
+
+        /**
          * Can not parse “{1}” as a file in the {0} format.
          */
         public static final int CanNotParseFile_2 = 79;
