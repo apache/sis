@@ -16,6 +16,8 @@
  */
 package org.apache.sis.setup;
 
+import java.util.Map;
+import java.util.HashMap;
 import java.nio.ByteBuffer;
 import java.io.Serializable;
 import java.io.ObjectStreamException;
@@ -126,6 +128,52 @@ public class OptionKey<T> implements Serializable {
      */
     public final Class<T> getElementType() {
         return type;
+    }
+
+    /**
+     * Returns the option value in the given map for this key, or {@code null} if none.
+     * This is a convenience method for implementors, which can be used as below:
+     *
+     * {@preformat java
+     *     public <T> T getOption(final OptionKey<T> key) {
+     *         ArgumentChecks.ensureNonNull("key", key);
+     *         return key.getValueFrom(options);
+     *     }
+     * }
+     *
+     * @param  options The map where to search for the value, or {@code null} if not yet created.
+     * @return The current value in the map for the this option, or {@code null} if none.
+     */
+    public T getValueFrom(final Map<OptionKey<?>,?> options) {
+        return (options != null) ? type.cast(options.get(this)) : null;
+    }
+
+    /**
+     * Sets a value for this option key in the given map, or in a new map if the given map is {@code null}.
+     * This is a convenience method for implementors, which can be used as below:
+     *
+     * {@preformat java
+     *     public <T> void setOption(final OptionKey<T> key, final T value) {
+     *         ArgumentChecks.ensureNonNull("key", key);
+     *         options = key.setValueInto(options, value);
+     *     }
+     * }
+     *
+     * @param  options The map where to set the value, or {@code null} if not yet created.
+     * @param  value   The new value for the given option, or {@code null} for removing the value.
+     * @return The given map of options, or a new map if the given map was null. The returned value
+     *         may be null if the given map and the given value are both null.
+     */
+    public Map<OptionKey<?>,Object> setValueInto(Map<OptionKey<?>,Object> options, final T value) {
+        if (value != null) {
+            if (options == null) {
+                options = new HashMap<>();
+            }
+            options.put(this, value);
+        } else if (options != null) {
+            options.remove(this);
+        }
+        return options;
     }
 
     /**

@@ -34,7 +34,6 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.storage.IOUtilities;
 import org.apache.sis.internal.storage.ChannelImageInputStream;
-import org.apache.sis.internal.util.Options;
 import org.apache.sis.setup.OptionKey;
 
 
@@ -152,7 +151,8 @@ public class DataStoreConnection implements Serializable {
      * @return The current value for the given option, or {@code null} if none.
      */
     public <T> T getOption(final OptionKey<T> key) {
-        return Options.get(options, key);
+        ArgumentChecks.ensureNonNull("key", key);
+        return key.getValueFrom(options);
     }
 
     /**
@@ -168,7 +168,8 @@ public class DataStoreConnection implements Serializable {
      * @param value The new value for the given option, or {@code null} for removing the value.
      */
     public <T> void setOption(final OptionKey<T> key, final T value) {
-        options = Options.set(options, key, value);
+        ArgumentChecks.ensureNonNull("key", key);
+        options = key.setValueInto(options, value);
     }
 
     /**
@@ -481,7 +482,9 @@ public class DataStoreConnection implements Serializable {
     public String toString() {
         final StringBuilder buffer = new StringBuilder(40);
         buffer.append(Classes.getShortClassName(this)).append("[“").append(getStorageName()).append('”');
-        Options.list(options, ", ", buffer);
+        if (options != null) {
+            buffer.append(", options=").append(options);
+        }
         return buffer.append(']').toString();
     }
 }
