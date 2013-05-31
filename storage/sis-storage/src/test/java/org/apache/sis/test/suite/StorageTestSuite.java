@@ -33,7 +33,8 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.storage.WarningConsumerTest.class,
     org.apache.sis.internal.storage.IOUtilitiesTest.class,
     org.apache.sis.internal.storage.ChannelDataInputTest.class,
-    org.apache.sis.internal.storage.ChannelImageInputStreamTest.class
+    org.apache.sis.internal.storage.ChannelImageInputStreamTest.class,
+    org.apache.sis.storage.DataStoreConnectionTest.class
 })
 public final strictfp class StorageTestSuite extends TestSuite {
     /**
