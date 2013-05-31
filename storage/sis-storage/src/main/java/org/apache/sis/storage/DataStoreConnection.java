@@ -21,11 +21,16 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
+import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
-import org.apache.sis.internal.storage.ChannelImageInputStream;
-import org.apache.sis.internal.storage.IOUtilities;
+import java.sql.Connection;
+import java.sql.SQLException;
+import javax.sql.DataSource;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.storage.IOUtilities;
+import org.apache.sis.internal.storage.ChannelImageInputStream;
 
 
 /**
@@ -35,10 +40,22 @@ import org.apache.sis.util.resources.Errors;
  * <ul>
  *   <li>A {@link java.nio.file.Path} or a {@link java.io.File} or file or a directory in a file system.</li>
  *   <li>A {@link java.net.URI} or a {@link java.net.URL} to a distant resource.</li>
+ *   <li>A {@link CharSequence} interpreted as a filename or a URL.</li>
  *   <li>A {@link java.nio.channels.Channel} or a {@link DataInput}.</li>
- *   <li>A {@link javax.sql.DataSource} or a {@link java.sql.Connection} to a JDBC database.</li>
+ *   <li>A {@link DataSource} or a {@link Connection} to a JDBC database.</li>
  *   <li>Any other {@code DataStore}-specific object, for example {@link ucar.nc2.NetcdfFile}.</li>
  * </ul>
+ *
+ * This class is used only for discovery of a {@code DataStore} implementation capable to handle the input.
+ * Once a suitable {@code DataStore} has been found, the {@code DataStoreConnection} instance is typically
+ * discarded since each data store implementation will use their own input/output objects.
+ *
+ * <p>This class does not implement {@link AutoCloseable} on intend, because the connection shall not be closed
+ * if it has been taken by a {@link DataStore} instance. The connection shall be closed only if no suitable
+ * {@code DataStore} has been found.</p>
+ *
+ * <p>Instances of this class are serializable if the {@code storage} object given at construction time
+ * is serializable.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
@@ -47,12 +64,19 @@ import org.apache.sis.util.resources.Errors;
  */
 public class DataStoreConnection implements Serializable {
     /**
-     * The input given at construction time.
+     * For cross-version compatibility.
      */
-    private final Object input;
+    private static final long serialVersionUID = 2524083964906593093L;
 
     /**
-     * A name for the input, or {@code null} if none.
+     * The input/output object given at construction time.
+     *
+     * @see #getStorage()
+     */
+    private final Object storage;
+
+    /**
+     * A name for the input/output object, or {@code null} if none.
      * This field is initialized only when first needed.
      */
     private transient String name;
@@ -64,25 +88,25 @@ public class DataStoreConnection implements Serializable {
     private transient String extension;
 
     /**
-     * The input as a data input stream, or {@code null} if none.
-     * This field is initialized together with {@link #asByteBuffer} when first needed.
-     *
-     * <p>Unless the {@link #input} is already an instance of {@link DataInput}, this field will be given an instance
-     * of {@link ChannelImageInputStream}, not an arbitrary stream.  In particular, we do <strong>not</strong> invoke
-     * the {@link javax.imageio.ImageIO#createImageInputStream(Object)} factory method because some SIS data stores
-     * will want to access the channel and buffer directly.</p>
-     *
-     * @see #asDataInput()
-     */
-    private transient DataInput asDataInput;
-
-    /**
      * A read-only view of the buffer over the first bytes of the stream, or {@code null} if none.
      * This field is initialized together with {@link #asDataInput} when first needed.
      *
      * @see #asByteBuffer()
      */
     private transient ByteBuffer asByteBuffer;
+
+    /**
+     * The input as a data input stream, or {@code null} if none.
+     * This field is initialized together with {@link #asByteBuffer} when first needed.
+     *
+     * <p>Unless the {@link #storage} is already an instance of {@link DataInput}, this field will be
+     * given an instance of {@link ChannelImageInputStream} if possible rather than an arbitrary stream.
+     * In particular, we invoke the {@link ImageIO#createImageInputStream(Object)} factory method only in
+     * last resort because some SIS data stores will want to access the channel and buffer directly.</p>
+     *
+     * @see #asDataInput()
+     */
+    private transient DataInput asDataInput;
 
     /**
      * If {@link #asDataInput} is an instance of {@link ImageInputStream}, then the stream position
@@ -96,89 +120,82 @@ public class DataStoreConnection implements Serializable {
     private transient boolean isInitialized;
 
     /**
-     * Creates a new data store connection wrapping the given input object.
-     * The input can be of any type, but the class javadoc lists the most typical ones.
+     * The input/output object as a JDBC connection.
      *
-     * @param input The input as a URL, file, image input stream, <i>etc.</i>.
+     * @see #asDatabase()
      */
-    public DataStoreConnection(final Object input) {
-        ArgumentChecks.ensureNonNull("input", input);
-        this.input = input;
+    private transient Connection asDatabase;
+
+    /**
+     * Creates a new data store connection wrapping the given input/output object.
+     * The object can be of any type, but the class javadoc lists the most typical ones.
+     *
+     * @param storage The input/output object as a URL, file, image input stream, <i>etc.</i>.
+     */
+    public DataStoreConnection(final Object storage) {
+        ArgumentChecks.ensureNonNull("storage", storage);
+        this.storage = storage;
     }
 
     /**
-     * Returns the input object given at construction time.
-     * The input can be of any type, but the class javadoc lists the most typical ones.
+     * Returns the input/output object given at construction time.
+     * The object can be of any type, but the class javadoc lists the most typical ones.
      *
-     * @return The input as a URL, file, image input stream, <i>etc.</i>.
+     * @return The input/output object as a URL, file, image input stream, <i>etc.</i>.
      */
-    public Object getInput() {
-        return input;
+    public Object getStorage() {
+        return storage;
     }
 
     /**
-     * Returns the input name, or the {@linkplain Class#getSimpleName() simple class name} if this method can not infer
-     * a name from the input. If the input is a {@link java.nio.file.Path}, {@link java.io.File}, {@link java.net.URL}
-     * or {@link java.net.URI}, then the default implementation uses dedicated API like {@link Path#getFileName()}.
-     * If the input is a {@link CharSequence}, then the default implementation gets a string representation of
-     * the input and returns the part after the last {@code '/'} or platform-dependent name separator character,
-     * if any.
+     * Returns a short name of the input/output object. The default implementation performs
+     * the following choices based on the type of the {@linkplain #getStorage() storage} object:
      *
-     * @return The input name, or simple class name if the input is an object of unknown type.
+     * <ul>
+     *   <li>For {@link java.nio.file.Path}, {@link java.io.File}, {@link java.net.URI} or {@link java.net.URL}
+     *       instances, this method uses dedicated API like {@link Path#getFileName()}.</li>
+     *   <li>For {@link CharSequence} instances, this method gets a string representation of the storage object
+     *       and returns the part after the last {@code '/'} character or platform-dependent name separator.</li>
+     *   <li>For instances of unknown type, this method builds a string representation using the class name.
+     *       Note that the string representation of unknown types may change in any future SIS version.</li>
+     * </ul>
+     *
+     * @return A short name of the storage object.
      */
-    public String getInputName() {
+    public String getStorageName() {
         if (name == null) {
-            name = IOUtilities.filename(input);
+            name = IOUtilities.filename(storage);
             if (name == null) {
-                name = input.getClass().getSimpleName();
+                name = Classes.getShortClassName(storage);
             }
         }
         return name;
     }
 
     /**
-     * Returns the filename extension of the input. The default implementation recognizes the same input types
-     * than the {@link #getInputName()} method. If no extension is found, this method returns an empty string.
-     * If the input is an object of unknown type, this method return {@code null}.
+     * Returns the filename extension of the input/output object. The default implementation performs
+     * the following choices based on the type of the {@linkplain #getStorage() storage} object:
      *
-     * @return The extension, or an empty string if none, or {@code null} if the input is an object of unknown type.
+     * <ul>
+     *   <li>For {@link java.nio.file.Path}, {@link java.io.File}, {@link java.net.URI}, {@link java.net.URL} or
+     *       {@link CharSequence} instances, this method returns the string after the last {@code '.'} character
+     *       in the filename, provided that the {@code '.'} is not the first filename character. This may be an
+     *       empty string if the filename has no extension, but never {@code null}.</li>
+     *   <li>For instances of unknown type, this method returns {@code null}.</li>
+     * </ul>
+     *
+     * @return The filename extension, or an empty string if none, or {@code null} if the storage
+     *         is an object of unknown type.
      */
     public String getFileExtension() {
         if (extension == null) {
-            extension = IOUtilities.extension(input);
+            extension = IOUtilities.extension(storage);
         }
         return extension;
     }
 
     /**
-     * Returns the input as a {@link DataInput} if possible, or {@code null} otherwise.
-     * The default implementation performs the following choice:
-     *
-     * <ul>
-     *   <li>If the input is already an instance of {@link DataInput}, then it is returned unchanged.
-     *       This include the {@link ImageInputStream} and {@link javax.imageio.stream.ImageOutputStream} cases,
-     *       which are {@code DataInput} sub-interfaces.</li>
-     *
-     *   <li>Otherwise if the input is an instance of one of the types enumerated in the class javadoc
-     *       (except {@code DataStore}-specific types), then an {@link ImageInputStream} is created when first needed
-     *       and returned. Multiple invocations of this method on the same {@code DataStoreConnection} instance will
-     *       return the same {@code ImageInputStream} instance.</li>
-     *
-     *   <li>Otherwise this method returns {@code null}.</li>
-     * </ul>
-     *
-     * @return The input as a {@link DataInput}, or {@code null} if the input is an object of unknown type.
-     * @throws IOException If an error occurred while opening a stream for the input.
-     */
-    public DataInput asDataInput() throws IOException {
-        if (!isInitialized) {
-            initialize();
-        }
-        return asDataInput;
-    }
-
-    /**
-     * Returns a read-only view of the buffer over the first bytes of the stream, or {@code null} if unavailable.
+     * Returns a read-only view of the first bytes of the input stream, or {@code null} if unavailable.
      * If non-null, this buffer can be used for a quick check of file magic number.
      *
      * @return The first bytes in the stream (read-only), or {@code null} if unavailable.
@@ -192,25 +209,91 @@ public class DataStoreConnection implements Serializable {
     }
 
     /**
-     * Initializes the {@link #asDataInput} and {@link #asByteBuffer} fields.
+     * Returns the input as a {@link DataInput} if possible, or {@code null} otherwise.
+     * The default implementation performs the following choice based on the type of the
+     * {@linkplain #getStorage() storage} object:
+     *
+     * <ul>
+     *   <li>If the storage is already an instance of {@link DataInput} (including the {@link ImageInputStream}
+     *       and {@link javax.imageio.stream.ImageOutputStream} types), then it is returned unchanged.</li>
+     *
+     *   <li>Otherwise if the input is an instance of {@link java.nio.file.Path}, {@link java.io.File},
+     *       {@link java.net.URI}, {@link java.net.URL}, {@link CharSequence}, {@link java.io.InputStream} or
+     *       {@link java.nio.channels.ReadableByteChannel}, then an {@link ImageInputStream} backed by a
+     *       {@link ByteBuffer} is created when first needed and returned.</li>
+     *
+     *   <li>Otherwise if {@link ImageIO#createImageInputStream(Object)} returns a non-null value,
+     *       then this value is cached and returned.</li>
+     *
+     *   <li>Otherwise this method returns {@code null}.</li>
+     * </ul>
+     *
+     * Multiple invocations of this method on the same {@code DataStoreConnection} instance will return the same
+     * {@code ImageInputStream} instance.
+     *
+     * @return The input as a {@code DataInput}, or {@code null} if the input is an object of unknown type.
+     * @throws IOException If an error occurred while opening a stream for the input.
+     */
+    public DataInput asDataInput() throws IOException {
+        if (!isInitialized) {
+            initialize();
+        }
+        return asDataInput;
+    }
+
+    /**
+     * Returns the input as a connection to a JDBC database if possible, or {@code null} otherwise.
+     * The default implementation performs the following choice based on the type of the
+     * {@linkplain #getStorage() storage} object:
+     *
+     * <ul>
+     *   <li>If the storage is already an instance of {@link Connection}, then it is returned unchanged.</li>
+     *
+     *   <li>Otherwise if the storage is an instance of {@link DataSource}, then a connection is obtained
+     *       when first needed and returned.</li>
+     *
+     *   <li>Otherwise this method returns {@code null}.</li>
+     * </ul>
+     *
+     * Multiple invocations of this method on the same {@code DataStoreConnection} instance will return the same
+     * {@code Connection} instance.
+     *
+     * @return The storage as a {@code Connection}, or {@code null} if the storage is an object of unknown type.
+     * @throws SQLException If an error occurred while opening a database connection for the storage.
+     */
+    public Connection asDatabase() throws SQLException {
+        if (asDatabase == null) {
+            if (storage instanceof Connection) {
+                asDatabase = (Connection) storage;
+            } else if (storage instanceof DataSource) {
+                asDatabase = ((DataSource) storage).getConnection();
+            }
+        }
+        return asDatabase;
+    }
+
+    /**
+     * Initializes I/O part, namely the {@link #asDataInput} and {@link #asByteBuffer} fields.
      * Note that some or all of those fields may still be null after this method call.
      *
      * @see #rewind()
      */
     private void initialize() throws IOException {
-        if (input instanceof DataInput) {
-            asDataInput = (DataInput) input;
+        if (storage instanceof DataInput) {
+            asDataInput = (DataInput) storage;
         } else {
             /*
-             * Creates a ChannelImageInputStream instance. We really need that specific type - do NOT use
-             * the ImageIO.createImageInputStream(Object) method - because some SIS data stores will want
-             * to access directly the channel and the buffer.
+             * Creates a ChannelImageInputStream instance. We really need that specific type because some
+             * SIS data stores will want to access directly the channel and the buffer. We will fallback
+             * on the ImageIO.createImageInputStream(Object) method only in last resort.
              */
-            final ReadableByteChannel channel = IOUtilities.open(input, null);
+            final ReadableByteChannel channel = IOUtilities.open(storage, null);
             if (channel != null) {
                 final ByteBuffer buffer = ByteBuffer.allocate(4096);
-                asDataInput = new ChannelImageInputStream(getInputName(), channel, buffer, false);
+                asDataInput = new ChannelImageInputStream(getStorageName(), channel, buffer, false);
                 asByteBuffer = buffer.asReadOnlyBuffer();
+            } else {
+                asDataInput = ImageIO.createImageInputStream(storage);
             }
         }
         if (asDataInput instanceof ImageInputStream) {
@@ -227,27 +310,65 @@ public class DataStoreConnection implements Serializable {
      * <p>In the default implementation, this method does nothing if {@link #asDataInput()}
      * returns {@code null}.</p>
      *
-     * @throws IOException If the stream is open but can not be rewinded.
+     * @throws DataStoreException If the stream is open but can not be rewinded.
      */
-    public void rewind() throws IOException {
+    public void rewind() throws DataStoreException {
         /*
          * Restores the ImageInputStream to its original position if possible. Note that in
          * the ChannelImageInputStream, this may reload the buffer content if necessary.
          */
         if (asDataInput instanceof ImageInputStream) try {
             ((ImageInputStream) asDataInput).seek(streamOrigin);
-        } catch (IndexOutOfBoundsException e) {
-            throw new IOException(Errors.format(Errors.Keys.StreamIsForwardOnly_1, getInputName()), e);
+        } catch (IOException | IndexOutOfBoundsException e) {
+            throw new DataStoreException(Errors.format(Errors.Keys.StreamIsForwardOnly_1, getStorageName()), e);
         }
         /*
-         * If the buffer is non-null, then the way we implemented 'initialize()' guarantees that
-         * 'asDataInput' is an instance of ChannelImageInputStream. So we copy the position and
-         * limits from the buffer. Note that this copy must be performed after the above 'seek',
-         * because the seek operation may have modified the buffer position and limit.
+         * Copy the position and limits from the buffer. Note that this copy must be performed after the
+         * above 'seek', because the seek operation may have modified the buffer position and limit.
          */
-        if (asByteBuffer != null) {
+        if (asByteBuffer != null && asDataInput instanceof ChannelImageInputStream) {
             final ByteBuffer buffer = ((ChannelImageInputStream) asDataInput).buffer;
             asByteBuffer.clear().limit(buffer.limit()).position(buffer.position());
+            asByteBuffer.order(buffer.order());
+        }
+    }
+
+    /**
+     * Closes all streams and connections created by this object, and closes the storage it is closeable.
+     * This method closes the objects created by {@link #asDataInput()} and {@link #asDatabase()}, if any,
+     * then closes the {@linkplain #getStorage() storage} if it is closeable.
+     *
+     * <p>This method shall be invoked <strong>only</strong> if no {@link DataStore} accepted this input.
+     * Invoking this method in a {@code try} … {@code finally} block is usually not appropriate.</p>
+     *
+     * @throws DataStoreException If an error occurred while closing the stream or database connection.
+     */
+    public void close() throws DataStoreException {
+        try {
+            if (asDatabase != null) {
+                asDatabase.close();
+            }
+            if (asDataInput instanceof AutoCloseable) {
+                ((AutoCloseable) asDataInput).close();
+                /*
+                 * On JDK6, ImageInputStream does not extend Closeable and must
+                 * be checked explicitely. On JDK7, this is not needed anymore.
+                 */
+            } else if (storage instanceof AutoCloseable) {
+                /*
+                 * Close only if we didn't closed 'asDataInput', because closing 'asDataInput'
+                 * automatically close the 'storage' if the former is a wrapper for the later.
+                 * Since AutoCloseable.close() is not guaranteed to be indempotent, we should
+                 * avoid to call it (indirectly) twice.
+                 */
+                ((AutoCloseable) storage).close();
+            }
+        } catch (Exception e) {
+            throw new DataStoreException(e);
+        } finally {
+            asDatabase   = null;
+            asDataInput  = null;
+            asByteBuffer = null;
         }
     }
 
@@ -257,7 +378,7 @@ public class DataStoreConnection implements Serializable {
     @Override
     public String toString() {
         final StringBuilder buffer = new StringBuilder(40);
-        buffer.append(getClass().getSimpleName()).append("[“").append(getInputName());
+        buffer.append(Classes.getShortClassName(this)).append("[“").append(getStorageName());
         // TODO: more info here.
         return buffer.append("”]").toString();
     }
