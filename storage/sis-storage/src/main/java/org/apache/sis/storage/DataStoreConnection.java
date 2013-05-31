@@ -16,6 +16,10 @@
  */
 package org.apache.sis.storage;
 
+import java.util.Map;
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.ConcurrentModificationException;
 import java.io.DataInput;
 import java.io.IOException;
 import java.io.Serializable;
@@ -24,7 +28,6 @@ import java.nio.channels.ReadableByteChannel;
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
 import java.sql.Connection;
-import java.sql.SQLException;
 import javax.sql.DataSource;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArgumentChecks;
@@ -49,10 +52,6 @@ import org.apache.sis.internal.storage.ChannelImageInputStream;
  * This class is used only for discovery of a {@code DataStore} implementation capable to handle the input.
  * Once a suitable {@code DataStore} has been found, the {@code DataStoreConnection} instance is typically
  * discarded since each data store implementation will use their own input/output objects.
- *
- * <p>This class does not implement {@link AutoCloseable} on intend, because the connection shall not be closed
- * if it has been taken by a {@link DataStore} instance. The connection shall be closed only if no suitable
- * {@code DataStore} has been found.</p>
  *
  * <p>Instances of this class are serializable if the {@code storage} object given at construction time
  * is serializable.</p>
@@ -88,43 +87,35 @@ public class DataStoreConnection implements Serializable {
     private transient String extension;
 
     /**
-     * A read-only view of the buffer over the first bytes of the stream, or {@code null} if none.
-     * This field is initialized together with {@link #asDataInput} when first needed.
+     * Views of {@link #storage} as some of the following supported types:
      *
-     * @see #asByteBuffer()
+     * <ul>
+     *   <li>{@link ByteBuffer}:
+     *       A read-only view of the buffer over the first bytes of the stream.</li>
+     *
+     *   <li>{@link DataInput}:
+     *       The input as a data input stream. Unless the {@link #storage} is already an instance of {@link DataInput},
+     *       this entry will be given an instance of {@link ChannelImageInputStream} if possible rather than an arbitrary
+     *       stream. In particular, we invoke the {@link ImageIO#createImageInputStream(Object)} factory method only in
+     *       last resort because some SIS data stores will want to access the channel and buffer directly.</li>
+     *
+     *   <li>{@link Connection}:
+     *       The input/output object as a JDBC connection.</li>
+     * </ul>
+     *
+     * A non-existent entry means that the value has not yet been computed. A {@link Void#TYPE} value means the value
+     * has been computed and we have determined that {@link #viewAs(Class)} shall returns {@code null} for that type.
+     *
+     * @see #viewAs(Class)
      */
-    private transient ByteBuffer asByteBuffer;
+    private transient Map<Class<?>, Object> views;
 
     /**
-     * The input as a data input stream, or {@code null} if none.
-     * This field is initialized together with {@link #asByteBuffer} when first needed.
-     *
-     * <p>Unless the {@link #storage} is already an instance of {@link DataInput}, this field will be
-     * given an instance of {@link ChannelImageInputStream} if possible rather than an arbitrary stream.
-     * In particular, we invoke the {@link ImageIO#createImageInputStream(Object)} factory method only in
-     * last resort because some SIS data stores will want to access the channel and buffer directly.</p>
-     *
-     * @see #asDataInput()
-     */
-    private transient DataInput asDataInput;
-
-    /**
-     * If {@link #asDataInput} is an instance of {@link ImageInputStream}, then the stream position
-     * at the time the {@code asDataInput} field has been initialized. This is often zero.
+     * If an {@link ImageInputStream} vie exists, then the stream position at the time the view has been initialized.
+     * This is usually zero, but could be different if the {@link #storage} provided by the users is already an instance
+     * of {@code ImageInputStream}.
      */
     private transient long streamOrigin;
-
-    /**
-     * {@code true} if {@link #asDataInput} and {@link #asByteBuffer} have been initialized.
-     */
-    private transient boolean isInitialized;
-
-    /**
-     * The input/output object as a JDBC connection.
-     *
-     * @see #asDatabase()
-     */
-    private transient Connection asDatabase;
 
     /**
      * Creates a new data store connection wrapping the given input/output object.
@@ -195,90 +186,101 @@ public class DataStoreConnection implements Serializable {
     }
 
     /**
-     * Returns a read-only view of the first bytes of the input stream, or {@code null} if unavailable.
-     * If non-null, this buffer can be used for a quick check of file magic number.
-     *
-     * @return The first bytes in the stream (read-only), or {@code null} if unavailable.
-     * @throws IOException If an error occurred while opening a stream for the input.
-     */
-    public ByteBuffer asByteBuffer() throws IOException {
-        if (!isInitialized) {
-            initialize();
-        }
-        return asByteBuffer;
-    }
-
-    /**
-     * Returns the input as a {@link DataInput} if possible, or {@code null} otherwise.
-     * The default implementation performs the following choice based on the type of the
-     * {@linkplain #getStorage() storage} object:
+     * Returns the storage as a view of the given type if possible, or {@code null} otherwise.
+     * The default implementation accepts the following types:
      *
      * <ul>
-     *   <li>If the storage is already an instance of {@link DataInput} (including the {@link ImageInputStream}
-     *       and {@link javax.imageio.stream.ImageOutputStream} types), then it is returned unchanged.</li>
+     *   <li><p>{@link ByteBuffer}:
+     *       A read-only view of the first bytes of the input stream, or {@code null} if unavailable.
+     *       If non-null, then the buffer can be used for a quick check of file magic number.</p></li>
      *
-     *   <li>Otherwise if the input is an instance of {@link java.nio.file.Path}, {@link java.io.File},
-     *       {@link java.net.URI}, {@link java.net.URL}, {@link CharSequence}, {@link java.io.InputStream} or
-     *       {@link java.nio.channels.ReadableByteChannel}, then an {@link ImageInputStream} backed by a
-     *       {@link ByteBuffer} is created when first needed and returned.</li>
+     *   <li><p>{@link DataInput}:
+     *       Performs the following choice based on the type of the {@linkplain #getStorage() storage} object:
+     *       <ul>
+     *         <li>If the storage is already an instance of {@link DataInput} (including the {@link ImageInputStream}
+     *             and {@link javax.imageio.stream.ImageOutputStream} types), then it is returned unchanged.</li>
      *
-     *   <li>Otherwise if {@link ImageIO#createImageInputStream(Object)} returns a non-null value,
-     *       then this value is cached and returned.</li>
+     *         <li>Otherwise if the input is an instance of {@link java.nio.file.Path}, {@link java.io.File},
+     *             {@link java.net.URI}, {@link java.net.URL}, {@link CharSequence}, {@link java.io.InputStream} or
+     *             {@link java.nio.channels.ReadableByteChannel}, then an {@link ImageInputStream} backed by a
+     *             {@link ByteBuffer} is created when first needed and returned.</li>
      *
-     *   <li>Otherwise this method returns {@code null}.</li>
+     *         <li>Otherwise if {@link ImageIO#createImageInputStream(Object)} returns a non-null value,
+     *             then this value is cached and returned.</li>
+     *
+     *         <li>Otherwise this method returns {@code null}.</li>
+     *       </ul></p></li>
+     *
+     *   <li><p>{@link DataInput}:
+     *       Performs the following choice based on the type of the {@linkplain #getStorage() storage} object:
+     *       <ul>
+     *         <li>If the storage is already an instance of {@link Connection}, then it is returned unchanged.</li>
+     *
+     *         <li>Otherwise if the storage is an instance of {@link DataSource}, then a connection is obtained
+     *             when first needed and returned.</li>
+     *
+     *         <li>Otherwise this method returns {@code null}.</li>
+     *       </ul></p></li>
      * </ul>
      *
-     * Multiple invocations of this method on the same {@code DataStoreConnection} instance will return the same
-     * {@code ImageInputStream} instance.
+     * Multiple invocations of this method on the same {@code DataStoreConnection} instance will return the same view
+     * instance. Consequently, callers shall not close the stream or database connection returned by this method.
      *
-     * @return The input as a {@code DataInput}, or {@code null} if the input is an object of unknown type.
-     * @throws IOException If an error occurred while opening a stream for the input.
+     * @param  <T>  The compile-time type of the {@code type} argument.
+     * @param  type The type of desired view, as one of {@code ByteBuffer}, {@code DataInput}, {@code Connection}
+     *         class or other type supported by {@code DataStoreConnection} subclasses.
+     * @return The storage as a view of the given type, or {@code null} if no view can be created for the given type.
+     * @throws IllegalArgumentException If the given {@code type} argument is not a known type.
+     * @throws DataStoreException If an error occurred while opening a stream or database connection.
      */
-    public DataInput asDataInput() throws IOException {
-        if (!isInitialized) {
-            initialize();
-        }
-        return asDataInput;
-    }
-
-    /**
-     * Returns the input as a connection to a JDBC database if possible, or {@code null} otherwise.
-     * The default implementation performs the following choice based on the type of the
-     * {@linkplain #getStorage() storage} object:
-     *
-     * <ul>
-     *   <li>If the storage is already an instance of {@link Connection}, then it is returned unchanged.</li>
-     *
-     *   <li>Otherwise if the storage is an instance of {@link DataSource}, then a connection is obtained
-     *       when first needed and returned.</li>
-     *
-     *   <li>Otherwise this method returns {@code null}.</li>
-     * </ul>
-     *
-     * Multiple invocations of this method on the same {@code DataStoreConnection} instance will return the same
-     * {@code Connection} instance.
-     *
-     * @return The storage as a {@code Connection}, or {@code null} if the storage is an object of unknown type.
-     * @throws SQLException If an error occurred while opening a database connection for the storage.
-     */
-    public Connection asDatabase() throws SQLException {
-        if (asDatabase == null) {
-            if (storage instanceof Connection) {
-                asDatabase = (Connection) storage;
-            } else if (storage instanceof DataSource) {
-                asDatabase = ((DataSource) storage).getConnection();
+    public <T> T viewAs(final Class<T> type) throws IllegalArgumentException, DataStoreException {
+        ArgumentChecks.ensureNonNull("type", type);
+        if (views != null) {
+            final Object view = views.get(type);
+            if (view != null) {
+                return (view != Void.TYPE) ? type.cast(view) : null;
             }
+        } else {
+            views = new IdentityHashMap<>();
         }
-        return asDatabase;
+        /*
+         * Special case for DataInput and ByteBuffer, because those values are created together.
+         * In addition, ImageInputStream creation assigns a value to the 'streamOrigin' field.
+         */
+        if (type == DataInput.class || type == ByteBuffer.class) {
+            try {
+                createDataInput();
+            } catch (IOException e) {
+                throw new DataStoreException(Errors.format(Errors.Keys.CanNotOpen_1, getStorageName()), e);
+            }
+            return getView(type);
+        }
+        /*
+         * All other cases.
+         */
+        final Object value;
+        try {
+            value = createView(type);
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new DataStoreException(Errors.format(Errors.Keys.CanNotOpen_1, getStorageName()), e);
+        }
+        final T view = type.cast(value);
+        addView(type, view);
+        return view;
     }
 
     /**
-     * Initializes I/O part, namely the {@link #asDataInput} and {@link #asByteBuffer} fields.
-     * Note that some or all of those fields may still be null after this method call.
+     * Creates a view for the input as a {@link DataInput} if possible. This method performs the choice
+     * documented in the {@link #viewAs(Class)} method for the {@code DataInput} case, and create the
+     * {@code ByteBuffer} in same time if possible.
      *
-     * @see #rewind()
+     * @throws IOException If an error occurred while opening a stream for the input.
      */
-    private void initialize() throws IOException {
+    private void createDataInput() throws IOException {
+        final DataInput asDataInput;
+        ByteBuffer asByteBuffer = null;
         if (storage instanceof DataInput) {
             asDataInput = (DataInput) storage;
         } else {
@@ -299,7 +301,54 @@ public class DataStoreConnection implements Serializable {
         if (asDataInput instanceof ImageInputStream) {
             streamOrigin = ((ImageInputStream) asDataInput).getStreamPosition();
         }
-        isInitialized = true;
+        addView(ByteBuffer.class, asByteBuffer);
+        addView(DataInput.class,  asDataInput);
+    }
+
+    /**
+     * Creates a storage view of the given type if possible, or returns {@code null} otherwise.
+     * This method is invoked by {@link #viewAs(Class)} when first needed, and the result is cached.
+     *
+     * @param  <T>  The compile-time type of the {@code type} argument.
+     * @param  type The type of desired view.
+     * @return The storage as a view of the given type, or {@code null} if no view can be created for the given type.
+     * @throws IllegalArgumentException If the given {@code type} argument is not a known type.
+     * @throws Exception If an error occurred while opening a stream or database connection.
+     */
+    private Object createView(final Class<?> type) throws IllegalArgumentException, Exception {
+        if (type == Connection.class) {
+            if (storage instanceof Connection) {
+                return storage;
+            } else if (storage instanceof DataSource) {
+                return ((DataSource) storage).getConnection();
+            }
+        }
+        throw new IllegalArgumentException(Errors.format(Errors.Keys.UnknownType_1, type));
+    }
+
+    /**
+     * Adds the given view in the caches.
+     *
+     * @param <T>   The compile-time type of the {@code type} argument.
+     * @param type  The view type.
+     * @param view  The view, or {@code null} if none.
+     */
+    private <T> void addView(final Class<T> type, final T view) {
+        if (views.put(type, (view != null) ? view : Void.TYPE) != null) {
+            throw new ConcurrentModificationException();
+        }
+    }
+
+    /**
+     * Returns the view for the given type from the caches.
+     *
+     * @param <T>   The compile-time type of the {@code type} argument.
+     * @param type  The view type.
+     * @return      The view, or {@code null} if none.
+     */
+    private <T> T getView(final Class<T> type) {
+        final Object view = views.get(type);
+        return (view != Void.TYPE) ? type.cast(view) : null;
     }
 
     /**
@@ -307,56 +356,67 @@ public class DataStoreConnection implements Serializable {
      * This method is invoked when more than one {@link DataStore} instance is tried in search
      * for a data store that accept this {@code DataStoreInput} instance.
      *
-     * <p>In the default implementation, this method does nothing if {@link #asDataInput()}
-     * returns {@code null}.</p>
-     *
      * @throws DataStoreException If the stream is open but can not be rewinded.
      */
     public void rewind() throws DataStoreException {
-        /*
-         * Restores the ImageInputStream to its original position if possible. Note that in
-         * the ChannelImageInputStream, this may reload the buffer content if necessary.
-         */
-        if (asDataInput instanceof ImageInputStream) try {
-            ((ImageInputStream) asDataInput).seek(streamOrigin);
-        } catch (IOException | IndexOutOfBoundsException e) {
-            throw new DataStoreException(Errors.format(Errors.Keys.StreamIsForwardOnly_1, getStorageName()), e);
-        }
-        /*
-         * Copy the position and limits from the buffer. Note that this copy must be performed after the
-         * above 'seek', because the seek operation may have modified the buffer position and limit.
-         */
-        if (asByteBuffer != null && asDataInput instanceof ChannelImageInputStream) {
-            final ByteBuffer buffer = ((ChannelImageInputStream) asDataInput).buffer;
-            asByteBuffer.clear().limit(buffer.limit()).position(buffer.position());
-            asByteBuffer.order(buffer.order());
+        if (views != null) {
+            /*
+             * Restores the ImageInputStream to its original position if possible. Note that in
+             * the ChannelImageInputStream, this may reload the buffer content if necessary.
+             */
+            final DataInput asDataInput = getView(DataInput.class);
+            if (asDataInput instanceof ImageInputStream) try {
+                ((ImageInputStream) asDataInput).seek(streamOrigin);
+            } catch (IOException | IndexOutOfBoundsException e) {
+                throw new DataStoreException(Errors.format(Errors.Keys.StreamIsForwardOnly_1, getStorageName()), e);
+            }
+            /*
+             * Copy the position and limits from the buffer. Note that this copy must be performed after the
+             * above 'seek', because the seek operation may have modified the buffer position and limit.
+             */
+            final ByteBuffer asByteBuffer = getView(ByteBuffer.class);
+            if (asByteBuffer != null && asDataInput instanceof ChannelImageInputStream) {
+                final ByteBuffer buffer = ((ChannelImageInputStream) asDataInput).buffer;
+                asByteBuffer.clear().limit(buffer.limit()).position(buffer.position());
+                asByteBuffer.order(buffer.order());
+            }
         }
     }
 
     /**
-     * Closes all streams and connections created by this object, and closes the storage it is closeable.
-     * This method closes the objects created by {@link #asDataInput()} and {@link #asDatabase()}, if any,
-     * then closes the {@linkplain #getStorage() storage} if it is closeable.
+     * Closes all streams and connections created by this {@code DataStoreConnection} except the given view.
+     * This method closes all objects created by the {@link #viewAs(Class)} method, leaving only {@code view} open.
+     * If {@code view} is {@code null}, then this method closes everything including the {@linkplain #getStorage()
+     * storage} if it is closeable.
      *
-     * <p>This method shall be invoked <strong>only</strong> if no {@link DataStore} accepted this input.
-     * Invoking this method in a {@code try} … {@code finally} block is usually not appropriate.</p>
+     * <p>This method is invoked when a suitable {@link DataStore} has been found - in which case the view used
+     * by the data store is given in argument to this method - or when no suitable {@code DataStore} has been
+     * found - in which case the {@code view} argument is null.</p>
      *
+     * @param  view The view to leave open, or {@code null} if none.
      * @throws DataStoreException If an error occurred while closing the stream or database connection.
      */
-    public void close() throws DataStoreException {
+    public void closeAllExcept(final Object view) throws DataStoreException {
+        final Map<Class<?>, Object> map = views;
+        views = Collections.emptyMap();
+        boolean close = (view == null);
         try {
-            if (asDatabase != null) {
-                asDatabase.close();
-            }
-            if (asDataInput instanceof AutoCloseable) {
-                ((AutoCloseable) asDataInput).close();
+            for (final Object value : map.values()) {
+                if (value != view) {
+                    if (value instanceof AutoCloseable) {
+                        ((AutoCloseable) value).close();
+                        close = false;
+                    }
+                }
                 /*
                  * On JDK6, ImageInputStream does not extend Closeable and must
                  * be checked explicitely. On JDK7, this is not needed anymore.
+                 * Likewise, Connection extends AutoCloseable only in JDK7.
                  */
-            } else if (storage instanceof AutoCloseable) {
+            }
+            if (close && storage instanceof AutoCloseable) {
                 /*
-                 * Close only if we didn't closed 'asDataInput', because closing 'asDataInput'
+                 * Close only if we didn't closed a view because closing an input stream view
                  * automatically close the 'storage' if the former is a wrapper for the later.
                  * Since AutoCloseable.close() is not guaranteed to be indempotent, we should
                  * avoid to call it (indirectly) twice.
@@ -365,10 +425,6 @@ public class DataStoreConnection implements Serializable {
             }
         } catch (Exception e) {
             throw new DataStoreException(e);
-        } finally {
-            asDatabase   = null;
-            asDataInput  = null;
-            asByteBuffer = null;
         }
     }
 
