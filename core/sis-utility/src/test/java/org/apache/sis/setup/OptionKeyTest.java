@@ -16,11 +16,13 @@
  */
 package org.apache.sis.setup;
 
+import java.util.Map;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
 import static org.apache.sis.setup.OptionKey.*;
+import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
 /**
@@ -32,6 +34,31 @@ import static org.apache.sis.setup.OptionKey.*;
  * @module
  */
 public final strictfp class OptionKeyTest extends TestCase {
+    /**
+     * Tests the {@link OptionKey#getValueFrom(Map)} and {@link OptionKey#setValueInto(Map, Object)}
+     * methods with null arguments.
+     */
+    @Test
+    public void testNullArguments() {
+        assertNull(URL_ENCODING.getValueFrom(null));
+        assertNull(URL_ENCODING.setValueInto(null, null));
+    }
+
+    /**
+     * Tests the {@link OptionKey#setValueInto(Map, Object)} method
+     * followed by {@link OptionKey#getValueFrom(Map)}.
+     */
+    @Test
+    public void testSetAndGet() {
+        final Map<OptionKey<?>,Object> options = URL_ENCODING.setValueInto(null, "UTF-8");
+        assertEquals("UTF-8", getSingleton(options.values()));
+        assertEquals("UTF-8", URL_ENCODING.getValueFrom(options));
+
+        assertSame(options, URL_ENCODING.setValueInto(options, "ISO-8859-1"));
+        assertEquals("ISO-8859-1", getSingleton(options.values()));
+        assertEquals("ISO-8859-1", URL_ENCODING.getValueFrom(options));
+    }
+
     /**
      * Tests the serialization of constants.
      * Those constants shall be resolved to their singleton instance on deserialization.
