@@ -117,6 +117,7 @@ public class ChannelDataInput {
         this.buffer        = buffer;
         this.channelOffset = (channel instanceof SeekableByteChannel) ? ((SeekableByteChannel) channel).position() : 0;
         if (!filled) {
+            buffer.clear();
             channel.read(buffer);
             buffer.flip();
         }

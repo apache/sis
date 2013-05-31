@@ -100,6 +100,10 @@ public final strictfp class IOUtilitiesTest extends TestCase {
                 IOUtilities.toURI(new URL("file:/Users/name/Map%20with%20spaces.png"), "UTF-8"));
         assertEquals(new URI("file:/Users/name/Map%20with%20spaces.png"),
                 IOUtilities.toURI(new URL("file:/Users/name/Map%20with%20spaces.png"), "ISO-8859-1"));
+
+        // Here the URL is considered non-encoded, so the method shall encode the % sign.
+        assertEquals(new URI("file:/Users/name/Map%2520with%2520spaces.png"),
+                IOUtilities.toURI(new URL("file:/Users/name/Map%20with%20spaces.png"), null));
     }
 
     /**

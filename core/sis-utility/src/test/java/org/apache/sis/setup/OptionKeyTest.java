@@ -14,15 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.sis.setup;
+
+import org.apache.sis.test.TestCase;
+import org.junit.Test;
+
+import static org.apache.sis.test.Assert.*;
+import static org.apache.sis.setup.OptionKey.*;
+
 
 /**
- * {@linkplain org.apache.sis.storage.DataStore Data store} base types for retrieving and saving geospatial data
- * in various storage formats.
+ * Tests {@link OptionKey}.
  *
- * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.10)
+ * @since   0.3
  * @version 0.3
  * @module
  */
-package org.apache.sis.storage;
+public final strictfp class OptionKeyTest extends TestCase {
+    /**
+     * Tests the serialization of constants.
+     * Those constants shall be resolved to their singleton instance on deserialization.
+     */
+    @Test
+    public void testSerialization() {
+        assertSame(URL_ENCODING, assertSerializedEquals(URL_ENCODING));
+        assertSame(BYTE_BUFFER,  assertSerializedEquals(BYTE_BUFFER ));
+    }
+}

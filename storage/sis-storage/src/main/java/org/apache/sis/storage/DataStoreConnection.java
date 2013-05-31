@@ -34,6 +34,8 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.storage.IOUtilities;
 import org.apache.sis.internal.storage.ChannelImageInputStream;
+import org.apache.sis.internal.util.Options;
+import org.apache.sis.setup.OptionKey;
 
 
 /**
@@ -66,6 +68,12 @@ public class DataStoreConnection implements Serializable {
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = 2524083964906593093L;
+
+    /**
+     * The default size of the {@link ByteBuffer} to be created.
+     * Users can override this value by providing a value for {@link OptionKey#BYTE_BUFFER}.
+     */
+    private static final int DEFAULT_BUFFER_SIZE = 4096;
 
     /**
      * The input/output object given at construction time.
@@ -118,6 +126,14 @@ public class DataStoreConnection implements Serializable {
     private transient long streamOrigin;
 
     /**
+     * The options, created only when first needed.
+     *
+     * @see #getOption(OptionKey)
+     * @see #setOption(OptionKey, Object)
+     */
+    private transient Map<OptionKey<?>, Object> options;
+
+    /**
      * Creates a new data store connection wrapping the given input/output object.
      * The object can be of any type, but the class javadoc lists the most typical ones.
      *
@@ -126,6 +142,33 @@ public class DataStoreConnection implements Serializable {
     public DataStoreConnection(final Object storage) {
         ArgumentChecks.ensureNonNull("storage", storage);
         this.storage = storage;
+    }
+
+    /**
+     * Returns the option value for the given key, or {@code null} if none.
+     *
+     * @param  <T> The type of option value.
+     * @param  key The option for which to get the value.
+     * @return The current value for the given option, or {@code null} if none.
+     */
+    public <T> T getOption(final OptionKey<T> key) {
+        return Options.get(options, key);
+    }
+
+    /**
+     * Sets the option value for the given key. The default implementation recognizes the given options:
+     *
+     * <ul>
+     *   <li>{@link OptionKey#URL_ENCODING} for converting URL to URI or filename, if needed.</li>
+     *   <li>{@link OptionKey#BYTE_BUFFER} for allowing users to control the byte buffer to be created.</li>
+     * </ul>
+     *
+     * @param <T>   The type of option value.
+     * @param key   The option for which to set the value.
+     * @param value The new value for the given option, or {@code null} for removing the value.
+     */
+    public <T> void setOption(final OptionKey<T> key, final T value) {
+        options = Options.set(options, key, value);
     }
 
     /**
@@ -289,9 +332,12 @@ public class DataStoreConnection implements Serializable {
              * SIS data stores will want to access directly the channel and the buffer. We will fallback
              * on the ImageIO.createImageInputStream(Object) method only in last resort.
              */
-            final ReadableByteChannel channel = IOUtilities.open(storage, null);
+            final ReadableByteChannel channel = IOUtilities.open(storage, getOption(OptionKey.URL_ENCODING));
             if (channel != null) {
-                final ByteBuffer buffer = ByteBuffer.allocate(4096);
+                ByteBuffer buffer = getOption(OptionKey.BYTE_BUFFER);
+                if (buffer == null) {
+                    buffer = ByteBuffer.allocate(DEFAULT_BUFFER_SIZE);
+                }
                 asDataInput = new ChannelImageInputStream(getStorageName(), channel, buffer, false);
                 asByteBuffer = buffer.asReadOnlyBuffer();
             } else {
@@ -434,8 +480,8 @@ public class DataStoreConnection implements Serializable {
     @Override
     public String toString() {
         final StringBuilder buffer = new StringBuilder(40);
-        buffer.append(Classes.getShortClassName(this)).append("[“").append(getStorageName());
-        // TODO: more info here.
-        return buffer.append("”]").toString();
+        buffer.append(Classes.getShortClassName(this)).append("[“").append(getStorageName()).append('”');
+        Options.list(options, ", ", buffer);
+        return buffer.append(']').toString();
     }
 }
