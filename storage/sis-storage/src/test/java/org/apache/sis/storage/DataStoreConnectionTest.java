@@ -20,6 +20,7 @@ import java.io.DataInput;
 import java.io.IOException;
 import java.nio.channels.ReadableByteChannel;
 import org.apache.sis.internal.storage.ChannelImageInputStream;
+import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -34,6 +35,7 @@ import static org.opengis.test.Assert.*;
  * @version 0.3
  * @module
  */
+@DependsOn(org.apache.sis.internal.storage.ChannelImageInputStreamTest.class)
 public final strictfp class DataStoreConnectionTest extends TestCase {
     /**
      * The magic number of Java class files, used for verifying the content of our test file.

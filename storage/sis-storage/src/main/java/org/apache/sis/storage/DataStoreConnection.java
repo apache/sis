@@ -30,6 +30,7 @@ import javax.imageio.stream.ImageInputStream;
 import java.sql.Connection;
 import javax.sql.DataSource;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.storage.IOUtilities;
@@ -116,13 +117,6 @@ public class DataStoreConnection implements Serializable {
      * @see #openAs(Class)
      */
     private transient Map<Class<?>, Object> views;
-
-    /**
-     * If an {@link ImageInputStream} vie exists, then the stream position at the time the view has been initialized.
-     * This is usually zero, but could be different if the {@link #storage} provided by the users is already an instance
-     * of {@code ImageInputStream}.
-     */
-    private transient long streamOrigin;
 
     /**
      * The options, created only when first needed.
@@ -234,11 +228,11 @@ public class DataStoreConnection implements Serializable {
      * The default implementation accepts the following types:
      *
      * <ul>
-     *   <li><p>{@link ByteBuffer}:
+     *   <li><p>{@link ByteBuffer} -
      *       A read-only view of the first bytes of the input stream, or {@code null} if unavailable.
      *       If non-null, then the buffer can be used for a quick check of file magic number.</p></li>
      *
-     *   <li><p>{@link DataInput}:
+     *   <li><p>{@link DataInput} -
      *       Performs the following choice based on the type of the {@linkplain #getStorage() storage} object:
      *       <ul>
      *         <li>If the storage is already an instance of {@link DataInput} (including the {@link ImageInputStream}
@@ -255,7 +249,7 @@ public class DataStoreConnection implements Serializable {
      *         <li>Otherwise this method returns {@code null}.</li>
      *       </ul></p></li>
      *
-     *   <li><p>{@link Connection}:
+     *   <li><p>{@link Connection} -
      *       Performs the following choice based on the type of the {@linkplain #getStorage() storage} object:
      *       <ul>
      *         <li>If the storage is already an instance of {@link Connection}, then it is returned unchanged.</li>
@@ -267,9 +261,11 @@ public class DataStoreConnection implements Serializable {
      *       </ul></p></li>
      * </ul>
      *
-     * Callers shall not close the stream or database connection returned by this method. Multiple invocations
-     * of this method on the same {@code DataStoreConnection} instance will try to return the same instance on
-     * a <cite>best effort</cite> basis.
+     * Multiple invocations of this method on the same {@code DataStoreConnection} instance will try
+     * to return the same instance on a <cite>best effort</cite> basis. Consequently, implementations
+     * of {@link DataStoreProvider#canOpen(DataStoreConnection)} methods shall not close the stream or
+     * database connection returned by this method. In addition, those {@code canOpen(DataStoreConnection)}
+     * methods are responsible for restoring the stream or byte buffer to its original position on return.
      *
      * @param  <T>  The compile-time type of the {@code type} argument.
      * @param  type The desired type as one of {@code ByteBuffer}, {@code DataInput}, {@code Connection}
@@ -320,8 +316,9 @@ public class DataStoreConnection implements Serializable {
 
     /**
      * Creates a view for the input as a {@link DataInput} if possible. This method performs the choice
-     * documented in the {@link #openAs(Class)} method for the {@code DataInput} case, and create the
-     * {@code ByteBuffer} in same time if possible.
+     * documented in the {@link #openAs(Class)} method for the {@code DataInput} case. Opening the data
+     * input may imply creating a {@link ByteBuffer}, in which case the buffer will be stored under the
+     * {@code ByteBuffer.class} key together with the {@code DataInput.class} case.
      *
      * @throws IOException If an error occurred while opening a stream for the input.
      */
@@ -338,12 +335,11 @@ public class DataStoreConnection implements Serializable {
              */
             final ReadableByteChannel channel = IOUtilities.open(storage, getOption(OptionKey.URL_ENCODING));
             if (channel != null) {
-                ByteBuffer buffer = getView(ByteBuffer.class);
+                ByteBuffer buffer = getOption(OptionKey.BYTE_BUFFER);
                 if (buffer == null) {
-                    buffer = getOption(OptionKey.BYTE_BUFFER);
-                    if (buffer == null) {
-                        buffer = ByteBuffer.allocate(DEFAULT_BUFFER_SIZE);
-                    }
+                    buffer = ByteBuffer.allocate(DEFAULT_BUFFER_SIZE);
+                    // TODO: we do not create direct buffer yet, but this is something
+                    // we may want to consider in a future SIS version.
                 }
                 asDataInput = new ChannelImageInputStream(getStorageName(), channel, buffer, false);
                 asByteBuffer = buffer.asReadOnlyBuffer();
@@ -351,8 +347,24 @@ public class DataStoreConnection implements Serializable {
                 asDataInput = ImageIO.createImageInputStream(storage);
             }
         }
-        if (asDataInput instanceof ImageInputStream) {
-            streamOrigin = ((ImageInputStream) asDataInput).getStreamPosition();
+        /*
+         * If an ImageInputStream has been created without buffer, read an arbitrary amount of bytes now
+         * so we can provide a ByteBuffer in case some user wants it. This may be a unnecessary overhead
+         * since maybe no user will want to look at a ByteBuffer,  but this case is presumed rare enough
+         * for not being worth a more complex "lazy instantiation" mechanism. We read only a small amount
+         * of bytes because, at the contrary of the buffer created in the above block, the buffer created
+         * here is unlikely to be used for the reading process after the recognition of the file format.
+         */
+        if (asByteBuffer == null && asDataInput instanceof ImageInputStream) {
+            final ImageInputStream in = (ImageInputStream) asDataInput;
+            in.mark();
+            final byte[] buffer = new byte[256];
+            final int n = in.read(buffer);
+            in.reset();
+            if (n >= 1) {
+                asByteBuffer = ByteBuffer.wrap(ArraysExt.resize(buffer, n))
+                        .asReadOnlyBuffer().order(in.getByteOrder());
+            }
         }
         addView(ByteBuffer.class, asByteBuffer);
         addView(DataInput.class,  asDataInput);
@@ -402,38 +414,6 @@ public class DataStoreConnection implements Serializable {
     private <T> T getView(final Class<T> type) {
         final Object view = views.get(type);
         return (view != Void.TYPE) ? type.cast(view) : null;
-    }
-
-    /**
-     * Rewinds the {@link DataInput} and {@link ByteBuffer} to the beginning of the stream.
-     * This method is invoked when more than one {@link DataStore} instance is tried in search
-     * for a data store that accept this {@code DataStoreInput} instance.
-     *
-     * @throws DataStoreException If the stream is open but can not be rewinded.
-     */
-    public void rewind() throws DataStoreException {
-        if (views != null) {
-            /*
-             * Restores the ImageInputStream to its original position if possible. Note that in
-             * the ChannelImageInputStream, this may reload the buffer content if necessary.
-             */
-            final DataInput asDataInput = getView(DataInput.class);
-            if (asDataInput instanceof ImageInputStream) try {
-                ((ImageInputStream) asDataInput).seek(streamOrigin);
-            } catch (IOException | IndexOutOfBoundsException e) {
-                throw new DataStoreException(Errors.format(Errors.Keys.StreamIsForwardOnly_1, getStorageName()), e);
-            }
-            /*
-             * Copy the position and limits from the buffer. Note that this copy must be performed after the
-             * above 'seek', because the seek operation may have modified the buffer position and limit.
-             */
-            final ByteBuffer asByteBuffer = getView(ByteBuffer.class);
-            if (asByteBuffer != null && asDataInput instanceof ChannelImageInputStream) {
-                final ByteBuffer buffer = ((ChannelImageInputStream) asDataInput).buffer;
-                asByteBuffer.clear().limit(buffer.limit()).position(buffer.position());
-                asByteBuffer.order(buffer.order());
-            }
-        }
     }
 
     /**
