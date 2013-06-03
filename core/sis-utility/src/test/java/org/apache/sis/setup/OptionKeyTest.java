@@ -17,6 +17,7 @@
 package org.apache.sis.setup;
 
 import java.util.Map;
+import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -34,6 +35,20 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @module
  */
 public final strictfp class OptionKeyTest extends TestCase {
+    /**
+     * A custom subclass of {@link OptionKey} for testing the ability to create custom option.
+     * This subclass implements {@link CheckedContainer} for ensuring that the {@code OptionKey}
+     * API is compatible with {@code CheckedContainer}. The public class does not implement that
+     * interface because a key is not a container. However we keep this possibility open in case
+     * some users find this approach convenient for their own keys.
+     */
+    @SuppressWarnings("serial")
+    private static final class CustomKey<T> extends OptionKey<T> implements CheckedContainer<T> {
+        CustomKey(final String name, final Class<T> type) {
+            super(name, type);
+        }
+    }
+
     /**
      * Tests the {@link OptionKey#getValueFrom(Map)} and {@link OptionKey#setValueInto(Map, Object)}
      * methods with null arguments.
@@ -67,5 +82,15 @@ public final strictfp class OptionKeyTest extends TestCase {
     public void testSerialization() {
         assertSame(URL_ENCODING, assertSerializedEquals(URL_ENCODING));
         assertSame(BYTE_BUFFER,  assertSerializedEquals(BYTE_BUFFER ));
+    }
+
+    /**
+     * Tests the serialization of a custom subclass. {@link OptionKey} can not resolve
+     * to a unique instance, unless the subclass provides its own resolution mechanism.
+     */
+    @Test
+    public void testSubclassSerialization() {
+        final CustomKey<Integer> key = new CustomKey<>("key", Integer.class);
+        assertNotSame(key, assertSerializedEquals(key));
     }
 }

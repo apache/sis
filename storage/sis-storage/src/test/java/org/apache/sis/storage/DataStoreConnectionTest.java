@@ -18,8 +18,10 @@ package org.apache.sis.storage;
 
 import java.io.DataInput;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import org.apache.sis.internal.storage.ChannelImageInputStream;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -97,7 +99,7 @@ public final strictfp class DataStoreConnectionTest extends TestCase {
     }
 
     /**
-     * Implementation of {@link #testOpenAsStream()}.
+     * Implementation of {@link #testOpenFromURL()} and {@link #testOpenFromStream()}.
      */
     private void testOpenAsDataInput(final boolean asStream) throws DataStoreException, IOException {
         final DataStoreConnection connection = create(asStream);
@@ -106,12 +108,46 @@ public final strictfp class DataStoreConnectionTest extends TestCase {
         assertInstanceOf("Needs the SIS implementation", ChannelImageInputStream.class, input);
         final ReadableByteChannel channel = ((ChannelImageInputStream) input).channel;
         /*
-         * Reads a single integer for checking that the stream is at the right position,
-         * then close the stream.
+         * Reads a single integer for checking that the stream is at the right position, then close the stream.
+         * Since the file is a compiled Java class, the integer that we read shall be the Java magic number.
          */
         assertTrue("channel.isOpen()", channel.isOpen());
         assertEquals(MAGIC_NUMBER, input.readInt());
         connection.closeAllExcept(null);
         assertFalse("channel.isOpen()", channel.isOpen());
+    }
+
+    /**
+     * Tests the {@link DataStoreConnection#openAs(Class)} method for the {@link ByteBuffer} type.
+     * This method uses the same test file than {@link #testOpenFromURL()}.
+     *
+     * @throws DataStoreException Should never happen.
+     * @throws IOException If an error occurred while reading the test file.
+     */
+    @Test
+    @DependsOnMethod("testOpenFromURL")
+    public void testOpenAsByteBuffer() throws DataStoreException, IOException {
+        final DataStoreConnection connection = create(false);
+        final ByteBuffer buffer = connection.openAs(ByteBuffer.class);
+        assertEquals(MAGIC_NUMBER, buffer.getInt());
+        connection.closeAllExcept(null);
+    }
+
+    /**
+     * Tests the {@link DataStoreConnection#closeAllExcept(Object)} method.
+     *
+     * @throws DataStoreException Should never happen.
+     * @throws IOException If an error occurred while reading the test file.
+     */
+    @Test
+    @DependsOnMethod("testOpenFromStream")
+    public void testCloseAllExcept() throws DataStoreException, IOException {
+        final DataStoreConnection connection = create(true);
+        final DataInput input = connection.openAs(DataInput.class);
+        final ReadableByteChannel channel = ((ChannelImageInputStream) input).channel;
+        assertTrue("channel.isOpen()", channel.isOpen());
+        connection.closeAllExcept(input);
+        assertTrue("channel.isOpen()", channel.isOpen());
+        channel.close();
     }
 }

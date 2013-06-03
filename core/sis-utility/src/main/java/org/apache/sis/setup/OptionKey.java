@@ -26,7 +26,7 @@ import org.apache.sis.util.logging.Logging;
 
 
 /**
- * Keys in a map of options. This class defines a set of static constants for commonly-used options.
+ * Keys in a map of options, together with static constants for commonly-used options.
  * Developers can subclass this class for defining their own options.
  *
  * @param <T> The type of option values.
