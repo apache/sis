@@ -34,6 +34,7 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.storage.IOUtilities;
+import org.apache.sis.internal.storage.ChannelDataInput;
 import org.apache.sis.internal.storage.ChannelImageInputStream;
 import org.apache.sis.setup.OptionKey;
 
@@ -77,7 +78,7 @@ public class DataStoreConnection implements Serializable {
      * The default size of the {@link ByteBuffer} to be created.
      * Users can override this value by providing a value for {@link OptionKey#BYTE_BUFFER}.
      */
-    private static final int DEFAULT_BUFFER_SIZE = 4096;
+    static final int DEFAULT_BUFFER_SIZE = 4096;
 
     /**
      * The input/output object given at construction time.
@@ -111,8 +112,11 @@ public class DataStoreConnection implements Serializable {
      *       stream. In particular, we invoke the {@link ImageIO#createImageInputStream(Object)} factory method only in
      *       last resort because some SIS data stores will want to access the channel and buffer directly.</li>
      *
+     *   <li>{@link ImageInputStream}:
+     *       Same as {@code DataInput} if it can be casted, or {@code null} otherwise.</li>
+     *
      *   <li>{@link Connection}:
-     *       The input/output object as a JDBC connection.</li>
+     *       The storage object as a JDBC connection.</li>
      * </ul>
      *
      * A non-existent entry means that the value has not yet been computed. A {@link Void#TYPE} value means the value
@@ -235,6 +239,15 @@ public class DataStoreConnection implements Serializable {
      * The default implementation accepts the following types:
      *
      * <ul>
+     *   <li>{@link String}:
+     *     <ul>
+     *       <li>If the {@linkplain #getStorage() storage} object is an instance of the {@link java.nio.file.Path},
+     *           {@link java.io.File}, {@link java.net.URL}, {@link java.net.URI} or {@link CharSequence} types,
+     *           returns the string representation of their path.</li>
+     *
+     *       <li>Otherwise this method returns {@code null}.</li>
+     *     </ul>
+     *   </li>
      *   <li>{@link ByteBuffer}:
      *     <ul>
      *       <li>If the {@linkplain #getStorage() storage} object can be obtained as described in bullet 2 of the
@@ -256,6 +269,13 @@ public class DataStoreConnection implements Serializable {
      *
      *       <li>Otherwise if {@link ImageIO#createImageInputStream(Object)} returns a non-null value,
      *           then this value is cached and returned.</li>
+     *
+     *       <li>Otherwise this method returns {@code null}.</li>
+     *     </ul>
+     *   </li>
+     *   <li>{@link ImageInputStream}:
+     *     <ul>
+     *       <li>If the {@code DataInput} computed above can be casted to {@code null}, returns it.</li>
      *
      *       <li>Otherwise this method returns {@code null}.</li>
      *     </ul>
@@ -302,13 +322,26 @@ public class DataStoreConnection implements Serializable {
         /*
          * Special case for DataInput and ByteBuffer, because those values are created together.
          * In addition, ImageInputStream creation assigns a value to the 'streamOrigin' field.
+         * The ChannelDataInput case is an undocumented (SIS internal) type for avoiding the
+         * potential call to ImageIO.createImageInputStream(…) when we do not need it.
          */
-        if (type == DataInput.class || type == ByteBuffer.class) {
-            try {
+        boolean done = false;
+        try {
+            if (type == ByteBuffer.class) {
+                createByteBuffer();
+                done = true;
+            } else if (type == DataInput.class) {
                 createDataInput();
-            } catch (IOException e) {
-                throw new DataStoreException(Errors.format(Errors.Keys.CanNotOpen_1, getStorageName()), e);
+                done = true;
+            } else if (type == ChannelDataInput.class) { // Undocumented case (SIS internal)
+                createChannelDataInput(false);
+                done = true;
             }
+        } catch (IOException e) {
+            throw new DataStoreException(Errors.format(Errors.Keys.CanNotOpen_1, getStorageName()), e);
+        }
+        if (done) {
+            // Want to exit this method even if the value is null.
             return getView(type);
         }
         /*
@@ -328,6 +361,32 @@ public class DataStoreConnection implements Serializable {
     }
 
     /**
+     * Creates a view for the input as a {@link ChannelDataInput} if possible.
+     *
+     * @param  asImageInputStream If the {@code ChannelDataInput} needs to be {@link ChannelImageInputStream} subclass.
+     * @throws IOException If an error occurred while opening a channel for the input.
+     */
+    private void createChannelDataInput(final boolean asImageInputStream) throws IOException {
+        final ReadableByteChannel channel = IOUtilities.open(storage, getOption(OptionKey.URL_ENCODING));
+        ChannelDataInput asDataInput = null;
+        if (channel != null) {
+            ByteBuffer buffer = getOption(OptionKey.BYTE_BUFFER);
+            if (buffer == null) {
+                buffer = ByteBuffer.allocate(DEFAULT_BUFFER_SIZE);
+                // TODO: we do not create direct buffer yet, but this is something
+                // we may want to consider in a future SIS version.
+            }
+            final String name = getStorageName();
+            if (asImageInputStream) {
+                asDataInput = new ChannelImageInputStream(name, channel, buffer, false);
+            } else {
+                asDataInput = new ChannelDataInput(name, channel, buffer, false);
+            }
+        }
+        addView(ChannelDataInput.class, asDataInput);
+    }
+
+    /**
      * Creates a view for the input as a {@link DataInput} if possible. This method performs the choice
      * documented in the {@link #getStorageAs(Class)} method for the {@code DataInput} case. Opening the
      * data input may imply creating a {@link ByteBuffer}, in which case the buffer will be stored under
@@ -337,7 +396,6 @@ public class DataStoreConnection implements Serializable {
      */
     private void createDataInput() throws IOException {
         final DataInput asDataInput;
-        ByteBuffer asByteBuffer = null;
         if (storage instanceof DataInput) {
             asDataInput = (DataInput) storage;
         } else {
@@ -346,41 +404,54 @@ public class DataStoreConnection implements Serializable {
              * SIS data stores will want to access directly the channel and the buffer. We will fallback
              * on the ImageIO.createImageInputStream(Object) method only in last resort.
              */
-            final ReadableByteChannel channel = IOUtilities.open(storage, getOption(OptionKey.URL_ENCODING));
-            if (channel != null) {
-                ByteBuffer buffer = getOption(OptionKey.BYTE_BUFFER);
-                if (buffer == null) {
-                    buffer = ByteBuffer.allocate(DEFAULT_BUFFER_SIZE);
-                    // TODO: we do not create direct buffer yet, but this is something
-                    // we may want to consider in a future SIS version.
-                }
-                asDataInput = new ChannelImageInputStream(getStorageName(), channel, buffer, false);
-                asByteBuffer = buffer.asReadOnlyBuffer();
-            } else {
+            if (!views.containsKey(ChannelDataInput.class)) {
+                createChannelDataInput(true);
+            }
+            final ChannelDataInput c = getView(ChannelDataInput.class);
+            if (c == null) {
                 asDataInput = ImageIO.createImageInputStream(storage);
+            } else if (c instanceof DataInput) {
+                asDataInput = (DataInput) c;
+            } else {
+                asDataInput = new ChannelImageInputStream(c);
+                if (views.put(ChannelDataInput.class, asDataInput) != c) {
+                    throw new ConcurrentModificationException();
+                }
             }
         }
-        /*
-         * If an ImageInputStream has been created without buffer, read an arbitrary amount of bytes now
-         * so we can provide a ByteBuffer in case some user wants it. This may be a unnecessary overhead
-         * since maybe no user will want to look at a ByteBuffer,  but this case is presumed rare enough
-         * for not being worth a more complex "lazy instantiation" mechanism. We read only a small amount
-         * of bytes because, at the contrary of the buffer created in the above block, the buffer created
-         * here is unlikely to be used for the reading process after the recognition of the file format.
-         */
-        if (asByteBuffer == null && asDataInput instanceof ImageInputStream) {
-            final ImageInputStream in = (ImageInputStream) asDataInput;
-            in.mark();
-            final byte[] buffer = new byte[256];
-            final int n = in.read(buffer);
-            in.reset();
-            if (n >= 1) {
-                asByteBuffer = ByteBuffer.wrap(ArraysExt.resize(buffer, n))
-                        .asReadOnlyBuffer().order(in.getByteOrder());
+        addView(DataInput.class, asDataInput);
+    }
+
+    /**
+     * If an {@link ImageInputStream} has been created without buffer, read an arbitrary amount of bytes now so
+     * we can provide a {@link ByteBuffer} for users who want it. We read only a small amount of bytes because,
+     * at the contrary of the buffer created in {@link #createChannelAndBuffer(boolean)}, the buffer created
+     * here is unlikely to be used for the reading process after the recognition of the file format.
+     *
+     * @throws IOException If an error occurred while opening a stream for the input.
+     */
+    private void createByteBuffer() throws IOException, DataStoreException {
+        if (!views.containsKey(ChannelDataInput.class)) {
+            createChannelDataInput(false);
+        }
+        ByteBuffer asByteBuffer = null;
+        final ChannelDataInput c = getView(ChannelDataInput.class);
+        if (c != null) {
+            asByteBuffer = c.buffer.asReadOnlyBuffer();
+        } else {
+            final ImageInputStream in = getStorageAs(ImageInputStream.class);
+            if (in != null) {
+                in.mark();
+                final byte[] buffer = new byte[256];
+                final int n = in.read(buffer);
+                in.reset();
+                if (n >= 1) {
+                    asByteBuffer = ByteBuffer.wrap(ArraysExt.resize(buffer, n))
+                            .asReadOnlyBuffer().order(in.getByteOrder());
+                }
             }
         }
         addView(ByteBuffer.class, asByteBuffer);
-        addView(DataInput.class,  asDataInput);
     }
 
     /**
@@ -394,6 +465,9 @@ public class DataStoreConnection implements Serializable {
      * @throws Exception If an error occurred while opening a stream or database connection.
      */
     private Object createView(final Class<?> type) throws IllegalArgumentException, Exception {
+        if (type == String.class) {
+            return IOUtilities.toString(storage);
+        }
         if (type == Connection.class) {
             if (storage instanceof Connection) {
                 return storage;
@@ -401,11 +475,15 @@ public class DataStoreConnection implements Serializable {
                 return ((DataSource) storage).getConnection();
             }
         }
+        if (type == ImageInputStream.class) {
+            final DataInput input = getStorageAs(DataInput.class);
+            return (input instanceof ImageInputStream) ? input : null;
+        }
         throw new IllegalArgumentException(Errors.format(Errors.Keys.UnknownType_1, type));
     }
 
     /**
-     * Adds the given view in the caches.
+     * Adds the given view in the cache.
      *
      * @param <T>   The compile-time type of the {@code type} argument.
      * @param type  The view type.
@@ -418,7 +496,7 @@ public class DataStoreConnection implements Serializable {
     }
 
     /**
-     * Returns the view for the given type from the caches.
+     * Returns the view for the given type from the cache.
      *
      * @param <T>   The compile-time type of the {@code type} argument.
      * @param type  The view type.
@@ -447,22 +525,25 @@ public class DataStoreConnection implements Serializable {
      * @see #getStorageAs(Class)
      */
     public void closeAllExcept(final Object view) throws DataStoreException {
-        boolean close = (view == null);
-        try {
-            for (final Object value : views.values()) {
-                if (value != view) {
-                    if (value instanceof AutoCloseable) {
-                        ((AutoCloseable) value).close();
-                        close = false;
-                    }
-                }
-                /*
-                 * On JDK6, ImageInputStream does not extend Closeable and must
-                 * be checked explicitely. On JDK7, this is not needed anymore.
-                 * Likewise, Connection extends AutoCloseable only in JDK7.
-                 */
+        /*
+         * Need a set of objects to close without duplicated values. In particular, the value for
+         * DataInput and ImageInputStream are often the same instance. We must avoid duplicated
+         * values because ImageInputStream.close() is not indempotent.
+         */
+        final Map<AutoCloseable,Object> toClose = new IdentityHashMap<>(4);
+        for (final Object value : views.values()) {
+            if (value instanceof AutoCloseable) {
+                toClose.put((AutoCloseable) value, null);
             }
-            if (close && storage instanceof AutoCloseable) {
+        }
+        toClose.remove(view);
+        toClose.remove(storage);
+        try {
+            if (!toClose.isEmpty()) {
+                for (final AutoCloseable value : toClose.keySet()) {
+                    value.close();
+                }
+            } else if (view == null && storage instanceof AutoCloseable) {
                 /*
                  * Close only if we didn't closed a view because closing an input stream view
                  * automatically close the 'storage' if the former is a wrapper for the later.
