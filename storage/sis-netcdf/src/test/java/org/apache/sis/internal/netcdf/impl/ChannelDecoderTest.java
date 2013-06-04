@@ -18,10 +18,12 @@ package org.apache.sis.internal.netcdf.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import org.opengis.wrapper.netcdf.IOTestCase;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.DecoderTest;
+import org.apache.sis.internal.storage.ChannelDataInput;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.test.DependsOn;
 
@@ -66,8 +68,10 @@ public final strictfp class ChannelDecoderTest extends DecoderTest {
     public static Decoder createChannelDecoder(final String name) throws IOException {
         final InputStream in = IOTestCase.class.getResourceAsStream(name);
         assertNotNull(name, in);
+        final ChannelDataInput input = new ChannelDataInput(name,
+                Channels.newChannel(in), ByteBuffer.allocate(4096), false);
         try {
-            return new ChannelDecoder(null, name, Channels.newChannel(in));
+            return new ChannelDecoder(null, input);
         } catch (DataStoreException e) {
             throw new AssertionError(e);
         }

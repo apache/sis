@@ -51,9 +51,13 @@ import org.apache.sis.setup.OptionKey;
  *   <li>Any other {@code DataStore}-specific object, for example {@link ucar.nc2.NetcdfFile}.</li>
  * </ul>
  *
- * This class is used only for discovery of a {@code DataStore} implementation capable to handle the input.
+ * The {@link #getStorageAs(Class)} method provides the storage as an object of the given type, opening
+ * the input stream if necessary. This class tries to open the stream only once - subsequent invocation
+ * of {@code getStorageAs(…)} may return the same input stream.
+ *
+ * <p>This class is used only for discovery of a {@code DataStore} implementation capable to handle the input.
  * Once a suitable {@code DataStore} has been found, the {@code DataStoreConnection} instance is typically
- * discarded since each data store implementation will use their own input/output objects.
+ * discarded since each data store implementation will use their own input/output objects.</p>
  *
  * <p>Instances of this class are serializable if the {@code storage} object given at construction time
  * is serializable.</p>
@@ -112,9 +116,10 @@ public class DataStoreConnection implements Serializable {
      * </ul>
      *
      * A non-existent entry means that the value has not yet been computed. A {@link Void#TYPE} value means the value
-     * has been computed and we have determined that {@link #openAs(Class)} shall returns {@code null} for that type.
+     * has been computed and we have determined that {@link #getStorageAs(Class)} shall returns {@code null} for that
+     * type.
      *
-     * @see #openAs(Class)
+     * @see #getStorageAs(Class)
      */
     private transient Map<Class<?>, Object> views;
 
@@ -171,6 +176,8 @@ public class DataStoreConnection implements Serializable {
      * The object can be of any type, but the class javadoc lists the most typical ones.
      *
      * @return The input/output object as a URL, file, image input stream, <i>etc.</i>.
+     *
+     * @see #getStorageAs(Class)
      */
     public Object getStorage() {
         return storage;
@@ -228,43 +235,48 @@ public class DataStoreConnection implements Serializable {
      * The default implementation accepts the following types:
      *
      * <ul>
-     *   <li><p>{@link ByteBuffer} -
-     *       A read-only view of the first bytes of the input stream, or {@code null} if unavailable.
-     *       If non-null, then the buffer can be used for a quick check of file magic number.</p></li>
+     *   <li>{@link ByteBuffer}:
+     *     <ul>
+     *       <li>If the {@linkplain #getStorage() storage} object can be obtained as described in bullet 2 of the
+     *           {@code DataInput} section below, then this method returns the associated byte buffer.</li>
      *
-     *   <li><p>{@link DataInput} -
-     *       Performs the following choice based on the type of the {@linkplain #getStorage() storage} object:
-     *       <ul>
-     *         <li>If the storage is already an instance of {@link DataInput} (including the {@link ImageInputStream}
-     *             and {@link javax.imageio.stream.ImageOutputStream} types), then it is returned unchanged.</li>
+     *       <li>Otherwise this method returns {@code null}.</li>
+     *     </ul>
+     *   </li>
+     *   <li>{@link DataInput}:
+     *     <ul>
+     *       <li>If the {@linkplain #getStorage() storage} object is already an instance of {@link DataInput}
+     *           (including the {@link ImageInputStream} and {@link javax.imageio.stream.ImageOutputStream} types),
+     *           then it is returned unchanged.</li>
      *
-     *         <li>Otherwise if the input is an instance of {@link java.nio.file.Path}, {@link java.io.File},
-     *             {@link java.net.URI}, {@link java.net.URL}, {@link CharSequence}, {@link java.io.InputStream} or
-     *             {@link java.nio.channels.ReadableByteChannel}, then an {@link ImageInputStream} backed by a
-     *             {@link ByteBuffer} is created when first needed and returned.</li>
+     *       <li>Otherwise if the input is an instance of {@link java.nio.file.Path}, {@link java.io.File},
+     *           {@link java.net.URI}, {@link java.net.URL}, {@link CharSequence}, {@link java.io.InputStream} or
+     *           {@link java.nio.channels.ReadableByteChannel}, then an {@link ImageInputStream} backed by a
+     *           {@link ByteBuffer} is created when first needed and returned.</li>
      *
-     *         <li>Otherwise if {@link ImageIO#createImageInputStream(Object)} returns a non-null value,
-     *             then this value is cached and returned.</li>
+     *       <li>Otherwise if {@link ImageIO#createImageInputStream(Object)} returns a non-null value,
+     *           then this value is cached and returned.</li>
      *
-     *         <li>Otherwise this method returns {@code null}.</li>
-     *       </ul></p></li>
+     *       <li>Otherwise this method returns {@code null}.</li>
+     *     </ul>
+     *   </li>
+     *   <li>{@link Connection}:
+     *     <ul>
+     *       <li>If the {@linkplain #getStorage() storage} object is already an instance of {@link Connection},
+     *           then it is returned unchanged.</li>
      *
-     *   <li><p>{@link Connection} -
-     *       Performs the following choice based on the type of the {@linkplain #getStorage() storage} object:
-     *       <ul>
-     *         <li>If the storage is already an instance of {@link Connection}, then it is returned unchanged.</li>
+     *       <li>Otherwise if the storage is an instance of {@link DataSource}, then a connection is obtained
+     *           when first needed and returned.</li>
      *
-     *         <li>Otherwise if the storage is an instance of {@link DataSource}, then a connection is obtained
-     *             when first needed and returned.</li>
-     *
-     *         <li>Otherwise this method returns {@code null}.</li>
-     *       </ul></p></li>
+     *       <li>Otherwise this method returns {@code null}.</li>
+     *     </ul>
+     *   </li>
      * </ul>
      *
      * Multiple invocations of this method on the same {@code DataStoreConnection} instance will try
      * to return the same instance on a <cite>best effort</cite> basis. Consequently, implementations
-     * of {@link DataStoreProvider#canOpen(DataStoreConnection)} methods shall not close the stream or
-     * database connection returned by this method. In addition, those {@code canOpen(DataStoreConnection)}
+     * of {@link DataStoreProvider#canRead(DataStoreConnection)} methods shall not close the stream or
+     * database connection returned by this method. In addition, those {@code canRead(DataStoreConnection)}
      * methods are responsible for restoring the stream or byte buffer to its original position on return.
      *
      * @param  <T>  The compile-time type of the {@code type} argument.
@@ -274,9 +286,10 @@ public class DataStoreConnection implements Serializable {
      * @throws IllegalArgumentException If the given {@code type} argument is not a known type.
      * @throws DataStoreException If an error occurred while opening a stream or database connection.
      *
+     * @see #getStorage()
      * @see #closeAllExcept(Object)
      */
-    public <T> T openAs(final Class<T> type) throws IllegalArgumentException, DataStoreException {
+    public <T> T getStorageAs(final Class<T> type) throws IllegalArgumentException, DataStoreException {
         ArgumentChecks.ensureNonNull("type", type);
         if (views != null) {
             final Object view = views.get(type);
@@ -316,9 +329,9 @@ public class DataStoreConnection implements Serializable {
 
     /**
      * Creates a view for the input as a {@link DataInput} if possible. This method performs the choice
-     * documented in the {@link #openAs(Class)} method for the {@code DataInput} case. Opening the data
-     * input may imply creating a {@link ByteBuffer}, in which case the buffer will be stored under the
-     * {@code ByteBuffer.class} key together with the {@code DataInput.class} case.
+     * documented in the {@link #getStorageAs(Class)} method for the {@code DataInput} case. Opening the
+     * data input may imply creating a {@link ByteBuffer}, in which case the buffer will be stored under
+     * the {@code ByteBuffer.class} key together with the {@code DataInput.class} case.
      *
      * @throws IOException If an error occurred while opening a stream for the input.
      */
@@ -372,7 +385,7 @@ public class DataStoreConnection implements Serializable {
 
     /**
      * Creates a storage view of the given type if possible, or returns {@code null} otherwise.
-     * This method is invoked by {@link #openAs(Class)} when first needed, and the result is cached.
+     * This method is invoked by {@link #getStorageAs(Class)} when first needed, and the result is cached.
      *
      * @param  <T>  The compile-time type of the {@code type} argument.
      * @param  type The type of the view to create.
@@ -418,7 +431,7 @@ public class DataStoreConnection implements Serializable {
 
     /**
      * Closes all streams and connections created by this {@code DataStoreConnection} except the given view.
-     * This method closes all objects created by the {@link #openAs(Class)} method, leaving only {@code view} open.
+     * This method closes all objects created by the {@link #getStorageAs(Class)} method except the given {@code view}.
      * If {@code view} is {@code null}, then this method closes everything including the {@linkplain #getStorage()
      * storage} if it is closeable.
      *
@@ -431,7 +444,7 @@ public class DataStoreConnection implements Serializable {
      * @param  view The view to leave open, or {@code null} if none.
      * @throws DataStoreException If an error occurred while closing the stream or database connection.
      *
-     * @see #openAs(Class)
+     * @see #getStorageAs(Class)
      */
     public void closeAllExcept(final Object view) throws DataStoreException {
         boolean close = (view == null);

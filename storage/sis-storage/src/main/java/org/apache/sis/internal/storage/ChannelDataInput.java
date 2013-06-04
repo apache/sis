@@ -182,7 +182,7 @@ public class ChannelDataInput {
      * @throws EOFException If the channel has reached the end of stream.
      * @throws IOException If an other kind of error occurred while reading.
      */
-    public final void ensureBufferContains(int n) throws IOException {
+    public final void ensureBufferContains(int n) throws EOFException, IOException {
         assert n <= buffer.capacity() : n;
         n -= buffer.remaining();
         if (n > 0) {
@@ -641,6 +641,30 @@ public class ChannelDataInput {
             @Override Buffer createView() {return view = buffer.asDoubleBuffer();}
             @Override void transfer(int offset, int n) {view.get(dest, offset, n);}
         }.readFully(Double.SIZE / Byte.SIZE, offset, length);
+    }
+
+    /**
+     * Decodes a string from a sequence of bytes in the given encoding. This method tries to avoid the creation
+     * of a temporary {@code byte[]} array when possible.
+     *
+     * <p>This convenience method shall be used only for relatively small amount of {@link String} instances
+     * to decode, for example attribute values in the file header. For large amount of data, consider using
+     * {@link java.nio.charset.CharsetDecoder} instead.</p>
+     *
+     * @param  length   Number of bytes to read.
+     * @param  encoding The character encoding.
+     * @return The string decoded from the {@code length} next bytes.
+     * @throws IOException If an error occurred while reading the bytes, or if the given encoding is invalid.
+     */
+    public final String readString(final int length, final String encoding) throws IOException {
+        if (buffer.hasArray() && length <= buffer.capacity()) {
+            ensureBufferContains(length);
+            final int position = buffer.position(); // Must be after 'ensureBufferContains(int)'.
+            buffer.position(position + length);     // Before 'new String' for consistency with the 'else' block in case of UnsupportedEncodingException.
+            return new String(buffer.array(), buffer.arrayOffset() + position, length, encoding);
+        } else {
+            return new String(readBytes(length), encoding);
+        }
     }
 
     /**

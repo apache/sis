@@ -75,7 +75,7 @@ public final strictfp class DataStoreConnectionTest extends TestCase {
     }
 
     /**
-     * Tests the {@link DataStoreConnection#openAs(Class)} method for the I/O types.
+     * Tests the {@link DataStoreConnection#getStorageAs(Class)} method for the I/O types.
      * The initial storage object is a {@link java.net.URL}.
      *
      * @throws DataStoreException Should never happen.
@@ -87,7 +87,7 @@ public final strictfp class DataStoreConnectionTest extends TestCase {
     }
 
     /**
-     * Tests the {@link DataStoreConnection#openAs(Class)} method for the I/O types.
+     * Tests the {@link DataStoreConnection#getStorageAs(Class)} method for the I/O types.
      * The initial storage object is an {@link java.io.InputStream}.
      *
      * @throws DataStoreException Should never happen.
@@ -103,8 +103,8 @@ public final strictfp class DataStoreConnectionTest extends TestCase {
      */
     private void testOpenAsDataInput(final boolean asStream) throws DataStoreException, IOException {
         final DataStoreConnection connection = create(asStream);
-        final DataInput input = connection.openAs(DataInput.class);
-        assertSame("Value shall be cached.", input, connection.openAs(DataInput.class));
+        final DataInput input = connection.getStorageAs(DataInput.class);
+        assertSame("Value shall be cached.", input, connection.getStorageAs(DataInput.class));
         assertInstanceOf("Needs the SIS implementation", ChannelImageInputStream.class, input);
         final ReadableByteChannel channel = ((ChannelImageInputStream) input).channel;
         /*
@@ -118,7 +118,7 @@ public final strictfp class DataStoreConnectionTest extends TestCase {
     }
 
     /**
-     * Tests the {@link DataStoreConnection#openAs(Class)} method for the {@link ByteBuffer} type.
+     * Tests the {@link DataStoreConnection#getStorageAs(Class)} method for the {@link ByteBuffer} type.
      * This method uses the same test file than {@link #testOpenFromURL()}.
      *
      * @throws DataStoreException Should never happen.
@@ -128,7 +128,7 @@ public final strictfp class DataStoreConnectionTest extends TestCase {
     @DependsOnMethod("testOpenFromURL")
     public void testOpenAsByteBuffer() throws DataStoreException, IOException {
         final DataStoreConnection connection = create(false);
-        final ByteBuffer buffer = connection.openAs(ByteBuffer.class);
+        final ByteBuffer buffer = connection.getStorageAs(ByteBuffer.class);
         assertEquals(MAGIC_NUMBER, buffer.getInt());
         connection.closeAllExcept(null);
     }
@@ -143,7 +143,7 @@ public final strictfp class DataStoreConnectionTest extends TestCase {
     @DependsOnMethod("testOpenFromStream")
     public void testCloseAllExcept() throws DataStoreException, IOException {
         final DataStoreConnection connection = create(true);
-        final DataInput input = connection.openAs(DataInput.class);
+        final DataInput input = connection.getStorageAs(DataInput.class);
         final ReadableByteChannel channel = ((ChannelImageInputStream) input).channel;
         assertTrue("channel.isOpen()", channel.isOpen());
         connection.closeAllExcept(input);

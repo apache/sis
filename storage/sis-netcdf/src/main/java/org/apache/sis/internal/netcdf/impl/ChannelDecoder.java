@@ -174,25 +174,22 @@ public final class ChannelDecoder extends Decoder {
      * This constructor parses immediately the header.
      *
      * @param  sink     Where to send the warnings, or {@code null} if none.
-     * @param  filename A file identifier used only for formatting error message.
-     * @param  channel  The channel from where data are read.
+     * @param  input    The channel and the buffer from where data are read.
      * @throws IOException If an error occurred while reading the channel.
      * @throws DataStoreException If the content of the given channel is not a NetCDF file.
      */
-    public ChannelDecoder(final WarningProducer sink, final String filename, final ReadableByteChannel channel)
+    public ChannelDecoder(final WarningProducer sink, final ChannelDataInput input)
             throws IOException, DataStoreException
     {
         super(sink);
-        // The buffer must be backed by a Java {@code byte[]} array,
-        // because we will occasionally reference that array.
-        input = new ChannelDataInput(filename, channel, ByteBuffer.allocate(4096), false);
+        this.input = input;
         /*
          * Check the magic number, which is expected to be exactly 3 bytes forming the "CDF" string.
          * The 4th byte is the version number, which we opportunistically use after the magic number check.
          */
         int version = input.readInt();
         if ((version & 0xFFFFFF00) != (('C' << 24) | ('D' << 16) | ('F' <<  8))) {
-            throw new DataStoreException(errors().getString(Errors.Keys.UnexpectedFileFormat_2, "NetCDF", filename));
+            throw new DataStoreException(errors().getString(Errors.Keys.UnexpectedFileFormat_2, "NetCDF", input.filename));
         }
         /*
          * Check the version number.
@@ -311,9 +308,8 @@ public final class ChannelDecoder extends Decoder {
         }
         final ByteBuffer buffer = input.buffer;
         final int size = ensureBufferContains(length, 1, "<name>");
-        final int position = buffer.position(); // Must be after 'require'
-        final String text = new String(buffer.array(), position, length, NAME_ENCODING);
-        buffer.position(position + size);
+        final String text = input.readString(length, NAME_ENCODING);
+        buffer.position(buffer.position() + (size - length));
         return text;
     }
 
@@ -330,11 +326,11 @@ public final class ChannelDecoder extends Decoder {
         }
         final ByteBuffer buffer = input.buffer;
         final int size = ensureBufferContains(length, VariableInfo.sizeOf(type), name);
-        final int position = buffer.position(); // Must be after 'require'
+        final int position = buffer.position(); // Must be after 'ensureBufferContains'
         final Object result;
         switch (type) {
             case VariableInfo.CHAR: {
-                final String text = new String(buffer.array(), position, length, encoding).trim();
+                final String text = input.readString(length, encoding).trim();
                 result = text.isEmpty() ? null : text;
                 break;
             }
