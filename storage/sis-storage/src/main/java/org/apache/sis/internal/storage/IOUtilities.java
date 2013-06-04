@@ -125,6 +125,27 @@ public final class IOUtilities extends Static {
     }
 
     /**
+     * Returns a string representation of the given path, or {@code null} if none. The current implementation
+     * recognizes only the {@link Path}, {@link File}, {@link URL}, {@link URI} or {@link CharSequence} types.
+     *
+     * @param  path The path for which to return a string representation.
+     * @return The string representation, or {@code null} if none.
+     */
+    public static String toString(final Object path) {
+        // For the following types, the string that we want can be obtained only by toString(),
+        // or the class is final so we know that the toString(à behavior can not be changed.
+        if (path instanceof CharSequence || path instanceof Path || path instanceof URL || path instanceof URI) {
+            return path.toString();
+        }
+        // While toString() would work too on the default implementation, the following
+        // type is not final. So we are better to invoke the dedicated method.
+        if (path instanceof File) {
+            return ((File) path).getPath();
+        }
+        return null;
+    }
+
+    /**
      * Encodes the characters that are not legal for the {@link URI#URI(String)} constructor.
      * Note that in addition to unreserved characters ("{@code _-!.~'()*}"), the reserved
      * characters ("{@code ?/[]@}") and the punctuation characters ("{@code ,;:$&+=}")

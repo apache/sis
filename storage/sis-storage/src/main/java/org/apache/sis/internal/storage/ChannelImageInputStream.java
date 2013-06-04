@@ -115,6 +115,18 @@ public class ChannelImageInputStream extends ChannelDataInput implements ImageIn
     }
 
     /**
+     * Creates a new input source from the given {@code ChannelDataInput}.
+     * This constructor is invoked when we need to change the implementation class
+     * from {@code ChannelDataInput} to {@code ChannelImageInputStream}.
+     *
+     * @param  input The existing instance from which to takes the channel and buffer.
+     * @throws IOException If an error occurred while reading the channel.
+     */
+    public ChannelImageInputStream(final ChannelDataInput input) throws IOException {
+        super(input.filename, input.channel, input.buffer, true);
+    }
+
+    /**
      * Sets the desired byte order for future reads of data values from this stream.
      * The default value is {@link ByteOrder#BIG_ENDIAN BIG_ENDIAN}.
      */

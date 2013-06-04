@@ -75,6 +75,22 @@ public final strictfp class IOUtilitiesTest extends TestCase {
     }
 
     /**
+     * Tests {@link IOUtilities#toString(Object)}.
+     *
+     * @throws URISyntaxException Should never happen.
+     * @throws MalformedURLException Should never happen.
+     */
+    @Test
+    public void testToString() throws URISyntaxException, MalformedURLException {
+        // Do not test File because the result is platform-specific.
+        assertEquals("/Users/name/Map.png",      IOUtilities.toString(              "/Users/name/Map.png"));
+        assertEquals("file:/Users/name/Map.png", IOUtilities.toString(new URI ("file:/Users/name/Map.png")));
+        assertEquals("file:/Users/name/Map.png", IOUtilities.toString(new URL ("file:/Users/name/Map.png")));
+        assertNull(IOUtilities.toString(Boolean.FALSE));
+        assertNull(IOUtilities.toString(null));
+    }
+
+    /**
      * Tests {@link IOUtilities#encodeURI(String)}.
      */
     @Test
