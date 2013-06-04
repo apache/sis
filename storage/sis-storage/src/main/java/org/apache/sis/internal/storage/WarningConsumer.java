@@ -52,7 +52,7 @@ public final class WarningConsumer<T> extends WarningProducer {
      * The listeners, or {@code null} if none. This is a <cite>copy on write</cite> array:
      * no elements are modified once the array have been created.
      */
-    private volatile WarningListener<? super T>[] listeners;
+    private WarningListener<? super T>[] listeners;
 
     /**
      * Creates a new instance with initially no listener.
@@ -84,7 +84,10 @@ public final class WarningConsumer<T> extends WarningProducer {
      */
     @Override
     void sendWarning(final LogRecord record) {
-        final WarningListener[] current = listeners;
+        final WarningListener[] current;
+        synchronized (this) {
+            current = listeners;
+        }
         if (current != null) {
             for (final WarningListener<? super T> listener : listeners) {
                 listener.warningOccured(source, record);
@@ -101,7 +104,9 @@ public final class WarningConsumer<T> extends WarningProducer {
      * @param  listener The listener to add.
      * @throws IllegalArgumentException If the given listener is already registered in this data store.
      */
-    public void addWarningListener(final WarningListener<? super T> listener) throws IllegalArgumentException {
+    public synchronized void addWarningListener(final WarningListener<? super T> listener)
+            throws IllegalArgumentException
+    {
         ArgumentChecks.ensureNonNull("listener", listener);
         final WarningListener<? super T>[] current = listeners;
         final int length = (current != null) ? current.length : 0;
@@ -125,7 +130,9 @@ public final class WarningConsumer<T> extends WarningProducer {
      * @param  listener The listener to remove.
      * @throws NoSuchElementException If the given listener is not registered in this data store.
      */
-    public void removeWarningListener(final WarningListener<? super T> listener) throws NoSuchElementException {
+    public synchronized void removeWarningListener(final WarningListener<? super T> listener)
+            throws NoSuchElementException
+    {
         final WarningListener<? super T>[] current = listeners;
         if (current != null) {
             for (int i=0; i<current.length; i++) {
