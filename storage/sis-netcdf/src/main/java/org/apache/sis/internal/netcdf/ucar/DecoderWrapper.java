@@ -33,10 +33,10 @@ import ucar.nc2.time.Calendar;
 import ucar.nc2.time.CalendarDate;
 import ucar.nc2.time.CalendarDateFormatter;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.GridGeometry;
-import org.apache.sis.internal.storage.WarningProducer;
 
 
 /**
@@ -86,23 +86,23 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      * {@link NetcdfFile} instance, the {@link NetcdfDataset} subclass is necessary in order to
      * get coordinate system information.
      *
-     * @param sink Where to send the warnings, or {@code null} if none.
+     * @param listeners Where to send the warnings.
      * @param file The NetCDF file from which to read data.
      */
-    public DecoderWrapper(final WarningProducer sink, final NetcdfFile file) {
-        super(sink);
+    public DecoderWrapper(final WarningListeners<?> listeners, final NetcdfFile file) {
+        super(listeners);
         this.file = file;
     }
 
     /**
      * Creates a new decoder for the given filename.
      *
-     * @param  sink     Where to send the warnings, or {@code null} if none.
-     * @param  filename The name of the NetCDF file from which to read data.
+     * @param  listeners Where to send the warnings.
+     * @param  filename  The name of the NetCDF file from which to read data.
      * @throws IOException If an error occurred while opening the NetCDF file.
      */
-    public DecoderWrapper(final WarningProducer sink, final String filename) throws IOException {
-        super(sink);
+    public DecoderWrapper(final WarningListeners<?> listeners, final String filename) throws IOException {
+        super(listeners);
         file = NetcdfDataset.openDataset(filename, false, this);
     }
 
@@ -229,7 +229,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
                         try {
                             date = CalendarDateFormatter.isoStringToCalendarDate(Calendar.proleptic_gregorian, value);
                         } catch (IllegalArgumentException e) {
-                            warning("dateValue", null, e);
+                            listeners.warning("dateValue", null, e);
                             continue;
                         }
                         return new Date(date.getMillis());
@@ -254,7 +254,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
         try {
             unit = new DateUnit(symbol);
         } catch (Exception e) { // Declared by the DateUnit constructor.
-            warning("numberToDate", null, e);
+            listeners.warning("numberToDate", null, e);
             return dates;
         }
         for (int i=0; i<values.length; i++) {
@@ -341,7 +341,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      */
     @Override
     public void setError(final String message) {
-        warning(null, message, null);
+        listeners.warning(null, message, null);
     }
 
     /**

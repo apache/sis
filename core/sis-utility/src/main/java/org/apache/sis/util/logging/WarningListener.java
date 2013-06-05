@@ -34,7 +34,7 @@ import java.util.logging.LogRecord;
  * The difference between using this listener or configuring the logging {@link java.util.logging.Handler} is
  * that listeners allow to handle the warnings on a per-{@code DataStore} (or any other emitter) instance.
  *
- * @param <T> The type of the warnings emitter.
+ * @param <S> The type of the source of warnings.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
@@ -43,7 +43,7 @@ import java.util.logging.LogRecord;
  *
  * @see org.apache.sis.storage.DataStore#addWarningListener(WarningListener)
  */
-public interface WarningListener<T> extends EventListener {
+public interface WarningListener<S> extends EventListener {
     /**
      * Reports the occurrence of a non-fatal error. The emitter process (often a
      * {@link org.apache.sis.storage.DataStore} in the midst of a reading process)
@@ -61,5 +61,5 @@ public interface WarningListener<T> extends EventListener {
      * @param source  The object that emitted a warning.
      * @param warning The warning message together with programmatic information.
      */
-    void warningOccured(T source, LogRecord warning);
+    void warningOccured(S source, LogRecord warning);
 }

@@ -26,11 +26,11 @@ import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.impl.ChannelDecoder;
 import org.apache.sis.internal.netcdf.ucar.DecoderWrapper;
 import org.apache.sis.internal.storage.ChannelDataInput;
-import org.apache.sis.internal.storage.WarningProducer;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreConnection;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.util.logging.WarningListeners;
 
 
 /**
@@ -156,25 +156,25 @@ public class NetcdfStoreProvider extends DataStoreProvider {
      * Creates a decoder for the given input. This method invokes
      * {@link DataStoreConnection#closeAllExcept(Object)} after the decoder has been created.
      *
-     * @param  sink    Where to send the warnings, or {@code null} if none.
+     * @param  listeners Where to send the warnings.
      * @param  storage Information about the input (file, input stream, <i>etc.</i>)
      * @return The decoder for the given input.
      * @throws IOException If an error occurred while opening the NetCDF file.
      * @throws DataStoreException If a logical error (other than I/O) occurred.
      */
-    static Decoder decoder(final WarningProducer sink, final DataStoreConnection storage)
+    static Decoder decoder(final WarningListeners<?> listeners, final DataStoreConnection storage)
             throws IOException, DataStoreException
     {
         Decoder decoder;
         Object keepOpen;
         final ChannelDataInput input = storage.getStorageAs(ChannelDataInput.class);
         if (input != null) try {
-            decoder = new ChannelDecoder(sink, input);
+            decoder = new ChannelDecoder(listeners, input);
             keepOpen = input;
         } catch (DataStoreException e) {
             final String path = storage.getStorageAs(String.class);
             if (path != null) try {
-                decoder = createByReflection(sink, path, false);
+                decoder = createByReflection(listeners, path, false);
                 keepOpen = path;
             } catch (IOException | DataStoreException s) {
                 e.addSuppressed(s);
@@ -182,7 +182,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
             throw e;
         } else {
             keepOpen = storage.getStorage();
-            decoder = createByReflection(sink, keepOpen, true);
+            decoder = createByReflection(listeners, keepOpen, true);
         }
         storage.closeAllExcept(keepOpen);
         return decoder;
@@ -193,7 +193,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
      * not create our embedded NetCDF decoder. This method uses reflection for creating the wrapper, in order
      * to keep the UCAR dependency optional.
      *
-     * @param  sink   Where to send the warnings, or {@code null} if none.
+     * @param  listeners Where to send the warnings.
      * @param  input  The NetCDF file object of filename string from which to read data.
      * @param  isUCAR {@code true} if {@code input} is an instance of the UCAR {@link ucar.nc2.NetcdfFile} object,
      *                or {@code false} if it is the filename as a {@code String}.
@@ -201,7 +201,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
      * @throws IOException If an error occurred while opening the NetCDF file.
      * @throws DataStoreException If a logical error (other than I/O) occurred.
      */
-    private static Decoder createByReflection(final WarningProducer sink, final Object input, final boolean isUCAR)
+    private static Decoder createByReflection(final WarningListeners<?> listeners, final Object input, final boolean isUCAR)
             throws IOException, DataStoreException
     {
         ensureInitialized();
@@ -222,7 +222,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
             return null;
         }
         try {
-            return constructor.newInstance(sink, input);
+            return constructor.newInstance(listeners, input);
         } catch (InvocationTargetException e) {
             final Throwable cause = e.getCause();
             if (cause instanceof IOException)        throw (IOException)        cause;
@@ -260,7 +260,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
                  */
                 final Class<? extends Decoder> wrapper =
                         Class.forName("org.apache.sis.internal.netcdf.ucar.DecoderWrapper").asSubclass(Decoder.class);
-                final Class<?>[] parameterTypes = new Class<?>[] {WarningProducer.class, netcdfFileClass};
+                final Class<?>[] parameterTypes = new Class<?>[] {WarningListeners.class, netcdfFileClass};
                 createFromUCAR = wrapper.getConstructor(parameterTypes);
                 parameterTypes[1] = String.class;
                 createFromPath = wrapper.getConstructor(parameterTypes);

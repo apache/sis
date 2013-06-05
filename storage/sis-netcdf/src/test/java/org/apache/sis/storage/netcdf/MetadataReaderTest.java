@@ -20,6 +20,7 @@ import java.io.IOException;
 import ucar.nc2.dataset.NetcdfDataset;
 import org.opengis.metadata.Metadata;
 import org.opengis.wrapper.netcdf.IOTestCase;
+import org.apache.sis.internal.netcdf.TestCase;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.ucar.DecoderWrapper;
 import org.apache.sis.internal.netcdf.impl.ChannelDecoderTest;
@@ -67,7 +68,7 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
     @Test
     public void testUCAR() throws IOException {
         final Metadata metadata;
-        try (Decoder input = new DecoderWrapper(null, new NetcdfDataset(open(NCEP)))) {
+        try (Decoder input = new DecoderWrapper(TestCase.LISTENERS, new NetcdfDataset(open(NCEP)))) {
             metadata = new MetadataReader(input).read();
         }
         compareToExpected(metadata);
