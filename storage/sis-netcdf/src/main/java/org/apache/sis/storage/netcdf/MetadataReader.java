@@ -830,6 +830,7 @@ final class MetadataReader extends WarningProducer {
 
     /**
      * Creates an ISO {@code Metadata} object from the information found in the NetCDF file.
+     * The returned metadata will be unmodifiable in order to allow the caller to cache it.
      *
      * @return The ISO metadata object.
      * @throws IOException If an I/O operation was necessary but failed.
@@ -919,6 +920,7 @@ final class MetadataReader extends WarningProducer {
                 metadata.getSpatialRepresentationInfo().add(createSpatialRepresentationInfo(cs));
             }
         }
+        metadata.freeze();
         return metadata;
     }
 }

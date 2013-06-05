@@ -353,4 +353,13 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     public void close() throws IOException {
         file.close();
     }
+
+    /**
+     * Returns a string representation to be inserted in {@link org.apache.sis.storage.netcdf.NetcdfStore#toString()}
+     * result. This is for debugging purpose only any may change in any future SIS version.
+     */
+    @Override
+    public String toString() {
+        return "UCAR driver: “" + file.getLocation() + '”';
+    }
 }
