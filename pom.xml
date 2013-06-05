@@ -78,7 +78,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
 
   <ciManagement>
     <system>jenkins</system>
-    <url>https://builds.apache.org/job/sis-jdk7</url>
+    <url>https://builds.apache.org/job/sis-trunk</url>
   </ciManagement>
 
   <issueManagement>
