@@ -16,6 +16,12 @@
  */
 package org.apache.sis.internal.jdk7;
 
+import java.io.Closeable;
+import java.sql.Connection;
+import java.sql.Statement;
+import java.sql.ResultSet;
+import javax.imageio.stream.ImageInputStream;
+
 
 /**
  * Place holder for methods defined only in JDK7. Those methods are defined in existing classes,
@@ -84,5 +90,31 @@ public final class JDK7 {
         c &= 0x3FF;
         c += Character.MIN_LOW_SURROGATE;
         return (char) c;
+    }
+
+    /**
+     * Simulates the {@code object instanceof AutoCloseable} code.
+     *
+     * @param  object The object to check, or {@code null}.
+     * @return {@code true} if the given object is closeable.
+     */
+    public static boolean isAutoCloseable(final Object object) {
+        return (object instanceof AutoCloseable) || (object instanceof Closeable) || (object instanceof ImageInputStream) ||
+                (object instanceof Connection) || (object instanceof Statement) || (object instanceof ResultSet);
+    }
+
+    /**
+     * Simulates the {@code ((AutoCloseable) object).close()} method call.
+     *
+     * @param  object The object to close.
+     * @throws Exception If an error occurred while closing the object.
+     */
+    public static void close(final Object object) throws Exception {
+             if (object instanceof Closeable)        ((Closeable)        object).close();
+        else if (object instanceof ImageInputStream) ((ImageInputStream) object).close();
+        else if (object instanceof Connection)       ((Connection)       object).close();
+        else if (object instanceof Statement)        ((Statement)        object).close();
+        else if (object instanceof ResultSet)        ((ResultSet)        object).close();
+        else ((AutoCloseable) object).close(); // Intentionally no 'instanceof' check.
     }
 }

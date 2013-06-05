@@ -29,6 +29,7 @@ import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.wrapper.netcdf.NetcdfMetadataTest;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.ucar.DecoderWrapper;
+import org.apache.sis.internal.netcdf.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
@@ -65,8 +66,8 @@ public final strictfp class ConformanceTest extends NetcdfMetadataTest {
      */
     @Override
     protected Metadata wrap(final NetcdfFile file) throws IOException {
-        final Decoder decoder = new DecoderWrapper(null, file);
-        final MetadataReader ncISO = new MetadataReader(null, decoder);
+        final Decoder decoder = new DecoderWrapper(TestCase.LISTENERS, file);
+        final MetadataReader ncISO = new MetadataReader(decoder);
         return ncISO.read();
         // Do not close the file, as this will be done by the parent test class.
     }

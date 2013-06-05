@@ -143,6 +143,23 @@ public final strictfp class ChannelDataInputTest extends TestCase {
     }
 
     /**
+     * Tests the {@link ChannelDataInput#readString(int, String)} method.
+     *
+     * @throws IOException Should never happen.
+     */
+    @Test
+    public void testReadString() throws IOException {
+        final String expected = "お元気ですか";
+        final byte[] array = expected.getBytes("UTF-8");
+        assertEquals(expected.length()*3, array.length); // Sanity check.
+        final ChannelDataInput input = new ChannelDataInput("testReadString",
+                Channels.newChannel(new ByteArrayInputStream(array)),
+                ByteBuffer.allocate(array.length + 4), false);
+        assertEquals(expected, input.readString(array.length, "UTF-8"));
+        assertFalse(input.buffer.hasRemaining());
+    }
+
+    /**
      * Tests {@link ChannelDataInput#seek(long)} on a channel that do not implement
      * {@link java.nio.channels.SeekableByteChannel}.
      *

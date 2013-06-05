@@ -21,21 +21,22 @@ import java.util.List;
 import java.util.EnumSet;
 import java.io.IOException;
 import ucar.nc2.Group;
+import ucar.nc2.Dimension;
 import ucar.nc2.Attribute;
 import ucar.nc2.VariableIF;
 import ucar.nc2.NetcdfFile;
 import ucar.nc2.dataset.NetcdfDataset;
 import ucar.nc2.dataset.CoordinateSystem;
+import ucar.nc2.util.CancelTask;
 import ucar.nc2.units.DateUnit;
 import ucar.nc2.time.Calendar;
 import ucar.nc2.time.CalendarDate;
 import ucar.nc2.time.CalendarDateFormatter;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.GridGeometry;
-import org.apache.sis.internal.netcdf.WarningProducer;
-import ucar.nc2.Dimension;
 
 
 /**
@@ -46,7 +47,7 @@ import ucar.nc2.Dimension;
  * @version 0.3
  * @module
  */
-public final class DecoderWrapper extends Decoder {
+public final class DecoderWrapper extends Decoder implements CancelTask {
     /**
      * The NetCDF file to read.
      * This file is set at construction time.
@@ -85,12 +86,24 @@ public final class DecoderWrapper extends Decoder {
      * {@link NetcdfFile} instance, the {@link NetcdfDataset} subclass is necessary in order to
      * get coordinate system information.
      *
-     * @param parent Where to send the warnings, or {@code null} if none.
-     * @param file The NetCDF file from which to parse metadata.
+     * @param listeners Where to send the warnings.
+     * @param file The NetCDF file from which to read data.
      */
-    public DecoderWrapper(final WarningProducer parent, final NetcdfFile file) {
-        super(parent);
+    public DecoderWrapper(final WarningListeners<?> listeners, final NetcdfFile file) {
+        super(listeners);
         this.file = file;
+    }
+
+    /**
+     * Creates a new decoder for the given filename.
+     *
+     * @param  listeners Where to send the warnings.
+     * @param  filename  The name of the NetCDF file from which to read data.
+     * @throws IOException If an error occurred while opening the NetCDF file.
+     */
+    public DecoderWrapper(final WarningListeners<?> listeners, final String filename) throws IOException {
+        super(listeners);
+        file = NetcdfDataset.openDataset(filename, false, this);
     }
 
     /**
@@ -216,7 +229,7 @@ public final class DecoderWrapper extends Decoder {
                         try {
                             date = CalendarDateFormatter.isoStringToCalendarDate(Calendar.proleptic_gregorian, value);
                         } catch (IllegalArgumentException e) {
-                            warning("dateValue", e);
+                            listeners.warning(null, e);
                             continue;
                         }
                         return new Date(date.getMillis());
@@ -241,7 +254,7 @@ public final class DecoderWrapper extends Decoder {
         try {
             unit = new DateUnit(symbol);
         } catch (Exception e) { // Declared by the DateUnit constructor.
-            warning("numberToDate", e);
+            listeners.warning(null, e);
             return dates;
         }
         for (int i=0; i<values.length; i++) {
@@ -311,6 +324,27 @@ public final class DecoderWrapper extends Decoder {
     }
 
     /**
+     * Invoked by the UCAR NetCDF library for checking if the reading process has been canceled.
+     * This method returns the {@link #canceled} flag.
+     *
+     * @return The {@link #canceled} flag.
+     */
+    @Override
+    public boolean isCancel() {
+        return canceled;
+    }
+
+    /**
+     * Invoked by the UCAR NetCDF library when an error occurred.
+     *
+     * @param message The error message.
+     */
+    @Override
+    public void setError(final String message) {
+        listeners.warning(message, null);
+    }
+
+    /**
      * Closes the NetCDF file.
      *
      * @throws IOException If an error occurred while closing the file.
@@ -318,5 +352,14 @@ public final class DecoderWrapper extends Decoder {
     @Override
     public void close() throws IOException {
         file.close();
+    }
+
+    /**
+     * Returns a string representation to be inserted in {@link org.apache.sis.storage.netcdf.NetcdfStore#toString()}
+     * result. This is for debugging purpose only any may change in any future SIS version.
+     */
+    @Override
+    public String toString() {
+        return "UCAR driver: “" + file.getLocation() + '”';
     }
 }

@@ -43,7 +43,7 @@
   <packaging>pom</packaging>
 
   <name>Apache SIS</name>
-  <url>http://incubator.apache.org/sis/</url>
+  <url>http://sis.apache.org</url>
   <description>
   <!-- Left alignment because this description will be copied in META-INF/MANIFEST.MF
        The leading space after the first line is necessary for proper formatting. -->
@@ -78,7 +78,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
 
   <ciManagement>
     <system>jenkins</system>
-    <url>https://builds.apache.org/job/sis-trunk</url>
+    <url>https://builds.apache.org/job/sis-jdk7</url>
   </ciManagement>
 
   <issueManagement>
