@@ -29,8 +29,8 @@
        ==================================================== -->
   <bannerLeft>
     <name>Apache SIS</name>
-    <src>http://builds.apache.org/job/sis-jdk7/site/images/banner.png</src>
-    <href>http://builds.apache.org/job/sis-jdk7/site/index.html</href>
+    <src>http://builds.apache.org/job/sis-trunk/site/images/banner.png</src>
+    <href>http://builds.apache.org/job/sis-trunk/site/index.html</href>
   </bannerLeft>
 
   <body>
@@ -43,7 +43,7 @@
       <item name="Apache" href="http://www.apache.org"/>
       <item name="Open Geospatial Consortium (OGC)" href="http://www.opengeospatial.org"/>
       <item name="GeoAPI" href="http://www.geoapi.org"/>
-      <item name="Javadoc" href="http://builds.apache.org/job/sis-jdk7/site/apidocs/index.html"/>
+      <item name="Javadoc" href="http://builds.apache.org/job/sis-trunk/site/apidocs/index.html"/>
       <!-- Absolute URL in order to point to the aggregated Javadoc instead than module Javadoc. -->
     </links>
 
