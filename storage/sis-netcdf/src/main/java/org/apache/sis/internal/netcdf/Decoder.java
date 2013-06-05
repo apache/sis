@@ -112,7 +112,7 @@ public abstract class Decoder implements Closeable {
         try {
             return Double.valueOf(value);
         } catch (NumberFormatException e) {
-            listeners.warning("numericValue", null, e);
+            listeners.warning(null, e);
         }
         return null;
     }
@@ -142,7 +142,7 @@ public abstract class Decoder implements Closeable {
         if (unit != null) try {
             return Units.valueOf(unit);
         } catch (IllegalArgumentException e) {
-            listeners.warning("unitValue", null, e);
+            listeners.warning(null, e);
         }
         return null;
     }

@@ -93,13 +93,13 @@ public final strictfp class WarningListenersTest extends TestCase implements War
     }
 
     /**
-     * Tests {@link WarningListeners#warning(String, String, Exception)} with a registered listener.
+     * Tests {@link WarningListeners#warning(String, Exception)} with a registered listener.
      */
     @Test
     @DependsOnMethod("testAddAndRemoveWarningListener")
     public void testWarning() {
         listeners.addWarningListener(this);
-        listeners.warning("testWarning", "The message", null);
+        listeners.warning("The message", null);
         listeners.removeWarningListener(this);
         assertNotNull("Listener has not been notified.", warning);
         assertEquals("testWarning", warning.getSourceMethodName());

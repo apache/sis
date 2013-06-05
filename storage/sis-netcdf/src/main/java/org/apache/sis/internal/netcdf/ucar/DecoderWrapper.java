@@ -229,7 +229,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
                         try {
                             date = CalendarDateFormatter.isoStringToCalendarDate(Calendar.proleptic_gregorian, value);
                         } catch (IllegalArgumentException e) {
-                            listeners.warning("dateValue", null, e);
+                            listeners.warning(null, e);
                             continue;
                         }
                         return new Date(date.getMillis());
@@ -254,7 +254,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
         try {
             unit = new DateUnit(symbol);
         } catch (Exception e) { // Declared by the DateUnit constructor.
-            listeners.warning("numberToDate", null, e);
+            listeners.warning(null, e);
             return dates;
         }
         for (int i=0; i<values.length; i++) {
@@ -341,7 +341,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      */
     @Override
     public void setError(final String message) {
-        listeners.warning(null, message, null);
+        listeners.warning(message, null);
     }
 
     /**
