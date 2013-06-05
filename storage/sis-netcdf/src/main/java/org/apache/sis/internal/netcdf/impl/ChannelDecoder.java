@@ -37,7 +37,6 @@ import org.apache.sis.internal.jdk8.Function;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.GridGeometry;
-import org.apache.sis.internal.netcdf.WarningProducer;
 import org.apache.sis.internal.storage.ChannelDataInput;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.jdk8.JDK8;
@@ -45,6 +44,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.measure.Units;
 
@@ -63,6 +63,17 @@ import org.apache.sis.measure.Units;
  * @see <a href="http://portal.opengeospatial.org/files/?artifact_id=43734">NetCDF Classic and 64-bit Offset Format (1.0)</a>
  */
 public final class ChannelDecoder extends Decoder {
+    /**
+     * The NetCDF magic number expected in the first integer of the stream.
+     * The comparison shall ignore the 8 lowest bits, as in the following example:
+     *
+     * {@preformat java
+     *     int header = ...; // The first integer in the stream.
+     *     boolean isNetCDF = (header & 0xFFFFFF00) == MAGIC_NUMBER;
+     * }
+     */
+    public static final int MAGIC_NUMBER = ('C' << 24) | ('D' << 16) | ('F' <<  8);
+
     /**
      * The encoding of dimension, variable and attribute names. This is fixed to {@value} by the
      * NetCDF specification. Note however that the encoding of attribute values may be different.
@@ -173,26 +184,23 @@ public final class ChannelDecoder extends Decoder {
      * Creates a new decoder for the given file.
      * This constructor parses immediately the header.
      *
-     * @param  parent   Where to send the warnings, or {@code null} if none.
-     * @param  filename A file identifier used only for formatting error message.
-     * @param  channel  The channel from where data are read.
+     * @param  listeners Where to send the warnings.
+     * @param  input     The channel and the buffer from where data are read.
      * @throws IOException If an error occurred while reading the channel.
      * @throws DataStoreException If the content of the given channel is not a NetCDF file.
      */
-    public ChannelDecoder(final WarningProducer parent, final String filename, final ReadableByteChannel channel)
+    public ChannelDecoder(final WarningListeners<?> listeners, final ChannelDataInput input)
             throws IOException, DataStoreException
     {
-        super(parent);
-        // The buffer must be backed by a Java {@code byte[]} array,
-        // because we will occasionally reference that array.
-        input = new ChannelDataInput(filename, channel, ByteBuffer.allocate(4096), false);
+        super(listeners);
+        this.input = input;
         /*
          * Check the magic number, which is expected to be exactly 3 bytes forming the "CDF" string.
          * The 4th byte is the version number, which we opportunistically use after the magic number check.
          */
         int version = input.readInt();
-        if ((version & 0xFFFFFF00) != (('C' << 24) | ('D' << 16) | ('F' <<  8))) {
-            throw new DataStoreException(Errors.format(Errors.Keys.UnexpectedFileFormat_2, "NetCDF", filename));
+        if ((version & 0xFFFFFF00) != MAGIC_NUMBER) {
+            throw new DataStoreException(errors().getString(Errors.Keys.UnexpectedFileFormat_2, "NetCDF", input.filename));
         }
         /*
          * Check the version number.
@@ -201,7 +209,7 @@ public final class ChannelDecoder extends Decoder {
         switch (version) {
             case 1:  is64bits = false; break;
             case 2:  is64bits = true;  break;
-            default: throw new DataStoreException(Errors.format(Errors.Keys.UnsupportedVersion_1, version));
+            default: throw new DataStoreException(errors().getString(Errors.Keys.UnsupportedVersion_1, version));
         }
         numrecs = input.readInt();
         /*
@@ -248,11 +256,20 @@ public final class ChannelDecoder extends Decoder {
     }
 
     /**
+     * Returns the localized error resource bundle for the locale given by {@link #getLocale()}.
+     *
+     * @return The localized error resource bundle.
+     */
+    private Errors errors() {
+        return Errors.getResources(listeners.getLocale());
+    }
+
+    /**
      * Returns an exception for a malformed header. This is used only after we have determined
      * that the file should be a NetCDF one, but we found some inconsistency or unknown tags.
      */
     private DataStoreException malformedHeader() {
-        return new DataStoreException(Errors.format(Errors.Keys.CanNotParseFile_2, "NetCDF", input.filename));
+        return new DataStoreException(errors().getString(Errors.Keys.CanNotParseFile_2, "NetCDF", input.filename));
     }
 
     /**
@@ -260,7 +277,7 @@ public final class ChannelDecoder extends Decoder {
      */
     private void ensureNonNegative(final int nelems, final int tag) throws DataStoreException {
         if (nelems < 0) {
-            throw new DataStoreException(Errors.format(Errors.Keys.NegativeArrayLength_1,
+            throw new DataStoreException(errors().getString(Errors.Keys.NegativeArrayLength_1,
                     input.filename + DefaultNameSpace.DEFAULT_SEPARATOR + tagName(tag)));
         }
     }
@@ -284,9 +301,10 @@ public final class ChannelDecoder extends Decoder {
         final long size = ((n & 0xFFFFFFFFL) * dataSize + 3) & ~3;
         if (size > input.buffer.capacity()) {
             name = input.filename + DefaultNameSpace.DEFAULT_SEPARATOR + name;
+            final Errors errors = errors();
             throw new DataStoreException(n < 0 ?
-                    Errors.format(Errors.Keys.NegativeArrayLength_1, name) :
-                    Errors.format(Errors.Keys.ExcessiveListSize_2, name, n));
+                    errors.getString(Errors.Keys.NegativeArrayLength_1, name) :
+                    errors.getString(Errors.Keys.ExcessiveListSize_2, name, n));
         }
         input.ensureBufferContains((int) size);
         return (int) size;
@@ -310,9 +328,8 @@ public final class ChannelDecoder extends Decoder {
         }
         final ByteBuffer buffer = input.buffer;
         final int size = ensureBufferContains(length, 1, "<name>");
-        final int position = buffer.position(); // Must be after 'require'
-        final String text = new String(buffer.array(), position, length, NAME_ENCODING);
-        buffer.position(position + size);
+        final String text = input.readString(length, NAME_ENCODING);
+        buffer.position(buffer.position() + (size - length));
         return text;
     }
 
@@ -329,11 +346,11 @@ public final class ChannelDecoder extends Decoder {
         }
         final ByteBuffer buffer = input.buffer;
         final int size = ensureBufferContains(length, VariableInfo.sizeOf(type), name);
-        final int position = buffer.position(); // Must be after 'require'
+        final int position = buffer.position(); // Must be after 'ensureBufferContains'
         final Object result;
         switch (type) {
             case VariableInfo.CHAR: {
-                final String text = new String(buffer.array(), position, length, encoding).trim();
+                final String text = input.readString(length, encoding).trim();
                 result = text.isEmpty() ? null : text;
                 break;
             }
@@ -394,7 +411,7 @@ public final class ChannelDecoder extends Decoder {
             if (length == 0) {
                 length = numrecs;
                 if (length == STREAMING) {
-                    throw new DataStoreException(Errors.format(Errors.Keys.MissingValueForProperty_1, "numrecs"));
+                    throw new DataStoreException(errors().getString(Errors.Keys.MissingValueForProperty_1, "numrecs"));
                 }
             }
             dimensions[i] = new Dimension(name, length);
@@ -506,11 +523,11 @@ public final class ChannelDecoder extends Decoder {
      *
      * @see #findAttribute(String)
      */
-    private static <E> Map<String,E> toMap(final E[] elements, final Function<E,String> nameFunction) throws DataStoreException {
+    private <E> Map<String,E> toMap(final E[] elements, final Function<E,String> nameFunction) throws DataStoreException {
         try {
             return CollectionsExt.toCaseInsensitiveNameMap(Arrays.asList(elements), nameFunction, NAME_LOCALE);
         } catch (InvalidParameterCardinalityException e) {
-            throw new DataStoreException(Errors.format(Errors.Keys.ValueAlreadyDefined_1, e.getParameterName()));
+            throw new DataStoreException(errors().getString(Errors.Keys.ValueAlreadyDefined_1, e.getParameterName()));
         }
     }
 
@@ -603,7 +620,7 @@ public final class ChannelDecoder extends Decoder {
             if (attribute.value instanceof String) try {
                 return JDK8.parseDateTime((String) attribute.value, DEFAULT_TIMEZONE_IS_UTC);
             } catch (IllegalArgumentException e) {
-                warning("dateValue", e);
+                listeners.warning(null, e);
             }
         }
         return null;
@@ -630,9 +647,9 @@ public final class ChannelDecoder extends Decoder {
                 }
             }
         } catch (ConversionException e) {
-            warning("numberToDate", e);
+            listeners.warning(null, e);
         } catch (IllegalArgumentException e) {
-            warning("numberToDate", e);
+            listeners.warning(null, e);
         }
         return dates;
     }
@@ -713,5 +730,19 @@ nextVar:    for (final VariableInfo variable : variables) {
     @Override
     public void close() throws IOException {
         input.channel.close();
+    }
+
+    /**
+     * Returns a string representation to be inserted in {@link org.apache.sis.storage.netcdf.NetcdfStore#toString()}
+     * result. This is for debugging purpose only any may change in any future SIS version.
+     */
+    @Override
+    public String toString() {
+        final StringBuilder buffer = new StringBuilder();
+        buffer.append("SIS driver: “").append(input.filename).append('”');
+        if (!input.channel.isOpen()) {
+            buffer.append(" (closed)");
+        }
+        return buffer.toString();
     }
 }

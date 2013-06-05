@@ -18,6 +18,7 @@ package org.apache.sis.internal.netcdf;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -44,6 +45,30 @@ public abstract strictfp class IOTestCase {
      * For subclass constructors only.
      */
     protected IOTestCase() {
+    }
+
+    /**
+     * Returns the given resource as a URL.
+     *
+     * @param  name The name of the resource.
+     * @return The resource as a URL.
+     */
+    public static URL getResource(final String name) {
+        final URL r = IOTestCase.class.getResource(name);
+        assumeNotNull(r);
+        return r;
+    }
+
+    /**
+     * Returns the given resource as an input stream.
+     *
+     * @param  name The name of the resource.
+     * @return The resource as an input stream.
+     */
+    public static InputStream getResourceAsStream(final String name) {
+        final InputStream in = IOTestCase.class.getResourceAsStream(name);
+        assumeNotNull(in);
+        return in;
     }
 
     /**
