@@ -720,4 +720,18 @@ nextVar:    for (final VariableInfo variable : variables) {
     public void close() throws IOException {
         input.channel.close();
     }
+
+    /**
+     * Returns a string representation to be inserted in {@link org.apache.sis.storage.netcdf.NetcdfStore#toString()}
+     * result. This is for debugging purpose only any may change in any future SIS version.
+     */
+    @Override
+    public String toString() {
+        final StringBuilder buffer = new StringBuilder();
+        buffer.append("SIS driver: “").append(input.filename).append('”');
+        if (!input.channel.isOpen()) {
+            buffer.append(" (closed)");
+        }
+        return buffer.toString();
+    }
 }

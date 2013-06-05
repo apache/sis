@@ -523,6 +523,7 @@ public class DataStoreConnection implements Serializable {
      * @throws DataStoreException If an error occurred while closing the stream or database connection.
      *
      * @see #getStorageAs(Class)
+     * @see DataStoreProvider#open(DataStoreConnection)
      */
     public void closeAllExcept(final Object view) throws DataStoreException {
         /*

@@ -75,8 +75,9 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
 
     /**
      * Compares the string representation of the given metadata object with the expected one.
+     * The given metadata shall have been created from the {@link #NCEP} dataset.
      */
-    private static void compareToExpected(final Metadata actual) {
+    static void compareToExpected(final Metadata actual) {
         assertMultilinesEquals(
             "DefaultMetadata\n" +
             "  ├─File identifier………………………………………………………………………… edu.ucar.unidata:NCEP/SST/Global_5x2p5deg/SST_Global_5x2p5deg_20050922_0000.nc\n" +

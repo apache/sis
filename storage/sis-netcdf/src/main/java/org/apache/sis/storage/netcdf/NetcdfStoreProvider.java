@@ -44,6 +44,8 @@ import org.apache.sis.storage.DataStoreException;
  * @since   0.3
  * @version 0.3
  * @module
+ *
+ * @see NetcdfStore
  */
 public class NetcdfStoreProvider extends DataStoreProvider {
     /**
@@ -130,7 +132,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
          * We check classnames instead of netcdfFileClass.isInstance(storage)
          * in order to avoid loading the UCAR library if not needed.
          */
-        for (Class<?> type = storage.getStorage().getClass(); type != null; type=type.getSuperclass()) {
+        for (Class<?> type = storage.getStorage().getClass(); type != null; type = type.getSuperclass()) {
             if (UCAR_CLASSNAME.equals(type.getName())) {
                 return Boolean.TRUE;
             }
@@ -139,40 +141,51 @@ public class NetcdfStoreProvider extends DataStoreProvider {
     }
 
     /**
-     * Returns a {@link NetcdfStore} implementation associated with this provider.
+     * Returns a {@link NetcdfStore} implementation associated with this provider. This method invokes
+     * {@link DataStoreConnection#closeAllExcept(Object)} after data store creation, keeping open only
+     * the needed resource.
      *
      * @param storage Information about the storage (URL, stream, {@link ucar.nc2.NetcdfFile} instance, <i>etc</i>).
      */
     @Override
-    public DataStore open(DataStoreConnection storage) throws DataStoreException {
-        throw new UnsupportedOperationException("Not supported yet."); // TODO
+    public DataStore open(final DataStoreConnection storage) throws DataStoreException {
+        return new NetcdfStore(storage);
     }
 
     /**
-     * Creates a decoder for the given input.
+     * Creates a decoder for the given input. This method invokes
+     * {@link DataStoreConnection#closeAllExcept(Object)} after the decoder has been created.
      *
-     * @param  sink       Where to send the warnings, or {@code null} if none.
-     * @param  connection Information about the input (file, input stream, <i>etc.</i>)
+     * @param  sink    Where to send the warnings, or {@code null} if none.
+     * @param  storage Information about the input (file, input stream, <i>etc.</i>)
      * @return The decoder for the given input.
      * @throws IOException If an error occurred while opening the NetCDF file.
      * @throws DataStoreException If a logical error (other than I/O) occurred.
      */
-    static Decoder decoder(final WarningProducer sink, final DataStoreConnection connection)
+    static Decoder decoder(final WarningProducer sink, final DataStoreConnection storage)
             throws IOException, DataStoreException
     {
-        final ChannelDataInput input = connection.getStorageAs(ChannelDataInput.class);
+        Decoder decoder;
+        Object keepOpen;
+        final ChannelDataInput input = storage.getStorageAs(ChannelDataInput.class);
         if (input != null) try {
-            return new ChannelDecoder(sink, input);
+            decoder = new ChannelDecoder(sink, input);
+            keepOpen = input;
         } catch (DataStoreException e) {
-            final String path = connection.getStorageAs(String.class);
+            final String path = storage.getStorageAs(String.class);
             if (path != null) try {
-                return createByReflection(sink, path, false);
+                decoder = createByReflection(sink, path, false);
+                keepOpen = path;
             } catch (IOException | DataStoreException s) {
                 e.addSuppressed(s);
             }
             throw e;
+        } else {
+            keepOpen = storage.getStorage();
+            decoder = createByReflection(sink, keepOpen, true);
         }
-        return createByReflection(sink, connection.getStorage(), true);
+        storage.closeAllExcept(keepOpen);
+        return decoder;
     }
 
     /**
