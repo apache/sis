@@ -35,6 +35,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.test.XMLComparatorTest.class,
 
     // Most basic functions of SIS library.
+    org.apache.sis.setup.OptionKeyTest.class,
     org.apache.sis.util.ArraysExtTest.class,
     org.apache.sis.util.CharactersTest.class,
     org.apache.sis.util.CharSequencesTest.class,
@@ -47,6 +48,7 @@ import org.junit.BeforeClass;
     org.apache.sis.util.resources.LoaderTest.class,
     org.apache.sis.util.resources.IndexedResourceBundleTest.class,
     org.apache.sis.util.logging.PerformanceLevelTest.class,
+    org.apache.sis.util.logging.WarningListenersTest.class,
     org.apache.sis.math.MathFunctionsTest.class,
     org.apache.sis.math.StatisticsTest.class,
     org.apache.sis.math.StatisticsFormatTest.class,

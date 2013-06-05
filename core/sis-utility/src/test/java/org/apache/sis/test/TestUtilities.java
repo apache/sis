@@ -138,7 +138,7 @@ public final strictfp class TestUtilities extends Static {
      * @return A new random number generator initialized with a random seed.
      */
     public static Random createRandomNumberGenerator(final String testMethod) {
-        final long seed = Math.round(Math.random() * (1L << 48));
+        final long seed = StrictMath.round(StrictMath.random() * (1L << 48));
         final PrintWriter out = TestCase.out;
         out.print("Random number generator for “");
         out.print(testMethod);

@@ -64,7 +64,6 @@ import org.apache.sis.internal.netcdf.Axis;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.GridGeometry;
-import org.apache.sis.internal.netcdf.WarningProducer;
 import org.apache.sis.internal.util.DefaultFactories;
 import org.apache.sis.internal.metadata.MetadataUtilities;
 
@@ -105,7 +104,7 @@ import static org.apache.sis.storage.netcdf.AttributeNames.*;
  * @version 0.3
  * @module
  */
-final class MetadataReader extends WarningProducer {
+final class MetadataReader {
     /**
      * Names of groups where to search for metadata, in precedence order.
      * The {@code null} value stands for global attributes.
@@ -169,12 +168,10 @@ final class MetadataReader extends WarningProducer {
     /**
      * Creates a new <cite>NetCDF to ISO</cite> mapper for the given source.
      *
-     * @param  parent Where to send the warnings, or {@code null} if none.
      * @param  decoder The source of NetCDF attributes.
      * @throws IOException If an I/O operation was necessary but failed.
      */
-    MetadataReader(final WarningProducer parent, final Decoder decoder) throws IOException {
-        super(parent);
+    MetadataReader(final Decoder decoder) throws IOException {
         this.decoder = decoder;
         decoder.setSearchPath(SEARCH_PATH);
         searchPath = decoder.getSearchPath();
@@ -273,7 +270,7 @@ final class MetadataReader extends WarningProducer {
             resource.setFunction(OnLineFunction.INFORMATION);
             return resource;
         } catch (URISyntaxException e) {
-            warning("createOnlineResource", e);
+            decoder.listeners.warning(null, e);
         }
         return null;
     }
@@ -678,7 +675,7 @@ final class MetadataReader extends WarningProducer {
             }
             extent.getTemporalElements().add(t);
         } catch (UnsupportedOperationException e) {
-            warning("createExtent", e);
+            decoder.listeners.warning(null, e);
         }
         /*
          * Add the geographic identifier, if present.
@@ -701,7 +698,7 @@ final class MetadataReader extends WarningProducer {
         if (source != null) try {
             return source.getConverterToAny(target);
         } catch (ConversionException e) {
-            warning("getConverterTo", e);
+            decoder.listeners.warning(null, e);
         }
         return null;
     }
@@ -832,6 +829,7 @@ final class MetadataReader extends WarningProducer {
 
     /**
      * Creates an ISO {@code Metadata} object from the information found in the NetCDF file.
+     * The returned metadata will be unmodifiable in order to allow the caller to cache it.
      *
      * @return The ISO metadata object.
      * @throws IOException If an I/O operation was necessary but failed.
@@ -921,6 +919,7 @@ final class MetadataReader extends WarningProducer {
                 metadata.getSpatialRepresentationInfo().add(createSpatialRepresentationInfo(cs));
             }
         }
+        metadata.freeze();
         return metadata;
     }
 }

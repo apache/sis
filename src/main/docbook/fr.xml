@@ -17,7 +17,7 @@
     <abstract><para>
       Introduction aux standards internationaux utilisées en information géographique,
       et à l’approche choisie pour les implémenter dans la bibliothèque
-      <link xlink:href="http://incubator.apache.org/sis">Apache SIS</link> &sis-release;.
+      <link xlink:href="http://sis.apache.org">Apache SIS</link> &sis-release;.
       Ce document couvre les outils de développement, structures, conventions et
       principales classes Java.
     </para></abstract>

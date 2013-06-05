@@ -30,8 +30,10 @@ import org.junit.BeforeClass;
  * @module
  */
 @Suite.SuiteClasses({
+    org.apache.sis.internal.storage.IOUtilitiesTest.class,
     org.apache.sis.internal.storage.ChannelDataInputTest.class,
-    org.apache.sis.internal.storage.ChannelImageInputStreamTest.class
+    org.apache.sis.internal.storage.ChannelImageInputStreamTest.class,
+    org.apache.sis.storage.DataStoreConnectionTest.class
 })
 public final strictfp class StorageTestSuite extends TestSuite {
     /**
