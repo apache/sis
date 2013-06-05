@@ -17,14 +17,11 @@
 package org.apache.sis.storage;
 
 import java.util.Locale;
-import java.util.logging.Logger;
-import java.util.logging.LogRecord;
 import java.util.NoSuchElementException;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.WarningListener;
+import org.apache.sis.util.logging.WarningListeners;
 
 
 /**
@@ -45,16 +42,16 @@ public abstract class AbstractDataStore implements DataStore, Localized {
     private Locale locale;
 
     /**
-     * The listeners, or {@code null} if none. This is a <cite>copy on write</cite> array:
-     * no elements are modified once the array have been created.
+     * The set of registered {@link WarningListener}s for this data store.
      */
-    private WarningListener<? super DataStore>[] listeners;
+    protected final WarningListeners<DataStore> listeners;
 
     /**
      * Creates a new instance with initially no listener.
      */
-    public AbstractDataStore() {
+    protected AbstractDataStore() {
         locale = Locale.getDefault(Locale.Category.DISPLAY);
+        listeners = new WarningListeners<DataStore>(this);
     }
 
     /**
@@ -85,24 +82,10 @@ public abstract class AbstractDataStore implements DataStore, Localized {
      * @throws IllegalArgumentException If the given listener is already registered in this data store.
      */
     @Override
-    public synchronized void addWarningListener(final WarningListener<? super DataStore> listener)
+    public void addWarningListener(final WarningListener<? super DataStore> listener)
             throws IllegalArgumentException
     {
-        ArgumentChecks.ensureNonNull("listener", listener);
-        final WarningListener<? super DataStore>[] current = listeners;
-        final int length = (current != null) ? current.length : 0;
-
-        @SuppressWarnings({"unchecked", "rawtypes"}) // Generic array creation.
-        final WarningListener<? super DataStore>[] copy = new WarningListener[length + 1];
-        for (int i=0; i<length; i++) {
-            final WarningListener<? super DataStore> c = current[i];
-            if (c == listener) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.ElementAlreadyPresent_1, listener));
-            }
-            copy[i] = c;
-        }
-        copy[length] = listener;
-        listeners = copy;
+        listeners.addWarningListener(listener);
     }
 
     /**
@@ -112,69 +95,9 @@ public abstract class AbstractDataStore implements DataStore, Localized {
      * @throws NoSuchElementException If the given listener is not registered in this data store.
      */
     @Override
-    public synchronized void removeWarningListener(final WarningListener<? super DataStore> listener)
+    public void removeWarningListener(final WarningListener<? super DataStore> listener)
             throws NoSuchElementException
     {
-        final WarningListener<? super DataStore>[] current = listeners;
-        if (current != null) {
-            for (int i=0; i<current.length; i++) {
-                if (current[i] == listener) {
-                    if (current.length == 1) {
-                        listeners = null;
-                    } else {
-                        @SuppressWarnings({"unchecked", "rawtypes"}) // Generic array creation.
-                        final WarningListener<? super DataStore>[] copy = new WarningListener[current.length - 1];
-                        System.arraycopy(current, 0, copy, 0, i);
-                        System.arraycopy(current, i+1, copy, i, copy.length - i);
-                        listeners = copy;
-                    }
-                    return;
-                }
-            }
-        }
-        throw new NoSuchElementException(Errors.format(Errors.Keys.NoSuchElement_1, listener));
-    }
-
-    /**
-     * Invoked when a new warning has been emitted.
-     * The default implementation makes the following choice:
-     *
-     * <ul>
-     *   <li>If at least one warning listener has been {@linkplain #addWarningListener(WarningListener) registered},
-     *       then this method notifies all listeners and the log record is <strong>not</strong> logged.</li>
-     *   <li>Otherwise this method logs the given record to the logger returned by {@link #getLogger()}</li>
-     * </ul>
-     *
-     * @param warning The warning message together with programmatic information.
-     *
-     * @see WarningListener#warningOccured(Object, LogRecord)
-     */
-    protected void fireWarningOccurred(final LogRecord warning) {
-        final WarningListener[] current;
-        synchronized (this) {
-            current = listeners;
-        }
-        if (current != null) {
-            for (final WarningListener<? super DataStore> listener : listeners) {
-                listener.warningOccured(this, warning);
-            }
-        } else {
-            final Logger logger = getLogger();
-            warning.setLoggerName(logger.getName());
-            logger.log(warning);
-        }
-    }
-
-    /**
-     * Returns the logger where to send warnings when there is registered warning listeners.
-     * This logger may also be used for other purpose like configuration or debugging information.
-     *
-     * <p>The default implementation returns the {@code "org.apache.sis.storage"} logger.
-     * Subclasses should override for specifying a logger in their own namespace.</p>
-     *
-     * @return The logger where to send warnings and other messages produced by this data store.
-     */
-    protected Logger getLogger() {
-        return Logging.getLogger(DataStore.class);
+        listeners.removeWarningListener(listener);
     }
 }

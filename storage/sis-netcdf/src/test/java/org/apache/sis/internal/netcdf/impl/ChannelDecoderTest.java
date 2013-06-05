@@ -71,7 +71,7 @@ public final strictfp class ChannelDecoderTest extends DecoderTest {
         final ChannelDataInput input = new ChannelDataInput(name,
                 Channels.newChannel(in), ByteBuffer.allocate(4096), false);
         try {
-            return new ChannelDecoder(null, input);
+            return new ChannelDecoder(LISTENERS, input);
         } catch (DataStoreException e) {
             throw new AssertionError(e);
         }

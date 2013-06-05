@@ -59,7 +59,7 @@ public class NetcdfStore extends AbstractDataStore {
     public NetcdfStore(final DataStoreConnection storage) throws DataStoreException {
         ArgumentChecks.ensureNonNull("storage", storage);
         try {
-            decoder = NetcdfStoreProvider.decoder(null, storage);
+            decoder = NetcdfStoreProvider.decoder(listeners, storage);
         } catch (IOException e) {
             throw new DataStoreException(e);
         }

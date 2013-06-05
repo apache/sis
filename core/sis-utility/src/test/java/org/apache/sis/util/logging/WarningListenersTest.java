@@ -14,12 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.storage;
+package org.apache.sis.util.logging;
 
-import java.util.NoSuchElementException;
 import java.util.logging.LogRecord;
-import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.logging.WarningListener;
+import java.util.NoSuchElementException;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -28,18 +26,18 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests the {@link WarningConsumer} class.
+ * Tests the {@link WarningListeners} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
  * @version 0.3
  * @module
  */
-public final strictfp class WarningConsumerTest extends TestCase implements WarningListener<String> {
+public final strictfp class WarningListenersTest extends TestCase implements WarningListener<String> {
     /**
      * The object to be tested. Its source will be set to the string {@code "source"}.
      */
-    private final WarningConsumer<String> consumer;
+    private final WarningListeners<String> listeners;
 
     /**
      * The warning received by {@link #warningOccured(String, LogRecord)}.
@@ -50,13 +48,13 @@ public final strictfp class WarningConsumerTest extends TestCase implements Warn
     /**
      * Creates a new test case.
      */
-    public WarningConsumerTest() {
-        consumer = new WarningConsumer<>("source", Logging.getLogger("org.apache.sis.storage"));
+    public WarningListenersTest() {
+        listeners = new WarningListeners<>("source");
     }
 
     /**
      * Invoked when a warning occurred. The implementation in this test verifies that the {@code source} argument has
-     * the expected values, then store the log record in the {@link #warning} field for inspection by the test method.
+     * the expected values, then stores the log record in the {@link #warning} field for inspection by the test method.
      */
     @Override
     public void warningOccured(final String source, final LogRecord warning) {
@@ -73,21 +71,21 @@ public final strictfp class WarningConsumerTest extends TestCase implements Warn
     }
 
     /**
-     * Tests {@link WarningProducer#addWarningListener(WarningListener)} followed by
-     * {@link WarningProducer#removeWarningListener(WarningListener)}
+     * Tests {@link WarningListeners#addWarningListener(WarningListener)} followed by
+     * {@link WarningListeners#removeWarningListener(WarningListener)}
      */
     @Test
     public void testAddAndRemoveWarningListener() {
-        consumer.addWarningListener(this);
+        listeners.addWarningListener(this);
         try {
-            consumer.addWarningListener(this);
+            listeners.addWarningListener(this);
         } catch (IllegalArgumentException e) {
             // This is the expected exception.
             assertTrue(e.getMessage().contains("TestListener"));
         }
-        consumer.removeWarningListener(this);
+        listeners.removeWarningListener(this);
         try {
-            consumer.removeWarningListener(this);
+            listeners.removeWarningListener(this);
         } catch (NoSuchElementException e) {
             // This is the expected exception.
             assertTrue(e.getMessage().contains("TestListener"));
@@ -95,14 +93,14 @@ public final strictfp class WarningConsumerTest extends TestCase implements Warn
     }
 
     /**
-     * Tests {@link WarningProducer#warning(String, String, Exception)} with a registered listener.
+     * Tests {@link WarningListeners#warning(String, String, Exception)} with a registered listener.
      */
     @Test
     @DependsOnMethod("testAddAndRemoveWarningListener")
     public void testWarning() {
-        consumer.addWarningListener(this);
-        consumer.warning("testWarning", "The message", null);
-        consumer.removeWarningListener(this);
+        listeners.addWarningListener(this);
+        listeners.warning("testWarning", "The message", null);
+        listeners.removeWarningListener(this);
         assertNotNull("Listener has not been notified.", warning);
         assertEquals("testWarning", warning.getSourceMethodName());
         assertEquals("The message", warning.getMessage());

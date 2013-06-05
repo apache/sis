@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.io.IOException;
 import java.lang.reflect.UndeclaredThrowableException;
+import org.apache.sis.util.logging.EmptyWarningListeners;
 import org.apache.sis.internal.netcdf.ucar.DecoderWrapper;
 import org.opengis.wrapper.netcdf.IOTestCase;
 import ucar.nc2.dataset.NetcdfDataset;
@@ -41,6 +42,12 @@ import static org.junit.Assert.*;
  * @module
  */
 public abstract strictfp class TestCase extends IOTestCase {
+    /**
+     * A dummy list of listeners which can be given to the {@link Decoder} constructor.
+     */
+    public static EmptyWarningListeners<Decoder> LISTENERS =
+            new EmptyWarningListeners<>("org.apache.sis.storage.netcdf");
+
     /**
      * The {@code searchPath} argument value to be given to the {@link Decoder#setSearchPath(String[])}
      * method when the decoder shall search only in global attributes.
@@ -98,7 +105,7 @@ public abstract strictfp class TestCase extends IOTestCase {
      * @throws IOException If an error occurred while opening the file.
      */
     protected Decoder createDecoder(final String name) throws IOException {
-        return new DecoderWrapper(null, new NetcdfDataset(open(name)));
+        return new DecoderWrapper(LISTENERS, new NetcdfDataset(open(name)));
     }
 
     /**

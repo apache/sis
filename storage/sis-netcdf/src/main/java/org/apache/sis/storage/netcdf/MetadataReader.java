@@ -64,7 +64,6 @@ import org.apache.sis.internal.netcdf.Axis;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.GridGeometry;
-import org.apache.sis.internal.storage.WarningProducer;
 import org.apache.sis.internal.util.DefaultFactories;
 import org.apache.sis.internal.metadata.MetadataUtilities;
 
@@ -105,7 +104,7 @@ import static org.apache.sis.storage.netcdf.AttributeNames.*;
  * @version 0.3
  * @module
  */
-final class MetadataReader extends WarningProducer {
+final class MetadataReader {
     /**
      * Names of groups where to search for metadata, in precedence order.
      * The {@code null} value stands for global attributes.
@@ -173,7 +172,6 @@ final class MetadataReader extends WarningProducer {
      * @throws IOException If an I/O operation was necessary but failed.
      */
     MetadataReader(final Decoder decoder) throws IOException {
-        super(decoder.sink);
         this.decoder = decoder;
         decoder.setSearchPath(SEARCH_PATH);
         searchPath = decoder.getSearchPath();
@@ -272,7 +270,7 @@ final class MetadataReader extends WarningProducer {
             resource.setFunction(OnLineFunction.INFORMATION);
             return resource;
         } catch (URISyntaxException e) {
-            warning("createOnlineResource", null, e);
+            decoder.listeners.warning("createOnlineResource", null, e);
         }
         return null;
     }
@@ -677,7 +675,7 @@ final class MetadataReader extends WarningProducer {
             }
             extent.getTemporalElements().add(t);
         } catch (UnsupportedOperationException e) {
-            warning("createExtent", null, e);
+            decoder.listeners.warning("createExtent", null, e);
         }
         /*
          * Add the geographic identifier, if present.
@@ -700,7 +698,7 @@ final class MetadataReader extends WarningProducer {
         if (source != null) try {
             return source.getConverterToAny(target);
         } catch (ConversionException e) {
-            warning("getConverterTo", null, e);
+            decoder.listeners.warning("getConverterTo", null, e);
         }
         return null;
     }

@@ -37,7 +37,6 @@ import org.apache.sis.internal.jdk8.Function;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.GridGeometry;
-import org.apache.sis.internal.storage.WarningProducer;
 import org.apache.sis.internal.storage.ChannelDataInput;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.jdk8.JDK8;
@@ -45,6 +44,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.measure.Units;
 
@@ -184,15 +184,15 @@ public final class ChannelDecoder extends Decoder {
      * Creates a new decoder for the given file.
      * This constructor parses immediately the header.
      *
-     * @param  sink     Where to send the warnings, or {@code null} if none.
-     * @param  input    The channel and the buffer from where data are read.
+     * @param  listeners Where to send the warnings.
+     * @param  input     The channel and the buffer from where data are read.
      * @throws IOException If an error occurred while reading the channel.
      * @throws DataStoreException If the content of the given channel is not a NetCDF file.
      */
-    public ChannelDecoder(final WarningProducer sink, final ChannelDataInput input)
+    public ChannelDecoder(final WarningListeners<?> listeners, final ChannelDataInput input)
             throws IOException, DataStoreException
     {
-        super(sink);
+        super(listeners);
         this.input = input;
         /*
          * Check the magic number, which is expected to be exactly 3 bytes forming the "CDF" string.
@@ -253,6 +253,15 @@ public final class ChannelDecoder extends Decoder {
             default:        return Integer.toHexString(tag);
         }
         return Vocabulary.format(key);
+    }
+
+    /**
+     * Returns the localized error resource bundle for the locale given by {@link #getLocale()}.
+     *
+     * @return The localized error resource bundle.
+     */
+    private Errors errors() {
+        return Errors.getResources(listeners.getLocale());
     }
 
     /**
@@ -611,7 +620,7 @@ public final class ChannelDecoder extends Decoder {
             if (attribute.value instanceof String) try {
                 return JDK8.parseDateTime((String) attribute.value, DEFAULT_TIMEZONE_IS_UTC);
             } catch (IllegalArgumentException e) {
-                warning("dateValue", null, e);
+                listeners.warning("dateValue", null, e);
             }
         }
         return null;
@@ -638,7 +647,7 @@ public final class ChannelDecoder extends Decoder {
                 }
             }
         } catch (ConversionException | IllegalArgumentException e) {
-            warning("numberToDate", null, e);
+            listeners.warning("numberToDate", null, e);
         }
         return dates;
     }
