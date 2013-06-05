@@ -26,17 +26,19 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URISyntaxException;
 import java.net.MalformedURLException;
-import java.nio.file.Path;
-import java.nio.file.Files;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystemNotFoundException;
-import java.nio.file.Paths;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.resources.Errors;
+
+// Related to JDK7
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.Files;
+import java.nio.file.FileSystemNotFoundException;
+import java.nio.charset.StandardCharsets;
 
 
 /**
