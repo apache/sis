@@ -64,6 +64,17 @@ import org.apache.sis.measure.Units;
  */
 public final class ChannelDecoder extends Decoder {
     /**
+     * The NetCDF magic number expected in the first integer of the stream.
+     * The comparison shall ignore the 8 lowest bits, as in the following example:
+     *
+     * {@preformat java
+     *     int header = ...; // The first integer in the stream.
+     *     boolean isNetCDF = (header & 0xFFFFFF00) == MAGIC_NUMBER;
+     * }
+     */
+    public static final int MAGIC_NUMBER = ('C' << 24) | ('D' << 16) | ('F' <<  8);
+
+    /**
      * The encoding of dimension, variable and attribute names. This is fixed to {@value} by the
      * NetCDF specification. Note however that the encoding of attribute values may be different.
      *
@@ -188,7 +199,7 @@ public final class ChannelDecoder extends Decoder {
          * The 4th byte is the version number, which we opportunistically use after the magic number check.
          */
         int version = input.readInt();
-        if ((version & 0xFFFFFF00) != (('C' << 24) | ('D' << 16) | ('F' <<  8))) {
+        if ((version & 0xFFFFFF00) != MAGIC_NUMBER) {
             throw new DataStoreException(errors().getString(Errors.Keys.UnexpectedFileFormat_2, "NetCDF", input.filename));
         }
         /*
