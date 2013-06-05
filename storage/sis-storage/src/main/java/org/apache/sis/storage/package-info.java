@@ -16,9 +16,11 @@
  */
 
 /**
- * Place holder for future {@code DataStore} services.
+ * {@linkplain org.apache.sis.storage.DataStore Data store} base types for retrieving and saving geospatial data
+ * in various storage formats.
  *
  * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.10)
  * @version 0.3
  * @module

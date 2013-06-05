@@ -89,6 +89,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int CanNotInstantiate_1 = 81;
 
         /**
+         * Can not open “{0}”.
+         */
+        public static final int CanNotOpen_1 = 97;
+
+        /**
          * Can not parse “{1}” as a file in the {0} format.
          */
         public static final int CanNotParseFile_2 = 79;
@@ -309,6 +314,11 @@ public final class Errors extends IndexedResourceBundle {
          * Can not create a “{0}” array of negative length.
          */
         public static final int NegativeArrayLength_1 = 78;
+
+        /**
+         * Element “{0}” has not been found.
+         */
+        public static final int NoSuchElement_1 = 96;
 
         /**
          * No property named “{0}” has been found in “{1}”.

@@ -19,6 +19,7 @@ package org.apache.sis.storage.netcdf;
 import java.io.IOException;
 import ucar.nc2.dataset.NetcdfDataset;
 import org.opengis.metadata.Metadata;
+import org.apache.sis.internal.netcdf.TestCase;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.IOTestCase;
 import org.apache.sis.internal.netcdf.ucar.DecoderWrapper;
@@ -54,7 +55,7 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
         final Metadata metadata;
         final Decoder input = ChannelDecoderTest.createChannelDecoder(NCEP);
         try {
-            metadata = new MetadataReader(null, input).read();
+            metadata = new MetadataReader(input).read();
         } finally {
             input.close();
         }
@@ -70,9 +71,9 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
     @Test
     public void testUCAR() throws IOException {
         final Metadata metadata;
-        final Decoder input = new DecoderWrapper(null, new NetcdfDataset(open(NCEP)));
+        final Decoder input = new DecoderWrapper(TestCase.LISTENERS, new NetcdfDataset(open(NCEP)));
         try {
-            metadata = new MetadataReader(null, input).read();
+            metadata = new MetadataReader(input).read();
         } finally {
             input.close();
         }
@@ -81,8 +82,9 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
 
     /**
      * Compares the string representation of the given metadata object with the expected one.
+     * The given metadata shall have been created from the {@link #NCEP} dataset.
      */
-    private static void compareToExpected(final Metadata actual) {
+    static void compareToExpected(final Metadata actual) {
         assertMultilinesEquals(
             "DefaultMetadata\n" +
             "  ├─File identifier………………………………………………………………………… edu.ucar.unidata:NCEP/SST/Global_5x2p5deg/SST_Global_5x2p5deg_20050922_0000.nc\n" +

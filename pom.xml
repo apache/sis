@@ -43,7 +43,7 @@
   <packaging>pom</packaging>
 
   <name>Apache SIS</name>
-  <url>http://incubator.apache.org/sis/</url>
+  <url>http://sis.apache.org</url>
   <description>
   <!-- Left alignment because this description will be copied in META-INF/MANIFEST.MF
        The leading space after the first line is necessary for proper formatting. -->

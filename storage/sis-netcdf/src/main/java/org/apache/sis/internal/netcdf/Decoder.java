@@ -21,6 +21,10 @@ import java.io.Closeable;
 import java.io.IOException;
 import javax.measure.unit.Unit;
 import org.apache.sis.measure.Units;
+import org.apache.sis.util.logging.WarningListeners;
+
+// Related to JDK7.
+import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
@@ -31,14 +35,26 @@ import org.apache.sis.measure.Units;
  * @version 0.3
  * @module
  */
-public abstract class Decoder extends WarningProducer implements Closeable {
+public abstract class Decoder implements Closeable {
+    /**
+     * Where to send the warnings.
+     */
+    public final WarningListeners<?> listeners;
+
+    /**
+     * Sets to {@code true} for canceling a reading process.
+     * This flag is honored on a <cite>best effort</cite> basis only.
+     */
+    public volatile boolean canceled;
+
     /**
      * Creates a new decoder.
      *
-     * @param parent Where to send the warnings, or {@code null} if none.
+     * @param listeners Where to send the warnings.
      */
-    protected Decoder(final WarningProducer parent) {
-        super(parent);
+    protected Decoder(final WarningListeners<?> listeners) {
+        Objects.requireNonNull(listeners);
+        this.listeners = listeners;
     }
 
     /**
@@ -96,7 +112,7 @@ public abstract class Decoder extends WarningProducer implements Closeable {
         try {
             return Double.valueOf(value);
         } catch (NumberFormatException e) {
-            warning("numericValue", e);
+            listeners.warning(null, e);
         }
         return null;
     }
@@ -126,7 +142,7 @@ public abstract class Decoder extends WarningProducer implements Closeable {
         if (unit != null) try {
             return Units.valueOf(unit);
         } catch (IllegalArgumentException e) {
-            warning("unitValue", e);
+            listeners.warning(null, e);
         }
         return null;
     }

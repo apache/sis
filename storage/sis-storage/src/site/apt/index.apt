@@ -1,0 +1,8 @@
+                             ---------------------------
+                               Apache SIS storage base
+                             ---------------------------
+
+Apache SIS storage base
+
+  Provides the interfaces and base classes to be implemented by various storage formats.
+  The main interface provided in this module is <<<DataStore>>>.
