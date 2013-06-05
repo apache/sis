@@ -130,22 +130,48 @@ public class WarningListeners<S> implements Localized {
      * Reports a warning represented by the given message and exception.
      * At least one of {@code message} and {@code exception} shall be non-null.
      *
-     * @param methodName The name of the method in which the warning occurred.
      * @param message    The message to log, or {@code null} if none.
      * @param exception  The exception to log, or {@code null} if none.
      */
-    public void warning(final String methodName, String message, final Exception exception) {
+    public void warning(String message, final Exception exception) {
+        final StackTraceElement[] trace;
         if (exception != null) {
+            trace = exception.getStackTrace();
             message = Exceptions.formatChainedMessages(getLocale(), message, exception);
             if (message == null) {
                 message = exception.toString();
             }
+        } else {
+            trace = Thread.currentThread().getStackTrace();
         }
         ArgumentChecks.ensureNonEmpty("message", message);
         final LogRecord record = new LogRecord(Level.WARNING, message);
-        record.setSourceClassName(getClass().getCanonicalName());
-        record.setSourceMethodName(methodName);
+        for (int i=0; i<trace.length; i++) {
+            StackTraceElement e = trace[i];
+            if (isPublic(e)) {
+                record.setSourceClassName(e.getClassName());
+                record.setSourceMethodName(e.getMethodName());
+                break;
+            }
+        }
         warning(record);
+    }
+
+    /**
+     * Returns {@code true} if the given stack trace element describes a method considered part of public API.
+     * This method is invoked in order to infer the class and method names to declare in a {@link LogRecord}.
+     *
+     * <p>The current implementation compares the class name against a hard-coded list of classes to hide.
+     * This implementation may change in any future SIS version.</p>
+     *
+     * @param  e A stack trace element.
+     * @return {@code true} if the class and method specified by the given element can be considered public API.
+     */
+    private static boolean isPublic(final StackTraceElement e) {
+        final String classname  = e.getClassName();
+        return !classname.equals("org.apache.sis.util.logging.WarningListeners") &&
+               !classname.contains(".internal.") && !classname.startsWith("java") &&
+                classname.indexOf('$') < 0 && e.getMethodName().indexOf('$') < 0;
     }
 
     /**
