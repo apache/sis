@@ -295,8 +295,8 @@ public class DataStoreConnection implements Serializable {
      *
      * Multiple invocations of this method on the same {@code DataStoreConnection} instance will try
      * to return the same instance on a <cite>best effort</cite> basis. Consequently, implementations
-     * of {@link DataStoreProvider#canRead(DataStoreConnection)} methods shall not close the stream or
-     * database connection returned by this method. In addition, those {@code canRead(DataStoreConnection)}
+     * of {@link DataStoreProvider#canOpen(DataStoreConnection)} methods shall not close the stream or
+     * database connection returned by this method. In addition, those {@code canOpen(DataStoreConnection)}
      * methods are responsible for restoring the stream or byte buffer to its original position on return.
      *
      * @param  <T>  The compile-time type of the {@code type} argument.
