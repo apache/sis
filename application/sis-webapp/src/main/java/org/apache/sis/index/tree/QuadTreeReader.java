@@ -25,7 +25,6 @@ import java.io.IOException;
 
 //SIS imports
 import org.apache.sis.core.LatLon;
-import org.apache.sis.storage.GeoRSSData;
 
 /**
  * Class to reload the quad tree index from file.
