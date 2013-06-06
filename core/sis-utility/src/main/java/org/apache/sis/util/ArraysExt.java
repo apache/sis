@@ -31,7 +31,7 @@ import java.util.Objects;
  *
  * <ul>
  *   <li>The {@link #resize(Object[], int) resize} methods, which are very similar to the
- *       {@link Arrays#copyOf(Object[], int) Arrays.copyOf} methods except that they accept
+ *       {@link Arrays#copyOf(Object[], int) Arrays.copyOf(…)} methods except that they accept
  *       {@code null} arrays and do not copy anything if the given array already has the
  *       requested length.</li>
  *   <li>The {@link #insert(Object[], int, Object[], int, int) insert} and {@link #remove(Object[],

@@ -151,8 +151,8 @@ public final strictfp class DataStoreConnectionTest extends TestCase {
     /**
      * Tests the {@link DataStoreConnection#getStorageAs(Class)} method for the {@link ChannelDataInput} type.
      * The initial value should not be an instance of {@link ChannelImageInputStream} in order to avoid initializing
-     * the Image I/O classes. However after a call to {@getStorageAt(ChannelImageInputStream.class)}, the type should
-     * have been promoted.
+     * the Image I/O classes. However after a call to {@code getStorageAt(ChannelImageInputStream.class)}, the type
+     * should have been promoted.
      *
      * @throws DataStoreException Should never happen.
      * @throws IOException If an error occurred while reading the test file.
@@ -195,7 +195,7 @@ public final strictfp class DataStoreConnectionTest extends TestCase {
 
     /**
      * Tests the {@link DataStoreConnection#getStorageAs(Class)} method for the {@link ByteBuffer} type when
-     * the buffer is only temporary. The difference between this test and {@link testGetAsByteBuffer()} is
+     * the buffer is only temporary. The difference between this test and {@link #testGetAsByteBuffer()} is
      * that the buffer created in this test will not be used for the "real" reading process in the data store.
      * Consequently, it should be a smaller, only temporary, buffer.
      *

@@ -160,12 +160,10 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      *       error index</var> + <var>{@code ParseException} error offset</var>.</li>
      * </ul>
      *
-     * <blockquote><font size="-1"><b>Example:</b>
-     * If parsing of the {@code "30.0 40,0"} coordinate fails on the coma in the last number,
-     * then the {@code pos} error index will be set to 5 (the beginning of the {@code "40.0"}
-     * character sequence) while the {@code ParseException} error offset will be set to 2
-     * (the coma position relative the the beginning of the {@code "40.0"} character sequence).
-     * </font></blockquote>
+     * {@example If parsing of the <code>"30.0 40,0"</code> coordinate fails on the coma in the last number, then the
+     * <code>pos</code> error index will be set to 5 (the beginning of the <code>"40.0"</code> character sequence)
+     * while the <code>ParseException</code> error offset will be set to 2 (the coma position relative the beginning
+     * of the <code>"40.0"</code> character sequence).}
      *
      * This error offset policy is a consequence of the compound nature of {@code CompoundFormat},
      * since the exception may have been produced by a call to {@link Format#parseObject(String)}.
