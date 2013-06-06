@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-package org.apache.sis.storage;
+package org.apache.sis.index.tree;
 
 /**
  * Enum to represent the 4 quadrants of a quad tree node.
- * 
+ *
  */
 enum Quadrant {
 
@@ -32,7 +32,7 @@ enum Quadrant {
 
   /**
    * Returns the index of the quadrant.
-   * 
+   *
    * @return index of the quadrant
    */
   public int index() {
@@ -41,7 +41,7 @@ enum Quadrant {
 
   /**
    * Retrieves the quadrant matching specified index.
-   * 
+   *
    * @param index
    *          specified index
    * @return quadrant matching specified index

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.sis.storage;
+package org.apache.sis.index.tree;
 
 //SIS imports
 import org.apache.sis.core.LatLon;
@@ -24,33 +24,33 @@ import org.apache.sis.core.LatLon;
  * Interface representing data stored in quad tree. All data to be stored in
  * quad tree must implement this interface, so that quad tree can access
  * location and store name of file in which data is saved.
- * 
+ *
  */
 public interface QuadTreeData {
   /**
    * Returns the Java 2D x-coordinate for the longitude.
-   * 
+   *
    * @return the Java 2D x-coordinate
    */
   public double getX();
 
   /**
    * Returns the Java 2D y-coordinate for the latitude.
-   * 
+   *
    * @return the Java 2D y-coordinate
    */
   public double getY();
 
   /**
    * Returns the latitude/longitude pair.
-   * 
+   *
    * @return the latitude/longitude pair.
    */
   public LatLon getLatLon();
 
   /**
    * Returns the name of the file where the entry's info is saved.
-   * 
+   *
    * @return the name of the file where the entry's info is saved
    */
   public String getFileName();
