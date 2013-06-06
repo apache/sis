@@ -56,10 +56,10 @@ import org.apache.sis.core.LatLon;
 import org.apache.sis.core.LatLonRect;
 import org.apache.sis.distance.DistanceUtils;
 import org.apache.sis.storage.GeoRSSData;
-import org.apache.sis.storage.QuadTree;
-import org.apache.sis.storage.QuadTreeData;
-import org.apache.sis.storage.QuadTreeReader;
-import org.apache.sis.storage.QuadTreeWriter;
+import org.apache.sis.index.tree.QuadTree;
+import org.apache.sis.index.tree.QuadTreeData;
+import org.apache.sis.index.tree.QuadTreeReader;
+import org.apache.sis.index.tree.QuadTreeWriter;
 
 //ROME imports
 import com.sun.syndication.feed.WireFeed;
@@ -70,11 +70,11 @@ import com.sun.syndication.io.WireFeedInput;
 import com.sun.syndication.io.XmlReader;
 
 /**
- * 
+ *
  * A location web service that loads data from GeoRSS format (configured via a
  * provided config.xml file), and then loads up a {@link QuadTree} with this
  * information, making it queryable for callers.
- * 
+ *
  */
 public class LocationServlet extends HttpServlet {
 
@@ -88,7 +88,7 @@ public class LocationServlet extends HttpServlet {
   /**
    * Read GeoRSS data (location information provide sis-location-config.xml )
    * and build quad-tree.
-   * 
+   *
    * @param config
    *          Servlet configuration file
    * @exception ServletException
@@ -233,7 +233,7 @@ public class LocationServlet extends HttpServlet {
   /**
    * Provide GET requests for Bounding-box and Point-radius search queries.
    * Return search results to client in xml format.
-   * 
+   *
    * @param request
    *          Http Servlet Request
    * @param response
@@ -335,7 +335,7 @@ public class LocationServlet extends HttpServlet {
 
   /**
    * Provide Post requests for build GeoRSS data html file.
-   * 
+   *
    * @param request
    *          Http Servlet Request
    * @param response
@@ -386,7 +386,7 @@ public class LocationServlet extends HttpServlet {
 
   /**
    * Builds the XML file to return to client.
-   * 
+   *
    * @param filterList
    *          list of QuadTreeData that are within the search region
    * @param regions
@@ -474,7 +474,7 @@ public class LocationServlet extends HttpServlet {
 
   /**
    * Replace all non-alphanumeric characters with empty strings.
-   * 
+   *
    * @param id
    * @return String without any non-alphanumeric characters
    */

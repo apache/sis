@@ -15,18 +15,13 @@
  * limitations under the License.
  */
 
-package org.apache.sis.storage;
+package org.apache.sis.index.tree;
 
-import junit.framework.TestCase;
-
-public class TestQuadTreeNode extends TestCase{
-
-	/**
-	 * @since SIS-39 
-	 */
-	public void testCapacityGreaterThanZero(){
-		QuadTreeNode node = new QuadTreeNode(-1, -5);
-		assertNotNull(node);
-		assertTrue(node.getCapacity() > 0);
-	}
+/**
+ * Enum to represent node type of quad tree. Black means node contains data.
+ * White means node is empty. Gray means node is parent.
+ *
+ */
+public enum NodeType {
+  BLACK, WHITE, GRAY
 }
