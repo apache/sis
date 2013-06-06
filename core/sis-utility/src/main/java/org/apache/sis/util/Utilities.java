@@ -28,7 +28,7 @@ import java.util.Objects;
 
 
 /**
- * Miscellaneous static methods.
+ * Static methods for object comparisons in different ways (deeply, approximatively, <i>etc</i>).
  *
  * @author Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-1.2)
