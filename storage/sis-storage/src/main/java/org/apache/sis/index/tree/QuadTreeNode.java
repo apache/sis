@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-package org.apache.sis.storage;
+package org.apache.sis.index.tree;
 
 /**
  * Implementation of quad tree node.
- * 
+ *
  */
 final class QuadTreeNode {
 
@@ -36,7 +36,7 @@ final class QuadTreeNode {
 
   /**
    * Constructs a quad tree node that can store data
-   * 
+   *
    * @param id
    *          node's id
    * @param capacity
@@ -56,7 +56,7 @@ final class QuadTreeNode {
 
   /**
    * Constructs a quad tree node that acts as a parent.
-   * 
+   *
    * @param type
    *          node's type
    * @param id
@@ -74,7 +74,7 @@ final class QuadTreeNode {
 
   /**
    * Add data to the node.
-   * 
+   *
    * @param data
    *          data to be added
    */
@@ -87,7 +87,7 @@ final class QuadTreeNode {
 
   /**
    * Gets the number of data stored in the node
-   * 
+   *
    * @return number of data stored in the node
    */
   public int getCount() {
@@ -96,7 +96,7 @@ final class QuadTreeNode {
 
   /**
    * Gets the node type.
-   * 
+   *
    * @return node type
    */
   public NodeType getNodeType() {
@@ -105,7 +105,7 @@ final class QuadTreeNode {
 
   /**
    * Sets the node's quadrant to point to the specified child.
-   * 
+   *
    * @param child
    *          child of this node
    * @param q
@@ -130,7 +130,7 @@ final class QuadTreeNode {
 
   /**
    * Returns the child of this node that resides in the specified quadrant.
-   * 
+   *
    * @param q
    *          specified quadrant
    * @return child in the specified quadrant
@@ -152,7 +152,7 @@ final class QuadTreeNode {
 
   /**
    * Returns the data stored in this node.
-   * 
+   *
    * @return data stored in this node
    */
   public QuadTreeData[] getData() {
@@ -161,7 +161,7 @@ final class QuadTreeNode {
 
   /**
    * Returns node's id.
-   * 
+   *
    * @return node's id
    */
   public int getId() {
@@ -170,7 +170,7 @@ final class QuadTreeNode {
 
   /**
    * Returns node's capacity.
-   * 
+   *
    * @return node's capacity
    */
   public int getCapacity() {
