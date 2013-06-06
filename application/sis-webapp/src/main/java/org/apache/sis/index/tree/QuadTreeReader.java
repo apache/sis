@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.sis.storage;
+package org.apache.sis.index.tree;
 
 //JDK imports
 import java.io.BufferedReader;
@@ -25,16 +25,17 @@ import java.io.IOException;
 
 //SIS imports
 import org.apache.sis.core.LatLon;
+import org.apache.sis.storage.GeoRSSData;
 
 /**
  * Class to reload the quad tree index from file.
- * 
+ *
  */
 public class QuadTreeReader {
 
   /**
    * Loads the quad tree index from file.
-   * 
+   *
    * @param directory
    *          the directory where the index files are located
    * @param treeConfigFile
@@ -53,7 +54,7 @@ public class QuadTreeReader {
 
   /**
    * Read the quad tree configuration from file.
-   * 
+   *
    *  @param tree
    *           the quad tree
    *  @param directory
@@ -85,11 +86,11 @@ public class QuadTreeReader {
 
   /**
    * Read the quad tree index from file.
-   * 
+   *
    * @param tree
-   *          the quad tree 
+   *          the quad tree
    * @param parent
-   *          the quad tree parent node 
+   *          the quad tree parent node
    * @param directory
    *          the directory where the index files are located
    * @param filename

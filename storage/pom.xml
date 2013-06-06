@@ -84,6 +84,11 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.apache.sis</groupId>
+      <artifactId>sis-referencing</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.opengis</groupId>
       <artifactId>geoapi-pending</artifactId>
     </dependency>
