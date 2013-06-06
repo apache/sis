@@ -55,7 +55,7 @@ import org.xml.sax.SAXException;
 import org.apache.sis.core.LatLon;
 import org.apache.sis.core.LatLonRect;
 import org.apache.sis.distance.DistanceUtils;
-import org.apache.sis.storage.GeoRSSData;
+import org.apache.sis.index.tree.GeoRSSData;
 import org.apache.sis.index.tree.QuadTree;
 import org.apache.sis.index.tree.QuadTreeData;
 import org.apache.sis.index.tree.QuadTreeReader;

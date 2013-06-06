@@ -3,8 +3,8 @@ Apache SIS Change Log
 
 Release 0.3 - Current Development
 
-* SIS-101 Moved QuadTree and related classes to its own package,
-  namely org.apache.sis.index.tree.
+* SIS-101 Moved QuadTree, GeoRSSData and related classes to their own package,
+  namely "org.apache.sis.index.tree".
 
 * SIS-31 Website needs a facelift (aestrada, Ross Laidlaw,
   Suresh Marru, mattmann)

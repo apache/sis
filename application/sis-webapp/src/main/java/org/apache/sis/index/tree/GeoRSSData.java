@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.sis.storage;
+package org.apache.sis.index.tree;
 
 //JDK imports
 import java.io.BufferedReader;
@@ -29,7 +29,6 @@ import java.util.HashMap;
 
 //SIS imports
 import org.apache.sis.core.LatLon;
-import org.apache.sis.index.tree.QuadTreeData;
 
 //ROME imports
 import com.sun.syndication.feed.module.georss.GeoRSSModule;
