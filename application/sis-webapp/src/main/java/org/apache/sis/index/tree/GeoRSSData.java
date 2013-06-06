@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.sis.storage;
+package org.apache.sis.index.tree;
 
 //JDK imports
 import java.io.BufferedReader;
@@ -37,7 +37,7 @@ import com.sun.syndication.feed.rss.Item;
 /**
  * Implements QuadTreeData to store GeoRSS items into quad tree. Provides
  * methods to save and load GeoRSS items to and from file.
- * 
+ *
  */
 public class GeoRSSData implements QuadTreeData {
 
@@ -47,7 +47,7 @@ public class GeoRSSData implements QuadTreeData {
 	/**
 	 * Creates a GeoRSSData object that stores the name of the file that the
 	 * entry's information is written to and the geo location of the entry.
-	 * 
+	 *
 	 * @param filename
 	 *            filename where rss entry's info is stored
 	 * @param latLon
@@ -60,7 +60,7 @@ public class GeoRSSData implements QuadTreeData {
 
 	/**
 	 * Returns the Java 2D x-coordinate for the longitude.
-	 * 
+	 *
 	 * @return the Java 2D x-coordinate
 	 */
 	public double getX() {
@@ -69,7 +69,7 @@ public class GeoRSSData implements QuadTreeData {
 
 	/**
 	 * Returns the Java 2D y-coordinate for the latitude.
-	 * 
+	 *
 	 * @return the Java 2D y-coordinate
 	 */
 	public double getY() {
@@ -87,7 +87,7 @@ public class GeoRSSData implements QuadTreeData {
 
 	/**
 	 * Returns the name of the file where the entry's info is saved.
-	 * 
+	 *
 	 * @return the name of the file where the entry's info is saved
 	 */
 	public String getFileName() {
@@ -96,7 +96,7 @@ public class GeoRSSData implements QuadTreeData {
 
 	/**
 	 * Saves the GeoRSS entry to file.
-	 * 
+	 *
 	 * @param item
 	 *            the Item object from Java ROME API containing the GeoRSS entry
 	 * @param geoRSSModule
@@ -147,7 +147,7 @@ public class GeoRSSData implements QuadTreeData {
 	 * Reads the file that contains the GeoRSS entry's information and returns a
 	 * HashMap of key, value pairs where the key is the name of the element e.g.
 	 * title, author.
-	 * 
+	 *
 	 * @param fullFileName
 	 *            the full path to the file
 	 * @return HashMap where the key is the name of the element and the value is
@@ -174,5 +174,5 @@ public class GeoRSSData implements QuadTreeData {
 		return map;
 
 	}
-	
+
 }

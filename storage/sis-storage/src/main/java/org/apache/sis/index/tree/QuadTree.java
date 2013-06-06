@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.sis.storage;
+package org.apache.sis.index.tree;
 
 //JDK imports
 import java.awt.geom.Rectangle2D;
@@ -32,7 +32,7 @@ import org.apache.sis.distance.DistanceUtils;
  * Implementation of Quad Tree Index. Insertion algorithm implemented based on
  * design of quad tree index in H. Samet, The Design and Analysis of Spatial
  * Data Structures. Massachusetts: Addison Wesley Publishing Company, 1989.
- * 
+ *
  */
 public class QuadTree {
 
@@ -55,7 +55,7 @@ public class QuadTree {
 
   /**
    * Creates a quad tree.
-   * 
+   *
    * @param capacity
    *          the capacity of each node in the quad tree
    * @param maxDepth
@@ -83,7 +83,7 @@ public class QuadTree {
 
   /**
    * Inserts the specified data into the quad tree.
-   * 
+   *
    * @param data
    *          specified data to be inserted
    * @return true if the data was inserted into the quad tree; false if data
@@ -102,7 +102,7 @@ public class QuadTree {
 
   /**
    * Calculates the quadrant that the data lies in.
-   * 
+   *
    * @param data
    *          specifed data
    * @param x
@@ -126,7 +126,7 @@ public class QuadTree {
 
   /**
    * Inserts the data into the quad tree with the specified root.
-   * 
+   *
    * @param data
    *          data to be inserted
    * @param root
@@ -231,7 +231,7 @@ public class QuadTree {
   /**
    * Determines if insertion of the data will cause the depth of the quad tree
    * to be exceeded.
-   * 
+   *
    * @param originalData
    *          array containing the data that is already stored in the node
    * @param toBeAddedData
@@ -287,7 +287,7 @@ public class QuadTree {
   /**
    * Returns true if all data (new and old) have to be stored in the same
    * quadrant of the node.
-   * 
+   *
    * @param originalData
    *          array of data already stored in the node
    * @param newNode
@@ -314,7 +314,7 @@ public class QuadTree {
 
   /**
    * Performs point radius search.
-   * 
+   *
    * @param point
    *          the center of the circular region
    * @param radiusKM
@@ -332,7 +332,7 @@ public class QuadTree {
 
   /**
    * Performs point radius search.
-   * 
+   *
    * @param point
    *          the center of the circular region
    * @param radiusKM
@@ -415,7 +415,7 @@ public class QuadTree {
 
   /**
    * Performs bounding box search.
-   * 
+   *
    * @param searchRegion
    *          LatLonRect representing the rectangular search region
    * @return a list of QuadTreeData that are within the given radius from the
@@ -446,7 +446,7 @@ public class QuadTree {
 
   /**
    * Performs bounding box search.
-   * 
+   *
    * @param searchRegion
    *          Rectangle2D representing the rectangular search region
    * @return a list of QuadTreeData that are within the given radius from the
@@ -459,7 +459,7 @@ public class QuadTree {
 
   /**
    * Performs bounding box search.
-   * 
+   *
    * @param node
    *          quad tree root node
    * @param nodeRegion
@@ -537,7 +537,7 @@ public class QuadTree {
 
   /**
    * Returns the size of the quad tree.
-   * 
+   *
    * @return size of the quad tree.
    */
   public int size() {
@@ -546,7 +546,7 @@ public class QuadTree {
 
   /**
    * Returns the root node of the quad tree.
-   * 
+   *
    * @return root node of the quad tree.
    */
   final QuadTreeNode getRoot() {
@@ -555,7 +555,7 @@ public class QuadTree {
 
   /**
    * Sets the size of the quad tree.
-   * 
+   *
    * @param size
    */
   public void setSize(int size) {
@@ -564,7 +564,7 @@ public class QuadTree {
 
   /**
    * Returns the size of the quad tree.
-   * 
+   *
    * @return size of quad tree
    */
   public int getSize() {
@@ -573,7 +573,7 @@ public class QuadTree {
 
   /**
    * Sets the node size of the quad tree.
-   * 
+   *
    * @param nodeSize
    */
   public void setNodeSize(int nodeSize) {
@@ -582,7 +582,7 @@ public class QuadTree {
 
   /**
    * Returns the node size of the quad tree.
-   * 
+   *
    * @return node size of the quad tree.
    */
   public int getNodeSize() {
@@ -591,7 +591,7 @@ public class QuadTree {
 
   /**
    * Returns the capacity of node in the quad tree.
-   * 
+   *
    * @return capacity of node in the quad tree.
    */
   public int getCapacity() {
@@ -600,7 +600,7 @@ public class QuadTree {
 
   /**
    * Returns the maximum depth of the quad tree.
-   * 
+   *
    * @return maximum depth of the quad tree.
    */
   public int getDepth() {
@@ -609,7 +609,7 @@ public class QuadTree {
 
   /**
    * Sets the capacity of node in the quad tree.
-   * 
+   *
    * @param capacity
    */
   public void setCapacity(int capacity) {
@@ -618,7 +618,7 @@ public class QuadTree {
 
   /**
    * Sets the maximum depth of the quad tree.
-   * 
+   *
    * @param depth
    */
   public void setDepth(int depth) {

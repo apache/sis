@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.sis.storage;
+package org.apache.sis.index.tree;
 
 //JDK imports
 import java.io.BufferedWriter;
@@ -25,14 +25,14 @@ import java.io.IOException;
 
 /**
  * Class to save the quad tree index from file.
- * 
+ *
  */
 public class QuadTreeWriter {
 
   /**
    * Writes the entire quad tree index to file with each node in saved in a
    * separate file.
-   * 
+   *
    * @param tree
    *          the quad tree
    * @param directory
@@ -46,7 +46,7 @@ public class QuadTreeWriter {
 
   /**
    * Creating quad tree index file.
-   * 
+   *
    * @param directory
    *          the directory where the index file is located
    */
@@ -60,7 +60,7 @@ public class QuadTreeWriter {
 
   /**
    * Write quad tree configerations to file.
-   * 
+   *
    * @param tree
    *          the quad tree
    * @param directory
@@ -81,7 +81,7 @@ public class QuadTreeWriter {
 
   /**
    * Write quad tree node to index file.
-   * 
+   *
    * @param node
    *          the quad tree node
    * @param directory
@@ -146,7 +146,7 @@ public class QuadTreeWriter {
 
   /**
    * Get the quad tree data string
-   * 
+   *
    * @param quadrant
    *          specified quadrant
    * @param node
