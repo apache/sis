@@ -50,7 +50,7 @@ import org.apache.sis.util.resources.Errors;
  * @module
  *
  * @see WarningListener
- * @see org.apache.sis.storage.AbstractDataStore#listeners
+ * @see org.apache.sis.storage.DataStore#listeners
  */
 @ThreadSafe
 public class WarningListeners<S> implements Localized {
