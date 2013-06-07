@@ -137,7 +137,8 @@ public abstract class LoggerAdapter extends Logger {
     public abstract Level getLevel();
 
     /**
-     * Returns the level for {@link #entering}, {@link #exiting} and {@link #throwing} methods.
+     * Returns the level for {@link #entering(String, String) entering(…)}, {@link #exiting(String, String) exiting(…)}
+     * and {@link #throwing(String, String, Throwable) throwing(…)} methods.
      * The default implementation returns {@link Level#FINER}, which is consistent with the
      * value used in the JDK logging framework. Subclasses should override this method if
      * a different debug level is wanted.

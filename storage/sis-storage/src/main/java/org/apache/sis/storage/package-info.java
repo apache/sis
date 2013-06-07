@@ -19,6 +19,20 @@
  * {@linkplain org.apache.sis.storage.DataStore Data store} base types for retrieving and saving geospatial data
  * in various storage formats.
  *
+ * <p>Different {@code DataStore} implementations will want different kind of input/output objects. Some examples are
+ * {@link java.lang.String}, {@link java.nio.file.Path}, {@link java.io.File}, {@link java.net.URI}, {@link java.net.URL},
+ * {@link java.io.InputStream}, {@link javax.imageio.stream.ImageInputStream}, {@link java.nio.channels.ReadableChannel},
+ * JDBC {@link java.sql.Connection} or {@link javax.sql.DataSource}, or even
+ * datastore-specific objects like {@link ucar.nc2.NetcdfFile}.
+ * Because of this variety, SIS does not know which kind of object to accept before the appropriate {@code DataStore}
+ * instance has been found. For this reason, storages are represented by arbitrary {@link java.lang.Object} encapsulated
+ * in {@link org.apache.sis.storage.StorageConnector}. The later can open the object in various ways, for example
+ * as {@link java.io.DataInput} or as {@link java.nio.ByteBuffer}, depending on {@code DataStore needs}.
+ * Future versions may contain additional information like login/password.</p>
+ *
+ * <p>{@code StorageConnector} is used only for the "discovery" phase, and discarded once the actual
+ * {@code DataStore} instance has been created.</p>
+ *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.10)
