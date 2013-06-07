@@ -37,7 +37,7 @@ import static org.junit.Assert.*;
 public abstract strictfp class TestSuite {
     /**
      * The default set of base classes that all test cases are expected to extends.
-     * This is the usual argument value to the {@link #verifyTestList(Class, Class<?>[])} method.
+     * This is the usual argument value to the {@link #verifyTestList(Class, Class[])} method.
      */
     protected static final Class<?>[] BASE_TEST_CLASSES = {
         TestCase.class,

@@ -33,12 +33,13 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.storage.IOUtilitiesTest.class,
     org.apache.sis.internal.storage.ChannelDataInputTest.class,
     org.apache.sis.internal.storage.ChannelImageInputStreamTest.class,
-    org.apache.sis.storage.DataStoreConnectionTest.class
+    org.apache.sis.storage.StorageConnectorTest.class,
+    org.apache.sis.index.GeoHashCoderTest.class
 })
 public final strictfp class StorageTestSuite extends TestSuite {
     /**
      * Verifies the list of tests before to run the suite.
-     * See {@link #verifyTestList(Class, Class<?>[])} for more information.
+     * See {@link #verifyTestList(Class, Class[])} for more information.
      */
     @BeforeClass
     public static void verifyTestList() {

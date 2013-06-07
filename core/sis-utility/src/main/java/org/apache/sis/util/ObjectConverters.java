@@ -61,6 +61,8 @@ import org.apache.sis.internal.converter.SystemRegistry;
  * @since   0.3 (derived from geotk-3.00)
  * @version 0.3
  * @module
+ *
+ * @see ObjectConverter
  */
 public final class ObjectConverters extends Static {
     /**

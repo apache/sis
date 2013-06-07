@@ -225,11 +225,9 @@ public interface TreeTable {
          * The user object is for information purpose only and does not appear in the rendered tree.
          * It is typically a Java object whose content is splitted into the various table columns.
          *
-         * <blockquote><font size="-1"><b>Example:</b>
-         * If a {@code CityLocation} class is defined as a (<var>city name</var>, <var>latitude</var>,
-         * <var>longitude</var>) tuple, then a {@code TreeTable.Node} could be defined to have
-         * 3 columns for the above 3 tuple components, and the user object could be the original
-         * {@code CityLocation} instance.</font></blockquote>
+         * {@example If a <code>CityLocation</code> class is defined as a (<var>city name</var>, <var>latitude</var>,
+         * <var>longitude</var>) tuple, then a <code>TreeTable.Node</code> could be defined to have 3 columns for the
+         * above 3 tuple components, and the user object could be the original <code>CityLocation</code> instance.}
          *
          * @return Any object stored at this node by the user, or {@code null} if none.
          * @category tree

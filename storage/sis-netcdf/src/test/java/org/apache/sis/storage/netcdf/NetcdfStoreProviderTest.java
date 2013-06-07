@@ -24,7 +24,7 @@ import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.ucar.DecoderWrapper;
 import org.apache.sis.internal.netcdf.impl.ChannelDecoder;
 import org.apache.sis.internal.netcdf.impl.ChannelDecoderTest;
-import org.apache.sis.storage.DataStoreConnection;
+import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
@@ -45,21 +45,21 @@ import static org.opengis.test.Assert.*;
 })
 public final strictfp class NetcdfStoreProviderTest extends IOTestCase {
     /**
-     * Tests {@link NetcdfStoreProvider#canOpen(DataStoreConnection)} for an input stream which shall
+     * Tests {@link NetcdfStoreProvider#canOpen(StorageConnector)} for an input stream which shall
      * be recognized as a classic NetCDF file.
      *
      * @throws DataStoreException Should never happen.
      */
     @Test
     public void testCanOpenFromStream() throws DataStoreException {
-        final DataStoreConnection c = new DataStoreConnection(IOTestCase.getResourceAsStream(NCEP));
+        final StorageConnector c = new StorageConnector(IOTestCase.getResourceAsStream(NCEP));
         final NetcdfStoreProvider provider = new NetcdfStoreProvider();
         assertTrue(provider.canOpen(c));
         c.closeAllExcept(null);
     }
 
     /**
-     * Tests {@link NetcdfStoreProvider#canOpen(DataStoreConnection)} for a UCAR {@link NetcdfFile} object.
+     * Tests {@link NetcdfStoreProvider#canOpen(StorageConnector)} for a UCAR {@link NetcdfFile} object.
      *
      * @throws IOException If an error occurred while opening the NetCDF file.
      * @throws DataStoreException Should never happen.
@@ -67,14 +67,14 @@ public final strictfp class NetcdfStoreProviderTest extends IOTestCase {
     @Test
     public void testCanOpenFromUCAR() throws IOException, DataStoreException {
         final NetcdfFile file = open(NCEP);
-        final DataStoreConnection c = new DataStoreConnection(file);
+        final StorageConnector c = new StorageConnector(file);
         final NetcdfStoreProvider provider = new NetcdfStoreProvider();
         assertTrue(provider.canOpen(c));
         file.close();
     }
 
     /**
-     * Tests {@link NetcdfStoreProvider#decoder(WarningListeners, DataStoreConnection)} for an input stream which
+     * Tests {@link NetcdfStoreProvider#decoder(WarningListeners, StorageConnector)} for an input stream which
      * shall be recognized as a classic NetCDF file. The provider shall instantiate a {@link ChannelDecoder}.
      *
      * @throws IOException If an error occurred while opening the NetCDF file.
@@ -82,14 +82,14 @@ public final strictfp class NetcdfStoreProviderTest extends IOTestCase {
      */
     @Test
     public void testDecoderFromStream() throws IOException, DataStoreException {
-        final DataStoreConnection c = new DataStoreConnection(IOTestCase.getResourceAsStream(NCEP));
+        final StorageConnector c = new StorageConnector(IOTestCase.getResourceAsStream(NCEP));
         final Decoder decoder = NetcdfStoreProvider.decoder(TestCase.LISTENERS, c);
         assertInstanceOf(NCEP, ChannelDecoder.class, decoder);
         decoder.close();
     }
 
     /**
-     * Tests {@link NetcdfStoreProvider#decoder(WarningListeners, DataStoreConnection)} for a UCAR
+     * Tests {@link NetcdfStoreProvider#decoder(WarningListeners, StorageConnector)} for a UCAR
      * {@link NetcdfFile} object. The provider shall instantiate a {@link DecoderWrapper}.
      *
      * @throws IOException If an error occurred while opening the NetCDF file.
@@ -97,7 +97,7 @@ public final strictfp class NetcdfStoreProviderTest extends IOTestCase {
      */
     @Test
     public void testDecoderFromUCAR() throws IOException, DataStoreException {
-        final DataStoreConnection c = new DataStoreConnection(open(NCEP));
+        final StorageConnector c = new StorageConnector(open(NCEP));
         final Decoder decoder = NetcdfStoreProvider.decoder(TestCase.LISTENERS, c);
         assertInstanceOf(NCEP, DecoderWrapper.class, decoder);
         decoder.close();

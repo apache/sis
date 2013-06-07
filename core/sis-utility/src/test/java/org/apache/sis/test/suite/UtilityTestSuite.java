@@ -32,6 +32,7 @@ import org.junit.BeforeClass;
 @Suite.SuiteClasses({
     // Following are testing the test tools.
     org.apache.sis.internal.test.AssertTest.class,
+    org.apache.sis.internal.test.TestUtilitiesTest.class,
     org.apache.sis.internal.test.XMLComparatorTest.class,
 
     // Most basic functions of SIS library.
@@ -116,7 +117,7 @@ import org.junit.BeforeClass;
 public final strictfp class UtilityTestSuite extends TestSuite {
     /**
      * Verifies the list of tests before to run the suite.
-     * See {@link #verifyTestList(Class, Class<?>[])} for more information.
+     * See {@link #verifyTestList(Class, Class[])} for more information.
      */
     @BeforeClass
     public static void verifyTestList() {

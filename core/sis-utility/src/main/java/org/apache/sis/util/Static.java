@@ -48,6 +48,8 @@ package org.apache.sis.util;
  *         and test if a unit is angular, linear or temporal.</td></tr>
  *
  * <tr><th colspan="2" class="hsep">OGC/ISO objects (metadata, referencing, geometries)</th></tr>
+ * <tr><td>{@link org.apache.sis.util.iso.Types}</td>
+ *     <td>Provide UML identifier and description for GeoAPI types.</td></tr>
  * <tr><td>{@link org.apache.sis.metadata.iso.extent.Extents}</td>
  *     <td>Extract information from {@link org.opengis.metadata.extent.Extent} objects.</td></tr>
  * <tr><td>{@link org.apache.sis.geometry.Envelopes}</td>
@@ -58,6 +60,8 @@ package org.apache.sis.util;
  *     <td>Methods working on {@link Appendable} instances.</td></tr>
  * <tr><td>{@link org.apache.sis.xml.XML}</td>
  *     <td>Marshal or unmarshal ISO 19115 objects.</td></tr>
+ * <tr><td>{@link org.apache.sis.xml.Namespaces}</td>
+ *     <td>{@code String} constants for commonly used namespaces.</td></tr>
  *
  * <tr><th colspan="2" class="hsep">Loggings and exceptions</th></tr>
  * <tr><td>{@link ArgumentChecks}</td>
