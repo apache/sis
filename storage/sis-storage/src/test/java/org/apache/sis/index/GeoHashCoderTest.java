@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.sis.util;
+package org.apache.sis.index;
 
 import junit.framework.TestCase;
 
@@ -25,10 +25,10 @@ import java.util.HashMap;
 
 /**
  * Tests methods from the {@link GeoHashUtils} class.
- * 
+ *
  * @author rlaidlaw
  */
-public class TestGeoHashUtils extends TestCase
+public class GeoHashCoderTest extends TestCase
 {
   private static final double EPSILON = 0.000001;
   private HashMap<String, HashMap<String, double[]>> places;
@@ -56,7 +56,7 @@ public class TestGeoHashUtils extends TestCase
     places.get("Mount Rushmore").put("9xy3teyv7ke4", new double[]{43.878947, -103.459825});
     places.get("Space Needle").put("c22yzvh0gmfy", new double[]{47.620400, -122.349100});
   }
-  
+
   /**
    * Clears up objects after running tests.
    */
@@ -64,7 +64,7 @@ public class TestGeoHashUtils extends TestCase
   {
     places = null;
   }
-  
+
   /**
    * Tests the encode() method.
    */
@@ -73,10 +73,10 @@ public class TestGeoHashUtils extends TestCase
     for (Map.Entry<String, HashMap<String, double[]>> place : places.entrySet())
     {
       HashMap<String, double[]> geoData = place.getValue();
-      
-      if (geoData == null) 
-      { 
-        fail("incorrect test data"); 
+
+      if (geoData == null)
+      {
+        fail("incorrect test data");
       }
       else
       {
@@ -84,21 +84,21 @@ public class TestGeoHashUtils extends TestCase
         {
           String geoHash = geoInfo.getKey();
           double[] point = geoInfo.getValue();
-          
-          if (geoHash == null || point == null) 
-          { 
-            fail("incorrect test data"); 
+
+          if (geoHash == null || point == null)
+          {
+            fail("incorrect test data");
           }
           else
           {
-            String encoded = GeoHashUtils.encode(point[0], point[1]);
+            String encoded = GeoHashCoder.encode(point[0], point[1]);
             assertEquals(geoHash, encoded);
           }
-        }        
+        }
       }
     }
   }
-  
+
   /**
    * Tests the decode() method.
    */
@@ -107,10 +107,10 @@ public class TestGeoHashUtils extends TestCase
     for (Map.Entry<String, HashMap<String, double[]>> place : places.entrySet())
     {
       HashMap<String, double[]> geoData = place.getValue();
-      
-      if (geoData == null) 
-      { 
-        fail("incorrect test data"); 
+
+      if (geoData == null)
+      {
+        fail("incorrect test data");
       }
       else
       {
@@ -118,14 +118,14 @@ public class TestGeoHashUtils extends TestCase
         {
           String geoHash = geoInfo.getKey();
           double[] point = geoInfo.getValue();
-          
-          if (geoHash == null || point == null) 
-          { 
-            fail("incorrect test data"); 
+
+          if (geoHash == null || point == null)
+          {
+            fail("incorrect test data");
           }
           else
           {
-            double[] decoded = GeoHashUtils.decode(geoHash);
+            double[] decoded = GeoHashCoder.decode(geoHash);
             assertEquals(point[0], decoded[0], EPSILON);
             assertEquals(point[1], decoded[1], EPSILON);
           }
