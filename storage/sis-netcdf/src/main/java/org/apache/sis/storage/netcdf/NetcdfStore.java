@@ -21,13 +21,13 @@ import org.opengis.metadata.Metadata;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.DataStoreConnection;
+import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.internal.netcdf.Decoder;
 
 
 /**
  * A data store backed by NetCDF files.
- * Instances of this data store are created by {@link NetcdfStoreProvider#open(DataStoreConnection)}.
+ * Instances of this data store are created by {@link NetcdfStoreProvider#open(StorageConnector)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
@@ -50,13 +50,13 @@ public class NetcdfStore extends DataStore {
 
     /**
      * Creates a new NetCDF store from the given file, URL, stream or {@link ucar.nc2.NetcdfFile} object.
-     * This constructor invokes {@link DataStoreConnection#closeAllExcept(Object)}, keeping open only the
+     * This constructor invokes {@link StorageConnector#closeAllExcept(Object)}, keeping open only the
      * needed resource.
      *
      * @param  storage Information about the storage (URL, stream, {@link ucar.nc2.NetcdfFile} instance, <i>etc</i>).
      * @throws DataStoreException If an error occurred while opening the NetCDF file.
      */
-    public NetcdfStore(final DataStoreConnection storage) throws DataStoreException {
+    public NetcdfStore(final StorageConnector storage) throws DataStoreException {
         ArgumentChecks.ensureNonNull("storage", storage);
         try {
             decoder = NetcdfStoreProvider.decoder(listeners, storage);

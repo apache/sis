@@ -18,7 +18,7 @@ package org.apache.sis.storage;
 
 
 /**
- * Creates {@link DataStore} instances for a specific format from a given {@link DataStoreConnection} input.
+ * Creates {@link DataStore} instances for a specific format from a given {@link StorageConnector} input.
  * There is typically a different {@code DataStoreProvider} instance for each format provided by a library.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -37,7 +37,7 @@ public abstract class DataStoreProvider {
      * Returns {@code TRUE} if the given storage appears to be supported by the {@code DataStore}.
      * Returning {@code TRUE} from this method does not guarantee that reading or writing will succeed,
      * only that there appears to be a reasonable chance of success based on a brief inspection of the
-     * {@linkplain DataStoreConnection#getStorage() storage object} or contents.
+     * {@linkplain StorageConnector#getStorage() storage object} or contents.
      *
      * <p>Implementations will typically check the first bytes of the stream for a "magic number"
      * associated with the format, as in the following example:</p>
@@ -45,9 +45,9 @@ public abstract class DataStoreProvider {
      * {@preformat java
      *     final ByteBuffer buffer = storage.getStorageAs(ByteBuffer.class);
      *     if (buffer == null) {
-     *         // If DataStoreConnection can not provide a ByteBuffer, then the storage is probably
-     *         // not a File, URL, URI, InputStream neither a ReadableChannel. In this example, our
-     *         // provider can not handle such unknown source.
+     *         // If StorageConnector can not provide a ByteBuffer, then the storage is probably
+     *         // not a File, URL, URI, InputStream neither a ReadableChannel. In this example,
+     *         // our provider can not handle such unknown source.
      *         return Boolean.FALSE;
      *     }
      *     if (buffer.remaining() < Integer.SIZE / Byte.SIZE) {
@@ -73,18 +73,18 @@ public abstract class DataStoreProvider {
      * @throws DataStoreException if an I/O or SQL error occurred. The error shall be unrelated to the logical
      *         structure of the storage.
      */
-    public abstract Boolean canOpen(DataStoreConnection storage) throws DataStoreException;
+    public abstract Boolean canOpen(StorageConnector storage) throws DataStoreException;
 
     /**
      * Returns a data store implementation associated with this provider.
      *
      * <p><b>Implementation note:</b>
-     * Implementors shall invoke {@link DataStoreConnection#closeAllExcept(Object)} after {@code DataStore}
+     * Implementors shall invoke {@link StorageConnector#closeAllExcept(Object)} after {@code DataStore}
      * creation, keeping open only the needed resource.</p>
      *
      * @param  storage Information about the storage (URL, stream, JDBC connection, <i>etc</i>).
      * @return A data store implementation associated with this provider for the given storage.
      * @throws DataStoreException if an error occurred while creating the data store instance.
      */
-    public abstract DataStore open(DataStoreConnection storage) throws DataStoreException;
+    public abstract DataStore open(StorageConnector storage) throws DataStoreException;
 }
