@@ -23,6 +23,9 @@
  * {@section Overview}
  * For a global overview of metadata in SIS, see the
  * <a href="{@docRoot}/../sis-metadata/index.html">Metadata page on the project web site</a>.
+ * For some explanation about how to use various ISO 19115 elements for scientific dataset, the
+ * <a href="https://geo-ide.noaa.gov/wiki/index.php?title=Category:ISO_19115">NOAA wiki page</a>
+ * is a good source of information.
  *
  * <table class="sis"><tr>
  *   <th>Class hierarchy</th>

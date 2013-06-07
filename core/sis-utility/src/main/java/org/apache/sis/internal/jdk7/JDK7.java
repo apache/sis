@@ -105,6 +105,8 @@ public final class JDK7 {
 
     /**
      * Simulates the {@code ((AutoCloseable) object).close()} method call.
+     * The given object shall be an instance of which {@link #isAutoCloseable(Object)}
+     * returned {@code true}, otherwise a {@link ClassCastException} will be thrown.
      *
      * @param  object The object to close.
      * @throws Exception If an error occurred while closing the object.

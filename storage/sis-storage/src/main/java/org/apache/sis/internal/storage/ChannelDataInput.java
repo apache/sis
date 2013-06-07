@@ -684,8 +684,8 @@ public class ChannelDataInput {
             /*
              * Requested position is outside the current limits of the buffer,
              * but we can set the new position directly in the channel. Note
-             * that DataStoreConnection.rewind() needs the buffer content to
-             * be valid as a result of this seek, so we reload it immediately.
+             * that StorageConnector.rewind() needs the buffer content to be
+             * valid as a result of this seek, so we reload it immediately.
              */
             ((FileChannel) channel).position(channelOffset + position);
             bufferOffset = position;

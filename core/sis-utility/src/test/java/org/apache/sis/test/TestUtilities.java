@@ -29,7 +29,11 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import org.apache.sis.util.Static;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.collection.TreeTable;
+import org.apache.sis.util.collection.TableColumn;
+import org.apache.sis.util.collection.TreeTableFormat;
 import org.apache.sis.internal.util.X364;
 
 import static org.junit.Assert.*;
@@ -67,6 +71,12 @@ public final strictfp class TestUtilities extends Static {
         dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
         dateFormat.setLenient(false);
     };
+
+    /**
+     * The {@link TreeTableFormat} to use for unlocalized string representations.
+     * Created when first needed.
+     */
+    private static Format tableFormat;
 
     /**
      * The thread group for every threads created for testing purpose.
@@ -197,6 +207,68 @@ public final strictfp class TestUtilities extends Static {
         }
         assertEquals("Parsed text not equal to the original value", value, parsed);
         return text;
+    }
+
+    /**
+     * Returns a unlocalized string representation of {@code NAME} and {@code VALUE} columns of the given tree table.
+     * This method is used mostly as a convenient way to verify the content of an ISO 19115 metadata object.
+     *
+     * @param  table The table for which to get a string representation.
+     * @return A unlocalized string representation of the given tree table.
+     */
+    public static String formatNameAndValue(final TreeTable table) {
+        synchronized (TestUtilities.class) {
+            if (tableFormat == null) {
+                final TreeTableFormat f = new TreeTableFormat(null, null);
+                f.setColumns(TableColumn.NAME, TableColumn.VALUE);
+                tableFormat = f;
+            }
+            return tableFormat.format(table);
+        }
+    }
+
+    /**
+     * Returns the tree structure of the given string representation, without the localized text.
+     * For example given the following string:
+     *
+     * {@preformat
+     *   Citation
+     *     ├─Title…………………………………………………… Some title
+     *     └─Cited responsible party
+     *         └─Individual name……………… Some person of contact
+     * }
+     *
+     * this method returns an array containing the following elements:
+     *
+     * {@preformat
+     *   "",
+     *   "  ├─",
+     *   "  └─",
+     *   "      └─"
+     * }
+     *
+     * This method is used for comparing two tree having string representation in different locales.
+     * In such case, we can not compare the actual text content. The best we can do is to compare
+     * the tree structure.
+     *
+     * @param  tree The string representation of a tree.
+     * @return The structure of the given tree, without text.
+     */
+    public static CharSequence[] toTreeStructure(final CharSequence tree) {
+        final CharSequence[] lines = CharSequences.split(tree, '\n');
+        for (int i=0; i<lines.length; i++) {
+            final CharSequence line = lines[i];
+            final int length = line.length();
+            for (int j=0; j<length;) {
+                final int c = Character.codePointAt(line, j);
+                if (Character.isLetterOrDigit(c)) {
+                    lines[i] = line.subSequence(0, j);
+                    break;
+                }
+                j += Character.charCount(c);
+            }
+        }
+        return lines;
     }
 
     /**

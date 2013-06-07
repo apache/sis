@@ -222,13 +222,12 @@ public final class MathFunctions extends Static {
      *       increases the number of needed fraction digits in order to prevent the rounded
      *       number to be collapsed into the next integer value.
      *
-     *       <blockquote><font size="-1"><b>Example:</b>
+     *       {@example
      *       If {@code accuracy} is 0.95, then a return value of 1 is not sufficient since the
      *       rounded value of 0.95 with 1 fraction digit would be 1.0. Such value would be a
      *       violation of this method contract since the difference between 0 and that formatted
      *       value would be greater than the accuracy. Note that this is not an artificial rule;
-     *       this is related to the fact that 0.9999… is mathematically strictly equals to 1.
-     *       </font></blockquote></li>
+     *       this is related to the fact that 0.9999… is mathematically strictly equals to 1.}</li>
      * </ul>
      *
      * <p>Invoking this method is equivalent to computing <code>(int)

@@ -78,10 +78,8 @@ public enum FunctionProperty {
      * A function is <cite>injective</cite> if each value of <var>T</var> is either unrelated
      * to <var>S</var>, or is the output of exactly one value of <var>S</var>.
      *
-     * <blockquote><font size="-1"><b>Example:</b>
-     * A {@code ObjectConverter} doing conversions from {@code Integer} to {@code String} is an
-     * injective function, because no pair of integers can produce the same string.
-     * </font></blockquote>
+     * {@example A <code>ObjectConverter</code> doing conversions from <code>Integer</code> to <code>String</code>
+     * is an injective function, because no pair of integers can produce the same string.}
      *
      * A function which is both injective and {@linkplain #SURJECTIVE surjective} is a
      * <cite>bijective</cite> function. In such functions, there is a one-to-one relationship
@@ -96,12 +94,9 @@ public enum FunctionProperty {
      * A function is <cite>surjective</cite> if any value of <var>T</var> can be created
      * from one or many values of <var>S</var>.
      *
-     * <blockquote><font size="-1"><b>Example:</b>
-     * A {@code ObjectConverter} doing conversions from {@link String} to {@link Integer} is a
-     * surjective function, since there is always at least one string for each integer value.
-     * Note that such function can not be {@linkplain #INJECTIVE injective} since many different
-     * strings can represent the same integer value.
-     * </font></blockquote>
+     * {@example A <code>ObjectConverter</code> doing conversions from <code>String</code> to <code>Integer</code>
+     * is a surjective function, since there is always at least one string for each integer value. Note that such
+     * function can not be injective since many different strings can represent the same integer value.}
      *
      * A function which is both {@linkplain #INJECTIVE injective} and surjective is a
      * <cite>bijective</cite> function. In such functions, there is a one-to-one relationship

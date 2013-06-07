@@ -52,14 +52,12 @@ import static org.apache.sis.internal.jdk7.JDK7.highSurrogate;
  *       feeds or tabulations are entity boundaries.</li>
  * </ul>
  *
- * <blockquote><font size="-1"><b>Example:</b> Numbers formatted in the French locale use no-break
- * spaces as group separators. When parsing a list of numbers, ordinary spaces around the numbers
- * may need to be ignored, but no-break spaces shall be considered as part of the numbers.
- * Consequently {@code isWhitespace(…)} is appropriate for skipping spaces <em>between</em> the numbers.
- * But if there is spaces to skip <em>inside</em> a single number, then {@code isSpaceChar(…)} is a
- * good choice for accepting no-break spaces and for stopping the parse operation at tabulations or
- * line feed character. A tabulation or line feed between two characters is very likely to separate
- * two distinct values.</font></blockquote>
+ * {@example Numbers formatted in the French locale use no-break spaces as group separators. When parsing a list
+ * of numbers, ordinary spaces around the numbers may need to be ignored, but no-break spaces shall be considered as
+ * part of the numbers. Consequently <code>isWhitespace(…)</code> is appropriate for skipping spaces <em>between</em>
+ * the numbers. But if there is spaces to skip <em>inside</em> a single number, then <code>isSpaceChar(…)</code> is a
+ * good choice for accepting no-break spaces and for stopping the parse operation at tabulations or line feed character.
+ * A tabulation or line feed between two characters is very likely to separate two distinct values.}
  *
  * In practice, the {@link java.text.Format} implementations in the SIS library typically use
  * {@code isSpaceChar(…)} while most of the rest of the SIS library, including this

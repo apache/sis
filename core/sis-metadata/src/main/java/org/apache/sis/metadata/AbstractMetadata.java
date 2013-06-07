@@ -70,6 +70,8 @@ import org.apache.sis.util.logging.Logging;
  * @since   0.3 (derived from geotk-2.4)
  * @version 0.3
  * @module
+ *
+ * @see MetadataStandard
  */
 public abstract class AbstractMetadata implements LenientComparable {
     /**
