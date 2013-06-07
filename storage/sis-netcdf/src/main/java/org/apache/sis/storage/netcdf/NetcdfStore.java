@@ -86,6 +86,8 @@ public class NetcdfStore extends AbstractDataStore {
 
     /**
      * Closes this NetCDF store and releases any underlying resources.
+     *
+     * @throws DataStoreException If an error occurred while closing the NetCDF file.
      */
     @Override
     public void close() throws DataStoreException {

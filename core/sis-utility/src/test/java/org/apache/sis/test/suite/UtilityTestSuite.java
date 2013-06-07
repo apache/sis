@@ -32,6 +32,7 @@ import org.junit.BeforeClass;
 @Suite.SuiteClasses({
     // Following are testing the test tools.
     org.apache.sis.internal.test.AssertTest.class,
+    org.apache.sis.internal.test.TestUtilitiesTest.class,
     org.apache.sis.internal.test.XMLComparatorTest.class,
 
     // Most basic functions of SIS library.
