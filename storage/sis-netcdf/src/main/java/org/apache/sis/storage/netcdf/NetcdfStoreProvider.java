@@ -28,13 +28,13 @@ import org.apache.sis.internal.netcdf.ucar.DecoderWrapper;
 import org.apache.sis.internal.storage.ChannelDataInput;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreProvider;
-import org.apache.sis.storage.DataStoreConnection;
+import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.logging.WarningListeners;
 
 
 /**
- * The provider of {@link NetcdfStore} instances. Given a {@link DataStoreConnection} input,
+ * The provider of {@link NetcdfStore} instances. Given a {@link StorageConnector} input,
  * this class tries to instantiate a {@code NetcdfStore} using the embedded NetCDF decoder.
  * If the embedded decoder can not decode the given input and the UCAR library is reachable
  * on the classpath, then this class tries to instantiate a {@code NetcdfStore} backed by
@@ -88,7 +88,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
      * Returns {@code TRUE} if the given storage appears to be supported by {@link NetcdfStore}.
      * Returning {@code TRUE} from this method does not guarantee that reading or writing will succeed,
      * only that there appears to be a reasonable chance of success based on a brief inspection of the
-     * {@linkplain DataStoreConnection#getStorage() storage object} or contents.
+     * {@linkplain StorageConnector#getStorage() storage object} or contents.
      *
      * @param  storage Information about the storage (URL, stream, {@link ucar.nc2.NetcdfFile} instance, <i>etc</i>).
      * @return {@link Boolean#TRUE} if the given storage seems to be usable by the {@code NetcdfStore} instances,
@@ -97,7 +97,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
      * @throws DataStoreException if an I/O error occurred.
      */
     @Override
-    public Boolean canOpen(DataStoreConnection storage) throws DataStoreException {
+    public Boolean canOpen(StorageConnector storage) throws DataStoreException {
         final ByteBuffer buffer = storage.getStorageAs(ByteBuffer.class);
         if (buffer != null) {
             if (buffer.remaining() < Integer.SIZE / Byte.SIZE) {
@@ -142,19 +142,19 @@ public class NetcdfStoreProvider extends DataStoreProvider {
 
     /**
      * Returns a {@link NetcdfStore} implementation associated with this provider. This method invokes
-     * {@link DataStoreConnection#closeAllExcept(Object)} after data store creation, keeping open only
+     * {@link StorageConnector#closeAllExcept(Object)} after data store creation, keeping open only
      * the needed resource.
      *
      * @param storage Information about the storage (URL, stream, {@link ucar.nc2.NetcdfFile} instance, <i>etc</i>).
      */
     @Override
-    public DataStore open(final DataStoreConnection storage) throws DataStoreException {
+    public DataStore open(final StorageConnector storage) throws DataStoreException {
         return new NetcdfStore(storage);
     }
 
     /**
      * Creates a decoder for the given input. This method invokes
-     * {@link DataStoreConnection#closeAllExcept(Object)} after the decoder has been created.
+     * {@link StorageConnector#closeAllExcept(Object)} after the decoder has been created.
      *
      * @param  listeners Where to send the warnings.
      * @param  storage Information about the input (file, input stream, <i>etc.</i>)
@@ -162,7 +162,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
      * @throws IOException If an error occurred while opening the NetCDF file.
      * @throws DataStoreException If a logical error (other than I/O) occurred.
      */
-    static Decoder decoder(final WarningListeners<?> listeners, final DataStoreConnection storage)
+    static Decoder decoder(final WarningListeners<?> listeners, final StorageConnector storage)
             throws IOException, DataStoreException
     {
         Decoder decoder;

@@ -41,7 +41,7 @@ import org.apache.sis.setup.OptionKey;
 
 /**
  * Information for creating a connection to a {@link DataStore} in read and/or write mode.
- * {@code DataStoreConnection} wraps an input {@link Object}, which can be any of the following types:
+ * {@code StorageConnector} wraps an input {@link Object}, which can be any of the following types:
  *
  * <ul>
  *   <li>A {@link java.nio.file.Path} or a {@link java.io.File} or file or a directory in a file system.</li>
@@ -57,7 +57,7 @@ import org.apache.sis.setup.OptionKey;
  * of {@code getStorageAs(…)} may return the same input stream.
  *
  * <p>This class is used only for discovery of a {@code DataStore} implementation capable to handle the input.
- * Once a suitable {@code DataStore} has been found, the {@code DataStoreConnection} instance is typically
+ * Once a suitable {@code DataStore} has been found, the {@code StorageConnector} instance is typically
  * discarded since each data store implementation will use their own input/output objects.</p>
  *
  * <p>Instances of this class are serializable if the {@code storage} object given at construction time
@@ -68,7 +68,7 @@ import org.apache.sis.setup.OptionKey;
  * @version 0.3
  * @module
  */
-public class DataStoreConnection implements Serializable {
+public class StorageConnector implements Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -141,7 +141,7 @@ public class DataStoreConnection implements Serializable {
      *
      * @param storage The input/output object as a URL, file, image input stream, <i>etc.</i>.
      */
-    public DataStoreConnection(final Object storage) {
+    public StorageConnector(final Object storage) {
         ArgumentChecks.ensureNonNull("storage", storage);
         this.storage = storage;
     }
@@ -293,15 +293,15 @@ public class DataStoreConnection implements Serializable {
      *   </li>
      * </ul>
      *
-     * Multiple invocations of this method on the same {@code DataStoreConnection} instance will try
+     * Multiple invocations of this method on the same {@code StorageConnector} instance will try
      * to return the same instance on a <cite>best effort</cite> basis. Consequently, implementations
-     * of {@link DataStoreProvider#canOpen(DataStoreConnection)} methods shall not close the stream or
-     * database connection returned by this method. In addition, those {@code canOpen(DataStoreConnection)}
+     * of {@link DataStoreProvider#canOpen(StorageConnector)} methods shall not close the stream or
+     * database connection returned by this method. In addition, those {@code canOpen(StorageConnector)}
      * methods are responsible for restoring the stream or byte buffer to its original position on return.
      *
      * @param  <T>  The compile-time type of the {@code type} argument.
      * @param  type The desired type as one of {@code ByteBuffer}, {@code DataInput}, {@code Connection}
-     *         class or other type supported by {@code DataStoreConnection} subclasses.
+     *         class or other type supported by {@code StorageConnector} subclasses.
      * @return The storage as a view of the given type, or {@code null} if no view can be created for the given type.
      * @throws IllegalArgumentException If the given {@code type} argument is not a known type.
      * @throws DataStoreException If an error occurred while opening a stream or database connection.
@@ -508,7 +508,7 @@ public class DataStoreConnection implements Serializable {
     }
 
     /**
-     * Closes all streams and connections created by this {@code DataStoreConnection} except the given view.
+     * Closes all streams and connections created by this {@code StorageConnector} except the given view.
      * This method closes all objects created by the {@link #getStorageAs(Class)} method except the given {@code view}.
      * If {@code view} is {@code null}, then this method closes everything including the {@linkplain #getStorage()
      * storage} if it is closeable.
@@ -517,13 +517,13 @@ public class DataStoreConnection implements Serializable {
      * by the data store is given in argument to this method - or when no suitable {@code DataStore} has been
      * found - in which case the {@code view} argument is null.</p>
      *
-     * <p>This {@code DataStoreConnection} instance shall not be used anymore after invocation of this method.</p>
+     * <p>This {@code StorageConnector} instance shall not be used anymore after invocation of this method.</p>
      *
      * @param  view The view to leave open, or {@code null} if none.
      * @throws DataStoreException If an error occurred while closing the stream or database connection.
      *
      * @see #getStorageAs(Class)
-     * @see DataStoreProvider#open(DataStoreConnection)
+     * @see DataStoreProvider#open(StorageConnector)
      */
     public void closeAllExcept(final Object view) throws DataStoreException {
         /*
@@ -561,7 +561,7 @@ public class DataStoreConnection implements Serializable {
     }
 
     /**
-     * Returns a string representation of this {@code DataStoreConnection} for debugging purpose.
+     * Returns a string representation of this {@code StorageConnector} for debugging purpose.
      */
     @Override
     public String toString() {
