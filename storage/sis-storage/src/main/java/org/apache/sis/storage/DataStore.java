@@ -16,9 +16,13 @@
  */
 package org.apache.sis.storage;
 
+import java.util.Locale;
 import java.util.NoSuchElementException;
 import org.opengis.metadata.Metadata;
+import org.apache.sis.util.Localized;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.WarningListener;
+import org.apache.sis.util.logging.WarningListeners;
 
 
 /**
@@ -30,7 +34,49 @@ import org.apache.sis.util.logging.WarningListener;
  * @version 0.3
  * @module
  */
-public interface DataStore extends AutoCloseable {
+public abstract class DataStore implements Localized, AutoCloseable {
+    /**
+     * The locale to use for formatting warnings.
+     *
+     * @see #getLocale()
+     * @see #setLocale(Locale)
+     */
+    private Locale locale;
+
+    /**
+     * The set of registered {@link WarningListener}s for this data store.
+     */
+    protected final WarningListeners<DataStore> listeners;
+
+    /**
+     * Creates a new instance with initially no listener.
+     */
+    protected DataStore() {
+        locale = Locale.getDefault(Locale.Category.DISPLAY);
+        listeners = new WarningListeners<>(this);
+    }
+
+    /**
+     * The locale to use for formatting warnings and other messages. This locale if for user interfaces
+     * only - it has no effect on the data to be read or written from/to the data store.
+     *
+     * <p>The default value is the {@linkplain Locale#getDefault() system default locale}.</p>
+     */
+    @Override
+    public synchronized Locale getLocale() {
+        return locale;
+    }
+
+    /**
+     * Sets the locale to use for formatting warnings and other messages.
+     *
+     * @param locale The new locale to use.
+     */
+    public synchronized void setLocale(final Locale locale) {
+        ArgumentChecks.ensureNonNull("locale", locale);
+        this.locale = locale;
+    }
+
     /**
      * Returns information about the dataset as a whole. The returned metadata object, if any, can contain
      * information such as the spatiotemporal extent of the dataset, contact information about the creator
@@ -39,7 +85,7 @@ public interface DataStore extends AutoCloseable {
      * @return Information about the dataset, or {@code null} if none.
      * @throws DataStoreException If an error occurred while reading the data.
      */
-    Metadata getMetadata() throws DataStoreException;
+    public abstract Metadata getMetadata() throws DataStoreException;
 
     /**
      * Adds a listener to be notified when a warning occurred while reading from or writing to the storage.
@@ -67,7 +113,11 @@ public interface DataStore extends AutoCloseable {
      * @param  listener The listener to add.
      * @throws IllegalArgumentException If the given listener is already registered in this data store.
      */
-    void addWarningListener(WarningListener<? super DataStore> listener) throws IllegalArgumentException;
+    public void addWarningListener(final WarningListener<? super DataStore> listener)
+            throws IllegalArgumentException
+    {
+        listeners.addWarningListener(listener);
+    }
 
     /**
      * Removes a previously registered listener.
@@ -75,7 +125,11 @@ public interface DataStore extends AutoCloseable {
      * @param  listener The listener to remove.
      * @throws NoSuchElementException If the given listener is not registered in this data store.
      */
-    void removeWarningListener(WarningListener<? super DataStore> listener) throws NoSuchElementException;
+    public void removeWarningListener(final WarningListener<? super DataStore> listener)
+            throws NoSuchElementException
+    {
+        listeners.removeWarningListener(listener);
+    }
 
     /**
      * Closes this data store and releases any underlying resources.
@@ -83,5 +137,5 @@ public interface DataStore extends AutoCloseable {
      * @throws DataStoreException If an error occurred while closing this data store.
      */
     @Override
-    void close() throws DataStoreException;
+    public abstract void close() throws DataStoreException;
 }

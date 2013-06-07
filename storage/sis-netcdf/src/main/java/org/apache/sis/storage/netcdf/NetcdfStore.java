@@ -19,7 +19,7 @@ package org.apache.sis.storage.netcdf;
 import java.io.IOException;
 import org.opengis.metadata.Metadata;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.storage.AbstractDataStore;
+import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreConnection;
 import org.apache.sis.internal.netcdf.Decoder;
@@ -36,7 +36,7 @@ import org.apache.sis.internal.netcdf.Decoder;
  *
  * @see NetcdfStoreProvider
  */
-public class NetcdfStore extends AbstractDataStore {
+public class NetcdfStore extends DataStore {
     /**
      * The object to use for decoding the NetCDF file content. There is two different implementations,
      * depending on whether we are using the embedded SIS decoder or a wrapper around the UCAR library.
