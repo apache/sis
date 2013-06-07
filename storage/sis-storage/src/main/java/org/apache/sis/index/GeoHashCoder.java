@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.sis.util;
+package org.apache.sis.index;
 
 //JDK imports
 import java.util.HashMap;
@@ -25,7 +25,7 @@ import java.util.Map;
  * Utilities for encoding and decoding geohashes. Based on
  * http://en.wikipedia.org/wiki/Geohash.
  */
-public class GeoHashUtils {
+public class GeoHashCoder {
 
   private static final char[] BASE_32 = { '0', '1', '2', '3', '4', '5', '6',
       '7', '8', '9', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'j', 'k', 'm', 'n',
@@ -42,12 +42,12 @@ public class GeoHashUtils {
     }
   }
 
-  private GeoHashUtils() {
+  private GeoHashCoder() {
   }
 
   /**
    * Encodes the given latitude and longitude into a geohash
-   * 
+   *
    * @param latitude
    *          Latitude to encode
    * @param longitude
@@ -100,7 +100,7 @@ public class GeoHashUtils {
 
   /**
    * Decodes the given geohash into a latitude and longitude
-   * 
+   *
    * @param geohash
    *          Geohash to deocde
    * @return Array with the latitude at index 0, and longitude at index 1
