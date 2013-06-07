@@ -404,7 +404,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
                      */
                     if (--indentationLevel < 0) {
                         pos.setErrorIndex(indexOfLineStart);
-                        throw new LocalizedParseException(locale,
+                        throw new LocalizedParseException(getLocale(),
                                 Errors.Keys.NodeHasNoParent_1, new Object[] {node}, 0);
                     }
                     lastNode = lastNode.getParent();
@@ -418,7 +418,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
                     final TreeTable.Node parent = lastNode.getParent();
                     if (parent == null) {
                         pos.setErrorIndex(indexOfLineStart);
-                        throw new LocalizedParseException(locale,
+                        throw new LocalizedParseException(getLocale(),
                                 Errors.Keys.NodeHasNoParent_1, new Object[] {node}, 0);
                     }
                     parent.getChildren().add(node);
@@ -583,9 +583,9 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
                 }
                 text = format.format(value);
             } else if (value instanceof InternationalString) {
-                text = ((InternationalString) value).toString(locale);
+                text = ((InternationalString) value).toString(getLocale());
             } else if (value instanceof CodeList<?>) {
-                text = Types.getCodeTitle((CodeList<?>) value).toString(locale);
+                text = Types.getCodeTitle((CodeList<?>) value).toString(getLocale());
             } else if (value instanceof Enum<?>) {
                 text = CharSequences.upperCaseToSentence(((Enum<?>) value).name());
             } else {

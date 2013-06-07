@@ -17,6 +17,8 @@
 package org.apache.sis.metadata;
 
 import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
 import java.text.Format;
 import java.io.Serializable;
 import java.io.IOException;
@@ -127,7 +129,8 @@ final class TreeTableView implements TreeTable, Serializable {
     public String toString() {
         synchronized (TreeTableView.class) {
             if (format == null) {
-                final TreeTableFormat f = new TreeTableFormat(null, null);
+                final TreeTableFormat f = new TreeTableFormat(
+                        Locale.getDefault(Locale.Category.FORMAT), TimeZone.getDefault());
                 f.setColumns(TableColumn.NAME, TableColumn.VALUE);
                 format = f;
             }

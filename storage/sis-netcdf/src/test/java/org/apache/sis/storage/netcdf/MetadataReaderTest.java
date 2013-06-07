@@ -24,10 +24,12 @@ import org.apache.sis.internal.netcdf.TestCase;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.ucar.DecoderWrapper;
 import org.apache.sis.internal.netcdf.impl.ChannelDecoderTest;
+import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
+import static org.apache.sis.test.TestUtilities.formatNameAndValue;
 
 
 /**
@@ -144,6 +146,6 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
             "      └─Lineage\n" +
             "          └─Statement…………………………………………………………………… 2003-04-07 12:12:50 - created by gribtocdl" +
             "              2005-09-26T21:50:00 - edavis - add attributes for dataset discovery\n",
-        actual.toString());
+        formatNameAndValue(DefaultMetadata.castOrCopy(actual).asTreeTable()));
     }
 }

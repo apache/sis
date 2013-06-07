@@ -26,6 +26,8 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
+import static org.apache.sis.test.TestUtilities.toTreeStructure;
+import static org.apache.sis.test.TestUtilities.formatNameAndValue;
 
 
 /**
@@ -47,10 +49,10 @@ public final strictfp class TreeTableViewTest extends TestCase {
     }
 
     /**
-     * Asserts that the given metadata object has the expected string representation.
+     * The expected string representation of the tree created by {@link #create(ValueExistencePolicy)}
+     * with {@link ValueExistencePolicy#NON_EMPTY}.
      */
-    private static void assertExpectedString(final TreeTableView metadata) {
-        assertMultilinesEquals("toString()",
+    private static final String EXPECTED =
                 "DefaultCitation\n" +
                 "  ├─Title…………………………………………………………………………………… Some title\n" +
                 "  ├─Alternate title (1 of 2)………………………………… First alternate title\n" +
@@ -67,16 +69,18 @@ public final strictfp class TreeTableViewTest extends TestCase {
                 "  │   └─Role…………………………………………………………………………… Point of contact\n" +
                 "  ├─Presentation form (1 of 2)…………………………… Map digital\n" +
                 "  ├─Presentation form (2 of 2)…………………………… Map hardcopy\n" +
-                "  └─Other citation details……………………………………… Some other details\n",
-                metadata.toString());
-    }
+                "  └─Other citation details……………………………………… Some other details\n";
 
     /**
      * Tests {@link TreeTableView#toString()}.
+     * Since the result is locale-dependant, we can not compare against an exact string.
+     * We will only compare the beginning of each line.
      */
     @Test
     public void testToString() {
-        assertExpectedString(create(ValueExistencePolicy.NON_EMPTY));
+        final TreeTableView metadata = create(ValueExistencePolicy.NON_EMPTY);
+        assertMultilinesEquals(EXPECTED, formatNameAndValue(metadata)); // Locale-independent
+        assertArrayEquals(toTreeStructure(EXPECTED), toTreeStructure(metadata.toString())); // Locale-dependent.
     }
 
     /**
@@ -98,6 +102,6 @@ public final strictfp class TreeTableViewTest extends TestCase {
         try (ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(data))) {
             deserialized = in.readObject();
         }
-        assertExpectedString((TreeTableView) deserialized);
+        assertMultilinesEquals(EXPECTED, formatNameAndValue((TreeTableView) deserialized));
     }
 }

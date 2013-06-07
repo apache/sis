@@ -83,13 +83,17 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
     /**
      * The locale given at construction time, or {@link Locale#ROOT} (never {@code null}) for
      * unlocalized format. See {@link #getLocale()} for more information on {@code ROOT} locale.
+     *
+     * @see #getLocale()
      */
-    protected final Locale locale;
+    private final Locale locale;
 
     /**
      * The timezone given at construction time, or {@code null} for UTC.
+     *
+     * @see #getTimeZone()
      */
-    protected final TimeZone timezone;
+    private final TimeZone timezone;
 
     /**
      * The formats for smaller unit of information.
@@ -107,12 +111,12 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      * @param timezone The timezone, or {@code null} for UTC.
      */
     protected CompoundFormat(final Locale locale, final TimeZone timezone) {
-        this.locale   = (locale != null) ? locale : Locale.ROOT;
+        this.locale   = (locale   != null) ? locale   : Locale.ROOT;
         this.timezone = timezone;
     }
 
     /**
-     * Returns the locale given at construction time. The returned value may be {@link Locale#ROOT}
+     * Returns the locale used by this format. The returned value may be {@link Locale#ROOT}
      * if this format does not apply any localization. The definition of "unlocalized string"
      * is implementation-dependent, but some typical examples are:
      *
@@ -126,6 +130,15 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
     @Override
     public Locale getLocale() {
         return locale;
+    }
+
+    /**
+     * Returns the timezone used by this format.
+     *
+     * @return The timezone used for this format, or UTC for unlocalized format.
+     */
+    public TimeZone getTimeZone() {
+        return timezone != null ? (TimeZone) timezone.clone() : TimeZone.getTimeZone("UTC");
     }
 
     /**
@@ -246,7 +259,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
             } while (Character.isSpaceChar(c) || Character.isISOControl(c));
             pos.setErrorIndex(i);
         }
-        throw new LocalizedParseException(locale, getValueType(), text, pos);
+        throw new LocalizedParseException(getLocale(), getValueType(), text, pos);
     }
 
     /**
@@ -368,6 +381,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
          * documented in this method javadoc. But actually it is not, since the call to
          * DefaultFormat.getInstance(…) will indirectly perform this kind of comparison.
          */
+        final Locale locale = getLocale();
         if (Number.class.isAssignableFrom(valueType)) {
             if (Locale.ROOT.equals(locale)) {
                 return DefaultFormat.getInstance(valueType);
@@ -381,7 +395,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
             } else {
                 format = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.ROOT);
             }
-            format.setTimeZone(timezone != null ? timezone : TimeZone.getTimeZone("UTC"));
+            format.setTimeZone(getTimeZone());
             return format;
         } else if (valueType == Angle.class) {
             return AngleFormat.getInstance(locale);
