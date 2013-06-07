@@ -18,7 +18,7 @@ package org.apache.sis.storage.netcdf;
 
 import org.opengis.metadata.Metadata;
 import org.opengis.wrapper.netcdf.IOTestCase;
-import org.apache.sis.storage.DataStoreConnection;
+import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
@@ -46,7 +46,7 @@ public final strictfp class NetcdfStoreTest extends IOTestCase {
      * @throws DataStoreException If an error occurred while reading the NetCDF file.
      */
     private static NetcdfStore create(final String dataset) throws DataStoreException {
-        return new NetcdfStore(new DataStoreConnection(IOTestCase.class.getResource(dataset)));
+        return new NetcdfStore(new StorageConnector(IOTestCase.class.getResource(dataset)));
     }
 
     /**

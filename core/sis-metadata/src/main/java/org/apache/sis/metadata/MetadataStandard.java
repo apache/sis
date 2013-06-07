@@ -83,6 +83,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @since   0.3 (derived from geotk-2.4)
  * @version 0.3
  * @module
+ *
+ * @see AbstractMetadata
  */
 @ThreadSafe
 public class MetadataStandard implements Serializable {
