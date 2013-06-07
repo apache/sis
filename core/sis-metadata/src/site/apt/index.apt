@@ -5,128 +5,40 @@
 
 Apache SIS Metadata
 
-  Group of packages related to handling metadata. This group contains the ISO 19115 metadata classes
-  (in <<<org.apache.sis.metadata.iso>>>) and various support classes.
+  Implementations of metadata derived from ISO 19115. This module provides both an implementation
+  of the metadata interfaces defined in GeoAPI, and a framework for handling those metadata through
+  Java reflection.
 
-  * {{{./faq.html}Frequently Asked Questions}}
+   * {{{./faq.html}Frequently Asked Questions}}
+
+   * {{{https://geo-ide.noaa.gov/wiki/index.php?title=Category:ISO_19115}ISO 19115 wiki at NOAA}}
 
 
 * Overview of Metadata handling in Apache SIS
 
-** Foreword
-
   Many metadata standards exist, including <Dublin core>, <ISO 19115> and the Image I/O metadata
   defined in <<<javax.imageio.metadata>>>. The SIS implementation focuses on ISO 19115 (including
   its ISO 19115-2 extension), but the classes are designed in a way that allow the usage of different
-  standards. This genericity goal should be keept in mind in the discussion below.
-
-
-** How Metadata are defined
-
-  A metadata standard is defined by a set of Java interfaces belonging to a specific package and its
-  sub-packages. For example the ISO 19115 standard is defined by the {{{http://www.geoapi.org}GeoAPI}}
-  interfaces defined in the <<<org.opengis.metadata>>> package and sub-packages. That standard is
-  identified in SIS by the <<<MetadataStandard.ISO_19115>>> constant. Other standards are defined
-  as well, for example the <<<MetadataStandard.ISO_19119>>> constant stands for the standards defined
-  by the interfaces in the <<<org.opengis.service>>> package and sub-packages.
-
-  For each interface, the collection of declared getter methods defines its <properties> (or <attributes>).
-  If a <<<@UML>>> annotation is attached to the getter method, the identifier declared in that annotation
-  is taken as the property name. This is typically the name defined by the International Standard from
-  which the interface is derived. Otherwise (if there is no <<<@UML>>> annotation) the property name is
-  inferred from the method name like what the <Java Beans> framework does.
-
-  The implementation classes, if they exist, are defined in different packages than the interfaces.
-  For example the ISO 19115 interfaces, declared in <<<org.opengis.metadata>>>, are implemented by
-  SIS in <<<org.apache.sis.metadata.iso>>>. The subpackages hierarchy is the same, and the names
-  of implementation classes are the name of the implemented interfaces prefixed with <<<Abstract>>>
-  or <<<Default>>>.
-
-  <<Notes:>>
-
-  * The <<<Abstract>>> prefix means that the class is abstract in the sense of the implemented
-    standard. It it not necessarily abstract in the sense of Java. Because incomplete metadata are
-    common in practice, sometime we wish to instantiate an "abstract" class despite the lack of
-    knowledge about the exact sub-type.
-
-  * The properties are determined by the getter methods declared in the interfaces.
-    Getter methods declared in the implementation classes are ignored.
-
-  * Setter methods, if any, can be declared in the implementation classes without the need for
-    declarations in the interfaces. In other words, interfaces are assumed read-only unless a
-    specific implementation provide setter methods.
-
-  * The implementation is not required to exist as source code. They can be generated
-    on the fly with <<<java.lang.reflect.Proxy>>>. This is the approach taken by the
-    <<<org.apache.sis.metadata.sql>>> package for generating metadata implementations
-    backed by the content of a database (see also the {{{./faq.html#proxy}FAQ entry}}).
-
-
-** How Metadata are handled
+  standards.
 
   Metadata objects in SIS are mostly containers: they provide getter and setter methods for
   manipulating the values associated to properties (for example the <title> properties of an
   <Citation> object), but provide few logic. The package <<<org.apache.sis.metadata.iso>>> and
   its sub-packages are the main examples of such containers.
 
-  In addition, the metadata modules provide support classes for handling the metadata objects
+  In addition, the metadata modules provide support methods for handling the metadata objects
   through Java Reflection. This is an approach similar to <Java Beans>, in that users are encouraged
   to use directly the API of <Plain Old Java> objects (actually interfaces) everytime their type is
-  known at compile time, and fallback on the support classes when the type is known only at runtime.
-
+  known at compile time, and fallback on the reflection technic when the type is known only at runtime.
   Using Java reflection, a metadata can be viewed in many different ways:
 
+   * As a <<<Map>>> (from <<<java.util>>>)
 
-*** As a <<<Map>>> (from <<<java.util>>>)
+   * As a <<<TreeTable>>> (from <<<org.apache.sis.util.collection>>>)
 
-  The <<<MetadataStandard>>> class provides various methods returning a view of an arbitrary
-  metadata implementation as a <<<java.util.Map>>>, where the key are the property names and
-  the values are the return values of getter methods. The map is writable if the underlying
-  metadata implementation has setter methods, otherwise attempts to set a value throw an
-  <<<UnmodifiableMetadataException>>>.
+   * As a <<<IIOMetadata>>> (from <<<javax.imageio.metadata>>>)
 
-
-*** As a <<<IIOMetadata>>> (from <<<javax.imageio.metadata>>>)
-
-  The ISO 19115-2 standard defines metadata for gridded data, which are good candidates for
-  Image I/O metadata with spatial data. The <<<org.apache.sis.image.io.metadata>>> package
-  provides a framework for converting an ISO metadata like <<<ImageDescription>>> into an
-  <<<IIOMetadata>>> object, and conversely.
-
-
-*** As a <<<TreeTableModel>>> (from <<<org.jdesktop.swingx.treetable>>>)
-
-  The metadata are organized as a tree. For example the <<<Citation>>> metadata contains one
-  or many <<<ResponsibleParty>>> elements, each of them containing a <<<Contact>>> element,
-  which contains a <<<Telephone>>> element, <etc>. For each node, there is many information
-  that can be displayed in columns:
-
-   * A description of the element.
-
-   * The type of values (<<<String>>>, <<<double>>>, <etc>).
-
-   * The range of valid values (if the type is numeric),
-     or an enumeration of valid values (if the type is a code list).
-
-   * The value stored in the element, or the default value.
-
-  The current SIS library provides an indirect way to view metadata in such tree table:
-  create an <<<IIOMetadata>>> view from the metadata, then create a <<<TreeTableModel>>>
-  view from the <<<IIOMetadata>>>. A more direct way may be provided in a future version.
-
-
-*** As a table record in a database (using <<<org.apache.sis.metadata.sql>>>)
-
-  It is possible to establish the following mapping between metadata and a SQL database:
-
-   * Each metadata interface maps to a table of the same name in the database.
-
-   * Each property in the above interface maps to a column of the same name in the above table.
-
-   * Each instance of the above interface is a record in the above table.
-
-  Using Java reflection, it is possible to generate implementations of the metadata interfaces
-  where each call to a getter method is translated into a SQL query for the above database.
+   * As a table record in a database (using <<<org.apache.sis.metadata.sql>>>)
 
 
 ** How Metadata are marshalled
@@ -140,7 +52,3 @@ Apache SIS Metadata
   before to be marshalled. All SIS annotated classes provide a copy constructor for this
   purpose. A shallow copy is sufficient; JAXB adapters will convert the elements on-the-fly
   when needed.
-
-  The annotated classes can be given to a JAXB <<<Marshaller>>>. For best results, it shall
-  be a marshaller obtained from the <<<org.apache.sis.xml.MarshallerPool>>>, otherwise some
-  XML outputs may be incomplete (missing namespaces for instance).
