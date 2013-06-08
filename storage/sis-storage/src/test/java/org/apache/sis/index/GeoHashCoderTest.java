@@ -18,6 +18,7 @@ package org.apache.sis.index;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.text.ParseException;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -83,9 +84,11 @@ public final strictfp class GeoHashCoderTest extends TestCase {
 
     /**
      * Tests the {@link GeoHashCoder#decode(String)} method.
+     *
+     * @throws ParseException Should never happen.
      */
     @Test
-    public void testDecode() {
+    public void testDecode() throws ParseException {
         final GeoHashCoder coder = new GeoHashCoder();
         for (final Map.Entry<String, Place> entry : places().entrySet()) {
             final String name = entry.getKey();
