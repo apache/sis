@@ -95,9 +95,9 @@ Define Maven Mojos and Javadoc taglets for generating resource files
       <version>${maven.version}</version>
     </dependency>
     <dependency>
-  <groupId>org.apache.maven</groupId>
-  <artifactId>maven-plugin-api</artifactId>
-  <version>3.0.5</version>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-plugin-api</artifactId>
+      <version>${maven.version}</version>
     </dependency>
   </dependencies>
 
