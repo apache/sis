@@ -16,8 +16,8 @@
  */
 package org.apache.sis.index;
 
-import java.util.Map;
-import java.util.HashMap;
+import java.text.ParseException;
+import org.opengis.geometry.DirectPosition;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -42,11 +42,13 @@ public final strictfp class GeoHashCoderTest extends TestCase {
      * A geographic coordinates together with the expected geohash.
      */
     private static final class Place {
-        final double latitude;
+        final String name;
         final double longitude;
+        final double latitude;
         final String geohash;
 
-        Place(final double latitude, final double longitude, final String geohash) {
+        Place(final String name, final double longitude, final double latitude, final String geohash) {
+            this.name      = name;
             this.latitude  = latitude;
             this.longitude = longitude;
             this.geohash   = geohash;
@@ -54,19 +56,17 @@ public final strictfp class GeoHashCoderTest extends TestCase {
     }
 
     /**
-     * Returns a map of places with their expected geohash.
+     * A list o places with their expected geohash.
      */
-    private Map<String, Place> places() {
-        final Map<String, Place> places = new HashMap<String, Place>(12);
-        places.put("Empire State Building", new Place(40.748433,  -73.985656, "dr5ru6j2c62q"));
-        places.put("Statue Of Liberty",     new Place(40.689167,  -74.044444, "dr5r7p4rx6kz"));
-        places.put("The White House",       new Place(38.897669,  -77.036550, "dqcjqcpeq70c"));
-        places.put("Hoover Dam",            new Place(36.015556, -114.737778, "9qqkvh6mzfpz"));
-        places.put("Golden Gate Bridge",    new Place(37.819722, -122.478611, "9q8zhuvgce0m"));
-        places.put("Mount Rushmore",        new Place(43.878947, -103.459825, "9xy3teyv7ke4"));
-        places.put("Space Needle",          new Place(47.620400, -122.349100, "c22yzvh0gmfy"));
-        return places;
-    }
+    private static Place[] PLACES = new Place[] {
+        new Place("Empire State Building",  -73.985656, 40.748433, "dr5ru6j2c62q"),
+        new Place("Statue Of Liberty",      -74.044444, 40.689167, "dr5r7p4rx6kz"),
+        new Place("The White House",        -77.036550, 38.897669, "dqcjqcpeq70c"),
+        new Place("Hoover Dam",            -114.737778, 36.015556, "9qqkvh6mzfpz"),
+        new Place("Golden Gate Bridge",    -122.478611, 37.819722, "9q8zhuvgce0m"),
+        new Place("Mount Rushmore",        -103.459825, 43.878947, "9xy3teyv7ke4"),
+        new Place("Space Needle",          -122.349100, 47.620400, "c22yzvh0gmfy")
+    };
 
     /**
      * Tests the {@link GeoHashCoder#encode(double, double)} method.
@@ -74,25 +74,23 @@ public final strictfp class GeoHashCoderTest extends TestCase {
     @Test
     public void testEncode() {
         final GeoHashCoder coder = new GeoHashCoder();
-        for (final Map.Entry<String, Place> entry : places().entrySet()) {
-            final Place place = entry.getValue();
-            assertEquals(entry.getKey(), place.geohash,
-                    coder.encode(place.latitude, place.longitude));
+        for (final Place place : PLACES) {
+            assertEquals(place.name, place.geohash, coder.encode(place.longitude, place.latitude));
         }
     }
 
     /**
      * Tests the {@link GeoHashCoder#decode(String)} method.
+     *
+     * @throws ParseException Should never happen.
      */
     @Test
-    public void testDecode() {
+    public void testDecode() throws ParseException {
         final GeoHashCoder coder = new GeoHashCoder();
-        for (final Map.Entry<String, Place> entry : places().entrySet()) {
-            final String name = entry.getKey();
-            final Place place = entry.getValue();
-            final double[] result = coder.decode(place.geohash);
-            assertEquals(name, place.latitude,  result[0], TOLERANCE);
-            assertEquals(name, place.longitude, result[1], TOLERANCE);
+        for (final Place place : PLACES) {
+            final DirectPosition result = coder.decode(place.geohash);
+            assertEquals(place.name, place.longitude, result.getOrdinate(0), TOLERANCE);
+            assertEquals(place.name, place.latitude,  result.getOrdinate(1), TOLERANCE);
         }
     }
 }
