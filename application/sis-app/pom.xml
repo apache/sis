@@ -64,6 +64,18 @@ Console application.
 
 
   <!-- ===========================================================
+           Dependencies
+       =========================================================== -->
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.sis.storage</groupId>
+      <artifactId>sis-storage</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+  </dependencies>
+
+
+  <!-- ===========================================================
            Build configuration
        =========================================================== -->
   <build>
