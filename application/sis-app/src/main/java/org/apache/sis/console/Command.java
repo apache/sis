@@ -14,18 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.cli;
+package org.apache.sis.console;
 
 /**
  * Command line interface for Apache SIS
  */
-public class SISCLI {
-
-	/**
-	 * Main method
-	 */
-	public static void main(String[] args) {
-
-	}
-	
+public class Command {
+    /**
+     * Main method
+     */
+    public static void main(String[] args) {
+    }
 }
