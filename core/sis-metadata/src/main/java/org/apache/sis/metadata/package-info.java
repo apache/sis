@@ -40,7 +40,7 @@
  * the property name is inferred from the method name like what the <cite>Java Beans</cite> framework does.</p>
  *
  * <p>The implementation classes, if they exist, are defined in different packages than the interfaces.
- * For example the ISO 19115 interfaces, declared in {@code org.opengis.metadata}, are implemented by
+ * For example the ISO 19115 interfaces, declared in {@link org.opengis.metadata}, are implemented by
  * SIS in {@link org.apache.sis.metadata.iso}. The subpackages hierarchy is the same, and the names
  * of implementation classes are the name of the implemented interfaces prefixed with {@code Abstract}
  * or {@code Default}.</p>
@@ -63,7 +63,7 @@
  * {@section How Metadata are handled}
  * Metadata objects in SIS are mostly containers: they provide getter and setter methods for manipulating the values
  * associated to properties (for example the {@code title} property of a {@code Citation} object), but provide few logic.
- * The package {@code org.apache.sis.metadata.iso} and its sub-packages are the main examples of such containers.
+ * The package {@link org.apache.sis.metadata.iso} and its sub-packages are the main examples of such containers.
  *
  * <p>In addition, the metadata modules provide support methods for handling the metadata objects through Java Reflection.
  * This is an approach similar to <cite>Java Beans</cite>, in that users are encouraged to use directly the API of
@@ -72,14 +72,14 @@
  *
  * <p>Using Java reflection, a metadata can be viewed in many different ways:</p>
  * <ul>
- *   <li><b>As a {@link java.util.Map}</b><br>
+ *   <li><p><b>As a {@link java.util.Map}</b><br>
  *       The {@link org.apache.sis.metadata.MetadataStandard} class provides various methods returning a view
  *       of an arbitrary metadata implementation as a {@code Map}, where the key are the property names and the
  *       values are the return values, types or descriptions of getter methods. The map is writable if the
  *       underlying metadata implementation has setter methods, otherwise attempts to set a value throw an
- *       {@code UnmodifiableMetadataException}.</li>
+ *       {@code UnmodifiableMetadataException}.</p></li>
  *
- *   <li><b>As a {@link org.apache.sis.util.collection.TreeTable}</b><br>
+ *   <li><p><b>As a {@link org.apache.sis.util.collection.TreeTable}</b><br>
  *       The metadata are organized as a tree. For example the {@code Citation} metadata contains one or many
  *       {@code ResponsibleParty} elements, each of them containing a {@code Contact} element, which contains
  *       a {@code Telephone} element, <i>etc</i>. For each node, there is many information that can be displayed
@@ -90,9 +90,9 @@
  *         <li>The range of valid values (if the type is numeric),
  *             or an enumeration of valid values (if the type is a code list).</li>
  *         <li>The value stored in the element, or the default value.</li>
- *       </ul></li>
+ *       </ul></p></li>
  *
- *   <li><b>As a table record in a database (using {@link org.apache.sis.metadata.sql})</b><br>
+ *   <li><p><b>As a table record in a database (using {@link org.apache.sis.metadata.sql})</b><br>
  *       It is possible to establish the following mapping between metadata and a SQL database:
  *       <ul>
  *         <li>Each metadata interface maps to a table of the same name in the database.</li>
@@ -100,7 +100,7 @@
  *         <li>Each instance of the above interface is a record in the above table.</li>
  *       </ul>
  *       Using Java reflection, it is possible to generate implementations of the metadata interfaces
- *       where each call to a getter method is translated into a SQL query for the above database.</li>
+ *       where each call to a getter method is translated into a SQL query for the above database.</p></li>
  * </ul>
  *
  * {@section How Metadata are marshalled}
@@ -109,7 +109,7 @@
  *
  * <p>Only the implementation classes defined in the {@link org.apache.sis.metadata.iso} packages and sub-packages
  * are annotated for JAXB marshalling. If a metadata is implemented by an other package (for example
- * {@code org.apache.sis.metadata.sql}), then it shall be converted to an annotated class before to be marshalled.
+ * {@link org.apache.sis.metadata.sql}), then it shall be converted to an annotated class before to be marshalled.
  * All SIS annotated classes provide a copy constructor for this purpose. A shallow copy is sufficient;
  * JAXB adapters will convert the elements on-the-fly when needed.</p>
  *
