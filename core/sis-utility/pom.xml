@@ -115,6 +115,7 @@ Miscellaneous utilities.
 
       <!-- Delete the "com/sun/xml/..." directory after compilation. -->
       <plugin>
+       <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-antrun-plugin</artifactId>
         <executions>
           <execution>
