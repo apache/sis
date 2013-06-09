@@ -124,6 +124,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int DuplicatedIdentifier_1 = 38;
 
         /**
+         * Option “{0}” is duplicated.
+         */
+        public static final int DuplicatedOption_1 = 100;
+
+        /**
          * Element “{0}” is already present.
          */
         public static final int ElementAlreadyPresent_1 = 36;
@@ -211,6 +216,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int IllegalLanguageCode_1 = 12;
 
         /**
+         * Option ‘{0}’ can not take the “{1}” value.
+         */
+        public static final int IllegalOptionValue_2 = 101;
+
+        /**
          * The [{0} … {1}] range of ordinate values is not valid for the “{2}” axis.
          */
         public static final int IllegalOrdinateRange_3 = 5;
@@ -294,6 +304,11 @@ public final class Errors extends IndexedResourceBundle {
          * This operation requires the “{0}” module.
          */
         public static final int MissingRequiredModule_1 = 84;
+
+        /**
+         * Missing value for option “{0}”.
+         */
+        public static final int MissingValueForOption_1 = 99;
 
         /**
          * Missing value for property “{0}”.
@@ -469,6 +484,16 @@ public final class Errors extends IndexedResourceBundle {
          * File “{1}” seems to be encoded in an other format than {0}.
          */
         public static final int UnexpectedFileFormat_2 = 92;
+
+        /**
+         * Command “{0}” is not recognized.
+         */
+        public static final int UnknownCommand_1 = 102;
+
+        /**
+         * Option “{0}” is not recognized.
+         */
+        public static final int UnknownOption_1 = 98;
 
         /**
          * Type of the “{0}” property is unknown.

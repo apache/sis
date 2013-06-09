@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.util;
+package org.apache.sis.setup;
 
 import java.util.Arrays;
 import java.util.List;
@@ -30,18 +30,17 @@ import java.util.MissingResourceException;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
-import java.io.Console;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.PrintStream;
-import java.io.PrintWriter;
 import java.io.IOException;
 import java.text.Format;
 import java.text.DateFormat;
 import java.text.FieldPosition;
 import java.nio.charset.Charset;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.Version;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TreeTables;
@@ -66,9 +65,6 @@ import static org.apache.sis.util.collection.TableColumn.VALUE_AS_TEXT;
  *   <li>Current directory, user home and Java home.</li>
  *   <li>Libraries on the classpath and extension directories.</li>
  * </ul>
- *
- * This class can be invoked from the command line.
- * See the {@link #main(String[])} method for more information.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
@@ -134,70 +130,6 @@ public enum About {
      */
     private About(final int resourceKey) {
         this.resourceKey = resourceKey;
-    }
-
-    /**
-     * Prints the information to the standard output stream.
-     * This method can be invoked from the command-line as below (the "{@code sis-utility}" file
-     * can be replaced by any SIS module, and its filename needs to be completed with the actual
-     * version number):
-     *
-     * {@preformat java
-     *     java -jar target/binaries/sis-utility.jar
-     * }
-     *
-     * "{@code target/binaries}" is the default location where SIS JAR files are grouped together
-     * with their dependencies after a Maven build. This directory can be replaced by any path to
-     * a directory providing the required dependencies.
-     *
-     * <p>By default the above command prints all information except the {@link #LIBRARIES} section,
-     * because the later is considered too verbose. Available options are:</p>
-     *
-     * <ul>
-     *   <li>{@code --version}: prints only Apache SIS version number.</li>
-     *   <li>{@code --verbose}: prints all information including the libraries.</li>
-     * </ul>
-     *
-     * @param args Command-line options.
-     */
-    public static void main(final String[] args) {
-        final EnumSet<About> sections = EnumSet.allOf(About.class);
-        String configuration = null;
-        /*
-         * Command-line arguments processing.
-         */
-        if (args.length == 0) {
-            sections.remove(About.LIBRARIES);
-        } else {
-            final String arg = args[0];
-            if (arg.equals("--version")) {
-                configuration = "Apache SIS version " + Version.SIS;
-            } else if (!arg.equals("--verbose")) {
-                System.err.println(Errors.format(Errors.Keys.IllegalArgumentValue_2, 1, arg));
-                return;
-            }
-            if (args.length != 1) { // Checked only after we verified the first argument.
-                System.err.println(Errors.format(Errors.Keys.IllegalArgumentValue_2, 2, args[1]));
-                return;
-            }
-        }
-        /*
-         * Format the tree and write result to the console.
-         */
-        if (configuration == null) {
-            configuration = configuration(sections, Locale.getDefault()).toString();
-        }
-        final Console console = System.console();
-        if (console != null) {
-            final PrintWriter out = console.writer();
-            out.write(configuration);
-            out.write(System.lineSeparator());
-            out.flush();
-        } else {
-            final PrintStream out = System.out;
-            out.println(configuration);
-            out.flush();
-        }
     }
 
     /**
