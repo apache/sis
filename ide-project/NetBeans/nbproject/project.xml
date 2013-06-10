@@ -13,13 +13,15 @@
                 <root id="src.referencing.dir" name="Referencing"/>
                 <root id="src.metadata.dir" name="Metadata"/>
                 <root id="src.utility.dir" name="Utility"/>
+                <root id="src.resources.dir" name="Resources"/>
             </source-roots>
             <test-roots>
-                <root id="test.netcdf.dir" name="NetCDF tests"/>
-                <root id="test.storage.dir" name="Storage tests"/>
-                <root id="test.referencing.dir" name="Referencing tests"/>
-                <root id="test.metadata.dir" name="Metadata tests"/>
-                <root id="test.utility.dir" name="Utility tests"/>
+                <root id="test.app.dir" name="Test Application"/>
+                <root id="test.netcdf.dir" name="Test NetCDF"/>
+                <root id="test.storage.dir" name="Test Storage"/>
+                <root id="test.referencing.dir" name="Test Referencing"/>
+                <root id="test.metadata.dir" name="Test Metadata"/>
+                <root id="test.utility.dir" name="Test Utility"/>
             </test-roots>
         </data>
         <spellchecker-wordlist xmlns="http://www.netbeans.org/ns/spellchecker-wordlist/1">

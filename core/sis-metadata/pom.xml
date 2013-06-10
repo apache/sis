@@ -103,6 +103,29 @@ Implementations of metadata derived from ISO 19115. This module provides both an
 
 
   <!-- ===========================================================
+           Build configuration
+       =========================================================== -->
+  <build>
+    <plugins>
+
+      <!-- Collect JAR files in <root>/target/binaries directory. -->
+      <plugin>
+        <groupId>org.apache.sis</groupId>
+        <artifactId>sis-build-helper</artifactId>
+        <version>${sis.plugin.version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>collect-jars</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+
+  <!-- ===========================================================
            Dependencies
        =========================================================== -->
   <dependencies>

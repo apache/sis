@@ -16,13 +16,132 @@
  */
 package org.apache.sis.console;
 
+import java.util.Locale;
+import java.io.Console;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import org.apache.sis.util.resources.Errors;
+
+
 /**
- * Command line interface for Apache SIS
+ * Command line interface for Apache SIS.
+ * The main method can be invoked from the command-line as below
+ * (the filename needs to be completed with the actual version number):
+ *
+ * {@preformat java
+ *     java -jar target/binaries/sis-app.jar
+ * }
+ *
+ * "{@code target/binaries}" is the default location where SIS JAR files are grouped together
+ * with their dependencies after a Maven build. This directory can be replaced by any path to
+ * a directory providing the required dependencies.
+ *
+ * @author  Martin Desruisseaux (Geomatys)
+ * @since   0.3
+ * @version 0.3
+ * @module
  */
-public class Command {
+public class Command implements Runnable {
     /**
-     * Main method
+     * The code given to {@link System#exit(int)} when the program failed because of a unknown sub-command.
      */
-    public static void main(String[] args) {
+    public static final int INVALID_COMMAND_EXIT_CODE = 1;
+
+    /**
+     * The code given to {@link System#exit(int)} when the program failed because of an illegal user argument.
+     */
+    public static final int INVALID_OPTION_EXIT_CODE = 2;
+
+    /**
+     * The code given to {@link System#exit(int)} when a file given in argument uses an unknown file format.
+     */
+    public static final int UNKNOWN_STORAGE_EXIT_CODE = 10;
+
+    /**
+     * The code given to {@link System#exit(int)} when the program failed because of an {@link java.io.IOException}.
+     */
+    public static final int IO_EXCEPTION_EXIT_CODE = 100;
+
+    /**
+     * The code given to {@link System#exit(int)} when the program failed because of an {@link java.sql.SQLException}.
+     */
+    public static final int SQL_EXCEPTION_EXIT_CODE = 101;
+
+    /**
+     * The sub-command to execute.
+     */
+    private final SubCommand command;
+
+    /**
+     * Creates a new command for the given arguments. The first value in the given array shall be the
+     * command name. All other values are options.
+     *
+     * @param  args The command-line arguments.
+     * @throws InvalidCommandException If an invalid command has been given.
+     * @throws InvalidOptionException If the given arguments contain an invalid option.
+     */
+    protected Command(final String[] args) throws InvalidCommandException, InvalidOptionException {
+        if (args.length == 0) {
+            command = new HelpCS(args);
+        } else {
+            final String name = args[0];
+            /*switch (name.toLowerCase(Locale.US))*/ {
+                if (name.equalsIgnoreCase("about")) {
+                    command = new AboutSC(args);
+                }
+                else if (name.equalsIgnoreCase("help")) {
+                    command = new HelpCS(args);
+                }
+                else {
+                    throw new InvalidCommandException(Errors.format(Errors.Keys.UnknownCommand_1, name), name);
+                }
+            }
+        }
+    }
+
+    /**
+     * Runs the command.
+     */
+    @Override
+    public void run() {
+        command.run();
+    }
+
+    /**
+     * Prints the message of the given exception. This method is invoked only when the error occurred before
+     * the {@link SubCommand} has been built, otherwise the {@link SubCommand#err} printer shall be used.
+     */
+    private static void error(final Exception e) {
+        final Console console = System.console();
+        if (console != null) {
+            final PrintWriter err = console.writer();
+            err.println(e.getLocalizedMessage());
+            err.flush();
+        } else {
+            final PrintStream err = System.err;
+            err.println(e.getLocalizedMessage());
+            err.flush();
+        }
+    }
+
+    /**
+     * Prints the information to the standard output stream.
+     *
+     * @param args Command-line options.
+     */
+    public static void main(final String[] args) {
+        final Command c;
+        try {
+            c = new Command(args);
+        } catch (InvalidCommandException e) {
+            error(e);
+            System.exit(INVALID_COMMAND_EXIT_CODE);
+            return;
+        } catch (InvalidOptionException e) {
+            error(e);
+            System.exit(INVALID_OPTION_EXIT_CODE);
+            return;
+        }
+        c.run();
     }
 }
