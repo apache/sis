@@ -43,7 +43,7 @@ public class BundleCreator extends AbstractMojo {
     /**
      * The Apache SIS version.
      */
-    private static final String VERSION = "0.3-jdk6";
+    private static final String VERSION = "0.3-geoapi3.0";
 
     /**
      * The root directory (without the "<code>target/binaries</code>" sub-directory) where JARs
