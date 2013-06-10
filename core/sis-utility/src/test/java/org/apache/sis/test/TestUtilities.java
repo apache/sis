@@ -231,7 +231,7 @@ public final strictfp class TestUtilities extends Static {
      * Returns the tree structure of the given string representation, without the localized text.
      * For example given the following string:
      *
-     * {@preformat
+     * {@preformat text
      *   Citation
      *     ├─Title…………………………………………………… Some title
      *     └─Cited responsible party
@@ -240,7 +240,7 @@ public final strictfp class TestUtilities extends Static {
      *
      * this method returns an array containing the following elements:
      *
-     * {@preformat
+     * {@preformat text
      *   "",
      *   "  ├─",
      *   "  └─",
