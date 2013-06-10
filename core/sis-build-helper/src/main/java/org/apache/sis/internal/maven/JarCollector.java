@@ -56,13 +56,13 @@ public final class JarCollector extends AbstractMojo implements FileFilter {
     private MavenProject project;
 
     /**
-     * The target directory (without the "<code>binaries</code>" sub-directory) where JARs are
-     * to be copied. It should be the "target" directory of the parent <code>pom.xml</code>.
+     * The root directory (without the "<code>target/binaries</code>" sub-directory) where JARs
+     * are to be copied. It should be the directory of the root <code>pom.xml</code>.
      *
-     * @parameter property="project.parent.build.directory"
+     * @parameter property="session.executionRootDirectory"
      * @required
      */
-    private String collectDirectory;
+    private String rootDirectory;
 
     /**
      * Copies the {@code *.jar} files to the collect directory.
@@ -71,8 +71,8 @@ public final class JarCollector extends AbstractMojo implements FileFilter {
      */
     @Override
     public void execute() throws MojoExecutionException {
-        if (collectDirectory == null || collectDirectory.startsWith("${")) {
-            getLog().warn("Unresolved directory: " + collectDirectory);
+        if (rootDirectory == null || rootDirectory.startsWith("${")) {
+            getLog().warn("Unresolved directory: " + rootDirectory);
             return;
         }
         /*
@@ -100,7 +100,7 @@ public final class JarCollector extends AbstractMojo implements FileFilter {
         /*
          * Get the "target" directory of the parent pom.xml and make sure it exists.
          */
-        File collect = new File(collectDirectory);
+        File collect = new File(rootDirectory, "target");
         if (!collect.exists()) {
             if (!collect.mkdir()) {
                 throw new MojoExecutionException("Failed to create target directory.");
