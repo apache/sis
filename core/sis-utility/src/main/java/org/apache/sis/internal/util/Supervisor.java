@@ -32,7 +32,7 @@ import javax.management.JMException;
 import javax.management.NotCompliantMBeanException;
 import java.lang.management.ManagementFactory;
 
-import org.apache.sis.util.About;
+import org.apache.sis.setup.About;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
