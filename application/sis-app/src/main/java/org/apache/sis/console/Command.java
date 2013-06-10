@@ -16,6 +16,7 @@
  */
 package org.apache.sis.console;
 
+import java.util.Locale;
 import java.io.Console;
 import java.io.PrintStream;
 import java.io.PrintWriter;
@@ -84,7 +85,7 @@ public class Command implements Runnable {
             command = new HelpCS(args);
         } else {
             final String name = args[0];
-            switch (name.toLowerCase()) {
+            switch (name.toLowerCase(Locale.US)) {
                 case "about": {
                     command = new AboutSC(args);
                     break;
