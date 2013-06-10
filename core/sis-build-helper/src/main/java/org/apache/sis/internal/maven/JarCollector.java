@@ -18,10 +18,15 @@ package org.apache.sis.internal.maven;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Files;
 import java.util.Set;
+import java.util.LinkedHashSet;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
@@ -43,9 +48,19 @@ import org.apache.maven.artifact.Artifact;
  */
 public final class JarCollector extends AbstractMojo implements FileFilter {
     /**
+     * The target directory.
+     */
+    static final String TARGET_DIRECTORY = "target";
+
+    /**
      * The sub directory to create inside the "target" directory.
      */
     static final String SUB_DIRECTORY = "binaries";
+
+    /**
+     * The name of the file where to list dependencies on platforms that do not support hard links.
+     */
+    static final String DEPENDENCIES_LIST = "dependencies.txt";
 
     /**
      * The Maven project running this plugin.
@@ -100,7 +115,7 @@ public final class JarCollector extends AbstractMojo implements FileFilter {
         /*
          * Get the "target" directory of the parent pom.xml and make sure it exists.
          */
-        File collect = new File(rootDirectory, "target");
+        File collect = new File(rootDirectory, TARGET_DIRECTORY);
         if (!collect.exists()) {
             if (!collect.mkdir()) {
                 throw new MojoExecutionException("Failed to create target directory.");
@@ -127,7 +142,7 @@ public final class JarCollector extends AbstractMojo implements FileFilter {
         }
         File copy = new File(collect, jarFile.getName());
         copy.delete();
-        copyFileToDirectory(jarFile, copy);
+        linkFileToDirectory(jarFile, copy);
         /*
          * Copies the dependencies.
          */
@@ -148,7 +163,7 @@ public final class JarCollector extends AbstractMojo implements FileFilter {
                              * the module's JAR was copied unconditionally above (because it may
                              * be the result of a new compilation).
                              */
-                            copyFileToDirectory(file, copy);
+                            linkFileToDirectory(file, copy);
                         }
                     }
                 }
@@ -212,20 +227,57 @@ public final class JarCollector extends AbstractMojo implements FileFilter {
     }
 
     /**
-     * Copies the given file to the given target file.
-     * Since JDK 7, this method actually creates a hard link.
+     * Creates a link from the given source file to the given target file.
+     * On JDK6 or on platform that do not support links, this method rather
+     * updates the <code>dependencies.txt</code> file.
      *
      * @param file The source file to read.
      * @param copy The destination file to create.
      */
-    private static void copyFileToDirectory(final File file, final File copy) throws IOException {
+    private static void linkFileToDirectory(final File file, final File copy) throws IOException {
         final Path source = file.toPath();
         final Path target = copy.toPath();
         try {
             Files.createLink(target, source);
+            return;
         } catch (UnsupportedOperationException e) {
-            // If hard links are not supported, do a plain copy.
-            Files.copy(source, target);
+            // If hard links are not supported, edit the "dependencies.txt" file instead.
         }
+        /*
+         * If we can not use hard links, creates or updates a "target/dependencies.txt" file instead.
+         * This file will contains the list of all dependencies, without duplicated values.
+         */
+        final File dependenciesFile = new File(copy.getParentFile(), DEPENDENCIES_LIST);
+        final Set<String> dependencies = loadDependencyList(dependenciesFile);
+        if (dependencies.add(file.getPath())) {
+            // Save the dependencies list only if it has been modified.
+            try (BufferedWriter out = new BufferedWriter(new FileWriter(dependenciesFile))) {
+                for (final String dependency : dependencies) {
+                    out.write(dependency);
+                    out.newLine();
+                }
+            }
+        }
+    }
+
+    /**
+     * Loads the {@value #DEPENDENCIES_LIST} from the given directory, if it exists.
+     * Otherwise returns an empty but modifiable set. This method is invoked only on
+     * platforms that do not support hard links.
+     */
+    static Set<String> loadDependencyList(final File dependenciesFile) throws IOException {
+        final Set<String> dependencies = new LinkedHashSet<>();
+        if (dependenciesFile.exists()) {
+            try (BufferedReader in = new BufferedReader(new FileReader(dependenciesFile))) {
+                String line;
+                while ((line = in.readLine()) != null) {
+                    line = line.trim();
+                    if (!line.isEmpty()) {
+                        dependencies.add(line);
+                    }
+                }
+            }
+        }
+        return dependencies;
     }
 }
