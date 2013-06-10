@@ -27,7 +27,6 @@
     <copy todir="${build.classes.dir}">
       <fileset dir="${project.root}/core/sis-utility/src/main/resources">
         <include name="META-INF/services/*"/>
-        <include name="**/*.properties"/>
       </fileset>
     </copy>
   </target>

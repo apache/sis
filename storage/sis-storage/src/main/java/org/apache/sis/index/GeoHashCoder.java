@@ -150,7 +150,7 @@ public class GeoHashCoder implements Serializable {
     }
 
     /**
-     * Returns the length of geohashes strings to be encoded by the {@link #encode(double, double)} method.
+     * Returns the length of geohashes strings to be encoded by the {@link #encode(DirectPosition)} method.
      * The default value is 12.
      *
      * @return The length of geohashes strings.
@@ -160,7 +160,7 @@ public class GeoHashCoder implements Serializable {
     }
 
     /**
-     * Sets the length of geohashes strings to be encoded by the {@link #encode(double, double)} method.
+     * Sets the length of geohashes strings to be encoded by the {@link #encode(DirectPosition)} method.
      *
      * @param precision The new length of geohashes strings.
      */

@@ -240,7 +240,6 @@ public class AttributeNames {
      *
      * @see #VOCABULARY
      * @see #STANDARD_NAME
-     * @see NetcdfMetadataReader#getKeywordSeparator(Group)
      * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html#keywords_Attribute">UCAR reference</a>
      */
     public static final String KEYWORDS = "keywords";

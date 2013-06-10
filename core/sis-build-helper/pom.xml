@@ -113,7 +113,7 @@ Define Maven Mojos and Javadoc taglets for generating resource files
          This copy will not be needed anymore if http://jira.codehaus.org/browse/MNG-3328
          get fixed. -->
     <profile>
-      <id>jdk7-tools.jar</id>
+      <id>jdk6-tools.jar</id>
       <activation>
         <property>
           <name>java.vendor</name>

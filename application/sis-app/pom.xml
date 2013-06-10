@@ -31,13 +31,70 @@
     <version>0.3-geoapi3.0-SNAPSHOT</version>
   </parent>
 
+
+  <!-- ===========================================================
+           Module Description
+       =========================================================== -->
   <artifactId>sis-app</artifactId>
   <packaging>bundle</packaging>
-  <name>Apache SIS app</name>
-  <url>http://sis.apache.org</url>
+  <name>Apache SIS application</name>
+  <description>
+  <!-- Left alignment because this description will be copied in META-INF/MANIFEST.MF
+       The leading space after the first line is necessary for proper formatting. -->
+Console application.
+  </description>
 
+
+  <!-- ===========================================================
+           Developers and Contributors
+       =========================================================== -->
+  <developers>
+    <developer>
+      <name>Martin Desruisseaux</name>
+      <id>desruisseaux</id>
+      <email>desruisseaux@apache.org</email>
+      <organization>Geomatys</organization>
+      <organizationUrl>http://www.geomatys.com</organizationUrl>
+      <timezone>+1</timezone>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
+  </developers>
+
+
+  <!-- ===========================================================
+           Dependencies
+       =========================================================== -->
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.sis.storage</groupId>
+      <artifactId>sis-storage</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+  </dependencies>
+
+
+  <!-- ===========================================================
+           Build configuration
+       =========================================================== -->
   <build>
     <plugins>
+
+      <!-- Declare the main class -->
+      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifest>
+              <mainClass>org.apache.sis.console.Command</mainClass>
+            </manifest>
+          </archive>
+          <skipIfEmpty>true</skipIfEmpty>
+        </configuration>
+      </plugin>
+
+      <!-- Package as OSGi bundle -->
       <plugin>
         <groupId>org.apache.felix</groupId>
         <artifactId>maven-bundle-plugin</artifactId>
@@ -46,7 +103,7 @@
             <Export-Package>
               org.apache.sis.cli
             </Export-Package>
-            <Main-Class>org.apache.sis.cli.SISCLI</Main-Class>
+            <Main-Class>org.apache.sis.console.Command</Main-Class>
           </instructions>
         </configuration>
       </plugin>
