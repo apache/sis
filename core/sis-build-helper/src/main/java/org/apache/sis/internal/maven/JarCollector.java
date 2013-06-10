@@ -34,8 +34,10 @@ import org.apache.maven.artifact.Artifact;
 
 
 /**
- * Copies <code>.jar</code> files in a single "{@code target/binaries}" directory.
- * Dependencies are copied as well, except if already presents.
+ * Collects <code>.jar</code> files in a single "{@code target/binaries}" directory.
+ * Dependencies are collected as well, except if already presents. This mojo uses hard links
+ * on platforms that support them. If hard links are not supported, then this mojo will instead
+ * creates a "{@code target/binaries/dependencies.txt}" file listing the dependencies.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.2)
