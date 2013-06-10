@@ -17,6 +17,10 @@
 package org.apache.sis.console;
 
 import java.util.EnumSet;
+import java.util.Locale;
+import java.util.ResourceBundle;
+import java.io.IOException;
+import org.apache.sis.io.TableAppender;
 
 
 /**
@@ -29,7 +33,15 @@ import java.util.EnumSet;
  */
 final class HelpCS extends SubCommand {
     /**
-     * Creates the {@code "about"} sub-command.
+     * The commands, in the order to be shown.
+     */
+    private static final String[] COMMANDS = {
+        "help",
+        "about"
+    };
+
+    /**
+     * Creates the {@code "help"} sub-command.
      */
     HelpCS(final String[] args) throws InvalidOptionException {
         super(args, EnumSet.of(Option.LOCALE, Option.ENCODING));
@@ -40,6 +52,30 @@ final class HelpCS extends SubCommand {
      */
     @Override
     public void run() {
-        // TODO
+        final ResourceBundle commands = ResourceBundle.getBundle("org.apache.sis.console.Commands");
+        final ResourceBundle options  = ResourceBundle.getBundle("org.apache.sis.console.Options");
+        out.println("Commands:");
+        try {
+            final TableAppender table = new TableAppender(out, "  ");
+            for (final String command : COMMANDS) {
+                table.append(' ').append(command);
+                table.nextColumn();
+                table.append(commands.getString(command));
+                table.nextLine();
+            }
+            table.flush();
+            out.println();
+            out.println("Options:");
+            for (final Option option : Option.values()) {
+                final String name = option.name().toLowerCase(Locale.US);
+                table.append(' ').append(name);
+                table.nextColumn();
+                table.append(options.getString(name));
+                table.nextLine();
+            }
+            table.flush();
+        } catch (IOException e) {
+            throw new AssertionError(e); // Should never happen, because we are writing to a PrintWriter.
+        }
     }
 }

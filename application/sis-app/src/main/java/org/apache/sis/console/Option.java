@@ -16,6 +16,7 @@
  */
 package org.apache.sis.console;
 
+import java.util.Locale;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -104,7 +105,7 @@ enum Option {
                 return (i & 1) != 0;
             }
         }
-        final String name = name().toLowerCase();
+        final String name = name().toLowerCase(Locale.US);
         throw new InvalidOptionException(Errors.format(Errors.Keys.IllegalOptionValue_2, name, value), name);
     }
 }

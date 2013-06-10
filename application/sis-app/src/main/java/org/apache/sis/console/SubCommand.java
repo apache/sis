@@ -89,7 +89,7 @@ abstract class SubCommand implements Runnable {
                 final String name = arg.substring(Option.PREFIX.length());
                 final Option option;
                 try {
-                    option = Option.valueOf(name.toUpperCase());
+                    option = Option.valueOf(name.toUpperCase(Locale.US));
                 } catch (IllegalArgumentException e) {
                     throw new InvalidOptionException(Errors.format(Errors.Keys.UnknownOption_1, name), e, name);
                 }
@@ -128,7 +128,7 @@ abstract class SubCommand implements Runnable {
             console = System.console();
             colors = (value != null) ? Option.COLORS.parseBoolean(value) : (console != null) && X364.isAnsiSupported();
         } catch (IllegalArgumentException e) {
-            final String name = option.name().toLowerCase();
+            final String name = option.name().toLowerCase(Locale.US);
             throw new InvalidOptionException(Errors.format(Errors.Keys.IllegalOptionValue_2, name, value), name);
         }
         /*
