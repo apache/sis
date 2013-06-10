@@ -95,7 +95,10 @@ final class PackOutput implements Closeable {
             inputs = new LinkedHashSet<>(jars.length * 4/3);
         }
         for (final String jar : jars) {
-            final File file = new File(packer.jarDirectory, jar);
+            File file = new File(jar);
+            if (!file.isAbsolute()) {
+                file = new File(packer.jarDirectory, jar);
+            }
             if (!file.isFile()) {
                 throw new IllegalArgumentException("Not a file: " + file);
             }
