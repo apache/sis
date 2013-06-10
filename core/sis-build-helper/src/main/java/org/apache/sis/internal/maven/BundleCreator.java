@@ -67,7 +67,7 @@ public class BundleCreator extends AbstractMojo {
         }
         try {
             final Packer packer = new Packer(targetDirectory, VERSION);
-            packer.addPack("sis-bundle-" + VERSION + ".jar");
+            packer.addPack("sis-" + VERSION + ".jar");
             try {
                 packer.createJars();
             } finally {

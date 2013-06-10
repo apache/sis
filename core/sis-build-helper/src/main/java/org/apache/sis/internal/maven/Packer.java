@@ -32,14 +32,14 @@ import java.io.InputStream;
 
 /**
  * Creates PAC200 files from the JAR builds by Maven. This tools needs the JAR files to be either provided
- * in the {@code target/binaries} directory, or listed in the {@code target/binaries/dependencies.txt} file.
+ * in the {@code target/binaries} directory, or listed in the {@code target/binaries/content.txt} file.
  *
  * <p><b>Usage:</b> If {@code rootDirectory} is the directory containing the root {@code pom.xml} file,
  * then this class can be used as below (replace {@code "1.0"} by the actual version number and
- * {@code "sis-bundle-1.0.jar"} by any filename of your choice):</p>
+ * {@code "sis-1.0.jar"} by any filename of your choice):</p>
  *
  * <blockquote><pre> Packer packer = new Packer(new File(rootDirectory, "target"), "1.0");
- * packer.addPack("sis-bundle-1.0.jar");
+ * packer.addPack("sis-1.0.jar");
  * packer.createJars();
  * packer.close();
  * packer.pack();</pre></blockquote>
@@ -107,7 +107,7 @@ final class Packer implements FilenameFilter {
      * @throws IOException If an error occurred while collecting the target directory content.
      */
     public void addPack(final String pack) throws IOException {
-        final Set<String> list = JarCollector.loadDependencyList(new File(jarDirectory, JarCollector.DEPENDENCIES_LIST));
+        final Set<String> list = JarCollector.loadDependencyList(new File(jarDirectory, JarCollector.CONTENT_FILE));
         list.addAll(Arrays.asList(jarDirectory.list(this)));
         addPack(null, pack, list.toArray(new String[list.size()]));
     }
