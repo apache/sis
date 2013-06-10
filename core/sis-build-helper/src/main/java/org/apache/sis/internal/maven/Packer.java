@@ -17,6 +17,7 @@
 package org.apache.sis.internal.maven;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Iterator;
@@ -32,6 +33,16 @@ import java.io.InputStream;
 /**
  * Creates PAC200 files from the JAR builds by Maven. This tools needs the JAR files to be either provided
  * in the {@code target/binaries} directory, or listed in the {@code target/binaries/dependencies.txt} file.
+ *
+ * <p><b>Usage:</b> If {@code rootDirectory} is the directory containing the root {@code pom.xml} file,
+ * then this class can be used as below (replace {@code "1.0"} by the actual version number and
+ * {@code "sis-bundle-1.0.jar"} by any filename of your choice):</p>
+ *
+ * <blockquote><pre> Packer packer = new Packer(new File(rootDirectory, "target"), "1.0");
+ * packer.addPack("sis-bundle-1.0.jar");
+ * packer.createJars();
+ * packer.close();
+ * packer.pack();</pre></blockquote>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
@@ -88,12 +99,17 @@ final class Packer implements FilenameFilter {
 
     /**
      * Adds a pack which will contain every JAR files in the target directory.
+     * The given {@code pack} name is the name of the JAR file to create before to be packed.
+     * This filename shall ends with the "{@code .jar}" suffix. That suffix will be replaced
+     * by {@code ".pack.gz"} at Pack200 creation time.
      *
-     * @param pack The name of the pack file to create.
+     * @param  pack The name of the JAR file to create before the Pack200 creation.
      * @throws IOException If an error occurred while collecting the target directory content.
      */
     public void addPack(final String pack) throws IOException {
-        addPack(null, pack, jarDirectory.list(this));
+        final Set<String> list = JarCollector.loadDependencyList(new File(jarDirectory, JarCollector.DEPENDENCIES_LIST));
+        list.addAll(Arrays.asList(jarDirectory.list(this)));
+        addPack(null, pack, list.toArray(new String[list.size()]));
     }
 
     /**
@@ -101,9 +117,14 @@ final class Packer implements FilenameFilter {
      * create a Pack200 file containing only a subset of all available JAR files, or when some
      * JAR files to include are specified by a previously created Pack200 file.
      *
-     * @param parent The pack from which to inherit the JAR files, or {@code null} if none.
-     * @param pack   The name of the pack file to create.
-     * @param jars   The list of JAR files in this pack file.
+     * <p>The filenames in the given {@code jars} array can contains the {@code '*'} wildcards.
+     * However at most one entry can match, otherwise an exception will be thrown. This limited
+     * wildcards support is mostly a convenience for avoiding to specify the version number of
+     * JAR files.</p>
+     *
+     * @param  parent The pack from which to inherit the JAR files, or {@code null} if none.
+     * @param  pack   The name of the JAR file to create before the Pack200 creation.
+     * @param  jars   The list of JAR files in this pack file. Filenames can contain the {@code '*'} wildcards.
      * @throws IOException If an error occurred while collecting the target directory content.
      */
     public void addPack(final String parent, final String pack, final String[] jars) throws IOException {
