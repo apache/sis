@@ -30,7 +30,8 @@ import org.junit.BeforeClass;
  * @module
  */
 @Suite.SuiteClasses({
-    org.apache.sis.console.HelpSCTest.class
+    org.apache.sis.console.HelpSCTest.class,
+    org.apache.sis.console.AboutSCTest.class
 })
 public final strictfp class ConsoleTestSuite extends TestSuite {
     /**

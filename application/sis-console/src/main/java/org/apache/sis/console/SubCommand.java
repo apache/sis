@@ -19,13 +19,18 @@ package org.apache.sis.console;
 import java.util.Locale;
 import java.util.EnumSet;
 import java.util.EnumMap;
+import java.util.TimeZone;
+import java.util.ResourceBundle;
 import java.io.Console;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import org.apache.sis.util.Locales;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.io.TableAppender;
 import org.apache.sis.internal.util.X364;
 
 
@@ -47,6 +52,13 @@ abstract class SubCommand implements Runnable {
     static final String TEST = "TEST";
 
     /**
+     * The set of legal options for this command.
+     *
+     * @see #help(String)
+     */
+    private final EnumSet<Option> validOptions;
+
+    /**
      * The command-line options allowed by this sub-command, together with their values.
      */
     protected final EnumMap<Option,String> options;
@@ -56,6 +68,12 @@ abstract class SubCommand implements Runnable {
      * provided, then this field is set to the {@linkplain Locale#getDefault() default locale}.
      */
     protected final Locale locale;
+
+    /**
+     * The locale specified by the {@code "--timezone"} option. If no such option was provided,
+     * then this field is left to {@code null}.
+     */
+    protected final TimeZone timezone;
 
     /**
      * The encoding specified by the {@code "--encoding"} option. If no such option was provided,
@@ -105,6 +123,7 @@ abstract class SubCommand implements Runnable {
             throws InvalidOptionException
     {
         boolean isTest = false;
+        this.validOptions = validOptions;
         options = new EnumMap<>(Option.class);
         for (int i=0; i<arguments.length; i++) {
             final String arg = arguments[i];
@@ -147,6 +166,9 @@ abstract class SubCommand implements Runnable {
             value = options.get(option = Option.LOCALE);
             locale = (value != null) ? Locales.parse(value) : Locale.getDefault(Locale.Category.DISPLAY);
 
+            value = options.get(option = Option.TIMEZONE);
+            timezone = (value != null) ? TimeZone.getTimeZone(value) : null;
+
             value = options.get(option = Option.ENCODING);
             explicitEncoding = (value != null);
             encoding = explicitEncoding ? Charset.forName(value) : Charset.defaultCharset();
@@ -180,6 +202,37 @@ abstract class SubCommand implements Runnable {
                     out = new PrintWriter(System.out, true);
                 }
             }
+        }
+    }
+
+    /**
+     * Shows the help instructions for a specific command. This method is invoked
+     * instead of {@link #run()} if the the user provided the {@code --help} option.
+     *
+     * @param commandName The command name converted to lower cases.
+     */
+    protected void help(final String commandName) {
+        final ResourceBundle commands = ResourceBundle.getBundle("org.apache.sis.console.Commands", locale);
+        final ResourceBundle options  = ResourceBundle.getBundle("org.apache.sis.console.Options", locale);
+        final Vocabulary vocabulary = Vocabulary.getResources(locale);
+        out.print(commandName);
+        out.print(": ");
+        out.println(commands.getString(commandName));
+        out.println();
+        out.print(vocabulary.getString(Vocabulary.Keys.Options));
+        out.println(':');
+        final TableAppender table = new TableAppender(out, "  ");
+        for (final Option option : validOptions) {
+            final String name = option.name().toLowerCase(Locale.US);
+            table.append("  ").append(Option.PREFIX).append(name);
+            table.nextColumn();
+            table.append(options.getString(name));
+            table.nextLine();
+        }
+        try {
+            table.flush();
+        } catch (IOException e) {
+            throw new AssertionError(e); // Should never happen, because we are writing to a PrintWriter.
         }
     }
 

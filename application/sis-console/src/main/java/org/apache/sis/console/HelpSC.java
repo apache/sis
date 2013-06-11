@@ -45,7 +45,7 @@ final class HelpSC extends SubCommand {
      * Creates the {@code "help"} sub-command.
      */
     HelpSC(final int commandIndex, final String... args) throws InvalidOptionException {
-        super(commandIndex, args, EnumSet.of(Option.LOCALE, Option.ENCODING));
+        super(commandIndex, args, EnumSet.of(Option.LOCALE, Option.ENCODING, Option.HELP));
     }
 
     /**
