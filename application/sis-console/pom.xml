@@ -35,7 +35,7 @@
   <!-- ===========================================================
            Module Description
        =========================================================== -->
-  <artifactId>sis-app</artifactId>
+  <artifactId>sis-console</artifactId>
   <packaging>bundle</packaging>
   <name>Apache SIS application</name>
   <description>

@@ -29,7 +29,7 @@ import org.apache.sis.util.resources.Errors;
  * (the filename needs to be completed with the actual version number):
  *
  * {@preformat java
- *     java -jar target/binaries/sis-app.jar
+ *     java -jar target/binaries/sis-console.jar
  * }
  *
  * "{@code target/binaries}" is the default location where SIS JAR files are grouped together
