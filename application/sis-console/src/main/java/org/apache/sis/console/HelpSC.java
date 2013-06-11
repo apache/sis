@@ -56,12 +56,16 @@ final class HelpSC extends SubCommand {
         final ResourceBundle commands = ResourceBundle.getBundle("org.apache.sis.console.Commands", locale);
         final ResourceBundle options  = ResourceBundle.getBundle("org.apache.sis.console.Options", locale);
         final Vocabulary vocabulary = Vocabulary.getResources(locale);
+        out.print("Apache SIS, ");
+        out.println(commands.getString("SIS"));
+        out.println(commands.getString("Usage"));
+        out.println();
         out.print(vocabulary.getString(Vocabulary.Keys.Commands));
         out.println(':');
         try {
             final TableAppender table = new TableAppender(out, "  ");
             for (final String command : COMMANDS) {
-                table.append(' ').append(command);
+                table.append("  ").append(command);
                 table.nextColumn();
                 table.append(commands.getString(command));
                 table.nextLine();
@@ -72,7 +76,7 @@ final class HelpSC extends SubCommand {
             out.println(':');
             for (final Option option : Option.values()) {
                 final String name = option.name().toLowerCase(Locale.US);
-                table.append(' ').append(Option.PREFIX).append(name);
+                table.append("  ").append(Option.PREFIX).append(name);
                 table.nextColumn();
                 table.append(options.getString(name));
                 table.nextLine();
