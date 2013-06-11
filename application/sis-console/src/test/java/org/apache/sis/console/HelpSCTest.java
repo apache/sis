@@ -32,7 +32,7 @@ import static org.junit.Assert.*;
  */
 public final strictfp class HelpSCTest extends TestCase {
     /**
-     * Tests the sub-command with default options.
+     * Tests the sub-command without option.
      *
      * @throws InvalidOptionException Should never happen.
      */
@@ -41,11 +41,32 @@ public final strictfp class HelpSCTest extends TestCase {
         final HelpSC test = new HelpSC(0, SubCommand.TEST);
         test.run();
         final String result = test.outputBuffer.toString();
-        assertTrue(result.startsWith("Apache SIS"));
-        assertTrue(result.contains("--locale"));
-        assertTrue(result.contains("--encoding"));
-        assertTrue(result.contains("--timezone"));
-        assertTrue(result.contains("--brief"));
-        assertTrue(result.contains("--verbose"));
+        assertTrue("Apache SIS", result.startsWith("Apache SIS"));
+        assertTrue("--locale",   result.contains("--locale"));
+        assertTrue("--encoding", result.contains("--encoding"));
+        assertTrue("--timezone", result.contains("--timezone"));
+        assertTrue("--brief",    result.contains("--brief"));
+        assertTrue("--verbose",  result.contains("--verbose"));
+        assertTrue("--help",     result.contains("--help"));
+    }
+
+    /**
+     * Tests the sub-command with the {@code --help} option.
+     * Shall contains only a subset of {@link #testDefault()}.
+     *
+     * @throws InvalidOptionException Should never happen.
+     */
+    @Test
+    public void testHelp() throws InvalidOptionException {
+        final HelpSC test = new HelpSC(0, SubCommand.TEST, "--help");
+        test.help("help");
+        final String result = test.outputBuffer.toString();
+        assertTrue ("help",       result.startsWith("help"));
+        assertTrue ("--locale",   result.contains("--locale"));
+        assertTrue ("--encoding", result.contains("--encoding"));
+        assertFalse("--timezone", result.contains("--timezone"));
+        assertFalse("--brief",    result.contains("--brief"));
+        assertFalse("--verbose",  result.contains("--verbose"));
+        assertTrue ("--help",     result.contains("--help"));
     }
 }

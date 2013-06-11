@@ -139,17 +139,18 @@ public enum About {
      * @return Configuration information, as a tree for grouping some configuration by sections.
      */
     public static TreeTable configuration(final Locale locale) {
-        return configuration(EnumSet.allOf(About.class), locale);
+        return configuration(EnumSet.allOf(About.class), locale, null);
     }
 
     /**
      * Returns a subset of the information about the current Apache SIS running environment.
      *
      * @param  sections The section for which information are desired.
-     * @param  locale The locale to use for formatting the texts in the tree.
+     * @param  locale   The locale to use for formatting the texts in the tree.
+     * @param  timezone The timezone to use for formatting the dates, or {@code null} for the default.
      * @return Configuration information, as a tree for grouping some configuration by sections.
      */
-    public static TreeTable configuration(final Set<About> sections, final Locale locale) {
+    public static TreeTable configuration(final Set<About> sections, final Locale locale, final TimeZone timezone) {
         ArgumentChecks.ensureNonNull("sections", sections);
         ArgumentChecks.ensureNonNull("locale", locale);
         String userHome = null;
@@ -234,7 +235,11 @@ fill:   for (int i=0; ; i++) {
                 case 5: {
                     if (sections.contains(LOCALIZATION)) {
                         nameKey = Vocabulary.Keys.CurrentDateTime;
-                        value = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG, locale).format(now);
+                        final DateFormat df = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG, locale);
+                        if (timezone != null) {
+                            df.setTimeZone(timezone);
+                        }
+                        value = df.format(now);
                     }
                     break;
                 }

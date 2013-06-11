@@ -300,6 +300,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final int Variables = 47;
 
         /**
+         * {0} version {1}
+         */
+        public static final int Version_2 = 50;
+
+        /**
          * Versions
          */
         public static final int Versions = 15;

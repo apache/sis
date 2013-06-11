@@ -41,7 +41,7 @@ import org.apache.sis.util.resources.Errors;
  * @version 0.3
  * @module
  */
-public class Command implements Runnable {
+public final class Command implements Runnable {
     /**
      * The code given to {@link System#exit(int)} when the program failed because of a unknown sub-command.
      */
@@ -66,6 +66,11 @@ public class Command implements Runnable {
      * The code given to {@link System#exit(int)} when the program failed because of an {@link java.sql.SQLException}.
      */
     public static final int SQL_EXCEPTION_EXIT_CODE = 101;
+
+    /**
+     * The sub-command name.
+     */
+    private final String commandName;
 
     /**
      * The sub-command to execute.
@@ -106,13 +111,15 @@ public class Command implements Runnable {
         if (commandName == null) {
             command = new HelpSC(-1, args);
         } else {
-            switch (commandName.toLowerCase(Locale.US)) {
+            commandName = commandName.toLowerCase(Locale.US);
+            switch (commandName) {
                 case "about": command = new AboutSC(commandIndex, args); break;
                 case "help":  command = new HelpSC (commandIndex, args); break;
                 default: throw new InvalidCommandException(Errors.format(
                             Errors.Keys.UnknownCommand_1, commandName), commandName);
             }
         }
+        this.commandName = commandName;
     }
 
     /**
@@ -120,7 +127,11 @@ public class Command implements Runnable {
      */
     @Override
     public void run() {
-        command.run();
+        if (command.options.containsKey(Option.HELP)) {
+            command.help(commandName);
+        } else {
+            command.run();
+        }
     }
 
     /**
