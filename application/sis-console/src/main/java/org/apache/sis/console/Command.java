@@ -20,6 +20,11 @@ import java.util.Locale;
 import java.io.Console;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.io.IOException;
+import java.sql.SQLException;
+import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -41,7 +46,7 @@ import org.apache.sis.util.resources.Errors;
  * @version 0.3
  * @module
  */
-public final class Command implements Runnable {
+public final class Command {
     /**
      * The code given to {@link System#exit(int)} when the program failed because of a unknown sub-command.
      */
@@ -66,6 +71,12 @@ public final class Command implements Runnable {
      * The code given to {@link System#exit(int)} when the program failed because of an {@link java.sql.SQLException}.
      */
     public static final int SQL_EXCEPTION_EXIT_CODE = 101;
+
+    /**
+     * The code given to {@link System#exit(int)} when the program failed for a reason
+     * other than the ones enumerated in the above constants.
+     */
+    public static final int FAILURE_EXIT_CODE = 199;
 
     /**
      * The sub-command name.
@@ -113,8 +124,9 @@ public final class Command implements Runnable {
         } else {
             commandName = commandName.toLowerCase(Locale.US);
             switch (commandName) {
-                case "about": command = new AboutSC(commandIndex, args); break;
-                case "help":  command = new HelpSC (commandIndex, args); break;
+                case "help":     command = new HelpSC    (commandIndex, args); break;
+                case "about":    command = new AboutSC   (commandIndex, args); break;
+                case "metadata": command = new MetadataSC(commandIndex, args); break;
                 default: throw new InvalidCommandException(Errors.format(
                             Errors.Keys.UnknownCommand_1, commandName), commandName);
             }
@@ -123,15 +135,44 @@ public final class Command implements Runnable {
     }
 
     /**
-     * Runs the command.
+     * Runs the command. If an exception occurs, then the exception message is sent to the error output
+     * stream before to be thrown. Callers can map the exception to a system exit code by the
+     * {@link #exitCodeFor(Throwable)} method.
+     *
+     * @throws Exception If an error occurred during the command execution. This is typically, but not limited, to
+     *         {@link IOException}, {@link SQLException}, {@link DataStoreException} or {@link TransformException}.
      */
-    @Override
-    public void run() {
+    public void run() throws Exception {
         if (command.options.containsKey(Option.HELP)) {
             command.help(commandName);
-        } else {
+        } else try {
             command.run();
+        } catch (Exception e) {
+            command.out.flush();
+            command.err.println(Exceptions.formatChainedMessages(command.locale, null, e));
+            throw e;
         }
+    }
+
+    /**
+     * Returns the exit code for the given exception, or 0 if unknown. This method iterates through the
+     * {@linkplain Throwable#getCause() causes} until an exception matching a {@code *_EXIT_CODE}
+     * constant is found.
+     *
+     * @param  cause The exception for which to get the exit code.
+     * @return The exit code as one of the {@code *_EXIT_CODE} constant, or {@link #FAILURE_EXIT_CODE} if unknown.
+     */
+    public static int exitCodeFor(Throwable cause) {
+        while (cause != null) {
+            if (cause instanceof IOException) {
+                return IO_EXCEPTION_EXIT_CODE;
+            }
+            if (cause instanceof SQLException) {
+                return SQL_EXCEPTION_EXIT_CODE;
+            }
+            cause = cause.getCause();
+        }
+        return FAILURE_EXIT_CODE;
     }
 
     /**
@@ -169,6 +210,10 @@ public final class Command implements Runnable {
             System.exit(INVALID_OPTION_EXIT_CODE);
             return;
         }
-        c.run();
+        try {
+            c.run();
+        } catch (Exception e) {
+            System.exit(exitCodeFor(e));
+        }
     }
 }

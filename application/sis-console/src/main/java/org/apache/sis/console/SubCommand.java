@@ -16,6 +16,8 @@
  */
 package org.apache.sis.console;
 
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Locale;
 import java.util.EnumSet;
 import java.util.EnumMap;
@@ -42,7 +44,7 @@ import org.apache.sis.internal.util.X364;
  * @version 0.3
  * @module
  */
-abstract class SubCommand implements Runnable {
+abstract class SubCommand {
     /**
      * Special value for {@code arguments[commandIndex]} meaning that this sub-command is created
      * for JUnit test purpose.
@@ -109,6 +111,12 @@ abstract class SubCommand implements Runnable {
     final StringBuffer outputBuffer;
 
     /**
+     * Any remaining parameters that are not command name or option.
+     * They are typically file names, but can occasionally be other type like URL.
+     */
+    protected final List<String> files;
+
+    /**
      * Creates a new sub-command with the given command-line arguments.
      * The {@code arguments} array is the same array than the one given to the {@code main(String[])} method.
      * The argument at index {@code commandIndex} is the name of this command, and will be ignored except for
@@ -125,6 +133,7 @@ abstract class SubCommand implements Runnable {
         boolean isTest = false;
         this.validOptions = validOptions;
         options = new EnumMap<>(Option.class);
+        files = new ArrayList<>(arguments.length);
         for (int i=0; i<arguments.length; i++) {
             final String arg = arguments[i];
             if (i == commandIndex) {
@@ -153,6 +162,8 @@ abstract class SubCommand implements Runnable {
                     throw new InvalidOptionException(Errors.format(Errors.Keys.DuplicatedOption_1, name), name);
                 }
                 options.put(option, value);
+            } else {
+                files.add(arg);
             }
         }
         /*
@@ -238,7 +249,8 @@ abstract class SubCommand implements Runnable {
 
     /**
      * Executes the sub-command.
+     *
+     * @throws Exception If an error occurred while executing the sub-command.
      */
-    @Override
-    public abstract void run();
+    public abstract void run() throws Exception;
 }
