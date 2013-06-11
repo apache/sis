@@ -95,6 +95,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final int Code_1 = 21;
 
         /**
+         * Commands
+         */
+        public static final int Commands = 48;
+
+        /**
          * Current date and time
          */
         public static final int CurrentDateTime = 25;
@@ -218,6 +223,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Operating system
          */
         public static final int OperatingSystem = 16;
+
+        /**
+         * Options
+         */
+        public static final int Options = 49;
 
         /**
          * Others

@@ -40,8 +40,8 @@ final class AboutSC extends SubCommand {
     /**
      * Creates the {@code "about"} sub-command.
      */
-    AboutSC(final String[] args) throws InvalidOptionException {
-        super(args, EnumSet.of(Option.LOCALE, Option.ENCODING, Option.BRIEF, Option.VERBOSE));
+    AboutSC(final int commandIndex, final String... args) throws InvalidOptionException {
+        super(commandIndex, args, EnumSet.of(Option.LOCALE, Option.ENCODING, Option.BRIEF, Option.VERBOSE));
     }
 
     /**
