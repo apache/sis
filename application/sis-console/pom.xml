@@ -37,7 +37,7 @@
        =========================================================== -->
   <artifactId>sis-console</artifactId>
   <packaging>bundle</packaging>
-  <name>Apache SIS application</name>
+  <name>Apache SIS console</name>
   <description>
   <!-- Left alignment because this description will be copied in META-INF/MANIFEST.MF
        The leading space after the first line is necessary for proper formatting. -->
