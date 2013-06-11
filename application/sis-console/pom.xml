@@ -35,9 +35,9 @@
   <!-- ===========================================================
            Module Description
        =========================================================== -->
-  <artifactId>sis-app</artifactId>
+  <artifactId>sis-console</artifactId>
   <packaging>bundle</packaging>
-  <name>Apache SIS application</name>
+  <name>Apache SIS console</name>
   <description>
   <!-- Left alignment because this description will be copied in META-INF/MANIFEST.MF
        The leading space after the first line is necessary for proper formatting. -->
@@ -61,18 +61,6 @@ Console application.
       </roles>
     </developer>
   </developers>
-
-
-  <!-- ===========================================================
-           Dependencies
-       =========================================================== -->
-  <dependencies>
-    <dependency>
-      <groupId>org.apache.sis.storage</groupId>
-      <artifactId>sis-storage</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-  </dependencies>
 
 
   <!-- ===========================================================

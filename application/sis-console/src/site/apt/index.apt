@@ -1,7 +1,7 @@
                              ------------------------------
-                                 Apache SIS application
+                                   Apache SIS console
                              ------------------------------
 
-Apache SIS application
+Apache SIS console
 
-  Experimental module.
+  A command-line tools for Apache SIS.

@@ -7,7 +7,7 @@
             <source-roots>
                 <root id="src.local-src.dir" name="Local sources (unversioned)"/>
                 <root id="src.webapp.dir" name="Web application"/>
-                <root id="src.app.dir" name="Application"/>
+                <root id="src.console.dir" name="Console"/>
                 <root id="src.netcdf.dir" name="NetCDF"/>
                 <root id="src.storage.dir" name="Storage"/>
                 <root id="src.referencing.dir" name="Referencing"/>
@@ -16,7 +16,7 @@
                 <root id="src.resources.dir" name="Resources"/>
             </source-roots>
             <test-roots>
-                <root id="test.app.dir" name="Test Application"/>
+                <root id="test.console.dir" name="Test Console"/>
                 <root id="test.netcdf.dir" name="Test NetCDF"/>
                 <root id="test.storage.dir" name="Test Storage"/>
                 <root id="test.referencing.dir" name="Test Referencing"/>

@@ -52,11 +52,6 @@
            Omitting the declaration from the root pom.xml limits the inconvenience to this "sis-webapp"
            module only. -->
     </dependency>
-    <dependency>
-      <groupId>org.apache.sis.storage</groupId>
-      <artifactId>sis-storage</artifactId>
-      <version>${project.version}</version>
-    </dependency>
   </dependencies>
 
   <build>
