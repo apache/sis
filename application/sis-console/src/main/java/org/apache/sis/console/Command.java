@@ -29,7 +29,7 @@ import org.apache.sis.util.resources.Errors;
  * (the filename needs to be completed with the actual version number):
  *
  * {@preformat java
- *     java -jar target/binaries/sis-app.jar
+ *     java -jar target/binaries/sis-console.jar
  * }
  *
  * "{@code target/binaries}" is the default location where SIS JAR files are grouped together
@@ -73,29 +73,43 @@ public class Command implements Runnable {
     private final SubCommand command;
 
     /**
-     * Creates a new command for the given arguments. The first value in the given array shall be the
-     * command name. All other values are options.
+     * Creates a new command for the given arguments. The first value in the given array which is
+     * not an option is taken as the command name. All other values are options or filenames.
      *
      * @param  args The command-line arguments.
      * @throws InvalidCommandException If an invalid command has been given.
      * @throws InvalidOptionException If the given arguments contain an invalid option.
      */
     protected Command(final String[] args) throws InvalidCommandException, InvalidOptionException {
-        if (args.length == 0) {
-            command = new HelpCS(args);
-        } else {
-            final String name = args[0];
-            /*switch (name.toLowerCase(Locale.US))*/ {
-                if (name.equalsIgnoreCase("about")) {
-                    command = new AboutSC(args);
+        int commandIndex = -1;
+        String commandName = null;
+        for (int i=0; i<args.length; i++) {
+            final String arg = args[i];
+            if (arg.startsWith(Option.PREFIX)) {
+                final String name = arg.substring(Option.PREFIX.length());
+                final Option option;
+                try {
+                    option = Option.valueOf(name.toUpperCase(Locale.US));
+                } catch (IllegalArgumentException e) {
+                    throw new InvalidOptionException(Errors.format(Errors.Keys.UnknownOption_1, name), e, name);
                 }
-                else if (name.equalsIgnoreCase("help")) {
-                    command = new HelpCS(args);
+                if (option.hasValue) {
+                    i++; // Skip the next argument.
                 }
-                else {
-                    throw new InvalidCommandException(Errors.format(Errors.Keys.UnknownCommand_1, name), name);
-                }
+            } else {
+                // Takes the first non-argument option as the command name.
+                commandName = arg;
+                commandIndex = i;
+                break;
             }
+        }
+        if (commandName == null) {
+            command = new HelpSC(-1, args);
+        } else {
+                 if (commandName.equalsIgnoreCase("about")) command = new AboutSC(commandIndex, args);
+            else if (commandName.equalsIgnoreCase("help"))  command = new HelpSC (commandIndex, args);
+            else throw new InvalidCommandException(Errors.format(
+                        Errors.Keys.UnknownCommand_1, commandName), commandName);
         }
     }
 

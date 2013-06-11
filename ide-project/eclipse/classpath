@@ -2,7 +2,7 @@
 <classpath>
 	<classpathentry kind="src" path="trunk/application/sis-webapp/src/main/java"/>
 	<classpathentry kind="src" path="trunk/application/sis-webapp/src/main/resources"/>
-	<classpathentry kind="src" path="trunk/application/sis-app/src/main/java"/>
+	<classpathentry kind="src" path="trunk/application/sis-console/src/main/java"/>
 	<classpathentry kind="src" path="trunk/core/sis-build-helper/src/main/java"/>
 	<classpathentry kind="src" path="trunk/core/sis-build-helper/src/main/resources"/>
 	<classpathentry kind="src" path="trunk/core/sis-build-helper/src/main/javadoc"/>
