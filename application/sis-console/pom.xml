@@ -98,4 +98,17 @@ Console application.
     </plugins>
   </build>
 
+
+  <!-- ===========================================================
+           Dependencies
+       =========================================================== -->
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.sis.storage</groupId>
+      <artifactId>sis-netcdf</artifactId>
+      <version>${project.version}</version>
+      <!-- TODO: use test or runtime scope -->
+    </dependency>
+  </dependencies>
+
 </project>
