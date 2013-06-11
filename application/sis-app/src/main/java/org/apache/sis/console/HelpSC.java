@@ -21,6 +21,7 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 import java.io.IOException;
 import org.apache.sis.io.TableAppender;
+import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
@@ -31,7 +32,7 @@ import org.apache.sis.io.TableAppender;
  * @version 0.3
  * @module
  */
-final class HelpCS extends SubCommand {
+final class HelpSC extends SubCommand {
     /**
      * The commands, in the order to be shown.
      */
@@ -43,8 +44,8 @@ final class HelpCS extends SubCommand {
     /**
      * Creates the {@code "help"} sub-command.
      */
-    HelpCS(final String[] args) throws InvalidOptionException {
-        super(args, EnumSet.of(Option.LOCALE, Option.ENCODING));
+    HelpSC(final int commandIndex, final String... args) throws InvalidOptionException {
+        super(commandIndex, args, EnumSet.of(Option.LOCALE, Option.ENCODING));
     }
 
     /**
@@ -52,9 +53,11 @@ final class HelpCS extends SubCommand {
      */
     @Override
     public void run() {
-        final ResourceBundle commands = ResourceBundle.getBundle("org.apache.sis.console.Commands");
-        final ResourceBundle options  = ResourceBundle.getBundle("org.apache.sis.console.Options");
-        out.println("Commands:");
+        final ResourceBundle commands = ResourceBundle.getBundle("org.apache.sis.console.Commands", locale);
+        final ResourceBundle options  = ResourceBundle.getBundle("org.apache.sis.console.Options", locale);
+        final Vocabulary vocabulary = Vocabulary.getResources(locale);
+        out.print(vocabulary.getString(Vocabulary.Keys.Commands));
+        out.println(':');
         try {
             final TableAppender table = new TableAppender(out, "  ");
             for (final String command : COMMANDS) {
@@ -65,10 +68,11 @@ final class HelpCS extends SubCommand {
             }
             table.flush();
             out.println();
-            out.println("Options:");
+            out.print(vocabulary.getString(Vocabulary.Keys.Options));
+            out.println(':');
             for (final Option option : Option.values()) {
                 final String name = option.name().toLowerCase(Locale.US);
-                table.append(' ').append(name);
+                table.append(' ').append(Option.PREFIX).append(name);
                 table.nextColumn();
                 table.append(options.getString(name));
                 table.nextLine();

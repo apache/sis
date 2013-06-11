@@ -21,6 +21,7 @@ import java.util.EnumSet;
 import java.util.EnumMap;
 import java.io.Console;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import org.apache.sis.util.Locales;
@@ -37,6 +38,14 @@ import org.apache.sis.internal.util.X364;
  * @module
  */
 abstract class SubCommand implements Runnable {
+    /**
+     * Special value for {@code arguments[commandIndex]} meaning that this sub-command is created
+     * for JUnit test purpose.
+     *
+     * @see #outputBuffer
+     */
+    static final String TEST = "TEST";
+
     /**
      * The command-line options allowed by this sub-command, together with their values.
      */
@@ -74,17 +83,35 @@ abstract class SubCommand implements Runnable {
     protected final PrintWriter err;
 
     /**
-     * Creates a new sub-command.
+     * The buffer where {@link #out} and {@link #err} output are sent, or {@code null} if none.
+     * This is non-null only during JUnit tests.
      *
-     * @param  args The command-line arguments provided by the user.
-     *         The first element in this array will be ignored, because it is assumed to be the sub-command name.
+     * @see #TEST
+     */
+    final StringBuffer outputBuffer;
+
+    /**
+     * Creates a new sub-command with the given command-line arguments.
+     * The {@code arguments} array is the same array than the one given to the {@code main(String[])} method.
+     * The argument at index {@code commandIndex} is the name of this command, and will be ignored except for
+     * the special {@value #TEST} value which is used only at JUnit testing time.
+     *
+     * @param  commandIndex Index of the {@code args} element containing the sub-command name.
+     * @param  arguments    The command-line arguments provided by the user.
      * @param  validOptions The command-line options allowed by this sub-command.
      * @throws InvalidOptionException If an illegal option has been provided, or the option has an illegal value.
      */
-    protected SubCommand(final String[] args, final EnumSet<Option> validOptions) throws InvalidOptionException {
+    protected SubCommand(final int commandIndex, final String[] arguments, final EnumSet<Option> validOptions)
+            throws InvalidOptionException
+    {
+        boolean isTest = false;
         options = new EnumMap<>(Option.class);
-        for (int i=1; i<args.length; i++) {
-            final String arg = args[i];
+        for (int i=0; i<arguments.length; i++) {
+            final String arg = arguments[i];
+            if (i == commandIndex) {
+                isTest = arg.equals(TEST);
+                continue;
+            }
             if (arg.startsWith(Option.PREFIX)) {
                 final String name = arg.substring(Option.PREFIX.length());
                 final Option option;
@@ -98,10 +125,10 @@ abstract class SubCommand implements Runnable {
                 }
                 String value = null;
                 if (option.hasValue) {
-                    if (++i >= args.length) {
+                    if (++i >= arguments.length) {
                         throw new InvalidOptionException(Errors.format(Errors.Keys.MissingValueForOption_1, name), name);
                     }
-                    value = args[i];
+                    value = arguments[i];
                 }
                 if (options.containsKey(option)) {
                     throw new InvalidOptionException(Errors.format(Errors.Keys.DuplicatedOption_1, name), name);
@@ -132,16 +159,26 @@ abstract class SubCommand implements Runnable {
             throw new InvalidOptionException(Errors.format(Errors.Keys.IllegalOptionValue_2, name, value), name);
         }
         /*
-         * Creates the writers.
+         * Creates the writers. If this sub-command is created for JUnit test purpose, then we will send the
+         * output to a StringBuffer. Otherwise the output will be sent to the java.io.Console if possible,
+         * or to the standard output stream otherwise.
          */
-        err = (console != null) ? console.writer() : new PrintWriter(System.err, true);
-        if (!explicitEncoding && console != null) {
-            out = console.writer();
+        if (isTest) {
+            final StringWriter s = new StringWriter();
+            outputBuffer = s.getBuffer();
+            out = new PrintWriter(s);
+            err = out;
         } else {
-            if (explicitEncoding) {
-                out = new PrintWriter(new OutputStreamWriter(System.out, encoding), true);
+            outputBuffer = null;
+            err = (console != null) ? console.writer() : new PrintWriter(System.err, true);
+            if (!explicitEncoding && console != null) {
+                out = console.writer();
             } else {
-                out = new PrintWriter(System.out, true);
+                if (explicitEncoding) {
+                    out = new PrintWriter(new OutputStreamWriter(System.out, encoding), true);
+                } else {
+                    out = new PrintWriter(System.out, true);
+                }
             }
         }
     }
