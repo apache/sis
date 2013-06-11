@@ -3,6 +3,8 @@ Apache SIS Change Log
 
 Release 0.3 - Current Development
 
+* SIS-105: Renamed "sis-app" module as "sis-console".
+
 * SIS-103: Fix Eclipse errors in SIS (Travis Pinney via mattmann)
 
 * SIS-101 Moved QuadTree, GeoRSSData and related classes to their own package,
