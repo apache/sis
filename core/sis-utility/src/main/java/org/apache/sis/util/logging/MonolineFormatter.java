@@ -24,7 +24,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 import java.util.Arrays;
-import java.util.Objects;
 import java.util.TreeMap;
 import java.util.SortedMap;
 import java.util.Comparator;
@@ -35,6 +34,9 @@ import org.apache.sis.internal.util.X364;
 import org.apache.sis.io.IO;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.io.LineAppender;
+
+// Related to JDK7
+import java.util.Objects;
 
 
 /**
