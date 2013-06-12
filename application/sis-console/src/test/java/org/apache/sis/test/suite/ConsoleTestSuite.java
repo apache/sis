@@ -14,34 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.jdk7;
+package org.apache.sis.test.suite;
 
-import java.nio.charset.Charset;
+import org.apache.sis.test.TestSuite;
+import org.junit.runners.Suite;
+import org.junit.BeforeClass;
 
 
 /**
- * Place holder for {@link java.nio.charset.StandardCharsets}.
- * This class will be deleted when we will be allowed to compile for JDK7.
+ * All tests from the {@code sis-console} module, in approximative dependency order.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from GeoAPI)
+ * @since   0.3
  * @version 0.3
  * @module
  */
-public final class StandardCharsets {
+@Suite.SuiteClasses({
+    org.apache.sis.console.SubCommandTest.class,
+    org.apache.sis.console.HelpSCTest.class,
+    org.apache.sis.console.AboutSCTest.class,
+    org.apache.sis.console.MetadataSCTest.class
+})
+public final strictfp class ConsoleTestSuite extends TestSuite {
     /**
-     * Do not allow instantiation of this class.
+     * Verifies the list of tests before to run the suite.
+     * See {@link #verifyTestList(Class, Class[])} for more information.
      */
-    private StandardCharsets() {
+    @BeforeClass
+    public static void verifyTestList() {
+        verifyTestList(ConsoleTestSuite.class, BASE_TEST_CLASSES);
     }
-
-    /**
-     * Eight-bit UCS Transformation Format.
-     */
-    public static final Charset UTF_8 = Charset.forName("UTF-8");
-
-    /**
-     * Sixteen-bit UCS Transformation Format.
-     */
-    public static final Charset UTF_16 = Charset.forName("UTF-16");
 }

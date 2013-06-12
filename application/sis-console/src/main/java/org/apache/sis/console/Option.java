@@ -35,14 +35,14 @@ enum Option {
     LOCALE(true),
 
     /**
-     * The encoding for the output produced by the command.
-     */
-    ENCODING(true),
-
-    /**
      * The timezone for the dates to be formatted.
      */
     TIMEZONE(true),
+
+    /**
+     * The encoding for the output produced by the command.
+     */
+    ENCODING(true),
 
     /**
      * Whether colorized output shall be enabled.
@@ -59,7 +59,12 @@ enum Option {
      * Whether the output should contains more detailed information.
      * This option expects no value.
      */
-    VERBOSE(false);
+    VERBOSE(false),
+
+    /**
+     * Lists the options accepted by a command.
+     */
+    HELP(false);
 
     /**
      * The prefix to prepend to option names.

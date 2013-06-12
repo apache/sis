@@ -19,6 +19,7 @@ package org.apache.sis.console;
 import java.util.EnumSet;
 import org.apache.sis.setup.About;
 import org.apache.sis.util.Version;
+import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
@@ -41,25 +42,31 @@ final class AboutSC extends SubCommand {
      * Creates the {@code "about"} sub-command.
      */
     AboutSC(final int commandIndex, final String... args) throws InvalidOptionException {
-        super(commandIndex, args, EnumSet.of(Option.LOCALE, Option.ENCODING, Option.BRIEF, Option.VERBOSE));
+        super(commandIndex, args, EnumSet.of(Option.LOCALE, Option.TIMEZONE, Option.ENCODING,
+                Option.BRIEF, Option.VERBOSE, Option.HELP));
     }
 
     /**
      * Prints the information to the output stream.
      */
     @Override
-    public void run() {
+    public int run() {
+        if (hasUnexpectedFileCount(0, 0)) {
+            return Command.INVALID_ARGUMENT_EXIT_CODE;
+        }
         final String configuration;
         if (options.containsKey(Option.BRIEF)) {
-            configuration = "Apache SIS version " + Version.SIS;
+            configuration = Vocabulary.getResources(locale).getString(
+                    Vocabulary.Keys.Version_2, "Apache SIS", Version.SIS);
         } else {
             final EnumSet<About> sections = EnumSet.allOf(About.class);
             if (!options.containsKey(Option.VERBOSE)) {
                 sections.remove(About.LIBRARIES);
             }
-            configuration = About.configuration(sections, locale).toString();
+            configuration = About.configuration(sections, locale, timezone).toString();
         }
         out.println(configuration);
         out.flush();
+        return 0;
     }
 }

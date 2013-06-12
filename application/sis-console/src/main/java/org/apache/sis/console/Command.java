@@ -20,42 +20,70 @@ import java.util.Locale;
 import java.io.Console;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.io.IOException;
+import java.sql.SQLException;
+import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.logging.MonolineFormatter;
 
 
 /**
- * Command line interface for Apache SIS.
- * The main method can be invoked from the command-line as below
- * (the filename needs to be completed with the actual version number):
+ * Command line interface for Apache SIS. The {@link #main(String[])} method accepts the following commands:
  *
- * {@preformat java
- *     java -jar target/binaries/sis-console.jar
- * }
+ * <ul>
+ *   <li>{@code help}     - Show a help overview.</li>
+ *   <li>{@code about}    - Show information about Apache SIS and system configuration.</li>
+ *   <li>{@code metadata} - Show metadata information for the given file.</li>
+ * </ul>
  *
- * "{@code target/binaries}" is the default location where SIS JAR files are grouped together
- * with their dependencies after a Maven build. This directory can be replaced by any path to
- * a directory providing the required dependencies.
+ * Each command can accepts an arbitrary amount of the following options:
+ *
+ * <ul>
+ *   <li>{@code --locale}   - The locale to use for the command output.</li>
+ *   <li>{@code --timezone} - The timezone for the dates to be formatted.</li>
+ *   <li>{@code --encoding} - The encoding to use for the command output.</li>
+ *   <li>{@code --colors}   - Whether colorized output shall be enabled.</li>
+ *   <li>{@code --brief}    - Whether the output should contains only brief information.</li>
+ *   <li>{@code --verbose}  - Whether the output should contains more detailed information.</li>
+ *   <li>{@code --help}     - Lists the options available for a specific command.</li>
+ * </ul>
+ *
+ * The {@code --locale}, {@code --timezone} and {@code --encoding} options apply to the command output sent
+ * to the {@linkplain System#out standard output stream}, but usually do not apply to the error messages sent
+ * to the {@linkplain System#err standard error stream}. The reason is that command output may be targeted to
+ * a client, while the error messages are usually for the operator.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
  * @version 0.3
  * @module
  */
-public class Command implements Runnable {
+public final class Command {
     /**
      * The code given to {@link System#exit(int)} when the program failed because of a unknown sub-command.
      */
     public static final int INVALID_COMMAND_EXIT_CODE = 1;
 
     /**
-     * The code given to {@link System#exit(int)} when the program failed because of an illegal user argument.
+     * The code given to {@link System#exit(int)} when the program failed because of a unknown option.
+     * The set of valid options depend on the sub-command to execute.
      */
     public static final int INVALID_OPTION_EXIT_CODE = 2;
 
     /**
+     * The code given to {@link System#exit(int)} when the program failed because of an illegal user argument.
+     * The user arguments are everything which is not a command name or an option. They are typically file names,
+     * but can occasionally be other types like URL.
+     */
+    public static final int INVALID_ARGUMENT_EXIT_CODE = 3;
+
+    /**
      * The code given to {@link System#exit(int)} when a file given in argument uses an unknown file format.
      */
-    public static final int UNKNOWN_STORAGE_EXIT_CODE = 10;
+    public static final int UNKNOWN_STORAGE_EXIT_CODE = 4;
 
     /**
      * The code given to {@link System#exit(int)} when the program failed because of an {@link java.io.IOException}.
@@ -66,6 +94,17 @@ public class Command implements Runnable {
      * The code given to {@link System#exit(int)} when the program failed because of an {@link java.sql.SQLException}.
      */
     public static final int SQL_EXCEPTION_EXIT_CODE = 101;
+
+    /**
+     * The code given to {@link System#exit(int)} when the program failed for a reason
+     * other than the ones enumerated in the above constants.
+     */
+    public static final int OTHER_ERROR_EXIT_CODE = 199;
+
+    /**
+     * The sub-command name.
+     */
+    private final String commandName;
 
     /**
      * The sub-command to execute.
@@ -106,19 +145,58 @@ public class Command implements Runnable {
         if (commandName == null) {
             command = new HelpSC(-1, args);
         } else {
-                 if (commandName.equalsIgnoreCase("about")) command = new AboutSC(commandIndex, args);
-            else if (commandName.equalsIgnoreCase("help"))  command = new HelpSC (commandIndex, args);
+            commandName = commandName.toLowerCase(Locale.US);
+                 if (commandName.equals("about"))    command = new AboutSC   (commandIndex, args);
+            else if (commandName.equals("help"))     command = new HelpSC    (commandIndex, args);
+            else if (commandName.equals("metadata")) command = new MetadataSC(commandIndex, args);
             else throw new InvalidCommandException(Errors.format(
                         Errors.Keys.UnknownCommand_1, commandName), commandName);
         }
+        this.commandName = commandName;
     }
 
     /**
-     * Runs the command.
+     * Runs the command. If an exception occurs, then the exception message is sent to the error output stream
+     * before to be thrown. Callers can map the exception to a {@linkplain System#exit(int) system exit code}
+     * by the {@link #exitCodeFor(Throwable)} method.
+     *
+     * @return 0 on success, or an exit code if the command failed for a reason other than a Java exception.
+     * @throws Exception If an error occurred during the command execution. This is typically, but not limited, to
+     *         {@link IOException}, {@link SQLException}, {@link DataStoreException} or {@link TransformException}.
      */
-    @Override
-    public void run() {
-        command.run();
+    public int run() throws Exception {
+        if (command.hasContradictoryOptions(Option.BRIEF, Option.VERBOSE)) {
+            return INVALID_OPTION_EXIT_CODE;
+        }
+        if (command.options.containsKey(Option.HELP)) {
+            command.help(commandName);
+        } else try {
+            return command.run();
+        } catch (Exception e) {
+            command.out.flush();
+            command.err.println(Exceptions.formatChainedMessages(command.locale, null, e));
+            throw e;
+        }
+        return 0;
+    }
+
+    /**
+     * Returns the exit code for the given exception, or 0 if unknown. This method iterates through the
+     * {@linkplain Throwable#getCause() causes} until an exception matching a {@code *_EXIT_CODE}
+     * constant is found.
+     *
+     * @param  cause The exception for which to get the exit code.
+     * @return The exit code as one of the {@code *_EXIT_CODE} constant, or {@link #OTHER_ERROR_EXIT_CODE} if unknown.
+     */
+    public static int exitCodeFor(Throwable cause) {
+        while (cause != null) {
+            if (cause instanceof InvalidCommandException) return INVALID_COMMAND_EXIT_CODE;
+            if (cause instanceof InvalidOptionException)  return INVALID_OPTION_EXIT_CODE;
+            if (cause instanceof IOException)             return IO_EXCEPTION_EXIT_CODE;
+            if (cause instanceof SQLException)            return SQL_EXCEPTION_EXIT_CODE;
+            cause = cause.getCause();
+        }
+        return OTHER_ERROR_EXIT_CODE;
     }
 
     /**
@@ -144,6 +222,7 @@ public class Command implements Runnable {
      * @param args Command-line options.
      */
     public static void main(final String[] args) {
+        MonolineFormatter.configureConsoleHandler(Logging.getLogger(""), null);
         final Command c;
         try {
             c = new Command(args);
@@ -156,6 +235,14 @@ public class Command implements Runnable {
             System.exit(INVALID_OPTION_EXIT_CODE);
             return;
         }
-        c.run();
+        int status;
+        try {
+            status = c.run();
+        } catch (Exception e) {
+            status = exitCodeFor(e);
+        }
+        if (status != 0) {
+            System.exit(status);
+        }
     }
 }
