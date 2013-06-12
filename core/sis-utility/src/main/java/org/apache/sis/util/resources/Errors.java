@@ -321,6 +321,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int MissingValueInColumn_1 = 77;
 
         /**
+         * Options “{0}” and “{1}” are mutually exclusive.
+         */
+        public static final int MutuallyExclusiveOptions_2 = 103;
+
+        /**
          * Argument ‘{0}’ shall not be negative. The given value was {1}.
          */
         public static final int NegativeArgument_2 = 8;
@@ -459,6 +464,16 @@ public final class Errors extends IndexedResourceBundle {
          * Can not move backward in the “{0}” stream.
          */
         public static final int StreamIsForwardOnly_1 = 95;
+
+        /**
+         * Expected at least {0} argument{0,choice,1#|2#s}, but got {1}.
+         */
+        public static final int TooFewArguments_2 = 104;
+
+        /**
+         * Expected at most {0} argument{0,choice,1#|2#s}, but got {1}.
+         */
+        public static final int TooManyArguments_2 = 105;
 
         /**
          * Ordering between “{0}” and “{1}” elements is undefined.
