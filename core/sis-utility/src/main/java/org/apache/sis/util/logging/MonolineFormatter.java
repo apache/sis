@@ -43,7 +43,7 @@ import org.apache.sis.io.LineAppender;
  * {@code MonolineFormatter} looks like:
  *
  * {@preformat text
- *     FINE   A log message logged with level FINE from the "org.geotoolkit.util" logger.
+ *     FINE   A log message logged with level FINE from the "org.apache.sis.util" logger.
  * }
  *
  * By default, {@code MonolineFormatter} displays only the level and the message. Additional
@@ -54,7 +54,7 @@ import org.apache.sis.io.LineAppender;
  *
  * {@preformat text
  *     ###########################################################################
- *     # Properties for the Geotoolkit.org's MonolineFormatter.
+ *     # Properties for the apache.sis.org's MonolineFormatter.
  *     # By default, the monoline formatter display only the level
  *     # and the message. Additional fields can be specified here:
  *     #
@@ -67,15 +67,15 @@ import org.apache.sis.io.LineAppender;
  *     #          Valid argument values are "none", "logger:short", "logger:long",
  *     #          "class:short" and "class:long".
  *     ###########################################################################
- *     org.geotoolkit.util.logging.MonolineFormatter.time = HH:mm:ss.SSS
- *     org.geotoolkit.util.logging.MonolineFormatter.source = class:short
+ *     org.apache.sis.util.logging.MonolineFormatter.time = HH:mm:ss.SSS
+ *     org.apache.sis.util.logging.MonolineFormatter.source = class:short
  * }
  *
  * The example below sets the {@code MonolineFormatter} for the whole system with level {@code FINE}
  * and {@code "Cp850"} page encoding (which is appropriate for some DOS console on old Windows).
  *
  * {@preformat text
- *     java.util.logging.ConsoleHandler.formatter = org.geotoolkit.util.logging.MonolineFormatter
+ *     java.util.logging.ConsoleHandler.formatter = org.apache.sis.util.logging.MonolineFormatter
  *     java.util.logging.ConsoleHandler.encoding = Cp850
  *     java.util.logging.ConsoleHandler.level = FINE
  * }
@@ -287,7 +287,7 @@ loop:   for (int i=0; ; i++) {
     /**
      * Returns the format for displaying elapsed time. This is the pattern specified
      * to the last call to {@link #setTimeFormat}, or the patten specified in the
-     * {@code org.geotoolkit.util.logging.MonolineFormatter.time} property in the
+     * {@code org.apache.sis.util.logging.MonolineFormatter.time} property in the
      * {@code jre/lib/logging.properties} file.
      *
      * @return The time pattern, or {@code null} if time is not formatted.
@@ -318,7 +318,7 @@ loop:   for (int i=0; ; i++) {
     /**
      * Returns the format for displaying the source. This is the pattern specified
      * to the last call to {@link #setSourceFormat}, or the patten specified in the
-     * {@code org.geotoolkit.util.logging.MonolineFormatter.source} property in the
+     * {@code org.apache.sis.util.logging.MonolineFormatter.source} property in the
      * {@code jre/lib/logging.properties} file.
      *
      * @return The source pattern, or {@code null} if source is not formatted.
@@ -452,7 +452,7 @@ loop:   for (int i=0; ; i++) {
         /*
          * Formats the time (e.g. "00:00:12.365"). The time pattern can be set either
          * programmatically by a call to setTimeFormat(...), or in logging.properties
-         * file with the "org.geotoolkit.util.logging.MonolineFormatter.time" property.
+         * file with the "org.apache.sis.util.logging.MonolineFormatter.time" property.
          */
         if (timeFormat != null) {
             Date time = new Date(Math.max(0, record.getMillis() - startMillis));
