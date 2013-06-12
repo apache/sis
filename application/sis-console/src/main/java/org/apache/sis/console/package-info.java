@@ -14,34 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.jdk7;
-
-import java.nio.charset.Charset;
-
 
 /**
- * Place holder for {@link java.nio.charset.StandardCharsets}.
- * This class will be deleted when we will be allowed to compile for JDK7.
+ * Command line interface for Apache SIS.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from GeoAPI)
+ * @since   0.3
  * @version 0.3
  * @module
  */
-public final class StandardCharsets {
-    /**
-     * Do not allow instantiation of this class.
-     */
-    private StandardCharsets() {
-    }
-
-    /**
-     * Eight-bit UCS Transformation Format.
-     */
-    public static final Charset UTF_8 = Charset.forName("UTF-8");
-
-    /**
-     * Sixteen-bit UCS Transformation Format.
-     */
-    public static final Charset UTF_16 = Charset.forName("UTF-16");
-}
+package org.apache.sis.console;
