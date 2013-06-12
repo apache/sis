@@ -67,7 +67,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
 
     /**
      * The path of the binary file containing resources, or {@code null} if there is no resources
-     * of if the resources have already been loaded. The resources may be a file or an entry in a
+     * or if the resources have already been loaded. The resources may be a file or an entry in a
      * JAR file.
      */
     private URL resources;

@@ -17,10 +17,16 @@
 package org.apache.sis.console;
 
 import java.util.EnumSet;
+import java.io.IOException;
 import org.opengis.metadata.Metadata;
+import org.apache.sis.metadata.MetadataStandard;
+import org.apache.sis.metadata.ValueExistencePolicy;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.netcdf.NetcdfStore;
+import org.apache.sis.util.collection.TableColumn;
+import org.apache.sis.util.collection.TreeTable;
+import org.apache.sis.util.collection.TreeTableFormat;
 
 
 /**
@@ -43,21 +49,26 @@ final class MetadataSC extends SubCommand {
      * Prints metadata information.
      *
      * @todo NetCDF data store is hard-coded for now. Will need a dynamic mechanism in the future.
+     *
+     * @throws DataStoreException If an error occurred while reading the NetCDF file.
+     * @throws IOException Should never happen, since we are appending to a print writer.
      */
     @Override
-    public void run() throws DataStoreException {
-        if (files.size() != 1) {
-            err.println("Needs a single file"); // TODO: localize, and need to return an error code.
-            return;
+    public int run() throws DataStoreException, IOException {
+        if (hasUnexpectedFileCount(1, 1)) {
+            return Command.INVALID_ARGUMENT_EXIT_CODE;
         }
         final Metadata metadata;
         try (NetcdfStore store = new NetcdfStore(new StorageConnector(files.get(0)))) {
             metadata = store.getMetadata();
         }
-        if (metadata == null) {
-            out.println("none"); // TODO: localize
-        } else {
-            out.println(metadata);
+        if (metadata != null) {
+            final TreeTable tree = MetadataStandard.ISO_19115.asTreeTable(metadata, ValueExistencePolicy.NON_EMPTY);
+            final TreeTableFormat format = new TreeTableFormat(locale, timezone);
+            format.setColumns(TableColumn.NAME, TableColumn.VALUE);
+            format.format(tree, out);
+            out.flush();
         }
+        return 0;
     }
 }

@@ -43,6 +43,14 @@ final class HelpSC extends SubCommand {
     };
 
     /**
+     * Copies the configuration of the given sub-command. This constructor is used
+     * for printing help about an other command.
+     */
+    HelpSC(final SubCommand parent) {
+        super(parent);
+    }
+
+    /**
      * Creates the {@code "help"} sub-command.
      */
     HelpSC(final int commandIndex, final String... args) throws InvalidOptionException {
@@ -53,20 +61,43 @@ final class HelpSC extends SubCommand {
      * Prints the help instructions.
      */
     @Override
-    public void run() {
+    public int run() {
+        if (hasUnexpectedFileCount(0, 0)) {
+            return Command.INVALID_ARGUMENT_EXIT_CODE;
+        }
+        help(true, COMMANDS, EnumSet.allOf(Option.class));
+        return 0;
+    }
+
+    /**
+     * Implementation of {@link #run()}, also shared by {@link SubCommand#help(String)}.
+     *
+     * @param showHeader   {@code true} for printing the "Apache SIS" header.
+     * @param commandNames The names of the commands to list.
+     * @param validOptions The options to list.
+     */
+    void help(final boolean showHeader, final String[] commandNames, final EnumSet<Option> validOptions) {
         final ResourceBundle commands = ResourceBundle.getBundle("org.apache.sis.console.Commands", locale);
-        final ResourceBundle options  = ResourceBundle.getBundle("org.apache.sis.console.Options", locale);
+        final ResourceBundle options  = ResourceBundle.getBundle("org.apache.sis.console.Options",  locale);
         final Vocabulary vocabulary = Vocabulary.getResources(locale);
-        out.print("Apache SIS, ");
-        out.println(commands.getString("SIS"));
-        out.println(commands.getString("Usage"));
-        out.println();
-        out.print(vocabulary.getString(Vocabulary.Keys.Commands));
-        out.println(':');
+        if (showHeader) {
+            out.print("Apache SIS, ");
+            out.println(commands.getString("SIS"));
+            out.println(commands.getString("Usage"));
+            out.println();
+            out.print(vocabulary.getString(Vocabulary.Keys.Commands));
+            out.println(':');
+        }
         try {
             final TableAppender table = new TableAppender(out, "  ");
-            for (final String command : COMMANDS) {
-                table.append("  ").append(command);
+            for (final String command : commandNames) {
+                if (showHeader) {
+                    table.append("  ");
+                }
+                table.append(command);
+                if (!showHeader) {
+                    table.append(':');
+                }
                 table.nextColumn();
                 table.append(commands.getString(command));
                 table.nextLine();
@@ -75,7 +106,7 @@ final class HelpSC extends SubCommand {
             out.println();
             out.print(vocabulary.getString(Vocabulary.Keys.Options));
             out.println(':');
-            for (final Option option : Option.values()) {
+            for (final Option option : validOptions) {
                 final String name = option.name().toLowerCase(Locale.US);
                 table.append("  ").append(Option.PREFIX).append(name);
                 table.nextColumn();
