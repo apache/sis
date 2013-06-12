@@ -29,17 +29,30 @@ import org.apache.sis.util.resources.Errors;
 
 
 /**
- * Command line interface for Apache SIS.
- * The main method can be invoked from the command-line as below
- * (the filename needs to be completed with the actual version number):
+ * Command line interface for Apache SIS. The {@link #main(String[])} method accepts the following commands:
  *
- * {@preformat java
- *     java -jar target/binaries/sis-console.jar
- * }
+ * <ul>
+ *   <li>{@code help}     - Show a help overview.</li>
+ *   <li>{@code about}    - Show information about Apache SIS and system configuration.</li>
+ *   <li>{@code metadata} - Show metadata information for the given file.</li>
+ * </ul>
  *
- * "{@code target/binaries}" is the default location where SIS JAR files are grouped together
- * with their dependencies after a Maven build. This directory can be replaced by any path to
- * a directory providing the required dependencies.
+ * Each command can accepts an arbitrary amount of the following options:
+ *
+ * <ul>
+ *   <li>{@code --locale}   - The locale to use for the command output.</li>
+ *   <li>{@code --timezone} - The timezone for the dates to be formatted.</li>
+ *   <li>{@code --encoding} - The encoding to use for the command output.</li>
+ *   <li>{@code --colors}   - Whether colorized output shall be enabled.</li>
+ *   <li>{@code --brief}    - Whether the output should contains only brief information.</li>
+ *   <li>{@code --verbose}  - Whether the output should contains more detailed information.</li>
+ *   <li>{@code --help}     - Lists the options available for a specific command.</li>
+ * </ul>
+ *
+ * The {@code --locale}, {@code --timezone} and {@code --encoding} options apply to the command output sent
+ * to the {@linkplain System#out standard output stream}, but usually do not apply to the error messages sent
+ * to the {@linkplain System#err standard error stream}. The reason is that command output may be targeted to
+ * a client, while the error messages are usually for the operator.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
@@ -53,14 +66,22 @@ public final class Command {
     public static final int INVALID_COMMAND_EXIT_CODE = 1;
 
     /**
-     * The code given to {@link System#exit(int)} when the program failed because of an illegal user argument.
+     * The code given to {@link System#exit(int)} when the program failed because of a unknown option.
+     * The set of valid options depend on the sub-command to execute.
      */
     public static final int INVALID_OPTION_EXIT_CODE = 2;
 
     /**
+     * The code given to {@link System#exit(int)} when the program failed because of an illegal user argument.
+     * The user arguments are everything which is not a command name or an option. They are typically file names,
+     * but can occasionally be other types like URL.
+     */
+    public static final int INVALID_ARGUMENT_EXIT_CODE = 3;
+
+    /**
      * The code given to {@link System#exit(int)} when a file given in argument uses an unknown file format.
      */
-    public static final int UNKNOWN_STORAGE_EXIT_CODE = 10;
+    public static final int UNKNOWN_STORAGE_EXIT_CODE = 4;
 
     /**
      * The code given to {@link System#exit(int)} when the program failed because of an {@link java.io.IOException}.
@@ -76,7 +97,7 @@ public final class Command {
      * The code given to {@link System#exit(int)} when the program failed for a reason
      * other than the ones enumerated in the above constants.
      */
-    public static final int FAILURE_EXIT_CODE = 199;
+    public static final int OTHER_ERROR_EXIT_CODE = 199;
 
     /**
      * The sub-command name.
@@ -135,23 +156,28 @@ public final class Command {
     }
 
     /**
-     * Runs the command. If an exception occurs, then the exception message is sent to the error output
-     * stream before to be thrown. Callers can map the exception to a system exit code by the
-     * {@link #exitCodeFor(Throwable)} method.
+     * Runs the command. If an exception occurs, then the exception message is sent to the error output stream
+     * before to be thrown. Callers can map the exception to a {@linkplain System#exit(int) system exit code}
+     * by the {@link #exitCodeFor(Throwable)} method.
      *
+     * @return 0 on success, or an exit code if the command failed for a reason other than a Java exception.
      * @throws Exception If an error occurred during the command execution. This is typically, but not limited, to
      *         {@link IOException}, {@link SQLException}, {@link DataStoreException} or {@link TransformException}.
      */
-    public void run() throws Exception {
+    public int run() throws Exception {
+        if (command.hasContradictoryOptions(Option.BRIEF, Option.VERBOSE)) {
+            return INVALID_OPTION_EXIT_CODE;
+        }
         if (command.options.containsKey(Option.HELP)) {
             command.help(commandName);
         } else try {
-            command.run();
+            return command.run();
         } catch (Exception e) {
             command.out.flush();
             command.err.println(Exceptions.formatChainedMessages(command.locale, null, e));
             throw e;
         }
+        return 0;
     }
 
     /**
@@ -160,19 +186,17 @@ public final class Command {
      * constant is found.
      *
      * @param  cause The exception for which to get the exit code.
-     * @return The exit code as one of the {@code *_EXIT_CODE} constant, or {@link #FAILURE_EXIT_CODE} if unknown.
+     * @return The exit code as one of the {@code *_EXIT_CODE} constant, or {@link #OTHER_ERROR_EXIT_CODE} if unknown.
      */
     public static int exitCodeFor(Throwable cause) {
         while (cause != null) {
-            if (cause instanceof IOException) {
-                return IO_EXCEPTION_EXIT_CODE;
-            }
-            if (cause instanceof SQLException) {
-                return SQL_EXCEPTION_EXIT_CODE;
-            }
+            if (cause instanceof InvalidCommandException) return INVALID_COMMAND_EXIT_CODE;
+            if (cause instanceof InvalidOptionException)  return INVALID_OPTION_EXIT_CODE;
+            if (cause instanceof IOException)             return IO_EXCEPTION_EXIT_CODE;
+            if (cause instanceof SQLException)            return SQL_EXCEPTION_EXIT_CODE;
             cause = cause.getCause();
         }
-        return FAILURE_EXIT_CODE;
+        return OTHER_ERROR_EXIT_CODE;
     }
 
     /**
@@ -210,10 +234,14 @@ public final class Command {
             System.exit(INVALID_OPTION_EXIT_CODE);
             return;
         }
+        int status;
         try {
-            c.run();
+            status = c.run();
         } catch (Exception e) {
-            System.exit(exitCodeFor(e));
+            status = exitCodeFor(e);
+        }
+        if (status != 0) {
+            System.exit(status);
         }
     }
 }

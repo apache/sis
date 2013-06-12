@@ -22,17 +22,13 @@ import java.util.Locale;
 import java.util.EnumSet;
 import java.util.EnumMap;
 import java.util.TimeZone;
-import java.util.ResourceBundle;
 import java.io.Console;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import org.apache.sis.util.Locales;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.io.TableAppender;
 import org.apache.sis.internal.util.X364;
 
 
@@ -112,9 +108,26 @@ abstract class SubCommand {
 
     /**
      * Any remaining parameters that are not command name or option.
-     * They are typically file names, but can occasionally be other type like URL.
+     * They are typically file names, but can occasionally be other types like URL.
      */
     protected final List<String> files;
+
+    /**
+     * Copies the configuration of the given sub-command. This constructor is used
+     * only when a command needs to delegates part of its work to an other command.
+     */
+    SubCommand(final SubCommand parent) {
+        this.validOptions = parent.validOptions;
+        this.options      = parent.options;
+        this.locale       = parent.locale;
+        this.timezone     = parent.timezone;
+        this.encoding     = parent.encoding;
+        this.colors       = parent.colors;
+        this.out          = parent.out;
+        this.err          = parent.err;
+        this.outputBuffer = parent.outputBuffer;
+        this.files        = parent.files;
+    }
 
     /**
      * Creates a new sub-command with the given command-line arguments.
@@ -217,40 +230,68 @@ abstract class SubCommand {
     }
 
     /**
+     * Checks if the user-provided {@linkplain #options} contains mutually exclusive options.
+     * If an inconsistency is found, then this method prints an error message to {@link #err}
+     * and returns {@code true}.
+     *
+     * <p>An example of a pair of mutually exclusive options is {@code --brief} and {@code --verbose}.</p>
+     *
+     * @param  exclusive Pairs of mutually exclusive options.
+     * @return {@code true} if two mutually exclusive options exist.
+     */
+    final boolean hasContradictoryOptions(final Option... exclusive) {
+        for (int i=0; i<exclusive.length;) {
+            final Option o1 = exclusive[i++];
+            final Option o2 = exclusive[i++];
+            if (options.containsKey(o1) && options.containsKey(o2)) {
+                err.println(Errors.format(Errors.Keys.MutuallyExclusiveOptions_2,
+                        o1.name().toLowerCase(Locale.US),
+                        o2.name().toLowerCase(Locale.US)));
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Checks the size of the {@link #files} list. If the list has an unexpected size,
+     * then this method prints an error message to {@link #err} and returns {@code true}.
+     *
+     * @param  min Minimal number of files.
+     * @param  max Maximum number of files.
+     * @return {@code true} if the list size is not in the expected bounds.
+     */
+    final boolean hasUnexpectedFileCount(final int min, final int max) {
+        final int size = files.size();
+        final int expected, key;
+        if (size < min) {
+            expected = min;
+            key = Errors.Keys.TooFewArguments_2;
+        } else if (size > max) {
+            expected = max;
+            key = Errors.Keys.TooManyArguments_2;
+        } else {
+            return false;
+        }
+        err.println(Errors.format(key, expected, size));
+        return true;
+    }
+
+    /**
      * Shows the help instructions for a specific command. This method is invoked
      * instead of {@link #run()} if the the user provided the {@code --help} option.
      *
      * @param commandName The command name converted to lower cases.
      */
     protected void help(final String commandName) {
-        final ResourceBundle commands = ResourceBundle.getBundle("org.apache.sis.console.Commands", locale);
-        final ResourceBundle options  = ResourceBundle.getBundle("org.apache.sis.console.Options", locale);
-        final Vocabulary vocabulary = Vocabulary.getResources(locale);
-        out.print(commandName);
-        out.print(": ");
-        out.println(commands.getString(commandName));
-        out.println();
-        out.print(vocabulary.getString(Vocabulary.Keys.Options));
-        out.println(':');
-        final TableAppender table = new TableAppender(out, "  ");
-        for (final Option option : validOptions) {
-            final String name = option.name().toLowerCase(Locale.US);
-            table.append("  ").append(Option.PREFIX).append(name);
-            table.nextColumn();
-            table.append(options.getString(name));
-            table.nextLine();
-        }
-        try {
-            table.flush();
-        } catch (IOException e) {
-            throw new AssertionError(e); // Should never happen, because we are writing to a PrintWriter.
-        }
+        new HelpSC(this).help(false, new String[] {commandName}, validOptions);
     }
 
     /**
      * Executes the sub-command.
      *
+     * @return 0 on success, or an exit code if the command failed for a reason other than a Java exception.
      * @throws Exception If an error occurred while executing the sub-command.
      */
-    public abstract void run() throws Exception;
+    public abstract int run() throws Exception;
 }

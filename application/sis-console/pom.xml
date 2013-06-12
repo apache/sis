@@ -89,7 +89,7 @@ Console application.
         <configuration>
           <instructions>
             <Export-Package>
-              org.apache.sis.cli
+              org.apache.sis.console
             </Export-Package>
             <Main-Class>org.apache.sis.console.Command</Main-Class>
           </instructions>
@@ -108,6 +108,15 @@ Console application.
       <artifactId>sis-netcdf</artifactId>
       <version>${project.version}</version>
       <!-- TODO: use test or runtime scope -->
+    </dependency>
+
+    <!-- Test dependencies -->
+    <dependency>
+      <groupId>org.opengis.wrapper</groupId>
+      <artifactId>geoapi-netcdf</artifactId>
+      <version>${geoapi.version}</version>
+      <type>test-jar</type>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 

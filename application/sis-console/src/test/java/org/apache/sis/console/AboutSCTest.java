@@ -18,6 +18,7 @@ package org.apache.sis.console;
 
 import org.apache.sis.util.Version;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -26,13 +27,14 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
 /**
- * Tests the {@link AboutSC} subcommand.
+ * Tests the {@link AboutSC} sub-command.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
  * @version 0.3
  * @module
  */
+@DependsOn(SubCommandTest.class)
 public final strictfp class AboutSCTest extends TestCase {
     /**
      * Tests the sub-command without option.

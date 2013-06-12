@@ -50,7 +50,10 @@ final class AboutSC extends SubCommand {
      * Prints the information to the output stream.
      */
     @Override
-    public void run() {
+    public int run() {
+        if (hasUnexpectedFileCount(0, 0)) {
+            return Command.INVALID_ARGUMENT_EXIT_CODE;
+        }
         final String configuration;
         if (options.containsKey(Option.BRIEF)) {
             configuration = Vocabulary.getResources(locale).getString(
@@ -64,5 +67,6 @@ final class AboutSC extends SubCommand {
         }
         out.println(configuration);
         out.flush();
+        return 0;
     }
 }

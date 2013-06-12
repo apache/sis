@@ -16,6 +16,7 @@
  */
 package org.apache.sis.console;
 
+import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -23,13 +24,14 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests the {@link HelpSC} subcommand.
+ * Tests the {@link HelpSC} sub-command.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
  * @version 0.3
  * @module
  */
+@DependsOn(SubCommandTest.class)
 public final strictfp class HelpSCTest extends TestCase {
     /**
      * Tests the sub-command without option.
