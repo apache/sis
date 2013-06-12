@@ -89,7 +89,7 @@ Console application.
         <configuration>
           <instructions>
             <Export-Package>
-              org.apache.sis.cli
+              org.apache.sis.console
             </Export-Package>
             <Main-Class>org.apache.sis.console.Command</Main-Class>
           </instructions>
@@ -97,5 +97,18 @@ Console application.
       </plugin>
     </plugins>
   </build>
+
+
+  <!-- ===========================================================
+           Dependencies
+       =========================================================== -->
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.sis.storage</groupId>
+      <artifactId>sis-netcdf</artifactId>
+      <version>${project.version}</version>
+      <!-- TODO: use test or runtime scope -->
+    </dependency>
+  </dependencies>
 
 </project>
