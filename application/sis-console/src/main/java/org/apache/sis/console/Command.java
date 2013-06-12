@@ -26,6 +26,8 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.logging.MonolineFormatter;
 
 
 /**
@@ -222,6 +224,7 @@ public final class Command {
      * @param args Command-line options.
      */
     public static void main(final String[] args) {
+        MonolineFormatter.configureConsoleHandler(Logging.getLogger(""), null);
         final Command c;
         try {
             c = new Command(args);
