@@ -45,12 +45,12 @@ import org.apache.sis.util.Debug;
  * {@code MonolineFormatter} may look like:
  *
  * <blockquote><table style="color:#FFFFFF; background:black" class="compact">
- * <tr><td style="background:blue"><code>CONFIG</code></td>
- *     <td><code><b>[MyApplication]</b> Read configuration from “my-application/setup.xml”.</code></td>
- * <tr><td style="background:green"><code>INFO</code></td>
- *     <td><code><b>[DirectEpsgFactory]</b> Connected to the EPSG database version 6.9 on JavaDB 10.8.</code></td>
- * <tr><td style="background:goldenrod"><code>WARNING</code></td>
- *     <td><code><b>[DefaultTemporalExtent]</b> This operation requires the “sis-temporal” module.</code></td>
+ * <tr><td><code>00:01</code></td><td style="background:blue"><code>CONFIG</code></td>
+ *     <td><code><b>[MyApplication]</b> Read configuration from “my-application/setup.xml”.</code></td></tr>
+ * <tr><td><code>00:03</code></td><td style="background:green"><code>INFO</code></td>
+ *     <td><code><b>[DirectEpsgFactory]</b> Connected to the EPSG database version 6.9 on JavaDB 10.8.</code></td></tr>
+ * <tr><td><code>00:12</code></td><td style="background:goldenrod"><code>WARNING</code></td>
+ *     <td><code><b>[DefaultTemporalExtent]</b> This operation requires the “sis-temporal” module.</code></td></tr>
  * </table></blockquote>
  *
  * By default, {@code MonolineFormatter} shows only the level and the message. One or two additional
@@ -200,8 +200,10 @@ public class MonolineFormatter extends Formatter {
      * The minimum amount of characters to use for writing logging level before the message.
      * If the logging level is shorter, remaining characters will be padded with spaces.
      * This is used in order to align the messages.
+     *
+     * @see #levelWidth(Level)
      */
-    private int levelWidth;
+    private final int levelWidth;
 
     /**
      * Time of {@code MonolineFormatter} creation, in milliseconds elapsed since January 1, 1970.
@@ -253,29 +255,11 @@ public class MonolineFormatter extends Formatter {
     public MonolineFormatter(final Handler handler) {
         this.startMillis = System.currentTimeMillis();
         /*
-         * Sets the "levelWidth" field to the largest label that may be displayed,
-         * according current handler setting. In the case where a larger label is
-         * to be printed, this class will adjust itself but the visual alignment
-         * with previous or next record may be broken.
+         * The length of the widest standard level name that may be displayed according current handler setting.
+         * If a larger label is to be printed, this class will adjust itself but the visual alignment with
+         * previous or next record may be broken.
          */
-        final Level level = (handler != null) ? handler.getLevel() : null;
-loop:   for (int i=0; ; i++) {
-            final Level c;
-            switch (i) {
-                case 0: c = Level.FINEST;  break;
-                case 1: c = Level.FINER;   break;
-                case 2: c = Level.FINE;    break;
-                case 3: c = Level.CONFIG;  break;
-                case 4: c = Level.INFO;    break;
-                case 5: c = Level.WARNING; break;
-                case 6: c = Level.SEVERE;  break;
-                default: break loop;
-            }
-            if (level == null || c.intValue() >= level.intValue()) {
-                final int length = c.getLocalizedName().length();
-                if (length > levelWidth) levelWidth = length;
-            }
-        }
+        levelWidth = levelWidth((handler != null) ? handler.getLevel() : null);
         /*
          * Configures this formatter according the properties, if any.
          */
@@ -316,6 +300,33 @@ loop:   for (int i=0; ; i++) {
         buffer  = str.getBuffer().append(header);
         printer = new PrintWriter(IO.asWriter(writer));
         writer.setTabulationWidth(4);
+    }
+
+    /**
+     * Returns the length of the widest level name, taking in account only the standard levels
+     * equals or greater then the given threshold.
+     */
+    static int levelWidth(final Level threshold) {
+        int levelWidth = 0;
+loop:   for (int i=0; ; i++) {
+            final Level c;
+            switch (i) {
+                case 0: c = Level.SEVERE;  break;
+                case 1: c = Level.WARNING; break;
+                case 2: c = Level.INFO;    break;
+                case 3: c = Level.CONFIG;  break;
+                case 4: c = Level.FINE;    break;
+                case 5: c = Level.FINER;   break;
+                case 6: c = Level.FINEST;  break;
+                default: break loop;
+            }
+            if (threshold != null && c.intValue() < threshold.intValue()) {
+                break loop;
+            }
+            final int length = c.getLocalizedName().length();
+            if (length > levelWidth) levelWidth = length;
+        }
+        return levelWidth;
     }
 
     /**
@@ -777,10 +788,23 @@ loop:   for (int i=0; ; i++) {
     }
 
     /**
-     * Installs a {@code MonolineFormatter} for the root logger and its children.
-     * If a {@code MonolineFormatter} is already installed, then it will be returned unchanged.
-     * If a {@link SimpleFormatter} was installed, then it will be removed in order to avoid sending
-     * the same records twice to the console.
+     * Installs a {@code MonolineFormatter} for the root logger, or returns the existing instance if any.
+     * This method performs the following choices:
+     *
+     * <ul>
+     *   <li>If a {@link ConsoleHandler} is associated to the root logger, then:
+     *     <ul>
+     *       <li>If that handler already uses a {@code MonolineFormatter}, then the existing formatter is returned.</li>
+     *       <li>Otherwise the {@code ConsoleHandler} formatter is replaced by a new {@code MonolineFormatter} instance,
+     *           and that new instance is returned. We perform this replacement in order to avoid sending twice the same
+     *           records to the console.</li>
+     *     </ul></li>
+     *   <li>Otherwise a new {@code ConsoleHandler} using a new {@code MonolineFormatter} is created and added to the
+     *       root logger.</li>
+     * </ul>
+     *
+     * {@note The current implementation does not check for duplicated <code>ConsoleHandler</code> instances,
+     *        and does not check if any child logger has a <code>ConsoleHandler</code>.}
      *
      * @return The new or existing {@code MonolineFormatter}. The formatter output can be configured
      *         using the {@link #setTimeFormat(String)} and {@link #setSourceFormat(String)} methods.
@@ -792,19 +816,36 @@ loop:   for (int i=0; ; i++) {
     }
 
     /**
-     * Installs a {@code MonolineFormatter} for the specified logger and its children.
-     * If a {@code MonolineFormatter} is already installed, then it will be returned unchanged.
-     * If a {@link SimpleFormatter} was installed, then it will be removed in order to avoid sending
-     * the same records twice to the console.
+     * Installs a {@code MonolineFormatter} for the specified logger, or returns the existing instance if any.
+     * This method performs the following steps:
+     *
+     * <ul>
+     *   <li>If a {@link ConsoleHandler} is associated to the given logger, then:
+     *     <ul>
+     *       <li>If that handler already uses a {@code MonolineFormatter}, then the existing formatter is returned.</li>
+     *       <li>Otherwise the {@code ConsoleHandler} formatter is replaced by a new {@code MonolineFormatter} instance,
+     *           and that new instance is returned. We perform this replacement in order to avoid sending twice the same
+     *           records to the console.</li>
+     *     </ul></li>
+     *   <li>Otherwise:
+     *     <ul>
+     *       <li>The {@link Logger#setUseParentHandlers(boolean)} flag is set to {@code false} for avoiding duplicated
+     *           loggings if a {@code ConsoleHandler} instance exists in the parent handlers.</li>
+     *       <li>Parent handlers that are not {@code ConsoleHandler} instances are added to the given logger in
+     *           order to preserve similar behavior as before the call to {@code setUseParentHandlers(false)}.</li>
+     *       <li>A new {@code ConsoleHandler} using a new {@code MonolineFormatter} is created and added to the
+     *           given logger.</li>
+     *     </ul></li>
+     * </ul>
+     *
+     * {@note The current implementation does not check for duplicated <code>ConsoleHandler</code> instances,
+     *        and does not check if any child logger has a <code>ConsoleHandler</code>.}
      *
      * {@section Specifying a log level}
-     * This method can opportunistically set the handler levels. If the given level is non-null,
-     * then every {@link Handler}s using the {@code MonolineFormatter} may be set to that level.
-     * The given level is only a hint - this method may ignores it if the current configuration
-     * already uses a finer level.
-     *
-     * <p>This method is provided mostly for debugging purpose, as a quick way to increase the
-     * logging verbosity.</p>
+     * This method can opportunistically set the handler level. If the given level is non-null,
+     * then the {@link ConsoleHandler} using the {@code MonolineFormatter} will be set to that level.
+     * This is mostly a convenience for temporary increase of logging verbosity for debugging purpose.
+     * This functionality should not be used in production environment, since it overwrite user's level setting.
      *
      * @param  logger The base logger to apply the change on.
      * @param  level The desired level, or {@code null} if no level should be set.
@@ -816,95 +857,55 @@ loop:   for (int i=0; ; i++) {
     @Configuration
     public static MonolineFormatter install(final Logger logger, final Level level) throws SecurityException {
         MonolineFormatter monoline = null;
-        boolean foundConsoleHandler = false;
-        Handler[] handlers = logger.getHandlers();
-        for (int i=0; i<handlers.length; i++) {
-            final Handler handler = handlers[i];
-            if (handler.getClass() == ConsoleHandler.class) {
-                foundConsoleHandler = true;
+        for (final Handler handler : logger.getHandlers()) {
+            if (handler instanceof ConsoleHandler) {
+                /*
+                 * Get or replace the formatter of the first ConsoleHandler found, then stop the search.
+                 * We do not search for duplicated ConsoleHandler instances. If such duplicated values exist,
+                 * we presume that the user know what he is doing and will avoid messing more with his configuration.
+                 */
                 final Formatter formatter = handler.getFormatter();
                 if (formatter instanceof MonolineFormatter) {
-                    /*
-                     * A MonolineFormatter already existed. Sets the level only for the first
-                     * instance (only one instance should exists anyway) for consistency with
-                     * the fact that this method returns only one MonolineFormatter for further
-                     * configuration.
-                     */
-                    if (monoline == null) {
-                        monoline = (MonolineFormatter) formatter;
-                        setLevel(handler, level);
-                    }
-                } else if (formatter.getClass() == SimpleFormatter.class) {
-                    /*
-                     * A ConsoleHandler using the SimpleFormatter has been found. Replaces
-                     * the SimpleFormatter by MonolineFormatter, creating it if necessary.
-                     */
-                    setLevel(handler, level);
-                    if (monoline == null) {
-                        monoline = new MonolineFormatter(handler);
-                    }
+                    monoline = (MonolineFormatter) formatter;
+                } else {
+                    monoline = new MonolineFormatter(handler);
                     handler.setFormatter(monoline);
                 }
+                if (level != null) {
+                    handler.setLevel(level);
+                }
+                break;
             }
         }
         /*
-         * If the logger uses parent handlers, copy them to the logger that we are initializing,
-         * because we will not use parent handlers anymore at the end of this method.
+         * If we didn't found any ConsoleHandler, then we will need to create a new one. This usually happen if
+         * the logger given in argument to this method was not the root logger. For example the user may want to
+         * configure only the "org.apache.sis" logger. But before to create the new ConsoleHandler, we will need
+         * to stop using the parent handlers because we don't want to inherit the original ConsoleHandler which
+         * is likely to exist in the root package. In order to preserve functionalities of other loggers, we copy
+         * a snapshot of all other handlers.
          */
-        for (Logger parent=logger; parent.getUseParentHandlers();) {
-            parent = parent.getParent();
-            if (parent == null) {
-                break;
-            }
-            handlers = parent.getHandlers();
-            for (int i=0; i<handlers.length; i++) {
-                Handler handler = handlers[i];
-                if (handler.getClass() == ConsoleHandler.class) {
-                    if (!foundConsoleHandler) {
-                        // We have already set a ConsoleHandler and we don't want a second one.
-                        continue;
-                    }
-                    foundConsoleHandler = true;
-                    final Formatter formatter = handler.getFormatter();
-                    if (formatter.getClass() == SimpleFormatter.class) {
-                        monoline = addHandler(logger, level);
-                        continue;
+        if (monoline == null) {
+            logger.setUseParentHandlers(false);
+            for (Logger parent=logger; parent.getUseParentHandlers();) {
+                parent = parent.getParent();
+                if (parent == null) {
+                    break;
+                }
+                for (final Handler handler : parent.getHandlers()) {
+                    if (!(handler instanceof ConsoleHandler)) {
+                        logger.addHandler(handler);
                     }
                 }
-                logger.addHandler(handler);
             }
-        }
-        logger.setUseParentHandlers(false);
-        if (!foundConsoleHandler) {
-            monoline = addHandler(logger, level);
+            final Handler handler = new ConsoleHandler();
+            if (level != null) {
+                handler.setLevel(level); // Shall be before MonolineFormatter creation.
+            }
+            monoline = new MonolineFormatter(handler);
+            handler.setFormatter(monoline);
+            logger.addHandler(handler);
         }
         return monoline;
-    }
-
-    /**
-     * Adds to the specified logger a {@link Handler} using a {@code MonolineFormatter}
-     * set at the specified level. The formatter is returned for convenience.
-     */
-    private static MonolineFormatter addHandler(final Logger logger, final Level level) {
-        final Handler handler = new ConsoleHandler();
-        final MonolineFormatter monoline = new MonolineFormatter(handler);
-        handler.setFormatter(monoline);
-        setLevel(handler, level);
-        logger.addHandler(handler);
-        return monoline;
-    }
-
-    /**
-     * Sets the level of the given handler. This method tries to find a balance between user's
-     * setting and desired level using heuristic rules that may change in any future version.
-     */
-    private static void setLevel(final Handler handler, final Level level) {
-        if (level != null) {
-            final int desired = level.intValue();
-            final int current = handler.getLevel().intValue();
-            if (desired < LEVEL_THRESHOLD.intValue() ? desired < current : desired > current) {
-                handler.setLevel(level);
-            }
-        }
     }
 }
