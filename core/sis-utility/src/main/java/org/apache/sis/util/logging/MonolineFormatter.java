@@ -425,6 +425,7 @@ loop:   for (int i=0; ; i++) {
     private void sourceFormat(String format) throws IllegalArgumentException {
         if (format == null) {
             sourceFormat = NO_SOURCE;
+            return;
         }
         format = CharSequences.trimWhitespaces(format).toLowerCase(Locale.US);
         for (int i=0; i<FORMAT_LABELS.length; i++) {
