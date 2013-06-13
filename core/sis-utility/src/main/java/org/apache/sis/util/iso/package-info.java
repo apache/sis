@@ -62,63 +62,63 @@
  *   </tr>
  *
  *   <tr align="center">
- *     <td bgcolor="palegoldenrod" colspan="1"><font size="-1">{@linkplain org.apache.sis.util.iso.AbstractName#head() head}</font></td><td></td>
- *     <td bgcolor="palegoldenrod" colspan="5"><font size="-1">{@linkplain org.apache.sis.util.iso.DefaultScopedName#tail() tail}</font></td>
+ *     <td style="background:palegoldenrod" colspan="1"><font size="-1">{@linkplain org.apache.sis.util.iso.AbstractName#head() head}</font></td><td></td>
+ *     <td style="background:palegoldenrod" colspan="5"><font size="-1">{@linkplain org.apache.sis.util.iso.DefaultScopedName#tail() tail}</font></td>
  *     <td rowspan="2"></td>
- *     <td rowspan="2" bgcolor="beige" align="left">{@linkplain org.apache.sis.util.iso.DefaultNameSpace#isGlobal() global}</td>
- *     <td rowspan="2" bgcolor="beige" align="right">{@code {"org", "opengis", "util", "Record"}}</td>
+ *     <td rowspan="2" style="background:beige" align="left">{@linkplain org.apache.sis.util.iso.DefaultNameSpace#isGlobal() global}</td>
+ *     <td rowspan="2" style="background:beige" align="right">{@code {"org", "opengis", "util", "Record"}}</td>
  *     <td rowspan="2"></td>
  *     <td rowspan="2">{@link org.apache.sis.util.iso.DefaultScopedName ScopedName}</td>
  *   </tr>
  *   <tr align="center">
- *     <td bgcolor="wheat" colspan="5"><font size="-1">{@linkplain org.apache.sis.util.iso.DefaultScopedName#path() path}</font></td><td></td>
- *     <td bgcolor="wheat" colspan="1"><font size="-1">{@linkplain org.apache.sis.util.iso.AbstractName#tip() tip}</font></td>
+ *     <td style="background:wheat" colspan="5"><font size="-1">{@linkplain org.apache.sis.util.iso.DefaultScopedName#path() path}</font></td><td></td>
+ *     <td style="background:wheat" colspan="1"><font size="-1">{@linkplain org.apache.sis.util.iso.AbstractName#tip() tip}</font></td>
  *   </tr>
  *
  *   <tr><td colspan="9" height="2"></td></tr>
  *   <tr align="center">
- *     <td bgcolor="palegoldenrod" colspan="1" rowspan="2"><font size="-1">{@linkplain org.apache.sis.util.iso.AbstractName#scope() scope}</font></td><td rowspan="2"></td>
- *     <td bgcolor="palegoldenrod" colspan="1"><font size="-1">head</font></td><td></td>
- *     <td bgcolor="palegoldenrod" colspan="3"><font size="-1">tail</font></td>
+ *     <td style="background:palegoldenrod" colspan="1" rowspan="2"><font size="-1">{@linkplain org.apache.sis.util.iso.AbstractName#scope() scope}</font></td><td rowspan="2"></td>
+ *     <td style="background:palegoldenrod" colspan="1"><font size="-1">head</font></td><td></td>
+ *     <td style="background:palegoldenrod" colspan="3"><font size="-1">tail</font></td>
  *     <td rowspan="2"></td>
- *     <td rowspan="2" bgcolor="beige" align="left">{@code "org"}</td>
- *     <td rowspan="2" bgcolor="beige" align="right">{@code {"opengis", "util", "Record"}}</td>
- *     <td rowspan="2"></td>
- *     <td rowspan="2">{@code ScopedName}</td>
- *   </tr>
- *   <tr align="center">
- *     <td bgcolor="wheat" colspan="3"><font size="-1">path</font></td><td></td>
- *     <td bgcolor="wheat" colspan="1"><font size="-1">tip</font></td>
- *   </tr>
- *
- *   <tr><td colspan="9" height="3"></td></tr>
- *   <tr align="center">
- *     <td bgcolor="palegoldenrod" colspan="3" rowspan="2"><font size="-1">scope</font></td><td rowspan="2"></td>
- *     <td bgcolor="palegoldenrod" colspan="1"><font size="-1">head</font></td><td></td>
- *     <td bgcolor="palegoldenrod" colspan="1"><font size="-1">tail</font></td>
- *     <td rowspan="2"></td>
- *     <td rowspan="2" bgcolor="beige" align="left">{@code "org.opengis"}</td>
- *     <td rowspan="2" bgcolor="beige" align="right">{@code {"util", "Record"}}</td>
+ *     <td rowspan="2" style="background:beige" align="left">{@code "org"}</td>
+ *     <td rowspan="2" style="background:beige" align="right">{@code {"opengis", "util", "Record"}}</td>
  *     <td rowspan="2"></td>
  *     <td rowspan="2">{@code ScopedName}</td>
  *   </tr>
  *   <tr align="center">
- *     <td bgcolor="wheat" colspan="1"><font size="-1">path</font></td><td></td>
- *     <td bgcolor="wheat" colspan="1"><font size="-1">tip</font></td>
+ *     <td style="background:wheat" colspan="3"><font size="-1">path</font></td><td></td>
+ *     <td style="background:wheat" colspan="1"><font size="-1">tip</font></td>
  *   </tr>
  *
  *   <tr><td colspan="9" height="3"></td></tr>
  *   <tr align="center">
- *     <td bgcolor="palegoldenrod" colspan="5" rowspan="2"><font size="-1">scope</font></td><td rowspan="2"></td>
- *     <td bgcolor="palegoldenrod" colspan="1"><font size="-1">head</font></td>
+ *     <td style="background:palegoldenrod" colspan="3" rowspan="2"><font size="-1">scope</font></td><td rowspan="2"></td>
+ *     <td style="background:palegoldenrod" colspan="1"><font size="-1">head</font></td><td></td>
+ *     <td style="background:palegoldenrod" colspan="1"><font size="-1">tail</font></td>
  *     <td rowspan="2"></td>
- *     <td rowspan="2" bgcolor="beige" align="left">{@code "org.opengis.util"}</td>
- *     <td rowspan="2" bgcolor="beige" align="right">{@code {"Record"}}</td>
+ *     <td rowspan="2" style="background:beige" align="left">{@code "org.opengis"}</td>
+ *     <td rowspan="2" style="background:beige" align="right">{@code {"util", "Record"}}</td>
+ *     <td rowspan="2"></td>
+ *     <td rowspan="2">{@code ScopedName}</td>
+ *   </tr>
+ *   <tr align="center">
+ *     <td style="background:wheat" colspan="1"><font size="-1">path</font></td><td></td>
+ *     <td style="background:wheat" colspan="1"><font size="-1">tip</font></td>
+ *   </tr>
+ *
+ *   <tr><td colspan="9" height="3"></td></tr>
+ *   <tr align="center">
+ *     <td style="background:palegoldenrod" colspan="5" rowspan="2"><font size="-1">scope</font></td><td rowspan="2"></td>
+ *     <td style="background:palegoldenrod" colspan="1"><font size="-1">head</font></td>
+ *     <td rowspan="2"></td>
+ *     <td rowspan="2" style="background:beige" align="left">{@code "org.opengis.util"}</td>
+ *     <td rowspan="2" style="background:beige" align="right">{@code {"Record"}}</td>
  *     <td rowspan="2"></td>
  *     <td rowspan="2">{@link org.apache.sis.util.iso.DefaultLocalName LocalName}</td>
  *   </tr>
  *   <tr align="center">
- *     <td bgcolor="wheat" colspan="1"><font size="-1">tip</font></td>
+ *     <td style="background:wheat" colspan="1"><font size="-1">tip</font></td>
  *   </tr>
  * </table></td></tr></table></blockquote>
  *
