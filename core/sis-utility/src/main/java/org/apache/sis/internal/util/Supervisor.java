@@ -16,8 +16,10 @@
  */
 package org.apache.sis.internal.util;
 
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import javax.management.ObjectName;
@@ -34,7 +36,6 @@ import java.lang.management.ManagementFactory;
 
 import org.apache.sis.setup.About;
 import org.apache.sis.util.Localized;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.TreeTable;
@@ -79,7 +80,7 @@ public final class Supervisor extends StandardMBean implements SupervisorMBean, 
             final MBeanServer server = ManagementFactory.getPlatformMBeanServer();
             try {
                 final ObjectName n = new ObjectName("org.apache.sis:type=Supervisor");
-                server.registerMBean(new Supervisor(Locale.getDefault()), n);
+                server.registerMBean(new Supervisor(null, null), n);
                 name = n; // Store only on success.
             } catch (SecurityException | JMException e) {
                 Logging.unexpectedException(Logger.getLogger("org.apache.sis"), Supervisor.class, "register", e);
@@ -105,24 +106,30 @@ public final class Supervisor extends StandardMBean implements SupervisorMBean, 
     }
 
     /**
-     * The locale for producing the messages.
+     * The locale for producing the messages, or {@code null} for the default.
      */
     private final Locale locale;
 
     /**
+     * The timezone for formatting the dates, or {@code null} for the default.
+     */
+    private final TimeZone timezone;
+
+    /**
      * Creates a new {@code Supervisor} which will report messages in the given locale.
      *
-     * @param  locale The locale to use for reporting messages.
+     * @param  locale The locale to use for reporting messages, or {@code null} for the default.
+     * @param  timezone The timezone for formatting the dates, or {@code null} for the default.
      * @throws NotCompliantMBeanException Should never happen.
      */
-    public Supervisor(final Locale locale) throws NotCompliantMBeanException {
+    public Supervisor(final Locale locale, final TimeZone timezone) throws NotCompliantMBeanException {
         super(SupervisorMBean.class);
-        ArgumentChecks.ensureNonNull("locale", locale);
-        this.locale = locale;
+        this.locale   = locale;
+        this.timezone = timezone;
     }
 
     /**
-     * Returns the supervisor locale.
+     * Returns the supervisor locale, or {@code null} for the default locale.
      */
     @Override
     public Locale getLocale() {
@@ -182,7 +189,8 @@ public final class Supervisor extends StandardMBean implements SupervisorMBean, 
      */
     private String getDescription(final String resourceKey) {
         return ResourceBundle.getBundle("org.apache.sis.internal.util.Descriptions",
-                locale, Supervisor.class.getClassLoader()).getString(resourceKey);
+                (locale != null) ? locale : Locale.getDefault(Locale.Category.DISPLAY),
+                Supervisor.class.getClassLoader()).getString(resourceKey);
     }
 
     // -----------------------------------------------------------------------
@@ -194,7 +202,7 @@ public final class Supervisor extends StandardMBean implements SupervisorMBean, 
      */
     @Override
     public TreeTable configuration() {
-        return About.configuration(locale);
+        return About.configuration(EnumSet.allOf(About.class), locale, timezone);
     }
 
     /**

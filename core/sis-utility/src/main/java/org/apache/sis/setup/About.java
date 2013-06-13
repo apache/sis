@@ -134,25 +134,37 @@ public enum About {
 
     /**
      * Returns all known information about the current Apache SIS running environment.
+     * The information are formatted using the system default locale and timezone.
      *
-     * @param  locale The locale to use for formatting the texts in the tree.
+     * <p>This convenience method is equivalent to the following code:</p>
+     *
+     * {@preformat java
+     *     return configuration(EnumSet.allOf(About.class), null, null);
+     * }
+     *
      * @return Configuration information, as a tree for grouping some configuration by sections.
      */
-    public static TreeTable configuration(final Locale locale) {
-        return configuration(EnumSet.allOf(About.class), locale, null);
+    public static TreeTable configuration() {
+        return configuration(EnumSet.allOf(About.class), null, null);
     }
 
     /**
      * Returns a subset of the information about the current Apache SIS running environment.
      *
      * @param  sections The section for which information are desired.
-     * @param  locale   The locale to use for formatting the texts in the tree.
+     * @param  locale   The locale to use for formatting the texts in the tree, or {@code null} for the default.
      * @param  timezone The timezone to use for formatting the dates, or {@code null} for the default.
      * @return Configuration information, as a tree for grouping some configuration by sections.
      */
-    public static TreeTable configuration(final Set<About> sections, final Locale locale, final TimeZone timezone) {
+    public static TreeTable configuration(final Set<About> sections, Locale locale, final TimeZone timezone) {
         ArgumentChecks.ensureNonNull("sections", sections);
-        ArgumentChecks.ensureNonNull("locale", locale);
+        final Locale formatLocale;
+        if (locale != null) {
+            formatLocale = locale;
+        } else {
+            locale       = Locale.getDefault(Locale.Category.DISPLAY);
+            formatLocale = Locale.getDefault(Locale.Category.FORMAT);
+        }
         String userHome = null;
         String javaHome = null;
         final Date now = new Date();
@@ -218,7 +230,7 @@ fill:   for (int i=0; ; i++) {
                             nameKey = Vocabulary.Keys.Timezone;
                             final boolean inDaylightTime = current.inDaylightTime(now);
                             value = concatenate(current.getDisplayName(inDaylightTime, TimeZone.LONG, locale), current.getID(), true);
-                            final DateFormat df = DateFormat.getTimeInstance(DateFormat.SHORT, locale);
+                            final DateFormat df = DateFormat.getTimeInstance(DateFormat.SHORT, formatLocale);
                             df.setTimeZone(TimeZone.getTimeZone("UTC"));
                             int offset = current.getOffset(now.getTime());
                             StringBuffer buffer = format(df, offset, new StringBuffer("UTC "));
@@ -235,7 +247,7 @@ fill:   for (int i=0; ; i++) {
                 case 5: {
                     if (sections.contains(LOCALIZATION)) {
                         nameKey = Vocabulary.Keys.CurrentDateTime;
-                        final DateFormat df = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG, locale);
+                        final DateFormat df = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG, formatLocale);
                         if (timezone != null) {
                             df.setTimeZone(timezone);
                         }
