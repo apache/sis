@@ -92,6 +92,7 @@ Console application.
               org.apache.sis.console
             </Export-Package>
             <Main-Class>org.apache.sis.console.Command</Main-Class>
+            <Bundle-SymbolicName>org.apache.sis.console</Bundle-SymbolicName>
           </instructions>
         </configuration>
       </plugin>

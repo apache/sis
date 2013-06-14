@@ -36,6 +36,7 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.CheckedContainer;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.simple.SimpleCitation;
 
@@ -139,7 +140,7 @@ public class MetadataStandard implements Serializable {
             ISO_19119,
             ISO_19123
         };
-        SystemListener.add(new SystemListener() {
+        SystemListener.add(new SystemListener(Modules.METADATA) {
             @Override protected void classpathChanged() {
                 clearCache();
             }

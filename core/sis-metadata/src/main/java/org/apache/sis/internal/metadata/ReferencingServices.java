@@ -24,6 +24,7 @@ import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.DefaultSpatialTemporalExtent;
 import org.apache.sis.internal.system.SystemListener;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -48,6 +49,7 @@ public abstract class ReferencingServices extends SystemListener {
      * in order to force a new {@code ReferencingServices} lookup if the classpath changes.
      */
     protected ReferencingServices() {
+        super(Modules.METADATA);
         SystemListener.add(this);
     }
 
