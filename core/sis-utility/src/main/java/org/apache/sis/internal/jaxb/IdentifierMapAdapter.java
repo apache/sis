@@ -27,6 +27,7 @@ import java.util.NoSuchElementException;
 import java.io.Serializable;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
+import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
@@ -541,6 +542,7 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
      *
      * @see SpecializedIdentifier#toString()
      */
+    @Debug
     @Override
     public String toString() {
 	final StringBuilder buffer = new StringBuilder(50).append('{');
