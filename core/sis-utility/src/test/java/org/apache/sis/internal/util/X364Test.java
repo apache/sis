@@ -36,6 +36,18 @@ import static org.apache.sis.internal.util.X364.*;
 @DependsOn(org.apache.sis.util.CharSequencesTest.class)
 public final strictfp class X364Test extends TestCase {
     /**
+     * Tests {@link X364#forColorName(String)}.
+     */
+    @Test
+    public void testForColorName() {
+        for (final X364 value : X364.values()) {
+            if (value.color != null) {
+                assertSame(value.color, value.foreground(), X364.forColorName(value.color));
+            }
+        }
+    }
+
+    /**
      * Tests the {@link X364#plain(String)} method.
      */
     @Test

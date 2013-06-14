@@ -26,30 +26,30 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.logging.MonolineFormatter;
 
 
 /**
  * Command line interface for Apache SIS. The {@link #main(String[])} method accepts the following commands:
  *
- * <ul>
- *   <li>{@code help}     - Show a help overview.</li>
- *   <li>{@code about}    - Show information about Apache SIS and system configuration.</li>
- *   <li>{@code metadata} - Show metadata information for the given file.</li>
- * </ul>
+ * <blockquote><table class="compact">
+ * <tr><td>{@code help}     </td><td>Show a help overview.</td></tr>
+ * <tr><td>{@code about}    </td><td>Show information about Apache SIS and system configuration.</td></tr>
+ * <tr><td>{@code metadata} </td><td>Show metadata information for the given file.</td></tr>
+ * </table></blockquote>
  *
  * Each command can accepts an arbitrary amount of the following options:
  *
- * <ul>
- *   <li>{@code --locale}   - The locale to use for the command output.</li>
- *   <li>{@code --timezone} - The timezone for the dates to be formatted.</li>
- *   <li>{@code --encoding} - The encoding to use for the command output.</li>
- *   <li>{@code --colors}   - Whether colorized output shall be enabled.</li>
- *   <li>{@code --brief}    - Whether the output should contains only brief information.</li>
- *   <li>{@code --verbose}  - Whether the output should contains more detailed information.</li>
- *   <li>{@code --help}     - Lists the options available for a specific command.</li>
- * </ul>
+ * <blockquote><table class="compact">
+ * <tr><td>{@code --format}   </td><td>The output format (XML or text).</td></tr>
+ * <tr><td>{@code --locale}   </td><td>The locale to use for the command output.</td></tr>
+ * <tr><td>{@code --timezone} </td><td>The timezone for the dates to be formatted.</td></tr>
+ * <tr><td>{@code --encoding} </td><td>The encoding to use for the command output.</td></tr>
+ * <tr><td>{@code --colors}   </td><td>Whether colorized output shall be enabled.</td></tr>
+ * <tr><td>{@code --brief}    </td><td>Whether the output should contains only brief information.</td></tr>
+ * <tr><td>{@code --verbose}  </td><td>Whether the output should contains more detailed information.</td></tr>
+ * <tr><td>{@code --help}     </td><td>Lists the options available for a specific command.</td></tr>
+ * </table></blockquote>
  *
  * The {@code --locale}, {@code --timezone} and {@code --encoding} options apply to the command output sent
  * to the {@linkplain System#out standard output stream}, but usually do not apply to the error messages sent
@@ -222,7 +222,7 @@ public final class Command {
      * @param args Command-line options.
      */
     public static void main(final String[] args) {
-        MonolineFormatter.configureConsoleHandler(Logging.getLogger(""), null);
+        MonolineFormatter.install();
         final Command c;
         try {
             c = new Command(args);

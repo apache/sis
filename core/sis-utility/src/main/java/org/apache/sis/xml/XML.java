@@ -39,6 +39,7 @@ import org.apache.sis.internal.jaxb.TypeRegistration;
  *   <li>{@link #LOCALE} for specifying the locale to use for international strings and code lists.</li>
  *   <li>{@link #TIMEZONE} for specifying the timezone to use for dates and times.</li>
  *   <li>{@link #SCHEMAS} for specifying the root URL of metadata schemas to use.</li>
+ *   <li>{@link #DEFAULT_NAMESPACE} for specifying the default namespace of the XML document to write.</li>
  *   <li>{@link #RESOLVER} for replacing {@code xlink} or {@code uuidref} attributes by the actual object to use.</li>
  *   <li>{@link #CONVERTER} for controlling the conversion of URL, UUID, Units or similar objects.</li>
  *   <li>{@link #STRING_SUBSTITUTES} for specifying which code lists to replace by simpler {@code <gco:CharacterString>} elements.</li>
@@ -52,7 +53,7 @@ import org.apache.sis.internal.jaxb.TypeRegistration;
  */
 public final class XML extends Static {
     /**
-     * Allows client code to specify the locale to use for marshalling
+     * Specifies the locale to use for marshalling
      * {@link org.opengis.util.InternationalString} and {@link org.opengis.util.CodeList}
      * instances. The value for this property shall be an instance of {@link Locale}.
      *
@@ -82,7 +83,7 @@ public final class XML extends Static {
     public static final String LOCALE = "org.apache.sis.xml.locale";
 
     /**
-     * The timezone to use for marshalling dates and times.
+     * Specifies the timezone to use for marshalling dates and times.
      *
      * {@section Default behavior}
      * If this property is never set, then (un)marshalling will use the
@@ -91,9 +92,9 @@ public final class XML extends Static {
     public static final String TIMEZONE = "org.apache.sis.xml.timezone";
 
     /**
-     * Allows client code to specify the root URL of schemas. The value for this property shall
-     * be an instance of {@link java.util.Map Map&lt;String,String&gt;}. This property controls
-     * the URL to be used when marshalling the following elements:
+     * Specifies the root URL of schemas. The value for this property shall
+     * be an instance of {@link java.util.Map Map&lt;String,String&gt;}.
+     * This property controls the URL to be used when marshalling the following elements:
      *
      * <ul>
      *   <li>The value of the {@code codeList} attribute when marshalling subclasses of
@@ -118,6 +119,17 @@ public final class XML extends Static {
      */
     public static final String SCHEMAS = "org.apache.sis.xml.schemas";
     // If more keys are documented, update the Pooled.SCHEMAS_KEY array.
+
+    /**
+     * Specifies the default namespace of the XML document to write.
+     * An example of value for this key is {@code "http://www.isotc211.org/2005/gmd"}.
+     *
+     * {@section Current limitation}
+     * In current SIS implementation, this property is honored only by the {@link MarshallerPool} constructors.
+     * Specifying this property to {@link javax.xml.bind.Marshaller#setProperty(String, Object)} is too late.
+     * This limitation may be fixed in a future SIS version.
+     */
+    public static final String DEFAULT_NAMESPACE = "org.apache.sis.xml.defaultNamespace";
 
     /**
      * Specifies the GML version to be marshalled or unmarshalled. The GML version may affect the
@@ -156,9 +168,8 @@ public final class XML extends Static {
     public static final String RESOLVER = "org.apache.sis.xml.resolver";
 
     /**
-     * Allows client code to control the behavior of the (un)marshalling process when an element
-     * can not be processed, or alter the element values. The value for this property shall be an
-     * instance of {@link ValueConverter}.
+     * Control the behaviors of the (un)marshalling process when an element can not be processed,
+     * or alter the element values. The value for this property shall be an instance of {@link ValueConverter}.
      *
      * <p>If an element in a XML document can not be parsed (for example if a {@linkplain java.net.URL}
      * string is not valid), the default behavior is to throw an exception which cause the
@@ -279,7 +290,7 @@ public final class XML extends Static {
             synchronized (XML.class) {
                 pool = POOL; // Double-check idiom: see javadoc.
                 if (pool == null) {
-                    POOL = pool = new MarshallerPool(TypeRegistration.defaultClassesToBeBound());
+                    POOL = pool = new MarshallerPool(null);
                 }
             }
         }
