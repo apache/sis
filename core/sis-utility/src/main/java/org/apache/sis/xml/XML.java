@@ -26,7 +26,7 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.JAXBException;
 import org.apache.sis.util.Static;
-import org.apache.sis.internal.util.SystemListener;
+import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.jaxb.TypeRegistration;
 
 

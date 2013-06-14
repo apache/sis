@@ -17,7 +17,7 @@
 package org.apache.sis.util.iso;
 
 import java.io.ObjectStreamException;
-import net.jcip.annotations.Immutable;
+import org.apache.sis.util.Immutable;
 
 
 /**

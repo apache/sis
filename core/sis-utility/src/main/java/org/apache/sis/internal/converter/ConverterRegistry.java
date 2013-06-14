@@ -18,9 +18,9 @@ package org.apache.sis.internal.converter;
 
 import java.util.Map;
 import java.util.LinkedHashMap;
-import net.jcip.annotations.ThreadSafe;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.ThreadSafe;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.UnconvertibleObjectException;

@@ -22,6 +22,7 @@ import org.apache.sis.internal.geoapi.temporal.Period;
 import org.apache.sis.internal.geoapi.temporal.TemporalFactory;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.system.DefaultFactories;
 
 
 /**

@@ -29,13 +29,13 @@ import java.util.TreeMap;
 import java.util.SortedMap;
 import java.util.Comparator;
 import java.util.logging.*;
-import net.jcip.annotations.ThreadSafe;
 import org.apache.sis.internal.system.OS;
 import org.apache.sis.internal.util.X364;
 import org.apache.sis.io.IO;
 import org.apache.sis.io.LineAppender;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Configuration;
+import org.apache.sis.util.ThreadSafe;
 import org.apache.sis.util.Debug;
 
 // Related to JDK7

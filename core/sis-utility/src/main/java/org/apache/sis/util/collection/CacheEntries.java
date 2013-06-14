@@ -23,8 +23,7 @@ import java.util.AbstractSet;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.NoSuchElementException;
 import java.lang.ref.Reference;
-
-import net.jcip.annotations.ThreadSafe;
+import org.apache.sis.util.ThreadSafe;
 
 
 /**

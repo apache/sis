@@ -17,9 +17,9 @@
 package org.apache.sis.util.iso;
 
 import javax.xml.bind.annotation.XmlRootElement;
-import net.jcip.annotations.Immutable;
 import org.opengis.util.TypeName;
 import org.opengis.util.NameSpace;
+import org.apache.sis.util.Immutable;
 
 
 /**

@@ -21,13 +21,13 @@ import java.util.Locale;
 import java.util.Iterator;
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlType;
-import net.jcip.annotations.Immutable;
 import org.opengis.util.NameSpace;
 import org.opengis.util.LocalName;
 import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.Immutable;
 
 // Related to JDK7
 import org.apache.sis.internal.jdk7.Objects;
