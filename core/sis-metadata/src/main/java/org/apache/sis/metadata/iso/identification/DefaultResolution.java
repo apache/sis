@@ -48,7 +48,7 @@ import org.apache.sis.internal.metadata.MetadataUtilities;
  */
 @XmlType(name = "MD_Resolution_Type", propOrder = {
     "equivalentScale",
-    "distance"
+// TODO    "distance"
 })
 @XmlRootElement(name = "MD_Resolution")
 public class DefaultResolution extends ISOMetadata implements Resolution {
@@ -170,7 +170,7 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
     @Override
     @ValueRange(minimum=0, isMinIncluded=false)
 //    @XmlJavaTypeAdapter(GO_Distance.class) // TODO
-    @XmlElement(name = "distance")
+//    @XmlElement(name = "distance")
     public Double getDistance() {
         return isDistance() ? (Double) scaleOrDistance : null;
     }

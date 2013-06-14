@@ -18,7 +18,6 @@ package org.apache.sis.xml;
 
 import java.util.Map;
 import java.util.Deque;
-import java.util.Collections;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.xml.bind.JAXBContext;
@@ -30,6 +29,8 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.util.DelayedExecutor;
 import org.apache.sis.internal.util.DelayedRunnable;
 import org.apache.sis.internal.jaxb.AdapterReplacement;
+import org.apache.sis.internal.jaxb.TypeRegistration;
+import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -54,6 +55,7 @@ import org.apache.sis.internal.jaxb.AdapterReplacement;
  * @module
  *
  * @see XML
+ * @see <a href="http://jaxb.java.net/guide/Performance_and_thread_safety.html">JAXB Performance and thread-safety</a>
  */
 @ThreadSafe
 public class MarshallerPool {
@@ -68,12 +70,6 @@ public class MarshallerPool {
      * Kind of JAXB implementations.
      */
     private static final byte INTERNAL = 0, ENDORSED = 1, OTHER = 2;
-
-    /**
-     * The key to be used in the map given to the constructors for specifying the default namespace.
-     * An example of value for this key is {@code "http://www.isotc211.org/2005/gmd"}.
-     */
-    public static final String DEFAULT_NAMESPACE_KEY = "org.apache.sis.xml.defaultNamespace";
 
     /**
      * The JAXB context to use for creating marshaller and unmarshaller.
@@ -127,68 +123,42 @@ public class MarshallerPool {
     private final AtomicBoolean isRemovalScheduled;
 
     /**
-     * Creates a new factory for the given class to be bound, with a default empty namespace.
+     * Creates a new factory using the SIS default {@code JAXBContext} instance.
+     * The keys in the {@code properties} map can be one or many of following constants:
      *
-     * @param  classesToBeBound The classes to be bound, for example {@code DefaultMetadata.class}.
-     * @throws JAXBException    If the JAXB context can not be created.
-     */
-    public MarshallerPool(final Class<?>... classesToBeBound) throws JAXBException {
-        this(Collections.<String,String>emptyMap(), classesToBeBound);
-    }
-
-    /**
-     * Creates a new factory for the given class to be bound. The keys in the {@code properties} map
-     * shall be one or many of the constants defined in this class like {@link #DEFAULT_NAMESPACE_KEY}.
+     * <ul>
+     *   <li>{@link XML#DEFAULT_NAMESPACE} for specifying the default namespace of the XML document to write.</li>
+     * </ul>
      *
-     * @param  properties       The set of properties to be given to the pool.
-     * @param  classesToBeBound The classes to be bound, for example {@code DefaultMetadata.class}.
-     * @throws JAXBException    If the JAXB context can not be created.
-     */
-    public MarshallerPool(final Map<String,String> properties, final Class<?>... classesToBeBound) throws JAXBException {
-        this(properties, JAXBContext.newInstance(classesToBeBound));
-    }
-
-    /**
-     * Creates a new factory for the given packages, with a default empty namespace.
-     * The separator character for the packages is the colon. Example:
-     *
-     * {@preformat text
-     *     "org.apache.sis.metadata.iso:org.apache.sis.metadata.iso.citation"
-     * }
-     *
-     * @param  packages      The colon-separated list of packages in which JAXB will search for annotated classes.
+     * @param  properties    The set of properties to be given to the pool, or {@code null} if none.
      * @throws JAXBException If the JAXB context can not be created.
      */
-    public MarshallerPool(final String packages) throws JAXBException {
-        this(Collections.<String,String>emptyMap(), packages);
+    public MarshallerPool(final Map<String,String> properties) throws JAXBException {
+        this(TypeRegistration.getSharedContext(), properties);
     }
 
     /**
-     * Creates a new factory for the given packages. The separator character for the packages is the
-     * colon. The keys in the {@code properties} map shall be one or many of the constants defined
-     * in this class like {@link #DEFAULT_NAMESPACE_KEY}.
+     * Creates a new factory using the given JAXB context.
+     * The keys in the {@code properties} map can be one or many of following constants:
      *
-     * @param  properties    The set of properties to be given to the pool.
-     * @param  packages      The colon-separated list of packages in which JAXB will search for annotated classes.
-     * @throws JAXBException If the JAXB context can not be created.
-     */
-    public MarshallerPool(final Map<String,String> properties, final String packages) throws JAXBException {
-        this(properties, JAXBContext.newInstance(packages));
-    }
-
-    /**
-     * Creates a new factory for the given packages.
+     * <ul>
+     *   <li>{@link XML#DEFAULT_NAMESPACE} for specifying the default namespace of the XML document to write.</li>
+     * </ul>
      *
-     * @param  properties    The set of properties to be given to the pool.
      * @param  context       The JAXB context.
-     * @throws JAXBException If the OGC namespace prefix mapper can not be created.
+     * @param  properties    The set of properties to be given to the pool, or {@code null} if none.
+     * @throws JAXBException If the marshaller pool can not be created.
      */
     @SuppressWarnings({"unchecked", "rawtypes"}) // Generic array creation
-    private MarshallerPool(final Map<String,String> properties, final JAXBContext context) throws JAXBException {
+    public MarshallerPool(final JAXBContext context, final Map<String,String> properties) throws JAXBException {
+        ArgumentChecks.ensureNonNull("context", context);
         this.context = context;
-        String rootNamespace = properties.get(DEFAULT_NAMESPACE_KEY);
-        if (rootNamespace == null) {
-            rootNamespace = "";
+        String rootNamespace = "";
+        if (properties != null) {
+            rootNamespace = properties.get(XML.DEFAULT_NAMESPACE);
+            if (rootNamespace == null) {
+                rootNamespace = "";
+            }
         }
         /*
          * Detects if we are using the endorsed JAXB implementation (i.e. the one provided in
@@ -370,11 +340,21 @@ public class MarshallerPool {
 
     /**
      * Declares a marshaller as available for reuse.
-     * The caller should not use anymore the given marshaller after this method call.
+     * The caller should not use anymore the given marshaller after this method call,
+     * since the marshaller may be re-used by another thread at any time after recycle.
      *
-     * <p>Do not invoke this method if the marshaller threw an exception, since the
-     * marshaller may be in an invalid state. In particular, this method should not
-     * be invoked in a {@code finally} block.</p>
+     * {@section Cautions}
+     * <ul>
+     *   <li>Do not invoke this method if the marshaller threw an exception, since the
+     *       marshaller may be in an invalid state. In particular, this method should not
+     *       be invoked in a {@code finally} block.</li>
+     *   <li>Do not invoke this method twice for the same marshaller, unless the marshaller
+     *       has been obtained by a new call to {@link #acquireMarshaller()}.
+     *       In case of doubt, it is better to not recycle the marshaller at all.</li>
+     * </ul>
+     *
+     * Note that this method does not close any output stream.
+     * Closing the marshaller stream is caller's or JAXB responsibility.
      *
      * @param marshaller The marshaller to return to the pool.
      */
@@ -384,11 +364,21 @@ public class MarshallerPool {
 
     /**
      * Declares a unmarshaller as available for reuse.
-     * The caller should not use anymore the given unmarshaller after this method call.
+     * The caller should not use anymore the given unmarshaller after this method call,
+     * since the unmarshaller may be re-used by another thread at any time after recycle.
      *
-     * <p>Do not invoke this method if the marshaller threw an exception, since the
-     * marshaller may be in an invalid state. In particular, this method should not
-     * be invoked in a {@code finally} block.</p>
+     * {@section Cautions}
+     * <ul>
+     *   <li>Do not invoke this method if the unmarshaller threw an exception, since the
+     *       unmarshaller may be in an invalid state. In particular, this method should not
+     *       be invoked in a {@code finally} block.</li>
+     *   <li>Do not invoke this method twice for the same unmarshaller, unless the unmarshaller
+     *       has been obtained by a new call to {@link #acquireUnmarshaller()}.
+     *       In case of doubt, it is better to not recycle the unmarshaller at all.</li>
+     * </ul>
+     *
+     * Note that this method does not close any input stream.
+     * Closing the unmarshaller stream is caller's or JAXB responsibility.
      *
      * @param unmarshaller The unmarshaller to return to the pool.
      */
