@@ -23,6 +23,9 @@
       <fileset dir="${project.root}/core/sis-utility/src/main/resources">
         <include name="META-INF/services/*"/>
       </fileset>
+      <fileset dir="${project.root}/core/sis-metadata/src/main/resources">
+        <include name="META-INF/services/*"/>
+      </fileset>
     </copy>
   </target>
 </project>

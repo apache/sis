@@ -18,6 +18,8 @@ package org.apache.sis.console;
 
 import java.util.EnumSet;
 import java.io.IOException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.JAXBException;
 import org.opengis.metadata.Metadata;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.ValueExistencePolicy;
@@ -27,6 +29,9 @@ import org.apache.sis.storage.netcdf.NetcdfStore;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TreeTableFormat;
+import org.apache.sis.util.resources.Errors;
+import org.apache.sis.xml.MarshallerPool;
+import org.apache.sis.xml.XML;
 
 
 /**
@@ -42,7 +47,7 @@ final class MetadataSC extends SubCommand {
      * Creates the {@code "metadata"} sub-command.
      */
     MetadataSC(final int commandIndex, final String... args) throws InvalidOptionException {
-        super(commandIndex, args, EnumSet.of(Option.LOCALE, Option.TIMEZONE, Option.ENCODING, Option.HELP));
+        super(commandIndex, args, EnumSet.of(Option.FORMAT, Option.LOCALE, Option.TIMEZONE, Option.ENCODING, Option.HELP));
     }
 
     /**
@@ -51,10 +56,26 @@ final class MetadataSC extends SubCommand {
      * @todo NetCDF data store is hard-coded for now. Will need a dynamic mechanism in the future.
      *
      * @throws DataStoreException If an error occurred while reading the NetCDF file.
+     * @throws JAXBException If an error occurred while producing the XML output.
      * @throws IOException Should never happen, since we are appending to a print writer.
      */
     @Override
-    public int run() throws DataStoreException, IOException {
+    public int run() throws InvalidOptionException, DataStoreException, JAXBException, IOException {
+        /*
+         * Output format can be either "text" (the default) or "xml".
+         */
+        boolean toXML = false;
+        final String format = options.get(Option.FORMAT);
+        if (format != null && !format.equalsIgnoreCase("text")) {
+            if (!format.equalsIgnoreCase("xml")) {
+                throw new InvalidOptionException(Errors.format(
+                        Errors.Keys.IllegalOptionValue_2, "format", format), format);
+            }
+            toXML = true;
+        }
+        /*
+         * Read metadata from the data storage.
+         */
         if (hasUnexpectedFileCount(1, 1)) {
             return Command.INVALID_ARGUMENT_EXIT_CODE;
         }
@@ -62,11 +83,22 @@ final class MetadataSC extends SubCommand {
         try (NetcdfStore store = new NetcdfStore(new StorageConnector(files.get(0)))) {
             metadata = store.getMetadata();
         }
+        /*
+         * Format metadata to the standard output stream.
+         */
         if (metadata != null) {
-            final TreeTable tree = MetadataStandard.ISO_19115.asTreeTable(metadata, ValueExistencePolicy.NON_EMPTY);
-            final TreeTableFormat format = new TreeTableFormat(locale, timezone);
-            format.setColumns(TableColumn.NAME, TableColumn.VALUE);
-            format.format(tree, out);
+            if (toXML) {
+                final MarshallerPool pool = new MarshallerPool(null);
+                final Marshaller marshaller = pool.acquireMarshaller();
+                marshaller.setProperty(XML.LOCALE,   locale);
+                marshaller.setProperty(XML.TIMEZONE, timezone);
+                marshaller.marshal(metadata, out);
+            } else {
+                final TreeTable tree = MetadataStandard.ISO_19115.asTreeTable(metadata, ValueExistencePolicy.NON_EMPTY);
+                final TreeTableFormat tf = new TreeTableFormat(locale, timezone);
+                tf.setColumns(TableColumn.NAME, TableColumn.VALUE);
+                tf.format(tree, out);
+            }
             out.flush();
         }
         return 0;
