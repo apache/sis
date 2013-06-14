@@ -58,9 +58,9 @@ public final strictfp class MonolineFormatterTest extends TestCase {
      * The given string shall use tabulation before each line of the message.
      */
     private static String localize(final Level level, final String expected) {
-        final String name = level.getName();
-        return expected.replace(name, level.getLocalizedName())
-                .replace("\t", CharSequences.spaces(MonolineFormatter.levelWidth(null) - name.length()));
+        final String label = level.getLocalizedName();
+        return expected.replace(level.getName(), label)
+                .replace("\t", CharSequences.spaces(MonolineFormatter.levelWidth(null) - label.length()));
     }
 
     /**
