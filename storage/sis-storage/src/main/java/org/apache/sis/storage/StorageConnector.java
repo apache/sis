@@ -29,6 +29,7 @@ import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
 import java.sql.Connection;
 import javax.sql.DataSource;
+import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
@@ -563,6 +564,7 @@ public class StorageConnector implements Serializable {
     /**
      * Returns a string representation of this {@code StorageConnector} for debugging purpose.
      */
+    @Debug
     @Override
     public String toString() {
         final StringBuilder buffer = new StringBuilder(40);

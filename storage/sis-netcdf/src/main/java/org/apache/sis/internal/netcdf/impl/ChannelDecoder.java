@@ -46,6 +46,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.Debug;
 import org.apache.sis.measure.Units;
 
 
@@ -734,6 +735,7 @@ nextVar:    for (final VariableInfo variable : variables) {
      * Returns a string representation to be inserted in {@link org.apache.sis.storage.netcdf.NetcdfStore#toString()}
      * result. This is for debugging purpose only any may change in any future SIS version.
      */
+    @Debug
     @Override
     public String toString() {
         final StringBuilder buffer = new StringBuilder();

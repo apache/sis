@@ -28,6 +28,7 @@ import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.internal.simple.SimpleCitation;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.util.Debug;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.xml.IdentifierSpace;
@@ -123,6 +124,7 @@ public final class NonMarshalledAuthority<T> extends SimpleCitation implements I
     /**
      * Returns a string representation of this identifier space.
      */
+    @Debug
     @Override
     public String toString() {
         return "IdentifierSpace[" + title + ']';

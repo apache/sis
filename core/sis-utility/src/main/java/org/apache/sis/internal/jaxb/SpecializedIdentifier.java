@@ -25,6 +25,7 @@ import org.opengis.metadata.citation.Citation;
 import org.apache.sis.xml.XLink;
 import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
+import org.apache.sis.util.Debug;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.util.Citations;
 
@@ -201,6 +202,7 @@ public final class SpecializedIdentifier<T> implements Identifier, Serializable 
      *
      * @see IdentifierMapAdapter#toString()
      */
+    @Debug
     @Override
     public String toString() {
         final StringBuilder buffer = new StringBuilder(60).append("Identifier[");

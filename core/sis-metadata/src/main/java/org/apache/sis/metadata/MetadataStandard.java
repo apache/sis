@@ -29,6 +29,7 @@ import java.lang.reflect.Field;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.ExtendedElementInformation;
 import org.opengis.referencing.ReferenceIdentifier;
+import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ThreadSafe;
 import org.apache.sis.util.ComparisonMode;
@@ -768,6 +769,7 @@ public class MetadataStandard implements Serializable {
      * Returns a string representation of this metadata standard.
      * This is for debugging purpose only and may change in any future version.
      */
+    @Debug
     @Override
     public String toString() {
         return Classes.getShortClassName(this) + '[' + citation.getTitle() + ']';
