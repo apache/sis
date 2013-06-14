@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.util;
+package org.apache.sis.internal.system;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -188,7 +188,7 @@ public final class Supervisor extends StandardMBean implements SupervisorMBean, 
      * Returns the string from the {@code Descriptions} resource bundle for the given key.
      */
     private String getDescription(final String resourceKey) {
-        return ResourceBundle.getBundle("org.apache.sis.internal.util.Descriptions",
+        return ResourceBundle.getBundle("org.apache.sis.internal.system.Descriptions",
                 (locale != null) ? locale : Locale.getDefault(Locale.Category.DISPLAY),
                 Supervisor.class.getClassLoader()).getString(resourceKey);
     }

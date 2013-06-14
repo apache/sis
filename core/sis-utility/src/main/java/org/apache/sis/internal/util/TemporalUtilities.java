@@ -22,6 +22,7 @@ import org.opengis.temporal.Period;
 import org.opengis.temporal.TemporalFactory;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.system.DefaultFactories;
 
 
 /**

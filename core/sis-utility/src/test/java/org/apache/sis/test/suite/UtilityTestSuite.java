@@ -58,7 +58,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.jdk8.JDK8Test.class,
 
     // Collections.
-    org.apache.sis.internal.util.ReferenceQueueConsumerTest.class,
+    org.apache.sis.internal.system.ReferenceQueueConsumerTest.class,
     org.apache.sis.util.collection.WeakHashSetTest.class,
     org.apache.sis.util.collection.WeakValueHashMapTest.class,
     org.apache.sis.util.collection.CacheTest.class,

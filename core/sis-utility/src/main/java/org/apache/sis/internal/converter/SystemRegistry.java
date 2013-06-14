@@ -23,7 +23,7 @@ import net.jcip.annotations.ThreadSafe;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.UnconvertibleObjectException;
-import org.apache.sis.internal.util.SystemListener;
+import org.apache.sis.internal.system.SystemListener;
 
 
 /**

@@ -35,7 +35,7 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.CheckedContainer;
-import org.apache.sis.internal.util.SystemListener;
+import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.simple.SimpleCitation;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;

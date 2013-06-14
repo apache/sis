@@ -25,7 +25,7 @@ import java.lang.reflect.Array;
 import org.apache.sis.util.Disposable;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Messages;
-import org.apache.sis.internal.util.ReferenceQueueConsumer;
+import org.apache.sis.internal.system.ReferenceQueueConsumer;
 import org.apache.sis.math.MathFunctions;
 
 
