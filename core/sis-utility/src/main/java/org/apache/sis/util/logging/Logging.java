@@ -204,7 +204,7 @@ public final class Logging extends Static {
      * @param  logger Where to log the error.
      * @param  error  The error that occurred.
      * @return {@code true} if the error has been logged, or {@code false} if the logger
-     *         doesn't log anything at the {@link Level#WARNING WARNING} level.
+     *         doesn't log anything at {@link Level#WARNING}.
      */
     public static boolean unexpectedException(final Logger logger, final Throwable error) {
         return unexpectedException(logger, null, null, error, Level.WARNING);
@@ -235,7 +235,7 @@ public final class Logging extends Static {
      * @param method  The method where the error occurred, or {@code null}.
      * @param error   The error.
      * @return {@code true} if the error has been logged, or {@code false} if the logger
-     *         doesn't log anything at the {@link Level#WARNING WARNING} level.
+     *         doesn't log anything at {@link Level#WARNING}.
      *
      * @see #recoverableException(Logger, Class, String, Throwable)
      * @see #severeException(Logger, Class, String, Throwable)
@@ -255,7 +255,7 @@ public final class Logging extends Static {
      * @param method  The method where the error occurred, or {@code null}.
      * @param error   The error.
      * @return {@code true} if the error has been logged, or {@code false} if the logger
-     *         doesn't log anything at the {@link Level#WARNING WARNING} level.
+     *         doesn't log anything at {@link Level#WARNING}.
      *
      * @see #recoverableException(Class, String, Throwable)
      */
@@ -392,6 +392,27 @@ public final class Logging extends Static {
     }
 
     /**
+     * Invoked when an unexpected error occurred while configuring the system. The error shall not
+     * prevent the application from working, but may change the behavior in some minor aspects.
+     *
+     * {@example if the <code>org.apache.sis.util.logging.MonolineFormatter.time</code> pattern declared
+     * in the <code>jre/lib/logging.properties</code> file is illegal, then <code>MonolineFormatter</code>
+     * while log this problem and use a default time pattern.}
+     *
+     * @param classe  The class where the error occurred.
+     * @param method  The method name where the error occurred.
+     * @param error   The error.
+     * @return {@code true} if the error has been logged, or {@code false} if the logger
+     *         doesn't log anything at {@link Level#CONFIG}.
+     *
+     * @see #unexpectedException(Class, String, Throwable)
+     */
+    static boolean configurationException(final Class<?> classe, final String method, final Throwable error) {
+        final String classname = (classe != null) ? classe.getName() : null;
+        return unexpectedException(null, classname, method, error, Level.CONFIG);
+    }
+
+    /**
      * Invoked when a recoverable error occurs. This method is similar to
      * {@link #unexpectedException(Class,String,Throwable) unexpectedException}
      * except that it doesn't log the stack trace and uses a lower logging level.
@@ -400,13 +421,11 @@ public final class Logging extends Static {
      * @param method  The method name where the error occurred.
      * @param error   The error.
      * @return {@code true} if the error has been logged, or {@code false} if the logger
-     *         doesn't log anything at the {@link Level#FINE FINE} level.
+     *         doesn't log anything at {@link Level#FINE}.
      *
      * @see #unexpectedException(Class, String, Throwable)
      */
-    public static boolean recoverableException(final Class<?> classe, final String method,
-                                               final Throwable error)
-    {
+    public static boolean recoverableException(final Class<?> classe, final String method, final Throwable error) {
         return recoverableException(null, classe, method, error);
     }
 
@@ -420,7 +439,7 @@ public final class Logging extends Static {
      * @param method  The method name where the error occurred.
      * @param error   The error.
      * @return {@code true} if the error has been logged, or {@code false} if the logger
-     *         doesn't log anything at the {@link Level#FINE FINE} level.
+     *         doesn't log anything at {@link Level#FINE}.
      *
      * @see #unexpectedException(Logger, Class, String, Throwable)
      * @see #severeException(Logger, Class, String, Throwable)
@@ -442,7 +461,7 @@ public final class Logging extends Static {
      * @param method  The method name where the error occurred.
      * @param error   The error.
      * @return {@code true} if the error has been logged, or {@code false} if the logger
-     *         doesn't log anything at the {@link Level#SEVERE SEVERE} level.
+     *         doesn't log anything at {@link Level#SEVERE}.
      *
      * @see #unexpectedException(Logger, Class, String, Throwable)
      * @see #recoverableException(Logger, Class, String, Throwable)

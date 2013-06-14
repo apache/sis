@@ -30,6 +30,11 @@ import org.apache.sis.util.resources.Errors;
  */
 enum Option {
     /**
+     * The output format. Examples: {@code "xml"}, {@code "text"}.
+     */
+    FORMAT(true),
+
+    /**
      * The locale for the output produced by the command.
      */
     LOCALE(true),

@@ -126,7 +126,7 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      * @return The content date.
      */
     @Override
-    @XmlElement(name = "extent", required = true)
+    // TODO @XmlElement(name = "extent", required = true)
     public TemporalPrimitive getExtent() {
         return extent;
     }
