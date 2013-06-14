@@ -21,7 +21,6 @@ import java.util.TimeZone;
 import java.text.ParsePosition;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
-import net.jcip.annotations.NotThreadSafe;
 import org.apache.sis.util.StringBuilders;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
@@ -72,7 +71,6 @@ import org.apache.sis.util.resources.Errors;
  *
  * @see TableAppender
  */
-@NotThreadSafe
 public abstract class TabularFormat<T> extends CompoundFormat<T> {
     /**
      * For cross-version compatibility.

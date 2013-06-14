@@ -20,7 +20,7 @@ import java.util.Collection;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.LinkedHashSet;
-import net.jcip.annotations.Immutable;
+import org.apache.sis.util.Immutable;
 import org.apache.sis.math.FunctionProperty;
 
 

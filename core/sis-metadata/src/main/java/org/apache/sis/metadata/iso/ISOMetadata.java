@@ -19,7 +19,6 @@ package org.apache.sis.metadata.iso;
 import java.util.Collection;
 import java.util.logging.Logger;
 import java.io.Serializable;
-import net.jcip.annotations.ThreadSafe;
 import org.opengis.metadata.Identifier;
 import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifiedObject;
@@ -28,6 +27,7 @@ import org.apache.sis.metadata.ModifiableMetadata;
 import org.apache.sis.internal.jaxb.IdentifierMapWithSpecialCases;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ThreadSafe;
 
 
 /**

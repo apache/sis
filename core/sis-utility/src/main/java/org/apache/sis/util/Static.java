@@ -18,8 +18,8 @@ package org.apache.sis.util;
 
 
 /**
- * Parent of classes that contain only static utility methods. This parent is for documentation
- * purpose only. The list below summarizes some of the utility classes:
+ * Parent of SIS classes that contain only static utility methods, for documentation purpose.
+ * The list below summarizes some of the utility classes:
  *
  * <table class="sis">
  * <tr><th colspan="2">Classes of the Java language</th></tr>

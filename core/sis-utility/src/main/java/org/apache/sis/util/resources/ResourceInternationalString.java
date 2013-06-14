@@ -23,7 +23,7 @@ import java.io.InvalidObjectException;
 import java.io.IOException;
 import java.util.Locale;
 import java.util.MissingResourceException;
-import net.jcip.annotations.Immutable;
+import org.apache.sis.util.Immutable;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.iso.AbstractInternationalString;

@@ -20,7 +20,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.io.ObjectStreamException;
 import javax.measure.converter.UnitConverter;
-import net.jcip.annotations.Immutable;
+import org.apache.sis.util.Immutable;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 
@@ -42,8 +42,8 @@ import static org.apache.sis.math.MathFunctions.truncate;
  * @version 0.3
  * @module
  */
-@Immutable // Intentionally not final.
-class SexagesimalConverter extends UnitConverter {
+@Immutable
+class SexagesimalConverter extends UnitConverter { // Intentionally not final.
     /**
      * Serial number for compatibility with different versions.
      */

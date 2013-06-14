@@ -22,11 +22,10 @@ import java.nio.charset.UnsupportedCharsetException;
 import java.net.URISyntaxException;
 import java.net.MalformedURLException;
 import java.nio.file.InvalidPathException;
-import net.jcip.annotations.Immutable;
-
 import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.Locales;
 import org.apache.sis.util.Numbers;
+import org.apache.sis.util.Immutable;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.UnconvertibleObjectException;
