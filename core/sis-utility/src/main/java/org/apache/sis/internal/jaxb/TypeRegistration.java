@@ -23,7 +23,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import org.apache.sis.internal.util.SystemListener;
+import org.apache.sis.internal.system.SystemListener;
 
 
 /**

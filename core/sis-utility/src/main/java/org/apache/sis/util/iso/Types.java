@@ -39,7 +39,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.BackingStoreException;
-import org.apache.sis.internal.util.DefaultFactories;
+import org.apache.sis.internal.system.DefaultFactories;
 
 
 /**

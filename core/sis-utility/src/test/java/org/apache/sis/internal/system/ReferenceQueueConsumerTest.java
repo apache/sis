@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.util;
+package org.apache.sis.internal.system;
 
 import java.lang.ref.ReferenceQueue;
 import org.apache.sis.test.TestCase;

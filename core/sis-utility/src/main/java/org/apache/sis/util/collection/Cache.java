@@ -33,10 +33,10 @@ import net.jcip.annotations.ThreadSafe;
 import org.apache.sis.util.Disposable;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.util.DelayedRunnable;
-import org.apache.sis.internal.util.ReferenceQueueConsumer;
+import org.apache.sis.internal.system.DelayedRunnable;
+import org.apache.sis.internal.system.ReferenceQueueConsumer;
 
-import static org.apache.sis.internal.util.DelayedExecutor.executeDaemonTask;
+import static org.apache.sis.internal.system.DelayedExecutor.executeDaemonTask;
 
 
 /**
