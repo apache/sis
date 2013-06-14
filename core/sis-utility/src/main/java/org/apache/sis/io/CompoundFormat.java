@@ -29,7 +29,6 @@ import java.text.ParsePosition;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import net.jcip.annotations.NotThreadSafe;
 
 import org.apache.sis.measure.Angle;
 import org.apache.sis.measure.AngleFormat;
@@ -73,7 +72,6 @@ import org.apache.sis.internal.util.LocalizedParseException;
  * @version 0.3
  * @module
  */
-@NotThreadSafe
 public abstract class CompoundFormat<T> extends Format implements Localized {
     /**
      * For cross-version compatibility.

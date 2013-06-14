@@ -19,11 +19,11 @@ package org.apache.sis.internal.converter;
 import java.util.Date;
 import java.util.ServiceLoader;
 import org.opengis.util.CodeList;
-import net.jcip.annotations.ThreadSafe;
 import org.apache.sis.util.Numbers;
+import org.apache.sis.util.ThreadSafe;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.UnconvertibleObjectException;
-import org.apache.sis.internal.util.SystemListener;
+import org.apache.sis.internal.system.SystemListener;
 
 
 /**

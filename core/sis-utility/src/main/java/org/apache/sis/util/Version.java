@@ -18,7 +18,6 @@ package org.apache.sis.util;
 
 import java.io.Serializable;
 import java.util.StringTokenizer;
-import net.jcip.annotations.Immutable;
 
 
 /**

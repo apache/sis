@@ -21,10 +21,10 @@ import java.util.Formattable;
 import java.util.FormattableFlags;
 import java.io.Serializable;
 import javax.measure.unit.Unit;
-import net.jcip.annotations.Immutable;
 import org.apache.sis.internal.util.Utilities;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.Immutable;
 import org.apache.sis.util.Numbers;
 
 // Related to JDK7

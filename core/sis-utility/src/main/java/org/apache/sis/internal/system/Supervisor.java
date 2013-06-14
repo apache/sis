@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.util;
+package org.apache.sis.internal.system;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -82,7 +82,7 @@ public final class Supervisor extends StandardMBean implements SupervisorMBean, 
                 final ObjectName n = new ObjectName("org.apache.sis:type=Supervisor");
                 server.registerMBean(new Supervisor(null, null), n);
                 name = n; // Store only on success.
-            } catch (Exception e) { // (SecurityException | JMException) on JDK7
+            } catch (Exception e) { // (SecurityException | JMException) on the JDK7 branch.
                 Logging.unexpectedException(Logger.getLogger("org.apache.sis"), Supervisor.class, "register", e);
             }
         }
@@ -188,7 +188,7 @@ public final class Supervisor extends StandardMBean implements SupervisorMBean, 
      * Returns the string from the {@code Descriptions} resource bundle for the given key.
      */
     private String getDescription(final String resourceKey) {
-        return ResourceBundle.getBundle("org.apache.sis.internal.util.Descriptions",
+        return ResourceBundle.getBundle("org.apache.sis.internal.system.Descriptions",
                 (locale != null) ? locale : Locale.getDefault(),
                 Supervisor.class.getClassLoader()).getString(resourceKey);
     }

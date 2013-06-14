@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.util;
+package org.apache.sis.internal.system;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.ExecutorService;

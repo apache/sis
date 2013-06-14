@@ -21,7 +21,6 @@
 	<classpathentry kind="var" path="M2_REPO/org/opengis/geoapi/3.0.0/geoapi-3.0.0.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/opengis/geoapi-conformance/3.0.0/geoapi-conformance-3.0.0.jar"/>
 	<classpathentry kind="var" path="M2_REPO/javax/measure/jsr-275/0.9.3/jsr-275-0.9.3.jar"/>
-	<classpathentry kind="var" path="M2_REPO/net/jcip/jcip-annotations/1.0/jcip-annotations-1.0.jar"/>
 	<classpathentry kind="var" path="M2_REPO/junit/junit/4.8.1/junit-4.8.1.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/osgi/org.osgi.core/5.0.0/org.osgi.core-5.0.0.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/apache/maven/maven-core/3.0.4/maven-core-3.0.4.jar"/>

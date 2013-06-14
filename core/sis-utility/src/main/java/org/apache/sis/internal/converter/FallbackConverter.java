@@ -20,7 +20,7 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.EnumSet;
 import java.util.Iterator;
-import net.jcip.annotations.Immutable;
+import org.apache.sis.util.Immutable;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.math.FunctionProperty;
