@@ -28,13 +28,11 @@ import java.util.NoSuchElementException;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import net.jcip.annotations.ThreadSafe;
-
 import org.opengis.util.InternationalString;
-
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Localized;
+import org.apache.sis.util.ThreadSafe;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;

@@ -22,13 +22,13 @@ package org.apache.sis.geometry;
  * force installation of the Java2D module (e.g. JavaFX/SWT).
  */
 import java.io.Serializable;
-import net.jcip.annotations.Immutable;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.geometry.MismatchedReferenceSystemException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.metadata.extent.GeographicBoundingBox;
+import org.apache.sis.util.Immutable;
 
 import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
 

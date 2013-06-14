@@ -24,7 +24,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
-import net.jcip.annotations.ThreadSafe;
+import org.apache.sis.util.ThreadSafe;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.DelayedExecutor;
 import org.apache.sis.internal.system.DelayedRunnable;

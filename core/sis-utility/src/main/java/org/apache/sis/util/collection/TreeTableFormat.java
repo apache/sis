@@ -27,7 +27,6 @@ import java.text.Format;
 import java.text.ParsePosition;
 import java.text.ParseException;
 import java.util.regex.Matcher;
-import net.jcip.annotations.NotThreadSafe;
 import org.opengis.util.CodeList;
 import org.opengis.util.InternationalString;
 import org.apache.sis.io.LineAppender;
@@ -85,7 +84,6 @@ import static org.apache.sis.util.Characters.NO_BREAK_SPACE;
  * @version 0.3
  * @module
  */
-@NotThreadSafe
 public class TreeTableFormat extends TabularFormat<TreeTable> {
     /**
      * For cross-version compatibility.

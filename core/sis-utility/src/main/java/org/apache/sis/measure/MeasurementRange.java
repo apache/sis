@@ -19,8 +19,8 @@ package org.apache.sis.measure;
 import javax.measure.unit.Unit;
 import javax.measure.converter.UnitConverter;
 import javax.measure.converter.ConversionException;
-import net.jcip.annotations.Immutable;
 import org.apache.sis.util.Numbers;
+import org.apache.sis.util.Immutable;
 import org.apache.sis.util.resources.Errors;
 
 // Related to JDK7

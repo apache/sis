@@ -29,7 +29,6 @@ import java.util.SortedSet;
 import java.util.AbstractSet;
 import java.util.NoSuchElementException;
 import java.util.ConcurrentModificationException;
-import net.jcip.annotations.NotThreadSafe;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Range;
 import org.apache.sis.util.ArraysExt;
@@ -108,7 +107,6 @@ import static org.apache.sis.util.Numbers.*;
  *
  * @see Range
  */
-@NotThreadSafe
 public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range<E>>
         implements CheckedContainer<Range<E>>, SortedSet<Range<E>>, Cloneable, Serializable
 {

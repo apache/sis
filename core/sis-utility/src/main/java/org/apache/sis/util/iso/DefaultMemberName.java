@@ -18,10 +18,10 @@ package org.apache.sis.util.iso;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import net.jcip.annotations.Immutable;
 import org.opengis.util.MemberName;
 import org.opengis.util.NameSpace;
 import org.opengis.util.TypeName;
+import org.apache.sis.util.Immutable;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 

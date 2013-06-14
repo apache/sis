@@ -26,9 +26,9 @@ import java.util.LinkedHashMap;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Locale;
-import net.jcip.annotations.ThreadSafe;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.Locales;
+import org.apache.sis.util.ThreadSafe;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 

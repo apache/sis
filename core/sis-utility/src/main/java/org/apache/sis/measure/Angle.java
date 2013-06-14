@@ -23,7 +23,7 @@ import java.util.FormattableFlags;
 import java.text.Format;
 import java.text.ParseException;
 import java.io.Serializable;
-import net.jcip.annotations.Immutable;
+import org.apache.sis.util.Immutable;
 import org.apache.sis.internal.util.Utilities;
 
 import static java.lang.Double.doubleToLongBits;

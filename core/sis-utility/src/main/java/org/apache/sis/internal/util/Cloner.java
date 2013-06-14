@@ -18,7 +18,6 @@ package org.apache.sis.internal.util;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
-import net.jcip.annotations.NotThreadSafe;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.resources.Errors;
 
@@ -32,7 +31,6 @@ import org.apache.sis.util.resources.Errors;
  * @version 0.3
  * @module
  */
-@NotThreadSafe
 @Workaround(library="JDK", version="1.7")
 public class Cloner {
     /**

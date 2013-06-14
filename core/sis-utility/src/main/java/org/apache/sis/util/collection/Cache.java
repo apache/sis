@@ -28,8 +28,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.ref.SoftReference;
-import net.jcip.annotations.GuardedBy;
-import net.jcip.annotations.ThreadSafe;
+import org.apache.sis.util.ThreadSafe;
 import org.apache.sis.util.Disposable;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
@@ -154,14 +153,12 @@ public class Cache<K,V> extends AbstractMap<K,V> {
      *
      * <p>Entries in this map are ordered from least-recently accessed to most-recently accessed.</p>
      */
-    @GuardedBy("costs")
     private final Map<K,Integer> costs;
 
     /**
      * The sum of all values in the {@link #costs} map. This field must be used in the
      * same thread than {@link #costs}.
      */
-    @GuardedBy("costs")
     private long totalCost;
 
     /**
@@ -769,7 +766,7 @@ public class Cache<K,V> extends AbstractMap<K,V> {
      */
     final void adjustReferences(final K key, final V value) {
         int cost = cost(value);
-        synchronized (costs) {
+        synchronized (costs) { // Should not be needed, but done as a safety.
             final Integer old = costs.put(key, cost);
             if (old != null) {
                 cost -= old;

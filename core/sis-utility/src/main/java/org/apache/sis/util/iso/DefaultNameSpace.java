@@ -22,12 +22,12 @@ import java.util.ListIterator;
 import java.util.Locale;
 import java.io.Serializable;
 import java.io.ObjectStreamException;
-import net.jcip.annotations.Immutable;
 import org.opengis.util.NameSpace;
 import org.opengis.util.LocalName;
 import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
+import org.apache.sis.util.Immutable;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 

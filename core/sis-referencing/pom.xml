@@ -112,10 +112,6 @@ Implementations of Coordinate Reference Systems (CRS),
       <groupId>org.opengis</groupId>
       <artifactId>geoapi-conformance</artifactId>
     </dependency>
-    <dependency>
-      <groupId>net.jcip</groupId>
-      <artifactId>jcip-annotations</artifactId>
-    </dependency>
 
     <!-- Test dependencies -->
     <dependency>
