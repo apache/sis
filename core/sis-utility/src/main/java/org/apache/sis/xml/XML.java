@@ -26,6 +26,7 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.JAXBException;
 import org.apache.sis.util.Static;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.jaxb.TypeRegistration;
 
@@ -263,7 +264,7 @@ public final class XML extends Static {
      * be created because the {@code JAXBContext} may be different.
      */
     static {
-        SystemListener.add(new SystemListener() {
+        SystemListener.add(new SystemListener(Modules.UTILITIES) {
             @Override protected void classpathChanged() {
                 POOL = null;
             }
