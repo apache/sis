@@ -45,7 +45,7 @@ import org.apache.sis.internal.metadata.ReferencingServices;
 @XmlType(name = "EX_VerticalExtent_Type", propOrder = {
     "minimumValue",
     "maximumValue",
-    "verticalCRS"
+// TODO    "verticalCRS"
 })
 @XmlRootElement(name = "EX_VerticalExtent")
 public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent {
@@ -178,7 +178,7 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
      * identification includes unit of measure.
      */
     @Override
-    @XmlElement(name = "verticalCRS", required = true)
+    // TODO @XmlElement(name = "verticalCRS", required = true)
     public VerticalCRS getVerticalCRS() {
         return verticalCRS;
     }

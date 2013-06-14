@@ -44,7 +44,7 @@ import static org.apache.sis.util.ArgumentChecks.ensurePositive;
  *   <li>The {@link Logger#setLevel(Level)} can be invoked, together with
  *       {@link java.util.logging.Handler#setLevel(Level)} on all relevant logging targets
  *       (console or file, <i>etc.</i>).</li>
- *   <li>The {@link MonolineFormatter#configureConsoleHandler(Logger, Level)} convenience
+ *   <li>The {@link MonolineFormatter#install(Logger, Level)} convenience
  *       method can be invoked.</li>
  * </ul>
  *
