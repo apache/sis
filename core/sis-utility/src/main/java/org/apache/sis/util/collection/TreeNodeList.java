@@ -19,7 +19,6 @@ package org.apache.sis.util.collection;
 import java.util.Arrays;
 import java.util.AbstractList;
 import java.io.Serializable;
-import net.jcip.annotations.NotThreadSafe;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
@@ -62,7 +61,6 @@ import org.apache.sis.util.resources.Errors;
  * @version 0.3
  * @module
  */
-@NotThreadSafe
 abstract class TreeNodeList extends AbstractList<TreeTable.Node>
         implements CheckedContainer<TreeTable.Node>, Serializable
 {

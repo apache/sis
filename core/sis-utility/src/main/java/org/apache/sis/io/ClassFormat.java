@@ -20,7 +20,7 @@ import java.text.Format;
 import java.text.FieldPosition;
 import java.text.ParsePosition;
 import java.io.InvalidObjectException;
-import net.jcip.annotations.ThreadSafe;
+import org.apache.sis.util.ThreadSafe;
 import org.apache.sis.util.Classes;
 
 

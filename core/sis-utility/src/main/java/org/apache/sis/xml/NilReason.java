@@ -21,7 +21,7 @@ import java.net.URISyntaxException;
 import java.io.Serializable;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.InvocationHandler;
-import net.jcip.annotations.Immutable;
+import org.apache.sis.util.Immutable;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;

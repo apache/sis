@@ -22,8 +22,8 @@ import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
-import org.apache.sis.internal.util.SystemListener;
 import org.apache.sis.metadata.iso.extent.DefaultSpatialTemporalExtent;
+import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.util.resources.Errors;
 
 

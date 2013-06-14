@@ -16,7 +16,7 @@
  */
 package org.apache.sis.measure;
 
-import net.jcip.annotations.Immutable;
+import org.apache.sis.util.Immutable;
 
 
 /**

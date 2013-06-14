@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.HashSet;
 import java.util.Arrays;
 import java.util.Comparator;
-import net.jcip.annotations.NotThreadSafe;
 
 import org.junit.Test;
 import org.junit.runner.Description;
@@ -51,7 +50,7 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  *   <li>Support of the {@link DependsOn} and {@link DependsOnMethod} annotations.</li>
  * </ul>
  *
- * This runner is not designed for parallel execution of tests.
+ * This runner is <strong>not</strong> designed for parallel execution of tests.
  *
  * @author  Stephen Connolly
  * @author  Martin Desruisseaux (Geomatys)
@@ -59,7 +58,6 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * @version 0.3
  * @module
  */
-@NotThreadSafe
 public final class TestRunner extends BlockJUnit4ClassRunner {
     /**
      * The test methods to be executed, sorted according their dependencies.

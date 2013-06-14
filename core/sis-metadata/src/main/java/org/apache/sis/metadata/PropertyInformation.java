@@ -20,7 +20,6 @@ import java.util.Locale;
 import java.util.Collection;
 import java.util.Collections;
 import java.lang.reflect.Method;
-import net.jcip.annotations.Immutable;
 import org.opengis.annotation.UML;
 import org.opengis.metadata.Datatype;
 import org.opengis.metadata.Obligation;
@@ -33,6 +32,7 @@ import org.apache.sis.internal.simple.SimpleReferenceIdentifier;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.Numbers;
+import org.apache.sis.util.Immutable;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.logging.Logging;
 

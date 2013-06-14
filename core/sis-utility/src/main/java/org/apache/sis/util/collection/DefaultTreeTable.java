@@ -23,7 +23,6 @@ import java.util.LinkedHashMap;
 import java.util.Collection;
 import java.util.Collections;
 import java.io.Serializable;
-import net.jcip.annotations.NotThreadSafe;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Cloner;
@@ -73,7 +72,6 @@ import org.apache.sis.internal.jdk7.Objects;
  * @see Node
  * @see TableColumn
  */
-@NotThreadSafe
 public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
     /**
      * For cross-version compatibility.
@@ -324,7 +322,6 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
      * @see DefaultTreeTable
      * @see TableColumn
      */
-    @NotThreadSafe
     public static class Node implements TreeTable.Node, Cloneable, Serializable {
         /**
          * For cross-version compatibility.

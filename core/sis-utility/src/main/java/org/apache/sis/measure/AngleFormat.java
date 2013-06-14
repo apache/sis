@@ -25,8 +25,6 @@ import java.text.NumberFormat;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.AttributedCharacterIterator;
-import net.jcip.annotations.NotThreadSafe;
-
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.ArgumentChecks;
@@ -106,7 +104,6 @@ import org.apache.sis.internal.jdk7.Objects;
  * @see Latitude
  * @see Longitude
  */
-@NotThreadSafe
 public class AngleFormat extends Format implements Localized {
     /**
      * Serial number for inter-operability with different versions.

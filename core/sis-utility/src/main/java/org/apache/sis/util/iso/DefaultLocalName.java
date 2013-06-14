@@ -23,12 +23,12 @@ import java.io.ObjectStreamException;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import net.jcip.annotations.Immutable;
 import org.opengis.util.NameSpace;
 import org.opengis.util.LocalName;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.xml.Namespaces;
+import org.apache.sis.util.Immutable;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.internal.jaxb.gco.CharSequenceAdapter;
 
