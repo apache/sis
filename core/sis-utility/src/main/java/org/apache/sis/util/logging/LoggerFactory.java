@@ -17,7 +17,7 @@
 package org.apache.sis.util.logging;
 
 import java.util.logging.Logger;
-import net.jcip.annotations.ThreadSafe;
+import org.apache.sis.util.ThreadSafe;
 import org.apache.sis.util.collection.WeakValueHashMap;
 
 

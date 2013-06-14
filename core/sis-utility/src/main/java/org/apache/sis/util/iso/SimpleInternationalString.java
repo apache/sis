@@ -21,7 +21,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Locale;
-import net.jcip.annotations.Immutable;
+import org.apache.sis.util.Immutable;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 

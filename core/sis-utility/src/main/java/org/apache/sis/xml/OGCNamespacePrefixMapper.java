@@ -17,7 +17,7 @@
 package org.apache.sis.xml;
 
 import com.sun.xml.internal.bind.marshaller.NamespacePrefixMapper;
-import net.jcip.annotations.Immutable;
+import org.apache.sis.util.Immutable;
 
 
 /**
@@ -46,6 +46,7 @@ final class OGCNamespacePrefixMapper extends NamespacePrefixMapper {
 
     /**
      * Creates a new prefix mapper.
+     * This constructor is invoked by reflection and needs to be public for that reason.
      *
      * @param defaultNamespace The namespace which doesn't need prefix, or {@code null} if none.
      */

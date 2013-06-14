@@ -20,11 +20,10 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.AbstractSet;
 import java.lang.reflect.Array;
-import net.jcip.annotations.ThreadSafe;
-
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Utilities;
+import org.apache.sis.util.ThreadSafe;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.NullArgumentException;

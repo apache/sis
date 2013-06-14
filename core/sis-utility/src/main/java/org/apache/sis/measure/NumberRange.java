@@ -16,8 +16,8 @@
  */
 package org.apache.sis.measure;
 
-import net.jcip.annotations.Immutable;
 import org.apache.sis.util.Numbers;
+import org.apache.sis.util.Immutable;
 import org.apache.sis.util.resources.Errors;
 
 

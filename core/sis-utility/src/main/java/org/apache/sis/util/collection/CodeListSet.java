@@ -23,7 +23,6 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.io.Serializable;
 import java.lang.reflect.Modifier;
-import net.jcip.annotations.NotThreadSafe;
 import org.opengis.util.CodeList;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.resources.Errors;
@@ -58,7 +57,6 @@ import org.apache.sis.util.resources.Errors;
  *
  * @see java.util.EnumSet
  */
-@NotThreadSafe
 public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
         implements CheckedContainer<E>, Cloneable, Serializable
 {

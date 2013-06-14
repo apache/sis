@@ -21,8 +21,6 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.ArrayList;
-import net.jcip.annotations.ThreadSafe;
-
 import org.opengis.util.TypeName;
 import org.opengis.util.NameSpace;
 import org.opengis.util.LocalName;
@@ -30,7 +28,7 @@ import org.opengis.util.MemberName;
 import org.opengis.util.GenericName;
 import org.opengis.util.NameFactory;
 import org.opengis.util.InternationalString;
-
+import org.apache.sis.util.ThreadSafe;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.NullArgumentException;
 import org.apache.sis.util.collection.WeakHashSet;

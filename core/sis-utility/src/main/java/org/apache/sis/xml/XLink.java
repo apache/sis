@@ -23,10 +23,9 @@ import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
-import net.jcip.annotations.ThreadSafe;
-
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.ThreadSafe;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 

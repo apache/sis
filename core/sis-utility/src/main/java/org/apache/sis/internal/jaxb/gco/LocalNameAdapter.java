@@ -59,7 +59,7 @@ public final class LocalNameAdapter extends XmlAdapter<String,LocalName> {
      * better to avoid them.
      */
     static NameFactory getNameFactory() {
-        return org.apache.sis.internal.util.DefaultFactories.NAMES;
+        return org.apache.sis.internal.system.DefaultFactories.NAMES;
     }
 
     /**

@@ -64,7 +64,7 @@ import org.apache.sis.internal.netcdf.Axis;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.netcdf.GridGeometry;
-import org.apache.sis.internal.util.DefaultFactories;
+import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.metadata.MetadataUtilities;
 
 // The following dependency is used only for static final String constants.

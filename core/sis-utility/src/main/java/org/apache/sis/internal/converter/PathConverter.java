@@ -23,8 +23,8 @@ import java.net.URL;
 import java.net.URI;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
-import net.jcip.annotations.Immutable;
 import org.apache.sis.math.FunctionProperty;
+import org.apache.sis.util.Immutable;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.UnconvertibleObjectException;
 
