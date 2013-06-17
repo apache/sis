@@ -347,7 +347,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-jdk14</artifactId>
-        <version>1.6.4</version> <!-- Must matches the version used by NetCDF. -->
+        <version>1.7.5</version> <!-- Must matches the version used by NetCDF. -->
         <scope>runtime</scope> <!-- Should never be needed at compile time. -->
       </dependency>
     </dependencies>
@@ -374,7 +374,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
        =================================================================== -->
   <properties>
     <geoapi.version>3.0.0</geoapi.version>
-    <netcdf.version>4.3.16</netcdf.version>
+    <netcdf.version>4.3.17</netcdf.version>
     <findbugs.version>2.5.2</findbugs.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <website.encoding>UTF-8</website.encoding>

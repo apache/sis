@@ -135,6 +135,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final int Identifier = 42;
 
         /**
+         * Implementation
+         */
+        public static final int Implementation = 52;
+
+        /**
          * Index
          */
         public static final int Index = 44;
@@ -173,6 +178,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Localization
          */
         public static final int Localization = 19;
+
+        /**
+         * Logging
+         */
+        public static final int Logging = 51;
 
         /**
          * Longitude
