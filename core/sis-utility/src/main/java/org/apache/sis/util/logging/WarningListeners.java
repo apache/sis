@@ -125,6 +125,9 @@ public class WarningListeners<S> implements Localized {
         } else {
             final Logger logger = getLogger();
             record.setLoggerName(logger.getName());
+            if (record instanceof QuietLogRecord) {
+                ((QuietLogRecord) record).clearThrown();
+            }
             logger.log(record);
         }
     }
@@ -133,10 +136,23 @@ public class WarningListeners<S> implements Localized {
      * Reports a warning represented by the given message and exception.
      * At least one of {@code message} and {@code exception} shall be non-null.
      *
+     * {@section Stack trace omission}
+     * If there is no registered listener, then the {@link #warning(LogRecord)} method will send the record to the
+     * {@linkplain #getLogger() logger}, but <em>without</em> the stack trace. This is done that way because stack
+     * traces consume lot of space in the logging files, while being considered implementation details in the context
+     * of {@code WarningListeners} (on the assumption that the logging message provides sufficient information).
+     * If the stack trace is desired, then users can either:
+     * <ul>
+     *   <li>invoke {@code warning(LogRecord)} directly, or</li>
+     *   <li>override {@code warning(LogRecord)} and invoke {@link LogRecord#setThrown(Throwable)} explicitely, or</li>
+     *   <li>register a listener which will log the record itself.</li>
+     * </ul>
+     *
      * @param message    The message to log, or {@code null} if none.
      * @param exception  The exception to log, or {@code null} if none.
      */
     public void warning(String message, final Exception exception) {
+        final LogRecord record;
         final StackTraceElement[] trace;
         if (exception != null) {
             trace = exception.getStackTrace();
@@ -144,11 +160,12 @@ public class WarningListeners<S> implements Localized {
             if (message == null) {
                 message = exception.toString();
             }
+            record = new QuietLogRecord(message, exception);
         } else {
+            ArgumentChecks.ensureNonEmpty("message", message);
             trace = Thread.currentThread().getStackTrace();
+            record = new LogRecord(Level.WARNING, message);
         }
-        ArgumentChecks.ensureNonEmpty("message", message);
-        final LogRecord record = new LogRecord(Level.WARNING, message);
         for (int i=0; i<trace.length; i++) {
             StackTraceElement e = trace[i];
             if (isPublic(e)) {
