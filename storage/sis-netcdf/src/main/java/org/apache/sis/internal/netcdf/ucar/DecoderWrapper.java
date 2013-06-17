@@ -336,6 +336,16 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     }
 
     /**
+     * Invoked by the UCAR library during the reading process for progress information.
+     *
+     * @param message The message to show to the user.
+     * @param progress Count of progress, or -1 if unknown. This is not necessarily a percentage done.
+     */
+    @Override
+    public void setProgress(final String message, final int progress) {
+    }
+
+    /**
      * Invoked by the UCAR NetCDF library when an error occurred.
      *
      * @param message The error message.
