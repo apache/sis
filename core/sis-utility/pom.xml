@@ -153,6 +153,7 @@ Miscellaneous utilities.
         <artifactId>maven-bundle-plugin</artifactId>
         <configuration>
           <instructions>
+            <Bundle-SymbolicName>org.apache.sis.utility</Bundle-SymbolicName>
             <Bundle-Activator>org.apache.sis.internal.system.OSGiActivator</Bundle-Activator>
           </instructions>
         </configuration>

@@ -20,6 +20,7 @@ import java.util.Locale;
 import javax.xml.bind.annotation.XmlValue;
 import javax.xml.bind.annotation.XmlAttribute;
 import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.util.Debug;
 
 // Related to JDK7
 import org.apache.sis.internal.jdk7.Objects;
@@ -133,6 +134,7 @@ final class LocalisedCharacterString {
      *
      * @see TextGroup#toString()
      */
+    @Debug
     @Override
     public String toString() {
         final StringBuilder buffer = new StringBuilder(80)

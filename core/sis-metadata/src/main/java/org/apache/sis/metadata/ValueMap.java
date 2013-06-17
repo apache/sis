@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.Debug;
 
 import static org.apache.sis.metadata.PropertyAccessor.RETURN_NULL;
 import static org.apache.sis.metadata.PropertyAccessor.RETURN_PREVIOUS;
@@ -256,6 +257,7 @@ final class ValueMap extends PropertyMap<Object> {
          * Returns a string representation of this entry.
          * This method is mostly for debugging purpose.
          */
+        @Debug
         @Override
         public String toString() {
             String value = String.valueOf(getValue());

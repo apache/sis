@@ -38,6 +38,23 @@ public abstract class SystemListener implements EventListener {
     private static SystemListener[] listeners;
 
     /**
+     * The OSGi module symbolic name, as declared in the {@code Bundle-SymbolicName} entry of the
+     * {@code META-INF/MANIFEST.MF} file. Shall be one of {@link Modules} constants. This is used
+     * in order to detect which listeners to remove when a module is uninstalled.
+     */
+    private final String module;
+
+    /**
+     * Creates a nes listener.
+     *
+     * @param module The OSGi module symbolic name, as declared in the {@code Bundle-SymbolicName}
+     *        entry of the {@code META-INF/MANIFEST.MF} file. Shall be one of {@link Modules} constants.
+     */
+    protected SystemListener(final String module) {
+        this.module = module;
+    }
+
+    /**
      * Adds the given listener to the list of listeners to notify when a change occurs.
      * This method doesn't check if the given listener is already present in the array,
      * unless assertions are enabled.
@@ -62,10 +79,6 @@ public abstract class SystemListener implements EventListener {
      * a paranoiac check.`
      *
      * @param listener The listener to remove.
-     *
-     * @todo Not yet used. Given that the intend of this method is to remove all listeners
-     *       registered by a specific module, a possible approach would be to remove all
-     *       listeners associated to that through some module identifier.
      */
     public static synchronized void remove(final SystemListener listener) {
         SystemListener[] list = listeners;
@@ -80,16 +93,29 @@ public abstract class SystemListener implements EventListener {
     }
 
     /**
-     * For sub-classes constructors.
+     * Removes all listeners for the module of the given name.
+     * This method is invoked by {@link OSGiActivator}.
+     *
+     * @param name The name of the module for which to remove listeners, or {@code null} if the module
+     *        to uninstall does not have symbolic name (in which case it is probably not a SIS module).
      */
-    protected SystemListener() {
+    static synchronized void removeModule(final String name) {
+        if (name != null) {
+            final SystemListener[] list = listeners;
+            if (list != null) {
+                int count = 0;
+                final SystemListener[] modified = new SystemListener[list.length];
+                for (final SystemListener listener : list) {
+                    if (!name.equals(listener.module)) {
+                        modified[count++] = listener;
+                    }
+                }
+                if (count != list.length) {
+                    listeners = Arrays.copyOf(modified, count);
+                }
+            }
+        }
     }
-
-    /**
-     * Invoked when the classpath is likely to have changed.
-     * Any classes using {@link java.util.ServiceLoader} are advised to clear their cache.
-     */
-    protected abstract void classpathChanged();
 
     /**
      * Notifies all registered listeners that the classpath may have changed.
@@ -105,4 +131,10 @@ public abstract class SystemListener implements EventListener {
             }
         }
     }
+
+    /**
+     * Invoked when the classpath is likely to have changed.
+     * Any classes using {@link java.util.ServiceLoader} are advised to clear their cache.
+     */
+    protected abstract void classpathChanged();
 }

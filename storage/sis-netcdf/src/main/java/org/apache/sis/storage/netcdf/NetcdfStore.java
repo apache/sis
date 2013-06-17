@@ -18,6 +18,7 @@ package org.apache.sis.storage.netcdf;
 
 import java.io.IOException;
 import org.opengis.metadata.Metadata;
+import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
@@ -103,6 +104,7 @@ public class NetcdfStore extends DataStore {
      * Returns a string representation of this NetCDF store for debugging purpose.
      * The content of the string returned by this method may change in any future SIS version.
      */
+    @Debug
     @Override
     public String toString() {
         return getClass().getSimpleName() + '[' + decoder + ']';

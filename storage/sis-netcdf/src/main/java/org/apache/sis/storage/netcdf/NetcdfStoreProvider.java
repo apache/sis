@@ -26,6 +26,8 @@ import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.impl.ChannelDecoder;
 import org.apache.sis.internal.netcdf.ucar.DecoderWrapper;
 import org.apache.sis.internal.storage.ChannelDataInput;
+import org.apache.sis.internal.system.SystemListener;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.StorageConnector;
@@ -77,6 +79,18 @@ public class NetcdfStoreProvider extends DataStoreProvider {
      * in argument a UCAR {@code NetcdfFile} object. Otherwise {@code null}.
      */
     private static volatile Constructor<? extends Decoder> createFromUCAR;
+
+    /**
+     * Clears the cached constructors if the classpath has changed,
+     * because the UCAR library may no longer be on the classpath.
+     */
+    static {
+        SystemListener.add(new SystemListener(Modules.NETCDF) {
+            @Override protected void classpathChanged() {
+                reset();
+            }
+        });
+    }
 
     /**
      * Creates a new provider.
@@ -234,37 +248,51 @@ public class NetcdfStoreProvider extends DataStoreProvider {
     }
 
     /**
-     * Get the {@link java.lang.Class} that represent the {@link ucar.nc2.NetcdfFile type}.
-     * We do not synchronize this method since it is not a big deal if {@code Class.forName(…)} is invoked twice.
-     * The {@code Class.forName(…)} method performs itself the required synchronization for returning the same
-     * singleton {@code Class} instance.
+     * Gets the {@link java.lang.Class} that represent the {@link ucar.nc2.NetcdfFile type}.
      */
     private static void ensureInitialized() {
         if (netcdfFileClass == null) {
-            try {
-                netcdfFileClass = Class.forName(UCAR_CLASSNAME);
-            } catch (ClassNotFoundException e) {
-                netcdfFileClass = Void.TYPE;
-                return;
-            }
-            try {
+            synchronized (NetcdfStoreProvider.class) {
                 /*
-                 * UCAR API.
+                 * No double-check because it is not a big deal if the constructors are fetched twice.
+                 * The sychronization is mostly a safety against concurrent execution of 'reset()'.
                  */
-                canOpenFromPath = netcdfFileClass.getMethod("canOpen", String.class);
-                assert canOpenFromPath.getReturnType() == Boolean.TYPE;
-                /*
-                 * SIS Wrapper API.
-                 */
-                final Class<? extends Decoder> wrapper =
-                        Class.forName("org.apache.sis.internal.netcdf.ucar.DecoderWrapper").asSubclass(Decoder.class);
-                final Class<?>[] parameterTypes = new Class<?>[] {WarningListeners.class, netcdfFileClass};
-                createFromUCAR = wrapper.getConstructor(parameterTypes);
-                parameterTypes[1] = String.class;
-                createFromPath = wrapper.getConstructor(parameterTypes);
-            } catch (Exception e) { // (ReflectiveOperationException) on JDK7 branch.
-                throw new AssertionError(e); // Should never happen (shall be verified by the JUnit tests).
+                try {
+                    netcdfFileClass = Class.forName(UCAR_CLASSNAME);
+                } catch (ClassNotFoundException e) {
+                    netcdfFileClass = Void.TYPE;
+                    return;
+                }
+                try {
+                    /*
+                     * UCAR API.
+                     */
+                    canOpenFromPath = netcdfFileClass.getMethod("canOpen", String.class);
+                    assert canOpenFromPath.getReturnType() == Boolean.TYPE;
+                    /*
+                     * SIS Wrapper API.
+                     */
+                    final Class<? extends Decoder> wrapper =
+                            Class.forName("org.apache.sis.internal.netcdf.ucar.DecoderWrapper").asSubclass(Decoder.class);
+                    final Class<?>[] parameterTypes = new Class<?>[] {WarningListeners.class, netcdfFileClass};
+                    createFromUCAR = wrapper.getConstructor(parameterTypes);
+                    parameterTypes[1] = String.class;
+                    createFromPath = wrapper.getConstructor(parameterTypes);
+                } catch (Exception e) { // (ReflectiveOperationException) on JDK7 branch.
+                    throw new AssertionError(e); // Should never happen (shall be verified by the JUnit tests).
+                }
             }
         }
+    }
+
+    /**
+     * Invoked when the classpath changed. Clears the cached class and constructors, since we don't know
+     * if the UCAR library is still on the classpath.
+     */
+    static synchronized void reset() {
+        netcdfFileClass = null;
+        canOpenFromPath = null;
+        createFromUCAR  = null;
+        createFromPath  = null;
     }
 }

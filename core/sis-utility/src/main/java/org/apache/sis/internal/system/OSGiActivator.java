@@ -74,9 +74,14 @@ public final class OSGiActivator implements BundleActivator, BundleListener {
     @Override
     public void bundleChanged(final BundleEvent event) {
         switch (event.getType()) {
-            case BundleEvent.STARTED:
+            case BundleEvent.STARTED: {
+                SystemListener.fireClasspathChanged();
+                break;
+            }
             case BundleEvent.STOPPED: {
                 SystemListener.fireClasspathChanged();
+                SystemListener.removeModule(event.getBundle().getSymbolicName());
+                break;
             }
         }
     }
