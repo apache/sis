@@ -41,6 +41,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Version;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.logging.LoggerFactory;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TreeTables;
@@ -96,6 +97,11 @@ public enum About {
      * </ul>
      */
     LOCALIZATION(Vocabulary.Keys.Localization),
+
+    /**
+     * Information about logging.
+     */
+    LOGGING(Vocabulary.Keys.Logging),
 
     /**
      * Information about user home directory, java installation directory or other kind of data.
@@ -276,6 +282,15 @@ fill:   for (int i=0; ; i++) {
                     break;
                 }
                 case 7: {
+                    newSection = LOGGING;
+                    if (sections.contains(LOGGING)) {
+                        nameKey = Vocabulary.Keys.Implementation;
+                        final LoggerFactory<?> factory = Logging.getLoggerFactory();
+                        value = (factory != null) ? factory.getName() : "java.util.logging";
+                    }
+                    break;
+                }
+                case 8: {
                     newSection = PATHS;
                     if (sections.contains(PATHS)) {
                         nameKey = Vocabulary.Keys.UserHome;
@@ -283,28 +298,28 @@ fill:   for (int i=0; ; i++) {
                     }
                     break;
                 }
-                case 8: {
+                case 9: {
                     if (sections.contains(PATHS)) {
                         nameKey = Vocabulary.Keys.CurrentDirectory;
                         value = getProperty("user.dir");
                     }
                     break;
                 }
-                case 9: {
+                case 10: {
                     if (sections.contains(PATHS)) {
                         nameKey = Vocabulary.Keys.TemporaryFiles;
                         value = getProperty("java.io.tmpdir");
                     }
                     break;
                 }
-                case 10: {
+                case 11: {
                     if (sections.contains(PATHS)) {
                         nameKey = Vocabulary.Keys.JavaHome;
                         value = javaHome = getProperty("java.home");
                     }
                     break;
                 }
-                case 11: {
+                case 12: {
                     newSection = LIBRARIES;
                     if (sections.contains(LIBRARIES)) {
                         nameKey = Vocabulary.Keys.JavaExtensions;
@@ -312,7 +327,7 @@ fill:   for (int i=0; ; i++) {
                     }
                     break;
                 }
-                case 12: {
+                case 13: {
                     if (sections.contains(LIBRARIES)) {
                         nameKey = Vocabulary.Keys.Classpath;
                         value = classpath(getProperty("java.class.path"), null, false, null);
