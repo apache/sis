@@ -91,6 +91,17 @@ Implementations of Coordinate Reference Systems (CRS),
           </execution>
         </executions>
       </plugin>
+
+      <!-- Package as OSGi bundle -->
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <configuration>
+          <instructions>
+            <Bundle-SymbolicName>org.apache.sis.referencing</Bundle-SymbolicName>
+          </instructions>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 

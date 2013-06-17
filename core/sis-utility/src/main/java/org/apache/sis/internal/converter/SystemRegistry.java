@@ -24,6 +24,7 @@ import org.apache.sis.util.ThreadSafe;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.internal.system.SystemListener;
+import org.apache.sis.internal.system.Modules;
 
 
 /**
@@ -72,7 +73,7 @@ public final class SystemRegistry extends ConverterRegistry {
          * then those converters are lost. This is of concern only for applications using
          * a modularization framework like OSGi. See package javadoc for more information.
          */
-        SystemListener.add(new SystemListener() {
+        SystemListener.add(new SystemListener(Modules.UTILITIES) {
             @Override protected void classpathChanged() {
                 INSTANCE.clear();
             }

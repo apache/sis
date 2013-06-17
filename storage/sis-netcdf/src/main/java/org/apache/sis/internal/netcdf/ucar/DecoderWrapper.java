@@ -32,6 +32,7 @@ import ucar.nc2.units.DateUnit;
 import ucar.nc2.time.Calendar;
 import ucar.nc2.time.CalendarDate;
 import ucar.nc2.time.CalendarDateFormatter;
+import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.internal.netcdf.Decoder;
@@ -335,6 +336,16 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     }
 
     /**
+     * Invoked by the UCAR library during the reading process for progress information.
+     *
+     * @param message The message to show to the user.
+     * @param progress Count of progress, or -1 if unknown. This is not necessarily a percentage done.
+     */
+    @Override
+    public void setProgress(final String message, final int progress) {
+    }
+
+    /**
      * Invoked by the UCAR NetCDF library when an error occurred.
      *
      * @param message The error message.
@@ -358,6 +369,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      * Returns a string representation to be inserted in {@link org.apache.sis.storage.netcdf.NetcdfStore#toString()}
      * result. This is for debugging purpose only any may change in any future SIS version.
      */
+    @Debug
     @Override
     public String toString() {
         return "UCAR driver: “" + file.getLocation() + '”';
