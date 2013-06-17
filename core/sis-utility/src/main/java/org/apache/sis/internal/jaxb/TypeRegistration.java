@@ -23,6 +23,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.SystemListener;
 
 
@@ -50,7 +51,7 @@ public abstract class TypeRegistration {
      */
     private static Reference<JAXBContext> context;
     static {
-        SystemListener.add(new SystemListener() {
+        SystemListener.add(new SystemListener(Modules.UTILITIES) {
             @Override protected void classpathChanged() {
                 context = null;
             }

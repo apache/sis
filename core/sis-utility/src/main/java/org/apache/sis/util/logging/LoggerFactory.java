@@ -74,6 +74,13 @@ public abstract class LoggerFactory<L> {
     }
 
     /**
+     * Returns the name of the logging framework.
+     *
+     * @return The logging framework name.
+     */
+    public abstract String getName();
+
+    /**
      * Returns the logger of the specified name, or {@code null} if the JDK logging framework
      * should be used.
      *

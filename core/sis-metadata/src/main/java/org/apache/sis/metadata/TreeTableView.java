@@ -28,6 +28,7 @@ import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTableFormat;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.internal.system.LocalizedStaticObject;
 
 
 /**
@@ -66,8 +67,10 @@ final class TreeTableView implements TreeTable, Serializable {
 
     /**
      * The {@link TreeTableFormat} to use for the {@link #toString()} method implementation.
-     * Created when first needed.
+     * Created when first needed. Would need to be reset to {@code null} on locale or timezone
+     * changes, but we do not yet have any listener for such information.
      */
+    @LocalizedStaticObject
     private static Format format;
 
     /**

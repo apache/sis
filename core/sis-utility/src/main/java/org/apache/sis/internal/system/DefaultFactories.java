@@ -51,6 +51,7 @@ public final class DefaultFactories extends SystemListener {
      * For the singleton system listener only.
      */
     private DefaultFactories() {
+        super(Modules.UTILITIES);
     }
 
     /**

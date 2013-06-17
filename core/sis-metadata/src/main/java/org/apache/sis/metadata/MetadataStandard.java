@@ -29,12 +29,14 @@ import java.lang.reflect.Field;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.ExtendedElementInformation;
 import org.opengis.referencing.ReferenceIdentifier;
+import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ThreadSafe;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.CheckedContainer;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.simple.SimpleCitation;
 
@@ -138,7 +140,7 @@ public class MetadataStandard implements Serializable {
             ISO_19119,
             ISO_19123
         };
-        SystemListener.add(new SystemListener() {
+        SystemListener.add(new SystemListener(Modules.METADATA) {
             @Override protected void classpathChanged() {
                 clearCache();
             }
@@ -768,6 +770,7 @@ public class MetadataStandard implements Serializable {
      * Returns a string representation of this metadata standard.
      * This is for debugging purpose only and may change in any future version.
      */
+    @Debug
     @Override
     public String toString() {
         return Classes.getShortClassName(this) + '[' + citation.getTitle() + ']';
