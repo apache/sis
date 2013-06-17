@@ -47,6 +47,14 @@ final class DualLoggerFactory extends LoggerFactory<DualLogger> {
     }
 
     /**
+     * Returns a comma-separated list of the logging frameworks.
+     */
+    @Override
+    public String getName() {
+        return first.getName() + ", " + second.getName();
+    }
+
+    /**
      * Returns the implementation to use for the logger of the specified name,
      * or {@code null} if the logger would delegates to Java logging anyway.
      */
