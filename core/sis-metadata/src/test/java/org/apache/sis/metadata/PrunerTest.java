@@ -21,6 +21,8 @@ import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
+import org.apache.sis.metadata.iso.acquisition.DefaultAcquisitionInformation;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -116,9 +118,32 @@ public final strictfp class PrunerTest extends TestCase {
     }
 
     /**
+     * Adds to the {@link #metadata} an object having a cyclic association.
+     * The cycle is between {@code platform.instrument} and {@code instrument.isMountedOn}.
+     */
+    private void createCyclicMetadata() {
+        final DefaultAcquisitionInformation acquisition = new DefaultAcquisitionInformation();
+        acquisition.getPlatforms().add(MetadataStandardTest.createCyclicMetadata());
+        metadata.getAcquisitionInformation().add(acquisition);
+    }
+
+    /**
+     * Tests the {@link AbstractMetadata#isEmpty()} method on a metadata object having a cycle association.
+     * In absence of safety guard against infinite recursivity, this test would produce {@link StackOverflowError}.
+     */
+    @Test
+    @DependsOnMethod("testIsEmpty")
+    public void testIsEmptyOnCyclicMetadata() {
+        assertTrue(metadata.isEmpty());
+        createCyclicMetadata();
+        assertFalse(metadata.isEmpty());
+    }
+
+    /**
      * Tests the {@link ModifiableMetadata#prune()} method.
      */
     @Test
+    @DependsOnMethod("testIsEmpty")
     public void testPrune() {
         metadata.setFileIdentifier("A file identifiers");
         identification.setCitation(new DefaultCitation("A citation title"));
@@ -148,5 +173,20 @@ public final strictfp class PrunerTest extends TestCase {
         assertTrue(identification.getExtents().isEmpty());
         assertTrue(extent.getGeographicElements().isEmpty());
         assertTrue(metadata.isEmpty());
+    }
+
+    /**
+     * Tests the {@link AbstractMetadata#prune()} method on a metadata object having a cycle association.
+     * In absence of safety guard against infinite recursivity, this test would produce {@link StackOverflowError}.
+     */
+    @Test
+    @DependsOnMethod({"testPrune", "testIsEmptyOnCyclicMetadata"})
+    public void testPruneOnCyclicMetadata() {
+        createCyclicMetadata();
+        assertEquals(1, metadata.getIdentificationInfo()    .size());
+        assertEquals(1, metadata.getAcquisitionInformation().size());
+        metadata.prune();
+        assertEquals(0, metadata.getIdentificationInfo()    .size());
+        assertEquals(1, metadata.getAcquisitionInformation().size());
     }
 }
