@@ -19,7 +19,6 @@ package org.apache.sis.metadata;
 import java.util.Map;
 import java.util.Iterator;
 import java.util.Collection;
-import java.util.IdentityHashMap;
 import org.opengis.util.CodeList;
 import org.apache.sis.internal.util.CollectionsExt;
 
@@ -27,33 +26,30 @@ import static org.apache.sis.metadata.ValueExistencePolicy.*;
 
 
 /**
- * Implementation of {@link AbstractMetadata#isEmpty()} and {@link ModifiableMetadata#prune()}
- * methods.
+ * Implementation of {@link AbstractMetadata#isEmpty()} and {@link ModifiableMetadata#prune()} methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.20)
  * @version 0.3
  * @module
  */
-final class Pruner extends ThreadLocal<Map<Object,Boolean>> {
+final class Pruner {
     /**
-     * The thread-local map of metadata object already tested.
+     * The thread-local map of metadata objects already tested. The keys are metadata instances, and values
+     * are the results of the {@code metadata.isEmpty()} operation.
+     *
+     * If the final operation requested by the user is {@code isEmpty()}, then this map will contain at most
+     * one {@code false} value since the walk in the tree will stop at the first {@code false} value found.
+     *
+     * If the final operation requested by the user is {@code prune()}, then this map will contain a mix of
+     * {@code false} and {@code true} values since the operation will unconditionally walk through the entire tree.
      */
-    private static final Pruner INSTANCE = new Pruner();
+    private static final RecursivityGuard<Boolean> MAPS = new RecursivityGuard<>();
 
     /**
      * For internal usage only.
      */
     private Pruner() {
-    }
-
-    /**
-     * Creates an initially empty hash map when the {@code isEmpty()} or {@code prune()}
-     * method is invoked, before any recursive invocation.
-     */
-    @Override
-    protected Map<Object,Boolean> initialValue() {
-        return new IdentityHashMap<>();
     }
 
     /**
@@ -87,14 +83,19 @@ final class Pruner extends ThreadLocal<Map<Object,Boolean>> {
      */
     static boolean isEmpty(final AbstractMetadata metadata, final boolean prune) {
         final Map<String,Object> properties = asMap(metadata.getStandard(), metadata, prune);
-        final Map<Object,Boolean> tested = INSTANCE.get();
+        final Map<Object,Boolean> tested = MAPS.get();
         if (!tested.isEmpty()) {
             return isEmpty(properties, tested, prune);
         } else try {
             tested.put(metadata, Boolean.FALSE);
             return isEmpty(properties, tested, prune);
         } finally {
-            INSTANCE.remove();
+            MAPS.remove();
+            /*
+             * Note: we could invoke 'tested.clear()' instead in order to recycle the existing
+             *       IdentityHashMap instance, but we presume that usage of this class will be
+             *       rare enough for not being worth to keep those objects around.
+             */
         }
     }
 
