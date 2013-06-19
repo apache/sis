@@ -17,6 +17,7 @@
 package org.apache.sis.util.collection;
 
 import java.util.Arrays;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.List;
@@ -38,6 +39,7 @@ import org.apache.sis.util.Workaround;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.util.LocalizedParseException;
 
 import static org.apache.sis.util.Characters.NO_BREAK_SPACE;
@@ -78,6 +80,16 @@ import static org.apache.sis.util.Characters.NO_BREAK_SPACE;
  * The default pattern is {@code "?……[…] "}, which means "<cite>If the next value is non-null,
  * then insert the {@code "……"} string, repeat the {@code '…'} character as many time as needed
  * (may be zero), and finally insert a space</cite>".
+ *
+ * {@section Safety against infinite recursivity}
+ * Some {@code TreeTable} implementations generate the nodes dynamically as wrappers around Java objects.
+ * Such Java objects may contain cyclic associations (<var>A</var> contains <var>B</var> contains <var>C</var>
+ * contains <var>A</var>), which result in a tree of infinite depth. Some examples can been found in ISO 19115
+ * metadata. This {@code TreeTableFormat} class contains a safety against such cycles. The algorithm is based
+ * on the assumption that for each node, the values and children are fully determined by the
+ * {@linkplain TreeTable.Node#getUserObject() user object}, if non-null. Consequently for each node <var>C</var>
+ * to be formatted, if the user object of that node is the same instance (in the sense of the {@code ==} operator)
+ * than the user object of a parent node <var>A</var>, then the children of the <var>C</var> node will not be formatted.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.0)
@@ -140,6 +152,12 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
      * @see #createTreeSymbols()
      */
     private transient String treeBlank, treeLine, treeCross, treeEnd;
+
+    /**
+     * The map to be given to {@link Writer#parentObjects}, created when first needed
+     * and reused for subsequent formating.
+     */
+    private transient Map<Object,Object> parentObjects;
 
     /**
      * Creates a new tree table format.
@@ -552,14 +570,33 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
         private boolean[] isLast;
 
         /**
-         * Creates a new instance which will write in the given appendable.
+         * The {@linkplain TreeTable.Node#getUserObject() user object} of the parent nodes.
+         * We use this map as a safety against infinite recursivity, on the assumption that
+         * the node content and children are fully determined by the user object.
+         *
+         * <p>User objects in this map will be compared by the identity comparator rather than by the
+         * {@code equals(Object)} method because the later may be costly and could itself be vulnerable
+         * to infinite recursivity if it has not been implemented defensively.</p>
+         *
+         * <p>We check the user object instead than the node itself because the same node instance can
+         * theoretically not appear twice with a different parent.</p>
          */
-        Writer(final Appendable out, final TableColumn<?>[] columns) {
+        private final Map<Object,Object> parentObjects;
+
+        /**
+         * Creates a new instance which will write in the given appendable.
+         *
+         * @param out           Where to format the tree.
+         * @param column        The columns of the tree table to format.
+         * @param parentObjects An initially empty {@link IdentityHashMap}.
+         */
+        Writer(final Appendable out, final TableColumn<?>[] columns, final Map<Object,Object> parentObjects) {
             super(columns.length >= 2 ? new TableAppender(out, "") : out);
             this.columns = columns;
             this.formats = getFormats(columns, false);
             this.values  = new Object[columns.length];
             this.isLast  = new boolean[8];
+            this.parentObjects = parentObjects;
             setTabulationExpanded(true);
             setLineSeparator(" ¶ ");
         }
@@ -631,13 +668,38 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
             if (level >= isLast.length) {
                 isLast = Arrays.copyOf(isLast, level*2);
             }
-            final Iterator<? extends TreeTable.Node> it = node.getChildren().iterator();
-            boolean hasNext = it.hasNext();
-            while (hasNext) {
-                final TreeTable.Node child = it.next();
-                hasNext = it.hasNext();
-                isLast[level] = !hasNext; // Must be set before the call to 'format' below.
-                format(child, level+1);
+            /*
+             * Format the children only if we do not detect an infinite recursivity. Our recursivity detection
+             * algorithm assumes that the node content is fully determined by the user object. If that assumption
+             * holds, then we have an infinite recursivity if the user object of the current node is also the user
+             * object of a parent node.
+             *
+             * Note that the value stored in the 'parentObjects' map needs to be the 'userObject' because we want
+             * the map value to be null if the user object is null, in order to format the children even if many
+             * null user objects exist in the tree.
+             */
+            final Object userObject = node.getUserObject();
+            if (parentObjects.put(userObject, userObject) == null) {
+                final Iterator<? extends TreeTable.Node> it = node.getChildren().iterator();
+                boolean hasNext = it.hasNext();
+                while (hasNext) {
+                    final TreeTable.Node child = it.next();
+                    hasNext = it.hasNext();
+                    isLast[level] = !hasNext; // Must be set before the call to 'format' below.
+                    format(child, level+1);
+                }
+                parentObjects.remove(userObject);
+            } else {
+                /*
+                 * Detected a recursivity. Format "(cycle omitted)" just below the node.
+                 */
+                for (int i=0; i<level; i++) {
+                    out.append(getTreeSymbols(true, isLast[i]));
+                }
+                final Locale locale = getLocale();
+                out.append('(').append(Vocabulary.getResources(locale)
+                   .getString(Vocabulary.Keys.CycleOmitted).toLowerCase(locale))
+                   .append(')').append(lineSeparator);
             }
         }
     }
@@ -668,8 +730,15 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
             final List<TableColumn<?>> c = tree.getColumns();
             columns = c.toArray(new TableColumn<?>[c.size()]);
         }
-        final Writer out = new Writer(toAppendTo, columns);
-        out.format(tree.getRoot(), 0);
-        out.flush();
+        if (parentObjects == null) {
+            parentObjects = new IdentityHashMap<>();
+        }
+        try {
+            final Writer out = new Writer(toAppendTo, columns, parentObjects);
+            out.format(tree.getRoot(), 0);
+            out.flush();
+        } finally {
+            parentObjects.clear();
+        }
     }
 }

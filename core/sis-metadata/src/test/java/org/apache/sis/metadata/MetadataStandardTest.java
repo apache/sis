@@ -201,16 +201,19 @@ public final strictfp class MetadataStandardTest extends TestCase {
     /**
      * Tests the {@link MetadataStandard#hashCode(Object)} method on an object having cyclic associations.
      * In absence of safety guard against infinite recursivity, this test would produce {@link StackOverflowError}.
+     *
+     * @see AbstractMetadataTest#testHashCodeOnCyclicMetadata()
      */
     @Test
     @DependsOnMethod("testHashCode")
     public void testHashCodeOnCyclicMetadata() {
-        final int code = createCyclicMetadata().hashCode();
+        final MetadataStandard std = MetadataStandard.ISO_19115;
+        final int code = std.hashCode(createCyclicMetadata());
         /*
          * Following line checks that the hash code is stable, just for doing something with the code.
          * The real test was actually to ensure that the above line didn't threw a StackOverflowError.
          */
-        assertEquals(code, createCyclicMetadata().hashCode());
+        assertEquals(code, std.hashCode(createCyclicMetadata()));
     }
 
     /**
