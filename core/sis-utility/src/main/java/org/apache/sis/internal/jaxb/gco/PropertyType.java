@@ -28,6 +28,7 @@ import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.IdentifiedObject;
+import org.apache.sis.xml.ReferenceResolver;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.util.iso.SimpleInternationalString;
 
@@ -112,12 +113,12 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
         extends XmlAdapter<ValueType,BoundType>
 {
     /**
-     * The wrapped GeoAPI metadata interface.
+     * The wrapped GeoAPI metadata instance.
      */
     protected BoundType metadata;
 
     /**
-     * Either an {@link ObjectReference} or a {@link String}.
+     * Either {@code null}, an {@link ObjectReference} or a {@link String}.
      *
      * <ul>
      *   <li>{@link ObjectReference} defines the {@code idref}, {@code uuidref}, {@code xlink:href},
@@ -138,32 +139,42 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
     }
 
     /**
-     * Builds an adapter for the given GeoAPI interface.
+     * Builds an adapter for the given GeoAPI interface. This constructor checks if the given metadata
+     * implements the {@link NilObject} or {@link IdentifiedObject} interface. If the object implements
+     * both of them (should not happen, but we never know), then the identifiers will have precedence.
      *
      * @param metadata The interface to wrap.
      */
     protected PropertyType(final BoundType metadata) {
         this.metadata = metadata;
+        if (metadata instanceof NilObject) {
+            final NilReason reason = ((NilObject) metadata).getNilReason();
+            if (reason != null) {
+                reference = reason.toString();
+            }
+        }
         if (metadata instanceof IdentifiedObject) {
             final IdentifierMap map = ((IdentifiedObject) metadata).getIdentifierMap();
             XLink  link = map.getSpecialized(IdentifierSpace.XLINK);
             UUID   uuid = map.getSpecialized(IdentifierSpace.UUID);
             String anyUUID = (uuid != null) ? uuid.toString() : map.get(IdentifierSpace.UUID);
             if (anyUUID != null || link != null) {
-                final Context context = Context.current();
+                final Context           context  = Context.current();
+                final ReferenceResolver resolver = Context.resolver(context);
+                final Class<BoundType>  type     = getBoundType();
                 if (uuid == null) {
                     uuid = ObjectReference.toUUID(context, anyUUID); // May still null.
                 }
-                if (uuid == null || Context.resolver(context).canSubstituteByReference(context, getBoundType(), metadata, uuid)) {
-                    reference = new ObjectReference(uuid, anyUUID, link);
-                    return;
+                // Check if the user gives us the permission to use those identifiers.
+                if (uuid != null && !resolver.canSubstituteByReference(context, type, metadata, uuid)) {
+                    uuid = null;
                 }
-            }
-        }
-        if (metadata instanceof NilObject) {
-            final NilReason reason = ((NilObject) metadata).getNilReason();
-            if (reason != null) {
-                reference = reason.toString();
+                if (link != null && !resolver.canSubstituteByReference(context, type, metadata, link)) {
+                    link = null;
+                }
+                if (uuid != null || link != null) {
+                    reference = new ObjectReference(uuid, anyUUID, link);
+                }
             }
         }
     }
@@ -370,7 +381,7 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
     @XmlAttribute(name = "title", namespace = Namespaces.XLINK)
     public final String getTitle() {
         final XLink link = xlink(false);
-        return (link != null) ? toString(link.getTitle()) : null;
+        return (link != null) ? StringAdapter.toString(link.getTitle()) : null;
     }
 
     /**
