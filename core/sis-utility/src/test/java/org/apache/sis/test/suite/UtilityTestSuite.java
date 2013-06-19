@@ -51,6 +51,7 @@ import org.junit.BeforeClass;
     org.apache.sis.util.logging.PerformanceLevelTest.class,
     org.apache.sis.util.logging.WarningListenersTest.class,
     org.apache.sis.util.logging.MonolineFormatterTest.class,
+    org.apache.sis.util.logging.LoggerAdapterTest.class,
     org.apache.sis.math.MathFunctionsTest.class,
     org.apache.sis.math.StatisticsTest.class,
     org.apache.sis.math.StatisticsFormatTest.class,
