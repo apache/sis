@@ -74,10 +74,10 @@ public final strictfp class ValueMapTest extends TestCase {
      *
      * {@preformat text
      *     Citation
-     *     ├───Title…………………………………………………… Undercurrent
-     *     ├───Cited Responsible Parties
-     *     │   └───Individual Name……………… Testsuya Toyoda
-     *     └───ISBN……………………………………………………… 9782505004509
+     *       ├─Title…………………………………………………… Undercurrent
+     *       ├─Cited Responsible Parties
+     *       │   └─Individual Name……………… Testsuya Toyoda
+     *       └─ISBN……………………………………………………… 9782505004509
      * }
      *
      * The citation instance is stored in the {@link #citation} field.
@@ -120,11 +120,11 @@ public final strictfp class ValueMapTest extends TestCase {
      *
      * {@preformat text
      *     Citation
-     *     ├───Title…………………………………………………… Undercurrent
-     *     ├───Identifiers…………………………………… 9782505004509
-     *     ├───Cited Responsible Parties
-     *     │   └───Individual Name……………… Testsuya Toyoda
-     *     └───ISBN……………………………………………………… 9782505004509
+     *       ├─Title…………………………………………………… Undercurrent
+     *       ├─Identifiers…………………………………… 9782505004509
+     *       ├─Cited Responsible Parties
+     *       │   └─Individual Name……………… Testsuya Toyoda
+     *       └─ISBN……………………………………………………… 9782505004509
      * }
      *
      * Note that this test is intentionally sensitive to iteration order.
@@ -212,9 +212,9 @@ public final strictfp class ValueMapTest extends TestCase {
          * Remove the ISBN value. Result shall be:
          *
          * Citation
-         * ├───Title…………………………………………………… Undercurrent
-         * └───Cited Responsible Parties
-         *     └───Individual Name……………… Testsuya Toyoda
+         *   ├─Title…………………………………………………… Undercurrent
+         *   └─Cited Responsible Parties
+         *       └─Individual Name……………… Testsuya Toyoda
          */
         assertEquals("9782505004509", map.remove("ISBN"));
         assertNull("ISBN shall have been removed.", citation.getISBN());
@@ -227,10 +227,10 @@ public final strictfp class ValueMapTest extends TestCase {
          * Add a value. Result shall be:
          *
          * Citation
-         * ├───Title…………………………………………………… Undercurrent
-         * ├───Cited Responsible Parties
-         * │   └───Individual Name……………… Testsuya Toyoda
-         * └───Presentation Forms………………… document hardcopy
+         *   ├─Title…………………………………………………… Undercurrent
+         *   ├─Cited Responsible Parties
+         *   │   └─Individual Name……………… Testsuya Toyoda
+         *   └─Presentation Forms………………… document hardcopy
          */
         assertNull(map.put("presentationForm", DOCUMENT_HARDCOPY));
         assertEquals(DOCUMENT_HARDCOPY, getSingleton(citation.getPresentationForms()));
@@ -243,12 +243,12 @@ public final strictfp class ValueMapTest extends TestCase {
          * Add back the ISBN value. Result shall be:
          *
          * Citation
-         * ├───Title…………………………………………………… Undercurrent
-         * ├───Identifiers…………………………………… 9782505004509
-         * ├───Cited Responsible Parties
-         * │   └───Individual Name……………… Testsuya Toyoda
-         * ├───Presentation Forms………………… document hardcopy
-         * └───ISBN……………………………………………………… 9782505004509
+         *   ├─Title…………………………………………………… Undercurrent
+         *   ├─Identifiers…………………………………… 9782505004509
+         *   ├─Cited Responsible Parties
+         *   │   └─Individual Name……………… Testsuya Toyoda
+         *   ├─Presentation Forms………………… document hardcopy
+         *   └─ISBN……………………………………………………… 9782505004509
          */
         assertNull(map.put("ISBN", "9782505004509"));
         assertEquals("9782505004509", citation.getISBN());
