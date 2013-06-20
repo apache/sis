@@ -434,7 +434,7 @@ public class MetadataStandard implements Serializable {
      * @param  type The interface, typically from the {@code org.opengis.metadata} package.
      * @return The implementation class, or {@code null} if none.
      */
-    protected Class<?> getImplementation(final Class<?> type) {
+    public Class<?> getImplementation(final Class<?> type) {
         return null;
     }
 
