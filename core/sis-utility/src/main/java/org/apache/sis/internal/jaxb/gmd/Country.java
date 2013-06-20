@@ -91,7 +91,7 @@ public final class Country extends GO_CharacterString {
      * @return The country to marshal, or {@code null} if the given locale was null
      *         or if its {@link Locale#getCountry()} attribute is the empty string.
      */
-    static Country create(final Context context, final Locale locale) {
+    public static Country create(final Context context, final Locale locale) {
         if (locale != null) {
             final String codeListValue = Context.converter(context).toCountryCode(context, locale);
             if (!codeListValue.isEmpty() && Context.isFlagSet(context, Context.SUBSTITUTE_COUNTRY)) {
@@ -131,7 +131,7 @@ public final class Country extends GO_CharacterString {
      *
      * @see LanguageCode#getLocale(Context, LanguageCode, boolean)
      */
-    static Locale getLocale(final Country value) {
+    public static Locale getLocale(final Country value) {
         if (value != null) {
             String code = null;
             if (value.proxy != null) {
