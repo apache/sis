@@ -24,7 +24,6 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
 import org.opengis.util.CodeList;
 import org.apache.sis.util.iso.Types;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.jaxb.Context;
 
 
@@ -46,21 +45,13 @@ import org.apache.sis.internal.jaxb.Context;
 @XmlType(name = "CodeList", propOrder = { "codeSpace", "codeListValue", "codeList" })
 public final class CodeListProxy {
     /**
-     * Returns the URL to given code list in the given XML file.
-     *
-     * @param  context    The current (un)marshalling context, or {@code null} if none.
-     * @param  file       The XML file, either {@code "gmxCodelists.xml"} or {@code "ML_gmxCodelists.xml"}.
-     * @param  identifier The UML identifier of the code list.
-     * @return The URL to the given code list in the given schema.
+     * The default schema to be given to {@link Context#schema(Context, String, String)} (last argument).
      */
-    private static String schema(final Context context, final String file, final String identifier) {
-        return schema(Context.schema(context, "gmd", "http://schemas.opengis.net/iso/19139/20070417/"),
-                "resources/Codelist", file, identifier);
-    }
+    public static final String DEFAULT_SCHEMA = "http://schemas.opengis.net/iso/19139/20070417/";
 
     /**
-     * Returns the URL to a given code list in the given XML file. This method concatenates
-     * the base schema URL with the given directory, file and identifier.
+     * Returns the URL to a given code list in the given XML file.
+     * This method concatenates the base schema URL with the given file and identifier.
      * Some examples of strings returned by this method are:
      *
      * <ul>
@@ -69,23 +60,14 @@ public final class CodeListProxy {
      *   <li>{@code "http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode"}</li>
      * </ul>
      *
-     * @param  schema     The schema, typically as a result of a call to
-     *                    {@link Context#schema(Context, String, String)}.
-     * @param  directory  The directory to concatenate, for example {@code "resources/uom"}
-     *                    or {@code "resources/Codelist"} (<strong>no trailing {@code '/'}</strong>).
-     * @param  file       The XML file, for example {@code "gmxUom.xml"}, {@code "gmxCodelists.xml"}
-     *                    or {@code "ML_gmxCodelists.xml"} (<strong>no trailing {@code '#'}</strong>).
+     * @param  context    The current (un)marshalling context, or {@code null} if none.
+     * @param  file       The XML file, either {@code "gmxCodelists.xml"} or {@code "ML_gmxCodelists.xml"}.
      * @param  identifier The UML identifier of the code list.
      * @return The URL to the given code list in the given schema.
      */
-    private static String schema(final String schema, final String directory, final String file, final String identifier) {
-        final StringBuilder buffer = new StringBuilder(128);
-        buffer.append(schema);
-        final int length = buffer.length();
-        if (length != 0 && buffer.charAt(length - 1) != '/') {
-            buffer.append('/');
-        }
-        return buffer.append(directory).append('/').append(file).append('#').append(identifier).toString();
+    private static String schema(final Context context, final String file, final String identifier) {
+        return Context.schema(context, "gmd", DEFAULT_SCHEMA).append("resources/Codelist/")
+                .append(file).append('#').append(identifier).toString();
     }
 
     /**
@@ -183,7 +165,7 @@ public final class CodeListProxy {
                 value = ResourceBundle.getBundle("org.opengis.metadata.CodeLists",
                         locale, CodeList.class.getClassLoader()).getString(key);
             } catch (MissingResourceException e) {
-                Logging.recoverableException(CodeListAdapter.class, "marshal", e);
+                Context.warningOccured(context, code, CodeListAdapter.class, "marshal", e, false);
             }
         }
         if (value != null) {

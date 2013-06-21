@@ -49,8 +49,10 @@ import org.junit.BeforeClass;
     org.apache.sis.metadata.TreeNodeChildrenTest.class,
     org.apache.sis.metadata.TreeNodeTest.class,
     org.apache.sis.metadata.TreeTableViewTest.class,
+    org.apache.sis.metadata.TreeTableFormatTest.class,
     org.apache.sis.metadata.MetadataStandardTest.class,
     org.apache.sis.metadata.PrunerTest.class,
+    org.apache.sis.metadata.AbstractMetadataTest.class,
     org.apache.sis.metadata.iso.AllMetadataTest.class
 })
 public final strictfp class MetadataTestSuite extends TestSuite {

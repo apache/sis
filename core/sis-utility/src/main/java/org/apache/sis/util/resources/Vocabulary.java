@@ -110,6 +110,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final int CurrentDirectory = 33;
 
         /**
+         * Cycle omitted
+         */
+        public static final int CycleOmitted = 54;
+
+        /**
          * Daylight time
          */
         public static final int DaylightTime = 24;
@@ -288,6 +293,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Type
          */
         public static final int Type = 1;
+
+        /**
+         * Unavailable content.
+         */
+        public static final int UnavailableContent = 53;
 
         /**
          * Untitled
