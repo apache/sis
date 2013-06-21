@@ -181,30 +181,28 @@ public class ReferenceResolver {
      *   <th>As {@code <gco:CharacterString>}</th>
      *   <th>As {@code <gmx:Anchor>}</th>
      * </tr><tr>
-     * <td>{@preformat xml
-     *   <gmd:country>
-     *     <gco:CharacterString>France</gco:CharacterString>
-     *   </gmd:country>
-     * }</td>
-     * <td>{@preformat xml
-     *   <gmd:country>
-     *     <gmx:Anchor xlink:href="SDN:C320:2:FR">France</gmx:Anchor>
-     *   </gmd:country>
-     * }</td>
-     * </tr>
+     * <td>
+     *   <pre> &lt;gmd:country&gt;
+     *     &lt;gco:CharacterString&gt;France&lt;/gco:CharacterString&gt;
+     * &lt;/gmd:country&gt;</pre>
+     * </td><td>
+     *   <pre> &lt;gmd:country&gt;
+     *     &lt;gmx:Anchor xlink:href="SDN:C320:2:FR"&gt;France&lt;/gmx:Anchor&gt;
+     * &lt;/gmd:country&gt;</pre>
+     * </td></tr>
      * </table>
      *
      * Subclasses can override this method if they can provide a mapping from some text
      * values to anchors.
      *
      * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
-     * @param  object  The object for which an anchor is requested. Often same than {@code text},
-     *                 but can also be the {@link java.net.URI} or {@link java.util.Locale} instance
-     *                 for which {@code text} is a string representation.
-     * @param  text    The textual representation of the object for which to get the anchor.
+     * @param  value   The value for which an anchor is requested. Often the same instance than {@code text},
+     *                 but can also be the {@link java.net.URI} or {@link java.util.Locale} instance for which
+     *                 {@code text} is a string representation.
+     * @param  text    The textual representation of the value for which to get the anchor.
      * @return The anchor for the given text, or {@code null} if none.
      */
-    public XLink anchor(final MarshalContext context, final Object object, final CharSequence text) {
+    public XLink anchor(final MarshalContext context, final Object value, final CharSequence text) {
         return (text instanceof Anchor) ? (Anchor) text : null;
     }
 }
