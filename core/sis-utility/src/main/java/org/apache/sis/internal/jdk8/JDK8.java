@@ -17,6 +17,11 @@
 package org.apache.sis.internal.jdk8;
 
 import java.util.Date;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.Locale;
+import java.util.TimeZone;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.xml.bind.DatatypeConverter;
 import org.apache.sis.util.CharSequences;
 
@@ -31,6 +36,13 @@ import org.apache.sis.util.CharSequences;
  * @module
  */
 public final class JDK8 {
+    /**
+     * A shared Gregorian calendar to use for {@link #printDateTime(Date)}.
+     * We share a single instance instead than using {@link ThreadLocal} instances
+     * on the assumption that usages of this calendar will be relatively rare.
+     */
+    private static final AtomicReference<Calendar> CALENDAR = new AtomicReference<Calendar>();
+
     /**
      * Do not allow instantiation of this class.
      */
@@ -134,5 +146,30 @@ public final class JDK8 {
             }
         }
         return null;
+    }
+
+    /**
+     * Formats a date value in a string, assuming UTC timezone and US locale.
+     * This method should be used only for occasional formatting.
+     *
+     * <p>This method will be replaced by {@link java.time.format.DateTimeFormatter} on the JDK8 branch.</p>
+     *
+     * @param  date The date to format, or {@code null}.
+     * @return The formatted date, or {@code null} if the given date was null.
+     *
+     * @see DatatypeConverter#printDateTime(Calendar)
+     */
+    public static String printDateTime(final Date date) {
+        if (date == null) {
+            return null;
+        }
+        Calendar calendar = CALENDAR.getAndSet(null);
+        if (calendar == null) {
+            calendar = new GregorianCalendar(TimeZone.getTimeZone("UTC"), Locale.US);
+        }
+        calendar.setTime(date);
+        final String text = DatatypeConverter.printDateTime(calendar);
+        CALENDAR.set(calendar); // Recycle for future usage.
+        return text;
     }
 }

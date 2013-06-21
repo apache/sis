@@ -122,7 +122,7 @@
     @XmlJavaTypeAdapter(MI_TriggerCode.class),
 
     // Java types, primitive types and basic OGC types handling
-//  @XmlJavaTypeAdapter(GO_DateTime.class), // TODO
+    @XmlJavaTypeAdapter(GO_DateTime.class),
     @XmlJavaTypeAdapter(StringAdapter.class),
     @XmlJavaTypeAdapter(InternationalStringAdapter.class)
 })

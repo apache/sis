@@ -434,7 +434,7 @@ public class MetadataStandard implements Serializable {
      * @param  type The interface, typically from the {@code org.opengis.metadata} package.
      * @return The implementation class, or {@code null} if none.
      */
-    protected Class<?> getImplementation(final Class<?> type) {
+    public Class<?> getImplementation(final Class<?> type) {
         return null;
     }
 
@@ -746,7 +746,25 @@ public class MetadataStandard implements Serializable {
         if (accessor.type != findInterface(metadata2.getClass())) {
             return false;
         }
-        return accessor.equals(metadata1, metadata2, mode);
+        /*
+         * At this point, we have to perform the actual property-by-property comparison.
+         * Cycle may exist in metadata tree, so we have to keep trace of pair in process
+         * of being compared for avoiding infinite recursivity.
+         */
+        final ObjectPair pair = new ObjectPair(metadata1, metadata2);
+        final Set<ObjectPair> inProgress = ObjectPair.CURRENT.get();
+        if (inProgress.add(pair)) try {
+            return accessor.equals(metadata1, metadata2, mode);
+        } finally {
+            inProgress.remove(pair);
+        } else {
+            /*
+             * If we get here, a cycle has been found. Returns 'true' in order to allow the caller to continue
+             * comparing other properties. It is okay because someone else is comparing those two same objects,
+             * and that later comparison will do the actual check for property values.
+             */
+            return true;
+        }
     }
 
     /**
@@ -756,14 +774,28 @@ public class MetadataStandard implements Serializable {
      * and ensures that the hash code value is insensitive to the ordering of properties.
      *
      * @param  metadata The metadata object to compute hash code.
-     * @return A hash code value for the specified metadata.
+     * @return A hash code value for the specified metadata, or 0 if the given metadata is null.
      * @throws ClassCastException if the metadata object doesn't implement a metadata
      *         interface of the expected package.
      *
      * @see AbstractMetadata#hashCode()
      */
     public int hashCode(final Object metadata) throws ClassCastException {
-        return getAccessor(metadata.getClass(), true).hashCode(metadata);
+        if (metadata != null) {
+            final Map<Object,Object> inProgress = RecursivityGuard.HASH_CODES.get();
+            if (inProgress.put(metadata, Boolean.TRUE) == null) try {
+                return getAccessor(metadata.getClass(), true).hashCode(metadata);
+            } finally {
+                inProgress.remove(metadata);
+            }
+            /*
+             * If we get there, a cycle has been found. We can not compute a hash code value for that metadata.
+             * However it should not be a problem since this metadata is part of a bigger metadata object, and
+             * that enclosing object has other properties for computing its hash code. We just need the result
+             * to be consistent, we should be the case if properties ordering is always the same.
+             */
+        }
+        return 0;
     }
 
     /**

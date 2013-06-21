@@ -99,7 +99,7 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
      */
     public DefaultProcessing(final Processing object) {
         super(object);
-        identifiers          = singleton(object.getIdentifier(), Identifier.class); // TODO
+        identifiers          = singleton(object.getIdentifier(), Identifier.class);
         softwareReferences   = copyCollection(object.getSoftwareReferences(), Citation.class);
         procedureDescription = object.getProcedureDescription();
         documentations       = copyCollection(object.getDocumentations(), Citation.class);

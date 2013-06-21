@@ -104,20 +104,24 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
     /**
      * {@inheritDoc}
      *
-     * <p>The default implementation returns a wrapper around the list returned by {@link #getIdentifiers()}.
+     * <p>The default implementation returns a wrapper around the {@link #identifiers} list.
      * That map is <cite>live</cite>: changes in the identifiers list will be reflected in the map,
      * and conversely.</p>
      */
     @Override
     public IdentifierMap getIdentifierMap() {
         /*
-         * We do not cache (for now) the IdentifierMap because it is cheap to create, and if were
-         * caching it we would need anyway to check if 'identifiers' still references the same list.
+         * Do not invoke getIdentifiers(), because some subclasses like DefaultCitation and
+         * DefaultObjective override getIdentifiers() in order to return a filtered list.
          */
-        final Collection<Identifier> identifiers = getIdentifiers();
+        identifiers = nonNullCollection(identifiers, Identifier.class);
         if (identifiers == null) {
             return IdentifierMapWithSpecialCases.EMPTY;
         }
+        /*
+         * We do not cache (for now) the IdentifierMap because it is cheap to create, and if were
+         * caching it we would need anyway to check if 'identifiers' still references the same list.
+         */
         return new IdentifierMapWithSpecialCases(identifiers);
     }
 }

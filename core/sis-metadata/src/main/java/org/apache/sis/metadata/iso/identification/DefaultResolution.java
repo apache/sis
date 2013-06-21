@@ -22,11 +22,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.metadata.identification.RepresentativeFraction;
 import org.opengis.metadata.identification.Resolution;
-// import org.apache.sis.internal.jaxb.gco.GO_Distance; // TODO
+import org.apache.sis.internal.jaxb.gco.GO_Distance;
+import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.util.resources.Messages;
-import org.apache.sis.internal.metadata.MetadataUtilities;
 
 
 /**
@@ -46,10 +46,7 @@ import org.apache.sis.internal.metadata.MetadataUtilities;
  * @version 0.3
  * @module
  */
-@XmlType(name = "MD_Resolution_Type", propOrder = {
-    "equivalentScale",
-// TODO    "distance"
-})
+@XmlType(name = "MD_Resolution_Type") // No need for propOrder since this structure is a union (see javadoc).
 @XmlRootElement(name = "MD_Resolution")
 public class DefaultResolution extends ISOMetadata implements Resolution {
     /**
@@ -169,8 +166,8 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      */
     @Override
     @ValueRange(minimum=0, isMinIncluded=false)
-//    @XmlJavaTypeAdapter(GO_Distance.class) // TODO
-//    @XmlElement(name = "distance")
+    @XmlJavaTypeAdapter(GO_Distance.class)
+    @XmlElement(name = "distance")
     public Double getDistance() {
         return isDistance() ? (Double) scaleOrDistance : null;
     }

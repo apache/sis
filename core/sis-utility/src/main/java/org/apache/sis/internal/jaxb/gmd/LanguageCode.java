@@ -89,7 +89,7 @@ public final class LanguageCode extends GO_CharacterString {
      * @return The language to marshal, or {@code null} if the given locale was null
      *         or if its {@link Locale#getLanguage()} attribute is the empty string.
      */
-    static LanguageCode create(final Context context, final Locale locale) {
+    public static LanguageCode create(final Context context, final Locale locale) {
         if (locale != null) {
             final String codeListValue = Context.converter(context).toLanguageCode(context, locale);
             if (!codeListValue.isEmpty() && Context.isFlagSet(context, Context.SUBSTITUTE_LANGUAGE)) {
@@ -124,6 +124,7 @@ public final class LanguageCode extends GO_CharacterString {
     /**
      * Returns the locale for the given language (which may be null), or {@code null} if none.
      *
+     * @param context The current (un)marshalling context, or {@code null} if none.
      * @param value The wrapper for this metadata value.
      * @param useCharSequence Whatever this method should fallback on the
      *        {@code gco:CharacterString} element if no value were specified for the
@@ -132,7 +133,7 @@ public final class LanguageCode extends GO_CharacterString {
      *
      * @see Country#getLocale(Country)
      */
-    static Locale getLocale(final Context context, final LanguageCode value, final boolean useCharSequence) {
+    public static Locale getLocale(final Context context, final LanguageCode value, final boolean useCharSequence) {
         if (value != null) {
             final CodeListProxy proxy = value.proxy;
             if (proxy != null) {

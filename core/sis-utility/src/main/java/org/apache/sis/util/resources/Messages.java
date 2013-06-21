@@ -63,7 +63,7 @@ public final class Messages extends IndexedResourceBundle {
          * Property “{0}” has been discarded in favor of “{1}”, because those two properties are
          * mutually exclusive.
          */
-        public static final int DiscardedExclusiveProperty_2 = 4;
+        public static final int DiscardedExclusiveProperty_2 = 1;
 
         /**
          * Text were discarded for some locales.
@@ -74,11 +74,6 @@ public final class Messages extends IndexedResourceBundle {
          * Property “{0}” is hidden by “{1}”.
          */
         public static final int PropertyHiddenBy_2 = 3;
-
-        /**
-         * Unavailable content.
-         */
-        public static final int UnavailableContent = 1;
     }
 
     /**

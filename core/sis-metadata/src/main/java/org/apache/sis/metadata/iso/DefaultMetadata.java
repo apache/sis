@@ -41,7 +41,7 @@ import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.quality.DataQuality;
 import org.opengis.metadata.spatial.SpatialRepresentation;
 import org.opengis.referencing.ReferenceSystem;
-//import org.apache.sis.internal.jaxb.gmd.PT_Locale; // TODO
+import org.apache.sis.internal.jaxb.code.PT_Locale;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.xml.Namespaces;
 
@@ -362,7 +362,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Override
     @XmlElement(name = "locale")
-//    @XmlJavaTypeAdapter(PT_Locale.class) // TODO
+    @XmlJavaTypeAdapter(PT_Locale.class)
     public Collection<Locale> getLocales() {
         return locales = nonNullCollection(locales, Locale.class);
     }

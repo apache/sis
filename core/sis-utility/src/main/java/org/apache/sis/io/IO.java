@@ -23,7 +23,7 @@ import java.io.Writer;
 import java.io.StringWriter;
 import java.io.CharArrayWriter;
 import org.apache.sis.util.Static;
-import org.apache.sis.util.resources.Messages;
+import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
@@ -143,7 +143,7 @@ public final class IO extends Static {
         if (content != null) {
             return content.toString();
         }
-        return Messages.format(Messages.Keys.UnavailableContent);
+        return Vocabulary.format(Vocabulary.Keys.UnavailableContent);
     }
 
     /**

@@ -53,6 +53,14 @@ public final strictfp class WarningListenersTest extends TestCase implements War
     }
 
     /**
+     * Returns the type warning sources.
+     */
+    @Override
+    public Class<String> getSourceClass() {
+        return String.class;
+    }
+
+    /**
      * Invoked when a warning occurred. The implementation in this test verifies that the {@code source} argument has
      * the expected values, then stores the log record in the {@link #warning} field for inspection by the test method.
      */

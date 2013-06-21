@@ -76,7 +76,7 @@ public class DefaultPlatformPass extends ISOMetadata implements PlatformPass {
      */
     public DefaultPlatformPass(final PlatformPass object) {
         super(object);
-        identifiers   = singleton(object.getIdentifier(), Identifier.class); // TODO
+        identifiers   = singleton(object.getIdentifier(), Identifier.class);
         extent        = object.getExtent();
         relatedEvents = copyCollection(object.getRelatedEvents(), Event.class);
     }

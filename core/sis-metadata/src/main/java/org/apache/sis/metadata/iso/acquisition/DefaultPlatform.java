@@ -91,7 +91,7 @@ public class DefaultPlatform extends ISOMetadata implements Platform {
     public DefaultPlatform(final Platform object) {
         super(object);
         citation    = object.getCitation();
-        identifiers = singleton(object.getIdentifier(), Identifier.class); // TODO
+        identifiers = singleton(object.getIdentifier(), Identifier.class);
         description = object.getDescription();
         sponsors    = copyCollection(object.getSponsors(), ResponsibleParty.class);
         instruments = copyCollection(object.getInstruments(), Instrument.class);

@@ -106,7 +106,7 @@
     @XmlJavaTypeAdapter(MI_TransferFunctionTypeCode.class),
 
     // Java types, primitive types and basic OGC types handling
-//  @XmlJavaTypeAdapter(UnitAdapter.class), // TODO
+    @XmlJavaTypeAdapter(UnitAdapter.class),
     @XmlJavaTypeAdapter(LocaleAdapter.class),
     @XmlJavaTypeAdapter(InternationalStringAdapter.class),
     @XmlJavaTypeAdapter(GO_GenericName.class),

@@ -17,7 +17,6 @@
 package org.apache.sis.internal.jaxb.gco;
 
 import java.util.UUID;
-
 import org.apache.sis.xml.XLink;
 import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
@@ -129,7 +128,7 @@ final class ObjectReference {
                 metadata = resolver.newIdentifiedObject(context, type, identifiers);
             }
         } else {
-            // If principle, the XML should contain a full metadata object OR a uuidref attribute.
+            // In principle, the XML should contain a full metadata object OR a uuidref attribute.
             // However if both are present, assign the identifiers to that instance.
             if (metadata instanceof IdentifiedObject) {
                 final IdentifierMap map = ((IdentifiedObject) metadata).getIdentifierMap();
