@@ -45,6 +45,11 @@ import org.apache.sis.internal.jaxb.Context;
 @XmlType(name = "CodeList", propOrder = { "codeSpace", "codeListValue", "codeList" })
 public final class CodeListProxy {
     /**
+     * The default schema to be given to {@link Context#schema(Context, String, String)} (last argument).
+     */
+    public static final String DEFAULT_SCHEMA = "http://schemas.opengis.net/iso/19139/20070417/";
+
+    /**
      * Returns the URL to given code list in the given XML file.
      *
      * @param  context    The current (un)marshalling context, or {@code null} if none.
@@ -53,7 +58,7 @@ public final class CodeListProxy {
      * @return The URL to the given code list in the given schema.
      */
     private static String schema(final Context context, final String file, final String identifier) {
-        return schema(Context.schema(context, "gmd", "http://schemas.opengis.net/iso/19139/20070417/"),
+        return schema(Context.schema(context, "gmd", DEFAULT_SCHEMA),
                 "resources/Codelist", file, identifier);
     }
 
@@ -77,7 +82,7 @@ public final class CodeListProxy {
      * @param  identifier The UML identifier of the code list.
      * @return The URL to the given code list in the given schema.
      */
-    private static String schema(final String schema, final String directory, final String file, final String identifier) {
+    public static String schema(final String schema, final String directory, final String file, final String identifier) {
         final StringBuilder buffer = new StringBuilder(128);
         buffer.append(schema);
         final int length = buffer.length();
