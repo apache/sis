@@ -100,8 +100,8 @@ public final class Measure {
         } else if (unit.equals(NonSI.PIXEL)) {
             symbol = "pixel";
         } else {
-            symbol = CodeListProxy.schema(Context.schema(Context.current(), "gmd", CodeListProxy.DEFAULT_SCHEMA),
-                            "resources/uom", "gmxUom.xml", "xpointer(//*[@gml:id='" + unit + "'])");
+            symbol = Context.schema(Context.current(), "gmd", CodeListProxy.DEFAULT_SCHEMA)
+                    .append("resources/uom/gmxUom.xml#xpointer(//*[@gml:id='").append(unit).append("'])").toString();
         }
         return symbol;
     }
