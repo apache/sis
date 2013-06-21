@@ -46,10 +46,7 @@ import org.apache.sis.util.resources.Messages;
  * @version 0.3
  * @module
  */
-@XmlType(name = "MD_Resolution_Type", propOrder = {
-    "equivalentScale",
-// TODO    "distance"
-})
+@XmlType(name = "MD_Resolution_Type") // No propOrder for union.
 @XmlRootElement(name = "MD_Resolution")
 public class DefaultResolution extends ISOMetadata implements Resolution {
     /**
