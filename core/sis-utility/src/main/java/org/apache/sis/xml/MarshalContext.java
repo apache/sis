@@ -19,6 +19,7 @@ package org.apache.sis.xml;
 import java.util.Locale;
 import java.util.TimeZone;
 import org.apache.sis.util.Version;
+import org.opengis.util.InternationalString;
 
 
 /**
@@ -37,29 +38,8 @@ public abstract class MarshalContext {
     }
 
     /**
-     * Returns the schema version of the XML document being (un)marshalled.
-     * The {@code prefix} argument can be any of the following values (case-sensitive):
-     *
-     * <table class="sis">
-     *   <tr>
-     *     <th>Prefix</th>
-     *     <th>Standard</th>
-     *     <th>Typical values</th>
-     *   </tr>
-     *   <tr>
-     *     <td>gml</td> <td>Geographic Markup Language</td> <td>{@code 3.0}, {@code 3.2}</td>
-     *   </tr>
-     * </table>
-     *
-     * @param  prefix One of the above-cited prefix.
-     * @return The version for the given schema, or {@code null} if unknown.
-     */
-    public abstract Version getVersion(final String prefix);
-
-    /**
-     * Returns the locale to use for (un)marshalling, or {@code null} if no locale were explicitly
-     * specified. The locale returned by this method can be used for choosing a language in an
-     * {@link org.opengis.util.InternationalString}.
+     * Returns the locale to use for (un)marshalling, or {@code null} if no locale were explicitly specified.
+     * The locale returned by this method can be used for choosing a language in an {@link InternationalString}.
      *
      * <p>This locale may vary in different fragments of the same XML document.
      * In particular children of {@link org.opengis.metadata.Metadata} inherit the locale
@@ -82,8 +62,7 @@ public abstract class MarshalContext {
     public abstract Locale getLocale();
 
     /**
-     * Returns the timezone to use for (un)marshalling, or {@code null} if none were explicitely
-     * specified.
+     * Returns the timezone to use for (un)marshalling, or {@code null} if none were explicitely specified.
      *
      * {@section Handling of <code>null</code> timezone}
      * A {@code null} value means that the timezone is unspecified. Callers are encouraged
@@ -92,4 +71,24 @@ public abstract class MarshalContext {
      * @return The timezone for the XML fragment being (un)marshalled, or {@code null} if unspecified.
      */
     public abstract TimeZone getTimeZone();
+
+    /**
+     * Returns the schema version of the XML document being (un)marshalled.
+     * The {@code prefix} argument can be any of the following values (case-sensitive):
+     *
+     * <table class="sis">
+     *   <tr>
+     *     <th>Prefix</th>
+     *     <th>Standard</th>
+     *     <th>Typical values</th>
+     *   </tr>
+     *   <tr>
+     *     <td>gml</td> <td>Geographic Markup Language</td> <td>{@code 3.0}, {@code 3.2}</td>
+     *   </tr>
+     * </table>
+     *
+     * @param  prefix One of the above-cited prefix.
+     * @return The version for the given schema, or {@code null} if unknown.
+     */
+    public abstract Version getVersion(final String prefix);
 }
