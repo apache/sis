@@ -142,7 +142,7 @@
 //    @XmlJavaTypeAdapter(UnitAdapter.class), // TODO
     @XmlJavaTypeAdapter(StringAdapter.class),
     @XmlJavaTypeAdapter(InternationalStringAdapter.class),
-//    @XmlJavaTypeAdapter(GO_DateTime.class), // TODO
+    @XmlJavaTypeAdapter(GO_DateTime.class),
 //    @XmlJavaTypeAdapter(GO_RecordType.class), // TODO
     @XmlJavaTypeAdapter(GO_Boolean.class), @XmlJavaTypeAdapter(type=boolean.class, value=GO_Boolean.class)
 })
