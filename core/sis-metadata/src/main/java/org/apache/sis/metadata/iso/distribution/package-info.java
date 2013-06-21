@@ -94,7 +94,7 @@
 //  @XmlJavaTypeAdapter(UnitAdapter.class), // TODO
     @XmlJavaTypeAdapter(LocalNameAdapter.class),
     @XmlJavaTypeAdapter(InternationalStringAdapter.class),
-//  @XmlJavaTypeAdapter(GO_DateTime.class), // TODO
+    @XmlJavaTypeAdapter(GO_DateTime.class),
     @XmlJavaTypeAdapter(GO_Decimal.class), @XmlJavaTypeAdapter(type=double.class, value=GO_Decimal.class),
     @XmlJavaTypeAdapter(GO_Integer.class), @XmlJavaTypeAdapter(type=int.class,    value=GO_Integer.class)
 })
