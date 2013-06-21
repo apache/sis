@@ -75,10 +75,10 @@
     @XmlJavaTypeAdapter(MD_MaintenanceInformation.class),
     @XmlJavaTypeAdapter(MD_ScopeCode.class),
     @XmlJavaTypeAdapter(MD_ScopeDescription.class),
-//    @XmlJavaTypeAdapter(TM_PeriodDuration.class), // TODO
+    @XmlJavaTypeAdapter(TM_PeriodDuration.class),
 
     // Java types, primitive types and basic OGC types handling
-//    @XmlJavaTypeAdapter(GO_DateTime.class), // TODO
+    @XmlJavaTypeAdapter(GO_DateTime.class),
     @XmlJavaTypeAdapter(StringAdapter.class),
     @XmlJavaTypeAdapter(InternationalStringAdapter.class)
 })
@@ -95,5 +95,5 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.internal.jaxb.gco.*;
 import org.apache.sis.internal.jaxb.code.*;
-//import org.apache.sis.internal.jaxb.gts.TM_PeriodDuration; // TODO
+import org.apache.sis.internal.jaxb.gts.TM_PeriodDuration;
 import org.apache.sis.internal.jaxb.metadata.*;

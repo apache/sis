@@ -24,6 +24,8 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.quality.Completeness;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
+import org.apache.sis.metadata.iso.acquisition.DefaultPlatform;
+import org.apache.sis.metadata.iso.acquisition.DefaultInstrument;
 import org.apache.sis.metadata.iso.quality.AbstractCompleteness;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.ComparisonMode;
@@ -33,6 +35,7 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
+import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
 /**
@@ -109,6 +112,36 @@ public final strictfp class MetadataStandardTest extends TestCase {
     }
 
     /**
+     * Creates a metadata object having a cyclic association. The cycle is between
+     * {@code platform.instrument} and {@code instrument.isMountedOn}.
+     */
+    static DefaultPlatform createCyclicMetadata() {
+        final DefaultInstrument instrument = new DefaultInstrument();
+        instrument.setType(new SimpleInternationalString("An instrument type."));
+        final DefaultPlatform platform = new DefaultPlatform();
+        platform.setDescription(new SimpleInternationalString("A platform."));
+        instrument.setMountedOn(platform);
+        platform.getInstruments().add(instrument);
+        return platform;
+    }
+
+    /**
+     * Tests the {@link MetadataStandard#equals(Object, Object, ComparisonMode)} method on an object
+     * having cyclic associations. In absence of safety guard against infinite recursivity, this test
+     * would produce {@link StackOverflowError}.
+     */
+    @Test
+    @DependsOnMethod("testEquals")
+    public void testEqualsOnCyclicMetadata() {
+        final DefaultPlatform p1 = createCyclicMetadata();
+        final DefaultPlatform p2 = createCyclicMetadata();
+        assertTrue(p1.equals(p2));
+        ((DefaultInstrument) getSingleton(p2.getInstruments()))
+                .setType(new SimpleInternationalString("An other instrument type."));
+        assertFalse(p1.equals(p2));
+    }
+
+    /**
      * Tests the {@link MetadataStandard#asValueMap(Object, KeyNamePolicy, ValueExistencePolicy)} implementation.
      * This test duplicates {@link ValueMapTest}, but is done here again as an integration test and because many
      * {@code MetadataStandard} methods depend on it ({@code equals}, {@code hashCode}, {@code prune}, <i>etc.</i>).
@@ -161,6 +194,24 @@ public final strictfp class MetadataStandardTest extends TestCase {
         assertFalse(map.isEmpty()); // Actually 'testValueMap()' job, but verified for safety.
         assertEquals("hashCode()", new HashSet<Object>(map.values()).hashCode() + Citation.class.hashCode(),
                 std.hashCode(instance));
+    }
+
+    /**
+     * Tests the {@link MetadataStandard#hashCode(Object)} method on an object having cyclic associations.
+     * In absence of safety guard against infinite recursivity, this test would produce {@link StackOverflowError}.
+     *
+     * @see AbstractMetadataTest#testHashCodeOnCyclicMetadata()
+     */
+    @Test
+    @DependsOnMethod("testHashCode")
+    public void testHashCodeOnCyclicMetadata() {
+        final MetadataStandard std = MetadataStandard.ISO_19115;
+        final int code = std.hashCode(createCyclicMetadata());
+        /*
+         * Following line checks that the hash code is stable, just for doing something with the code.
+         * The real test was actually to ensure that the above line didn't threw a StackOverflowError.
+         */
+        assertEquals(code, std.hashCode(createCyclicMetadata()));
     }
 
     /**

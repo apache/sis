@@ -133,7 +133,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
         super(object);
         description       = object.getDescription();
         citation          = object.getCitation();
-        identifiers       = singleton(object.getIdentifier(), Identifier.class); // TODO
+        identifiers       = singleton(object.getIdentifier(), Identifier.class);
         status            = object.getStatus();
         type              = object.getType();
         childOperations   = copyCollection(object.getChildOperations(), Operation.class);

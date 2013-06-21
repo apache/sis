@@ -115,7 +115,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
      */
     public DefaultEvent(final Event object) {
         super(object);
-        identifiers        = singleton(object.getIdentifier(), Identifier.class); // TODO
+        identifiers        = singleton(object.getIdentifier(), Identifier.class);
         trigger            = object.getTrigger();
         context            = object.getContext();
         sequence           = object.getSequence();

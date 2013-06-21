@@ -51,6 +51,7 @@ import org.junit.BeforeClass;
     org.apache.sis.util.logging.PerformanceLevelTest.class,
     org.apache.sis.util.logging.WarningListenersTest.class,
     org.apache.sis.util.logging.MonolineFormatterTest.class,
+    org.apache.sis.util.logging.LoggerAdapterTest.class,
     org.apache.sis.math.MathFunctionsTest.class,
     org.apache.sis.math.StatisticsTest.class,
     org.apache.sis.math.StatisticsFormatTest.class,
@@ -112,8 +113,12 @@ import org.junit.BeforeClass;
     org.apache.sis.xml.NilReasonTest.class,
     org.apache.sis.xml.OGCNamespacePrefixMapperTest.class,
     org.apache.sis.xml.MarshallerPoolTest.class,
+    org.apache.sis.internal.jaxb.XmlUtilitiesTest.class,
     org.apache.sis.internal.jaxb.IdentifierMapAdapterTest.class,
-    org.apache.sis.internal.jaxb.IdentifierMapWithSpecialCasesTest.class
+    org.apache.sis.internal.jaxb.IdentifierMapWithSpecialCasesTest.class,
+    org.apache.sis.internal.jaxb.gco.StringAdapterTest.class,
+    org.apache.sis.internal.jaxb.gco.MeasureTest.class,
+    org.apache.sis.internal.jaxb.gco.PropertyTypeTest.class
 })
 public final strictfp class UtilityTestSuite extends TestSuite {
     /**

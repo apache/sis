@@ -283,6 +283,10 @@ public final class NonMarshalledAuthority<T> extends SimpleCitation implements I
                 warningLogged = true;
                 final LogRecord record = Errors.getResources(null).getLogRecord(Level.WARNING,
                         Errors.Keys.MissingRequiredModule_1, "sis-metadata");
+                /*
+                 * Log directly the the logger rather than invoking the Context.warningOccured(…) method because
+                 * this warning does not occur during XML (un)marshalling. It may occurs only during serialization.
+                 */
                 record.setThrown(e);
                 Logging.log(NonMarshalledAuthority.class, "readResolve", record);
             }

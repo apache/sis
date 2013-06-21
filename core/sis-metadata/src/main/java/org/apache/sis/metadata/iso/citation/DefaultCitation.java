@@ -33,6 +33,7 @@ import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.xml.IdentifierSpace;
+import org.apache.sis.xml.IdentifierMap;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 import static org.apache.sis.internal.metadata.MetadataUtilities.toDate;
@@ -221,8 +222,13 @@ public class DefaultCitation extends ISOMetadata implements Citation {
         series                  = object.getSeries();
         otherCitationDetails    = object.getOtherCitationDetails();
         collectiveTitle         = object.getCollectiveTitle();
-// TODO ISBN                    = object.getISBN();
-// TODO ISSN                    = object.getISSN();
+        final String id1        = object.getISBN();
+        final String id2        = object.getISSN();
+        if (id1 != null || id2 != null) {
+            final IdentifierMap map = super.getIdentifierMap();
+            if (id1 != null) map.putSpecialized(ISBN, id1);
+            if (id2 != null) map.putSpecialized(ISSN, id2);
+        }
     }
 
     /**

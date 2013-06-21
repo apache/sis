@@ -48,7 +48,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
 @XmlType(name = "MD_MaintenanceInformation_Type", propOrder = {
     "maintenanceAndUpdateFrequency",
     "dateOfNextUpdate",
-// TODO    "userDefinedMaintenanceFrequency",
+    "userDefinedMaintenanceFrequency",
     "updateScopes",
     "updateScopeDescriptions",
     "maintenanceNotes",
@@ -205,11 +205,9 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
 
     /**
      * Returns the maintenance period other than those defined.
-     *
-     * @todo needs an implementation of org.opengis.temporal modules to anntote this parameter.
      */
     @Override
-    // TODO @XmlElement(name = "userDefinedMaintenanceFrequency")
+    @XmlElement(name = "userDefinedMaintenanceFrequency")
     public PeriodDuration getUserDefinedMaintenanceFrequency() {
         return userDefinedMaintenanceFrequency;
     }

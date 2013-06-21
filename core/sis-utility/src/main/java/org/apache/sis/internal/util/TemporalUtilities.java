@@ -45,9 +45,10 @@ public final class TemporalUtilities extends Static {
     /**
      * Returns a temporal factory if available.
      *
+     * @return The temporal factory.
      * @throws UnsupportedOperationException If the temporal factory is not available on the classpath.
      */
-    private static TemporalFactory getTemporalFactory() throws UnsupportedOperationException {
+    public static TemporalFactory getTemporalFactory() throws UnsupportedOperationException {
         final TemporalFactory factory = DefaultFactories.forClass(TemporalFactory.class);
         if (factory != null) {
             return factory;
