@@ -54,8 +54,8 @@ public final strictfp class ReferenceResolverMock extends ReferenceResolver {
      * @return The (un)marshalling context.
      */
     public static Context begin(final boolean marshalling) {
-        return new Context(null, new ReferenceResolverMock(), null, null, null, null,
-                marshalling ? Context.MARSHALLING : 0);
+        return new Context(marshalling ? Context.MARSHALLING : 0, null, null, null, null,
+                new ReferenceResolverMock(), null, null);
     }
 
     /**

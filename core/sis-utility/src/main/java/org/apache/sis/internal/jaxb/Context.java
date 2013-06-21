@@ -19,7 +19,10 @@ package org.apache.sis.internal.jaxb;
 import java.util.Map;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.logging.LogRecord;
 import org.apache.sis.util.Version;
+import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.xml.MarshalContext;
 import org.apache.sis.xml.ValueConverter;
 import org.apache.sis.xml.ReferenceResolver;
@@ -70,26 +73,9 @@ public final class Context extends MarshalContext {
     private static final ThreadLocal<Context> CURRENT = new ThreadLocal<>();
 
     /**
-     * The value converter currently in use, or {@code null} for {@link ValueConverter#DEFAULT}.
+     * Various boolean attributes determines by the above static constants.
      */
-    private ValueConverter converter;
-
-    /**
-     * The reference resolver currently in use, or {@code null} for {@link ReferenceResolver#DEFAULT}.
-     */
-    private ReferenceResolver resolver;
-
-    /**
-     * The GML version to be marshalled or unmarshalled, or {@code null} if unspecified.
-     * If null, than the latest version is assumed.
-     */
-    private Version versionGML;
-
-    /**
-     * The base URL of ISO 19139 (or other standards) schemas. The valid values
-     * are documented in the {@link org.apache.sis.xml.XML#SCHEMAS} property.
-     */
-    private Map<String,String> schemas;
+    private int bitMasks;
 
     /**
      * The locale to use for marshalling, or {@code null} if no locale were explicitly specified.
@@ -103,9 +89,31 @@ public final class Context extends MarshalContext {
     private TimeZone timezone;
 
     /**
-     * Various boolean attributes determines by the above static constants.
+     * The base URL of ISO 19139 (or other standards) schemas. The valid values
+     * are documented in the {@link org.apache.sis.xml.XML#SCHEMAS} property.
      */
-    private int bitMasks;
+    private Map<String,String> schemas;
+
+    /**
+     * The GML version to be marshalled or unmarshalled, or {@code null} if unspecified.
+     * If null, than the latest version is assumed.
+     */
+    private Version versionGML;
+
+    /**
+     * The reference resolver currently in use, or {@code null} for {@link ReferenceResolver#DEFAULT}.
+     */
+    private ReferenceResolver resolver;
+
+    /**
+     * The value converter currently in use, or {@code null} for {@link ValueConverter#DEFAULT}.
+     */
+    private ValueConverter converter;
+
+    /**
+     * The object to inform about warnings, or {@code null} if none.
+     */
+    private WarningListener<?> warningListener;
 
     /**
      * The context which was previously used. This form a linked list allowing
@@ -127,26 +135,29 @@ public final class Context extends MarshalContext {
      *     }
      * }
      *
-     * @param  converter  The converter in use.
-     * @param  resolver   The resolver in use.
-     * @param  versionGML The GML version, or {@code null}.
-     * @param  schemas    The schemas root URL, or {@code null} if none.
-     * @param  locale     The locale, or {@code null} if unspecified.
-     * @param  timezone   The timezone, or {@code null} if unspecified.
-     * @param  bitMasks   A combination of {@link #MARSHALLING}, {@link #SUBSTITUTE_LANGUAGE},
-     *                    {@link #SUBSTITUTE_COUNTRY} or other bit masks.
+     * @param  bitMasks        A combination of {@link #MARSHALLING}, {@code #SUBSTITUTE_*} or other bit masks.
+     * @param  locale          The locale, or {@code null} if unspecified.
+     * @param  timezone        The timezone, or {@code null} if unspecified.
+     * @param  schemas         The schemas root URL, or {@code null} if none.
+     * @param  versionGML      The GML version, or {@code null}.
+     * @param  resolver        The resolver in use.
+     * @param  converter       The converter in use.
+     * @param  warningListener The object to inform about warnings.
      */
-    public Context(final ValueConverter converter, final ReferenceResolver resolver,
-            final Version versionGML, final Map<String,String> schemas,
-            final Locale locale, final TimeZone timezone, final int bitMasks)
+    public Context(final int                bitMasks,
+                   final Locale             locale,   final TimeZone       timezone,
+                   final Map<String,String> schemas,  final Version        versionGML,
+                   final ReferenceResolver  resolver, final ValueConverter converter,
+                   final WarningListener<?> warningListener)
     {
-        this.converter  = converter;
-        this.resolver   = resolver;
-        this.versionGML = versionGML;
-        this.schemas    = schemas; // No clone, because this class is internal.
-        this.locale     = locale;
-        this.timezone   = timezone;
-        this.bitMasks   = bitMasks;
+        this.bitMasks        = bitMasks;
+        this.locale          = locale;
+        this.timezone        = timezone;
+        this.schemas         = schemas; // No clone, because this class is internal.
+        this.versionGML      = versionGML;
+        this.resolver        = resolver;
+        this.converter       = converter;
+        this.warningListener = warningListener;
         previous = current();
         CURRENT.set(this);
     }
@@ -160,29 +171,17 @@ public final class Context extends MarshalContext {
      */
     private Context(final Context previous) {
         if (previous != null) {
-            converter  = previous.converter;
-            resolver   = previous.resolver;
-            versionGML = previous.versionGML;
-            schemas    = previous.schemas;
-            locale     = previous.locale;
-            timezone   = previous.timezone;
-            bitMasks   = previous.bitMasks;
+            bitMasks         = previous.bitMasks;
+            locale           = previous.locale;
+            timezone         = previous.timezone;
+            schemas          = previous.schemas;
+            versionGML       = previous.versionGML;
+            resolver         = previous.resolver;
+            converter        = previous.converter;
+            warningListener  = previous.warningListener;
         }
         this.previous = previous;
         CURRENT.set(this);
-    }
-
-    /**
-     * Returns the schema version of the XML document being (un)marshalled.
-     * See the super-class javadoc for the list of prefix that we shall support.
-     */
-    @Override
-    public final Version getVersion(final String prefix) {
-        if (prefix.equals("gml")) {
-            return versionGML;
-        }
-        // Future SIS versions may add more cases here.
-        return null;
     }
 
     /**
@@ -201,6 +200,19 @@ public final class Context extends MarshalContext {
     @Override
     public final TimeZone getTimeZone() {
         return timezone;
+    }
+
+    /**
+     * Returns the schema version of the XML document being (un)marshalled.
+     * See the super-class javadoc for the list of prefix that we shall support.
+     */
+    @Override
+    public final Version getVersion(final String prefix) {
+        if (prefix.equals("gml")) {
+            return versionGML;
+        }
+        // Future SIS versions may add more cases here.
+        return null;
     }
 
     /*
@@ -250,44 +262,6 @@ public final class Context extends MarshalContext {
     }
 
     /**
-     * Returns the value converter in use for the current marshalling or unmarshalling process.
-     * If no converter were explicitely set, then this method returns {@link ValueConverter#DEFAULT}.
-     *
-     * {@note This method is static for the convenience of performing the check for null context.}
-     *
-     * @param  context The current context, or {@code null} if none.
-     * @return The current value converter (never null).
-     */
-    public static ValueConverter converter(final Context context) {
-        if (context != null) {
-            final ValueConverter converter = context.converter;
-            if (converter != null) {
-                return converter;
-            }
-        }
-        return ValueConverter.DEFAULT;
-    }
-
-    /**
-     * Returns the reference resolver in use for the current marshalling or unmarshalling process.
-     * If no resolver were explicitely set, then this method returns {@link ReferenceResolver#DEFAULT}.
-     *
-     * {@note This method is static for the convenience of performing the check for null context.}
-     *
-     * @param  context The current context, or {@code null} if none.
-     * @return The current reference resolver (never null).
-     */
-    public static ReferenceResolver resolver(final Context context) {
-        if (context != null) {
-            final ReferenceResolver resolver = context.resolver;
-            if (resolver != null) {
-                return resolver;
-            }
-        }
-        return ReferenceResolver.DEFAULT;
-    }
-
-    /**
      * Returns the base URL of ISO 19139 (or other standards) schemas.
      * The valid values are documented in the {@link org.apache.sis.xml.XML#SCHEMAS} property.
      *
@@ -333,6 +307,65 @@ public final class Context extends MarshalContext {
             }
         }
         return true;
+    }
+
+    /**
+     * Returns the reference resolver in use for the current marshalling or unmarshalling process.
+     * If no resolver were explicitely set, then this method returns {@link ReferenceResolver#DEFAULT}.
+     *
+     * {@note This method is static for the convenience of performing the check for null context.}
+     *
+     * @param  context The current context, or {@code null} if none.
+     * @return The current reference resolver (never null).
+     */
+    public static ReferenceResolver resolver(final Context context) {
+        if (context != null) {
+            final ReferenceResolver resolver = context.resolver;
+            if (resolver != null) {
+                return resolver;
+            }
+        }
+        return ReferenceResolver.DEFAULT;
+    }
+
+    /**
+     * Returns the value converter in use for the current marshalling or unmarshalling process.
+     * If no converter were explicitely set, then this method returns {@link ValueConverter#DEFAULT}.
+     *
+     * {@note This method is static for the convenience of performing the check for null context.}
+     *
+     * @param  context The current context, or {@code null} if none.
+     * @return The current value converter (never null).
+     */
+    public static ValueConverter converter(final Context context) {
+        if (context != null) {
+            final ValueConverter converter = context.converter;
+            if (converter != null) {
+                return converter;
+            }
+        }
+        return ValueConverter.DEFAULT;
+    }
+
+    /**
+     * Sends the given warning to the warning listener if there is one, or log the warning otherwise.
+     * The {@link LogRecord#getLoggerName()} <strong>must</strong> be set to the proper logger name,
+     * because this method relies on that information for fetching the logger.
+     *
+     * @param context The current context, or {@code null} if none.
+     * @param source  The object that emit a warning. Can not be null.
+     * @param warning The warning.
+     */
+    @SuppressWarnings("unchecked")
+    public static void warningOccured(final Context context, final Object source, final LogRecord warning) {
+        if (context != null) {
+            final WarningListener<?> warningListener = context.warningListener;
+            if (warningListener != null && warningListener.getSourceClass().isInstance(source)) {
+                ((WarningListener) warningListener).warningOccured(source, warning);
+                return;
+            }
+        }
+        Logging.getLogger(warning.getLoggerName()).log(warning);
     }
 
     /**
