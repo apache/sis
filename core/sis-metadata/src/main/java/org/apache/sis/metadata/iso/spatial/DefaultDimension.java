@@ -22,8 +22,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.metadata.spatial.Dimension;
 import org.opengis.metadata.spatial.DimensionNameType;
+import org.apache.sis.internal.jaxb.gco.GO_Measure;
 import org.apache.sis.metadata.iso.ISOMetadata;
-//import org.apache.sis.internal.jaxb.gco.GO_Measure;
 import org.apache.sis.measure.ValueRange;
 
 
@@ -166,7 +166,7 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
      */
     @Override
     @ValueRange(minimum=0, isMinIncluded=false)
-//  @XmlJavaTypeAdapter(GO_Measure.class) // TODO
+    @XmlJavaTypeAdapter(GO_Measure.class)
     @XmlElement(name = "resolution")
     public Double getResolution() {
         return resolution;
