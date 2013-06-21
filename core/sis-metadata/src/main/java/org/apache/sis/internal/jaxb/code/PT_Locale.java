@@ -24,7 +24,6 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.metadata.identification.CharacterSet;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.Locales;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.internal.jaxb.Context;
@@ -136,7 +135,7 @@ public final class PT_Locale extends XmlAdapter<PT_Locale, Locale> {
             } catch (PropertyException | ClassCastException e) {
                 // Should never happen. But if it happen anyway, just let the
                 // characterEncoding unitialized: it will not be marshalled.
-                Logging.unexpectedException(PT_Locale.class, "beforeMarshal", e);
+                Context.warningOccured(Context.current(), marshaller, PT_Locale.class, "beforeMarshal", e, true);
                 return;
             }
             if (encoding != null) {
