@@ -46,7 +46,7 @@ import org.apache.sis.util.resources.Messages;
  * @version 0.3
  * @module
  */
-@XmlType(name = "MD_Resolution_Type") // No propOrder for union.
+@XmlType(name = "MD_Resolution_Type") // No need for propOrder since this structure is a union (see javadoc).
 @XmlRootElement(name = "MD_Resolution")
 public class DefaultResolution extends ISOMetadata implements Resolution {
     /**

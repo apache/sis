@@ -116,7 +116,7 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
     public DefaultRequirement(final Requirement object) {
         super(object);
         citation       = object.getCitation();
-        identifiers    = singleton(object.getIdentifier(), Identifier.class); // TODO
+        identifiers    = singleton(object.getIdentifier(), Identifier.class);
         requestors     = copyCollection(object.getRequestors(), ResponsibleParty.class);
         recipients     = copyCollection(object.getRecipients(), ResponsibleParty.class);
         priority       = object.getPriority();
