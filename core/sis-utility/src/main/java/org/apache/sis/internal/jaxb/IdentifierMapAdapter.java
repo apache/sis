@@ -273,7 +273,7 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
             }
         }
         if (code != null) {
-            identifiers.add(SpecializedIdentifier.parse(authority, code));
+            identifiers.add(SpecializedIdentifier.parse(this, authority, code));
         }
         return old;
     }

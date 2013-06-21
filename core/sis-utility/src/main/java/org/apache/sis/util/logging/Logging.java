@@ -52,6 +52,18 @@ import org.apache.sis.util.Classes;
  */
 public final class Logging extends Static {
     /**
+     * The threshold at which {@link #unexpectedException(Logger, String, String, Throwable, Level)} shall
+     * set the throwable in the {@link LogRecord}. For any record to be logged at a lower {@link Level},
+     * the {@link LogRecord#setThrown(Throwable)} method will not be invoked.
+     *
+     * <p>The default value is 600, which is the {@link PerformanceLevel#PERFORMANCE} value.
+     * This value is between {@link Level#FINE} (500) and {@link Level#CONFIG} (700).
+     * Consequently we will ignore the stack traces of recoverable failures, but will report
+     * stack traces that may impact performance, configuration, or correctness.</p>
+     */
+    private static final int LEVEL_THRESHOLD_FOR_STACKTRACE = 600;
+
+    /**
      * The factory for obtaining {@link Logger} instances, or {@code null} if none.
      * If {@code null} (the default), then the standard JDK logging framework will be used.
      * {@code Logging} scans the classpath for logger factories on class initialization.
@@ -383,7 +395,7 @@ public final class Logging extends Static {
         if (method != null) {
             record.setSourceMethodName(method);
         }
-        if (level.intValue() > 500) {
+        if (level.intValue() >= LEVEL_THRESHOLD_FOR_STACKTRACE) {
             record.setThrown(error);
         }
         record.setLoggerName(logger.getName());

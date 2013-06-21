@@ -19,8 +19,10 @@ package org.apache.sis.internal.jaxb;
 import java.util.Map;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import org.apache.sis.util.Version;
+import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.xml.MarshalContext;
@@ -348,16 +350,20 @@ public final class Context extends MarshalContext {
     }
 
     /**
-     * Sends the given warning to the warning listener if there is one, or log the warning otherwise.
-     * The {@link LogRecord#getLoggerName()} <strong>must</strong> be set to the proper logger name,
-     * because this method relies on that information for fetching the logger.
+     * Sends the given warning to the warning listener if there is one, or logs the warning otherwise.
+     * In the later case, this method logs to the logger specified by {@link LogRecord#getLoggerName()}
+     * if defined, or to the {@code "org.apache.sis.xml"} logger otherwise.
      *
      * @param context The current context, or {@code null} if none.
-     * @param source  The object that emit a warning. Can not be null.
+     * @param source  The object that emitted a warning. Can not be null.
      * @param warning The warning.
      */
     @SuppressWarnings("unchecked")
     public static void warningOccured(final Context context, final Object source, final LogRecord warning) {
+        String logger = warning.getLoggerName();
+        if (logger == null) {
+            warning.setLoggerName(logger = "org.apache.sis.xml");
+        }
         if (context != null) {
             final WarningListener<?> warningListener = context.warningListener;
             if (warningListener != null && warningListener.getSourceClass().isInstance(source)) {
@@ -365,7 +371,34 @@ public final class Context extends MarshalContext {
                 return;
             }
         }
-        Logging.getLogger(warning.getLoggerName()).log(warning);
+        /*
+         * Log the warning without stack-trace, since this method shall be used only for non-fatal warnings
+         * and we want to avoid polluting the logs.
+         */
+        warning.setThrown(null);
+        Logging.getLogger(logger).log(warning);
+    }
+
+    /**
+     * Convenience method for sending a warning for the given exception.
+     * The logger will be {@code "org.apache.sis.xml"}.
+     *
+     * @param context The current context, or {@code null} if none.
+     * @param source  The object that emitted a warning. Can not be null.
+     * @param classe  The name of the class to declare as the warning source.
+     * @param method  The name of the method to declare as the warning source.
+     * @param cause   The exception which occurred.
+     * @param warning {@code true} for {@link Level#WARNING}, or {@code false} for {@link Level#FILE}.
+     */
+    public static void warningOccured(final Context context, final Object source, final Class<?> classe,
+            final String method, final Exception cause, final boolean warning)
+    {
+        final LogRecord record = new LogRecord(warning ? Level.WARNING : Level.FINE,
+                Exceptions.formatChainedMessages(context != null ? context.getLocale() : null, null, cause));
+        record.setSourceClassName(classe.getCanonicalName());
+        record.setSourceMethodName(method);
+        record.setThrown(cause);
+        warningOccured(context, source, record);
     }
 
     /**

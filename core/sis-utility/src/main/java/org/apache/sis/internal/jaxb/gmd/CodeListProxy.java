@@ -24,7 +24,6 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
 import org.opengis.util.CodeList;
 import org.apache.sis.util.iso.Types;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.jaxb.Context;
 
 
@@ -183,7 +182,7 @@ public final class CodeListProxy {
                 value = ResourceBundle.getBundle("org.opengis.metadata.CodeLists",
                         locale, CodeList.class.getClassLoader()).getString(key);
             } catch (MissingResourceException e) {
-                Logging.recoverableException(CodeListAdapter.class, "marshal", e);
+                Context.warningOccured(context, code, CodeListAdapter.class, "marshal", e, false);
             }
         }
         if (value != null) {
