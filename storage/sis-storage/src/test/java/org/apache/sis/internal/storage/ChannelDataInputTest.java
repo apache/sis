@@ -170,13 +170,13 @@ public final strictfp class ChannelDataInputTest extends TestCase {
         final Random random = TestUtilities.createRandomNumberGenerator("testSeekOnForwardOnlyChannel");
         int length = random.nextInt(2048) + 1024;
         final byte[] array = createRandomArray(length, random);
-        length -= (Long.SIZE / Byte.SIZE) - 1; // Safety against buffer underflow.
+        length -= (Long.SIZE / Byte.SIZE); // Safety against buffer underflow.
         final ByteBuffer buffer = ByteBuffer.wrap(array);
         final ChannelDataInput input = new ChannelDataInput("testSeekOnForwardOnlyChannel",
                 Channels.newChannel(new ByteArrayInputStream(array)),
                 ByteBuffer.allocate(random.nextInt(64) + 16), false);
         int position = 0;
-        while (position <= length) {
+        while (position < length) {
             input.seek(position);
             assertEquals("getStreamPosition()", position, input.getStreamPosition());
             assertEquals(buffer.getLong(position), input.readLong());

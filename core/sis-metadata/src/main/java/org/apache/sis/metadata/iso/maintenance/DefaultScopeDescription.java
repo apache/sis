@@ -48,10 +48,7 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  * @version 0.3
  * @module
  */
-@XmlType(name = "MD_ScopeDescription_Type", propOrder = {
-    "dataset",
-    "other"
-})
+@XmlType(name = "MD_ScopeDescription_Type") // No need for propOrder since this structure is a union (see javadoc).
 @XmlRootElement(name = "MD_ScopeDescription")
 public class DefaultScopeDescription extends ISOMetadata implements ScopeDescription {
     /**

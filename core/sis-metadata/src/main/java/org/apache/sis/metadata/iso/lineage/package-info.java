@@ -89,7 +89,7 @@
     @XmlJavaTypeAdapter(MD_RepresentativeFraction.class),
 
     // Java types, primitive types and basic OGC types handling
-//    @XmlJavaTypeAdapter(GO_DateTime.class), // TODO
+    @XmlJavaTypeAdapter(GO_DateTime.class),
     @XmlJavaTypeAdapter(InternationalStringAdapter.class)
 })
 package org.apache.sis.metadata.iso.lineage;

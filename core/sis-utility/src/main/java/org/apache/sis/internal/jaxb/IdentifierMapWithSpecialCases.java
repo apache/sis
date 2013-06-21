@@ -198,7 +198,7 @@ public final class IdentifierMapWithSpecialCases extends IdentifierMapAdapter {
                 return (id != null) ? id.toString() : old;
             }
         }
-        SpecializedIdentifier.parseFailure(exception);
+        SpecializedIdentifier.parseFailure(this, exception);
         return super.put(authority, code);
     }
 

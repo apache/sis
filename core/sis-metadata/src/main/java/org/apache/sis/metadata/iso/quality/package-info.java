@@ -139,10 +139,10 @@
     @XmlJavaTypeAdapter(MX_DataFile.class),
 
     // Java types, primitive types and basic OGC types handling
-//    @XmlJavaTypeAdapter(UnitAdapter.class), // TODO
+    @XmlJavaTypeAdapter(UnitAdapter.class),
     @XmlJavaTypeAdapter(StringAdapter.class),
     @XmlJavaTypeAdapter(InternationalStringAdapter.class),
-//    @XmlJavaTypeAdapter(GO_DateTime.class), // TODO
+    @XmlJavaTypeAdapter(GO_DateTime.class),
 //    @XmlJavaTypeAdapter(GO_RecordType.class), // TODO
     @XmlJavaTypeAdapter(GO_Boolean.class), @XmlJavaTypeAdapter(type=boolean.class, value=GO_Boolean.class)
 })

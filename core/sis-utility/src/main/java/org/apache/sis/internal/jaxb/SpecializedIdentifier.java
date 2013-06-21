@@ -26,7 +26,6 @@ import org.apache.sis.xml.XLink;
 import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.util.Debug;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.util.Citations;
 
 // Related to JDK7
@@ -89,12 +88,13 @@ public final class SpecializedIdentifier<T> implements Identifier, Serializable 
      * authorities declared in the {@link IdentifierSpace} interface. Otherwise a
      * plain {@link IdentifierMapEntry} is created.
      *
+     * @param source    The object to declare as the source in case of failure.
      * @param authority The authority, typically as one of the {@link IdentifierSpace} constants.
-     * @param code The identifier code to parse.
+     * @param code      The identifier code to parse.
      *
      * @see IdentifierMapAdapter#put(Citation, String)
      */
-    static Identifier parse(final Citation authority, final String code) {
+    static Identifier parse(final IdentifierMap source, final Citation authority, final String code) {
         if (authority instanceof NonMarshalledAuthority) {
             switch (((NonMarshalledAuthority) authority).ordinal) {
                 case NonMarshalledAuthority.ID: {
@@ -104,7 +104,7 @@ public final class SpecializedIdentifier<T> implements Identifier, Serializable 
                     try {
                         return new SpecializedIdentifier<UUID>(IdentifierSpace.UUID, UUID.fromString(code));
                     } catch (IllegalArgumentException e) {
-                        parseFailure(e);
+                        parseFailure(source, e);
                         break;
                     }
                 }
@@ -113,7 +113,7 @@ public final class SpecializedIdentifier<T> implements Identifier, Serializable 
                     try {
                         href = new URI(code);
                     } catch (URISyntaxException e) {
-                        parseFailure(e);
+                        parseFailure(source, e);
                         break;
                     }
                     return new SpecializedIdentifier<URI>(IdentifierSpace.HREF, href);
@@ -123,7 +123,7 @@ public final class SpecializedIdentifier<T> implements Identifier, Serializable 
                     try {
                         href = new URI(code);
                     } catch (URISyntaxException e) {
-                        parseFailure(e);
+                        parseFailure(source, e);
                         break;
                     }
                     final XLink xlink = new XLink();
@@ -140,13 +140,15 @@ public final class SpecializedIdentifier<T> implements Identifier, Serializable 
      * This is considered a non-fatal error, because the parse method can fallback
      * on the generic {@link IdentifierMapEntry} in such cases.
      */
-    static void parseFailure(final Exception e) {
+    static void parseFailure(final IdentifierMap source, final Exception e) {
         // IdentifierMap.put(Citation,String) is the public facade.
-        Logging.recoverableException(IdentifierMap.class, "put", e);
+        Context.warningOccured(Context.current(), source, IdentifierMap.class, "put", e, true);
     }
 
     /**
      * Returns the authority specified at construction time.
+     *
+     * @return The identifier authority.
      */
     @Override
     public Citation getAuthority() {
@@ -166,6 +168,8 @@ public final class SpecializedIdentifier<T> implements Identifier, Serializable 
     /**
      * Returns a string representation of the {@linkplain #getValue() identifier value},
      * or {@code null} if none.
+     *
+     * @return The identifier value.
      */
     @Override
     public String getCode() {

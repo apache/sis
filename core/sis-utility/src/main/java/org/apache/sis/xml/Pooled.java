@@ -29,8 +29,10 @@ import javax.xml.bind.PropertyException;
 import javax.xml.bind.ValidationEventHandler;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import org.apache.sis.util.Version;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.jaxb.Context;
 
@@ -87,29 +89,11 @@ abstract class Pooled {
     private final Map<Object,Object> initialProperties;
 
     /**
-     * The object converters to use during (un)marshalling.
-     * Can be set by the {@link XML#CONVERTER} property.
+     * Bit masks for various boolean attributes. This include whatever the language codes
+     * or the country codes should be substituted by a simpler character string elements.
+     * Those bits are determined by the {@link XML#STRING_SUBSTITUTES} property.
      */
-    private ValueConverter converter;
-
-    /**
-     * The reference resolver to use during unmarshalling.
-     * Can be set by the {@link XML#RESOLVER} property.
-     */
-    private ReferenceResolver resolver;
-
-    /**
-     * The GML version to be marshalled or unmarshalled, or {@code null} if unspecified.
-     * If null, then the latest version is assumed.
-     */
-    private Version gmlVersion;
-
-    /**
-     * The base URL of ISO 19139 (or other standards) schemas. It shall be an unmodifiable
-     * instance because {@link #getProperty(String)} returns a direct reference to the user.
-     * The valid values are documented in the {@link XML#SCHEMAS} property.
-     */
-    private Map<String,String> schemas;
+    private int bitMasks;
 
     /**
      * An optional locale for {@link org.opengis.util.InternationalString} and
@@ -124,11 +108,34 @@ abstract class Pooled {
     private TimeZone timezone;
 
     /**
-     * Bit masks for various boolean attributes. This include whatever the language codes
-     * or the country codes should be substituted by a simpler character string elements.
-     * Those bits are determined by the {@link XML#STRING_SUBSTITUTES} property.
+     * The base URL of ISO 19139 (or other standards) schemas. It shall be an unmodifiable
+     * instance because {@link #getProperty(String)} returns a direct reference to the user.
+     * The valid values are documented in the {@link XML#SCHEMAS} property.
      */
-    private int bitMasks;
+    private Map<String,String> schemas;
+
+    /**
+     * The GML version to be marshalled or unmarshalled, or {@code null} if unspecified.
+     * If null, then the latest version is assumed.
+     */
+    private Version gmlVersion;
+
+    /**
+     * The reference resolver to use during unmarshalling.
+     * Can be set by the {@link XML#RESOLVER} property.
+     */
+    private ReferenceResolver resolver;
+
+    /**
+     * The object converters to use during (un)marshalling.
+     * Can be set by the {@link XML#CONVERTER} property.
+     */
+    private ValueConverter converter;
+
+    /**
+     * The object to inform about warnings, or {@code null} if none.
+     */
+    private WarningListener<?> warningListener;
 
     /**
      * The {@link System#nanoTime()} value of the last call to {@link #reset()}.
@@ -170,14 +177,15 @@ abstract class Pooled {
             reset(entry.getKey(), entry.getValue());
         }
         initialProperties.clear();
-        converter  = null;
-        resolver   = null;
-        gmlVersion = null;
-        schemas    = null;
-        locale     = null;
-        timezone   = null;
-        bitMasks   = initialBitMasks();
-        resetTime  = System.nanoTime();
+        bitMasks        = initialBitMasks();
+        locale          = null;
+        timezone        = null;
+        schemas         = null;
+        gmlVersion      = null;
+        resolver        = null;
+        converter       = null;
+        warningListener = null;
+        resetTime       = System.nanoTime();
     }
 
     /**
@@ -241,12 +249,12 @@ abstract class Pooled {
     public final void setProperty(String name, final Object value) throws PropertyException {
         try {
             /* switch (name) */ {
-                if (name.equals(XML.CONVERTER)) {
-                    converter = (ValueConverter) value;
+                if (name.equals(XML.LOCALE)) {
+                    locale = (Locale) value;
                     return;
                 }
-                else if (name.equals(XML.RESOLVER)) {
-                    resolver = (ReferenceResolver) value;
+                else if (name.equals(XML.TIMEZONE)) {
+                    timezone = (TimeZone) value;
                     return;
                 }
                 else if (name.equals(XML.SCHEMAS)) {
@@ -273,19 +281,18 @@ abstract class Pooled {
                     gmlVersion = (value instanceof CharSequence) ? new Version(value.toString()) : (Version) value;
                     return;
                 }
-                else if (name.equals(XML.LOCALE)) {
-                    locale = (Locale) value;
+                else if (name.equals(XML.RESOLVER)) {
+                    resolver = (ReferenceResolver) value;
                     return;
                 }
-                else if (name.equals(XML.TIMEZONE)) {
-                    timezone = (TimeZone) value;
+                else if (name.equals(XML.CONVERTER)) {
+                    converter = (ValueConverter) value;
                     return;
                 }
                 else if (name.equals(XML.STRING_SUBSTITUTES)) {
                     int mask = initialBitMasks();
-                    final CharSequence[] substitutes = CharSequences.split((CharSequence) value, ',');
-                    if (substitutes != null) {
-                        for (final CharSequence substitute : substitutes) {
+                    if (value != null) {
+                        for (final CharSequence substitute : (CharSequence[]) value) {
                             if (CharSequences.equalsIgnoreCase(substitute, "language")) {
                                 mask |= Context.SUBSTITUTE_LANGUAGE;
                             } else if (CharSequences.equalsIgnoreCase(substitute, "country")) {
@@ -294,6 +301,10 @@ abstract class Pooled {
                         }
                     }
                     bitMasks = mask;
+                    return;
+                }
+                else if (name.equals(XML.WARNING_LISTENER)) {
+                    warningListener = (WarningListener<?>) value;
                     return;
                 }
             }
@@ -316,22 +327,19 @@ abstract class Pooled {
      */
     public final Object getProperty(final String name) throws PropertyException {
         /*switch (name)*/ {
-            if (name.equals(XML.CONVERTER))   return converter;
-            if (name.equals(XML.RESOLVER))    return resolver;
-            if (name.equals(XML.SCHEMAS))     return schemas;
-            if (name.equals(XML.GML_VERSION)) return gmlVersion;
-            if (name.equals(XML.LOCALE))      return locale;
-            if (name.equals(XML.TIMEZONE))    return timezone;
+            if (name.equals(XML.LOCALE))           return locale;
+            if (name.equals(XML.TIMEZONE))         return timezone;
+            if (name.equals(XML.SCHEMAS))          return schemas;
+            if (name.equals(XML.GML_VERSION))      return gmlVersion;
+            if (name.equals(XML.RESOLVER))         return resolver;
+            if (name.equals(XML.CONVERTER))        return converter;
+            if (name.equals(XML.WARNING_LISTENER)) return warningListener;
             if (name.equals(XML.STRING_SUBSTITUTES)) {
-                final StringBuilder buffer = new StringBuilder();
-                if ((bitMasks & Context.SUBSTITUTE_LANGUAGE) != 0) buffer.append("language,");
-                if ((bitMasks & Context.SUBSTITUTE_COUNTRY)  != 0) buffer.append("country,");
-                final int length = buffer.length();
-                if (length != 0) {
-                    buffer.setLength(length - 1); // Remove the last coma.
-                    return buffer.toString();
-                }
-                return null;
+                int n = 0;
+                final String[] substitutes = new String[2];
+                if ((bitMasks & Context.SUBSTITUTE_LANGUAGE) != 0) substitutes[n++] = "language";
+                if ((bitMasks & Context.SUBSTITUTE_COUNTRY)  != 0) substitutes[n++] = "country";
+                return (n != 0) ? ArraysExt.resize(substitutes, n) : null;
             }
             else {
                 return getStandardProperty(convertPropertyKey(name));
@@ -428,6 +436,6 @@ abstract class Pooled {
      * @see Context#finish();
      */
     final Context begin() {
-        return new Context(converter, resolver, gmlVersion, schemas, locale, timezone, bitMasks);
+        return new Context(bitMasks, locale, timezone, schemas, gmlVersion, resolver, converter, warningListener);
     }
 }
