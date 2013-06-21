@@ -339,7 +339,7 @@ abstract class Pooled {
                 final String[] substitutes = new String[2];
                 if ((bitMasks & Context.SUBSTITUTE_LANGUAGE) != 0) substitutes[n++] = "language";
                 if ((bitMasks & Context.SUBSTITUTE_COUNTRY)  != 0) substitutes[n++] = "country";
-                return ArraysExt.resize(substitutes, n);
+                return (n != 0) ? ArraysExt.resize(substitutes, n) : null;
             }
             default: {
                 return getStandardProperty(convertPropertyKey(name));
