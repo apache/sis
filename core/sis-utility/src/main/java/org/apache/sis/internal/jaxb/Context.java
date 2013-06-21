@@ -266,6 +266,7 @@ public final class Context extends MarshalContext {
     /**
      * Returns the base URL of ISO 19139 (or other standards) schemas.
      * The valid values are documented in the {@link org.apache.sis.xml.XML#SCHEMAS} property.
+     * If the returned value is not empty, then this method guarantees it ends with {@code '/'}.
      *
      * {@note This method is static for the convenience of performing the check for null context.}
      *
@@ -273,19 +274,25 @@ public final class Context extends MarshalContext {
      * @param  key One of the value documented in the "<cite>Map key</cite>" column of
      *         {@link org.apache.sis.xml.XML#SCHEMAS}.
      * @param  defaultSchema The value to return if no schema is found for the given key.
-     * @return The base URL of the schema, or {@code null} if none were specified.
+     * @return The base URL of the schema, or an empty buffer if none were specified.
      */
-    public static String schema(final Context context, final String key, final String defaultSchema) {
+    public static StringBuilder schema(final Context context, final String key, String defaultSchema) {
+        final StringBuilder buffer = new StringBuilder(128);
         if (context != null) {
             final Map<String,String> schemas = context.schemas;
             if (schemas != null) {
                 final String schema = schemas.get(key);
                 if (schema != null) {
-                    return schema;
+                    defaultSchema = schema;
                 }
             }
         }
-        return defaultSchema;
+        buffer.append(defaultSchema);
+        final int length = buffer.length();
+        if (length != 0 && buffer.charAt(length - 1) != '/') {
+            buffer.append('/');
+        }
+        return buffer;
     }
 
     /**
