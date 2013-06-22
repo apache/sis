@@ -137,6 +137,7 @@
   <modules>
     <module>sis-storage</module>
     <module>sis-netcdf</module>
+    <module>sis-shapefile</module>
   </modules>
 
 </project>
