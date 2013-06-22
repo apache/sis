@@ -57,30 +57,34 @@ Shapefile Driver
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>3.8.1</version>
+      <version>4.8.2</version>
       <scope>test</scope>
     </dependency>
     <dependency>
 	  <groupId>com.esri.geometry</groupId>
- 	 <artifactId>esri-geometry-api</artifactId>
- 	 <version>1.0</version>
-  </dependency>
-  <dependency>
-	<groupId>commons-io</groupId>
-	<artifactId>commons-io</artifactId>
-	<version>2.4</version>
-  </dependency>  
- <dependency>
-	<groupId>commons-codec</groupId>
-	<artifactId>commons-codec</artifactId>
-	<version>1.8</version>
-</dependency>
-<dependency>
- 	<groupId>org.apache.sis.storage</groupId>
-  	<artifactId>sis-storage</artifactId>
-    <version>0.3-geoapi3.0-SNAPSHOT</version>
-</dependency>
-
+ 	  <artifactId>esri-geometry-api</artifactId>
+ 	  <version>1.0</version>
+    </dependency>
+    <dependency>
+	  <groupId>commons-io</groupId>
+	  <artifactId>commons-io</artifactId>
+	  <version>2.4</version>
+    </dependency>  
+    <dependency>
+	  <groupId>commons-codec</groupId>
+	  <artifactId>commons-codec</artifactId>
+	  <version>1.8</version>
+    </dependency>
+    <dependency>
+ 	  <groupId>org.apache.sis.storage</groupId>
+  	  <artifactId>sis-storage</artifactId>
+      <version>0.3-geoapi3.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-jdk14</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
 </project>
