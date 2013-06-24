@@ -18,16 +18,24 @@ package org.apache.sis.util.iso;
 
 import java.util.Set;
 import java.util.Map;
+import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.io.Serializable;
+import javax.xml.bind.annotation.XmlType;
 import org.opengis.util.Type;
 import org.opengis.util.TypeName;
 import org.opengis.util.MemberName;
 import org.opengis.util.Record;
 import org.opengis.util.RecordType;
 import org.opengis.util.RecordSchema;
+import org.apache.sis.util.Debug;
+import org.apache.sis.util.Immutable;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.util.CollectionsExt;
+
+// Related to JDK7
+import java.util.Objects;
 
 
 /**
@@ -45,7 +53,14 @@ import org.apache.sis.util.resources.Errors;
  * @version 0.3
  * @module
  */
-public class DefaultRecordType implements RecordType {
+@Immutable
+@XmlType(name = "RecordType")
+public class DefaultRecordType implements RecordType, Serializable {
+    /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = -1534515712654429099L;
+
     /**
      * The name that identifies this record type.
      *
@@ -67,6 +82,26 @@ public class DefaultRecordType implements RecordType {
      * @see #getMemberTypes()
      */
     private final Map<MemberName,Type> memberTypes;
+
+    /**
+     * Empty constructor only used by JAXB.
+     */
+    private DefaultRecordType() {
+        typeName    = null;
+        container   = null;
+        memberTypes = Collections.emptyMap();
+    }
+
+    /**
+     * Creates a new record with the same names and members than the given one.
+     *
+     * @param other The {@code RecordType} to copy.
+     */
+    public DefaultRecordType(final RecordType other) {
+        typeName    = other.getTypeName();
+        container   = other.getContainer();
+        memberTypes = other.getMemberTypes();
+    }
 
     /**
      * Creates a new record.
@@ -91,6 +126,32 @@ public class DefaultRecordType implements RecordType {
         this.typeName    = typeName;
         this.container   = container;
         this.memberTypes = CollectionsExt.unmodifiableOrCopy(memberTypes);
+    }
+
+    /**
+     * Returns a SIS implementation with the name and members of the given arbitrary implementation.
+     * This method performs the first applicable actions in the following choices:
+     *
+     * <ul>
+     *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
+     *   <li>Otherwise if the given object is already an instance of {@code DefaultRecordType},
+     *       then it is returned unchanged.</li>
+     *   <li>Otherwise a new {@code DefaultRecordType} instance is created using the
+     *       {@linkplain #DefaultRecordType(RecordType) copy constructor} and returned.
+     *       Note that this is a shallow copy operation, since the members contained
+     *       in the given object are not recursively copied.</li>
+     * </ul>
+     *
+     * @param  other The object to get as a SIS implementation, or {@code null} if none.
+     * @return A SIS implementation containing the members of the given object
+     *         (may be the given object itself), or {@code null} if the argument was {@code null}.
+     */
+    public static DefaultRecordType castOrCopy(final RecordType other) {
+        if (other == null || other instanceof DefaultRecordType) {
+            return (DefaultRecordType) other;
+        } else {
+            return new DefaultRecordType(other);
+        }
     }
 
     /**
@@ -192,5 +253,46 @@ public class DefaultRecordType implements RecordType {
     @Override
     public boolean isInstance(final Record record) {
         return (record != null) && getMembers().containsAll(record.getAttributes().keySet());
+    }
+
+    /**
+     * Compares the given object with this {@code RecordType} for equality.
+     *
+     * @param  other The object to compare with this {@code RecordType}.
+     * @return {@code true} if both objects are equal.
+     */
+    @Override
+    public boolean equals(final Object other) {
+        if (other == this) {
+            return true;
+        }
+        if (other != null && other.getClass() == getClass()) {
+            final DefaultRecordType that = (DefaultRecordType) other;
+            return Objects.equals(typeName,    that.typeName)  &&
+                   Objects.equals(container,   that.container) &&
+                   Objects.equals(memberTypes, that.memberTypes);
+        }
+        return false;
+    }
+
+    /**
+     * Returns a hash code value for this {@code RecordType}.
+     */
+    @Override
+    public int hashCode() {
+        int code = memberTypes.hashCode();
+        if (typeName  != null) code = 31*code + typeName .hashCode();
+        if (container != null) code = 31*code + container.hashCode();
+        return code;
+    }
+
+    /**
+     * Returns a string representation of this {@code RecordType}.
+     * The string representation is for debugging purpose and may change in any future SIS version.
+     */
+    @Debug
+    @Override
+    public String toString() {
+        return "RecordType[\"" + typeName + "\"]";
     }
 }
