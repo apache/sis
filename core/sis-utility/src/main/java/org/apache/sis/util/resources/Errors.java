@@ -216,6 +216,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int IllegalLanguageCode_1 = 12;
 
         /**
+         * Member “{0}” can not be associated to type “{1}”.
+         */
+        public static final int IllegalMemberType_2 = 106;
+
+        /**
          * Option ‘{0}’ can not take the “{1}” value.
          */
         public static final int IllegalOptionValue_2 = 101;
