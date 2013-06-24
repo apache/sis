@@ -46,10 +46,15 @@ public final strictfp class XmlUtilitiesTest extends TestCase {
     @Test
     public void testToXML() throws DatatypeConfigurationException {
         final Context context = new Context(0, Locale.FRENCH, TimeZone.getTimeZone("CET"), null, null, null, null, null);
-        final XMLGregorianCalendar cal = XmlUtilities.toXML(context, new Date(1230786000000L));
-        assertEquals("2009-01-01T06:00:00.000+01:00", cal.toString());
+        final XMLGregorianCalendar calendar;
+        try {
+            calendar = XmlUtilities.toXML(context, new Date(1230786000000L));
+        } finally {
+            context.finish();
+        }
+        assertEquals("2009-01-01T06:00:00.000+01:00", calendar.toString());
 
-        cal.setMillisecond(FIELD_UNDEFINED);
-        assertEquals("2009-01-01T06:00:00+01:00", cal.toString());
+        calendar.setMillisecond(FIELD_UNDEFINED);
+        assertEquals("2009-01-01T06:00:00+01:00", calendar.toString());
     }
 }
