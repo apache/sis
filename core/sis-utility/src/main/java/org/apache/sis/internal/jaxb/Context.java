@@ -137,7 +137,7 @@ public final class Context extends MarshalContext {
      *     }
      * }
      *
-     * @param  bitMasks        A combination of {@link #MARSHALLING}, {@code #SUBSTITUTE_*} or other bit masks.
+     * @param  bitMasks        A combination of {@link #MARSHALLING}, {@code SUBSTITUTE_*} or other bit masks.
      * @param  locale          The locale, or {@code null} if unspecified.
      * @param  timezone        The timezone, or {@code null} if unspecified.
      * @param  schemas         The schemas root URL, or {@code null} if none.

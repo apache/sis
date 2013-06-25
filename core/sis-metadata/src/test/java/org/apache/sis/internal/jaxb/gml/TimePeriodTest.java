@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.jaxb.gml;
 
+import java.util.Locale;
 import java.io.StringReader;
 import java.io.StringWriter;
 import javax.xml.bind.Marshaller;
@@ -24,7 +25,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.datatype.DatatypeConfigurationException;
 import org.apache.sis.internal.jaxb.XmlUtilities;
-import org.apache.sis.test.TestCase;
+import org.apache.sis.test.XMLTestCase;
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
@@ -43,7 +44,7 @@ import static org.apache.sis.test.TestUtilities.format;
  * @version 0.3
  * @module
  */
-public final strictfp class TimePeriodTest extends TestCase {
+public final strictfp class TimePeriodTest extends XMLTestCase {
     /**
      * The XML marshaller.
      */
@@ -90,13 +91,14 @@ public final strictfp class TimePeriodTest extends TestCase {
     }
 
     /**
-     * Tests time instant.
+     * Tests time instant. The test is executed using an arbitrary locale and timezone.
      *
      * @throws JAXBException If an error occurred while marshalling.
      * @throws DatatypeConfigurationException Should never happen.
      */
     @Test
     public void testTimeInstant() throws JAXBException, DatatypeConfigurationException {
+        createContext(false, Locale.FRANCE, "CET");
         final String expected =
             "<gml:TimeInstant>\n" +
             "  <gml:timePosition>1992-01-01T01:00:00.000+01:00</gml:timePosition>\n" +
@@ -111,11 +113,13 @@ public final strictfp class TimePeriodTest extends TestCase {
 
     /**
      * Tests a time period using the GML 2 syntax.
+     * The test is executed using an arbitrary locale and timezone.
      *
      * @throws JAXBException If an error occurred while marshalling.
      */
     @Test
     public void testPeriodGML2() throws JAXBException {
+        createContext(false, Locale.FRANCE, "CET");
         testPeriod(new TimePeriodBound.GML2(new DummyInstant(date("1992-01-01 00:00:00"))),
                    new TimePeriodBound.GML2(new DummyInstant(date("2007-12-31 00:00:00"))),
             "<gml:TimePeriod>\n" +
@@ -135,12 +139,14 @@ public final strictfp class TimePeriodTest extends TestCase {
     /**
      * Tests a time period using GML2 or GML3 syntax. This method is used for the
      * implementation of {@link #testPeriodGML2()} and {@link #testPeriodGML3()}.
+     * The test is executed using an arbitrary locale and timezone.
      *
      * @param expected The expected string.
      */
     private void testPeriod(final TimePeriodBound begin, final TimePeriodBound end,
             final String expected, final boolean verifyValues) throws JAXBException
     {
+        createContext(false, Locale.FRANCE, "CET");
         final TimePeriod period = new TimePeriod();
         period.begin = begin;
         period.end   = end;
@@ -156,11 +162,13 @@ public final strictfp class TimePeriodTest extends TestCase {
 
     /**
      * Tests a time period using the GML 3 syntax.
+     * The test is executed using an arbitrary locale and timezone.
      *
      * @throws JAXBException If an error occurred while marshalling.
      */
     @Test
     public void testPeriodGML3() throws JAXBException {
+        createContext(false, Locale.FRANCE, "CET");
         testPeriod(new TimePeriodBound.GML3(new DummyInstant(date("1992-01-01 00:00:00")), "before"),
                    new TimePeriodBound.GML3(new DummyInstant(date("2007-12-31 00:00:00")), "after"),
             "<gml:TimePeriod>\n" +
@@ -170,13 +178,14 @@ public final strictfp class TimePeriodTest extends TestCase {
     }
 
     /**
-     * Same test than {@link #testPeriodGML3()}, but with simplified date format
-     * (omit the hours and timezone)
+     * Same test than {@link #testPeriodGML3()}, but with simplified date format (omit the hours and timezone)
+     * The test is executed using an arbitrary locale and timezone.
      *
      * @throws JAXBException If an error occurred while marshalling.
      */
     @Test
     public void testSimplifiedPeriodGML3() throws JAXBException {
+        createContext(false, Locale.FRANCE, "CET");
         testPeriod(new TimePeriodBound.GML3(new DummyInstant(date("1992-01-01 23:00:00")), "before"),
                    new TimePeriodBound.GML3(new DummyInstant(date("2007-12-30 23:00:00")), "after"),
             "<gml:TimePeriod>\n" +
@@ -186,12 +195,14 @@ public final strictfp class TimePeriodTest extends TestCase {
     }
 
     /**
-     * Same test than {@link #testSimplifiedPeriodGML3()}, but without begining boundary.
+     * Same test than {@link #testSimplifiedPeriodGML3()}, but without beginning boundary.
+     * The test is executed using an arbitrary locale and timezone.
      *
      * @throws JAXBException If an error occurred while marshalling.
      */
     @Test
     public void testBeforePeriodGML3() throws JAXBException {
+        createContext(false, Locale.FRANCE, "CET");
         testPeriod(new TimePeriodBound.GML3(null, "before"),
                    new TimePeriodBound.GML3(new DummyInstant(date("2007-12-30 23:00:00")), "after"),
             "<gml:TimePeriod>\n" +
@@ -202,11 +213,13 @@ public final strictfp class TimePeriodTest extends TestCase {
 
     /**
      * Same test than {@link #testSimplifiedPeriodGML3()}, but without end boundary.
+     * The test is executed using an arbitrary locale and timezone.
      *
      * @throws JAXBException If an error occurred while marshalling.
      */
     @Test
     public void testAfterPeriodGML3() throws JAXBException {
+        createContext(false, Locale.FRANCE, "CET");
         testPeriod(new TimePeriodBound.GML3(new DummyInstant(date("1992-01-01 23:00:00")), "before"),
                    new TimePeriodBound.GML3(null, "after"),
             "<gml:TimePeriod>\n" +
