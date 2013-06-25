@@ -18,7 +18,6 @@ package org.apache.sis.metadata.iso;
 
 import java.util.Map;
 import java.util.Locale;
-import java.util.Collection;
 import java.util.logging.Level;
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlElement;
@@ -32,7 +31,6 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.util.Locales;
 import org.apache.sis.util.Immutable;
 import org.apache.sis.util.Deprecable;
-import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
@@ -334,7 +332,7 @@ public class ImmutableIdentifier implements ReferenceIdentifier, Deprecable, Ser
          * identifier if there is any, otherwise we take the shortest title.
          */
         if (codeSpace == null && authority instanceof Citation) {
-            codeSpace = getCodeSpace((Citation) authority);
+            codeSpace = Citations.getIdentifier((Citation) authority);
         }
         /*
          * Store the definitive reference to the attributes. Note that casts are performed only
@@ -354,50 +352,6 @@ public class ImmutableIdentifier implements ReferenceIdentifier, Deprecable, Ser
                     Errors.format(Errors.Keys.IllegalArgumentValue_2, key, value), exception, key, value);
         }
         ensureNonNull(CODE_KEY, code);
-    }
-
-    /**
-     * Returns the shortest title inferred from the specified authority.
-     * This is used both for creating a generic name, or for inferring a
-     * default identifier code space.
-     */
-    private static InternationalString getShortestTitle(final Citation authority) {
-        InternationalString title = authority.getTitle();
-        int length = title.length();
-        final Collection<? extends InternationalString> alt = authority.getAlternateTitles();
-        if (alt != null) {
-            for (final InternationalString candidate : alt) {
-                final int candidateLength = candidate.length();
-                if (candidateLength > 0 && candidateLength < length) {
-                    title = candidate;
-                    length = candidateLength;
-                }
-            }
-        }
-        return title;
-    }
-
-    /**
-     * Tries to get a code space from the specified authority. This method scans first
-     * through the identifier, then through the titles if no suitable identifier were found.
-     */
-    private static String getCodeSpace(final Citation authority) {
-        if (authority != null) {
-            final Collection<? extends Identifier> identifiers = authority.getIdentifiers();
-            if (identifiers != null) {
-                for (final Identifier id : identifiers) {
-                    final String identifier = id.getCode();
-                    if (CharSequences.isUnicodeIdentifier(identifier)) {
-                        return identifier;
-                    }
-                }
-            }
-            final String title = getShortestTitle(authority).toString(Locale.ROOT);
-            if (CharSequences.isUnicodeIdentifier(title)) {
-                return title;
-            }
-        }
-        return null;
     }
 
     /**
