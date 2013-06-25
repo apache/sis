@@ -17,17 +17,27 @@
 
 /**
  * Miscellaneous objects and adapters defined in the {@code "gml"} namespace.
+ * This package contains adapters mapping GeoAPI interfaces to their SIS implementation.
+ * We must use adapters since JAXB can not handle interfaces. Consequently the purpose of
+ * these adapters is to replace arbitrary instances of interfaces by SIS implementations.
+ *
+ * <p>Every time JAXB try to marshal or unmarshal an instance of an interface,
+ * the adapter will be invoked for eventually substituting that instance.</p>
  *
  * @author  Guilhem Legal (Geomatys)
+ * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.18)
+ * @since   0.3 (derived from geotk-3.00)
  * @version 0.3
  * @module
  *
  * @see javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter
  */
 @XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GML, xmlns = {
-    @XmlNs(prefix = "gml", namespaceURI = Namespaces.GML)
+    @XmlNs(prefix = "gml", namespaceURI = Namespaces.GML),
+    @XmlNs(prefix = "gmd", namespaceURI = Namespaces.GMD),
+    @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),
+    @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI)
 })
 @XmlAccessorType(XmlAccessType.NONE)
 package org.apache.sis.internal.jaxb.gml;

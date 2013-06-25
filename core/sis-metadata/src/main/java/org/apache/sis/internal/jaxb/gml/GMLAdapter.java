@@ -19,7 +19,6 @@ package org.apache.sis.internal.jaxb.gml;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlAttribute;
 import org.apache.sis.util.Version;
-import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.IdentifiedObject;
@@ -66,7 +65,7 @@ public abstract class GMLAdapter {
      * @see org.apache.sis.internal.jaxb.gco.ObjectReference#getUUIDREF()
      */
     @XmlID
-    @XmlAttribute(required = true, namespace = Namespaces.GML)
+    @XmlAttribute(required = true)
     private String id;
 
     /**
