@@ -70,7 +70,7 @@ public class SC_VerticalCRS extends PropertyType<SC_VerticalCRS, VerticalCRS> {
      *
      * @param metadata The metadata value to marshal.
      */
-    private SC_VerticalCRS(final VerticalCRS metadata) {
+    protected SC_VerticalCRS(final VerticalCRS metadata) {
         super(metadata);
     }
 
