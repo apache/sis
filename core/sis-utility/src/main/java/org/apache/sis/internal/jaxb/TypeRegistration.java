@@ -47,13 +47,24 @@ import org.apache.sis.internal.system.SystemListener;
  */
 public abstract class TypeRegistration {
     /**
-     * The JAXB context, or {@code null} if not yet created.
+     * The JAXB context, or {@code null} if not yet created or if the classpath changed.
      */
     private static Reference<JAXBContext> context;
     static {
         SystemListener.add(new SystemListener(Modules.UTILITIES) {
             @Override protected void classpathChanged() {
-                context = null;
+                synchronized (TypeRegistration.class) {
+                    context = null;
+                }
+                /*
+                 * Opportunistically clears the AdapterReplacement.PROVIDER. We can not do this work in the
+                 * AdapterReplacement interface because we can not declare static initializer in interfaces.
+                 * This TypeRegistration class is an acceptable fallback because MarshallerPool uses this
+                 * class before to use AdapterReplacement.
+                 */
+                synchronized (AdapterReplacement.PROVIDER) {
+                    AdapterReplacement.PROVIDER.reload();
+                }
             }
         });
     }
@@ -105,9 +116,8 @@ public abstract class TypeRegistration {
      * @throws JAXBException If an error occurred while creating the JAXB context.
      */
     public static synchronized JAXBContext getSharedContext() throws JAXBException {
-        final Reference<JAXBContext> ref = context; // Protect from changes by the listener.
-        if (ref != null) {
-            final JAXBContext instance = ref.get();
+        if (context != null) {
+            final JAXBContext instance = context.get();
             if (instance != null) {
                 return instance;
             }
