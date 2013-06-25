@@ -143,7 +143,7 @@
     @XmlJavaTypeAdapter(EX_VerticalExtent.class),
     @XmlJavaTypeAdapter(GM_Object.class),
     @XmlJavaTypeAdapter(MD_Identifier.class),
-//  @XmlJavaTypeAdapter(SC_VerticalCRS.class), // TODO
+    @XmlJavaTypeAdapter(SC_VerticalCRS.class),
     @XmlJavaTypeAdapter(TM_Primitive.class),
 
     // Java types, primitive types and basic OGC types handling
