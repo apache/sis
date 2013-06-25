@@ -83,6 +83,9 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
     /**
      * Creates an international string from a set of strings in different locales.
      *
+     * @param strings String value for each locale key.
+     * @return The international string.
+     *
      * @see Types#toInternationalString(CharSequence)
      */
     @Override
