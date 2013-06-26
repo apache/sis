@@ -35,9 +35,7 @@
  */
 @XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GML, xmlns = {
     @XmlNs(prefix = "gml", namespaceURI = Namespaces.GML),
-    @XmlNs(prefix = "gmd", namespaceURI = Namespaces.GMD),
-    @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),
-    @XmlNs(prefix = "xsi", namespaceURI = Namespaces.XSI)
+    @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO)
 })
 @XmlAccessorType(XmlAccessType.NONE)
 package org.apache.sis.internal.jaxb.gml;

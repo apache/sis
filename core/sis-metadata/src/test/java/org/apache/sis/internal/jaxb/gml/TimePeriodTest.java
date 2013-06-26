@@ -25,6 +25,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.datatype.DatatypeConfigurationException;
 import org.apache.sis.internal.jaxb.XmlUtilities;
+import org.apache.sis.test.XMLTransformation;
 import org.apache.sis.test.XMLTestCase;
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
@@ -99,13 +100,14 @@ public final strictfp class TimePeriodTest extends XMLTestCase {
     @Test
     public void testTimeInstant() throws JAXBException, DatatypeConfigurationException {
         createContext(false, Locale.FRANCE, "CET");
-        final String expected =
+        String expected =
             "<gml:TimeInstant>\n" +
             "  <gml:timePosition>1992-01-01T01:00:00.000+01:00</gml:timePosition>\n" +
             "</gml:TimeInstant>\n";
         final TimeInstant instant = createTimeInstant("1992-01-01 00:00:00");
         marshaller.marshal(instant, buffer);
         final String actual = buffer.toString();
+        expected = XMLTransformation.GML.optionallyRemovePrefix(expected, actual);
         assertXmlEquals(expected, actual, "xmlns:*", "xsi:schemaLocation");
         final TimeInstant test = (TimeInstant) unmarshaller.unmarshal(new StringReader(actual));
         assertEquals("1992-01-01 00:00:00", format(XmlUtilities.toDate(test.timePosition)));
@@ -144,7 +146,7 @@ public final strictfp class TimePeriodTest extends XMLTestCase {
      * @param expected The expected string.
      */
     private void testPeriod(final TimePeriodBound begin, final TimePeriodBound end,
-            final String expected, final boolean verifyValues) throws JAXBException
+            String expected, final boolean verifyValues) throws JAXBException
     {
         createContext(false, Locale.FRANCE, "CET");
         final TimePeriod period = new TimePeriod();
@@ -152,6 +154,7 @@ public final strictfp class TimePeriodTest extends XMLTestCase {
         period.end   = end;
         marshaller.marshal(period, buffer);
         final String actual = buffer.toString();
+        expected = XMLTransformation.GML.optionallyRemovePrefix(expected, actual);
         assertXmlEquals(expected, actual, "xmlns:*", "xsi:schemaLocation");
         final TimePeriod test = (TimePeriod) unmarshaller.unmarshal(new StringReader(actual));
         if (verifyValues) {
