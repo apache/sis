@@ -53,7 +53,10 @@ import org.junit.BeforeClass;
     org.apache.sis.metadata.MetadataStandardTest.class,
     org.apache.sis.metadata.PrunerTest.class,
     org.apache.sis.metadata.AbstractMetadataTest.class,
-    org.apache.sis.metadata.iso.AllMetadataTest.class
+    org.apache.sis.metadata.iso.AllMetadataTest.class,
+
+    // XML marshalling
+    org.apache.sis.internal.jaxb.gml.TimePeriodTest.class
 })
 public final strictfp class MetadataTestSuite extends TestSuite {
     /**

@@ -17,13 +17,12 @@
 package org.apache.sis.internal.jaxb.gco;
 
 import java.util.UUID;
-import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.xml.XLink;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.ReferenceResolverMock;
 import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.TestCase;
+import org.apache.sis.test.XMLTestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -38,7 +37,7 @@ import static org.junit.Assert.*;
  * @module
  */
 @DependsOn(org.apache.sis.internal.jaxb.IdentifierMapAdapterTest.class)
-public final strictfp class PropertyTypeTest extends TestCase {
+public final strictfp class PropertyTypeTest extends XMLTestCase {
     /**
      * The pseudo-metadata object to wrap for testing purpose.
      */
@@ -108,13 +107,8 @@ public final strictfp class PropertyTypeTest extends TestCase {
     public void testWithUUID() throws Exception {
         final UUID uuid = UUID.randomUUID();
         metadata.getIdentifierMap().putSpecialized(IdentifierSpace.UUID, uuid);
-        final Context context = ReferenceResolverMock.begin(true);
-        final PropertyTypeMock property;
-        try {
-            property = marshal();
-        } finally {
-            context.finish();
-        }
+        context = ReferenceResolverMock.begin(true);
+        final PropertyTypeMock property = marshal();
         assertSame  (metadata,        property.metadata);
         assertNull  ("nilReason",     property.getNilReason());
         assertEquals(uuid.toString(), property.getUUIDREF());
@@ -146,13 +140,8 @@ public final strictfp class PropertyTypeTest extends TestCase {
     public void testWithXLink() throws Exception {
         final XLink link = createXLink();
         metadata.getIdentifierMap().putSpecialized(IdentifierSpace.XLINK, link);
-        final Context context = ReferenceResolverMock.begin(true);
-        final PropertyTypeMock property;
-        try {
-            property = marshal();
-        } finally {
-            context.finish();
-        }
+        context = ReferenceResolverMock.begin(true);
+        final PropertyTypeMock property = marshal();
         assertSame  (metadata,              property.metadata);
         assertNull  ("nilReason",           property.getNilReason());
         assertNull  ("uuidref",             property.getUUIDREF());

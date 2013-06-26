@@ -143,7 +143,7 @@
     @XmlJavaTypeAdapter(StringAdapter.class),
     @XmlJavaTypeAdapter(InternationalStringAdapter.class),
     @XmlJavaTypeAdapter(GO_DateTime.class),
-//    @XmlJavaTypeAdapter(GO_RecordType.class), // TODO
+    @XmlJavaTypeAdapter(GO_RecordType.class),
     @XmlJavaTypeAdapter(GO_Boolean.class), @XmlJavaTypeAdapter(type=boolean.class, value=GO_Boolean.class)
 })
 package org.apache.sis.metadata.iso.quality;

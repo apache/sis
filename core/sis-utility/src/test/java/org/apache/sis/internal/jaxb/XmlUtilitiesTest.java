@@ -18,10 +18,9 @@ package org.apache.sis.internal.jaxb;
 
 import java.util.Date;
 import java.util.Locale;
-import java.util.TimeZone;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.datatype.DatatypeConfigurationException;
-import org.apache.sis.test.TestCase;
+import org.apache.sis.test.XMLTestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -36,7 +35,7 @@ import static javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED;
  * @version 0.3
  * @module
  */
-public final strictfp class XmlUtilitiesTest extends TestCase {
+public final strictfp class XmlUtilitiesTest extends XMLTestCase {
     /**
      * Tests the {@link XmlUtilities#toXML} method.
      * This test arbitrarily uses the CET timezone.
@@ -45,11 +44,11 @@ public final strictfp class XmlUtilitiesTest extends TestCase {
      */
     @Test
     public void testToXML() throws DatatypeConfigurationException {
-        final Context context = new Context(0, Locale.FRENCH, TimeZone.getTimeZone("CET"), null, null, null, null, null);
-        final XMLGregorianCalendar cal = XmlUtilities.toXML(context, new Date(1230786000000L));
-        assertEquals("2009-01-01T06:00:00.000+01:00", cal.toString());
+        createContext(false, Locale.FRANCE, "CET");
+        final XMLGregorianCalendar calendar = XmlUtilities.toXML(context, new Date(1230786000000L));
+        assertEquals("2009-01-01T06:00:00.000+01:00", calendar.toString());
 
-        cal.setMillisecond(FIELD_UNDEFINED);
-        assertEquals("2009-01-01T06:00:00+01:00", cal.toString());
+        calendar.setMillisecond(FIELD_UNDEFINED);
+        assertEquals("2009-01-01T06:00:00+01:00", calendar.toString());
     }
 }

@@ -143,8 +143,8 @@
     @XmlJavaTypeAdapter(EX_VerticalExtent.class),
     @XmlJavaTypeAdapter(GM_Object.class),
     @XmlJavaTypeAdapter(MD_Identifier.class),
-//  @XmlJavaTypeAdapter(SC_VerticalCRS.class), // TODO
-//  @XmlJavaTypeAdapter(TM_Primitive.class),   // TODO
+    @XmlJavaTypeAdapter(SC_VerticalCRS.class),
+    @XmlJavaTypeAdapter(TM_Primitive.class),
 
     // Java types, primitive types and basic OGC types handling
     @XmlJavaTypeAdapter(InternationalStringAdapter.class),
@@ -163,6 +163,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
 
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.internal.jaxb.gco.*;
+import org.apache.sis.internal.jaxb.gml.*;
 import org.apache.sis.internal.jaxb.metadata.*;
-// TODO import org.apache.sis.internal.jaxb.referencing.*;
 import org.apache.sis.internal.jaxb.geometry.GM_Object;
