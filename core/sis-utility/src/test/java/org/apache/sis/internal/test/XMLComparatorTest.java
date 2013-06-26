@@ -33,8 +33,7 @@ import static org.junit.Assert.*;
  */
 public final strictfp class XMLComparatorTest extends TestCase {
     /**
-     * Tests the {@link XMLComparator#ignoredAttributes} and {@link XMLComparator#ignoredNodes}
-     * sets.
+     * Tests the {@link XMLComparator#ignoredAttributes} and {@link XMLComparator#ignoredNodes} sets.
      *
      * @throws Exception Should never happen.
      */

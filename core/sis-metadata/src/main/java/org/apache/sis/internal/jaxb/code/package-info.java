@@ -38,8 +38,8 @@
  * @see org.opengis.util.CodeList
  */
 @XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GMD, xmlns = {
-    @XmlNs(prefix = "gmi", namespaceURI = Namespaces.GMI),
     @XmlNs(prefix = "gmd", namespaceURI = Namespaces.GMD),
+    @XmlNs(prefix = "gmi", namespaceURI = Namespaces.GMI),
     @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO)
 })
 package org.apache.sis.internal.jaxb.code;
