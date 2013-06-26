@@ -16,19 +16,29 @@
  */
 
 /**
- * Temporary placeholder for the Temporal Schema JAXB adapters.
+ * Miscellaneous objects and adapters defined in the {@code "gml"} namespace.
+ * This package contains adapters mapping GeoAPI interfaces to their SIS implementation.
+ * We must use adapters since JAXB can not handle interfaces. Consequently the purpose of
+ * these adapters is to replace arbitrary instances of interfaces by SIS implementations.
+ *
+ * <p>Every time JAXB try to marshal or unmarshal an instance of an interface,
+ * the adapter will be invoked for eventually substituting that instance.</p>
  *
  * @author  Guilhem Legal (Geomatys)
- * @since   0.3 (derived from geotk-3.21)
+ * @author  Cédric Briançon (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
+ * @since   0.3 (derived from geotk-3.00)
  * @version 0.3
  * @module
+ *
+ * @see javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter
  */
-@XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GTS, xmlns = {
-    @XmlNs(prefix = "gts", namespaceURI = Namespaces.GTS),
+@XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GML, xmlns = {
+    @XmlNs(prefix = "gml", namespaceURI = Namespaces.GML),
     @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO)
 })
 @XmlAccessorType(XmlAccessType.NONE)
-package org.apache.sis.internal.jaxb.gts;
+package org.apache.sis.internal.jaxb.gml;
 
 import javax.xml.bind.annotation.XmlNs;
 import javax.xml.bind.annotation.XmlNsForm;

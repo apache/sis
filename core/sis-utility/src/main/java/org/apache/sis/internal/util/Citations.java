@@ -27,6 +27,7 @@ import org.apache.sis.util.Static;
 
 import static org.apache.sis.util.CharSequences.equalsFiltered;
 import static org.apache.sis.util.CharSequences.trimWhitespaces;
+import static org.apache.sis.util.CharSequences.isUnicodeIdentifier;
 import static org.apache.sis.util.Characters.Filter.LETTERS_AND_DIGITS;
 
 
@@ -62,6 +63,15 @@ public final class Citations extends Static {
      */
     private static <E> Iterator<E> iterator(final Collection<E> collection) {
         return (collection != null && !collection.isEmpty()) ? collection.iterator() : null;
+    }
+
+    /**
+     * Returns a "unlocalized" string representation of the given international string,
+     * or {@code null} if none. This method is used by {@link #getIdentifier(Citation)},
+     * which is why we don't want the localized string.
+     */
+    private static String toString(final InternationalString title) {
+        return (title != null) ? trimWhitespaces(title.toString(Locale.ROOT)) : null;
     }
 
     /**
@@ -223,15 +233,37 @@ public final class Citations extends Static {
     }
 
     /**
-     * Returns the shortest identifier for the specified citation, or the title if there is
-     * no identifier. This method is useful for extracting the namespace from an authority,
-     * for example {@code "EPSG"}.
+     * Infers an identifier from the given citation, or returns {@code null} if no identifier has been found.
+     * This method is useful for extracting the namespace from an authority, for example {@code "EPSG"}.
+     * The implementation performs the following choices:
+     *
+     * <ul>
+     *   <li>If the given citation is {@code null}, then this method returns {@code null}.</li>
+     *   <li>Otherwise if the citation contains at least one {@linkplain Citation#getIdentifiers() identifier}, then:
+     *     <ul>
+     *       <li>If at least one identifier is a {@linkplain org.apache.sis.util.CharSequences#isUnicodeIdentifier
+     *           unicode identifier}, then the shortest of those identifiers is returned.</li>
+     *       <li>Otherwise the shortest identifier is returned, despite not being a Unicode identifier.</li>
+     *     </ul></li>
+     *   <li>Otherwise if the citation contains at least one {@linkplain Citation#getTitle() title} or
+     *       {@linkplain Citation#getAlternateTitles() alternate title}, then:
+     *     <ul>
+     *       <li>If at least one title is a {@linkplain org.apache.sis.util.CharSequences#isUnicodeIdentifier
+     *           unicode identifier}, then the shortest of those titles is returned.</li>
+     *       <li>Otherwise the shortest title is returned, despite not being a Unicode identifier.</li>
+     *     </ul></li>
+     *   <li>Otherwise this method returns {@code null}.</li>
+     * </ul>
+     *
+     * This method searches in alternate titles as a fallback because ISO specification said
+     * that those titles are often used for abbreviations.
      *
      * @param  citation The citation for which to get the identifier, or {@code null}.
-     * @return The shortest identifier of the given citation, or {@code null} if the
-     *         given citation was null or doesn't declare any identifier or title.
+     * @return An identifier for the given citation, or {@code null} if the given citation is null
+     *         or does not declare any identifier or title.
      */
     public static String getIdentifier(final Citation citation) {
+        boolean isUnicode = false; // Whether 'identifier' is a Unicode identifier.
         String identifier = null;
         if (citation != null) {
             final Iterator<? extends Identifier> it = iterator(citation.getIdentifiers());
@@ -241,18 +273,43 @@ public final class Citations extends Static {
                     final String candidate = trimWhitespaces(id.getCode());
                     if (candidate != null) {
                         final int length = candidate.length();
-                        if (length != 0) {
-                            if (identifier == null || length < identifier.length()) {
+                        if (length != 0 && (identifier == null || length < identifier.length())) {
+                            final boolean s = isUnicodeIdentifier(candidate);
+                            if (s || !isUnicode) {
                                 identifier = candidate;
+                                isUnicode = s;
                             }
                         }
                     }
                 }
             }
+            /*
+             * If no identifier has been found, fallback on the shortest title or alternate title.
+             * We search for alternate titles because ISO specification said that those titles are
+             * often used for abbreviations.
+             */
             if (identifier == null) {
-                final InternationalString title = citation.getTitle();
-                if (title != null) {
-                    identifier = title.toString();
+                identifier = toString(citation.getTitle());
+                if (identifier != null) {
+                    if (identifier.isEmpty()) {
+                        identifier = null;
+                    } else {
+                        isUnicode = isUnicodeIdentifier(identifier);
+                    }
+                }
+                final Iterator<? extends InternationalString> iterator = iterator(citation.getAlternateTitles());
+                if (iterator != null) while (iterator.hasNext()) {
+                    final String candidate = toString(iterator.next());
+                    if (candidate != null) {
+                        final int length = candidate.length();
+                        if (length != 0 && (identifier == null || length < identifier.length())) {
+                            final boolean s = isUnicodeIdentifier(candidate);
+                            if (s || !isUnicode) {
+                                identifier = candidate;
+                                isUnicode = s;
+                            }
+                        }
+                    }
                 }
             }
         }

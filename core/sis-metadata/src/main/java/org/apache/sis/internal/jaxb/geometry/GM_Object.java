@@ -83,7 +83,7 @@ public class GM_Object extends XmlAdapter<GM_Object, Geometry> {
      * The default implementation returns {@code null} if all cases. Subclasses
      * must override this method in order to provide useful marshalling.
      *
-     * @param value The value to marshall.
+     * @param value The value to marshal.
      * @return The adapter which covers the geometry value.
      */
     protected GM_Object wrap(Geometry value) {
