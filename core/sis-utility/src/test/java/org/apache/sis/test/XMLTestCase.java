@@ -37,6 +37,9 @@ import static org.junit.Assert.*;
  * @since   0.3
  * @version 0.3
  * @module
+ *
+ * @see XMLComparator
+ * @see XMLTransformation
  */
 public abstract strictfp class XMLTestCase extends TestCase {
     /**
