@@ -402,7 +402,7 @@ pathTree:   for (int j=0; ; j++) {
                         directory.setValue(NAME, parenthesis(resources.getString(homeKey)));
                     }
                     CharSequence title = entry.getValue();
-                    if (title == null) {
+                    if (title == null || title.length() == 0) {
                         title = parenthesis(resources.getString(entry.getKey().isDirectory() ?
                                 Vocabulary.Keys.Directory : Vocabulary.Keys.Untitled).toLowerCase(locale));
                     }
@@ -487,6 +487,11 @@ pathTree:   for (int j=0; ; j++) {
                             if (title == null) {
                                 title = concatenate(attributes.getValue(Attributes.Name.SPECIFICATION_TITLE),
                                         attributes.getValue(Attributes.Name.SPECIFICATION_VERSION), false);
+                                if (title == null) {
+                                    // We really need a non-null value in order to protect this code
+                                    // against infinite recursivity.
+                                    title = "";
+                                }
                             }
                             entry.setValue(title);
                             files = classpath(attributes.getValue(Attributes.Name.CLASS_PATH),
@@ -509,7 +514,7 @@ pathTree:   for (int j=0; ; j++) {
     }
 
     /**
-     * Puts the given file in the given map. IF a value was already associated to the given file,
+     * Puts the given file in the given map. If a value was already associated to the given file,
      * then that value is preserved.
      *
      * @param  files The map in which to add the file, or {@code null} if not yet created.
@@ -594,9 +599,10 @@ pathTree:   for (int j=0; ; j++) {
      * Concatenates the given strings in the format "main (complement)".
      * Any of the given strings can be null.
      *
-     * @param main        The main string to show first.
-     * @param complement  The string to show after the main one.
-     * @param parenthesis {@code true} for writing the complement between parenthesis.
+     * @param  main        The main string to show first, or {@code null}.
+     * @param  complement  The string to show after the main one, or {@code null}.
+     * @param  parenthesis {@code true} for writing the complement between parenthesis, or {@code null}.
+     * @return The concatenated string, or {@code null} if all components are null.
      */
     private static CharSequence concatenate(final CharSequence main, final CharSequence complement, final boolean parenthesis) {
         if (main != null && main.length() != 0) {
