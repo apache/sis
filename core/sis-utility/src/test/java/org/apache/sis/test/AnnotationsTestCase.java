@@ -270,7 +270,9 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
                     break;
                 }
             }
-            assertTrue("Namespace is not declared in the package @XmlSchema.xmlns().", found);
+            if (!found) {
+                fail("Namespace for " + impl + " is not declared in the package @XmlSchema.xmlns().");
+            }
         } else {
             namespace = schemaNamespace;
         }
