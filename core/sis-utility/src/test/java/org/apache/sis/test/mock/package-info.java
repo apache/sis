@@ -17,10 +17,32 @@
 
 /**
  * Provides objects that simulate the behavior of complex or unavailable real objects.
+ * Mocks are often used as a replacement for objects to be defined only in dependant modules.
+ *
+ * <p>Objects defined in this package are only for SIS testing purpose any many change
+ * in any future version without notice.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
  * @version 0.3
  * @module
  */
+@XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GML, xmlns = {
+    @XmlNs(prefix = "gml", namespaceURI = Namespaces.GML),
+    @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO)
+})
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlJavaTypeAdapters({
+    @XmlJavaTypeAdapter(GO_GenericName.class)
+})
 package org.apache.sis.test.mock;
+
+import javax.xml.bind.annotation.XmlNs;
+import javax.xml.bind.annotation.XmlNsForm;
+import javax.xml.bind.annotation.XmlSchema;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
+import org.apache.sis.internal.jaxb.gco.GO_GenericName;
+import org.apache.sis.xml.Namespaces;
