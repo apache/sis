@@ -41,7 +41,7 @@ import org.apache.sis.xml.Namespaces;
  * @module
  */
 @XmlType(name = "MD_CoverageDescription_Type", propOrder = {
-// TODO    "attributeDescription",
+    "attributeDescription",
     "contentType",
     "dimensions",
     "rangeElementDescriptions"
@@ -135,7 +135,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
      * Returns the description of the attribute described by the measurement value.
      */
     @Override
-    // TODO @XmlElement(name = "attributeDescription", required = true)
+    @XmlElement(name = "attributeDescription", required = true)
     public RecordType getAttributeDescription() {
         return attributeDescription;
     }
