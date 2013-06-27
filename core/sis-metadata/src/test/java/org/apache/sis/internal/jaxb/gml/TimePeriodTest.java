@@ -16,6 +16,8 @@
  */
 package org.apache.sis.internal.jaxb.gml;
 
+import java.util.Map;
+import java.util.HashMap;
 import java.util.Locale;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -24,8 +26,9 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.datatype.DatatypeConfigurationException;
+import org.apache.sis.xml.XML;
+import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.internal.jaxb.XmlUtilities;
-import org.apache.sis.test.XMLTransformation;
 import org.apache.sis.test.XMLTestCase;
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
@@ -47,14 +50,9 @@ import static org.apache.sis.test.TestUtilities.format;
  */
 public final strictfp class TimePeriodTest extends XMLTestCase {
     /**
-     * The XML marshaller.
+     * A poll of configured {@link Marshaller} and {@link Unmarshaller}, created when first needed.
      */
-    private static Marshaller marshaller;
-
-    /**
-     * The XML unmarshaller.
-     */
-    private static Unmarshaller unmarshaller;
+    private static MarshallerPool pool;
 
     /**
      * A buffer where to marshal.
@@ -62,32 +60,45 @@ public final strictfp class TimePeriodTest extends XMLTestCase {
     private final StringWriter buffer = new StringWriter();
 
     /**
-     * Creates the XML marshaller to be shared by all test methods.
-     *
-     * @throws JAXBException If an error occurred while creating the marshaller.
+     * Set the marshalling context to a fixed locale and timezone before to create the
+     * JAXB wrappers for temporal objects. Callers shall invoke {@link #clearContext()}
+     * after this method.
      */
-    @BeforeClass
-    public static void createMarshallers() throws JAXBException {
-        final JAXBContext context = JAXBContext.newInstance(TimeInstant.class, TimePeriod.class);
-        marshaller   = context.createMarshaller();
-        unmarshaller = context.createUnmarshaller();
+    private void createContext() {
+        createContext(true, Locale.FRANCE, "CET");
     }
 
     /**
-     * Allows the garbage collector to collect the marshaller and unmarshallers.
+     * Creates the XML (un)marshaller pool to be shared by all test methods.
+     * The (un)marshallers locale and timezone will be set to fixed values.
+     *
+     * @throws JAXBException If an error occurred while creating the pool.
+     */
+    @BeforeClass
+    public static void createMarshallers() throws JAXBException {
+        final Map<String,Object> properties = new HashMap<>(4);
+        assertNull(properties.put(XML.LOCALE, Locale.FRANCE));
+        assertNull(properties.put(XML.TIMEZONE, "CET"));
+        pool = new MarshallerPool(JAXBContext.newInstance(TimeInstant.class, TimePeriod.class), properties);
+    }
+
+    /**
+     * Invoked by JUnit after the execution of every tests in order to dispose
+     * the {@link MarshallerPool} instance used internally by this class.
      */
     @AfterClass
-    public static void disposeMarshallers() {
-        marshaller   = null;
-        unmarshaller = null;
+    public static void disposeMarshallerPool() {
+        pool = null;
     }
 
     /**
      * Creates a new time instant for the given date.
      */
-    private static TimeInstant createTimeInstant(final String date) throws DatatypeConfigurationException {
+    private TimeInstant createTimeInstant(final String date) throws DatatypeConfigurationException {
         final TimeInstant instant = new TimeInstant();
-        instant.timePosition = XmlUtilities.toXML(null, date(date));
+        createContext();
+        instant.timePosition = XmlUtilities.toXML(context, date(date));
+        clearContext();
         return instant;
     }
 
@@ -99,18 +110,22 @@ public final strictfp class TimePeriodTest extends XMLTestCase {
      */
     @Test
     public void testTimeInstant() throws JAXBException, DatatypeConfigurationException {
-        createContext(false, Locale.FRANCE, "CET");
-        String expected =
-            "<gml:TimeInstant>\n" +
-            "  <gml:timePosition>1992-01-01T01:00:00.000+01:00</gml:timePosition>\n" +
-            "</gml:TimeInstant>\n";
+        final Marshaller   marshaller   = pool.acquireMarshaller();
+        final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
+
         final TimeInstant instant = createTimeInstant("1992-01-01 00:00:00");
         marshaller.marshal(instant, buffer);
         final String actual = buffer.toString();
-        expected = XMLTransformation.GML.optionallyRemovePrefix(expected, actual);
-        assertXmlEquals(expected, actual, "xmlns:*", "xsi:schemaLocation");
+        assertXmlEquals(
+                "<gml:TimeInstant>\n" +
+                "  <gml:timePosition>1992-01-01T01:00:00.000+01:00</gml:timePosition>\n" +
+                "</gml:TimeInstant>\n", actual, "xmlns:*", "xsi:schemaLocation");
+
         final TimeInstant test = (TimeInstant) unmarshaller.unmarshal(new StringReader(actual));
         assertEquals("1992-01-01 00:00:00", format(XmlUtilities.toDate(test.timePosition)));
+
+        pool.recycle(marshaller);
+        pool.recycle(unmarshaller);
     }
 
     /**
@@ -121,9 +136,11 @@ public final strictfp class TimePeriodTest extends XMLTestCase {
      */
     @Test
     public void testPeriodGML2() throws JAXBException {
-        createContext(false, Locale.FRANCE, "CET");
-        testPeriod(new TimePeriodBound.GML2(new DummyInstant(date("1992-01-01 00:00:00"))),
-                   new TimePeriodBound.GML2(new DummyInstant(date("2007-12-31 00:00:00"))),
+        createContext();
+        final TimePeriodBound begin = new TimePeriodBound.GML2(new DummyInstant(date("1992-01-01 00:00:00")));
+        final TimePeriodBound end   = new TimePeriodBound.GML2(new DummyInstant(date("2007-12-31 00:00:00")));
+        clearContext();
+        testPeriod(begin, end,
             "<gml:TimePeriod>\n" +
             "  <gml:begin>\n" +
             "    <gml:TimeInstant>\n" +
@@ -146,21 +163,23 @@ public final strictfp class TimePeriodTest extends XMLTestCase {
      * @param expected The expected string.
      */
     private void testPeriod(final TimePeriodBound begin, final TimePeriodBound end,
-            String expected, final boolean verifyValues) throws JAXBException
+            final String expected, final boolean verifyValues) throws JAXBException
     {
-        createContext(false, Locale.FRANCE, "CET");
+        final Marshaller   marshaller   = pool.acquireMarshaller();
+        final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
         final TimePeriod period = new TimePeriod();
         period.begin = begin;
         period.end   = end;
         marshaller.marshal(period, buffer);
         final String actual = buffer.toString();
-        expected = XMLTransformation.GML.optionallyRemovePrefix(expected, actual);
         assertXmlEquals(expected, actual, "xmlns:*", "xsi:schemaLocation");
         final TimePeriod test = (TimePeriod) unmarshaller.unmarshal(new StringReader(actual));
         if (verifyValues) {
             assertEquals("1992-01-01 00:00:00", format(XmlUtilities.toDate(test.begin.calendar())));
             assertEquals("2007-12-31 00:00:00", format(XmlUtilities.toDate(test.end  .calendar())));
         }
+        pool.recycle(marshaller);
+        pool.recycle(unmarshaller);
     }
 
     /**
@@ -171,9 +190,11 @@ public final strictfp class TimePeriodTest extends XMLTestCase {
      */
     @Test
     public void testPeriodGML3() throws JAXBException {
-        createContext(false, Locale.FRANCE, "CET");
-        testPeriod(new TimePeriodBound.GML3(new DummyInstant(date("1992-01-01 00:00:00")), "before"),
-                   new TimePeriodBound.GML3(new DummyInstant(date("2007-12-31 00:00:00")), "after"),
+        createContext();
+        final TimePeriodBound begin = new TimePeriodBound.GML3(new DummyInstant(date("1992-01-01 00:00:00")), "before");
+        final TimePeriodBound end   = new TimePeriodBound.GML3(new DummyInstant(date("2007-12-31 00:00:00")), "after");
+        clearContext();
+        testPeriod(begin, end,
             "<gml:TimePeriod>\n" +
             "  <gml:beginPosition>1992-01-01T01:00:00+01:00</gml:beginPosition>\n" +
             "  <gml:endPosition>2007-12-31T01:00:00+01:00</gml:endPosition>\n" +
@@ -188,9 +209,11 @@ public final strictfp class TimePeriodTest extends XMLTestCase {
      */
     @Test
     public void testSimplifiedPeriodGML3() throws JAXBException {
-        createContext(false, Locale.FRANCE, "CET");
-        testPeriod(new TimePeriodBound.GML3(new DummyInstant(date("1992-01-01 23:00:00")), "before"),
-                   new TimePeriodBound.GML3(new DummyInstant(date("2007-12-30 23:00:00")), "after"),
+        createContext();
+        final TimePeriodBound begin = new TimePeriodBound.GML3(new DummyInstant(date("1992-01-01 23:00:00")), "before");
+        final TimePeriodBound end   = new TimePeriodBound.GML3(new DummyInstant(date("2007-12-30 23:00:00")), "after");
+        clearContext();
+        testPeriod(begin, end,
             "<gml:TimePeriod>\n" +
             "  <gml:beginPosition>1992-01-02</gml:beginPosition>\n" +
             "  <gml:endPosition>2007-12-31</gml:endPosition>\n" +
@@ -205,9 +228,11 @@ public final strictfp class TimePeriodTest extends XMLTestCase {
      */
     @Test
     public void testBeforePeriodGML3() throws JAXBException {
-        createContext(false, Locale.FRANCE, "CET");
-        testPeriod(new TimePeriodBound.GML3(null, "before"),
-                   new TimePeriodBound.GML3(new DummyInstant(date("2007-12-30 23:00:00")), "after"),
+        createContext();
+        final TimePeriodBound begin = new TimePeriodBound.GML3(null, "before");
+        final TimePeriodBound end   = new TimePeriodBound.GML3(new DummyInstant(date("2007-12-30 23:00:00")), "after");
+        clearContext();
+        testPeriod(begin, end,
             "<gml:TimePeriod>\n" +
             "  <gml:beginPosition indeterminatePosition=\"before\"/>\n" +
             "  <gml:endPosition>2007-12-31</gml:endPosition>\n" +
@@ -222,9 +247,11 @@ public final strictfp class TimePeriodTest extends XMLTestCase {
      */
     @Test
     public void testAfterPeriodGML3() throws JAXBException {
-        createContext(false, Locale.FRANCE, "CET");
-        testPeriod(new TimePeriodBound.GML3(new DummyInstant(date("1992-01-01 23:00:00")), "before"),
-                   new TimePeriodBound.GML3(null, "after"),
+        createContext();
+        final TimePeriodBound begin = new TimePeriodBound.GML3(new DummyInstant(date("1992-01-01 23:00:00")), "before");
+        final TimePeriodBound end   = new TimePeriodBound.GML3(null, "after");
+        clearContext();
+        testPeriod(begin, end,
             "<gml:TimePeriod>\n" +
             "  <gml:beginPosition>1992-01-02</gml:beginPosition>\n" +
             "  <gml:endPosition indeterminatePosition=\"after\"/>\n" +

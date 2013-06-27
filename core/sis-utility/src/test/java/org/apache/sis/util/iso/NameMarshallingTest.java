@@ -49,7 +49,9 @@ import static org.apache.sis.test.Assert.*;
 @DependsOn(DefaultNameFactoryTest.class)
 public final strictfp class NameMarshallingTest extends XMLTestCase {
     /**
-     * The JAXB context, created when first needed.
+     * A poll of configured {@link Marshaller} and {@link Unmarshaller}, created when first needed.
+     *
+     * @see #disposeMarshallerPool()
      */
     private static MarshallerPool pool;
 
