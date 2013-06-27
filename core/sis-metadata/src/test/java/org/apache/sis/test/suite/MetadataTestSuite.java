@@ -55,7 +55,11 @@ import org.junit.BeforeClass;
     org.apache.sis.metadata.AbstractMetadataTest.class,
     org.apache.sis.metadata.iso.AllMetadataTest.class,
 
-    // XML marshalling
+    // XML marshalling.
+    org.apache.sis.xml.NilReasonMarshallingTest.class,
+    org.apache.sis.xml.FreeTextMarshallingTest.class,
+    org.apache.sis.internal.jaxb.code.CodeListMarshallingTest.class,
+    org.apache.sis.internal.jaxb.gmd.LanguageMarshallingTest.class,
     org.apache.sis.internal.jaxb.gml.TimePeriodTest.class
 })
 public final strictfp class MetadataTestSuite extends TestSuite {
