@@ -200,9 +200,9 @@ public final strictfp class TreeNodeChildrenTest extends TestCase {
             "Second alternate title",
             "Third alternate title",  // After addition
             "New edition", // After "addition" (actually change).
+            "PresentationForm[IMAGE_DIGITAL]", // After addition
             "PresentationForm[MAP_DIGITAL]",
             "PresentationForm[MAP_HARDCOPY]",
-            "PresentationForm[IMAGE_DIGITAL]", // After addition
             "Some other details"
         };
         toAdd.setValue(TableColumn.IDENTIFIER, "edition");
