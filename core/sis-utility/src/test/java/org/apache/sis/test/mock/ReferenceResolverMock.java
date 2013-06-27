@@ -14,10 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.xml;
+package org.apache.sis.test.mock;
 
 import java.util.UUID;
 import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.xml.MarshalContext;
+import org.apache.sis.xml.ReferenceResolver;
+import org.apache.sis.xml.XLink;
 
 
 /**
