@@ -75,7 +75,6 @@ import org.apache.sis.internal.jdk7.JDK7;
  * @module
  *
  * @see XMLTestCase
- * @see XMLTransformation
  * @see Assert#assertXmlEquals(Object, Object, String[])
  */
 public strictfp class XMLComparator {
