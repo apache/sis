@@ -102,17 +102,12 @@ public final class LanguageCode extends GO_CharacterString {
                     return new LanguageCode(string);
                 }
             }
-            String codeSpace = null;
-            String value = null;
-            if (context != null) {
-                final Locale marshalLocale = context.getLocale();
-                if (marshalLocale != null) {
-                    codeSpace = Context.converter(context).toLanguageCode(context, locale);
-                    value = locale.getDisplayLanguage(marshalLocale);
-                    if (value.isEmpty()) {
-                        value = null;
-                    }
-                }
+            final Locale marshalLocale = (context != null) ? context.getLocale() : null;
+            final String codeSpace = Context.converter(context).toLanguageCode(context, locale);
+            String value = (marshalLocale != null) ? locale.getDisplayLanguage(marshalLocale)
+                                                   : locale.getDisplayLanguage();
+            if (value.isEmpty()) {
+                value = null;
             }
             if (!codeListValue.isEmpty() || value != null) {
                 return new LanguageCode(context, codeListValue, codeSpace, value);
