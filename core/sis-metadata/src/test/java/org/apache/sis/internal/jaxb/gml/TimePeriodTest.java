@@ -111,7 +111,7 @@ public final strictfp class TimePeriodTest extends XMLTestCase {
         assertXmlEquals(
                 "<gml:TimeInstant>\n" +
                 "  <gml:timePosition>1992-01-01T01:00:00.000+01:00</gml:timePosition>\n" +
-                "</gml:TimeInstant>\n", actual, "xmlns:*", "xsi:schemaLocation");
+                "</gml:TimeInstant>\n", actual, "xmlns:*");
 
         final TimeInstant test = (TimeInstant) unmarshal(unmarshaller, actual);
         assertEquals("1992-01-01 00:00:00", format(XmlUtilities.toDate(test.timePosition)));
@@ -163,7 +163,7 @@ public final strictfp class TimePeriodTest extends XMLTestCase {
         period.begin = begin;
         period.end   = end;
         final String actual = marshal(marshaller, period);
-        assertXmlEquals(expected, actual, "xmlns:*", "xsi:schemaLocation");
+        assertXmlEquals(expected, actual, "xmlns:*");
         final TimePeriod test = (TimePeriod) unmarshal(unmarshaller, actual);
         if (verifyValues) {
             assertEquals("1992-01-01 00:00:00", format(XmlUtilities.toDate(test.begin.calendar())));
