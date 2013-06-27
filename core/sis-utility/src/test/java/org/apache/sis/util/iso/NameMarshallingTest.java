@@ -16,8 +16,10 @@
  */
 package org.apache.sis.util.iso;
 
+import java.io.StringReader;
 import java.io.StringWriter;
 import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import org.opengis.util.TypeName;
@@ -29,6 +31,7 @@ import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.test.mock.IdentifiedObjectMock;
 import org.apache.sis.test.XMLTestCase;
 import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.DependsOnMethod;
 import org.junit.AfterClass;
 import org.junit.Test;
 
@@ -66,6 +69,17 @@ public final strictfp class NameMarshallingTest extends XMLTestCase {
     }
 
     /**
+     * Converse of {@link #marshall(GenericName)}.
+     */
+    private static GenericName unmarshall(final String xml) throws JAXBException {
+        final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
+        final StringReader in = new StringReader(xml);
+        final Object value = unmarshaller.unmarshal(in);
+        pool.recycle(unmarshaller);
+        return ((IdentifiedObjectMock) value).alias;
+    }
+
+    /**
      * Tests XML of a {@link LocalName}.
      *
      * @throws JAXBException Should not happen.
@@ -83,6 +97,7 @@ public final strictfp class NameMarshallingTest extends XMLTestCase {
                 "</gml:IO_IdentifiedObject>\n";
         final String actual = marshall(name);
         assertXmlEquals(expected, actual, "xmlns:*", "xsi:schemaLocation");
+        assertEquals(name, unmarshall(actual));
     }
 
     /**
@@ -91,6 +106,7 @@ public final strictfp class NameMarshallingTest extends XMLTestCase {
      * @throws JAXBException Should not happen.
      */
     @Test
+    @DependsOnMethod("testLocalName")
     public void testLocalNameWithAmp() throws JAXBException {
         final NameFactory factory = DefaultFactories.NAMES;
         final LocalName name = factory.createLocalName(null, "A name with & and > and <.");
@@ -103,6 +119,7 @@ public final strictfp class NameMarshallingTest extends XMLTestCase {
                 "</gml:IO_IdentifiedObject>\n";
         final String actual = marshall(name);
         assertXmlEquals(expected, actual, "xmlns:*", "xsi:schemaLocation");
+        assertEquals(name, unmarshall(actual));
     }
 
     /**
@@ -127,6 +144,7 @@ public final strictfp class NameMarshallingTest extends XMLTestCase {
                 "</gml:IO_IdentifiedObject>\n";
         final String actual = marshall(name);
         assertXmlEquals(expected, actual, "xmlns:*", "xsi:schemaLocation");
+        assertEquals(name, unmarshall(actual));
     }
 
     /**
@@ -147,6 +165,7 @@ public final strictfp class NameMarshallingTest extends XMLTestCase {
                 "</gml:IO_IdentifiedObject>\n";
         final String actual = marshall(name);
         assertXmlEquals(expected, actual, "xmlns:*", "xsi:schemaLocation");
+        assertEquals(name, unmarshall(actual));
     }
 
     /**
