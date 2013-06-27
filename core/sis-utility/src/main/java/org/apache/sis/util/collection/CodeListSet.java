@@ -126,7 +126,7 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
      * those new elements will <em>not</em> be in this set.
      *
      * @param  elementType The type of code list elements to be included in this set.
-     * @param  fill {@code true} for filling the set with all known elements if the given type,
+     * @param  fill {@code true} for filling the set with all known elements of the given type,
      *         or {@code false} for leaving the set empty.
      * @throws IllegalArgumentException If the given class is not final.
      */
