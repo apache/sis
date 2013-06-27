@@ -23,7 +23,6 @@ import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceIdentifier;
-import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
@@ -38,7 +37,6 @@ import org.apache.sis.internal.jaxb.gco.GO_GenericName;
  * @version 0.3
  * @module
  */
-@XmlType(name = "IdentifiedObjectType")
 @XmlRootElement(name = "IO_IdentifiedObject")
 public final strictfp class IdentifiedObjectMock implements IdentifiedObject {
     /**
