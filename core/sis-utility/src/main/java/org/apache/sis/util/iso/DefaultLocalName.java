@@ -25,11 +25,14 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.NameSpace;
 import org.opengis.util.LocalName;
+import org.opengis.util.TypeName;
+import org.opengis.util.MemberName;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.util.Immutable;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.jaxb.gco.CharSequenceAdapter;
 
 // Related to JDK7
@@ -135,6 +138,45 @@ public class DefaultLocalName extends AbstractName implements LocalName {
             }
         }
         this.name = name.toString();
+    }
+
+    /**
+     * Returns a SIS local name implementation with the values of the given arbitrary implementation.
+     * This method performs the first applicable actions in the following choices:
+     *
+     * <ul>
+     *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
+     *   <li>Otherwise if the given object is already an instance of {@code DefaultLocalName},
+     *       then it is returned unchanged.</li>
+     *   <li>Otherwise a new {@code DefaultLocalName} instance is created using the
+     *       {@link DefaultNameFactory#createLocalName(NameSpace, CharSequence)} method,
+     *       or the {@code createTypeName} or {@code createMemberName} variants if the
+     *       given object implements the corresponding interface.</li>
+     * </ul>
+     *
+     * @param  object The object to get as a SIS implementation, or {@code null} if none.
+     * @return A SIS implementation containing the values of the given object (may be the
+     *         given object itself), or {@code null} if the argument was null.
+     */
+    public static DefaultLocalName castOrCopy(final LocalName object) {
+        if (object == null || object instanceof DefaultLocalName) {
+            return (DefaultLocalName) object;
+        }
+        final NameSpace scope = object.scope();
+        final InternationalString name = object.toInternationalString();
+        final LocalName result;
+        if (object instanceof MemberName) {
+            result = DefaultFactories.SIS_NAMES.createMemberName(scope, name, ((MemberName) object).getAttributeType());
+        } else if (object instanceof TypeName) {
+            result = DefaultFactories.SIS_NAMES.createTypeName(scope, name);
+        } else {
+            result = DefaultFactories.SIS_NAMES.createLocalName(scope, name);
+        }
+        /*
+         * Following cast should be safe because the SIS_NAMES factory is fixed to a
+         * DefaultNameFactory instance, which is known to create AbstractName instances.
+         */
+        return (DefaultLocalName) result;
     }
 
     /**
