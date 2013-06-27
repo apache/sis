@@ -20,6 +20,8 @@ import java.io.StringWriter;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
+import org.opengis.util.TypeName;
+import org.opengis.util.LocalName;
 import org.opengis.util.GenericName;
 import org.opengis.util.NameFactory;
 import org.apache.sis.internal.system.DefaultFactories;
@@ -64,14 +66,14 @@ public final strictfp class NameMarshallingTest extends XMLTestCase {
     }
 
     /**
-     * Tests XML of a {@link org.opengis.util.LocalName}.
+     * Tests XML of a {@link LocalName}.
      *
      * @throws JAXBException Should not happen.
      */
     @Test
     public void testLocalName() throws JAXBException {
         final NameFactory factory = DefaultFactories.NAMES;
-        final GenericName name = factory.createLocalName(null, "An ordinary local name");
+        final LocalName name = factory.createLocalName(null, "An ordinary local name");
         assertEquals("An ordinary local name", name.toString());
         final String expected =
                 "<gml:IO_IdentifiedObject>\n" +
@@ -84,19 +86,19 @@ public final strictfp class NameMarshallingTest extends XMLTestCase {
     }
 
     /**
-     * Tests XML of a {@link org.opengis.util.LocalName} with {@code &} symbol.
+     * Tests XML of a {@link LocalName} with {@code &} symbol.
      *
      * @throws JAXBException Should not happen.
      */
     @Test
     public void testLocalNameWithAmp() throws JAXBException {
         final NameFactory factory = DefaultFactories.NAMES;
-        final GenericName name = factory.createLocalName(null, "A name with & and > and <.");
+        final LocalName name = factory.createLocalName(null, "A name with & and > and <.");
         assertEquals("A name with & and > and <.", name.toString());
         final String expected =
                 "<gml:IO_IdentifiedObject>\n" +
                 "  <gml:alias>\n" +
-                "      <gco:LocalName>A name with &amp; and &gt; and &lt;.</gco:LocalName>\n" +
+                "    <gco:LocalName>A name with &amp; and &gt; and &lt;.</gco:LocalName>\n" +
                 "  </gml:alias>\n" +
                 "</gml:IO_IdentifiedObject>\n";
         final String actual = marshall(name);
@@ -104,14 +106,14 @@ public final strictfp class NameMarshallingTest extends XMLTestCase {
     }
 
     /**
-     * Tests XML of a {@link org.opengis.util.TypeName}.
+     * Tests XML of a {@link TypeName}.
      *
      * @throws JAXBException Should not happen.
      */
     @Test
     public void testTypeName() throws JAXBException {
         final NameFactory factory = DefaultFactories.NAMES;
-        final GenericName name = factory.createTypeName(null, "An other local name");
+        final TypeName name = factory.createTypeName(null, "An other local name");
         assertEquals("An other local name", name.toString());
         final String expected =
                 "<gml:IO_IdentifiedObject>\n" +
@@ -133,7 +135,6 @@ public final strictfp class NameMarshallingTest extends XMLTestCase {
      * @throws JAXBException Should not happen.
      */
     @Test
-    @org.junit.Ignore("Expected XML seems wrong.")
     public void testScopedName() throws JAXBException {
         final NameFactory factory = DefaultFactories.NAMES;
         final GenericName name = factory.createGenericName(null, "myScope","myName");
@@ -141,10 +142,7 @@ public final strictfp class NameMarshallingTest extends XMLTestCase {
         final String expected =
                 "<gml:IO_IdentifiedObject>\n" +
                 "  <gml:alias>\n" +
-                "    <gco:ScopedName>\n" +
-                "      <gco:parsedName>myScope</gco:parsedName>\n" +
-                "      <gco:parsedName>myName</gco:parsedName>\n" +
-                "    </gco:ScopedName>\n" +
+                "    <gco:ScopedName>myScope:myName</gco:ScopedName>\n" +
                 "  </gml:alias>\n" +
                 "</gml:IO_IdentifiedObject>\n";
         final String actual = marshall(name);

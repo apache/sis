@@ -16,19 +16,22 @@
  */
 package org.apache.sis.internal.jaxb.gco;
 
+import java.util.ConcurrentModificationException;
+import java.util.List;
+import java.util.Locale;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
-
 import org.opengis.util.TypeName;
 import org.opengis.util.LocalName;
+import org.opengis.util.ScopedName;
 import org.opengis.util.MemberName;
 import org.opengis.util.GenericName;
-
 import org.apache.sis.util.iso.AbstractName;
 import org.apache.sis.util.iso.DefaultTypeName;
 import org.apache.sis.util.iso.DefaultMemberName;
-import org.apache.sis.util.iso.DefaultScopedName;
 import org.apache.sis.util.resources.Errors;
+
+import static org.apache.sis.internal.jaxb.gco.LocalNameAdapter.getNameFactory;
 
 
 /**
@@ -92,7 +95,7 @@ public final class GO_GenericName extends XmlAdapter<GO_GenericName, GenericName
      */
     @XmlElement(name = "LocalName")
     public String getLocalName() {
-        final Object name = this.name;
+        final AbstractName name = this.name;
         return (name instanceof LocalName) && !(name instanceof TypeName)
                 && !(name instanceof MemberName) ? name.toString() : null;
     }
@@ -101,19 +104,19 @@ public final class GO_GenericName extends XmlAdapter<GO_GenericName, GenericName
      * Sets the value for the {@code LocalName}.
      * This method is called at unmarshalling-time by JAXB.
      *
-     * @param  name The new name.
+     * @param  value The new name.
      * @throws IllegalStateException If a name is already defined.
      */
-    public void setLocalName(final String name) throws IllegalStateException {
+    public void setLocalName(final String value) throws IllegalStateException {
         ensureUndefined();
-        if (name == null) {
-            this.name = null;
+        if (value == null) {
+            name = null;
         } else {
             /*
              * Following cast should be safe because the getNameFactory() method asked specifically
              * for a DefaultNameFactory instance, which is known to create AbstractName instances.
              */
-            this.name = (AbstractName) LocalNameAdapter.getNameFactory().createLocalName(null, name);
+            name = (AbstractName) getNameFactory().createLocalName(null, value);
         }
     }
 
@@ -124,21 +127,29 @@ public final class GO_GenericName extends XmlAdapter<GO_GenericName, GenericName
      * @return The current name, or {@code null} if none.
      */
     @XmlElement(name = "ScopedName")
-    public DefaultScopedName getScopedName() {
-        final Object name = this.name;
-        return (name instanceof DefaultScopedName) ? (DefaultScopedName) name : null;
+    public String getScopedName() {
+        final AbstractName name = this.name;
+        return (name instanceof ScopedName) ? name.toString() : null;
     }
 
     /**
      * Sets the value for the {@code ScopedName}.
      * This method is called at unmarshalling-time by JAXB.
      *
-     * @param  name The new name.
+     * @param  value The new name.
      * @throws IllegalStateException If a name is already defined.
      */
-    public void setScopedName(final DefaultScopedName name) throws IllegalStateException {
+    public void setScopedName(final String value) throws IllegalStateException {
         ensureUndefined();
-        this.name = name;
+        if (value == null) {
+            name = null;
+        } else {
+            /*
+             * Following cast should be safe because the getNameFactory() method asked specifically
+             * for a DefaultNameFactory instance, which is known to create AbstractName instances.
+             */
+            name = (AbstractName) getNameFactory().parseGenericName(null, value);
+        }
     }
 
     /**
@@ -149,7 +160,7 @@ public final class GO_GenericName extends XmlAdapter<GO_GenericName, GenericName
      */
     @XmlElement(name = "TypeName")
     public DefaultTypeName getTypeName() {
-        final Object name = this.name;
+        final AbstractName name = this.name;
         return (name instanceof DefaultTypeName) ? (DefaultTypeName) name : null;
     }
 
@@ -157,12 +168,12 @@ public final class GO_GenericName extends XmlAdapter<GO_GenericName, GenericName
      * Sets the value for the {@code TypeName}.
      * This method is called at unmarshalling-time by JAXB.
      *
-     * @param  name The new name.
+     * @param  value The new name.
      * @throws IllegalStateException If a name is already defined.
      */
-    public void setTypeName(final DefaultTypeName name) throws IllegalStateException {
+    public void setTypeName(final DefaultTypeName value) throws IllegalStateException {
         ensureUndefined();
-        this.name = name;
+        name = value;
     }
 
     /**
@@ -173,7 +184,7 @@ public final class GO_GenericName extends XmlAdapter<GO_GenericName, GenericName
      */
     @XmlElement(name = "MemberName")
     public DefaultMemberName getMemberName() {
-        final Object name = this.name;
+        final AbstractName name = this.name;
         return (name instanceof MemberName) ? (DefaultMemberName) name : null;
     }
 
@@ -181,12 +192,12 @@ public final class GO_GenericName extends XmlAdapter<GO_GenericName, GenericName
      * Sets the value for the {@code MemberName}.
      * This method is called at unmarshalling-time by JAXB.
      *
-     * @param  name The new name.
+     * @param  value The new name.
      * @throws IllegalStateException If a name is already defined.
      */
-    public void setMemberName(final DefaultMemberName name) throws IllegalStateException {
+    public void setMemberName(final DefaultMemberName value) throws IllegalStateException {
         ensureUndefined();
-        this.name = name;
+        name = value;
     }
 
     /**
@@ -201,17 +212,31 @@ public final class GO_GenericName extends XmlAdapter<GO_GenericName, GenericName
         if (value == null) {
             return null;
         }
-        final AbstractName name;
+        final AbstractName impl;
         if (value instanceof AbstractName) {
-            name = (AbstractName) value;
+            impl = (AbstractName) value;
         } else {
+            /*
+             * Recreates a new name for the given name in order to get
+             * a SIS implementation from an arbitrary implementation.
+             */
+            final List<? extends LocalName> parsedNames = value.getParsedNames();
+            final CharSequence[] names = new CharSequence[parsedNames.size()];
+            int i=0;
+            for (final LocalName component : parsedNames) {
+                // Asks for the unlocalized name, since we are going to marshal that.
+                names[i++] = component.toInternationalString().toString(Locale.ROOT);
+            }
+            if (i != names.length) {
+                throw new ConcurrentModificationException(Errors.format(Errors.Keys.UnexpectedChange_1, "parsedNames"));
+            }
             /*
              * Following cast should be safe because the getNameFactory() method asked specifically
              * for a DefaultNameFactory instance, which is known to create AbstractName instances.
              */
-            name = (AbstractName) ScopedNameAdapter.wrap(value, LocalNameAdapter.getNameFactory());
+            impl = (AbstractName) getNameFactory().createGenericName(value.scope(), names);
         }
-        return new GO_GenericName(name);
+        return new GO_GenericName(impl);
     }
 
     /**
