@@ -18,7 +18,13 @@ package org.apache.sis.test;
 
 import java.util.Locale;
 import java.util.TimeZone;
+import java.io.StringReader;
+import java.io.StringWriter;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.JAXBException;
 import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.util.ArgumentChecks;
 import org.junit.After;
 
 import static org.junit.Assert.*;
@@ -52,6 +58,11 @@ public abstract strictfp class XMLTestCase extends TestCase {
     protected Context context;
 
     /**
+     * A buffer for {@link #marshal(Marshaller, Object)}, created only when first needed.
+     */
+    private StringWriter buffer;
+
+    /**
      * Creates a new test case.
      */
     protected XMLTestCase() {
@@ -83,5 +94,36 @@ public abstract strictfp class XMLTestCase extends TestCase {
             context.finish();
             context = null;
         }
+    }
+
+    /**
+     * Marshals the given object using the given marshaler.
+     *
+     * @param  marshaller The marshaller to use.
+     * @param  object     The object to marshal, or {@code null}.
+     * @return The marshalled object, or {@code null} if and only if the given {@code object} was null.
+     * @throws JAXBException If an error occurred while marshalling the object.
+     */
+    protected final String marshal(final Marshaller marshaller, final Object object) throws JAXBException {
+        ArgumentChecks.ensureNonNull("marshaller", marshaller);
+        if (buffer == null) {
+            buffer = new StringWriter();
+        }
+        buffer.getBuffer().setLength(0);
+        marshaller.marshal(object, buffer);
+        return buffer.toString();
+    }
+
+    /**
+     * Unmarshals the given XML using the given unmarshaler.
+     *
+     * @param  unmarshaller The unmarshaller to use.
+     * @param  xml The XML representation of the object to unmarshal, or {@code null}.
+     * @return The unmarshalled object, or {@code null} if and only if the given {@code xml} was null.
+     * @throws JAXBException If an error occurred while unmarshalling the XML.
+     */
+    protected final Object unmarshal(final Unmarshaller unmarshaller, final String xml) throws JAXBException {
+        ArgumentChecks.ensureNonNull("unmarshaller", unmarshaller);
+        return unmarshaller.unmarshal(new StringReader(xml));
     }
 }

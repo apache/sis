@@ -82,7 +82,7 @@ public final strictfp class IdentifiedObjectMock implements IdentifiedObject {
      */
     @Override
     public Collection<GenericName> getAlias() {
-        return Collections.singleton(alias);
+        return (alias != null) ? Collections.singleton(alias) : Collections.<GenericName>emptySet();
     }
 
     /**
