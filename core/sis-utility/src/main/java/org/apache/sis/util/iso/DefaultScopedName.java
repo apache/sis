@@ -19,7 +19,6 @@ package org.apache.sis.util.iso;
 import java.util.List;
 import java.util.Iterator;
 import java.util.ConcurrentModificationException;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.NameSpace;
 import org.opengis.util.LocalName;
@@ -30,7 +29,6 @@ import org.apache.sis.util.Immutable;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
-
 
 
 /**
@@ -247,8 +245,10 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
     }
 
     /**
-     * Returns every elements of the {@linkplain #getParsedNames() parsed names list}
+     * Returns every elements in the sequence of {@linkplain #getParsedNames() parsed names}
      * except for the {@linkplain #head() head}.
+     *
+     * @return All elements except the first one in the in the list of {@linkplain #getParsedNames() parsed names}.
      */
     @Override
     public synchronized GenericName tail() {
@@ -265,8 +265,10 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
     }
 
     /**
-     * Returns every element of the {@linkplain #getParsedNames() parsed names list}
+     * Returns every element in the sequence of {@linkplain #getParsedNames() parsed names}
      * except for the {@linkplain #tip() tip}.
+     *
+     * @return All elements except the last one in the in the list of {@linkplain #getParsedNames() parsed names}.
      */
     @Override
     public synchronized GenericName path() {
@@ -286,7 +288,6 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
      * Returns the sequence of local name for this generic name.
      */
     @Override
-    @XmlElement(name = "parsedName", required = true)
     public List<? extends LocalName> getParsedNames() {
         return parsedNames;
     }

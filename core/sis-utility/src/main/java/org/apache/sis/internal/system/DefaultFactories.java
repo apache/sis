@@ -34,9 +34,18 @@ import org.apache.sis.util.iso.DefaultNameFactory;
  */
 public final class DefaultFactories extends SystemListener {
     /**
-     * The factory to use for creating names.
+     * A name factory which is guaranteed to be an instance of SIS {@link DefaultNameFactory}.
+     * We use this factory when we need to ensure that the created names are instances of the
+     * SIS {@link org.apache.sis.util.iso.AbstractName} implementation.
      */
-    public static final NameFactory NAMES = new DefaultNameFactory();
+    public static final NameFactory SIS_NAMES = new DefaultNameFactory();
+
+    /**
+     * The factory to use for creating names, not necessarily SIS instances.
+     * This is fixed to {@link #SIS_NAMES} for now, but will probably be fetched in a more
+     * dynamic way later.
+     */
+    public static final NameFactory NAMES = SIS_NAMES;
 
     /**
      * Cache of factories which are found by {@code META-INF/services}.

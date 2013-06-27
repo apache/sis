@@ -20,7 +20,7 @@ import java.util.UUID;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.xml.XLink;
 import org.apache.sis.xml.IdentifierSpace;
-import org.apache.sis.xml.ReferenceResolverMock;
+import org.apache.sis.test.mock.ReferenceResolverMock;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.XMLTestCase;
 import org.junit.Test;

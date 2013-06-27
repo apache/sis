@@ -118,7 +118,8 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.jaxb.IdentifierMapWithSpecialCasesTest.class,
     org.apache.sis.internal.jaxb.gco.StringAdapterTest.class,
     org.apache.sis.internal.jaxb.gco.MeasureTest.class,
-    org.apache.sis.internal.jaxb.gco.PropertyTypeTest.class
+    org.apache.sis.internal.jaxb.gco.PropertyTypeTest.class,
+    org.apache.sis.util.iso.NameMarshallingTest.class
 })
 public final strictfp class UtilityTestSuite extends TestSuite {
     /**
