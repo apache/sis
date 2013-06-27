@@ -19,7 +19,6 @@ package org.apache.sis.test.mock;
 import java.util.Locale;
 import java.util.Collection;
 import java.util.Collections;
-import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
@@ -52,7 +51,6 @@ import org.apache.sis.internal.jaxb.gmd.LocaleAdapter;
  * @version 0.3
  * @module
  */
-@XmlType(name = "MD_DataIdentification_Type")
 @XmlRootElement(name = "MD_DataIdentification", namespace = Namespaces.GMD)
 public final strictfp class DataIdentificationMock implements DataIdentification {
     /**
