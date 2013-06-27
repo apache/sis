@@ -19,8 +19,6 @@ package org.apache.sis.internal.jaxb.gml;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
-import java.io.StringReader;
-import java.io.StringWriter;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.JAXBContext;
@@ -53,11 +51,6 @@ public final strictfp class TimePeriodTest extends XMLTestCase {
      * A poll of configured {@link Marshaller} and {@link Unmarshaller}, created when first needed.
      */
     private static MarshallerPool pool;
-
-    /**
-     * A buffer where to marshal.
-     */
-    private final StringWriter buffer = new StringWriter();
 
     /**
      * Set the marshalling context to a fixed locale and timezone before to create the
@@ -114,14 +107,13 @@ public final strictfp class TimePeriodTest extends XMLTestCase {
         final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
 
         final TimeInstant instant = createTimeInstant("1992-01-01 00:00:00");
-        marshaller.marshal(instant, buffer);
-        final String actual = buffer.toString();
+        final String actual = marshal(marshaller, instant);
         assertXmlEquals(
                 "<gml:TimeInstant>\n" +
                 "  <gml:timePosition>1992-01-01T01:00:00.000+01:00</gml:timePosition>\n" +
-                "</gml:TimeInstant>\n", actual, "xmlns:*", "xsi:schemaLocation");
+                "</gml:TimeInstant>\n", actual, "xmlns:*");
 
-        final TimeInstant test = (TimeInstant) unmarshaller.unmarshal(new StringReader(actual));
+        final TimeInstant test = (TimeInstant) unmarshal(unmarshaller, actual);
         assertEquals("1992-01-01 00:00:00", format(XmlUtilities.toDate(test.timePosition)));
 
         pool.recycle(marshaller);
@@ -170,10 +162,9 @@ public final strictfp class TimePeriodTest extends XMLTestCase {
         final TimePeriod period = new TimePeriod();
         period.begin = begin;
         period.end   = end;
-        marshaller.marshal(period, buffer);
-        final String actual = buffer.toString();
-        assertXmlEquals(expected, actual, "xmlns:*", "xsi:schemaLocation");
-        final TimePeriod test = (TimePeriod) unmarshaller.unmarshal(new StringReader(actual));
+        final String actual = marshal(marshaller, period);
+        assertXmlEquals(expected, actual, "xmlns:*");
+        final TimePeriod test = (TimePeriod) unmarshal(unmarshaller, actual);
         if (verifyValues) {
             assertEquals("1992-01-01 00:00:00", format(XmlUtilities.toDate(test.begin.calendar())));
             assertEquals("2007-12-31 00:00:00", format(XmlUtilities.toDate(test.end  .calendar())));
