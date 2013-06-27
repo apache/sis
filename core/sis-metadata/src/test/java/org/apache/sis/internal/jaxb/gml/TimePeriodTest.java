@@ -66,9 +66,11 @@ public final strictfp class TimePeriodTest extends XMLTestCase {
      * The (un)marshallers locale and timezone will be set to fixed values.
      *
      * @throws JAXBException If an error occurred while creating the pool.
+     *
+     * @see #disposeMarshallerPool()
      */
     @BeforeClass
-    public static void createMarshallers() throws JAXBException {
+    public static void createMarshallerPool() throws JAXBException {
         final Map<String,Object> properties = new HashMap<>(4);
         assertNull(properties.put(XML.LOCALE, Locale.FRANCE));
         assertNull(properties.put(XML.TIMEZONE, "CET"));
@@ -133,18 +135,18 @@ public final strictfp class TimePeriodTest extends XMLTestCase {
         final TimePeriodBound end   = new TimePeriodBound.GML2(new DummyInstant(date("2007-12-31 00:00:00")));
         clearContext();
         testPeriod(begin, end,
-            "<gml:TimePeriod>\n" +
-            "  <gml:begin>\n" +
-            "    <gml:TimeInstant>\n" +
-            "      <gml:timePosition>1992-01-01T01:00:00+01:00</gml:timePosition>\n" +
-            "    </gml:TimeInstant>\n" +
-            "  </gml:begin>\n" +
-            "  <gml:end>\n" +
-            "    <gml:TimeInstant>\n" +
-            "      <gml:timePosition>2007-12-31T01:00:00+01:00</gml:timePosition>\n" +
-            "    </gml:TimeInstant>\n" +
-            "  </gml:end>\n" +
-            "</gml:TimePeriod>\n", true);
+                "<gml:TimePeriod>\n" +
+                "  <gml:begin>\n" +
+                "    <gml:TimeInstant>\n" +
+                "      <gml:timePosition>1992-01-01T01:00:00+01:00</gml:timePosition>\n" +
+                "    </gml:TimeInstant>\n" +
+                "  </gml:begin>\n" +
+                "  <gml:end>\n" +
+                "    <gml:TimeInstant>\n" +
+                "      <gml:timePosition>2007-12-31T01:00:00+01:00</gml:timePosition>\n" +
+                "    </gml:TimeInstant>\n" +
+                "  </gml:end>\n" +
+                "</gml:TimePeriod>\n", true);
     }
 
     /**
@@ -186,10 +188,10 @@ public final strictfp class TimePeriodTest extends XMLTestCase {
         final TimePeriodBound end   = new TimePeriodBound.GML3(new DummyInstant(date("2007-12-31 00:00:00")), "after");
         clearContext();
         testPeriod(begin, end,
-            "<gml:TimePeriod>\n" +
-            "  <gml:beginPosition>1992-01-01T01:00:00+01:00</gml:beginPosition>\n" +
-            "  <gml:endPosition>2007-12-31T01:00:00+01:00</gml:endPosition>\n" +
-            "</gml:TimePeriod>\n", true);
+                "<gml:TimePeriod>\n" +
+                "  <gml:beginPosition>1992-01-01T01:00:00+01:00</gml:beginPosition>\n" +
+                "  <gml:endPosition>2007-12-31T01:00:00+01:00</gml:endPosition>\n" +
+                "</gml:TimePeriod>\n", true);
     }
 
     /**
@@ -205,10 +207,10 @@ public final strictfp class TimePeriodTest extends XMLTestCase {
         final TimePeriodBound end   = new TimePeriodBound.GML3(new DummyInstant(date("2007-12-30 23:00:00")), "after");
         clearContext();
         testPeriod(begin, end,
-            "<gml:TimePeriod>\n" +
-            "  <gml:beginPosition>1992-01-02</gml:beginPosition>\n" +
-            "  <gml:endPosition>2007-12-31</gml:endPosition>\n" +
-            "</gml:TimePeriod>\n", false);
+                "<gml:TimePeriod>\n" +
+                "  <gml:beginPosition>1992-01-02</gml:beginPosition>\n" +
+                "  <gml:endPosition>2007-12-31</gml:endPosition>\n" +
+                "</gml:TimePeriod>\n", false);
     }
 
     /**
@@ -224,10 +226,10 @@ public final strictfp class TimePeriodTest extends XMLTestCase {
         final TimePeriodBound end   = new TimePeriodBound.GML3(new DummyInstant(date("2007-12-30 23:00:00")), "after");
         clearContext();
         testPeriod(begin, end,
-            "<gml:TimePeriod>\n" +
-            "  <gml:beginPosition indeterminatePosition=\"before\"/>\n" +
-            "  <gml:endPosition>2007-12-31</gml:endPosition>\n" +
-            "</gml:TimePeriod>\n", false);
+                "<gml:TimePeriod>\n" +
+                "  <gml:beginPosition indeterminatePosition=\"before\"/>\n" +
+                "  <gml:endPosition>2007-12-31</gml:endPosition>\n" +
+                "</gml:TimePeriod>\n", false);
     }
 
     /**
@@ -243,9 +245,9 @@ public final strictfp class TimePeriodTest extends XMLTestCase {
         final TimePeriodBound end   = new TimePeriodBound.GML3(null, "after");
         clearContext();
         testPeriod(begin, end,
-            "<gml:TimePeriod>\n" +
-            "  <gml:beginPosition>1992-01-02</gml:beginPosition>\n" +
-            "  <gml:endPosition indeterminatePosition=\"after\"/>\n" +
-            "</gml:TimePeriod>\n", false);
+                "<gml:TimePeriod>\n" +
+                "  <gml:beginPosition>1992-01-02</gml:beginPosition>\n" +
+                "  <gml:endPosition indeterminatePosition=\"after\"/>\n" +
+                "</gml:TimePeriod>\n", false);
     }
 }
