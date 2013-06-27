@@ -28,6 +28,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.PropertyException;
 import javax.xml.bind.ValidationEventHandler;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
+import org.apache.sis.util.Locales;
 import org.apache.sis.util.Version;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
@@ -85,8 +86,10 @@ abstract class Pooled {
      *   <li>For each entry having a key of type {@link String}, the value is the argument
      *       to be given to the {@code marshaller.setProperty(key, value)} method.</li>
      * </ul>
+     *
+     * This map is never {@code null}.
      */
-    private final Map<Object,Object> initialProperties;
+    final Map<Object,Object> initialProperties;
 
     /**
      * Bit masks for various boolean attributes. This include whatever the language codes
@@ -138,14 +141,14 @@ abstract class Pooled {
     private WarningListener<?> warningListener;
 
     /**
-     * The {@link System#nanoTime()} value of the last call to {@link #reset()}.
+     * The {@link System#nanoTime()} value of the last call to {@link #reset(Pooled)}.
      * This is used for disposing (un)marshallers that have not been used for a while,
      * since {@code reset()} is invoked just before to push a (un)marshaller in the pool.
      */
     volatile long resetTime;
 
     /**
-     * Default constructor.
+     * Creates a {@link PooledTemplate}.
      *
      * @param internal {@code true} if the JAXB implementation is the one bundled in JDK 6,
      *        or {@code false} if this is the external implementation provided as a JAR file
@@ -154,7 +157,32 @@ abstract class Pooled {
     Pooled(final boolean internal) {
         this.internal = internal;
         initialProperties = new LinkedHashMap<>();
-        bitMasks = initialBitMasks();
+    }
+
+    /**
+     * Creates a {@link PooledMarshaller} or {@link PooledUnmarshaller}. The {@link #initialize(Pooled)}
+     * method must be invoked after this constructor for completing the initialization.
+     *
+     * @param template The {@link PooledTemplate} from which to get the initial values.
+     */
+    Pooled(final Pooled template) {
+        initialProperties = new LinkedHashMap<>();
+        internal = template.internal;
+    }
+
+    /**
+     * Completes the creation of a {@link PooledMarshaller} or {@link PooledUnmarshaller}.
+     * This method is not invoked in the {@link #Pooled(Pooled)} constructor in order to
+     * give to subclasses a chance to complete their construction first.
+     *
+     * @param  template The {@link PooledTemplate} from which to get the initial values.
+     * @throws JAXBException If an error occurred while setting a property.
+     */
+    final void initialize(final Pooled template) throws JAXBException {
+        reset(template); // Set the SIS properties first. JAXB properties are set below.
+        for (final Map.Entry<Object,Object> entry : template.initialProperties.entrySet()) {
+            setStandardProperty((String) entry.getKey(), entry.getValue());
+        }
     }
 
     /**
@@ -170,27 +198,28 @@ abstract class Pooled {
      * This method is invoked by {@link MarshallerPool} just before to push a
      * (un)marshaller in the pool after its usage.
      *
+     * @param  template The {@link PooledTemplate} from which to get the initial values.
      * @throws JAXBException If an error occurred while restoring a property.
      */
-    public final void reset() throws JAXBException {
+    public final void reset(final Pooled template) throws JAXBException {
         for (final Map.Entry<Object,Object> entry : initialProperties.entrySet()) {
             reset(entry.getKey(), entry.getValue());
         }
         initialProperties.clear();
         bitMasks        = initialBitMasks();
-        locale          = null;
-        timezone        = null;
-        schemas         = null;
-        gmlVersion      = null;
-        resolver        = null;
-        converter       = null;
-        warningListener = null;
+        locale          = template.locale;
+        timezone        = template.timezone;
+        schemas         = template.schemas;
+        gmlVersion      = template.gmlVersion;
+        resolver        = template.resolver;
+        converter       = template.converter;
+        warningListener = template.warningListener;
         resetTime       = System.nanoTime();
     }
 
     /**
      * Resets the given marshaller property to its initial state. This method is invoked
-     * automatically by the {@link #reset()} method. The key is either a {@link String}
+     * automatically by the {@link #reset(Pooled)} method. The key is either a {@link String}
      * or a {@link Class}. If this is a string, then the value shall be given to the
      * {@code setProperty(key, value)} method. Otherwise the value shall be given to
      * {@code setFoo(value)} method where {@code "Foo"} is determined from the key.
@@ -211,8 +240,8 @@ abstract class Pooled {
 
     /**
      * Saves the current value of a property. This method is invoked before a value is
-     * modified for the first time, in order to allow {@link #reset()} to restore the
-     * (un)marshaller to its initial state.
+     * modified for the first time, in order to allow {@link #reset(Pooled)} to restore
+     * the (un)marshaller to its initial state.
      *
      * @param type  The property to save.
      * @param value The current value of the property.
@@ -250,11 +279,11 @@ abstract class Pooled {
         try {
             switch (name) {
                 case XML.LOCALE: {
-                    locale = (Locale) value;
+                    locale = (value instanceof CharSequence) ? Locales.parse(value.toString()) : (Locale) value;
                     return;
                 }
                 case XML.TIMEZONE: {
-                    timezone = (TimeZone) value;
+                    timezone = (value instanceof CharSequence) ? TimeZone.getTimeZone(value.toString()) : (TimeZone) value;
                     return;
                 }
                 case XML.SCHEMAS: {
@@ -308,10 +337,14 @@ abstract class Pooled {
                     return;
                 }
             }
-        } catch (ClassCastException e) {
+        } catch (ClassCastException | IllegalArgumentException e) {
             throw new PropertyException(Errors.format(
                     Errors.Keys.IllegalPropertyClass_2, name, value.getClass()), e);
         }
+        /*
+         * If we reach this point, the given name is not a SIS property. Try to handle
+         * it as a (un)marshaller-specific property, after saving the previous value.
+         */
         name = convertPropertyKey(name);
         if (!initialProperties.containsKey(name)) {
             if (initialProperties.put(name, getStandardProperty(name)) != null) {

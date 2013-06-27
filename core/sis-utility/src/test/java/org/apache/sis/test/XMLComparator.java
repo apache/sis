@@ -72,7 +72,6 @@ import static org.apache.sis.util.CharSequences.trimWhitespaces;
  * @module
  *
  * @see XMLTestCase
- * @see XMLTransformation
  * @see Assert#assertXmlEquals(Object, Object, String[])
  */
 public strictfp class XMLComparator {

@@ -141,7 +141,7 @@ public final class XmlUtilities extends SystemListener {
      */
     public static XMLGregorianCalendar toXML(final Context context, final Date date) throws DatatypeConfigurationException {
         if (date != null) {
-            final GregorianCalendar calendar = createGregorianCalendar();
+            final GregorianCalendar calendar = createGregorianCalendar(context);
             calendar.setTime(date);
             return getDatatypeFactory().newXMLGregorianCalendar(calendar);
         }
@@ -155,11 +155,10 @@ public final class XmlUtilities extends SystemListener {
      *
      * @return A Gregorian calendar initialized with the current timezone and locale.
      */
-    private static GregorianCalendar createGregorianCalendar() {
-        final Context current = Context.current();
-        if (current != null) {
-            final Locale locale = current.getLocale();
-            final TimeZone timezone = current.getTimeZone();
+    private static GregorianCalendar createGregorianCalendar(final Context context) {
+        if (context != null) {
+            final Locale locale = context.getLocale();
+            final TimeZone timezone = context.getTimeZone();
             /*
              * Use the appropriate contructor rather than setting ourself the null values to
              * the default locale or timezone, because the JDK constructors perform a better
