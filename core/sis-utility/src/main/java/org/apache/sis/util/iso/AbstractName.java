@@ -98,6 +98,8 @@ public abstract class AbstractName implements GenericName, Serializable {
      * no scope. If this method is invoked on such name, then the SIS implementation returns a
      * global scope instance (i.e. an instance for which {@link DefaultNameSpace#isGlobal()}
      * returns {@code true}) which is unique and named {@code "global"}.</p>
+     *
+     * @return The scope of this name.
      */
     @Override
     public abstract NameSpace scope();
@@ -105,6 +107,8 @@ public abstract class AbstractName implements GenericName, Serializable {
     /**
      * Indicates the number of levels specified by this name. The default implementation returns
      * the size of the list returned by the {@link #getParsedNames()} method.
+     *
+     * @return The depth of this name.
      */
     @Override
     public int depth() {
@@ -124,6 +128,9 @@ public abstract class AbstractName implements GenericName, Serializable {
      * Returns the sequence of {@linkplain DefaultLocalName local names} making this generic name.
      * The length of this sequence is the {@linkplain #depth() depth}. It does not include the
      * {@linkplain #scope() scope}.
+     *
+     * @return The local names making this generic name, without the {@linkplain #scope() scope}.
+     *         Shall never be {@code null} neither empty.
      */
     @Override
     public abstract List<? extends LocalName> getParsedNames();
@@ -132,9 +139,10 @@ public abstract class AbstractName implements GenericName, Serializable {
      * Returns the first element in the sequence of {@linkplain #getParsedNames() parsed names}.
      * For any {@code LocalName}, this is always {@code this}.
      *
-     * <p><b>Example</b>:
-     * If {@code this} name is {@code "org.opengis.util.Record"} (no matter its
-     * {@linkplain #scope() scope}), then this method returns {@code "org"}.</p>
+     * {@example If <code>this</code> name is <code>"org.opengis.util.Record"</code>
+     *           (no matter its scope, then this method returns <code>"org"</code>.}
+     *
+     * @return The first element in the list of {@linkplain #getParsedNames() parsed names}.
      */
     @Override
     public LocalName head() {
@@ -145,9 +153,10 @@ public abstract class AbstractName implements GenericName, Serializable {
      * Returns the last element in the sequence of {@linkplain #getParsedNames() parsed names}.
      * For any {@code LocalName}, this is always {@code this}.
      *
-     * <p><b>Example</b>:
-     * If {@code this} name is {@code "org.opengis.util.Record"} (no matter its
-     * {@linkplain #scope() scope}), then this method returns {@code "Record"}.</p>
+     * {@example If <code>this</code> name is <code>"org.opengis.util.Record"</code>
+     *           (no matter its scope, then this method returns <code>"Record"</code>.}
+     *
+     * @return The last element in the list of {@linkplain #getParsedNames() parsed names}.
      */
     @Override
     public LocalName tip() {
@@ -159,6 +168,8 @@ public abstract class AbstractName implements GenericName, Serializable {
      * Returns a view of this name as a fully-qualified name. The {@linkplain #scope() scope}
      * of a fully qualified name is {@linkplain DefaultNameSpace#isGlobal() global}.
      * If the scope of this name is already global, then this method returns {@code this}.
+     *
+     * @return The fully-qualified name (never {@code null}).
      */
     @Override
     public synchronized GenericName toFullyQualifiedName() {
@@ -181,6 +192,9 @@ public abstract class AbstractName implements GenericName, Serializable {
      * {@code this} name is {@code "util.Record"} and the given {@code scope} argument is
      * {@code "org.opengis"}, then {@code this.push(scope)} shall return
      * {@code "org.opengis.util.Record"}.
+     *
+     * @param  scope The name to use as prefix.
+     * @return A concatenation of the given scope with this name.
      */
     @Override
     public ScopedName push(final GenericName scope) {
@@ -219,6 +233,8 @@ public abstract class AbstractName implements GenericName, Serializable {
      *   <li><code>{@linkplain #tip()}.toString()</code> is guaranteed to not contain
      *       any scope.</li>
      * </ul>
+     *
+     * @return A local-independent string representation of this name.
      */
     @Override
     public synchronized String toString() {
@@ -246,6 +262,8 @@ public abstract class AbstractName implements GenericName, Serializable {
      * has been localized in the {@linkplain InternationalString#toString(Locale) specified locale}.
      * If no international string is available, then this method returns an implementation mapping
      * to {@link #toString()} for all locales.
+     *
+     * @return A localizable string representation of this name.
      */
     @Override
     public synchronized InternationalString toInternationalString() {
@@ -282,7 +300,7 @@ public abstract class AbstractName implements GenericName, Serializable {
          * @param asString The string representation of the enclosing abstract name.
          * @param parsedNames The value returned by {@link AbstractName#getParsedNames()}.
          */
-        public International(final String asString, final List<? extends LocalName> parsedNames) {
+        International(final String asString, final List<? extends LocalName> parsedNames) {
             super(asString);
             this.parsedNames = parsedNames;
         }
@@ -317,6 +335,14 @@ public abstract class AbstractName implements GenericName, Serializable {
                 return Objects.equals(parsedNames, that.parsedNames);
             }
             return false;
+        }
+
+        /**
+         * Returns a hash code value for this international text.
+         */
+        @Override
+        public int hashCode() {
+            return parsedNames.hashCode() ^ (int) serialVersionUID;
         }
     }
 

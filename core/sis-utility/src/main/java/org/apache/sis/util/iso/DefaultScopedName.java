@@ -247,8 +247,10 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
     }
 
     /**
-     * Returns every elements of the {@linkplain #getParsedNames() parsed names list}
+     * Returns every elements in the sequence of {@linkplain #getParsedNames() parsed names}
      * except for the {@linkplain #head() head}.
+     *
+     * @return All elements except the first one in the in the list of {@linkplain #getParsedNames() parsed names}.
      */
     @Override
     public synchronized GenericName tail() {
@@ -265,8 +267,10 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
     }
 
     /**
-     * Returns every element of the {@linkplain #getParsedNames() parsed names list}
+     * Returns every element in the sequence of {@linkplain #getParsedNames() parsed names}
      * except for the {@linkplain #tip() tip}.
+     *
+     * @return All elements except the last one in the in the list of {@linkplain #getParsedNames() parsed names}.
      */
     @Override
     public synchronized GenericName path() {

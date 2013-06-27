@@ -76,6 +76,8 @@ public class DefaultMemberName extends DefaultLocalName implements MemberName {
 
     /**
      * Returns the type of the data associated with the record member.
+     *
+     * @return The type of the data associated with the record member.
      */
     @Override
     public TypeName getAttributeType() {
