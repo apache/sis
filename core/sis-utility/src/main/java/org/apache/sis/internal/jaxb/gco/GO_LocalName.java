@@ -16,8 +16,8 @@
  */
 package org.apache.sis.internal.jaxb.gco;
 
-import org.opengis.util.GenericName;
-import org.apache.sis.util.iso.AbstractName;
+import org.opengis.util.LocalName;
+import org.apache.sis.util.iso.DefaultLocalName;
 
 
 /**
@@ -27,7 +27,6 @@ import org.apache.sis.util.iso.AbstractName;
  *
  * <ul>
  *   <li>{@code LocalName}</li>
- *   <li>{@code ScopedName}</li>
  *   <li>{@code TypeName}</li>
  *   <li>{@code MemberName}</li>
  * </ul>
@@ -39,17 +38,17 @@ import org.apache.sis.util.iso.AbstractName;
  * @version 0.3
  * @module
  */
-public final class GO_GenericName extends NameAdapter<GO_GenericName, GenericName> {
+public final class GO_LocalName extends NameAdapter<GO_LocalName, LocalName> {
     /**
      * Empty constructor for JAXB only.
      */
-    public GO_GenericName() {
+    public GO_LocalName() {
     }
 
     /**
      * Wraps a name at marshalling-time.
      */
-    private GO_GenericName(final AbstractName value) {
+    private GO_LocalName(final DefaultLocalName value) {
         name = value;
     }
 
@@ -61,8 +60,8 @@ public final class GO_GenericName extends NameAdapter<GO_GenericName, GenericNam
      * @return An wrapper which contains the metadata value.
      */
     @Override
-    public GO_GenericName marshal(final GenericName value) {
-        return (value != null) ? new GO_GenericName(AbstractName.castOrCopy(value)) : null;
+    public GO_LocalName marshal(final LocalName value) {
+        return (value != null) ? new GO_LocalName(DefaultLocalName.castOrCopy(value)) : null;
     }
 
     /**
@@ -73,7 +72,7 @@ public final class GO_GenericName extends NameAdapter<GO_GenericName, GenericNam
      * @return The implementing class.
      */
     @Override
-    public GenericName unmarshal(final GO_GenericName value) {
-        return (value != null) ? value.name : null;
+    public LocalName unmarshal(final GO_LocalName value) {
+        return (value != null) ? (LocalName) value.name : null;
     }
 }

@@ -19,6 +19,7 @@ package org.apache.sis.util.iso;
 import java.util.List;
 import java.util.Locale;
 import java.util.Iterator;
+import java.util.ConcurrentModificationException;
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlType;
 import org.opengis.util.NameSpace;
@@ -26,6 +27,7 @@ import org.opengis.util.LocalName;
 import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
+import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Immutable;
 
@@ -86,6 +88,51 @@ public abstract class AbstractName implements GenericName, Serializable {
      * Creates a new instance of generic name.
      */
     protected AbstractName() {
+    }
+
+    /**
+     * Returns a SIS name implementation with the values of the given arbitrary implementation.
+     * This method performs the first applicable actions in the following choices:
+     *
+     * <ul>
+     *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
+     *   <li>Otherwise if the given object is already an instance of {@code AbstractName},
+     *       then it is returned unchanged.</li>
+     *   <li>Otherwise if the given object is an instance of {@link LocalName}, then this
+     *       method delegates to {@link DefaultLocalName#castOrCopy(LocalName)}.</li>
+     *   <li>Otherwise a new instance of an {@code AbstractName} subclass is created using the
+     *       {@link DefaultNameFactory#createGenericName(NameSpace, CharSequence[])} method.</li>
+     * </ul>
+     *
+     * @param  object The object to get as a SIS implementation, or {@code null} if none.
+     * @return A SIS implementation containing the values of the given object (may be the
+     *         given object itself), or {@code null} if the argument was null.
+     */
+    public static AbstractName castOrCopy(final GenericName object) {
+        if (object == null || object instanceof AbstractName) {
+            return (AbstractName) object;
+        }
+        if (object instanceof LocalName) {
+            return DefaultLocalName.castOrCopy((LocalName) object);
+        }
+        /*
+         * Recreates a new name for the given name in order to get
+         * a SIS implementation from an arbitrary implementation.
+         */
+        final List<? extends LocalName> parsedNames = object.getParsedNames();
+        final CharSequence[] names = new CharSequence[parsedNames.size()];
+        int i=0;
+        for (final LocalName component : parsedNames) {
+            names[i++] = component.toInternationalString();
+        }
+        if (i != names.length) {
+            throw new ConcurrentModificationException(Errors.format(Errors.Keys.UnexpectedChange_1, "parsedNames"));
+        }
+        /*
+         * Following cast should be safe because the SIS_NAMES factory is fixed to a
+         * DefaultNameFactory instance, which is known to create AbstractName instances.
+         */
+        return (AbstractName) DefaultFactories.SIS_NAMES.createGenericName(object.scope(), names);
     }
 
     /**
