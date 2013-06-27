@@ -99,7 +99,7 @@ import org.junit.BeforeClass;
     org.apache.sis.util.collection.TreeTableFormatTest.class,
     org.apache.sis.util.collection.RangeSetTest.class,
 
-    // Converters
+    // Converters.
     org.apache.sis.internal.converter.AngleConverterTest.class,
     org.apache.sis.internal.converter.StringConverterTest.class,
     org.apache.sis.internal.converter.PathConverterTest.class,
