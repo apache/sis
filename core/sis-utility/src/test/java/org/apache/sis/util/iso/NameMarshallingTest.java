@@ -94,7 +94,7 @@ public final strictfp class NameMarshallingTest extends XMLTestCase {
                 "  </gml:alias>\n" +
                 "</gml:IO_IdentifiedObject>\n";
         final String actual = marshal(name);
-        assertXmlEquals(expected, actual, "xmlns:*", "xsi:schemaLocation");
+        assertXmlEquals(expected, actual, "xmlns:*");
         assertEquals(name, unmarshall(actual));
     }
 
@@ -116,7 +116,7 @@ public final strictfp class NameMarshallingTest extends XMLTestCase {
                 "  </gml:alias>\n" +
                 "</gml:IO_IdentifiedObject>\n";
         final String actual = marshal(name);
-        assertXmlEquals(expected, actual, "xmlns:*", "xsi:schemaLocation");
+        assertXmlEquals(expected, actual, "xmlns:*");
         assertEquals(name, unmarshall(actual));
     }
 
@@ -141,7 +141,7 @@ public final strictfp class NameMarshallingTest extends XMLTestCase {
                 "  </gml:alias>\n" +
                 "</gml:IO_IdentifiedObject>\n";
         final String actual = marshal(name);
-        assertXmlEquals(expected, actual, "xmlns:*", "xsi:schemaLocation");
+        assertXmlEquals(expected, actual, "xmlns:*");
         assertEquals(name, unmarshall(actual));
     }
 
@@ -162,7 +162,7 @@ public final strictfp class NameMarshallingTest extends XMLTestCase {
                 "  </gml:alias>\n" +
                 "</gml:IO_IdentifiedObject>\n";
         final String actual = marshal(name);
-        assertXmlEquals(expected, actual, "xmlns:*", "xsi:schemaLocation");
+        assertXmlEquals(expected, actual, "xmlns:*");
         assertEquals(name, unmarshall(actual));
     }
 
