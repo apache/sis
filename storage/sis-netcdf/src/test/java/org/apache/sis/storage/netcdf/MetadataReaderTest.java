@@ -82,7 +82,7 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
      */
     static void compareToExpected(final Metadata actual) {
         assertMultilinesEquals(
-            "DefaultMetadata\n" +
+            "Metadata\n" +
             "  ├─File identifier………………………………………………………………………… edu.ucar.unidata:NCEP/SST/Global_5x2p5deg/SST_Global_5x2p5deg_20050922_0000.nc\n" +
             "  ├─Hierarchy level………………………………………………………………………… Dataset\n" +
             "  ├─Contact\n" +
