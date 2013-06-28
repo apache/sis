@@ -44,14 +44,14 @@ public final strictfp class NilReasonMarshallingTest extends XMLTestCase {
     @Test
     public void testMissing() throws JAXBException {
         final String expected =
-            "<gmd:CI_Citation xmlns:gmd=\"" + Namespaces.GMD + '"' +
-                            " xmlns:gco=\"" + Namespaces.GCO + '"' +
-                            " xmlns:xlink=\"" + Namespaces.XLINK + "\">\n" +
-            "  <gmd:title>\n" +
-            "    <gco:CharacterString>A title</gco:CharacterString>\n" +
-            "  </gmd:title>\n" +
-            "  <gmd:series gco:nilReason=\"missing\"/>\n" +
-            "</gmd:CI_Citation>";
+                "<gmd:CI_Citation xmlns:gmd=\"" + Namespaces.GMD + '"' +
+                                " xmlns:gco=\"" + Namespaces.GCO + '"' +
+                                " xmlns:xlink=\"" + Namespaces.XLINK + "\">\n" +
+                "  <gmd:title>\n" +
+                "    <gco:CharacterString>A title</gco:CharacterString>\n" +
+                "  </gmd:title>\n" +
+                "  <gmd:series gco:nilReason=\"missing\"/>\n" +
+                "</gmd:CI_Citation>";
 
         final Citation citation = (Citation) XML.unmarshal(expected);
         assertEquals("title", "A title", citation.getTitle().toString());
@@ -80,14 +80,14 @@ public final strictfp class NilReasonMarshallingTest extends XMLTestCase {
     @Test
     public void testOther() throws JAXBException {
         final String expected =
-            "<gmd:CI_Citation xmlns:gmd=\"" + Namespaces.GMD + '"' +
-                            " xmlns:gco=\"" + Namespaces.GCO + '"' +
-                            " xmlns:xlink=\"" + Namespaces.XLINK + "\">\n" +
-            "  <gmd:title>\n" +
-            "    <gco:CharacterString>A title</gco:CharacterString>\n" +
-            "  </gmd:title>\n" +
-            "  <gmd:series gco:nilReason=\"other:myReason\"/>\n" +
-            "</gmd:CI_Citation>";
+                "<gmd:CI_Citation xmlns:gmd=\"" + Namespaces.GMD + '"' +
+                                " xmlns:gco=\"" + Namespaces.GCO + '"' +
+                                " xmlns:xlink=\"" + Namespaces.XLINK + "\">\n" +
+                "  <gmd:title>\n" +
+                "    <gco:CharacterString>A title</gco:CharacterString>\n" +
+                "  </gmd:title>\n" +
+                "  <gmd:series gco:nilReason=\"other:myReason\"/>\n" +
+                "</gmd:CI_Citation>";
 
         final Citation citation = (Citation) XML.unmarshal(expected);
         assertEquals("title", "A title", citation.getTitle().toString());
@@ -115,14 +115,14 @@ public final strictfp class NilReasonMarshallingTest extends XMLTestCase {
     @Test
     public void testURI() throws JAXBException {
         final String expected =
-            "<gmd:CI_Citation xmlns:gmd=\"" + Namespaces.GMD + '"' +
-                            " xmlns:gco=\"" + Namespaces.GCO + '"' +
-                            " xmlns:xlink=\"" + Namespaces.XLINK + "\">\n" +
-            "  <gmd:title>\n" +
-            "    <gco:CharacterString>A title</gco:CharacterString>\n" +
-            "  </gmd:title>\n" +
-            "  <gmd:series gco:nilReason=\"http://www.myreason.org\"/>\n" +
-            "</gmd:CI_Citation>";
+                "<gmd:CI_Citation xmlns:gmd=\"" + Namespaces.GMD + '"' +
+                                " xmlns:gco=\"" + Namespaces.GCO + '"' +
+                                " xmlns:xlink=\"" + Namespaces.XLINK + "\">\n" +
+                "  <gmd:title>\n" +
+                "    <gco:CharacterString>A title</gco:CharacterString>\n" +
+                "  </gmd:title>\n" +
+                "  <gmd:series gco:nilReason=\"http://www.myreason.org\"/>\n" +
+                "</gmd:CI_Citation>";
 
         final Citation citation = (Citation) XML.unmarshal(expected);
         assertEquals("title", "A title", citation.getTitle().toString());

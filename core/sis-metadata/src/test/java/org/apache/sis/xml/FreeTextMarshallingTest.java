@@ -60,22 +60,22 @@ public final strictfp class FreeTextMarshallingTest extends XMLTestCase {
     @Test
     public void testStandard() throws JAXBException {
         final String expected =
-            "<gmd:CI_Citation xmlns:gmd=\"" + Namespaces.GMD + "\" xmlns:gco=\"" + Namespaces.GCO + "\" xmlns:xsi=\"" + Namespaces.XSI + "\">\n" +
-            "  <gmd:title xsi:type=\"gmd:PT_FreeText_PropertyType\">\n" +
-            "    <gco:CharacterString>OpenSource Project</gco:CharacterString>\n" +
-            "    <gmd:PT_FreeText>\n" +
-            "      <gmd:textGroup>\n" +
-            "        <gmd:LocalisedCharacterString locale=\"#locale-eng\">OpenSource Project</gmd:LocalisedCharacterString>\n" +
-            "      </gmd:textGroup>\n" +
-            "      <gmd:textGroup>\n" +
-            "        <gmd:LocalisedCharacterString locale=\"#locale-ita\">Progetto OpenSource</gmd:LocalisedCharacterString>\n" +
-            "      </gmd:textGroup>\n" +
-            "      <gmd:textGroup>\n" +
-            "        <gmd:LocalisedCharacterString locale=\"#locale-fra\">Projet OpenSource</gmd:LocalisedCharacterString>\n" +
-            "      </gmd:textGroup>\n" +
-            "    </gmd:PT_FreeText>\n" +
-            "  </gmd:title>\n" +
-            "</gmd:CI_Citation>\n";
+                "<gmd:CI_Citation xmlns:gmd=\"" + Namespaces.GMD + "\" xmlns:gco=\"" + Namespaces.GCO + "\" xmlns:xsi=\"" + Namespaces.XSI + "\">\n" +
+                "  <gmd:title xsi:type=\"gmd:PT_FreeText_PropertyType\">\n" +
+                "    <gco:CharacterString>OpenSource Project</gco:CharacterString>\n" +
+                "    <gmd:PT_FreeText>\n" +
+                "      <gmd:textGroup>\n" +
+                "        <gmd:LocalisedCharacterString locale=\"#locale-eng\">OpenSource Project</gmd:LocalisedCharacterString>\n" +
+                "      </gmd:textGroup>\n" +
+                "      <gmd:textGroup>\n" +
+                "        <gmd:LocalisedCharacterString locale=\"#locale-ita\">Progetto OpenSource</gmd:LocalisedCharacterString>\n" +
+                "      </gmd:textGroup>\n" +
+                "      <gmd:textGroup>\n" +
+                "        <gmd:LocalisedCharacterString locale=\"#locale-fra\">Projet OpenSource</gmd:LocalisedCharacterString>\n" +
+                "      </gmd:textGroup>\n" +
+                "    </gmd:PT_FreeText>\n" +
+                "  </gmd:title>\n" +
+                "</gmd:CI_Citation>\n";
 
         final Citation citation = (Citation) XML.unmarshal(expected);
         assertEquals(getExpectedI18N(), citation.getTitle());
@@ -94,18 +94,18 @@ public final strictfp class FreeTextMarshallingTest extends XMLTestCase {
     @Test
     public void testLegacy() throws JAXBException {
         final String legacy =
-            "<gmd:CI_Citation xmlns:gmd=\"" + Namespaces.GMD + "\" xmlns:gco=\"" + Namespaces.GCO + "\" xmlns:xsi=\"" + Namespaces.XSI + "\">\n" +
-            "  <gmd:title xsi:type=\"gmd:PT_FreeText_PropertyType\">\n" +
-            "    <gco:CharacterString>OpenSource Project</gco:CharacterString>\n" +
-            "    <gmd:PT_FreeText>\n" +
-            "      <gmd:textGroup>\n" +
-            "        <gmd:LocalisedCharacterString locale=\"#locale-eng\">OpenSource Project</gmd:LocalisedCharacterString>\n" +
-            "        <gmd:LocalisedCharacterString locale=\"#locale-ita\">Progetto OpenSource</gmd:LocalisedCharacterString>\n" +
-            "        <gmd:LocalisedCharacterString locale=\"#locale-fra\">Projet OpenSource</gmd:LocalisedCharacterString>\n" +
-            "      </gmd:textGroup>\n" +
-            "    </gmd:PT_FreeText>\n" +
-            "  </gmd:title>\n" +
-            "</gmd:CI_Citation>\n";
+                "<gmd:CI_Citation xmlns:gmd=\"" + Namespaces.GMD + "\" xmlns:gco=\"" + Namespaces.GCO + "\" xmlns:xsi=\"" + Namespaces.XSI + "\">\n" +
+                "  <gmd:title xsi:type=\"gmd:PT_FreeText_PropertyType\">\n" +
+                "    <gco:CharacterString>OpenSource Project</gco:CharacterString>\n" +
+                "    <gmd:PT_FreeText>\n" +
+                "      <gmd:textGroup>\n" +
+                "        <gmd:LocalisedCharacterString locale=\"#locale-eng\">OpenSource Project</gmd:LocalisedCharacterString>\n" +
+                "        <gmd:LocalisedCharacterString locale=\"#locale-ita\">Progetto OpenSource</gmd:LocalisedCharacterString>\n" +
+                "        <gmd:LocalisedCharacterString locale=\"#locale-fra\">Projet OpenSource</gmd:LocalisedCharacterString>\n" +
+                "      </gmd:textGroup>\n" +
+                "    </gmd:PT_FreeText>\n" +
+                "  </gmd:title>\n" +
+                "</gmd:CI_Citation>\n";
 
         final Citation citation = (Citation) XML.unmarshal(legacy);
         assertEquals(getExpectedI18N(), citation.getTitle());

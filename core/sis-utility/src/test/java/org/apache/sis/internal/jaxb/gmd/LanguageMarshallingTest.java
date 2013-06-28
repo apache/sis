@@ -99,9 +99,9 @@ public final strictfp class LanguageMarshallingTest extends XMLTestCase {
                 " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
                 "  <gmd:language>\n");
         if (languageCode) {
-            buffer.append("    <gmd:LanguageCode"
-                    + " codeList=\"http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/ML_gmxCodelists.xml#LanguageCode\""
-                    + " codeListValue=\"fra\">French</gmd:LanguageCode>\n");
+            buffer.append("    <gmd:LanguageCode" +
+                    " codeList=\"http://schemas.opengis.net/iso/19139/20070417/resources/Codelist/ML_gmxCodelists.xml#LanguageCode\"" +
+                    " codeListValue=\"fra\">French</gmd:LanguageCode>\n");
         } else {
             buffer.append("    <gco:CharacterString>fra</gco:CharacterString>\n");
         }

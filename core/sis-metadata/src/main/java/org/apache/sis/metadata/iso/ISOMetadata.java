@@ -16,18 +16,29 @@
  */
 package org.apache.sis.metadata.iso;
 
+import java.util.UUID;
 import java.util.Collection;
 import java.util.logging.Logger;
 import java.io.Serializable;
+import javax.xml.bind.annotation.XmlID;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import org.opengis.metadata.Identifier;
 import org.apache.sis.xml.IdentifierMap;
+import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.IdentifiedObject;
+import org.apache.sis.xml.ValueConverter;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.ModifiableMetadata;
 import org.apache.sis.internal.jaxb.IdentifierMapWithSpecialCases;
+import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ThreadSafe;
+
+import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 
 
 /**
@@ -123,5 +134,63 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
          * caching it we would need anyway to check if 'identifiers' still references the same list.
          */
         return new IdentifierMapWithSpecialCases(identifiers);
+    }
+
+    /**
+     * Returns an identifier unique for the XML document, or {@code null} if none.
+     * This method is invoked automatically by JAXB and should never be invoked explicitely.
+     */
+    @XmlID
+    @XmlAttribute  // Defined in "gco" as unqualified attribute.
+    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+    private String getID() {
+        return isNullOrEmpty(identifiers) ? null : getIdentifierMap().getSpecialized(IdentifierSpace.ID);
+    }
+
+    /**
+     * Sets an identifier unique for the XML document.
+     * This method is invoked automatically by JAXB and should never be invoked explicitely.
+     */
+    private void setID(String id) {
+        id = CharSequences.trimWhitespaces(id);
+        if (id != null && !id.isEmpty()) {
+            getIdentifierMap().putSpecialized(IdentifierSpace.ID, id);
+        }
+    }
+
+    /**
+     * Returns an unique identifier, or {@code null} if none.
+     * This method is invoked automatically by JAXB and should never be invoked explicitely.
+     */
+    @XmlAttribute  // Defined in "gco" as unqualified attribute.
+    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+    private String getUUID() {
+        return isNullOrEmpty(identifiers) ? null : getIdentifierMap().get(IdentifierSpace.UUID);
+    }
+
+    /**
+     * Sets an unique identifier.
+     * This method is invoked automatically by JAXB and should never be invoked explicitely.
+     *
+     * @throws IllegalArgumentException If the UUID is already assigned to an other object.
+     */
+    private void setUUID(String id) {
+        final Context context = Context.current();
+        final ValueConverter converter = Context.converter(context);
+        final UUID uuid;
+        try {
+            uuid = converter.toUUID(context, id);
+        } catch (IllegalArgumentException e) {
+            // IF we can not store the value as a UUID, store it as a String.
+            Context.warningOccured(context, this, ISOMetadata.class, "setUUID", e, false);
+            id = CharSequences.trimWhitespaces(id);
+            if (id != null && !id.isEmpty()) {
+                getIdentifierMap().put(IdentifierSpace.UUID, id);
+            }
+            return;
+        }
+        if (uuid != null) {
+            getIdentifierMap().putSpecialized(IdentifierSpace.UUID, uuid);
+        }
     }
 }

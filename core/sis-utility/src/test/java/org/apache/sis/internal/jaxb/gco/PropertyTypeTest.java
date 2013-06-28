@@ -21,6 +21,7 @@ import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.xml.XLink;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.test.mock.ReferenceResolverMock;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.XMLTestCase;
 import org.junit.Test;
@@ -55,6 +56,17 @@ public final strictfp class PropertyTypeTest extends XMLTestCase {
     }
 
     /**
+     * Creates a dummy XLink.
+     */
+    private static XLink createXLink() {
+        final XLink link = new XLink();
+        link.setShow(XLink.Show.REPLACE);
+        link.setActuate(XLink.Actuate.ON_LOAD);
+        link.setTitle(new SimpleInternationalString("myResult"));
+        return link;
+    }
+
+    /**
      * Tests the construction of a plain property (no identifier).
      *
      * @throws Exception Should never happen.
@@ -83,11 +95,12 @@ public final strictfp class PropertyTypeTest extends XMLTestCase {
 
     /**
      * Tests the construction of an object containing {@code UUID} and {@code XLink} references,
-     * which shall be discarded because didn't gave us the authorization to use them.
+     * but in a context where the user didn't gave us the authorization to use them.
      *
      * @throws Exception Should never happen.
      */
     @Test
+    @DependsOnMethod({"testWithUUID", "testWithXLink"})
     public void testWithDiscardedReferences() throws Exception {
         final UUID  uuid = UUID.randomUUID();
         final XLink link = createXLink();
@@ -100,10 +113,12 @@ public final strictfp class PropertyTypeTest extends XMLTestCase {
 
     /**
      * Tests the construction of an object containing a {@link UUID}.
+     * The {@code XLink} is allowed to replace the object definition in the XML to be marshalled.
      *
      * @throws Exception Should never happen.
      */
     @Test
+    @DependsOnMethod("testWithNoReference")
     public void testWithUUID() throws Exception {
         final UUID uuid = UUID.randomUUID();
         metadata.getIdentifierMap().putSpecialized(IdentifierSpace.UUID, uuid);
@@ -118,25 +133,17 @@ public final strictfp class PropertyTypeTest extends XMLTestCase {
         assertNull  ("title",         property.getTitle());
         assertNull  ("show",          property.getShow());
         assertNull  ("actuate",       property.getActuate());
-    }
-
-    /**
-     * Creates a dummy XLink.
-     */
-    private static XLink createXLink() {
-        final XLink link = new XLink();
-        link.setShow(XLink.Show.REPLACE);
-        link.setActuate(XLink.Actuate.ON_LOAD);
-        link.setTitle(new SimpleInternationalString("myResult"));
-        return link;
+        assertTrue  ("skip",          property.skip());
     }
 
     /**
      * Tests the construction of an object containing a {@link XLink}.
+     * The {@code XLink} is allowed to replace the object definition in the XML to be marshalled.
      *
      * @throws Exception Should never happen.
      */
     @Test
+    @DependsOnMethod("testWithNoReference")
     public void testWithXLink() throws Exception {
         final XLink link = createXLink();
         metadata.getIdentifierMap().putSpecialized(IdentifierSpace.XLINK, link);
@@ -151,5 +158,6 @@ public final strictfp class PropertyTypeTest extends XMLTestCase {
         assertEquals("myResult",            property.getTitle());
         assertEquals(XLink.Show.REPLACE,    property.getShow());
         assertEquals(XLink.Actuate.ON_LOAD, property.getActuate());
+        assertTrue  ("skip",                property.skip());
     }
 }
