@@ -61,6 +61,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.jaxb.gml.TimePeriodTest.class,
     org.apache.sis.xml.FreeTextMarshallingTest.class,
     org.apache.sis.xml.NilReasonMarshallingTest.class,
+    org.apache.sis.xml.AnchorMarshallingTest.class,
     org.apache.sis.xml.ObjectReferenceMarshallingTest.class
 })
 public final strictfp class MetadataTestSuite extends TestSuite {
