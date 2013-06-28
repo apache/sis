@@ -206,7 +206,8 @@ class TreeNode implements Node {
      * <p>The default implementation is suitable only for the root node - subclasses must override.</p>
      */
     CharSequence getName() {
-        return Classes.getShortClassName(metadata);
+        return CharSequences.camelCaseToSentence(Classes.getShortName(
+                table.standard.getInterface(metadata.getClass()))).toString();
     }
 
     /**
