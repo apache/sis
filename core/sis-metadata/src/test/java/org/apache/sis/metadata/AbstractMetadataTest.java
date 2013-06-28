@@ -54,7 +54,7 @@ public final strictfp class AbstractMetadataTest extends TestCase {
      *
      * <p>The tree formatted by this test is:</p>
      * {@preformat text
-     *     DefaultPlatform
+     *     Platform
      *       ├─Description……………………… A platform.
      *       └─Instrument
      *           ├─Type……………………………… An instrument type.
@@ -69,7 +69,7 @@ public final strictfp class AbstractMetadataTest extends TestCase {
          * We can not perform a full comparison of the string, since it is locale-dependent.
          * Compare only the tree structure. The full tree is English is shown in javadoc.
          */
-        assertTrue(text, text.startsWith("DefaultPlatform"));
+        assertTrue(text, text.startsWith("Platform"));
         assertArrayEquals(new String[] {
             "",
             "  ├─",

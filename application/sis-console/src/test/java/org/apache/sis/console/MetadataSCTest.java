@@ -48,7 +48,7 @@ public final strictfp class MetadataSCTest extends TestCase {
         assertNotNull("NCEP-SST.nc", url);
         final MetadataSC test = new MetadataSC(0, SubCommand.TEST, url.toString());
         test.run();
-        verifyNetCDF("DefaultMetadata", test.outputBuffer.toString());
+        verifyNetCDF("Metadata", test.outputBuffer.toString());
     }
 
     /**
