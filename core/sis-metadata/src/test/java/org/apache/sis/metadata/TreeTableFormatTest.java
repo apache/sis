@@ -105,7 +105,7 @@ public final strictfp class TreeTableFormatTest extends TestCase {
         final DefaultCitation citation = createCitation();
         final String text = format.format(citation.asTreeTable());
         assertMultilinesEquals(
-            "DefaultCitation\n" +
+            "Citation\n" +
             "  ├─Title……………………………………………………………………… Undercurrent\n" +
             "  ├─Alternate title (1 of 2)…………………… Alt A\n" +
             "  ├─Alternate title (2 of 2)…………………… Alt B\n" +
@@ -140,7 +140,7 @@ public final strictfp class TreeTableFormatTest extends TestCase {
         processing.getDocumentations().add(untitled);
         final String text = format.format(processing.asTreeTable());
         assertMultilinesEquals(
-            "DefaultProcessing\n" +
+            "Processing\n" +
             "  ├─Documentation (1 of 3)\n" +
             "  │   ├─Title……………………………………………… Some specification\n" +
             "  │   └─Presentation form……………… Document hardcopy\n" +
@@ -161,15 +161,15 @@ public final strictfp class TreeTableFormatTest extends TestCase {
         image.getDimensions().add(createBand(0.28, 0.29));
         final String text = format.format(image.asTreeTable());
         assertMultilinesEquals(
-            "DefaultImageDescription\n" +
+            "Image description\n" +
             "  ├─Dimension (1 of 2)\n" +
-            "  │   ├─Max value……………… 0.26\n" +
-            "  │   ├─Min value……………… 0.25\n" +
-            "  │   └─Units………………………… cm\n" +
+            "  │   ├─Max value…………… 0.26\n" +
+            "  │   ├─Min value…………… 0.25\n" +
+            "  │   └─Units……………………… cm\n" +
             "  └─Dimension (2 of 2)\n" +
-            "      ├─Max value……………… 0.29\n" +
-            "      ├─Min value……………… 0.28\n" +
-            "      └─Units………………………… cm\n", text);
+            "      ├─Max value…………… 0.29\n" +
+            "      ├─Min value…………… 0.28\n" +
+            "      └─Units……………………… cm\n", text);
     }
 
     /**
@@ -194,7 +194,7 @@ public final strictfp class TreeTableFormatTest extends TestCase {
 
         final String text = format.format(identification.asTreeTable());
         assertMultilinesEquals(
-            "DefaultDataIdentification\n" +
+            "Data identification\n" +
             "  ├─Topic category (1 of 3)…… Health\n" +
             "  ├─Topic category (2 of 3)…… Oceans\n" +
             "  ├─Topic category (3 of 3)…… Test\n" +
