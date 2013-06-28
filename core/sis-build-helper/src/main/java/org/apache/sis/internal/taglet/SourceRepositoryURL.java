@@ -75,10 +75,13 @@ public final class SourceRepositoryURL extends InlineTaglet {
      */
     @Override
     public String toString(final Tag tag) {
-        final StringBuilder url = new StringBuilder("https://svn.apache.org/repos/asf/sis/branches/JDK7");
+        final StringBuilder url = new StringBuilder("http://svn.apache.org/repos/asf/sis/branches/JDK7");
         final String keyword = tag.text();
         switch (keyword) {
-            case "gmd-data": url.append("/core/sis-metadata/src/test/resources/org/apache/sis/xml"); break;
+            case "gmd-data": {
+                url.append("/core/sis-metadata/src/test/resources/org/apache/sis/xml");
+                break;
+            }
             default: {
                 ConfigurationImpl.getInstance().root.printWarning(tag.position(), "Unknown keyword: " + keyword);
                 break;
