@@ -62,7 +62,8 @@ import org.junit.BeforeClass;
     org.apache.sis.xml.FreeTextMarshallingTest.class,
     org.apache.sis.xml.NilReasonMarshallingTest.class,
     org.apache.sis.xml.AnchorMarshallingTest.class,
-    org.apache.sis.xml.ObjectReferenceMarshallingTest.class
+    org.apache.sis.xml.ObjectReferenceMarshallingTest.class,
+    org.apache.sis.xml.CustomMetadataTest.class
 })
 public final strictfp class MetadataTestSuite extends TestSuite {
     /**
