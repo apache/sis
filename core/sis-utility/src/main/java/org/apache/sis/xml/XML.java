@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.logging.LogRecord; // For javadoc
+import java.net.URL;
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -34,6 +35,8 @@ import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.jaxb.TypeRegistration;
+
+import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
 /**
@@ -331,6 +334,7 @@ public final class XML extends Static {
      * @throws JAXBException If an error occurred during the marshalling.
      */
     public static String marshal(final Object object) throws JAXBException {
+        ensureNonNull("object", object);
         final StringWriter output = new StringWriter();
         final MarshallerPool pool = getPool();
         final Marshaller marshaller = pool.acquireMarshaller();
@@ -347,6 +351,8 @@ public final class XML extends Static {
      * @throws JAXBException If an error occurred during the marshalling.
      */
     public static void marshal(final Object object, final OutputStream output) throws JAXBException {
+        ensureNonNull("object", object);
+        ensureNonNull("output", output);
         final MarshallerPool pool = getPool();
         final Marshaller marshaller = pool.acquireMarshaller();
         marshaller.marshal(object, output);
@@ -361,6 +367,8 @@ public final class XML extends Static {
      * @throws JAXBException If an error occurred during the marshalling.
      */
     public static void marshal(final Object object, final File output) throws JAXBException {
+        ensureNonNull("object", object);
+        ensureNonNull("output", output);
         final MarshallerPool pool = getPool();
         final Marshaller marshaller = pool.acquireMarshaller();
         marshaller.marshal(object, output);
@@ -375,6 +383,7 @@ public final class XML extends Static {
      * @throws JAXBException If an error occurred during the unmarshalling.
      */
     public static Object unmarshal(final String input) throws JAXBException {
+        ensureNonNull("input", input);
         final StringReader in = new StringReader(input);
         final MarshallerPool pool = getPool();
         final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
@@ -391,6 +400,23 @@ public final class XML extends Static {
      * @throws JAXBException If an error occurred during the unmarshalling.
      */
     public static Object unmarshal(final InputStream input) throws JAXBException {
+        ensureNonNull("input", input);
+        final MarshallerPool pool = getPool();
+        final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
+        final Object object = unmarshaller.unmarshal(input);
+        pool.recycle(unmarshaller);
+        return object;
+    }
+
+    /**
+     * Unmarshall an object from the given URL.
+     *
+     * @param  input The URL from which to read a XML representation.
+     * @return The object unmarshalled from the given input.
+     * @throws JAXBException If an error occurred during the unmarshalling.
+     */
+    public static Object unmarshal(final URL input) throws JAXBException {
+        ensureNonNull("input", input);
         final MarshallerPool pool = getPool();
         final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
         final Object object = unmarshaller.unmarshal(input);
@@ -406,6 +432,7 @@ public final class XML extends Static {
      * @throws JAXBException If an error occurred during the unmarshalling.
      */
     public static Object unmarshal(final File input) throws JAXBException {
+        ensureNonNull("input", input);
         final MarshallerPool pool = getPool();
         final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
         final Object object = unmarshaller.unmarshal(input);
