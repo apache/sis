@@ -17,14 +17,16 @@
 package org.apache.sis.internal.jaxb.gco;
 
 import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import org.apache.sis.xml.XLink;
 import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.IdentifiedObject;
 import org.apache.sis.xml.ReferenceResolver;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.internal.jaxb.Context;
-import org.apache.sis.internal.jaxb.IdentifierMapAdapter;
 import org.apache.sis.internal.jaxb.SpecializedIdentifier;
 
 
@@ -76,6 +78,9 @@ final class ObjectReference {
 
     /**
      * Creates an object reference initialized to the given value.
+     *
+     * @see ReferenceResolver#canSubstituteByReference(MarshalContext, Class, Object, UUID)
+     * @see ReferenceResolver#canSubstituteByReference(MarshalContext, Class, Object, XLink)
      */
     ObjectReference(final UUID uuid, final String anyUUID, final XLink link) {
         this.uuid    = uuid;
@@ -132,34 +137,48 @@ final class ObjectReference {
             // However if both are present, assign the identifiers to that instance.
             if (metadata instanceof IdentifiedObject) {
                 final IdentifierMap map = ((IdentifiedObject) metadata).getIdentifierMap();
-                if (uuid  != null) putInto(map, IdentifierSpace.UUID,  uuid);
-                if (xlink != null) putInto(map, IdentifierSpace.XLINK, xlink);
+                putInto(context, map, IdentifierSpace.UUID,  uuid);
+                putInto(context, map, IdentifierSpace.XLINK, xlink);
             }
         }
         return metadata;
     }
 
     /**
-     * Adds a new identifier into the given map. This method is a shortcut which bypass the check
-     * for previous values associated to same the authority. It is okay only when constructing
-     * new instances, for example at XML unmarshalling time.
+     * Adds a new identifier into the given map, if non null. No previous value should exist in normal situation.
+     * However a previous value may exit in unusual (probably not very valid) XML, as in the following example:
+     *
+     * {@preformat xml
+     *   <gmd:CI_Citation>
+     *     <gmd:series uuidref="f8f5fcb1-d57b-4013-b3a4-4eaa40df6dcf">
+     *       <gmd:CI_Series uuid="f8f5fcb1-d57b-4013-b3a4-4eaa40df6dcf">
+     *         ...
+     *       </gmd:CI_Series>
+     *     </gmd:series>
+     *   </gmd:CI_Citation>
+     * }
+     *
+     * In such situation, this method is silent if the two identifiers are equal, or logs a warning and restores
+     * the previous value if they are not equal. The previous value is the "{@code uuid}" attribute, which is
+     * assumed more closely tied to the actual metadata than the {@code uuidref} attribute.
      *
      * @param map       The map in which to write the identifier.
      * @param authority The identifier authority.
      * @param value     The identifier value, or {@code null} if not yet defined.
      */
-    private static <T> void putInto(final IdentifierMap map, final IdentifierSpace<T> authority, final T value) {
-        if (map instanceof IdentifierMapAdapter) {
-            final SpecializedIdentifier<T> identifier = new SpecializedIdentifier<T>(authority, value);
-            /*
-             * If the following assert statement appears to fail in practice, then remove
-             * completly this method and use the public putSpecialized(…) method instead.
-             * Note: usage of 'put' is for having the compiler to check the key type.
-             */
-            assert map.put(authority, null) == null : identifier;
-            ((IdentifierMapAdapter) map).identifiers.add(identifier);
-        } else {
-            map.putSpecialized(authority, value);
+    private static <T> void putInto(final Context context, final IdentifierMap map,
+            final IdentifierSpace<T> authority, final T value)
+    {
+        if (value != null) {
+            final T previous = map.putSpecialized(authority, value);
+            if (previous != null && !previous.equals(value)) {
+                final LogRecord record = Errors.getResources((context != null) ? context.getLocale() : null)
+                        .getLogRecord(Level.WARNING, Errors.Keys.InconsistentAttribute_2, authority.getName(), value);
+                record.setSourceClassName(IdentifierMap.class.getName());
+                record.setSourceMethodName("putSpecialized");
+                Context.warningOccured(context, map, record);
+                map.putSpecialized(authority, previous);
+            }
         }
     }
 }

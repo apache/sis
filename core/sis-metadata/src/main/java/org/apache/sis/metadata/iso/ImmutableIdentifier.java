@@ -353,7 +353,9 @@ public class ImmutableIdentifier implements ReferenceIdentifier, Deprecable, Ser
             e.initCause(exception);
             throw e;
         }
-        ensureNonNull(CODE_KEY, code);
+        if (code == null) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.MissingValueForProperty_1, CODE_KEY));
+        }
     }
 
     /**
