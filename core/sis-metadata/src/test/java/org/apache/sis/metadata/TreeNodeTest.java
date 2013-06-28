@@ -55,7 +55,7 @@ public final strictfp class TreeNodeTest extends TestCase {
      * This method creates the following metadata:
      *
      * {@preformat text
-     *   DefaultCitation
+     *   Citation
      *     ├─Title…………………………………………………………………………………… Some title
      *     ├─Alternate title (1 of 2)………………………………… First alternate title
      *     ├─Alternate title (2 of 2)………………………………… Second alternate title
@@ -108,13 +108,13 @@ public final strictfp class TreeNodeTest extends TestCase {
     public void testRootNode() {
         final DefaultCitation citation = TreeNodeChildrenTest.metadataWithoutCollections();
         final TreeNode node = create(citation, ValueExistencePolicy.NON_EMPTY);
-        assertEquals("getName()",        "DefaultCitation", node.getName());
-        assertEquals("getIdentifier()",  "CI_Citation",     node.getIdentifier());
-        assertEquals("getElementType()", Citation.class,    node.getElementType());
-        assertSame  ("getUserObject()",  citation,          node.getUserObject());
-        assertFalse ("isWritable()",                        node.isWritable());
-        assertNull  ("getParent()",                         node.getParent());
-        assertFalse ("isLeaf()",                            node.isLeaf());
+        assertEquals("getName()",        "Citation",     node.getName());
+        assertEquals("getIdentifier()",  "CI_Citation",  node.getIdentifier());
+        assertEquals("getElementType()", Citation.class, node.getElementType());
+        assertSame  ("getUserObject()",  citation,       node.getUserObject());
+        assertFalse ("isWritable()",                     node.isWritable());
+        assertNull  ("getParent()",                      node.getParent());
+        assertFalse ("isLeaf()",                         node.isLeaf());
 
         final TreeNodeChildren children = (TreeNodeChildren) node.getChildren();
         assertSame ("children.metadata", citation, children.metadata);
@@ -131,7 +131,7 @@ public final strictfp class TreeNodeTest extends TestCase {
     public void testGetNameForSingleton() {
         final DefaultCitation citation = TreeNodeChildrenTest.metadataWithSingletonInCollections();
         assertColumnContentEquals(create(citation, ValueExistencePolicy.NON_EMPTY), TableColumn.NAME,
-            "DefaultCitation",
+            "Citation",
               "Title",
               "Alternate title",
               "Edition",
@@ -148,7 +148,7 @@ public final strictfp class TreeNodeTest extends TestCase {
     public void testGetNameForMultiOccurrences() {
         final DefaultCitation citation = TreeNodeChildrenTest.metadataWithMultiOccurrences();
         assertColumnContentEquals(create(citation, ValueExistencePolicy.NON_EMPTY), TableColumn.NAME,
-            "DefaultCitation",
+            "Citation",
               "Title",
               "Alternate title (1 of 2)",
               "Alternate title (2 of 2)",
@@ -166,7 +166,7 @@ public final strictfp class TreeNodeTest extends TestCase {
     public void testGetNameForHierarchy() {
         final DefaultCitation citation = metadataWithHierarchy();
         assertColumnContentEquals(create(citation, ValueExistencePolicy.NON_EMPTY), TableColumn.NAME,
-            "DefaultCitation",
+            "Citation",
               "Title",
               "Alternate title (1 of 2)",
               "Alternate title (2 of 2)",
