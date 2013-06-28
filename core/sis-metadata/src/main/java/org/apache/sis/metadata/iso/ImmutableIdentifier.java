@@ -351,7 +351,9 @@ public class ImmutableIdentifier implements ReferenceIdentifier, Deprecable, Ser
             throw new InvalidParameterValueException(
                     Errors.format(Errors.Keys.IllegalArgumentValue_2, key, value), exception, key, value);
         }
-        ensureNonNull(CODE_KEY, code);
+        if (code == null) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.MissingValueForProperty_1, CODE_KEY));
+        }
     }
 
     /**

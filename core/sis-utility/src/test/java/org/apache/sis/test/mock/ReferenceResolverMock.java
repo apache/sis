@@ -53,6 +53,9 @@ public final strictfp class ReferenceResolverMock extends ReferenceResolver {
      *     }
      * }
      *
+     * Alternatively, the {@code finally} block can be replaced by a call to {@code context.finish()}
+     * in a method annotated by {@link org.junit.After}.
+     *
      * @param  marshalling {@code true} for marshalling, or {@code false} for unmarshalling.
      * @return The (un)marshalling context.
      */
