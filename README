@@ -2,14 +2,26 @@
 Welcome to Apache SIS <http://sis.apache.org>
 =============================================
 
-Apache SIS(TM) is a spatial framework that enables better representation
-of coordinates for searching, data clustering, archiving, or any other
-relevant spatial needs.
+SIS is a free software, Java language library for developing geospatial
+applications. The library can be used for desktop or server applications.
+SIS is an implementation of GeoAPI 3.0 interfaces. SIS provides data structures
+for geographic data and associated metadata along with methods to manipulate
+those data structures. The SIS metadata module forms the base of the library
+and enables the creation of metadata objects which comply with the ISO 19115
+metadata model and which can be read from or written to ISO 19139 compliant
+XML documents. The SIS referencing module will enable the construction of
+geodetic data structures for geospatial referencing based on the ISO 19111
+model such as axis, projection and coordinate reference system definitions,
+along with the associated operations which enable the mathematical conversion
+of coordinates between different systems of reference. The SIS storage modules
+will provide a common approach to the reading and writing of grid coverages
+applicable to simple imagery as to many dimensional data structures.
 
 SIS is a project of the Apache Software Foundation <http://www.apache.org/>.
 
 Apache SIS, SIS, Apache, the Apache feather logo, and the Apache SIS
 project logo are trademarks of The Apache Software Foundation.
+
 
 Getting Started
 ===============
@@ -19,56 +31,14 @@ build system. To build SIS, use the following command in this directory:
 
     mvn clean install
 
+Information for running the application can be found on the wiki
+(<http://cwiki.apache.org/confluence/display/SIS/>)
 
-Tomcat Server (See much simpler Jetty integration below)
-========================================================
-The build consists of a number of components, including a web-based application
-file (WAR) you can use to try out SISfeatures. You can run it on top of Apache Tomcat like this:
-
-    /usr/local/tomcat/bin/shutdown.sh
-    mkdir /usr/local/sis
-    cd /usr/local/sis
-    cp -R /path/to/apache-sis-X.Y-src/sis-webapp/target/sis-webapp-X.Y.war ./
-    cp -R /path/to/apache-sis-X.Y-src/sis-webapp/src/main/webapp/META-INF/context.xml ./sis.xml
-    edit sis.xml (set the docBase to /usr/local/sis/sis-webapp-X.Y.war and the property
-          org.apache.sis.services.config.filePath to /usr/local/sis/sis-location-config.xml,
-          org.apache.sis.services.config.qIndexPath to /usr/local/sis/qtree,
-          org.apache.sis.services.config.geodataPath to /usr/local/sis/geodata)
-    cp -R /path/to/apache-sis-X.Y-src/sis-webapp/src/main/resources/sis-location-config.xml ./
-    edit sis-location-config.xml (add or delete GeoRSS URLs)
-    ln -s /usr/local/sis/sis.xml /usr/local/tomcat/conf/Catalina/localhost/sis.xml
-    /usr/local/tomcat/bin/startup.sh
-    Visit http://localhost:8080/sis/demo.jsp and checkout the demo!
-    Try some queries:
-
-    Bounding Box:
-      0, 50, 50, 100
-
-    Point Raidus:
-      0, 80, 400km
-
-Jetty Server
-============
-Jetty is now supported too (as of 02/11/2012). Simply build the project at the root level
-
-	mvn clean install
-
-Then browse to the sis-webapp directory. To run the built-in Jetty server, type the command:
-
-	mvn jetty:run
-
-Visit http://localhost:8080/sis-webapp/demp.jsp and run the same queries as noted above.
-
-    Bounding Box:
-      0, 50, 50, 100
-
-    Point Raidus:
-      0, 80, 400km
 
 License (see also LICENSE)
 ==========================
 
-Collective work: Copyright 2010 The Apache Software Foundation.
+Collective work: Copyright 2010-2013 The Apache Software Foundation.
 
 Licensed to the Apache Software Foundation (ASF) under one or more
 contributor license agreements.  See the NOTICE file distributed with
