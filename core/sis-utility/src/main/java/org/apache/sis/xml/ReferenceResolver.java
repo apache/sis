@@ -130,9 +130,9 @@ public class ReferenceResolver {
      * SIS can not know if the metadata shall be fully marshalled or not.
      * Such information needs to be provided by the application.
      *
-     * <p>The default implementation conservatively returns {@code false} in every cases.
-     * Subclasses can override this method if they know whether the receiver will be able
-     * to resolve such references.</p>
+     * <p>The default implementation conservatively returns {@code false} in every cases except for instances of
+     * {@link NilObject}, since the later exist only for carrying the {@code gco} and {@code xlink} attributes.
+     * Subclasses can override this method if they know whether the receiver will be able to resolve the reference.</p>
      *
      * @param  <T>     The compile-time type of the {@code type} argument.
      * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
@@ -144,7 +144,7 @@ public class ReferenceResolver {
      *         instead than marshalling the given metadata.
      */
     public <T> boolean canSubstituteByReference(final MarshalContext context, final Class<T> type, final T object, final UUID uuid) {
-        return false;
+        return (object instanceof NilObject);
     }
 
     /**
@@ -154,9 +154,9 @@ public class ReferenceResolver {
      * SIS can not know if the metadata shall be fully marshalled or not.
      * Such information needs to be provided by the application.
      *
-     * <p>The default implementation conservatively returns {@code false} in every cases.
-     * Subclasses can override this method if they know whether the receiver will be able
-     * to resolve such references.</p>
+     * <p>The default implementation conservatively returns {@code false} in every cases except for instances of
+     * {@link NilObject}, since the later exist only for carrying the {@code gco} and {@code xlink} attributes.
+     * Subclasses can override this method if they know whether the receiver will be able to resolve the reference.</p>
      *
      * @param  <T>     The compile-time type of the {@code type} argument.
      * @param  context Context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
@@ -168,7 +168,7 @@ public class ReferenceResolver {
      *         instead than marshalling the given metadata.
      */
     public <T> boolean canSubstituteByReference(final MarshalContext context, final Class<T> type, final T object, final XLink link) {
-        return false;
+        return (object instanceof NilObject);
     }
 
     /**
