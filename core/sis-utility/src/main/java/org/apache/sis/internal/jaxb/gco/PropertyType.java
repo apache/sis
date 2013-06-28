@@ -165,7 +165,12 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
                 if (uuid == null) {
                     uuid = ObjectReference.toUUID(context, anyUUID); // May still null.
                 }
-                // Check if the user gives us the permission to use those identifiers.
+                /*
+                 * Check if the user gives us the permission to use reference to those identifiers.
+                 * If not, forget them. Information will actually not be lost, since the same identifiers
+                 * will be provided by private methods in ISOMetadata. If we do nott clear the identifiers
+                 * here, they would appear twice in the XML output.
+                 */
                 if (uuid != null && !resolver.canSubstituteByReference(context, type, metadata, uuid)) {
                     uuid = null;
                 }
@@ -250,15 +255,9 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
      * future implementations.
      *
      * @return {@code true} if the wrapped metadata should not be marshalled.
-     *
-     * @see #getElement()
      */
     protected final boolean skip() {
-        if (metadata instanceof NilObject) {
-            return true;
-        }
-        final Object ref = reference;
-        return (ref instanceof ObjectReference) && ((ObjectReference) ref).anyUUID != null;
+        return (metadata instanceof NilObject) || (reference instanceof ObjectReference);
     }
 
     /**
@@ -269,7 +268,7 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
      * @return the current value, or {@code null} if none.
      * @category gco:ObjectReference
      */
-    @XmlAttribute(name = "uuidref", namespace = Namespaces.GCO)
+    @XmlAttribute(name = "uuidref")  // Defined in "gco" as unqualified attribute.
     public final String getUUIDREF() {
         final ObjectReference ref = reference(false);
         return (ref != null) ? ref.anyUUID : null;
