@@ -556,18 +556,15 @@ Apache SIS is a free software, Java language library for developing geospatial a
        ============================================================== -->
   <reporting>
     <plugins>
-      <!-- Overwrite the configuration declared in the Apache parent pom.xml
-           in order to use version 2.5.1 instead than 2.5. This is necessary
-           for avoiding a NullPointerException (http://jira.codehaus.org/browse/MPIR-248) -->
       <plugin>
         <artifactId>maven-project-info-reports-plugin</artifactId>
-        <version>2.6</version>
+        <version>2.7</version>
       </plugin>
 
       <!-- Produce JavaDoc -->
       <plugin>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <version>2.9</version>
+        <version>2.9.1</version>
         <configuration>
           <source>${maven.compile.source}</source>              <!-- Enables javadoc to handle language constructs present in target JDK. -->
           <encoding>${project.build.sourceEncoding}</encoding>  <!-- Encoding of Java source file. -->
@@ -636,6 +633,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
             <taglet><tagletClass>org.apache.sis.internal.taglet.Note</tagletClass></taglet>
             <taglet><tagletClass>org.apache.sis.internal.taglet.Example</tagletClass></taglet>
             <taglet><tagletClass>org.apache.sis.internal.taglet.Preformat</tagletClass></taglet>
+            <taglet><tagletClass>org.apache.sis.internal.taglet.SourceRepositoryURL</tagletClass></taglet>
           </taglets>
           <tagletArtifact>
             <groupId>org.apache.sis</groupId>
@@ -654,7 +652,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <!-- Unit tests report -->
       <plugin>
         <artifactId>maven-surefire-report-plugin</artifactId>
-        <version>2.12.4</version>
+        <version>2.15</version>
       </plugin>
 
       <!-- "Release Audit" report (checks license headers etc.) -->

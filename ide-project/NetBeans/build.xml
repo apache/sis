@@ -7,11 +7,11 @@
   <import file="nbproject/build-impl.xml"/>
 
   <!--
-    Called before JAR creation. Copies the "*.utf" resources files created by Maven.
+    Called after compilation. Copies the "*.utf" resources files created by Maven.
     Note that the Apache SIS project must have been build by Maven at least once it
     can be built by the NetBeans IDE.
   -->
-  <target name="-pre-jar">
+  <target name="-post-compile">
     <copy todir="${build.classes.dir}/org/apache/sis/util/iso">
       <fileset dir="${project.root}/core/sis-utility/src/main/resources/org/apache/sis/util/iso">
         <include name="class-index.properties"/>
@@ -27,9 +27,24 @@
     <copy todir="${build.classes.dir}">
       <fileset dir="${project.root}/core/sis-utility/src/main/resources">
         <include name="META-INF/services/*"/>
+        <include name="**/*.properties"/>
       </fileset>
       <fileset dir="${project.root}/core/sis-metadata/src/main/resources">
         <include name="META-INF/services/*"/>
+      </fileset>
+      <fileset dir="${project.root}/application/sis-console/src/main/resources">
+        <include name="**/*.properties"/>
+      </fileset>
+    </copy>
+  </target>
+
+  <!--
+    Called after compilation of test classes in order to copy test files.
+  -->
+  <target name="-post-compile-test">
+    <copy todir="${build.test.classes.dir}">
+      <fileset dir="${project.root}/core/sis-metadata/src/test/resources">
+        <include name="**/*.xml"/>
       </fileset>
     </copy>
   </target>
