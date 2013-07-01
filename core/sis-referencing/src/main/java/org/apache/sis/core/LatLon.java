@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,74 +17,72 @@
 
 package org.apache.sis.core;
 
+import org.apache.sis.geometry.DirectPosition2D;
+
 /**
  * Represents 2D point on earth surface by latitude and longitude.
- * 
- * 
+ *
+ *
  */
-public class LatLon {
-
-  private double lat;
-  private double lon;
+public class LatLon extends DirectPosition2D {
 
   /**
    * LatLon to represent geo point.
-   * 
+   *
    * @param lat
    *          the latitude
    * @param lon
    *          the longitude
    */
   public LatLon(double lat, double lon) {
-    this.lat = lat;
-    this.lon = lon;
+    super(lon, lat);
   }
 
   /**
    * Shifts the latitude by +90.0 so that all latitude lies in the positive
    * coordinate. Used mainly for Java 2D geometry.
-   * 
+   *
    * @return latitude shifted by +90.0
    */
   public double getShiftedLat() {
-    return this.lat + 90.0;
+    return this.y + 90.0;
   }
 
   /**
    * Shifts the longitude by +180.0 so that all longitude lies in the positive
    * coordinate. Used mainly for Java 2D geometry.
-   * 
+   *
    * @return longitude shifted by +180.0
    */
   public double getShiftedLon() {
-    return this.lon + 180.0;
+    return this.x + 180.0;
   }
 
   /**
    * Returns the latitude.
-   * 
+   *
    * @return latitude
    */
   public double getLat() {
-    return this.lat;
+    return this.y;
   }
 
   /**
    * Returns the longitude.
-   * 
+   *
    * @return longitude
    */
   public double getLon() {
-    return this.lon;
+    return this.x;
   }
 
   /**
    * Normalizes the longitude values to be between -180.0 and 180.0
-   * 
+   *
    * @return longitude value that is between -180.0 and 180.0 inclusive
    */
   public double getNormLon() {
-    double normLon = this.lon;
+    double normLon = this.x;
     if (normLon > 180.0) {
       while (normLon > 180.0) {
         normLon -= 360.0;
@@ -99,6 +97,6 @@ public class LatLon {
 
   @Override
   public String toString() {
-    return this.lat + "," + this.lon;
+    return this.y + "," + this.x;
   }
 }

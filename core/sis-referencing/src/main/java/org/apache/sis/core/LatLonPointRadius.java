@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,41 +24,38 @@ import java.awt.geom.Rectangle2D;
 
 //SIS imports
 import org.apache.sis.distance.DistanceUtils;
+import org.apache.sis.geometry.GeneralDirectPosition;
 
 /**
  * Represents a 2D point associated with a radius to enable great circle
  * estimation on earth surface.
- * 
+ *
  */
-public class LatLonPointRadius {
-
-  private LatLon center;
-  private double radius;
+public class LatLonPointRadius extends GeneralDirectPosition {
 
   /**
    * Creates a representation of point-radius search region.
-   * 
+   *
    * @param center
    *          the center of the search region
    * @param radius
    *          the radius of the search region
    */
   public LatLonPointRadius(LatLon center, double radius) {
-    this.center = center;
-    this.radius = radius;
+    super(center.x, center.y, radius);
   }
 
   /**
    * Gets the circular region approximation on the earth surface using haversine
    * formula.
-   * 
+   *
    * @param numberOfPoints
    *          the number of points used to estimate the circular region
    * @return an array of LatLon representing the points that estimate the
    *         circular region
    */
   public LatLon[] getCircularRegionApproximation(int numberOfPoints) {
-    if (this.radius >= DistanceUtils.HALF_EARTH_CIRCUMFERENCE) {
+    if (super.getOrdinate(2) >= DistanceUtils.HALF_EARTH_CIRCUMFERENCE) {
       LatLon[] points = new LatLon[5];
       points[0] = new LatLon(-90.0, -180.0);
       points[1] = new LatLon(90.0, -180.0);
@@ -69,14 +66,14 @@ public class LatLonPointRadius {
     }
     // plus one to add closing point
     LatLon[] points = new LatLon[numberOfPoints + 1];
-    
+
     double bearingIncrement = 0;
     if (numberOfPoints > 0) { bearingIncrement = 360/numberOfPoints; }
 
-    for (int i = 0; i < numberOfPoints; i++) 
+    for (int i = 0; i < numberOfPoints; i++)
     {
-      points[i] = DistanceUtils.getPointOnGreatCircle(this.center.getLat(),
-          this.center.getLon(), radius, i * bearingIncrement);
+      points[i] = DistanceUtils.getPointOnGreatCircle(super.getOrdinate(1),
+          super.getOrdinate(0), super.getOrdinate(2), i * bearingIncrement);
     }
 
     points[numberOfPoints] = points[0];
@@ -86,27 +83,27 @@ public class LatLonPointRadius {
 
   /**
    * Calculates the rectangular region enclosing the circular search region.
-   * 
+   *
    * @param numberOfPoints
    *          the number of points used to estimate the circular search region
    * @return Java Rectangle2D object that bounds the circlar search region
    */
   public Rectangle2D getRectangularRegionApproximation(int numberOfPoints) {
-    if (this.radius >= DistanceUtils.HALF_EARTH_CIRCUMFERENCE) {
+    if (super.getOrdinate(2) >= DistanceUtils.HALF_EARTH_CIRCUMFERENCE) {
       return new Rectangle2D.Double(0.0, 0.0, 360.0, 180.0);
     }
     int numberOfCrossOvers = 0;
 
     Path2D path = new Path2D.Double();
-    LatLon initPT = DistanceUtils.getPointOnGreatCircle(this.center.getLat(),
-        this.center.getLon(), this.radius, 0);
+    LatLon initPT = DistanceUtils.getPointOnGreatCircle(super.getOrdinate(1),
+        super.getOrdinate(0), super.getOrdinate(2), 0);
     path.moveTo(initPT.getShiftedLon(), initPT.getShiftedLat());
 
     LatLon currPT = initPT;
     for (int i = 1; i < 360; i++) {
 
-      LatLon pt = DistanceUtils.getPointOnGreatCircle(this.center.getLat(),
-          this.center.getLon(), this.radius, i);
+      LatLon pt = DistanceUtils.getPointOnGreatCircle(super.getOrdinate(1),
+          super.getOrdinate(0), super.getOrdinate(2), i);
       path.lineTo(pt.getShiftedLon(), pt.getShiftedLat());
 
       if (dateLineCrossOver(currPT.getNormLon(), pt.getNormLon())) {
@@ -126,8 +123,7 @@ public class LatLonPointRadius {
       Rectangle2D r = path.getBounds2D();
       Rectangle2D lowerHalf = new Rectangle2D.Double(0.0, 0.0, 360.0, r
           .getMaxY());
-      if (lowerHalf.contains(this.center.getShiftedLon(), this.center
-          .getShiftedLat())) {
+      if (lowerHalf.contains(super.getOrdinate(0) + 180, super.getOrdinate(1) + 90)) {
         return lowerHalf;
       } else {
         return new Rectangle2D.Double(0.0, r.getMinY(), 360.0, 180.0 - r
@@ -135,7 +131,7 @@ public class LatLonPointRadius {
       }
     }
 
-    if (path.contains(this.center.getShiftedLon(), this.center.getShiftedLat())) {
+    if (path.contains(super.getOrdinate(0) + 180, super.getOrdinate(1) + 90)) {
       Rectangle2D r = path.getBounds2D();
       if ((r.getMaxX() - r.getMinX()) > 359.0) {
         return new Rectangle2D.Double(0.0, 0.0, 360.0, 180.0);
@@ -160,7 +156,7 @@ public class LatLonPointRadius {
   /**
    * Returns true if the line segment connecting the two specified longitudes
    * crosses the international dateline.
-   * 
+   *
    * @param longitude1
    *          first longitude
    * @param longitude2
