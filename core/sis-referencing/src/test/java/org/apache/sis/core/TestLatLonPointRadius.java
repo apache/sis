@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,7 +24,7 @@ import java.awt.geom.Rectangle2D;
 
 /**
  * Tests methods from the {@link LatLonPointRadius} class.
- * 
+ *
  * @author rlaidlaw
  */
 public class TestLatLonPointRadius extends TestCase
@@ -58,7 +58,7 @@ public class TestLatLonPointRadius extends TestCase
     assertEquals(180.0, pts1[3].getLon(), EPSILON);
     assertEquals(-90.0, pts1[4].getLat(), EPSILON);
     assertEquals(-180.0, pts1[4].getLon(), EPSILON);
-    
+
     LatLonPointRadius pr2 = new LatLonPointRadius(new LatLon(0.0, 0.0), 1000.0);
     LatLon pts2[] = pr2.getCircularRegionApproximation(6);
     assertEquals(7, pts2.length);
@@ -67,7 +67,7 @@ public class TestLatLonPointRadius extends TestCase
   /**
    * Tests the getRectangularRegionApproximation() method.
    */
-  public void testGetRectangularRegionApproximation() 
+  public void testGetRectangularRegionApproximation()
   {
     LatLonPointRadius pr1 = new LatLonPointRadius(new LatLon(0.0, 0.0), 25000.0);
     Rectangle2D r1 = pr1.getRectangularRegionApproximation(10);
