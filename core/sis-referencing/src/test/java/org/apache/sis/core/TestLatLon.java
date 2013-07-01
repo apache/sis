@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,14 +21,14 @@ import junit.framework.TestCase;
 
 /**
  * Tests methods from the {@link LatLon} class.
- * 
+ *
  * @author rlaidlaw
  */
 public class TestLatLon extends TestCase
 {
   private static final double EPSILON = 0.000001;
   private LatLon point;
-  
+
   /**
    * Set up objects prior to tests.
    */
@@ -36,7 +36,7 @@ public class TestLatLon extends TestCase
   {
     point = new LatLon(-75.0, -145.0);
   }
-  
+
   /**
    * Clear up objects after testing.
    */
@@ -52,7 +52,7 @@ public class TestLatLon extends TestCase
   {
     assertNotNull(point);
   }
-  
+
   /**
    * Tests the getLat() method.
    */
@@ -60,7 +60,7 @@ public class TestLatLon extends TestCase
   {
     assertEquals(-75.0, point.getLat(), EPSILON);
   }
-  
+
   /**
    * Tests the getLon() method.
    */
@@ -68,7 +68,7 @@ public class TestLatLon extends TestCase
   {
     assertEquals(-145.0, point.getLon(), EPSILON);
   }
-  
+
   /**
    * Tests the getShiftedLat() method.
    */
@@ -90,11 +90,11 @@ public class TestLatLon extends TestCase
    */
   public void testGetNormLon()
   {
-    LatLon pointHighLon = new LatLon(0.0, 545.0);    
+    LatLon pointHighLon = new LatLon(0.0, 545.0);
     assertEquals(-175.0, pointHighLon.getNormLon(), EPSILON);
-    
+
     LatLon pointLowLon = new LatLon(0.0, -545.0);
-    assertEquals(175.0, pointLowLon.getNormLon(), EPSILON);    
+    assertEquals(175.0, pointLowLon.getNormLon(), EPSILON);
   }
 
   /**
