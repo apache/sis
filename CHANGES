@@ -1,7 +1,7 @@
 Apache SIS Change Log
 ======================
 
-Release 0.3 - Current Development
+Release 0.3 - 06/29/2013
 
 * SIS-105: Renamed "sis-app" module as "sis-console".
 
