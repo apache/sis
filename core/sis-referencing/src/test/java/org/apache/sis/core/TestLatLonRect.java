@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,31 +24,31 @@ import java.awt.geom.Rectangle2D;
 
 /**
  * Tests methods from the {@link LatLonRect} class.
- * 
+ *
  * @author rlaidlaw
  */
 public class TestLatLonRect extends TestCase
 {
   private static final double EPSILON = 0.000001;
-  
+
   /**
    * Tests the LatLonRect constructor.
    */
   public void testCreateLatLonRect()
   {
-    LatLonRect rect = new LatLonRect(new LatLon(-50.0, -150.0), 
+    LatLonRect rect = new LatLonRect(new LatLon(-50.0, -150.0),
                                      new LatLon(50.0, 150.0));
-    assertNotNull(rect);    
+    assertNotNull(rect);
   }
-  
+
   /**
    * Tests the getJavaRectangles() method.
    */
   public void testGetJavaRectangles()
   {
-    LatLonRect r1 = new LatLonRect(new LatLon(0.0, 0.0), 
+    LatLonRect r1 = new LatLonRect(new LatLon(0.0, 0.0),
         new LatLon(50.0, 50.0));
-    
+
     Rectangle2D[] rects1 = r1.getJavaRectangles();
     assertEquals(1, rects1.length);
     assertEquals(180.0, rects1[0].getX(), EPSILON);
@@ -56,8 +56,8 @@ public class TestLatLonRect extends TestCase
     assertEquals(50.0, rects1[0].getWidth(), EPSILON);
     assertEquals(50.0, rects1[0].getHeight(), EPSILON);
 
-    
-    LatLonRect r2 = new LatLonRect(new LatLon(0.0, 155.0), 
+
+    LatLonRect r2 = new LatLonRect(new LatLon(0.0, 155.0),
         new LatLon(50.0, -155.0));
 
     Rectangle2D[] rects2 = r2.getJavaRectangles();
