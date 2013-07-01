@@ -13,7 +13,6 @@
                 <root id="src.referencing.dir" name="Referencing"/>
                 <root id="src.metadata.dir" name="Metadata"/>
                 <root id="src.utility.dir" name="Utility"/>
-                <root id="src.resources.dir" name="Resources"/>
             </source-roots>
             <test-roots>
                 <root id="test.console.dir" name="Test Console"/>

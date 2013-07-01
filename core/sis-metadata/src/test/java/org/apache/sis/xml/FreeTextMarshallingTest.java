@@ -36,7 +36,6 @@ import static org.apache.sis.test.Assert.*;
  *
  * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-107">GEOTK-107</a>
  * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-152">GEOTK-152</a>
- * @see MetadataMarshallingTest#testTextGroup()
  */
 public final strictfp class FreeTextMarshallingTest extends XMLTestCase {
     /**

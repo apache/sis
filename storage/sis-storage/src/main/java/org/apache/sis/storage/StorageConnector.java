@@ -197,7 +197,7 @@ public class StorageConnector implements Serializable {
      *
      * <ul>
      *   <li>For {@link java.nio.file.Path}, {@link java.io.File}, {@link java.net.URI} or {@link java.net.URL}
-     *       instances, this method uses dedicated API like {@link Path#getFileName()}.</li>
+     *       instances, this method uses dedicated API like {@link java.nio.file.Path#getFileName()}.</li>
      *   <li>For {@link CharSequence} instances, this method gets a string representation of the storage object
      *       and returns the part after the last {@code '/'} character or platform-dependent name separator.</li>
      *   <li>For instances of unknown type, this method builds a string representation using the class name.
