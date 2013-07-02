@@ -30,7 +30,9 @@ import org.apache.sis.geometry.GeneralDirectPosition;
  * Represents a 2D point associated with a radius to enable great circle
  * estimation on earth surface.
  *
+ * @deprecated Replaced by {@link org.opengis.geometry.DirectPosition}, which is derived from OGC/ISO specifications.
  */
+@Deprecated
 public class LatLonPointRadius extends GeneralDirectPosition {
 
   /**

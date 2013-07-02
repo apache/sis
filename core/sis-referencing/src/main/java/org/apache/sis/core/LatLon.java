@@ -22,8 +22,9 @@ import org.apache.sis.geometry.DirectPosition2D;
 /**
  * Represents 2D point on earth surface by latitude and longitude.
  *
- *
+ * @deprecated Replaced by {@link org.opengis.geometry.DirectPosition}, which is derived from OGC/ISO specifications.
  */
+@Deprecated
 public class LatLon extends DirectPosition2D {
 
   /**
