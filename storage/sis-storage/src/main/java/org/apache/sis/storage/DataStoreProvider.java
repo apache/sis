@@ -66,6 +66,13 @@ public abstract class DataStoreProvider {
      * {@link java.nio.ByteBuffer#mark()}, {@link java.io.InputStream#mark(int)} and
      * {@link javax.imageio.stream.ImageInputStream#mark()}.
      *
+     * <table width="80%" align="center" cellpadding="18" border="4" bgcolor="#FFE0B0">
+     *   <tr><td>
+     *     <b>Warning:</b> this method is likely to change. SIS 0.4 will probably return a set of enumeration
+     *     values describing how the file can be open (read, write, append) similar to JDK7 open mode.
+     *   </td></tr>
+     * </table>
+     *
      * @param  storage Information about the storage (URL, stream, JDBC connection, <i>etc</i>).
      * @return {@link Boolean#TRUE} if the given storage seems to be usable by the {@code DataStore} instances
      *         create by this provider, {@link Boolean#FALSE} if the {@code DataStore} will not be able to use

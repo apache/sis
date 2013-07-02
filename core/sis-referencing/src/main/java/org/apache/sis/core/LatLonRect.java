@@ -27,7 +27,9 @@ import org.apache.sis.geometry.Envelope2D;
  * Represents a 2D rectangle on earth surface specified by lower left and upper
  * right coordinates.
  *
+ * @deprecated Replaced by {@link org.opengis.geometry.Envelope}, which is derived from OGC/ISO specifications.
  */
+@Deprecated
 public class LatLonRect extends Envelope2D {
 
   /**
