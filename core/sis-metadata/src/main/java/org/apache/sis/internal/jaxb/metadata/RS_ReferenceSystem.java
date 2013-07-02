@@ -96,46 +96,4 @@ public class RS_ReferenceSystem extends PropertyType<RS_ReferenceSystem, Referen
     public void setElement(final ReferenceSystemMetadata metadata) {
         this.metadata = metadata;
     }
-
-    /**
-     * A hook for the French profile.
-     *
-     * @return The metadata to be marshalled.
-     *
-     * @todo We need a better plugin mechanism.
-     */
-    @XmlElement(name = "FRA_DirectReferenceSystem", namespace = Namespaces.FRA)
-    public ReferenceSystemMetadata getDirectReferenceSystem() {
-        return null;
-    }
-
-    /**
-     * Setter method for the French profile hook.
-     *
-     * @param metadata The unmarshalled metadata.
-     */
-    public void setDirectReferenceSystem(final ReferenceSystemMetadata metadata) {
-        this.metadata = metadata;
-    }
-
-    /**
-     * A hook for the French profile.
-     *
-     * @return The metadata to be marshalled.
-     *
-     * @todo We need a better plugin mechanism.
-     */
-    @XmlElement(name = "FRA_IndirectReferenceSystem", namespace = Namespaces.FRA)
-    public ReferenceSystemMetadata getIndirectReferenceSystem() {
-        return null;
-    }
-
-    /**
-     * Setter method for the French profile hook.
-     *
-     * @param metadata The unmarshalled metadata.
-     */
-    public void setIndirectReferenceSystem(final ReferenceSystemMetadata metadata) {
-        this.metadata = metadata;
-    }
 }
