@@ -63,6 +63,23 @@ run.jvmargs = -DmyProperty=myValue
 +----------------------------------------------+
 
 
+* Eclipse
+
+  Execute the <<<svn checkout>>> to <<<mvn install>>> commands documented in the beginning of this section,
+  then execute the following steps:
+
+   * Execute <<<mvn eclipse:eclipse>>> on the command line.
+
+   * Open Eclipse in a new workspace.
+
+   * Go to <Eclipse> → <Preferences> → <General> → <Workspace>.
+
+   * Change <Text file encoding> to <Other: UTF-8>, press <Apply>, then <Ok>.
+
+   * Go to <File> → <Import> → <General> → <Existing Projects in Workspace>.
+
+   * Choose the <<<sis>>> directory and import.
+
 
 Developing Apache SIS
 
