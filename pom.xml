@@ -462,47 +462,6 @@ Apache SIS is a free software, Java language library for developing geospatial a
         </configuration>
       </plugin>
 
-      <!-- Build XHTML pages from the DocBook files
-           See src/main/docbook/README.txt -->
-      <plugin>
-        <groupId>com.agilejava.docbkx</groupId>
-        <artifactId>docbkx-maven-plugin</artifactId>
-        <version>2.0.14</version>
-        <inherited>false</inherited>
-        <dependencies>
-          <dependency> <!-- XHTML generation -->
-            <groupId>net.sf.docbook</groupId>
-            <artifactId>docbook-xml</artifactId>
-            <version>5.0-all</version>
-            <classifier>resources</classifier>
-            <type>zip</type>
-            <scope>runtime</scope>
-          </dependency>
-          <dependency> <!-- Syntax highlighting -->
-            <groupId>net.sf.xslthl</groupId>
-            <artifactId>xslthl</artifactId>
-            <version>2.1.0</version>
-            <scope>runtime</scope>
-          </dependency>
-        </dependencies>
-        <configuration>
-          <sourceDirectory>${basedir}/src/main/docbook</sourceDirectory>
-          <targetDirectory>${basedir}/target/site/book</targetDirectory>
-          <xhtmlCustomization>src/main/docbook/book.xsl</xhtmlCustomization>
-          <xincludeSupported>true</xincludeSupported>
-          <htmlStylesheet>book.css</htmlStylesheet>
-          <highlightSource>true</highlightSource>
-        </configuration>
-        <executions>
-          <execution>
-            <goals>
-              <goal>generate-xhtml</goal>
-            </goals>
-            <phase>pre-site</phase>
-          </execution>
-        </executions>
-      </plugin>
-
       <!-- Create web site -->
       <plugin>
         <artifactId>maven-site-plugin</artifactId>
