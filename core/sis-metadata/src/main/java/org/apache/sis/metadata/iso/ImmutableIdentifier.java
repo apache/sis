@@ -301,15 +301,7 @@ public class ImmutableIdentifier implements ReferenceIdentifier, Deprecable, Ser
             final Locale locale = Locales.parseSuffix(REMARKS_KEY, key);
             if (locale != null) {
                 if (localized == null) {
-                    if (remarks instanceof DefaultInternationalString) {
-                        localized = (DefaultInternationalString) remarks;
-                    } else {
-                        localized = new DefaultInternationalString();
-                        if (remarks instanceof CharSequence) { // String or InternationalString.
-                            localized.add(Locale.ROOT, remarks.toString());
-                            remarks = null;
-                        }
-                    }
+                    localized = new DefaultInternationalString();
                 }
                 localized.add(locale, (String) value);
             }
@@ -319,8 +311,11 @@ public class ImmutableIdentifier implements ReferenceIdentifier, Deprecable, Ser
          * both as InternationalString and as String for some locales (which is a weird
          * usage...), then current implementation discards the later with a warning.
          */
-        if (localized != null && !localized.getLocales().isEmpty()) {
+        if (localized != null) {
             if (remarks == null) {
+                remarks = localized;
+            } else if (remarks instanceof SimpleInternationalString) {
+                localized.add(Locale.ROOT, remarks.toString());
                 remarks = localized;
             } else {
                 Logging.log(ImmutableIdentifier.class, "<init>",
