@@ -248,7 +248,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
                 /*
                  * If there is no explicit resources for this instance, inherit the resources
                  * from the parent. Note that this IndexedResourceBundle instance may still
-                 * differ from its parent in the way date and numbers are formatted.
+                 * differ from its parent in the way dates and numbers are formatted.
                  */
                 if (resources == null) {
                     // If we get a NullPointerException or ClassCastException here,
