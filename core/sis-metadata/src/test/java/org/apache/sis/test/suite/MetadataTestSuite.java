@@ -53,6 +53,7 @@ import org.junit.BeforeClass;
     org.apache.sis.metadata.MetadataStandardTest.class,
     org.apache.sis.metadata.PrunerTest.class,
     org.apache.sis.metadata.AbstractMetadataTest.class,
+    org.apache.sis.metadata.iso.ImmutableIdentifierTest.class,
     org.apache.sis.metadata.iso.AllMetadataTest.class,
 
     // XML marshalling.
