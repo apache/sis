@@ -122,9 +122,7 @@
     @XmlJavaTypeAdapter(LocaleAdapter.class),
     @XmlJavaTypeAdapter(StringAdapter.class),
     @XmlJavaTypeAdapter(InternationalStringAdapter.class),
-    @XmlJavaTypeAdapter(GO_DateTime.class),
-    @XmlJavaTypeAdapter(GO_Decimal.class),        @XmlJavaTypeAdapter(type=double.class, value=GO_Decimal.class),
-    @XmlJavaTypeAdapter(GO_Integer.AsLong.class), @XmlJavaTypeAdapter(type=long.class,   value=GO_Integer.AsLong.class)
+    @XmlJavaTypeAdapter(GO_DateTime.class)
 })
 package org.apache.sis.metadata.iso.identification;
 

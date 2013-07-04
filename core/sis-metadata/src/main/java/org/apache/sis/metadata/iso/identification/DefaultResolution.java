@@ -27,6 +27,7 @@ import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.util.resources.Messages;
+import org.apache.sis.util.Workaround;
 
 
 /**
@@ -168,8 +169,6 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      */
     @Override
     @ValueRange(minimum=0, isMinIncluded=false)
-    @XmlJavaTypeAdapter(GO_Distance.class)
-    @XmlElement(name = "distance")
     public Double getDistance() {
         return isDistance() ? (Double) scaleOrDistance : null;
     }
@@ -188,5 +187,32 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
             warning("setDistance", "equivalentScale", "distance");
         }
         scaleOrDistance = newValue;
+    }
+
+    /**
+     * Workaround for a strange JAXB behavior (bug?). For an unknown reason, we are unable to annotate the
+     * {@link #getDistance()} method directly. Doing so cause JAXB to randomly ignores the {@code <gmd:distance>}
+     * property. Annotating a separated method which in turn invokes the real method seems to work.
+     *
+     * <p>In order to check if this workaround is still needed with more recent JAXB versions, move the
+     * {@link XmlElement} and {@link XmlJavaTypeAdapter} annotations to the {@link #getDistance()} method,
+     * then execute the {@link DefaultResolutionTest#testXML()} test at least 10 times (because the failure
+     * happen randomly). If the test succeeded every time, then the {@code getValue()} and {@code setValue(Double)}
+     * methods can be completely deleted.</p>
+     *
+     * @see DefaultResolutionTest#testXML()
+     */
+    @XmlElement(name = "distance")
+    @XmlJavaTypeAdapter(GO_Distance.class)
+    @Workaround(library = "JAXB", version = "2.2.4-2")
+    private Double getValue() {
+        return getDistance();
+    }
+
+    /**
+     * The corresponding setter for the {@link #getValue()} workaround.
+     */
+    private void setValue(final Double newValue) {
+        setDistance(newValue);
     }
 }
