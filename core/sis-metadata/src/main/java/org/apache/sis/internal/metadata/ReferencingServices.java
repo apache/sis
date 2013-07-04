@@ -77,8 +77,7 @@ public abstract class ReferencingServices extends SystemListener {
         if (instance == null) try {
             instance = (ReferencingServices) Class.forName("org.apache.sis.internal.referencing.ServicesForMetadata").newInstance();
         } catch (ClassNotFoundException exception) {
-            throw new UnsupportedOperationException(Errors.format(
-                    Errors.Keys.MissingRequiredModule_1, "sis-referencing"), exception);
+            throw new UnsupportedOperationException("Not supported in Apache SIS 0.3.", exception);
         } catch (Exception exception) { // (ReflectiveOperationException) on JDK7 branch.
             // Should never happen if we didn't broke our helper class.
             throw new AssertionError(exception);
