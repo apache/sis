@@ -81,15 +81,17 @@ public class DefaultSeries extends ISOMetadata implements Series {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Series)
      */
     public DefaultSeries(final Series object) {
         super(object);
-        name                = object.getName();
-        issueIdentification = object.getIssueIdentification();
-        page                = object.getPage();
+        if (object != null) {
+            name                = object.getName();
+            issueIdentification = object.getIssueIdentification();
+            page                = object.getPage();
+        }
     }
 
     /**

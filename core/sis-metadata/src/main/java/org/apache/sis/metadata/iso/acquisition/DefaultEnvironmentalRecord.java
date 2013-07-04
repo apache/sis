@@ -78,16 +78,18 @@ public class DefaultEnvironmentalRecord extends ISOMetadata implements Environme
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(EnvironmentalRecord)
      */
     public DefaultEnvironmentalRecord(final EnvironmentalRecord object) {
         super(object);
-        averageAirTemperature    = object.getAverageAirTemperature();
-        maxRelativeHumidity      = object.getMaxRelativeHumidity();
-        maxAltitude              = object.getMaxAltitude();
-        meteorologicalConditions = object.getMeteorologicalConditions();
+        if (object != null) {
+            averageAirTemperature    = object.getAverageAirTemperature();
+            maxRelativeHumidity      = object.getMaxRelativeHumidity();
+            maxAltitude              = object.getMaxAltitude();
+            meteorologicalConditions = object.getMeteorologicalConditions();
+        }
     }
 
     /**

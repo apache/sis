@@ -70,13 +70,15 @@ public class DefaultBoundingPolygon extends AbstractGeographicExtent implements 
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(BoundingPolygon)
      */
     public DefaultBoundingPolygon(final BoundingPolygon object) {
         super(object);
-        polygons = copyCollection(object.getPolygons(), Geometry.class);
+        if (object != null) {
+            polygons = copyCollection(object.getPolygons(), Geometry.class);
+        }
     }
 
     /**

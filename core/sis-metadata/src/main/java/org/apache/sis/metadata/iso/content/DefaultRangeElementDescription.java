@@ -74,15 +74,17 @@ public class DefaultRangeElementDescription extends ISOMetadata implements Range
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(RangeElementDescription)
      */
     public DefaultRangeElementDescription(final RangeElementDescription object) {
         super(object);
-        name          = object.getName();
-        definition    = object.getDefinition();
-        rangeElements = copyCollection(object.getRangeElements(), Record.class);
+        if (object != null) {
+            name          = object.getName();
+            definition    = object.getDefinition();
+            rangeElements = copyCollection(object.getRangeElements(), Record.class);
+        }
     }
 
     /**

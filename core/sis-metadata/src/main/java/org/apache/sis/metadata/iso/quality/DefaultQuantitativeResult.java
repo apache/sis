@@ -79,16 +79,18 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(QuantitativeResult)
      */
     public DefaultQuantitativeResult(final QuantitativeResult object) {
         super(object);
-        valueType      = object.getValueType();
-        valueUnit      = object.getValueUnit();
-        errorStatistic = object.getErrorStatistic();
-        values         = copyList(object.getValues(), Record.class);
+        if (object != null) {
+            valueType      = object.getValueType();
+            valueUnit      = object.getValueUnit();
+            errorStatistic = object.getErrorStatistic();
+            values         = copyList(object.getValues(), Record.class);
+        }
     }
 
     /**

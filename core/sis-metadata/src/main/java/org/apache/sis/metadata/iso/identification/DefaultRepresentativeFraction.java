@@ -19,7 +19,9 @@ package org.apache.sis.metadata.iso.identification;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.metadata.identification.RepresentativeFraction;
+import org.apache.sis.internal.jaxb.gco.GO_Integer;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
@@ -74,13 +76,14 @@ public class DefaultRepresentativeFraction extends Number implements Representat
     /**
      * Constructs a new representative fraction initialized to the value of the given object.
      *
-     * @param  object The representative fraction to copy.
+     * @param  object The metadata to copy values from, or {@code null} if none.
      * @throws IllegalArgumentException If the denominator of the given source is negative.
      */
     public DefaultRepresentativeFraction(final RepresentativeFraction object) throws IllegalArgumentException {
-        ArgumentChecks.ensureNonNull("object", object);
-        denominator = object.getDenominator();
-        ArgumentChecks.ensurePositive("object", denominator);
+        if (object != null) {
+            denominator = object.getDenominator();
+            ArgumentChecks.ensurePositive("object", denominator);
+        }
     }
 
     /**
@@ -104,6 +107,7 @@ public class DefaultRepresentativeFraction extends Number implements Representat
      * Returns the denominator of this representative fraction.
      */
     @Override
+    @XmlJavaTypeAdapter(value = GO_Integer.AsLong.class, type = long.class)
     @XmlElement(name = "denominator", required = true)
     public long getDenominator() {
         return denominator;

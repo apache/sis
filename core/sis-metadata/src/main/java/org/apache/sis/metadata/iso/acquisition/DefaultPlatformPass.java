@@ -70,15 +70,17 @@ public class DefaultPlatformPass extends ISOMetadata implements PlatformPass {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(PlatformPass)
      */
     public DefaultPlatformPass(final PlatformPass object) {
         super(object);
-        identifiers   = singleton(object.getIdentifier(), Identifier.class);
-        extent        = object.getExtent();
-        relatedEvents = copyCollection(object.getRelatedEvents(), Event.class);
+        if (object != null) {
+            identifiers   = singleton(object.getIdentifier(), Identifier.class);
+            extent        = object.getExtent();
+            relatedEvents = copyCollection(object.getRelatedEvents(), Event.class);
+        }
     }
 
     /**
