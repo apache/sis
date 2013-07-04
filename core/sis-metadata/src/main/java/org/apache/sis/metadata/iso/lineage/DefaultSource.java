@@ -127,20 +127,22 @@ public class DefaultSource extends ISOMetadata implements Source {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Source)
      */
     public DefaultSource(final Source object) {
         super(object);
-        description           = object.getDescription();
-        scaleDenominator      = object.getScaleDenominator();
-        sourceCitation        = object.getSourceCitation();
-        sourceExtents         = copyCollection(object.getSourceExtents(), Extent.class);
-        sourceSteps           = copyCollection(object.getSourceSteps(), ProcessStep.class);
-        processedLevel        = object.getProcessedLevel();
-        resolution            = object.getResolution();
-        sourceReferenceSystem = object.getSourceReferenceSystem();
+        if (object != null) {
+            description           = object.getDescription();
+            scaleDenominator      = object.getScaleDenominator();
+            sourceCitation        = object.getSourceCitation();
+            sourceExtents         = copyCollection(object.getSourceExtents(), Extent.class);
+            sourceSteps           = copyCollection(object.getSourceSteps(), ProcessStep.class);
+            processedLevel        = object.getProcessedLevel();
+            resolution            = object.getResolution();
+            sourceReferenceSystem = object.getSourceReferenceSystem();
+        }
     }
 
     /**

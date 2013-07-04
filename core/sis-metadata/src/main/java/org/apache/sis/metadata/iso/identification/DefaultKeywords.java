@@ -96,15 +96,17 @@ public class DefaultKeywords extends ISOMetadata implements Keywords {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Keywords)
      */
     public DefaultKeywords(final Keywords object) {
         super(object);
-        keywords      = copyCollection(object.getKeywords(), InternationalString.class);
-        type          = object.getType();
-        thesaurusName = object.getThesaurusName();
+        if (object != null) {
+            keywords      = copyCollection(object.getKeywords(), InternationalString.class);
+            type          = object.getType();
+            thesaurusName = object.getThesaurusName();
+        }
     }
 
     /**

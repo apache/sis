@@ -84,17 +84,19 @@ public class DefaultPlatform extends ISOMetadata implements Platform {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Platform)
      */
     public DefaultPlatform(final Platform object) {
         super(object);
-        citation    = object.getCitation();
-        identifiers = singleton(object.getIdentifier(), Identifier.class);
-        description = object.getDescription();
-        sponsors    = copyCollection(object.getSponsors(), ResponsibleParty.class);
-        instruments = copyCollection(object.getInstruments(), Instrument.class);
+        if (object != null) {
+            citation    = object.getCitation();
+            identifiers = singleton(object.getIdentifier(), Identifier.class);
+            description = object.getDescription();
+            sponsors    = copyCollection(object.getSponsors(), ResponsibleParty.class);
+            instruments = copyCollection(object.getInstruments(), Instrument.class);
+        }
     }
 
     /**

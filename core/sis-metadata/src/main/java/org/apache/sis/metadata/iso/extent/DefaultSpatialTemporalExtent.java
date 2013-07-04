@@ -63,13 +63,15 @@ public class DefaultSpatialTemporalExtent extends DefaultTemporalExtent implemen
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(SpatialTemporalExtent)
      */
     public DefaultSpatialTemporalExtent(final SpatialTemporalExtent object) {
         super(object);
-        spatialExtent = copyCollection(object.getSpatialExtent(), GeographicExtent.class);
+        if (object != null) {
+            spatialExtent = copyCollection(object.getSpatialExtent(), GeographicExtent.class);
+        }
     }
 
     /**

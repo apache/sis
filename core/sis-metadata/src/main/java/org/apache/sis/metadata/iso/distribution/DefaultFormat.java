@@ -106,18 +106,20 @@ public class DefaultFormat extends ISOMetadata implements Format {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Format)
      */
     public DefaultFormat(final Format object) {
         super(object);
-        name                       = object.getName();
-        version                    = object.getVersion();
-        amendmentNumber            = object.getAmendmentNumber();
-        specification              = object.getSpecification();
-        fileDecompressionTechnique = object.getFileDecompressionTechnique();
-        formatDistributors         = copyCollection(object.getFormatDistributors(), Distributor.class);
+        if (object != null) {
+            name                       = object.getName();
+            version                    = object.getVersion();
+            amendmentNumber            = object.getAmendmentNumber();
+            specification              = object.getSpecification();
+            fileDecompressionTechnique = object.getFileDecompressionTechnique();
+            formatDistributors         = copyCollection(object.getFormatDistributors(), Distributor.class);
+        }
     }
 
     /**

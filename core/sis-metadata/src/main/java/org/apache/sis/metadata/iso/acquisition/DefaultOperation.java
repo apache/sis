@@ -125,23 +125,25 @@ public class DefaultOperation extends ISOMetadata implements Operation {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Operation)
      */
     public DefaultOperation(final Operation object) {
         super(object);
-        description       = object.getDescription();
-        citation          = object.getCitation();
-        identifiers       = singleton(object.getIdentifier(), Identifier.class);
-        status            = object.getStatus();
-        type              = object.getType();
-        childOperations   = copyCollection(object.getChildOperations(), Operation.class);
-        objectives        = copyCollection(object.getObjectives(), Objective.class);
-        parentOperation   = object.getParentOperation();
-        plan              = object.getPlan();
-        platforms         = copyCollection(object.getPlatforms(), Platform.class);
-        significantEvents = copyCollection(object.getSignificantEvents(), Event.class);
+        if (object != null) {
+            description       = object.getDescription();
+            citation          = object.getCitation();
+            identifiers       = singleton(object.getIdentifier(), Identifier.class);
+            status            = object.getStatus();
+            type              = object.getType();
+            childOperations   = copyCollection(object.getChildOperations(), Operation.class);
+            objectives        = copyCollection(object.getObjectives(), Objective.class);
+            parentOperation   = object.getParentOperation();
+            plan              = object.getPlan();
+            platforms         = copyCollection(object.getPlatforms(), Platform.class);
+            significantEvents = copyCollection(object.getSignificantEvents(), Event.class);
+        }
     }
 
     /**

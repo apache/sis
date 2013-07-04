@@ -90,7 +90,7 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
      * Date and time after which collection is no longer valid,
      * or {@link Long#MIN_VALUE} if none.
      */
-    private long expiryDate;
+    private long expiryDate = Long.MIN_VALUE;
 
     /**
      * Plan that identifies solution to satisfy the requirement.
@@ -101,7 +101,6 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
      * Constructs an initially empty requirement.
      */
     public DefaultRequirement() {
-        expiryDate = Long.MIN_VALUE;
     }
 
     /**
@@ -109,20 +108,22 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Requirement)
      */
     public DefaultRequirement(final Requirement object) {
         super(object);
-        citation       = object.getCitation();
-        identifiers    = singleton(object.getIdentifier(), Identifier.class);
-        requestors     = copyCollection(object.getRequestors(), ResponsibleParty.class);
-        recipients     = copyCollection(object.getRecipients(), ResponsibleParty.class);
-        priority       = object.getPriority();
-        requestedDate  = object.getRequestedDate();
-        expiryDate     = toMilliseconds(object.getExpiryDate());
-        satisfiedPlans = copyCollection(object.getSatisfiedPlans(), Plan.class);
+        if (object != null) {
+            citation       = object.getCitation();
+            identifiers    = singleton(object.getIdentifier(), Identifier.class);
+            requestors     = copyCollection(object.getRequestors(), ResponsibleParty.class);
+            recipients     = copyCollection(object.getRecipients(), ResponsibleParty.class);
+            priority       = object.getPriority();
+            requestedDate  = object.getRequestedDate();
+            expiryDate     = toMilliseconds(object.getExpiryDate());
+            satisfiedPlans = copyCollection(object.getSatisfiedPlans(), Plan.class);
+        }
     }
 
     /**

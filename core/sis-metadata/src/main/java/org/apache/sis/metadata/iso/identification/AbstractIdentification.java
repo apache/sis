@@ -154,25 +154,27 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Identification)
      */
     public AbstractIdentification(final Identification object) {
         super(object);
-        citation               = object.getCitation();
-        abstracts              = object.getAbstract();
-        purpose                = object.getPurpose();
-        credits                = copyCollection(object.getCredits(), String.class);
-        status                 = copyCollection(object.getStatus(), Progress.class);
-        pointOfContacts        = copyCollection(object.getPointOfContacts(), ResponsibleParty.class);
-        resourceMaintenances   = copyCollection(object.getResourceMaintenances(), MaintenanceInformation.class);
-        graphicOverviews       = copyCollection(object.getGraphicOverviews(), BrowseGraphic.class);
-        resourceFormats        = copyCollection(object.getResourceFormats(), Format.class);
-        descriptiveKeywords    = copyCollection(object.getDescriptiveKeywords(), Keywords.class);
-        resourceSpecificUsages = copyCollection(object.getResourceSpecificUsages(), Usage.class);
-        resourceConstraints    = copyCollection(object.getResourceConstraints(), Constraints.class);
-        aggregationInfo        = copyCollection(object.getAggregationInfo(), AggregateInformation.class);
+        if (object != null) {
+            citation               = object.getCitation();
+            abstracts              = object.getAbstract();
+            purpose                = object.getPurpose();
+            credits                = copyCollection(object.getCredits(), String.class);
+            status                 = copyCollection(object.getStatus(), Progress.class);
+            pointOfContacts        = copyCollection(object.getPointOfContacts(), ResponsibleParty.class);
+            resourceMaintenances   = copyCollection(object.getResourceMaintenances(), MaintenanceInformation.class);
+            graphicOverviews       = copyCollection(object.getGraphicOverviews(), BrowseGraphic.class);
+            resourceFormats        = copyCollection(object.getResourceFormats(), Format.class);
+            descriptiveKeywords    = copyCollection(object.getDescriptiveKeywords(), Keywords.class);
+            resourceSpecificUsages = copyCollection(object.getResourceSpecificUsages(), Usage.class);
+            resourceConstraints    = copyCollection(object.getResourceConstraints(), Constraints.class);
+            aggregationInfo        = copyCollection(object.getAggregationInfo(), AggregateInformation.class);
+        }
     }
 
     /**

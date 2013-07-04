@@ -103,19 +103,21 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(AcquisitionInformation)
      */
     public DefaultAcquisitionInformation(final AcquisitionInformation object) {
         super(object);
-        acquisitionPlans        = copyCollection(object.getAcquisitionPlans(), Plan.class);
-        acquisitionRequirements = copyCollection(object.getAcquisitionRequirements(), Requirement.class);
-        environmentalConditions = object.getEnvironmentalConditions();
-        instruments             = copyCollection(object.getInstruments(), Instrument.class);
-        objectives              = copyCollection(object.getObjectives(), Objective.class);
-        operations              = copyCollection(object.getOperations(), Operation.class);
-        platforms               = copyCollection(object.getPlatforms(), Platform.class);
+        if (object != null) {
+            acquisitionPlans        = copyCollection(object.getAcquisitionPlans(), Plan.class);
+            acquisitionRequirements = copyCollection(object.getAcquisitionRequirements(), Requirement.class);
+            environmentalConditions = object.getEnvironmentalConditions();
+            instruments             = copyCollection(object.getInstruments(), Instrument.class);
+            objectives              = copyCollection(object.getObjectives(), Objective.class);
+            operations              = copyCollection(object.getOperations(), Operation.class);
+            platforms               = copyCollection(object.getPlatforms(), Platform.class);
+        }
     }
 
     /**

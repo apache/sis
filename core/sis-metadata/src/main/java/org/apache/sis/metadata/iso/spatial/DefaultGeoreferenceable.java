@@ -101,22 +101,24 @@ public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation im
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Georeferenceable)
      */
     public DefaultGeoreferenceable(final Georeferenceable object) {
         super(object);
-        if (object.isControlPointAvailable()) {
-            booleans |= CONTROL_POINT_MASK;
+        if (object != null) {
+            if (object.isControlPointAvailable()) {
+                booleans |= CONTROL_POINT_MASK;
+            }
+            if (object.isOrientationParameterAvailable()) {
+                booleans |= OPERATION_MASK;
+            }
+            orientationParameterDescription = object.getOrientationParameterDescription();
+            parameterCitations              = copyCollection(object.getParameterCitations(), Citation.class);
+            geolocationInformation          = copyCollection(object.getGeolocationInformation(), GeolocationInformation.class);
+            georeferencedParameters         = object.getGeoreferencedParameters();
         }
-        if (object.isOrientationParameterAvailable()) {
-            booleans |= OPERATION_MASK;
-        }
-        orientationParameterDescription = object.getOrientationParameterDescription();
-        parameterCitations              = copyCollection(object.getParameterCitations(), Citation.class);
-        geolocationInformation          = copyCollection(object.getGeolocationInformation(), GeolocationInformation.class);
-        georeferencedParameters         = object.getGeoreferencedParameters();
     }
 
     /**
