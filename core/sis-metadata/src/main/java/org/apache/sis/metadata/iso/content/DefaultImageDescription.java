@@ -162,27 +162,29 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(ImageDescription)
      */
     public DefaultImageDescription(final ImageDescription object) {
         super(object);
-        illuminationElevationAngle            = object.getIlluminationElevationAngle();
-        illuminationAzimuthAngle              = object.getIlluminationAzimuthAngle();
-        imagingCondition                      = object.getImagingCondition();
-        imageQualityCode                      = object.getImageQualityCode();
-        cloudCoverPercentage                  = object.getCloudCoverPercentage();
-        processingLevelCode                   = object.getProcessingLevelCode();
-        compressionGenerationQuantity         = object.getCompressionGenerationQuantity();
+        if (object != null) {
+            illuminationElevationAngle            = object.getIlluminationElevationAngle();
+            illuminationAzimuthAngle              = object.getIlluminationAzimuthAngle();
+            imagingCondition                      = object.getImagingCondition();
+            imageQualityCode                      = object.getImageQualityCode();
+            cloudCoverPercentage                  = object.getCloudCoverPercentage();
+            processingLevelCode                   = object.getProcessingLevelCode();
+            compressionGenerationQuantity         = object.getCompressionGenerationQuantity();
 
-        int flags;
-        flags = setBoolean(0,     TRIANGULATION_MASK, object.getTriangulationIndicator());
-        flags = setBoolean(flags, RADIOMETRIC_MASK,   object.isRadiometricCalibrationDataAvailable());
-        flags = setBoolean(flags, CAMERA_MASK,        object.isCameraCalibrationInformationAvailable());
-        flags = setBoolean(flags, FILM_MASK,          object.isFilmDistortionInformationAvailable());
-        flags = setBoolean(flags, LENS_MASK,          object.isLensDistortionInformationAvailable());
-        booleans = (short) flags;
+            int flags;
+            flags = setBoolean(0,     TRIANGULATION_MASK, object.getTriangulationIndicator());
+            flags = setBoolean(flags, RADIOMETRIC_MASK,   object.isRadiometricCalibrationDataAvailable());
+            flags = setBoolean(flags, CAMERA_MASK,        object.isCameraCalibrationInformationAvailable());
+            flags = setBoolean(flags, FILM_MASK,          object.isFilmDistortionInformationAvailable());
+            flags = setBoolean(flags, LENS_MASK,          object.isLensDistortionInformationAvailable());
+            booleans = (short) flags;
+        }
     }
 
     /**

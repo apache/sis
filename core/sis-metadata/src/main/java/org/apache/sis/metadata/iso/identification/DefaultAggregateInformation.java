@@ -85,16 +85,18 @@ public class DefaultAggregateInformation extends ISOMetadata implements Aggregat
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(AggregateInformation)
      */
     public DefaultAggregateInformation(final AggregateInformation object) {
         super(object);
-        aggregateDataSetName       = object.getAggregateDataSetName();
-        aggregateDataSetIdentifier = object.getAggregateDataSetIdentifier();
-        associationType            = object.getAssociationType();
-        initiativeType             = object.getInitiativeType();
+        if (object != null) {
+            aggregateDataSetName       = object.getAggregateDataSetName();
+            aggregateDataSetIdentifier = object.getAggregateDataSetIdentifier();
+            associationType            = object.getAssociationType();
+            initiativeType             = object.getInitiativeType();
+        }
     }
 
     /**

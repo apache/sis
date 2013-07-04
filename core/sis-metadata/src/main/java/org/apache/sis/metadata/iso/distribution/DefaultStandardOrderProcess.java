@@ -62,7 +62,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
      * Date and time when the dataset will be available,
      * in milliseconds elapsed since January 1st, 1970.
      */
-    private long plannedAvailableDateTime;
+    private long plannedAvailableDateTime = Long.MIN_VALUE;
 
     /**
      * General instructions, terms and services provided by the distributor.
@@ -78,7 +78,6 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
      * Constructs an initially empty standard order process.
      */
     public DefaultStandardOrderProcess() {
-        plannedAvailableDateTime = Long.MIN_VALUE;
     }
 
     /**
@@ -86,16 +85,18 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(StandardOrderProcess)
      */
     public DefaultStandardOrderProcess(final StandardOrderProcess object) {
         super(object);
-        fees                     = object.getFees();
-        plannedAvailableDateTime = toMilliseconds(object.getPlannedAvailableDateTime());
-        orderingInstructions     = object.getOrderingInstructions();
-        turnaround               = object.getTurnaround();
+        if (object != null) {
+            fees                     = object.getFees();
+            plannedAvailableDateTime = toMilliseconds(object.getPlannedAvailableDateTime());
+            orderingInstructions     = object.getOrderingInstructions();
+            turnaround               = object.getTurnaround();
+        }
     }
 
     /**

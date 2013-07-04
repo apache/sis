@@ -16,8 +16,13 @@
  */
 package org.apache.sis.internal.jaxb.gml;
 
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import javax.xml.bind.annotation.XmlAnyElement;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
+import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -25,9 +30,11 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  * complying with OGC/ISO standard. Note that the CRS is formatted using the GML schema,
  * not the ISO 19139 one.
  *
- * <p>This implementation does not contain any WML element, because doing so would require
- * the {@code sis-referencing} module. Module capable to provide an element shall create a
- * subclass like below:</p>
+ * <p>This wrapper does not declare directly the XML element, because doing so would require
+ * the implementation classes in the {@code sis-referencing} module. Instead, this wrapper
+ * declares an {@code Object} property annotated with {@code XmlAnyElement}, with a default
+ * implementation returning {@code null}. Modules capable to provide an instance shall create
+ * a subclass like below:</p>
  *
  * {@preformat java
  *     public final class MyClass extends SC_VerticalCRS implements AdapterReplacement {
@@ -36,19 +43,22 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  *             marshaller.setAdapter(SC_VerticalCRS.class, this);
  *         }
  *
- *         &#64;XmlElement(name = "VerticalCRS")
+ *         &#64;Override
  *         public DefaultVerticalCRS getElement() {
  *             return skip() ? null : DefaultVerticalCRS.castOrCopy(metadata);
- *         }
- *
- *         public void setElement(final DefaultVerticalCRS metadata) {
- *             this.metadata = metadata;
  *         }
  *     }
  * }
  *
- * The path to {@code MyClass} shall be provided in the module
- * {@code META-INF/services/org.apache.sis.internal.jaxb.AdapterReplacement} file.
+ * Next, the module shall provides the following:
+ * <ul>
+ *   <li>The path to {@code MyClass} shall be provided in the module
+ *       {@code META-INF/services/org.apache.sis.internal.jaxb.AdapterReplacement} file.</li>
+ *   <li>The {@code DefaultVerticalCRS} class shall have the
+ *       {@code XmlRootElement(name = "VerticalCRS")} annotation.</li>
+ *   <li>The {@code DefaultVerticalCRS} class shall be declared by a
+ *       {@link org.apache.sis.internal.jaxb.TypeRegistration} implementation provided by the module.</li>
+ * </ul>
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -91,5 +101,40 @@ public class SC_VerticalCRS extends PropertyType<SC_VerticalCRS, VerticalCRS> {
     @Override
     protected final Class<VerticalCRS> getBoundType() {
         return VerticalCRS.class;
+    }
+
+    /**
+     * Returns the {@code DefaultVerticalCRS} generated from the metadata value.
+     * The default implementation returns {@code null}. Subclasses shall override
+     * this method like below:
+     *
+     * {@preformat java
+     *   return skip() ? null : DefaultVerticalCRS.castOrCopy(metadata);
+     * }
+     *
+     * @return The metadata to be marshalled.
+     */
+    @XmlAnyElement(lax = true)
+    public Object getElement() {
+        final LogRecord record = new LogRecord(Level.WARNING, Errors.format(
+                Errors.Keys.MissingRequiredModule_1, "sis-referencing"));
+        record.setSourceClassName(SC_VerticalCRS.class.getName());
+        record.setSourceMethodName("getElement");
+        final Context context = Context.current();
+        context.warningOccured(context, metadata, record);
+        return null;
+    }
+
+    /**
+     * Sets the value for the given {@code DefaultVerticalCRS}. If the given value is an instance
+     * of {@link VerticalCRS}, then this method assigns that value to the {@link #metadata} field.
+     * Otherwise this method does nothing.
+     *
+     * @param metadata The unmarshalled metadata.
+     */
+    public final void setElement(final Object metadata) {
+        if (metadata instanceof VerticalCRS) {
+            this.metadata = (VerticalCRS) metadata;
+        }
     }
 }

@@ -96,18 +96,20 @@ public class DefaultMedium extends ISOMetadata implements Medium {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Medium)
      */
     public DefaultMedium(final Medium object) {
         super(object);
-        name          = object.getName();
-        densities     = copyCollection(object.getDensities(), Double.class);
-        densityUnits  = object.getDensityUnits();
-        volumes       = object.getVolumes();
-        mediumFormats = copyCollection(object.getMediumFormats(), MediumFormat.class);
-        mediumNote    = object.getMediumNote();
+        if (object != null) {
+            name          = object.getName();
+            densities     = copyCollection(object.getDensities(), Double.class);
+            densityUnits  = object.getDensityUnits();
+            volumes       = object.getVolumes();
+            mediumFormats = copyCollection(object.getMediumFormats(), MediumFormat.class);
+            mediumNote    = object.getMediumNote();
+        }
     }
 
     /**

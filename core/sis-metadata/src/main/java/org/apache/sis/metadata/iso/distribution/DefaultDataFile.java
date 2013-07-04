@@ -71,14 +71,16 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(DataFile)
      */
     public DefaultDataFile(final DataFile object) {
         super(object);
-        featureTypes = copyCollection(object.getFeatureTypes(), LocalName.class);
-        fileFormat   = object.getFileFormat();
+        if (object != null) {
+            featureTypes = copyCollection(object.getFeatureTypes(), LocalName.class);
+            fileFormat   = object.getFileFormat();
+        }
     }
 
     /**

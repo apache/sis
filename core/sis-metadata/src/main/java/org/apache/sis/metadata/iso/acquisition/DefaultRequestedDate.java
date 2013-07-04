@@ -51,20 +51,18 @@ public class DefaultRequestedDate extends ISOMetadata implements RequestedDate {
      * Preferred date and time of collection,
      * or {@link Long#MIN_VALUE} if none.
      */
-    private long requestedDateOfCollection;
+    private long requestedDateOfCollection = Long.MIN_VALUE;
 
     /**
      * Latest date and time collection must be completed,
      * or {@link Long#MIN_VALUE} if none.
      */
-    private long latestAcceptableDate;
+    private long latestAcceptableDate = Long.MIN_VALUE;
 
     /**
      * Constructs an initially empty requested date.
      */
     public DefaultRequestedDate() {
-        requestedDateOfCollection = Long.MIN_VALUE;
-        latestAcceptableDate = Long.MIN_VALUE;
     }
 
     /**
@@ -72,14 +70,16 @@ public class DefaultRequestedDate extends ISOMetadata implements RequestedDate {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(RequestedDate)
      */
     public DefaultRequestedDate(final RequestedDate object) {
         super(object);
-        requestedDateOfCollection = toMilliseconds(object.getRequestedDateOfCollection());
-        latestAcceptableDate      = toMilliseconds(object.getLatestAcceptableDate());
+        if (object != null) {
+            requestedDateOfCollection = toMilliseconds(object.getRequestedDateOfCollection());
+            latestAcceptableDate      = toMilliseconds(object.getLatestAcceptableDate());
+        }
     }
 
     /**
