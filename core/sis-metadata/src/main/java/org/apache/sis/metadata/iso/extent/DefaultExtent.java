@@ -112,16 +112,18 @@ public class DefaultExtent extends ISOMetadata implements Extent {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Extent)
      */
     public DefaultExtent(final Extent object) {
         super(object);
-        description        = object.getDescription();
-        geographicElements = copyCollection(object.getGeographicElements(), GeographicExtent.class);
-        temporalElements   = copyCollection(object.getTemporalElements(), TemporalExtent.class);
-        verticalElements   = copyCollection(object.getVerticalElements(), VerticalExtent.class);
+        if (object != null) {
+            description        = object.getDescription();
+            geographicElements = copyCollection(object.getGeographicElements(), GeographicExtent.class);
+            temporalElements   = copyCollection(object.getTemporalElements(),   TemporalExtent.class);
+            verticalElements   = copyCollection(object.getVerticalElements(),   VerticalExtent.class);
+        }
     }
 
     /**

@@ -76,13 +76,15 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(TemporalExtent)
      */
     public DefaultTemporalExtent(final TemporalExtent object) {
         super(object);
-        extent = object.getExtent();
+        if (object != null) {
+            extent = object.getExtent();
+        }
     }
 
     /**

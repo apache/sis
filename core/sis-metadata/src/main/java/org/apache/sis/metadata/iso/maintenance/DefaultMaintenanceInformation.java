@@ -72,7 +72,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      * since January 1st, 1970. If there is no such date, then this field
      * is set to the special value {@link Long#MIN_VALUE}.
      */
-    private long dateOfNextUpdate;
+    private long dateOfNextUpdate = Long.MIN_VALUE;
 
     /**
      * Maintenance period other than those defined, in milliseconds.
@@ -104,7 +104,6 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      * Creates a an initially empty maintenance information.
      */
     public DefaultMaintenanceInformation() {
-        dateOfNextUpdate = Long.MIN_VALUE;
     }
 
     /**
@@ -114,7 +113,6 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      *        made to the resource after the initial resource is completed, or {@code null} if none.
      */
     public DefaultMaintenanceInformation(final MaintenanceFrequency maintenanceAndUpdateFrequency) {
-        this(); // Initialize the date field.
         this.maintenanceAndUpdateFrequency = maintenanceAndUpdateFrequency;
     }
 
@@ -123,19 +121,21 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(MaintenanceInformation)
      */
     public DefaultMaintenanceInformation(final MaintenanceInformation object) {
         super(object);
-        maintenanceAndUpdateFrequency   = object.getMaintenanceAndUpdateFrequency();
-        dateOfNextUpdate                = toMilliseconds(object.getDateOfNextUpdate());
-        userDefinedMaintenanceFrequency = object.getUserDefinedMaintenanceFrequency();
-        updateScopes                    = copyCollection(object.getUpdateScopes(), ScopeCode.class);
-        updateScopeDescriptions         = copyCollection(object.getUpdateScopeDescriptions(), ScopeDescription.class);
-        maintenanceNotes                = copyCollection(object.getMaintenanceNotes(), InternationalString.class);
-        contacts                        = copyCollection(object.getContacts(), ResponsibleParty.class);
+        if (object != null) {
+            maintenanceAndUpdateFrequency   = object.getMaintenanceAndUpdateFrequency();
+            dateOfNextUpdate                = toMilliseconds(object.getDateOfNextUpdate());
+            userDefinedMaintenanceFrequency = object.getUserDefinedMaintenanceFrequency();
+            updateScopes                    = copyCollection(object.getUpdateScopes(), ScopeCode.class);
+            updateScopeDescriptions         = copyCollection(object.getUpdateScopeDescriptions(), ScopeDescription.class);
+            maintenanceNotes                = copyCollection(object.getMaintenanceNotes(), InternationalString.class);
+            contacts                        = copyCollection(object.getContacts(), ResponsibleParty.class);
+        }
     }
 
     /**

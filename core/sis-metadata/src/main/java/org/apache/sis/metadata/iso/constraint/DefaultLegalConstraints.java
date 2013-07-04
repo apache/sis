@@ -91,15 +91,17 @@ public class DefaultLegalConstraints extends DefaultConstraints implements Legal
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(LegalConstraints)
      */
     public DefaultLegalConstraints(final LegalConstraints object) {
         super(object);
-        accessConstraints = copyCollection(object.getAccessConstraints(), Restriction.class);
-        useConstraints    = copyCollection(object.getUseConstraints(), Restriction.class);
-        otherConstraints  = copyCollection(object.getOtherConstraints(), InternationalString.class);
+        if (object != null) {
+            accessConstraints = copyCollection(object.getAccessConstraints(), Restriction.class);
+            useConstraints    = copyCollection(object.getUseConstraints(), Restriction.class);
+            otherConstraints  = copyCollection(object.getOtherConstraints(), InternationalString.class);
+        }
     }
 
     /**

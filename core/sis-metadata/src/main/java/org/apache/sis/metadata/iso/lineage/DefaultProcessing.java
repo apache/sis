@@ -93,18 +93,20 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Processing)
      */
     public DefaultProcessing(final Processing object) {
         super(object);
-        identifiers          = singleton(object.getIdentifier(), Identifier.class);
-        softwareReferences   = copyCollection(object.getSoftwareReferences(), Citation.class);
-        procedureDescription = object.getProcedureDescription();
-        documentations       = copyCollection(object.getDocumentations(), Citation.class);
-        runTimeParameters    = object.getRunTimeParameters();
-        algorithms           = copyCollection(object.getAlgorithms(), Algorithm.class);
+        if (object != null) {
+            identifiers          = singleton(object.getIdentifier(), Identifier.class);
+            softwareReferences   = copyCollection(object.getSoftwareReferences(), Citation.class);
+            procedureDescription = object.getProcedureDescription();
+            documentations       = copyCollection(object.getDocumentations(), Citation.class);
+            runTimeParameters    = object.getRunTimeParameters();
+            algorithms           = copyCollection(object.getAlgorithms(), Algorithm.class);
+        }
     }
 
     /**

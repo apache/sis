@@ -180,25 +180,27 @@ public class DefaultExtendedElementInformation extends ISOMetadata
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(ExtendedElementInformation)
      */
     public DefaultExtendedElementInformation(final ExtendedElementInformation object) {
         super(object);
-        name              = object.getName();
-        shortName         = object.getShortName();
-        domainCode        = object.getDomainCode();
-        definition        = object.getDefinition();
-        obligation        = object.getObligation();
-        condition         = object.getCondition();
-        dataType          = object.getDataType();
-        maximumOccurrence = object.getMaximumOccurrence();
-        domainValue       = object.getDomainValue();
-        parentEntity      = copyCollection(object.getParentEntity(), String.class);
-        rule              = object.getRule();
-        rationales        = copyCollection(object.getRationales(), InternationalString.class);
-        sources           = copyCollection(object.getSources(), ResponsibleParty.class);
+        if (object != null) {
+            name              = object.getName();
+            shortName         = object.getShortName();
+            domainCode        = object.getDomainCode();
+            definition        = object.getDefinition();
+            obligation        = object.getObligation();
+            condition         = object.getCondition();
+            dataType          = object.getDataType();
+            maximumOccurrence = object.getMaximumOccurrence();
+            domainValue       = object.getDomainValue();
+            parentEntity      = copyCollection(object.getParentEntity(), String.class);
+            rule              = object.getRule();
+            rationales        = copyCollection(object.getRationales(), InternationalString.class);
+            sources           = copyCollection(object.getSources(), ResponsibleParty.class);
+        }
     }
 
     /**

@@ -80,7 +80,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
     /**
      * Time the event occurred, or {@link Long#MIN_VALUE} if none.
      */
-    private long time;
+    private long time = Long.MIN_VALUE;
 
     /**
      * Objective or objectives satisfied by an event.
@@ -101,7 +101,6 @@ public class DefaultEvent extends ISOMetadata implements Event {
      * Constructs an initially empty acquisition information.
      */
     public DefaultEvent() {
-        time = Long.MIN_VALUE;
     }
 
     /**
@@ -109,20 +108,22 @@ public class DefaultEvent extends ISOMetadata implements Event {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Event)
      */
     public DefaultEvent(final Event object) {
         super(object);
-        identifiers        = singleton(object.getIdentifier(), Identifier.class);
-        trigger            = object.getTrigger();
-        context            = object.getContext();
-        sequence           = object.getSequence();
-        time               = toMilliseconds(object.getTime());
-        expectedObjectives = copyCollection(object.getExpectedObjectives(), Objective.class);
-        relatedPass        = object.getRelatedPass();
-        relatedSensors     = copyCollection(object.getRelatedSensors(), Instrument.class);
+        if (object != null) {
+            identifiers        = singleton(object.getIdentifier(), Identifier.class);
+            trigger            = object.getTrigger();
+            context            = object.getContext();
+            sequence           = object.getSequence();
+            time               = toMilliseconds(object.getTime());
+            expectedObjectives = copyCollection(object.getExpectedObjectives(), Objective.class);
+            relatedPass        = object.getRelatedPass();
+            relatedSensors     = copyCollection(object.getRelatedSensors(), Instrument.class);
+        }
     }
 
     /**

@@ -127,23 +127,25 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Georectified)
      */
     public DefaultGeorectified(final Georectified object) {
         super(object);
-        checkPointDescription              = object.getCheckPointDescription();
-        cornerPoints                       = copyList(object.getCornerPoints(), Point.class);
-        centerPoint                        = object.getCenterPoint();
-        pointInPixel                       = object.getPointInPixel();
-        transformationDimensionDescription = object.getTransformationDimensionDescription();
-        transformationDimensionMapping     = copyCollection(object.getTransformationDimensionMapping(), InternationalString.class);
-        checkPoints                        = copyCollection(object.getCheckPoints(), GCP.class);
+        if (object != null) {
+            checkPointDescription              = object.getCheckPointDescription();
+            cornerPoints                       = copyList(object.getCornerPoints(), Point.class);
+            centerPoint                        = object.getCenterPoint();
+            pointInPixel                       = object.getPointInPixel();
+            transformationDimensionDescription = object.getTransformationDimensionDescription();
+            transformationDimensionMapping     = copyCollection(object.getTransformationDimensionMapping(), InternationalString.class);
+            checkPoints                        = copyCollection(object.getCheckPoints(), GCP.class);
 
-        // checkPointAvailability is required to be 'true' if there is a description.
-        if (checkPointDescription != null || object.isCheckPointAvailable()) {
-            booleans |= CHECK_POINT_MASK;
+            // checkPointAvailability is required to be 'true' if there is a description.
+            if (checkPointDescription != null || object.isCheckPointAvailable()) {
+                booleans |= CHECK_POINT_MASK;
+            }
         }
     }
 

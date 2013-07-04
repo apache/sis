@@ -146,7 +146,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * Date that the metadata was created, in milliseconds elapsed since January 1st, 1970.
      * If not defined, then then value is {@link Long#MIN_VALUE}.
      */
-    private long dateStamp;
+    private long dateStamp = Long.MIN_VALUE;
 
     /**
      * Name of the metadata standard (including profile name) used.
@@ -228,7 +228,6 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * Creates an initially empty metadata.
      */
     public DefaultMetadata() {
-        dateStamp = Long.MIN_VALUE;
     }
 
     /**
@@ -253,36 +252,38 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Metadata)
      */
     public DefaultMetadata(final Metadata object) {
         super(object);
-        fileIdentifier            = object.getFileIdentifier();
-        language                  = object.getLanguage();
-        characterSet              = object.getCharacterSet();
-        parentIdentifier          = object.getParentIdentifier();
-        hierarchyLevels           = copyCollection(object.getHierarchyLevels(), ScopeCode.class);
-        hierarchyLevelNames       = copyCollection(object.getHierarchyLevelNames(), String.class);
-        contacts                  = copyCollection(object.getContacts(), ResponsibleParty.class);
-        dateStamp                 = toMilliseconds(object.getDateStamp());
-        metadataStandardName      = object.getMetadataStandardName();
-        metadataStandardVersion   = object.getMetadataStandardVersion();
-        dataSetUri                = object.getDataSetUri();
-        locales                   = copyCollection(object.getLocales(), Locale.class);
-        spatialRepresentationInfo = copyCollection(object.getSpatialRepresentationInfo(), SpatialRepresentation.class);
-        referenceSystemInfo       = copyCollection(object.getReferenceSystemInfo(), ReferenceSystem.class);
-        metadataExtensionInfo     = copyCollection(object.getMetadataExtensionInfo(), MetadataExtensionInformation.class);
-        identificationInfo        = copyCollection(object.getIdentificationInfo(), Identification.class);
-        contentInfo               = copyCollection(object.getContentInfo(), ContentInformation.class);
-        distributionInfo          = object.getDistributionInfo();
-        dataQualityInfo           = copyCollection(object.getDataQualityInfo(), DataQuality.class);
-        portrayalCatalogueInfo    = copyCollection(object.getPortrayalCatalogueInfo(), PortrayalCatalogueReference.class);
-        metadataConstraints       = copyCollection(object.getMetadataConstraints(), Constraints.class);
-        applicationSchemaInfo     = copyCollection(object.getApplicationSchemaInfo(), ApplicationSchemaInformation.class);
-        metadataMaintenance       = object.getMetadataMaintenance();
-        acquisitionInformation    = copyCollection(object.getAcquisitionInformation(), AcquisitionInformation.class);
+        if (object != null) {
+            fileIdentifier            = object.getFileIdentifier();
+            language                  = object.getLanguage();
+            characterSet              = object.getCharacterSet();
+            parentIdentifier          = object.getParentIdentifier();
+            hierarchyLevels           = copyCollection(object.getHierarchyLevels(), ScopeCode.class);
+            hierarchyLevelNames       = copyCollection(object.getHierarchyLevelNames(), String.class);
+            contacts                  = copyCollection(object.getContacts(), ResponsibleParty.class);
+            dateStamp                 = toMilliseconds(object.getDateStamp());
+            metadataStandardName      = object.getMetadataStandardName();
+            metadataStandardVersion   = object.getMetadataStandardVersion();
+            dataSetUri                = object.getDataSetUri();
+            locales                   = copyCollection(object.getLocales(), Locale.class);
+            spatialRepresentationInfo = copyCollection(object.getSpatialRepresentationInfo(), SpatialRepresentation.class);
+            referenceSystemInfo       = copyCollection(object.getReferenceSystemInfo(), ReferenceSystem.class);
+            metadataExtensionInfo     = copyCollection(object.getMetadataExtensionInfo(), MetadataExtensionInformation.class);
+            identificationInfo        = copyCollection(object.getIdentificationInfo(), Identification.class);
+            contentInfo               = copyCollection(object.getContentInfo(), ContentInformation.class);
+            distributionInfo          = object.getDistributionInfo();
+            dataQualityInfo           = copyCollection(object.getDataQualityInfo(), DataQuality.class);
+            portrayalCatalogueInfo    = copyCollection(object.getPortrayalCatalogueInfo(), PortrayalCatalogueReference.class);
+            metadataConstraints       = copyCollection(object.getMetadataConstraints(), Constraints.class);
+            applicationSchemaInfo     = copyCollection(object.getApplicationSchemaInfo(), ApplicationSchemaInformation.class);
+            metadataMaintenance       = object.getMetadataMaintenance();
+            acquisitionInformation    = copyCollection(object.getAcquisitionInformation(), AcquisitionInformation.class);
+        }
     }
 
     /**
