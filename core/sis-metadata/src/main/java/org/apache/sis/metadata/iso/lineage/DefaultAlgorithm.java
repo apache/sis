@@ -68,14 +68,16 @@ public class DefaultAlgorithm extends ISOMetadata implements Algorithm {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Algorithm)
      */
     public DefaultAlgorithm(final Algorithm object) {
         super(object);
-        citation    = object.getCitation();
-        description = object.getDescription();
+        if (object != null) {
+            citation    = object.getCitation();
+            description = object.getDescription();
+        }
     }
 
     /**

@@ -92,16 +92,18 @@ public class DefaultDistributor extends ISOMetadata implements Distributor {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Distributor)
      */
     public DefaultDistributor(final Distributor object) {
         super(object);
-        distributorContact         = object.getDistributorContact();
-        distributionOrderProcesses = copyCollection(object.getDistributionOrderProcesses(), StandardOrderProcess.class);
-        distributorFormats         = copyCollection(object.getDistributorFormats(), Format.class);
-        distributorTransferOptions = copyCollection(object.getDistributorTransferOptions(), DigitalTransferOptions.class);
+        if (object != null) {
+            distributorContact         = object.getDistributorContact();
+            distributionOrderProcesses = copyCollection(object.getDistributionOrderProcesses(), StandardOrderProcess.class);
+            distributorFormats         = copyCollection(object.getDistributorFormats(), Format.class);
+            distributorTransferOptions = copyCollection(object.getDistributorTransferOptions(), DigitalTransferOptions.class);
+        }
     }
 
     /**

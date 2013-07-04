@@ -83,15 +83,17 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Lineage)
      */
     public DefaultLineage(final Lineage object) {
         super(object);
-        statement    = object.getStatement();
-        processSteps = copyCollection(object.getProcessSteps(), ProcessStep.class);
-        sources      = copyCollection(object.getSources(), Source.class);
+        if (object != null) {
+            statement    = object.getStatement();
+            processSteps = copyCollection(object.getProcessSteps(), ProcessStep.class);
+            sources      = copyCollection(object.getSources(), Source.class);
+        }
     }
 
     /**

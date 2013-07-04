@@ -16,6 +16,8 @@
  */
 package org.apache.sis.metadata.iso.identification;
 
+import javax.xml.bind.JAXBException;
+import org.apache.sis.xml.XML;
 import org.apache.sis.metadata.iso.LoggingWatcher;
 import org.apache.sis.test.TestCase;
 import org.junit.Rule;
@@ -76,5 +78,66 @@ public final strictfp class DefaultResolutionTest extends TestCase {
         metadata.setEquivalentScale(null);
         assertNull("equivalentScale", metadata.getEquivalentScale());
         assertNull("distance", metadata.getDistance());
+    }
+
+    /**
+     * Tests XML (un)marshalling of a resolution element. The main purpose of this method is to test our
+     * workaround for a strange JAXB behavior (bug?).  For an unknown reason, we are unable to annotate the
+     * {@link DefaultResolution#getDistance()} method directly. Doing so cause JAXB to randomly ignores the
+     * {@code <gmd:distance>} property. Annotating a separated method which in turn invokes the real method
+     * seems to work.
+     *
+     * <p>This test creates a {@link DefaultResolution} instance which is expected to be marshalled as below
+     * (ignoring namespace declarations):</p>
+     *
+     * {@preformat xml
+     *   <gmd:MD_Resolution>
+     *     <gmd:distance>
+     *       <gco:Distance uom=\"http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])\">1000.0</gco:Distance>
+     *     </gmd:distance>
+     *   </gmd:MD_Resolution>
+     * }
+     *
+     * If we annotate the public {@code getDistance()} directly, JAXB will sometime marshals the resolution as
+     * expected, or sometime marshals an empty element as below:
+     *
+     * {@preformat xml
+     *   <gmd:MD_Resolution/>
+     * }
+     *
+     * In the later case, debugging shows that the {@code getDistance()} method is simply never invoked.
+     * Whether the distance is marshaled or not seems totally random: just executing this test many time
+     * make both cases to occur (however failures occur more often the successes).
+     *
+     * <p>Annotating an other method as a workaround seems to always work. See the {@link DefaultResolution#getValue()}
+     * javadoc for instructions about how to check if this workaround is still needed with more recent JAXB versions.</p>
+     *
+     * @throws JAXBException If an error occurred while marshalling the element.
+     *
+     * @see DefaultResolution#getValue()
+     */
+    @Test
+    public void testXML() throws JAXBException {
+        final DefaultResolution resolution = new DefaultResolution();
+        resolution.setDistance(1000.0);
+        final String xml = XML.marshal(resolution);
+        assertTrue("<gmd:distance> element is missing. If this test fails randomly, "
+                + "see DefaultResolutionTest.testXML() javadoc for more information", xml.contains("distance"));
+        /*
+         * Following test is done as a matter of principle, but should not be a problem.
+         * The real issue is the <gmd:distance> which happen to be randomly missing for
+         * an unknown reason.
+         */
+        assertXmlEquals(
+                "<gmd:MD_Resolution>\n" +
+                "  <gmd:distance>\n" +
+                "    <gco:Distance uom=\"http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])\">1000.0</gco:Distance>\n" +
+                "  </gmd:distance>\n" +
+                "</gmd:MD_Resolution>", xml, "xmlns:*");
+        /*
+         * Unmarshal the element back to a Java object, as a safety.
+         * Should not be a problem neither.
+         */
+        assertEquals(resolution, XML.unmarshal(xml));
     }
 }

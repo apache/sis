@@ -122,40 +122,42 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * {@linkplain #getAttributeInstances() attribute instances}, {@linkplain #getDataset() dataset}
      * and {@linkplain #getOther() other}.</p>
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(ScopeDescription)
      */
     @SuppressWarnings("unchecked")
     public DefaultScopeDescription(final ScopeDescription object) {
         super(object);
-        for (byte i=ATTRIBUTES; i<=OTHER; i++) {
-            Object candidate;
-            switch (i) {
-                case ATTRIBUTES:          candidate = object.getAttributes();         break;
-                case FEATURES:            candidate = object.getFeatures();           break;
-                case FEATURE_INSTANCES:   candidate = object.getFeatureInstances();   break;
-                case ATTRIBUTE_INSTANCES: candidate = object.getAttributeInstances(); break;
-                case DATASET:             candidate = object.getDataset();            break;
-                case OTHER:               candidate = object.getOther();              break;
-                default: throw new AssertionError(i);
-            }
-            if (candidate != null) {
+        if (object != null) {
+            for (byte i=ATTRIBUTES; i<=OTHER; i++) {
+                Object candidate;
                 switch (i) {
-                    case ATTRIBUTES:
-                    case ATTRIBUTE_INSTANCES: {
-                        candidate = copySet((Set<AttributeType>) candidate, AttributeType.class);
-                        break;
-                    }
-                    case FEATURES:
-                    case FEATURE_INSTANCES: {
-                        candidate = copySet((Set<FeatureType>) candidate, FeatureType.class);
-                        break;
-                    }
+                    case ATTRIBUTES:          candidate = object.getAttributes();         break;
+                    case FEATURES:            candidate = object.getFeatures();           break;
+                    case FEATURE_INSTANCES:   candidate = object.getFeatureInstances();   break;
+                    case ATTRIBUTE_INSTANCES: candidate = object.getAttributeInstances(); break;
+                    case DATASET:             candidate = object.getDataset();            break;
+                    case OTHER:               candidate = object.getOther();              break;
+                    default: throw new AssertionError(i);
                 }
-                value = candidate;
-                property = i;
-                break;
+                if (candidate != null) {
+                    switch (i) {
+                        case ATTRIBUTES:
+                        case ATTRIBUTE_INSTANCES: {
+                            candidate = copySet((Set<AttributeType>) candidate, AttributeType.class);
+                            break;
+                        }
+                        case FEATURES:
+                        case FEATURE_INSTANCES: {
+                            candidate = copySet((Set<FeatureType>) candidate, FeatureType.class);
+                            break;
+                        }
+                    }
+                    value = candidate;
+                    property = i;
+                    break;
+                }
             }
         }
     }

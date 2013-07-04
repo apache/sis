@@ -91,18 +91,20 @@ public class DefaultAddress extends ISOMetadata implements Address {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Address)
      */
     public DefaultAddress(final Address object) {
         super(object);
-        deliveryPoints          = copyCollection(object.getDeliveryPoints(), String.class);
-        city                    = object.getCity();
-        administrativeArea      = object.getAdministrativeArea();
-        postalCode              = object.getPostalCode();
-        country                 = object.getCountry();
-        electronicMailAddresses = copyCollection(object.getElectronicMailAddresses(), String.class);
+        if (object != null) {
+            deliveryPoints          = copyCollection(object.getDeliveryPoints(), String.class);
+            city                    = object.getCity();
+            administrativeArea      = object.getAdministrativeArea();
+            postalCode              = object.getPostalCode();
+            country                 = object.getCountry();
+            electronicMailAddresses = copyCollection(object.getElectronicMailAddresses(), String.class);
+        }
     }
 
     /**

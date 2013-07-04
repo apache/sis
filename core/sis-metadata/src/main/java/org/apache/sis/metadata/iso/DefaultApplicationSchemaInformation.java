@@ -114,19 +114,21 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(ApplicationSchemaInformation)
      */
     public DefaultApplicationSchemaInformation(final ApplicationSchemaInformation object) {
         super(object);
-        name                          = object.getName();
-        schemaLanguage                = object.getSchemaLanguage();
-        constraintLanguage            = object.getConstraintLanguage();
-        schemaAscii                   = object.getSchemaAscii();
-        graphicsFile                  = object.getGraphicsFile();
-        softwareDevelopmentFile       = object.getSoftwareDevelopmentFile();
-        softwareDevelopmentFileFormat = object.getSoftwareDevelopmentFileFormat();
+        if (object != null) {
+            name                          = object.getName();
+            schemaLanguage                = object.getSchemaLanguage();
+            constraintLanguage            = object.getConstraintLanguage();
+            schemaAscii                   = object.getSchemaAscii();
+            graphicsFile                  = object.getGraphicsFile();
+            softwareDevelopmentFile       = object.getSoftwareDevelopmentFile();
+            softwareDevelopmentFileFormat = object.getSoftwareDevelopmentFileFormat();
+        }
     }
 
     /**

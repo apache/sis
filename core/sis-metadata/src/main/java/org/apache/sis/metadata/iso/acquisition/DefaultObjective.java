@@ -106,20 +106,22 @@ public class DefaultObjective extends ISOMetadata implements Objective {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Objective)
      */
     public DefaultObjective(final Objective object) {
         super(object);
-        identifiers         = copyCollection(object.getIdentifiers(), Identifier.class);
-        priority            = object.getPriority();
-        types               = copyCollection(object.getTypes(), ObjectiveType.class);
-        functions           = copyCollection(object.getFunctions(), InternationalString.class);
-        extents             = copyCollection(object.getExtents(), Extent.class);
-        objectiveOccurences = copyCollection(object.getObjectiveOccurences(), Event.class);
-        pass                = copyCollection(object.getPass(), PlatformPass.class);
-        sensingInstruments  = copyCollection(object.getSensingInstruments(), Instrument.class);
+        if (object != null) {
+            identifiers         = copyCollection(object.getIdentifiers(), Identifier.class);
+            priority            = object.getPriority();
+            types               = copyCollection(object.getTypes(), ObjectiveType.class);
+            functions           = copyCollection(object.getFunctions(), InternationalString.class);
+            extents             = copyCollection(object.getExtents(), Extent.class);
+            objectiveOccurences = copyCollection(object.getObjectiveOccurences(), Event.class);
+            pass                = copyCollection(object.getPass(), PlatformPass.class);
+            sensingInstruments  = copyCollection(object.getSensingInstruments(), Instrument.class);
+        }
     }
 
     /**

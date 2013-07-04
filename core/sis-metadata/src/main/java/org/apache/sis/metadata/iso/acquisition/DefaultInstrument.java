@@ -83,17 +83,19 @@ public class DefaultInstrument extends ISOMetadata implements Instrument {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Instrument)
      */
     public DefaultInstrument(final Instrument object) {
         super(object);
-        citations   = copyCollection(object.getCitations(), Citation.class);
-        identifiers = singleton(object.getIdentifier(), Identifier.class);
-        type        = object.getType();
-        description = object.getDescription();
-        mountedOn   = object.getMountedOn();
+        if (object != null) {
+            citations   = copyCollection(object.getCitations(), Citation.class);
+            identifiers = singleton(object.getIdentifier(), Identifier.class);
+            type        = object.getType();
+            description = object.getDescription();
+            mountedOn   = object.getMountedOn();
+        }
     }
 
     /**

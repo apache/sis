@@ -88,13 +88,15 @@ public class AbstractGeographicExtent extends ISOMetadata implements GeographicE
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(GeographicExtent)
      */
     public AbstractGeographicExtent(final GeographicExtent object) {
         super(object);
-        booleans = (byte) setBoolean(0, INCLUSION_MASK, object.getInclusion());
+        if (object != null) {
+            booleans = (byte) setBoolean(0, INCLUSION_MASK, object.getInclusion());
+        }
     }
 
     /**
