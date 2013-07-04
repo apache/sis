@@ -151,25 +151,27 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Band)
      */
     public DefaultBand(final Band object) {
         super(object);
-        maxValue                 = object.getMaxValue();
-        minValue                 = object.getMinValue();
-        units                    = object.getUnits();
-        peakResponse             = object.getPeakResponse();
-        bitsPerValue             = object.getBitsPerValue();
-        toneGradation            = object.getToneGradation();
-        scaleFactor              = object.getScaleFactor();
-        offset                   = object.getOffset();
-        bandBoundaryDefinition   = object.getBandBoundaryDefinition();
-        nominalSpatialResolution = object.getNominalSpatialResolution();
-        transferFunctionType     = object.getTransferFunctionType();
-        transmittedPolarization  = object.getTransmittedPolarization();
-        detectedPolarization     = object.getDetectedPolarization();
+        if (object != null) {
+            maxValue                 = object.getMaxValue();
+            minValue                 = object.getMinValue();
+            units                    = object.getUnits();
+            peakResponse             = object.getPeakResponse();
+            bitsPerValue             = object.getBitsPerValue();
+            toneGradation            = object.getToneGradation();
+            scaleFactor              = object.getScaleFactor();
+            offset                   = object.getOffset();
+            bandBoundaryDefinition   = object.getBandBoundaryDefinition();
+            nominalSpatialResolution = object.getNominalSpatialResolution();
+            transferFunctionType     = object.getTransferFunctionType();
+            transmittedPolarization  = object.getTransmittedPolarization();
+            detectedPolarization     = object.getDetectedPolarization();
+        }
     }
 
     /**

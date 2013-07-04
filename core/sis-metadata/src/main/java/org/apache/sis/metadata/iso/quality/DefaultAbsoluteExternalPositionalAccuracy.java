@@ -62,7 +62,7 @@ public class DefaultAbsoluteExternalPositionalAccuracy extends AbstractPositiona
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(AbsoluteExternalPositionalAccuracy)
      */

@@ -297,7 +297,6 @@ public class AbstractElement extends ISOMetadata implements Element {
      *               acceptable conformance quality level.
      */
     public AbstractElement(final Result result) {
-        this(); // Initialize date fields.
         results = singleton(result, Result.class);
     }
 
@@ -306,20 +305,22 @@ public class AbstractElement extends ISOMetadata implements Element {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Element)
      */
     public AbstractElement(final Element object) {
         super(object);
-        namesOfMeasure              = copyCollection(object.getNamesOfMeasure(), InternationalString.class);
-        measureIdentification       = object.getMeasureIdentification();
-        measureDescription          = object.getMeasureDescription();
-        evaluationMethodType        = object.getEvaluationMethodType();
-        evaluationMethodDescription = object.getEvaluationMethodDescription();
-        evaluationProcedure         = object.getEvaluationProcedure();
-        results                     = copyCollection(object.getResults(), Result.class);
-        writeDates(object.getDates());
+        if (object != null) {
+            namesOfMeasure              = copyCollection(object.getNamesOfMeasure(), InternationalString.class);
+            measureIdentification       = object.getMeasureIdentification();
+            measureDescription          = object.getMeasureDescription();
+            evaluationMethodType        = object.getEvaluationMethodType();
+            evaluationMethodDescription = object.getEvaluationMethodDescription();
+            evaluationProcedure         = object.getEvaluationProcedure();
+            results                     = copyCollection(object.getResults(), Result.class);
+            writeDates(object.getDates());
+        }
     }
 
     /**
