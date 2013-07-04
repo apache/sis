@@ -74,15 +74,17 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      * <p>If both {@linkplain #getEquivalentScale() scale} and {@linkplain #getDistance() distance}
      * are specified, then the scale will have precedence and the distance is silently discarded.</p>
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Resolution)
      */
     public DefaultResolution(final Resolution object) {
         super(object);
-        scaleOrDistance = object.getEquivalentScale();
-        if (scaleOrDistance == null) {
-            scaleOrDistance = object.getDistance();
+        if (object != null) {
+            scaleOrDistance = object.getEquivalentScale();
+            if (scaleOrDistance == null) {
+                scaleOrDistance = object.getDistance();
+            }
         }
     }
 

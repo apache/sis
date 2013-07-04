@@ -79,7 +79,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      * in milliseconds elapsed since January 1st, 1970. If there is no such date, then this
      * field is set to the special value {@link Long#MIN_VALUE}.
      */
-    private long date;
+    private long date = Long.MIN_VALUE;
 
     /**
      * Identification of, and means of communication with, person(s) and
@@ -113,7 +113,6 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      * Creates an initially empty process step.
      */
     public DefaultProcessStep() {
-        date = Long.MIN_VALUE;
     }
 
     /**
@@ -122,7 +121,6 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      * @param description Description of the event, including related parameters or tolerances.
      */
     public DefaultProcessStep(final CharSequence description) {
-        this(); // Initialize the date field.
         this.description = Types.toInternationalString(description);
     }
 
@@ -131,20 +129,22 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(ProcessStep)
      */
     public DefaultProcessStep(final ProcessStep object) {
         super(object);
-        description           = object.getDescription();
-        rationale             = object.getRationale();
-        date                  = toMilliseconds(object.getDate());
-        processors            = copyCollection(object.getProcessors(), ResponsibleParty.class);
-        sources               = copyCollection(object.getSources(), Source.class);
-        outputs               = copyCollection(object.getOutputs(), Source.class);
-        processingInformation = object.getProcessingInformation();
-        reports               = copyCollection(object.getReports(), ProcessStepReport.class);
+        if (object != null) {
+            description           = object.getDescription();
+            rationale             = object.getRationale();
+            date                  = toMilliseconds(object.getDate());
+            processors            = copyCollection(object.getProcessors(), ResponsibleParty.class);
+            sources               = copyCollection(object.getSources(), Source.class);
+            outputs               = copyCollection(object.getOutputs(), Source.class);
+            processingInformation = object.getProcessingInformation();
+            reports               = copyCollection(object.getReports(), ProcessStepReport.class);
+        }
     }
 
     /**

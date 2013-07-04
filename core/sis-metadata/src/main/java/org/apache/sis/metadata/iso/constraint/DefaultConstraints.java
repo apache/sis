@@ -77,13 +77,15 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Constraints)
      */
     public DefaultConstraints(final Constraints object) {
         super(object);
-        useLimitations = copyCollection(object.getUseLimitations(), InternationalString.class);
+        if (object != null) {
+            useLimitations = copyCollection(object.getUseLimitations(), InternationalString.class);
+        }
     }
 
     /**

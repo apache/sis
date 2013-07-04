@@ -52,7 +52,7 @@ public class DefaultCitationDate extends ISOMetadata implements CitationDate {
      * Reference date for the cited resource in milliseconds elapsed sine January 1st, 1970,
      * or {@link Long#MIN_VALUE} if none.
      */
-    private long date;
+    private long date = Long.MIN_VALUE;
 
     /**
      * Event used for reference date.
@@ -63,7 +63,6 @@ public class DefaultCitationDate extends ISOMetadata implements CitationDate {
      * Constructs an initially empty citation date.
      */
     public DefaultCitationDate() {
-        date = Long.MIN_VALUE;
     }
 
     /**
@@ -82,14 +81,16 @@ public class DefaultCitationDate extends ISOMetadata implements CitationDate {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(CitationDate)
      */
     public DefaultCitationDate(final CitationDate object) {
         super(object);
-        date     = toMilliseconds(object.getDate());
-        dateType = object.getDateType();
+        if (object != null) {
+            date     = toMilliseconds(object.getDate());
+            dateType = object.getDateType();
+        }
     }
 
     /**

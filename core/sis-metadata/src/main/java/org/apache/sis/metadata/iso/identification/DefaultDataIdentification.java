@@ -129,20 +129,22 @@ public class DefaultDataIdentification extends AbstractIdentification implements
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(DataIdentification)
      */
     public DefaultDataIdentification(final DataIdentification object) {
         super(object);
-        spatialRepresentationTypes = copyCollection(object.getSpatialRepresentationTypes(), SpatialRepresentationType.class);
-        spatialResolutions         = copyCollection(object.getSpatialResolutions(), Resolution.class);
-        languages                  = copyCollection(object.getLanguages(), Locale.class);
-        characterSets              = copyCollection(object.getCharacterSets(), CharacterSet.class);
-        topicCategories            = copyCollection(object.getTopicCategories(), TopicCategory.class);
-        environmentDescription     = object.getEnvironmentDescription();
-        extents                    = copyCollection(object.getExtents(), Extent.class);
-        supplementalInformation    = object.getSupplementalInformation();
+        if (object != null) {
+            spatialRepresentationTypes = copyCollection(object.getSpatialRepresentationTypes(), SpatialRepresentationType.class);
+            spatialResolutions         = copyCollection(object.getSpatialResolutions(), Resolution.class);
+            languages                  = copyCollection(object.getLanguages(), Locale.class);
+            characterSets              = copyCollection(object.getCharacterSets(), CharacterSet.class);
+            topicCategories            = copyCollection(object.getTopicCategories(), TopicCategory.class);
+            environmentDescription     = object.getEnvironmentDescription();
+            extents                    = copyCollection(object.getExtents(), Extent.class);
+            supplementalInformation    = object.getSupplementalInformation();
+        }
     }
 
     /**

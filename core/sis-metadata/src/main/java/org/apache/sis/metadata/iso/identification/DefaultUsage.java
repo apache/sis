@@ -64,7 +64,7 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      * Values are milliseconds elapsed since January 1st, 1970,
      * or {@link Long#MIN_VALUE} if this value is not set.
      */
-    private long usageDate;
+    private long usageDate = Long.MIN_VALUE;
 
     /**
      * Applications, determined by the user for which the resource and/or resource series
@@ -82,7 +82,6 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      * Constructs an initially empty usage.
      */
     public DefaultUsage() {
-        usageDate = Long.MIN_VALUE;
     }
 
     /**
@@ -94,7 +93,6 @@ public class DefaultUsage extends ISOMetadata implements Usage {
     public DefaultUsage(final CharSequence specificUsage,
                         final ResponsibleParty userContactInfo)
     {
-        this(); // Initialize the date field.
         this.specificUsage   = Types.toInternationalString(specificUsage);
         this.userContactInfo = singleton(userContactInfo, ResponsibleParty.class);
     }
@@ -104,16 +102,18 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Usage)
      */
     public DefaultUsage(final Usage object) {
         super(object);
-        specificUsage             = object.getSpecificUsage();
-        usageDate                 = toMilliseconds(object.getUsageDate());
-        userDeterminedLimitations = object.getUserDeterminedLimitations();
-        userContactInfo           = copyCollection(object.getUserContactInfo(), ResponsibleParty.class);
+        if (object != null) {
+            specificUsage             = object.getSpecificUsage();
+            usageDate                 = toMilliseconds(object.getUsageDate());
+            userDeterminedLimitations = object.getUserDeterminedLimitations();
+            userContactInfo           = copyCollection(object.getUserContactInfo(), ResponsibleParty.class);
+        }
     }
 
     /**

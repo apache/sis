@@ -88,17 +88,19 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(CoverageResult)
      */
     public DefaultCoverageResult(final CoverageResult object) {
         super(object);
-        spatialRepresentationType   = object.getSpatialRepresentationType();
-        resultSpatialRepresentation = object.getResultSpatialRepresentation();
-        resultContentDescription    = object.getResultContentDescription();
-        resultFormat                = object.getResultFormat();
-        resultFile                  = object.getResultFile();
+        if (object != null) {
+            spatialRepresentationType   = object.getSpatialRepresentationType();
+            resultSpatialRepresentation = object.getResultSpatialRepresentation();
+            resultContentDescription    = object.getResultContentDescription();
+            resultFormat                = object.getResultFormat();
+            resultFile                  = object.getResultFile();
+        }
     }
 
     /**

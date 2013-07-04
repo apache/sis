@@ -122,7 +122,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * Date of the edition in milliseconds elapsed sine January 1st, 1970,
      * or {@link Long#MIN_VALUE} if none.
      */
-    private long editionDate;
+    private long editionDate = Long.MIN_VALUE;
 
     /**
      * Name and position information for an individual or organization that is responsible
@@ -158,7 +158,6 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * Constructs an initially empty citation.
      */
     public DefaultCitation() {
-        editionDate = Long.MIN_VALUE;
     }
 
     /**
@@ -168,7 +167,6 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      *        or {@code null} if none.
      */
     public DefaultCitation(final CharSequence title) {
-        this(); // Initialize the date field.
         this.title = Types.toInternationalString(title);
     }
 
@@ -184,7 +182,6 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      *              responsible for the resource, or {@code null} if none.
      */
     public DefaultCitation(final ResponsibleParty party) {
-        this(); // Initialize the date field.
         if (party != null) {
             citedResponsibleParties = singleton(party, ResponsibleParty.class);
             title = party.getOrganisationName();
@@ -205,29 +202,31 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Citation)
      */
     public DefaultCitation(final Citation object) {
         super(object);
-        title                   = object.getTitle();
-        alternateTitles         = copyCollection(object.getAlternateTitles(), InternationalString.class);
-        dates                   = copyCollection(object.getDates(), CitationDate.class);
-        edition                 = object.getEdition();
-        editionDate             = toMilliseconds(object.getEditionDate());
-        identifiers             = copyCollection(object.getIdentifiers(), Identifier.class);
-        citedResponsibleParties = copyCollection(object.getCitedResponsibleParties(), ResponsibleParty.class);
-        presentationForms       = copyCollection(object.getPresentationForms(), PresentationForm.class);
-        series                  = object.getSeries();
-        otherCitationDetails    = object.getOtherCitationDetails();
-        collectiveTitle         = object.getCollectiveTitle();
-        final String id1        = object.getISBN();
-        final String id2        = object.getISSN();
-        if (id1 != null || id2 != null) {
-            final IdentifierMap map = super.getIdentifierMap();
-            if (id1 != null) map.putSpecialized(ISBN, id1);
-            if (id2 != null) map.putSpecialized(ISSN, id2);
+        if (object != null) {
+            title                   = object.getTitle();
+            alternateTitles         = copyCollection(object.getAlternateTitles(), InternationalString.class);
+            dates                   = copyCollection(object.getDates(), CitationDate.class);
+            edition                 = object.getEdition();
+            editionDate             = toMilliseconds(object.getEditionDate());
+            identifiers             = copyCollection(object.getIdentifiers(), Identifier.class);
+            citedResponsibleParties = copyCollection(object.getCitedResponsibleParties(), ResponsibleParty.class);
+            presentationForms       = copyCollection(object.getPresentationForms(), PresentationForm.class);
+            series                  = object.getSeries();
+            otherCitationDetails    = object.getOtherCitationDetails();
+            collectiveTitle         = object.getCollectiveTitle();
+            final String id1        = object.getISBN();
+            final String id2        = object.getISSN();
+            if (id1 != null || id2 != null) {
+                final IdentifierMap map = super.getIdentifierMap();
+                if (id1 != null) map.putSpecialized(ISBN, id1);
+                if (id2 != null) map.putSpecialized(ISSN, id2);
+            }
         }
     }
 
