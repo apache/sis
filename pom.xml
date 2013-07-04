@@ -19,7 +19,7 @@
   under the License.
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0                                http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -36,7 +36,7 @@
        ============================================================== -->
   <groupId>org.apache.sis</groupId>
   <artifactId>parent</artifactId>
-  <version>0.3</version>
+  <version>0.4-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Apache SIS</name>
@@ -65,12 +65,12 @@ Apache SIS is a free software, Java language library for developing geospatial a
        ============================================================== -->
   <scm>
     <connection>
-      scm:svn:http://svn.apache.org/repos/asf/sis/tags/0.3
+      scm:svn:http://svn.apache.org/repos/asf/sis/trunk
     </connection>
     <developerConnection>
-      scm:svn:https://svn.apache.org/repos/asf/sis/tags/0.3
+      scm:svn:https://svn.apache.org/repos/asf/sis/trunk
     </developerConnection>
-    <url>http://svn.apache.org/viewvc/sis/tags/0.3</url>
+    <url>http://svn.apache.org/viewvc/sis/trunk</url>
   </scm>
 
   <ciManagement>
@@ -380,7 +380,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
     <!-- Following properties are branch-specific -->
     <maven.compile.source>1.6</maven.compile.source>
     <maven.compile.target>1.6</maven.compile.target>
-    <sis.plugin.version>0.3</sis.plugin.version>
+    <sis.plugin.version>0.4-SNAPSHOT</sis.plugin.version>
   </properties>
 
   <profiles>
