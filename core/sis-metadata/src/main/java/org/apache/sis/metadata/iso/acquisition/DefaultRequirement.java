@@ -154,6 +154,8 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
     /**
      * Returns the identification of reference or guidance material for the requirement.
      * {@code null} if unspecified.
+     *
+     * @return Identification of reference or guidance material, or {@code null}.
      */
     @Override
     @XmlElement(name = "citation")
@@ -173,6 +175,8 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
 
     /**
      * Returns the unique name, or code, for the requirement.
+     *
+     * @return Unique name or code, or {@code null}.
      */
     @Override
     @XmlElement(name = "identifier", required = true)
@@ -193,6 +197,8 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
 
     /**
      * Returns the origin of requirement.
+     *
+     * @return Origin of requirement.
      */
     @Override
     @XmlElement(name = "requestor", required = true)
@@ -211,6 +217,8 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
 
     /**
      * Returns the person(s), or body(ies), to receive results of requirement.
+     *
+     * @return Person(s), or body(ies), to receive results.
      */
     @Override
     @XmlElement(name = "recipient", required = true)
@@ -229,6 +237,8 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
 
     /**
      * Returns the relative ordered importance, or urgency, of the requirement.
+     *
+     * @return Relative ordered importance, or urgency, or {@code null}.
      */
     @Override
     @XmlElement(name = "priority", required = true)
@@ -248,6 +258,8 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
 
     /**
      * Returns the required or preferred acquisition date and time.
+     *
+     * @return Required or preferred acquisition date and time, or {@code null}.
      */
     @Override
     @XmlElement(name = "requestedDate", required = true)
@@ -267,6 +279,8 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
 
     /**
      * Returns the date and time after which collection is no longer valid.
+     *
+     * @return Date and time after which collection is no longer valid, or {@code null}.
      */
     @Override
     @XmlElement(name = "expiryDate", required = true)
@@ -286,6 +300,8 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
 
     /**
      * Returns the plan that identifies solution to satisfy the requirement.
+     *
+     * @return Plan that identifies solution to satisfy the requirement.
      */
     @Override
     @XmlElement(name = "satisfiedPlan")

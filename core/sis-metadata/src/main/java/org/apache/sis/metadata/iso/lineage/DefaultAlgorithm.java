@@ -107,6 +107,8 @@ public class DefaultAlgorithm extends ISOMetadata implements Algorithm {
 
     /**
      * Returns the information identifying the algorithm and version or date.
+     *
+     * @return Algorithm and version or date, or {@code null}.
      */
     @Override
     @XmlElement(name = "citation", namespace = Namespaces.GMI, required = true)
@@ -126,6 +128,8 @@ public class DefaultAlgorithm extends ISOMetadata implements Algorithm {
 
     /**
      * Returns the information describing the algorithm used to generate the data.
+     *
+     * @return Algorithm used to generate the data, or {@code null}.
      */
     @Override
     @XmlElement(name = "description", namespace = Namespaces.GMI, required = true)

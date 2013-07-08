@@ -114,8 +114,8 @@ public class DefaultNameSpace implements NameSpace, Serializable {
      * However we can (in an opportunist way) handles local names as well. In case of conflict,
      * the namespace will have precedence.
      *
-     * <p>This field is initialized soon after {@code DefaultNameSpace} and should be treated
-     * like a final field from that point.</p>
+     * <p>This field is initialized by {@link #init()} soon after {@code DefaultNameSpace} creation
+     * and shall be treated like a final field from that point.</p>
      */
     private transient WeakValueHashMap<String,Object> childs;
 
@@ -372,6 +372,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
         if (name == null) {
             name = key;
         }
+        final WeakValueHashMap<String,Object> childs = this.childs; // Paranoiac protection against accidental changes.
         DefaultNameSpace child;
         synchronized (childs) {
             final Object existing = childs.get(key);
@@ -412,6 +413,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
     final DefaultLocalName local(final CharSequence name, final DefaultLocalName candidate) {
         ensureNonNull("name", name);
         final String key = name.toString();
+        final WeakValueHashMap<String,Object> childs = this.childs; // Paranoiac protection against accidental changes.
         DefaultLocalName child;
         synchronized (childs) {
             final Object existing = childs.get(key);

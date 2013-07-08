@@ -166,6 +166,8 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     /**
      * Returns the frequency with which changes and additions are made to the resource
      * after the initial resource is completed.
+     *
+     * @return Frequency with which changes and additions are made to the resource, or {@code null}.
      */
     @Override
     @XmlElement(name = "maintenanceAndUpdateFrequency", required = true)
@@ -186,6 +188,8 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
 
     /**
      * Returns the scheduled revision date for resource.
+     *
+     * @return Scheduled revision date, or {@code null}.
      */
     @Override
     @XmlElement(name = "dateOfNextUpdate")
@@ -205,6 +209,8 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
 
     /**
      * Returns the maintenance period other than those defined.
+     *
+     * @return The Maintenance period, or {@code null}.
      */
     @Override
     @XmlElement(name = "userDefinedMaintenanceFrequency")
@@ -224,6 +230,8 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
 
     /**
      * Returns the scope of data to which maintenance is applied.
+     *
+     * @return Scope of data to which maintenance is applied.
      */
     @Override
     @XmlElement(name = "updateScope")
@@ -242,6 +250,8 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
 
     /**
      * Returns additional information about the range or extent of the resource.
+     *
+     * @return Additional information about the range or extent of the resource.
      */
     @Override
     @XmlElement(name = "updateScopeDescription")
@@ -260,6 +270,8 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
 
     /**
      * Returns information regarding specific requirements for maintaining the resource.
+     *
+     * @return Information regarding specific requirements for maintaining the resource.
      */
     @Override
     @XmlElement(name = "maintenanceNote")
@@ -279,6 +291,9 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     /**
      * Returns identification of, and means of communicating with,
      * person(s) and organization(s) with responsibility for maintaining the metadata.
+     *
+     * @return Means of communicating with person(s) and organization(s) with responsibility
+     *         for maintaining the metadata.
      */
     @Override
     @XmlElement(name = "contact")

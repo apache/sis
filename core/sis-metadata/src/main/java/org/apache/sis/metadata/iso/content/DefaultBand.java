@@ -200,8 +200,11 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
     }
 
     /**
-     * Returns the longest wavelength that the sensor is capable of collecting within
-     * a designated band.
+     * Returns the longest wavelength that the sensor is capable of collecting within a designated band.
+     * The units of measurement is given by {@link #getUnits()}.
+     *
+     * @return Longest wavelength that the sensor is capable of collecting within a designated band,
+     *         or {@code null} if unspecified.
      */
     @Override
     @XmlElement(name = "maxValue")
@@ -211,8 +214,7 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
     }
 
     /**
-     * Sets the longest wavelength that the sensor is capable of collecting within a
-     * designated band.
+     * Sets the longest wavelength that the sensor is capable of collecting within a designated band.
      *
      * @param newValue The new longest wavelength.
      */
@@ -222,8 +224,11 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
     }
 
     /**
-     * Returns the shortest wavelength that the sensor is capable of collecting
-     * within a designated band.
+     * Returns the shortest wavelength that the sensor is capable of collecting within a designated band.
+     * The units of measurement is given by {@link #getUnits()}.
+     *
+     * @return Shortest wavelength that the sensor is capable of collecting within a designated band,
+     *         or {@code null} if unspecified.
      */
     @Override
     @XmlElement(name = "minValue")
@@ -233,8 +238,7 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
     }
 
     /**
-     * Sets the shortest wavelength that the sensor is capable of collecting within
-     * a designated band.
+     * Sets the shortest wavelength that the sensor is capable of collecting within a designated band.
      *
      * @param newValue The new shortest wavelength.
      */
@@ -244,9 +248,11 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
     }
 
     /**
-     * Returns the units in which sensor wavelengths are expressed. Should be non-null
+     * Returns the units in which sensor wavelengths are expressed. Shall be non-null
      * if {@linkplain #getMinValue() min value} or {@linkplain #getMaxValue() max value}
      * are provided.
+     *
+     * @return Units in which sensor wavelengths are expressed, or {@code null}.
      */
     @Override
     @XmlElement(name = "units")
@@ -255,7 +261,7 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
     }
 
     /**
-     * Sets the units in which sensor wavelengths are expressed. Should be non-null if
+     * Sets the units in which sensor wavelengths are expressed. Shall be non-null if
      * {@linkplain #getMinValue() min value} or {@linkplain #getMaxValue() max value}
      * are provided.
      *
@@ -268,6 +274,9 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
 
     /**
      * Returns the wavelength at which the response is the highest.
+     * The units of measurement is given by {@link #getUnits()}.
+     *
+     * @return Wavelength at which the response is the highest, or {@code null} if unspecified.
      */
     @Override
     @XmlElement(name = "peakResponse")
@@ -288,6 +297,8 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
     /**
      * Returns the maximum number of significant bits in the uncompressed
      * representation for the value in each band of each pixel.
+     *
+     * @return Maximum number of significant bits in the uncompressed representation, or {@code null}.
      */
     @Override
     @ValueRange(minimum=1)
@@ -309,6 +320,8 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
 
     /**
      * Returns the number of discrete numerical values in the grid data.
+     *
+     * @return Number of discrete numerical values in the grid data, or {@code null}.
      */
     @Override
     @ValueRange(minimum=0)
@@ -329,6 +342,8 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
 
     /**
      * Returns the scale factor which has been applied to the cell value.
+     *
+     * @return Scale factor which has been applied to the cell value, or {@code null}.
      */
     @Override
     @XmlElement(name = "scaleFactor")
@@ -348,6 +363,8 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
 
     /**
      * Returns the physical value corresponding to a cell value of zero.
+     *
+     * @return The physical value corresponding to a cell value of zero, or {@code null}.
      */
     @Override
     @XmlElement(name = "offset")
@@ -366,8 +383,9 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
     }
 
     /**
-     * Returns the designation of criterion for defining maximum and minimum wavelengths
-     * for a spectral band.
+     * Returns the designation of criterion for defining maximum and minimum wavelengths for a spectral band.
+     *
+     * @return Criterion for defining maximum and minimum wavelengths, or {@code null}.
      */
     @Override
     @XmlElement(name = "bandBoundaryDefinition", namespace = Namespaces.GMI)
@@ -376,8 +394,7 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
     }
 
     /**
-     * Sets designation of criterion for defining maximum and minimum wavelengths
-     * for a spectral band.
+     * Sets designation of criterion for defining maximum and minimum wavelengths for a spectral band.
      *
      * @param newValue The new band definition.
      */
@@ -389,6 +406,8 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
     /**
      * Returns the smallest distance between which separate points can be distinguished,
      * as specified in instrument design.
+     *
+     * @return Smallest distance between which separate points can be distinguished, or {@code null}.
      */
     @Override
     @ValueRange(minimum=0, isMinIncluded=false)
@@ -410,6 +429,8 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
 
     /**
      * Returns type of transfer function to be used when scaling a physical value for a given element.
+     *
+     * @return Type of transfer function, or {@code null}.
      */
     @Override
     @XmlElement(name = "transferFunctionType", namespace = Namespaces.GMI)
@@ -429,6 +450,8 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
 
     /**
      * Polarization of the radiation transmitted.
+     *
+     * @return Polarization of the radiation transmitted, or {@code null}.
      */
     @Override
     @XmlElement(name = "transmittedPolarization", namespace = Namespaces.GMI)
@@ -448,6 +471,8 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
 
     /**
      * Polarization of the radiation detected.
+     *
+     * @return Polarization of the radiation detected, or {@code null}.
      */
     @Override
     @XmlElement(name = "detectedPolarization", namespace = Namespaces.GMI)

@@ -136,6 +136,8 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
 
     /**
      * Returns the information to identify the processing package that produced the data.
+     *
+     * @return Identifier of the processing package that produced the data, or {@code null}.
      */
     @Override
     @XmlElement(name = "identifier", namespace = Namespaces.GMI, required = true)
@@ -156,6 +158,8 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
 
     /**
      * Returns the reference to document describing processing software.
+     *
+     * @return Document describing processing software.
      */
     @Override
     @XmlElement(name = "softwareReference", namespace = Namespaces.GMI)
@@ -174,6 +178,8 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
 
     /**
      * Returns the additional details about the processing procedures. {@code null} if unspecified.
+     *
+     * @return Processing procedures, or {@code null}.
      */
     @Override
     @XmlElement(name = "procedureDescription", namespace = Namespaces.GMI)
@@ -193,6 +199,8 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
 
     /**
      * Returns the reference to documentation describing the processing.
+     *
+     * @return Documentation describing the processing.
      */
     @Override
     @XmlElement(name = "documentation", namespace = Namespaces.GMI)
@@ -211,7 +219,8 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
 
     /**
      * Returns the parameters to control the processing operations, entered at run time.
-     * {@code null} if unspecified.
+     *
+     * @return Parameters to control the processing operations, or {@code null}.
      */
     @Override
     @XmlElement(name = "runTimeParameters", namespace = Namespaces.GMI)
@@ -232,6 +241,8 @@ public class DefaultProcessing extends ISOMetadata implements Processing {
     /**
      * Returns the details of the methodology by which geographic information was derived from the
      * instrument readings.
+     *
+     * @return Methodology by which geographic information was derived from the instrument readings.
      */
     @Override
     @XmlElement(name = "algorithm", namespace = Namespaces.GMI)

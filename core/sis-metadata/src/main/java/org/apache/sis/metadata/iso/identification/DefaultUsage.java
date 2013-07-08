@@ -143,6 +143,8 @@ public class DefaultUsage extends ISOMetadata implements Usage {
 
     /**
      * Returns a brief description of the resource and/or resource series usage.
+     *
+     * @return Description of the resource usage, or {@code null}.
      */
     @Override
     @XmlElement(name = "specificUsage", required = true)
@@ -163,6 +165,8 @@ public class DefaultUsage extends ISOMetadata implements Usage {
     /**
      * Returns the date and time of the first use or range of uses
      * of the resource and/or resource series.
+     *
+     * @return Date of the first use of the resource, or {@code null}.
      */
     @Override
     @XmlElement(name = "usageDateTime")
@@ -183,6 +187,8 @@ public class DefaultUsage extends ISOMetadata implements Usage {
     /**
      * Returns applications, determined by the user for which the resource and/or resource series
      * is not suitable.
+     *
+     * @return Applications for which the resource and/or resource series is not suitable, or {@code null}.
      */
     @Override
     @XmlElement(name = "userDeterminedLimitations")
@@ -204,6 +210,8 @@ public class DefaultUsage extends ISOMetadata implements Usage {
     /**
      * Returns identification of and means of communicating with person(s) and organization(s)
      * using the resource(s).
+     *
+     * @return Means of communicating with person(s) and organization(s) using the resource(s).
      */
     @Override
     @XmlElement(name = "userContactInfo", required = true)

@@ -313,6 +313,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
 
     /**
      * Returns the unique identifier for this metadata file, or {@code null} if none.
+     *
+     * @return Unique identifier for this metadata file, or {@code null}.
      */
     @Override
     @XmlElement(name = "fileIdentifier")
@@ -334,6 +336,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * Returns the language used for documenting metadata. This {@code DefaultMetadata} object and
      * its children will use that locale for marshalling {@link org.opengis.util.InternationalString}
      * and {@link org.opengis.util.CodeList} instances in ISO 19139 compliant XML documents.
+     *
+     * @return Language used for documenting metadata, or {@code null}.
      */
     @Override
     @XmlElement(name = "language")
@@ -358,8 +362,9 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     }
 
     /**
-     * Provides information about an alternatively used localized character
-     * string for a linguistic extension.
+     * Provides information about an alternatively used localized character string for a linguistic extension.
+     *
+     * @return Alternatively used localized character string for a linguistic extension.
      */
     @Override
     @XmlElement(name = "locale")
@@ -369,8 +374,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     }
 
     /**
-     * Sets information about an alternatively used localized character
-     * string for a linguistic extension.
+     * Sets information about an alternatively used localized character string for a linguistic extension.
      *
      * @param newValues The new locales.
      */
@@ -380,6 +384,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
 
     /**
      * Returns the full name of the character coding standard used for the metadata set.
+     *
+     * @return character coding standard used for the metadata, or {@code null}.
      */
     @Override
     @XmlElement(name = "characterSet")
@@ -399,6 +405,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
 
     /**
      * Returns the file identifier of the metadata to which this metadata is a subset (child).
+     *
+     * @return Identifier of the metadata to which this metadata is a subset, or {@code null}.
      */
     @Override
     @XmlElement(name = "parentIdentifier")
@@ -418,6 +426,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
 
     /**
      * Returns the scope to which the metadata applies.
+     *
+     * @return Scope to which the metadata applies.
      */
     @Override
     @XmlElement(name = "hierarchyLevel")
@@ -436,6 +446,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
 
     /**
      * Returns the name of the hierarchy levels for which the metadata is provided.
+     *
+     * @return Hierarchy levels for which the metadata is provided.
      */
     @Override
     @XmlElement(name = "hierarchyLevelName")
@@ -454,6 +466,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
 
     /**
      * Returns the parties responsible for the metadata information.
+     *
+     * @return Parties responsible for the metadata information.
      */
     @Override
     @XmlElement(name = "contact", required = true)
@@ -473,6 +487,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
 
     /**
      * Returns the date that the metadata was created.
+     *
+     * @return Date that the metadata was created, or {@code null}.
      */
     @Override
     @XmlElement(name = "dateStamp", required = true)
@@ -492,6 +508,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
 
     /**
      * Returns the name of the metadata standard (including profile name) used.
+     *
+     * @return Name of the metadata standard used, or {@code null}.
      */
     @Override
     @XmlElement(name = "metadataStandardName")
@@ -511,6 +529,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
 
     /**
      * Returns the version (profile) of the metadata standard used.
+     *
+     * @return Version of the metadata standard used, or {@code null}.
      */
     @Override
     @XmlElement(name = "metadataStandardVersion")
@@ -530,6 +550,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
 
     /**
      * Provides the URI of the dataset to which the metadata applies.
+     *
+     * @return Uniformed Resource Identifier of the dataset, or {@code null}.
      */
     @Override
     @XmlElement(name = "dataSetURI")
@@ -549,6 +571,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
 
     /**
      * Returns the digital representation of spatial information in the dataset.
+     *
+     * @return Digital representation of spatial information in the dataset.
      */
     @Override
     @XmlElement(name = "spatialRepresentationInfo")
@@ -567,6 +591,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
 
     /**
      * Returns the description of the spatial and temporal reference systems used in the dataset.
+     *
+     * @return Spatial and temporal reference systems used in the dataset.
      */
     @Override
     @XmlElement(name = "referenceSystemInfo")
@@ -585,6 +611,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
 
     /**
      * Returns information describing metadata extensions.
+     *
+     * @return Metadata extensions.
      */
     @Override
     @XmlElement(name = "metadataExtensionInfo")
@@ -603,6 +631,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
 
     /**
      * Returns basic information about the resource(s) to which the metadata applies.
+     *
+     * @return The resource(s) to which the metadata applies.
      */
     @Override
     @XmlElement(name = "identificationInfo", required = true)
@@ -622,6 +652,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Provides information about the feature catalogue and describes the coverage and
      * image data characteristics.
+     *
+     * @return The feature catalogue, coverage descriptions and image data characteristics.
      */
     @Override
     @XmlElement(name = "contentInfo")
@@ -641,6 +673,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
 
     /**
      * Provides information about the distributor of and options for obtaining the resource(s).
+     *
+     * @return The distributor of and options for obtaining the resource(s), or {@code null}.
      */
     @Override
     @XmlElement(name = "distributionInfo")
@@ -660,6 +694,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
 
     /**
      * Provides overall assessment of quality of a resource(s).
+     *
+     * @return Overall assessment of quality of a resource(s).
      */
     @Override
     @XmlElement(name = "dataQualityInfo")
@@ -677,8 +713,9 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     }
 
     /**
-     * Provides information about the catalogue of rules defined for the portrayal of a
-     * resource(s).
+     * Provides information about the catalogue of rules defined for the portrayal of a resource(s).
+     *
+     * @return The catalogue of rules defined for the portrayal of a resource(s).
      */
     @Override
     @XmlElement(name = "portrayalCatalogueInfo")
@@ -691,14 +728,14 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @param newValues The new portrayal catalog info.
      */
-    public void setPortrayalCatalogueInfo(
-            final Collection<? extends PortrayalCatalogueReference> newValues)
-    {
+    public void setPortrayalCatalogueInfo(final Collection<? extends PortrayalCatalogueReference> newValues) {
         portrayalCatalogueInfo = writeCollection(newValues, portrayalCatalogueInfo, PortrayalCatalogueReference.class);
     }
 
     /**
      * Provides restrictions on the access and use of data.
+     *
+     * @return Restrictions on the access and use of data.
      */
     @Override
     @XmlElement(name = "metadataConstraints")
@@ -717,6 +754,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
 
     /**
      * Provides information about the conceptual schema of a dataset.
+     *
+     * @return The conceptual schema of a dataset.
      */
     @Override
     @XmlElement(name = "applicationSchemaInfo")
@@ -735,6 +774,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
 
     /**
      * Provides information about the frequency of metadata updates, and the scope of those updates.
+     *
+     * @return The frequency of metadata updates and their scope, or {@code null}.
      */
     @Override
     @XmlElement(name = "metadataMaintenance")
@@ -754,6 +795,8 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
 
     /**
      * Provides information about the acquisition of the data.
+     *
+     * @return The acquisition of data.
      */
     @Override
     @XmlElement(name = "acquisitionInformation", namespace = Namespaces.GMI)

@@ -126,6 +126,8 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
 
     /**
      * Returns tiles, layers, geographic areas, <i>etc.</i>, in which data is available.
+     *
+     * @return Tiles, layers, geographic areas, <cite>etc.</cite> in which data is available, or {@code null}.
      */
     @Override
     @XmlElement(name = "unitsOfDistribution")
@@ -146,6 +148,8 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
     /**
      * Returns an estimated size of a unit in the specified transfer format, expressed in megabytes.
      * The transfer size is greater than zero.
+     *
+     * @return Estimated size of a unit in the specified transfer format in megabytes, or {@code null}.
      */
     @Override
     @XmlElement(name = "transferSize")
@@ -168,6 +172,8 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
 
     /**
      * Returns information about online sources from which the resource can be obtained.
+     *
+     * @return Online sources from which the resource can be obtained.
      */
     @Override
     @XmlElement(name = "onLine")
@@ -186,6 +192,8 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
 
     /**
      * Returns information about offline media on which the resource can be obtained.
+     *
+     * @return Offline media on which the resource can be obtained, or {@code null}.
      */
     @Override
     @XmlElement(name = "offLine")

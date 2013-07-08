@@ -130,6 +130,8 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
 
     /**
      * Returns the method used to spatially represent the coverage result.
+     *
+     * @return Spatial representation of the coverage result, or {@code null}.
      */
     @Override
     @XmlElement(name = "spatialRepresentationType", namespace = Namespaces.GMI, required = true)
@@ -149,6 +151,8 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
 
     /**
      * Returns the digital representation of data quality measures composing the coverage result.
+     *
+     * @return Digital representation of data quality measures composing the coverage result, or {@code null}.
      */
     @Override
     @XmlElement(name = "resultSpatialRepresentation", namespace = Namespaces.GMI, required = true)
@@ -169,6 +173,8 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
     /**
      * Returns the description of the content of the result coverage, i.e. semantic definition
      * of the data quality measures.
+     *
+     * @return Description of the content of the result coverage, or {@code null}.
      */
     @Override
     @XmlElement(name = "resultContentDescription", namespace = Namespaces.GMI, required = true)
@@ -189,6 +195,8 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
 
     /**
      * Returns the information about the format of the result coverage data.
+     *
+     * @return Format of the result coverage data, or {@code null}.
      */
     @Override
     @XmlElement(name = "resultFormat", namespace = Namespaces.GMI, required = true)
@@ -208,6 +216,8 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
 
     /**
      * Returns the information about the data file containing the result coverage data.
+     *
+     * @return Data file containing the result coverage data, or {@code null}.
      */
     @Override
     @XmlElement(name = "resultFile", namespace = Namespaces.GMX, required = true)

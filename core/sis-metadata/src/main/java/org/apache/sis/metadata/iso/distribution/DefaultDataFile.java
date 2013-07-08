@@ -113,6 +113,8 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
      * the transfer choices, a data file may contain data related to one or many feature types.
      * This attribute may be omitted when the dataset is composed of a single file and/or the
      * data does not relate to a feature catalogue.
+     *
+     * @return List of features types concerned by the transfer data file.
      */
     @Override
     @XmlElement(name = "featureType", namespace = Namespaces.GMX)
@@ -131,6 +133,8 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
 
     /**
      * Returns the format of the transfer data file.
+     *
+     * @return Format of the transfer data file, or {@code null}.
      */
     @Override
     @XmlElement(name = "fileFormat", namespace = Namespaces.GMX, required = true)

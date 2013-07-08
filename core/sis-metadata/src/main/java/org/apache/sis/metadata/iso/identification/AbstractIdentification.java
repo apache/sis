@@ -216,6 +216,8 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
 
     /**
      * Returns the citation data for the resource(s).
+     *
+     * @return Citation data for the resource(s), or {@code null}.
      */
     @Override
     @XmlElement(name = "citation", required = true)
@@ -235,6 +237,8 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
 
     /**
      * Returns a brief narrative summary of the content of the resource(s).
+     *
+     * @return Brief narrative summary of the content, or {@code null}.
      */
     @Override
     @XmlElement(name = "abstract", required = true)
@@ -254,6 +258,8 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
 
     /**
      * Returns a summary of the intentions with which the resource(s) was developed.
+     *
+     * @return The intentions with which the resource(s) was developed, or {@code null}.
      */
     @Override
     @XmlElement(name = "purpose")
@@ -273,6 +279,8 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
 
     /**
      * Returns the recognition of those who contributed to the resource(s).
+     *
+     * @return Recognition of those who contributed to the resource(s).
      */
     @Override
     @XmlElement(name = "credit")
@@ -291,6 +299,8 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
 
     /**
      * Returns the status of the resource(s).
+     *
+     * @return Status of the resource(s), or {@code null}.
      */
     @Override
     @XmlElement(name = "status")
@@ -310,6 +320,8 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     /**
      * Returns the identification of, and means of communication with, person(s) and organizations(s)
      * associated with the resource(s).
+     *
+     * @return Means of communication with person(s) and organizations(s) associated with the resource(s).
      */
     @Override
     @XmlElement(name = "pointOfContact")
@@ -328,6 +340,8 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
 
     /**
      * Provides information about the frequency of resource updates, and the scope of those updates.
+     *
+     * @return Frequency and scope of resource updates.
      */
     @Override
     @XmlElement(name = "resourceMaintenance")
@@ -346,6 +360,8 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
 
     /**
      * Provides a graphic that illustrates the resource(s) (should include a legend for the graphic).
+     *
+     * @return A graphic that illustrates the resource(s).
      */
     @Override
     @XmlElement(name = "graphicOverview")
@@ -364,6 +380,8 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
 
     /**
      * Provides a description of the format of the resource(s).
+     *
+     * @return Description of the format.
      */
     @Override
     @XmlElement(name = "resourceFormat")
@@ -382,6 +400,8 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
 
     /**
      * Provides category keywords, their type, and reference source.
+     *
+     * @return Category keywords, their type, and reference source.
      */
     @Override
     @XmlElement(name = "descriptiveKeywords")
@@ -401,6 +421,9 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     /**
      * Provides basic information about specific application(s) for which the resource(s)
      * has/have been or is being used by different users.
+     *
+     * @return Information about specific application(s) for which the resource(s)
+     *         has/have been or is being used.
      */
     @Override
     @XmlElement(name = "resourceSpecificUsage")
@@ -419,6 +442,8 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
 
     /**
      * Provides information about constraints which apply to the resource(s).
+     *
+     * @return Constraints which apply to the resource(s).
      */
     @Override
     @XmlElement(name = "resourceConstraints")
@@ -437,6 +462,8 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
 
     /**
      * Provides aggregate dataset information.
+     *
+     * @return Aggregate dataset information.
      */
     @Override
     @XmlElement(name = "aggregationInfo")
