@@ -125,6 +125,8 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
      * Returns the general explanation of the data producer's knowledge about the lineage of a dataset.
      * Can be provided only if {@linkplain DefaultScope#getLevel scope level}
      * is {@link ScopeCode#DATASET DATASET} or {@link ScopeCode#SERIES SERIES}.
+     *
+     * @return Explanation of the data producer's knowledge about the lineage, or {@code null}.
      */
     @Override
     @XmlElement(name = "statement")
@@ -144,6 +146,8 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
 
     /**
      * Returns the information about an event in the creation process for the data specified by the scope.
+     *
+     * @return Information about an event in the creation process.
      */
     @Override
     @XmlElement(name = "processStep")
@@ -162,6 +166,8 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
 
     /**
      * Returns information about the source data used in creating the data specified by the scope.
+     *
+     * @return Information about the source data.
      */
     @Override
     @XmlElement(name = "source")

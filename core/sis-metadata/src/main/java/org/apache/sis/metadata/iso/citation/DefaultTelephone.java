@@ -103,8 +103,9 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
     }
 
     /**
-     * Returns the telephone numbers by which individuals can speak to the responsible
-     * organization or individual.
+     * Returns the telephone numbers by which individuals can speak to the responsible organization or individual.
+     *
+     * @return Telephone numbers by which individuals can speak to the responsible organization or individual.
      */
     @Override
     @XmlElement(name = "voice")
@@ -113,8 +114,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
     }
 
     /**
-     * Sets the telephone numbers by which individuals can speak to the responsible
-     * organization or individual.
+     * Sets the telephone numbers by which individuals can speak to the responsible organization or individual.
      *
      * @param newValues The new telephone numbers, or {@code null} if none.
      */
@@ -123,8 +123,9 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
     }
 
     /**
-     * Returns the telephone numbers of a facsimile machine for the responsible organization
-     * or individual.
+     * Returns the telephone numbers of a facsimile machine for the responsible organization or individual.
+     *
+     * @return Telephone numbers of a facsimile machine for the responsible organization or individual.
      */
     @Override
     @XmlElement(name = "facsimile")
@@ -133,8 +134,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
     }
 
     /**
-     * Sets the telephone number of a facsimile machine for the responsible organization
-     * or individual.
+     * Sets the telephone number of a facsimile machine for the responsible organization or individual.
      *
      * @param newValues The new telephone number, or {@code null} if none.
      */

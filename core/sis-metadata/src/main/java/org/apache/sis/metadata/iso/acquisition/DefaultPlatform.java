@@ -125,8 +125,9 @@ public class DefaultPlatform extends ISOMetadata implements Platform {
     }
 
     /**
-     * Returns the source where information about the platform is described. {@code null}
-     * if unspecified.
+     * Returns the source where information about the platform is described. {@code null} if unspecified.
+     *
+     * @return Source where information about the platform is described, or {@code null}.
      */
     @Override
     @XmlElement(name = "citation")
@@ -146,6 +147,8 @@ public class DefaultPlatform extends ISOMetadata implements Platform {
 
     /**
      * Returns the unique identification of the platform.
+     *
+     * @return Unique identification of the platform, or {@code null}.
      */
     @Override
     @XmlElement(name = "identifier", required = true)
@@ -166,6 +169,8 @@ public class DefaultPlatform extends ISOMetadata implements Platform {
 
     /**
      * Gets the narrative description of the platform supporting the instrument.
+     *
+     * @return Narrative description of the platform, or {@code null}.
      */
     @Override
     @XmlElement(name = "description", required = true)
@@ -185,6 +190,8 @@ public class DefaultPlatform extends ISOMetadata implements Platform {
 
     /**
      * Returns the organization responsible for building, launch, or operation of the platform.
+     *
+     * @return Organization responsible for building, launch, or operation of the platform.
      */
     @Override
     @XmlElement(name = "sponsor")
@@ -203,6 +210,8 @@ public class DefaultPlatform extends ISOMetadata implements Platform {
 
     /**
      * Gets the instrument(s) mounted on a platform.
+     *
+     * @return Instrument(s) mounted on a platform.
      */
     @Override
     @XmlElement(name = "instrument", required = true)

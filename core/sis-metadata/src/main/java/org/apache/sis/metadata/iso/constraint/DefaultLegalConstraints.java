@@ -132,6 +132,8 @@ public class DefaultLegalConstraints extends DefaultConstraints implements Legal
     /**
      * Returns the access constraints applied to assure the protection of privacy or intellectual property,
      * and any special restrictions or limitations on obtaining the resource.
+     *
+     * @return Access constraints applied to assure the protection of privacy or intellectual property.
      */
     @Override
     @XmlElement(name = "accessConstraints")
@@ -152,6 +154,8 @@ public class DefaultLegalConstraints extends DefaultConstraints implements Legal
     /**
      * Returns the constraints applied to assure the protection of privacy or intellectual property,
      * and any special restrictions or limitations or warnings on using the resource.
+     *
+     * @return Constraints applied to assure the protection of privacy or intellectual property.
      */
     @Override
     @XmlElement(name = "useConstraints")
@@ -171,9 +175,11 @@ public class DefaultLegalConstraints extends DefaultConstraints implements Legal
 
     /**
      * Returns the other restrictions and legal prerequisites for accessing and using the resource.
-     * Should be a non-empty value only if {@linkplain #getAccessConstraints() access constraints}
+     * Shall be a non-empty value only if {@linkplain #getAccessConstraints() access constraints}
      * or {@linkplain #getUseConstraints() use constraints} declares
      * {@linkplain Restriction#OTHER_RESTRICTIONS other restrictions}.
+     *
+     * @return Other restrictions and legal prerequisites for accessing and using the resource.
      */
     @Override
     @XmlElement(name = "otherConstraints")

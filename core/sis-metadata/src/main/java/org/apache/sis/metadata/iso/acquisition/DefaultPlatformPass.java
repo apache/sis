@@ -110,6 +110,8 @@ public class DefaultPlatformPass extends ISOMetadata implements PlatformPass {
 
     /**
      * Returns the unique name of the pass.
+     *
+     * @return Unique name of the pass, or {@code null}.
      */
     @Override
     @XmlElement(name = "identifier", required = true)
@@ -131,7 +133,7 @@ public class DefaultPlatformPass extends ISOMetadata implements PlatformPass {
     /**
      * Returns the area covered by the pass. {@code null} if unspecified.
      *
-     * @todo annotate an implementation of {@link Geometry} in order to annotate this method.
+     * @return Area covered by the pass, or {@code null}.
      */
     @Override
     @XmlElement(name = "extent")
@@ -151,6 +153,8 @@ public class DefaultPlatformPass extends ISOMetadata implements PlatformPass {
 
     /**
      * Returns the occurrence of one or more events for a pass.
+     *
+     * @return Occurrence of one or more events for a pass.
      */
     @Override
     @XmlElement(name = "relatedEvent")

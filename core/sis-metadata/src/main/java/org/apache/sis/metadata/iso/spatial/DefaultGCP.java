@@ -108,10 +108,12 @@ public class DefaultGCP extends ISOMetadata implements GCP {
     /**
      * Returns the geographic or map position of the control point, in either two or three dimensions.
      *
+     * @return Geographic or map position of the control point, or {@code null}.
+     *
      * @todo finish the annotation on the referencing module before.
      */
     @Override
-    //@XmlElement(name = "geographicCoordinates")
+    //@XmlElement(name = "geographicCoordinates", required = true)
     public DirectPosition getGeographicCoordinates() {
         return geographicCoordinates;
     }
@@ -127,7 +129,9 @@ public class DefaultGCP extends ISOMetadata implements GCP {
     }
 
     /**
-     * Get the accuracy of a ground control point.
+     * Returns the accuracy of a ground control point.
+     *
+     * @return Accuracy of a ground control point.
      */
     @Override
     @XmlElement(name = "accuracyReport", namespace = Namespaces.GMI)

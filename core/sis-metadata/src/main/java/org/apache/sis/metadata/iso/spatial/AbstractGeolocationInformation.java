@@ -106,6 +106,8 @@ public class AbstractGeolocationInformation extends ISOMetadata implements Geolo
 
     /**
      * Returns an overall assessment of quality of geolocation information.
+     *
+     * @return An overall assessment of quality of geolocation information.
      */
     @Override
     @XmlElement(name = "qualityInfo", namespace = Namespaces.GMI)

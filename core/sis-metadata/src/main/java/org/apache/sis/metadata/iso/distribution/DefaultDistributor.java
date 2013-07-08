@@ -133,6 +133,8 @@ public class DefaultDistributor extends ISOMetadata implements Distributor {
 
     /**
      * Party from whom the resource may be obtained. This list need not be exhaustive.
+     *
+     * @return Party from whom the resource may be obtained, or {@code null}.
      */
     @Override
     @XmlElement(name = "distributorContact", required = true)
@@ -153,6 +155,8 @@ public class DefaultDistributor extends ISOMetadata implements Distributor {
     /**
      * Provides information about how the resource may be obtained,
      * and related instructions and fee information.
+     *
+     * @return Information about how the resource may be obtained.
      */
     @Override
     @XmlElement(name = "distributionOrderProcess")
@@ -172,6 +176,8 @@ public class DefaultDistributor extends ISOMetadata implements Distributor {
 
     /**
      * Provides information about the format used by the distributor.
+     *
+     * @return Information about the format used by the distributor.
      */
     @Override
     @XmlElement(name = "distributorFormat")
@@ -190,6 +196,8 @@ public class DefaultDistributor extends ISOMetadata implements Distributor {
 
     /**
      * Provides information about the technical means and media used by the distributor.
+     *
+     * @return Information about the technical means and media used by the distributor.
      */
     @Override
     @XmlElement(name = "distributorTransferOptions")
