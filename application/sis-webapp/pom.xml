@@ -31,6 +31,7 @@
     <version>0.3-jdk7-SNAPSHOT</version>
   </parent>
 
+  <groupId>org.apache.sis.application</groupId>
   <artifactId>sis-webapp</artifactId>
   <packaging>war</packaging>
   <name>Apache SIS web services layer</name>
