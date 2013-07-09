@@ -524,7 +524,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
         <version>${findbugs.version}</version>
         <dependencies>
           <dependency>
-            <groupId>org.apache.sis</groupId>
+            <groupId>org.apache.sis.core</groupId>
             <artifactId>sis-build-helper</artifactId>
             <version>${sis.plugin.version}</version>
           </dependency>
@@ -636,7 +636,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
             <taglet><tagletClass>org.apache.sis.internal.taglet.SourceRepositoryURL</tagletClass></taglet>
           </taglets>
           <tagletArtifact>
-            <groupId>org.apache.sis</groupId>
+            <groupId>org.apache.sis.core</groupId>
             <artifactId>sis-build-helper</artifactId>
             <version>${sis.plugin.version}</version>
           </tagletArtifact>

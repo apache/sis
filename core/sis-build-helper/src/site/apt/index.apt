@@ -91,7 +91,7 @@ Building Apache SIS
 <build>
   <plugins>
     <plugin>
-      <groupId>org.apache.sis</groupId>
+      <groupId>org.apache.sis.core</groupId>
       <artifactId>sis-build-helper</artifactId>
       <version>${sis.plugin.version}</version>
       <executions>
@@ -137,7 +137,7 @@ Building Apache SIS
   <build>
     <plugins>
       <plugin>
-        <groupId>org.apache.sis</groupId>
+        <groupId>org.apache.sis.core</groupId>
         <artifactId>sis-build-helper</artifactId>
         <version>${sis.plugin.version}</version>
         <executions>

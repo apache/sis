@@ -35,6 +35,7 @@
   <!-- ===========================================================
            Module Description
        =========================================================== -->
+  <groupId>org.apache.sis.core</groupId>
   <artifactId>sis-build-helper</artifactId>
   <packaging>maven-plugin</packaging>
   <name>Apache SIS build helper</name>
