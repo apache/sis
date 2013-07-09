@@ -123,6 +123,8 @@ public class DefaultScope extends ISOMetadata implements Scope {
 
     /**
      * Returns the hierarchical level of the data specified by the scope.
+     *
+     * @return Hierarchical level of the data, or {@code null}.
      */
     @Override
     @XmlElement(name = "level", required = true)
@@ -142,6 +144,8 @@ public class DefaultScope extends ISOMetadata implements Scope {
 
     /**
      * Returns detailed descriptions about the level of the data specified by the scope.
+     *
+     * @return Detailed description about the level of the data.
      */
     @Override
     @XmlElement(name = "levelDescription")
@@ -159,8 +163,9 @@ public class DefaultScope extends ISOMetadata implements Scope {
     }
 
     /**
-     * Information about the spatial, vertical and temporal extent of the data specified by the
-     * scope.
+     * Information about the spatial, vertical and temporal extent of the data specified by the scope.
+     *
+     * @return Information about the extent of the data, or {@code null}.
      */
     @Override
     @XmlElement(name = "extent")

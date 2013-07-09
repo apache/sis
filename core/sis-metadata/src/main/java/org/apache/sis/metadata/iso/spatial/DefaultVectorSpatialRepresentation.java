@@ -108,6 +108,8 @@ public class DefaultVectorSpatialRepresentation extends AbstractSpatialRepresent
 
     /**
      * Returns the code which identifies the degree of complexity of the spatial relationships.
+     *
+     * @return The degree of complexity of the spatial relationships, or {@code null}.
      */
     @Override
     @XmlElement(name = "topologyLevel")
@@ -127,6 +129,8 @@ public class DefaultVectorSpatialRepresentation extends AbstractSpatialRepresent
 
     /**
      * Returns information about the geometric objects used in the dataset.
+     *
+     * @return Information about the geometric objects used in the dataset, or {@code null}.
      */
     @Override
     @XmlElement(name = "geometricObjects")

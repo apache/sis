@@ -53,7 +53,7 @@ public final class TemporalUtilities extends Static {
         if (factory != null) {
             return factory;
         }
-        throw new UnsupportedOperationException(Errors.format(Errors.Keys.MissingRequiredModule_1, "sis-temporal"));
+        throw new UnsupportedOperationException("Not supported in Apache SIS 0.3.");
     }
 
     /**

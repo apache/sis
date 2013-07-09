@@ -19,10 +19,7 @@
   under the License.
 -->
 
-<project xmlns              = "http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi          = "http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation = "http://maven.apache.org/POM/4.0.0
-                               http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -383,7 +380,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
     <!-- Following properties are branch-specific -->
     <maven.compile.source>1.6</maven.compile.source>
     <maven.compile.target>1.6</maven.compile.target>
-    <sis.plugin.version>${project.version}</sis.plugin.version>
+    <sis.plugin.version>0.3</sis.plugin.version>
   </properties>
 
   <profiles>
@@ -462,47 +459,6 @@ Apache SIS is a free software, Java language library for developing geospatial a
         </configuration>
       </plugin>
 
-      <!-- Build XHTML pages from the DocBook files
-           See src/main/docbook/README.txt -->
-      <plugin>
-        <groupId>com.agilejava.docbkx</groupId>
-        <artifactId>docbkx-maven-plugin</artifactId>
-        <version>2.0.14</version>
-        <inherited>false</inherited>
-        <dependencies>
-          <dependency> <!-- XHTML generation -->
-            <groupId>net.sf.docbook</groupId>
-            <artifactId>docbook-xml</artifactId>
-            <version>5.0-all</version>
-            <classifier>resources</classifier>
-            <type>zip</type>
-            <scope>runtime</scope>
-          </dependency>
-          <dependency> <!-- Syntax highlighting -->
-            <groupId>net.sf.xslthl</groupId>
-            <artifactId>xslthl</artifactId>
-            <version>2.1.0</version>
-            <scope>runtime</scope>
-          </dependency>
-        </dependencies>
-        <configuration>
-          <sourceDirectory>${basedir}/src/main/docbook</sourceDirectory>
-          <targetDirectory>${basedir}/target/site/book</targetDirectory>
-          <xhtmlCustomization>src/main/docbook/book.xsl</xhtmlCustomization>
-          <xincludeSupported>true</xincludeSupported>
-          <htmlStylesheet>book.css</htmlStylesheet>
-          <highlightSource>true</highlightSource>
-        </configuration>
-        <executions>
-          <execution>
-            <goals>
-              <goal>generate-xhtml</goal>
-            </goals>
-            <phase>pre-site</phase>
-          </execution>
-        </executions>
-      </plugin>
-
       <!-- Create web site -->
       <plugin>
         <artifactId>maven-site-plugin</artifactId>
@@ -524,7 +480,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
         <version>${findbugs.version}</version>
         <dependencies>
           <dependency>
-            <groupId>org.apache.sis</groupId>
+            <groupId>org.apache.sis.core</groupId>
             <artifactId>sis-build-helper</artifactId>
             <version>${sis.plugin.version}</version>
           </dependency>
@@ -636,7 +592,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
             <taglet><tagletClass>org.apache.sis.internal.taglet.SourceRepositoryURL</tagletClass></taglet>
           </taglets>
           <tagletArtifact>
-            <groupId>org.apache.sis</groupId>
+            <groupId>org.apache.sis.core</groupId>
             <artifactId>sis-build-helper</artifactId>
             <version>${sis.plugin.version}</version>
           </tagletArtifact>
@@ -677,26 +633,6 @@ Apache SIS is a free software, Java language library for developing geospatial a
       </plugin>
     </plugins>
   </reporting>
-
-
-
-  <!-- ==============================================================
-         Additional repositories from which to download artifacts.
-         The parent pom.xml already declares the apache.snapshots
-         repository for library artefacts. But we also need it for
-         Maven plugins in order to download sis-build-helper when
-         the user did not built it himself.
-       ============================================================== -->
-  <pluginRepositories>
-    <pluginRepository>
-      <id>apache.snapshots</id>
-      <name>Apache Snapshot Repository</name>
-      <url>http://repository.apache.org/snapshots</url>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-    </pluginRepository>
-  </pluginRepositories>
 
 
 

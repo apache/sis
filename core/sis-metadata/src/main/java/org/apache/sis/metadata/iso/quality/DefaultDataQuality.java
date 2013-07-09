@@ -131,6 +131,8 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
 
     /**
      * Returns the specific data to which the data quality information applies.
+     *
+     * @return The specific data to which the data quality information applies, or {@code null}.
      */
     @Override
     @XmlElement(name = "scope", required = true)
@@ -151,7 +153,7 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
     /**
      * Returns the quantitative quality information for the data specified by the scope.
      *
-     * @return The quantitative quality information.
+     * @return Quantitative quality information for the data.
      */
     @Override
     @XmlElement(name = "report")
@@ -169,8 +171,9 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
     }
 
     /**
-     * Returns non-quantitative quality information about the lineage of the data specified
-     * by the scope.
+     * Returns non-quantitative quality information about the lineage of the data specified by the scope.
+     *
+     * @return Non-quantitative quality information about the lineage of the data specified, or {@code null}.
      */
     @Override
     @XmlElement(name = "lineage")
@@ -179,8 +182,7 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
     }
 
     /**
-     * Sets the non-quantitative quality information about the lineage of the data specified
-     * by the scope.
+     * Sets the non-quantitative quality information about the lineage of the data specified by the scope.
      *
      * @param newValue The new lineage.
      */

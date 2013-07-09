@@ -131,14 +131,6 @@ public final class Namespaces extends Static {
     public static final String XLINK = "http://www.w3.org/1999/xlink";
 
     /**
-     * The <code>{@value}</code> URL.
-     * The usual prefix for this namespace is {@code "fra"}.
-     *
-     * @category Profiles
-     */
-    public static final String FRA = "http://www.cnig.gouv.fr/2005/fra";
-
-    /**
      * URLs for which the prefix to use directly follows them.
      */
     private static final String[] GENERIC_URLS = {

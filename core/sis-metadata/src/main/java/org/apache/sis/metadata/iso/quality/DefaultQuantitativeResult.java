@@ -120,6 +120,8 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
 
     /**
      * Returns the quantitative value or values, content determined by the evaluation procedure used.
+     *
+     * @return Quantitative value or values.
      */
     @Override
 //  @XmlElement(name = "value", required = true) // TODO
@@ -137,7 +139,9 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
     }
 
     /**
-     * Return the value type for reporting a data quality result, or {@code null} if none.
+     * Return the value type for reporting a data quality result.
+     *
+     * @return Value type for reporting a data quality result, or {@code null}.
      */
     @Override
     @XmlElement(name = "valueType")
@@ -146,7 +150,7 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
     }
 
     /**
-     * Sets the value type for reporting a data quality result, or {@code null} if none.
+     * Sets the value type for reporting a data quality result.
      *
      * @param newValue The new value type.
      */
@@ -156,7 +160,9 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
     }
 
     /**
-     * Returns the value unit for reporting a data quality result, or {@code null} if none.
+     * Returns the value unit for reporting a data quality result.
+     *
+     * @return Value unit for reporting a data quality result, or {@code null}.
      */
     @Override
     @XmlElement(name = "valueUnit", required = true)
@@ -165,7 +171,7 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
     }
 
     /**
-     * Sets the value unit for reporting a data quality result, or {@code null} if none.
+     * Sets the value unit for reporting a data quality result.
      *
      * @param newValue The new value unit.
      */
@@ -175,7 +181,9 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
     }
 
     /**
-     * Returns the statistical method used to determine the value, or {@code null} if none.
+     * Returns the statistical method used to determine the value.
+     *
+     * @return Statistical method used to determine the value, or {@code null}.
      */
     @Override
     @XmlElement(name = "errorStatistic")

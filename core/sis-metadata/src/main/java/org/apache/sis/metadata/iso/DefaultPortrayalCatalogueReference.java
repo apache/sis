@@ -107,6 +107,8 @@ public class DefaultPortrayalCatalogueReference extends ISOMetadata
 
     /**
      * Bibliographic reference to the portrayal catalogue cited.
+     *
+     * @return References to the portrayal catalogue cited.
      */
     @Override
     @XmlElement(name = "portrayalCatalogueCitation", required = true)

@@ -57,7 +57,7 @@ public final class Supervisor extends StandardMBean implements SupervisorMBean, 
      * Whatever JMX agent is enabled. Setting this variable to {@code false} allows the
      * Java compiler to omit any dependency to this {@code Supervisor} class.
      */
-    static final boolean ENABLED = true;
+    static final boolean ENABLED = false;
 
     /**
      * The JMX object name, created when the {@link #register()} is first invoked.

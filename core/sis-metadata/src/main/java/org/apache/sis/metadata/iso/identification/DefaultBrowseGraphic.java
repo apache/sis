@@ -123,6 +123,8 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
 
     /**
      * Returns the name of the file that contains a graphic that provides an illustration of the dataset.
+     *
+     * @return File that contains a graphic that provides an illustration of the dataset, or {@code null}.
      */
     @Override
     @XmlElement(name = "fileName", required = true)
@@ -142,6 +144,8 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
 
     /**
      * Returns the text description of the illustration.
+     *
+     * @return Text description of the illustration, or {@code null}.
      */
     @Override
     @XmlElement(name = "fileDescription")
@@ -162,6 +166,8 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
     /**
      * Format in which the illustration is encoded.
      * Examples: CGM, EPS, GIF, JPEG, PBM, PS, TIFF, XWD.
+     *
+     * @return Format in which the illustration is encoded, or {@code null}.
      */
     @Override
     @XmlElement(name = "fileType")
