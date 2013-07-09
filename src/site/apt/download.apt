@@ -33,7 +33,7 @@ Downloading Apache SIS Binaries
 
 +---------------------------------------------------------+
 <properties>
-  <sis.version>0.2-incubating</sis.version>
+  <sis.version>0.3</sis.version>
 </properties>
 
 <dependencies>
@@ -43,32 +43,4 @@ Downloading Apache SIS Binaries
     <version>${sis.version}</version>
   </dependency>
 </dependencies>
-+---------------------------------------------------------+
-
-
-* Using SIS development snapshots in a Maven project
-
-+---------------------------------------------------------+
-<properties>
-  <sis.version>0.3-SNAPSHOT</sis.version>
-</properties>
-
-<dependencies>
-  <dependency>
-    <groupId>org.apache.sis.core</groupId>
-    <artifactId>sis-referencing</artifactId>
-    <version>${sis.version}</version>
-  </dependency>
-</dependencies>
-
-<repositories>
-  <repository>
-    <id>apache.snapshots</id>
-    <name>Apache Snapshot Repository</name>
-    <url>http://repository.apache.org/snapshots</url>
-    <releases>
-      <enabled>false</enabled>
-    </releases>
-  </repository>
-</repositories>
 +---------------------------------------------------------+

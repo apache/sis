@@ -46,7 +46,7 @@ public class Version implements CharSequence, Comparable<Version>, Serializable 
     /**
      * The version of this Apache SIS distribution.
      */
-    public static final Version SIS = new Version("0.3-SNAPSHOT");
+    public static final Version SIS = new Version("0.3");
 
     /**
      * The separator characters between {@linkplain #getMajor() major}, {@linkplain #getMinor() minor}

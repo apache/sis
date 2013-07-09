@@ -380,7 +380,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
     <!-- Following properties are branch-specific -->
     <maven.compile.source>1.6</maven.compile.source>
     <maven.compile.target>1.6</maven.compile.target>
-    <sis.plugin.version>0.3-SNAPSHOT</sis.plugin.version>
+    <sis.plugin.version>0.3</sis.plugin.version>
   </properties>
 
   <profiles>
@@ -633,26 +633,6 @@ Apache SIS is a free software, Java language library for developing geospatial a
       </plugin>
     </plugins>
   </reporting>
-
-
-
-  <!-- ==============================================================
-         Additional repositories from which to download artifacts.
-         The parent pom.xml already declares the apache.snapshots
-         repository for library artefacts. But we also need it for
-         Maven plugins in order to download sis-build-helper when
-         the user did not built it himself.
-       ============================================================== -->
-  <pluginRepositories>
-    <pluginRepository>
-      <id>apache.snapshots</id>
-      <name>Apache Snapshot Repository</name>
-      <url>http://repository.apache.org/snapshots</url>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-    </pluginRepository>
-  </pluginRepositories>
 
 
 
