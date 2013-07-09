@@ -109,6 +109,8 @@ public class DefaultRequestedDate extends ISOMetadata implements RequestedDate {
 
     /**
      * Returns the preferred date and time of collection.
+     *
+     * @return Preferred date and time, or {@code null}.
      */
     @Override
     @XmlElement(name = "requestedDateOfCollection", required = true)
@@ -128,6 +130,8 @@ public class DefaultRequestedDate extends ISOMetadata implements RequestedDate {
 
     /**
      * Returns the latest date and time collection must be completed.
+     *
+     * @return Latest date and time, or {@code null}.
      */
     @Override
     @XmlElement(name = "latestAcceptableDate", required = true)

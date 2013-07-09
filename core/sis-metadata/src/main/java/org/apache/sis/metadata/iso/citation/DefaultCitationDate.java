@@ -120,6 +120,8 @@ public class DefaultCitationDate extends ISOMetadata implements CitationDate {
 
     /**
      * Returns the reference date for the cited resource.
+     *
+     * @return Reference date for the cited resource, or {@code null}.
      */
     @Override
     @XmlElement(name = "date", required = true)
@@ -139,6 +141,8 @@ public class DefaultCitationDate extends ISOMetadata implements CitationDate {
 
     /**
      * Returns the event used for reference date.
+     *
+     * @return Event used for reference date, or {@code null}.
      */
     @Override
     @XmlElement(name = "dateType", required = true)

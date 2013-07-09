@@ -136,6 +136,8 @@ public class DefaultKeywords extends ISOMetadata implements Keywords {
 
     /**
      * Returns commonly used word(s) or formalised word(s) or phrase(s) used to describe the subject.
+     *
+     * @return Word(s) or phrase(s) used to describe the subject.
      */
     @Override
     @XmlElement(name = "keyword", required = true)
@@ -154,6 +156,8 @@ public class DefaultKeywords extends ISOMetadata implements Keywords {
 
     /**
      * Returns the subject matter used to group similar keywords.
+     *
+     * @return Subject matter used to group similar keywords, or {@code null}.
      */
     @Override
     @XmlElement(name = "type")
@@ -172,8 +176,9 @@ public class DefaultKeywords extends ISOMetadata implements Keywords {
     }
 
     /**
-     * Returns the name of the formally registered thesaurus
-     * or a similar authoritative source of keywords.
+     * Returns the name of the formally registered thesaurus or a similar authoritative source of keywords.
+     *
+     * @return Name of registered thesaurus or similar authoritative source of keywords, or {@code null}.
      */
     @Override
     @XmlElement(name = "thesaurusName")
@@ -182,8 +187,7 @@ public class DefaultKeywords extends ISOMetadata implements Keywords {
     }
 
     /**
-     * Sets the name of the formally registered thesaurus or a similar authoritative source
-     * of keywords.
+     * Sets the name of the formally registered thesaurus or a similar authoritative source of keywords.
      *
      * @param newValue The new thesaurus name.
      */

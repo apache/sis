@@ -138,8 +138,10 @@ public class DefaultResponsibleParty extends ISOMetadata implements ResponsibleP
 
     /**
      * Returns the name of the responsible person- surname, given name, title separated by a delimiter.
-     * Only one of {@code individualName}, {@link #getOrganisationName organisationName}
-     * and {@link #getPositionName positionName} should be provided.
+     * Only one of {@code individualName}, {@link #getOrganisationName() organisationName}
+     * and {@link #getPositionName() positionName} shall be provided.
+     *
+     * @return Name, surname, given name and title of the responsible person, or {@code null}.
      */
     @Override
     @XmlElement(name = "individualName")
@@ -149,8 +151,8 @@ public class DefaultResponsibleParty extends ISOMetadata implements ResponsibleP
 
     /**
      * Sets the name of the responsible person- surname, given name, title separated by a delimiter.
-     * Only one of {@code individualName}, {@link #getOrganisationName organisationName}
-     * and {@link #getPositionName positionName} should be provided.
+     * Only one of {@code individualName}, {@link #getOrganisationName() organisationName}
+     * and {@link #getPositionName() positionName} shall be provided.
      *
      * @param newValue The new individual name, or {@code null} if none.
      */
@@ -161,8 +163,10 @@ public class DefaultResponsibleParty extends ISOMetadata implements ResponsibleP
 
     /**
      * Returns the name of the responsible organization. Only one of
-     * {@link #getIndividualName individualName}, {@code organisationName}
-     * and {@link #getPositionName positionName} should be provided.
+     * {@link #getIndividualName() individualName}, {@code organisationName}
+     * and {@link #getPositionName() positionName} shall be provided.
+     *
+     * @return Name of the responsible organization, or {@code null}.
      */
     @Override
     @XmlElement(name = "organisationName")
@@ -172,10 +176,10 @@ public class DefaultResponsibleParty extends ISOMetadata implements ResponsibleP
 
     /**
      * Sets the name of the responsible organization. Only one of
-     * {@link #getIndividualName individualName}, {@code organisationName}
-     * and {@link #getPositionName positionName} should be provided.
+     * {@link #getIndividualName() individualName}, {@code organisationName}
+     * and {@link #getPositionName() positionName} shall be provided.
      *
-     * @param newValue The new organisation name, or {@code null} if none.
+     * @param newValue The new organization name, or {@code null} if none.
      */
     public void setOrganisationName(final InternationalString newValue) {
         checkWritePermission();
@@ -184,8 +188,10 @@ public class DefaultResponsibleParty extends ISOMetadata implements ResponsibleP
 
     /**
      * Returns the role or position of the responsible person Only one of
-     * {@link #getIndividualName individualName}, {@link #getOrganisationName organisationName}
-     * and {@code positionName} should be provided.
+     * {@link #getIndividualName() individualName}, {@link #getOrganisationName() organisationName}
+     * and {@code positionName} shall be provided.
+     *
+     * @return Role or position of the responsible person, or {@code null}
      */
     @Override
     @XmlElement(name = "positionName")
@@ -195,8 +201,8 @@ public class DefaultResponsibleParty extends ISOMetadata implements ResponsibleP
 
     /**
      * set the role or position of the responsible person Only one of
-     * {@link #getIndividualName individualName}, {@link #getOrganisationName organisationName}
-     * and {@code positionName} should be provided.
+     * {@link #getIndividualName() individualName}, {@link #getOrganisationName() organisationName}
+     * and {@code positionName} shall be provided.
      *
      * @param newValue The new position name, or {@code null} if none.
      */
@@ -207,6 +213,8 @@ public class DefaultResponsibleParty extends ISOMetadata implements ResponsibleP
 
     /**
      * Returns the address of the responsible party.
+     *
+     * @return Address of the responsible party, or {@code null}.
      */
     @Override
     @XmlElement(name = "contactInfo")
@@ -226,6 +234,8 @@ public class DefaultResponsibleParty extends ISOMetadata implements ResponsibleP
 
     /**
      * Returns the function performed by the responsible party.
+     *
+     * @return Function performed by the responsible party, or {@code null}.
      */
     @Override
     @XmlElement(name = "role", required = true)

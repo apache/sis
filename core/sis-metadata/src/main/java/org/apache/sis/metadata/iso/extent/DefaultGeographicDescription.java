@@ -113,6 +113,8 @@ public class DefaultGeographicDescription extends AbstractGeographicExtent
 
     /**
      * Returns the identifier used to represent a geographic area.
+     *
+     * @return The identifier used to represent a geographic area, or {@code null}.
      */
     @Override
     @XmlElement(name = "geographicIdentifier", required = true)

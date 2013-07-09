@@ -74,7 +74,7 @@ public final strictfp class ImmutableIdentifierTest extends TestCase {
     }
 
     /**
-     * Tests the constructor with the {@code "remarks"} attribute as an {@link InternationalString}.
+     * Tests the constructor with the {@code "remarks"} attribute as a {@link SimpleInternationalString}.
      */
     @Test
     @DependsOnMethod("testConstructorWithStringValues")
@@ -105,9 +105,9 @@ public final strictfp class ImmutableIdentifierTest extends TestCase {
         final ImmutableIdentifier identifier = new ImmutableIdentifier(properties);
         Validators.validate(identifier);
 
-        assertEquals(CODE_KEY,        "This is a code",        identifier.getCode());
-        assertEquals(AUTHORITY_KEY,   "An other authority",    identifier.getAuthority().getTitle().toString());
-        assertEquals(VERSION_KEY,     "This is a version",     identifier.getVersion());
+        assertEquals(CODE_KEY,        "This is a code",       identifier.getCode());
+        assertEquals(AUTHORITY_KEY,   "An other authority",   identifier.getAuthority().getTitle().toString());
+        assertEquals(VERSION_KEY,     "This is a version",    identifier.getVersion());
         assertEquals("remarks",       "There is remarks",     identifier.getRemarks().toString(Locale.ENGLISH));
         assertEquals("remarks_fr",    "Voici des remarques",  identifier.getRemarks().toString(Locale.FRENCH));
         assertEquals("remarks_fr_CA", "Pareil",               identifier.getRemarks().toString(Locale.CANADA_FRENCH));

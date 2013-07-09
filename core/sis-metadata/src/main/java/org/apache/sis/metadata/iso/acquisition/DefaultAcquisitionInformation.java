@@ -147,6 +147,8 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
 
     /**
      * Returns the plan as implemented by the acquisition.
+     *
+     * @return Plan as implemented by the acquisition.
      */
     @Override
     @XmlElement(name = "acquisitionPlan")
@@ -165,6 +167,8 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
 
     /**
      * Returns the requirement the data acquisition intends to satisfy.
+     *
+     * @return Requirement the data acquisition intends to satisfy.
      */
     @Override
     @XmlElement(name = "acquisitionRequirement")
@@ -184,6 +188,8 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
     /**
      * Returns a record of the environmental circumstances during the data acquisition.
      * {@code null} if unspecified.
+     *
+     * @return Record of the environmental circumstances, or {@code null}.
      */
     @Override
     @XmlElement(name = "environmentalConditions")
@@ -203,6 +209,8 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
 
     /**
      * Returns the general information about the instrument used in data acquisition.
+     *
+     * @return Instrument used in data acquisition.
      */
     @Override
     @XmlElement(name = "instrument")
@@ -221,6 +229,8 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
 
     /**
      * Returns the area or object to be sensed.
+     *
+     * @return Area or object to be sensed.
      */
     @Override
     @XmlElement(name = "objective")
@@ -239,6 +249,8 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
 
     /**
      * Returns the general information about an identifiable activity which provided the data.
+     *
+     * @return Identifiable activity which provided the data.
      */
     @Override
     @XmlElement(name = "operation")
@@ -257,6 +269,8 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
 
     /**
      * Returns the general information about the platform from which the data were taken.
+     *
+     * @return Platform from which the data were taken.
      */
     @Override
     @XmlElement(name = "platform")
