@@ -125,6 +125,8 @@ public class DefaultInstrument extends ISOMetadata implements Instrument {
 
     /**
      * Returns the complete citation of the instrument.
+     *
+     * @return Complete citation of the instrument.
      */
     @Override
     @XmlElement(name = "citation")
@@ -143,6 +145,8 @@ public class DefaultInstrument extends ISOMetadata implements Instrument {
 
     /**
      * Returns the unique identification of the instrument.
+     *
+     * @return Unique identification of the instrument, or {@code null}.
      */
     @Override
     @XmlElement(name = "identifier", required = true)
@@ -163,6 +167,8 @@ public class DefaultInstrument extends ISOMetadata implements Instrument {
 
     /**
      * Returns the name of the type of instrument. Examples: framing, line-scan, push-broom, pan-frame.
+     *
+     * @return Type of instrument, or {@code null}.
      */
     @Override
     @XmlElement(name = "type", required = true)
@@ -182,6 +188,8 @@ public class DefaultInstrument extends ISOMetadata implements Instrument {
 
     /**
      * Returns the textual description of the instrument. {@code null} if unspecified.
+     *
+     * @return Textual description, or {@code null}.
      */
     @Override
     @XmlElement(name = "description")
@@ -201,6 +209,8 @@ public class DefaultInstrument extends ISOMetadata implements Instrument {
 
     /**
      * Returns the platform on which the instrument is mounted. {@code null} if unspecified.
+     *
+     * @return Platform on which the instrument is mounted, or {@code null}.
      */
     @Override
     @XmlElement(name = "mountedOn")

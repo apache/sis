@@ -139,6 +139,8 @@ public class DefaultContact extends ISOMetadata implements Contact {
 
     /**
      * Returns telephone numbers at which the organization or individual may be contacted.
+     *
+     * @return Telephone numbers at which the organization or individual may be contacted, or {@code null}.
      */
     @Override
     @XmlElement(name = "phone")
@@ -158,6 +160,8 @@ public class DefaultContact extends ISOMetadata implements Contact {
 
     /**
      * Returns the physical and email address at which the organization or individual may be contacted.
+     *
+     * @return Physical and email address at which the organization or individual may be contacted, or {@code null}.
      */
     @Override
     @XmlElement(name = "address")
@@ -177,6 +181,8 @@ public class DefaultContact extends ISOMetadata implements Contact {
 
     /**
      * Return on-line information that can be used to contact the individual or organization.
+     *
+     * @return On-line information that can be used to contact the individual or organization, or {@code null}.
      */
     @Override
     @XmlElement(name = "onlineResource")
@@ -195,8 +201,9 @@ public class DefaultContact extends ISOMetadata implements Contact {
     }
 
     /**
-     * Returns the time period (including time zone) when individuals can contact the organization
-     * or individual.
+     * Returns the time period (including time zone) when individuals can contact the organization or individual.
+     *
+     * @return Time period when individuals can contact the organization or individual, or {@code null}.
      */
     @Override
     @XmlElement(name = "hoursOfService")
@@ -205,8 +212,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
     }
 
     /**
-     * Sets time period (including time zone) when individuals can contact the organization or
-     * individual.
+     * Sets time period (including time zone) when individuals can contact the organization or individual.
      *
      * @param newValue The new hours of service, or {@code null} if none.
      */
@@ -217,6 +223,8 @@ public class DefaultContact extends ISOMetadata implements Contact {
 
     /**
      * Returns supplemental instructions on how or when to contact the individual or organization.
+     *
+     * @return Supplemental instructions on how or when to contact the individual or organization, or {@code null}.
      */
     @Override
     @XmlElement(name = "contactInstructions")

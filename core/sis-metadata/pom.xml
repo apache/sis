@@ -32,6 +32,7 @@
   <!-- ===========================================================
            Module Description
        =========================================================== -->
+  <groupId>org.apache.sis.core</groupId>
   <artifactId>sis-metadata</artifactId>
   <packaging>bundle</packaging>
   <name>Apache SIS metadata</name>
@@ -107,7 +108,7 @@ Implementations of metadata derived from ISO 19115. This module provides both an
 
       <!-- Collect JAR files in <root>/target/binaries directory. -->
       <plugin>
-        <groupId>org.apache.sis</groupId>
+        <groupId>org.apache.sis.core</groupId>
         <artifactId>sis-build-helper</artifactId>
         <version>${sis.plugin.version}</version>
         <executions>
@@ -138,7 +139,7 @@ Implementations of metadata derived from ISO 19115. This module provides both an
        =========================================================== -->
   <dependencies>
     <dependency>
-      <groupId>org.apache.sis</groupId>
+      <groupId>org.apache.sis.core</groupId>
       <artifactId>sis-utility</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -153,7 +154,7 @@ Implementations of metadata derived from ISO 19115. This module provides both an
 
     <!-- Test dependencies -->
     <dependency>
-      <groupId>org.apache.sis</groupId>
+      <groupId>org.apache.sis.core</groupId>
       <artifactId>sis-utility</artifactId>
       <version>${project.version}</version>
       <type>test-jar</type>

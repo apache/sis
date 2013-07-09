@@ -254,6 +254,8 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
     /**
      * Returns the attributes to which the information applies.
      *
+     * @return Attributes to which the information applies.
+     *
      * {@section Conditions}
      * This method returns a modifiable collection only if no other property is set.
      * Otherwise, this method returns an unmodifiable empty collection.
@@ -278,6 +280,8 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
 
     /**
      * Returns the features to which the information applies.
+     *
+     * @return Features to which the information applies.
      *
      * {@section Conditions}
      * This method returns a modifiable collection only if no other property is set.
@@ -304,6 +308,8 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
     /**
      * Returns the feature instances to which the information applies.
      *
+     * @return Feature instances to which the information applies.
+     *
      * {@section Conditions}
      * This method returns a modifiable collection only if no other property is set.
      * Otherwise, this method returns an unmodifiable empty collection.
@@ -329,6 +335,8 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
     /**
      * Returns the attribute instances to which the information applies.
      *
+     * @return Attribute instances to which the information applies.
+     *
      * {@section Conditions}
      * This method returns a modifiable collection only if no other property is set.
      * Otherwise, this method returns an unmodifiable empty collection.
@@ -353,6 +361,8 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
 
     /**
      * Returns the dataset to which the information applies.
+     *
+     * @return Dataset to which the information applies, or {@code null}.
      */
     @Override
     @XmlElement(name = "dataset")
@@ -379,8 +389,9 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
     }
 
     /**
-     * Returns the class of information that does not fall into the other categories to
-     * which the information applies.
+     * Returns the class of information that does not fall into the other categories to which the information applies.
+     *
+     * @return Class of information that does not fall into the other categories, or {@code null}.
      */
     @Override
     @XmlElement(name = "other")

@@ -114,6 +114,8 @@ public class DefaultFeatureTypeList extends ISOMetadata implements FeatureTypeLi
 
     /**
      * Instance of a type defined in the spatial schema.
+     *
+     * @return Instance of a type defined in the spatial schema, or {@code null}.
      */
     @Override
     @XmlElement(name = "spatialObject", required = true)
@@ -133,6 +135,8 @@ public class DefaultFeatureTypeList extends ISOMetadata implements FeatureTypeLi
 
     /**
      * Name of the spatial schema used.
+     *
+     * @return Name of the spatial schema used, or {@code null}.
      */
     @Override
     @XmlElement(name = "spatialSchemaName", required = true)

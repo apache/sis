@@ -128,6 +128,8 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
     /**
      * Returns the limitation affecting the fitness for use of the resource.
      * Example: "<cite>not to be used for navigation</cite>".
+     *
+     * @return Limitation affecting the fitness for use of the resource.
      */
     @Override
     @XmlElement(name = "useLimitation")

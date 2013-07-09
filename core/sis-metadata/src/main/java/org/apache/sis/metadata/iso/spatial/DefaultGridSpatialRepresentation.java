@@ -159,6 +159,8 @@ public class DefaultGridSpatialRepresentation extends AbstractSpatialRepresentat
 
     /**
      * Returns the number of independent spatial-temporal axes.
+     *
+     * @return Number of independent spatial-temporal axes, or {@code null}.
      */
     @Override
     @ValueRange(minimum=0)
@@ -179,6 +181,8 @@ public class DefaultGridSpatialRepresentation extends AbstractSpatialRepresentat
 
     /**
      * Returns information about spatial-temporal axis properties.
+     *
+     * @return Information about spatial-temporal axis properties.
      */
     @Override
     @XmlElement(name = "axisDimensionProperties", required = true)
@@ -199,6 +203,8 @@ public class DefaultGridSpatialRepresentation extends AbstractSpatialRepresentat
 
     /**
      * Returns the identification of grid data as point or cell.
+     *
+     * @return Identification of grid data as point or cell, or {@code null}.
      */
     @Override
     @XmlElement(name = "cellGeometry", required = true)
@@ -218,6 +224,8 @@ public class DefaultGridSpatialRepresentation extends AbstractSpatialRepresentat
 
     /**
      * Returns indication of whether or not parameters for transformation exists.
+     *
+     * @return Whether or not parameters for transformation exists.
      */
     @Override
     @XmlElement(name = "transformationParameterAvailability", required = true)
