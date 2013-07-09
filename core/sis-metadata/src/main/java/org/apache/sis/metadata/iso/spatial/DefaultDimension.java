@@ -126,6 +126,8 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
 
     /**
      * Returns the name of the axis.
+     *
+     * @return Name of the axis, or {@code null}.
      */
     @Override
     @XmlElement(name = "dimensionName", required = true)
@@ -145,6 +147,8 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
 
     /**
      * Returns the number of elements along the axis.
+     *
+     * @return Number of elements along the axis, or {@code null}.
      */
     @Override
     @ValueRange(minimum=0)
@@ -165,6 +169,8 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
 
     /**
      * Returns the degree of detail in the grid dataset.
+     *
+     * @return Degree of detail in the grid dataset, or {@code null}.
      */
     @Override
     @ValueRange(minimum=0, isMinIncluded=false)

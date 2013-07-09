@@ -119,6 +119,8 @@ public class DefaultEnvironmentalRecord extends ISOMetadata implements Environme
 
     /**
      * Returns the average air temperature along the flight pass during the photo flight.
+     *
+     * @return Average air temperature along the flight pass during the photo flight, or {@code null}.
      */
     @Override
     @XmlElement(name = "averageAirTemperature", required = true)
@@ -138,6 +140,8 @@ public class DefaultEnvironmentalRecord extends ISOMetadata implements Environme
 
     /**
      * Returns the maximum relative humidity along the flight pass during the photo flight.
+     *
+     * @return Maximum relative humidity along the flight pass during the photo flight, or {@code null}.
      */
     @Override
     @ValueRange(minimum=0, maximum=100)
@@ -158,6 +162,8 @@ public class DefaultEnvironmentalRecord extends ISOMetadata implements Environme
 
     /**
      * Returns the maximum altitude during the photo flight.
+     *
+     * @return Maximum altitude during the photo flight, or {@code null}.
      */
     @Override
     @XmlElement(name = "maxAltitude", required = true)
@@ -176,8 +182,9 @@ public class DefaultEnvironmentalRecord extends ISOMetadata implements Environme
     }
 
     /**
-     * Returns the meteorological conditions in the photo flight area, in particular clouds,
-     * snow and wind.
+     * Returns the meteorological conditions in the photo flight area, in particular clouds, snow and wind.
+     *
+     * @return Meteorological conditions in the photo flight area, or {@code null}.
      */
     @Override
     @XmlElement(name = "meteorologicalConditions", required = true)
@@ -186,8 +193,7 @@ public class DefaultEnvironmentalRecord extends ISOMetadata implements Environme
     }
 
     /**
-     * Sets the meteorological conditions in the photo flight area, in particular clouds,
-     * snow and wind.
+     * Sets the meteorological conditions in the photo flight area, in particular clouds, snow and wind.
      *
      * @param newValue The meteorological conditions value.
      */

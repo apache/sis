@@ -111,6 +111,8 @@ public class DefaultMetadataExtensionInformation extends ISOMetadata
     /**
      * Information about on-line sources containing the community profile name and
      * the extended metadata elements. Information for all new metadata elements.
+     *
+     * @return Online sources to community profile name and extended metadata elements, or {@code null}.
      */
     @Override
     @XmlElement(name = "extensionOnLineResource")
@@ -131,6 +133,8 @@ public class DefaultMetadataExtensionInformation extends ISOMetadata
     /**
      * Provides information about a new metadata element, not found in ISO 19115, which is
      * required to describe geographic data.
+     *
+     * @return New metadata elements not found in ISO 19115.
      */
     @Override
     @XmlElement(name = "extendedElementInformation")

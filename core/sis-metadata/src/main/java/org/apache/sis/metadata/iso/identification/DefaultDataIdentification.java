@@ -174,6 +174,8 @@ public class DefaultDataIdentification extends AbstractIdentification implements
 
     /**
      * Returns the method used to spatially represent geographic information.
+     *
+     * @return Method(s) used to spatially represent geographic information.
      */
     @Override
     @XmlElement(name = "spatialRepresentationType")
@@ -191,8 +193,9 @@ public class DefaultDataIdentification extends AbstractIdentification implements
     }
 
     /**
-     * Returns the factor which provides a general understanding of the density of spatial data
-     * in the dataset.
+     * Returns the factor which provides a general understanding of the density of spatial data in the dataset.
+     *
+     * @return Factor which provides a general understanding of the density of spatial data.
      */
     @Override
     @XmlElement(name = "spatialResolution")
@@ -201,8 +204,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
     }
 
     /**
-     * Sets the factor which provides a general understanding of the density of spatial data
-     * in the dataset.
+     * Sets the factor which provides a general understanding of the density of spatial data in the dataset.
      *
      * @param newValues The new spatial resolutions.
      */
@@ -212,6 +214,8 @@ public class DefaultDataIdentification extends AbstractIdentification implements
 
     /**
      * Returns the language(s) used within the dataset.
+     *
+     * @return Language(s) used.
      */
     @Override
     @XmlElement(name = "language", required = true)
@@ -230,6 +234,8 @@ public class DefaultDataIdentification extends AbstractIdentification implements
 
     /**
      * Returns the full name of the character coding standard used for the dataset.
+     *
+     * @return Name(s) of the character coding standard(s) used.
      */
     @Override
     @XmlElement(name = "characterSet")
@@ -248,6 +254,8 @@ public class DefaultDataIdentification extends AbstractIdentification implements
 
     /**
      * Returns the main theme(s) of the dataset.
+     *
+     * @return Main theme(s).
      */
     @Override
     @XmlElement(name = "topicCategory")
@@ -267,6 +275,8 @@ public class DefaultDataIdentification extends AbstractIdentification implements
     /**
      * Returns a description of the dataset in the producer's processing environment. This includes
      * items such as the software, the computer operating system, file name, and the dataset size.
+     *
+     * @return Description of the dataset in the producer's processing environment, or {@code null}.
      */
     @Override
     @XmlElement(name = "environmentDescription")
@@ -287,6 +297,8 @@ public class DefaultDataIdentification extends AbstractIdentification implements
     /**
      * Returns additional extent information including the bounding polygon, vertical, and temporal
      * extent of the dataset.
+     *
+     * @return Additional extent information.
      */
     @Override
     @XmlElement(name = "extent")
@@ -305,6 +317,8 @@ public class DefaultDataIdentification extends AbstractIdentification implements
 
     /**
      * Any other descriptive information about the dataset.
+     *
+     * @return Other descriptive information, or {@code null}.
      */
     @Override
     @XmlElement(name = "supplementalInformation")

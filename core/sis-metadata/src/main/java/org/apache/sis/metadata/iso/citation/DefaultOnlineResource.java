@@ -148,6 +148,8 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
     /**
      * Returns the name of an application profile that can be used with the online resource.
      * Returns {@code null} if none.
+     *
+     * @return Application profile that can be used with the online resource, or {@code null}.
      */
     @Override
     @XmlElement(name = "applicationProfile")
@@ -167,6 +169,8 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
 
     /**
      * Name of the online resource. Returns {@code null} if none.
+     *
+     * @return Name of the online resource, or {@code null}.
      */
     @Override
     @XmlElement(name = "name")
@@ -186,6 +190,8 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
 
     /**
      * Returns the detailed text description of what the online resource is/does.
+     *
+     * @return Text description of what the online resource is/does, or {@code null}.
      */
     @Override
     @XmlElement(name = "description")
@@ -205,6 +211,8 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
 
     /**
      * Returns the code for function performed by the online resource.
+     *
+     * @return Function performed by the online resource, or {@code null}.
      */
     @Override
     @XmlElement(name = "function")
@@ -225,6 +233,8 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
     /**
      * Returns the location (address) for on-line access using a Uniform Resource Locator address or
      * similar addressing scheme such as "{@code http://www.statkart.no/isotc211}".
+     *
+     * @return Location for on-line access using a Uniform Resource Locator address or similar scheme, or {@code null}.
      */
     @Override
     @XmlElement(name = "linkage", required = true)
@@ -245,6 +255,8 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
 
     /**
      * Returns the connection protocol to be used.
+     *
+     * @return Connection protocol to be used, or {@code null}.
      */
     @Override
     @XmlElement(name = "protocol")

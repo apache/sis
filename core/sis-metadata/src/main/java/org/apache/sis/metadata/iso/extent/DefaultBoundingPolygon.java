@@ -108,6 +108,8 @@ public class DefaultBoundingPolygon extends AbstractGeographicExtent implements 
 
     /**
      * Returns the sets of points defining the bounding polygon.
+     *
+     * @return The sets of points defining the bounding polygon.
      */
     @Override
     @XmlElement(name = "polygon", required = true)

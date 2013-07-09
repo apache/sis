@@ -177,6 +177,8 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
     /**
      * Returns an indication of whether or not geographic position points are available to test the
      * accuracy of the georeferenced grid data.
+     *
+     * @return Whether or not geographic position points are available to test accuracy.
      */
     @Override
     @XmlElement(name = "checkPointAvailability", required = true)
@@ -212,6 +214,8 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      * Returns a description of geographic position points used to test the accuracy of the
      * georeferenced grid data. This value is non-null only if {@link #isCheckPointAvailable()}
      * returns {@code true}.
+     *
+     * @return Description of geographic position points used to test accuracy, or {@code null}.
      */
     @Override
     @XmlElement(name = "checkPointDescription")
@@ -242,6 +246,8 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      * and the grid coordinate of the cells at opposite ends of grid coverage along two
      * diagonals in the grid spatial dimensions. There are four corner points in a
      * georectified grid; at least two corner points along one diagonal are required.
+     *
+     * @return The corner points.
      */
     @Override
     @XmlElement(name = "cornerPoints", required = true)
@@ -262,6 +268,8 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
      * Returns the Earth location in the coordinate system defined by the Spatial Reference System
      * and the grid coordinate of the cell halfway between opposite ends of the grid in the
      * spatial dimensions.
+     *
+     * @return The center point, or {@code null}.
      */
     @Override
     @XmlElement(name = "centerPoint")
@@ -281,6 +289,8 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
 
     /**
      * Returns the point in a pixel corresponding to the Earth location of the pixel.
+     *
+     * @return Earth location of the pixel, or {@code null}.
      */
     @Override
     @XmlElement(name = "pointInPixel", required = true)
@@ -299,8 +309,9 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
     }
 
     /**
-     * Returns a description of the information about which grid dimensions are the spatial
-     * dimensions.
+     * Returns a description of the information about which grid dimensions are the spatial dimensions.
+     *
+     * @return Description of the information about grid dimensions, or {@code null}.
      */
     @Override
     @XmlElement(name = "transformationDimensionDescription")
@@ -309,8 +320,7 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
     }
 
     /**
-     * Sets the description of the information about which grid dimensions are the spatial
-     * dimensions.
+     * Sets the description of the information about which grid dimensions are the spatial dimensions.
      *
      * @param newValue The new transformation dimension description.
      */
@@ -321,6 +331,8 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
 
     /**
      * Returns information about which grid dimensions are the spatial dimensions.
+     *
+     * @return Information about which grid dimensions are the spatial dimensions, or {@code null}.
      */
     @Override
     @XmlElement(name = "transformationDimensionMapping")
@@ -339,6 +351,8 @@ public class DefaultGeorectified extends DefaultGridSpatialRepresentation implem
 
     /**
      * Returns the geographic references used to validate georectification of the data.
+     *
+     * @return Geographic references used to validate georectification.
      */
     @Override
     @XmlElement(name = "checkPoint", namespace = Namespaces.GMI)

@@ -138,6 +138,8 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
 
     /**
      * Alphanumeric value identifying an instance in the namespace.
+     *
+     * @return Value identifying an instance in the namespace, or {@code null}.
      */
     @Override
     @XmlElement(name = "code", required = true)
