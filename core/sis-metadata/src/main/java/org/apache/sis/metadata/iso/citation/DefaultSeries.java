@@ -121,6 +121,8 @@ public class DefaultSeries extends ISOMetadata implements Series {
 
     /**
      * Returns the name of the series, or aggregate dataset, of which the dataset is a part.
+     *
+     * @return The name of the series or aggregate dataset, or {@code null}.
      */
     @Override
     @XmlElement(name = "name")
@@ -140,6 +142,8 @@ public class DefaultSeries extends ISOMetadata implements Series {
 
     /**
      * Returns information identifying the issue of the series.
+     *
+     * @return Information identifying the issue of the series, or {@code null}.
      */
     @Override
     @XmlElement(name = "issueIdentification")
@@ -159,6 +163,8 @@ public class DefaultSeries extends ISOMetadata implements Series {
 
     /**
      * Returns details on which pages of the publication the article was published.
+     *
+     * @return Details on which pages of the publication the article was published, or {@code null}.
      */
     @Override
     @XmlElement(name = "page")

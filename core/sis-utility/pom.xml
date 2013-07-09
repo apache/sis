@@ -35,6 +35,7 @@
   <!-- ===========================================================
            Module Description
        =========================================================== -->
+  <groupId>org.apache.sis.core</groupId>
   <artifactId>sis-utility</artifactId>
   <packaging>bundle</packaging>
   <name>Apache SIS utilities</name>
@@ -134,7 +135,7 @@ Miscellaneous utilities.
 
       <!-- Compile properties files into resources UTF files and collect JAR files. -->
       <plugin>
-        <groupId>org.apache.sis</groupId>
+        <groupId>org.apache.sis.core</groupId>
         <artifactId>sis-build-helper</artifactId>
         <version>${sis.plugin.version}</version>
         <executions>

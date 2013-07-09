@@ -257,6 +257,8 @@ public class DefaultCitation extends ISOMetadata implements Citation {
 
     /**
      * Returns the name by which the cited resource is known.
+     *
+     * @return The cited resource name, or {@code null}.
      */
     @Override
     @XmlElement(name = "title", required = true)
@@ -277,6 +279,8 @@ public class DefaultCitation extends ISOMetadata implements Citation {
     /**
      * Returns the short name or other language name by which the cited information is known.
      * Example: "DCW" as an alternative title for "<cite>Digital Chart of the World</cite>".
+     *
+     * @return Other names for the resource, or an empty collection if none.
      */
     @Override
     @XmlElement(name = "alternateTitle")
@@ -295,6 +299,8 @@ public class DefaultCitation extends ISOMetadata implements Citation {
 
     /**
      * Returns the reference date for the cited resource.
+     *
+     * @return The reference date.
      */
     @Override
     @XmlElement(name = "date", required = true)
@@ -313,6 +319,8 @@ public class DefaultCitation extends ISOMetadata implements Citation {
 
     /**
      * Returns the version of the cited resource.
+     *
+     * @return The version, or {@code null} if none.
      */
     @Override
     @XmlElement(name = "edition")
@@ -332,6 +340,8 @@ public class DefaultCitation extends ISOMetadata implements Citation {
 
     /**
      * Returns the date of the edition.
+     *
+     * @return The edition date, or {@code null} if none.
      */
     @Override
     @XmlElement(name = "editionDate")
@@ -362,6 +372,8 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * {@note The <code>&lt:gmd:identifier&gt;</code> element marshalled to XML will exclude
      *        all the above cited identifiers, for ISO 19139 compliance. Those identifiers
      *        will appear in other XML elements or attributes.}
+     *
+     * @return The identifiers, or an empty collection if none.
      *
      * @see #getISBN()
      * @see #getISSN()
@@ -398,6 +410,8 @@ public class DefaultCitation extends ISOMetadata implements Citation {
     /**
      * Returns the name and position information for an individual or organization that is
      * responsible for the resource.
+     *
+     * @return The individual or organization that is responsible, or an empty collection if none.
      */
     @Override
     @XmlElement(name = "citedResponsibleParty")
@@ -417,6 +431,8 @@ public class DefaultCitation extends ISOMetadata implements Citation {
 
     /**
      * Returns the mode in which the resource is represented.
+     *
+     * @return The presentation modes, or an empty collection if none.
      */
     @Override
     @XmlElement(name = "presentationForm")
@@ -435,6 +451,8 @@ public class DefaultCitation extends ISOMetadata implements Citation {
 
     /**
      * Returns the information about the series, or aggregate dataset, of which the dataset is a part.
+     *
+     * @return The series of which the dataset is a part, or {@code null} if none.
      */
     @Override
     @XmlElement(name = "series")
@@ -454,6 +472,8 @@ public class DefaultCitation extends ISOMetadata implements Citation {
 
     /**
      * Returns other information required to complete the citation that is not recorded elsewhere.
+     *
+     * @return Other details, or {@code null} if none.
      */
     @Override
     @XmlElement(name = "otherCitationDetails")
@@ -472,9 +492,10 @@ public class DefaultCitation extends ISOMetadata implements Citation {
     }
 
     /**
-     * Returns the common title with holdings note. Note: title identifies elements of a series
-     * collectively, combined with information about what volumes are available at the
-     * source cited.
+     * Returns the common title with holdings note. Note: title identifies elements of a series collectively,
+     * combined with information about what volumes are available at the source cited.
+     *
+     * @return The common title, or {@code null} if none.
      */
     @Override
     @XmlElement(name = "collectiveTitle")
@@ -483,8 +504,8 @@ public class DefaultCitation extends ISOMetadata implements Citation {
     }
 
     /**
-     * Sets the common title with holdings note. This title identifies elements of a series
-     * collectively, combined with information about what volumes are available at the source cited.
+     * Sets the common title with holdings note. This title identifies elements of a series collectively,
+     * combined with information about what volumes are available at the source cited.
      *
      * @param newValue The new collective title, or {@code null} if none.
      */
@@ -500,6 +521,8 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * {@preformat java
      *   return getIdentifierMap().getSpecialized(Citations.ISBN);
      * }
+     *
+     * @return The ISBN, or {@code null} if none.
      *
      * @see #getIdentifiers()
      * @see Citations#ISBN
@@ -537,6 +560,8 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * {@preformat java
      *   return getIdentifierMap().getSpecialized(Citations.ISSN);
      * }
+     *
+     * @return The ISSN, or {@code null} if none.
      *
      * @see #getIdentifiers()
      * @see Citations#ISSN

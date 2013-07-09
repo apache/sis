@@ -127,6 +127,8 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
     /**
      * Returns fees and terms for retrieving the resource.
      * Include monetary units (as specified in ISO 4217).
+     *
+     * @return Fees and terms for retrieving the resource, or {@code null}.
      */
     @Override
     @XmlElement(name = "fees")
@@ -147,6 +149,8 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
 
     /**
      * Returns the date and time when the dataset will be available.
+     *
+     * @return Date and time when the dataset will be available, or {@code null}.
      */
     @Override
     @XmlElement(name = "plannedAvailableDateTime")
@@ -166,6 +170,8 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
 
     /**
      * Returns general instructions, terms and services provided by the distributor.
+     *
+     * @return General instructions, terms and services provided by the distributor, or {@code null}.
      */
     @Override
     @XmlElement(name = "orderingInstructions")
@@ -185,6 +191,8 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
 
     /**
      * Returns typical turnaround time for the filling of an order.
+     *
+     * @return Typical turnaround time for the filling of an order, or {@code null}.
      */
     @Override
     @XmlElement(name = "turnaround")

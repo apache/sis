@@ -135,6 +135,8 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
 
     /**
      * Returns the description of the attribute described by the measurement value.
+     *
+     * @return Description of the attribute, or {@code null}.
      */
     @Override
     @XmlElement(name = "attributeDescription", required = true)
@@ -154,6 +156,8 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
 
     /**
      * Returns the type of information represented by the cell value.
+     *
+     * @return Type of information represented by the cell value, or {@code null}.
      */
     @Override
     @XmlElement(name = "contentType", required = true)
@@ -173,6 +177,8 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
 
     /**
      * Returns the information on the dimensions of the cell measurement value.
+     *
+     * @return Dimensions of the cell measurement value.
      */
     @Override
     @XmlElement(name = "dimension")

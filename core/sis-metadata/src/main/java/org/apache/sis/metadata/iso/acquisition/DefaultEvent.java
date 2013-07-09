@@ -153,6 +153,8 @@ public class DefaultEvent extends ISOMetadata implements Event {
 
     /**
      * Returns the event name or number.
+     *
+     * @return Event name or number, or {@code null}.
      */
     @Override
     @XmlElement(name = "identifier", required = true)
@@ -173,6 +175,8 @@ public class DefaultEvent extends ISOMetadata implements Event {
 
     /**
      * Returns the initiator of the event.
+     *
+     * @return Initiator of the event, or {@code null}.
      */
     @Override
     @XmlElement(name = "trigger", required = true)
@@ -192,6 +196,8 @@ public class DefaultEvent extends ISOMetadata implements Event {
 
     /**
      * Meaning of the event.
+     *
+     * @return Meaning of the event, or {@code null}.
      */
     @Override
     @XmlElement(name = "context", required = true)
@@ -211,6 +217,8 @@ public class DefaultEvent extends ISOMetadata implements Event {
 
     /**
      * Returns the relative time ordering of the event.
+     *
+     * @return Relative time ordering, or {@code null}.
      */
     @Override
     @XmlElement(name = "sequence", required = true)
@@ -230,6 +238,8 @@ public class DefaultEvent extends ISOMetadata implements Event {
 
     /**
      * Returns the time the event occurred.
+     *
+     * @return Time the event occurred, or {@code null}.
      */
     @Override
     @XmlElement(name = "time", required = true)
@@ -249,6 +259,8 @@ public class DefaultEvent extends ISOMetadata implements Event {
 
     /**
      * Returns the objective or objectives satisfied by an event.
+     *
+     * @return Objectives satisfied by an event.
      */
     @Override
     @XmlElement(name = "expectedObjective")
@@ -267,6 +279,8 @@ public class DefaultEvent extends ISOMetadata implements Event {
 
     /**
      * Returns the pass during which an event occurs. {@code null} if unspecified.
+     *
+     * @return Pass during which an event occurs, or {@code null}.
      */
     @Override
     @XmlElement(name = "relatedPass")
@@ -285,6 +299,8 @@ public class DefaultEvent extends ISOMetadata implements Event {
 
     /**
      * Returns the instrument or instruments for which the event is meaningful.
+     *
+     * @return Instruments for which the event is meaningful.
      */
     @Override
     @XmlElement(name = "relatedSensor")

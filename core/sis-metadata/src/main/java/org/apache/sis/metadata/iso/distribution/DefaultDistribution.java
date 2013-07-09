@@ -116,6 +116,8 @@ public class DefaultDistribution extends ISOMetadata implements Distribution {
 
     /**
      * Provides a description of the format of the data to be distributed.
+     *
+     * @return Description of the format of the data to be distributed.
      */
     @Override
     @XmlElement(name = "distributionFormat")
@@ -134,6 +136,8 @@ public class DefaultDistribution extends ISOMetadata implements Distribution {
 
     /**
      * Provides information about the distributor.
+     *
+     * @return Information about the distributor.
      */
     @Override
     @XmlElement(name = "distributor")
@@ -151,8 +155,9 @@ public class DefaultDistribution extends ISOMetadata implements Distribution {
     }
 
     /**
-     * Provides information about technical means and media by which a resource is obtained
-     * from the distributor.
+     * Provides information about technical means and media by which a resource is obtained from the distributor.
+     *
+     * @return Technical means and media by which a resource is obtained from the distributor.
      */
     @Override
     @XmlElement(name = "transferOptions")

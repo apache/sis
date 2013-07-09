@@ -148,6 +148,8 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
 
     /**
      * Returns whether or not the cited feature catalogue complies with ISO 19110.
+     *
+     * @return Whether or not the cited feature catalogue complies with ISO 19110, or {@code null}.
      */
     @Override
     @XmlElement(name = "complianceCode")
@@ -167,6 +169,8 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
 
     /**
      * Returns the language(s) used within the catalogue
+     *
+     * @return Language(s) used within the catalogue.
      */
     @Override
     @XmlElement(name = "language")
@@ -185,6 +189,8 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
 
     /**
      * Returns whether or not the feature catalogue is included with the dataset.
+     *
+     * @return Whether or not the feature catalogue is included with the dataset.
      */
     @Override
     @XmlElement(name = "includedWithDataset", required = true)
@@ -208,6 +214,8 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
 
     /**
      * Returns the subset of feature types from cited feature catalogue occurring in dataset.
+     *
+     * @return Subset of feature types occurring in dataset.
      */
     @Override
     @XmlElement(name = "featureTypes")
@@ -226,6 +234,8 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
 
     /**
      * Returns the complete bibliographic reference to one or more external feature catalogues.
+     *
+     * @return Bibliographic reference to one or more external feature catalogues.
      */
     @Override
     @XmlElement(name = "featureCatalogueCitation", required = true)

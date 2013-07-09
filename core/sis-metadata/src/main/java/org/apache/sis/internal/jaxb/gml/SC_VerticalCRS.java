@@ -116,12 +116,12 @@ public class SC_VerticalCRS extends PropertyType<SC_VerticalCRS, VerticalCRS> {
      */
     @XmlAnyElement(lax = true)
     public Object getElement() {
-        final LogRecord record = new LogRecord(Level.WARNING, Errors.format(
-                Errors.Keys.MissingRequiredModule_1, "sis-referencing"));
+        final LogRecord record = Errors.getResources(null).getLogRecord(Level.WARNING,
+                Errors.Keys.MissingRequiredModule_1, "sis-referencing");
         record.setSourceClassName(SC_VerticalCRS.class.getName());
         record.setSourceMethodName("getElement");
         final Context context = Context.current();
-        context.warningOccured(context, metadata, record);
+        Context.warningOccured(context, metadata, record);
         return null;
     }
 

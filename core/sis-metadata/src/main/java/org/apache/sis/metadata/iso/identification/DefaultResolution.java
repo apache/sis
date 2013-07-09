@@ -134,7 +134,9 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
     /**
      * Returns the level of detail expressed as the scale of a comparable hardcopy map or chart.
      * Only one of {@linkplain #getEquivalentScale() equivalent scale} and
-     * {@linkplain #getDistance() ground sample distance} may be provided.
+     * {@linkplain #getDistance() ground sample distance} shall be provided.
+     *
+     * @return Level of detail expressed as the scale of a comparable hardcopy, or {@code null}.
      */
     @Override
     @XmlElement(name = "equivalentScale")
@@ -165,7 +167,9 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
     /**
      * Returns the ground sample distance.
      * Only one of {@linkplain #getEquivalentScale equivalent scale} and
-     * {@linkplain #getDistance ground sample distance} may be provided.
+     * {@linkplain #getDistance ground sample distance} shall be provided.
+     *
+     * @return The ground sample distance, or {@code null}.
      */
     @Override
     @ValueRange(minimum=0, isMinIncluded=false)

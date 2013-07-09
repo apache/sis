@@ -160,6 +160,8 @@ public class DefaultObjective extends ISOMetadata implements Objective {
      * {@note The <code>&lt:gmd:identifier&gt;</code> element marshalled to XML will exclude
      *        all the above cited identifiers, for ISO 19139 compliance. Those identifiers
      *        will appear in other XML elements or attributes.}
+     *
+     * @return Identify the objective.
      */
     @Override
     @XmlElement(name = "identifier", required = true)
@@ -185,6 +187,8 @@ public class DefaultObjective extends ISOMetadata implements Objective {
 
     /**
      * Returns the priority applied to the target. {@code null} if unspecified.
+     *
+     * @return Priority applied, or {@code null}.
      */
     @Override
     @XmlElement(name = "priority")
@@ -204,6 +208,8 @@ public class DefaultObjective extends ISOMetadata implements Objective {
 
     /**
      * Returns the collection technique for the objective.
+     *
+     * @return Collection technique for the objective.
      */
     @Override
     @XmlElement(name = "type")
@@ -222,6 +228,8 @@ public class DefaultObjective extends ISOMetadata implements Objective {
 
     /**
      * Returns the role or purpose performed by or activity performed at the objective.
+     *
+     * @return Role or purpose performed by or activity performed at the objective.
      */
     @Override
     @XmlElement(name = "function")
@@ -241,6 +249,8 @@ public class DefaultObjective extends ISOMetadata implements Objective {
     /**
      * Returns the extent information including the bounding box, bounding polygon, vertical and
      * temporal extent of the objective.
+     *
+     * @return Extent information.
      */
     @Override
     @XmlElement(name = "extent")
@@ -260,6 +270,8 @@ public class DefaultObjective extends ISOMetadata implements Objective {
 
     /**
      * Returns the event or events associated with objective completion.
+     *
+     * @return Events associated with objective completion.
      */
     @Override
     @XmlElement(name = "objectiveOccurence", required = true)
@@ -278,6 +290,8 @@ public class DefaultObjective extends ISOMetadata implements Objective {
 
     /**
      * Returns the pass of the platform over the objective.
+     *
+     * @return Pass of the platform.
      */
     @Override
     @XmlElement(name = "pass")
@@ -296,6 +310,8 @@ public class DefaultObjective extends ISOMetadata implements Objective {
 
     /**
      * Returns the instrument which senses the objective data.
+     *
+     * @return Instrument which senses the objective data.
      */
     @Override
     @XmlElement(name = "sensingInstrument")

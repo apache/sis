@@ -138,6 +138,8 @@ public class DefaultSecurityConstraints extends DefaultConstraints implements Se
 
     /**
      * Returns the name of the handling restrictions on the resource.
+     *
+     * @return Name of the handling restrictions on the resource, or {@code null}.
      */
     @Override
     @XmlElement(name = "classification", required = true)
@@ -158,6 +160,8 @@ public class DefaultSecurityConstraints extends DefaultConstraints implements Se
     /**
      * Returns the explanation of the application of the legal constraints or other restrictions and legal
      * prerequisites for obtaining and using the resource.
+     *
+     * @return Explanation of the application of the legal constraints, or {@code null}.
      */
     @Override
     @XmlElement(name = "userNote")
@@ -178,6 +182,8 @@ public class DefaultSecurityConstraints extends DefaultConstraints implements Se
 
     /**
      * Returns the name of the classification system.
+     *
+     * @return Name of the classification system, or {@code null}.
      */
     @Override
     @XmlElement(name = "classificationSystem")
@@ -197,6 +203,8 @@ public class DefaultSecurityConstraints extends DefaultConstraints implements Se
 
     /**
      * Returns the additional information about the restrictions on handling the resource.
+     *
+     * @return Additional information about the restrictions, or {@code null}.
      */
     @Override
     @XmlElement(name = "handlingDescription")

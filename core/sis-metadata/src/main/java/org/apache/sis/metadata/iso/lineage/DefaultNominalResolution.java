@@ -108,6 +108,8 @@ public class DefaultNominalResolution extends ISOMetadata implements NominalReso
     /**
      * Returns the distance between consistent parts of (centre, left side, right side)
      * adjacent pixels in the scan plane.
+     *
+     * @return Distance between consistent parts of adjacent pixels in the scan plane, or {@code null}.
      */
     @Override
     @ValueRange(minimum=0, isMinIncluded=false)
@@ -130,6 +132,8 @@ public class DefaultNominalResolution extends ISOMetadata implements NominalReso
     /**
      * Returns the distance between consistent parts of (centre, left side, right side) adjacent
      * pixels in the object space.
+     *
+     * @return Distance between consistent parts of adjacent pixels in the object space, or {@code null}.
      */
     @Override
     @ValueRange(minimum=0, isMinIncluded=false)
