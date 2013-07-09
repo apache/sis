@@ -134,6 +134,8 @@ public class DefaultAddress extends ISOMetadata implements Address {
 
     /**
      * Return the state, province of the location.
+     *
+     * @return State, province of the location, or {@code null}.
      */
     @Override
     @XmlElement(name = "administrativeArea")
@@ -153,6 +155,8 @@ public class DefaultAddress extends ISOMetadata implements Address {
 
     /**
      * Returns the city of the location.
+     *
+     * @return The city of the location, or {@code null}.
      */
     @Override
     @XmlElement(name = "city")
@@ -172,6 +176,8 @@ public class DefaultAddress extends ISOMetadata implements Address {
 
     /**
      * Returns the country of the physical address.
+     *
+     * @return Country of the physical address, or {@code null}.
      */
     @Override
     @XmlElement(name = "country")
@@ -191,6 +197,8 @@ public class DefaultAddress extends ISOMetadata implements Address {
 
     /**
      * Returns the address line for the location (as described in ISO 11180, Annex A).
+     *
+     * @return Address line for the location.
      */
     @Override
     @XmlElement(name = "deliveryPoint")
@@ -209,6 +217,8 @@ public class DefaultAddress extends ISOMetadata implements Address {
 
     /**
      * Returns the address of the electronic mailbox of the responsible organization or individual.
+     *
+     * @return Address of the electronic mailbox of the responsible organization or individual.
      */
     @Override
     @XmlElement(name = "electronicMailAddress")
@@ -227,6 +237,8 @@ public class DefaultAddress extends ISOMetadata implements Address {
 
     /**
      * Returns ZIP or other postal code.
+     *
+     * @return ZIP or other postal code, or {@code null}.
      */
     @Override
     @XmlElement(name = "postalCode")

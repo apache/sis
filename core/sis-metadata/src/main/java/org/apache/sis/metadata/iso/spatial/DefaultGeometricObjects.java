@@ -116,6 +116,8 @@ public class DefaultGeometricObjects extends ISOMetadata implements GeometricObj
 
     /**
      * Returns the total number of the point or vector object type occurring in the dataset.
+     *
+     * @return Name of spatial objects used to locate spatial locations in the dataset, or {@code null}.
      */
     @Override
     @XmlElement(name = "geometricObjectType", required = true)
@@ -135,6 +137,8 @@ public class DefaultGeometricObjects extends ISOMetadata implements GeometricObj
 
     /**
      * Returns the total number of the point or vector object type occurring in the dataset.
+     *
+     * @return Total number of the point or vector object type, or {@code null}.
      */
     @Override
     @ValueRange(minimum=0)

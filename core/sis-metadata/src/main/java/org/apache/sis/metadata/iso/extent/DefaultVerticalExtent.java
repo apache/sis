@@ -138,6 +138,8 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
 
     /**
      * Returns the lowest vertical extent contained in the dataset.
+     *
+     * @return The lowest vertical extent, or {@code null}.
      */
     @Override
     @XmlElement(name = "minimumValue", required = true)
@@ -157,6 +159,8 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
 
     /**
      * Returns the highest vertical extent contained in the dataset.
+     *
+     * @return The highest vertical extent, or {@code null}.
      */
     @Override
     @XmlElement(name = "maximumValue", required = true)
@@ -176,8 +180,10 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
 
     /**
      * Provides information about the vertical coordinate reference system to
-     * which the maximum and minimum elevation values are measured. The CRS
-     * identification includes unit of measure.
+     * which the maximum and minimum elevation values are measured.
+     * The CRS identification includes unit of measure.
+     *
+     * @return The vertical CRS, or {@code null}.
      */
     @Override
     @XmlElement(name = "verticalCRS", required = true)

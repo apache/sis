@@ -133,8 +133,9 @@ public class DefaultConformanceResult extends AbstractResult implements Conforma
     }
 
     /**
-     * Returns the citation of product specification or user
-     * requirement against which data is being evaluated.
+     * Returns the citation of product specification or user requirement against which data is being evaluated.
+     *
+     * @return Citation of product specification or user requirement, or {@code null}.
      */
     @Override
     @XmlElement(name = "specification", required = true)
@@ -143,8 +144,7 @@ public class DefaultConformanceResult extends AbstractResult implements Conforma
     }
 
     /**
-     * Sets the citation of product specification or user requirement against which data
-     * is being evaluated.
+     * Sets the citation of product specification or user requirement against which data is being evaluated.
      *
      * @param newValue The new specification.
      */
@@ -155,6 +155,8 @@ public class DefaultConformanceResult extends AbstractResult implements Conforma
 
     /**
      * Returns the explanation of the meaning of conformance for this result.
+     *
+     * @return Explanation of the meaning of conformance, or {@code null}.
      */
     @Override
     @XmlElement(name = "explanation", required = true)
@@ -174,6 +176,8 @@ public class DefaultConformanceResult extends AbstractResult implements Conforma
 
     /**
      * Returns an indication of the conformance result.
+     *
+     * @return Indication of the conformance result, or {@code null}.
      */
     @Override
     public Boolean pass() {

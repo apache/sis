@@ -153,6 +153,8 @@ public class DefaultExtent extends ISOMetadata implements Extent {
 
     /**
      * Returns the spatial and temporal extent for the referring object.
+     *
+     * @return The spatial and temporal extent, or {@code null} in none.
      */
     @Override
     @XmlElement(name = "description")
@@ -172,6 +174,8 @@ public class DefaultExtent extends ISOMetadata implements Extent {
 
     /**
      * Provides geographic component of the extent of the referring object
+     *
+     * @return The geographic extent, or an empty set if none.
      */
     @Override
     @XmlElement(name = "geographicElement")
@@ -190,6 +194,8 @@ public class DefaultExtent extends ISOMetadata implements Extent {
 
     /**
      * Provides temporal component of the extent of the referring object.
+     *
+     * @return The temporal extent, or an empty set if none.
      */
     @Override
     @XmlElement(name = "temporalElement")
@@ -208,6 +214,8 @@ public class DefaultExtent extends ISOMetadata implements Extent {
 
     /**
      * Provides vertical component of the extent of the referring object.
+     *
+     * @return The vertical extent, or an empty set if none.
      */
     @Override
     @XmlElement(name = "verticalElement")

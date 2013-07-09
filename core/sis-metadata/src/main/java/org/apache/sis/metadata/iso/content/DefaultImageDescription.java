@@ -218,6 +218,8 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      * For images from a scanning device, refer to the centre pixel of the image.
      *
      * <p>The horizon is at 0°, straight up has an elevation of 90°.</p>
+     *
+     * @return A value between -90° and +90°, or {@code null} if unspecified.
      */
     @Override
     @ValueRange(minimum=0, maximum=180)
@@ -240,8 +242,9 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
 
     /**
      * Returns the illumination azimuth measured in degrees clockwise from true north at the time
-     * the image is taken. For images from a scanning device, refer to the centre pixel of the
-     * image.
+     * the image is taken. For images from a scanning device, refer to the centre pixel of the image.
+     *
+     * @return A value between 0° and 360°, or {@code null} if unspecified.
      */
     @Override
     @ValueRange(minimum=0, maximum=360)
@@ -263,6 +266,8 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
 
     /**
      * Returns the conditions affected the image.
+     *
+     * @return Conditions affected the image, or {@code null} if unspecified.
      */
     @Override
     @XmlElement(name = "imagingCondition")
@@ -282,6 +287,8 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
 
     /**
      * Returns the identifier that specifies the image quality.
+     *
+     * @return The image quality, or {@code null} if unspecified.
      */
     @Override
     @XmlElement(name = "imageQualityCode")
@@ -301,6 +308,8 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
 
     /**
      * Returns the area of the dataset obscured by clouds, expressed as a percentage of the spatial extent.
+     *
+     * @return A value between 0 and 100, or {@code null} if unspecified.
      */
     @Override
     @ValueRange(minimum=0, maximum=100)
@@ -322,6 +331,9 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     /**
      * Returns the image distributor's code that identifies the level of radiometric and geometric
      * processing that has been applied.
+     *
+     * @return The level of radiometric and geometric processing that has been applied,
+     *         or {@code null} if unspecified.
      */
     @Override
     @XmlElement(name = "processingLevelCode")
@@ -342,6 +354,9 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
 
     /**
      * Returns the count of the number of lossy compression cycles performed on the image.
+     *
+     * @return The number of lossy compression cycles performed on the image,
+     *         or {@code null} if unspecified.
      */
     @Override
     @ValueRange(minimum=0)
@@ -362,6 +377,9 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
 
     /**
      * Returns the indication of whether or not triangulation has been performed upon the image.
+     *
+     * @return Whether or not triangulation has been performed upon the image,
+     *         or {@code null} if unspecified.
      */
     @Override
     @XmlElement(name = "triangulationIndicator")
@@ -382,6 +400,9 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     /**
      * Returns the indication of whether or not the radiometric calibration information for
      * generating the radiometrically calibrated standard data product is available.
+     *
+     * @return Whether or not the radiometric calibration information is available,
+     *         or {@code null} if unspecified.
      */
     @Override
     @XmlElement(name = "radiometricCalibrationDataAvailability")
@@ -403,6 +424,9 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
     /**
      * Returns the indication of whether or not constants are available which allow for camera
      * calibration corrections.
+     *
+     * @return Whether or not constants are available for camera calibration corrections,
+     *         or {@code null} if unspecified.
      */
     @Override
     @XmlElement(name = "cameraCalibrationInformationAvailability")
@@ -423,6 +447,9 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
 
     /**
      * Returns the indication of whether or not Calibration Reseau information is available.
+     *
+     * @return Whether or not Calibration Reseau information is available,
+     *         or {@code null} if unspecified.
      */
     @Override
     @XmlElement(name = "filmDistortionInformationAvailability")
@@ -442,6 +469,9 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
 
     /**
      * Returns the indication of whether or not lens aberration correction information is available.
+     *
+     * @return Whether or not lens aberration correction information is available,
+     *         or {@code null} if unspecified.
      */
     @Override
     @XmlElement(name = "lensDistortionInformationAvailability")

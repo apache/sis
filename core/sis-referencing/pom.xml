@@ -31,6 +31,7 @@
     <version>0.3-SNAPSHOT</version>
   </parent>
 
+  <groupId>org.apache.sis.core</groupId>
   <artifactId>sis-referencing</artifactId>
   <packaging>bundle</packaging>
   <name>Apache SIS referencing</name>
@@ -80,7 +81,7 @@ Implementations of Coordinate Reference Systems (CRS),
 
       <!-- Collect JAR files in <root>/target/binaries directory. -->
       <plugin>
-        <groupId>org.apache.sis</groupId>
+        <groupId>org.apache.sis.core</groupId>
         <artifactId>sis-build-helper</artifactId>
         <version>${sis.plugin.version}</version>
         <executions>
@@ -111,7 +112,7 @@ Implementations of Coordinate Reference Systems (CRS),
        =========================================================== -->
   <dependencies>
     <dependency>
-      <groupId>org.apache.sis</groupId>
+      <groupId>org.apache.sis.core</groupId>
       <artifactId>sis-utility</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -126,7 +127,7 @@ Implementations of Coordinate Reference Systems (CRS),
 
     <!-- Test dependencies -->
     <dependency>
-      <groupId>org.apache.sis</groupId>
+      <groupId>org.apache.sis.core</groupId>
       <artifactId>sis-utility</artifactId>
       <version>${project.version}</version>
       <type>test-jar</type>

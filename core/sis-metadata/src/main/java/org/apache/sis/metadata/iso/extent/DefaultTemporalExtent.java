@@ -125,7 +125,7 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      * then this method will build an extent from the {@linkplain #getStartTime() start
      * time} and {@linkplain #getEndTime() end time} if any.
      *
-     * @return The content date.
+     * @return The date and time for the content, or {@code null}.
      */
     @Override
     @XmlElement(name = "extent", required = true)

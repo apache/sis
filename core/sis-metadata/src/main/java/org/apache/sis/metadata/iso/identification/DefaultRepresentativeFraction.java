@@ -105,6 +105,8 @@ public class DefaultRepresentativeFraction extends Number implements Representat
 
     /**
      * Returns the denominator of this representative fraction.
+     *
+     * @return The denominator.
      */
     @Override
     @XmlJavaTypeAdapter(value = GO_Integer.AsLong.class, type = long.class)
