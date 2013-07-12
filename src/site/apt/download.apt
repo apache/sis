@@ -33,7 +33,7 @@ Downloading Apache SIS Binaries
 
 +---------------------------------------------------------+
 <properties>
-  <sis.version>0.2-incubating</sis.version>
+  <sis.version>0.3</sis.version>
 </properties>
 
 <dependencies>
@@ -50,7 +50,7 @@ Downloading Apache SIS Binaries
 
 +---------------------------------------------------------+
 <properties>
-  <sis.version>0.3-SNAPSHOT</sis.version>
+  <sis.version>0.4-SNAPSHOT</sis.version>
 </properties>
 
 <dependencies>
