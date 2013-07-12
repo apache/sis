@@ -28,7 +28,7 @@
   <parent>
     <groupId>org.apache.sis</groupId>
     <artifactId>core</artifactId>
-    <version>0.3-jdk7-SNAPSHOT</version>
+    <version>0.4-jdk7-SNAPSHOT</version>
   </parent>
 
 
