@@ -45,8 +45,8 @@ The Apache SIS™ library
 * Using SIS
 
   SIS requires a Java 6 Runtime Environment.
-  The latest release is <<<0.2-incubating>>>.
-  The version under development is <<<0.3-SNAPSHOT>>>.
+  The latest release is <<<0.3>>>.
+  The version under development is <<<0.4-SNAPSHOT>>>.
 
   The source code can be checked out anonymously with SubVersion from
   {{{http://svn.apache.org/repos/asf/sis/trunk}http://svn.apache.org/repos/asf/sis/trunk}},
