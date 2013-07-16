@@ -25,6 +25,7 @@ import org.opengis.metadata.citation.Citation;
 import org.apache.sis.xml.XLink;
 import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
+import org.apache.sis.xml.ValueConverter;
 import org.apache.sis.util.Debug;
 import org.apache.sis.internal.util.Citations;
 
@@ -96,35 +97,34 @@ public final class SpecializedIdentifier<T> implements Identifier, Serializable 
      */
     static Identifier parse(final IdentifierMap source, final Citation authority, final String code) {
         if (authority instanceof NonMarshalledAuthority) {
-            switch (((NonMarshalledAuthority) authority).ordinal) {
+            final int ordinal = ((NonMarshalledAuthority) authority).ordinal;
+            switch (ordinal) {
                 case NonMarshalledAuthority.ID: {
                     return new SpecializedIdentifier<>(IdentifierSpace.ID, code);
                 }
                 case NonMarshalledAuthority.UUID: {
+                    final Context context = Context.current();
+                    final ValueConverter converter = Context.converter(context);
                     try {
-                        return new SpecializedIdentifier<>(IdentifierSpace.UUID, UUID.fromString(code));
+                        return new SpecializedIdentifier<>(IdentifierSpace.UUID, converter.toUUID(context, code));
                     } catch (IllegalArgumentException e) {
-                        parseFailure(source, e);
+                        parseFailure(context, source, e);
                         break;
                     }
                 }
-                case NonMarshalledAuthority.HREF: {
-                    final URI href;
-                    try {
-                        href = new URI(code);
-                    } catch (URISyntaxException e) {
-                        parseFailure(source, e);
-                        break;
-                    }
-                    return new SpecializedIdentifier<>(IdentifierSpace.HREF, href);
-                }
+                case NonMarshalledAuthority.HREF:
                 case NonMarshalledAuthority.XLINK: {
+                    final Context context = Context.current();
+                    final ValueConverter converter = Context.converter(context);
                     final URI href;
                     try {
-                        href = new URI(code);
+                        href = converter.toURI(context, code);
                     } catch (URISyntaxException e) {
-                        parseFailure(source, e);
+                        parseFailure(context, source, e);
                         break;
+                    }
+                    if (ordinal == NonMarshalledAuthority.HREF) {
+                        return new SpecializedIdentifier<>(IdentifierSpace.HREF, href);
                     }
                     final XLink xlink = new XLink();
                     xlink.setHRef(href);
@@ -143,8 +143,8 @@ public final class SpecializedIdentifier<T> implements Identifier, Serializable 
      * <p>This method assumes that {@link IdentifierMap#put(Citation, String)} is
      * the public API by which this method has been invoked.</p>
      */
-    static void parseFailure(final IdentifierMap source, final Exception e) {
-        Context.warningOccured(Context.current(), source, IdentifierMap.class, "put", e, true);
+    static void parseFailure(final Context context, final IdentifierMap source, final Exception e) {
+        Context.warningOccured(context, source, IdentifierMap.class, "put", e, true);
     }
 
     /**
