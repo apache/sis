@@ -22,6 +22,7 @@ import java.util.Collection;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.xml.IdentifierSpace;
+import org.apache.sis.xml.ValueConverter;
 import org.apache.sis.xml.XLink;
 
 // Related to JDK7
@@ -187,7 +188,8 @@ public final class IdentifierMapWithSpecialCases extends IdentifierMapAdapter {
     public String put(final Citation authority, final String code)
             throws UnsupportedOperationException
     {
-        final Object removed;
+        final Context   context;
+        final Object    removed;
         final Exception exception;
         switch (specialCase(authority)) {
             default: {
@@ -195,19 +197,23 @@ public final class IdentifierMapWithSpecialCases extends IdentifierMapAdapter {
             }
             case NonMarshalledAuthority.HREF: {
                 URI uri = null;
-                if (code != null) try {
-                    uri = new URI(code);
-                } catch (URISyntaxException e) {
-                    exception = e;
-                    removed = setHRef(null);
-                    break;
+                if (code != null) {
+                    context = Context.current();
+                    final ValueConverter converter = Context.converter(context);
+                    try {
+                        uri = converter.toURI(context, code);
+                    } catch (URISyntaxException e) {
+                        exception = e;
+                        removed = setHRef(null);
+                        break;
+                    }
                 }
                 final String old = getUnspecialized(authority);
                 uri = setHRef(uri);
                 return (uri != null) ? uri.toString() : old;
             }
         }
-        SpecializedIdentifier.parseFailure(this, exception);
+        SpecializedIdentifier.parseFailure(context, this, exception);
         final String old = super.put(authority, code);
         return (old == null && removed != null) ? removed.toString() : old;
     }
