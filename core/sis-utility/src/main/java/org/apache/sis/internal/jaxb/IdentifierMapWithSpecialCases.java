@@ -92,7 +92,9 @@ public final class IdentifierMapWithSpecialCases extends IdentifierMapAdapter {
     /**
      * Sets the {@code xlink:href} value, which may be null. If an explicit {@code xlink:href}
      * identifier exists, it is removed before to set the new {@code href} in the {@link XLink}
-     * object.
+     * object. The intend is to give precedence to the {@link XLink#getHRef()} property in every
+     * cases where the {@code href} is parseable as a {@link URI}, and use the value associated
+     * to the {@code HREF} key only as a fallback when the string can not be parsed.
      */
     private URI setHRef(final URI href) {
         URI old = super.putSpecialized(IdentifierSpace.HREF, null);
@@ -175,35 +177,47 @@ public final class IdentifierMapWithSpecialCases extends IdentifierMapAdapter {
 
     /**
      * {@inheritDoc}
+     *
+     * <p>If the given {@code authority} is {@code HREF} and if the given string is parseable as a {@link URI},
+     * then this method will actually store the value as the {@link XLink#getHRef()} property of the {@code XLink}
+     * associated to the {@code XLINK} key. Only if the given string can not be parsed, then the value is stored
+     * <cite>as-is</cite> under the {@code HREF} key.</p>
      */
     @Override
     public String put(final Citation authority, final String code)
             throws UnsupportedOperationException
     {
+        final Object removed;
         final Exception exception;
         switch (specialCase(authority)) {
             default: {
                 return super.put(authority, code);
             }
             case NonMarshalledAuthority.HREF: {
-                URI id = null;
+                URI uri = null;
                 if (code != null) try {
-                    id = new URI(code);
+                    uri = new URI(code);
                 } catch (URISyntaxException e) {
                     exception = e;
+                    removed = setHRef(null);
                     break;
                 }
                 final String old = getUnspecialized(authority);
-                id = setHRef(id);
-                return (id != null) ? id.toString() : old;
+                uri = setHRef(uri);
+                return (uri != null) ? uri.toString() : old;
             }
         }
         SpecializedIdentifier.parseFailure(this, exception);
-        return super.put(authority, code);
+        final String old = super.put(authority, code);
+        return (old == null && removed != null) ? removed.toString() : old;
     }
 
     /**
      * {@inheritDoc}
+     *
+     * <p>If the given {@code authority} is {@code HREF}, then this method will actually store the value
+     * as the {@link XLink#getHRef()} property of the {@code XLink} associated to the {@code XLINK} key.
+     * The previous {@code HREF} value, if any, is discarded.</p>
      */
     @Override
     @SuppressWarnings("unchecked")
@@ -211,8 +225,12 @@ public final class IdentifierMapWithSpecialCases extends IdentifierMapAdapter {
             throws UnsupportedOperationException
     {
         switch (specialCase(authority)) {
-            default: return super.putSpecialized(authority, value);
-            case NonMarshalledAuthority.HREF: return (T) setHRef((URI)  value);
+            default: {
+                return super.putSpecialized(authority, value);
+            }
+            case NonMarshalledAuthority.HREF: {
+                return (T) setHRef((URI) value);
+            }
         }
     }
 }
