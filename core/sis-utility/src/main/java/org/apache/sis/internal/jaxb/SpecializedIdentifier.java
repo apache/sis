@@ -139,9 +139,11 @@ public final class SpecializedIdentifier<T> implements Identifier, Serializable 
      * Invoked by {@link #parse(Citation,String)} when a string can not be parsed.
      * This is considered a non-fatal error, because the parse method can fallback
      * on the generic {@link IdentifierMapEntry} in such cases.
+     *
+     * <p>This method assumes that {@link IdentifierMap#put(Citation, String)} is
+     * the public API by which this method has been invoked.</p>
      */
     static void parseFailure(final IdentifierMap source, final Exception e) {
-        // IdentifierMap.put(Citation,String) is the public facade.
         Context.warningOccured(Context.current(), source, IdentifierMap.class, "put", e, true);
     }
 
