@@ -52,23 +52,18 @@ import org.apache.sis.internal.jaxb.SpecializedIdentifier;
  */
 final class ObjectReference {
     /**
-     * A URN to an external resources, or to an other part of a XML document, or an identifier.
+     * A unique identifier to an external resources, or to an other part of a XML document.
      * The {@code uuidref} attribute is used to refer to an XML element that has a corresponding
      * {@code uuid} attribute.
      *
      * @see <a href="http://www.schemacentral.com/sc/niem21/a-uuidref-1.html">Usage of uuidref</a>
      */
-    String anyUUID;
+    UUID uuid;
 
     /**
      * The {@code xlink} attributes, or {@code null} if none.
      */
     XLink xlink;
-
-    /**
-     * The parsed value of {@link #anyUUID}, computed when first needed.
-     */
-    private transient UUID uuid;
 
     /**
      * Creates an initially empty object reference.
@@ -82,22 +77,9 @@ final class ObjectReference {
      * @see ReferenceResolver#canSubstituteByReference(MarshalContext, Class, Object, UUID)
      * @see ReferenceResolver#canSubstituteByReference(MarshalContext, Class, Object, XLink)
      */
-    ObjectReference(final UUID uuid, final String anyUUID, final XLink link) {
-        this.uuid    = uuid;
-        this.anyUUID = anyUUID;
-        this.xlink   = link;
-    }
-
-    /**
-     * Parses the given string as a UUID.
-     *
-     * @param  context The marshalling context, or {@code null} if none.
-     * @param  anyUUID The string to parse, or {@code null}.
-     * @return The parsed UUID, or {@code null}.
-     * @throws IllegalArgumentException If {@code anyUUID} can not be parsed.
-     */
-    static UUID toUUID(final Context context, final String anyUUID) throws IllegalArgumentException {
-        return (anyUUID != null) ? Context.converter(context).toUUID(context, anyUUID) : null;
+    ObjectReference(final UUID uuid, final XLink link) {
+        this.uuid  = uuid;
+        this.xlink = link;
     }
 
     /**
@@ -105,19 +87,15 @@ final class ObjectReference {
      * declared in this {@code ObjectReference}. If the given metadata object is non-null,
      * assigns to that object the identifiers declared in this {@code ObjectReference}.
      *
-     * <p>This method is invoked at unmarshalling time.</p>
+     * <p>This method is invoked at unmarshalling time by {@link PropertyType#resolve(Context)}.</p>
      *
      * @param  <T>       The compile-time type of the {@code type} argument.
      * @param  context   The marshalling context, or {@code null} if none.
      * @param  type      The expected type of the metadata object.
      * @param  metadata  The metadata object, or {@code null}.
      * @return A metadata object for the identifiers, or {@code null}
-     * @throws IllegalArgumentException If the {@link #anyUUID} field can not be parsed.
      */
-    final <T> T resolve(final Context context, final Class<T> type, T metadata) throws IllegalArgumentException {
-        if (uuid == null) {
-            uuid = toUUID(context, anyUUID);
-        }
+    final <T> T resolve(final Context context, final Class<T> type, T metadata) {
         if (metadata == null) {
             final ReferenceResolver resolver = Context.resolver(context);
             if ((uuid  == null || (metadata = resolver.resolve(context, type, uuid )) == null) &&
