@@ -36,7 +36,7 @@ import static org.apache.sis.test.Assert.*;
  *
  * <p>This test shall not perform any conversion neither serialization. It shall only ensures
  * that the converters are properly registered. This is because some {@link SystemConverter}
- * methods may query back {@link HeuristicRegistry#SYSTEM} while we want to keep the tests
+ * methods may query back {@link SystemRegistry#INSTANCE} while we want to keep the tests
  * isolated.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -334,5 +334,32 @@ public final strictfp class ConverterRegistryTest extends TestCase {
          * Final check.
          */
         assertAllConvertersAreRegistered();
+    }
+
+    /**
+     * Tests automatic creation of a converter for an array of values.
+     */
+    @Test
+    public void testArrayOfWrapperTypes() {
+        register(new NumberConverter<>(Float.class, Double.class));
+        final ObjectConverter<?,?> converter = registry.find(Float[].class, Double[].class);
+        assertInstanceOf("Array conversions", ArrayConverter.class, converter);
+        assertEquals(Float [].class, converter.getSourceClass());
+        assertEquals(Double[].class, converter.getTargetClass());
+        assertSame("Converter shall be cached.", converter, registry.find(Float[].class, Double[].class));
+    }
+
+    /**
+     * Tests automatic creation of a converter for an array of values.
+     */
+    @Test
+    @DependsOnMethod("testArrayOfWrapperTypes")
+    public void testArrayOfPrimitiveTypes() {
+        register(new NumberConverter<>(Float.class, Double.class));
+        final ObjectConverter<?,?> converter = registry.find(float[].class, double[].class);
+        assertInstanceOf("Array conversions", ArrayConverter.class, converter);
+        assertEquals(float [].class, converter.getSourceClass());
+        assertEquals(double[].class, converter.getTargetClass());
+        assertSame("Converter shall be cached.", converter, registry.find(float[].class, double[].class));
     }
 }
