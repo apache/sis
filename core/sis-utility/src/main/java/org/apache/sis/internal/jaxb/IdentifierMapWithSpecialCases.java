@@ -190,6 +190,7 @@ public final class IdentifierMapWithSpecialCases extends IdentifierMapAdapter {
     {
         final Context   context;
         final Object    removed;
+        final Class<?>  type;
         final Exception exception;
         switch (specialCase(authority)) {
             default: {
@@ -205,6 +206,7 @@ public final class IdentifierMapWithSpecialCases extends IdentifierMapAdapter {
                     } catch (URISyntaxException e) {
                         exception = e;
                         removed = setHRef(null);
+                        type = URI.class;
                         break;
                     }
                 }
@@ -213,7 +215,7 @@ public final class IdentifierMapWithSpecialCases extends IdentifierMapAdapter {
                 return (uri != null) ? uri.toString() : old;
             }
         }
-        SpecializedIdentifier.parseFailure(context, this, exception);
+        SpecializedIdentifier.parseFailure(context, this, code, type, exception);
         final String old = super.put(authority, code);
         return (old == null && removed != null) ? removed.toString() : old;
     }

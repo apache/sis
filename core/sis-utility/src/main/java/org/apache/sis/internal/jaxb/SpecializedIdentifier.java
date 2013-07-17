@@ -20,6 +20,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.UUID;
 import java.io.Serializable;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.xml.XLink;
@@ -27,6 +29,7 @@ import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.ValueConverter;
 import org.apache.sis.util.Debug;
+import org.apache.sis.util.resources.Messages;
 import org.apache.sis.internal.util.Citations;
 
 // Related to JDK7
@@ -108,7 +111,7 @@ public final class SpecializedIdentifier<T> implements Identifier, Serializable 
                     try {
                         return new SpecializedIdentifier<>(IdentifierSpace.UUID, converter.toUUID(context, code));
                     } catch (IllegalArgumentException e) {
-                        parseFailure(context, source, e);
+                        parseFailure(context, source, code, UUID.class, e);
                         break;
                     }
                 }
@@ -120,7 +123,7 @@ public final class SpecializedIdentifier<T> implements Identifier, Serializable 
                     try {
                         href = converter.toURI(context, code);
                     } catch (URISyntaxException e) {
-                        parseFailure(context, source, e);
+                        parseFailure(context, source, code, URI.class, e);
                         break;
                     }
                     if (ordinal == NonMarshalledAuthority.HREF) {
@@ -142,9 +145,22 @@ public final class SpecializedIdentifier<T> implements Identifier, Serializable 
      *
      * <p>This method assumes that {@link IdentifierMap#put(Citation, String)} is
      * the public API by which this method has been invoked.</p>
+     *
+     * @param context The marshalling context, or {@code null} if none.
+     * @param source  The object to declare as the source of the warning.
+     * @param value   The value that we failed to parse.
+     * @param type    The target type of the parsing process.
+     * @param cause   The exception that occurred during the parsing process.
      */
-    static void parseFailure(final Context context, final IdentifierMap source, final Exception e) {
-        Context.warningOccured(context, source, IdentifierMap.class, "put", e, true);
+    static void parseFailure(final Context context, final IdentifierMap source,
+            final String value, final Class<?> type, final Exception cause)
+    {
+        final Messages resources = Messages.getResources(context != null ? context.getLocale() : null);
+        final LogRecord record = resources.getLogRecord(Level.WARNING, Messages.Keys.UnparsableValueStoredAsText_2, type, value);
+        record.setSourceClassName(IdentifierMap.class.getCanonicalName());
+        record.setSourceMethodName("put");
+        record.setThrown(cause);
+        Context.warningOccured(context, source, record);
     }
 
     /**
