@@ -614,7 +614,7 @@ public final class Numbers extends Static {
      * @return The value object, or {@code null} if {@code value} was null.
      * @throws IllegalArgumentException if {@code type} is not a recognized type.
      * @throws NumberFormatException if {@code type} is a subclass of {@link Number} and the
-     *         string value is not parseable as a number of the specified type.
+     *         string value is not parsable as a number of the specified type.
      */
     @SuppressWarnings("unchecked")
     public static <T> T valueOf(final String value, final Class<T> type)

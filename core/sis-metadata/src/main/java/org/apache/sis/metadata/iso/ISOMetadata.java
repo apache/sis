@@ -162,7 +162,7 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
     private String getUUID() {
         /*
          * IdentifierMapWithSpecialCases will take care of converting UUID to String,
-         * or to return a previously stored String if it was an unparseable UUID.
+         * or to return a previously stored String if it was an unparsable UUID.
          */
         return isNullOrEmpty(identifiers) ? null : getIdentifierMap().get(IdentifierSpace.UUID);
     }
