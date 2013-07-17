@@ -29,16 +29,10 @@ Building Apache SIS
 
   Content:
 
-  * Javadoc taglets
-
-  * Localized resources compiler
-
-  * JAR files collector
-
-  * Pack200 bundles
+%{toc|fromDepth=2|toDepth=2}
 
 
-* Javadoc taglets
+* Javadoc {taglets}
 
   This module provides the following javadoc taglets:
 
@@ -65,7 +59,7 @@ Building Apache SIS
 *----------------------+-------------------------------------------------------------------------------------------+
 
 
-* Localized resources compiler
+* Localized {resources} compiler
 
   Localized resources are provided in <<<*.properties>>> files as specified by the
   <<<java.util.PropertyResourceBundle>>> standard class. However SIS does not use
@@ -116,7 +110,7 @@ Building Apache SIS
 -----------------------------------------------------------
 
 
-* JAR files collector
+* JAR files {collector}
 
   Links or copies all JAR files (including dependencies) in the <<<target/binaries>>> directory of the parent project.
   This plugin performs a work similar to the standard Maven assembly plugin work, with the following differences:
@@ -153,7 +147,7 @@ Building Apache SIS
 +-----------------------------------------------------
 
 
-* Pack200 bundles
+* Pack200 {bundle}
 
   To merges the binaries produced by the above step and compress them using Pack200,
   invoke the following from the command line. Do not forget the <<<--non-recursive>>>
