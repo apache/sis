@@ -94,7 +94,7 @@ public final class IdentifierMapWithSpecialCases extends IdentifierMapAdapter {
      * Sets the {@code xlink:href} value, which may be null. If an explicit {@code xlink:href}
      * identifier exists, it is removed before to set the new {@code href} in the {@link XLink}
      * object. The intend is to give precedence to the {@link XLink#getHRef()} property in every
-     * cases where the {@code href} is parseable as a {@link URI}, and use the value associated
+     * cases where the {@code href} is parsable as a {@link URI}, and use the value associated
      * to the {@code HREF} key only as a fallback when the string can not be parsed.
      */
     private URI setHRef(final URI href) {
@@ -179,7 +179,7 @@ public final class IdentifierMapWithSpecialCases extends IdentifierMapAdapter {
     /**
      * {@inheritDoc}
      *
-     * <p>If the given {@code authority} is {@code HREF} and if the given string is parseable as a {@link URI},
+     * <p>If the given {@code authority} is {@code HREF} and if the given string is parsable as a {@link URI},
      * then this method will actually store the value as the {@link XLink#getHRef()} property of the {@code XLink}
      * associated to the {@code XLINK} key. Only if the given string can not be parsed, then the value is stored
      * <cite>as-is</cite> under the {@code HREF} key.</p>

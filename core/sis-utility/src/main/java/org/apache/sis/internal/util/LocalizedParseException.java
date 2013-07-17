@@ -81,7 +81,7 @@ public final class LocalizedParseException extends ParseException implements Loc
 
     /**
      * Constructs a {@code ParseException} with a message formatted from the given resource key
-     * and unparseable string. This convenience constructor fetches the word starting at the error
+     * and unparsable string. This convenience constructor fetches the word starting at the error
      * index, and uses that word as the single argument associated to the resource key.
      *
      * @param locale      The locale for {@link #getLocalizedMessage()}.
