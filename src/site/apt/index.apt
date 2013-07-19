@@ -78,6 +78,8 @@ The Apache SIS™ library
 
     * {{{http://reviews.apache.org/groups/sis/}Code review}}
 
+    * {{{./release-process.html}Release process}} (for release managers)
+
 
   Apache SIS, Apache, the Apache feather logo, and the Apache SIS project logo are trademarks of
   The Apache Software Foundation.

@@ -1,0 +1,234 @@
+~~
+~~ Licensed to the Apache Software Foundation (ASF) under one
+~~ or more contributor license agreements.  See the NOTICE file
+~~ distributed with this work for additional information
+~~ regarding copyright ownership.  The ASF licenses this file
+~~ to you under the Apache License, Version 2.0 (the
+~~ "License"); you may not use this file except in compliance
+~~ with the License.  You may obtain a copy of the License at
+~~
+~~   http://www.apache.org/licenses/LICENSE-2.0
+~~
+~~ Unless required by applicable law or agreed to in writing,
+~~ software distributed under the License is distributed on an
+~~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+~~ KIND, either express or implied.  See the License for the
+~~ specific language governing permissions and limitations
+~~ under the License.
+~~
+
+                             -----------------------------
+                                     Release process
+                             -----------------------------
+
+Release Process
+
+  This page describes how to create and deploy the SIS Maven artifacts, binary bundle, javadoc and list of API changes.
+  The {{{http://www.apache.org/dev/release.html}Release FAQ}} page describes the foundation wide policies.
+  The instructions on this page provide a summary suitable to SIS releases, together with SIS-specific steps.
+  The intended audiences are SIS release managers.
+
+%{toc|fromDepth=2|toDepth=3}
+
+
+* Requirements
+
+  Before to perform a release, make sure that the following conditions holds:
+
+   * A Unix shell (commands documented in this page have not been tested on Windows).
+
+   * GNU GPG, Maven, Ant, Java and the Java compiler are available on the path.
+
+   * The {{{./release-setup.html}release setup}} steps have been executed once.
+
+  For all instructions in this page, <<<$OLD_VERSION>>> and <<<$NEW_VERSION>>> stand for the version
+  number of the previous and the new release respectively. Those versions shall be set on the command
+  line like below (Unix):
+
+----------------------
+export OLD_VERSION=0.3
+export NEW_VERSION=0.4
+----------------------
+
+
+
+* Update JIRA tasks and release notes.
+
+  Update {{{http://issues.apache.org/jira/browse/SIS}JIRA}} tasks and prepare release notes as below:
+
+     * Ensure that the <Fix Version> in issues resolved since the last release includes this release version correctly.
+
+     * Ensure that all open issues are resolved or closed before proceeding further.
+
+     * Create a <<<src/site/resources/release-notes/$NEW_VERSION.html>>> file with all the features added.
+
+        * Use <<<$OLD_VERSION.html>>> as a template, omitting everything between the <<<<body>>>> and <<<</body>>>> tags.
+
+        * The release notes can be obtained from JIRA, by clicking on the <Versions> tab, clicking on the version number,
+          and then configuring the release notes to display HTML format and copying it.
+
+        * A suggested approach would be to reorganize the release notes as <New Features>,
+          then <Improvements>, then <Tasks> and <Sub Tasks> and finally <Bug Fixes>.
+
+     * Review and update the <<<README>>> file.
+
+     * Commit any changes back to SVN.
+
+     * Update the following Wiki pages:
+
+        * {{{https://cwiki.apache.org/confluence/display/SIS/Roadmap}Roadmap}}
+
+
+
+* Prepare the trunk
+
+  Update the version numbers from <<<$NEW_VERSION>>> to the next version in the following files.
+  Do not update <<<pom.xml>>> files yet; this will be done after the release.
+
+     * <<<src/site/apt/index.apt>>>
+
+     * <<<src/site/apt/download.apt>>>
+
+  Commit on trunk:
+
+----------------------------------------------------------
+svn add src/site/resources/release-notes/$NEW_VERSION.html
+svn commit --message "Document the $NEW_VERSION release."
+----------------------------------------------------------
+
+
+
+* Create a branch
+
+  Execute the following command:
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+svn copy https://svn.apache.org/repos/asf/sis/trunk https://svn.apache.org/repos/asf/sis/branches/$NEW_VERSION --message "Create the $NEW_VERSION branch."
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+  Move to a directory containing the project branches (presumed to be <<<../branches>>> in the following command,
+  but can be replaced by anything else), then checkout a clean copy of the branch to release:
+
+-----------------------------------------------------------------------
+cd ../branches
+svn checkout https://svn.apache.org/repos/asf/sis/branches/$NEW_VERSION
+cd $NEW_VERSION
+-----------------------------------------------------------------------
+
+  We need to update the Subversion URL and SIS version numbers not only in the <<<pom.xml>>> files,
+  but also in a few Java files. The following command performs the replacement using Ant:
+
+-----------------------------------------------------------------------------------------------
+ant -buildfile core/sis-build-helper/src/main/ant/prepare-branch.xml -Dsis.version=$NEW_VERSION
+-----------------------------------------------------------------------------------------------
+
+  Open the root <<<pom.xml>>> file in an editor and remove the following sections:
+
+     * The whole <<<<pluginRepositories>>>> section, since it should not be needed for releases (and is actually not allowed).
+
+     * The <<<<plugin>>>> section for <<<docbkx-maven-plugin>>>, since the DocBook directory is omitted (see below).
+
+  Recursively delete the <<<src/main/docbook>>> directory (this policy may be revised in future SIS releases).
+  We omit this directory for now because this material may move to the CMS, and no English version is available yet.
+
+  In <<<core/sis-utility/src/main/java/org/apache/sis/internal/system/Supervisor.java>>>, consider setting
+  the <<<ENABLED>>> flag to <<<false>>>. This policy may be revised in future SIS releases.
+
+  Commit the changes on the branch:
+
+-----------------------------------------------------------------------
+svn commit --message "Prepare the branch for the $NEW_VERSION release."
+-----------------------------------------------------------------------
+
+
+** Verify the branch content
+
+  Try a dry run of the <<<release:prepare>>> goal. This goals checks for <<<SNAPSHOT>>> dependencies in <<<pom.xml>>> files.
+  It will not complete the prepare goal until all <<<SNAPSHOT>>> dependencies are resolved.
+  If anything goes wrong, the directory can be cleaned by running the <<<release:clean>>> goal
+  before to fix the problem and try again.
+
+-----------------------------------------------------------------------------------------------------
+mvn release:prepare --define releaseVersion=$NEW_VERSION --define tag=$NEW_VERSION \\
+    --define autoVersionSubmodules=true --define updateWorkingCopyVersions=false --define dryRun=true
+-----------------------------------------------------------------------------------------------------
+
+  The dry run will not commit any changes back to SVN. Instead, it will create <<<pom.xml.tag>>> files containing
+  the changes that would have been committed to SVN. This gives us the opportunity to verify that the release process
+  will complete as expected.
+
+  <<Tip:>> Maven should not prompt for any information except the GPG passphrase
+  (on MacOS, the passphrase will not be prompted if it is stored in keychain).
+  However if no GPG agent is running and if the passphrase is not in the OS keychain,
+  then Maven may prompt for the passphrase very often (many times per module).
+  For avoiding this annoyance, consider starting the <<<gpg-agent>>> daemon like below:
+
+--------------------------
+eval $(gpg-agent --daemon)
+--------------------------
+
+  Compare the original <<<pom.xml>>> files with the <<<pom.xml.tag>>> ones to see if the license or any other info has been removed.
+  This has been known to happen if the starting <<<<project>>>> tag is not on a single line.
+  The only things that should be different between these files are the <<<<version>>>> and <<<<scm>>>> elements.
+  Comparisons can be performed for all files with the following command:
+
+----------------------------------------------------------
+find . -name "pom.xml" -print -exec diff '{}' '{}'.tag \\;
+----------------------------------------------------------
+
+  View the <<<release.properties>>> file and check for the following properties:
+
+     * <<<exec.additionalArguments>>> shall contains <<<-Papache-release>>>
+       (this profile shall be implied even if not explicitely specified on the command line).
+
+     * <<<project.scm.org.apache.sis:parent.connection>>> shall be (ignoring escape characters)
+       <<<scm:svn:http://svn.apache.org/repos/asf/sis/branches/$NEW_VERSION>>>.
+
+  Verify signature for all files:
+
+----------------------------------------------------
+find . -name "sis-*.asc" -exec gpg --verify '{}' \\;
+----------------------------------------------------
+
+  Clean and ensure that there is no modified files, i.e. that the last <<<svn>>> command produces no output:
+
+-----------------
+mvn release:clean
+svn status
+-----------------
+
+
+
+* Perform the release
+
+  Run the <<<release:prepare>>> goal for real this time. The command is identical to the one in the
+  <Create a branch> section except for the <<<dryRun>>> property, which is omitted.
+  This command will create the tag and commit the changes on SVN.
+
+-------------------------------------------------------------------------------------
+mvn release:prepare --define releaseVersion=$NEW_VERSION --define tag=$NEW_VERSION \\
+    --define autoVersionSubmodules=true --define updateWorkingCopyVersions=false
+-------------------------------------------------------------------------------------
+
+  In theory, the next command would be <<<mvn release:perform>>>.
+  However in fact, that command only checks out the project from tag folder and then run the <<<deploy>>> phase.
+  We need to perform those commands manually, because we need a separated <<<install>>> phase first,
+  then a <<<site>>> phase at deploy time (even if the site is not deployed) for proper execution of SIS custom taglets.
+
+  First, move to a directory containing the project tags (presumed to be <<<../../tags>>> in the following
+  command, but can be replaced by anything else), then checkout and deploy:
+
+--------------------------------------------------
+cd ../../tags
+svn checkout https://svn.apache.org/repos/asf/sis/tags/$NEW_VERSION
+cd $NEW_VERSION
+mvn clean install --define skipTests
+mvn site deploy --activate-profiles apache-release
+--------------------------------------------------
+
+  <<Note:>> if the local OS <<<userId>>> does not match the Apache <<<userId>>>, then the Apache one must be specified
+  by adding the following option to the last command: <<<--define user.name=[apache_userId]>>>
+
+
+
+* Verify the Nexus release artifacts
