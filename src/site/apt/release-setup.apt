@@ -30,6 +30,16 @@ One time release management setup
 %{toc|fromDepth=2|toDepth=3}
 
 
+* Shell configuration
+
+  It is better for Unix shells to contain the following line in their initialization file
+  (typically {{~/.bashrc}} or {{~/.profile}}, where {{~}} stands for the user's home directory):
+
+---------------------
+export GPG_TTY=$(tty)
+---------------------
+
+
 * Generate GPG key
 
   The releases have to be signed by public key cryptography signatures.
@@ -69,7 +79,7 @@ gpg --gen-key
 
    * Passphrase: please choose a strong one.
 
-  Verify the key information (replace _Real Name_ by the above-cited developer's name, keeping quotes in the command below).
+  Verify the key information (replace <Real Name> by the above-cited developer's name, keeping quotes in the command below).
   Note the key identifier, which is a value like <<<EB98E066>>>. This key identifier will be needed for the next steps.
 
 ---------------------------
@@ -88,12 +98,12 @@ gpg --send-key <key_id>
   Generate a revocation certificate. This is not for immediate use, but generating the certificate now
   is a safety in case the passphrase is lost. Keep the revocation certificate in a safe place.
 
-----------------------------------------------
-gpg --output revcert.asc --gen-revoke <key_id>
-----------------------------------------------
+-------------------------------------------------------------
+gpg --output revocation_certificate.asc --gen-revoke <key_id>
+-------------------------------------------------------------
 
   Have the key signed by at least three Apache commiters. This can be done by executing the following commands on
-  the machine of the other Apache commiter, where <<<key_to_use>>> is the identifier of the other commiter's key.
+  the machine of the other Apache commiter, where <<<<key_to_use>>>> is the identifier of the other commiter's key.
   Those operation should preferably be done in some event where the commiters can meet face-to-face.
   The other commiter should verify that the <<<gpg --fingerprint>>> command output matches the fingerprint of the key to sign.
 
@@ -106,7 +116,7 @@ gpg --send-key <key_id>
 
   The above-cited <Release Signing> page provides more instructions.
   Then, the signed public key shall be appended to the <<<KEYS>>> file on
-  {{{http://dist.apache.org/repos/dist/release/sis/}}}.
+  {{http://dist.apache.org/repos/dist/release/sis/}}.
 
 
 * Maven Configuration & Nexus Setup
@@ -119,7 +129,7 @@ gpg --send-key <key_id>
 mvn --encrypt-master-password <password>
 ----------------------------------------
 
-  The command will produce an encrypted version of the given password, something like <<<{jSMOWnoPFgsHVpMvz5VrIt5kRbzGpI8u+9EF1iFQyJQ=}>>>.
+  The command will produce an encrypted version of the given password, something like <<<\{jSMOWnoPFgsHVpMvz5VrIt5kRbzGpI8u+9EF1iFQyJQ=\}>>>.
   Store this password in the <<<~/.m2/settings-security.xml>>> file like below:
 
 +---------------------------------------------------------------+
@@ -134,7 +144,7 @@ mvn --encrypt-master-password <password>
 mvn --encrypt-password <passphrase>
 -----------------------------------
 
-  The command will produce an encrypted version of the passphrase, something like <<<{COQLCE6DU6GtcS5P=}>>>.
+  The command will produce an encrypted version of the passphrase, something like <<<\{COQLCE6DU6GtcS5P=\}>>>.
   Cut-and-paste it in a section of the <<<~/.m2/settings.xml>>> file like below:
 
 +--------------------------------------------------------------------+
