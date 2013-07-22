@@ -123,7 +123,7 @@ Building Apache SIS
     so execution of this plugin should be very cheap and consume few disk space.
 
   * Dependencies already present in the <<<target/binaries>>> directory are presumed stables and
-    are not overwritten. Only artefacts produced by the Maven build are unconditionally overwritten.
+    are not overwritten. Only artifacts produced by the Maven build are unconditionally overwritten.
 
   This plugin can be activated by the following fragment in the parent <<<pom.xml>>> file:
 

@@ -149,7 +149,7 @@ svn commit --message "Prepare the branch for the $NEW_VERSION release."
   before to fix the problem and try again.
 
 -----------------------------------------------------------------------------------------------------
-mvn release:prepare --define releaseVersion=$NEW_VERSION --define tag=$NEW_VERSION \\
+mvn release:prepare --define releaseVersion=$NEW_VERSION --define tag=$NEW_VERSION \
     --define autoVersionSubmodules=true --define updateWorkingCopyVersions=false --define dryRun=true
 -----------------------------------------------------------------------------------------------------
 
@@ -172,9 +172,9 @@ eval $(gpg-agent --daemon)
   The only things that should be different between these files are the <<<<version>>>> and <<<<scm>>>> elements.
   Comparisons can be performed for all files with the following command:
 
-----------------------------------------------------------
-find . -name "pom.xml" -print -exec diff '{}' '{}'.tag \\;
-----------------------------------------------------------
+---------------------------------------------------------
+find . -name "pom.xml" -print -exec diff '{}' '{}'.tag \;
+---------------------------------------------------------
 
   View the <<<release.properties>>> file and check for the following properties:
 
@@ -186,9 +186,9 @@ find . -name "pom.xml" -print -exec diff '{}' '{}'.tag \\;
 
   Verify signature for all files:
 
-----------------------------------------------------
-find . -name "sis-*.asc" -exec gpg --verify '{}' \\;
-----------------------------------------------------
+---------------------------------------------------
+find . -name "sis-*.asc" -exec gpg --verify '{}' \;
+---------------------------------------------------
 
   Clean and ensure that there is no modified files, i.e. that the last <<<svn>>> command produces no output:
 
@@ -199,16 +199,16 @@ svn status
 
 
 
-* Perform the release
+* Deploy the release
 
   Run the <<<release:prepare>>> goal for real this time. The command is identical to the one in the
   <Create a branch> section except for the <<<dryRun>>> property, which is omitted.
   This command will create the tag and commit the changes on SVN.
 
--------------------------------------------------------------------------------------
-mvn release:prepare --define releaseVersion=$NEW_VERSION --define tag=$NEW_VERSION \\
+------------------------------------------------------------------------------------
+mvn release:prepare --define releaseVersion=$NEW_VERSION --define tag=$NEW_VERSION \
     --define autoVersionSubmodules=true --define updateWorkingCopyVersions=false
--------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------
 
   In theory, the next command would be <<<mvn release:perform>>>.
   However in fact, that command only checks out the project from tag folder and then run the <<<deploy>>> phase.

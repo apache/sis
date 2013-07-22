@@ -33,7 +33,7 @@ One time release management setup
 * Shell configuration
 
   It is better for Unix shells to contain the following line in their initialization file
-  (typically {{~/.bashrc}} or {{~/.profile}}, where {{~}} stands for the user's home directory):
+  (typically {{\~/.bashrc}} or {{\~/.profile}}, where {{\~}} stands for the user's home directory):
 
 ---------------------
 export GPG_TTY=$(tty)
@@ -48,7 +48,7 @@ export GPG_TTY=$(tty)
   The {{{http://www.apache.org/dev/openpgp.html}OpenPGP instructions}} list out detailed steps on managing your keys.
   The following steps provide a summary:
 
-  Edit the <<<~/.gnupg/gpg.conf>>> configuration file (where <<<~>>> is the home directory) and add the following
+  Edit the <<<\~/.gnupg/gpg.conf>>> configuration file (where <<<\~>>> is the home directory) and add the following
   configuration options, or edit the existing values if any:
 
 -------------------------------------------------------------------------------------------------------
@@ -122,7 +122,7 @@ gpg --send-key <key_id>
 * Maven Configuration & Nexus Setup
 
   Detailed instructions are at {{{http://www.apache.org/dev/publishing-maven-artifacts.html}Publishing Maven Artifacts}}.
-  In summary, the developer needs to specify username, and optionally password, in his local <<<~/.m2>>> directory.
+  In summary, the developer needs to specify username, and optionally password, in his local <<<\~/.m2>>> directory.
   If not already done, create a Maven master password:
 
 ----------------------------------------
@@ -130,7 +130,7 @@ mvn --encrypt-master-password <password>
 ----------------------------------------
 
   The command will produce an encrypted version of the given password, something like <<<\{jSMOWnoPFgsHVpMvz5VrIt5kRbzGpI8u+9EF1iFQyJQ=\}>>>.
-  Store this password in the <<<~/.m2/settings-security.xml>>> file like below:
+  Store this password in the <<<\~/.m2/settings-security.xml>>> file like below:
 
 +---------------------------------------------------------------+
 <settingsSecurity>
@@ -145,7 +145,7 @@ mvn --encrypt-password <passphrase>
 -----------------------------------
 
   The command will produce an encrypted version of the passphrase, something like <<<\{COQLCE6DU6GtcS5P=\}>>>.
-  Cut-and-paste it in a section of the <<<~/.m2/settings.xml>>> file like below:
+  Cut-and-paste it in a section of the <<<\~/.m2/settings.xml>>> file like below:
 
 +--------------------------------------------------------------------+
 <settings>
