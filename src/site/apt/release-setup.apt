@@ -30,10 +30,36 @@ One time release management setup
 %{toc|fromDepth=2|toDepth=3}
 
 
+* Directory layout (including Subversion checkout)
+
+  The steps described in the <Release process> page assumes the following directory layout.
+  Some directories are SVN checkout, other are ordinary directories. Any other layout can be used.
+  However in the later case, all relative paths in the {{{./release-process.html}Release process}}
+  page will need to be adjusted accordingly.
+
++---------------------------+
+<any root directory for SIS>
+├─ trunk
+├─ branches
+├─ tags
+└─ distribution
++---------------------------+
+
+  Create the above directory structure as below:
+
+--------------------------------------------------------------------
+svn checkout https://svn.apache.org/repos/asf/sis/trunk
+svn checkout https://dist.apache.org/repos/dist/dev/sis distribution
+mkdir branches
+mkdir tags
+--------------------------------------------------------------------
+
+
+
 * Shell configuration
 
   It is better for Unix shells to contain the following line in their initialization file
-  (typically {{\~/.bashrc}} or {{\~/.profile}}, where {{\~}} stands for the user's home directory):
+  (typically <<<\~/.bashrc>>> or <<<\~/.profile>>>, where <<<\~>>> stands for the user's home directory):
 
 ---------------------
 export GPG_TTY=$(tty)
