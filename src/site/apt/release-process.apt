@@ -37,19 +37,39 @@ Release Process
 
    * A Unix shell (commands documented in this page have not been tested on Windows).
 
-   * GNU GPG, Maven, Ant, Java and the Java compiler are available on the path.
+   * Subversion, GNU GPG, ZIP, Maven, Ant, Java and the Java compiler are available on the path.
 
    * The {{{./release-setup.html}release setup}} steps have been executed once.
 
   For all instructions in this page, <<<$OLD_VERSION>>> and <<<$NEW_VERSION>>> stand for the version
-  number of the previous and the new release respectively. Those versions shall be set on the command
-  line like below (Unix):
+  number of the previous and the new release respectively, and <<<$RELEASE_CANDIDATE>>> stands for
+  the current release attempt. Those versions shall be set on the command line like below (Unix):
 
-----------------------
+--------------------------
 export OLD_VERSION=0.3
 export NEW_VERSION=0.4
-----------------------
+export RELEASE_CANDIDATE=1
+--------------------------
 
+** Directory layout
+
+  The steps described in this page assume the following directory layout (some directories will be created as
+  a result of the steps). Any other layout can be used. However if the layout differ, then the relative paths
+  in this page shall be adjusted accordingly.
+
+-----------------------------
+<any root directory for SIS>
+├─ trunk
+├─ branches
+│  └─ $NEW_VERSION
+├─ tags
+│  └─ $NEW_VERSION
+│     └─ target
+│        └─ bundles
+└─ distribution
+   └─ $NEW_VERSION
+      └─ RC$RELEASE_CANDIDATE
+-----------------------------
 
 
 * Update JIRA tasks and release notes.
@@ -141,7 +161,7 @@ svn commit --message "Prepare the branch for the $NEW_VERSION release."
 -----------------------------------------------------------------------
 
 
-** Verify the branch content
+* Verify the branch content
 
   Try a dry run of the <<<release:prepare>>> goal. This goals checks for <<<SNAPSHOT>>> dependencies in <<<pom.xml>>> files.
   It will not complete the prepare goal until all <<<SNAPSHOT>>> dependencies are resolved.
@@ -222,7 +242,7 @@ mvn release:prepare --define releaseVersion=$NEW_VERSION --define tag=$NEW_VERSI
 cd ../../tags
 svn checkout https://svn.apache.org/repos/asf/sis/tags/$NEW_VERSION
 cd $NEW_VERSION
-mvn clean install --define skipTests
+mvn clean install --define skipTests=true
 mvn site deploy --activate-profiles apache-release
 --------------------------------------------------
 
@@ -231,4 +251,98 @@ mvn site deploy --activate-profiles apache-release
 
 
 
-* Verify the Nexus release artifacts
+* Verify and close the Nexus release artifacts
+
+  Verify the staged artifacts in the {{{https://repository.apache.org/index.html}Nexus repository}}.
+  The artifacts can be found under _Build Promotion_ → _Staging repositories_ → _Name column_ --> <<<org.apache.sis>>>.
+  Navigate through the artifact tree and make sure that all javadoc, source, test and jar files have <<<.asc>>> (GPG signature)
+  and <<<.md5>>> files.
+
+  Additional references about signatures:
+
+     * {{{http://people.apache.org/~henkp/repo/faq.html}Maven repository PGP signature checker FAQ}}
+
+     * {{{http://www.apache.org/dev/release-signing.html}Release signing}}
+       (cited in the {{{./release-setup.html}Release setup}} page)
+
+
+  Close the nexus staging repository: click the checkbox for the open staging repositories
+  (<<<org.apache.sis-<module>>>>) and press <Close> in the menu bar.
+
+
+
+* Stage the binary and javadoc artifacts to the distribution development repository
+
+  Create the directory for the new version and release candidate within the distribution directory.
+  The <<<RC>>> number shall correspond to the current release attempt.
+
+--------------------------------------------------------------------------
+mkdir ../../distribution/$NEW_VERSION
+--------------------------------------------------------------------------
+
+  Create and put the binary artifact in the distribution directory:
+
+----------------------------------------------------------------------
+mvn org.apache.sis:sis-build-helper:$NEW_VERSION:pack --non-recursive
+mv target/bundles ../../distribution/$NEW_VERSION/RC$RELEASE_CANDIDATE
+----------------------------------------------------------------------
+
+  Create and put the javadoc in the distribution directory:
+
+---------------------------------------------------------------------------------------------------------
+cd target/site
+zip -9 -r ../../../../distribution/$NEW_VERSION/RC$RELEASE_CANDIDATE/sis-$NEW_VERSION-apidocs.zip apidocs
+cd ../..
+---------------------------------------------------------------------------------------------------------
+
+  Create and put the source code in the distribution directory:
+
+-------------------------------------------------------------------------------------
+svn export . ../../distribution/$NEW_VERSION/RC$RELEASE_CANDIDATE/src --native-eol LF
+cd ../../distribution/$NEW_VERSION/RC$RELEASE_CANDIDATE
+zip -9 -r sis-$NEW_VERSION-src.zip src
+rm -r src
+-------------------------------------------------------------------------------------
+
+  Sign the source, javadoc and binary artifacts:
+
+-----------------------------------------------------------------------------------------
+gpg --armor --detach-sign sis-$NEW_VERSION.src.zip
+gpg --print-md SHA512     sis-$NEW_VERSION.src.zip > sis-$NEW_VERSION.src.zip.sha
+gpg --print-md MD5        sis-$NEW_VERSION.src.zip > sis-$NEW_VERSION.src.zip.md5
+gpg --armor --detach-sign sis-$NEW_VERSION.apidocs.zip
+gpg --print-md SHA512     sis-$NEW_VERSION.apidocs.zip > sis-$NEW_VERSION.apidocs.zip.sha
+gpg --print-md MD5        sis-$NEW_VERSION.apidocs.zip > sis-$NEW_VERSION.apidocs.zip.md5
+gpg --armor --detach-sign sis-$NEW_VERSION.pack.gz
+gpg --print-md SHA512     sis-$NEW_VERSION.pack.gz > sis-$NEW_VERSION.pack.gz.sha
+gpg --print-md MD5        sis-$NEW_VERSION.pack.gz > sis-$NEW_VERSION.pack.gz.md5
+-----------------------------------------------------------------------------------------
+
+  Commit:
+
+---------------------------------------------------------------
+cd ../..
+svn add $NEW_VERSION
+svn commit --message "SIS release candidate $RELEASE_CANDIDATE"
+---------------------------------------------------------------
+
+  Verify that the files are downloadable from the {{http://dist.apache.org/repos/dist/dev/sis/}} sub-directory.
+
+
+* Put the release candidate up for a vote
+
+     * Create a VOTE email thread on <<<dev@>>> to record votes as replies.
+
+     * Create a DISCUSS email thread on <<<dev@>>> for any vote questions.
+
+     * Perform a review of the release and cast your vote:
+
+         * a -1 vote does not necessarily mean that the vote must be redone, however it is usually a good idea
+           to rollback the release if a -1 vote is received. See - Recovering from a vetoed release.
+
+     * After the vote has been open for at least 72 hours, has at least three +1 PMC votes and no -1 votes,
+       then post the results to the vote thread:
+
+         * Reply to the initial email and prepend to the original subject "[RESULT]"
+
+         * Include a list of everyone who voted +1, 0 or -1.
