@@ -332,13 +332,15 @@ svn commit --message "SIS release candidate $RELEASE_CANDIDATE"
 * Put the release candidate up for a vote
 
      * Create a VOTE email thread on <<<dev@>>> to record votes as replies.
+       A template is available at {{{http://sis.apache.org/release-vote.txt}here}}.
 
      * Create a DISCUSS email thread on <<<dev@>>> for any vote questions.
+       A template is available at {{{http://sis.apache.org/release-discuss.txt}here}}.
 
      * Perform a review of the release and cast your vote:
 
          * a -1 vote does not necessarily mean that the vote must be redone, however it is usually a good idea
-           to rollback the release if a -1 vote is received. See - Recovering from a vetoed release.
+           to rollback the release if a -1 vote is received. See <Recovering from a vetoed release> below.
 
      * After the vote has been open for at least 72 hours, has at least three +1 PMC votes and no -1 votes,
        then post the results to the vote thread:
