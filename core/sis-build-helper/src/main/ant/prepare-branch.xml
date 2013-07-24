@@ -22,7 +22,7 @@
 
 <!--
   Invoked after a branch has been created in order to update version numbers.
-  See http://builds.apache.org/job/sis-trunk/site/release-process.html
+  See http://sis.apache.org/release-management.html
 -->
 <project name="prepare-branch" default="update-version">
   <target name="update-version">
@@ -45,15 +45,15 @@
     </replace>
 
     <!--
-      Replace URL to trunk by URL to the branch on Suversion.
+      Replace URL to trunk by URL to the branch on Subversion.
     -->
     <replace dir="${user.dir}" failOnNoReplacements="true">
       <include name="pom.xml"/>
       <include name="core/sis-build-helper/src/main/java/org/apache/sis/internal/taglet/SourceRepositoryURL.java"/>
       <replacefilter token="svn.apache.org/repos/asf/sis/trunk"
-                     value="svn.apache.org/repos/asf/sis/branches/${sis.version}"/>
+                     value="svn.apache.org/repos/asf/sis/tags/${sis.version}"/>
       <replacefilter token="svn.apache.org/viewvc/sis/trunk"
-                     value="svn.apache.org/viewvc/sis/branches/${sis.version}"/>
+                     value="svn.apache.org/viewvc/sis/tags/${sis.version}"/>
     </replace>
   </target>
 </project>
