@@ -65,12 +65,12 @@ Apache SIS is a free software, Java language library for developing geospatial a
        ============================================================== -->
   <scm>
     <connection>
-      scm:svn:http://svn.apache.org/repos/asf/sis/branches/0.3
+      scm:svn:http://svn.apache.org/repos/asf/sis/tags/0.3
     </connection>
     <developerConnection>
-      scm:svn:https://svn.apache.org/repos/asf/sis/branches/0.3
+      scm:svn:https://svn.apache.org/repos/asf/sis/tags/0.3
     </developerConnection>
-    <url>http://svn.apache.org/viewvc/sis/branches/0.3</url>
+    <url>http://svn.apache.org/viewvc/sis/tags/0.3</url>
   </scm>
 
   <ciManagement>
