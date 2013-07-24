@@ -47,20 +47,14 @@ The Apache SIS™ library
 
 ** User documentation
 
-    * {{{./download.html}Downloading binaries}}
-
     * {{{./apidocs/index.html}Aggregated Javadoc}}
 
     * Developer Guide (English - translation to be provided later) ({{{./book/fr.xhtml}Français}})
-
-    * {{{http://cwiki.apache.org/confluence/display/SIS}SIS Wiki}}
 
 
 ** SIS developer documentation
 
     * {{{./code-patterns.html}Recommended code patterns}}
-
-    * {{{./release-process.html}Release process}} (for release managers)
 
 
   Apache SIS, Apache, the Apache feather logo, and the Apache SIS project logo are trademarks of
