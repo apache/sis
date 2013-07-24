@@ -21,22 +21,20 @@
 
 
 <!--
-  Invoked after a branch has been created in order to update version numbers.
+  Invoked after a branch or a tag has been created in order to update version numbers.
   See http://sis.apache.org/release-management.html
 -->
-<project name="prepare-branch" default="update-version">
-  <target name="update-version">
-    <!--
-      Ensure that the "sis-build-helper" plugin used by the build is the released version.
-      This replacement is optional since the trunk may have fixed the plugin to a stable release.
-    -->
+<project name="prepare-release">
+
+  <!-- Invoked after a branch has been created from the trunk. -->
+  <target name="branch">
+
+    <!-- Ensure that the "sis-build-helper" plugin used by the build is the released version. -->
     <replaceregexp file = "${user.dir}/pom.xml"
                   match = "&lt;sis\.plugin\.version&gt;.+&lt;/sis\.plugin\.version&gt;"
                 replace = "&lt;sis.plugin.version&gt;${sis.version}-SNAPSHOT&lt;/sis.plugin.version&gt;"/>
 
-    <!--
-      Replace the version number in Java code.
-    -->
+    <!-- Replace the version number in Java code. -->
     <replace dir="${user.dir}" failOnNoReplacements="true">
       <include name="core/sis-utility/src/main/java/org/apache/sis/util/Version.java"/>
       <include name="core/sis-build-helper/src/main/java/org/apache/sis/internal/taglet/Module.java"/>
@@ -44,16 +42,39 @@
                      value="&quot;${sis.version}&quot;"/>
     </replace>
 
-    <!--
-      Replace URL to trunk by URL to the branch on Subversion.
-    -->
+    <!-- Replace URL to trunk by URL to the branch on Subversion. -->
     <replace dir="${user.dir}" failOnNoReplacements="true">
-      <include name="pom.xml"/>
+      <include name="**/pom.xml"/>
       <include name="core/sis-build-helper/src/main/java/org/apache/sis/internal/taglet/SourceRepositoryURL.java"/>
       <replacefilter token="svn.apache.org/repos/asf/sis/trunk"
-                     value="svn.apache.org/repos/asf/sis/tags/${sis.version}"/>
+                     value="svn.apache.org/repos/asf/sis/branches/${sis.version}"/>
       <replacefilter token="svn.apache.org/viewvc/sis/trunk"
+                     value="svn.apache.org/viewvc/sis/branches/${sis.version}"/>
+    </replace>
+  </target>
+
+
+
+  <!-- Invoked after a tag has been created from the branch. -->
+  <target name="tag">
+
+    <!-- Replace URL to branch by URL to the branch on Subversion. -->
+    <replace dir="${user.dir}" failOnNoReplacements="true">
+      <include name="**/pom.xml"/>
+      <include name="core/sis-build-helper/src/main/java/org/apache/sis/internal/taglet/SourceRepositoryURL.java"/>
+      <replacefilter token="svn.apache.org/repos/asf/sis/branches/${sis.version}"
+                     value="svn.apache.org/repos/asf/sis/tags/${sis.version}"/>
+      <replacefilter token="svn.apache.org/viewvc/sis/branches/${sis.version}"
                      value="svn.apache.org/viewvc/sis/tags/${sis.version}"/>
+    </replace>
+
+    <!-- Replace version numbers. Note that no snapshot other than SIS can exist at this point. -->
+    <replace dir="${user.dir}" failOnNoReplacements="true">
+      <include name="**/pom.xml"/>
+      <replacefilter token="&lt;version&gt;${sis.version}-SNAPSHOT&lt;/version&gt;"
+                     value="&lt;version&gt;${sis.version}&lt;/version&gt;"/>
+      <replacefilter token="&lt;sis.plugin.version&gt;${sis.version}-SNAPSHOT&lt;/sis.plugin.version&gt;"
+                     value="&lt;sis.plugin.version&gt;${sis.version}&lt;/sis.plugin.version&gt;"/>
     </replace>
   </target>
 </project>
