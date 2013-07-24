@@ -75,7 +75,7 @@ public final class SourceRepositoryURL extends InlineTaglet {
      */
     @Override
     public String toString(final Tag tag) {
-        final StringBuilder url = new StringBuilder("http://svn.apache.org/repos/asf/sis/trunk");
+        final StringBuilder url = new StringBuilder("http://svn.apache.org/repos/asf/sis/tags/0.3");
         final String keyword = tag.text();
         /* switch (keyword) */ {
             if (keyword.equals("gmd-data")) {
