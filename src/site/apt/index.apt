@@ -40,43 +40,16 @@ The Apache SIS™ library
   applicable to simple imagery as to many dimensional data structures.
 
   SIS is a project of the {{{http://www.apache.org}Apache Software Foundation}}.
-
-
-* Using SIS
-
-  SIS requires a Java 6 Runtime Environment.
-  The latest release is <<<0.3>>>.
-  The version under development is <<<0.4-SNAPSHOT>>>.
-
-  The source code can be checked out anonymously with SubVersion from
-  {{{http://svn.apache.org/repos/asf/sis/trunk}http://svn.apache.org/repos/asf/sis/trunk}},
-  or can be cloned with Git from {{{git://git.apache.org/sis.git}git://git.apache.org/sis.git}}.
+  The project home is {{http://sis.apache.org}}.
 
 
 * Documentation
 
 ** User documentation
 
-    * {{{./download.html}Downloading binaries}}
-
     * {{{./apidocs/index.html}Aggregated Javadoc}}
 
     * Developer Guide (English - translation to be provided later) ({{{./book/fr.xhtml}Français}})
-
-    * {{{http://cwiki.apache.org/confluence/display/SIS}SIS Wiki}}
-
-
-** SIS developer documentation
-
-    * {{{./develop.html}Developing Apache SIS}}
-
-    * {{{./branches.html}Branches (JDK6, JDK7, GeoAPI)}}
-
-    * {{{./code-patterns.html}Recommended code patterns}}
-
-    * {{{./code-format.html}Code and Javadoc formatting}}
-
-    * {{{http://reviews.apache.org/groups/sis/}Code review}}
 
 
   Apache SIS, Apache, the Apache feather logo, and the Apache SIS project logo are trademarks of

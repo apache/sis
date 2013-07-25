@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/* Override styles in maven-base.css */
+/* Overwrite styles in maven-base.css */
 #leftColumn {
  width: 190px;
 }
@@ -23,7 +23,7 @@
   margin-left: 210px;
 }
 
-/* Override styles in maven-theme.css */
+/* Overwrite styles in maven-theme.css */
 a {
   color: #387085;
 }

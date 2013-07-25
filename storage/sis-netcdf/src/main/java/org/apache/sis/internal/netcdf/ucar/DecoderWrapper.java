@@ -190,7 +190,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      * Returns the value of the attribute of the given name as a number, or {@code null} if none.
      *
      * @param  name The name of the attribute to search, or {@code null}.
-     * @return The attribute value, or {@code null} if none or unparseable or if the given name was null.
+     * @return The attribute value, or {@code null} if none or unparsable or if the given name was null.
      */
     @Override
     public Number numericValue(final String name) {
@@ -216,7 +216,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      * Returns the value of the attribute of the given name as a date, or {@code null} if none.
      *
      * @param  name The name of the attribute to search, or {@code null}.
-     * @return The attribute value, or {@code null} if none or unparseable or if the given name was null.
+     * @return The attribute value, or {@code null} if none or unparsable or if the given name was null.
      */
     @Override
     public Date dateValue(final String name) {

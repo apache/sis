@@ -16,7 +16,6 @@
  */
 package org.apache.sis.metadata.iso;
 
-import java.util.UUID;
 import java.util.Collection;
 import java.util.logging.Logger;
 import java.io.Serializable;
@@ -28,11 +27,9 @@ import org.opengis.metadata.Identifier;
 import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.IdentifiedObject;
-import org.apache.sis.xml.ValueConverter;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.ModifiableMetadata;
 import org.apache.sis.internal.jaxb.IdentifierMapWithSpecialCases;
-import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ThreadSafe;
@@ -163,6 +160,10 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
     @XmlAttribute  // Defined in "gco" as unqualified attribute.
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     private String getUUID() {
+        /*
+         * IdentifierMapWithSpecialCases will take care of converting UUID to String,
+         * or to return a previously stored String if it was an unparsable UUID.
+         */
         return isNullOrEmpty(identifiers) ? null : getIdentifierMap().get(IdentifierSpace.UUID);
     }
 
@@ -173,22 +174,11 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
      * @throws IllegalArgumentException If the UUID is already assigned to an other object.
      */
     private void setUUID(String id) {
-        final Context context = Context.current();
-        final ValueConverter converter = Context.converter(context);
-        final UUID uuid;
-        try {
-            uuid = converter.toUUID(context, id);
-        } catch (IllegalArgumentException e) {
-            // IF we can not store the value as a UUID, store it as a String.
-            Context.warningOccured(context, this, ISOMetadata.class, "setUUID", e, false);
-            id = CharSequences.trimWhitespaces(id);
-            if (id != null && !id.isEmpty()) {
-                getIdentifierMap().put(IdentifierSpace.UUID, id);
-            }
-            return;
-        }
-        if (uuid != null) {
-            getIdentifierMap().putSpecialized(IdentifierSpace.UUID, uuid);
-        }
+        /*
+         * IdentifierMapWithSpecialCases will take care of converting the String to UUID if possible,
+         * or will store the value as a plain String if it can not be converted. In the later case, a
+         * warning will be emitted (logged or processed by listeners).
+         */
+        getIdentifierMap().put(IdentifierSpace.UUID, id);
     }
 }

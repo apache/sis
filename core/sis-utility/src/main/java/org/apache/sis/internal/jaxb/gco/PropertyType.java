@@ -154,22 +154,37 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
             }
         }
         if (metadata instanceof IdentifiedObject) {
+            /*
+             * Get the identifiers as full UUID or XLink objects. We do not use the more permissive methods
+             * working with arbitrary strings -- e.g. map.get(IdentifierSpace.HREF) -- because we are going
+             * to use those values for marshalling REFERENCES to an externally-defined metadata object, not
+             * for declaring the attributes to marshal together with the metadata. Since references REPLACE
+             * the original metadata object, we are better to ensure that they are well formed - in case of
+             * doubt, we are better to marshal the full object. We are not loosing information since in the
+             * later case, the identifiers will be marshalled as Strings by ISOMetadata. Example:
+             *
+             *   <gmd:CI_Citation>
+             *     <gmd:series uuidref="f8f5fcb1-d57b-4013-b3a4-4eaa40df6dcf">      ☚ marshalled by this
+             *       <gmd:CI_Series uuid="f8f5fcb1-d57b-4013-b3a4-4eaa40df6dcf">    ☚ marshalled by ISOMetadata
+             *         ...
+             *       </gmd:CI_Series>
+             *     </gmd:series>
+             *   </gmd:CI_Citation>
+             *
+             * We do not try to parse UUID or XLink objects from String because it should be the job of
+             * org.apache.sis.internal.jaxb.IdentifierMapWithSpecialCases.put(Citation, String).
+             */
             final IdentifierMap map = ((IdentifiedObject) metadata).getIdentifierMap();
             XLink  link = map.getSpecialized(IdentifierSpace.XLINK);
             UUID   uuid = map.getSpecialized(IdentifierSpace.UUID);
-            String anyUUID = (uuid != null) ? uuid.toString() : map.get(IdentifierSpace.UUID);
-            if (anyUUID != null || link != null) {
+            if (uuid != null || link != null) {
                 final Context           context  = Context.current();
                 final ReferenceResolver resolver = Context.resolver(context);
                 final Class<BoundType>  type     = getBoundType();
-                if (uuid == null) {
-                    uuid = ObjectReference.toUUID(context, anyUUID); // May still null.
-                }
                 /*
                  * Check if the user gives us the permission to use reference to those identifiers.
-                 * If not, forget them. Information will actually not be lost, since the same identifiers
-                 * will be provided by private methods in ISOMetadata. If we do nott clear the identifiers
-                 * here, they would appear twice in the XML output.
+                 * If not, forget them in order to avoid marshalling the identifiers twice (see the
+                 * example in the above comment).
                  */
                 if (uuid != null && !resolver.canSubstituteByReference(context, type, metadata, uuid)) {
                     uuid = null;
@@ -178,7 +193,7 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
                     link = null;
                 }
                 if (uuid != null || link != null) {
-                    reference = new ObjectReference(uuid, anyUUID, link);
+                    reference = new ObjectReference(uuid, link);
                 }
             }
         }
@@ -271,24 +286,26 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
     @XmlAttribute(name = "uuidref")  // Defined in "gco" as unqualified attribute.
     public final String getUUIDREF() {
         final ObjectReference ref = reference(false);
-        return (ref != null) ? ref.anyUUID : null;
+        return (ref != null) ? toString(ref.uuid) : null;
     }
 
     /**
      * Sets the {@code uuidref} attribute value.
      *
-     * @param uuid The new attribute value.
+     * @param  uuid The new attribute value.
+     * @throws IllegalArgumentException If the given UUID can not be parsed.
      * @category gco:ObjectReference
      */
-    public final void setUUIDREF(final String uuid) {
-        reference(true).anyUUID = uuid;
+    public final void setUUIDREF(final String uuid) throws IllegalArgumentException {
+        final Context context = Context.current();
+        reference(true).uuid = Context.converter(context).toUUID(context, uuid);
     }
 
     /**
      * Returns the given URI as a string, or returns {@code null} if the given argument is null.
      */
-    private static String toString(final Object uri) {
-        return (uri != null) ? uri.toString() : null;
+    private static String toString(final Object text) {
+        return (text != null) ? text.toString() : null;
     }
 
     /**
@@ -516,10 +533,9 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
      * If the {@linkplain #metadata} is still null, tries to resolve it using UUID, XLink
      * or NilReason information. This method is invoked at unmarshalling time.
      *
-     * @throws URISyntaxException If a URI can not be parsed.
-     * @throws IllegalArgumentException If the UUID can not be parsed.
+     * @throws URISyntaxException If a nil reason is present and can not be parsed.
      */
-    final BoundType resolve(final Context context) throws URISyntaxException, IllegalArgumentException {
+    final BoundType resolve(final Context context) throws URISyntaxException {
         final ObjectReference ref = reference(false);
         if (ref != null) {
             metadata = ref.resolve(context, getBoundType(), metadata);
