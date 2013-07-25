@@ -138,6 +138,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
      *         Note that {@linkplain Double#NaN NaN} values are allowed.
      *
      * @see #setBounds(double, double, double, double)
+     * @see DefaultExtent#DefaultExtent(double, double, double, double)
      */
     public DefaultGeographicBoundingBox(final double westBoundLongitude,
                                         final double eastBoundLongitude,
