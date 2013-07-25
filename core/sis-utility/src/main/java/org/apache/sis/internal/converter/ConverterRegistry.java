@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.LinkedHashMap;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ThreadSafe;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverter;
@@ -478,6 +479,21 @@ public class ConverterRegistry {
             if (converter != null) {
                 put(key, converter);
                 return converter;
+            }
+            /*
+             * Still no converter found. If the source and target classes are array classes,
+             * search a converter for their components.
+             */
+            final Class<?> sourceComponent = sourceClass.getComponentType();
+            if (sourceComponent != null) {
+                final Class<?> targetComponent = targetClass.getComponentType();
+                if (targetComponent != null) {
+                    converter = new ArrayConverter<S,T>(sourceClass, targetClass, find(
+                            Numbers.primitiveToWrapper(sourceComponent),
+                            Numbers.primitiveToWrapper(targetComponent)));
+                    put(key, converter);
+                    return converter;
+                }
             }
         }
         throw new UnconvertibleObjectException(Errors.format(Errors.Keys.CanNotConvertFromType_2, sourceClass, targetClass));

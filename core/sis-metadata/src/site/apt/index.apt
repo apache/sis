@@ -28,7 +28,7 @@ Apache SIS Metadata
   of the metadata interfaces defined in GeoAPI, and a framework for handling those metadata through
   Java reflection.
 
-   * {{{./faq.html}Frequently Asked Questions}}
+   * {{{http://sis.apache.org/faq.html#metadata}Frequently Asked Questions}}
 
    * {{{https://geo-ide.noaa.gov/wiki/index.php?title=Category:ISO_19115}ISO 19115 wiki at NOAA}}
 

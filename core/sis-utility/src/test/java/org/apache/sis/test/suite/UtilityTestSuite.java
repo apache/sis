@@ -104,6 +104,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.converter.StringConverterTest.class,
     org.apache.sis.internal.converter.PathConverterTest.class,
     org.apache.sis.internal.converter.FallbackConverterTest.class,
+    org.apache.sis.internal.converter.ArrayConverterTest.class,
     org.apache.sis.internal.converter.ConverterRegistryTest.class,
     org.apache.sis.internal.converter.SystemRegistryTest.class,
     org.apache.sis.internal.converter.NumberConverterTest.class, // Shall be after SystemRegistryTest.

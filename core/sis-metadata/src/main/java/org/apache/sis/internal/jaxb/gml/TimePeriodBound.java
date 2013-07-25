@@ -37,7 +37,7 @@ import org.apache.sis.internal.geoapi.temporal.Instant;
  * @module
  */
 @XmlTransient
-abstract class TimePeriodBound {
+public abstract class TimePeriodBound {
     /**
      * Empty constructor for subclasses only.
      */
