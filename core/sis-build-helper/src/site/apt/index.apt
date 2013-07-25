@@ -29,13 +29,7 @@ Building Apache SIS
 
   Content:
 
-  * Javadoc taglets
-
-  * Localized resources compiler
-
-  * JAR files collector
-
-  * Pack200 bundles
+%{toc|fromDepth=2|toDepth=2}
 
 
 * Javadoc taglets
@@ -129,7 +123,7 @@ Building Apache SIS
     so execution of this plugin should be very cheap and consume few disk space.
 
   * Dependencies already present in the <<<target/binaries>>> directory are presumed stables and
-    are not overwritten. Only artefacts produced by the Maven build are unconditionally overwritten.
+    are not overwritten. Only artifacts produced by the Maven build are unconditionally overwritten.
 
   This plugin can be activated by the following fragment in the parent <<<pom.xml>>> file:
 
@@ -153,7 +147,7 @@ Building Apache SIS
 +-----------------------------------------------------
 
 
-* Pack200 bundles
+* Pack200 bundle
 
   To merges the binaries produced by the above step and compress them using Pack200,
   invoke the following from the command line. Do not forget the <<<--non-recursive>>>

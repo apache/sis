@@ -91,7 +91,7 @@ public abstract class Decoder implements Closeable {
      * Returns the value of the attribute of the given name as a number, or {@code null} if none.
      *
      * @param  name The name of the attribute to search, or {@code null}.
-     * @return The attribute value, or {@code null} if none or unparseable or if the given name was null.
+     * @return The attribute value, or {@code null} if none or unparsable or if the given name was null.
      * @throws IOException If an I/O operation was necessary but failed.
      */
     public abstract Number numericValue(final String name) throws IOException;
@@ -121,7 +121,7 @@ public abstract class Decoder implements Closeable {
      * Returns the value of the attribute of the given name as a date, or {@code null} if none.
      *
      * @param  name The name of the attribute to search, or {@code null}.
-     * @return The attribute value, or {@code null} if none or unparseable or if the given name was null.
+     * @return The attribute value, or {@code null} if none or unparsable or if the given name was null.
      * @throws IOException If an I/O operation was necessary but failed.
      */
     public abstract Date dateValue(final String name) throws IOException;
@@ -130,7 +130,7 @@ public abstract class Decoder implements Closeable {
      * Returns the value of the attribute of the given name as a unit of measurement, or {@code null} if none.
      *
      * @param  name The name of the attribute to search, or {@code null}.
-     * @return The attribute value, or {@code null} if none or unparseable or if the given name was null.
+     * @return The attribute value, or {@code null} if none or unparsable or if the given name was null.
      * @throws IOException If an I/O operation was necessary but failed.
      *
      * @todo Current Units.valueOf(String) implementation ignore direction in "degrees_east" or "degrees_west".

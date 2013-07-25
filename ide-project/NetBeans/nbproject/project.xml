@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!--
   Licensed to the Apache Software Foundation (ASF) under one
   or more contributor license agreements.  See the NOTICE file
@@ -18,7 +17,6 @@
   specific language governing permissions and limitations
   under the License.
 -->
-
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.java.j2seproject</type>
     <configuration>
@@ -63,6 +61,7 @@
             <word>monospaced</word>
             <word>namespace</word>
             <word>namespaces</word>
+            <word>parsable</word>
             <word>timezone</word>
             <word>Unicode</word>
             <word>uninstall</word>
@@ -70,6 +69,7 @@
             <word>unmarshaller</word>
             <word>unmarshallers</word>
             <word>unmarshalling</word>
+            <word>unparsable</word>
             <word>whitespaces</word>
         </spellchecker-wordlist>
     </configuration>

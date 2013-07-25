@@ -74,6 +74,12 @@ public final class Messages extends IndexedResourceBundle {
          * Property “{0}” is hidden by “{1}”.
          */
         public static final int PropertyHiddenBy_2 = 3;
+
+        /**
+         * Can not parse “{1}” as an instance of {0}. The value is stored as plain text instead, but
+         * will be ignored by some processing.
+         */
+        public static final int UnparsableValueStoredAsText_2 = 4;
     }
 
     /**
