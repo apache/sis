@@ -536,7 +536,7 @@ pathTree:   for (int j=0; ; j++) {
 
     /**
      * If a file path in the given node or any children follow the Maven pattern, remove the
-     * artefact name and version numbers redundancies in order to make the name more compact.
+     * artifact name and version numbers redundancies in order to make the name more compact.
      * For example this method replaces {@code "org/opengis/geoapi/3.0.0/geoapi-3.0.0.jar"}
      * by {@code "org/opengis/(…)/geoapi-3.0.0.jar"}.
      */

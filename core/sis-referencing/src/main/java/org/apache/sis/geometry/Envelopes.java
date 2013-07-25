@@ -113,7 +113,7 @@ public final class Envelopes extends Static {
      * parsed} by the {@code GeneralEnvelope} constructor.
      *
      * @param  envelope The envelope to format.
-     * @return The envelope as a {@code BOX} or {@code BOX3D} in WKT format.
+     * @return This envelope as a {@code BOX} or {@code BOX3D} (most typical dimensions) element.
      *
      * @see #fromWKT(CharSequence)
      * @see org.apache.sis.io.wkt

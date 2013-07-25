@@ -30,7 +30,7 @@
   <body>
     <menu name="Quick links">
       <item name="Module Javadoc"  href="apidocs/index.html"/>
-      <item name="FAQ"             href="faq.html"/>
+      <item name="FAQ"             href="http://sis.apache.org/faq.html#metadata"/>
       <item name="Apache SIS home" href="../index.html"/>
     </menu>
 
