@@ -52,10 +52,5 @@ The Apache SIS™ library
     * Developer Guide (English - translation to be provided later) ({{{./book/fr.xhtml}Français}})
 
 
-** SIS developer documentation
-
-    * {{{./code-patterns.html}Recommended code patterns}}
-
-
   Apache SIS, Apache, the Apache feather logo, and the Apache SIS project logo are trademarks of
   The Apache Software Foundation.
