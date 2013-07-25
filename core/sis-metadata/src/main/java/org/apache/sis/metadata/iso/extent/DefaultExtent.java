@@ -17,7 +17,6 @@
 package org.apache.sis.metadata.iso.extent;
 
 import java.util.Collection;
-import java.util.Collections;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -29,6 +28,8 @@ import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.InternationalString;
+import org.apache.sis.util.iso.Types;
+import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.internal.metadata.ReferencingServices;
 
@@ -72,17 +73,19 @@ public class DefaultExtent extends ISOMetadata implements Extent {
 
     /**
      * A geographic extent ranging from 180°W to 180°E and 90°S to 90°N.
+     * This extent has no vertical and no temporal components.
      */
     public static final Extent WORLD;
     static {
-        final DefaultExtent world = new DefaultExtent();
-        world.setGeographicElements(Collections.singleton(DefaultGeographicBoundingBox.WORLD));
+        final DefaultExtent world = new DefaultExtent(
+                Vocabulary.formatInternational(Vocabulary.Keys.World),
+                DefaultGeographicBoundingBox.WORLD, null, null);
         world.freeze();
         WORLD = world;
     }
 
     /**
-     * Returns the spatial and temporal extent for the referring object.
+     * The spatial and temporal extent for the referring object.
      */
     private InternationalString description;
 
@@ -105,6 +108,58 @@ public class DefaultExtent extends ISOMetadata implements Extent {
      * Constructs an initially empty extent.
      */
     public DefaultExtent() {
+    }
+
+    /**
+     * Constructs an extent initialized to the given description or components.
+     * Any argument given to this constructor can be {@code null}.
+     * While a valid {@code Extent} requires at least one component to be non-null,
+     * this constructor does not perform such verification.
+     *
+     * @param description        A description, or {@code null} if none.
+     * @param geographicElements A geographic component, or {@code null} if none.
+     * @param verticalElements   A vertical component, or {@code null} if none.
+     * @param temporalElements   A temporal component, or {@code null} if none.
+     */
+    public DefaultExtent(final CharSequence     description,
+                         final GeographicExtent geographicElements,
+                         final VerticalExtent   verticalElements,
+                         final TemporalExtent   temporalElements)
+    {
+        this.description        = Types.toInternationalString(description);
+        this.geographicElements = singleton(geographicElements, GeographicExtent.class);
+        this.verticalElements   = singleton(verticalElements,   VerticalExtent.class);
+        this.temporalElements   = singleton(temporalElements,   TemporalExtent.class);
+    }
+
+    /**
+     * Constructs an extent initialized to the given geographic bounding box.
+     *
+     * <p><strong>Caution:</strong> Arguments are expected in the same order than they appear
+     * in the ISO 19115 specification. This is different than the order commonly found in the
+     * Java2D world, which is rather (<var>x</var><sub>min</sub>, <var>y</var><sub>min</sub>,
+     * <var>x</var><sub>max</sub>, <var>y</var><sub>max</sub>).</p>
+     *
+     * @param westBoundLongitude The minimal λ value.
+     * @param eastBoundLongitude The maximal λ value.
+     * @param southBoundLatitude The minimal φ value.
+     * @param northBoundLatitude The maximal φ value.
+     *
+     * @throws IllegalArgumentException If (<var>west bound</var> &gt; <var>east bound</var>)
+     *         or (<var>south bound</var> &gt; <var>north bound</var>).
+     *         Note that {@linkplain Double#NaN NaN} values are allowed.
+     *
+     * @see DefaultGeographicBoundingBox#DefaultGeographicBoundingBox(double, double, double, double)
+     */
+    public DefaultExtent(final double westBoundLongitude,
+                         final double eastBoundLongitude,
+                         final double southBoundLatitude,
+                         final double northBoundLatitude)
+             throws IllegalArgumentException
+    {
+        geographicElements = singleton(new DefaultGeographicBoundingBox(
+                westBoundLongitude, eastBoundLongitude,
+                southBoundLatitude, northBoundLatitude), GeographicExtent.class);
     }
 
     /**
