@@ -29,7 +29,6 @@ import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.iso.Types;
-import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.internal.metadata.ReferencingServices;
 
@@ -70,19 +69,6 @@ public class DefaultExtent extends ISOMetadata implements Extent {
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = 2979058128422252800L;
-
-    /**
-     * A geographic extent ranging from 180°W to 180°E and 90°S to 90°N.
-     * This extent has no vertical and no temporal components.
-     */
-    public static final Extent WORLD;
-    static {
-        final DefaultExtent world = new DefaultExtent(
-                Vocabulary.formatInternational(Vocabulary.Keys.World),
-                DefaultGeographicBoundingBox.WORLD, null, null);
-        world.freeze();
-        WORLD = world;
-    }
 
     /**
      * The spatial and temporal extent for the referring object.
@@ -130,36 +116,6 @@ public class DefaultExtent extends ISOMetadata implements Extent {
         this.geographicElements = singleton(geographicElements, GeographicExtent.class);
         this.verticalElements   = singleton(verticalElements,   VerticalExtent.class);
         this.temporalElements   = singleton(temporalElements,   TemporalExtent.class);
-    }
-
-    /**
-     * Constructs an extent initialized to the given geographic bounding box.
-     *
-     * <p><strong>Caution:</strong> Arguments are expected in the same order than they appear
-     * in the ISO 19115 specification. This is different than the order commonly found in the
-     * Java2D world, which is rather (<var>x</var><sub>min</sub>, <var>y</var><sub>min</sub>,
-     * <var>x</var><sub>max</sub>, <var>y</var><sub>max</sub>).</p>
-     *
-     * @param westBoundLongitude The minimal λ value.
-     * @param eastBoundLongitude The maximal λ value.
-     * @param southBoundLatitude The minimal φ value.
-     * @param northBoundLatitude The maximal φ value.
-     *
-     * @throws IllegalArgumentException If (<var>west bound</var> &gt; <var>east bound</var>)
-     *         or (<var>south bound</var> &gt; <var>north bound</var>).
-     *         Note that {@linkplain Double#NaN NaN} values are allowed.
-     *
-     * @see DefaultGeographicBoundingBox#DefaultGeographicBoundingBox(double, double, double, double)
-     */
-    public DefaultExtent(final double westBoundLongitude,
-                         final double eastBoundLongitude,
-                         final double southBoundLatitude,
-                         final double northBoundLatitude)
-             throws IllegalArgumentException
-    {
-        geographicElements = singleton(new DefaultGeographicBoundingBox(
-                westBoundLongitude, eastBoundLongitude,
-                southBoundLatitude, northBoundLatitude), GeographicExtent.class);
     }
 
     /**
