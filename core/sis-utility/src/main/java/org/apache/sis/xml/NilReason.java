@@ -27,6 +27,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.collection.WeakHashSet;
+import org.apache.sis.internal.jaxb.PrimitiveTypeProperties;
 
 
 /**
@@ -48,7 +49,7 @@ import org.apache.sis.util.collection.WeakHashSet;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.18)
- * @version 0.3
+ * @version 0.4
  * @module
  *
  * @see NilObject
@@ -141,6 +142,26 @@ public final class NilReason implements Serializable {
      * is "{@code other}", or an {@link URI}.
      */
     private final Object reason;
+
+    /**
+     * Special boolean value for attaching this {@code NilReason} to a {@code Boolean}.
+     */
+    private transient Boolean nilBoolean;
+
+    /**
+     * Special integer value for attaching this {@code NilReason} to an {@code Integer}.
+     */
+    private transient Integer nilInteger;
+
+    /**
+     * Special double value for attaching this {@code NilReason} to a {@code Double}.
+     */
+    private transient Double nilDouble;
+
+    /**
+     * Special string value for attaching this {@code NilReason} to a {@code String}.
+     */
+    private transient String nilString;
 
     /**
      * The invocation handler for {@link NilObject} instances, created when first needed.
@@ -334,21 +355,31 @@ public final class NilReason implements Serializable {
 
     /**
      * Returns an object of the given type which is nil for the reason represented by this instance.
-     * This method returns an object which implement the given interface together with the
-     * {@link NilObject} interface. The {@link NilObject#getNilReason()} method will return
-     * this {@code NilReason} instance, and all other methods (except the ones inherited from
-     * the {@code Object} class) will return an empty collection, empty array, {@code null},
-     * {@link Double#NaN NaN}, {@code 0} or {@code false}, in this preference order,
-     * depending on the method return type.
+     * The {@code type} argument can be one of the following cases:
+     *
+     * <ul>
+     *   <li><p>An <strong>interface</strong>: in such case, this method returns an object which implement the given
+     *       interface together with the {@link NilObject} interface. The {@link NilObject#getNilReason()} method
+     *       will return this {@code NilReason} instance, and all other methods (except the ones inherited from
+     *       the {@code Object} class) will return an empty collection, empty array, {@code null},
+     *       {@link Double#NaN NaN}, {@code 0} or {@code false}, in this preference order,
+     *       depending on the method return type.</p></li>
+     *   <li><p>One of {@link Boolean}, {@link Integer}, {@link Double} or {@link String} types: in such case,
+     *       this method returns a specific instance which will be recognized as "nil" by the XML marshaller.</p></li>
+     * </ul>
      *
      * @param  <T> The compile-time type of the {@code type} argument.
-     * @param  type The object type as an <strong>interface</strong>.
-     *         This is usually a <a href="http://www.geoapi.org">GeoAPI</a> interface.
+     * @param  type The object type as an <strong>interface</strong>
+     *         (usually a <a href="http://www.geoapi.org">GeoAPI</a> one) or one of the special types.
+     * @throws IllegalArgumentException If the given type is not a supported type.
      * @return An {@link NilObject} of the given type.
      */
     @SuppressWarnings("unchecked")
     public <T> T createNilObject(final Class<T> type) {
         ArgumentChecks.ensureNonNull("type", type);
+        if (!type.isInterface()) {
+            return createNilPrimitive(type);
+        }
         if (NilObjectHandler.isIgnoredInterface(type)) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "type", type));
         }
@@ -360,5 +391,99 @@ public final class NilReason implements Serializable {
         }
         return (T) Proxy.newProxyInstance(NilReason.class.getClassLoader(),
                 new Class<?>[] {type, NilObject.class, LenientComparable.class}, h);
+    }
+
+    /**
+     * Returns an {@code Boolean}, {@code Integer}, {@code Double} or {@code String} which is nil for the reason
+     * represented by this instance.
+     *
+     * @throws IllegalArgumentException If the given type is not a supported type.
+     */
+    @SuppressWarnings("unchecked")
+    private <T> T createNilPrimitive(final Class<T> type) {
+        if (type == Boolean.class) {
+            Boolean value;
+            synchronized (this) {
+                if ((value = nilBoolean) == null) {
+                    nilBoolean = value = new Boolean(false); // REALLY need a new instance, not Boolean.FALSE.
+                    PrimitiveTypeProperties.associate(value, this);
+                }
+            }
+            return (T) value;
+        }
+        if (type == Integer.class) {
+            Integer value;
+            synchronized (this) {
+                if ((value = nilInteger) == null) {
+                    nilInteger = value = new Integer(0); // REALLY need a new instance, not Integer.valueOf(…).
+                    PrimitiveTypeProperties.associate(value, this);
+                }
+            }
+            return (T) value;
+        }
+        if (type == Double.class) {
+            Double value;
+            synchronized (this) {
+                if ((value = nilDouble) == null) {
+                    nilDouble = value = new Double(Double.NaN); // REALLY need a new instance, not Double.valueOf(…).
+                    PrimitiveTypeProperties.associate(value, this);
+                }
+            }
+            return (T) value;
+        }
+        if (type == String.class) {
+            String value;
+            synchronized (this) {
+                if ((value = nilString) == null) {
+                    nilString = value = new String(""); // REALLY need a new instance.
+                    PrimitiveTypeProperties.associate(value, this);
+                }
+            }
+            return (T) value;
+        }
+        /*
+         * REMINDER: If more special cases are added, do not forget to update the getNilReason(Object) method
+         *           below and to update javadoc.
+         */
+        throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "type", type));
+    }
+
+    /**
+     * If the given object is nil, returns the reason why it does not contain information.
+     * This method performs the following choices:
+     *
+     * <ul>
+     *   <li>If the given object implements the {@link NilObject} interface, then this method delegates
+     *       to the {@link NilObject#getNilReason()} method.</li>
+     *   <li>Otherwise if the given object is one of the {@link Boolean}, {@link Integer}, {@link Double}
+     *       or {@link String} instances returned by {@link #createNilObject(Class)}, then this method
+     *       returns the associated reason.</li>
+     *   <li>Otherwise this method returns {@code null}.</li>
+     * </ul>
+     *
+     * @param  object The object for which to get the {@code NilReason}, or {@code null}.
+     * @return The reason why the given object contains no information,
+     *         or {@code null} if the given object is not nil.
+     *
+     * @see NilObject#getNilReason()
+     *
+     * @since 0.4
+     */
+    public static NilReason getNilReason(final Object object) {
+        if (object != null) {
+            if (object instanceof NilObject) {
+                return ((NilObject) object).getNilReason();
+            }
+            /*
+             * Invoke 'PrimitiveTypeProperties' method only if the given type is one of the hard-coded
+             * types from the above 'createNilPrimitive(Object)' method, in order to avoid unnecessary
+             * synchronization (implicitly done by PrimitiveTypeProperties).
+             */
+            final Class<?> type = object.getClass();
+            if (type == Boolean.class || type == Integer.class || type == Double.class || type == String.class) {
+                return (NilReason) PrimitiveTypeProperties.property(object);
+            }
+        }
+        return null;
     }
 }

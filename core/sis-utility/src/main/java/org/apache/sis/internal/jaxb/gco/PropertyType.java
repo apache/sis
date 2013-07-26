@@ -30,6 +30,7 @@ import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.IdentifiedObject;
 import org.apache.sis.xml.ReferenceResolver;
 import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.internal.jaxb.PrimitiveTypeProperties;
 import org.apache.sis.util.iso.SimpleInternationalString;
 
 
@@ -139,6 +140,23 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
     }
 
     /**
+     * Builds an adapter for the given primitive wrapper. This constructor checks for nil reasons
+     * only if {@code check} is {@code true}.
+     *
+     * @param value The primitive type wrapper.
+     * @param check {@code true} if we should check for nil reasons.
+     */
+    PropertyType(final BoundType value, final boolean check) {
+        metadata = value;
+        if (check) {
+            final Object property = PrimitiveTypeProperties.property(value);
+            if (property instanceof NilReason) {
+                reference = property.toString();
+            }
+        }
+    }
+
+    /**
      * Builds an adapter for the given GeoAPI interface. This constructor checks if the given metadata
      * implements the {@link NilObject} or {@link IdentifiedObject} interface. If the object implements
      * both of them (should not happen, but we never know), then the identifiers will have precedence.
@@ -147,6 +165,10 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
      */
     protected PropertyType(final BoundType metadata) {
         this.metadata = metadata;
+        /*
+         * Do not invoke NilReason.getNilReason(metadata) in order to avoid unnecessary synchronization.
+         * Subclasses will use PropertyType(BoundType, boolean) when a check for primitive type is required.
+         */
         if (metadata instanceof NilObject) {
             final NilReason reason = ((NilObject) metadata).getNilReason();
             if (reason != null) {
@@ -272,7 +294,7 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
      * @return {@code true} if the wrapped metadata should not be marshalled.
      */
     protected final boolean skip() {
-        return (metadata instanceof NilObject) || (reference instanceof ObjectReference);
+        return reference != null;
     }
 
     /**
