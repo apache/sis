@@ -75,16 +75,6 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
     private static final long serialVersionUID = -9200149606040429957L;
 
     /**
-     * A bounding box ranging from 180°W to 180°E and 90°S to 90°N.
-     */
-    public static final GeographicBoundingBox WORLD;
-    static {
-        final DefaultGeographicBoundingBox world = new DefaultGeographicBoundingBox(-180, 180, -90, 90);
-        world.freeze();
-        WORLD = world;
-    }
-
-    /**
      * The western-most coordinate of the limit of the dataset extent.
      * The value is expressed in longitude in decimal degrees (positive east).
      */
@@ -138,7 +128,6 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
      *         Note that {@linkplain Double#NaN NaN} values are allowed.
      *
      * @see #setBounds(double, double, double, double)
-     * @see DefaultExtent#DefaultExtent(double, double, double, double)
      */
     public DefaultGeographicBoundingBox(final double westBoundLongitude,
                                         final double eastBoundLongitude,
