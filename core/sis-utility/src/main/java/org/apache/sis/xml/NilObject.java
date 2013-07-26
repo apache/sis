@@ -82,7 +82,7 @@ public interface NilObject {
      *
      * @return The reason why this object contains no information.
      *
-     * @see NilReason#getNilReason(Object)
+     * @see NilReason#forObject(Object)
      */
     NilReason getNilReason();
 }
