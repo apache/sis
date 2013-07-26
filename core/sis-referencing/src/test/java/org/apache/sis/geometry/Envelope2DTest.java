@@ -16,7 +16,9 @@
  */
 package org.apache.sis.geometry;
 
+import java.awt.geom.Rectangle2D;
 import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -27,13 +29,14 @@ import static org.apache.sis.geometry.AbstractEnvelopeTest.WGS84;
 
 /**
  * Tests the {@link Envelope2D} class.
- * Most of tests are actually performed by {@link AbstractEnvelopeTest}, which compare
+ * Most tests are actually performed by {@link AbstractEnvelopeTest}, which compare
  * {@link GeneralEnvelope} results with {@code Envelope2D} results for ensuring consistency.
  * This class adds only some tests that are specific to {@code Envelope2D} instances.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Ross Laidlaw
  * @since   0.3
- * @version 0.3
+ * @version 0.4
  * @module
  */
 @DependsOn(AbstractEnvelopeTest.class)
@@ -47,5 +50,61 @@ public final strictfp class Envelope2DTest extends TestCase {
         final Envelope2D e2 = assertSerializedEquals(e1);
         assertNotSame(e1, e2);
         validate(e2);
+    }
+
+    /**
+     * Tests {@link Envelope2D#toRectangles()} on an empty envelope.
+     *
+     * @since 0.4
+     */
+    @Test
+    public void testToRectanglesOnEmptyEnvelope() {
+        final Envelope2D envelope = new Envelope2D(WGS84, 0, 0, 0, 0);
+        assertEquals(0, envelope.toRectangles().length);
+    }
+
+    /**
+     * Tests {@link Envelope2D#toRectangles()} on a simple envelope having no wraparound axis.
+     *
+     * @since 0.4
+     */
+    @Test
+    public void testToRectanglesOnSimpleEnvelope() {
+        final Envelope2D envelope = new Envelope2D(WGS84, -20, -10, 50, 40);
+        final Rectangle2D[] rectangles = envelope.toRectangles();
+        assertEquals(1, rectangles.length);
+        final Rectangle2D r = rectangles[0];
+        assertNotSame("toRectangles() shall copy the envelope.", envelope, r);
+        assertEquals(-20.0, r.getX(),      0.0);
+        assertEquals(-10.0, r.getY(),      0.0);
+        assertEquals( 50.0, r.getWidth(),  0.0);
+        assertEquals( 40.0, r.getHeight(), 0.0);
+    }
+
+    /**
+     * Tests {@link Envelope2D#toRectangles()} on an envelope crossing the anti-meridian.
+     * The longitude range in this test is [155 … -150].
+     *
+     * @since 0.4
+     */
+    @Test
+    @DependsOnMethod("testToRectanglesOnSimpleEnvelope")
+    @org.junit.Ignore("Needs implementation of WGS84 CRS.")
+    public void testToRectanglesOverAntiMeridian() {
+        final Envelope2D envelope = new Envelope2D(WGS84, 155, 0, -150 - 155, 50);
+        final Rectangle2D[] rectangles = envelope.toRectangles();
+        assertEquals(2, rectangles.length);
+        final Rectangle2D r0 = rectangles[0];
+        final Rectangle2D r1 = rectangles[1];
+
+        assertEquals( 155.0, r0.getX(),      0.0);
+        assertEquals(   0.0, r0.getY(),      0.0);
+        assertEquals(  25.0, r0.getWidth(),  0.0);
+        assertEquals(  50.0, r0.getHeight(), 0.0);
+
+        assertEquals(-180.0, r1.getX(),      0.0);
+        assertEquals(   0.0, r1.getY(),      0.0);
+        assertEquals(  30.0, r1.getWidth(),  0.0);
+        assertEquals(  50.0, r1.getHeight(), 0.0);
     }
 }
