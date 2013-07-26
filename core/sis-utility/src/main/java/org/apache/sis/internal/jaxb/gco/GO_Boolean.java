@@ -17,7 +17,6 @@
 package org.apache.sis.internal.jaxb.gco;
 
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.adapters.XmlAdapter;
 
 
 /**
@@ -31,26 +30,10 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.5)
- * @version 0.3
+ * @version 0.4
  * @module
  */
-public final class GO_Boolean extends XmlAdapter<GO_Boolean, Boolean> {
-    /**
-     * Wraps the {@link Boolean#TRUE} value.
-     */
-    private static final GO_Boolean TRUE = new GO_Boolean(Boolean.TRUE);
-
-    /**
-     * Wraps the {@link Boolean#FALSE} value.
-     */
-    private static final GO_Boolean FALSE = new GO_Boolean(Boolean.FALSE);
-
-    /**
-     * The boolean value to handle.
-     */
-    @XmlElement(name = "Boolean")
-    public Boolean value;
-
+public final class GO_Boolean extends PropertyType<GO_Boolean, Boolean> {
     /**
      * Empty constructor used only by JAXB.
      */
@@ -63,18 +46,15 @@ public final class GO_Boolean extends XmlAdapter<GO_Boolean, Boolean> {
      * @param value The value.
      */
     private GO_Boolean(final Boolean value) {
-        this.value = value;
+        super(value, !value);
     }
 
     /**
-     * Allows JAXB to generate a Boolean object using the value found in the adapter.
-     *
-     * @param value The value wrapped in an adapter.
-     * @return The boolean value extracted from the adapter.
+     * Returns the Java type which is bound by this adapter.
      */
     @Override
-    public Boolean unmarshal(final GO_Boolean value) {
-        return (value != null) ? value.value : null;
+    protected Class<Boolean> getBoundType() {
+        return Boolean.class;
     }
 
     /**
@@ -86,12 +66,26 @@ public final class GO_Boolean extends XmlAdapter<GO_Boolean, Boolean> {
      *         by {@code <gco:Boolean>} element.
      */
     @Override
-    public GO_Boolean marshal(final Boolean value) {
-        if (value == null) {
-            return null;
-        }
-        final GO_Boolean c = value ? TRUE : FALSE;
-        assert value.equals(c.value) : value;
-        return c;
+    protected GO_Boolean wrap(final Boolean value) {
+        return new GO_Boolean(value);
+    }
+
+    /**
+     * Invoked by JAXB at marshalling time for getting the actual value to write.
+     *
+     * @return The value to be marshalled.
+     */
+    @XmlElement(name = "Boolean")
+    public Boolean getElement() {
+        return skip() ? null : metadata;
+    }
+
+    /**
+     * Invoked by JAXB at unmarshalling time for storing the result temporarily.
+     *
+     * @param metadata The unmarshalled value.
+     */
+    public void setElement(final Boolean metadata) {
+        this.metadata = metadata;
     }
 }

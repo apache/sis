@@ -36,7 +36,7 @@ import static org.apache.sis.test.TestUtilities.waitForGarbageCollection;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.0)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 @DependsOn(org.apache.sis.util.ArraysExtTest.class)
@@ -196,5 +196,30 @@ public final strictfp class WeakValueHashMapTest extends TestCase {
         assertSame (v2, weakMap.put(k2,         v2));
         assertSame (v1, weakMap.get(k1));
         assertSame (v2, weakMap.get(k2));
+    }
+
+    /**
+     * Tests using identity comparisons. This test uses two {@link Integer} keys having the same value
+     * but being different instances.
+     *
+     * @since 0.4
+     */
+    @Test
+    @DependsOnMethod("testStrongReferences")
+    public void testIdentityComparisons() {
+        final WeakValueHashMap<Integer,Integer> weakMap = new WeakValueHashMap<>(Integer.class, true);
+        final Integer k1 = 10;
+        final Integer k2 = 20;
+        final Integer k3 = new Integer(10); // Really want a new instance.
+        final Integer v1 = 1;
+        final Integer v2 = 2;
+        final Integer v3 = 3;
+        assertEquals(k1, k3); // Necessary condition for the test to be valid.
+        assertNull(weakMap.put(k1, v1));  assertSame(v1, weakMap.put(k1, v1));
+        assertNull(weakMap.put(k2, v2));  assertSame(v2, weakMap.put(k2, v2));
+        assertNull(weakMap.put(k3, v3));  assertSame(v3, weakMap.put(k3, v3));
+        assertSame(v1, weakMap.get(k1));
+        assertSame(v2, weakMap.get(k2));
+        assertSame(v3, weakMap.get(k3));
     }
 }
