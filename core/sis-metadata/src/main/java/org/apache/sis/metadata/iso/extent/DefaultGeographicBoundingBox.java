@@ -58,6 +58,8 @@ import java.util.Objects;
  * @since   0.3 (derived from geotk-2.1)
  * @version 0.3
  * @module
+ *
+ * @see org.apache.sis.geometry.GeneralEnvelope
  */
 @XmlType(name = "EX_GeographicBoundingBox_Type", propOrder = {
     "westBoundLongitude",
