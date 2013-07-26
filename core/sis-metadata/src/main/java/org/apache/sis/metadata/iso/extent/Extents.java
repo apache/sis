@@ -43,6 +43,20 @@ public final class Extents extends Static {
     }
 
     /**
+     * A geographic extent ranging from 180°W to 180°E and 90°S to 90°N.
+     * This extent has no vertical and no temporal components.
+     */
+    public static final Extent WORLD;
+    static {
+        final DefaultGeographicBoundingBox box = new DefaultGeographicBoundingBox(-180, 180, -90, 90);
+        box.freeze();
+        final DefaultExtent world = new DefaultExtent();
+        world.getGeographicElements().add(box);
+        world.freeze();
+        WORLD = world;
+    }
+
+    /**
      * Returns a single geographic bounding box from the specified extent.
      * If no bounding box is found, then this method returns {@code null}.
      * If a single bounding box is found, then that box is returned directly.

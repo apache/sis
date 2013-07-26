@@ -17,7 +17,6 @@
 package org.apache.sis.metadata.iso.extent;
 
 import java.util.Collection;
-import java.util.Collections;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -69,17 +68,6 @@ public class DefaultExtent extends ISOMetadata implements Extent {
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = 2979058128422252800L;
-
-    /**
-     * A geographic extent ranging from 180°W to 180°E and 90°S to 90°N.
-     */
-    public static final Extent WORLD;
-    static {
-        final DefaultExtent world = new DefaultExtent();
-        world.setGeographicElements(Collections.singleton(DefaultGeographicBoundingBox.WORLD));
-        world.freeze();
-        WORLD = world;
-    }
 
     /**
      * Returns the spatial and temporal extent for the referring object.
