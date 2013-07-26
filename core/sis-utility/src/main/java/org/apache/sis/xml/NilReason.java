@@ -469,7 +469,7 @@ public final class NilReason implements Serializable {
      *
      * @since 0.4
      */
-    public static NilReason getNilReason(final Object object) {
+    public static NilReason forObject(final Object object) {
         if (object != null) {
             if (object instanceof NilObject) {
                 return ((NilObject) object).getNilReason();
@@ -477,10 +477,14 @@ public final class NilReason implements Serializable {
             /*
              * Invoke 'PrimitiveTypeProperties' method only if the given type is one of the hard-coded
              * types from the above 'createNilPrimitive(Object)' method, in order to avoid unnecessary
-             * synchronization (implicitly done by PrimitiveTypeProperties).
+             * synchronization (implicitly done by PrimitiveTypeProperties). Note that 'instanceof'
+             * checks on instances of final classes are expected to be very fast.
              */
-            final Class<?> type = object.getClass();
-            if (type == Boolean.class || type == Integer.class || type == Double.class || type == String.class) {
+            if ((object instanceof Boolean && ((Boolean) object).booleanValue() == false) ||
+                (object instanceof Integer && ((Integer) object).intValue() == 0) ||
+                (object instanceof Double  && Double.isNaN(((Double) object).doubleValue())) ||
+                (object instanceof String  && ((String) object).isEmpty()))
+            {
                 return (NilReason) PrimitiveTypeProperties.property(object);
             }
         }

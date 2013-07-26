@@ -46,8 +46,8 @@ public final strictfp class NilReasonMarshallingTest extends XMLTestCase {
     @Test
     public void testMissing() throws JAXBException {
         final String expected =
-                "<gmd:CI_Citation xmlns:gmd=\"" + Namespaces.GMD + '"' +
-                                " xmlns:gco=\"" + Namespaces.GCO + '"' +
+                "<gmd:CI_Citation xmlns:gmd=\""   + Namespaces.GMD + '"' +
+                                " xmlns:gco=\""   + Namespaces.GCO + '"' +
                                 " xmlns:xlink=\"" + Namespaces.XLINK + "\">\n" +
                 "  <gmd:title>\n" +
                 "    <gco:CharacterString>A title</gco:CharacterString>\n" +
@@ -85,8 +85,8 @@ public final strictfp class NilReasonMarshallingTest extends XMLTestCase {
     @DependsOnMethod("testMissing")
     public void testMissingBoolean() throws JAXBException {
         final String expected =
-                "<gmd:DQ_ConformanceResult xmlns:gmd=\"" + Namespaces.GMD + '"' +
-                                         " xmlns:gco=\"" + Namespaces.GCO + '"' +
+                "<gmd:DQ_ConformanceResult xmlns:gmd=\""   + Namespaces.GMD + '"' +
+                                         " xmlns:gco=\""   + Namespaces.GCO + '"' +
                                          " xmlns:xlink=\"" + Namespaces.XLINK + "\">\n" +
                 "  <gmd:explanation>\n" +
                 "    <gco:CharacterString>An explanation</gco:CharacterString>\n" +
@@ -102,7 +102,7 @@ public final strictfp class NilReasonMarshallingTest extends XMLTestCase {
         assertEquals ("Nil value shall be false.",  Boolean.FALSE, pass);
         assertNotSame("Expected a sentinal value.", Boolean.FALSE, pass);
 
-        final NilReason reason = NilReason.getNilReason(pass);
+        final NilReason reason = NilReason.forObject(pass);
         assertSame("nilReason", NilReason.MISSING, reason);
 
         final String actual = XML.marshal(result);
@@ -119,8 +119,8 @@ public final strictfp class NilReasonMarshallingTest extends XMLTestCase {
     @DependsOnMethod("testMissing")
     public void testOther() throws JAXBException {
         final String expected =
-                "<gmd:CI_Citation xmlns:gmd=\"" + Namespaces.GMD + '"' +
-                                " xmlns:gco=\"" + Namespaces.GCO + '"' +
+                "<gmd:CI_Citation xmlns:gmd=\""   + Namespaces.GMD + '"' +
+                                " xmlns:gco=\""   + Namespaces.GCO + '"' +
                                 " xmlns:xlink=\"" + Namespaces.XLINK + "\">\n" +
                 "  <gmd:title>\n" +
                 "    <gco:CharacterString>A title</gco:CharacterString>\n" +
@@ -155,8 +155,8 @@ public final strictfp class NilReasonMarshallingTest extends XMLTestCase {
     @DependsOnMethod("testMissing")
     public void testURI() throws JAXBException {
         final String expected =
-                "<gmd:CI_Citation xmlns:gmd=\"" + Namespaces.GMD + '"' +
-                                " xmlns:gco=\"" + Namespaces.GCO + '"' +
+                "<gmd:CI_Citation xmlns:gmd=\""   + Namespaces.GMD + '"' +
+                                " xmlns:gco=\""   + Namespaces.GCO + '"' +
                                 " xmlns:xlink=\"" + Namespaces.XLINK + "\">\n" +
                 "  <gmd:title>\n" +
                 "    <gco:CharacterString>A title</gco:CharacterString>\n" +

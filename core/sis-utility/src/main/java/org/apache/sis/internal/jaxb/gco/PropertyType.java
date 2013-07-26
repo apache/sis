@@ -166,8 +166,9 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
     protected PropertyType(final BoundType metadata) {
         this.metadata = metadata;
         /*
-         * Do not invoke NilReason.getNilReason(metadata) in order to avoid unnecessary synchronization.
-         * Subclasses will use PropertyType(BoundType, boolean) when a check for primitive type is required.
+         * Do not invoke NilReason.forObject(metadata) in order to avoid unnecessary synchronization.
+         * Subclasses will use the PropertyType(BoundType, boolean) constructor instead when a check
+         * for primitive type is required.
          */
         if (metadata instanceof NilObject) {
             final NilReason reason = ((NilObject) metadata).getNilReason();
