@@ -21,11 +21,9 @@ import javax.xml.bind.annotation.XmlElement;
 
 /**
  * Surrounds long values by {@code <gco:Integer>}.
- * The ISO-19139 standard specifies that primitive types have to be surrounded by an element
- * which represents the type of the value, using the namespace {@code gco} linked to the
- * {@code http://www.isotc211.org/2005/gco} URL. The JAXB default behavior is to marshal
- * primitive Java types directly "as is", without wrapping the value in the required element.
- * The role of this class is to add such wrapping.
+ * The ISO-19139 standard requires most types to be surrounded by an element representing the value type.
+ * The JAXB default behavior is to marshal primitive Java types directly, without such wrapper element.
+ * The role of this class is to add the {@code <gco:…>} wrapper element required by ISO 19139.
  *
  * @author  Cédric Briançon (Geomatys)
  * @since   0.4 (derived from geotk-2.5)
