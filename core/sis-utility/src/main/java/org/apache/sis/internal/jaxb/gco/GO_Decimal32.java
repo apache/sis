@@ -20,7 +20,7 @@ import javax.xml.bind.annotation.XmlElement;
 
 
 /**
- * Surrounds integer values by {@code <gco:Integer>}.
+ * Surrounds float values by {@code <gco:Decimal>}.
  * The ISO-19139 standard specifies that primitive types have to be surrounded by an element
  * which represents the type of the value, using the namespace {@code gco} linked to the
  * {@code http://www.isotc211.org/2005/gco} URL. The JAXB default behavior is to marshal
@@ -28,18 +28,15 @@ import javax.xml.bind.annotation.XmlElement;
  * The role of this class is to add such wrapping.
  *
  * @author  Cédric Briançon (Geomatys)
- * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-2.5)
+ * @since   0.4 (derived from geotk-2.5)
  * @version 0.4
  * @module
- *
- * @see GO_Integer64
  */
-public final class GO_Integer extends PropertyType<GO_Integer, Integer> {
+public final class GO_Decimal32 extends PropertyType<GO_Decimal32, Float> {
     /**
      * Empty constructor used only by JAXB.
      */
-    public GO_Integer() {
+    public GO_Decimal32() {
     }
 
     /**
@@ -47,29 +44,29 @@ public final class GO_Integer extends PropertyType<GO_Integer, Integer> {
      *
      * @param value The value.
      */
-    private GO_Integer(final Integer value) {
-        super(value, value.intValue() == 0);
+    private GO_Decimal32(final Float value) {
+        super(value, value.isNaN());
     }
 
     /**
      * Returns the Java type which is bound by this adapter.
      */
     @Override
-    protected Class<Integer> getBoundType() {
-        return Integer.class;
+    protected Class<Float> getBoundType() {
+        return Float.class;
     }
 
     /**
      * Allows JAXB to change the result of the marshalling process, according to the
      * ISO-19139 standard and its requirements about primitive types.
      *
-     * @param value The integer value we want to surround by an element representing its type.
-     * @return An adaptation of the integer value, that is to say an integer value surrounded
-     *         by {@code <gco:Integer>} element.
+     * @param value The float value we want to surround by an element representing its type.
+     * @return An adaptation of the float value, that is to say a float value surrounded
+     *         by {@code <gco:Decimal>} element.
      */
     @Override
-    public GO_Integer wrap(final Integer value) {
-        return new GO_Integer(value);
+    public GO_Decimal32 wrap(final Float value) {
+        return new GO_Decimal32(value);
     }
 
     /**
@@ -77,8 +74,8 @@ public final class GO_Integer extends PropertyType<GO_Integer, Integer> {
      *
      * @return The value to be marshalled.
      */
-    @XmlElement(name = "Integer")
-    public Integer getElement() {
+    @XmlElement(name = "Decimal")
+    public Float getElement() {
         return skip() ? null : metadata;
     }
 
@@ -87,7 +84,7 @@ public final class GO_Integer extends PropertyType<GO_Integer, Integer> {
      *
      * @param metadata The unmarshalled value.
      */
-    public void setElement(final Integer metadata) {
+    public void setElement(final Float metadata) {
         this.metadata = metadata;
     }
 }
