@@ -17,6 +17,7 @@
 package org.apache.sis.xml;
 
 import java.net.URISyntaxException;
+import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.ResponsibleParty;
 import org.apache.sis.util.LenientComparable;
@@ -33,7 +34,7 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.18)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 public final strictfp class NilReasonTest extends TestCase {
@@ -94,6 +95,91 @@ public final strictfp class NilReasonTest extends TestCase {
     }
 
     /**
+     * Tests {@link NilReason#createNilObject(Class)} for a boolean type.
+     * Opportunistically tests {@link NilReason#forObject(Object)} with the created object.
+     *
+     * @since 0.4
+     */
+    @Test
+    public void testCreateNilBoolean() {
+        final Boolean value = NilReason.MISSING.createNilObject(Boolean.class);
+        assertEquals (Boolean.FALSE, value);
+        assertNotSame(Boolean.FALSE, value);
+        assertSame("NilReason.forObject(…)", NilReason.MISSING, NilReason.forObject(value));
+        assertNull("NilReason.forObject(…)", NilReason.forObject(Boolean.FALSE));
+        assertNull("NilReason.forObject(…)", NilReason.forObject(Boolean.TRUE));
+        assertSame("Expected cached value.", value, NilReason.MISSING.createNilObject(Boolean.class));
+    }
+
+    /**
+     * Tests {@link NilReason#createNilObject(Class)} for an integer type.
+     * Opportunistically tests {@link NilReason#forObject(Object)} with the created object.
+     *
+     * @since 0.4
+     */
+    @Test
+    public void testCreateNilInteger() {
+        final Integer zero  = 0;
+        final Integer value = NilReason.MISSING.createNilObject(Integer.class);
+        assertEquals (zero, value);
+        assertNotSame(zero, value);
+        assertSame("NilReason.forObject(…)", NilReason.MISSING, NilReason.forObject(value));
+        assertNull("NilReason.forObject(…)", NilReason.forObject(zero));
+        assertNull("NilReason.forObject(…)", NilReason.forObject(1));
+        assertSame("Expected cached value.", value, NilReason.MISSING.createNilObject(Integer.class));
+    }
+
+    /**
+     * Tests {@link NilReason#createNilObject(Class)} for a double type.
+     * Opportunistically tests {@link NilReason#forObject(Object)} with the created object.
+     *
+     * @since 0.4
+     */
+    @Test
+    public void testCreateNilDouble() {
+        final Double nan  = Double.NaN;
+        final Double value = NilReason.MISSING.createNilObject(Double.class);
+        assertEquals (nan, value);
+        assertNotSame(nan, value);
+        assertSame("NilReason.forObject(…)", NilReason.MISSING, NilReason.forObject(value));
+        assertNull("NilReason.forObject(…)", NilReason.forObject(nan));
+        assertNull("NilReason.forObject(…)", NilReason.forObject(0.0));
+        assertSame("Expected cached value.", value, NilReason.MISSING.createNilObject(Double.class));
+    }
+
+    /**
+     * Tests {@link NilReason#createNilObject(Class)} for a string type.
+     * Opportunistically tests {@link NilReason#forObject(Object)} with the created object.
+     *
+     * @since 0.4
+     */
+    @Test
+    public void testCreateNilString() {
+        final String value = NilReason.MISSING.createNilObject(String.class);
+        assertEquals ("", value);
+        assertNotSame("", value);
+        assertSame("NilReason.forObject(…)", NilReason.MISSING, NilReason.forObject(value));
+        assertNull("NilReason.forObject(…)", NilReason.forObject(""));
+        assertNull("NilReason.forObject(…)", NilReason.forObject("null"));
+        assertSame("Expected cached value.", value, NilReason.MISSING.createNilObject(String.class));
+    }
+
+    /**
+     * Tests {@link NilReason#createNilObject(Class)} for an international string type.
+     * Opportunistically tests {@link NilReason#forObject(Object)} with the created object.
+     *
+     * @since 0.4
+     */
+    @Test
+    public void testCreateNilInternationalString() {
+        final InternationalString value = NilReason.MISSING.createNilObject(InternationalString.class);
+        assertEquals("", value.toString());
+        assertInstanceOf("Unexpected impl.", NilObject.class, value);
+        assertSame("NilReason.forObject(…)", NilReason.MISSING, NilReason.forObject(value));
+        assertSame("Expected cached value.", value, NilReason.MISSING.createNilObject(InternationalString.class));
+    }
+
+    /**
      * Tests the creation of {@link NilObject} instances.
      */
     @Test
@@ -103,6 +189,8 @@ public final strictfp class NilReasonTest extends TestCase {
         assertNull(citation.getTitle());
         assertTrue(citation.getDates().isEmpty());
         assertEquals("NilObject.toString()", "Citation[template]", citation.toString());
+        assertSame("NilReason.forObject(…)", NilReason.TEMPLATE, NilReason.forObject(citation));
+        assertSame("Expected cached value.", citation, NilReason.TEMPLATE.createNilObject(Citation.class));
     }
 
     /**
