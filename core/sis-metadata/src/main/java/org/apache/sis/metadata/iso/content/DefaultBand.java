@@ -22,14 +22,12 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.metadata.content.Band;
 import org.opengis.metadata.content.BandDefinition;
 import org.opengis.metadata.content.PolarizationOrientation;
 import org.opengis.metadata.content.TransferFunctionType;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.measure.ValueRange;
-import org.apache.sis.internal.jaxb.gco.GO_Real;
 
 
 /**
@@ -208,7 +206,6 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
      */
     @Override
     @XmlElement(name = "maxValue")
-    @XmlJavaTypeAdapter(GO_Real.class)
     public Double getMaxValue() {
         return maxValue;
     }
@@ -232,7 +229,6 @@ public class DefaultBand extends DefaultRangeDimension implements Band {
      */
     @Override
     @XmlElement(name = "minValue")
-    @XmlJavaTypeAdapter(GO_Real.class)
     public Double getMinValue() {
         return minValue;
     }
