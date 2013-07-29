@@ -349,13 +349,18 @@ public final class NilReason implements Serializable {
      *
      * <ul>
      *   <li><p>An <strong>interface</strong>: in such case, this method returns an object which implement the given
-     *       interface together with the {@link NilObject} interface. The {@link NilObject#getNilReason()} method
-     *       will return this {@code NilReason} instance, and all other methods (except the ones inherited from
-     *       the {@code Object} class) will return an empty collection, empty array, {@code null},
-     *       {@link Double#NaN NaN}, {@code 0} or {@code false}, in this preference order,
-     *       depending on the method return type.</p></li>
-     *   <li><p>One of {@link Boolean}, {@link Integer}, {@link Double} or {@link String} types: in such case,
-     *       this method returns a specific instance which will be recognized as "nil" by the XML marshaller.</p></li>
+     *       interface together with the {@link NilObject} and {@link LenientComparable} interfaces:
+     *       <ul>
+     *         <li>The {@link NilObject#getNilReason()} method will return this {@code NilReason} instance.</li>
+     *         <li>The {@code equals(…)} and {@code hashCode()} methods behave as documented in {@link LenientComparable}.</li>
+     *         <li>The {@code toString()} method is unspecified (may contain debugging information).</li>
+     *         <li>All other methods return an empty collections, empty arrays, {@code null}, {@link Double#NaN NaN},
+     *             {@code 0} or {@code false}, in this preference order, depending on the method return type.</li>
+     *       </ul></p>
+     *   </li>
+     *   <li><p>One of {@link Boolean}, {@link Integer}, {@link Long}, {@link Double} or {@link String} types:
+     *       in such case, this method returns a specific instance which will be recognized as "nil"
+     *       by the XML marshaller.</p></li>
      * </ul>
      *
      * @param  <T> The compile-time type of the {@code type} argument.
@@ -419,17 +424,19 @@ public final class NilReason implements Serializable {
     }
 
     /**
-     * Returns an {@code Boolean}, {@code Integer}, {@code Double} or {@code String} to be considered as a nil value.
+     * Returns a {@code Boolean}, {@code Integer}, {@link Long}, {@code Double} or {@code String}
+     * to be considered as a nil value.
      * The caller is responsible for registering the value in {@link PrimitiveTypeProperties}.
      *
      * <p><b>REMINDER:<b> If more special cases are added, do not forget to update the {@link #mayBeNil(Object)}
-     * method and to update javadoc.</p>
+     * method and to update the {@link #createNilObject(Class)} and {@link #forObject(Object)} javadoc.</p>
      *
      * @throws IllegalArgumentException If the given type is not a supported type.
      */
     private static Object createNilPrimitive(final Class<?> type) {
         if (type == String .class) return new String("");         // REALLY need a new instance.
         if (type == Integer.class) return new Integer(0);         // REALLY need a new instance, not Integer.valueOf(0).
+        if (type == Long   .class) return new Long(0);            // REALLY need a new instance, not Long.valueOf(0).
         if (type == Boolean.class) return new Boolean(false);     // REALLY need a new instance, not Boolean.FALSE.
         if (type == Double .class) return new Double(Double.NaN); // REALLY need a new instance, not Double.valueOf(…).
         throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "type", type));
@@ -446,6 +453,7 @@ public final class NilReason implements Serializable {
         // 'instanceof' checks on instances of final classes are expected to be very fast.
         if (object instanceof String)  return ((String)  object).isEmpty();
         if (object instanceof Integer) return ((Integer) object).intValue() == 0;
+        if (object instanceof Long)    return ((Long)    object).longValue() == 0;
         if (object instanceof Boolean) return ((Boolean) object).booleanValue() == false;
         if (object instanceof Double)  return Double.isNaN(((Double) object).doubleValue());
         return false;
@@ -458,7 +466,7 @@ public final class NilReason implements Serializable {
      * <ul>
      *   <li>If the given object implements the {@link NilObject} interface, then this method delegates
      *       to the {@link NilObject#getNilReason()} method.</li>
-     *   <li>Otherwise if the given object is one of the {@link Boolean}, {@link Integer}, {@link Double}
+     *   <li>Otherwise if the given object is one of the {@link Boolean}, {@link Integer}, {@link Long}, {@link Double}
      *       or {@link String} instances returned by {@link #createNilObject(Class)}, then this method
      *       returns the associated reason.</li>
      *   <li>Otherwise this method returns {@code null}.</li>

@@ -130,6 +130,24 @@ public final strictfp class NilReasonTest extends TestCase {
     }
 
     /**
+     * Tests {@link NilReason#createNilObject(Class)} for a long type.
+     * Opportunistically tests {@link NilReason#forObject(Object)} with the created object.
+     *
+     * @since 0.4
+     */
+    @Test
+    public void testCreateNilLong() {
+        final Long zero  = 0L;
+        final Long value = NilReason.MISSING.createNilObject(Long.class);
+        assertEquals (zero, value);
+        assertNotSame(zero, value);
+        assertSame("NilReason.forObject(…)", NilReason.MISSING, NilReason.forObject(value));
+        assertNull("NilReason.forObject(…)", NilReason.forObject(zero));
+        assertNull("NilReason.forObject(…)", NilReason.forObject(1L));
+        assertSame("Expected cached value.", value, NilReason.MISSING.createNilObject(Long.class));
+    }
+
+    /**
      * Tests {@link NilReason#createNilObject(Class)} for a double type.
      * Opportunistically tests {@link NilReason#forObject(Object)} with the created object.
      *
