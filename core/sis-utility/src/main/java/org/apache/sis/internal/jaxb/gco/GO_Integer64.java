@@ -20,7 +20,7 @@ import javax.xml.bind.annotation.XmlElement;
 
 
 /**
- * Surrounds boolean value by {@code <gco:Boolean>}.
+ * Surrounds long values by {@code <gco:Integer>}.
  * The ISO-19139 standard specifies that primitive types have to be surrounded by an element
  * which represents the type of the value, using the namespace {@code gco} linked to the
  * {@code http://www.isotc211.org/2005/gco} URL. The JAXB default behavior is to marshal
@@ -28,16 +28,15 @@ import javax.xml.bind.annotation.XmlElement;
  * The role of this class is to add such wrapping.
  *
  * @author  Cédric Briançon (Geomatys)
- * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-2.5)
+ * @since   0.4 (derived from geotk-2.5)
  * @version 0.4
  * @module
  */
-public final class GO_Boolean extends PropertyType<GO_Boolean, Boolean> {
+public final class GO_Integer64 extends PropertyType<GO_Integer64, Long> {
     /**
      * Empty constructor used only by JAXB.
      */
-    public GO_Boolean() {
+    public GO_Integer64() {
     }
 
     /**
@@ -45,29 +44,29 @@ public final class GO_Boolean extends PropertyType<GO_Boolean, Boolean> {
      *
      * @param value The value.
      */
-    private GO_Boolean(final Boolean value) {
-        super(value, !value);
+    private GO_Integer64(final Long value) {
+        super(value, value.longValue() == 0);
     }
 
     /**
      * Returns the Java type which is bound by this adapter.
      */
     @Override
-    protected Class<Boolean> getBoundType() {
-        return Boolean.class;
+    protected Class<Long> getBoundType() {
+        return Long.class;
     }
 
     /**
      * Allows JAXB to change the result of the marshalling process, according to the
      * ISO-19139 standard and its requirements about primitive types.
      *
-     * @param value The boolean value we want to surround by an element representing its type.
-     * @return An adaptation of the boolean value, that is to say a boolean value surrounded
-     *         by {@code <gco:Boolean>} element.
+     * @param value The integer value we want to surround by an element representing its type.
+     * @return An adaptation of the integer value, that is to say a integer value surrounded
+     *         by {@code <gco:Integer>} element.
      */
     @Override
-    protected GO_Boolean wrap(final Boolean value) {
-        return new GO_Boolean(value);
+    public GO_Integer64 wrap(final Long value) {
+        return new GO_Integer64(value);
     }
 
     /**
@@ -75,8 +74,8 @@ public final class GO_Boolean extends PropertyType<GO_Boolean, Boolean> {
      *
      * @return The value to be marshalled.
      */
-    @XmlElement(name = "Boolean")
-    public Boolean getElement() {
+    @XmlElement(name = "Integer")
+    public Long getElement() {
         return skip() ? null : metadata;
     }
 
@@ -85,7 +84,7 @@ public final class GO_Boolean extends PropertyType<GO_Boolean, Boolean> {
      *
      * @param metadata The unmarshalled value.
      */
-    public void setElement(final Boolean metadata) {
+    public void setElement(final Long metadata) {
         this.metadata = metadata;
     }
 }

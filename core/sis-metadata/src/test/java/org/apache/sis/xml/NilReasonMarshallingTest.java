@@ -19,6 +19,7 @@ package org.apache.sis.xml;
 import javax.xml.bind.JAXBException;
 import org.opengis.metadata.citation.Series;
 import org.opengis.metadata.citation.Citation;
+import org.opengis.metadata.spatial.Dimension;
 import org.opengis.metadata.quality.ConformanceResult;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.XMLTestCase;
@@ -46,9 +47,8 @@ public final strictfp class NilReasonMarshallingTest extends XMLTestCase {
     @Test
     public void testMissing() throws JAXBException {
         final String expected =
-                "<gmd:CI_Citation xmlns:gmd=\""   + Namespaces.GMD + '"' +
-                                " xmlns:gco=\""   + Namespaces.GCO + '"' +
-                                " xmlns:xlink=\"" + Namespaces.XLINK + "\">\n" +
+                "<gmd:CI_Citation xmlns:gmd=\"" + Namespaces.GMD + '"' +
+                                " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
                 "  <gmd:title>\n" +
                 "    <gco:CharacterString>A title</gco:CharacterString>\n" +
                 "  </gmd:title>\n" +
@@ -85,9 +85,8 @@ public final strictfp class NilReasonMarshallingTest extends XMLTestCase {
     @DependsOnMethod("testMissing")
     public void testMissingBoolean() throws JAXBException {
         final String expected =
-                "<gmd:DQ_ConformanceResult xmlns:gmd=\""   + Namespaces.GMD + '"' +
-                                         " xmlns:gco=\""   + Namespaces.GCO + '"' +
-                                         " xmlns:xlink=\"" + Namespaces.XLINK + "\">\n" +
+                "<gmd:DQ_ConformanceResult xmlns:gmd=\"" + Namespaces.GMD + '"' +
+                                         " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
                 "  <gmd:explanation>\n" +
                 "    <gco:CharacterString>An explanation</gco:CharacterString>\n" +
                 "  </gmd:explanation>\n" +
@@ -98,12 +97,43 @@ public final strictfp class NilReasonMarshallingTest extends XMLTestCase {
         assertEquals("explanation", "An explanation", result.getExplanation().toString());
 
         final Boolean pass = result.pass();
-        assertNotNull("Expected a sentinal value.", pass);
+        assertNotNull("Expected a sentinel value.", pass);
         assertEquals ("Nil value shall be false.",  Boolean.FALSE, pass);
-        assertNotSame("Expected a sentinal value.", Boolean.FALSE, pass);
+        assertNotSame("Expected a sentinel value.", Boolean.FALSE, pass);
 
         final NilReason reason = NilReason.forObject(pass);
         assertSame("nilReason", NilReason.MISSING, reason);
+
+        final String actual = XML.marshal(result);
+        assertXmlEquals(expected, actual, "xmlns:*");
+        assertEquals(result, XML.unmarshal(actual));
+    }
+
+    /**
+     * Tests a missing integer value. The {@link Boolean}, {@link Integer}, {@link Double} and {@link String}
+     * values are implemented as special cases in {@link NilReason}, because they are final classes on which
+     * we have no control.
+     *
+     * @throws JAXBException Should never happen.
+     */
+    @Test
+    @DependsOnMethod("testMissing")
+    public void testMissingInteger() throws JAXBException {
+        final String expected =
+                "<gmd:MD_Dimension xmlns:gmd=\"" + Namespaces.GMD + '"' +
+                                 " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
+                "  <gmd:dimensionSize gco:nilReason=\"unknown\"/>\n" +
+                "</gmd:MD_Dimension>";
+
+        final Dimension result = (Dimension) XML.unmarshal(expected);
+
+        final Integer size = result.getDimensionSize();
+        assertNotNull("Expected a sentinel value.", size);
+        assertEquals ("Nil value shall be 0.",      Integer.valueOf(0), size);
+        assertNotSame("Expected a sentinel value.", Integer.valueOf(0), size);
+
+        final NilReason reason = NilReason.forObject(size);
+        assertSame("nilReason", NilReason.UNKNOWN, reason);
 
         final String actual = XML.marshal(result);
         assertXmlEquals(expected, actual, "xmlns:*");
@@ -119,9 +149,8 @@ public final strictfp class NilReasonMarshallingTest extends XMLTestCase {
     @DependsOnMethod("testMissing")
     public void testOther() throws JAXBException {
         final String expected =
-                "<gmd:CI_Citation xmlns:gmd=\""   + Namespaces.GMD + '"' +
-                                " xmlns:gco=\""   + Namespaces.GCO + '"' +
-                                " xmlns:xlink=\"" + Namespaces.XLINK + "\">\n" +
+                "<gmd:CI_Citation xmlns:gmd=\"" + Namespaces.GMD + '"' +
+                                " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
                 "  <gmd:title>\n" +
                 "    <gco:CharacterString>A title</gco:CharacterString>\n" +
                 "  </gmd:title>\n" +
@@ -155,9 +184,8 @@ public final strictfp class NilReasonMarshallingTest extends XMLTestCase {
     @DependsOnMethod("testMissing")
     public void testURI() throws JAXBException {
         final String expected =
-                "<gmd:CI_Citation xmlns:gmd=\""   + Namespaces.GMD + '"' +
-                                " xmlns:gco=\""   + Namespaces.GCO + '"' +
-                                " xmlns:xlink=\"" + Namespaces.XLINK + "\">\n" +
+                "<gmd:CI_Citation xmlns:gmd=\"" + Namespaces.GMD + '"' +
+                                " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
                 "  <gmd:title>\n" +
                 "    <gco:CharacterString>A title</gco:CharacterString>\n" +
                 "  </gmd:title>\n" +
