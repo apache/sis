@@ -358,9 +358,9 @@ public final class NilReason implements Serializable {
      *             {@code 0} or {@code false}, in this preference order, depending on the method return type.</li>
      *       </ul></p>
      *   </li>
-     *   <li><p>One of {@link Boolean}, {@link Integer}, {@link Long}, {@link Double} or {@link String} types:
-     *       in such case, this method returns a specific instance which will be recognized as "nil"
-     *       by the XML marshaller.</p></li>
+     *   <li><p>One of {@code Boolean}, {@link Byte}, {@link Short}, {@code Integer}, {@link Long}, {@link Float},
+     *       {@code Double} or {@code String} types: in such case, this method returns a specific instance which
+     *       will be recognized as "nil" by the XML marshaller.</p></li>
      * </ul>
      *
      * @param  <T> The compile-time type of the {@code type} argument.
@@ -410,8 +410,8 @@ public final class NilReason implements Serializable {
                 }
             } else {
                 /*
-                 * If the requested type is not an interface, this is usually an error except for a short
-                 * list of special cases: Boolean, Integer, Double or String.
+                 * If the requested type is not an interface, this is usually an error except for some
+                 * special cases: Boolean, Byte, Short, Integer, Long, Float, Double or String.
                  */
                 object = createNilPrimitive(type);
                 PrimitiveTypeProperties.associate(object, this);
@@ -424,8 +424,8 @@ public final class NilReason implements Serializable {
     }
 
     /**
-     * Returns a {@code Boolean}, {@code Integer}, {@link Long}, {@code Double} or {@code String}
-     * to be considered as a nil value.
+     * Returns a new {@code Boolean}, {@link Byte}, {@link Short}, {@code Integer}, {@link Long},
+     * {@link Float}, {@code Double} or {@code String} instance to be considered as a nil value.
      * The caller is responsible for registering the value in {@link PrimitiveTypeProperties}.
      *
      * <p><b>REMINDER:<b> If more special cases are added, do not forget to update the {@link #mayBeNil(Object)}
@@ -435,9 +435,12 @@ public final class NilReason implements Serializable {
      */
     private static Object createNilPrimitive(final Class<?> type) {
         if (type == String .class) return new String("");         // REALLY need a new instance.
+        if (type == Boolean.class) return new Boolean(false);     // REALLY need a new instance, not Boolean.FALSE.
+        if (type == Byte   .class) return new Byte((byte) 0);     // REALLY need a new instance, not Byte.valueOf(0).
+        if (type == Short  .class) return new Short((byte) 0);    // REALLY need a new instance, not Short.valueOf(0).
         if (type == Integer.class) return new Integer(0);         // REALLY need a new instance, not Integer.valueOf(0).
         if (type == Long   .class) return new Long(0);            // REALLY need a new instance, not Long.valueOf(0).
-        if (type == Boolean.class) return new Boolean(false);     // REALLY need a new instance, not Boolean.FALSE.
+        if (type == Float  .class) return new Float(Float.NaN);   // REALLY need a new instance, not Float.valueOf(…).
         if (type == Double .class) return new Double(Double.NaN); // REALLY need a new instance, not Double.valueOf(…).
         throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "type", type));
     }
@@ -452,10 +455,16 @@ public final class NilReason implements Serializable {
     private static boolean mayBeNil(final Object object) {
         // 'instanceof' checks on instances of final classes are expected to be very fast.
         if (object instanceof String)  return ((String)  object).isEmpty();
-        if (object instanceof Integer) return ((Integer) object).intValue() == 0;
-        if (object instanceof Long)    return ((Long)    object).longValue() == 0;
         if (object instanceof Boolean) return ((Boolean) object).booleanValue() == false;
-        if (object instanceof Double)  return Double.isNaN(((Double) object).doubleValue());
+        if (object instanceof Number) {
+            /*
+             * Following test may return false positives for Long, Float and Double types, but this is okay
+             * since the real check will be done by PrimitiveTypeProperties.  The purpose of this method is
+             * only to perform a cheap filtering. Note that this method relies on the fact that casting NaN
+             * to 'int' produces 0.
+             */
+            return ((Number) object).intValue() == 0;
+        }
         return false;
     }
 
@@ -466,9 +475,9 @@ public final class NilReason implements Serializable {
      * <ul>
      *   <li>If the given object implements the {@link NilObject} interface, then this method delegates
      *       to the {@link NilObject#getNilReason()} method.</li>
-     *   <li>Otherwise if the given object is one of the {@link Boolean}, {@link Integer}, {@link Long}, {@link Double}
-     *       or {@link String} instances returned by {@link #createNilObject(Class)}, then this method
-     *       returns the associated reason.</li>
+     *   <li>Otherwise if the given object is one of the {@code Boolean}, {@link Byte}, {@link Short}, {@code Integer},
+     *       {@link Long}, {@link Float}, {@code Double} or {@code String} instances returned by
+     *       {@link #createNilObject(Class)}, then this method returns the associated reason.</li>
      *   <li>Otherwise this method returns {@code null}.</li>
      * </ul>
      *

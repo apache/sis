@@ -130,6 +130,42 @@ public final strictfp class NilReasonTest extends TestCase {
     }
 
     /**
+     * Tests {@link NilReason#createNilObject(Class)} for a byte type.
+     * Opportunistically tests {@link NilReason#forObject(Object)} with the created object.
+     *
+     * @since 0.4
+     */
+    @Test
+    public void testCreateNilByte() {
+        final Byte zero  = 0;
+        final Byte value = NilReason.MISSING.createNilObject(Byte.class);
+        assertEquals (zero, value);
+        assertNotSame(zero, value);
+        assertSame("NilReason.forObject(…)", NilReason.MISSING, NilReason.forObject(value));
+        assertNull("NilReason.forObject(…)", NilReason.forObject(zero));
+        assertNull("NilReason.forObject(…)", NilReason.forObject(1));
+        assertSame("Expected cached value.", value, NilReason.MISSING.createNilObject(Byte.class));
+    }
+
+    /**
+     * Tests {@link NilReason#createNilObject(Class)} for a short type.
+     * Opportunistically tests {@link NilReason#forObject(Object)} with the created object.
+     *
+     * @since 0.4
+     */
+    @Test
+    public void testCreateNilShort() {
+        final Short zero  = 0;
+        final Short value = NilReason.MISSING.createNilObject(Short.class);
+        assertEquals (zero, value);
+        assertNotSame(zero, value);
+        assertSame("NilReason.forObject(…)", NilReason.MISSING, NilReason.forObject(value));
+        assertNull("NilReason.forObject(…)", NilReason.forObject(zero));
+        assertNull("NilReason.forObject(…)", NilReason.forObject(1));
+        assertSame("Expected cached value.", value, NilReason.MISSING.createNilObject(Short.class));
+    }
+
+    /**
      * Tests {@link NilReason#createNilObject(Class)} for a long type.
      * Opportunistically tests {@link NilReason#forObject(Object)} with the created object.
      *
@@ -145,6 +181,24 @@ public final strictfp class NilReasonTest extends TestCase {
         assertNull("NilReason.forObject(…)", NilReason.forObject(zero));
         assertNull("NilReason.forObject(…)", NilReason.forObject(1L));
         assertSame("Expected cached value.", value, NilReason.MISSING.createNilObject(Long.class));
+    }
+
+    /**
+     * Tests {@link NilReason#createNilObject(Class)} for a float type.
+     * Opportunistically tests {@link NilReason#forObject(Object)} with the created object.
+     *
+     * @since 0.4
+     */
+    @Test
+    public void testCreateNilFloat() {
+        final Float nan  = Float.NaN;
+        final Float value = NilReason.MISSING.createNilObject(Float.class);
+        assertEquals (nan, value);
+        assertNotSame(nan, value);
+        assertSame("NilReason.forObject(…)", NilReason.MISSING, NilReason.forObject(value));
+        assertNull("NilReason.forObject(…)", NilReason.forObject(nan));
+        assertNull("NilReason.forObject(…)", NilReason.forObject(0f));
+        assertSame("Expected cached value.", value, NilReason.MISSING.createNilObject(Float.class));
     }
 
     /**
