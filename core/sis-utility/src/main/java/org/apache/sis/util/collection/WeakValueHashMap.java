@@ -86,12 +86,21 @@ import java.util.Objects;
 @ThreadSafe
 public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
     /**
-     * The comparison mode for key objects.
+     * Comparison mode for key objects. The standard mode is {@code EQUALS}, which means that keys are compared
+     * using their {@link Object#equals(Object)} method. But {@code WeakValueHashMap} will automatically select
+     * {@code DEEP_EQUALS} if there is a chance that some keys are arrays. In the later case, comparisons will
+     * be done by the more costly {@link Objects#deepEquals(Object, Object)} method instead.
      *
+     * <p>The {@code IDENTITY} mode is rarely used, and is selected only if the user explicitely asks for this mode
+     * at construction time. This mode is provided because reference-equality semantic is sometime required, and
+     * hard to simulate if not supported natively by the hash map. See {@link java.util.IdentityHashMap} javadoc
+     * for some examples of cases where reference-equality semantic is useful.</p>
+     *
+     * @see #comparisonMode
      * @see #keyEquals(Object, Object)
      * @see #keyHashCode(Object)
      */
-    private static final int IDENTITY = 0, EQUALS = 1, DEEP_EQUALS = 2;
+    private static final byte IDENTITY = 0, EQUALS = 1, DEEP_EQUALS = 2;
 
     /**
      * An entry in the {@link WeakValueHashMap}. This is a weak reference
@@ -195,10 +204,15 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
     private final Class<K> keyType;
 
     /**
-     * {@link #DEEP_EQUALS} if the keys in this map may be arrays. If the keys can not be arrays,
-     * then we can avoid the calls to the costly {@link Utilities} methods.
+     * Whether keys shall be compared by reference-equality ({@link #IDENTITY}), by shallow object-equality
+     * ({@link #EQUALS}) or by deep object-equality ({@link #DEEP_EQUALS}). The {@code DEEP_EQUALS} mode is
+     * selected only if the keys in this map may be arrays. If the keys can not be arrays, then we select the
+     * {@code EQUALS} mode for avoiding calls to the costly {@link Objects#deepEquals(Object, Object)} method.
+     *
+     * @see #keyEquals(Object, Object)
+     * @see #keyHashCode(Object)
      */
-    private final int comparisonMode;
+    private final byte comparisonMode;
 
     /**
      * The set of entries, created only when first needed.
@@ -227,15 +241,18 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
      * If {@code identity} is {@code true}, then two keys {@code k1} and {@code k2} are considered equal if and
      * only if {@code (k1 == k2)} instead than if {@code k1.equals(k2)}.
      *
-     * @param keyType    The type of keys in the map.
-     * @param byIdentity {@code true} if the map shall use reference-equality in place of object-equality
-     *                   when comparing keys, or {@code false} for the standard behavior.
+     * <p>Reference-equality semantic is rarely used. See the {@link java.util.IdentityHashMap} class javadoc
+     * for a discussion about drawbacks and use cases when reference-equality semantic is useful.</p>
+     *
+     * @param keyType  The type of keys in the map.
+     * @param identity {@code true} if the map shall use reference-equality in place of object-equality
+     *                 when comparing keys, or {@code false} for the standard behavior.
      *
      * @since 0.4
      */
-    public WeakValueHashMap(final Class<K> keyType, final boolean byIdentity) {
+    public WeakValueHashMap(final Class<K> keyType, final boolean identity) {
         this.keyType   = keyType;
-        comparisonMode = byIdentity ? IDENTITY :
+        comparisonMode = identity ? IDENTITY :
                 (keyType.isArray() || keyType.equals(Object.class)) ? DEEP_EQUALS : EQUALS;
         lastTimeNormalCapacity = System.nanoTime();
         /*

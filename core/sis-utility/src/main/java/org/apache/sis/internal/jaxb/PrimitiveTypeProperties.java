@@ -16,16 +16,17 @@
  */
 package org.apache.sis.internal.jaxb;
 
+import java.util.Map;
+import java.util.IdentityHashMap;
 import java.lang.reflect.Modifier;
 import org.apache.sis.xml.NilReason;
-import org.apache.sis.util.collection.WeakValueHashMap;
 
 
 /**
  * A workaround for attaching properties ({@code nilreason}, {@code href}, <i>etc.</i>) to primitive type wrappers.
  * The normal approach in SIS is to implement the {@link org.apache.sis.xml.NilObject} interface. However we can not
  * do so when the object is a final Java class like {@link Boolean}, {@link Integer}, {@link Double} or {@link String}.
- * This class provides a workaround using specific instances of some primitive types.
+ * This class provides a workaround using specific instances of those wrappers.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
@@ -36,13 +37,29 @@ import org.apache.sis.util.collection.WeakValueHashMap;
  */
 public final class PrimitiveTypeProperties {
     /**
-     * The map where to store specific instances. We really need an identity hash map;
-     * using the {@code Object.equals(Object)} method is not allowed here.
+     * The map where to store specific instances. Keys are instances of the primitive wrappers considered as nil.
+     * Values are the {@code NilReason} why the primitive is missing, or any other property we may want to attach.
      *
-     * <p>Keys are the primitive type instances. Values are the {@code NilReason} why this value is missing,
-     * or any other property we may want to attach.</p>
+     * {@section Identity comparisons}
+     * We really need an identity hash map; using the {@code Object.equals(Object)} method is not allowed here.
+     * This is because "nil values" are real values. For example if the type is {@link Integer}, then the nil value
+     * is an {@code Integer} instance having the value 0. We don't want to consider every 0 integer value as nil,
+     * but only the specific {@code Integer} instance used as sentinel value for nil.
+     *
+     * {@section Weak references}
+     * We can not use weak value references, because we don't want the {@link NilReason} (the map value) to be lost
+     * while the sentinel value (the map key) is still in use. We could use weak references for the keys, but JDK 7
+     * does not provides any map implementation which is both an {@code IdentityHashMap} and a {@code WeakHashMap}.
+     *
+     * For now we do not use weak references. This means that if a user creates a custom {@code NilReason} by a call
+     * to {@link NilReason#valueOf(String)}, and if he uses that nil reason for a primitive type, then that custom
+     * {@code NilReason} instance and its sentinel values will never be garbage-collected.
+     * We presume that such cases will be rare enough for not being an issue in practice.
+     *
+     * {@section Synchronization}
+     * All accesses to this map shall be synchronized on the map object.
      */
-    private static final WeakValueHashMap<Object,Object> SENTINAL_VALUES = new WeakValueHashMap<>(Object.class, true);
+    private static final Map<Object,Object> SENTINEL_VALUES = new IdentityHashMap<>();
 
     /**
      * Do not allow instantiation of this class.
@@ -69,10 +86,12 @@ public final class PrimitiveTypeProperties {
      */
     public static void associate(final Object primitive, final Object property) {
         assert isValidKey(primitive) : primitive;
-        final Object old = SENTINAL_VALUES.put(primitive, property);
-        if (old != null) { // Should never happen - this is rather debugging check.
-            SENTINAL_VALUES.put(primitive, old);
-            throw new AssertionError(primitive);
+        synchronized (SENTINEL_VALUES) {
+            final Object old = SENTINEL_VALUES.put(primitive, property);
+            if (old != null) { // Should never happen - this is rather debugging check.
+                SENTINEL_VALUES.put(primitive, old);
+                throw new AssertionError(primitive);
+            }
         }
     }
 
@@ -84,6 +103,8 @@ public final class PrimitiveTypeProperties {
      */
     public static Object property(final Object primitive) {
         assert isValidKey(primitive) : primitive;
-        return SENTINAL_VALUES.get(primitive);
+        synchronized (SENTINEL_VALUES) {
+            return SENTINEL_VALUES.get(primitive);
+        }
     }
 }
