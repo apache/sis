@@ -17,6 +17,7 @@
 package org.apache.sis.xml;
 
 import javax.xml.bind.JAXBException;
+import org.opengis.metadata.content.Band;
 import org.opengis.metadata.citation.Series;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.spatial.Dimension;
@@ -100,9 +101,7 @@ public final strictfp class NilReasonMarshallingTest extends XMLTestCase {
         assertNotNull("Expected a sentinel value.", pass);
         assertEquals ("Nil value shall be false.",  Boolean.FALSE, pass);
         assertNotSame("Expected a sentinel value.", Boolean.FALSE, pass);
-
-        final NilReason reason = NilReason.forObject(pass);
-        assertSame("nilReason", NilReason.MISSING, reason);
+        assertSame("nilReason", NilReason.MISSING, NilReason.forObject(pass));
 
         final String actual = XML.marshal(result);
         assertXmlEquals(expected, actual, "xmlns:*");
@@ -131,9 +130,39 @@ public final strictfp class NilReasonMarshallingTest extends XMLTestCase {
         assertNotNull("Expected a sentinel value.", size);
         assertEquals ("Nil value shall be 0.",      Integer.valueOf(0), size);
         assertNotSame("Expected a sentinel value.", Integer.valueOf(0), size);
+        assertSame("nilReason", NilReason.UNKNOWN, NilReason.forObject(size));
 
-        final NilReason reason = NilReason.forObject(size);
-        assertSame("nilReason", NilReason.UNKNOWN, reason);
+        final String actual = XML.marshal(result);
+        assertXmlEquals(expected, actual, "xmlns:*");
+        assertEquals(result, XML.unmarshal(actual));
+    }
+
+    /**
+     * Tests a missing double value.
+     *
+     * @throws JAXBException Should never happen.
+     */
+    @Test
+    @DependsOnMethod("testMissing")
+    public void testMissingDouble() throws JAXBException {
+        final String expected =
+                "<gmd:MD_Band xmlns:gmd=\"" + Namespaces.GMD + '"' +
+                            " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
+                "  <gmd:minValue gco:nilReason=\"unknown\"/>\n" +
+                "  <gmd:peakResponse gco:nilReason=\"missing\"/>\n" +
+                "</gmd:MD_Band>";
+
+        final Band result = (Band) XML.unmarshal(expected);
+
+        final Double minValue = result.getMinValue();
+        assertNotNull("Expected a sentinel value.", minValue);
+        assertTrue("Nil value shall be NaN.", minValue.isNaN());
+        assertSame("nilReason", NilReason.UNKNOWN, NilReason.forObject(minValue));
+
+        final Double peakResponse = result.getMinValue();
+        assertNotNull("Expected a sentinel value.", peakResponse);
+        assertTrue("Nil value shall be NaN.", peakResponse.isNaN());
+        assertSame("nilReason", NilReason.UNKNOWN, NilReason.forObject(peakResponse));
 
         final String actual = XML.marshal(result);
         assertXmlEquals(expected, actual, "xmlns:*");

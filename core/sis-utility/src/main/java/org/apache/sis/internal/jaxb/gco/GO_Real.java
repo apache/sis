@@ -17,7 +17,6 @@
 package org.apache.sis.internal.jaxb.gco;
 
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.adapters.XmlAdapter;
 
 
 /**
@@ -35,13 +34,7 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
  *
  * @see GO_Decimal
  */
-public final class GO_Real extends XmlAdapter<GO_Real, Double> {
-    /**
-     * The double value to handle.
-     */
-    @XmlElement(name = "Real")
-    public Double value;
-
+public final class GO_Real extends PropertyType<GO_Real, Double> {
     /**
      * Empty constructor used only by JAXB.
      */
@@ -49,23 +42,20 @@ public final class GO_Real extends XmlAdapter<GO_Real, Double> {
     }
 
     /**
-     * Constructs an adapter for this value.
+     * Constructs a wrapper for the given value.
      *
      * @param value The value.
      */
     private GO_Real(final Double value) {
-        this.value = value;
+        super(value, value.isNaN());
     }
 
     /**
-     * Allows JAXB to generate a Double object using the value found in the adapter.
-     *
-     * @param value The value extract from the adapter.
-     * @return A double object.
+     * Returns the Java type which is bound by this adapter.
      */
     @Override
-    public Double unmarshal(final GO_Real value) {
-        return (value != null) ? value.value : null;
+    protected Class<Double> getBoundType() {
+        return Double.class;
     }
 
     /**
@@ -77,7 +67,26 @@ public final class GO_Real extends XmlAdapter<GO_Real, Double> {
      *         by {@code <gco:Real>} element.
      */
     @Override
-    public GO_Real marshal(final Double value) {
-        return (value != null) ? new GO_Real(value) : null;
+    public GO_Real wrap(final Double value) {
+        return new GO_Real(value);
+    }
+
+    /**
+     * Invoked by JAXB at marshalling time for getting the actual value to write.
+     *
+     * @return The value to be marshalled.
+     */
+    @XmlElement(name = "Real")
+    public Double getElement() {
+        return skip() ? null : metadata;
+    }
+
+    /**
+     * Invoked by JAXB at unmarshalling time for storing the result temporarily.
+     *
+     * @param metadata The unmarshalled value.
+     */
+    public void setElement(final Double metadata) {
+        this.metadata = metadata;
     }
 }
