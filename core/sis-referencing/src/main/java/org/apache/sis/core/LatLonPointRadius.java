@@ -24,6 +24,7 @@ import java.awt.geom.Rectangle2D;
 
 //SIS imports
 import org.apache.sis.distance.DistanceUtils;
+import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.GeneralDirectPosition;
 
 /**
@@ -43,7 +44,7 @@ public class LatLonPointRadius extends GeneralDirectPosition {
    * @param radius
    *          the radius of the search region
    */
-  public LatLonPointRadius(LatLon center, double radius) {
+  public LatLonPointRadius(DirectPosition2D center, double radius) {
     super(center.x, center.y, radius);
   }
 
@@ -53,21 +54,21 @@ public class LatLonPointRadius extends GeneralDirectPosition {
    *
    * @param numberOfPoints
    *          the number of points used to estimate the circular region
-   * @return an array of LatLon representing the points that estimate the
+   * @return an array of DirectPosition2D representing the points that estimate the
    *         circular region
    */
-  public LatLon[] getCircularRegionApproximation(int numberOfPoints) {
+  public DirectPosition2D[] getCircularRegionApproximation(int numberOfPoints) {
     if (super.getOrdinate(2) >= DistanceUtils.HALF_EARTH_CIRCUMFERENCE) {
-      LatLon[] points = new LatLon[5];
-      points[0] = new LatLon(-90.0, -180.0);
-      points[1] = new LatLon(90.0, -180.0);
-      points[2] = new LatLon(90.0, 180.0);
-      points[3] = new LatLon(-90.0, 180.0);
+      DirectPosition2D[] points = new DirectPosition2D[5];
+      points[0] = new DirectPosition2D(-180.0, -90.0);
+      points[1] = new DirectPosition2D(-180.0, 90.0);
+      points[2] = new DirectPosition2D(180.0, 90.0);
+      points[3] = new DirectPosition2D(180.0, -90.0);
       points[4] = points[0];
       return points;
     }
     // plus one to add closing point
-    LatLon[] points = new LatLon[numberOfPoints + 1];
+    DirectPosition2D[] points = new DirectPosition2D[numberOfPoints + 1];
 
     double bearingIncrement = 0;
     if (numberOfPoints > 0) { bearingIncrement = 360/numberOfPoints; }

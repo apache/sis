@@ -53,7 +53,7 @@ import org.xml.sax.SAXException;
 
 //SIS imports
 import org.apache.sis.core.LatLon;
-import org.apache.sis.core.LatLonRect;
+import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.distance.DistanceUtils;
 import org.apache.sis.index.tree.GeoRSSData;
 import org.apache.sis.index.tree.QuadTree;
@@ -264,7 +264,7 @@ public class LocationServlet extends HttpServlet {
 
       if (llLat != null && llLon != null && urLat != null && urLon != null) {
         try {
-          LatLonRect bbox = new LatLonRect(new LatLon(
+          Envelope2D bbox = new Envelope2D(new LatLon(
               Double.parseDouble(llLat), Double.parseDouble(llLon)),
               new LatLon(Double.parseDouble(urLat), Double.parseDouble(urLon)));
 
@@ -272,18 +272,14 @@ public class LocationServlet extends HttpServlet {
           results = tree.queryByBoundingBox(bbox);
           afterTime = System.currentTimeMillis();
           // get the polygon that approximates the region
-          Rectangle2D[] rects = bbox.getJavaRectangles();
+          Rectangle2D[] rects = bbox.toRectangles();
           for (int i = 0; i < rects.length; i++) {
-            String regionStr = (rects[i].getMinY() - 90) + ","
-                + (rects[i].getMinX() - 180) + ",";
-            regionStr += (rects[i].getMaxY() - 90) + ","
-                + (rects[i].getMinX() - 180) + ",";
-            regionStr += (rects[i].getMaxY() - 90) + ","
-                + (rects[i].getMaxX() - 180) + ",";
-            regionStr += (rects[i].getMinY() - 90) + ","
-                + (rects[i].getMaxX() - 180) + ",";
-            regionStr += (rects[i].getMinY() - 90) + ","
-                + (rects[i].getMinX() - 180);
+            final Rectangle2D r = rects[i];
+            String regionStr = (r.getMinY()) + "," + (r.getMinX()) + ",";
+            regionStr += (r.getMaxY()) + "," + (r.getMinX()) + ",";
+            regionStr += (r.getMaxY()) + "," + (r.getMaxX()) + ",";
+            regionStr += (r.getMinY()) + "," + (r.getMaxX()) + ",";
+            regionStr += (r.getMinY()) + "," + (r.getMinX());
             regions.add(regionStr);
           }
         } catch (NumberFormatException ex) {
@@ -414,14 +410,12 @@ public class LocationServlet extends HttpServlet {
         item.appendChild(id);
 
         Element lat = doc.createElement("lat");
-        Text latText = doc.createTextNode(Double.toString(geo.getLatLon()
-            .getLat()));
+        Text latText = doc.createTextNode(Double.toString(geo.getLatLon().y));
         lat.appendChild(latText);
         item.appendChild(lat);
 
         Element lon = doc.createElement("lon");
-        Text lonText = doc.createTextNode(Double.toString(geo.getLatLon()
-            .getLon()));
+        Text lonText = doc.createTextNode(Double.toString(geo.getLatLon().x));
         lon.appendChild(lonText);
         item.appendChild(lon);
 
