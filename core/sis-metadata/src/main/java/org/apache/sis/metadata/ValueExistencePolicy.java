@@ -19,26 +19,34 @@ package org.apache.sis.metadata;
 import java.util.Map;
 import java.util.Collection;
 import java.lang.reflect.Array;
+import org.apache.sis.xml.NilObject;
+import org.apache.sis.xml.NilReason;
 
 
 /**
- * Whatever {@link MetadataStandard#asValueMap MetadataStandard.asValueMap(…)} shall contain
- * entries for null or empty values. By default the map does not provide
- * {@linkplain java.util.Map.Entry entries} for {@code null} metadata properties or
+ * Whatever {@link MetadataStandard#asValueMap MetadataStandard.asValueMap(…)} shall contain entries for null,
+ * {@linkplain org.apache.sis.xml.NilObject nil} or empty values. By default the value map does not provide
+ * {@linkplain java.util.Map.Entry entries} for {@code null} metadata properties, nil objects or
  * {@linkplain java.util.Collection#isEmpty() empty collections}.
- * This enumeration allows control on this behavior.
+ * This enumeration allows to control this behavior.
+ *
+ * {@section Difference between null and nil}
+ * A null property is a reference which is {@code null} in the Java sense.
+ * Null references can be used for missing properties when no information is provided about why the property is missing.
+ * On the other hand, a nil object is a placeholder for a missing property similar in purpose to {@code null} references,
+ * except that an explanation about why the property is missing can be attached to those objects.
+ * Those explanations can be obtained by calls to the {@link org.apache.sis.xml.NilReason#forObject(Object)} method.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.03)
- * @version 0.3
+ * @version 0.4
  * @module
  *
  * @see MetadataStandard#asValueMap(Object, KeyNamePolicy, ValueExistencePolicy)
  */
 public enum ValueExistencePolicy {
     /**
-     * Includes all entries in the map, including those having a null value or an
-     * empty collection.
+     * Includes all entries in the map, including those having a null value or an empty collection.
      */
     ALL() {
         /** Never skip values. */
@@ -55,7 +63,10 @@ public enum ValueExistencePolicy {
 
     /**
      * Includes only the non-null properties.
+     * {@link org.apache.sis.xml.NilObject}s are included.
      * Collections are included no matter if they are empty or not.
+     *
+     * <p>The set of {@code NON_NULL} properties is a subset of {@link #ALL} properties.</p>
      */
     NON_NULL() {
         /** Skips all null values. */
@@ -71,8 +82,29 @@ public enum ValueExistencePolicy {
     },
 
     /**
-     * Includes only the properties that are non-null and non empty.
-     * A non-null property is considered empty if:
+     * Includes only the non-null and non-nil properties.
+     * Collections are included no matter if they are empty or not.
+     *
+     * <p>The set of {@code NON_NIL} properties is a subset of {@link #NON_NULL} properties.</p>
+     *
+     * @since 0.4
+     */
+    NON_NIL() {
+        /** Skips all null or nil values. */
+        @Override boolean isSkipped(final Object value) {
+            return (value == null) || (value instanceof NilObject) || NilReason.forObject(value) != null;
+        }
+
+        /** Substitutes empty collections by a null singleton element, but not
+            null references since they are supposed to be skipped by this policy. */
+        @Override boolean substituteByNullElement(final Collection<?> values) {
+            return (values != null) && values.isEmpty();
+        }
+    },
+
+    /**
+     * Includes only the properties that are non-null, non-nil and non empty.
+     * A non-null and non-nil property is considered empty in any of the following cases:
      *
      * <ul>
      *   <li>It is a character sequence containing only {@linkplain Character#isWhitespace(int) whitespaces}.</li>
@@ -82,6 +114,8 @@ public enum ValueExistencePolicy {
      * </ul>
      *
      * This is the default behavior of {@link AbstractMetadata#asMap()}.
+     *
+     * <p>The set of {@code NON_EMPTY} properties is a subset of {@link #NON_NIL} properties.</p>
      */
     NON_EMPTY() {
         /** Skips all null or empty values. */
@@ -118,11 +152,13 @@ public enum ValueExistencePolicy {
      * we would need to add a check against infinite recursivity.</p>
      */
     static boolean isNullOrEmpty(final Object value) {
-        return value == null
-                || ((value instanceof CharSequence)  && isEmpty((CharSequence) value))
-                || ((value instanceof Collection<?>) && ((Collection<?>) value).isEmpty())
-                || ((value instanceof Map<?,?>)      && ((Map<?,?>) value).isEmpty())
-                || (value.getClass().isArray()       && Array.getLength(value) == 0);
+        if (value == null)                  return true;
+        if (value instanceof NilObject)     return true;
+        if (value instanceof CharSequence)  return isEmpty((CharSequence) value);
+        if (value instanceof Collection<?>) return ((Collection<?>) value).isEmpty();
+        if (value instanceof Map<?,?>)      return ((Map<?,?>) value).isEmpty();
+        if (value.getClass().isArray())     return Array.getLength(value) == 0;
+        return NilReason.forObject(value) != null;
     }
 
     /**
