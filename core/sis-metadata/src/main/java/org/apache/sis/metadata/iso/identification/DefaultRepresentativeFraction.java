@@ -21,7 +21,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.metadata.identification.RepresentativeFraction;
-import org.apache.sis.internal.jaxb.gco.GO_Integer;
+import org.apache.sis.internal.jaxb.gco.GO_Integer64;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
@@ -109,7 +109,7 @@ public class DefaultRepresentativeFraction extends Number implements Representat
      * @return The denominator.
      */
     @Override
-    @XmlJavaTypeAdapter(value = GO_Integer.AsLong.class, type = long.class)
+    @XmlJavaTypeAdapter(value = GO_Integer64.class, type = long.class)
     @XmlElement(name = "denominator", required = true)
     public long getDenominator() {
         return denominator;

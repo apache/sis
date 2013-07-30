@@ -81,6 +81,8 @@ public interface NilObject {
      * Returns the reason why this object contains no information.
      *
      * @return The reason why this object contains no information.
+     *
+     * @see NilReason#forObject(Object)
      */
     NilReason getNilReason();
 }

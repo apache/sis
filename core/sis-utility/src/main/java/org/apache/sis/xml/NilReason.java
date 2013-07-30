@@ -16,17 +16,21 @@
  */
 package org.apache.sis.xml;
 
+import java.util.Map;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.io.Serializable;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.InvocationHandler;
+import org.opengis.util.InternationalString;
 import org.apache.sis.util.Immutable;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.collection.WeakHashSet;
+import org.apache.sis.util.collection.WeakValueHashMap;
+import org.apache.sis.internal.jaxb.PrimitiveTypeProperties;
 
 
 /**
@@ -48,7 +52,7 @@ import org.apache.sis.util.collection.WeakHashSet;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.18)
- * @version 0.3
+ * @version 0.4
  * @module
  *
  * @see NilObject
@@ -148,6 +152,13 @@ public final class NilReason implements Serializable {
      * no matter the interface they implement.
      */
     private transient InvocationHandler handler;
+
+    /**
+     * The values created by {@link #createNilObject(Class)}. They are often instances of {@link NilObject},
+     * except for some JDK types like {@link String}, {@link Boolean} or {@link Integer} which are handled
+     * in a special way.
+     */
+    private transient Map<Class<?>, Object> nilObjects;
 
     /**
      * Creates a new reason for the given XML value or the given URI.
@@ -334,31 +345,159 @@ public final class NilReason implements Serializable {
 
     /**
      * Returns an object of the given type which is nil for the reason represented by this instance.
-     * This method returns an object which implement the given interface together with the
-     * {@link NilObject} interface. The {@link NilObject#getNilReason()} method will return
-     * this {@code NilReason} instance, and all other methods (except the ones inherited from
-     * the {@code Object} class) will return an empty collection, empty array, {@code null},
-     * {@link Double#NaN NaN}, {@code 0} or {@code false}, in this preference order,
-     * depending on the method return type.
+     * The {@code type} argument can be one of the following cases:
+     *
+     * <ul>
+     *   <li><p>An <strong>interface</strong>: in such case, this method returns an object which implement the given
+     *       interface together with the {@link NilObject} and {@link LenientComparable} interfaces:
+     *       <ul>
+     *         <li>The {@link NilObject#getNilReason()} method will return this {@code NilReason} instance.</li>
+     *         <li>The {@code equals(…)} and {@code hashCode()} methods behave as documented in {@link LenientComparable}.</li>
+     *         <li>The {@code toString()} method is unspecified (may contain debugging information).</li>
+     *         <li>All other methods return an empty collections, empty arrays, {@code null}, {@link Double#NaN NaN},
+     *             {@code 0} or {@code false}, in this preference order, depending on the method return type.</li>
+     *       </ul></p>
+     *   </li>
+     *   <li><p>One of {@code Boolean}, {@link Byte}, {@link Short}, {@code Integer}, {@link Long}, {@link Float},
+     *       {@code Double} or {@code String} types: in such case, this method returns a specific instance which
+     *       will be recognized as "nil" by the XML marshaller.</p></li>
+     * </ul>
      *
      * @param  <T> The compile-time type of the {@code type} argument.
-     * @param  type The object type as an <strong>interface</strong>.
-     *         This is usually a <a href="http://www.geoapi.org">GeoAPI</a> interface.
+     * @param  type The object type as an <strong>interface</strong>
+     *         (usually a <a href="http://www.geoapi.org">GeoAPI</a> one) or one of the special types.
+     * @throws IllegalArgumentException If the given type is not a supported type.
      * @return An {@link NilObject} of the given type.
      */
     @SuppressWarnings("unchecked")
-    public <T> T createNilObject(final Class<T> type) {
+    public synchronized <T> T createNilObject(final Class<T> type) {
         ArgumentChecks.ensureNonNull("type", type);
-        if (NilObjectHandler.isIgnoredInterface(type)) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "type", type));
+        /*
+         * Check for existing instance in the cache before to create a new object. Returning a unique
+         * instance is mandatory for the types handled by 'createNilPrimitive(Class)'. Since we have
+         * to cache those values anyway, we opportunistically extend the caching to other types too.
+         *
+         * Implementation note: we have two synchronizations here: one lock on 'this' because of the
+         * 'synchronized' statement in this method signature, and an other lock in WeakValueHashMap.
+         * The second lock may seem useless since we already hold a lock on 'this'. But it is actually
+         * needed because the garbage-collected entries are removed from the map in a background thread
+         * (see ReferenceQueueConsumer), which is synchronized on the map itself. It is better to keep
+         * the synchronization on the map shorter than the snychronization on 'this' because a single
+         * ReferenceQueueConsumer thread is shared by all the SIS library.
+         */
+        if (nilObjects == null) {
+            nilObjects = new WeakValueHashMap<Class<?>, Object>((Class) Class.class);
         }
-        InvocationHandler h;
-        synchronized (this) {
-            if ((h = handler) == null) {
-                handler = h = new NilObjectHandler(this);
+        Object object = nilObjects.get(type);
+        if (object == null) {
+            /*
+             * If no object has been previously created, check for the usual case where the requested type
+             * is an interface. We still have a special case for InternationalString. For all other cases,
+             * we will rely on the proxy.
+             */
+            if (type.isInterface()) {
+                if (NilObjectHandler.isIgnoredInterface(type)) {
+                    throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "type", type));
+                }
+                if (type == InternationalString.class) {
+                    object = new NilInternationalString(this);
+                } else {
+                    if (handler == null) {
+                        handler = new NilObjectHandler(this);
+                    }
+                    object = Proxy.newProxyInstance(NilReason.class.getClassLoader(),
+                            new Class<?>[] {type, NilObject.class, LenientComparable.class}, handler);
+                }
+            } else {
+                /*
+                 * If the requested type is not an interface, this is usually an error except for some
+                 * special cases: Boolean, Byte, Short, Integer, Long, Float, Double or String.
+                 */
+                object = createNilPrimitive(type);
+                PrimitiveTypeProperties.associate(object, this);
+            }
+            if (nilObjects.put(type, object) != null) {
+                throw new AssertionError(type); // Should never happen.
             }
         }
-        return (T) Proxy.newProxyInstance(NilReason.class.getClassLoader(),
-                new Class<?>[] {type, NilObject.class, LenientComparable.class}, h);
+        return type.cast(object);
+    }
+
+    /**
+     * Returns a new {@code Boolean}, {@link Byte}, {@link Short}, {@code Integer}, {@link Long},
+     * {@link Float}, {@code Double} or {@code String} instance to be considered as a nil value.
+     * The caller is responsible for registering the value in {@link PrimitiveTypeProperties}.
+     *
+     * <p><b>REMINDER:<b> If more special cases are added, do not forget to update the {@link #mayBeNil(Object)}
+     * method and to update the {@link #createNilObject(Class)} and {@link #forObject(Object)} javadoc.</p>
+     *
+     * @throws IllegalArgumentException If the given type is not a supported type.
+     */
+    private static Object createNilPrimitive(final Class<?> type) {
+        if (type == String .class) return new String("");         // REALLY need a new instance.
+        if (type == Boolean.class) return new Boolean(false);     // REALLY need a new instance, not Boolean.FALSE.
+        if (type == Byte   .class) return new Byte((byte) 0);     // REALLY need a new instance, not Byte.valueOf(0).
+        if (type == Short  .class) return new Short((byte) 0);    // REALLY need a new instance, not Short.valueOf(0).
+        if (type == Integer.class) return new Integer(0);         // REALLY need a new instance, not Integer.valueOf(0).
+        if (type == Long   .class) return new Long(0);            // REALLY need a new instance, not Long.valueOf(0).
+        if (type == Float  .class) return new Float(Float.NaN);   // REALLY need a new instance, not Float.valueOf(…).
+        if (type == Double .class) return new Double(Double.NaN); // REALLY need a new instance, not Double.valueOf(…).
+        throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "type", type));
+    }
+
+    /**
+     * Returns {@code true} if the given object may be one of the sentinel values
+     * created by {@link #createNilPrimitive(Class)}. This method only checks the value.
+     * If this method returns {@code true}, then the caller still need to check the actual instance using the
+     * {@link PrimitiveTypeProperties} class. The purpose of this method is to filter the values that can not
+     * be sentinel values, in order to avoid the synchronization done by {@code PrimitiveTypeProperties}.
+     */
+    private static boolean mayBeNil(final Object object) {
+        // 'instanceof' checks on instances of final classes are expected to be very fast.
+        if (object instanceof String)  return ((String)  object).isEmpty();
+        if (object instanceof Boolean) return ((Boolean) object).booleanValue() == false;
+        if (object instanceof Number) {
+            /*
+             * Following test may return false positives for Long, Float and Double types, but this is okay
+             * since the real check will be done by PrimitiveTypeProperties.  The purpose of this method is
+             * only to perform a cheap filtering. Note that this method relies on the fact that casting NaN
+             * to 'int' produces 0.
+             */
+            return ((Number) object).intValue() == 0;
+        }
+        return false;
+    }
+
+    /**
+     * If the given object is nil, returns the reason why it does not contain information.
+     * This method performs the following choices:
+     *
+     * <ul>
+     *   <li>If the given object implements the {@link NilObject} interface, then this method delegates
+     *       to the {@link NilObject#getNilReason()} method.</li>
+     *   <li>Otherwise if the given object is one of the {@code Boolean}, {@link Byte}, {@link Short}, {@code Integer},
+     *       {@link Long}, {@link Float}, {@code Double} or {@code String} instances returned by
+     *       {@link #createNilObject(Class)}, then this method returns the associated reason.</li>
+     *   <li>Otherwise this method returns {@code null}.</li>
+     * </ul>
+     *
+     * @param  object The object for which to get the {@code NilReason}, or {@code null}.
+     * @return The reason why the given object contains no information,
+     *         or {@code null} if the given object is not nil.
+     *
+     * @see NilObject#getNilReason()
+     *
+     * @since 0.4
+     */
+    public static NilReason forObject(final Object object) {
+        if (object != null) {
+            if (object instanceof NilObject) {
+                return ((NilObject) object).getNilReason();
+            }
+            if (mayBeNil(object)) {
+                return (NilReason) PrimitiveTypeProperties.property(object);
+            }
+        }
+        return null;
     }
 }
