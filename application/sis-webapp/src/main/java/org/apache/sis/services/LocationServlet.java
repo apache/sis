@@ -52,7 +52,7 @@ import org.w3c.dom.Text;
 import org.xml.sax.SAXException;
 
 //SIS imports
-import org.apache.sis.core.LatLon;
+import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.distance.DistanceUtils;
 import org.apache.sis.index.tree.GeoRSSData;
@@ -195,15 +195,15 @@ public class LocationServlet extends HttpServlet {
                 else
                   filename = cleanStr(item.getLink()) + ".txt";
 
-                GeoRSSData data = new GeoRSSData(filename, new LatLon(
-                    geoRSSModule.getPosition().getLatitude(), geoRSSModule
-                        .getPosition().getLongitude()));
+                GeoRSSData data = new GeoRSSData(filename, new DirectPosition2D(
+                    geoRSSModule.getPosition().getLongitude(),
+                    geoRSSModule.getPosition().getLatitude()));
                 if (this.tree.insert(data)) {
                   data.saveToFile(item, geoRSSModule, georssStoragePath);
                 } else {
                   System.out.println("[INFO] Unable to store data at location "
-                      + data.getLatLon().getLat() + ", "
-                      + data.getLatLon().getLon() + " under filename "
+                      + data.getLatLon().y + ", "
+                      + data.getLatLon().x + " under filename "
                       + data.getFileName());
                 }
               }
@@ -264,9 +264,9 @@ public class LocationServlet extends HttpServlet {
 
       if (llLat != null && llLon != null && urLat != null && urLon != null) {
         try {
-          Envelope2D bbox = new Envelope2D(new LatLon(
-              Double.parseDouble(llLat), Double.parseDouble(llLon)),
-              new LatLon(Double.parseDouble(urLat), Double.parseDouble(urLon)));
+          Envelope2D bbox = new Envelope2D(new DirectPosition2D(
+              Double.parseDouble(llLon), Double.parseDouble(llLat)),
+              new DirectPosition2D(Double.parseDouble(urLon), Double.parseDouble(urLat)));
 
           beforeTime = System.currentTimeMillis();
           results = tree.queryByBoundingBox(bbox);
@@ -295,9 +295,9 @@ public class LocationServlet extends HttpServlet {
 
       if (radius != null && lat != null && lon != null) {
 
-        LatLon point = null;
+        DirectPosition2D point = null;
         try {
-          point = new LatLon(Double.parseDouble(lat), Double.parseDouble(lon));
+          point = new DirectPosition2D(Double.parseDouble(lon), Double.parseDouble(lat));
         } catch (NumberFormatException ex) {
           System.out
               .println("{ERROR] Input parameters were not valid latitudes and longitudes");
@@ -308,13 +308,11 @@ public class LocationServlet extends HttpServlet {
         String regionStr = "";
 
         for (int i = 0; i < 360; i += 10) {
-          LatLon pt = DistanceUtils.getPointOnGreatCircle(point.getLat(), point
-              .getLon(), radiusKM, i);
-          regionStr += pt.toString() + ",";
+          DirectPosition2D pt = DistanceUtils.getPointOnGreatCircle(point.y, point.x, radiusKM, i);
+          regionStr += pt.y + "," + pt.x + ",";
         }
-        LatLon pt = DistanceUtils.getPointOnGreatCircle(point.getLat(), point
-            .getLon(), radiusKM, 0);
-        regionStr += pt.toString() + ",";
+        DirectPosition2D pt = DistanceUtils.getPointOnGreatCircle(point.y, point.x, radiusKM, 0);
+        regionStr += pt.y + "," + pt.x + ",";
         regions.add(regionStr.substring(0, regionStr.length() - 1));
 
         beforeTime = System.currentTimeMillis();

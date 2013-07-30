@@ -795,6 +795,8 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      *
      * @return {@code true} if this envelope has been modified as a result of this method call,
      *         or {@code false} if no change has been done.
+     *
+     * @see AbstractDirectPosition#normalize()
      */
     public boolean normalize() {
         boolean changed = false;
