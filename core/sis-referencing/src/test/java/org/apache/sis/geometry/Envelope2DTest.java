@@ -25,6 +25,7 @@ import org.junit.Test;
 import static org.opengis.test.Validators.*;
 import static org.apache.sis.referencing.Assert.*;
 import static org.apache.sis.geometry.AbstractEnvelopeTest.WGS84;
+import static org.apache.sis.geometry.AbstractEnvelopeTest.STRICT;
 
 
 /**
@@ -75,10 +76,10 @@ public final strictfp class Envelope2DTest extends TestCase {
         assertEquals(1, rectangles.length);
         final Rectangle2D r = rectangles[0];
         assertNotSame("toRectangles() shall copy the envelope.", envelope, r);
-        assertEquals(-20.0, r.getX(),      0.0);
-        assertEquals(-10.0, r.getY(),      0.0);
-        assertEquals( 50.0, r.getWidth(),  0.0);
-        assertEquals( 40.0, r.getHeight(), 0.0);
+        assertEquals(-20.0, r.getX(),      STRICT);
+        assertEquals(-10.0, r.getY(),      STRICT);
+        assertEquals( 50.0, r.getWidth(),  STRICT);
+        assertEquals( 40.0, r.getHeight(), STRICT);
     }
 
     /**
@@ -89,7 +90,7 @@ public final strictfp class Envelope2DTest extends TestCase {
      */
     @Test
     @DependsOnMethod("testToRectanglesOnSimpleEnvelope")
-    @org.junit.Ignore("Needs implementation of WGS84 CRS.")
+    @org.junit.Ignore("The tested envelope needs to be associated to CRS:84")
     public void testToRectanglesOverAntiMeridian() {
         final Envelope2D envelope = new Envelope2D(WGS84, 155, 0, -150 - 155, 50);
         final Rectangle2D[] rectangles = envelope.toRectangles();
@@ -97,14 +98,14 @@ public final strictfp class Envelope2DTest extends TestCase {
         final Rectangle2D r0 = rectangles[0];
         final Rectangle2D r1 = rectangles[1];
 
-        assertEquals( 155.0, r0.getX(),      0.0);
-        assertEquals(   0.0, r0.getY(),      0.0);
-        assertEquals(  25.0, r0.getWidth(),  0.0);
-        assertEquals(  50.0, r0.getHeight(), 0.0);
+        assertEquals( 155.0, r0.getX(),      STRICT);
+        assertEquals(   0.0, r0.getY(),      STRICT);
+        assertEquals(  25.0, r0.getWidth(),  STRICT);
+        assertEquals(  50.0, r0.getHeight(), STRICT);
 
-        assertEquals(-180.0, r1.getX(),      0.0);
-        assertEquals(   0.0, r1.getY(),      0.0);
-        assertEquals(  30.0, r1.getWidth(),  0.0);
-        assertEquals(  50.0, r1.getHeight(), 0.0);
+        assertEquals(-180.0, r1.getX(),      STRICT);
+        assertEquals(   0.0, r1.getY(),      STRICT);
+        assertEquals(  30.0, r1.getWidth(),  STRICT);
+        assertEquals(  50.0, r1.getHeight(), STRICT);
     }
 }
