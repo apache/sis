@@ -24,7 +24,7 @@ import java.io.FileReader;
 import java.io.IOException;
 
 //SIS imports
-import org.apache.sis.core.LatLon;
+import org.apache.sis.geometry.DirectPosition2D;
 
 /**
  * Class to reload the quad tree index from file.
@@ -118,7 +118,7 @@ public class QuadTreeReader {
             double lat = Double.parseDouble(dataTokens[0]);
             double lon = Double.parseDouble(dataTokens[1]);
             parent.getChild(quadrant).addData(
-                new GeoRSSData(dataTokens[2], new LatLon(lat, lon)));
+                new GeoRSSData(dataTokens[2], new DirectPosition2D(lon, lat)));
             tree.setSize(tree.getSize() + 1);
           }
           tree.setNodeSize(tree.getNodeSize() + 1);

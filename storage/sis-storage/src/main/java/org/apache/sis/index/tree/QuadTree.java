@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 //SIS imports
-import org.apache.sis.core.LatLon;
+import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.core.LatLonPointRadius;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.distance.DistanceUtils;
@@ -322,7 +322,7 @@ public class QuadTree {
    * @return a list of QuadTreeData that are within the given radius from the
    *         point
    */
-  public List<QuadTreeData> queryByPointRadius(final LatLon point,
+  public List<QuadTreeData> queryByPointRadius(final DirectPosition2D point,
       final double radiusKM) {
     LatLonPointRadius pr = new LatLonPointRadius(point, radiusKM);
     return queryByPointRadius(point, radiusKM, this.root,
@@ -346,7 +346,7 @@ public class QuadTree {
    * @return a list of QuadTreeData that are within the given radius from the
    *         point
    */
-  private List<QuadTreeData> queryByPointRadius(final LatLon point,
+  private List<QuadTreeData> queryByPointRadius(final DirectPosition2D point,
       final double radiusKM, final QuadTreeNode node,
       final Rectangle2D nodeRegion, final Rectangle2D searchRegion) {
     List<QuadTreeData> matches = new ArrayList<QuadTreeData>();
@@ -359,7 +359,7 @@ public class QuadTree {
         QuadTreeData[] data = node.getData();
         for (int i = 0; i < node.getCount(); i++) {
           if (DistanceUtils.getHaversineDistance(data[i].getLatLon().y, data[i]
-              .getLatLon().x, point.getLat(), point.getLon()) <= radiusKM) {
+              .getLatLon().x, point.y, point.x) <= radiusKM) {
             matches.add(data[i]);
           }
         }
