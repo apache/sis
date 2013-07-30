@@ -20,6 +20,7 @@ import java.awt.geom.Rectangle2D;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.GeographicCRS;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Ignore;
@@ -36,7 +37,7 @@ import static org.apache.sis.referencing.Assert.*;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-3.20)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 @DependsOn(GeneralDirectPositionTest.class)
@@ -44,7 +45,7 @@ public final strictfp class AbstractEnvelopeTest extends TestCase {
     /**
      * Tolerance threshold for strict floating point comparisons.
      */
-    private static final double STRICT = 0;
+    static final double STRICT = 0;
 
     /**
      * Enumeration of implementations to be tested.
@@ -457,6 +458,73 @@ public final strictfp class AbstractEnvelopeTest extends TestCase {
                 }
             }
             verifyInvariants(type, envelope);
+        }
+    }
+
+    /**
+     * Tests {@link AbstractEnvelope#toSimpleEnvelopes()} on an empty envelope.
+     *
+     * @since 0.4
+     */
+    @Test
+    public void testToSimpleEnvelopesOnEmptyEnvelope() {
+        for (int type=0; type<LAST; type++) {
+            if (type != RECTANGLE) {
+                final AbstractEnvelope envelope = (AbstractEnvelope) create(type, 0, 0, 0, 0);
+                assertEquals(0, envelope.toSimpleEnvelopes().length);
+            }
+        }
+    }
+
+    /**
+     * Tests {@link AbstractEnvelope#toSimpleEnvelopes()} on a simple envelope having no wraparound axis.
+     *
+     * @since 0.4
+     */
+    @Test
+    @DependsOnMethod("testToSimpleEnvelopesOnEmptyEnvelope")
+    public void testToSimpleEnvelopesOnSimpleEnvelope() {
+        for (int type=0; type<LAST; type++) {
+            if (type != RECTANGLE) {
+                final AbstractEnvelope envelope = (AbstractEnvelope) create(type, -20, 30, -10, 15);
+                final Envelope[] simples = envelope.toSimpleEnvelopes();
+                assertEquals(1, simples.length);
+                assertSame(envelope, simples[0]);
+            }
+        }
+    }
+
+    /**
+     * Tests {@link AbstractEnvelope#toSimpleEnvelopes()} on a simple envelope having no wraparound axis.
+     *
+     * @since 0.4
+     */
+    @Test
+    @DependsOnMethod("testToSimpleEnvelopesOnEmptyEnvelope")
+    @Ignore("The tested envelope needs to be associated to CRS:84")
+    public void testToSimpleEnvelopesOverAntiMeridian() {
+        for (int type=0; type<LAST; type++) {
+            if (type != RECTANGLE) {
+                final AbstractEnvelope envelope = (AbstractEnvelope) create(type, 155, -150, 0, 50);
+                final Envelope[] simples = envelope.toSimpleEnvelopes();
+                assertEquals(2, simples.length);
+                final AbstractEnvelope e0 = (AbstractEnvelope) simples[0];
+                final AbstractEnvelope e1 = (AbstractEnvelope) simples[1];
+
+                assertEquals( 155.0, e0.getLower(0), STRICT);
+                assertEquals(   0.0, e0.getLower(1), STRICT);
+                assertEquals( 180.0, e0.getUpper(0), STRICT);
+                assertEquals(  50.0, e0.getUpper(1), STRICT);
+                assertEquals(  25.0, e0.getSpan (0), STRICT);
+                assertEquals(  50.0, e0.getSpan (1), STRICT);
+
+                assertEquals(-180.0, e1.getLower(0), STRICT);
+                assertEquals(   0.0, e1.getLower(1), STRICT);
+                assertEquals(-150.0, e1.getUpper(0), STRICT);
+                assertEquals(  50.0, e1.getUpper(1), STRICT);
+                assertEquals(  30.0, e1.getSpan (0), STRICT);
+                assertEquals(  50.0, e1.getSpan (1), STRICT);
+            }
         }
     }
 }

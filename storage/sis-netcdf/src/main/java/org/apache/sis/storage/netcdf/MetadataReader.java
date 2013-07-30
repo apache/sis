@@ -622,10 +622,9 @@ final class MetadataReader {
         if (xmin != null || xmax != null || ymin != null || ymax != null) {
             final UnitConverter xConv = getConverterTo(decoder.unitValue(LONGITUDE.UNITS), NonSI.DEGREE_ANGLE);
             final UnitConverter yConv = getConverterTo(decoder.unitValue(LATITUDE .UNITS), NonSI.DEGREE_ANGLE);
-            extent = new DefaultExtent();
-            extent.getGeographicElements().add(new DefaultGeographicBoundingBox(
+            extent = new DefaultExtent(null, new DefaultGeographicBoundingBox(
                     valueOf(xmin, xConv), valueOf(xmax, xConv),
-                    valueOf(ymin, yConv), valueOf(ymax, yConv)));
+                    valueOf(ymin, yConv), valueOf(ymax, yConv)), null, null);
         }
         /*
          * If at least one vertical ordinates above is available, add a VerticalExtent.
