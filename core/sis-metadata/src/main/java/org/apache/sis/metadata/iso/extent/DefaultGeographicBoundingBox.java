@@ -58,6 +58,8 @@ import org.apache.sis.internal.jdk7.Objects;
  * @since   0.3 (derived from geotk-2.1)
  * @version 0.3
  * @module
+ *
+ * @see org.apache.sis.geometry.GeneralEnvelope
  */
 @XmlType(name = "EX_GeographicBoundingBox_Type", propOrder = {
     "westBoundLongitude",
@@ -73,16 +75,6 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = -9200149606040429957L;
-
-    /**
-     * A bounding box ranging from 180°W to 180°E and 90°S to 90°N.
-     */
-    public static final GeographicBoundingBox WORLD;
-    static {
-        final DefaultGeographicBoundingBox world = new DefaultGeographicBoundingBox(-180, 180, -90, 90);
-        world.freeze();
-        WORLD = world;
-    }
 
     /**
      * The western-most coordinate of the limit of the dataset extent.

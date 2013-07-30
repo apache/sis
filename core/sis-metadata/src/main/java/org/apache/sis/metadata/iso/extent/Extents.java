@@ -20,6 +20,7 @@ import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.BoundingPolygon;
 import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
+import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.Static;
 
 import static org.apache.sis.internal.metadata.MetadataUtilities.getInclusion;
@@ -40,6 +41,20 @@ public final class Extents extends Static {
      * Do no allow instantiation of this class.
      */
     private Extents() {
+    }
+
+    /**
+     * A geographic extent ranging from 180°W to 180°E and 90°S to 90°N.
+     * This extent has no vertical and no temporal components.
+     */
+    public static final Extent WORLD;
+    static {
+        final DefaultGeographicBoundingBox box = new DefaultGeographicBoundingBox(-180, 180, -90, 90);
+        box.freeze();
+        final DefaultExtent world = new DefaultExtent(
+                Vocabulary.formatInternational(Vocabulary.Keys.World), box, null, null);
+        world.freeze();
+        WORLD = world;
     }
 
     /**

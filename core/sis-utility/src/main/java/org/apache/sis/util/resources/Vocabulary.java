@@ -328,6 +328,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Versions
          */
         public static final int Versions = 15;
+
+        /**
+         * World
+         */
+        public static final int World = 55;
     }
 
     /**

@@ -17,42 +17,23 @@
 package org.apache.sis.internal.jaxb.gco;
 
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.adapters.XmlAdapter;
 
 
 /**
  * Surrounds integer values by {@code <gco:Integer>}.
- * The ISO-19139 standard specifies that primitive types have to be surrounded by an element
- * which represents the type of the value, using the namespace {@code gco} linked to the
- * {@code http://www.isotc211.org/2005/gco} URL. The JAXB default behavior is to marshal
- * primitive Java types directly "as is", without wrapping the value in the required element.
- * The role of this class is to add such wrapping.
+ * The ISO-19139 standard requires most types to be surrounded by an element representing the value type.
+ * The JAXB default behavior is to marshal primitive Java types directly, without such wrapper element.
+ * The role of this class is to add the {@code <gco:…>} wrapper element required by ISO 19139.
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.5)
- * @version 0.3
+ * @version 0.4
  * @module
  *
- * @see AsLong
+ * @see GO_Integer64
  */
-public final class GO_Integer extends XmlAdapter<GO_Integer, Integer> {
-    /**
-     * Frequently used constants.
-     */
-    private static final GO_Integer[] CONSTANTS = new GO_Integer[5];
-    static {
-        for (int i=0; i<CONSTANTS.length; i++) {
-            CONSTANTS[i] = new GO_Integer(i);
-        }
-    }
-
-    /**
-     * The integer value to handle.
-     */
-    @XmlElement(name = "Integer")
-    public Integer value;
-
+public final class GO_Integer extends PropertyType<GO_Integer, Integer> {
     /**
      * Empty constructor used only by JAXB.
      */
@@ -60,23 +41,20 @@ public final class GO_Integer extends XmlAdapter<GO_Integer, Integer> {
     }
 
     /**
-     * Constructs an adapter for the given value.
+     * Constructs a wrapper for the given value.
      *
      * @param value The value.
      */
     private GO_Integer(final Integer value) {
-        this.value = value;
+        super(value, value.intValue() == 0);
     }
 
     /**
-     * Allows JAXB to generate an Integer object using the value found in the adapter.
-     *
-     * @param value The value wrapped in an adapter.
-     * @return The integer value extracted from the adapter.
+     * Returns the Java type which is bound by this adapter.
      */
     @Override
-    public Integer unmarshal(final GO_Integer value) {
-        return (value != null) ? value.value : null;
+    protected Class<Integer> getBoundType() {
+        return Integer.class;
     }
 
     /**
@@ -88,76 +66,26 @@ public final class GO_Integer extends XmlAdapter<GO_Integer, Integer> {
      *         by {@code <gco:Integer>} element.
      */
     @Override
-    public GO_Integer marshal(final Integer value) {
-        if (value == null) {
-            return null;
-        }
-        final int i = value;
-        final GO_Integer c = (i >= 0 && i < CONSTANTS.length) ? CONSTANTS[i] : new GO_Integer(value);
-        assert value.equals(c.value) : value;
-        return c;
+    public GO_Integer wrap(final Integer value) {
+        return new GO_Integer(value);
     }
 
-
-
+    /**
+     * Invoked by JAXB at marshalling time for getting the actual value to write.
+     *
+     * @return The value to be marshalled.
+     */
+    @XmlElement(name = "Integer")
+    public Integer getElement() {
+        return skip() ? null : metadata;
+    }
 
     /**
-     * Surrounds long values by {@code <gco:Integer>}.
-     * The ISO-19139 standard specifies that primitive types have to be surrounded by an element
-     * which represents the type of the value, using the namespace {@code gco} linked to the
-     * {@code http://www.isotc211.org/2005/gco} URL. The JAXB default behavior is to marshal
-     * primitive Java types directly "as is", without wrapping the value in the required element.
-     * The role of this class is to add such wrapping.
+     * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @author  Cédric Briançon (Geomatys)
-     * @since   0.3 (derived from geotk-2.5)
-     * @version 0.3
-     * @module
+     * @param metadata The unmarshalled value.
      */
-    public static final class AsLong extends XmlAdapter<AsLong, Long> {
-        /**
-         * The long value to handle.
-         */
-        @XmlElement(name = "Integer")
-        public Long value;
-
-        /**
-         * Empty constructor used only by JAXB.
-         */
-        public AsLong() {
-        }
-
-        /**
-         * Constructs an adapter for the given value.
-         *
-         * @param value The value.
-         */
-        private AsLong(final Long value) {
-            this.value = value;
-        }
-
-        /**
-         * Allows JAXB to generate a Long object using the value found in the adapter.
-         *
-         * @param value The value wrapped in an adapter.
-         * @return The long value extracted from the adapter.
-         */
-        @Override
-        public Long unmarshal(final AsLong value) {
-            return (value != null) ? value.value : null;
-        }
-
-        /**
-         * Allows JAXB to change the result of the marshalling process, according to the
-         * ISO-19139 standard and its requirements about primitive types.
-         *
-         * @param value The integer value we want to surround by an element representing its type.
-         * @return An adaptation of the integer value, that is to say a integer value surrounded
-         *         by {@code <gco:Integer>} element.
-         */
-        @Override
-        public AsLong marshal(final Long value) {
-            return (value != null) ? new AsLong(value) : null;
-        }
+    public void setElement(final Integer metadata) {
+        this.metadata = metadata;
     }
 }
