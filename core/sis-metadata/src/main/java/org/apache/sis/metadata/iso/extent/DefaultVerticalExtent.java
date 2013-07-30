@@ -19,11 +19,13 @@ package org.apache.sis.metadata.iso.extent;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.metadata.extent.VerticalExtent;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.internal.jaxb.gco.GO_Real;
 import org.apache.sis.internal.metadata.ReferencingServices;
 
 
@@ -143,6 +145,7 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
      */
     @Override
     @XmlElement(name = "minimumValue", required = true)
+    @XmlJavaTypeAdapter(GO_Real.class)
     public Double getMinimumValue() {
         return minimumValue;
     }
@@ -164,6 +167,7 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
      */
     @Override
     @XmlElement(name = "maximumValue", required = true)
+    @XmlJavaTypeAdapter(GO_Real.class)
     public Double getMaximumValue() {
         return maximumValue;
     }

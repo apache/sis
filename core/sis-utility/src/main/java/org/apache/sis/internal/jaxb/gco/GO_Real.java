@@ -17,31 +17,25 @@
 package org.apache.sis.internal.jaxb.gco;
 
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.adapters.XmlAdapter;
 
 
 /**
  * Surrounds double values by {@code <gco:Real>}.
- * The ISO-19139 standard specifies that primitive types have to be surrounded by an element
- * which represents the type of the value, using the namespace {@code gco} linked to the
- * {@code http://www.isotc211.org/2005/gco} URL. The JAXB default behavior is to marshal
- * primitive Java types directly "as is", without wrapping the value in the required element.
- * The role of this class is to add such wrapping.
+ * The ISO-19139 standard requires most types to be surrounded by an element representing the value type.
+ * The JAXB default behavior is to marshal primitive Java types directly, without such wrapper element.
+ * The role of this class is to add the {@code <gco:…>} wrapper element required by ISO 19139.
+ *
+ * {@section Relationship with <code>GO_Decimal</code>}
+ * This adapter is identical to {@link GO_Decimal} except for the element name, which is {@code "Real"}
+ * instead than {@code "Decimal"}. This adapter is the most widely used one in IS 19139 XML schema.
+ * The few exceptions are documented in {@link GO_Decimal}.
  *
  * @author  Cédric Briançon (Geomatys)
  * @since   0.3 (derived from geotk-2.5)
  * @version 0.3
  * @module
- *
- * @see GO_Decimal
  */
-public final class GO_Real extends XmlAdapter<GO_Real, Double> {
-    /**
-     * The double value to handle.
-     */
-    @XmlElement(name = "Real")
-    public Double value;
-
+public final class GO_Real extends PropertyType<GO_Real, Double> {
     /**
      * Empty constructor used only by JAXB.
      */
@@ -49,23 +43,20 @@ public final class GO_Real extends XmlAdapter<GO_Real, Double> {
     }
 
     /**
-     * Constructs an adapter for this value.
+     * Constructs a wrapper for the given value.
      *
      * @param value The value.
      */
     private GO_Real(final Double value) {
-        this.value = value;
+        super(value, value.isNaN());
     }
 
     /**
-     * Allows JAXB to generate a Double object using the value found in the adapter.
-     *
-     * @param value The value extract from the adapter.
-     * @return A double object.
+     * Returns the Java type which is bound by this adapter.
      */
     @Override
-    public Double unmarshal(final GO_Real value) {
-        return (value != null) ? value.value : null;
+    protected Class<Double> getBoundType() {
+        return Double.class;
     }
 
     /**
@@ -77,7 +68,26 @@ public final class GO_Real extends XmlAdapter<GO_Real, Double> {
      *         by {@code <gco:Real>} element.
      */
     @Override
-    public GO_Real marshal(final Double value) {
-        return (value != null) ? new GO_Real(value) : null;
+    public GO_Real wrap(final Double value) {
+        return new GO_Real(value);
+    }
+
+    /**
+     * Invoked by JAXB at marshalling time for getting the actual value to write.
+     *
+     * @return The value to be marshalled.
+     */
+    @XmlElement(name = "Real")
+    public Double getElement() {
+        return skip() ? null : metadata;
+    }
+
+    /**
+     * Invoked by JAXB at unmarshalling time for storing the result temporarily.
+     *
+     * @param metadata The unmarshalled value.
+     */
+    public void setElement(final Double metadata) {
+        this.metadata = metadata;
     }
 }

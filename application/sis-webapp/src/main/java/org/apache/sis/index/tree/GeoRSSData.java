@@ -28,7 +28,7 @@ import java.io.IOException;
 import java.util.HashMap;
 
 //SIS imports
-import org.apache.sis.core.LatLon;
+import org.apache.sis.geometry.DirectPosition2D;
 
 //ROME imports
 import com.sun.syndication.feed.module.georss.GeoRSSModule;
@@ -42,7 +42,7 @@ import com.sun.syndication.feed.rss.Item;
 public class GeoRSSData implements QuadTreeData {
 
 	private String filename;
-	private LatLon latLon;
+	private DirectPosition2D latLon;
 
 	/**
 	 * Creates a GeoRSSData object that stores the name of the file that the
@@ -53,7 +53,7 @@ public class GeoRSSData implements QuadTreeData {
 	 * @param latLon
 	 *            geo location of the entry
 	 */
-	public GeoRSSData(String filename, LatLon latLon) {
+	public GeoRSSData(String filename, DirectPosition2D latLon) {
 		this.filename = filename;
 		this.latLon = latLon;
 	}
@@ -64,7 +64,7 @@ public class GeoRSSData implements QuadTreeData {
 	 * @return the Java 2D x-coordinate
 	 */
 	public double getX() {
-		return latLon.getShiftedLon();
+		return latLon.x + 180.0;
 	}
 
 	/**
@@ -73,7 +73,7 @@ public class GeoRSSData implements QuadTreeData {
 	 * @return the Java 2D y-coordinate
 	 */
 	public double getY() {
-		return latLon.getShiftedLat();
+		return latLon.y + 90.0;
 	}
 
 
@@ -81,7 +81,7 @@ public class GeoRSSData implements QuadTreeData {
    * @see org.apache.sis.storage.QuadTreeData#getLatLon()
    */
   @Override
-  public LatLon getLatLon() {
+  public DirectPosition2D getLatLon() {
     return this.latLon;
   }
 

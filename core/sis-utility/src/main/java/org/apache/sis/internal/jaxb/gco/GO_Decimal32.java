@@ -20,31 +20,21 @@ import javax.xml.bind.annotation.XmlElement;
 
 
 /**
- * Surrounds double values by {@code <gco:Decimal>}.
+ * Surrounds float values by {@code <gco:Decimal>}.
  * The ISO-19139 standard requires most types to be surrounded by an element representing the value type.
  * The JAXB default behavior is to marshal primitive Java types directly, without such wrapper element.
  * The role of this class is to add the {@code <gco:…>} wrapper element required by ISO 19139.
  *
- * {@section Relationship with <code>GO_Real</code>}
- * This adapter is identical to {@link GO_Real} except for the element name, which is {@code "Decimal"} instead
- * than {@code "Real"}. This adapter is used for the {@code westBoundLongitude}, {@code eastBoundLongitude},
- * {@code southBoundLatitude} and {@code northBoundLatitude} properties of {@code EX_DefaultGeographicBoundingBox}.
- * The {@code GO_Real} adapter is used for about everything else.
- *
  * @author  Cédric Briançon (Geomatys)
- * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-2.5)
- * @version 0.3
+ * @since   0.4 (derived from geotk-2.5)
+ * @version 0.4
  * @module
- *
- * @see GO_Real
- * @see GO_Decimal32
  */
-public final class GO_Decimal extends PropertyType<GO_Decimal, Double> {
+public final class GO_Decimal32 extends PropertyType<GO_Decimal32, Float> {
     /**
      * Empty constructor used only by JAXB.
      */
-    public GO_Decimal() {
+    public GO_Decimal32() {
     }
 
     /**
@@ -52,7 +42,7 @@ public final class GO_Decimal extends PropertyType<GO_Decimal, Double> {
      *
      * @param value The value.
      */
-    private GO_Decimal(final Double value) {
+    private GO_Decimal32(final Float value) {
         super(value, value.isNaN());
     }
 
@@ -60,21 +50,21 @@ public final class GO_Decimal extends PropertyType<GO_Decimal, Double> {
      * Returns the Java type which is bound by this adapter.
      */
     @Override
-    protected Class<Double> getBoundType() {
-        return Double.class;
+    protected Class<Float> getBoundType() {
+        return Float.class;
     }
 
     /**
      * Allows JAXB to change the result of the marshalling process, according to the
      * ISO-19139 standard and its requirements about primitive types.
      *
-     * @param value The double value we want to surround by an element representing its type.
-     * @return An adaptation of the double value, that is to say a double value surrounded
+     * @param value The float value we want to surround by an element representing its type.
+     * @return An adaptation of the float value, that is to say a float value surrounded
      *         by {@code <gco:Decimal>} element.
      */
     @Override
-    public GO_Decimal wrap(final Double value) {
-        return new GO_Decimal(value);
+    public GO_Decimal32 wrap(final Float value) {
+        return new GO_Decimal32(value);
     }
 
     /**
@@ -83,7 +73,7 @@ public final class GO_Decimal extends PropertyType<GO_Decimal, Double> {
      * @return The value to be marshalled.
      */
     @XmlElement(name = "Decimal")
-    public Double getElement() {
+    public Float getElement() {
         return skip() ? null : metadata;
     }
 
@@ -92,7 +82,7 @@ public final class GO_Decimal extends PropertyType<GO_Decimal, Double> {
      *
      * @param metadata The unmarshalled value.
      */
-    public void setElement(final Double metadata) {
+    public void setElement(final Float metadata) {
         this.metadata = metadata;
     }
 }

@@ -112,14 +112,15 @@ public abstract class AbstractMetadata implements LenientComparable {
     }
 
     /**
-     * Returns {@code true} if this metadata contains only {@code null} or empty properties.
-     * A property is considered empty in any of the following cases:
+     * Returns {@code true} if this metadata contains only {@code null},
+     * {@linkplain org.apache.sis.xml.NilObject nil} or empty properties.
+     * A non-null and non-nil property is considered empty in any of the following cases:
      *
      * <ul>
      *   <li>An empty {@linkplain CharSequence character sequences}.</li>
      *   <li>An {@linkplain java.util.Collection#isEmpty() empty collection} or an empty array.</li>
-     *   <li>A collection or array containing only {@code null} or empty elements.</li>
-     *   <li>An other metadata object containing only {@code null} or empty properties.</li>
+     *   <li>A collection or array containing only {@code null}, nil or empty elements.</li>
+     *   <li>An other metadata object containing only {@code null}, nil or empty properties.</li>
      * </ul>
      *
      * Note that empty properties can be removed by calling the {@link ModifiableMetadata#prune()}

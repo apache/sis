@@ -81,6 +81,7 @@ import static org.apache.sis.math.MathFunctions.isSameSign;
  *   <li>{@link #getMedian(int)}</li>
  *   <li>{@link #getSpan(int)}</li>
  *   <li>{@link #isEmpty()}</li>
+ *   <li>{@link #toSimpleEnvelopes() toSimpleEnvelopes()}</li>
  *   <li>{@link #contains(DirectPosition) contains(DirectPosition)}</li>
  *   <li>{@link #contains(Envelope, boolean) contains(Envelope, boolean)}</li>
  *   <li>{@link #intersects(Envelope, boolean) intersects(Envelope, boolean)}</li>
@@ -794,6 +795,8 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      *
      * @return {@code true} if this envelope has been modified as a result of this method call,
      *         or {@code false} if no change has been done.
+     *
+     * @see AbstractDirectPosition#normalize()
      */
     public boolean normalize() {
         boolean changed = false;
@@ -858,10 +861,10 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * {@linkplain #getLower(int) lower ordinate value}, then there is a choice:
      *
      * <ul>
-     *   <li>If the axis has {@link RangeMeaning#WRAPAROUND}, then the lower ordinate value is
-     *       set to the {@linkplain CoordinateSystemAxis#getMinimumValue() axis minimum value}
-     *       and the upper ordinate value is set to the
-     *       {@linkplain CoordinateSystemAxis#getMaximumValue() axis maimum value}.</li>
+     *   <li>If the axis has {@link RangeMeaning#WRAPAROUND}, then:<ul>
+     *       <li>the lower ordinate value is set to the {@linkplain CoordinateSystemAxis#getMinimumValue() axis minimum value}, and</li>
+     *       <li>the upper ordinate value is set to the {@linkplain CoordinateSystemAxis#getMaximumValue() axis maximum value}.</li>
+     *     </ul></li>
      *   <li>Otherwise an {@link IllegalStateException} is thrown.</li>
      * </ul>
      *

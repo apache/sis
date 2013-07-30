@@ -24,6 +24,7 @@ import java.awt.geom.Rectangle2D;
 
 //SIS imports
 import org.apache.sis.distance.DistanceUtils;
+import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.GeneralDirectPosition;
 
 /**
@@ -43,7 +44,7 @@ public class LatLonPointRadius extends GeneralDirectPosition {
    * @param radius
    *          the radius of the search region
    */
-  public LatLonPointRadius(LatLon center, double radius) {
+  public LatLonPointRadius(DirectPosition2D center, double radius) {
     super(center.x, center.y, radius);
   }
 
@@ -53,21 +54,21 @@ public class LatLonPointRadius extends GeneralDirectPosition {
    *
    * @param numberOfPoints
    *          the number of points used to estimate the circular region
-   * @return an array of LatLon representing the points that estimate the
+   * @return an array of DirectPosition2D representing the points that estimate the
    *         circular region
    */
-  public LatLon[] getCircularRegionApproximation(int numberOfPoints) {
+  public DirectPosition2D[] getCircularRegionApproximation(int numberOfPoints) {
     if (super.getOrdinate(2) >= DistanceUtils.HALF_EARTH_CIRCUMFERENCE) {
-      LatLon[] points = new LatLon[5];
-      points[0] = new LatLon(-90.0, -180.0);
-      points[1] = new LatLon(90.0, -180.0);
-      points[2] = new LatLon(90.0, 180.0);
-      points[3] = new LatLon(-90.0, 180.0);
+      DirectPosition2D[] points = new DirectPosition2D[5];
+      points[0] = new DirectPosition2D(-180.0, -90.0);
+      points[1] = new DirectPosition2D(-180.0, 90.0);
+      points[2] = new DirectPosition2D(180.0, 90.0);
+      points[3] = new DirectPosition2D(180.0, -90.0);
       points[4] = points[0];
       return points;
     }
     // plus one to add closing point
-    LatLon[] points = new LatLon[numberOfPoints + 1];
+    DirectPosition2D[] points = new DirectPosition2D[numberOfPoints + 1];
 
     double bearingIncrement = 0;
     if (numberOfPoints > 0) { bearingIncrement = 360/numberOfPoints; }
@@ -97,23 +98,24 @@ public class LatLonPointRadius extends GeneralDirectPosition {
     int numberOfCrossOvers = 0;
 
     Path2D path = new Path2D.Double();
-    LatLon initPT = DistanceUtils.getPointOnGreatCircle(super.getOrdinate(1),
+    DirectPosition2D initPT = DistanceUtils.getPointOnGreatCircle(super.getOrdinate(1),
         super.getOrdinate(0), super.getOrdinate(2), 0);
-    path.moveTo(initPT.getShiftedLon(), initPT.getShiftedLat());
+    path.moveTo(initPT.x + 180.0, initPT.y + 90.0);
 
-    LatLon currPT = initPT;
+    DirectPosition2D currPT = initPT;
+
     for (int i = 1; i < 360; i++) {
 
-      LatLon pt = DistanceUtils.getPointOnGreatCircle(super.getOrdinate(1),
+      DirectPosition2D pt = DistanceUtils.getPointOnGreatCircle(super.getOrdinate(1),
           super.getOrdinate(0), super.getOrdinate(2), i);
-      path.lineTo(pt.getShiftedLon(), pt.getShiftedLat());
+      path.lineTo(pt.x + 180.0, pt.y + 90.0);
 
-      if (dateLineCrossOver(currPT.getNormLon(), pt.getNormLon())) {
+      if (dateLineCrossOver(getNormLon(currPT.x), getNormLon(pt.x))) {
         numberOfCrossOvers++;
       }
       currPT = pt;
     }
-    if (dateLineCrossOver(initPT.getNormLon(), currPT.getNormLon())) {
+    if (dateLineCrossOver(getNormLon(initPT.x), getNormLon(currPT.x))) {
       numberOfCrossOvers++;
     }
 
@@ -156,6 +158,24 @@ public class LatLonPointRadius extends GeneralDirectPosition {
   }
 
   /**
+   * Normalizes the longitude values to be between -180.0 and 180.0
+   *
+   * @return longitude value that is between -180.0 and 180.0 inclusive
+   */
+  private static double getNormLon(double normLon) {
+    if (normLon > 180.0) {
+      while (normLon > 180.0) {
+        normLon -= 360.0;
+      }
+    } else if (normLon < -180.0) {
+      while (normLon < -180.0) {
+        normLon += 360.0;
+      }
+    }
+    return normLon;
+  }
+
+  /**
    * Returns true if the line segment connecting the two specified longitudes
    * crosses the international dateline.
    *
@@ -166,7 +186,7 @@ public class LatLonPointRadius extends GeneralDirectPosition {
    * @return true if the line segment crosses the internation dateline, false
    *         otherwise
    */
-  private boolean dateLineCrossOver(double longitude1, double longitude2) {
+  private static boolean dateLineCrossOver(double longitude1, double longitude2) {
     if (Math.abs(longitude1 - longitude2) > 180.0)
       return true;
     return false;

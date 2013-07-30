@@ -143,6 +143,8 @@ public abstract class AbstractDirectPosition implements DirectPosition {
      *
      * @return {@code true} if this position has been modified as a result of this method call,
      *         or {@code false} if no change has been done.
+     *
+     * @see GeneralEnvelope#normalize()
      */
     public boolean normalize() {
         boolean changed = false;

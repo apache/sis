@@ -82,6 +82,7 @@ import org.apache.sis.internal.jdk7.Objects;
  *   <li>{@link #getSpan(int)}</li>
  *   <li>{@link #getMedian(int)}</li>
  *   <li>{@link #isEmpty()}</li>
+ *   <li>{@link #toRectangles()}</li>
  *   <li>{@link #contains(double,double)}</li>
  *   <li>{@link #contains(Rectangle2D)} and its variant receiving {@code double} arguments</li>
  *   <li>{@link #intersects(Rectangle2D)} and its variant receiving {@code double} arguments</li>
@@ -99,7 +100,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @version 0.4
  * @module
  *
  * @see GeneralEnvelope
@@ -110,6 +111,17 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Cloneabl
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = 761232175464415062L;
+
+    /**
+     * The number of dimensions in every {@code Envelope2D}.
+     */
+    private static final int DIMENSION = 2;
+
+    /**
+     * An empty array of Java2D rectangles, to be returned by {@link #toRectangles()}
+     * when en envelope is empty.
+     */
+    private static final Rectangle2D.Double[] EMPTY = new Rectangle2D.Double[0];
 
     /**
      * The coordinate reference system, or {@code null}.
@@ -153,7 +165,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Cloneabl
          */
         this(lowerCorner.getOrdinate(0), lowerCorner.getOrdinate(1),
              upperCorner.getOrdinate(0), upperCorner.getOrdinate(1));
-        ensureDimensionMatches("crs", 2, crs);
+        ensureDimensionMatches("crs", DIMENSION, crs);
         this.crs = crs;
     }
 
@@ -225,7 +237,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Cloneabl
             throws MismatchedDimensionException
     {
         super(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight()); // Really 'super', not 'this'.
-        ensureDimensionMatches("crs", 2, crs);
+        ensureDimensionMatches("crs", DIMENSION, crs);
         this.crs = crs;
     }
 
@@ -248,7 +260,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Cloneabl
             final double width, final double height) throws MismatchedDimensionException
     {
         super(x, y, width, height); // Really 'super', not 'this'.
-        ensureDimensionMatches("crs", 2, crs);
+        ensureDimensionMatches("crs", DIMENSION, crs);
         this.crs = crs;
     }
 
@@ -271,16 +283,18 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Cloneabl
      * @param crs The new coordinate reference system, or {@code null}.
      */
     public void setCoordinateReferenceSystem(final CoordinateReferenceSystem crs) {
-        ensureDimensionMatches("crs", 2, crs);
+        ensureDimensionMatches("crs", DIMENSION, crs);
         this.crs = crs;
     }
 
     /**
      * Returns the number of dimensions, which is always 2.
+     *
+     * @return Always 2 for bi-dimensional objects.
      */
     @Override
     public final int getDimension() {
-        return 2;
+        return DIMENSION;
     }
 
     /**
@@ -501,16 +515,109 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Cloneabl
      * (@linkplain #height} is considered as a non-empty area if the corresponding
      * axis has the {@linkplain org.opengis.referencing.cs.RangeMeaning#WRAPAROUND
      * wraparound} range meaning.
-     * <p>
-     * Note that if the {@linkplain #width} or {@linkplain #height} value is
+     *
+     * <p>Note that if the {@linkplain #width} or {@linkplain #height} value is
      * {@link java.lang.Double#NaN NaN}, then the envelope is considered empty.
      * This is different than the default {@link java.awt.geom.Rectangle2D.Double#isEmpty()}
-     * implementation, which doesn't check for {@code NaN} values.
+     * implementation, which doesn't check for {@code NaN} values.</p>
      */
     @Override
     public boolean isEmpty() {
         return !((width  > 0 || (isNegative(width)  && isWrapAround(crs, 0)))
               && (height > 0 || (isNegative(height) && isWrapAround(crs, 1))));
+    }
+
+    /**
+     * Returns this envelope as non-empty Java2D rectangle objects. This method returns an array of length 0, 1,
+     * 2 or 4 depending on whether the envelope crosses the anti-meridian or the limit of any other axis having
+     * {@linkplain org.opengis.referencing.cs.RangeMeaning#WRAPAROUND wraparound} range meaning.
+     * More specifically:
+     *
+     * <ul>
+     *   <li>If this envelope {@linkplain #isEmpty() is empty}, then this method returns an empty array.</li>
+     *   <li>If this envelope does not have any wraparound behavior, then this method returns a copy
+     *       of this envelope as an instance of {@code Rectangle2D.Double} in an array of length 1.</li>
+     *   <li>If this envelope crosses the <cite>anti-meridian</cite> (a.k.a. <cite>date line</cite>)
+     *       then this method represents this envelope as two separated rectangles.
+     *   <li>While uncommon, the envelope could theoretically crosses the limit of other axis having
+     *       wraparound range meaning. If wraparound occur along the two axes, then this method
+     *       represents this envelope as four separated rectangles.
+     * </ul>
+     *
+     * @return A representation of this envelope as an array of non-empty Java2D rectangles.
+     *         The array never contains {@code this}.
+     *
+     * @see GeneralEnvelope#toSimpleEnvelopes()
+     *
+     * @since 0.4
+     */
+    public Rectangle2D.Double[] toRectangles() {
+        int isWrapAround = 0; // A bitmask of the dimensions having a "wrap around" behavior.
+        for (int i=0; i!=DIMENSION; i++) {
+            final double span = (i == 0) ? width : height;
+            if (!(span > 0)) { // Use '!' for catching NaN.
+                if (!isNegative(span) || !isWrapAround(crs, i)) {
+                    return EMPTY;
+                }
+                isWrapAround |= (1 << i);
+            }
+        }
+        /*
+         * The number of rectangles is 2ⁿ where n is the number of wraparound found.
+         */
+        final Rectangle2D.Double[] rect = new Rectangle2D.Double[1 << Integer.bitCount(isWrapAround)];
+        for (int i=0; i<rect.length; i++) {
+            rect[i] = new Rectangle2D.Double(x, y, width, height);
+        }
+        if ((isWrapAround & 1) != 0) {
+            /*
+             *  (x+width)   (x)
+             *          ↓   ↓
+             *    ──────┐   ┌───────
+             *    …next │   │ start…
+             *    ──────┘   └───────
+             */
+            final CoordinateSystemAxis axis = getAxis(crs, 0);
+            final Rectangle2D.Double start = rect[0];
+            final Rectangle2D.Double next  = rect[1];
+            start.width = axis.getMaximumValue() - x;
+            next.x      = axis.getMinimumValue();
+            next.width += x - next.x;
+        }
+        if ((isWrapAround & 2) != 0) {
+            /*
+             *              │   ⋮   │
+             *              │ start │
+             * (y)        → └───────┘
+             * (y+height) → ┌───────┐
+             *              │ next  │
+             *              │   ⋮   │
+             */
+            final CoordinateSystemAxis axis = getAxis(crs, 1);
+            final Rectangle2D.Double start = rect[0];
+            final Rectangle2D.Double next  = rect[isWrapAround - 1]; // == 1 if y is the only wraparound axis, or 2 otherwise.
+            start.height = axis.getMaximumValue() - y;
+            next.y       = axis.getMinimumValue();
+            next.height += y - next.y;
+        }
+        if (isWrapAround == 3) {
+            /*
+             * If there is a wraparound along both axes, copy the values.
+             * The (x) and (y) labels indicate which values to copy.
+             *
+             *      (y) R1 │   │ R0
+             *    ─────────┘   └─────────
+             *    ─────────┐   ┌─────────
+             *    (x,y) R3 │   │ R2 (x)
+             */
+            rect[1].height = rect[0].height;
+            rect[2].width  = rect[0].width;
+            rect[3].x      = rect[1].x;
+            rect[3].width  = rect[1].width;
+            rect[3].y      = rect[2].y;
+            rect[3].height = rect[2].height;
+        }
+        return rect;
     }
 
     /**
@@ -580,7 +687,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Cloneabl
      */
     @Override
     public boolean contains(final double rx, final double ry, final double rw, final double rh) {
-        for (int i=0; i!=2; i++) {
+        for (int i=0; i!=DIMENSION; i++) {
             final double min0, min1, span0, span1;
             if (i == 0) {
                 min0 =  x;  span0 = width;
@@ -649,7 +756,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Cloneabl
      */
     @Override
     public boolean intersects(final double rx, final double ry, final double rw, final double rh) {
-        for (int i=0; i!=2; i++) {
+        for (int i=0; i!=DIMENSION; i++) {
             final double min0, min1, span0, span1;
             if (i == 0) {
                 min0 =  x;  span0 = width;
@@ -693,7 +800,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Cloneabl
     public Envelope2D createIntersection(final Rectangle2D rect) {
         final Envelope2D env = (rect instanceof Envelope2D) ? (Envelope2D) rect : null;
         final Envelope2D inter = new Envelope2D(crs, NaN, NaN, NaN, NaN);
-        for (int i=0; i!=2; i++) {
+        for (int i=0; i!=DIMENSION; i++) {
             final double min0, min1, span0, span1;
             if (i == 0) {
                 min0  = x;
@@ -779,7 +886,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Cloneabl
     @Override
     public void add(final Rectangle2D rect) {
         final Envelope2D env = (rect instanceof Envelope2D) ? (Envelope2D) rect : null;
-        for (int i=0; i!=2; i++) {
+        for (int i=0; i!=DIMENSION; i++) {
             final double min0, min1, span0, span1;
             if (i == 0) {
                 min0  = x;

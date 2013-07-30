@@ -163,3 +163,6 @@ Building Apache SIS
 ----------------------------------------------------------------
    unpack200 --remove-pack-file sis-<version>.pack.gz sis.jar
 ----------------------------------------------------------------
+
+  The Pack200 bundle does not include the <<<sis-webapp>>> module because the later can be downloaded
+  as a <<<WAR>>> file from the Maven repository.
