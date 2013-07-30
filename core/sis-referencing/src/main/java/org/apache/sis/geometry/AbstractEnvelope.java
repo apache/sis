@@ -82,6 +82,7 @@ import java.util.Objects;
  *   <li>{@link #getMaximum(int)}</li>
  *   <li>{@link #getMedian(int)}</li>
  *   <li>{@link #getSpan(int)}</li>
+ *   <li>{@link #toSimpleEnvelopes()}</li>
  *   <li>{@link #contains(DirectPosition)}</li>
  *   <li>{@link #contains(Envelope, boolean)}</li>
  *   <li>{@link #intersects(Envelope, boolean)}</li>
@@ -111,6 +112,12 @@ import java.util.Objects;
  * @module
  */
 public abstract class AbstractEnvelope implements Envelope {
+    /**
+     * An empty array of envelopes, to be returned by {@link #toSimpleEnvelopes()}
+     * when en envelope is empty.
+     */
+    private static final Envelope[] EMPTY = new Envelope[0];
+
     /**
      * Constructs an envelope.
      */
@@ -493,6 +500,111 @@ public abstract class AbstractEnvelope implements Envelope {
             }
         }
         return value;
+    }
+
+    /**
+     * Returns this envelope as an array of simple (without wraparound) envelopes.
+     * The length of the returned array depends on the number of dimensions where a
+     * {@linkplain org.opengis.referencing.cs.RangeMeaning#WRAPAROUND wraparound} range is found.
+     * Typically, wraparound occurs only in the range of longitude values, when the range crosses
+     * the anti-meridian (a.k.a. date line). However this implementation will take in account any
+     * axis having wraparound {@linkplain CoordinateSystemAxis#getRangeMeaning() range meaning}.
+     *
+     * <p>Special cases:</p>
+     *
+     * <ul>
+     *   <li>If this envelope {@linkplain #isEmpty() is empty}, then this method returns an empty array.</li>
+     *   <li>If this envelope does not have any wraparound behavior, then this method returns {@code this}
+     *       in an array of length 1. This envelope is <strong>not</strong> cloned.</li>
+     *   <li>If this envelope crosses the <cite>anti-meridian</cite> (a.k.a. <cite>date line</cite>)
+     *       then this method represents this envelope as two separated simple envelopes.
+     *   <li>While uncommon, the envelope could theoretically crosses the limit of other axis having
+     *       wraparound range meaning. If wraparound occur along <var>n</var> axes, then this method
+     *       represents this envelope as 2ⁿ separated simple envelopes.
+     * </ul>
+     *
+     * @return A representation of this envelope as an array of non-empty envelope.
+     *
+     * @see Envelope2D#toRectangles()
+     *
+     * @since 0.4
+     */
+    public Envelope[] toSimpleEnvelopes() {
+        long isWrapAround = 0; // A bitmask of the dimensions having a "wrap around" behavior.
+        CoordinateReferenceSystem crs = null;
+        final int dimension = getDimension();
+        for (int i=0; i!=dimension; i++) {
+            final double span = getUpper(i) - getLower(i); // Do not use getSpan(i).
+            if (!(span > 0)) { // Use '!' for catching NaN.
+                if (!isNegative(span)) {
+                    return EMPTY; // Span is positive zero.
+                }
+                if (crs == null) {
+                    crs = getCoordinateReferenceSystem();
+                }
+                if (!isWrapAround(crs, i)) {
+                    return EMPTY;
+                }
+                if (i >= Long.SIZE) {
+                    // Actually the limit in our current implementation is not the number of axes, but the index of
+                    // axes where a wraparound has been found. However we consider that having more than 64 axes in
+                    // a CRS is unusual enough for not being worth to make the distinction in the error message.
+                    throw new IllegalStateException(Errors.format(Errors.Keys.ExcessiveListSize_2, "axis", dimension));
+                }
+                isWrapAround |= (1L << i);
+            }
+        }
+        /*
+         * The number of simple envelopes is 2ⁿ where n is the number of wraparound found. In most
+         * cases, isWrapAround == 0 so we have an array of length 1 containing only this envelope.
+         */
+        final int bitCount = Long.bitCount(isWrapAround);
+        if (bitCount >= Integer.SIZE - 1) {
+            // Should be very unusual, but let be paranoiac.
+            throw new IllegalStateException(Errors.format(Errors.Keys.ExcessiveListSize_2, "wraparound", bitCount));
+        }
+        final Envelope[] envelopes = new Envelope[1 << bitCount];
+        if (envelopes.length == 1) {
+            envelopes[0] = this;
+        } else {
+            /*
+             * Need to create at least 2 envelopes. Instantiate now all envelopes with ordinate values
+             * initialized to a copy of this envelope. We will write directly in their internal arrays later.
+             */
+            double[] c = new double[dimension * 2];
+            for (int i=0; i<dimension; i++) {
+                c[i            ] = getLower(i);
+                c[i + dimension] = getUpper(i);
+            }
+            final double[][] ordinates = new double[envelopes.length][];
+            for (int i=0; i<envelopes.length; i++) {
+                final GeneralEnvelope envelope = new GeneralEnvelope(i == 0 ? c : c.clone());
+                envelope.crs = crs;
+                envelopes[i] = envelope;
+                ordinates[i] = envelope.ordinates;
+            }
+            /*
+             * Assign the minimum and maximum ordinate values in the dimension where a wraparound has been found.
+             * The 'for' loop below iterates only over the 'i' values for which the 'isWrapAround' bit is set to 1.
+             */
+            int mask = 1; // For identifying whether we need to set the lower or the upper ordinate.
+            final CoordinateSystem cs = crs.getCoordinateSystem(); // Should not be null at this point.
+            for (int i; (i = Long.numberOfTrailingZeros(isWrapAround)) != Long.SIZE; isWrapAround &= ~(1L << i)) {
+                final CoordinateSystemAxis axis = cs.getAxis(i);
+                final double min = axis.getMinimumValue();
+                final double max = axis.getMaximumValue();
+                for (int j=0; j<ordinates.length; j++) {
+                    c = ordinates[j];
+                    if ((j & mask) == 0) {
+                        c[i + dimension] = max;
+                    } else {
+                        c[i] = min;
+                    }
+                }
+                mask <<= 1;
+            }
+        }
+        return envelopes;
     }
 
     /**
