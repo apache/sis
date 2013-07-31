@@ -18,8 +18,6 @@ package org.apache.sis.storage;
 
 import java.util.Set;
 import java.util.Collections;
-import java.nio.file.OpenOption;
-import java.nio.file.StandardOpenOption;
 import org.apache.sis.util.Static;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.SystemListener;
@@ -62,7 +60,7 @@ public final class DataStores extends Static {
     /**
      * The options for opening storage in read mode.
      */
-    private static final Set<OpenOption> READ = Collections.<OpenOption>singleton(StandardOpenOption.READ);
+    private static final Set<OpenOption> READ = Collections.singleton(OpenOption.READ);
 
     /**
      * Do not allow instantiation of this class.
@@ -72,7 +70,7 @@ public final class DataStores extends Static {
 
     /**
      * Creates a {@link DataStore} for the given storage using its default set of {@code OpenOption}s.
-     * The data store is guaranteed to be opened at least with {@link StandardOpenOption#READ}.
+     * The data store is guaranteed to be opened at least with {@link OpenOption#READ}.
      * Whether the data store has also write or append capabilities is implementation dependent.
      *
      * <p>The {@code storage} argument can be any of the following types:</p>
@@ -111,7 +109,7 @@ public final class DataStores extends Static {
      * </ul>
      *
      * @param  storage The input/output object as a URL, file, image input stream, <i>etc.</i>.
-     * @param  options The open options. Shall contain at least one element, typically {@link StandardOpenOption#READ}.
+     * @param  options The open options. Shall contain at least one element, typically {@link OpenOption#READ}.
      * @return The object to use for reading geospatial data from the given storage.
      * @throws UnsupportedStorageException if no {@link DataStoreProvider} is found for a given storage object.
      * @throws DataStoreException If an error occurred while opening the storage.

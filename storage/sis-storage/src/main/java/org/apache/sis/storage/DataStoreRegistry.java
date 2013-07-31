@@ -18,7 +18,6 @@ package org.apache.sis.storage;
 
 import java.util.Set;
 import java.util.ServiceLoader;
-import java.nio.file.OpenOption;
 import org.apache.sis.util.ThreadSafe;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
@@ -79,8 +78,7 @@ final class DataStoreRegistry {
      * </ul>
      *
      * @param  storage The input/output object as a URL, file, image input stream, <i>etc.</i>.
-     * @param  options The open options. Shall contain at least one element,
-     *                 typically {@link java.nio.file.StandardOpenOption#READ}.
+     * @param  options The open options. Shall contain at least one element, typically {@link OpenOption#READ}.
      * @return The object to use for reading geospatial data from the given storage.
      * @throws UnsupportedStorageException if no {@link DataStoreProvider} is found for a given storage object.
      * @throws DataStoreException If an error occurred while opening the storage.
@@ -90,6 +88,10 @@ final class DataStoreRegistry {
         ArgumentChecks.ensureNonNull("options", options);
         if (options.isEmpty()) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "options"));
+        }
+        if (options.contains(OpenOption.UNKNOWN)) {
+            throw new IllegalArgumentException(Errors.format(
+                    Errors.Keys.IllegalArgumentValue_2, "options", OpenOption.UNKNOWN));
         }
         StorageConnector connector;
         if (storage instanceof StorageConnector) {
@@ -102,7 +104,7 @@ final class DataStoreRegistry {
             synchronized (loader) {
                 for (final DataStoreProvider candidate : loader) {
                     final Set<OpenOption> capabilities = candidate.getOpenCapabilities(connector);
-                    if (capabilities == null) {
+                    if (capabilities.contains(OpenOption.UNKNOWN)) {
                         // TODO: not enough information.
                     } else if (capabilities.containsAll(options)) {
                         provider = candidate;
