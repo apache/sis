@@ -18,6 +18,7 @@ package org.apache.sis.xml;
 
 import java.util.Map;
 import java.util.Deque;
+import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.xml.bind.JAXBContext;
@@ -94,6 +95,17 @@ public class MarshallerPool {
     private final Object mapper;
 
     /**
+     * The provider of {@code AdapterReplacement} instances.
+     * <strong>Every usage of this service loader must be synchronized.</strong>
+     *
+     * {@note Each <code>MarshallerPool</code> has its own service loader instance rather than using a
+     *        system-wide instance because the <code>ClassLoader</code> used by the service loader is
+     *        the <cite>context class loader</cite>, which depends on the thread that created the pool.
+     *        So two pools in two different applications could have two different set of replacements.}
+     */
+    private final ServiceLoader<AdapterReplacement> replacements;
+
+    /**
      * The {@link PooledTemplate} to use for initializing recycled (un)marshaller.
      */
     private final PooledTemplate template;
@@ -167,6 +179,7 @@ public class MarshallerPool {
     public MarshallerPool(final JAXBContext context, final Map<String,?> properties) throws JAXBException {
         ArgumentChecks.ensureNonNull("context", context);
         this.context = context;
+        replacements = ServiceLoader.load(AdapterReplacement.class);
         /*
          * Detects if we are using the endorsed JAXB implementation (i.e. the one provided in
          * separated JAR files) or the one bundled in JDK 6. We use the JAXB context package
@@ -424,8 +437,8 @@ public class MarshallerPool {
             }
             // Do nothing for the OTHER case.
         }
-        synchronized (AdapterReplacement.PROVIDER) {
-            for (final AdapterReplacement adapter : AdapterReplacement.PROVIDER) {
+        synchronized (replacements) {
+            for (final AdapterReplacement adapter : replacements) {
                 adapter.register(marshaller);
             }
         }
@@ -442,8 +455,8 @@ public class MarshallerPool {
      */
     protected Unmarshaller createUnmarshaller() throws JAXBException {
         final Unmarshaller unmarshaller = context.createUnmarshaller();
-        synchronized (AdapterReplacement.PROVIDER) {
-            for (final AdapterReplacement adapter : AdapterReplacement.PROVIDER) {
+        synchronized (replacements) {
+            for (final AdapterReplacement adapter : replacements) {
                 adapter.register(unmarshaller);
             }
         }
