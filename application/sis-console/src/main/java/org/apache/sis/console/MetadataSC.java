@@ -23,9 +23,9 @@ import javax.xml.bind.JAXBException;
 import org.opengis.metadata.Metadata;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.ValueExistencePolicy;
+import org.apache.sis.storage.DataStore;
+import org.apache.sis.storage.DataStores;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.StorageConnector;
-import org.apache.sis.storage.netcdf.NetcdfStore;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TreeTableFormat;
@@ -80,7 +80,7 @@ final class MetadataSC extends SubCommand {
             return Command.INVALID_ARGUMENT_EXIT_CODE;
         }
         final Metadata metadata;
-        try (NetcdfStore store = new NetcdfStore(new StorageConnector(files.get(0)))) {
+        try (DataStore store = DataStores.open(files.get(0))) {
             metadata = store.getMetadata();
         }
         /*

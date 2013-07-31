@@ -16,16 +16,34 @@
  */
 package org.apache.sis.storage;
 
+import org.apache.sis.util.ThreadSafe;
+
 
 /**
  * Creates {@link DataStore} instances for a specific format from a given {@link StorageConnector} input.
  * There is typically a different {@code DataStoreProvider} instance for each format provided by a library.
+ *
+ * {@section Packaging data stores}
+ * JAR files that provide implementations of this class shall contain an entry with exactly the following path:
+ *
+ * {@preformat text
+ *     META-INF/services/org.apache.sis.storage.DataStoreProvider
+ * }
+ *
+ * The above entry shall contain one line for each {@code DataStoreProvider} implementation provided in the JAR file,
+ * where each line is the fully qualified name of the implementation class.
+ * See {@link java.util.ServiceLoader} for more general discussion about this lookup mechanism.
+ *
+ * {@section Thread safety policy}
+ * All {@code DataStoreProvider} implementations shall be thread-safe.
+ * However the {@code DataStore} instances created by the providers do not need to be thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
  * @version 0.3
  * @module
  */
+@ThreadSafe
 public abstract class DataStoreProvider {
     /**
      * Creates a new provider.
