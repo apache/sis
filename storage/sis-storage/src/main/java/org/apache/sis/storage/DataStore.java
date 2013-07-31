@@ -26,7 +26,7 @@ import org.apache.sis.util.logging.WarningListeners;
 
 
 /**
- * A storage object which manage a series of features, coverages or sensor data.
+ * Manages a series of features, coverages or sensor data.
  *
  * {@section Thread safety policy}
  * This {@code DataStore} base class is thread-safe. However subclasses are usually not.
