@@ -16,8 +16,12 @@
  */
 package org.apache.sis.storage.netcdf;
 
+import java.util.Set;
+import java.util.Collections;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.file.OpenOption;
+import java.nio.file.StandardOpenOption;
 import java.lang.reflect.Method;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -45,7 +49,7 @@ import org.apache.sis.util.ThreadSafe;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.4
  * @module
  *
  * @see NetcdfStore
@@ -95,25 +99,30 @@ public class NetcdfStoreProvider extends DataStoreProvider {
     }
 
     /**
+     * The open options of NetCDF files.
+     */
+    private static final Set<OpenOption> OPTIONS = Collections.<OpenOption>singleton(StandardOpenOption.READ);
+
+    /**
      * Creates a new provider.
      */
     public NetcdfStoreProvider() {
     }
 
     /**
-     * Returns {@code TRUE} if the given storage appears to be supported by {@link NetcdfStore}.
-     * Returning {@code TRUE} from this method does not guarantee that reading or writing will succeed,
+     * Returns a non-empty set if the given storage appears to be supported by {@link NetcdfStore}.
+     * Returning a non-empty set from this method does not guarantee that reading or writing will succeed,
      * only that there appears to be a reasonable chance of success based on a brief inspection of the
      * {@linkplain StorageConnector#getStorage() storage object} or contents.
      *
      * @param  storage Information about the storage (URL, stream, {@link ucar.nc2.NetcdfFile} instance, <i>etc</i>).
-     * @return {@link Boolean#TRUE} if the given storage seems to be usable by the {@code NetcdfStore} instances,
-     *         {@link Boolean#FALSE} if {@code NetcdfStore} will not be able to use the given storage,
+     * @return A non-empty set if the given storage seems to be usable by the {@code NetcdfStore} instances,
+     *         an empty set if {@code NetcdfStore} will not be able to use the given storage,
      *         or {@code null} if this method does not have enough information.
      * @throws DataStoreException if an I/O error occurred.
      */
     @Override
-    public Boolean canOpen(StorageConnector storage) throws DataStoreException {
+    public Set<OpenOption> getOpenCapabilities(StorageConnector storage) throws DataStoreException {
         final ByteBuffer buffer = storage.getStorageAs(ByteBuffer.class);
         if (buffer != null) {
             if (buffer.remaining() < Integer.SIZE / Byte.SIZE) {
@@ -121,7 +130,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
             }
             final int header = buffer.getInt(buffer.position());
             if ((header & 0xFFFFFF00) == ChannelDecoder.MAGIC_NUMBER) {
-                return Boolean.TRUE;
+                return OPTIONS;
             }
         }
         /*
@@ -132,7 +141,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
             ensureInitialized();
             final Method method = canOpenFromPath;
             if (method != null) try {
-                return (Boolean) method.invoke(null, path);
+                return ((Boolean) method.invoke(null, path)) ? OPTIONS : Collections.<OpenOption>emptySet();
             } catch (IllegalAccessException e) {
                 throw new AssertionError(e); // Should never happen, since the method is public.
             } catch (InvocationTargetException e) {
@@ -150,10 +159,10 @@ public class NetcdfStoreProvider extends DataStoreProvider {
          */
         for (Class<?> type = storage.getStorage().getClass(); type != null; type = type.getSuperclass()) {
             if (UCAR_CLASSNAME.equals(type.getName())) {
-                return Boolean.TRUE;
+                return OPTIONS;
             }
         }
-        return Boolean.FALSE;
+        return Collections.emptySet();
     }
 
     /**
