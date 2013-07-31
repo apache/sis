@@ -20,8 +20,6 @@ import java.util.Set;
 import java.util.Collections;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.file.OpenOption;
-import java.nio.file.StandardOpenOption;
 import java.lang.reflect.Method;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -36,6 +34,7 @@ import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.OpenOption;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.util.ThreadSafe;
 
@@ -101,7 +100,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
     /**
      * The open options of NetCDF files.
      */
-    private static final Set<OpenOption> OPTIONS = Collections.<OpenOption>singleton(StandardOpenOption.READ);
+    private static final Set<OpenOption> OPTIONS = Collections.<OpenOption>singleton(OpenOption.READ);
 
     /**
      * Creates a new provider.
@@ -126,7 +125,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
         final ByteBuffer buffer = storage.getStorageAs(ByteBuffer.class);
         if (buffer != null) {
             if (buffer.remaining() < Integer.SIZE / Byte.SIZE) {
-                return null;
+                return Collections.singleton(OpenOption.UNKNOWN);
             }
             final int header = buffer.getInt(buffer.position());
             if ((header & 0xFFFFFF00) == ChannelDecoder.MAGIC_NUMBER) {

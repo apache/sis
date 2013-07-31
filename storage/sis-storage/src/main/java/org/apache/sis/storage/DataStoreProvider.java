@@ -17,8 +17,6 @@
 package org.apache.sis.storage;
 
 import java.util.Set;
-import java.nio.file.OpenOption;
-import java.nio.file.StandardOpenOption;
 import org.apache.sis.util.ThreadSafe;
 
 
@@ -63,23 +61,23 @@ public abstract class DataStoreProvider {
     }
 
     /**
-     * Returns a non-empty set if the given storage appears to be supported by the {@code DataStore}.
-     * Returning a non-empty set from this method does not guarantee that reading or writing will succeed,
+     * Indicates how the given storage can be opened.
+     * The set returned by this method will fall in one of the following cases:
+     *
+     * <ul>
+     *   <li>If the {@code DataStore} managed by this provider can not open the given storage,
+     *       then this method returns an empty set.</li>
+     *   <li>Otherwise if this method does not have enough information for determining the
+     *       open capabilities, then this method returns a singleton containing only the
+     *       {@link OpenOption#UNKNOWN} value.</li>
+     *   <li>Otherwise this method returns a set containing at least one, and possibly many, of
+     *       {@link OpenOption#READ}, {@link OpenOption#WRITE WRITE}, {@link OpenOption#APPEND APPEND},
+     *       {@link OpenOption#CREATE CREATE} or implementation-specific values.</li>
+     * </ul>
+     *
+     * Note that the later case does not guarantee that reading or writing will succeed,
      * only that there appears to be a reasonable chance of success based on a brief inspection of the
      * {@linkplain StorageConnector#getStorage() storage object} or contents.
-     *
-     * <p>If the given storage is supported, then the returned set shall contain at least one of the
-     * following values:</p>
-     *
-     * <table class="sis">
-     *   <tr><th>Value</th>                                 <th>Meaning</th></tr>
-     *   <tr><td>{@link StandardOpenOption#READ}</td>       <td>Can read data from the given storage.</td></tr>
-     *   <tr><td>{@link StandardOpenOption#WRITE}</td>      <td>Can overwrite existing data.</td></tr>
-     *   <tr><td>{@link StandardOpenOption#APPEND}</td>     <td>Can write new data.</td></tr>
-     *   <tr><td>{@link StandardOpenOption#CREATE_NEW}</td> <td>Can create a new storage at the given location.</td></tr>
-     * </table>
-     *
-     * Other values may be present at implementation choice.
      *
      * {@section Implementation note}
      * Implementations will typically check the first bytes of the stream for a "magic number" associated
@@ -90,10 +88,10 @@ public abstract class DataStoreProvider {
      *         final ByteBuffer buffer = storage.getStorageAs(ByteBuffer.class);
      *         if (buffer != null) {
      *             if (buffer.remaining() < Integer.SIZE / Byte.SIZE) {
-     *                 return null; // See notes below.
+     *                 return Collections.singleton(OpenOption.UNKNOWN);
      *             }
      *             if (buffer.getInt(buffer.position()) == MAGIC_NUMBER) {
-     *                 return EnumSet.of(StandardOpenOption.READ);
+     *                 return Collections.singleton(OpenOption.READ);
      *             }
      *         }
      *         return Collections.emptySet();
@@ -134,7 +132,7 @@ public abstract class DataStoreProvider {
     @Deprecated
     public Boolean canOpen(StorageConnector storage) throws DataStoreException {
         final Set<OpenOption> options = getOpenCapabilities(storage);
-        return (options == null) ? null : options.contains(StandardOpenOption.READ);
+        return (options == null) ? null : options.contains(OpenOption.READ);
     }
 
     /**

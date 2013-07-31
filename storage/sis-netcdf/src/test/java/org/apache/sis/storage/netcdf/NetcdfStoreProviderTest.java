@@ -18,7 +18,6 @@ package org.apache.sis.storage.netcdf;
 
 import java.util.Collections;
 import java.io.IOException;
-import java.nio.file.StandardOpenOption;
 import ucar.nc2.NetcdfFile;
 import org.opengis.wrapper.netcdf.IOTestCase;
 import org.apache.sis.internal.netcdf.TestCase;
@@ -26,6 +25,7 @@ import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.ucar.DecoderWrapper;
 import org.apache.sis.internal.netcdf.impl.ChannelDecoder;
 import org.apache.sis.internal.netcdf.impl.ChannelDecoderTest;
+import org.apache.sis.storage.OpenOption;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.test.DependsOn;
@@ -56,7 +56,7 @@ public final strictfp class NetcdfStoreProviderTest extends IOTestCase {
     public void testCanOpenFromStream() throws DataStoreException {
         final StorageConnector c = new StorageConnector(IOTestCase.class.getResourceAsStream(NCEP));
         final NetcdfStoreProvider provider = new NetcdfStoreProvider();
-        assertEquals(Collections.singleton(StandardOpenOption.READ), provider.getOpenCapabilities(c));
+        assertEquals(Collections.singleton(OpenOption.READ), provider.getOpenCapabilities(c));
         c.closeAllExcept(null);
     }
 
@@ -71,7 +71,7 @@ public final strictfp class NetcdfStoreProviderTest extends IOTestCase {
         final NetcdfFile file = open(NCEP);
         final StorageConnector c = new StorageConnector(file);
         final NetcdfStoreProvider provider = new NetcdfStoreProvider();
-        assertEquals(Collections.singleton(StandardOpenOption.READ), provider.getOpenCapabilities(c));
+        assertEquals(Collections.singleton(OpenOption.READ), provider.getOpenCapabilities(c));
         file.close();
     }
 
