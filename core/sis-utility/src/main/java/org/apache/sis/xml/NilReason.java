@@ -431,6 +431,12 @@ public final class NilReason implements Serializable {
      * <p><b>REMINDER:<b> If more special cases are added, do not forget to update the {@link #mayBeNil(Object)}
      * method and to update the {@link #createNilObject(Class)} and {@link #forObject(Object)} javadoc.</p>
      *
+     * {@note There is no special case for <code>Character</code> because Java <code>char</code>s are not really
+     *        full Unicode characters. They are parts of UTF-16 encoding instead. If there is a need to represent
+     *        a single Unicode character, we should probably still use a <code>String</code> where the string may
+     *        contain up to 2 Java characters. This may also facilitate the encoding in the XML files, since many
+     *        files use an other encoding than UTF-16 anyway.}
+     *
      * @throws IllegalArgumentException If the given type is not a supported type.
      */
     private static Object createNilPrimitive(final Class<?> type) {

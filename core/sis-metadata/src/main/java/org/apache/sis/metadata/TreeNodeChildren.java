@@ -473,7 +473,8 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
      * are ignored.
      *
      * <p>If the identified property is a collection, then this method adds the value to that collection.
-     * Otherwise the new value will be set only if the previous value is null or empty.</p>
+     * Otherwise the new value will be set only if the previous value is null,
+     * {@linkplain org.apache.sis.xml.NilObject nil} or empty.</p>
      *
      * <p>This method does not iterate explicitly through the children list, because adding a metadata
      * object implicitly adds all its children.</p>
