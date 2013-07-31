@@ -33,6 +33,7 @@ import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.logging.WarningListeners;
+import org.apache.sis.util.ThreadSafe;
 
 
 /**
@@ -49,6 +50,7 @@ import org.apache.sis.util.logging.WarningListeners;
  *
  * @see NetcdfStore
  */
+@ThreadSafe
 public class NetcdfStoreProvider extends DataStoreProvider {
     /**
      * The name of the {@link ucar.nc2.NetcdfFile} class, which is {@value}.

@@ -45,7 +45,7 @@ import org.apache.sis.setup.OptionKey;
  * {@code StorageConnector} wraps an input {@link Object}, which can be any of the following types:
  *
  * <ul>
- *   <li>A {@link java.nio.file.Path} or a {@link java.io.File} or file or a directory in a file system.</li>
+ *   <li>A {@link java.nio.file.Path} or a {@link java.io.File} for a file or a directory.</li>
  *   <li>A {@link java.net.URI} or a {@link java.net.URL} to a distant resource.</li>
  *   <li>A {@link CharSequence} interpreted as a filename or a URL.</li>
  *   <li>A {@link java.nio.channels.Channel} or a {@link DataInput}.</li>
