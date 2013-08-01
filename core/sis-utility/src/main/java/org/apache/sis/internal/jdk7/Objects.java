@@ -21,7 +21,7 @@ import java.util.Arrays;
 
 /**
  * Place holder for {@link java.util.Objects}.
- * This class will be deleted when we will be allowed to compile for JDK7.
+ * This class exists only on the JDK6 branch of SIS.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from GeoAPI)
