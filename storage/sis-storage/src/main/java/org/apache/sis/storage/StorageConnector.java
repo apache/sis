@@ -48,7 +48,7 @@ import org.apache.sis.internal.jdk7.JDK7;
  * {@code StorageConnector} wraps an input {@link Object}, which can be any of the following types:
  *
  * <ul>
- *   <li>A {@link java.nio.file.Path} or a {@link java.io.File} or file or a directory in a file system.</li>
+ *   <li>A {@link java.nio.file.Path} or a {@link java.io.File} for a file or a directory.</li>
  *   <li>A {@link java.net.URI} or a {@link java.net.URL} to a distant resource.</li>
  *   <li>A {@link CharSequence} interpreted as a filename or a URL.</li>
  *   <li>A {@link java.nio.channels.Channel} or a {@link DataInput}.</li>
@@ -167,6 +167,7 @@ public class StorageConnector implements Serializable {
      *
      * <ul>
      *   <li>{@link OptionKey#URL_ENCODING} for converting URL to URI or filename, if needed.</li>
+     *   <li>{@link OptionKey#OPEN_OPTIONS} for specifying whether the data store shall be read only or read/write.</li>
      *   <li>{@link OptionKey#BYTE_BUFFER} for allowing users to control the byte buffer to be created.</li>
      * </ul>
      *
@@ -298,8 +299,8 @@ public class StorageConnector implements Serializable {
      * </ul>
      *
      * Multiple invocations of this method on the same {@code StorageConnector} instance will try
-     * to return the same instance on a <cite>best effort</cite> basis. Consequently, implementations
-     * of {@link DataStoreProvider#canOpen(StorageConnector)} methods shall not close the stream or
+     * to return the same instance on a <cite>best effort</cite> basis. Consequently, implementations of
+     * {@link DataStoreProvider#canOpen(StorageConnector)} methods shall not close the stream or
      * database connection returned by this method. In addition, those {@code canOpen(StorageConnector)}
      * methods are responsible for restoring the stream or byte buffer to its original position on return.
      *
@@ -371,7 +372,8 @@ public class StorageConnector implements Serializable {
      * @throws IOException If an error occurred while opening a channel for the input.
      */
     private void createChannelDataInput(final boolean asImageInputStream) throws IOException {
-        final ReadableByteChannel channel = IOUtilities.open(storage, getOption(OptionKey.URL_ENCODING));
+        final ReadableByteChannel channel = IOUtilities.open(storage,
+                getOption(OptionKey.URL_ENCODING), getOption(OptionKey.OPEN_OPTIONS));
         ChannelDataInput asDataInput = null;
         if (channel != null) {
             ByteBuffer buffer = getOption(OptionKey.BYTE_BUFFER);

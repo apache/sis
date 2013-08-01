@@ -24,6 +24,7 @@ import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.ucar.DecoderWrapper;
 import org.apache.sis.internal.netcdf.impl.ChannelDecoder;
 import org.apache.sis.internal.netcdf.impl.ChannelDecoderTest;
+import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.test.DependsOn;
@@ -54,7 +55,7 @@ public final strictfp class NetcdfStoreProviderTest extends IOTestCase {
     public void testCanOpenFromStream() throws DataStoreException {
         final StorageConnector c = new StorageConnector(IOTestCase.class.getResourceAsStream(NCEP));
         final NetcdfStoreProvider provider = new NetcdfStoreProvider();
-        assertTrue(provider.canOpen(c));
+        assertEquals(ProbeResult.SUPPORTED, provider.canOpen(c));
         c.closeAllExcept(null);
     }
 
@@ -69,7 +70,7 @@ public final strictfp class NetcdfStoreProviderTest extends IOTestCase {
         final NetcdfFile file = open(NCEP);
         final StorageConnector c = new StorageConnector(file);
         final NetcdfStoreProvider provider = new NetcdfStoreProvider();
-        assertTrue(provider.canOpen(c));
+        assertEquals(ProbeResult.SUPPORTED, provider.canOpen(c));
         file.close();
     }
 
