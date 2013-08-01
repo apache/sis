@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.jaxb;
 
-import java.util.ServiceLoader;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.JAXBException;
@@ -46,22 +45,6 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
  * @see Unmarshaller#setAdapter(XmlAdapter)
  */
 public interface AdapterReplacement {
-    /**
-     * The system-wide provider of {@code AdapterReplacement} instances.
-     * <strong>Every usage of this service loader must be synchronized.</strong>
-     * This loader is public for {@link org.apache.sis.xml.MarshallerPool} usage.
-     *
-     * <p>This loader needs to be cleared as below when modules are loaded or unloaded.
-     * This is done opportunistically by {@link TypeRegistration}.</p>
-     *
-     * {@preformat java
-     *     synchronized (AdapterReplacement.PROVIDER) {
-     *         AdapterReplacement.PROVIDER.reload();
-     *     }
-     * }
-     */
-    ServiceLoader<AdapterReplacement> PROVIDER = ServiceLoader.load(AdapterReplacement.class);
-
     /**
      * Invoked when a new adapter is created by {@link org.apache.sis.xml.MarshallerPool}.
      * Typical implementations will be as below:

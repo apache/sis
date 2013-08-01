@@ -544,6 +544,10 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Cloneabl
      *       represents this envelope as four separated rectangles.
      * </ul>
      *
+     * {@note The return type is the <code>Rectangle2D.Double</code> implementation class rather than the
+     *        <code>Rectangle2D</code> abstract class because the <code>Envelope2D</code> class hierarchy
+     *        already exposes this implementation choice.}
+     *
      * @return A representation of this envelope as an array of non-empty Java2D rectangles.
      *         The array never contains {@code this}.
      *
