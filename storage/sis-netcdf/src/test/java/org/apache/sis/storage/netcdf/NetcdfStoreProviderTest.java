@@ -16,7 +16,6 @@
  */
 package org.apache.sis.storage.netcdf;
 
-import java.util.Collections;
 import java.io.IOException;
 import ucar.nc2.NetcdfFile;
 import org.opengis.wrapper.netcdf.IOTestCase;
@@ -25,7 +24,7 @@ import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.ucar.DecoderWrapper;
 import org.apache.sis.internal.netcdf.impl.ChannelDecoder;
 import org.apache.sis.internal.netcdf.impl.ChannelDecoderTest;
-import org.apache.sis.storage.OpenOption;
+import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.test.DependsOn;
@@ -47,7 +46,7 @@ import static org.opengis.test.Assert.*;
 })
 public final strictfp class NetcdfStoreProviderTest extends IOTestCase {
     /**
-     * Tests {@link NetcdfStoreProvider#getOpenCapabilities(StorageConnector)} for an input stream which shall
+     * Tests {@link NetcdfStoreProvider#canOpen(StorageConnector)} for an input stream which shall
      * be recognized as a classic NetCDF file.
      *
      * @throws DataStoreException Should never happen.
@@ -56,12 +55,12 @@ public final strictfp class NetcdfStoreProviderTest extends IOTestCase {
     public void testCanOpenFromStream() throws DataStoreException {
         final StorageConnector c = new StorageConnector(IOTestCase.class.getResourceAsStream(NCEP));
         final NetcdfStoreProvider provider = new NetcdfStoreProvider();
-        assertEquals(Collections.singleton(OpenOption.READ), provider.getOpenCapabilities(c));
+        assertEquals(ProbeResult.SUPPORTED, provider.canOpen(c));
         c.closeAllExcept(null);
     }
 
     /**
-     * Tests {@link NetcdfStoreProvider#getOpenCapabilities(StorageConnector)} for a UCAR {@link NetcdfFile} object.
+     * Tests {@link NetcdfStoreProvider#canOpen(StorageConnector)} for a UCAR {@link NetcdfFile} object.
      *
      * @throws IOException If an error occurred while opening the NetCDF file.
      * @throws DataStoreException Should never happen.
@@ -71,7 +70,7 @@ public final strictfp class NetcdfStoreProviderTest extends IOTestCase {
         final NetcdfFile file = open(NCEP);
         final StorageConnector c = new StorageConnector(file);
         final NetcdfStoreProvider provider = new NetcdfStoreProvider();
-        assertEquals(Collections.singleton(OpenOption.READ), provider.getOpenCapabilities(c));
+        assertEquals(ProbeResult.SUPPORTED, provider.canOpen(c));
         file.close();
     }
 

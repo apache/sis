@@ -16,8 +16,6 @@
  */
 package org.apache.sis.storage;
 
-import java.util.Set;
-import java.util.Collections;
 import org.apache.sis.util.Static;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.SystemListener;
@@ -58,22 +56,14 @@ public final class DataStores extends Static {
     }
 
     /**
-     * The options for opening storage in read mode.
-     */
-    private static final Set<OpenOption> READ = Collections.singleton(OpenOption.READ);
-
-    /**
      * Do not allow instantiation of this class.
      */
     private DataStores() {
     }
 
     /**
-     * Creates a {@link DataStore} for the given storage using its default set of {@code OpenOption}s.
-     * The data store is guaranteed to be opened at least with {@link OpenOption#READ}.
-     * Whether the data store has also write or append capabilities is implementation dependent.
-     *
-     * <p>The {@code storage} argument can be any of the following types:</p>
+     * Creates a {@link DataStore} for the given storage.
+     * The {@code storage} argument can be any of the following types:
      *
      * <ul>
      *   <li>A {@link java.nio.file.Path} or a {@link java.io.File} for a file or a directory.</li>
@@ -91,30 +81,6 @@ public final class DataStores extends Static {
      * @throws DataStoreException If an error occurred while opening the storage.
      */
     public static DataStore open(final Object storage) throws DataStoreException {
-        return open(storage, READ);
-    }
-
-    /**
-     * Creates a {@link DataStore} for the given storage using the given set of {@code OpenOption}s.
-     * The {@code storage} argument can be any of the following types:
-     *
-     * <ul>
-     *   <li>A {@link java.nio.file.Path} or a {@link java.io.File} for a file or a directory.</li>
-     *   <li>A {@link java.net.URI} or a {@link java.net.URL} to a distant resource.</li>
-     *   <li>A {@link java.lang.CharSequence} interpreted as a filename or a URL.</li>
-     *   <li>A {@link java.nio.channels.Channel} or a {@link java.io.DataInput}.</li>
-     *   <li>A {@link javax.sql.DataSource} or a {@link java.sql.Connection} to a JDBC database.</li>
-     *   <li>Any other {@code DataStore}-specific object, for example {@link ucar.nc2.NetcdfFile}.</li>
-     *   <li>An existing {@link StorageConnector} instance.</li>
-     * </ul>
-     *
-     * @param  storage The input/output object as a URL, file, image input stream, <i>etc.</i>.
-     * @param  options The open options. Shall contain at least one element, typically {@link OpenOption#READ}.
-     * @return The object to use for reading geospatial data from the given storage.
-     * @throws UnsupportedStorageException if no {@link DataStoreProvider} is found for a given storage object.
-     * @throws DataStoreException If an error occurred while opening the storage.
-     */
-    public static DataStore open(final Object storage, final Set<OpenOption> options) throws DataStoreException {
         DataStoreRegistry r = registry;
         if (r == null) {
             synchronized (DataStores.class) {
@@ -124,6 +90,6 @@ public final class DataStores extends Static {
                 }
             }
         }
-        return r.open(storage, options);
+        return r.open(storage);
     }
 }

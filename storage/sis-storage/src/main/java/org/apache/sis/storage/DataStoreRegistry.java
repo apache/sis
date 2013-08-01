@@ -16,7 +16,6 @@
  */
 package org.apache.sis.storage;
 
-import java.util.Set;
 import java.util.ServiceLoader;
 import org.apache.sis.util.ThreadSafe;
 import org.apache.sis.util.ArgumentChecks;
@@ -78,21 +77,12 @@ final class DataStoreRegistry {
      * </ul>
      *
      * @param  storage The input/output object as a URL, file, image input stream, <i>etc.</i>.
-     * @param  options The open options. Shall contain at least one element, typically {@link OpenOption#READ}.
      * @return The object to use for reading geospatial data from the given storage.
      * @throws UnsupportedStorageException if no {@link DataStoreProvider} is found for a given storage object.
      * @throws DataStoreException If an error occurred while opening the storage.
      */
-    public DataStore open(final Object storage, final Set<OpenOption> options) throws DataStoreException {
+    public DataStore open(final Object storage) throws DataStoreException {
         ArgumentChecks.ensureNonNull("storage", storage);
-        ArgumentChecks.ensureNonNull("options", options);
-        if (options.isEmpty()) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "options"));
-        }
-        if (options.contains(OpenOption.UNKNOWN)) {
-            throw new IllegalArgumentException(Errors.format(
-                    Errors.Keys.IllegalArgumentValue_2, "options", OpenOption.UNKNOWN));
-        }
         StorageConnector connector;
         if (storage instanceof StorageConnector) {
             connector = (StorageConnector) storage;
@@ -102,13 +92,16 @@ final class DataStoreRegistry {
         try {
             DataStoreProvider provider = null;
             synchronized (loader) {
-                for (final DataStoreProvider candidate : loader) {
-                    final Set<OpenOption> capabilities = candidate.getOpenCapabilities(connector);
-                    if (capabilities.contains(OpenOption.UNKNOWN)) {
-                        // TODO: not enough information.
-                    } else if (capabilities.containsAll(options)) {
-                        provider = candidate;
-                        break;
+search:         for (final DataStoreProvider candidate : loader) {
+                    switch (candidate.canOpen(connector)) {
+                        case SUPPORTED: {
+                            provider = candidate;
+                            break search;
+                        }
+                        case UNDETERMINED: {
+                            // TODO: not enough information.
+                            break;
+                        }
                     }
                 }
             }

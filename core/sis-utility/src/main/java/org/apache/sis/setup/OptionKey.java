@@ -24,6 +24,10 @@ import java.io.ObjectStreamException;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 
+// Related to JDK7
+import java.nio.file.OpenOption;
+import java.nio.file.StandardOpenOption;
+
 
 /**
  * Keys in a map of options, together with static constants for commonly-used options.
@@ -33,7 +37,7 @@ import org.apache.sis.util.logging.Logging;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.4
  * @module
  */
 public class OptionKey<T> implements Serializable {
@@ -45,10 +49,10 @@ public class OptionKey<T> implements Serializable {
     /**
      * The encoding of a URL (<strong>not</strong> the encoding of the document content).
      * This option may be used when converting a {@link String} or a {@link java.net.URL}
-     * to a {@link java.net.URI} or a {@link java.io.File}:
+     * to a {@link java.net.URI} or a {@link java.io.File}. The following rules apply:
      *
      * <ul>
-     *   <li>URI are always encoded in UTF-8.</li>
+     *   <li>URI are always encoded in UTF-8. Consequently this option is ignored for URI.</li>
      *   <li>URL are often encoded in UTF-8, but not necessarily. Other encodings are possible
      *       (while not recommended), or some URL may not be encoded at all.</li>
      * </ul>
@@ -73,6 +77,20 @@ public class OptionKey<T> implements Serializable {
      * @see java.net.URLDecoder
      */
     public static final OptionKey<String> URL_ENCODING = new OptionKey<>("URL_ENCODING", String.class);
+
+    /**
+     * Whether a storage object (e.g. a {@link org.apache.sis.storage.DataStore}) shall be opened in read,
+     * write, append or other modes. The main options that can be provided are:
+     *
+     * <table class="sis">
+     *   <tr><th>Value</th>                             <th>Meaning</th></tr>
+     *   <tr><td>{@link StandardOpenOption#READ}</td>   <td>Open for reading data from the storage object.</td></tr>
+     *   <tr><td>{@link StandardOpenOption#WRITE}</td>  <td>Open for modifying existing data in the storage object.</td></tr>
+     *   <tr><td>{@link StandardOpenOption#APPEND}</td> <td>Open for appending new data in the storage object.</td></tr>
+     *   <tr><td>{@link StandardOpenOption#CREATE}</td> <td>Creates a new storage object (file or database) if it does not exist.</td></tr>
+     * </table>
+     */
+    public static final OptionKey<OpenOption[]> OPEN_OPTIONS = new OptionKey<>("OPEN_OPTIONS", OpenOption[].class);
 
     /**
      * The byte buffer to use for input/output operations. Some {@link org.apache.sis.storage.DataStore}

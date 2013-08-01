@@ -16,8 +16,6 @@
  */
 package org.apache.sis.storage.netcdf;
 
-import java.util.Set;
-import java.util.Collections;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.lang.reflect.Method;
@@ -34,7 +32,7 @@ import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.OpenOption;
+import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.util.ThreadSafe;
 
@@ -98,38 +96,31 @@ public class NetcdfStoreProvider extends DataStoreProvider {
     }
 
     /**
-     * The open options of NetCDF files.
-     */
-    private static final Set<OpenOption> OPTIONS = Collections.<OpenOption>singleton(OpenOption.READ);
-
-    /**
      * Creates a new provider.
      */
     public NetcdfStoreProvider() {
     }
 
     /**
-     * Returns a non-empty set if the given storage appears to be supported by {@link NetcdfStore}.
-     * Returning a non-empty set from this method does not guarantee that reading or writing will succeed,
+     * Returns {@link ProbeResult#SUPPORTED} if the given storage appears to be supported by {@link NetcdfStore}.
+     * Returning {@code SUPPORTED} from this method does not guarantee that reading or writing will succeed,
      * only that there appears to be a reasonable chance of success based on a brief inspection of the
      * {@linkplain StorageConnector#getStorage() storage object} or contents.
      *
      * @param  storage Information about the storage (URL, stream, {@link ucar.nc2.NetcdfFile} instance, <i>etc</i>).
-     * @return A non-empty set if the given storage seems to be usable by the {@code NetcdfStore} instances,
-     *         an empty set if {@code NetcdfStore} will not be able to use the given storage,
-     *         or {@code null} if this method does not have enough information.
+     * @return {@code SUPPORTED} if the given storage seems to be usable by the {@code NetcdfStore} instances.
      * @throws DataStoreException if an I/O error occurred.
      */
     @Override
-    public Set<OpenOption> getOpenCapabilities(StorageConnector storage) throws DataStoreException {
+    public ProbeResult canOpen(StorageConnector storage) throws DataStoreException {
         final ByteBuffer buffer = storage.getStorageAs(ByteBuffer.class);
         if (buffer != null) {
             if (buffer.remaining() < Integer.SIZE / Byte.SIZE) {
-                return Collections.singleton(OpenOption.UNKNOWN);
+                return ProbeResult.UNDETERMINED;
             }
             final int header = buffer.getInt(buffer.position());
             if ((header & 0xFFFFFF00) == ChannelDecoder.MAGIC_NUMBER) {
-                return OPTIONS;
+                return ProbeResult.SUPPORTED;
             }
         }
         /*
@@ -140,7 +131,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
             ensureInitialized();
             final Method method = canOpenFromPath;
             if (method != null) try {
-                return ((Boolean) method.invoke(null, path)) ? OPTIONS : Collections.<OpenOption>emptySet();
+                return ((Boolean) method.invoke(null, path)) ? ProbeResult.SUPPORTED : ProbeResult.UNKNOWN_FORMAT;
             } catch (IllegalAccessException e) {
                 throw new AssertionError(e); // Should never happen, since the method is public.
             } catch (InvocationTargetException e) {
@@ -158,16 +149,14 @@ public class NetcdfStoreProvider extends DataStoreProvider {
          */
         for (Class<?> type = storage.getStorage().getClass(); type != null; type = type.getSuperclass()) {
             if (UCAR_CLASSNAME.equals(type.getName())) {
-                return OPTIONS;
+                return ProbeResult.SUPPORTED;
             }
         }
-        return Collections.emptySet();
+        return ProbeResult.UNKNOWN_FORMAT;
     }
 
     /**
-     * Returns a {@link NetcdfStore} implementation associated with this provider. This method invokes
-     * {@link StorageConnector#closeAllExcept(Object)} after data store creation, keeping open only
-     * the needed resource.
+     * Returns a {@link NetcdfStore} implementation associated with this provider.
      *
      * @param storage Information about the storage (URL, stream, {@link ucar.nc2.NetcdfFile} instance, <i>etc</i>).
      */
