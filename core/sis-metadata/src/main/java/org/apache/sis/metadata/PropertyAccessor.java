@@ -1085,47 +1085,6 @@ final class PropertyAccessor {
     }
 
     /**
-     * Appends all non-empty metadata from source to target. The source can be any implementation
-     * of the metadata interface, but the target must be the implementation expected by this class.
-     *
-     * <p>If the source contains any null or empty properties, then those properties will
-     * not overwrite the corresponding properties in the destination metadata.</p>
-     *
-     * @param  source The metadata to copy.
-     * @param  target The target metadata where to append.
-     * @return {@code true} in case of success, or {@code false} if at least
-     *         one setter method was not found.
-     * @throws UnmodifiableMetadataException if the target metadata is unmodifiable.
-     * @throws BackingStoreException If the implementation threw a checked exception.
-     */
-    public boolean append(final Object source, final Object target)
-            throws UnmodifiableMetadataException, BackingStoreException
-    {
-        // Because this PropertyAccesssor is designed for the target, we must
-        // check if the extra methods are suitable for the source object.
-        assert type.isInstance(source) : Classes.getClass(source);
-        boolean success = true;
-        final Object[] arguments = new Object[1];
-        for (int i=0; i<standardCount; i++) {
-            final Method getter = getters[i];
-            arguments[0] = get(getter, source);
-            if (!isNullOrEmpty(arguments[0])) {
-                if (setters == null) {
-                    return false;
-                }
-                final Method setter = setters[i];
-                if (setter != null) {
-                    convert(getter, target, null, arguments, elementTypes[i], true);
-                    set(setter, target, arguments);
-                } else {
-                    success = false;
-                }
-            }
-        }
-        return success;
-    }
-
-    /**
      * Replaces every properties in the specified metadata by their
      * {@linkplain ModifiableMetadata#unmodifiable() unmodifiable variant}.
      *

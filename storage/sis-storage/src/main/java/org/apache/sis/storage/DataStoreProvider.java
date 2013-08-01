@@ -16,16 +16,43 @@
  */
 package org.apache.sis.storage;
 
+import java.util.Set;
+import org.apache.sis.util.ThreadSafe;
+
 
 /**
- * Creates {@link DataStore} instances for a specific format from a given {@link StorageConnector} input.
- * There is typically a different {@code DataStoreProvider} instance for each format provided by a library.
+ * Provides information about a specific {@link DataStore} implementation.
+ * There is typically one {@code DataStoreProvider} instance for each format supported by a library.
+ * Each {@code DataStoreProvider} instances provides the following services:
+ *
+ * <ul>
+ *   <li>Provide generic information about the storage (name, <i>etc.</i>).</li>
+ *   <li>Create instances of the {@link DataStore} implementation described by this provider.</li>
+ *   <li>Test if a {@code DataStore} instance created by this provider would have reasonable chances
+ *       to open a given {@link StorageConnector}.</li>
+ * </ul>
+ *
+ * {@section Packaging data stores}
+ * JAR files that provide implementations of this class shall contain an entry with exactly the following path:
+ *
+ * {@preformat text
+ *     META-INF/services/org.apache.sis.storage.DataStoreProvider
+ * }
+ *
+ * The above entry shall contain one line for each {@code DataStoreProvider} implementation provided in the JAR file,
+ * where each line is the fully qualified name of the implementation class.
+ * See {@link java.util.ServiceLoader} for more general discussion about this lookup mechanism.
+ *
+ * {@section Thread safety policy}
+ * All {@code DataStoreProvider} implementations shall be thread-safe.
+ * However the {@code DataStore} instances created by the providers do not need to be thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.4
  * @module
  */
+@ThreadSafe
 public abstract class DataStoreProvider {
     /**
      * Creates a new provider.
@@ -34,64 +61,73 @@ public abstract class DataStoreProvider {
     }
 
     /**
-     * Returns {@code TRUE} if the given storage appears to be supported by the {@code DataStore}.
-     * Returning {@code TRUE} from this method does not guarantee that reading or writing will succeed,
+     * Indicates if the given storage appears to be supported by the {@code DataStore}s created by this provider.
+     * The most typical return values are:
+     *
+     * <ul>
+     *   <li>{@link ProbeResult#SUPPORTED} if the {@code DataStore}s created by this provider
+     *       can open the given storage.</li>
+     *   <li>{@link ProbeResult#UNKNOWN_STORAGE} if the given storage does not appear to be in a format
+     *       supported by this {@code DataStoreProvider}.</li>
+     * </ul>
+     *
+     * Note that the {@code SUPPORTED_FORMAT} value does not guarantee that reading or writing will succeed,
      * only that there appears to be a reasonable chance of success based on a brief inspection of the
      * {@linkplain StorageConnector#getStorage() storage object} or contents.
-     *
-     * <p>Implementations will typically check the first bytes of the stream for a "magic number"
-     * associated with the format, as in the following example:</p>
-     *
-     * {@preformat java
-     *     final ByteBuffer buffer = storage.getStorageAs(ByteBuffer.class);
-     *     if (buffer == null) {
-     *         // If StorageConnector can not provide a ByteBuffer, then the storage is probably
-     *         // not a File, URL, URI, InputStream neither a ReadableChannel. In this example,
-     *         // our provider can not handle such unknown source.
-     *         return Boolean.FALSE;
-     *     }
-     *     if (buffer.remaining() < Integer.SIZE / Byte.SIZE) {
-     *         // If the buffer does not contain enough bytes for the 'int' type, this is not necessarily
-     *         // because the file is truncated. It may be because the data were not yet available at the
-     *         // time this method has been invoked. Returning 'null' means "don't know".
-     *         return null;
-     *     }
-     *     // Use ByteBuffer.getInt(int) instead than ByteBuffer.getInt() in order to keep buffer position
-     *     // unchanged after this method call.
-     *     return buffer.getInt(buffer.position()) == MAGIC_NUMBER;
-     * }
      *
      * Implementors are responsible for restoring the input to its original stream position on return of this method.
      * Implementors can use a mark/reset pair for this purpose. Marks are available as
      * {@link java.nio.ByteBuffer#mark()}, {@link java.io.InputStream#mark(int)} and
      * {@link javax.imageio.stream.ImageInputStream#mark()}.
      *
-     * <table width="80%" align="center" cellpadding="18" border="4" bgcolor="#FFE0B0">
-     *   <tr><td>
-     *     <b>Warning:</b> this method is likely to change. SIS 0.4 will probably return a set of enumeration
-     *     values describing how the file can be open (read, write, append) similar to JDK7 open mode.
-     *   </td></tr>
-     * </table>
+     * {@section Implementation example}
+     * Implementations will typically check the first bytes of the stream for a "magic number" associated
+     * with the format, as in the following example:
+     *
+     * {@preformat java
+     *     public ProbeResult canOpen(StorageConnector storage) throws DataStoreException {
+     *         final ByteBuffer buffer = storage.getStorageAs(ByteBuffer.class);
+     *         if (buffer == null) {
+     *             // If StorageConnector can not provide a ByteBuffer, then the storage is
+     *             // probably not a File, URL, URI, InputStream neither a ReadableChannel.
+     *             return ProbeResult.UNKNOWN_STORAGE;
+     *         }
+     *         if (buffer.remaining() < Integer.SIZE / Byte.SIZE) {
+     *             // If the buffer does not contain enough bytes for the integer type, this is not
+     *             // necessarily because the file is truncated. It may be because the data were not
+     *             // yet available at the time this method has been invoked.
+     *             return ProbeResult.UNDETERMINED;
+     *         }
+     *         if (buffer.getInt(buffer.position()) != MAGIC_NUMBER) {
+     *             // We used ByteBuffer.getInt(int) instead than ByteBuffer.getInt() above
+     *             // in order to keep the buffer position unchanged after this method call.
+     *             return ProbeResult.UNKNOWN_FORMAT;
+     *         }
+     *         return ProbeResult.SUPPORTED;
+     *     }
+     * }
      *
      * @param  storage Information about the storage (URL, stream, JDBC connection, <i>etc</i>).
-     * @return {@link Boolean#TRUE} if the given storage seems to be usable by the {@code DataStore} instances
-     *         create by this provider, {@link Boolean#FALSE} if the {@code DataStore} will not be able to use
-     *         the given storage, or {@code null} if this method does not have enough information.
+     * @return {@link ProbeResult#SUPPORTED} if the given storage seems to be readable by the {@code DataStore}
+     *         instances created by this provider.
      * @throws DataStoreException if an I/O or SQL error occurred. The error shall be unrelated to the logical
      *         structure of the storage.
      */
-    public abstract Boolean canOpen(StorageConnector storage) throws DataStoreException;
+    public abstract ProbeResult canOpen(StorageConnector storage) throws DataStoreException;
 
     /**
      * Returns a data store implementation associated with this provider.
      *
-     * <p><b>Implementation note:</b>
+     * {@section Implementation note}
      * Implementors shall invoke {@link StorageConnector#closeAllExcept(Object)} after {@code DataStore}
-     * creation, keeping open only the needed resource.</p>
+     * creation, keeping open only the needed resource.
      *
      * @param  storage Information about the storage (URL, stream, JDBC connection, <i>etc</i>).
      * @return A data store implementation associated with this provider for the given storage.
-     * @throws DataStoreException if an error occurred while creating the data store instance.
+     * @throws IllegalArgumentException If the set contains an invalid combination of options.
+     * @throws DataStoreException If an error occurred while creating the data store instance.
+     *
+     * @see DataStores#open(Object, Set)
      */
     public abstract DataStore open(StorageConnector storage) throws DataStoreException;
 }

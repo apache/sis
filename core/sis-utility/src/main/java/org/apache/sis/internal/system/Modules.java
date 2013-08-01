@@ -41,6 +41,11 @@ public final class Modules {
     /**
      * The {@value} module name.
      */
+    public static final String STORAGE = "org.apache.sis.storage";
+
+    /**
+     * The {@value} module name.
+     */
     public static final String NETCDF = "org.apache.sis.storage.netcdf";
 
     /**
