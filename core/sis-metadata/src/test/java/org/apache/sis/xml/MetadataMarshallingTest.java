@@ -26,6 +26,9 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.JAXBException;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.metadata.iso.extent.DefaultExtent;
+import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
+import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.lineage.DefaultProcessing;
 import org.apache.sis.metadata.iso.lineage.DefaultProcessStep;
 import org.apache.sis.metadata.iso.quality.AbstractElement;
@@ -37,6 +40,7 @@ import org.junit.AfterClass;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
+import static org.apache.sis.test.TestUtilities.date;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
@@ -48,7 +52,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.5)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 @DependsOn(FreeTextMarshallingTest.class)
@@ -131,7 +135,7 @@ public final strictfp class MetadataMarshallingTest extends XMLTestCase {
         assertInstanceOf("Wrong value for <gmd:result>", DefaultConformanceResult.class,
                 getSingleton(((AbstractElement) metadata).getResults()));
         /*
-         * Final comparison: ensure that we didn't lost any information, then release.
+         * Final comparison: ensure that we didn't lost any information.
          */
         assertXmlEquals(resource, marshal(marshaller, metadata), "xmlns:*", "xsi:schemaLocation", "xsi:type");
         pool.recycle(unmarshaller);
@@ -162,9 +166,47 @@ public final strictfp class MetadataMarshallingTest extends XMLTestCase {
         assertTrue(xml.startsWith("<?xml"));
         assertXmlEquals(getResource("ProcessStep.xml"), xml, "xmlns:*", "xsi:schemaLocation");
         /*
-         * Final comparison: ensure that we didn't lost any information, then release.
+         * Final comparison: ensure that we didn't lost any information.
          */
         assertEquals(processStep, unmarshal(unmarshaller, xml));
+        pool.recycle(unmarshaller);
+        pool.recycle(marshaller);
+    }
+
+    /**
+     * Tests the (un)marshalling of a {@code <gmd:EX_Extent>} object.
+     * This test opportunistically tests setting {@code "gml:id"} value.
+     *
+     * <p><b>XML test file:</b>
+     * <a href="{@scmUrl gmd-data}/Extent.xml">Extent.xml</a></p>
+     *
+     * @throws IOException   If an error occurred while reading the XML file.
+     * @throws JAXBException If an error occurred during the during marshalling / unmarshalling processes.
+     *
+     * @since 0.4
+     */
+    @Test
+    public void testExtent() throws IOException, JAXBException {
+        final Marshaller   marshaller   = pool.acquireMarshaller();
+        final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
+        final DefaultGeographicBoundingBox bbox = new DefaultGeographicBoundingBox(-99, -79, 14.9844, 31);
+        bbox.getIdentifierMap().put(IdentifierSpace.ID, "bbox");
+        final DefaultTemporalExtent temporal = new DefaultTemporalExtent();
+        if (PENDING_FUTURE_SIS_VERSION) {
+            // This block needs sis-temporal module.
+            temporal.setBounds(date("2010-01-27 13:26:10"), date("2010-08-27 13:26:10"));
+        }
+        final DefaultExtent extent = new DefaultExtent(null, bbox, null, temporal);
+        /*
+         * XML marshalling, and compare with the content of "ProcessStep.xml" file.
+         */
+        final String xml = marshal(marshaller, extent);
+        assertTrue(xml.startsWith("<?xml"));
+        assertXmlEquals(getResource("Extent.xml"), xml, "xmlns:*", "xsi:schemaLocation");
+        /*
+         * Final comparison: ensure that we didn't lost any information.
+         */
+        assertEquals(extent, unmarshal(unmarshaller, xml));
         pool.recycle(unmarshaller);
         pool.recycle(marshaller);
     }

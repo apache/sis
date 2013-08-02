@@ -25,9 +25,6 @@ import org.opengis.util.GenericName;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.content.FeatureCatalogueDescription;
 
-import static org.apache.sis.internal.metadata.MetadataUtilities.getBoolean;
-import static org.apache.sis.internal.metadata.MetadataUtilities.setBoolean;
-
 
 /**
  * Information identifying the feature catalogue.
@@ -36,7 +33,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.setBoolean;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 @XmlType(name = "MD_FeatureCatalogueDescription_Type", propOrder = {
@@ -53,28 +50,26 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -3626075463499626813L;
+    private static final long serialVersionUID = -3626075463499626815L;
 
     /**
-     * Mask for the {@code compliant} {@link Boolean} value.
-     * Needs 2 bits since the values can be {@code true}, {@code false} or {@code null}.
+     * Whether or not the cited feature catalogue complies with ISO 19110.
      *
-     * @see #booleans
+     * <p>Implementation note: we need to store the reference to the {@code Boolean} instance instead
+     * than using bitmask because {@link org.apache.sis.internal.jaxb.PrimitiveTypeProperties} may
+     * associate some properties to that particular instance.</p>
      */
-    private static final byte COMPLIANT_MASK = 0b011;
-
-    /**
-     * Mask for the {@code includedWithDataset} {@code boolean} value.
-     * Needs only 1 bit because the value can not be {@code null}.
-     *
-     * @see #booleans
-     */
-    private static final byte INCLUDED_MASK = 0b100;
+    private Boolean compliant;
 
     /**
      * Language(s) used within the catalogue
      */
     private Collection<Locale> languages;
+
+    /**
+     * Whether or not the feature catalogue is included with the dataset.
+     */
+    private boolean includedWithDataset;
 
     /**
      * Subset of feature types from cited feature catalogue occurring in dataset.
@@ -85,15 +80,6 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      * Complete bibliographic reference to one or more external feature catalogues.
      */
     private Collection<Citation> featureCatalogueCitations;
-
-    /**
-     * The set of {@code boolean} and {@link Boolean} values.
-     * Bits are read and written using the {@code *_MASK} constants.
-     *
-     * @see #COMPLIANT_MASK
-     * @see #INCLUDED_MASK
-     */
-    private byte booleans;
 
     /**
      * Constructs an initially empty feature catalogue description.
@@ -113,8 +99,8 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
     public DefaultFeatureCatalogueDescription(final FeatureCatalogueDescription object) {
         super(object);
         if (object != null) {
-            booleans                  = object.isIncludedWithDataset() ? INCLUDED_MASK : 0;
-            booleans                  = (byte) setBoolean(booleans, COMPLIANT_MASK, object.isCompliant());
+            compliant                 = object.isCompliant();
+            includedWithDataset       = object.isIncludedWithDataset();
             languages                 = copyCollection(object.getLanguages(), Locale.class);
             featureTypes              = copyCollection(object.getFeatureTypes(), GenericName.class);
             featureCatalogueCitations = copyCollection(object.getFeatureCatalogueCitations(), Citation.class);
@@ -154,7 +140,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
     @Override
     @XmlElement(name = "complianceCode")
     public Boolean isCompliant() {
-        return getBoolean(booleans, COMPLIANT_MASK);
+        return compliant;
     }
 
     /**
@@ -164,7 +150,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      */
     public void setCompliant(final Boolean newValue) {
         checkWritePermission();
-        booleans = (byte) setBoolean(booleans, COMPLIANT_MASK, newValue);
+        compliant = newValue;
     }
 
     /**
@@ -195,7 +181,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
     @Override
     @XmlElement(name = "includedWithDataset", required = true)
     public boolean isIncludedWithDataset() {
-        return (booleans & INCLUDED_MASK) != 0;
+        return includedWithDataset;
     }
 
     /**
@@ -205,11 +191,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      */
     public void setIncludedWithDataset(final boolean newValue) {
         checkWritePermission();
-        if (newValue) {
-            booleans |= INCLUDED_MASK;
-        } else {
-            booleans &= ~INCLUDED_MASK;
-        }
+        includedWithDataset = newValue;
     }
 
     /**

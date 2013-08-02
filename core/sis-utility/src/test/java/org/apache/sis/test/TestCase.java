@@ -50,7 +50,7 @@ import static org.apache.sis.test.TestConfiguration.OUTPUT_ENCODING_KEY;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.16)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 @RunWith(TestRunner.class)
@@ -70,6 +70,23 @@ public abstract strictfp class TestCase {
      * of the {@code geoapi-conformance} module, but should pass with the development snapshot.
      */
     public static final boolean PENDING_NEXT_GEOAPI_RELEASE = false;
+
+    /**
+     * A flag for code that are pending future SIS development before to be enabled.
+     * This flag is always set to {@code false}. It shall be used as below:
+     *
+     * {@preformat java
+     *     if (PENDING_FUTURE_SIS_VERSION) {
+     *         // Do some stuff here.
+     *     }
+     * }
+     *
+     * The intend is to make easier to identify test cases that fail with the current version
+     * of SIS (e.g. because of unsupported operations), but should pass in a future version.
+     *
+     * @since 0.4
+     */
+    public static final boolean PENDING_FUTURE_SIS_VERSION = false;
 
     /**
      * The output writer where to print debugging information (never {@code null}).
