@@ -16,10 +16,10 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
-import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
-import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.content.TransferFunctionType;
+import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
+import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
 import org.apache.sis.xml.Namespaces;
 
 
@@ -36,13 +36,6 @@ import org.apache.sis.xml.Namespaces;
 public final class MI_TransferFunctionTypeCode
         extends CodeListAdapter<MI_TransferFunctionTypeCode, TransferFunctionType>
 {
-    /**
-     * Ensures that the adapted code list class is loaded.
-     */
-    static {
-        ensureClassLoaded(TransferFunctionType.class);
-    }
-
     /**
      * Empty constructor for JAXB only.
      */

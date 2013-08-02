@@ -16,10 +16,10 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
-import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
-import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.acquisition.GeometryType;
+import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
+import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
 import org.apache.sis.xml.Namespaces;
 
 
@@ -34,13 +34,6 @@ import org.apache.sis.xml.Namespaces;
  * @module
  */
 public final class MI_GeometryTypeCode extends CodeListAdapter<MI_GeometryTypeCode, GeometryType> {
-    /**
-     * Ensures that the adapted code list class is loaded.
-     */
-    static {
-        ensureClassLoaded(GeometryType.class);
-    }
-
     /**
      * Empty constructor for JAXB only.
      */
