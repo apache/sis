@@ -38,6 +38,8 @@ import org.apache.sis.util.logging.WarningListeners;
  * @since   0.3
  * @version 0.3
  * @module
+ *
+ * @see DataStores#open(Object)
  */
 public abstract class DataStore implements Localized, AutoCloseable {
     /**

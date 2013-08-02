@@ -18,7 +18,7 @@ package org.apache.sis.storage;
 
 
 /**
- * Tells whether a storage (file, database, <i>etc.</i>) appears to be supported by a {@code DataStore}.
+ * Tells whether a storage (file, database) appears to be supported by a {@code DataStore}.
  * There is three categories of values in this enumeration:
  *
  * <ul>
@@ -27,7 +27,8 @@ package org.apache.sis.storage;
  *       whether the storage can be opened. SIS will try to use such provider last, if no better suited
  *       provider is found.</li>
  *   <li>All other values indicate that the storage can not be opened. The actual enumeration value gives
- *       the reason (e.g. unknown format, or unsupported version).</li>
+ *       the reason (e.g. {@linkplain #UNKNOWN_FORMAT unknown format}, or
+ *       {@linkplain #UNSUPPORTED_VERSION unsupported version}).</li>
  * </ul>
  *
  * When a {@link DataStores#open DataStores.open(…)} method is invoked, SIS will iterate over the list of known
