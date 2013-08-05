@@ -19,15 +19,14 @@ package org.apache.sis.internal.metadata;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import org.apache.sis.xml.NilReason;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.metadata.InvalidMetadataException;
+import org.apache.sis.internal.jaxb.PrimitiveTypeProperties;
 
 import static org.apache.sis.metadata.iso.ISOMetadata.LOGGER;
-
-// Related to JDK7
-import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
@@ -35,7 +34,7 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.4
  * @module
  */
 public final class MetadataUtilities extends Static {
@@ -78,59 +77,22 @@ public final class MetadataUtilities extends Static {
     }
 
     /**
-     * Sets the bit under the given mask for the given boolean value.
-     * This method uses two bits as below:
-     *
-     * <ul>
-     *   <li>{@code 00} - {@code null}</li>
-     *   <li>{@code 10} - {@code Boolean.FALSE}</li>
-     *   <li>{@code 11} - {@code Boolean.TRUE}</li>
-     * </ul>
-     *
-     * @param  flags The set of bits to modify for the given boolean value.
-     * @param  mask  The bit mask, which much have exactly two consecutive bits set.
-     * @param  value The boolean value to store in the {@code flags}, or {@code null}.
-     * @return The updated {@code flags}.
-     */
-    public static int setBoolean(int flags, final int mask, final Boolean value) {
-        assert 3 << Integer.numberOfTrailingZeros(mask) == mask : mask;
-        if (value == null) {
-            flags &= ~mask;
-        } else {
-            flags |= mask;
-            if (!value) {
-                flags &= ~(mask & (mask >>> 1));
-            }
-        }
-        assert Objects.equals(getBoolean(flags, mask), value) : value;
-        return flags;
-    }
-
-    /**
-     * Returns the boolean value for the bits under the given mask.
-     * This method is the reverse of {@link #setBoolean(int, int, Boolean)}.
-     *
-     * @param  flags The set of bits from which to read the boolean value under the given mask.
-     * @param  mask  The bit mask, which much have exactly two consecutive bits set.
-     * @return The boolean value under the given mask (may be {@code null}).
-     */
-    public static Boolean getBoolean(int flags, final int mask) {
-        flags &= mask;
-        return (flags == 0) ? null : Boolean.valueOf(flags == mask);
-    }
-
-    /**
-     * Makes sure that the given inclusion is non-null, then returns its value.
+     * Makes sure that the given inclusion is non-nil, then returns its value.
+     * If the given inclusion is {@code null}, then the default value is {@code true}.
      *
      * @param  value The {@link org.opengis.metadata.extent.GeographicBoundingBox#getInclusion()} value.
      * @return The given value as a primitive type.
-     * @throws InvalidMetadataException if the given value is null.
+     * @throws InvalidMetadataException if the given value is nil.
      */
     public static boolean getInclusion(final Boolean value) throws InvalidMetadataException {
         if (value == null) {
-            throw new InvalidMetadataException(Errors.format(Errors.Keys.MissingValueForProperty_1, "inclusion"));
+            return true;
         }
-        return value;
+        final boolean p = value;
+        if (p || value == Boolean.FALSE || !(PrimitiveTypeProperties.property(value) instanceof NilReason)) {
+            return p;
+        }
+        throw new InvalidMetadataException(Errors.format(Errors.Keys.MissingValueForProperty_1, "inclusion"));
     }
 
     /**

@@ -44,7 +44,7 @@ public final class GO_Boolean extends PropertyType<GO_Boolean, Boolean> {
      * @param value The value.
      */
     private GO_Boolean(final Boolean value) {
-        super(value, !value);
+        super(value, value.booleanValue() == false && value != Boolean.FALSE);
     }
 
     /**

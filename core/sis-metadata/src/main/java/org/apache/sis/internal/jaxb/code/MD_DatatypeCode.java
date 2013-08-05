@@ -16,10 +16,10 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
-import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
-import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.Datatype;
+import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
+import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
 
 
 /**
@@ -33,13 +33,6 @@ import org.opengis.metadata.Datatype;
  * @module
  */
 public final class MD_DatatypeCode extends CodeListAdapter<MD_DatatypeCode, Datatype> {
-    /**
-     * Ensures that the adapted code list class is loaded.
-     */
-    static {
-        ensureClassLoaded(Datatype.class);
-    }
-
     /**
      * Empty constructor for JAXB only.
      */

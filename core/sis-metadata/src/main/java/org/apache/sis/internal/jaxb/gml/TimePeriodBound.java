@@ -28,7 +28,7 @@ import org.apache.sis.internal.geoapi.temporal.Instant;
 /**
  * The {@linkplain TimePeriod#begin begin} or {@linkplain TimePeriod#end end} position in
  * a {@link TimePeriod}. This information is encoded in different way depending if we are
- * reading or formatting a GML2 or GML2 file.
+ * reading or formatting a GML2 or GML3 file.
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -137,7 +137,7 @@ public abstract class TimePeriodBound {
      *   </gml:TimePeriod>
      * }
      */
-    @XmlType(name = "TimeInstantPropertyType")
+    //@XmlType(name = "TimeInstantPropertyType") // TODO: Omitted for now for allowing external modules to define their own type.
     public static final class GML2 extends TimePeriodBound {
         /**
          * The time.

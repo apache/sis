@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.jdk7;
 
+import java.util.Set;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -45,22 +46,15 @@ public final class Files {
      * @return The channel.
      * @throws IOException If an error occurred while opening the channel.
      */
-    public static ByteChannel newByteChannel(final File file, final Object... options) throws IOException {
+    public static ByteChannel newByteChannel(final File file, final Set<?> options) throws IOException {
         String mode = "r";
         if (options != null) {
-            for (final Object option : options) {
-                final String s = option.toString().trim();
-                if (s.equalsIgnoreCase("WRITE")) {
-                    if (mode.length() == 1) { // Have precedence only over "r" mode.
-                        mode = "rw";
-                    }
-                } else if (s.equalsIgnoreCase("SYNC")) {
-                    mode = "rws";
-                    break; // Have precedence over all other modes.
-                } else if (s.equalsIgnoreCase("DSYNC")) {
-                    mode = "rwd";
-                    // Continue in case there is also a "rws".
-                }
+            if (options.contains(StandardOpenOption.DSYNC)) {
+                mode = "rwd";
+            } else if (options.contains(StandardOpenOption.SYNC)) {
+                mode = "rws";
+            } else if (options.contains(StandardOpenOption.WRITE)) {
+                mode = "rw";
             }
         }
         return new RandomAccessFile(file, mode).getChannel();
