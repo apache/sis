@@ -519,6 +519,7 @@ public final class Types extends Static {
         if (name == null || name.isEmpty()) {
             return null;
         }
+        // -------- Begin workaround for GeoAPI 3.0 (TODO: remove after upgrade to GeoAPI 3.1) ------------
         final String typeName = codeType.getName();
         try {
             // Forces initialization of the given class in order
@@ -527,6 +528,7 @@ public final class Types extends Static {
         } catch (ClassNotFoundException e) {
             throw new TypeNotPresentException(typeName, e); // Should never happen.
         }
+        // -------- End workaround ------------------------------------------------------------------------
         return CodeList.valueOf(codeType, new CodeListFilter(name, canCreate));
     }
 

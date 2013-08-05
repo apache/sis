@@ -37,7 +37,7 @@ import org.apache.sis.internal.jaxb.Context;
  * @module
  */
 @XmlRootElement(name="TimePeriod")
-@XmlType(name = "TimePeriodType", propOrder = {
+@XmlType(/*name = "TimePeriodType",*/ propOrder = { // TODO: Omitted for now for allowing external modules to define their own type.
     "begin",
     "end"
 })

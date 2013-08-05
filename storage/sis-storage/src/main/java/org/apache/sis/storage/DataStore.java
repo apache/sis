@@ -41,6 +41,8 @@ import org.apache.sis.internal.jdk7.AutoCloseable;
  * @since   0.3
  * @version 0.3
  * @module
+ *
+ * @see DataStores#open(Object)
  */
 public abstract class DataStore implements Localized, AutoCloseable {
     /**

@@ -16,10 +16,10 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
-import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
-import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.constraint.Classification;
+import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
+import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
 
 
 /**
@@ -33,13 +33,6 @@ import org.opengis.metadata.constraint.Classification;
  * @module
  */
 public final class MD_ClassificationCode extends CodeListAdapter<MD_ClassificationCode, Classification> {
-    /**
-     * Ensures that the adapted code list class is loaded.
-     */
-    static {
-        ensureClassLoaded(Classification.class);
-    }
-
     /**
      * Empty constructor for JAXB only.
      */
