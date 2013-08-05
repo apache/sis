@@ -31,7 +31,6 @@ import java.sql.Connection;
 import javax.sql.DataSource;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.storage.IOUtilities;
@@ -80,6 +79,12 @@ public class StorageConnector implements Serializable {
      * Users can override this value by providing a value for {@link OptionKey#BYTE_BUFFER}.
      */
     static final int DEFAULT_BUFFER_SIZE = 4096;
+
+    /**
+     * The minimal size of the {@link ByteBuffer} to be created. This size is used only
+     * for temporary buffers that are unlikely to be used for the actual reading process.
+     */
+    private static final int MINIMAL_BUFFER_SIZE = 256;
 
     /**
      * The input/output object given at construction time.
@@ -364,6 +369,7 @@ public class StorageConnector implements Serializable {
 
     /**
      * Creates a view for the input as a {@link ChannelDataInput} if possible.
+     * If the view can not be created, remember that fact in order to avoid new attempts.
      *
      * @param  asImageInputStream If the {@code ChannelDataInput} needs to be {@link ChannelImageInputStream} subclass.
      * @throws IOException If an error occurred while opening a channel for the input.
@@ -426,14 +432,18 @@ public class StorageConnector implements Serializable {
     }
 
     /**
-     * If an {@link ImageInputStream} has been created without buffer, read an arbitrary amount of bytes now so
-     * we can provide a {@link ByteBuffer} for users who want it. We read only a small amount of bytes because,
-     * at the contrary of the buffer created in {@link #createChannelAndBuffer(boolean)}, the buffer created
-     * here is unlikely to be used for the reading process after the recognition of the file format.
+     * Creates a {@link ByteBuffer} from the {@link ChannelDataInput} if possible, or from the
+     * {@link ImageInputStream} otherwise. The buffer will be initialized with an arbitrary amount
+     * of bytes read from the input. This amount is not sufficient, it can be increased by a call
+     * to {@link #prefetch()}.
      *
      * @throws IOException If an error occurred while opening a stream for the input.
      */
     private void createByteBuffer() throws IOException, DataStoreException {
+        /*
+         * First, try to create the ChannelDataInput if it does not already exists.
+         * If successful, this will create a ByteBuffer companion as a side effect.
+         */
         if (!views.containsKey(ChannelDataInput.class)) {
             createChannelDataInput(false);
         }
@@ -442,19 +452,66 @@ public class StorageConnector implements Serializable {
         if (c != null) {
             asByteBuffer = c.buffer.asReadOnlyBuffer();
         } else {
+            /*
+             * If no ChannelDataInput has been create by the above code, get the input as an ImageInputStream and
+             * read an arbitrary amount of bytes. Read only a small amount of bytes because, at the contrary of the
+             * buffer created in createChannelDataInput(boolean), the buffer created here is unlikely to be used for
+             * the reading process after the recognition of the file format.
+             */
             final ImageInputStream in = getStorageAs(ImageInputStream.class);
             if (in != null) {
                 in.mark();
-                final byte[] buffer = new byte[256];
+                final byte[] buffer = new byte[MINIMAL_BUFFER_SIZE];
                 final int n = in.read(buffer);
                 in.reset();
                 if (n >= 1) {
-                    asByteBuffer = ByteBuffer.wrap(ArraysExt.resize(buffer, n))
-                            .asReadOnlyBuffer().order(in.getByteOrder());
+                    asByteBuffer = ByteBuffer.wrap(buffer).order(in.getByteOrder());
+                    asByteBuffer.limit(n);
+                    // Can't invoke asReadOnly() because 'prefetch()' need to be able to write in it.
                 }
             }
         }
         addView(ByteBuffer.class, asByteBuffer);
+    }
+
+    /**
+     * Transfers more bytes from the {@link DataInput} to the {@link ByteBuffer}, if possible.
+     * This method returns {@code true} on success, or {@code false} if input is not a readable
+     * channel or stream, we have reached the end of stream, or the buffer is full.
+     *
+     * <p>This method is invoked when the amount of bytes in the buffer appears to be insufficient
+     * for {@link DataStoreProvider#canOpen(StorageConnector)} purpose.</p>
+     *
+     * @return {@code true} on success.
+     * @throws DataStoreException If an error occurred while reading more bytes.
+     */
+    final boolean prefetch() throws DataStoreException {
+        try {
+            final ChannelDataInput c = getView(ChannelDataInput.class);
+            if (c != null) {
+                return c.prefetch() >= 0;
+            }
+            /*
+             * The above code is the usual case. The code below this point is the fallback used when only
+             * an ImageInputStream was available. In such case, the ByteBuffer can only be the one created
+             * by the above createByteBuffer() method, which is known to be backed by a writable array.
+             */
+            final ImageInputStream input = getView(ImageInputStream.class);
+            if (input != null) {
+                final ByteBuffer buffer = getView(ByteBuffer.class);
+                if (buffer != null) {
+                    final int p = buffer.limit();
+                    final int n = input.read(buffer.array(), p, buffer.capacity() - p);
+                    if (n >= 0) {
+                        buffer.limit(p + n);
+                        return true;
+                    }
+                }
+            }
+        } catch (IOException e) {
+            throw new DataStoreException(Errors.format(Errors.Keys.CanNotRead_1, getStorageName()), e);
+        }
+        return false;
     }
 
     /**
