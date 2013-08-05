@@ -75,10 +75,10 @@ public abstract class DataStoreProvider {
      * only that there appears to be a reasonable chance of success based on a brief inspection of the
      * {@linkplain StorageConnector#getStorage() storage object} or contents.
      *
-     * Implementors are responsible for restoring the input to its original stream position on return of this method.
+     * <p>Implementors are responsible for restoring the input to its original stream position on return of this method.
      * Implementors can use a mark/reset pair for this purpose. Marks are available as
      * {@link java.nio.ByteBuffer#mark()}, {@link java.io.InputStream#mark(int)} and
-     * {@link javax.imageio.stream.ImageInputStream#mark()}.
+     * {@link javax.imageio.stream.ImageInputStream#mark()}.</p>
      *
      * {@section Implementation example}
      * Implementations will typically check the first bytes of the stream for a "magic number" associated
@@ -127,7 +127,7 @@ public abstract class DataStoreProvider {
      * @throws IllegalArgumentException If the set contains an invalid combination of options.
      * @throws DataStoreException If an error occurred while creating the data store instance.
      *
-     * @see DataStores#open(Object, Set)
+     * @see DataStores#open(Object)
      */
     public abstract DataStore open(StorageConnector storage) throws DataStoreException;
 }

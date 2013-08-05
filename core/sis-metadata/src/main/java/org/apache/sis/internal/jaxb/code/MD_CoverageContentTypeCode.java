@@ -16,10 +16,10 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
-import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
-import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.content.CoverageContentType;
+import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
+import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
 
 
 /**
@@ -35,13 +35,6 @@ import org.opengis.metadata.content.CoverageContentType;
 public final class MD_CoverageContentTypeCode
         extends CodeListAdapter<MD_CoverageContentTypeCode, CoverageContentType>
 {
-    /**
-     * Ensures that the adapted code list class is loaded.
-     */
-    static {
-        ensureClassLoaded(CoverageContentType.class);
-    }
-
     /**
      * Empty constructor for JAXB only.
      */

@@ -16,10 +16,10 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
-import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
-import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.identification.CharacterSet;
+import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
+import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
 
 
 /**
@@ -33,13 +33,6 @@ import org.opengis.metadata.identification.CharacterSet;
  * @module
  */
 public final class MD_CharacterSetCode extends CodeListAdapter<MD_CharacterSetCode, CharacterSet> {
-    /**
-     * Ensures that the adapted code list class is loaded.
-     */
-    static {
-        ensureClassLoaded(CharacterSet.class);
-    }
-
     /**
      * Empty constructor for JAXB only.
      */

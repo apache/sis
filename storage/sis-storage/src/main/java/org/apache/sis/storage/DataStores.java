@@ -22,7 +22,7 @@ import org.apache.sis.internal.system.SystemListener;
 
 
 /**
- * Creates {@link DataStore} instances from a given storage object.
+ * Static convenience methods creating {@link DataStore} instances from a given storage object.
  * Storage objects are typically {@link java.io.File} or {@link javax.sql.DataSource} instances,
  * but can also be any other objects documented in the {@link StorageConnector} class.
  *

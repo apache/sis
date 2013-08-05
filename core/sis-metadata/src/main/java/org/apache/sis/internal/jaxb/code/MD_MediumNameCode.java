@@ -16,10 +16,10 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
-import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
-import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.distribution.MediumName;
+import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
+import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
 
 
 /**
@@ -33,13 +33,6 @@ import org.opengis.metadata.distribution.MediumName;
  * @module
  */
 public final class MD_MediumNameCode extends CodeListAdapter<MD_MediumNameCode, MediumName> {
-    /**
-     * Ensures that the adapted code list class is loaded.
-     */
-    static {
-        ensureClassLoaded(MediumName.class);
-    }
-
     /**
      * Empty constructor for JAXB only.
      */
