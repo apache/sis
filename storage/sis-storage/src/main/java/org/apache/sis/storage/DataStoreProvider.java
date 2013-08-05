@@ -67,7 +67,7 @@ public abstract class DataStoreProvider {
      * <ul>
      *   <li>{@link ProbeResult#SUPPORTED} if the {@code DataStore}s created by this provider
      *       can open the given storage.</li>
-     *   <li>{@link ProbeResult#UNKNOWN_STORAGE} if the given storage does not appear to be in a format
+     *   <li>{@link ProbeResult#UNSUPPORTED_STORAGE} if the given storage does not appear to be in a format
      *       supported by this {@code DataStoreProvider}.</li>
      * </ul>
      *
@@ -90,18 +90,18 @@ public abstract class DataStoreProvider {
      *         if (buffer == null) {
      *             // If StorageConnector can not provide a ByteBuffer, then the storage is
      *             // probably not a File, URL, URI, InputStream neither a ReadableChannel.
-     *             return ProbeResult.UNKNOWN_STORAGE;
+     *             return ProbeResult.UNSUPPORTED_STORAGE;
      *         }
      *         if (buffer.remaining() < Integer.SIZE / Byte.SIZE) {
      *             // If the buffer does not contain enough bytes for the integer type, this is not
      *             // necessarily because the file is truncated. It may be because the data were not
      *             // yet available at the time this method has been invoked.
-     *             return ProbeResult.UNDETERMINED;
+     *             return ProbeResult.INSUFFICIENT_BYTES;
      *         }
      *         if (buffer.getInt(buffer.position()) != MAGIC_NUMBER) {
      *             // We used ByteBuffer.getInt(int) instead than ByteBuffer.getInt() above
      *             // in order to keep the buffer position unchanged after this method call.
-     *             return ProbeResult.UNKNOWN_FORMAT;
+     *             return ProbeResult.UNSUPPORTED_STORAGE;
      *         }
      *         return ProbeResult.SUPPORTED;
      *     }

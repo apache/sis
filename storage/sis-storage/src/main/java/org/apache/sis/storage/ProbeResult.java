@@ -23,12 +23,11 @@ package org.apache.sis.storage;
  *
  * <ul>
  *   <li>{@link #SUPPORTED} indicates that the storage can be read and eventually written.</li>
- *   <li>{@link #UNDETERMINED} indicates that the provider does not have enough information for telling
- *       whether the storage can be opened. SIS will try to use such provider last, if no better suited
- *       provider is found.</li>
- *   <li>All other values indicate that the storage can not be opened. The actual enumeration value gives
- *       the reason (e.g. {@linkplain #UNKNOWN_FORMAT unknown format}, or
- *       {@linkplain #UNSUPPORTED_VERSION unsupported version}).</li>
+ *   <li>{@code UNSUPPORTED_*} indicate that the storage can not be opened. The actual enumeration value gives
+ *       the reason (e.g. unsupported format or {@linkplain #UNSUPPORTED_VERSION unsupported version}).</li>
+ *   <li>{@link #INSUFFICIENT_BYTES} or {@link #UNDETERMINED} indicate that the provider does not have enough
+ *       information for telling whether the storage can be opened. SIS will try to use such provider last,
+ *       if no better suited provider is found.</li>
  * </ul>
  *
  * When a {@link DataStores#open DataStores.open(…)} method is invoked, SIS will iterate over the list of known
@@ -52,34 +51,56 @@ public enum ProbeResult {
     SUPPORTED,
 
     /**
-     * The open capability can not be determined.
-     * This value may be returned in two kinds of situation:
+     * The {@code DataStoreProvider} does not recognize the given storage object, file format or database schema.
+     * Examples:
      *
      * <ul>
-     *   <li>The method can not look ahead far enough in the file header,
-     *       for example because the buffer has not fetched enough bytes.</li>
-     *   <li>The {@code DataStore} could potentially open anything.
-     *       This is the case for example of the RAW image format.</li>
+     *   <li>The storage is a file while the provider expected a database connection (or conversely).</li>
+     *   <li>The file does not contains the expected magic number.</li>
+     *   <li>The database schema does not contain the expected tables.</li>
      * </ul>
      */
-    UNDETERMINED,
-
-    /**
-     * The {@code DataStoreProvider} does not recognize the given storage object.
-     * For example the storage may be a file while the provider expected a database connection, or conversely.
-     */
-    UNKNOWN_STORAGE,
-
-    /**
-     * The {@code DataStoreProvider} does not recognize the file format or schema.
-     * For example the file does not contains the expected magic number,
-     * or the database schema does not contain the expected tables.
-     */
-    UNKNOWN_FORMAT,
+    UNSUPPORTED_STORAGE,
 
     /**
      * The {@code DataStoreProvider} recognizes the given storage, but the data are structured
      * according a file or schema version not yet supported by the current implementation.
      */
-    UNSUPPORTED_VERSION
+    UNSUPPORTED_VERSION,
+
+    /**
+     * The open capability can not be determined because the {@link ByteBuffer} contains an insufficient
+     * amount of bytes. This value may be returned by {@link DataStoreProvider#canOpen(StorageConnector)}
+     * implementations similar to the following:
+     *
+     * {@preformat java
+     *     public ProbeResult canOpen(StorageConnector storage) throws DataStoreException {
+     *         final ByteBuffer buffer = storage.getStorageAs(ByteBuffer.class);
+     *         if (buffer == null) {
+     *             return ProbeResult.UNSUPPORTED_STORAGE;
+     *         }
+     *         if (buffer.remaining() < Integer.SIZE / Byte.SIZE) {
+     *             return ProbeResult.INSUFFICIENT_BYTES;
+     *         }
+     *         // Other verifications here.
+     *     }
+     * }
+     *
+     * When some {@code DataStoreProvider} return this value, SIS will first continue the search for a provider that
+     * can answer the {@code canOpen(…)} question using only the available bytes. Only if no provider is found,
+     * then SIS will fetch more bytes and try again the providers that returned {@code INSUFFICIENT_BYTES}.
+     * SIS tries to work with available bytes before to ask more in order to reduce latencies on network connections.
+     */
+    INSUFFICIENT_BYTES,
+
+    /**
+     * The open capability can not be determined.
+     * This value may be returned by {@code DataStore} implementations that could potentially open anything,
+     * as for example of the RAW image format.
+     *
+     * <p><strong>This is a last resort value!</strong> {@code canOpen(…)} implementations are strongly encouraged
+     * to return a more accurate enumeration value for allowing {@link DataStores#open(Object)} to perform a better
+     * choice. Generally, this value should be used only by the RAW image format.</p>
+     */
+    UNDETERMINED
 }
