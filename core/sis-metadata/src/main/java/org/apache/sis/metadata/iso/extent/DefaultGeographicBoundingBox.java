@@ -322,9 +322,9 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent
      *         Note that {@linkplain Double#NaN NaN} values are allowed.
      */
     public void setBounds(final double westBoundLongitude,
-                                       final double eastBoundLongitude,
-                                       final double southBoundLatitude,
-                                       final double northBoundLatitude)
+                          final double eastBoundLongitude,
+                          final double southBoundLatitude,
+                          final double northBoundLatitude)
             throws IllegalArgumentException
     {
         checkWritePermission();

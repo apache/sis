@@ -38,7 +38,7 @@ import org.apache.sis.internal.jaxb.XmlUtilities;
  * @module
  */
 @XmlRootElement(name="TimeInstant")
-@XmlType(name = "TimeInstantType")
+//@XmlType(name = "TimeInstantType") // TODO: Omitted for now for allowing external modules to define their own type.
 public final class TimeInstant extends GMLAdapter {
     /**
      * The date, optionally with its time component. The time component is omitted
