@@ -96,46 +96,54 @@ final class DataStoreRegistry {
         List<DataStoreProvider> deferred = null;
         try {
             /*
-             * TODO: we may have thread contention here.
-             * We are waiting to see if this is a problem in practice.
+             * All usages of 'loader' and its 'providers' iterator must be protected in a synchronized block,
+             * because ServiceLoader is not thread-safe. We try to keep the synhronization block as small as
+             * possible for less contention. In particular, the canOpen(connector) method call may be costly.
              */
+            final Iterator<DataStoreProvider> providers;
+            DataStoreProvider candidate;
             synchronized (loader) {
-search:         for (final DataStoreProvider candidate : loader) {
-                    switch (candidate.canOpen(connector)) {
-                        /*
-                         * Stop at the first provider claiming to be able to read the storage.
-                         * We will exit the synchronized block before to open the storage.
-                         */
-                        case SUPPORTED: {
-                            provider = candidate;
-                            deferred = null;
-                            break search;
-                        }
-                        /*
-                         * If a provider doesn't have enough bytes for answering the question,
-                         * try again after this loop with more bytes in the buffer, unless we
-                         * found an other provider.
-                         */
-                        case INSUFFICIENT_BYTES: {
-                            if (deferred == null) {
-                                deferred = new LinkedList<>();
-                            }
-                            deferred.add(candidate);
-                            break;
-                        }
-                        /*
-                         * If a provider doesn't know whether it can open the given storage,
-                         * we will try it only if we find no provider retuning SUPPORTED.
-                         *
-                         * TODO: What to do if we find more than one provider here? We can not invoke
-                         *       provider.open(connector) in a try … catch block because it may leave
-                         *       the StorageConnector in an invalid state in case of failure.
-                         */
-                        case UNDETERMINED: {
-                            provider = candidate;
-                            break;
-                        }
+                providers = loader.iterator();
+                candidate = providers.hasNext() ? providers.next() : null;
+            }
+search:     while (candidate != null) {
+                switch (candidate.canOpen(connector)) {
+                    /*
+                     * Stop at the first provider claiming to be able to read the storage.
+                     * Do not iterate over the list of deferred providers (if any).
+                     */
+                    case SUPPORTED: {
+                        provider = candidate;
+                        deferred = null;
+                        break search;
                     }
+                    /*
+                     * If a provider doesn't have enough bytes for answering the question,
+                     * try again after this loop with more bytes in the buffer, unless we
+                     * found an other provider.
+                     */
+                    case INSUFFICIENT_BYTES: {
+                        if (deferred == null) {
+                            deferred = new LinkedList<>();
+                        }
+                        deferred.add(candidate);
+                        break;
+                    }
+                    /*
+                     * If a provider doesn't know whether it can open the given storage,
+                     * we will try it only if we find no provider retuning SUPPORTED.
+                     *
+                     * TODO: What to do if we find more than one provider here? We can not invoke
+                     *       provider.open(connector) in a try … catch block because it may leave
+                     *       the StorageConnector in an invalid state in case of failure.
+                     */
+                    case UNDETERMINED: {
+                        provider = candidate;
+                        break;
+                    }
+                }
+                synchronized (loader) {
+                    candidate = providers.hasNext() ? providers.next() : null;
                 }
             }
             /*
@@ -146,7 +154,7 @@ search:         for (final DataStoreProvider candidate : loader) {
             if (deferred != null) {
 search:         while (!deferred.isEmpty() && connector.prefetch()) {
                     for (final Iterator<DataStoreProvider> it=deferred.iterator(); it.hasNext();) {
-                        final DataStoreProvider candidate = it.next();
+                        candidate = it.next();
                         switch (candidate.canOpen(connector)) {
                             case SUPPORTED:          provider = candidate; break search;
                             case UNDETERMINED:       provider = candidate; break;
