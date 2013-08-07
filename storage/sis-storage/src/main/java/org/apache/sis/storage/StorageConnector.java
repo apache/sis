@@ -584,11 +584,13 @@ public class StorageConnector implements Serializable {
         if (type == Connection.class) {
             if (storage instanceof Connection) {
                 return storage;
-            } else if (storage instanceof DataSource) {
+            }
+            if (storage instanceof DataSource) {
                 final Connection c = ((DataSource) storage).getConnection();
                 addViewToClose(c, storage);
                 return c;
             }
+            return null;
         }
         if (type == ImageInputStream.class) {
             final DataInput input = getStorageAs(DataInput.class);
@@ -607,6 +609,7 @@ public class StorageConnector implements Serializable {
                 addViewToClose(c, input);
                 return c;
             }
+            return null;
         }
         if (type == Reader.class) {
             if (storage instanceof Reader) {
@@ -620,6 +623,7 @@ public class StorageConnector implements Serializable {
                 addViewToClose(c, input);
                 return c;
             }
+            return null;
         }
         throw new IllegalArgumentException(Errors.format(Errors.Keys.UnknownType_1, type));
     }
