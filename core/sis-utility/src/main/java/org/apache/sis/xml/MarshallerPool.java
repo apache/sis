@@ -413,7 +413,7 @@ public class MarshallerPool {
     }
 
     /**
-     * Creates an configure a new JAXB marshaller.
+     * Creates an configures a new JAXB marshaller.
      * This method is invoked only when no existing marshaller is available in the pool.
      * Subclasses can override this method if they need to change the marshaller configuration.
      *
@@ -446,7 +446,7 @@ public class MarshallerPool {
     }
 
     /**
-     * Creates an configure a new JAXB unmarshaller.
+     * Creates an configures a new JAXB unmarshaller.
      * This method is invoked only when no existing unmarshaller is available in the pool.
      * Subclasses can override this method if they need to change the unmarshaller configuration.
      *
