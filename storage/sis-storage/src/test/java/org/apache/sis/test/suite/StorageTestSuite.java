@@ -26,7 +26,7 @@ import org.junit.BeforeClass;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.4
  * @module
  */
 @Suite.SuiteClasses({
@@ -34,6 +34,8 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.storage.ChannelDataInputTest.class,
     org.apache.sis.internal.storage.ChannelImageInputStreamTest.class,
     org.apache.sis.storage.StorageConnectorTest.class,
+    org.apache.sis.internal.storage.xml.XMLStoreProviderTest.class,
+    org.apache.sis.internal.storage.xml.XMLStoreTest.class,
     org.apache.sis.index.GeoHashCoderTest.class
 })
 public final strictfp class StorageTestSuite extends TestSuite {
