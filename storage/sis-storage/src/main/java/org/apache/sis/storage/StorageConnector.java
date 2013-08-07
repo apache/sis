@@ -17,13 +17,20 @@
 package org.apache.sis.storage;
 
 import java.util.Map;
+import java.util.Queue;
+import java.util.Iterator;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.IdentityHashMap;
 import java.util.ConcurrentModificationException;
+import java.io.Reader;
 import java.io.DataInput;
+import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.nio.channels.ReadableByteChannel;
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
@@ -47,7 +54,7 @@ import org.apache.sis.setup.OptionKey;
  *   <li>A {@link java.nio.file.Path} or a {@link java.io.File} for a file or a directory.</li>
  *   <li>A {@link java.net.URI} or a {@link java.net.URL} to a distant resource.</li>
  *   <li>A {@link CharSequence} interpreted as a filename or a URL.</li>
- *   <li>A {@link java.nio.channels.Channel} or a {@link DataInput}.</li>
+ *   <li>A {@link java.nio.channels.Channel}, {@link DataInput}, {@link InputStream} or {@link Reader}.</li>
  *   <li>A {@link DataSource} or a {@link Connection} to a JDBC database.</li>
  *   <li>Any other {@code DataStore}-specific object, for example {@link ucar.nc2.NetcdfFile}.</li>
  * </ul>
@@ -84,7 +91,7 @@ public class StorageConnector implements Serializable {
      * The minimal size of the {@link ByteBuffer} to be created. This size is used only
      * for temporary buffers that are unlikely to be used for the actual reading process.
      */
-    private static final int MINIMAL_BUFFER_SIZE = 256;
+    static final int MINIMAL_BUFFER_SIZE = 256;
 
     /**
      * The input/output object given at construction time.
@@ -121,6 +128,12 @@ public class StorageConnector implements Serializable {
      *   <li>{@link ImageInputStream}:
      *       Same as {@code DataInput} if it can be casted, or {@code null} otherwise.</li>
      *
+     *   <li>{@link InputStream}:
+     *       If not explicitely provided, this is a wrapper around the above {@link ImageInputStream}.</li>
+     *
+     *   <li>{@link Reader}:
+     *       If not explicitely provided, this is a wrapper around the above {@link InputStream}.</li>
+     *
      *   <li>{@link Connection}:
      *       The storage object as a JDBC connection.</li>
      * </ul>
@@ -132,6 +145,17 @@ public class StorageConnector implements Serializable {
      * @see #getStorageAs(Class)
      */
     private transient Map<Class<?>, Object> views;
+
+    /**
+     * Objects which will need to be closed by the {@link #closeAllExcept(Object)} method.
+     * For each (<var>key</var>, <var>value</var>) entry, if the object to close (the key)
+     * is a wrapper around an other object (e.g. an {@link InputStreamReader} wrapping an
+     * {@link InputStream}), then the value is the other object.
+     *
+     * @see #addViewToClose(Object, Object)
+     * @see #closeAllExcept(Object)
+     */
+    private transient Map<Object, Object> viewsToClose;
 
     /**
      * The options, created only when first needed.
@@ -165,12 +189,13 @@ public class StorageConnector implements Serializable {
     }
 
     /**
-     * Sets the option value for the given key. The default implementation recognizes the given options:
+     * Sets the option value for the given key. The default implementation recognizes the following options:
      *
      * <ul>
+     *   <li>{@link OptionKey#ENCODING}     for decoding characters in an input stream, if needed.</li>
      *   <li>{@link OptionKey#URL_ENCODING} for converting URL to URI or filename, if needed.</li>
      *   <li>{@link OptionKey#OPEN_OPTIONS} for specifying whether the data store shall be read only or read/write.</li>
-     *   <li>{@link OptionKey#BYTE_BUFFER} for allowing users to control the byte buffer to be created.</li>
+     *   <li>{@link OptionKey#BYTE_BUFFER}  for allowing users to control the byte buffer to be created.</li>
      * </ul>
      *
      * @param <T>   The type of option value.
@@ -265,12 +290,12 @@ public class StorageConnector implements Serializable {
      *   </li>
      *   <li>{@link DataInput}:
      *     <ul>
-     *       <li>If the {@linkplain #getStorage() storage} object is already an instance of {@link DataInput}
+     *       <li>If the {@linkplain #getStorage() storage} object is already an instance of {@code DataInput}
      *           (including the {@link ImageInputStream} and {@link javax.imageio.stream.ImageOutputStream} types),
      *           then it is returned unchanged.</li>
      *
      *       <li>Otherwise if the input is an instance of {@link java.nio.file.Path}, {@link java.io.File},
-     *           {@link java.net.URI}, {@link java.net.URL}, {@link CharSequence}, {@link java.io.InputStream} or
+     *           {@link java.net.URI}, {@link java.net.URL}, {@link CharSequence}, {@link InputStream} or
      *           {@link java.nio.channels.ReadableByteChannel}, then an {@link ImageInputStream} backed by a
      *           {@link ByteBuffer} is created when first needed and returned.</li>
      *
@@ -282,7 +307,30 @@ public class StorageConnector implements Serializable {
      *   </li>
      *   <li>{@link ImageInputStream}:
      *     <ul>
-     *       <li>If the {@code DataInput} computed above can be casted to {@code null}, returns it.</li>
+     *       <li>If the above {@code DataInput} can be created and casted to {@code ImageInputStream}, returns it.</li>
+     *
+     *       <li>Otherwise this method returns {@code null}.</li>
+     *     </ul>
+     *   </li>
+     *   <li>{@link InputStream}:
+     *     <ul>
+     *       <li>If the {@linkplain #getStorage() storage} object is already an instance of {@link InputStream},
+     *           then it is returned unchanged.</li>
+     *
+     *       <li>Otherwise if the above {@code ImageInputStream} can be created,
+     *           returns a wrapper around that stream.</li>
+     *
+     *       <li>Otherwise this method returns {@code null}.</li>
+     *     </ul>
+     *   </li>
+     *   <li>{@link Reader}:
+     *     <ul>
+     *       <li>If the {@linkplain #getStorage() storage} object is already an instance of {@link Reader},
+     *           then it is returned unchanged.</li>
+     *
+     *       <li>Otherwise if the above {@code InputStream} can be created, returns an {@link InputStreamReader}
+     *           using the encoding specified by {@link OptionKey#ENCODING} if any, or using the system default
+     *           encoding otherwise.</li>
      *
      *       <li>Otherwise this method returns {@code null}.</li>
      *     </ul>
@@ -379,6 +427,7 @@ public class StorageConnector implements Serializable {
                 getOption(OptionKey.URL_ENCODING), getOption(OptionKey.OPEN_OPTIONS));
         ChannelDataInput asDataInput = null;
         if (channel != null) {
+            addViewToClose(channel, storage);
             ByteBuffer buffer = getOption(OptionKey.BYTE_BUFFER);
             if (buffer == null) {
                 buffer = ByteBuffer.allocate(DEFAULT_BUFFER_SIZE);
@@ -391,6 +440,7 @@ public class StorageConnector implements Serializable {
             } else {
                 asDataInput = new ChannelDataInput(name, channel, buffer, false);
             }
+            addViewToClose(asDataInput, channel);
         }
         addView(ChannelDataInput.class, asDataInput);
     }
@@ -419,13 +469,16 @@ public class StorageConnector implements Serializable {
             final ChannelDataInput c = getView(ChannelDataInput.class);
             if (c == null) {
                 asDataInput = ImageIO.createImageInputStream(storage);
+                addViewToClose(asDataInput, storage);
             } else if (c instanceof DataInput) {
                 asDataInput = (DataInput) c;
+                // No call to 'addViewToClose' because the instance already exists.
             } else {
                 asDataInput = new ChannelImageInputStream(c);
-                if (views.put(ChannelDataInput.class, asDataInput) != c) {
+                if (views.put(ChannelDataInput.class, asDataInput) != c) { // Replace the previous instance.
                     throw new ConcurrentModificationException();
                 }
+                addViewToClose(asDataInput, c.channel);
             }
         }
         addView(DataInput.class, asDataInput);
@@ -532,12 +585,41 @@ public class StorageConnector implements Serializable {
             if (storage instanceof Connection) {
                 return storage;
             } else if (storage instanceof DataSource) {
-                return ((DataSource) storage).getConnection();
+                final Connection c = ((DataSource) storage).getConnection();
+                addViewToClose(c, storage);
+                return c;
             }
         }
         if (type == ImageInputStream.class) {
             final DataInput input = getStorageAs(DataInput.class);
             return (input instanceof ImageInputStream) ? input : null;
+        }
+        if (type == InputStream.class) {
+            if (storage instanceof InputStream) {
+                return storage;
+            }
+            final DataInput input = getStorageAs(DataInput.class);
+            if (input instanceof InputStream) {
+                return (InputStream) input;
+            }
+            if (input instanceof ImageInputStream) {
+                final InputStream c = new InputStreamAdapter((ImageInputStream) input);
+                addViewToClose(c, input);
+                return c;
+            }
+        }
+        if (type == Reader.class) {
+            if (storage instanceof Reader) {
+                return storage;
+            }
+            final InputStream input = getStorageAs(InputStream.class);
+            if (input != null) {
+                final Charset encoding = getOption(OptionKey.ENCODING);
+                final Reader c = (encoding != null) ? new InputStreamReader(input, encoding)
+                                                    : new InputStreamReader(input);
+                addViewToClose(c, input);
+                return c;
+            }
         }
         throw new IllegalArgumentException(Errors.format(Errors.Keys.UnknownType_1, type));
     }
@@ -568,6 +650,23 @@ public class StorageConnector implements Serializable {
     }
 
     /**
+     * Declares that the given {@code input} will need to be closed by the {@link #closeAllExcept(Object)} method.
+     * The {@code input} argument is always a new instance wrapping, directly or indirectly, the {@link #storage}.
+     * Callers must specify the wrapped object in the {@code delegate} argument.
+     *
+     * @param input    The newly created object which will need to be closed.
+     * @param delegate The object wrapped by the given {@code input}.
+     */
+    private void addViewToClose(final Object input, final Object delegate) {
+        if (viewsToClose == null) {
+            viewsToClose = new IdentityHashMap<>(4);
+        }
+        if (viewsToClose.put(input, delegate) != null) {
+            throw new AssertionError(input);
+        }
+    }
+
+    /**
      * Closes all streams and connections created by this {@code StorageConnector} except the given view.
      * This method closes all objects created by the {@link #getStorageAs(Class)} method except the given {@code view}.
      * If {@code view} is {@code null}, then this method closes everything including the {@linkplain #getStorage()
@@ -586,37 +685,86 @@ public class StorageConnector implements Serializable {
      * @see DataStoreProvider#open(StorageConnector)
      */
     public void closeAllExcept(final Object view) throws DataStoreException {
+        final Map<Object,Object> toClose = viewsToClose;
+        viewsToClose = Collections.emptyMap();
+        views        = Collections.emptyMap();
+        if (toClose == null) {
+            if (storage != view && storage instanceof AutoCloseable) try {
+                ((AutoCloseable) storage).close();
+            } catch (Exception e) {
+                throw new DataStoreException(e);
+            }
+            return;
+        }
         /*
-         * Need a set of objects to close without duplicated values. In particular, the value for
-         * DataInput and ImageInputStream are often the same instance. We must avoid duplicated
-         * values because ImageInputStream.close() is not indempotent.
+         * The "AutoCloseable.close() is not indempotent" problem
+         * ------------------------------------------------------
+         * We will need a set of objects to close without duplicated values. For example the values associated to the
+         * 'ImageInputStream.class' and 'DataInput.class' keys are often the same instance.  We must avoid duplicated
+         * values because 'ImageInputStream.close()' is not indempotent,  i.e.  invoking their 'close()' method twice
+         * will thrown an IOException.
+         *
+         * Generally speaking, all AutoCloseable instances are not guaranteed to be indempotent because this is not
+         * required by the interface contract. Consequently we must be careful to not invoke the close() method on
+         * the same instance twice (indirectly or indirectly).
+         *
+         * The set of objects to close will be the keys of the 'viewsToClose' map. It can not be the values of the
+         * 'views' map.
          */
-        final Map<AutoCloseable,Object> toClose = new IdentityHashMap<>(4);
-        for (final Object value : views.values()) {
-            if (value instanceof AutoCloseable) {
-                toClose.put((AutoCloseable) value, null);
+        toClose.put(storage, null);
+        if (view != null) {
+            /*
+             * If there is a view to not close, search for all views that are wrapper for the given view.
+             * Those wrappers shall not be closed. For example if the caller does not want to close the
+             * InputStream view, then we shall not close the InputStreamReader wrapper neither.
+             */
+            final Queue<Object> deferred = new LinkedList<>();
+            Object doNotClose = view;
+            do {
+                final Iterator<Map.Entry<Object,Object>> it = toClose.entrySet().iterator();
+                while (it.hasNext()) {
+                    final Map.Entry<Object,Object> entry = it.next();
+                    if (entry.getValue() == doNotClose) {
+                        deferred.add(entry.getKey());
+                        it.remove();
+                    }
+                }
+                doNotClose = deferred.poll();
+            } while (doNotClose != null);
+        }
+        /*
+         * Remove the view to not close. If that view is a wrapper for an other object, do not close the
+         * wrapped object neither. Proceed the dependency chain up to the original 'storage' object.
+         */
+        for (Object doNotClose = view; doNotClose != null;) {
+            doNotClose = toClose.remove(doNotClose);
+        }
+        /*
+         * Remove all wrapped objects. After this loop, only the "top level" objects should remain
+         * (typically only one object). This block is needed because of the "AutoCloseable.close()
+         * is not idempotent" issue, otherwise we could have omitted it.
+         */
+        for (final Object delegate : toClose.values().toArray()) { // 'toArray()' is for avoiding ConcurrentModificationException.
+            toClose.remove(delegate);
+        }
+        /*
+         * Now close all remaining items. If an exception occurs, we will propagate it only after we are
+         * done closing all items.
+         */
+        DataStoreException failure = null;
+        for (final Object c : toClose.keySet()) {
+            if (c instanceof AutoCloseable) try {
+                ((AutoCloseable) c).close();
+            } catch (Exception e) {
+                if (failure == null) {
+                    failure = new DataStoreException(e);
+                } else {
+                    failure.addSuppressed(e);
+                }
             }
         }
-        toClose.remove(view);
-        toClose.remove(storage);
-        try {
-            if (!toClose.isEmpty()) {
-                for (final AutoCloseable value : toClose.keySet()) {
-                    value.close();
-                }
-            } else if (view == null && storage instanceof AutoCloseable) {
-                /*
-                 * Close only if we didn't closed a view because closing an input stream view
-                 * automatically close the 'storage' if the former is a wrapper for the later.
-                 * Since AutoCloseable.close() is not guaranteed to be indempotent, we should
-                 * avoid to call it (indirectly) twice.
-                 */
-                ((AutoCloseable) storage).close();
-            }
-        } catch (Exception e) {
-            throw new DataStoreException(e);
-        } finally {
-            views = Collections.emptyMap();
+        if (failure != null) {
+            throw failure;
         }
     }
 
