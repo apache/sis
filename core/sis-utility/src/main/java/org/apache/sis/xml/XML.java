@@ -29,6 +29,8 @@ import java.io.StringWriter;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.JAXBException;
+import javax.xml.transform.Source;
+import javax.xml.transform.Result;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Version;
 import org.apache.sis.util.logging.WarningListener;
@@ -60,7 +62,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 public final class XML extends Static {
@@ -376,6 +378,36 @@ public final class XML extends Static {
     }
 
     /**
+     * Marshall the given object to a stream, DOM or other destinations.
+     * This is the most flexible marshalling method provided in this {@code XML} class.
+     * The destination is specified by the {@code output} argument implementation, for example
+     * {@link javax.xml.transform.stream.StreamResult} for writing to a file or output stream.
+     * The optional {@code properties} map can contain any key documented in this {@code XML} class,
+     * together with the keys documented in the <cite>supported properties</cite> section of the the
+     * {@link Marshaller} class.
+     *
+     * @param  object The root of content tree to be marshalled.
+     * @param  output The file to be written.
+     * @param  properties An optional map of properties to give to the marshaller, or {@code null} if none.
+     * @throws JAXBException If a property has an illegal value, or if an error occurred during the marshalling.
+     *
+     * @since 0.4
+     */
+    public static void marshal(final Object object, final Result output, final Map<String,?> properties) throws JAXBException {
+        ensureNonNull("object", object);
+        ensureNonNull("output", output);
+        final MarshallerPool pool = getPool();
+        final Marshaller marshaller = pool.acquireMarshaller();
+        if (properties != null) {
+            for (final Map.Entry<String,?> entry : properties.entrySet()) {
+                marshaller.setProperty(entry.getKey(), entry.getValue());
+            }
+        }
+        marshaller.marshal(object, output);
+        pool.recycle(marshaller);
+    }
+
+    /**
      * Unmarshall an object from the given string.
      *
      * @param  input The XML representation of an object.
@@ -435,6 +467,38 @@ public final class XML extends Static {
         ensureNonNull("input", input);
         final MarshallerPool pool = getPool();
         final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
+        final Object object = unmarshaller.unmarshal(input);
+        pool.recycle(unmarshaller);
+        return object;
+    }
+
+    /**
+     * Unmarshall an object from the given stream, DOM or other sources.
+     * This is the most flexible unmarshalling method provided in this {@code XML} class.
+     * The source is specified by the {@code input} argument implementation, for example
+     * {@link javax.xml.transform.stream.StreamSource} for reading from a file or input stream.
+     * The optional {@code properties} map can contain any key documented in this {@code XML} class,
+     * together with the keys documented in the <cite>supported properties</cite> section of the the
+     * {@link Unmarshaller} class.
+     *
+     * @param  input The file from which to read a XML representation.
+     * @param  properties An optional map of properties to give to the unmarshaller, or {@code null} if none.
+     * @return The object unmarshalled from the given input.
+     * @throws JAXBException If a property has an illegal value, or if an error occurred during the unmarshalling.
+     *
+     * @since 0.4
+     *
+     * @see org.apache.sis.storage.xml.XMLStore
+     */
+    public static Object unmarshal(final Source input, final Map<String,?> properties) throws JAXBException {
+        ensureNonNull("input", input);
+        final MarshallerPool pool = getPool();
+        final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
+        if (properties != null) {
+            for (final Map.Entry<String,?> entry : properties.entrySet()) {
+                unmarshaller.setProperty(entry.getKey(), entry.getValue());
+            }
+        }
         final Object object = unmarshaller.unmarshal(input);
         pool.recycle(unmarshaller);
         return object;

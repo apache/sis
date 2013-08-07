@@ -125,7 +125,7 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
             return IdentifierMapWithSpecialCases.EMPTY;
         }
         /*
-         * We do not cache (for now) the IdentifierMap because it is cheap to create, and if were
+         * We do not cache (for now) the IdentifierMap because it is cheap to create, and if we were
          * caching it we would need anyway to check if 'identifiers' still references the same list.
          */
         return new IdentifierMapWithSpecialCases(identifiers);
