@@ -24,6 +24,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
+import java.sql.Connection;
 import org.apache.sis.internal.storage.ChannelDataInput;
 import org.apache.sis.internal.storage.ChannelImageInputStream;
 import org.apache.sis.test.DependsOnMethod;
@@ -261,6 +262,18 @@ public final strictfp class StorageConnectorTest extends TestCase {
         assertNotNull("getStorageAs(ByteBuffer.class)", buffer);
         assertEquals(StorageConnector.MINIMAL_BUFFER_SIZE, buffer.capacity());
         assertEquals(MAGIC_NUMBER, buffer.getInt());
+        connection.closeAllExcept(null);
+    }
+
+    /**
+     * Tests the {@link StorageConnector#getStorageAs(Class)} method for the {@link Connection} type.
+     *
+     * @throws DataStoreException Should never happen.
+     * @throws IOException Should never happen.
+     */
+    public void testGetAsConnection() throws DataStoreException, IOException {
+        final StorageConnector connection = create(false);
+        assertNull(connection.getStorageAs(Connection.class));
         connection.closeAllExcept(null);
     }
 
