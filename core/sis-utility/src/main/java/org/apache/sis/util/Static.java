@@ -58,6 +58,8 @@ package org.apache.sis.util;
  * <tr><th colspan="2" class="hsep">Input / Output (including CRS, XML, images)</th></tr>
  * <tr><td>{@link org.apache.sis.io.IO}</td>
  *     <td>Methods working on {@link Appendable} instances.</td></tr>
+ * <tr><td>{@link org.apache.sis.storage.DataStores}</td>
+ *     <td>Read or write geospatial data in various backends.</td></tr>
  * <tr><td>{@link org.apache.sis.xml.XML}</td>
  *     <td>Marshal or unmarshal ISO 19115 objects.</td></tr>
  * <tr><td>{@link org.apache.sis.xml.Namespaces}</td>

@@ -22,7 +22,6 @@ import java.io.DataInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -36,7 +35,7 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.07)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 public final strictfp class ChannelDataInputTest extends TestCase {
@@ -44,6 +43,20 @@ public final strictfp class ChannelDataInputTest extends TestCase {
      * The maximal size of the arrays to be used for the tests, in bytes.
      */
     private static final int ARRAY_MAX_SIZE = 256;
+
+    /**
+     * Creates an array filled with random values.
+     *
+     * @param length The length of the array to create.
+     * @param random The random number generator to use.
+     */
+    static byte[] createRandomArray(final int length, final Random random) {
+        final byte[] array = new byte[length];
+        for (int i=0; i<length; i++) {
+            array[i] = (byte) random.nextInt(256);
+        }
+        return array;
+    }
 
     /**
      * Fills a buffer with random data and compare the result with a standard image input stream.
@@ -59,7 +72,7 @@ public final strictfp class ChannelDataInputTest extends TestCase {
         compareStreamToBuffer(random, array.length,
                 new DataInputStream(new ByteArrayInputStream(array)),
                 new ChannelDataInput("testAllReadMethods",
-                    Channels.newChannel(new ByteArrayInputStream(array)),
+                    new DripByteChannel(array, random, 1, 1024),
                     ByteBuffer.allocate(random.nextInt(ARRAY_MAX_SIZE / 4) + (Double.SIZE / Byte.SIZE)), false));
     }
 
@@ -149,11 +162,12 @@ public final strictfp class ChannelDataInputTest extends TestCase {
      */
     @Test
     public void testReadString() throws IOException {
+        final Random random   = TestUtilities.createRandomNumberGenerator("testReadString");
         final String expected = "お元気ですか";
-        final byte[] array = expected.getBytes("UTF-8");
+        final byte[] array    = expected.getBytes("UTF-8");
         assertEquals(expected.length()*3, array.length); // Sanity check.
         final ChannelDataInput input = new ChannelDataInput("testReadString",
-                Channels.newChannel(new ByteArrayInputStream(array)),
+                new DripByteChannel(array, random, 1, 32),
                 ByteBuffer.allocate(array.length + 4), false);
         assertEquals(expected, input.readString(array.length, "UTF-8"));
         assertFalse(input.buffer.hasRemaining());
@@ -173,7 +187,7 @@ public final strictfp class ChannelDataInputTest extends TestCase {
         length -= (Long.SIZE / Byte.SIZE); // Safety against buffer underflow.
         final ByteBuffer buffer = ByteBuffer.wrap(array);
         final ChannelDataInput input = new ChannelDataInput("testSeekOnForwardOnlyChannel",
-                Channels.newChannel(new ByteArrayInputStream(array)),
+                new DripByteChannel(array, random, 1, 2048),
                 ByteBuffer.allocate(random.nextInt(64) + 16), false);
         int position = 0;
         while (position < length) {
@@ -185,16 +199,46 @@ public final strictfp class ChannelDataInputTest extends TestCase {
     }
 
     /**
-     * Creates an array filled with random values.
+     * Tests {@link ChannelDataInput#prefetch()}.
      *
-     * @param length The length of the array to create.
-     * @param random The random number generator to use.
+     * @throws IOException Should never happen.
      */
-    static byte[] createRandomArray(final int length, final Random random) {
-        final byte[] array = new byte[length];
-        for (int i=0; i<length; i++) {
-            array[i] = (byte) random.nextInt(256);
+    @Test
+    public void testPrefetch() throws IOException {
+        final Random     random = TestUtilities.createRandomNumberGenerator("testPrefetch");
+        final int        length = random.nextInt(256) + 128;
+        final byte[]     array  = createRandomArray(length, random);
+        final ByteBuffer buffer = ByteBuffer.allocate(random.nextInt(64) + 16);
+        final ChannelDataInput input = new ChannelDataInput("testPrefetch",
+                new DripByteChannel(array, random, 1, 64), buffer, false);
+        int position = 0;
+        while (position != length) {
+            if (random.nextBoolean()) {
+                assertEquals(array[position++], input.readByte());
+            }
+            /*
+             * Prefetch a random amount of bytes and verifies the buffer status.
+             */
+            final int p = buffer.position();
+            final int m = buffer.limit();
+            final int n = input.prefetch();
+            assertEquals("Position shall be unchanged.", p, buffer.position());
+            final int limit = buffer.limit();
+            if (n >= 0) {
+                // Usual case.
+                assertTrue("Limit shall be increased.", limit > m);
+            } else {
+                // Buffer is full or channel reached the end of stream.
+                assertEquals("Limit shall be unchanged", m, limit);
+            }
+            /*
+             * Compare the buffer content with the original data array. The comparison starts
+             * from the buffer begining, in order to ensure that previous data are unchanged.
+             */
+            final int offset = position - buffer.position();
+            for (int i=0; i<limit; i++) {
+                assertEquals(array[offset + i], buffer.get(i));
+            }
         }
-        return array;
     }
 }

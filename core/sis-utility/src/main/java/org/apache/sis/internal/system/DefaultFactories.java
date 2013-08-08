@@ -86,11 +86,17 @@ public final class DefaultFactories extends SystemListener {
         T factory = type.cast(FACTORIES.get(type));
         if (factory == null && !FACTORIES.containsKey(type)) {
             for (final T candidate : ServiceLoader.load(type)) {
-                if (candidate.getClass().getName().startsWith("org.apache.sis.")) {
+                final Class<?> ct = candidate.getClass();
+                if (ct.getName().startsWith("org.apache.sis.")) {
                     factory = candidate;
                     break;
                 }
-                if (factory == null) {
+                /*
+                 * Select the first provider found in the iteration. If more than one provider is found,
+                 * select the most specialized type. This is okay only for relatively simple configurations,
+                 * while we are waiting for a real dependency injection mechanism.
+                 */
+                if (factory == null || factory.getClass().isAssignableFrom(ct)) {
                     factory = candidate;
                 }
             }
