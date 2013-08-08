@@ -116,7 +116,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
         final ByteBuffer buffer = storage.getStorageAs(ByteBuffer.class);
         if (buffer != null) {
             if (buffer.remaining() < Integer.SIZE / Byte.SIZE) {
-                return ProbeResult.UNDETERMINED;
+                return ProbeResult.INSUFFICIENT_BYTES;
             }
             final int header = buffer.getInt(buffer.position());
             if ((header & 0xFFFFFF00) == ChannelDecoder.MAGIC_NUMBER) {
@@ -131,7 +131,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
             ensureInitialized();
             final Method method = canOpenFromPath;
             if (method != null) try {
-                return ((Boolean) method.invoke(null, path)) ? ProbeResult.SUPPORTED : ProbeResult.UNKNOWN_FORMAT;
+                return ((Boolean) method.invoke(null, path)) ? ProbeResult.SUPPORTED : ProbeResult.UNSUPPORTED_STORAGE;
             } catch (IllegalAccessException e) {
                 throw new AssertionError(e); // Should never happen, since the method is public.
             } catch (InvocationTargetException e) {
@@ -152,7 +152,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
                 return ProbeResult.SUPPORTED;
             }
         }
-        return ProbeResult.UNKNOWN_FORMAT;
+        return ProbeResult.UNSUPPORTED_STORAGE;
     }
 
     /**

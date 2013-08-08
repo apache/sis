@@ -19,6 +19,7 @@ package org.apache.sis.setup;
 import java.util.Map;
 import java.util.HashMap;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.io.Serializable;
 import java.io.ObjectStreamException;
 import org.apache.sis.util.ArgumentChecks;
@@ -26,8 +27,33 @@ import org.apache.sis.util.logging.Logging;
 
 
 /**
- * Keys in a map of options, together with static constants for commonly-used options.
- * Developers can subclass this class for defining their own options.
+ * Keys in a map of options for configuring various services
+ * ({@link org.apache.sis.storage.DataStore}, <i>etc</i>).
+ * {@code OptionKey}s are used for aspects that usually do not need to be configured, except in a few specialized cases.
+ * For example most data file formats read by SIS do not require the user to specify the character encoding, since the
+ * encoding it is often given in the file header or in the format specification. However if SIS may have to read plain
+ * text files <em>and</em> the default platform encoding is not suitable, then the user can specify the desired encoding
+ * explicitely using the {@link #ENCODING} option.
+ *
+ * <p>All options are <em>hints</em> and may be silently ignored. For example most {@code DataStore}s will ignore the
+ * {@code ENCODING} option if irrelevant to their format, or if the encoding is specified in the data file header.</p>
+ *
+ * <p>Options are <em>transitive</em>: if a service uses others services for its internal working, the given options
+ * may also be given to those dependencies, at implementation choice.</p>
+ *
+ * {@section Defining new options}
+ * Developers who wish to define their own options can define static constants in a subclass,
+ * as in the following example:
+ *
+ * {@preformat java
+ *     public final class MyOptionKey<T> extends OptionKey<T> {
+ *         public static final OptionKey<String> MY_OPTION = new MyOptionKey<>("MY_OPTION", String.class);
+ *
+ *         private MyOptionKey(final String name, final Class<T> type) {
+ *             super(name, type);
+ *         }
+ *     }
+ * }
  *
  * @param <T> The type of option values.
  *
@@ -41,6 +67,19 @@ public class OptionKey<T> implements Serializable {
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = -7580514229639750246L;
+
+    /**
+     * The character encoding of document content.
+     * This option can be used when the file to read does not describe itself its encoding.
+     * For example this option can be used when reading plain text files, but is ignored when
+     * reading XML files having a {@code <?xml version="1.0" encoding="…"?>} declaration.
+     *
+     * <p>If this option is not provided, then the default value is the
+     * {@link Charset#defaultCharset() platform default}.</p>
+     *
+     * @since 0.4
+     */
+    public static final OptionKey<Charset> ENCODING = new OptionKey<Charset>("ENCODING", Charset.class);
 
     /**
      * The encoding of a URL (<strong>not</strong> the encoding of the document content).

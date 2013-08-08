@@ -1,0 +1,182 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.sis.internal.storage.xml;
+
+import java.util.Map;
+import java.util.Collections;
+import java.util.logging.LogRecord;
+import java.io.Closeable;
+import java.io.Reader;
+import java.io.InputStream;
+import java.io.IOException;
+import javax.xml.bind.JAXBException;
+import javax.xml.transform.stream.StreamSource;
+import org.opengis.metadata.Metadata;
+import org.apache.sis.xml.XML;
+import org.apache.sis.storage.DataStore;
+import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.util.logging.WarningListener;
+import org.apache.sis.util.resources.Errors;
+
+
+/**
+ * A data store which creates data objects from a XML file.
+ * This {@code DataStore} implementation is basically a facade for the {@link XML#unmarshal(Source, Map)} method.
+ * The current implementation recognizes the following objects:
+ *
+ * <ul>
+ *   <li>{@link Metadata}, typically built from the {@code <gmd:MD_Metadata>} XML element.</li>
+ * </ul>
+ *
+ * The above list may be extended in any future SIS version.
+ *
+ * @author  Martin Desruisseaux (Geomatys)
+ * @since   0.4
+ * @version 0.4
+ * @module
+ */
+public class XMLStore extends DataStore {
+    /**
+     * The file name.
+     */
+    private final String name;
+
+    /**
+     * The input stream or reader, set by the constructor and cleared when no longer needed.
+     */
+    private StreamSource source;
+
+    /**
+     * The unmarshalled object, initialized only when first needed.
+     * May still {@code null} if the unmarshalling failed.
+     */
+    private Object object;
+
+    /**
+     * Creates a new XML store from the given file, URL or stream.
+     *
+     * @param  connector Information about the storage (URL, stream, <i>etc</i>).
+     * @throws DataStoreException If an error occurred while opening the stream.
+     */
+    public XMLStore(final StorageConnector connector) throws DataStoreException {
+        name = connector.getStorageName();
+        final InputStream in = connector.getStorageAs(InputStream.class);
+        if (in != null) {
+            source = new StreamSource(in);
+        } else {
+            final Reader reader = connector.getStorageAs(Reader.class);
+            if (reader != null) {
+                source = new StreamSource(reader);
+            }
+        }
+        final Closeable c = input(source);
+        connector.closeAllExcept(c);
+        if (c == null) {
+            throw new DataStoreException(Errors.format(Errors.Keys.CanNotOpen_1, name));
+        }
+    }
+
+    /**
+     * Returns the input stream or reader set in the given source, or {@code null} if none.
+     */
+    private static Closeable input(final StreamSource source) {
+        Closeable in = null;
+        if (source != null) {
+            in = source.getInputStream();
+            if (in == null) {
+                in = source.getReader();
+            }
+        }
+        return in;
+    }
+
+    /**
+     * Returns the properties to give to the (un)marshaller.
+     */
+    private Map<String,?> properties() {
+        if (listeners.hasListeners()) {
+            return Collections.singletonMap(XML.WARNING_LISTENER, new WarningListener<Object>() {
+                /** Returns the type of objects that emit warnings of interest for this listener. */
+                @Override public Class<Object> getSourceClass() {
+                    return Object.class;
+                }
+
+                /** Reports the occurrence of a non-fatal error during XML unmarshalling. */
+                @Override public void warningOccured(final Object source, final LogRecord warning) {
+                    listeners.warning(warning);
+                }
+            });
+        }
+        return null;
+    }
+
+    /**
+     * Unmarshal the object, if not already done. Note that {@link #object} may still be null
+     * if an exception has been thrown at this invocation time or in previous invocation.
+     *
+     * @throws DataStoreException If an error occurred during the unmarshalling process.
+     */
+    private void unmarshal() throws DataStoreException {
+        final StreamSource s = source;
+        final Closeable in = input(s);
+        source = null; // Cleared first in case of error.
+        if (in != null) try {
+            try {
+                object = XML.unmarshal(s, properties());
+            } finally {
+                in.close();
+            }
+        } catch (Exception e) { // (JAXBException | IOException) on the JDK7 branch.
+            throw new DataStoreException(Errors.format(Errors.Keys.CanNotRead_1, name), e);
+        }
+    }
+
+    /**
+     * Returns the metadata associated to the unmarshalled object, or {@code null} if none.
+     * The current implementation performs the following choice:
+     *
+     * <ul>
+     *   <li>If the unmarshalled object implements the {@link Metadata} interface, then it is returned directly.</li>
+     * </ul>
+     *
+     * Other cases may be added in any future SIS version.
+     *
+     * @return The metadata associated to the unmarshalled object, or {@code null} if none.
+     * @throws DataStoreException If an error occurred during the unmarshalling process.
+     */
+    @Override
+    public Metadata getMetadata() throws DataStoreException {
+        unmarshal();
+        return (object instanceof Metadata) ? (Metadata) object : null;
+    }
+
+    /**
+     * Closes this data store and releases any underlying resources.
+     */
+    @Override
+    public void close() throws DataStoreException {
+        object = null;
+        final Closeable in = input(source);
+        source = null; // Cleared first in case of failure.
+        if (in != null) try {
+            in.close();
+        } catch (IOException e) {
+            throw new DataStoreException(e);
+        }
+    }
+}

@@ -27,7 +27,7 @@ import org.apache.maven.plugin.MojoExecutionException;
  * This mojo delegates the work to <code>Packer</code>, which can be invoked from the command
  * line without Maven. Maven invocation syntax is:
  *
- * <blockquote><code>mvn org.apache.sis:sis-build-helper:pack --non-recursive</code></blockquote>
+ * <blockquote><code>mvn org.apache.sis.core:sis-build-helper:pack --non-recursive</code></blockquote>
  *
  * Do not forget the <code>--non-recursive</code> option, otherwise the Mojo will be executed many time.
  *

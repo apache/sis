@@ -19,6 +19,7 @@ package org.apache.sis.internal.jaxb.gml;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlAttribute;
 import org.apache.sis.util.Version;
+import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.IdentifiedObject;
@@ -35,7 +36,7 @@ import org.apache.sis.xml.IdentifiedObject;
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.18)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 public abstract class GMLAdapter {
@@ -65,7 +66,7 @@ public abstract class GMLAdapter {
      * @see org.apache.sis.internal.jaxb.gco.ObjectReference#getUUIDREF()
      */
     @XmlID
-    @XmlAttribute(required = true)
+    @XmlAttribute(namespace = Namespaces.GML, required = true)
     private String id;
 
     /**
