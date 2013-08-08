@@ -449,6 +449,19 @@ Apache SIS is a free software, Java language library for developing geospatial a
         </executions>
       </plugin>
 
+      <!-- Set "*-source-release.zip" filename prefix to "sis-*" instead of "parent-*" -->
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>source-release-assembly</id>
+            <configuration>
+              <finalName>sis-${project.version}</finalName>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
       <!-- Package as OSGi bundle -->
       <plugin>
         <groupId>org.apache.felix</groupId>
