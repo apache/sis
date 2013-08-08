@@ -99,6 +99,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int CanNotParseFile_2 = 79;
 
         /**
+         * Can not read “{0}”.
+         */
+        public static final int CanNotRead_1 = 108;
+
+        /**
          * Can not set a value for property “{0}”.
          */
         public static final int CanNotSetPropertyValue_1 = 75;

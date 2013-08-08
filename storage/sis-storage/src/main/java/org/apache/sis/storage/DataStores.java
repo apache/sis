@@ -69,7 +69,7 @@ public final class DataStores extends Static {
      *   <li>A {@link java.nio.file.Path} or a {@link java.io.File} for a file or a directory.</li>
      *   <li>A {@link java.net.URI} or a {@link java.net.URL} to a distant resource.</li>
      *   <li>A {@link java.lang.CharSequence} interpreted as a filename or a URL.</li>
-     *   <li>A {@link java.nio.channels.Channel} or a {@link java.io.DataInput}.</li>
+     *   <li>A {@link java.nio.channels.Channel}, {@link java.io.DataInput}, {@link java.io.InputStream} or {@link java.io.Reader}.</li>
      *   <li>A {@link javax.sql.DataSource} or a {@link java.sql.Connection} to a JDBC database.</li>
      *   <li>Any other {@code DataStore}-specific object, for example {@link ucar.nc2.NetcdfFile}.</li>
      *   <li>An existing {@link StorageConnector} instance.</li>

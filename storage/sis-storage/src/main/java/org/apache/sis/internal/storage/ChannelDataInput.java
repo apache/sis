@@ -59,7 +59,7 @@ import java.nio.channels.FileChannel;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.07)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 public class ChannelDataInput {
@@ -147,6 +147,34 @@ public class ChannelDataInput {
              */
             throw new IOException(e);
         }
+    }
+
+    /**
+     * Tries to read more bytes from the channel without changing the buffer position.
+     * This method returns a negative number if the buffer is already full or if the channel reached the
+     * <cite>end of stream</cite>. Otherwise this method reads an arbitrary amount of bytes not greater
+     * than the space available in the buffer, and returns the amount bytes actually read.
+     *
+     * @return The number of bytes read, or -2 if the buffer is full, or -1 on <cite>end of stream</cite>.
+     * @throws IOException If an error occurred while reading the bytes.
+     *
+     * @since 0.4
+     */
+    public final int prefetch() throws IOException {
+        final int limit    = buffer.limit();
+        final int capacity = buffer.capacity();
+        if (limit == capacity) {
+            return -2;
+        }
+        final int position = buffer.position();
+        buffer.limit(capacity).position(limit);
+        int c = channel.read(buffer);
+        while (c == 0) {
+            onEmptyChannelBuffer();
+            c = channel.read(buffer);
+        }
+        buffer.limit(buffer.position()).position(position);
+        return c;
     }
 
     /**
@@ -708,8 +736,9 @@ public class ChannelDataInput {
                     }
                     onEmptyChannelBuffer();
                 }
+                buffer.flip();
             } while (p > buffer.limit());
-            buffer.flip().position((int) p);
+            buffer.position((int) p);
         } else {
             /*
              * Requested position is before the current buffer limits
