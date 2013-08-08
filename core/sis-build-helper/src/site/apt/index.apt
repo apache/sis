@@ -105,9 +105,9 @@ Building Apache SIS
   in the module containing the resources to recompile. This is sometime useful for regenerating
   the constants in the <<<Keys>>> inner class in a feaster way than building the project.
 
------------------------------------------------------------
-   mvn org.apache.sis:sis-build-helper:compile-resources
------------------------------------------------------------
+----------------------------------------------------------------
+   mvn org.apache.sis.core:sis-build-helper:compile-resources
+----------------------------------------------------------------
 
 
 * JAR files collector
@@ -153,9 +153,9 @@ Building Apache SIS
   invoke the following from the command line. Do not forget the <<<--non-recursive>>>
   option, otherwise the Mojo will waste CPU by executing itself many time.
 
-----------------------------------------------------------------
-   mvn org.apache.sis:sis-build-helper:pack --non-recursive
-----------------------------------------------------------------
+-------------------------------------------------------------------
+   mvn org.apache.sis.core:sis-build-helper:pack --non-recursive
+-------------------------------------------------------------------
 
   The above command should create a <<<target/binaries/sis-\<version\>.pack.gz>>> file.
   To uncompress that file, use the following command:
