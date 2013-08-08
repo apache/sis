@@ -486,6 +486,93 @@ Apache SIS is a free software, Java language library for developing geospatial a
           </dependency>
         </dependencies>
       </plugin>
+      <plugin>
+        <artifactId>maven-project-info-reports-plugin</artifactId>
+        <version>2.7</version>
+      </plugin>
+
+      <!-- Following is a copy-and-paste of maven-javadoc-plugin configuration in the <reporting> section.
+           Seems to be required for javadoc packaged as JAR files. -->
+      <plugin>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.9.1</version>
+        <configuration>
+          <source>${maven.compile.source}</source>              <!-- Enables javadoc to handle language constructs present in target JDK. -->
+          <encoding>${project.build.sourceEncoding}</encoding>  <!-- Encoding of Java source file. -->
+          <docencoding>${website.encoding}</docencoding>        <!-- Encoding of the generated HTML files. -->
+          <charset>${website.encoding}</charset>                <!-- Encoding to declare in the HTML META tag. -->
+          <locale>${website.locale}</locale>                    <!-- Locale for navigation bar, help file contents, etc. -->
+          <author>false</author>                                <!-- Excludes the authors text in the generated docs. -->
+          <version>false</version>                              <!-- Excludes the version text in the generated docs. -->
+          <nosince>true</nosince>                               <!-- Omits the "Since" sections associated with the since tags. -->
+          <noqualifier>all</noqualifier>                        <!-- Omit qualifying package name before class names in output. -->
+          <quiet>true</quiet>                                   <!-- Shuts off non-error and non-warning messages. -->
+          <keywords>true</keywords>                             <!-- Adds HTML meta keyword tags to the generated files. -->
+          <breakiterator>true</breakiterator>                   <!-- Better boundary detection when determining the end of the first sentence. -->
+          <stylesheetfile>src/main/javadoc/stylesheet.css</stylesheetfile>
+          <validateLinks>true</validateLinks>
+          <links>
+            <link>http://www.geoapi.org/3.0/javadoc</link>
+          </links>
+
+          <!-- Separates packages on the overview page into the groups specified. -->
+          <groups>
+            <group>
+              <title>Testing tools</title> <!-- Exists in test javadoc only. -->
+              <packages>org.apache.sis.test*</packages>
+            </group>
+            <group>
+              <title>Applications</title>
+              <packages>org.apache.sis.console*:org.apache.sis.services*</packages>
+            </group>
+            <group>
+              <title>Data storage</title>
+              <packages>org.apache.sis.storage*:org.apache.sis.index*</packages>
+            </group>
+            <group>
+              <title>Geometry</title>
+              <packages>org.apache.sis.geometry*</packages>
+            </group>
+            <group>
+              <title>Referencing</title>
+              <packages>org.apache.sis.referencing*:org.apache.sis.parameter*</packages>
+            </group>
+            <group>
+              <title>Metadata</title>
+              <packages>org.apache.sis.metadata*</packages>
+            </group>
+            <group>
+              <title>Utilities</title>
+              <packages>org.apache.sis.math*:org.apache.sis.measure*:org.apache.sis.util*:org.apache.sis.io*:org.apache.sis.xml*:org.apache.sis.setup*</packages>
+            </group>
+          </groups>
+
+          <!-- Internal packages to hide from javadoc. -->
+          <excludePackageNames>org.apache.sis.internal:com</excludePackageNames>
+
+          <!-- Custom taglets, some of them implemented in Java. -->
+          <tags>
+            <tag><placement>t</placement> <name>goal</name>     <head>Maven goal:</head></tag>
+            <tag><placement>t</placement> <name>phase</name>    <head>Maven phase:</head></tag>
+            <tag><placement>X</placement> <name>category</name> <head>Category:</head></tag>
+            <tag><placement>a</placement> <name>todo</name>     <head>TODO:</head></tag>
+          </tags>
+          <taglets>
+            <taglet><tagletClass>org.apache.sis.internal.taglet.Module</tagletClass></taglet>
+            <taglet><tagletClass>org.apache.sis.internal.taglet.WebSite</tagletClass></taglet>
+            <taglet><tagletClass>org.apache.sis.internal.taglet.Section</tagletClass></taglet>
+            <taglet><tagletClass>org.apache.sis.internal.taglet.Note</tagletClass></taglet>
+            <taglet><tagletClass>org.apache.sis.internal.taglet.Example</tagletClass></taglet>
+            <taglet><tagletClass>org.apache.sis.internal.taglet.Preformat</tagletClass></taglet>
+            <taglet><tagletClass>org.apache.sis.internal.taglet.SourceRepositoryURL</tagletClass></taglet>
+          </taglets>
+          <tagletArtifact>
+            <groupId>org.apache.sis.core</groupId>
+            <artifactId>sis-build-helper</artifactId>
+            <version>${sis.plugin.version}</version>
+          </tagletArtifact>
+        </configuration>
+      </plugin>
     </plugins>
 
     <!-- Following plugins are used only by some specific modules. -->
