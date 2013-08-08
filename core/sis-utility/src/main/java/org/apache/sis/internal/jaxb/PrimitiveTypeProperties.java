@@ -102,7 +102,8 @@ public final class PrimitiveTypeProperties {
      * @return The property associated to the given instance, or {@code null} if none.
      */
     public static Object property(final Object primitive) {
-        assert isValidKey(primitive) : primitive;
+        // No 'assert isValidKey(primitive)' because this method is sometime invoked
+        // only after a brief inspection (e.g. 'NilReason.mayBeNil(Object)' method).
         synchronized (SENTINEL_VALUES) {
             return SENTINEL_VALUES.get(primitive);
         }

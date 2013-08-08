@@ -46,7 +46,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.4
  * @module
  *
  * @see WarningListener
@@ -256,5 +256,16 @@ public class WarningListeners<S> implements Localized {
             }
         }
         throw new NoSuchElementException(Errors.format(Errors.Keys.NoSuchElement_1, listener));
+    }
+
+    /**
+     * Returns {@code true} if this object contains at least one listener.
+     *
+     * @return {@code true} if this object contains at least one listener, {@code false} otherwise.
+     *
+     * @since 0.4
+     */
+    public synchronized boolean hasListeners() {
+        return listeners != null;
     }
 }

@@ -16,6 +16,9 @@
  */
 package org.apache.sis.storage;
 
+import java.util.List;
+import java.util.LinkedList;
+import java.util.Iterator;
 import java.util.ServiceLoader;
 import org.apache.sis.util.ThreadSafe;
 import org.apache.sis.util.ArgumentChecks;
@@ -70,7 +73,7 @@ final class DataStoreRegistry {
      *   <li>A {@link java.nio.file.Path} or a {@link java.io.File} for a file or a directory.</li>
      *   <li>A {@link java.net.URI} or a {@link java.net.URL} to a distant resource.</li>
      *   <li>A {@link java.lang.CharSequence} interpreted as a filename or a URL.</li>
-     *   <li>A {@link java.nio.channels.Channel} or a {@link java.io.DataInput}.</li>
+     *   <li>A {@link java.nio.channels.Channel}, {@link java.io.DataInput}, {@link java.io.InputStream} or {@link java.io.Reader}.</li>
      *   <li>A {@link javax.sql.DataSource} or a {@link java.sql.Connection} to a JDBC database.</li>
      *   <li>Any other {@code DataStore}-specific object, for example {@link ucar.nc2.NetcdfFile}.</li>
      *   <li>An existing {@link StorageConnector} instance.</li>
@@ -89,22 +92,85 @@ final class DataStoreRegistry {
         } else {
             connector = new StorageConnector(storage);
         }
+        DataStoreProvider provider = null;
+        List<DataStoreProvider> deferred = null;
         try {
-            DataStoreProvider provider = null;
+            /*
+             * All usages of 'loader' and its 'providers' iterator must be protected in a synchronized block,
+             * because ServiceLoader is not thread-safe. We try to keep the synhronization block as small as
+             * possible for less contention. In particular, the canOpen(connector) method call may be costly.
+             */
+            final Iterator<DataStoreProvider> providers;
+            DataStoreProvider candidate;
             synchronized (loader) {
-search:         for (final DataStoreProvider candidate : loader) {
-                    switch (candidate.canOpen(connector)) {
-                        case SUPPORTED: {
-                            provider = candidate;
-                            break search;
+                providers = loader.iterator();
+                candidate = providers.hasNext() ? providers.next() : null;
+            }
+search:     while (candidate != null) {
+                switch (candidate.canOpen(connector)) {
+                    /*
+                     * Stop at the first provider claiming to be able to read the storage.
+                     * Do not iterate over the list of deferred providers (if any).
+                     */
+                    case SUPPORTED: {
+                        provider = candidate;
+                        deferred = null;
+                        break search;
+                    }
+                    /*
+                     * If a provider doesn't have enough bytes for answering the question,
+                     * try again after this loop with more bytes in the buffer, unless we
+                     * found an other provider.
+                     */
+                    case INSUFFICIENT_BYTES: {
+                        if (deferred == null) {
+                            deferred = new LinkedList<DataStoreProvider>();
                         }
-                        case UNDETERMINED: {
-                            // TODO: not enough information.
-                            break;
+                        deferred.add(candidate);
+                        break;
+                    }
+                    /*
+                     * If a provider doesn't know whether it can open the given storage,
+                     * we will try it only if we find no provider retuning SUPPORTED.
+                     *
+                     * TODO: What to do if we find more than one provider here? We can not invoke
+                     *       provider.open(connector) in a try … catch block because it may leave
+                     *       the StorageConnector in an invalid state in case of failure.
+                     */
+                    case UNDETERMINED: {
+                        provider = candidate;
+                        break;
+                    }
+                }
+                synchronized (loader) {
+                    candidate = providers.hasNext() ? providers.next() : null;
+                }
+            }
+            /*
+             * If any provider did not had enough bytes for answering the 'canOpen(…)' question,
+             * get more bytes and try again. We try to prefetch more bytes only if we have no choice
+             * in order to avoid latency on network connection.
+             */
+            if (deferred != null) {
+search:         while (!deferred.isEmpty() && connector.prefetch()) {
+                    for (final Iterator<DataStoreProvider> it=deferred.iterator(); it.hasNext();) {
+                        candidate = it.next();
+                        switch (candidate.canOpen(connector)) {
+                            case SUPPORTED:          provider = candidate; break search;
+                            case UNDETERMINED:       provider = candidate; break;
+                            case INSUFFICIENT_BYTES: continue; // Will try again in next iteration.
                         }
+                        it.remove(); // UNSUPPORTED_* or UNDETERMINED: do not try again those providers.
                     }
                 }
             }
+            /*
+             * If a provider has been found, or if a provider returned UNDETERMINED, use that one
+             * for opening a DataStore. Note that if more than one provider returned UNDETERMINED,
+             * the selected one is arbitrary and may change in different execution. Implementors
+             * shall avoid the UNDETERMINED value as much as possible (this value should be used
+             * only for RAW image format).
+             */
             if (provider != null) {
                 final DataStore data = provider.open(connector);
                 connector = null; // For preventing it to be closed.
