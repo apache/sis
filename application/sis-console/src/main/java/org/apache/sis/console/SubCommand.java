@@ -69,7 +69,7 @@ abstract class SubCommand {
 
     /**
      * The locale specified by the {@code "--timezone"} option. If no such option was provided,
-     * then this field is left to {@code null}.
+     * then this field is set to the {@linkplain TimeZone#getDefault() default timezone}.
      */
     protected final TimeZone timezone;
 
@@ -191,7 +191,7 @@ abstract class SubCommand {
             locale = (value != null) ? Locales.parse(value) : Locale.getDefault(Locale.Category.DISPLAY);
 
             value = options.get(option = Option.TIMEZONE);
-            timezone = (value != null) ? TimeZone.getTimeZone(value) : null;
+            timezone = (value != null) ? TimeZone.getTimeZone(value) : TimeZone.getDefault();
 
             value = options.get(option = Option.ENCODING);
             explicitEncoding = (value != null);
