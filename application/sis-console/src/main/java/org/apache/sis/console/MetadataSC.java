@@ -17,6 +17,7 @@
 package org.apache.sis.console;
 
 import java.util.EnumSet;
+import java.io.File;
 import java.io.IOException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.JAXBException;
@@ -80,11 +81,17 @@ final class MetadataSC extends SubCommand {
             return Command.INVALID_ARGUMENT_EXIT_CODE;
         }
         final Metadata metadata;
-        final NetcdfStore store = new NetcdfStore(new StorageConnector(files.get(0)));
-        try {
-            metadata = store.getMetadata();
-        } finally {
-            store.close();
+        final String file = files.get(0);
+        if (file.endsWith(".xml")) {
+            final Object obj = XML.unmarshal(new File(file));
+            metadata = (obj instanceof Metadata) ? (Metadata) obj : null;
+        } else {
+            final NetcdfStore store = new NetcdfStore(new StorageConnector(file));
+            try {
+                metadata = store.getMetadata();
+            } finally {
+                store.close();
+            }
         }
         /*
          * Format metadata to the standard output stream.

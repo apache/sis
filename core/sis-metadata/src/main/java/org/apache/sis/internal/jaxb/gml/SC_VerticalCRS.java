@@ -116,7 +116,7 @@ public class SC_VerticalCRS extends PropertyType<SC_VerticalCRS, VerticalCRS> {
      */
     @XmlAnyElement(lax = true)
     public Object getElement() {
-        final LogRecord record = new LogRecord(Level.WARNING, "Not supported in Apache SIS 0.3.");
+        final LogRecord record = new LogRecord(Level.WARNING, "VerticalCRS is not supported in Apache SIS 0.3.");
         record.setSourceClassName(SC_VerticalCRS.class.getName());
         record.setSourceMethodName("getElement");
         final Context context = Context.current();

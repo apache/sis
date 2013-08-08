@@ -53,7 +53,7 @@ public final class TemporalUtilities extends Static {
         if (factory != null) {
             return factory;
         }
-        throw new UnsupportedOperationException("Not supported in Apache SIS 0.3.");
+        throw new UnsupportedOperationException("TemporalFactory is not supported in Apache SIS 0.3.");
     }
 
     /**
