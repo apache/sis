@@ -16,10 +16,10 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
-import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
-import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.quality.EvaluationMethodType;
+import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
+import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
 
 
 /**
@@ -35,13 +35,6 @@ import org.opengis.metadata.quality.EvaluationMethodType;
 public final class DQ_EvaluationMethodTypeCode
         extends CodeListAdapter<DQ_EvaluationMethodTypeCode, EvaluationMethodType>
 {
-    /**
-     * Ensures that the adapted code list class is loaded.
-     */
-    static {
-        ensureClassLoaded(EvaluationMethodType.class);
-    }
-
     /**
      * Empty constructor for JAXB only.
      */

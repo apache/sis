@@ -26,9 +26,6 @@ import org.opengis.metadata.extent.GeographicDescription;
 import org.opengis.metadata.extent.BoundingPolygon;
 import org.apache.sis.metadata.iso.ISOMetadata;
 
-import static org.apache.sis.internal.metadata.MetadataUtilities.getBoolean;
-import static org.apache.sis.internal.metadata.MetadataUtilities.setBoolean;
-
 
 /**
  * Base class for geographic area of the dataset.
@@ -51,22 +48,17 @@ public class AbstractGeographicExtent extends ISOMetadata implements GeographicE
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 4819196764221609263L;
+    private static final long serialVersionUID = 4819196764221609265L;
 
     /**
-     * Mask for the {@code inclusion} {@link Boolean} value.
-     * Needs 2 bits since the values can be {@code true}, {@code false} or {@code null}.
+     * Indication of whether the bounding polygon encompasses an area covered by the data
+     * (<cite>inclusion</cite>) or an area where data is not present (<cite>exclusion</cite>).
      *
-     * @see #booleans
+     * <p>Implementation note: we need to store the reference to the {@code Boolean} instance instead
+     * than using bitmask because {@link org.apache.sis.internal.jaxb.PrimitiveTypeProperties} may
+     * associate some properties to that particular instance.</p>
      */
-    private static final byte INCLUSION_MASK = 3;
-
-    /**
-     * The set of {@link Boolean} values. Bits are read and written using the {@code *_MASK} constants.
-     *
-     * @see #INCLUSION_MASK
-     */
-    private byte booleans;
+    private Boolean inclusion;
 
     /**
      * Constructs an initially empty geographic extent.
@@ -80,7 +72,7 @@ public class AbstractGeographicExtent extends ISOMetadata implements GeographicE
      * @param inclusion Whether the bounding polygon encompasses an area covered by the data.
      */
     public AbstractGeographicExtent(final boolean inclusion) {
-        booleans = inclusion ? INCLUSION_MASK : 0;
+        this.inclusion = inclusion;
     }
 
     /**
@@ -95,7 +87,7 @@ public class AbstractGeographicExtent extends ISOMetadata implements GeographicE
     public AbstractGeographicExtent(final GeographicExtent object) {
         super(object);
         if (object != null) {
-            booleans = (byte) setBoolean(0, INCLUSION_MASK, object.getInclusion());
+            inclusion = object.getInclusion();
         }
     }
 
@@ -148,7 +140,7 @@ public class AbstractGeographicExtent extends ISOMetadata implements GeographicE
     @Override
     @XmlElement(name = "extentTypeCode")
     public Boolean getInclusion() {
-        return getBoolean(booleans, INCLUSION_MASK);
+        return inclusion;
     }
 
     /**
@@ -159,6 +151,6 @@ public class AbstractGeographicExtent extends ISOMetadata implements GeographicE
      */
     public void setInclusion(final Boolean newValue) {
         checkWritePermission();
-        booleans = (byte) setBoolean(booleans, INCLUSION_MASK, newValue);
+        inclusion = newValue;
     }
 }

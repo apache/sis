@@ -131,7 +131,7 @@ public final strictfp class MetadataMarshallingTest extends XMLTestCase {
         assertInstanceOf("Wrong value for <gmd:result>", DefaultConformanceResult.class,
                 getSingleton(((AbstractElement) metadata).getResults()));
         /*
-         * Final comparison: ensure that we didn't lost any information, then release.
+         * Final comparison: ensure that we didn't lost any information.
          */
         assertXmlEquals(resource, marshal(marshaller, metadata), "xmlns:*", "xsi:schemaLocation", "xsi:type");
         pool.recycle(unmarshaller);
@@ -162,7 +162,7 @@ public final strictfp class MetadataMarshallingTest extends XMLTestCase {
         assertTrue(xml.startsWith("<?xml"));
         assertXmlEquals(getResource("ProcessStep.xml"), xml, "xmlns:*", "xsi:schemaLocation");
         /*
-         * Final comparison: ensure that we didn't lost any information, then release.
+         * Final comparison: ensure that we didn't lost any information.
          */
         assertEquals(processStep, unmarshal(unmarshaller, xml));
         pool.recycle(unmarshaller);

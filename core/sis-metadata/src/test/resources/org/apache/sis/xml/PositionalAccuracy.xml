@@ -19,10 +19,10 @@
 -->
 
 <gmd:DQ_RelativeInternalPositionalAccuracy
-  xmlns:gmd = "http://www.isotc211.org/2005/gmd"
-  xmlns:gco = "http://www.isotc211.org/2005/gco"
-  xmlns:xsi = "http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation = "http://www.isotc211.org/2005/gmd http://schemas.opengis.net/iso/19139/20070417/gmd/gmd.xsd">
+    xmlns:gmd = "http://www.isotc211.org/2005/gmd"
+    xmlns:gco = "http://www.isotc211.org/2005/gco"
+    xmlns:xsi = "http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation = "http://www.isotc211.org/2005/gmd http://schemas.opengis.net/iso/19139/20070417/gmd/gmd.xsd">
 
   <!-- The <nameOfMeasure> element below is the main purpose of MetadataMarshallingTest.testPositionalAccuracy().
        The <result> element was added only in order to allow validation of this XML file, with the addition of an

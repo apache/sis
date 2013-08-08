@@ -74,23 +74,6 @@ public abstract class CodeListAdapter<ValueType extends CodeListAdapter<ValueTyp
     }
 
     /**
-     * Forces the initialization of the given code list class, since some
-     * calls to {@link CodeList#valueOf(Class, String)} are done whereas
-     * the constructor has not already been called.
-     *
-     * @param <T>  The code list type.
-     * @param type The code list class to initialize.
-     */
-    protected static <T extends CodeList<T>> void ensureClassLoaded(final Class<T> type) {
-        final String name = type.getName();
-        try {
-            Class.forName(name, true, type.getClassLoader());
-        } catch (ClassNotFoundException e) {
-            throw new TypeNotPresentException(name, e); // Should never happen.
-        }
-    }
-
-    /**
      * Wraps the proxy value into an adapter.
      *
      * @param proxy The proxy version of {@link CodeList}, to be marshalled.

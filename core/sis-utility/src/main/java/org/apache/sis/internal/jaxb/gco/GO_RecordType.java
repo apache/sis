@@ -18,7 +18,6 @@ package org.apache.sis.internal.jaxb.gco;
 
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.util.RecordType;
-import org.apache.sis.internal.jaxb.gco.PropertyType;
 import org.apache.sis.util.iso.DefaultRecordType;
 
 
