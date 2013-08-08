@@ -25,6 +25,7 @@ import java.nio.channels.ReadableByteChannel;
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
 import java.sql.Connection;
+import org.apache.sis.setup.OptionKey;
 import org.apache.sis.internal.storage.ChannelDataInput;
 import org.apache.sis.internal.storage.ChannelImageInputStream;
 import org.apache.sis.test.DependsOnMethod;
@@ -59,7 +60,9 @@ public final strictfp class StorageConnectorTest extends TestCase {
         final String name = c.getSimpleName() + ".class";
         final Object storage = asStream ? c.getResourceAsStream(name) : c.getResource(name);
         assertNotNull(storage);
-        return new StorageConnector(storage);
+        final StorageConnector connector = new StorageConnector(storage);
+        connector.setOption(OptionKey.URL_ENCODING, "UTF-8");
+        return connector;
     }
 
     /**
