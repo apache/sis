@@ -125,7 +125,7 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
             "  │   ├─Citation\n" +
             "  │   │   ├─Title……………………………………………………………………………… Sea Surface Temperature Analysis Model\n" +
             "  │   │   ├─Date\n" +
-            "  │   │   │   ├─Date……………………………………………………………………… Thu Sep 22 02:00:00 CEST 2005\n" +
+            "  │   │   │   ├─Date……………………………………………………………………… 2005/09/22 00:00:00\n" +
             "  │   │   │   └─Date type………………………………………………………… Creation\n" +
             "  │   │   ├─Identifier\n" +
             "  │   │   │   ├─Code……………………………………………………………………… NCEP/SST/Global_5x2p5deg/SST_Global_5x2p5deg_20050922_0000.nc\n" +

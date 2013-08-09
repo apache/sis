@@ -604,10 +604,10 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
         /**
          * Appends a textual representation of the given value.
          *
-         * @param  format The format to use.
+         * @param  format The format to use for the column as a whole, or {@code null} if unknown.
          * @param  value  The value to format (may be {@code null}).
          */
-        private void formatValue(final Format format, final Object value) throws IOException {
+        private void formatValue(Format format, final Object value) throws IOException {
             final CharSequence text;
             if (value == null) {
                 text = " "; // String for missing value.
@@ -619,12 +619,21 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
                 text = format.format(value);
             } else if (value instanceof InternationalString) {
                 text = ((InternationalString) value).toString(getLocale());
+            } else if (value instanceof CharSequence) {
+                text = value.toString();
             } else if (value instanceof CodeList<?>) {
                 text = Types.getCodeTitle((CodeList<?>) value).toString(getLocale());
             } else if (value instanceof Enum<?>) {
                 text = CharSequences.upperCaseToSentence(((Enum<?>) value).name());
             } else {
-                text = String.valueOf(value);
+                /*
+                 * Check for a value-by-value format only as last resort.
+                 * If a column-wide format was given in argument to this method,
+                 * that format should have been used by above code in order to
+                 * produce a more uniform formatting.
+                 */
+                format = getFormat(value.getClass());
+                text = (format != null) ? format.format(value) : value.toString();
             }
             append(text);
         }
