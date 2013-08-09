@@ -2,37 +2,50 @@
 Welcome to Apache SIS <http://sis.apache.org>
 =============================================
 
-SIS is a free software, Java language library for developing geospatial
-applications. The library can be used for desktop or server applications.
-SIS is an implementation of GeoAPI 3.0 interfaces. SIS provides data structures
-for geographic data and associated metadata along with methods to manipulate
-those data structures. The SIS metadata module forms the base of the library
-and enables the creation of metadata objects which comply with the ISO 19115
-metadata model and which can be read from or written to ISO 19139 compliant
-XML documents. The SIS referencing module will enable the construction of
-geodetic data structures for geospatial referencing based on the ISO 19111
-model such as axis, projection and coordinate reference system definitions,
-along with the associated operations which enable the mathematical conversion
-of coordinates between different systems of reference. The SIS storage modules
-will provide a common approach to the reading and writing of grid coverages
-applicable to simple imagery as to many dimensional data structures.
-
-SIS is a project of the Apache Software Foundation <http://www.apache.org/>.
+SIS is a project of the Apache Software Foundation <http://www.apache.org>
+for developing geospatial applications in the Java programming language.
+The library can be used for desktop or server applications.
 
 Apache SIS, SIS, Apache, the Apache feather logo, and the Apache SIS
 project logo are trademarks of The Apache Software Foundation.
 
 
-Getting Started
-===============
+Installation
+============
 
-SIS is based on Java 6 and uses the Maven 2 <http://maven.apache.org/>
-build system. To build SIS, use the following command in this directory:
+SIS is based on Java 6 and provided as a unique standalone JAR file.
 
-    mvn clean install
+Unix
+----
+1) Unzip 'apache-sis-0.3-bin.zip' in any directory.
+2) Add the 'apache-sis-0.3/bin' directory to the path.
+3) Invoke 'sis' on the command line.
 
-Information for running the application can be found on the wiki
-(<http://cwiki.apache.org/confluence/display/SIS/>)
+Windows
+-------
+There is not yet 'sis.bat' file for Windows.
+The following steps need to be done manually:
+
+1) Unzip 'apache-sis-0.3-bin.zip' in any directory.
+2) In the 'apache-sis-0.3/lib' directory, execute:
+
+     unpack200 --remove-pack-file sis.pack.gz sis.jar
+
+3) Invoke 'java -jar lib/sis.jar' on the command line.
+
+
+Configuration (Unix only)
+=========================
+
+A 'SIS_OPTS' environment variable can optionally be set for specifying options
+to be given to any execution of Apache SIS. For example for setting the
+encoding to UTF-8:
+
+    export SIS_OPTS="--encoding UTF-8"
+
+Optional dependencies can be added to the 'lib' folder. For example adding the
+UCAR NetCDF library in the 'lib' folder will cause Apache SIS to decode a
+wider range of file formats like NcML files.
 
 
 License (see also LICENSE)
