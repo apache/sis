@@ -150,12 +150,12 @@ Implementations of metadata derived from ISO 19115. This module provides both an
       <groupId>org.opengis</groupId>
       <artifactId>geoapi-pending</artifactId>
     </dependency>
+
+    <!-- Test dependencies -->
     <dependency>
       <groupId>org.opengis</groupId>
       <artifactId>geoapi-conformance</artifactId>
     </dependency>
-
-    <!-- Test dependencies -->
     <dependency>
       <groupId>org.apache.sis.core</groupId>
       <artifactId>sis-utility</artifactId>
