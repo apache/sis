@@ -51,10 +51,10 @@ final class SpecialCases extends PropertyAccessor {
     SpecialCases(final Citation standard, final Class<?> type, final Class<?> implementation) {
         super(standard, type, implementation);
         assert isSpecialCase(type) : type;
-        westBoundLongitude = setType("westBoundLongitude", Longitude.class);
-        eastBoundLongitude = setType("eastBoundLongitude", Longitude.class);
-        southBoundLatitude = setType("southBoundLatitude",  Latitude.class);
-        northBoundLatitude = setType("northBoundLatitude",  Latitude.class);
+        westBoundLongitude = indexOf("westBoundLongitude", true);
+        eastBoundLongitude = indexOf("eastBoundLongitude", true);
+        southBoundLatitude = indexOf("southBoundLatitude", true);
+        northBoundLatitude = indexOf("northBoundLatitude", true);
     }
 
     /**
@@ -65,6 +65,27 @@ final class SpecialCases extends PropertyAccessor {
      */
     static boolean isSpecialCase(final Class<?> type) {
         return type == GeographicBoundingBox.class;
+    }
+
+    /**
+     * Delegates to {@link PropertyAccessor#type(int)}, then substitutes the type for the properties
+     * handled in a special way.
+     */
+    @Override
+    Class<?> type(final int index, final TypeValuePolicy policy) {
+        Class<?> type = super.type(index, policy);
+        switch (policy) {
+            case PROPERTY_TYPE:
+            case ELEMENT_TYPE: {
+                if (index == westBoundLongitude || index == eastBoundLongitude) {
+                    type = Longitude.class;
+                } else if (index == southBoundLatitude || index == northBoundLatitude) {
+                    type = Latitude.class;
+                }
+                break;
+            }
+        }
+        return type;
     }
 
     /**

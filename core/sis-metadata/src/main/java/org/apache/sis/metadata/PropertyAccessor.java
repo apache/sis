@@ -349,24 +349,6 @@ class PropertyAccessor {
     }
 
     /**
-     * Sets the type of the given property. This method is invoked by the {@link SpecialCases} constructor only,
-     * and should never be invoked in any other context. This restriction exists because {@code PropertyAcessor}
-     * shall be immutable after construction.
-     *
-     * <p>Subclasses that invoke this method shall also override the {@link #get(int, Object)} and
-     * {@link #set(int, Object, Object, int)} methods.</p>
-     *
-     * @param  name The name of the property for which to modify the element type.
-     * @param  type The new element type for the named property.
-     * @return The index of the modified property.
-     */
-    final int setType(final String name, final Class<?> type) {
-        final int index = indexOf(name, true);
-        elementTypes[index] = type;
-        return index;
-    }
-
-    /**
      * Adds the given (name, index) pair to {@link #mapping}, making sure we don't
      * overwrite an existing entry with different value.
      */
@@ -553,7 +535,7 @@ class PropertyAccessor {
      * @param  policy The kind of type to return.
      * @return The type of property values, or {@code null} if unknown.
      */
-    final Class<?> type(final int index, final TypeValuePolicy policy) {
+    Class<?> type(final int index, final TypeValuePolicy policy) {
         if (index >= 0 && index < standardCount) {
             switch (policy) {
                 case ELEMENT_TYPE: {
@@ -617,7 +599,8 @@ class PropertyAccessor {
             final Method   getter      = getters[index];
             ValueRange range = null;
             if (implementation != type) {
-                if (Number.class.isAssignableFrom(elementType)) try {
+                final int e = Numbers.getEnumConstant(elementType);
+                if (e >= Numbers.BYTE && e <= Numbers.DOUBLE) try {
                     range = implementation.getMethod(getter.getName(), (Class<?>[]) null)
                             .getAnnotation(ValueRange.class);
                 } catch (NoSuchMethodException error) {
