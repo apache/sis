@@ -189,7 +189,8 @@ public final strictfp class StringConverterTest extends TestCase {
     @Test
     public void testAngle() {
         final ObjectConverter<String,Angle> c = new StringConverter.Angle();
-        runInvertibleConversion(c, "42°30′00″", new Angle(42.5));
+        runInvertibleConversion(c, "42°30′",       new Angle(42.5));
+        runInvertibleConversion(c, "42°30′56.25″", new Angle(42.515625));
         tryUnconvertibleValue(c);
         assertSerializedEquals(c);
     }

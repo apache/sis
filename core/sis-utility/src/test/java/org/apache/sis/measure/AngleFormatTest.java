@@ -33,7 +33,7 @@ import static org.apache.sis.test.TestUtilities.*;
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.0)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 @DependsOn({
@@ -127,6 +127,20 @@ public final strictfp class AngleFormatTest extends TestCase {
         assertEquals( "DD°MM′SS.sss″", f.toPattern());
         assertEquals( "12°30′56.250″", formatAndParse(f, new Angle( 12.515625)));
         assertEquals("-12°30′56.250″", formatAndParse(f, new Angle(-12.515625)));
+    }
+
+    /**
+     * Tests with optional minutes and seconds fields.
+     */
+    @Test
+    @DependsOnMethod("testDegreeMinutesSeconds")
+    public void testOptionalFields() {
+        final AngleFormat f = new AngleFormat(AngleFormat.AUTOMATIC_PATTERN, Locale.CANADA);
+        assertEquals(AngleFormat.AUTOMATIC_PATTERN, f.toPattern());
+        assertEquals("12°",          formatAndParse(f, new Angle(12)));
+        assertEquals("12°30′",       formatAndParse(f, new Angle(12.5)));
+        assertEquals("12°00′36″",    formatAndParse(f, new Angle(12.01)));
+        assertEquals("12°30′56.25″", formatAndParse(f, new Angle(12.515625)));
     }
 
     /**

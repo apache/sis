@@ -82,7 +82,7 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * @module
  */
 @ThreadSafe
-final class PropertyAccessor {
+class PropertyAccessor {
     /**
      * Getters shared between many instances of this class. Two different implementations
      * may share the same getters but different setters.
@@ -349,6 +349,24 @@ final class PropertyAccessor {
     }
 
     /**
+     * Sets the type of the given property. This method is invoked by the {@link SpecialCases} constructor only,
+     * and should never be invoked in any other context. This restriction exists because {@code PropertyAcessor}
+     * shall be immutable after construction.
+     *
+     * <p>Subclasses that invoke this method shall also override the {@link #get(int, Object)} and
+     * {@link #set(int, Object, Object, int)} methods.</p>
+     *
+     * @param  name The name of the property for which to modify the element type.
+     * @param  type The new element type for the named property.
+     * @return The index of the modified property.
+     */
+    final int setType(final String name, final Class<?> type) {
+        final int index = indexOf(name, true);
+        elementTypes[index] = type;
+        return index;
+    }
+
+    /**
      * Adds the given (name, index) pair to {@link #mapping}, making sure we don't
      * overwrite an existing entry with different value.
      */
@@ -599,8 +617,7 @@ final class PropertyAccessor {
             final Method   getter      = getters[index];
             ValueRange range = null;
             if (implementation != type) {
-                final int e = Numbers.getEnumConstant(elementType);
-                if (e >= Numbers.BYTE && e <= Numbers.DOUBLE) try {
+                if (Number.class.isAssignableFrom(elementType)) try {
                     range = implementation.getMethod(getter.getName(), (Class<?>[]) null)
                             .getAnnotation(ValueRange.class);
                 } catch (NoSuchMethodException error) {
@@ -633,7 +650,7 @@ final class PropertyAccessor {
      * @return The value, or {@code null} if none or if the given is out of bounds.
      * @throws BackingStoreException If the implementation threw a checked exception.
      */
-    final Object get(final int index, final Object metadata) throws BackingStoreException {
+    Object get(final int index, final Object metadata) throws BackingStoreException {
         return (index >= 0 && index < standardCount) ? get(getters[index], metadata) : null;
     }
 
@@ -680,7 +697,7 @@ final class PropertyAccessor {
      *                        new collection in their existing instance.</li>
      *   <li>APPEND:          Set the value only if it doesn't overwrite an existing value, then returns
      *                        {@link Boolean#TRUE} if the metadata changed as a result of this method call,
-     *                        {@code Boolean#FALSE} if the metadata didn't changed or {@code null} if the
+     *                        {@link Boolean#FALSE} if the metadata didn't changed or {@code null} if the
      *                        value can not be set because an other value already exists.</li>
      * </ul>
      *
@@ -704,7 +721,7 @@ final class PropertyAccessor {
      * @throws ClassCastException if the given value is not of the expected type.
      * @throws BackingStoreException if the implementation threw a checked exception.
      */
-    final Object set(final int index, final Object metadata, final Object value, final int mode)
+    Object set(final int index, final Object metadata, final Object value, final int mode)
             throws UnmodifiableMetadataException, ClassCastException, BackingStoreException
     {
         if (index < 0 || index >= standardCount) {
@@ -884,9 +901,7 @@ final class PropertyAccessor {
                 // Other cases: let the collection unchanged. It is likely to
                 // cause an exception later. The message should be appropriate.
             }
-            // Getter type (targetType) shall be the same than the setter type (elementType).
-            assert elementType == Numbers.primitiveToWrapper(targetType) : elementType;
-            targetType = elementType; // Ensure that we use primitive wrapper.
+            targetType = Numbers.primitiveToWrapper(targetType);
         } else {
             /*
              * We expect a collection. Collections are handled in one of the two ways below:

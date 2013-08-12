@@ -54,7 +54,7 @@ public final class LocalizedParseException extends ParseException implements Loc
     private final Locale locale;
 
     /**
-     * The resources key as one of the {@link Errors.Keys} constant.
+     * The resources key as one of the {@code Errors.Keys} constant.
      */
     private final int key;
 
@@ -68,7 +68,7 @@ public final class LocalizedParseException extends ParseException implements Loc
      * and message arguments. This is the most generic constructor.
      *
      * @param locale      The locale for {@link #getLocalizedMessage()}.
-     * @param key         The resource key as one of the {@link Errors.Keys} constant.
+     * @param key         The resource key as one of the {@code Errors.Keys} constant.
      * @param arguments   The value of {@link #arguments(String, ParsePosition)}.
      * @param errorOffset The position where the error is found while parsing.
      */
@@ -85,7 +85,7 @@ public final class LocalizedParseException extends ParseException implements Loc
      * index, and uses that word as the single argument associated to the resource key.
      *
      * @param locale      The locale for {@link #getLocalizedMessage()}.
-     * @param key         The resource key as one of the {@link Errors.Keys} constant.
+     * @param key         The resource key as one of the {@code Errors.Keys} constant.
      * @param text        The full text that {@code Format} failed to parse.
      * @param errorOffset The position where the error is found while parsing.
      */

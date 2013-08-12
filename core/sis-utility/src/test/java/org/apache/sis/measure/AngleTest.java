@@ -29,7 +29,7 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.0)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 @DependsOn(AngleFormatTest.class)
@@ -39,9 +39,11 @@ public final strictfp class AngleTest extends TestCase {
      */
     @Test
     public void testToString() {
-        assertEquals("45°30′00″",  new Angle    (45.5).toString());
-        assertEquals("45°30′00″N", new Latitude (45.5).toString());
-        assertEquals("45°30′00″E", new Longitude(45.5).toString());
+        assertEquals("45°",           new Angle    (45  ).toString());
+        assertEquals("45°30′",        new Angle    (45.5).toString());
+        assertEquals("45°30′N",       new Latitude (45.5).toString());
+        assertEquals("45°30′E",       new Longitude(45.5).toString());
+        assertEquals("45°30′56.25″E", new Longitude(45.515625).toString());
 
         // Angle out of expected range.
         assertEquals( "720.0°E", new Longitude( 720).toString());
@@ -59,6 +61,7 @@ public final strictfp class AngleTest extends TestCase {
      */
     @Test
     public void testParse() {
+        assertEquals(new Angle    (45.5), new Angle    ("45°30′"));
         assertEquals(new Angle    (45.5), new Angle    ("45°30′00″"));
         assertEquals(new Latitude (45.5), new Latitude ("45°30′00″N"));
         assertEquals(new Longitude(45.5), new Longitude("45°30′00″E"));
