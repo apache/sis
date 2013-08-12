@@ -16,17 +16,20 @@
  */
 package org.apache.sis.metadata;
 
+import org.opengis.util.InternationalString;
+import org.opengis.metadata.ExtendedElementInformation;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
+import org.apache.sis.measure.NumberRange;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.apache.sis.test.Assert.*;
 
 
 /**
@@ -52,7 +55,7 @@ public final strictfp class SpecialCasesTest extends TestCase {
     /**
      * An arbitrary bounding box to be used for testing purpose.
      */
-    private final DefaultGeographicBoundingBox box;
+    private DefaultGeographicBoundingBox box;
 
     /**
      * Creates a new test case.
@@ -60,7 +63,21 @@ public final strictfp class SpecialCasesTest extends TestCase {
     public SpecialCasesTest() {
         accessor = new SpecialCases(HardCodedCitations.ISO_19115,
                 GeographicBoundingBox.class, DefaultGeographicBoundingBox.class);
+    }
+
+    /**
+     * Initializes the {@link #box} field.
+     * Invoked only by the tests that need an actual metadata instance.
+     */
+    private void createBox() {
         box = new DefaultGeographicBoundingBox(-20, 30, -10, 40);
+    }
+
+    /**
+     * Invokes {@link SpecialCases#type(int)} and ensure that the result is equals to the expected value.
+     */
+    private void assertTypeEquals(final String name, final Class<?> expected) {
+        assertEquals(name, expected, accessor.type(accessor.indexOf(name, true), TypeValuePolicy.ELEMENT_TYPE));
     }
 
     /**
@@ -89,10 +106,23 @@ public final strictfp class SpecialCasesTest extends TestCase {
     }
 
     /**
+     * Tests {@link SpecialCases#type(int, TypeValuePolicy)}.
+     */
+    @Test
+    public void testType() {
+        assertTypeEquals("westBoundLongitude", Longitude.class);
+        assertTypeEquals("eastBoundLongitude", Longitude.class);
+        assertTypeEquals("southBoundLatitude", Latitude.class);
+        assertTypeEquals("northBoundLatitude", Latitude.class);
+        assertTypeEquals("extentTypeCode",     Boolean.class);
+    }
+
+    /**
      * Tests {@link SpecialCases#get(int, Object)}.
      */
     @Test
     public void testGet() {
+        createBox();
         assertPropertyEquals("westBoundLongitude", new Longitude(-20));
         assertPropertyEquals("eastBoundLongitude", new Longitude( 30));
         assertPropertyEquals("southBoundLatitude", new Latitude (-10));
@@ -106,6 +136,7 @@ public final strictfp class SpecialCasesTest extends TestCase {
     @Test
     @DependsOnMethod("testGet")
     public void testSet() {
+        createBox();
         assertPreviousEquals("westBoundLongitude", new Longitude(-20), new Longitude(-15));
         assertPreviousEquals("eastBoundLongitude", new Longitude( 30), new Longitude( 25));
         assertPreviousEquals("southBoundLatitude", new Latitude (-10), new Latitude ( -5));
@@ -126,6 +157,7 @@ public final strictfp class SpecialCasesTest extends TestCase {
     @Test
     @DependsOnMethod("testSet")
     public void testSetAsPrimitive() {
+        createBox();
         assertPreviousEquals("westBoundLongitude", new Longitude(-20), -14.0);
         assertPreviousEquals("eastBoundLongitude", new Longitude( 30),  26  );
         assertPreviousEquals("southBoundLatitude", new Latitude (-10),  -7f );
@@ -144,6 +176,7 @@ public final strictfp class SpecialCasesTest extends TestCase {
     @Test
     @DependsOnMethod("testSet")
     public void testAppend() {
+        createBox();
         assertAppendResultEquals("westBoundLongitude", null, new Longitude(-20));
         assertAppendResultEquals("eastBoundLongitude", null, new Longitude( 24));
         assertAppendResultEquals("southBoundLatitude", null, new Latitude ( -6));
@@ -155,5 +188,18 @@ public final strictfp class SpecialCasesTest extends TestCase {
         assertEquals("southBoundLatitude", -10, box.getSouthBoundLatitude(), STRICT);
         assertEquals("northBoundLatitude",  40, box.getNorthBoundLatitude(), STRICT);
         assertEquals("extentTypeCode", Boolean.TRUE, box.getInclusion());
+    }
+
+    /**
+     * Tests {@link SpecialCases#information(int)}.
+     */
+    @Test
+    public void testPropertyInformation() {
+        final ExtendedElementInformation info = accessor.information(accessor.indexOf("westBoundLongitude", true));
+        final InternationalString domain = info.getDomainValue();
+        assertInstanceOf("Expected numerical information about range.", NumberRange.class, domain);
+        final NumberRange<?> range = (NumberRange) domain;
+        assertEquals(-180, range.getMinDouble(), STRICT);
+        assertEquals(+180, range.getMaxDouble(), STRICT);
     }
 }
