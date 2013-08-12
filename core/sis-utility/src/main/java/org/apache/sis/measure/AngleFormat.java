@@ -97,7 +97,7 @@ import java.util.Objects;
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @since   0.3 (derived from geotk-1.0)
- * @version 0.3
+ * @version 0.4
  * @module
  *
  * @see Angle
@@ -169,6 +169,14 @@ public class AngleFormat extends Format implements Localized {
      * The index of each symbol shall be equal to the corresponding {@code *_FIELD} constant.
      */
     private static final char[] SYMBOLS = {'D', 'M', 'S', '#'};
+
+    /**
+     * The pattern for the automatic format. An {@code AngleFormat} in automatic mode determines
+     * the number of degrees/minutes/seconds fields and the number of digits from the angle value.
+     *
+     * @see #isAutomatic
+     */
+    static final String AUTOMATIC_PATTERN = "#°##′##.#″";
 
     /**
      * Defines constants that are used as attribute keys in the iterator returned from
@@ -261,6 +269,14 @@ public class AngleFormat extends Format implements Localized {
                    degreesSuffix,
                    minutesSuffix,
                    secondsSuffix;
+
+    /**
+     * {@code true} if this {@code AngleFormat} is in automatic mode. An {@code AngleFormat} in automatic mode
+     * determines the number of degrees/minutes/seconds fields and the number of digits from the angle value.
+     *
+     * @see #AUTOMATIC_PATTERN
+     */
+    private boolean isAutomatic;
 
     /**
      * {@code true} if the {@link #parse(String, ParsePosition)} method is allowed to fallback
@@ -360,14 +376,21 @@ public class AngleFormat extends Format implements Localized {
     public AngleFormat(final Locale locale) {
         ArgumentChecks.ensureNonNull("locale", locale);
         this.locale = locale;
-        degreesFieldWidth     = 1;
-        minutesFieldWidth     = 2;
-        secondsFieldWidth     = 2;
-        fractionFieldWidth    = 16;  // Number of digits for accurate representation of 1″ ULP.
-        degreesSuffix         = "°";
-        minutesSuffix         = "′";
-        secondsSuffix         = "″";
-        useDecimalSeparator   = true;
+        setDefaultPattern();
+    }
+
+    /**
+     * Sets the pattern to the default value.
+     */
+    private void setDefaultPattern() {
+        degreesFieldWidth   = 1;
+        minutesFieldWidth   = 2;
+        secondsFieldWidth   = 2;
+        fractionFieldWidth  = 16;  // Number of digits for accurate representation of 1″ ULP.
+        degreesSuffix       = "°";
+        minutesSuffix       = "′";
+        secondsSuffix       = "″";
+        useDecimalSeparator = true;
     }
 
     /**
@@ -390,6 +413,7 @@ public class AngleFormat extends Format implements Localized {
      * @throws IllegalArgumentException If the specified pattern is illegal.
      */
     public AngleFormat(final String pattern, final Locale locale) throws IllegalArgumentException {
+        ArgumentChecks.ensureNonEmpty("pattern", pattern);
         ArgumentChecks.ensureNonNull("locale", locale);
         this.locale = locale;
         applyPattern(pattern, SYMBOLS, '.');
@@ -406,6 +430,7 @@ public class AngleFormat extends Format implements Localized {
      * @see #setMaximumFractionDigits(int)
      */
     public void applyPattern(final String pattern) throws IllegalArgumentException {
+        ArgumentChecks.ensureNonEmpty("pattern", pattern);
         applyPattern(pattern, SYMBOLS, '.');
     }
 
@@ -419,7 +444,6 @@ public class AngleFormat extends Format implements Localized {
      */
     @SuppressWarnings("fallthrough")
     private void applyPattern(final String pattern, final char[] symbols, final int decimalSeparator) {
-        ArgumentChecks.ensureNonEmpty("pattern", pattern);
         degreesFieldWidth     = 1;
         minutesFieldWidth     = 0;
         secondsFieldWidth     = 0;
@@ -431,6 +455,11 @@ public class AngleFormat extends Format implements Localized {
         minutesSuffix         = null;
         secondsSuffix         = null;
         useDecimalSeparator   = true;
+        isAutomatic = pattern.equals(AUTOMATIC_PATTERN);
+        if (isAutomatic) {
+            setDefaultPattern();
+            return;
+        }
         int expectedField     = PREFIX_FIELD;
         int endPreviousField  = 0;
         boolean parseFinished = false;
@@ -557,6 +586,9 @@ scan:   for (int i=0; i<length;) {
      * @param decimalSeparator The code point which represent decimal separator in the pattern.
      */
     private String toPattern(final char[] symbols, final int decimalSeparator) {
+        if (isAutomatic) {
+            return AUTOMATIC_PATTERN;
+        }
         char symbol = 0;
         final StringBuilder buffer = new StringBuilder();
         for (int field=DEGREES_FIELD; field<=FRACTION_FIELD; field++) {
@@ -809,6 +841,25 @@ scan:   for (int i=0; i<length;) {
             }
             return toAppendTo;
         }
+        /*
+         * The 'minutesFieldWidth' and 'secondsFieldWidth' local variables below have the same values
+         * than the corresponding fields, except in automatic mode where the values may be set to 0.
+         * After the 'isAutomatic' check, those variables shall be considered as read-only.
+         */
+        int minutesFieldWidth = this.minutesFieldWidth;
+        int secondsFieldWidth = this.secondsFieldWidth;
+        int maximumFractionDigits = fractionFieldWidth;
+        if (isAutomatic) {
+            double r = abs(angle) * 60;
+            if (r == Math.floor(r)) {
+                maximumFractionDigits = 0;
+                secondsFieldWidth = 0;
+                r = abs(angle);
+                if (r == Math.floor(r)) {
+                    minutesFieldWidth = 0;
+                }
+            }
+        }
         double degrees = angle;
         /*
          * Computes the numerical values of minutes and seconds fields.
@@ -843,7 +894,6 @@ scan:   for (int i=0; i<length;) {
          * fraction digits for a 'double' value. The intend is to avoid non-significant garbage
          * that are pure artifacts from the conversion from base 2 to base 10.
          */
-        int maximumFractionDigits = fractionFieldWidth;
         if (maximumFractionDigits != minimumFractionDigits) {
             if      (secondsFieldWidth != 0) angle *= 3600;
             else if (minutesFieldWidth != 0) angle *=   60;
@@ -1633,9 +1683,9 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
      */
     @Override
     public int hashCode() {
-        return Objects.hash(degreesFieldWidth, minutesFieldWidth, secondsFieldWidth,
-                fractionFieldWidth, minimumFractionDigits, useDecimalSeparator, isFallbackAllowed,
-                locale, prefix, degreesSuffix, minutesSuffix, secondsSuffix) ^ (int) serialVersionUID;
+        return Objects.hash(degreesFieldWidth, minutesFieldWidth, secondsFieldWidth, fractionFieldWidth,
+                minimumFractionDigits, useDecimalSeparator, isFallbackAllowed, isAutomatic, locale,
+                prefix, degreesSuffix, minutesSuffix, secondsSuffix) ^ (int) serialVersionUID;
     }
 
     /**
@@ -1657,14 +1707,14 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
                    minimumFractionDigits == cast.minimumFractionDigits &&
                    useDecimalSeparator   == cast.useDecimalSeparator   &&
                    isFallbackAllowed     == cast.isFallbackAllowed     &&
+                   isAutomatic           == cast.isAutomatic           &&
                    Objects.equals(locale,        cast.locale)          &&
                    Objects.equals(prefix,        cast.prefix)          &&
                    Objects.equals(degreesSuffix, cast.degreesSuffix)   &&
                    Objects.equals(minutesSuffix, cast.minutesSuffix)   &&
                    Objects.equals(secondsSuffix, cast.secondsSuffix);
-        } else {
-            return false;
         }
+        return false;
     }
 
     /**

@@ -396,7 +396,9 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
             format.setTimeZone(getTimeZone());
             return format;
         } else if (valueType == Angle.class) {
-            return AngleFormat.getInstance(locale);
+            final AngleFormat format = AngleFormat.getInstance(locale);
+            format.applyPattern("#°##′##.#″");
+            return format;
         } else if (valueType == Class.class) {
             return ClassFormat.INSTANCE;
         }

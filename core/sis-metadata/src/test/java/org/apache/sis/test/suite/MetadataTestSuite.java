@@ -42,6 +42,7 @@ import org.junit.BeforeClass;
     // Classes using Java reflection.
     org.apache.sis.metadata.PropertyInformationTest.class,
     org.apache.sis.metadata.PropertyAccessorTest.class,
+    org.apache.sis.metadata.SpecialCasesTest.class,
     org.apache.sis.metadata.NameMapTest.class,
     org.apache.sis.metadata.TypeMapTest.class,
     org.apache.sis.metadata.InformationMapTest.class,
