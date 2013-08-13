@@ -68,6 +68,20 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
     }
 
     /**
+     * Creates a new resolution initialized to the given scale.
+     *
+     * @param scale The scale, or {@code null} if none.
+     *
+     * @since 0.4
+     */
+    public DefaultResolution(final RepresentativeFraction scale) {
+        scaleOrDistance = scale;
+    }
+
+    // Note: there is not yet DefaultResolution(double) method because
+    //       we need to update the Unit Of Measurement package first.
+
+    /**
      * Constructs a new instance initialized with the values from the specified metadata object.
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
