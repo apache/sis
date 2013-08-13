@@ -163,9 +163,11 @@ public final strictfp class AngleFormatTest extends TestCase {
         assertEquals("D°?MM′?SS.################″?", f.toPattern());
         assertEquals("12°",          formatAndParse(f, new Angle(12)));
         assertEquals("12°30′",       formatAndParse(f, new Angle(12.5)));
-        assertEquals("12°00′36″",    formatAndParse(f, new Angle(12.01)));
+        assertEquals("12°36″",       formatAndParse(f, new Angle(12.01)));
+        assertEquals("12°00′36″N",   formatAndParse(f, new Latitude(12.01)));
         assertEquals("12°30′56.25″", formatAndParse(f, new Angle(12.515625)));
         assertEquals("-36″",         formatAndParse(f, new Angle(-0.01)));
+        assertEquals("0°00′36″S",    formatAndParse(f, new Latitude(-0.01)));
     }
 
     /**
