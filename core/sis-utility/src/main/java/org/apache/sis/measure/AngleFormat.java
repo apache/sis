@@ -833,8 +833,16 @@ scan:   for (int i=0; i<length;) {
                 minutes = rint(minutes * puissance) / puissance;
             }
             final double correction = truncate(minutes / 60);
-            minutes -= correction * 60;
-            degrees += correction;
+            if (correction != 0) {
+                /*
+                 * We really need to NOT perform the addition if correction == 0, even if its look like
+                 * mathematically equivalent, because we want to preserve the sign of 'degrees' in case
+                 * of negative zero. This is because in Java, -0.0 + 0 == +0.0 while we really need to
+                 * keep the negative sign in -0.0.
+                 */
+                minutes -= correction * 60;
+                degrees += correction;
+            }
         }
         /*
          * At this point the 'degrees', 'minutes' and 'seconds' variables contain the final values

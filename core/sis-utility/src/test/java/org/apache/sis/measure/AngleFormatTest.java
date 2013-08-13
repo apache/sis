@@ -73,6 +73,7 @@ public final strictfp class AngleFormatTest extends TestCase {
         assertEquals("-12.247°",  formatAndParse(f, new Angle   (-12.247)));
         assertEquals( "13.214°N", formatAndParse(f, new Latitude( 13.214)));
         assertEquals( "12.782°S", formatAndParse(f, new Latitude(-12.782)));
+        assertEquals("-00.010°",  formatAndParse(f, new Angle   (-0.01)));
     }
 
     /**
@@ -83,9 +84,10 @@ public final strictfp class AngleFormatTest extends TestCase {
         final AngleFormat f = new AngleFormat("DD.ddd°", Locale.FRANCE);
         assertEquals(3, f.getMinimumFractionDigits());
         assertEquals(3, f.getMaximumFractionDigits());
-        assertEquals( "DD.ddd°", f.toPattern());
-        assertEquals("19,457°E", formatAndParse(f, new Longitude( 19.457)));
-        assertEquals("78,124°S", formatAndParse(f, new Latitude (-78.124)));
+        assertEquals( "DD.ddd°",  f.toPattern());
+        assertEquals( "19,457°E", formatAndParse(f, new Longitude( 19.457)));
+        assertEquals( "78,124°S", formatAndParse(f, new Latitude (-78.124)));
+        assertEquals("-00,010°",  formatAndParse(f, new Angle    (-0.01)));
     }
 
     /**
@@ -96,9 +98,10 @@ public final strictfp class AngleFormatTest extends TestCase {
         final AngleFormat f = new AngleFormat("DDddd", Locale.CANADA);
         assertEquals(3, f.getMinimumFractionDigits());
         assertEquals(3, f.getMaximumFractionDigits());
-        assertEquals("DDddd",  f.toPattern());
-        assertEquals("19457E", formatAndParse(f, new Longitude( 19.457)));
-        assertEquals("78124S", formatAndParse(f, new Latitude (-78.124)));
+        assertEquals( "DDddd",  f.toPattern());
+        assertEquals( "19457E", formatAndParse(f, new Longitude( 19.457)));
+        assertEquals( "78124S", formatAndParse(f, new Latitude (-78.124)));
+        assertEquals("-00010",  formatAndParse(f, new Angle    (-0.01)));
     }
 
     /**
@@ -113,6 +116,7 @@ public final strictfp class AngleFormatTest extends TestCase {
         assertEquals( "DD°MM.m", f.toPattern());
         assertEquals( "12°30.0", formatAndParse(f, new Angle( 12.50)));
         assertEquals("-10°15.0", formatAndParse(f, new Angle(-10.25)));
+        assertEquals("-00°00.6", formatAndParse(f, new Angle( -0.01)));
     }
 
     /**
@@ -127,6 +131,7 @@ public final strictfp class AngleFormatTest extends TestCase {
         assertEquals( "DD°MM′SS.sss″", f.toPattern());
         assertEquals( "12°30′56.250″", formatAndParse(f, new Angle( 12.515625)));
         assertEquals("-12°30′56.250″", formatAndParse(f, new Angle(-12.515625)));
+        assertEquals("-00°00′36.000″", formatAndParse(f, new Angle( -0.01)));
     }
 
     /**
