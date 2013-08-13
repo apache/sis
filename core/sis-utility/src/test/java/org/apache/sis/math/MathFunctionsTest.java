@@ -56,8 +56,10 @@ public final strictfp class MathFunctionsTest extends TestCase {
      */
     @Test
     public void testTruncate() {
-        assertEquals(+4, truncate(+4.9), 0);
-        assertEquals(-4, truncate(-4.9), 0);
+        assertEquals(+4.0, truncate(+4.9), 0);
+        assertEquals(-4.0, truncate(-4.9), 0);
+        assertEquals(+0.0, truncate(+0.1), 0);
+        assertEquals(-0.0, truncate(-0.1), 0);
         assertEquals("Positive zero",
                 Double.doubleToLongBits(+0.0),
                 Double.doubleToLongBits(truncate(+0.5)));

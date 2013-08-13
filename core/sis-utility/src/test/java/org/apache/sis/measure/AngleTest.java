@@ -78,13 +78,13 @@ public final strictfp class AngleTest extends TestCase {
      */
     @Test
     public void testFormatTo() {
-        assertEquals("5°30′00″",  String.format(Locale.CANADA,  "%s",    new Angle   (5.5)));
-        assertEquals("5°30′00″N", String.format(Locale.CANADA,  "%s",    new Latitude(5.5)));
-        assertEquals("  5°30′",   String.format(Locale.CANADA,  "%7.5s", new Angle   (5.5)));
-        assertEquals("  5.5°N",   String.format(Locale.CANADA,  "%7.5s", new Latitude(5.5)));
-        assertEquals("  5,5°N",   String.format(Locale.FRANCE,  "%7.5s", new Latitude(5.5)));
-        assertEquals("5,5°N  ",   String.format(Locale.FRANCE, "%-7.5s", new Latitude(5.5)));
-        assertEquals("N",         String.format(Locale.FRANCE,  "%1.1s", new Latitude(5.5)));
-        assertEquals(" ",         String.format(Locale.FRANCE,  "%1.0s", new Latitude(5.5)));
+        assertEquals("5°30′36″",  String.format(Locale.CANADA,  "%s",    new Angle   (5.51)));
+        assertEquals("5°30′36″N", String.format(Locale.CANADA,  "%s",    new Latitude(5.51)));
+        assertEquals("  5°31′",   String.format(Locale.CANADA,  "%7.5s", new Angle   (5.51)));
+        assertEquals("  5.5°N",   String.format(Locale.CANADA,  "%7.5s", new Latitude(5.51)));
+        assertEquals("  5,5°N",   String.format(Locale.FRANCE,  "%7.5s", new Latitude(5.51)));
+        assertEquals("5,5°N  ",   String.format(Locale.FRANCE, "%-7.5s", new Latitude(5.51)));
+        assertEquals("N",         String.format(Locale.FRANCE,  "%1.1s", new Latitude(5.51)));
+        assertEquals(" ",         String.format(Locale.FRANCE,  "%1.0s", new Latitude(5.51)));
     }
 }
