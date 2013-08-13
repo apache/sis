@@ -59,21 +59,21 @@ import java.util.Objects;
  *   <tr><td>{@code s}</td><td>The fractional part of seconds</td></tr>
  *   <tr><td>{@code #}</td><td>Fraction digits shown only if non-zero</td></tr>
  *   <tr><td>{@code .}</td><td>The decimal separator</td></tr>
- *   <tr><td>{@code ?}</td><td>Omit the preceding field if zero (unless between non-omitted fields)</td></tr>
+ *   <tr><td>{@code ?}</td><td>Omit the preceding field if zero</td></tr>
  * </table>
  *
  * Upper-case letters {@code D}, {@code M} and {@code S} stand for the integer parts of degrees,
  * minutes and seconds respectively. If present, they shall appear in that order.
  *
- * {@example "<code>M′D</code>" is illegal because "<code>M</code>" and "<code>S</code>" are in reverse order;
- *           "<code>D°S</code>" is illegal too because "<code>M</code>" is missing between "<code>D</code>" and
+ * {@example "<code>M′D</code>" is illegal because "<code>M</code>" and "<code>S</code>" are in reverse order.
+ *           "<code>D°S</code>" is also illegal because "<code>M</code>" is missing between "<code>D</code>" and
  *           "<code>S</code>".}
  *
  * Lower-case letters {@code d}, {@code m} and {@code s} stand for fractional parts of degrees, minutes and
  * seconds respectively. Only one of those can appear in a pattern. If present, they must be in the last field.
  *
- * {@example "<code>D.dd°MM′</code>" is illegal because "<code>d</code>" is followed by "<code>M</code>";
- *           "<code>D.mm</code>" is illegal too because "<code>m</code>" is not the fractional part of
+ * {@example "<code>D.dd°MM′</code>" is illegal because "<code>d</code>" is followed by "<code>M</code>".
+ *           "<code>D.mm</code>" is also illegal because "<code>m</code>" is not the fractional part of
  *           "<code>D</code>".}
  *
  * The number of occurrences of {@code D}, {@code M}, {@code S} and their lower-case counterpart is the number
@@ -89,8 +89,20 @@ import java.util.Objects;
  *
  * {@example "<code>0480439</code>" with the "<code>DDDMMmm</code>" pattern will be parsed as 48°04.39′.}
  *
- * <p>The following table gives some pattern examples:</p>
+ * The {@code ?} modifier specify that the preceding field can be omitted if its value is zero.
+ * Any field can be omitted for {@link Angle} object, but only trailing fields are omitted for
+ * {@li{@link Longitude} and {@link Latitude}.
  *
+ * {@example "<code>DD°MM′?SS″?</code>" will format an angle of 12.01° as {@code 12°36″}, but a longitude of 12.01°N
+ *           as {@code 12°00′36″N} (not {@code 12°36″N}).}
+ *
+ * The above special case exists because some kind of angles are expected to be very small (e.g. rotation angles in
+ * {@linkplain org.apache.sis.referencing.datum.BursaWolfParameters Bursa-Wolf parameters} are given in arc-seconds),
+ * while longitude and latitude values are usually distributed over their full ±180° or ±90° range. Since longitude
+ * or latitude values without the degrees field are unusual, omitting that field is almost guaranteed to increase the
+ * risk of confusion in those cases.
+ *
+ * {@section Examples}
  * <table class="sis">
  *   <tr><th>Pattern               </th>  <th>48.5      </th> <th>-12.53125    </th></tr>
  *   <tr><td>{@code DD°MM′SS.#″}   </td>  <td>48°30′00″ </td> <td>-12°31′52.5″ </td></tr>
@@ -116,20 +128,6 @@ public class AngleFormat extends Format implements Localized {
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = 820524050016391537L;
-
-    /**
-     * If {@code true}, {@link #optionalFields} never apply to fields located between two formatted fields.
-     * This option currently can apply only to the minutes field. If minutes are declared optional but the
-     * degrees and seconds are formatted, then minutes will be formatted too un order to reduce the risk of
-     * confusion
-     *
-     * {@example Value 12.01 is formatted as <code>12°00′36″</code> if <code>true</code> and as
-     *           <code>12°36″</code> if <code>false</code>.}
-     *
-     * We set this field to {@code true} for now because the above-cited risk of confusion seems to high.
-     * However we may consider allowing this flag to be configured in a future SIS version.
-     */
-    private static final boolean INNER_FIELDS_ALWAYS_SHOWN = true;
 
     /**
      * Hemisphere symbols. Must be upper-case.
@@ -313,6 +311,16 @@ public class AngleFormat extends Format implements Localized {
      * and fractional part without separation, e.g. "34867" for 34.867.
      */
     private boolean useDecimalSeparator;
+
+    /**
+     * If {@code true}, {@link #optionalFields} never apply to fields to leading fields.
+     * If the minutes field is declared optional but the degrees and seconds are formatted,
+     * then minutes will be formatted too un order to reduce the risk of confusion
+     *
+     * {@example Value 12.01 is formatted as <code>12°00′36″</code> if <code>true</code>
+     *           and as <code>12°36″</code> if <code>false</code>.}
+     */
+    private transient boolean showLeadingFields;
 
     /**
      * Format to use for writing numbers (degrees, minutes or seconds) when formatting an angle.
@@ -934,14 +942,13 @@ public class AngleFormat extends Format implements Localized {
             }
         }
         /*
-         * Avoid formatting values like 12.01 as 12°36″ because of the risk of confusion.
+         * Avoid formatting values like 12.01°N as 12°36″N because of the risk of confusion.
          * In such cases, force the formatting of minutes field as in 12°00′36″.
          */
         byte effectiveOptionalFields = optionalFields;
-        if (INNER_FIELDS_ALWAYS_SHOWN) {
-            if (minutes == 0 && ((effectiveOptionalFields & (1 << DEGREES_FIELD)) == 0 || degrees != 0)
-                             && ((effectiveOptionalFields & (1 << SECONDS_FIELD)) == 0 || seconds != 0))
-            {
+        if (showLeadingFields) {
+            effectiveOptionalFields &= ~(1 << DEGREES_FIELD);
+            if (minutes == 0 && ((effectiveOptionalFields & (1 << SECONDS_FIELD)) == 0 || seconds != 0)) {
                 effectiveOptionalFields &= ~(1 << MINUTES_FIELD);
             }
         }
@@ -1114,7 +1121,12 @@ public class AngleFormat extends Format implements Localized {
     private StringBuffer format(final double angle, StringBuffer toAppendTo,
             final FieldPosition pos, final char positiveSuffix, final char negativeSuffix)
     {
-        toAppendTo = format(abs(angle), toAppendTo, pos);
+        try {
+            showLeadingFields = true;
+            toAppendTo = format(abs(angle), toAppendTo, pos);
+        } finally {
+            showLeadingFields = false;
+        }
         final int startPosition = toAppendTo.length();
         final char suffix = isNegative(angle) ? negativeSuffix : positiveSuffix;
         toAppendTo.append(suffix);
