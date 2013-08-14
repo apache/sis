@@ -46,11 +46,11 @@ public class BundleCreator extends AbstractMojo {
     private static final String VERSION = "0.3";
 
     /**
-     * The Apache SIS branch for which this plugin is creating a bundle.
-     * This is declared as a separated constant in order to make easier to update
-     * {@link #VERSION} without creating conflicts during branch merge.
+     * The Apache SIS branch for which this plugin is creating a bundle, prefixed by {@code '-'}.
+     * This is declared as a separated constant in order to make easier to update {@link #VERSION}
+     * without creating conflicts during branch merges.
      */
-    private static final String BRANCH = "geoapi3.0";
+    private static final String BRANCH = "";
 
     /**
      * The root directory (without the "<code>target/binaries</code>" sub-directory) where JARs
@@ -73,9 +73,9 @@ public class BundleCreator extends AbstractMojo {
             throw new MojoExecutionException("Directory not found: " + targetDirectory);
         }
         try {
-            final String fullVersion = VERSION + '-' + BRANCH;
+            final String fullVersion = VERSION + BRANCH;
             final Packer packer = new Packer(targetDirectory, fullVersion);
-            packer.addPack("sis-" + fullVersion + ".jar");
+            packer.addPack("apache-sis-" + fullVersion + ".jar");
             try {
                 packer.createJars();
             } finally {
