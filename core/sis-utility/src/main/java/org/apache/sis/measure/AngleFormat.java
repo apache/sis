@@ -809,40 +809,33 @@ scan:   for (int i=0; i<length;) {
             }
             return toAppendTo;
         }
-        double degrees = angle;
         /*
          * Computes the numerical values of minutes and seconds fields.
          * If those fiels are not written, then store NaN.
          */
+        double degrees = angle;
         double minutes = NaN;
         double seconds = NaN;
         if (minutesFieldWidth != 0 && !isNaN(angle)) {
             minutes = abs(degrees - (degrees = truncate(degrees))) * 60;
+            final double p = pow10(fractionFieldWidth);
             if (secondsFieldWidth != 0) {
                 seconds = (minutes - (minutes = truncate(minutes))) * 60;
-                /*
-                 * Correction for rounding errors.
-                 */
-                final double puissance = pow10(fractionFieldWidth);
-                seconds = rint(seconds * puissance) / puissance;
-                final double correction = truncate(seconds / 60);
-                seconds -= correction * 60;
-                minutes += correction;
+                seconds = rint(seconds * p) / p; // Correction for rounding errors.
+                if (seconds >= 60) { // We do not expect > 60 (only == 60), but let be safe.
+                    seconds = 0;
+                    minutes++;
+                }
             } else {
-                final double puissance = pow10(fractionFieldWidth);
-                minutes = rint(minutes * puissance) / puissance;
+                minutes = rint(minutes * p) / p; // Correction for rounding errors.
             }
-            final double correction = truncate(minutes / 60);
-            if (correction != 0) {
-                /*
-                 * We really need to NOT perform the addition if correction == 0, even if its look like
-                 * mathematically equivalent, because we want to preserve the sign of 'degrees' in case
-                 * of negative zero. This is because in Java, -0.0 + 0 == +0.0 while we really need to
-                 * keep the negative sign in -0.0.
-                 */
-                minutes -= correction * 60;
-                degrees += correction;
+            if (minutes >= 60) { // We do not expect > 60 (only == 60), but let be safe.
+                minutes = 0;
+                degrees += Math.signum(angle);
             }
+            // Note: a previous version was doing a unconditional addition to the 'degrees' variable,
+            // in the form 'degrees += correction'. However -0.0 + 0 == +0.0, while we really need to
+            // preserve the sign of negative zero. See [SIS-120].
         }
         /*
          * At this point the 'degrees', 'minutes' and 'seconds' variables contain the final values

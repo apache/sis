@@ -135,6 +135,18 @@ public final strictfp class AngleFormatTest extends TestCase {
     }
 
     /**
+     * Tests values that have to be rounded, especially the values near zero.
+     */
+    @Test
+    @DependsOnMethod("testDegreeMinutesSeconds")
+    public void testRounding() {
+        final AngleFormat f = new AngleFormat("DD°MM′SS.sss″", Locale.CANADA);
+        assertEquals( "01°00′00.000″", f.format(new Angle(+(59 + (59.9999 / 60)) / 60)));
+        assertEquals("-01°00′00.000″", f.format(new Angle(-(59 + (59.9999 / 60)) / 60)));
+        assertEquals("-00°59′59.999″", f.format(new Angle(-(59 + (59.9988 / 60)) / 60)));
+    }
+
+    /**
      * Tests with optional digits.
      */
     @Test
