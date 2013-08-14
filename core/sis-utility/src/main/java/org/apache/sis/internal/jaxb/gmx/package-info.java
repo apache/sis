@@ -20,7 +20,7 @@
  *
  * @author  Guilhem Legal (Geomatys)
  * @since   0.3 (derived from geotk-2.5)
- * @version 0.3
+ * @version 0.4
  * @module
  *
  * @see javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter

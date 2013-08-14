@@ -41,7 +41,7 @@ import org.apache.sis.internal.jaxb.gmd.PT_FreeText;
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
- * @version 0.3
+ * @version 0.4
  * @module
  *
  * @see StringAdapter
@@ -71,7 +71,7 @@ public final class CharSequenceAdapter extends XmlAdapter<GO_CharacterString, Ch
      * in a XML file or stream. JAXB calls automatically this method at marshalling time.
      *
      * @param  value The string value.
-     * @return The wrapper for the given character sequence.
+     * @return The wrapper for the given character sequence, or {@code null}.
      */
     @Override
     public GO_CharacterString marshal(final CharSequence value) {
@@ -83,11 +83,11 @@ public final class CharSequenceAdapter extends XmlAdapter<GO_CharacterString, Ch
      * in a XML file or stream.
      *
      * @param  value The character representation of the object being marshalled.
-     * @return The wrapper for the given character sequence.
+     * @return The wrapper for the given character sequence, or {@code null}.
      */
     public static GO_CharacterString wrap(CharSequence value) {
         if (value instanceof String) {
-            return wrap(value, (String) value); // Slightly more efficient variant of this method.
+            return wrap(Context.current(), value, (String) value); // Slightly more efficient variant of this method.
         }
         /*
          * <gmd:someElement xsi:type="gmd:PT_FreeText_PropertyType">
@@ -147,25 +147,38 @@ public final class CharSequenceAdapter extends XmlAdapter<GO_CharacterString, Ch
      * This method is a copy of {@link #wrap(CharSequence)} simplified for the case when we know
      * that the character sequence being marshalled is a string.
      *
-     * @param  object The object being marshalled (e.g. {@code URI} or {@code Locale}).
-     * @param  string The string representation of the object being marshalled.
-     * @return The wrapper for the given character sequence.
+     * @param  context The current (un)marshalling context, or {@code null} if none.
+     * @param  object  The object being marshalled (e.g. {@code URI} or {@code Locale}).
+     * @param  string  The string representation of the object being marshalled.
+     * @return The wrapper for the given character sequence, or {@code null}.
      */
-    public static GO_CharacterString wrap(final Object object, String string) {
+    public static GO_CharacterString wrap(final Context context, final Object object, final String string) {
+        final CharSequence text = value(context, object, string);
+        return (text != null) ? new GO_CharacterString(text) : null;
+    }
+
+    /**
+     * Same as {@link #wrap(Object, String)}, but returns directly the {@link GO_CharacterString#text}
+     * value without wrapping in a {@code GO_CharacterString} instance.
+     *
+     * @param  context The current (un)marshalling context, or {@code null} if none.
+     * @param  object  The object being marshalled (e.g. {@code URI} or {@code Locale}).
+     * @param  string  The string representation of the object being marshalled.
+     * @return The text value for the given character sequence, or {@code null}.
+     */
+    public static CharSequence value(final Context context, final Object object, String string) {
         string = CharSequences.trimWhitespaces(string);
         if (string == null || string.isEmpty()) {
             return null;
         }
-        CharSequence value = string;
-        final Context context = Context.current();
         final XLink linkage = Context.resolver(context).anchor(context, object, string);
         if (linkage != null) {
             if (linkage instanceof Anchor) {
-                value = (Anchor) linkage;
+                return (Anchor) linkage;
             } else {
-                value = new Anchor(linkage, string);
+                return new Anchor(linkage, string);
             }
         }
-        return new GO_CharacterString(value);
+        return string;
     }
 }

@@ -105,6 +105,6 @@ public final class StringAdapter extends XmlAdapter<GO_CharacterString, String> 
      */
     @Override
     public GO_CharacterString marshal(final String value) {
-        return CharSequenceAdapter.wrap(value, value);
+        return CharSequenceAdapter.wrap(Context.current(), value, value);
     }
 }

@@ -326,6 +326,10 @@ abstract class Pooled {
                                 mask |= Context.SUBSTITUTE_LANGUAGE;
                             } else if (CharSequences.equalsIgnoreCase(substitute, "country")) {
                                 mask |= Context.SUBSTITUTE_COUNTRY;
+                            } else if (CharSequences.equalsIgnoreCase(substitute, "filename")) {
+                                mask |= Context.SUBSTITUTE_FILENAME;
+                            } else if (CharSequences.equalsIgnoreCase(substitute, "mimetype")) {
+                                mask |= Context.SUBSTITUTE_MIMETYPE;
                             }
                         }
                     }
@@ -369,9 +373,11 @@ abstract class Pooled {
             case XML.WARNING_LISTENER: return warningListener;
             case XML.STRING_SUBSTITUTES: {
                 int n = 0;
-                final String[] substitutes = new String[2];
+                final String[] substitutes = new String[4];
                 if ((bitMasks & Context.SUBSTITUTE_LANGUAGE) != 0) substitutes[n++] = "language";
                 if ((bitMasks & Context.SUBSTITUTE_COUNTRY)  != 0) substitutes[n++] = "country";
+                if ((bitMasks & Context.SUBSTITUTE_FILENAME) != 0) substitutes[n++] = "filename";
+                if ((bitMasks & Context.SUBSTITUTE_MIMETYPE) != 0) substitutes[n++] = "mimetype";
                 return (n != 0) ? ArraysExt.resize(substitutes, n) : null;
             }
             default: {

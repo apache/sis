@@ -23,20 +23,19 @@ import org.apache.sis.internal.jaxb.Context;
 
 
 /**
- * JAXB adapter wrapping a URI value with a {@code <gco:CharacterString>} element,
- * for ISO-19139 compliance.
+ * JAXB adapter wrapping a URI value with a {@code <gmx:FileName>} element, for ISO-19139 compliance.
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.5)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 public final class URIAdapter extends XmlAdapter<GO_CharacterString, URI> {
     /**
      * Empty constructor for JAXB.
      */
-    private URIAdapter() {
+    public URIAdapter() {
     }
 
     /**
@@ -66,6 +65,16 @@ public final class URIAdapter extends XmlAdapter<GO_CharacterString, URI> {
      */
     @Override
     public GO_CharacterString marshal(final URI value) {
-        return (value != null) ? CharSequenceAdapter.wrap(value, value.toString()) : null;
+        if (value != null) {
+            final Context context = Context.current();
+            final GO_CharacterString wrapper = CharSequenceAdapter.wrap(context, value, value.toString());
+            if (wrapper != null) {
+                if (!Context.isFlagSet(context, Context.SUBSTITUTE_FILENAME)) {
+                    wrapper.type = GO_CharacterString.FILENAME;
+                }
+                return wrapper;
+            }
+        }
+        return null;
     }
 }
