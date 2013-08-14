@@ -928,7 +928,7 @@ public class AngleFormat extends Format implements Localized {
             }
             if (minutes >= 60) { // We do not expect > 60 (only == 60), but let be safe.
                 minutes = 0;
-                degrees += Math.copySign(1, angle);
+                degrees += Math.signum(angle);
             }
             // Note: a previous version was doing a unconditional addition to the 'degrees' variable,
             // in the form 'degrees += correction'. However -0.0 + 0 == +0.0, while we really need to
