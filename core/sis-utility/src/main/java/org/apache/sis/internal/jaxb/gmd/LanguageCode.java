@@ -61,10 +61,10 @@ public final class LanguageCode extends GO_CharacterString {
     }
 
     /**
-     * Builds a {@code <gco:CharacterString>} element.
+     * Builds a {@code <gco:LanguageCode>} element.
      * For private use by {@link #create(Context, Locale)} only.
      */
-    private LanguageCode(final GO_CharacterString code) {
+    private LanguageCode(final CharSequence code) {
         super(code);
     }
 
@@ -97,7 +97,7 @@ public final class LanguageCode extends GO_CharacterString {
                  * Marshal the locale as a <gco:CharacterString> instead than <LanguageCode>,
                  * using the user-supplied anchors if any.
                  */
-                final GO_CharacterString string = CharSequenceAdapter.wrap(locale, codeListValue);
+                final CharSequence string = CharSequenceAdapter.value(context, locale, codeListValue);
                 if (string != null) {
                     return new LanguageCode(string);
                 }

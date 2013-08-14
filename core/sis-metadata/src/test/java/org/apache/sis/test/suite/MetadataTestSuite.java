@@ -26,7 +26,7 @@ import org.junit.BeforeClass;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.4
  * @module
  */
 @Suite.SuiteClasses({
@@ -36,6 +36,7 @@ import org.junit.BeforeClass;
     org.apache.sis.metadata.iso.identification.DefaultKeywordsTest.class,
     org.apache.sis.metadata.iso.identification.DefaultRepresentativeFractionTest.class,
     org.apache.sis.metadata.iso.identification.DefaultResolutionTest.class,
+    org.apache.sis.metadata.iso.identification.DefaultBrowseGraphicTest.class,
     org.apache.sis.metadata.iso.spatial.DefaultGeorectifiedTest.class,
     org.apache.sis.metadata.iso.maintenance.DefaultScopeDescriptionTest.class,
     org.apache.sis.metadata.iso.quality.AbstractElementTest.class,

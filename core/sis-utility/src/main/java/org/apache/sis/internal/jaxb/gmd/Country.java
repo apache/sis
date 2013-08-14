@@ -45,7 +45,7 @@ import org.apache.sis.internal.jaxb.gco.CharSequenceAdapter;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.5)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 @XmlType(name = "Country_PropertyType")
@@ -63,10 +63,10 @@ public final class Country extends GO_CharacterString {
     }
 
     /**
-     * Builds a {@code <gco:CharacterString>} element.
+     * Builds a {@code <gco:Country>} element.
      * For private use by {@link #create(Context, Locale)} only.
      */
-    private Country(final GO_CharacterString code) {
+    private Country(final CharSequence code) {
         super(code);
     }
 
@@ -99,7 +99,7 @@ public final class Country extends GO_CharacterString {
                  * Marshal the locale as a <gco:CharacterString> instead than <Country>,
                  * using the user-supplied anchors if any.
                  */
-                final GO_CharacterString string = CharSequenceAdapter.wrap(locale, codeListValue);
+                final CharSequence string = CharSequenceAdapter.value(context, locale, codeListValue);
                 if (string != null) {
                     return new Country(string);
                 }

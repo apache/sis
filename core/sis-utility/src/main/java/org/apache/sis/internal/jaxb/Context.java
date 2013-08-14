@@ -43,7 +43,7 @@ import org.apache.sis.xml.ReferenceResolver;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.07)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 public final class Context extends MarshalContext {
@@ -66,6 +66,20 @@ public final class Context extends MarshalContext {
      * @see org.apache.sis.xml.XML#STRING_SUBSTITUTES
      */
     public static final int SUBSTITUTE_COUNTRY = 4;
+
+    /**
+     * The bit flag for enabling substitution of filenames by character strings.
+     *
+     * @see org.apache.sis.xml.XML#STRING_SUBSTITUTES
+     */
+    public static final int SUBSTITUTE_FILENAME = 8;
+
+    /**
+     * The bit flag for enabling substitution of mime types by character strings.
+     *
+     * @see org.apache.sis.xml.XML#STRING_SUBSTITUTES
+     */
+    public static final int SUBSTITUTE_MIMETYPE = 16;
 
     /**
      * The thread-local context. Elements are created in the constructor, and removed in a
