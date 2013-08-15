@@ -237,8 +237,10 @@ public final class XML extends Static {
      * The value for this property shall be a {@code String[]} array of any of the following values:
      *
      * <ul>
-     *   <li>"{@code language}"</li>
-     *   <li>"{@code country}"</li>
+     *   <li>"{@code language}" for substituting {@code <gmd:LanguageCode>} elements</li>
+     *   <li>"{@code country}"  for substituting {@code <gmd:Country>} elements</li>
+     *   <li>"{@code filename}" for substituting {@code <gmx:FileName>} elements</li>
+     *   <li>"{@code mimetype}" for substituting {@code <gmx:MimeFileType>} elements</li>
      * </ul>
      *
      * {@section Example}

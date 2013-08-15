@@ -293,7 +293,12 @@ public class MetadataStandard implements Serializable {
                     return null;
                 }
             }
-            final PropertyAccessor accessor = new PropertyAccessor(citation, type, implementation);
+            final PropertyAccessor accessor;
+            if (SpecialCases.isSpecialCase(type)) {
+                accessor = new SpecialCases(citation, type, implementation);
+            } else {
+                accessor = new PropertyAccessor(citation, type, implementation);
+            }
             accessors.put(implementation, accessor);
             return accessor;
         }

@@ -19,6 +19,7 @@ package org.apache.sis.metadata.iso.identification;
 import javax.xml.bind.JAXBException;
 import org.apache.sis.xml.XML;
 import org.apache.sis.metadata.iso.LoggingWatcher;
+import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Rule;
 import org.junit.Test;
@@ -34,6 +35,7 @@ import static org.apache.sis.test.Assert.*;
  * @version 0.3
  * @module
  */
+@DependsOn(DefaultRepresentativeFractionTest.class)
 public final strictfp class DefaultResolutionTest extends TestCase {
     /**
      * A JUnit {@linkplain Rule rule} for listening to log events. This field is public

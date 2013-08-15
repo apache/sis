@@ -34,11 +34,11 @@ import org.apache.sis.internal.jaxb.Context;
  * @version 0.3
  * @module
  */
-public final class StringAdapter extends XmlAdapter<GO_CharacterString, String> {
+public class StringAdapter extends XmlAdapter<GO_CharacterString, String> {
     /**
-     * Empty constructor for JAXB.
+     * Empty constructor for JAXB or subclasses.
      */
-    private StringAdapter() {
+    public StringAdapter() {
     }
 
     /**
@@ -105,6 +105,6 @@ public final class StringAdapter extends XmlAdapter<GO_CharacterString, String> 
      */
     @Override
     public GO_CharacterString marshal(final String value) {
-        return CharSequenceAdapter.wrap(value, value);
+        return CharSequenceAdapter.wrap(Context.current(), value, value);
     }
 }

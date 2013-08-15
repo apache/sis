@@ -109,7 +109,7 @@ Console application.
       <groupId>org.apache.sis.storage</groupId>
       <artifactId>sis-netcdf</artifactId>
       <version>${project.version}</version>
-      <!-- TODO: use test or runtime scope -->
+      <scope>runtime</scope>
     </dependency>
   </dependencies>
 

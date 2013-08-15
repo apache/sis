@@ -113,10 +113,10 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
             "  │   ├─Spatial representation type……………………………… Grid\n" +
             "  │   ├─Extent\n" +
             "  │   │   ├─Geographic element\n" +
-            "  │   │   │   ├─West bound longitude…………………………… -180.0\n" +
-            "  │   │   │   ├─East bound longitude…………………………… 180.0\n" +
-            "  │   │   │   ├─South bound latitude…………………………… -90.0\n" +
-            "  │   │   │   ├─North bound latitude…………………………… 90.0\n" +
+            "  │   │   │   ├─West bound longitude…………………………… 180°W\n" +
+            "  │   │   │   ├─East bound longitude…………………………… 180°E\n" +
+            "  │   │   │   ├─South bound latitude…………………………… 90°S\n" +
+            "  │   │   │   ├─North bound latitude…………………………… 90°N\n" +
             "  │   │   │   └─Extent type code……………………………………… true\n" +
             "  │   │   └─Vertical element\n" +
             "  │   │       ├─Minimum value……………………………………………… 0.0\n" +
