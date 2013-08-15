@@ -20,9 +20,11 @@ import java.net.URI;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.identification.BrowseGraphic;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.internal.jaxb.gmx.MimeFileTypeAdapter;
 
 
 /**
@@ -32,7 +34,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 @XmlType(name = "MD_BrowseGraphic_Type", propOrder = {
@@ -171,6 +173,7 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
      */
     @Override
     @XmlElement(name = "fileType")
+    @XmlJavaTypeAdapter(MimeFileTypeAdapter.class)
     public String getFileType() {
         return fileType;
     }

@@ -89,17 +89,17 @@ import java.util.Objects;
  *
  * {@example "<code>0480439</code>" with the "<code>DDDMMmm</code>" pattern will be parsed as 48°04.39′.}
  *
- * The {@code ?} modifier specify that the preceding field can be omitted if its value is zero.
+ * The {@code ?} modifier specifies that the preceding field can be omitted if its value is zero.
  * Any field can be omitted for {@link Angle} object, but only trailing fields are omitted for
  * {@li{@link Longitude} and {@link Latitude}.
  *
- * {@example "<code>DD°MM′?SS″?</code>" will format an angle of 12.01° as {@code 12°36″}, but a longitude of 12.01°N
- *           as {@code 12°00′36″N} (not {@code 12°36″N}).}
+ * {@example "<code>DD°MM′?SS″?</code>" will format an angle of 12.01° as <code>12°36″</code>,
+ *           but a longitude of 12.01°N as <code>12°00′36″N</code> (not <code>12°36″N</code>).}
  *
  * The above special case exists because some kind of angles are expected to be very small (e.g. rotation angles in
  * {@linkplain org.apache.sis.referencing.datum.BursaWolfParameters Bursa-Wolf parameters} are given in arc-seconds),
  * while longitude and latitude values are usually distributed over their full ±180° or ±90° range. Since longitude
- * or latitude values without the degrees field are unusual, omitting that field is almost guaranteed to increase the
+ * or latitude values without the degrees field are unusual, omitting that field is likely to increase the
  * risk of confusion in those cases.
  *
  * {@section Examples}

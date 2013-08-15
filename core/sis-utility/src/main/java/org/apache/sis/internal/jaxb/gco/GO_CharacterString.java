@@ -17,6 +17,7 @@
 package org.apache.sis.internal.jaxb.gco;
 
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
@@ -24,6 +25,7 @@ import org.apache.sis.xml.Namespaces;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gmx.Anchor;
 import org.apache.sis.internal.jaxb.gmx.FileName;
+import org.apache.sis.internal.jaxb.gmx.MimeFileType;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Messages;
 
@@ -136,9 +138,12 @@ public class GO_CharacterString {
                 noset     = true;
             }
             final Context context = Context.current();
-            Context.warningOccured(context, value,
-                    Messages.getResources(context != null ? context.getLocale() : null).getLogRecord(Level.WARNING,
-                    Messages.Keys.DiscardedExclusiveProperty_2, NAMES[discarded], NAMES[property]));
+            final LogRecord record = Messages.getResources(context != null ? context.getLocale() : null)
+                    .getLogRecord(Level.WARNING, Messages.Keys.DiscardedExclusiveProperty_2,
+                                  NAMES[discarded], NAMES[property]);
+            record.setSourceClassName(getClass().getCanonicalName());
+            record.setSourceMethodName("setText");
+            Context.warningOccured(context, value, record);
             if (noset) {
                 return;
             }
@@ -176,7 +181,7 @@ public class GO_CharacterString {
     }
 
     /**
-     * Returns the text in a {@code <gco:FileName>} element, or {@code null} if none.
+     * Returns the text in a {@code <gmx:FileName>} element, or {@code null} if none.
      */
     @XmlElement(name = "FileName", namespace = Namespaces.GMX)
     final FileName getFileName() {
@@ -197,6 +202,32 @@ public class GO_CharacterString {
             final String value = CharSequences.trimWhitespaces(file.toString());
             if (value != null && !value.isEmpty()) {
                 setText(value, FILENAME);
+            }
+        }
+    }
+
+    /**
+     * Returns the text in a {@code <gmx:MimeFileType>} element, or {@code null} if none.
+     */
+    @XmlElement(name = "MimeFileType", namespace = Namespaces.GMX)
+    final MimeFileType getMimeFileType() {
+        if (type == MIME_TYPE) {
+            final CharSequence text = this.text;
+            if (text != null && !(text instanceof Anchor)) {
+                return new MimeFileType(text.toString());
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Invoked by JAXB for setting the MIME type.
+     */
+    final void setMimeFileType(final MimeFileType type) {
+        if (type != null) {
+            final String value = CharSequences.trimWhitespaces(type.toString());
+            if (value != null && !value.isEmpty()) {
+                setText(value, MIME_TYPE);
             }
         }
     }

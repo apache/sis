@@ -23,14 +23,14 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 
 /**
- * The {@code <gmx:FileName>} element, which may be used as a substitute of {@code <gco:CharacterString>}.
- * This is used for the URI in {@link org.apache.sis.metadata.iso.identification.DefaultBrowseGraphic}.
+ * The {@code <gmx:MimeFileType>} element, which may be used as a substitute of {@code <gco:CharacterString>}.
+ * This is used in {@link org.apache.sis.metadata.iso.identification.DefaultBrowseGraphic}.
  * Example:
  *
  * {@preformat xml
- *   <fileName>
- *      <gmx:FileName src="../path/wkj98723.jpg">Overview</gmx:FileName>
- *   </fileName>
+ *   <fileType>
+ *     <gmx:MimeFileType type="image/tiff">Graphic TIFF</gmx:MimeFileType>
+ *   </fileType>
  * }
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -40,18 +40,18 @@ import javax.xml.bind.annotation.XmlRootElement;
  *
  * @see <a href="https://issues.apache.org/jira/browse/SIS-119">SIS-119</a>
  */
-@XmlType(name = "FileName_PropertyType")
-@XmlRootElement(name = "FileName")
-public final class FileName {
+@XmlType(name = "MimeFileType_PropertyType")
+@XmlRootElement(name = "MimeFileType")
+public final class MimeFileType {
     /**
-     * The value of the {@code src} attribute, which is the file path.
+     * The value of the {@code type} attribute, which is the mime type.
      */
     @XmlAttribute
-    private String src;
+    private String type;
 
     /**
-     * A human-readable description of the filename. If {@link #src} is null,
-     * then this will be taken as the file path.
+     * A human-readable description of the mime type. If {@link #type} is null,
+     * then this will be taken as the mime type.
      */
     @XmlValue
     private String value;
@@ -59,29 +59,29 @@ public final class FileName {
     /**
      * Empty constructor for JAXB only.
      */
-    public FileName() {
+    public MimeFileType() {
     }
 
     /**
-     * Creates a new {@code <gml:FileName>} for the given URI.
+     * Creates a new {@code <gml:MimeFileType>} for the given type.
      *
-     * @param uri The string representation of the URI.
+     * @param type The MIME type.
      */
-    public FileName(final String uri) {
-        src   = uri;
-        value = uri.substring(uri.lastIndexOf('/') + 1);
+    public MimeFileType(final String type) {
+        this.type  = type;
+        this.value = type; // May provide a more human-redeable value in a future SIS version.
     }
 
     /**
-     * Returns the file path, or {@code null} if none.
+     * Returns the MIME type, or {@code null} if none.
      *
      * {@note Returning <code>null</code> is usually not recommended for a <code>toString()</code> method,
      *        but this class is for internal usage only.}
      *
-     * @return The file path, or {@code null} if none.
+     * @return The MIME type, or {@code null} if none.
      */
     @Override
     public String toString() {
-        return (src != null) ? src : value;
+        return (type != null) ? type : value;
     }
 }

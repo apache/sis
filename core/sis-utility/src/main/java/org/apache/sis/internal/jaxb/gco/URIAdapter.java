@@ -43,7 +43,7 @@ public final class URIAdapter extends XmlAdapter<GO_CharacterString, URI> {
      * JAXB calls automatically this method at unmarshalling time.
      *
      * @param  value The wrapper for the URI value, or {@code null}.
-     * @return An {@link URI} which represents the URI value, or {@code null}.
+     * @return A {@link URI} which represents the URI value, or {@code null}.
      * @throws URISyntaxException If the string is not a valid URI.
      */
     @Override
