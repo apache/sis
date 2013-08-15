@@ -99,6 +99,16 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
         return MetadataStandard.ISO_19115;
     }
 
+
+
+
+    // --------------------------------------------------------------------------------------
+    // Code below this point also appears in other IdentifiedObject implementations.
+    // If this code is modified, consider revisiting also the following classes:
+    //
+    //   * org.apache.sis.metadata.iso.identification.DefaultRepresentativeFraction
+    // --------------------------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */
@@ -170,10 +180,8 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
     /**
      * Sets an unique identifier.
      * This method is invoked automatically by JAXB and should never be invoked explicitely.
-     *
-     * @throws IllegalArgumentException If the UUID is already assigned to an other object.
      */
-    private void setUUID(String id) {
+    private void setUUID(final String id) {
         /*
          * IdentifierMapWithSpecialCases will take care of converting the String to UUID if possible,
          * or will store the value as a plain String if it can not be converted. In the later case, a
