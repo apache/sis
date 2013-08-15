@@ -241,7 +241,7 @@ public class Angle implements Comparable<Angle>, Formattable, Serializable {
     private static Format getAngleFormat() {
         assert Thread.holdsLock(Angle.class);
         if (format == null) {
-            format = AngleFormat.getInstance(Locale.ROOT);
+            format = new AngleFormat(Locale.ROOT);
         }
         return format;
     }
