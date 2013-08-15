@@ -120,12 +120,12 @@ Implementations of Coordinate Reference Systems (CRS),
       <groupId>org.opengis</groupId>
       <artifactId>geoapi</artifactId>
     </dependency>
+
+    <!-- Test dependencies -->
     <dependency>
       <groupId>org.opengis</groupId>
       <artifactId>geoapi-conformance</artifactId>
     </dependency>
-
-    <!-- Test dependencies -->
     <dependency>
       <groupId>org.apache.sis.core</groupId>
       <artifactId>sis-utility</artifactId>

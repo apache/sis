@@ -16,14 +16,27 @@
  */
 package org.apache.sis.metadata.iso.identification;
 
+import java.util.Collection;
+import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
+import org.opengis.metadata.Identifier;
 import org.opengis.metadata.identification.RepresentativeFraction;
+import org.apache.sis.internal.jaxb.IdentifierMapWithSpecialCases;
 import org.apache.sis.internal.jaxb.gco.GO_Integer64;
+import org.apache.sis.internal.util.CheckedArrayList;
+import org.apache.sis.xml.IdentifierMap;
+import org.apache.sis.xml.IdentifierSpace;
+import org.apache.sis.xml.IdentifiedObject;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+
+import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 
 
 /**
@@ -38,12 +51,12 @@ import org.apache.sis.util.resources.Errors;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.4)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 @XmlType(name = "MD_RepresentativeFraction_Type")
 @XmlRootElement(name = "MD_RepresentativeFraction")
-public class DefaultRepresentativeFraction extends Number implements RepresentativeFraction {
+public class DefaultRepresentativeFraction extends Number implements RepresentativeFraction, IdentifiedObject {
     /**
      * Serial number for compatibility with different versions.
      */
@@ -53,6 +66,12 @@ public class DefaultRepresentativeFraction extends Number implements Representat
      * The number below the line in a vulgar fraction, or 0 if undefined.
      */
     private long denominator;
+
+    /**
+     * All identifiers associated with this metadata, or {@code null} if none.
+     * This field is initialized to a non-null value when first needed.
+     */
+    private Collection<Identifier> identifiers;
 
     /**
      * Creates a uninitialized representative fraction.
@@ -210,5 +229,79 @@ public class DefaultRepresentativeFraction extends Number implements Representat
     @Override
     public int hashCode() {
         return (int) denominator;
+    }
+
+
+
+
+    // --------------------------------------------------------------------------------------
+    // Code below this point is basically a copy-and-paste of ISOMetadata, with some edition.
+    // The JAXB attributes defined here shall be the same than the ISOMetadata ones.
+    // --------------------------------------------------------------------------------------
+
+    /**
+     * Returns all identifiers associated to this object, or an empty collection if none.
+     * Those identifiers are marshalled in XML as {@code id} or {@code uuid} attributes.
+     */
+    @Override
+    public Collection<Identifier> getIdentifiers() {
+        if (identifiers == null) {
+            identifiers = new CheckedArrayList<Identifier>(Identifier.class);
+        }
+        return identifiers;
+    }
+
+    /**
+     * Returns a map view of the {@linkplain #getIdentifiers() identifiers} collection as (<var>authority</var>,
+     * <var>code</var>) entries. That map is <cite>live</cite>: changes in the identifiers list will be reflected
+     * in the map, and conversely.
+     */
+    @Override
+    public IdentifierMap getIdentifierMap() {
+        return new IdentifierMapWithSpecialCases(getIdentifiers());
+    }
+
+    /**
+     * Invoked by JAXB for fetching the unique identifier unique for the XML document.
+     *
+     * @see org.apache.sis.metadata.iso.ISOMetadata#getID()
+     */
+    @XmlID
+    @XmlAttribute  // Defined in "gco" as unqualified attribute.
+    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+    private String getID() {
+        return isNullOrEmpty(identifiers) ? null : getIdentifierMap().getSpecialized(IdentifierSpace.ID);
+    }
+
+    /**
+     * Invoked by JAXB for specifying the unique identifier.
+     *
+     * @see org.apache.sis.metadata.iso.ISOMetadata#setID(String)
+     */
+    private void setID(String id) {
+        id = CharSequences.trimWhitespaces(id);
+        if (id != null && !id.isEmpty()) {
+            getIdentifierMap().putSpecialized(IdentifierSpace.ID, id);
+        }
+    }
+
+    /**
+     * Invoked by JAXB for fetching the unique identifier unique "worldwide".
+     *
+     * @see org.apache.sis.metadata.iso.ISOMetadata#getUUID()
+     */
+    @XmlAttribute  // Defined in "gco" as unqualified attribute.
+    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+    private String getUUID() {
+        return isNullOrEmpty(identifiers) ? null : getIdentifierMap().get(IdentifierSpace.UUID);
+    }
+
+    /**
+     * Invoked by JAXB for specifying the unique identifier.
+     *
+     * @see org.apache.sis.metadata.iso.ISOMetadata#setUUID(String)
+     */
+    private void setUUID(final String id) {
+        getIdentifierMap().put(IdentifierSpace.UUID, id);
     }
 }

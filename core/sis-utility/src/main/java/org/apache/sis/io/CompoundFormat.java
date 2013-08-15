@@ -389,7 +389,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
         } else if (valueType == Date.class) {
             final DateFormat format;
             if (!Locale.ROOT.equals(locale)) {
-                format = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM, locale);
+                format = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.DEFAULT, locale);
             } else {
                 format = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.ROOT);
             }

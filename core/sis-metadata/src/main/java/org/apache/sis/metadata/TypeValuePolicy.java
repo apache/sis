@@ -32,23 +32,32 @@ package org.apache.sis.metadata;
 public enum TypeValuePolicy {
     /**
      * The type of a property, as inferred from the
-     * {@linkplain java.lang.reflect.Method#getReturnType() return type} of the property method.
-     * Collections are not handled in any special way; if the return type is a collection, then
-     * the value is {@code Collection.class} (or a subclass).
+     * {@linkplain java.lang.reflect.Method#getReturnType() return type} of the property method
+     * defined in the interface.
+     *
+     * <p><b>Notes:</b></p>
+     * <ul>
+     *   <li>Collections are not handled in any special way: if the return type is a collection,
+     *       then the property type is {@code Collection.class} or any other declared return type.</li>
+     *   <li>As a special case, values of type {@code double} (the primitive type) in
+     *       {@link org.opengis.metadata.extent.GeographicBoundingBox} are wrapped in
+     *       {@link org.apache.sis.measure.Longitude} and {@link org.apache.sis.measure.Latitude}
+     *       objects instead of {@link Double}.</li>
+     * </ul>
      */
     PROPERTY_TYPE,
 
     /**
-     * The type of a property, or type of elements if the property is a collection. This is the
-     * same than {@link #PROPERTY_TYPE} except that collections are handled in a special way:
-     * if the property is a collection, then the value is the type of <em>elements</em> in that
-     * collection.
+     * The specialized type of a property, or type of elements if the property is a collection.
+     * This is the same type than {@link #PROPERTY_TYPE} except for the following:
      *
-     * {@note Current implementation has an additional slight difference: if the getter method
-     *        in the implementation class declares a more specific return value than the getter
-     *        method in the interface, and if the setter method (if any) expects the same specialized
-     *        type, then <code>ELEMENT_TYPE</code> will use that specialized type. This is different
-     *        than <code>PROPERTY_TYPE</code> which always use the type declared in the interface.}
+     * <ul>
+     *   <li>If the property is a collection, then the element type is the type of <em>elements</em> in that
+     *       collection. For example if the property type is {@code Collection<String>}, then the element type
+     *       is {@code String}.</li>
+     *   <li>If the implementation declares a more specific property type than the interface (as allowed by
+     *       <cite>covariant return type</cite>), then the element type will be that specialized type.</li>
+     * </ul>
      */
     ELEMENT_TYPE,
 
