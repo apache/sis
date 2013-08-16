@@ -18,6 +18,7 @@ package org.apache.sis.util;
 
 import java.io.Serializable;
 import java.util.StringTokenizer;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -31,9 +32,9 @@ import java.util.StringTokenizer;
  * <p>This class provides methods for performing comparisons of {@code Version} objects where major,
  * minor and revision parts are compared as numbers when possible, or as strings otherwise.</p>
  *
- * @author  Martin Desruisseaux (IRD)
+ * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.4)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 @Immutable
@@ -44,15 +45,26 @@ public class Version implements CharSequence, Comparable<Version>, Serializable 
     private static final long serialVersionUID = 8402041502662929792L;
 
     /**
+     * The separator characters between {@linkplain #getMajor() major}, {@linkplain #getMinor() minor}
+     * and {@linkplain #getRevision() revision} components. Any character in this string fits.
+     */
+    private static final String SEPARATORS = ".-";
+
+    /**
      * The version of this Apache SIS distribution.
      */
     public static final Version SIS = new Version("0.4-SNAPSHOT");
 
     /**
-     * The separator characters between {@linkplain #getMajor() major}, {@linkplain #getMinor() minor}
-     * and {@linkplain #getRevision() revision} components. Any character in this string fits.
+     * A few commonly used version numbers. This list is based on SIS needs, e.g. in {@code DataStore}
+     * implementations. New constants are likely to be added in any future SIS versions.
+     *
+     * @see #valueOf(int[])
      */
-    private static final String SEPARATORS = ".-";
+    private static final Version[] CONSTANTS = {
+        new Version("1"),
+        new Version("2")
+    };
 
     /**
      * The version in string form, with leading and trailing spaces removed.
@@ -81,7 +93,56 @@ public class Version implements CharSequence, Comparable<Version>, Serializable 
      */
     public Version(final String version) {
         ArgumentChecks.ensureNonNull("version", version);
-        this.version = CharSequences.trimWhitespaces(version);
+        this.version = version;
+    }
+
+    /**
+     * Returns an instance for the given integer values.
+     * The {@code components} array must contain at least 1 element, where:
+     *
+     * <ul>
+     *   <li>The first element is the {@linkplain #getMajor() major} number.</li>
+     *   <li>The second element (if any) is the {@linkplain #getMinor() minor} number.</li>
+     *   <li>The third element (if any) is the {@linkplain #getRevision() revision} number.</li>
+     *   <li>Other elements (if any) will be appended to the {@link #toString() string value}.</li>
+     * </ul>
+     *
+     * @param  components The major number, optionally followed by minor, revision or other numbers.
+     * @return A new or existing instance of {@code Version} for the given numbers.
+     *
+     * @since 0.4
+     */
+    public static Version valueOf(final int... components) {
+        if (components.length == 0) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "components"));
+        }
+        final Version version;
+        final int major = components[0];
+        if (components.length == 1) {
+            if (major >= 1 && major <= CONSTANTS.length) {
+                return CONSTANTS[major-1];
+            } else {
+                version = new Version(Integer.toString(major));
+            }
+        } else {
+            final StringBuilder buffer = new StringBuilder().append(major);
+            for (int i=1; i<components.length; i++) {
+                buffer.append('.').append(components[i]);
+            }
+            version = new Version(buffer.toString());
+        }
+        /*
+         * Pre-compute the 'parsed' array since we already have the integer values. It will avoid the need to
+         * create the 'this.components' array and to parse the String values if a 'getFoo()' method is invoked.
+         * Note that the cost is typically only the 'parsed' array creation, not Integer objects creation, since
+         * version numbers are usually small enough for allowing 'Integer.valueOf(int)' to cache them.
+         */
+        final Integer[] parsed = new Integer[components.length];
+        for (int i=0; i<components.length; i++) {
+            parsed[i] = components[i];
+        }
+        version.parsed = parsed;
+        return version;
     }
 
     /**

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.util;
 
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -25,9 +26,9 @@ import static org.apache.sis.test.Assert.*;
 /**
  * Tests the {@link Version} class, especially the {@code compareTo} method.
  *
- * @author  Martin Desruisseaux (IRD)
+ * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.4)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 public final strictfp class VersionTest extends TestCase {
@@ -54,6 +55,7 @@ public final strictfp class VersionTest extends TestCase {
      * Tests a alpha-numeric version.
      */
     @Test
+    @DependsOnMethod("testNumeric")
     public void testAlphaNumeric() {
         final Version version = new Version("1.6.b2");
         assertEquals("1.6.b2", version.toString());
@@ -66,6 +68,48 @@ public final strictfp class VersionTest extends TestCase {
         assertTrue(version.compareTo(new Version("1.6.b2")) == 0);
         assertTrue(version.compareTo(new Version("1.6.b1"))  > 0);
         assertTrue(version.compareTo(new Version("1.07.b1")) < 0);
+    }
+
+    /**
+     * Tests the {@link Version#valueOf(int[])} method.
+     */
+    @Test
+    public void testValueOf() {
+        Version version = Version.valueOf(1);
+        assertEquals("1", version.toString());
+        assertEquals( 1,  version.getMajor());
+        assertNull  (     version.getMinor());
+        assertNull  (     version.getRevision());
+
+        version = Version.valueOf(10);
+        assertEquals("10", version.toString());
+        assertEquals( 10,  version.getMajor());
+        assertNull  (      version.getMinor());
+        assertNull  (      version.getRevision());
+
+        version = Version.valueOf(0, 4);
+        assertEquals("0.4", version.toString());
+        assertEquals( 0,    version.getMajor());
+        assertEquals(   4,  version.getMinor());
+        assertNull  (       version.getRevision());
+
+        version = Version.valueOf(6, 11, 2);
+        assertEquals("6.11.2", version.toString());
+        assertEquals( 6,       version.getMajor());
+        assertEquals(   11,    version.getMinor());
+        assertEquals(      2,  version.getRevision());
+    }
+
+    /**
+     * Tests the cached values of {@link Version#valueOf(int[])}.
+     */
+    @Test
+    @DependsOnMethod("testValueOf")
+    public void testCachedValueOf() {
+        for (int major=1; major<=2; major++) {
+            final Version version = Version.valueOf(major);
+            assertSame(version.toString(), version, Version.valueOf(major));
+        }
     }
 
     /**

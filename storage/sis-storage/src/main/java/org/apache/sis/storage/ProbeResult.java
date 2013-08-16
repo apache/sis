@@ -43,9 +43,9 @@ import java.util.Objects;
  *
  * {@section Special values}
  * In addition to the supported/unsupported information, {@code ProbeResult} defines two constants having
- * a special meaning: {@link #INSUFFICIENT_BYTES} and {@link #UNDETERMINED} indicate that the provider does
+ * a special meaning: {@link #INSUFFICIENT_BYTES} and {@link #UNDETERMINED}, which indicate that the provider does
  * not have enough information for telling whether the storage can be opened.
- * SIS will try to use such provider last, if no better suited provider is found.
+ * In such cases, SIS will revisit those providers only if no better suited provider is found.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
@@ -141,14 +141,14 @@ public class ProbeResult implements Serializable {
     private final boolean isSupported;
 
     /**
-     * The storage MIME type, or {@code null} if unknown or irrelevant.
+     * The storage MIME type, or {@code null} if unknown or not applicable.
      *
      * @see #getMimeType()
      */
     private final String mimeType;
 
     /**
-     * The version of file format or database schema used by the storage, or {@code null} if unknown or irrelevant.
+     * The version of file format or database schema used by the storage, or {@code null} if unknown or not applicable.
      *
      * @see #getVersion()
      */
@@ -158,9 +158,9 @@ public class ProbeResult implements Serializable {
      * Creates a new {@code ProbeResult} with the given support status, MIME type and version number.
      *
      * @param isSupported {@code true} if the storage is supported by the {@link DataStoreProvider}.
-     * @param mimeType    The storage MIME type, or {@code null} if unknown or irrelevant.
+     * @param mimeType    The storage MIME type, or {@code null} if unknown or not applicable.
      * @param version     The version of file format or database schema used by the storage,
-     *                    or {@code null} if unknown or irrelevant.
+     *                    or {@code null} if unknown or not applicable.
      */
     public ProbeResult(final boolean isSupported, final String mimeType, final Version version) {
         this.isSupported = isSupported;
@@ -180,7 +180,7 @@ public class ProbeResult implements Serializable {
     }
 
     /**
-     * Returns the MIME type of the storage file format, or {@code null} if unknown or irrelevant.
+     * Returns the MIME type of the storage file format, or {@code null} if unknown or not applicable.
      * The {@link DataStoreProvider} may (at implementation choice) inspect the storage content for
      * determining a more accurate MIME type.
      *
@@ -203,7 +203,7 @@ public class ProbeResult implements Serializable {
      * Consequently, a XML data store provider may need to read the root element of a XML document in order
      * to determine the document MIME type.}
      *
-     * @return The storage MIME type, or {@code null} if unknown or irrelevant.
+     * @return The storage MIME type, or {@code null} if unknown or not applicable.
      */
     public String getMimeType() {
         return mimeType;
@@ -211,10 +211,10 @@ public class ProbeResult implements Serializable {
 
     /**
      * Returns the version of file format or database schema used by the storage,
-     * or {@code null} if unknown or irrelevant.
+     * or {@code null} if unknown or not applicable.
      *
      * @return The version of file format or database schema used by the storage,
-     *         or {@code null} if unknown or irrelevant.
+     *         or {@code null} if unknown or not applicable.
      */
     public Version getVersion() {
         return version;
