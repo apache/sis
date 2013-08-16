@@ -33,8 +33,8 @@ import java.util.Objects;
  *
  * {@section Usage}
  * When a {@link DataStores#open DataStores.open(…)} method is invoked, SIS will iterate over the list of known
- * providers and invoke the {@link DataStoreProvider#canOpen(StorageConnector)} method for each of them.
- * The {@code ProbeResult} value returned by {@code canOpen(…)} tells to SIS whether a particular
+ * providers and invoke the {@link DataStoreProvider#probeContent(StorageConnector)} method for each of them.
+ * The {@code ProbeResult} value returned by {@code probeContent(…)} tells to SIS whether a particular
  * {@code DataStoreProvider} instance has reasonable chances to be able to handle the given storage.
  *
  * <p>Whether a storage appears to be supported or not is given by the {@link #isSupported()} property.
@@ -52,7 +52,7 @@ import java.util.Objects;
  * @version 0.4
  * @module
  *
- * @see DataStoreProvider#canOpen(StorageConnector)
+ * @see DataStoreProvider#probeContent(StorageConnector)
  */
 public class ProbeResult implements Serializable {
     /**
@@ -65,7 +65,7 @@ public class ProbeResult implements Serializable {
      * The {@link #isSupported()} method returns {@code true}, but the {@linkplain #getMimeType() MIME type}
      * and {@linkplain #getVersion() version} properties are {@code null}.
      *
-     * <p>{@link DataStoreProvider#canOpen(StorageConnector)} implementations should consider returning a
+     * <p>{@link DataStoreProvider#probeContent(StorageConnector)} implementations should consider returning a
      * {@linkplain #ProbeResult(boolean, String, Version) new instance} instead than this constant
      * if they can provide the file MIME type or the format version number.</p>
      */
@@ -83,7 +83,7 @@ public class ProbeResult implements Serializable {
      *   <li>The database schema does not contain the expected tables.</li>
      * </ul>
      *
-     * {@link DataStoreProvider#canOpen(StorageConnector)} implementations should consider returning a
+     * {@link DataStoreProvider#probeContent(StorageConnector)} implementations should consider returning a
      * {@linkplain #ProbeResult(boolean, String, Version) new instance} instead than this constant
      * if the {@code DataStoreProvider} recognizes the given storage, but the data are structured
      * according a file or schema version not yet supported by the current implementation.
@@ -92,11 +92,11 @@ public class ProbeResult implements Serializable {
 
     /**
      * The open capability can not be determined because the {@link ByteBuffer} contains an insufficient
-     * amount of bytes. This value can be returned by {@link DataStoreProvider#canOpen(StorageConnector)}
+     * amount of bytes. This value can be returned by {@link DataStoreProvider#probeContent(StorageConnector)}
      * implementations as below:
      *
      * {@preformat java
-     *     public ProbeResult canOpen(StorageConnector storage) throws DataStoreException {
+     *     public ProbeResult probeContent(StorageConnector storage) throws DataStoreException {
      *         final ByteBuffer buffer = storage.getStorageAs(ByteBuffer.class);
      *         if (buffer == null) {
      *             return ProbeResult.UNSUPPORTED_STORAGE;
@@ -112,8 +112,8 @@ public class ProbeResult implements Serializable {
      * if at least one {@code DataStoreProvider} returns {@code INSUFFICIENT_BYTES}, then:
      *
      * <ol>
-     *   <li>SIS will continue to search for an other provider that can answer the {@code canOpen(…)}
-     *       question using only the available bytes.</li>
+     *   <li>SIS will continue to search for an other provider for which {@code probeContent(…)}
+     *       declares to support the storage, using only the available bytes.</li>
      *   <li>Only if no such provider can be found, then SIS will fetch more bytes and query again
      *       the providers that returned {@code INSUFFICIENT_BYTES} in the previous iteration.</li>
      * </ol>
@@ -127,7 +127,7 @@ public class ProbeResult implements Serializable {
      * This value may be returned by {@code DataStore} implementations that could potentially open anything,
      * for example the RAW image format.
      *
-     * <p><strong>This is a last resort value!</strong> {@code canOpen(…)} implementations are strongly encouraged
+     * <p><strong>This is a last resort value!</strong> {@code probeContent(…)} implementations are strongly encouraged
      * to return a more accurate enumeration value for allowing {@link DataStores#open(Object)} to perform a better
      * choice. Generally, this value should be returned only by the RAW image format.</p>
      */

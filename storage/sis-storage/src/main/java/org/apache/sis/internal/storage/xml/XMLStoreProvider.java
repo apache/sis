@@ -54,7 +54,7 @@ public class XMLStoreProvider extends DataStoreProvider {
      * header.
      */
     @Override
-    public ProbeResult canOpen(final StorageConnector storage) throws DataStoreException {
+    public ProbeResult probeContent(final StorageConnector storage) throws DataStoreException {
         /*
          * Usual case. This include InputStream, DataInput, File, Path, URL, URI.
          */

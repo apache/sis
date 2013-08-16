@@ -112,7 +112,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
      * @throws DataStoreException if an I/O error occurred.
      */
     @Override
-    public ProbeResult canOpen(StorageConnector storage) throws DataStoreException {
+    public ProbeResult probeContent(StorageConnector storage) throws DataStoreException {
         final ByteBuffer buffer = storage.getStorageAs(ByteBuffer.class);
         if (buffer != null) {
             if (buffer.remaining() < Integer.SIZE / Byte.SIZE) {

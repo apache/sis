@@ -46,31 +46,31 @@ import static org.opengis.test.Assert.*;
 })
 public final strictfp class NetcdfStoreProviderTest extends IOTestCase {
     /**
-     * Tests {@link NetcdfStoreProvider#canOpen(StorageConnector)} for an input stream which shall
+     * Tests {@link NetcdfStoreProvider#probeContent(StorageConnector)} for an input stream which shall
      * be recognized as a classic NetCDF file.
      *
      * @throws DataStoreException Should never happen.
      */
     @Test
-    public void testCanOpenFromStream() throws DataStoreException {
+    public void testProbeContentFromStream() throws DataStoreException {
         final StorageConnector c = new StorageConnector(IOTestCase.class.getResourceAsStream(NCEP));
         final NetcdfStoreProvider provider = new NetcdfStoreProvider();
-        assertEquals(ProbeResult.SUPPORTED, provider.canOpen(c));
+        assertEquals(ProbeResult.SUPPORTED, provider.probeContent(c));
         c.closeAllExcept(null);
     }
 
     /**
-     * Tests {@link NetcdfStoreProvider#canOpen(StorageConnector)} for a UCAR {@link NetcdfFile} object.
+     * Tests {@link NetcdfStoreProvider#probeContent(StorageConnector)} for a UCAR {@link NetcdfFile} object.
      *
      * @throws IOException If an error occurred while opening the NetCDF file.
      * @throws DataStoreException Should never happen.
      */
     @Test
-    public void testCanOpenFromUCAR() throws IOException, DataStoreException {
+    public void testProbeContentFromUCAR() throws IOException, DataStoreException {
         final NetcdfFile file = open(NCEP);
         final StorageConnector c = new StorageConnector(file);
         final NetcdfStoreProvider provider = new NetcdfStoreProvider();
-        assertEquals(ProbeResult.SUPPORTED, provider.canOpen(c));
+        assertEquals(ProbeResult.SUPPORTED, provider.probeContent(c));
         file.close();
     }
 
