@@ -51,7 +51,7 @@ final class DataStoreRegistry {
      * Creates a new registry which will use the current thread
      * {@linkplain Thread#getContextClassLoader() context class loader}.
      */
-    public DataStoreRegistry() {
+    DataStoreRegistry() {
         loader = ServiceLoader.load(DataStoreProvider.class);
     }
 
@@ -60,7 +60,7 @@ final class DataStoreRegistry {
      *
      * @param loader The class loader to use for loading {@link DataStoreProvider} implementations.
      */
-    public DataStoreRegistry(final ClassLoader loader) {
+    DataStoreRegistry(final ClassLoader loader) {
         ArgumentChecks.ensureNonNull("loader", loader);
         this.loader = ServiceLoader.load(DataStoreProvider.class, loader);
     }
@@ -106,29 +106,28 @@ final class DataStoreRegistry {
                 providers = loader.iterator();
                 candidate = providers.hasNext() ? providers.next() : null;
             }
-search:     while (candidate != null) {
-                switch (candidate.canOpen(connector)) {
+            while (candidate != null) {
+                final ProbeResult probe = candidate.canOpen(connector);
+                if (probe.isSupported()) {
                     /*
                      * Stop at the first provider claiming to be able to read the storage.
                      * Do not iterate over the list of deferred providers (if any).
                      */
-                    case SUPPORTED: {
-                        provider = candidate;
-                        deferred = null;
-                        break search;
-                    }
+                    provider = candidate;
+                    deferred = null;
+                    break;
+                }
+                if (ProbeResult.INSUFFICIENT_BYTES.equals(probe)) {
                     /*
                      * If a provider doesn't have enough bytes for answering the question,
                      * try again after this loop with more bytes in the buffer, unless we
                      * found an other provider.
                      */
-                    case INSUFFICIENT_BYTES: {
-                        if (deferred == null) {
-                            deferred = new LinkedList<>();
-                        }
-                        deferred.add(candidate);
-                        break;
+                    if (deferred == null) {
+                        deferred = new LinkedList<>();
                     }
+                    deferred.add(candidate);
+                } else if (ProbeResult.UNDETERMINED.equals(probe)) {
                     /*
                      * If a provider doesn't know whether it can open the given storage,
                      * we will try it only if we find no provider retuning SUPPORTED.
@@ -137,10 +136,7 @@ search:     while (candidate != null) {
                      *       provider.open(connector) in a try … catch block because it may leave
                      *       the StorageConnector in an invalid state in case of failure.
                      */
-                    case UNDETERMINED: {
-                        provider = candidate;
-                        break;
-                    }
+                    provider = candidate;
                 }
                 synchronized (loader) {
                     candidate = providers.hasNext() ? providers.next() : null;
@@ -155,12 +151,17 @@ search:     while (candidate != null) {
 search:         while (!deferred.isEmpty() && connector.prefetch()) {
                     for (final Iterator<DataStoreProvider> it=deferred.iterator(); it.hasNext();) {
                         candidate = it.next();
-                        switch (candidate.canOpen(connector)) {
-                            case SUPPORTED:          provider = candidate; break search;
-                            case UNDETERMINED:       provider = candidate; break;
-                            case INSUFFICIENT_BYTES: continue; // Will try again in next iteration.
+                        final ProbeResult probe = candidate.canOpen(connector);
+                        if (probe.isSupported()) {
+                            provider = candidate;
+                            break search;
                         }
-                        it.remove(); // UNSUPPORTED_* or UNDETERMINED: do not try again those providers.
+                        if (!ProbeResult.INSUFFICIENT_BYTES.equals(probe)) {
+                            if (ProbeResult.UNDETERMINED.equals(probe)) {
+                                provider = candidate; // To be used only if we don't find a better match.
+                            }
+                            it.remove(); // UNSUPPORTED_* or UNDETERMINED: do not try again those providers.
+                        }
                     }
                 }
             }
