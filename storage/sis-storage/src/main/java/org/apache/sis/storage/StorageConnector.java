@@ -350,8 +350,8 @@ public class StorageConnector implements Serializable {
      *
      * Multiple invocations of this method on the same {@code StorageConnector} instance will try
      * to return the same instance on a <cite>best effort</cite> basis. Consequently, implementations of
-     * {@link DataStoreProvider#canOpen(StorageConnector)} methods shall not close the stream or
-     * database connection returned by this method. In addition, those {@code canOpen(StorageConnector)}
+     * {@link DataStoreProvider#probeContent(StorageConnector)} methods shall not close the stream or
+     * database connection returned by this method. In addition, those {@code probeContent(StorageConnector)}
      * methods are responsible for restoring the stream or byte buffer to its original position on return.
      *
      * @param  <T>  The compile-time type of the {@code type} argument.
@@ -533,7 +533,7 @@ public class StorageConnector implements Serializable {
      * channel or stream, we have reached the end of stream, or the buffer is full.
      *
      * <p>This method is invoked when the amount of bytes in the buffer appears to be insufficient
-     * for {@link DataStoreProvider#canOpen(StorageConnector)} purpose.</p>
+     * for {@link DataStoreProvider#probeContent(StorageConnector)} purpose.</p>
      *
      * @return {@code true} on success.
      * @throws DataStoreException If an error occurred while reading more bytes.

@@ -98,7 +98,7 @@ final class DataStoreRegistry {
             /*
              * All usages of 'loader' and its 'providers' iterator must be protected in a synchronized block,
              * because ServiceLoader is not thread-safe. We try to keep the synhronization block as small as
-             * possible for less contention. In particular, the canOpen(connector) method call may be costly.
+             * possible for less contention. In particular, the probeContent(connector) method call may be costly.
              */
             final Iterator<DataStoreProvider> providers;
             DataStoreProvider candidate;
@@ -107,7 +107,7 @@ final class DataStoreRegistry {
                 candidate = providers.hasNext() ? providers.next() : null;
             }
             while (candidate != null) {
-                final ProbeResult probe = candidate.canOpen(connector);
+                final ProbeResult probe = candidate.probeContent(connector);
                 if (probe.isSupported()) {
                     /*
                      * Stop at the first provider claiming to be able to read the storage.
@@ -143,7 +143,7 @@ final class DataStoreRegistry {
                 }
             }
             /*
-             * If any provider did not had enough bytes for answering the 'canOpen(…)' question,
+             * If any provider did not had enough bytes for answering the 'probeContent(…)' question,
              * get more bytes and try again. We try to prefetch more bytes only if we have no choice
              * in order to avoid latency on network connection.
              */
@@ -151,7 +151,7 @@ final class DataStoreRegistry {
 search:         while (!deferred.isEmpty() && connector.prefetch()) {
                     for (final Iterator<DataStoreProvider> it=deferred.iterator(); it.hasNext();) {
                         candidate = it.next();
-                        final ProbeResult probe = candidate.canOpen(connector);
+                        final ProbeResult probe = candidate.probeContent(connector);
                         if (probe.isSupported()) {
                             provider = candidate;
                             break search;

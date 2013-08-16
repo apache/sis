@@ -36,15 +36,15 @@ import static org.junit.Assert.*;
  */
 public final strictfp class XMLStoreProviderTest extends TestCase {
     /**
-     * Tests {@link XMLStoreProvider#canOpen(StorageConnector)} method from a {@link Reader} object.
+     * Tests {@link XMLStoreProvider#probeContent(StorageConnector)} method from a {@link Reader} object.
      *
      * @throws DataStoreException Should never happen.
      */
     @Test
-    public void testCanOpenFromReader() throws DataStoreException {
+    public void testProbeContentFromReader() throws DataStoreException {
         final XMLStoreProvider p = new XMLStoreProvider();
         final StorageConnector c = new StorageConnector(new StringReader(XMLStoreTest.XML));
-        assertEquals(ProbeResult.SUPPORTED, p.canOpen(c));
+        assertEquals(ProbeResult.SUPPORTED, p.probeContent(c));
         c.closeAllExcept(null);
     }
 }
