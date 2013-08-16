@@ -16,7 +16,6 @@
  */
 package org.apache.sis.storage;
 
-import java.util.Set;
 import org.apache.sis.util.ThreadSafe;
 
 
@@ -71,7 +70,7 @@ public abstract class DataStoreProvider {
      *       supported by this {@code DataStoreProvider}.</li>
      * </ul>
      *
-     * Note that the {@code SUPPORTED_FORMAT} value does not guarantee that reading or writing will succeed,
+     * Note that the {@code SUPPORTED} value does not guarantee that reading or writing will succeed,
      * only that there appears to be a reasonable chance of success based on a brief inspection of the
      * {@linkplain StorageConnector#getStorage() storage object} or contents.
      *
