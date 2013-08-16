@@ -27,6 +27,7 @@ import org.apache.sis.internal.netcdf.impl.ChannelDecoderTest;
 import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.util.Version;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
@@ -38,7 +39,7 @@ import static org.opengis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.4
  * @module
  */
 @DependsOn({
@@ -55,7 +56,10 @@ public final strictfp class NetcdfStoreProviderTest extends IOTestCase {
     public void testProbeContentFromStream() throws DataStoreException {
         final StorageConnector c = new StorageConnector(IOTestCase.class.getResourceAsStream(NCEP));
         final NetcdfStoreProvider provider = new NetcdfStoreProvider();
-        assertEquals(ProbeResult.SUPPORTED, provider.probeContent(c));
+        final ProbeResult probe = provider.probeContent(c);
+        assertTrue  ("isSupported", probe.isSupported());
+        assertEquals("getMimeType", NetcdfStoreProvider.MIME_TYPE, probe.getMimeType());
+        assertEquals("getVersion",  new Version("1"), probe.getVersion());
         c.closeAllExcept(null);
     }
 
@@ -70,7 +74,10 @@ public final strictfp class NetcdfStoreProviderTest extends IOTestCase {
         final NetcdfFile file = open(NCEP);
         final StorageConnector c = new StorageConnector(file);
         final NetcdfStoreProvider provider = new NetcdfStoreProvider();
-        assertEquals(ProbeResult.SUPPORTED, provider.probeContent(c));
+        final ProbeResult probe = provider.probeContent(c);
+        assertTrue  ("isSupported", probe.isSupported());
+        assertEquals("getMimeType", NetcdfStoreProvider.MIME_TYPE, probe.getMimeType());
+        assertNull  ("getVersion",  probe.getVersion());
         file.close();
     }
 

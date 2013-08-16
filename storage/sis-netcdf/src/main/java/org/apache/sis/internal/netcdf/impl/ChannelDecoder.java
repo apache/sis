@@ -76,6 +76,11 @@ public final class ChannelDecoder extends Decoder {
     public static final int MAGIC_NUMBER = ('C' << 24) | ('D' << 16) | ('F' <<  8);
 
     /**
+     * The maximal version number supported by this implementation.
+     */
+    public static final int MAX_VERSION = 2;
+
+    /**
      * The encoding of dimension, variable and attribute names. This is fixed to {@value} by the
      * NetCDF specification. Note however that the encoding of attribute values may be different.
      *
@@ -211,6 +216,7 @@ public final class ChannelDecoder extends Decoder {
             case 1:  is64bits = false; break;
             case 2:  is64bits = true;  break;
             default: throw new DataStoreException(errors().getString(Errors.Keys.UnsupportedVersion_1, version));
+            // If more cases are added, remember to increment the MAX_VERSION constant.
         }
         numrecs = input.readInt();
         /*
