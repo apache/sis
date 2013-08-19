@@ -620,6 +620,17 @@ public class StorageConnector implements Serializable {
                 final Charset encoding = getOption(OptionKey.ENCODING);
                 final Reader c = (encoding != null) ? new InputStreamReader(input, encoding)
                                                     : new InputStreamReader(input);
+                /*
+                 * Current implementation does not wrap the above Reader in a BufferedReader because:
+                 *
+                 * 1) InputStreamReader already uses a buffer internally.
+                 * 2) InputStreamReader does not support mark/reset, which is a desired limitation for now.
+                 *    This is because reseting the Reader would not reset the underlying InputStream, which
+                 *    would cause other DataStoreProvider.probeContent(…) methods to fail if they try to use
+                 *    the InputStream. For now we let the InputStreamReader.mark() to throws an IOException,
+                 *    but we may need to provide our own subclass of BufferedReader in a future SIS version
+                 *    if mark/reset support is needed here.
+                 */
                 addViewToClose(c, input);
                 return c;
             }
