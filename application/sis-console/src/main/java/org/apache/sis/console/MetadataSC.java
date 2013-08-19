@@ -39,7 +39,7 @@ import org.apache.sis.xml.XML;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.4
  * @module
  */
 final class MetadataSC extends SubCommand {
@@ -53,9 +53,7 @@ final class MetadataSC extends SubCommand {
     /**
      * Prints metadata information.
      *
-     * @todo NetCDF data store is hard-coded for now. Will need a dynamic mechanism in the future.
-     *
-     * @throws DataStoreException If an error occurred while reading the NetCDF file.
+     * @throws DataStoreException If an error occurred while reading the file.
      * @throws JAXBException If an error occurred while producing the XML output.
      * @throws IOException Should never happen, since we are appending to a print writer.
      */
