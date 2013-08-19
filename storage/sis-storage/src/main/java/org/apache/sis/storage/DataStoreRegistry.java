@@ -66,6 +66,19 @@ final class DataStoreRegistry {
     }
 
     /**
+     * Returns the MIME type of the storage file format, or {@code null} if unknown or not applicable.
+     *
+     * @param  storage The input/output object as a URL, file, image input stream, <i>etc.</i>.
+     * @return The storage MIME type, or {@code null} if unknown or not applicable.
+     * @throws DataStoreException If an error occurred while opening the storage.
+     */
+    public String probeContentType(final Object storage) throws DataStoreException {
+        ArgumentChecks.ensureNonNull("storage", storage);
+        final ProbeProviderPair p = lookup(storage, false);
+        return (p != null) ? p.probe.getMimeType() : null;
+    }
+
+    /**
      * Creates a {@link DataStore} for reading the given storage.
      * The {@code storage} argument can be any of the following types:
      *
@@ -84,16 +97,28 @@ final class DataStoreRegistry {
      * @throws UnsupportedStorageException if no {@link DataStoreProvider} is found for a given storage object.
      * @throws DataStoreException If an error occurred while opening the storage.
      */
-    public DataStore open(final Object storage) throws DataStoreException {
+    public DataStore open(final Object storage) throws UnsupportedStorageException, DataStoreException {
         ArgumentChecks.ensureNonNull("storage", storage);
+        return lookup(storage, true).store;
+    }
+
+    /**
+     * Implementation of {@link #probeContentType(Object)} and {@link #open(Object)}.
+     *
+     * @param  storage The input/output object as a URL, file, image input stream, <i>etc.</i>.
+     * @param  open {@code true} for creating a {@link DataStore}, or {@code false} if not needed.
+     * @throws UnsupportedStorageException if no {@link DataStoreProvider} is found for a given storage object.
+     * @throws DataStoreException If an error occurred while opening the storage.
+     */
+    private ProbeProviderPair lookup(final Object storage, final boolean open) throws DataStoreException {
         StorageConnector connector;
         if (storage instanceof StorageConnector) {
             connector = (StorageConnector) storage;
         } else {
             connector = new StorageConnector(storage);
         }
-        DataStoreProvider provider = null;
-        List<DataStoreProvider> deferred = null;
+        ProbeProviderPair selected = null;
+        List<ProbeProviderPair> deferred = null;
         try {
             /*
              * All usages of 'loader' and its 'providers' iterator must be protected in a synchronized block,
@@ -101,19 +126,19 @@ final class DataStoreRegistry {
              * possible for less contention. In particular, the probeContent(connector) method call may be costly.
              */
             final Iterator<DataStoreProvider> providers;
-            DataStoreProvider candidate;
+            DataStoreProvider provider;
             synchronized (loader) {
                 providers = loader.iterator();
-                candidate = providers.hasNext() ? providers.next() : null;
+                provider = providers.hasNext() ? providers.next() : null;
             }
-            while (candidate != null) {
-                final ProbeResult probe = candidate.probeContent(connector);
+            while (provider != null) {
+                final ProbeResult probe = provider.probeContent(connector);
                 if (probe.isSupported()) {
                     /*
                      * Stop at the first provider claiming to be able to read the storage.
                      * Do not iterate over the list of deferred providers (if any).
                      */
-                    provider = candidate;
+                    selected = new ProbeProviderPair(provider, probe);
                     deferred = null;
                     break;
                 }
@@ -126,7 +151,7 @@ final class DataStoreRegistry {
                     if (deferred == null) {
                         deferred = new LinkedList<>();
                     }
-                    deferred.add(candidate);
+                    deferred.add(new ProbeProviderPair(provider, probe));
                 } else if (ProbeResult.UNDETERMINED.equals(probe)) {
                     /*
                      * If a provider doesn't know whether it can open the given storage,
@@ -136,10 +161,10 @@ final class DataStoreRegistry {
                      *       provider.open(connector) in a try … catch block because it may leave
                      *       the StorageConnector in an invalid state in case of failure.
                      */
-                    provider = candidate;
+                    selected = new ProbeProviderPair(provider, probe);
                 }
                 synchronized (loader) {
-                    candidate = providers.hasNext() ? providers.next() : null;
+                    provider = providers.hasNext() ? providers.next() : null;
                 }
             }
             /*
@@ -149,16 +174,16 @@ final class DataStoreRegistry {
              */
             if (deferred != null) {
 search:         while (!deferred.isEmpty() && connector.prefetch()) {
-                    for (final Iterator<DataStoreProvider> it=deferred.iterator(); it.hasNext();) {
-                        candidate = it.next();
-                        final ProbeResult probe = candidate.probeContent(connector);
-                        if (probe.isSupported()) {
-                            provider = candidate;
+                    for (final Iterator<ProbeProviderPair> it=deferred.iterator(); it.hasNext();) {
+                        final ProbeProviderPair p = it.next();
+                        p.probe = provider.probeContent(connector);
+                        if (p.probe.isSupported()) {
+                            selected = p;
                             break search;
                         }
-                        if (!ProbeResult.INSUFFICIENT_BYTES.equals(probe)) {
-                            if (ProbeResult.UNDETERMINED.equals(probe)) {
-                                provider = candidate; // To be used only if we don't find a better match.
+                        if (!ProbeResult.INSUFFICIENT_BYTES.equals(p.probe)) {
+                            if (ProbeResult.UNDETERMINED.equals(p.probe)) {
+                                selected = p; // To be used only if we don't find a better match.
                             }
                             it.remove(); // UNSUPPORTED_* or UNDETERMINED: do not try again those providers.
                         }
@@ -172,16 +197,18 @@ search:         while (!deferred.isEmpty() && connector.prefetch()) {
              * shall avoid the UNDETERMINED value as much as possible (this value should be used
              * only for RAW image format).
              */
-            if (provider != null) {
-                final DataStore data = provider.open(connector);
+            if (open && selected != null) {
+                selected.store = selected.provider.open(connector);
                 connector = null; // For preventing it to be closed.
-                return data;
             }
         } finally {
             if (connector != null && connector != storage) {
                 connector.closeAllExcept(null);
             }
         }
-        throw new UnsupportedStorageException(Errors.format(Errors.Keys.UnknownFormatFor_1, connector.getStorageName()));
+        if (open && selected == null) {
+            throw new UnsupportedStorageException(Errors.format(Errors.Keys.UnknownFormatFor_1, connector.getStorageName()));
+        }
+        return selected;
     }
 }

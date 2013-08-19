@@ -35,6 +35,7 @@ import org.apache.sis.util.logging.MonolineFormatter;
  * <blockquote><table class="compact">
  * <tr><td>{@code help}     </td><td>Show a help overview.</td></tr>
  * <tr><td>{@code about}    </td><td>Show information about Apache SIS and system configuration.</td></tr>
+ * <tr><td>{@code mime-type}</td><td>Show MIME type for the given file.</td></tr>
  * <tr><td>{@code metadata} </td><td>Show metadata information for the given file.</td></tr>
  * </table></blockquote>
  *
@@ -147,9 +148,10 @@ public final class Command {
         } else {
             commandName = commandName.toLowerCase(Locale.US);
             switch (commandName) {
-                case "help":     command = new HelpSC    (commandIndex, args); break;
-                case "about":    command = new AboutSC   (commandIndex, args); break;
-                case "metadata": command = new MetadataSC(commandIndex, args); break;
+                case "help":      command = new HelpSC    (commandIndex, args); break;
+                case "about":     command = new AboutSC   (commandIndex, args); break;
+                case "mime-type": command = new MimeTypeSC(commandIndex, args); break;
+                case "metadata":  command = new MetadataSC(commandIndex, args); break;
                 default: throw new InvalidCommandException(Errors.format(
                             Errors.Keys.UnknownCommand_1, commandName), commandName);
             }
