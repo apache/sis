@@ -44,7 +44,9 @@ public final strictfp class XMLStoreProviderTest extends TestCase {
     public void testProbeContentFromReader() throws DataStoreException {
         final XMLStoreProvider p = new XMLStoreProvider();
         final StorageConnector c = new StorageConnector(new StringReader(XMLStoreTest.XML));
-        assertEquals(ProbeResult.SUPPORTED, p.probeContent(c));
+        final ProbeResult      r = p.probeContent(c);
         c.closeAllExcept(null);
+        assertTrue  ("isSupported()", r.isSupported());
+        assertEquals("getMimeType()", "application/vnd.iso.19139+xml", r.getMimeType());
     }
 }

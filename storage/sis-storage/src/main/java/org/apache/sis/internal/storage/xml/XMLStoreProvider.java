@@ -36,6 +36,17 @@ import org.apache.sis.storage.ProbeResult;
  */
 public class XMLStoreProvider extends DataStoreProvider {
     /**
+     * The {@value} MIME type, used only of {@link #probeContent(StorageConnector)} can not determine
+     * a more accurate type.
+     */
+    public static final String MIME_TYPE = "application/xml";
+
+    /**
+     * The read-ahead limit when reading the XML document from a {@link Reader}.
+     */
+    private static final int READ_AHEAD_LIMIT = 2048;
+
+    /**
      * The expected XML header. According XML specification, this declaration is required to appear
      * at the document beginning (no space allowed before the declaration).
      */
@@ -63,12 +74,25 @@ public class XMLStoreProvider extends DataStoreProvider {
             if (buffer.remaining() < HEADER.length) {
                 return ProbeResult.INSUFFICIENT_BYTES;
             }
+            // Quick check for "<?xml " header.
             for (int i=0; i<HEADER.length; i++) {
                 if (buffer.get(i) != HEADER[i]) {
                     return ProbeResult.UNSUPPORTED_STORAGE;
                 }
             }
-            return ProbeResult.SUPPORTED;
+            // Now check for a more accurate MIME type.
+            buffer.position(HEADER.length);
+            final ProbeResult result = new MimeTypeDetector() {
+                @Override int read() {
+                    if (buffer.hasRemaining()) {
+                        return buffer.get();
+                    }
+                    insufficientBytes = (buffer.limit() != buffer.capacity());
+                    return -1;
+                }
+            }.probeContent();
+            buffer.position(0);
+            return result;
         }
         /*
          * We should enter in this block only if the user gave us explicitely a Reader.
@@ -76,15 +100,23 @@ public class XMLStoreProvider extends DataStoreProvider {
          */
         final Reader reader = storage.getStorageAs(Reader.class);
         if (reader != null) try {
-            reader.mark(HEADER.length);
+            // Quick check for "<?xml " header.
+            reader.mark(HEADER.length + READ_AHEAD_LIMIT);
             for (int i=0; i<HEADER.length; i++) {
                 if (reader.read() != HEADER[i]) {
                     reader.reset();
                     return ProbeResult.UNSUPPORTED_STORAGE;
                 }
             }
+            // Now check for a more accurate MIME type.
+            final ProbeResult result = new MimeTypeDetector() {
+                private int remaining = READ_AHEAD_LIMIT;
+                @Override int read() throws IOException {
+                    return (--remaining >= 0) ? reader.read() : -1;
+                }
+            }.probeContent();
             reader.reset();
-            return ProbeResult.SUPPORTED;
+            return result;
         } catch (IOException e) {
             throw new DataStoreException(e);
         }
