@@ -33,9 +33,12 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.storage.IOUtilitiesTest.class,
     org.apache.sis.internal.storage.ChannelDataInputTest.class,
     org.apache.sis.internal.storage.ChannelImageInputStreamTest.class,
+    org.apache.sis.storage.ProbeResultTest.class,
     org.apache.sis.storage.StorageConnectorTest.class,
+    org.apache.sis.internal.storage.xml.MimeTypeDetectorTest.class,
     org.apache.sis.internal.storage.xml.XMLStoreProviderTest.class,
     org.apache.sis.internal.storage.xml.XMLStoreTest.class,
+    org.apache.sis.storage.DataStoresTest.class,
     org.apache.sis.index.GeoHashCoderTest.class
 })
 public final strictfp class StorageTestSuite extends TestSuite {

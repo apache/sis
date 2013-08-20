@@ -105,4 +105,19 @@ Provides the interfaces and base classes to be implemented by various storage fo
     </plugins>
   </build>
 
+
+  <!-- ===========================================================
+           Dependencies
+       =========================================================== -->
+  <dependencies>
+    <!-- Test dependencies -->
+    <dependency>
+      <groupId>org.apache.sis.core</groupId>
+      <artifactId>sis-metadata</artifactId>
+      <version>${project.version}</version>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
 </project>
