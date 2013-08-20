@@ -27,6 +27,7 @@ import org.apache.sis.internal.netcdf.impl.ChannelDecoderTest;
 import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.util.Version;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
@@ -38,7 +39,7 @@ import static org.opengis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.4
  * @module
  */
 @DependsOn({
@@ -46,31 +47,37 @@ import static org.opengis.test.Assert.*;
 })
 public final strictfp class NetcdfStoreProviderTest extends IOTestCase {
     /**
-     * Tests {@link NetcdfStoreProvider#canOpen(StorageConnector)} for an input stream which shall
+     * Tests {@link NetcdfStoreProvider#probeContent(StorageConnector)} for an input stream which shall
      * be recognized as a classic NetCDF file.
      *
      * @throws DataStoreException Should never happen.
      */
     @Test
-    public void testCanOpenFromStream() throws DataStoreException {
+    public void testProbeContentFromStream() throws DataStoreException {
         final StorageConnector c = new StorageConnector(IOTestCase.getResourceAsStream(NCEP));
         final NetcdfStoreProvider provider = new NetcdfStoreProvider();
-        assertEquals(ProbeResult.SUPPORTED, provider.canOpen(c));
+        final ProbeResult probe = provider.probeContent(c);
+        assertTrue  ("isSupported", probe.isSupported());
+        assertEquals("getMimeType", NetcdfStoreProvider.MIME_TYPE, probe.getMimeType());
+        assertEquals("getVersion",  new Version("1"), probe.getVersion());
         c.closeAllExcept(null);
     }
 
     /**
-     * Tests {@link NetcdfStoreProvider#canOpen(StorageConnector)} for a UCAR {@link NetcdfFile} object.
+     * Tests {@link NetcdfStoreProvider#probeContent(StorageConnector)} for a UCAR {@link NetcdfFile} object.
      *
      * @throws IOException If an error occurred while opening the NetCDF file.
      * @throws DataStoreException Should never happen.
      */
     @Test
-    public void testCanOpenFromUCAR() throws IOException, DataStoreException {
+    public void testProbeContentFromUCAR() throws IOException, DataStoreException {
         final NetcdfFile file = open(NCEP);
         final StorageConnector c = new StorageConnector(file);
         final NetcdfStoreProvider provider = new NetcdfStoreProvider();
-        assertEquals(ProbeResult.SUPPORTED, provider.canOpen(c));
+        final ProbeResult probe = provider.probeContent(c);
+        assertTrue  ("isSupported", probe.isSupported());
+        assertEquals("getMimeType", NetcdfStoreProvider.MIME_TYPE, probe.getMimeType());
+        assertNull  ("getVersion",  probe.getVersion());
         file.close();
     }
 

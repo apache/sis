@@ -46,7 +46,7 @@ public final strictfp class XMLStoreTest extends TestCase {
     /**
      * The metadata to unmarshal.
      */
-    static final String XML =
+    public static final String XML =
             "<?xml version=\"1.0\" standalone=\"yes\"?>\n" +
             "<gmd:MD_Metadata\n" +
             "  xmlns:gmd = \"" + Namespaces.GMD + "\"\n"  +

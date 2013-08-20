@@ -62,6 +62,33 @@ public final class DataStores extends Static {
     }
 
     /**
+     * Returns the registry, created when first needed.
+     */
+    private static DataStoreRegistry registry() {
+        DataStoreRegistry r = registry;
+        if (r == null) {
+            synchronized (DataStores.class) {
+                r = registry;
+                if (r == null) {
+                    registry = r = new DataStoreRegistry();
+                }
+            }
+        }
+        return r;
+    }
+
+    /**
+     * Returns the MIME type of the storage file format, or {@code null} if unknown or not applicable.
+     *
+     * @param  storage The input/output object as a URL, file, image input stream, <i>etc.</i>.
+     * @return The storage MIME type, or {@code null} if unknown or not applicable.
+     * @throws DataStoreException If an error occurred while opening the storage.
+     */
+    public static String probeContentType(final Object storage) throws DataStoreException {
+        return registry().probeContentType(storage);
+    }
+
+    /**
      * Creates a {@link DataStore} for the given storage.
      * The {@code storage} argument can be any of the following types:
      *
@@ -80,16 +107,7 @@ public final class DataStores extends Static {
      * @throws UnsupportedStorageException if no {@link DataStoreProvider} is found for a given storage object.
      * @throws DataStoreException If an error occurred while opening the storage.
      */
-    public static DataStore open(final Object storage) throws DataStoreException {
-        DataStoreRegistry r = registry;
-        if (r == null) {
-            synchronized (DataStores.class) {
-                r = registry;
-                if (r == null) {
-                    registry = r = new DataStoreRegistry();
-                }
-            }
-        }
-        return r.open(storage);
+    public static DataStore open(final Object storage) throws UnsupportedStorageException, DataStoreException {
+        return registry().open(storage);
     }
 }

@@ -31,7 +31,7 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.4
  * @module
  */
 public final strictfp class UtilitiesTest extends TestCase {
@@ -50,5 +50,13 @@ public final strictfp class UtilitiesTest extends TestCase {
         assertFalse(epsilonEqual(   1,    1 + COMPARISON_THRESHOLD * 2));
         assertTrue (epsilonEqual(-100, -100 + COMPARISON_THRESHOLD * 50));
         assertFalse(epsilonEqual( 100,  100 + COMPARISON_THRESHOLD * 150));
+    }
+
+    /**
+     * Tests the {@link Utilities#toString(Class, Object[])} method.
+     */
+    @Test
+    public void testToString() {
+        assertEquals("Number[base=“decimal”, value=20]", Utilities.toString(Number.class, "base", "decimal", "value", 20));
     }
 }

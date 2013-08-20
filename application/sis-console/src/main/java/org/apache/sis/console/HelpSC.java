@@ -39,6 +39,7 @@ final class HelpSC extends SubCommand {
     private static final String[] COMMANDS = {
         "help",
         "about",
+        "mime-type",
         "metadata"
     };
 

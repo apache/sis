@@ -316,6 +316,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int MissingRequiredModule_1 = 84;
 
         /**
+         * Missing scheme in URI.
+         */
+        public static final int MissingSchemeInURI = 109;
+
+        /**
          * Missing value for option “{0}”.
          */
         public static final int MissingValueForOption_1 = 99;
