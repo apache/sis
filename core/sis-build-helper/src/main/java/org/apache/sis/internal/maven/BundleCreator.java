@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.project.MavenProject;
 
 
 /**
@@ -41,16 +42,13 @@ import org.apache.maven.plugin.MojoExecutionException;
  */
 public class BundleCreator extends AbstractMojo {
     /**
-     * The Apache SIS version, without branch name.
+     * Project information (name, version, URL).
+     *
+     * @parameter default-value="${project}"
+     * @required
+     * @readonly
      */
-    private static final String VERSION = "0.4";
-
-    /**
-     * The Apache SIS branch for which this plugin is creating a bundle, prefixed by {@code '-'}.
-     * This is declared as a separated constant in order to make easier to update {@link #VERSION}
-     * without creating conflicts during branch merges.
-     */
-    private static final String BRANCH = "-jdk7";
+    private MavenProject project;
 
     /**
      * The root directory (without the "<code>target/binaries</code>" sub-directory) where JARs
@@ -73,15 +71,8 @@ public class BundleCreator extends AbstractMojo {
             throw new MojoExecutionException("Directory not found: " + targetDirectory);
         }
         try {
-            final String fullVersion = VERSION + BRANCH;
-            final Packer packer = new Packer(targetDirectory, fullVersion);
-            packer.addPack("apache-sis-" + fullVersion + ".jar");
-            try {
-                packer.createJars();
-            } finally {
-                packer.close();
-            }
-            packer.pack();
+            final Packer packer = new Packer(project.getName(), project.getUrl(), project.getVersion(), targetDirectory);
+            packer.createPack200("sis.jar");
         } catch (IOException e) {
             throw new MojoExecutionException(e.getLocalizedMessage(), e);
         }
