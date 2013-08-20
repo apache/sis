@@ -22,15 +22,19 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
 
+import static org.apache.sis.internal.maven.Filenames.*;
+
 
 /**
  * Merges the binaries produced by <code>JarCollector</code> and compress them using Pack200.
- * This mojo delegates the work to <code>Packer</code>, which can be invoked from the command
- * line without Maven. Maven invocation syntax is:
+ * This mojo can be invoked from the command line as below:
  *
  * <blockquote><code>mvn org.apache.sis.core:sis-build-helper:pack --non-recursive</code></blockquote>
  *
  * Do not forget the <code>--non-recursive</code> option, otherwise the Mojo will be executed many time.
+ *
+ * <p><b>Current limitation:</b>
+ * The final name is hard coded to <code>apache-sis-&lt;version&gt;.pack.gz</code> for now.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
@@ -60,19 +64,20 @@ public class BundleCreator extends AbstractMojo {
     private String rootDirectory;
 
     /**
-     * Creates the Pack200 files from the JAR files collected in the "<code>target/binaries</code>" directory.
+     * Creates the Pack200 file from the JAR files collected in the "<code>target/binaries</code>" directory.
      *
      * @throws MojoExecutionException if the plugin execution failed.
      */
     @Override
     public void execute() throws MojoExecutionException {
-        final File targetDirectory = new File(rootDirectory, JarCollector.TARGET_DIRECTORY);
+        final File targetDirectory = new File(rootDirectory, TARGET_DIRECTORY);
         if (!targetDirectory.isDirectory()) {
             throw new MojoExecutionException("Directory not found: " + targetDirectory);
         }
+        final String version = project.getVersion();
         try {
-            final Packer packer = new Packer(project.getName(), project.getUrl(), project.getVersion(), targetDirectory);
-            packer.createPack200("sis.jar");
+            final Packer packer = new Packer(project.getName(), project.getUrl(), version, targetDirectory);
+            packer.preparePack200(FINALNAME_PREFIX + version + ".jar").pack();
         } catch (IOException e) {
             throw new MojoExecutionException(e.getLocalizedMessage(), e);
         }
