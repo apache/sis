@@ -32,6 +32,8 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.artifact.Artifact;
 
+import static org.apache.sis.internal.maven.Filenames.*;
+
 
 /**
  * Collects <code>.jar</code> files in a single "{@code target/binaries}" directory.
@@ -49,22 +51,6 @@ import org.apache.maven.artifact.Artifact;
  * @requiresDependencyResolution runtime
  */
 public final class JarCollector extends AbstractMojo implements FileFilter {
-    /**
-     * The target directory.
-     */
-    static final String TARGET_DIRECTORY = "target";
-
-    /**
-     * The sub directory to create inside the "target" directory.
-     */
-    static final String SUB_DIRECTORY = "binaries";
-
-    /**
-     * The name of the file where to list SIS JAR files and their dependencies
-     * on platforms that do not support hard links.
-     */
-    static final String CONTENT_FILE = "content.txt";
-
     /**
      * The Maven project running this plugin.
      *
@@ -121,7 +107,7 @@ public final class JarCollector extends AbstractMojo implements FileFilter {
         File collect = new File(rootDirectory, TARGET_DIRECTORY);
         if (!collect.exists()) {
             if (!collect.mkdir()) {
-                throw new MojoExecutionException("Failed to create target directory.");
+                throw new MojoExecutionException("Failed to create \"" + TARGET_DIRECTORY + "\" directory.");
             }
         }
         if (collect.getCanonicalFile().equals(jarFile.getParentFile().getCanonicalFile())) {
@@ -137,10 +123,10 @@ public final class JarCollector extends AbstractMojo implements FileFilter {
          * Creates a "binaries" subdirectory inside the "target" directory, then copy the
          * JAR file compiled by Maven. If an JAR file already existed, it will be deleted.
          */
-        collect = new File(collect, SUB_DIRECTORY);
+        collect = new File(collect, BINARIES_DIRECTORY);
         if (!collect.exists()) {
             if (!collect.mkdir()) {
-                throw new MojoExecutionException("Failed to create binaries directory.");
+                throw new MojoExecutionException("Failed to create \"" + BINARIES_DIRECTORY + "\" directory.");
             }
         }
         File copy = new File(collect, jarFile.getName());

@@ -31,6 +31,7 @@ import java.io.FileOutputStream;
 import java.util.zip.GZIPOutputStream;
 
 import static java.util.jar.Pack200.Packer.*;
+import static org.apache.sis.internal.maven.Filenames.*;
 
 
 /**
@@ -272,6 +273,15 @@ final class PackOutput implements Closeable {
      */
     @Override
     public void close() throws IOException {
+        for (final PackInput input : inputJARs.values()) {
+            /*
+             * The code in this loop is never executed in normal execution, since the map shall be empty after
+             * successful completion of 'writeContent()'. However the map may be non-empty if the above method
+             * threw an exception, in which case this 'close()' method will be invoked in a 'finally' block.
+             */
+            input.close();
+        }
+        inputJARs.clear();
         if (outputStream != null) {
             outputStream.close();
         }
@@ -293,14 +303,25 @@ final class PackOutput implements Closeable {
         if (ext > 0) {
             filename = filename.substring(0, ext);
         }
-        filename += ".pack.gz";
+        filename += PACK_EXTENSION;
         final File outputFile = new File(inputFile.getParent(), filename);
         if (outputFile.equals(inputFile)) {
             throw new IOException("Input file is already packed: " + inputFile);
         }
-        /*
-         * Now process to the compression.
-         */
+        pack(new FileOutputStream(outputFile));
+    }
+
+    /**
+     * Creates a Pack200 file from the output JAR, then delete the JAR.
+     *
+     * @param  out Where to write the Pack200. This stream will be closed by this method.
+     * @throws IOException if an error occurred while packing the JAR.
+     */
+    void pack(final OutputStream out) throws IOException {
+        if (outputStream != null) {
+            throw new IllegalStateException("JAR output stream not closed.");
+        }
+        final File inputFile = outputJAR;
         final Pack200.Packer packer = Pack200.newPacker();
         final Map<String,String> p = packer.properties();
         p.put(EFFORT, String.valueOf(9));  // Maximum compression level.
@@ -309,8 +330,8 @@ final class PackOutput implements Closeable {
         p.put(DEFLATE_HINT,       TRUE);   // Ignore all JAR deflation requests.
         p.put(UNKNOWN_ATTRIBUTE,  ERROR);  // Throw an error if an attribute is unrecognized
         try (JarFile jarFile = new JarFile(inputFile)) {
-            try (OutputStream out = new GZIPOutputStream(new FileOutputStream(outputFile))) {
-                packer.pack(jarFile, out);
+            try (OutputStream deflater = new GZIPOutputStream(out)) {
+                packer.pack(jarFile, deflater);
             }
         }
         if (!inputFile.delete()) {

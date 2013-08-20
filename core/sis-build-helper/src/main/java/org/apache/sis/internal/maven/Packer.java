@@ -25,6 +25,8 @@ import java.io.FilenameFilter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import static org.apache.sis.internal.maven.Filenames.*;
+
 
 /**
  * Creates a PACK200 files from the JAR in the {@code target/binaries} directory.
@@ -37,12 +39,6 @@ import java.io.IOException;
  * @module
  */
 final class Packer implements FilenameFilter {
-    /**
-     * The {@code target} sub-directory containing pack files.
-     * This directory will be automatically created if it does not already exist.
-     */
-    private static final String PACK_DIRECTORY = "distribution";
-
     /**
      * The project name, URL and version to declare in the manifest file, or {@code null} if none.
      */
@@ -75,7 +71,7 @@ final class Packer implements FilenameFilter {
         this.projectURL  = projectURL;
         this.version     = version;
         this.targetDirectory = targetDirectory;
-        this.binariesDirectory = new File(targetDirectory, JarCollector.SUB_DIRECTORY);
+        this.binariesDirectory = new File(targetDirectory, BINARIES_DIRECTORY);
         if (!binariesDirectory.isDirectory()) {
             throw new FileNotFoundException("Directory not found: " + binariesDirectory);
         }
@@ -98,7 +94,7 @@ final class Packer implements FilenameFilter {
      * All input JAR files are opened by this method. They will need to be closed by {@link PackInput#close()}.
      */
     private Map<File,PackInput> getInputJARs() throws IOException {
-        final Set<String> filenames = JarCollector.loadDependencyList(new File(binariesDirectory, JarCollector.CONTENT_FILE));
+        final Set<String> filenames = JarCollector.loadDependencyList(new File(binariesDirectory, CONTENT_FILE));
         filenames.addAll(Arrays.asList(binariesDirectory.list(this)));
         final Map<File,PackInput> inputJARs = new LinkedHashMap<>(filenames.size() * 4/3);
         for (final String filename : filenames) {
@@ -117,29 +113,28 @@ final class Packer implements FilenameFilter {
     }
 
     /**
-     * Creates the Pack 200 file which will contain every JAR files in the {@code target/binaries} directory.
+     * Prepares the Pack 200 file which will contain every JAR files in the {@code target/binaries} directory.
      * The given {@code outputJAR} name is the name of the JAR file to create before to be packed.
      * This filename shall end with the "{@code .jar}" suffix.
+     *
+     * <p>Callers needs to invoke one of the {@code PackOutput.pack(…)} methods on the returned object.</p>
      *
      * @param  outputJAR The name of the JAR file to create before the Pack200 creation.
      * @throws IOException If an error occurred while collecting the target directory content.
      */
-    public void createPack200(final String outputJAR) throws IOException {
+    PackOutput preparePack200(final String outputJAR) throws IOException {
         /*
          * Creates the output directory. We do that first in order to avoid the
          * costly opening of all JAR files if we can't create this directory.
          */
-        final File outDirectory = new File(targetDirectory, PACK_DIRECTORY);
-        if (!outDirectory.isDirectory()) {
-            if (!outDirectory.mkdir()) {
-                throw new IOException("Can't create the \"" + PACK_DIRECTORY + "\" directory.");
-            }
+        final File outDirectory = distributionDirectory(targetDirectory);
+        final PackOutput output = new PackOutput(getInputJARs(), new File(outDirectory, outputJAR));
+        try {
+            output.open(projectName, projectURL, version);
+            output.writeContent();
+        } finally {
+            output.close();
         }
-        final PackOutput output;
-        output = new PackOutput(getInputJARs(), new File(outDirectory, outputJAR));
-        output.open(projectName, projectURL, version);
-        output.writeContent();
-        output.close();
-        output.pack();
+        return output;
     }
 }
