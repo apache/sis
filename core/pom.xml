@@ -66,6 +66,14 @@
         <role>developer</role>
       </roles>
     </developer>
+    <developer>
+      <name>Travis L. Pinney</name>
+      <id>tlpinney</id>
+      <email>travis.pinney@gmail.com</email>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
   </developers>
   <contributors>
     <contributor>
@@ -124,6 +132,7 @@
     <module>sis-utility</module>
     <module>sis-metadata</module>
     <module>sis-referencing</module>
+    <module>sis-feature</module>
   </modules>
 
 </project>

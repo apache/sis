@@ -20,16 +20,21 @@ import java.io.File;
 import java.io.IOException;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.project.MavenProject;
+
+import static org.apache.sis.internal.maven.Filenames.*;
 
 
 /**
  * Merges the binaries produced by <code>JarCollector</code> and compress them using Pack200.
- * This mojo delegates the work to <code>Packer</code>, which can be invoked from the command
- * line without Maven. Maven invocation syntax is:
+ * This mojo can be invoked from the command line as below:
  *
  * <blockquote><code>mvn org.apache.sis.core:sis-build-helper:pack --non-recursive</code></blockquote>
  *
  * Do not forget the <code>--non-recursive</code> option, otherwise the Mojo will be executed many time.
+ *
+ * <p><b>Current limitation:</b>
+ * The final name is hard coded to <code>apache-sis-&lt;version&gt;.pack.gz</code> for now.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
@@ -41,16 +46,13 @@ import org.apache.maven.plugin.MojoExecutionException;
  */
 public class BundleCreator extends AbstractMojo {
     /**
-     * The Apache SIS version, without branch name.
+     * Project information (name, version, URL).
+     *
+     * @parameter default-value="${project}"
+     * @required
+     * @readonly
      */
-    private static final String VERSION = "0.4";
-
-    /**
-     * The Apache SIS branch for which this plugin is creating a bundle, prefixed by {@code '-'}.
-     * This is declared as a separated constant in order to make easier to update {@link #VERSION}
-     * without creating conflicts during branch merges.
-     */
-    private static final String BRANCH = "-jdk6";
+    private MavenProject project;
 
     /**
      * The root directory (without the "<code>target/binaries</code>" sub-directory) where JARs
@@ -62,26 +64,20 @@ public class BundleCreator extends AbstractMojo {
     private String rootDirectory;
 
     /**
-     * Creates the Pack200 files from the JAR files collected in the "<code>target/binaries</code>" directory.
+     * Creates the Pack200 file from the JAR files collected in the "<code>target/binaries</code>" directory.
      *
      * @throws MojoExecutionException if the plugin execution failed.
      */
     @Override
     public void execute() throws MojoExecutionException {
-        final File targetDirectory = new File(rootDirectory, JarCollector.TARGET_DIRECTORY);
+        final File targetDirectory = new File(rootDirectory, TARGET_DIRECTORY);
         if (!targetDirectory.isDirectory()) {
             throw new MojoExecutionException("Directory not found: " + targetDirectory);
         }
+        final String version = project.getVersion();
         try {
-            final String fullVersion = VERSION + BRANCH;
-            final Packer packer = new Packer(targetDirectory, fullVersion);
-            packer.addPack("apache-sis-" + fullVersion + ".jar");
-            try {
-                packer.createJars();
-            } finally {
-                packer.close();
-            }
-            packer.pack();
+            final Packer packer = new Packer(project.getName(), project.getUrl(), version, targetDirectory);
+            packer.preparePack200(FINALNAME_PREFIX + version + ".jar").pack();
         } catch (IOException e) {
             throw new MojoExecutionException(e.getLocalizedMessage(), e);
         }
