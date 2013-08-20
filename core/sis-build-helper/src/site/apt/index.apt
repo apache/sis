@@ -166,3 +166,14 @@ Building Apache SIS
 
   The Pack200 bundle does not include the <<<sis-webapp>>> module because the later can be downloaded
   as a <<<WAR>>> file from the Maven repository.
+
+
+* Distribution file
+
+  The distribution file is a ZIP file containing the same Pack200 bundle than above,
+  together with a <<<README>>> file, configuration files and convenience shell scripts.
+  The distribution file is generated as below:
+
+-------------------------------------------------------------------
+   mvn org.apache.sis.core:sis-build-helper:dist --non-recursive
+-------------------------------------------------------------------

@@ -28,6 +28,7 @@
                 <root id="src.console.dir" name="Console"/>
                 <root id="src.netcdf.dir" name="NetCDF"/>
                 <root id="src.storage.dir" name="Storage"/>
+                <root id="src.feature.dir" name="Feature"/>
                 <root id="src.referencing.dir" name="Referencing"/>
                 <root id="src.metadata.dir" name="Metadata"/>
                 <root id="src.utility.dir" name="Utility"/>
@@ -36,6 +37,7 @@
                 <root id="test.console.dir" name="Test Console"/>
                 <root id="test.netcdf.dir" name="Test NetCDF"/>
                 <root id="test.storage.dir" name="Test Storage"/>
+                <root id="test.feature.dir" name="Test Feature"/>
                 <root id="test.referencing.dir" name="Test Referencing"/>
                 <root id="test.metadata.dir" name="Test Metadata"/>
                 <root id="test.utility.dir" name="Test Utility"/>

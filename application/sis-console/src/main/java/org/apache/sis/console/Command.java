@@ -221,8 +221,7 @@ public final class Command {
      *
      * @param args Command-line options.
      */
-    public static void main(String[] args) {
-        args = new String[] {"mime-type", "/Users/desruisseaux/Projets/SIS/JDK7/target/binaries/../../../../GeoAPI/trunk//geoapi-netcdf/src/test/resources/org/opengis/wrapper/netcdf/NCEP-SST.nc"};
+    public static void main(final String[] args) {
         MonolineFormatter.install();
         final Command c;
         try {
