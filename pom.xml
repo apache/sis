@@ -188,6 +188,14 @@ Apache SIS is a free software, Java language library for developing geospatial a
       </roles>
     </developer>
     <developer>
+      <name>Travis L. Pinney</name>
+      <id>tlpinney</id>
+      <email>travis.pinney@gmail.com</email>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
+    <developer>
       <name>Nga Chung</name>
       <id>nchung</id>
       <email>nchung@apache.org</email>
@@ -325,10 +333,20 @@ Apache SIS is a free software, Java language library for developing geospatial a
 
       <!-- Libraries (language, XML, network) -->
       <dependency>
+        <groupId>com.esri.geometry</groupId>
+        <artifactId>esri-geometry-api</artifactId>
+        <version>1.0</version>
+      </dependency>
+      <dependency>
         <groupId>javax</groupId>
         <artifactId>javaee-api</artifactId>
         <version>6.0</version>
         <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-compress</artifactId>
+        <version>1.5</version>
       </dependency>
 
       <!-- Optional dependencies -->
