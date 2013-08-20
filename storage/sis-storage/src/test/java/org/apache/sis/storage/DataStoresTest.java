@@ -14,12 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.storage.xml;
+package org.apache.sis.storage;
 
 import java.io.StringReader;
-import org.apache.sis.storage.StorageConnector;
-import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.ProbeResult;
+import org.apache.sis.internal.storage.xml.XMLStoreTest;
+import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -27,26 +26,34 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests {@link XMLStoreProvider}.
+ * Tests {@link DataStores}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
  * @version 0.4
  * @module
  */
-public final strictfp class XMLStoreProviderTest extends TestCase {
+@DependsOn(XMLStoreTest.class)
+public final strictfp class DataStoresTest extends TestCase {
     /**
-     * Tests {@link XMLStoreProvider#probeContent(StorageConnector)} method from a {@link Reader} object.
+     * Tests {@link DataStores#probeContentType(Object)}.
      *
      * @throws DataStoreException Should never happen.
      */
     @Test
-    public void testProbeContentFromReader() throws DataStoreException {
-        final XMLStoreProvider p = new XMLStoreProvider();
-        final StorageConnector c = new StorageConnector(new StringReader(XMLStoreTest.XML));
-        final ProbeResult      r = p.probeContent(c);
-        c.closeAllExcept(null);
-        assertTrue  ("isSupported()", r.isSupported());
-        assertEquals("getMimeType()", "application/vnd.iso.19139+xml", r.getMimeType());
+    public void testProbeContentType() throws DataStoreException {
+        final String type = DataStores.probeContentType(new StringReader(XMLStoreTest.XML));
+        assertEquals("application/vnd.iso.19139+xml", type);
+    }
+
+    /**
+     * Tests {@link DataStores#open(Object)}.
+     *
+     * @throws DataStoreException Should never happen.
+     */
+    @Test
+    public void testOpen() throws DataStoreException {
+        final DataStore store = DataStores.open(new StringReader(XMLStoreTest.XML));
+        assertFalse(store.getMetadata().getContacts().isEmpty());
     }
 }

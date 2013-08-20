@@ -28,6 +28,7 @@ import java.io.StringWriter;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import org.apache.sis.util.Locales;
+import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.X364;
 
@@ -275,6 +276,27 @@ abstract class SubCommand {
         }
         err.println(Errors.format(key, expected, size));
         return true;
+    }
+
+    /**
+     * Prints the "<cite>Can not open …</cite>" error message followed by the message in the given exception.
+     *
+     * @param fileIndex Index in the {@link #files} list of the file that can not be opened.
+     * @param e The exception which occurred.
+     */
+    final void canNotOpen(final int fileIndex, final Exception e) {
+        error(Errors.format(Errors.Keys.CanNotOpen_1, files.get(fileIndex)), e);
+    }
+
+    /**
+     * Prints the given error message followed by the message in the given exception.
+     *
+     * @param message The message to print before the exception, or {@code null}.
+     * @param e The exception which occurred.
+     */
+    final void error(final String message, final Exception e) {
+        out.flush();
+        err.println(Exceptions.formatChainedMessages(locale, message, e));
     }
 
     /**
