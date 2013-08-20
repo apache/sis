@@ -16,8 +16,8 @@
  */
 package org.apache.sis.util;
 
-import java.util.Set;
-import java.util.HashSet;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Locale;
 import java.sql.SQLException;
 import org.apache.sis.internal.util.LocalizedException;
@@ -33,7 +33,7 @@ import org.apache.sis.internal.jdk7.JDK7;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.0)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 public final class Exceptions extends Static {
@@ -127,34 +127,24 @@ public final class Exceptions extends Static {
      *         and no exception provide a message.
      */
     public static String formatChainedMessages(final Locale locale, String header, Throwable cause) {
-        Set<CharSequence> done = null;
+        List<String> previousLines = null;
         String lineSeparator = null;
         StringBuilder buffer = null;
         while (cause != null) {
             final String message = trimWhitespaces(getLocalizedMessage(cause, locale));
             if (message != null && !message.isEmpty()) {
                 if (buffer == null) {
-                    done = new HashSet<CharSequence>();
                     buffer = new StringBuilder(128);
                     lineSeparator = JDK7.lineSeparator();
+                    previousLines = new ArrayList<String>(4);
                     header = trimWhitespaces(header);
                     if (header != null && !header.isEmpty()) {
                         buffer.append(header);
-                        done.add(header);
-                        /*
-                         * The folowing is for avoiding to repeat the same message in the
-                         * common case where the header contains the exception class name
-                         * followed by the message, as in:
-                         *
-                         * FooException: InnerException: the inner message.
-                         */
-                        int s=0;
-                        while ((s=header.indexOf(':', s)) >= 0) {
-                            done.add(trimWhitespaces(header, ++s, header.length()));
-                        }
+                        previousLines.add(header);
                     }
                 }
-                if (done.add(message)) {
+                if (!contains(previousLines, message)) {
+                    previousLines.add(message);
                     if (buffer.length() != 0) {
                         buffer.append(lineSeparator);
                     }
@@ -174,5 +164,18 @@ public final class Exceptions extends Static {
             header = buffer.toString();
         }
         return header;
+    }
+
+    /**
+     * Returns {@code true} if a previous line contains the given exception message.
+     */
+    private static boolean contains(final List<String> previousLines, final String message) {
+        for (int i=previousLines.size(); --i>=0;) {
+            final int p = previousLines.get(i).indexOf(message);
+            if (p >= 0) {
+                return true;
+            }
+        }
+        return false;
     }
 }

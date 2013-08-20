@@ -51,7 +51,7 @@ final class DataStoreRegistry {
      * Creates a new registry which will use the current thread
      * {@linkplain Thread#getContextClassLoader() context class loader}.
      */
-    public DataStoreRegistry() {
+    DataStoreRegistry() {
         loader = ServiceLoader.load(DataStoreProvider.class);
     }
 
@@ -60,9 +60,22 @@ final class DataStoreRegistry {
      *
      * @param loader The class loader to use for loading {@link DataStoreProvider} implementations.
      */
-    public DataStoreRegistry(final ClassLoader loader) {
+    DataStoreRegistry(final ClassLoader loader) {
         ArgumentChecks.ensureNonNull("loader", loader);
         this.loader = ServiceLoader.load(DataStoreProvider.class, loader);
+    }
+
+    /**
+     * Returns the MIME type of the storage file format, or {@code null} if unknown or not applicable.
+     *
+     * @param  storage The input/output object as a URL, file, image input stream, <i>etc.</i>.
+     * @return The storage MIME type, or {@code null} if unknown or not applicable.
+     * @throws DataStoreException If an error occurred while opening the storage.
+     */
+    public String probeContentType(final Object storage) throws DataStoreException {
+        ArgumentChecks.ensureNonNull("storage", storage);
+        final ProbeProviderPair p = lookup(storage, false);
+        return (p != null) ? p.probe.getMimeType() : null;
     }
 
     /**
@@ -84,51 +97,62 @@ final class DataStoreRegistry {
      * @throws UnsupportedStorageException if no {@link DataStoreProvider} is found for a given storage object.
      * @throws DataStoreException If an error occurred while opening the storage.
      */
-    public DataStore open(final Object storage) throws DataStoreException {
+    public DataStore open(final Object storage) throws UnsupportedStorageException, DataStoreException {
         ArgumentChecks.ensureNonNull("storage", storage);
+        return lookup(storage, true).store;
+    }
+
+    /**
+     * Implementation of {@link #probeContentType(Object)} and {@link #open(Object)}.
+     *
+     * @param  storage The input/output object as a URL, file, image input stream, <i>etc.</i>.
+     * @param  open {@code true} for creating a {@link DataStore}, or {@code false} if not needed.
+     * @throws UnsupportedStorageException if no {@link DataStoreProvider} is found for a given storage object.
+     * @throws DataStoreException If an error occurred while opening the storage.
+     */
+    private ProbeProviderPair lookup(final Object storage, final boolean open) throws DataStoreException {
         StorageConnector connector;
         if (storage instanceof StorageConnector) {
             connector = (StorageConnector) storage;
         } else {
             connector = new StorageConnector(storage);
         }
-        DataStoreProvider provider = null;
-        List<DataStoreProvider> deferred = null;
+        ProbeProviderPair selected = null;
+        List<ProbeProviderPair> deferred = null;
         try {
             /*
              * All usages of 'loader' and its 'providers' iterator must be protected in a synchronized block,
              * because ServiceLoader is not thread-safe. We try to keep the synhronization block as small as
-             * possible for less contention. In particular, the canOpen(connector) method call may be costly.
+             * possible for less contention. In particular, the probeContent(connector) method call may be costly.
              */
             final Iterator<DataStoreProvider> providers;
-            DataStoreProvider candidate;
+            DataStoreProvider provider;
             synchronized (loader) {
                 providers = loader.iterator();
-                candidate = providers.hasNext() ? providers.next() : null;
+                provider = providers.hasNext() ? providers.next() : null;
             }
-search:     while (candidate != null) {
-                switch (candidate.canOpen(connector)) {
+            while (provider != null) {
+                final ProbeResult probe = provider.probeContent(connector);
+                if (probe.isSupported()) {
                     /*
                      * Stop at the first provider claiming to be able to read the storage.
                      * Do not iterate over the list of deferred providers (if any).
                      */
-                    case SUPPORTED: {
-                        provider = candidate;
-                        deferred = null;
-                        break search;
-                    }
+                    selected = new ProbeProviderPair(provider, probe);
+                    deferred = null;
+                    break;
+                }
+                if (ProbeResult.INSUFFICIENT_BYTES.equals(probe)) {
                     /*
                      * If a provider doesn't have enough bytes for answering the question,
                      * try again after this loop with more bytes in the buffer, unless we
                      * found an other provider.
                      */
-                    case INSUFFICIENT_BYTES: {
-                        if (deferred == null) {
-                            deferred = new LinkedList<DataStoreProvider>();
-                        }
-                        deferred.add(candidate);
-                        break;
+                    if (deferred == null) {
+                        deferred = new LinkedList<ProbeProviderPair>();
                     }
+                    deferred.add(new ProbeProviderPair(provider, probe));
+                } else if (ProbeResult.UNDETERMINED.equals(probe)) {
                     /*
                      * If a provider doesn't know whether it can open the given storage,
                      * we will try it only if we find no provider retuning SUPPORTED.
@@ -137,30 +161,32 @@ search:     while (candidate != null) {
                      *       provider.open(connector) in a try … catch block because it may leave
                      *       the StorageConnector in an invalid state in case of failure.
                      */
-                    case UNDETERMINED: {
-                        provider = candidate;
-                        break;
-                    }
+                    selected = new ProbeProviderPair(provider, probe);
                 }
                 synchronized (loader) {
-                    candidate = providers.hasNext() ? providers.next() : null;
+                    provider = providers.hasNext() ? providers.next() : null;
                 }
             }
             /*
-             * If any provider did not had enough bytes for answering the 'canOpen(…)' question,
+             * If any provider did not had enough bytes for answering the 'probeContent(…)' question,
              * get more bytes and try again. We try to prefetch more bytes only if we have no choice
              * in order to avoid latency on network connection.
              */
             if (deferred != null) {
 search:         while (!deferred.isEmpty() && connector.prefetch()) {
-                    for (final Iterator<DataStoreProvider> it=deferred.iterator(); it.hasNext();) {
-                        candidate = it.next();
-                        switch (candidate.canOpen(connector)) {
-                            case SUPPORTED:          provider = candidate; break search;
-                            case UNDETERMINED:       provider = candidate; break;
-                            case INSUFFICIENT_BYTES: continue; // Will try again in next iteration.
+                    for (final Iterator<ProbeProviderPair> it=deferred.iterator(); it.hasNext();) {
+                        final ProbeProviderPair p = it.next();
+                        p.probe = provider.probeContent(connector);
+                        if (p.probe.isSupported()) {
+                            selected = p;
+                            break search;
                         }
-                        it.remove(); // UNSUPPORTED_* or UNDETERMINED: do not try again those providers.
+                        if (!ProbeResult.INSUFFICIENT_BYTES.equals(p.probe)) {
+                            if (ProbeResult.UNDETERMINED.equals(p.probe)) {
+                                selected = p; // To be used only if we don't find a better match.
+                            }
+                            it.remove(); // UNSUPPORTED_* or UNDETERMINED: do not try again those providers.
+                        }
                     }
                 }
             }
@@ -171,16 +197,18 @@ search:         while (!deferred.isEmpty() && connector.prefetch()) {
              * shall avoid the UNDETERMINED value as much as possible (this value should be used
              * only for RAW image format).
              */
-            if (provider != null) {
-                final DataStore data = provider.open(connector);
+            if (open && selected != null) {
+                selected.store = selected.provider.open(connector);
                 connector = null; // For preventing it to be closed.
-                return data;
             }
         } finally {
             if (connector != null && connector != storage) {
                 connector.closeAllExcept(null);
             }
         }
-        throw new UnsupportedStorageException(Errors.format(Errors.Keys.UnknownFormatFor_1, connector.getStorageName()));
+        if (open && selected == null) {
+            throw new UnsupportedStorageException(Errors.format(Errors.Keys.UnknownFormatFor_1, connector.getStorageName()));
+        }
+        return selected;
     }
 }
