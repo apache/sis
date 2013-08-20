@@ -19,12 +19,13 @@ package org.apache.sis.internal.maven;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
+import java.util.Iterator;
 import java.util.Enumeration;
 import java.util.jar.*;
 import java.io.File;
 import java.io.Closeable;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.FileOutputStream;
 import java.util.zip.GZIPOutputStream;
@@ -37,7 +38,7 @@ import static java.util.jar.Pack200.Packer.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 final class PackOutput implements Closeable {
@@ -47,21 +48,15 @@ final class PackOutput implements Closeable {
     private static final String CLASS = ".class";
 
     /**
-     * The packer that created this object. Will be used in order to fetch
-     * additional informations like the version to declare in the pom.xml file.
+     * The output file path.
      */
-    private final Packer packer;
+    private final File outputJAR;
 
     /**
-     * The output file.
+     * The stream where to write the JAR.
+     * Created only when {@link #open(File)} is invoked.
      */
-    private File file;
-
-    /**
-     * The stream where to write the JAR. Will be created
-     * only when {@link #open} will be invoked.
-     */
-    private JarOutputStream out;
+    private JarOutputStream outputStream;
 
     /**
      * The manifest attribute value, or {@code null} if none. We will set this field to the
@@ -71,88 +66,44 @@ final class PackOutput implements Closeable {
     private String mainClass, splashScreen;
 
     /**
-     * The JAR to be used as inputs.
+     * The JAR to be used as inputs. The elements in this map will be removed by the
+     * {@link #write()} method as we are done copying the content of JAR files.
      */
-    private final Set<File> inputs;
+    private final Map<File,PackInput> inputJARs;
 
     /**
-     * The entries which were already done by previous invocation of {@link #getInputStream}.
+     * The entries which were already written in the output JAR file.
+     * There is two kind of entries which need this check:
+     *
+     * <ul>
+     *   <li>Directories, which may be duplicated in different JAR files.</li>
+     *   <li>{@code META-INF/services} files which were merged in a single file.</li>
+     * </ul>
+     *
+     * @see #isMergeAllowed(String)
      */
     private final Set<String> entriesDone = new HashSet<>();
 
     /**
+     * Returns {@code true} if entries of the given name are allowed to be concatenated
+     * when they appear in more than one input JAR files.
+     *
+     * @see #entriesDone
+     */
+    private static boolean isMergeAllowed(final String name) {
+        return name.startsWith(PackInput.SERVICES);
+    }
+
+    /**
      * Creates an output jar.
      *
-     * @param packer    The packer that created this object.
-     * @param parent    The parent, or {@code null} if none.
-     * @param jars      The JAR filenames.
+     * @param inputJARs The input JAR filenames together with their {@code PackInput} helpers.
+     * @param outputJAR The output JAR filename.
      */
-    PackOutput(final Packer packer, final PackOutput parent, final String[] jars) {
-        this.packer = packer;
-        if (parent != null) {
-            inputs = new LinkedHashSet<>(parent.inputs);
-        } else {
-            inputs = new LinkedHashSet<>(jars.length * 4/3);
-        }
-        for (final String jar : jars) {
-            File file = new File(jar);
-            if (!file.isAbsolute()) {
-                file = new File(packer.jarDirectory, jar);
-            }
-            if (!file.isFile()) {
-                throw new IllegalArgumentException("Not a file: " + file);
-            }
-            if (!inputs.add(file)) {
-                throw new IllegalArgumentException("Duplicated JAR: " + file);
-            }
-        }
-    }
-
-    /**
-     * Returns {@code true} if this pack contains the given JAR file.
-     *
-     * @param  file The JAR file to check for inclusion.
-     * @return {@code true} if this pack contains the given JAR file.
-     */
-    boolean contains(final File file) {
-        return inputs.contains(file);
-    }
-
-    /**
-     * Copies the entries from the given {@code mapping} to the given {@code actives} map, but
-     * only those having a key included in the set of input files used by this {@code PackOutput}.
-     *
-     * @param mapping The mapping from {@link File} to {@link PackInput}.
-     * @param actives Where to store the {@link PackInput} required for
-     *        input by this {@code PackOutput}.
-     */
-    void copyInputs(final Map<File,PackInput> mapping, final Map<File,PackInput> actives) {
-        for (final File file : inputs) {
-            final PackInput input = mapping.get(file);
-            if (input != null) {
-                final PackInput old = actives.put(file, input);
-                if (old != null && old != input) {
-                    throw new AssertionError("Inconsistent mapping.");
-                }
-            }
-        }
-    }
-
-    /**
-     * Opens the JAR files that were not already opens and store them in the given map.
-     *
-     * @param  inputs The map where to store the opened JAR files.
-     * @throws IOException If a file can not be open.
-     */
-    void createPackInputs(final Map<File,PackInput> inputs) throws IOException {
-        for (final File jar : this.inputs) {
-            PackInput in = inputs.get(jar);
-            if (in == null) {
-                in = new PackInput(jar);
-                if (inputs.put(jar, in) != null) {
-                    throw new AssertionError(jar);
-                }
-            }
+    PackOutput(final Map<File,PackInput> inputJARs, final File outputJAR) {
+        this.inputJARs = inputJARs;
+        this.outputJAR = outputJAR;
+        for (final PackInput in : inputJARs.values()) {
             if (in.mainClass != null) {
                 mainClass = in.mainClass;
             }
@@ -163,23 +114,30 @@ final class PackOutput implements Closeable {
     }
 
     /**
-     * Opens the given JAR file for writing
+     * Opens the given JAR file for writing and creates its manifest.
      *
-     * @param  file The file to open.
+     * @param  projectName The project name, or {@code null} if none.
+     * @param  projectURL  The project URL, or {@code null} if none.
+     * @param  version     The project version, or {@code null} if none.
      * @throws IOException if the file can't be open.
      */
-    void open(final File file) throws IOException {
-        this.file = file;
+    void open(final String projectName, final String projectURL, final String version) throws IOException {
         final Manifest manifest = new Manifest();
         Attributes attributes = manifest.getMainAttributes();
-        attributes.put(Attributes.Name.MANIFEST_VERSION,       "1.0");
-        attributes.put(Attributes.Name.SPECIFICATION_TITLE,    "Apache SIS");
-        attributes.put(Attributes.Name.SPECIFICATION_VENDOR,   "Apache SIS");
-        attributes.put(Attributes.Name.SPECIFICATION_VERSION,  packer.version);
-        attributes.put(Attributes.Name.IMPLEMENTATION_TITLE,   "Apache SIS");
-        attributes.put(Attributes.Name.IMPLEMENTATION_VENDOR,  "Apache SIS");
-        attributes.put(Attributes.Name.IMPLEMENTATION_VERSION, packer.version);
-        attributes.put(Attributes.Name.IMPLEMENTATION_URL,     "http://sis.apache.org");
+        attributes.put(Attributes.Name.MANIFEST_VERSION, "1.0");
+        if (projectName != null) {
+            attributes.put(Attributes.Name.SPECIFICATION_TITLE,    projectName);
+            attributes.put(Attributes.Name.SPECIFICATION_VENDOR,   projectName);
+            attributes.put(Attributes.Name.IMPLEMENTATION_TITLE,   projectName);
+            attributes.put(Attributes.Name.IMPLEMENTATION_VENDOR,  projectName);
+        }
+        if (projectURL != null) {
+            attributes.put(Attributes.Name.IMPLEMENTATION_URL, projectURL);
+        }
+        if (version != null) {
+            attributes.put(Attributes.Name.SPECIFICATION_VERSION,  version);
+            attributes.put(Attributes.Name.IMPLEMENTATION_VERSION, version);
+        }
         if (mainClass != null) {
             attributes.put(Attributes.Name.MAIN_CLASS, mainClass);
         }
@@ -187,9 +145,9 @@ final class PackOutput implements Closeable {
             attributes.put(PackInput.SPLASH_SCREEN, splashScreen);
         }
         /*
-         * Add the manifest of every dependencies.
+         * Add the package-level manifest of every dependencies.
          */
-        for (final File input : inputs) {
+        for (final File input : inputJARs.keySet()) {
             if (!input.getName().startsWith("sis-")) {
                 String packageName = null;
                 try (JarFile jar = new JarFile(input, false)) {
@@ -234,13 +192,15 @@ final class PackOutput implements Closeable {
         /*
          * Open the output stream for the big JAR file.
          */
-        out = new JarOutputStream(new FileOutputStream(file), manifest);
-        out.setLevel(1); // Use a cheap compression level since this JAR file is temporary.
+        outputStream = new JarOutputStream(new FileOutputStream(outputJAR), manifest);
+        outputStream.setLevel(1); // Use a cheap compression level since this JAR file is temporary.
     }
 
     /**
      * Copies the value of the given attribute from a source {@code Attributes} to a target
-     * {@code Attributes} object.
+     * {@code Attributes} object. This is used for copying the package-level attributes.
+     *
+     * @return {@code true} if the attribute has been copied.
      */
     private static boolean copy(final Attributes src, final Attributes dst, final Attributes.Name name) {
         String value = (String) src.get(name);
@@ -252,49 +212,57 @@ final class PackOutput implements Closeable {
     }
 
     /**
-     * Returns {@code true} if entries of the given name are allowed to be concatenated
-     * if they appear in more than one input JAR files.
+     * Iterates through the individual jars and merge them in single, bigger JAR file.
+     * This method closes the input JAR files as they are done.
      */
-    static boolean mergeAllowed(final String name) {
-        return name.startsWith(PackInput.SERVICES);
-    }
-
-    /**
-     * Begins writing a new JAR entry.
-     *
-     * @param  entry The new entry to write.
-     * @return {@code true} if the entry is ready to write, or {@code false} if it should be skipped.
-     * @throws IOException If a failure occurs while creating the entry.
-     */
-    boolean putNextEntry(final JarEntry entry) throws IOException {
-        final String name = entry.getName();
-        if (entry.isDirectory() || mergeAllowed(name)) {
-            if (!entriesDone.add(name)) {
-                return false;
+    final void writeContent() throws IOException {
+        final byte[] buffer = new byte[64 * 1024];
+        for (final Iterator<Map.Entry<File,PackInput>> it = inputJARs.entrySet().iterator(); it.hasNext();) {
+            final Map.Entry<File,PackInput> inputJAR = it.next();
+            it.remove(); // Needs to be removed before the inner loop below.
+            try (PackInput input = inputJAR.getValue()) {
+                for (JarEntry entry; (entry = input.nextEntry()) != null;) {
+                    final String name = entry.getName();
+                    boolean isMergeAllowed = false;
+                    if (entry.isDirectory() || (isMergeAllowed = isMergeAllowed(name))) {
+                        if (!entriesDone.add(name)) {
+                            continue;
+                        }
+                    }
+                    outputStream.putNextEntry(entry);
+                    copy(input.getInputStream(), buffer);
+                    /*
+                     * From that points, the entry has been copied to the target JAR. Now look in
+                     * following input JARs to see if there is some META-INF/services files to merge.
+                     */
+                    if (isMergeAllowed) {
+                        for (final Map.Entry<File,PackInput> continuing : inputJARs.entrySet()) {
+                            final InputStream in = continuing.getValue().getInputStream(name);
+                            if (in != null) {
+                                copy(in, buffer);
+                            }
+                        }
+                    }
+                    outputStream.closeEntry();
+                }
             }
         }
-        out.putNextEntry(entry);
-        return true;
     }
 
     /**
-     * Writes the given number of bytes.
+     * Copies fully the given input stream to the given destination.
+     * The given input stream is closed after the copy.
      *
-     * @param  buffer The buffer containing the bytes to write.
-     * @param  n The number of bytes to write.
-     * @throws IOException if an exception occurred while writing the bytes.
+     * @param  in     The input stream from which to get the the content to copy.
+     * @param  buffer Temporary buffer to reuse at each method call.
+     * @throws IOException If an error occurred during the copy.
      */
-    void write(final byte[] buffer, final int n) throws IOException {
-        out.write(buffer, 0, n);
-    }
-
-    /**
-     * Close the current entry.
-     *
-     * @throws IOException If an error occurred while closing the entry.
-     */
-    void closeEntry() throws IOException {
-        out.closeEntry();
+    void copy(final InputStream in, final byte[] buffer) throws IOException {
+        int n;
+        while ((n = in.read(buffer)) >= 0) {
+            outputStream.write(buffer, 0, n);
+        }
+        in.close();
     }
 
     /**
@@ -304,22 +272,22 @@ final class PackOutput implements Closeable {
      */
     @Override
     public void close() throws IOException {
-        if (out != null) {
-            out.close();
+        if (outputStream != null) {
+            outputStream.close();
         }
-        out = null;
+        outputStream = null;
     }
 
     /**
-     * Packs the output JAR.
+     * Creates a Pack200 file from the output JAR, then delete the JAR.
      *
      * @throws IOException if an error occurred while packing the JAR.
      */
     void pack() throws IOException {
-        if (out != null) {
+        if (outputStream != null) {
             throw new IllegalStateException("JAR output stream not closed.");
         }
-        final File inputFile = file;
+        final File inputFile = outputJAR;
         String filename = inputFile.getName();
         final int ext = filename.lastIndexOf('.');
         if (ext > 0) {
@@ -328,7 +296,7 @@ final class PackOutput implements Closeable {
         filename += ".pack.gz";
         final File outputFile = new File(inputFile.getParent(), filename);
         if (outputFile.equals(inputFile)) {
-            throw new IOException("Input file is already a packed: " + inputFile);
+            throw new IOException("Input file is already packed: " + inputFile);
         }
         /*
          * Now process to the compression.
