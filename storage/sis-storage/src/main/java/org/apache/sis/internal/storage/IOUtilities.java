@@ -484,12 +484,16 @@ public final class IOUtilities extends Static {
              * URL uses HTTP or FTP protocols, because JDK7 does not provide file systems for them by default.
              */
             final URI uri = (URI) input;
-            try {
+            if (!uri.isAbsolute()) {
+                // All methods invoked in this block throws IllegalArgumentException if the URI has no scheme,
+                // so we are better to check now and provide a more appropriate exception for this method.
+                throw new IOException(Errors.format(Errors.Keys.MissingSchemeInURI));
+            } else try {
                 input = Paths.get(uri);
             } catch (IllegalArgumentException | FileSystemNotFoundException e) {
                 try {
                     input = uri.toURL();
-                } catch (IOException ioe) {
+                } catch (MalformedURLException ioe) {
                     ioe.addSuppressed(e);
                     throw ioe;
                 }

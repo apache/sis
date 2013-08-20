@@ -26,7 +26,7 @@ import org.junit.BeforeClass;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.4
  * @module
  */
 @Suite.SuiteClasses({
@@ -41,6 +41,7 @@ import org.junit.BeforeClass;
     org.apache.sis.util.CharactersTest.class,
     org.apache.sis.util.CharSequencesTest.class,
     org.apache.sis.util.StringBuildersTest.class,
+    org.apache.sis.util.ExceptionsTest.class,
     org.apache.sis.util.UtilitiesTest.class,
     org.apache.sis.util.NumbersTest.class,
     org.apache.sis.util.ClassesTest.class,

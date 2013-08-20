@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.sql.SQLException;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.MonolineFormatter;
 
@@ -177,8 +176,7 @@ public final class Command {
         } else try {
             return command.run();
         } catch (Exception e) {
-            command.out.flush();
-            command.err.println(Exceptions.formatChainedMessages(command.locale, null, e));
+            command.error(null, e);
             throw e;
         }
         return 0;
@@ -225,7 +223,8 @@ public final class Command {
      *
      * @param args Command-line options.
      */
-    public static void main(final String[] args) {
+    public static void main(String[] args) {
+        args = new String[] {"mime-type", "/Users/desruisseaux/Projets/SIS/JDK7/target/binaries/../../../../GeoAPI/trunk//geoapi-netcdf/src/test/resources/org/opengis/wrapper/netcdf/NCEP-SST.nc"};
         MonolineFormatter.install();
         final Command c;
         try {
