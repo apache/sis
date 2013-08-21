@@ -104,6 +104,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int CanNotRead_1 = 108;
 
         /**
+         * Can not represent “{1}” in the {0} format.
+         */
+        public static final int CanNotRepresentInFormat_2 = 110;
+
+        /**
          * Can not set a value for property “{0}”.
          */
         public static final int CanNotSetPropertyValue_1 = 75;
