@@ -14,33 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.util;
+package org.apache.sis.io.wkt;
 
 
 /**
- * Thrown when an object can not be {@linkplain ObjectConverter#apply(Object) converted}
- * from the <cite>source</cite> type to the <cite>target</cite> type.
+ * Thrown by {@link FormattableObject#toWKT()} when an object can not be formatted as WKT.
+ * A formatting may fail because an object is too complex for the WKT format capability.
  *
- * <p>Some converters may attempt many strategies before to give up, resulting in more than
- * one exception being caught. In such case, all the failed attempts will be reported as
- * {@linkplain #getSuppressed() suppressed exceptions} and the {@linkplain #getCause() cause}
- * will be an arbitrary item of this list.</p>
+ * {@example An engineering CRS can not be represented in the WKT 1 format if all axes
+ *           does not use the same unit of measurement. However such CRS can be represented
+ *           in the WKT 2 format.}
  *
- * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.00)
- * @version 0.3
+ * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @since   0.4 (derived from geotk-2.0)
+ * @version 0.4
  * @module
+ *
+ * @see Formatter#setInvalidWKT(Class)
  */
-public class UnconvertibleObjectException extends IllegalArgumentException {
+public class UnformattableObjectException extends UnsupportedOperationException {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 4436966248421454692L;
+    private static final long serialVersionUID = 3623766455562385536L;
 
     /**
      * Constructs a new exception with no message.
      */
-    public UnconvertibleObjectException() {
+    public UnformattableObjectException() {
         super();
     }
 
@@ -49,7 +50,7 @@ public class UnconvertibleObjectException extends IllegalArgumentException {
      *
      * @param message The detail message, or {@code null} if none.
      */
-    public UnconvertibleObjectException(final String message) {
+    public UnformattableObjectException(final String message) {
         super(message);
     }
 
@@ -59,7 +60,7 @@ public class UnconvertibleObjectException extends IllegalArgumentException {
      * @param message The detail message, or {@code null} if none.
      * @param cause The cause, or {@code null} if none.
      */
-    public UnconvertibleObjectException(final String message, final Throwable cause) {
+    public UnformattableObjectException(final String message, final Throwable cause) {
         super(message, cause);
     }
 
@@ -68,7 +69,7 @@ public class UnconvertibleObjectException extends IllegalArgumentException {
      *
      * @param cause The cause, or {@code null} if none.
      */
-    public UnconvertibleObjectException(final Throwable cause) {
+    public UnformattableObjectException(final Throwable cause) {
         super(cause);
     }
 }
