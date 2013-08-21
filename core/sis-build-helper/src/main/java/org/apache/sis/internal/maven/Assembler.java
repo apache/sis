@@ -40,8 +40,9 @@ import static org.apache.sis.internal.maven.Filenames.*;
  * Do not forget the <code>--non-recursive</code> option, otherwise the Mojo will be executed many time.
  *
  * <p><b>Current limitation:</b>
- * The directory to ZIP is hard-coded to <code>application/sis-console/src/main/artifact</code>,
- * and the final name is hard coded to <code>apache-sis-&lt;version&gt;.zip</code> for now.</p>
+ * The current implementation uses some hard-coded paths and filenames.
+ * See the <cite>Distribution file and Pack200 bundle</cite> section in the <code>src/site/apt/index.apt</code>
+ * file for more information.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4

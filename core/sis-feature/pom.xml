@@ -104,6 +104,11 @@ Representations of geographic features.
       <artifactId>geoapi-pending</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.apache.sis.core</groupId>
+      <artifactId>sis-utility</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
       <groupId>com.esri.geometry</groupId>
       <artifactId>esri-geometry-api</artifactId>
     </dependency>
