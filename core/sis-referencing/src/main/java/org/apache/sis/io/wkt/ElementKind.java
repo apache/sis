@@ -19,6 +19,7 @@ package org.apache.sis.io.wkt;
 
 /**
  * Kind of an element in a <cite>Well Known Text</cite>.
+ * Different kinds of elements can be associated to different {@linkplain Colors colors}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4 (derived from geotk-3.00)

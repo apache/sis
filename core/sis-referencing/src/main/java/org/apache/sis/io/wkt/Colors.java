@@ -20,6 +20,7 @@ import java.util.EnumMap;
 import java.io.Serializable;
 import java.io.ObjectStreamException;
 import org.apache.sis.internal.util.X364;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -29,6 +30,9 @@ import org.apache.sis.internal.util.X364;
  * @since   0.4 (derived from geotk-3.00)
  * @version 0.4
  * @module
+ *
+ * @see WKTFormat#getColors()
+ * @see WKTFormat#setColors(Colors)
  */
 public class Colors implements Serializable {
     /**
@@ -38,6 +42,8 @@ public class Colors implements Serializable {
 
     /**
      * The immutable default set of colors.
+     *
+     * @see Symbols#DEFAULT
      */
     public static final Colors DEFAULT = new Immutable();
     static {
@@ -132,7 +138,7 @@ public class Colors implements Serializable {
          */
         @Override
         public void set(final ElementKind key, final String color) {
-            throw new UnsupportedOperationException();
+            throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnmodifiableObject_1, "Colors"));
         }
 
         /**
