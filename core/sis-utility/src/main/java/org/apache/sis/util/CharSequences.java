@@ -71,7 +71,7 @@ import static org.apache.sis.util.StringBuilders.replace;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
- * @version 0.3
+ * @version 0.4
  * @module
  *
  * @see StringBuilders
@@ -1751,6 +1751,54 @@ cmp:    while (ia < lga) {
     }
 
     /**
+     * Returns {@code true} if the given text at the given offset contains the given part,
+     * optionally in a case-insensitive way. This method is equivalent to the following code,
+     * except that this method works on arbitrary {@link CharSequence} objects instead than
+     * {@link String}s only:
+     *
+     * {@preformat java
+     *     return text.regionMatches(ignoreCase, offset, part, 0, part.length());
+     * }
+     *
+     * This method does not thrown {@code IndexOutOfBoundsException}. Instead if
+     * {@code fromIndex < 0} or {@code fromIndex + part.length() > text.length()},
+     * then this method returns {@code false}.
+     *
+     * @param text       The character sequence for which to tests for the presence of {@code part}.
+     * @param fromIndex  The offset in {@code text} where to test for the presence of {@code part}.
+     * @param part       The part which may be present in {@code text}.
+     * @param ignoreCase {@code true} if the case should be ignored.
+     * @return {@code true} if {@code text} contains {@code part} at the given {@code offset}.
+     * @throws NullPointerException if any of the arguments is null.
+     *
+     * @see String#regionMatches(boolean, int, String, int, int)
+     *
+     * @since 0.4
+     */
+    public static boolean regionMatches(final CharSequence text, int fromIndex, final CharSequence part, final boolean ignoreCase) {
+        if (!ignoreCase) {
+            return regionMatches(text, fromIndex, part);
+        }
+        // Do not check for String cases. We do not want to delegate to String.regionMatches
+        // because we compare code points while String.regionMatches(…) compares characters.
+        final int limit  = text.length();
+        final int length = part.length();
+        for (int i=0; i<length;) {
+            if (fromIndex < 0 || fromIndex >= limit) {
+                return false;
+            }
+            final int c1 = codePointAt(part, i);
+            final int c2 = codePointAt(text, fromIndex);
+            if (c1 != c2 && !equalsIgnoreCase(c1, c2)) {
+                return false;
+            }
+            fromIndex += charCount(c2);
+            i += charCount(c1);
+        }
+        return true;
+    }
+
+    /**
      * Returns {@code true} if the given character sequence starts with the given prefix.
      *
      * @param  text        The characters sequence to test.
@@ -1760,23 +1808,7 @@ cmp:    while (ia < lga) {
      * @throws NullPointerException if any of the arguments is null.
      */
     public static boolean startsWith(final CharSequence text, final CharSequence prefix, final boolean ignoreCase) {
-        final int lgs = text.length();
-        final int lgp = prefix.length();
-        int is = 0;
-        int ip = 0;
-        while (ip < lgp) {
-            if (is >= lgs) {
-                return false;
-            }
-            final int cs = codePointAt(text, is);
-            final int cp = codePointAt(prefix,   ip);
-            if (cs != cp && (!ignoreCase || !equalsIgnoreCase(cs, cp))) {
-                return false;
-            }
-            is += charCount(cs);
-            ip += charCount(cp);
-        }
-        return true;
+        return regionMatches(text, 0, prefix, ignoreCase);
     }
 
     /**
