@@ -18,6 +18,7 @@ package org.apache.sis.io.wkt;
 
 import java.util.EnumMap;
 import java.io.Serializable;
+import java.io.ObjectStreamException;
 import org.apache.sis.internal.util.X364;
 
 
@@ -40,88 +41,37 @@ public class Colors implements Serializable {
      */
     public static final Colors DEFAULT = new Immutable();
     static {
-        final EnumMap<Element,X364> map = DEFAULT.map;
-        map.put(Element.NUMBER,     X364.FOREGROUND_YELLOW);
-        map.put(Element.INTEGER,    X364.FOREGROUND_YELLOW);
-        map.put(Element.UNIT,       X364.FOREGROUND_YELLOW);
-        map.put(Element.AXIS,       X364.FOREGROUND_CYAN);
-        map.put(Element.CODE_LIST,  X364.FOREGROUND_CYAN);
-        map.put(Element.PARAMETER,  X364.FOREGROUND_GREEN);
-        map.put(Element.METHOD,     X364.FOREGROUND_GREEN);
-        map.put(Element.DATUM,      X364.FOREGROUND_GREEN);
-        map.put(Element.ERROR,      X364.BACKGROUND_RED);
-    }
-
-    /**
-     * Keys for syntactic elements to be colorized.
-     *
-     * @author  Martin Desruisseaux (Geomatys)
-     * @since   0.4 (derived from geotk-3.00)
-     * @version 0.4
-     * @module
-     */
-    public static enum Element {
-        /**
-         * Floating point numbers (excluding integer types).
-         */
-        NUMBER,
-
-        /**
-         * Integer numbers.
-         */
-        INTEGER,
-
-        /**
-         * {@linkplain javax.measure.unit.Unit Units of measurement}.
-         * In referencing WKT, this is the text inside {@code UNIT} elements.
-         */
-        UNIT,
-
-        /**
-         * {@linkplain org.opengis.referencing.cs.CoordinateSystemAxis Axes}.
-         * In referencing WKT, this is the text inside {@code AXIS} elements.
-         */
-        AXIS,
-
-        /**
-         * {@linkplain org.opengis.util.CodeList Code list} values.
-         */
-        CODE_LIST,
-
-        /**
-         * {@linkplain org.opengis.parameter.ParameterValue Parameter values}.
-         * In referencing WKT, this is the text inside {@code PARAMETER} elements.
-         */
-        PARAMETER,
-
-        /**
-         * {@linkplain org.opengis.referencing.operation.OperationMethod Operation methods}.
-         * In referencing WKT, this is the text inside {@code PROJECTION} elements.
-         */
-        METHOD,
-
-        /**
-         * {@linkplain org.opengis.referencing.datum.Datum Datum}.
-         * In referencing WKT, this is the text inside {@code DATUM} elements.
-         */
-        DATUM,
-
-        /**
-         * Unformattable elements.
-         */
-        ERROR
+        final EnumMap<ElementKind,X364> map = DEFAULT.map;
+        map.put(ElementKind.NUMBER,     X364.FOREGROUND_YELLOW);
+        map.put(ElementKind.INTEGER,    X364.FOREGROUND_YELLOW);
+        map.put(ElementKind.UNIT,       X364.FOREGROUND_YELLOW);
+        map.put(ElementKind.AXIS,       X364.FOREGROUND_CYAN);
+        map.put(ElementKind.CODE_LIST,  X364.FOREGROUND_CYAN);
+        map.put(ElementKind.PARAMETER,  X364.FOREGROUND_GREEN);
+        map.put(ElementKind.METHOD,     X364.FOREGROUND_GREEN);
+        map.put(ElementKind.DATUM,      X364.FOREGROUND_GREEN);
+        map.put(ElementKind.ERROR,      X364.BACKGROUND_RED);
     }
 
     /**
      * The map of colors.
      */
-    private final EnumMap<Element,X364> map;
+    private final EnumMap<ElementKind,X364> map;
 
     /**
      * Creates a new, initially empty, set of colors.
      */
     public Colors() {
-        map = new EnumMap<>(Element.class);
+        map = new EnumMap<>(ElementKind.class);
+    }
+
+    /**
+     * Creates a new set of colors initialized to a copy of the given one.
+     *
+     * @param colors The set of colors to copy.
+     */
+    public Colors(final Colors colors) {
+        map = new EnumMap<>(colors.map);
     }
 
     /**
@@ -134,7 +84,7 @@ public class Colors implements Serializable {
      * @param  color The color to give to the specified element, or {@code null} if none.
      * @throws IllegalArgumentException If the given color name is not recognized.
      */
-    public void set(final Element key, final String color) throws IllegalArgumentException {
+    public void set(final ElementKind key, final String color) throws IllegalArgumentException {
         if (color == null) {
             map.remove(key);
         } else {
@@ -148,15 +98,16 @@ public class Colors implements Serializable {
      * @param key The syntactic element for which to get the color.
      * @return The color of the specified element, or {@code null} if none.
      */
-    public String get(final Element key) {
+    public String get(final ElementKind key) {
         final X364 color = map.get(key);
         return (color != null) ? color.color : null;
     }
 
     /**
-     * An immutable subclass of {@link Colors} for the {@link Colors#DEFAULT} constant.
+     * An immutable subclass of {@link Colors} for the {@link Colors#DEFAULT} constant
+     * or for the object to be used by {@link WKTFormat}.
      */
-    private static final class Immutable extends Colors {
+    static final class Immutable extends Colors {
         /**
          * For cross-version compatibility.
          */
@@ -170,11 +121,25 @@ public class Colors implements Serializable {
         }
 
         /**
+         * Creates a immutable copy of the given set of colors.
+         */
+        Immutable(final Colors colors) {
+            super(colors);
+        }
+
+        /**
          * Do not allow color changes.
          */
         @Override
-        public void set(final Element key, final String color) {
+        public void set(final ElementKind key, final String color) {
             throw new UnsupportedOperationException();
+        }
+
+        /**
+         * Replaces the deserialized instance by {@link #DEFAULT} one if possible.
+         */
+        Object readResolve() throws ObjectStreamException {
+            return super.map.equals(DEFAULT.map) ? DEFAULT : this;
         }
     }
 }
