@@ -110,6 +110,14 @@ public class Colors implements Serializable {
     }
 
     /**
+     * Returns the ANSI sequence for the given syntactic element, or {@code null} if none.
+     */
+    final String getAnsiSequence(final ElementKind key) {
+        final X364 color = map.get(key);
+        return (color != null) ? color.sequence() : null;
+    }
+
+    /**
      * An immutable subclass of {@link Colors} for the {@link Colors#DEFAULT} constant
      * or for the object to be used by {@link WKTFormat}.
      */

@@ -191,7 +191,7 @@ public class Symbols implements Localized, Serializable {
      * @return The symbols locale.
      */
     @Override
-    public Locale getLocale() {
+    public final Locale getLocale() {
         return locale;
     }
 

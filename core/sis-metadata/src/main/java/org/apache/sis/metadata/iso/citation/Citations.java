@@ -37,7 +37,7 @@ import org.apache.sis.util.CharSequences;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.2)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 public final class Citations extends Static {
@@ -56,6 +56,84 @@ public final class Citations extends Static {
      * @category Organization
      */
     public static final Citation OGC = new SimpleCitation("OGC");
+
+    /**
+     * The <a href="http://sis.apache.org">Apache SIS</a> project.
+     *
+     * @since 0.4
+     */
+    public static final Citation SIS = new SimpleCitation("SIS");
+
+    /**
+     * The <a href="http://www.esri.com">ESRI</a> organization.
+     * This company defines many Coordinate Reference Systems in addition to the {@linkplain #EPSG} ones.
+     *
+     * @see org.apache.sis.io.wkt.Convention#ESRI
+     * @category Organization
+     *
+     * @since 0.4
+     */
+    public static final Citation ESRI = new SimpleCitation("ESRI");
+
+    /**
+     * The <a href="http://www.oracle.com">Oracle</a> organization.
+     *
+     * @see org.apache.sis.io.wkt.Convention#ORACLE
+     * @category Organization
+     *
+     * @since 0.4
+     */
+    public static final Citation ORACLE = new SimpleCitation("Oracle");
+
+    /**
+     * The <a href="http://www.unidata.ucar.edu/software/netcdf-java">NetCDF</a> specification.
+     *
+     * @see org.apache.sis.io.wkt.Convention#NETCDF
+     * @category Specification
+     *
+     * @since 0.4
+     */
+    public static final Citation NETCDF = new SimpleCitation("NetCDF");
+
+    /**
+     * The <a href="http://www.remotesensing.org/geotiff/geotiff.html">GeoTIFF</a> specification.
+     *
+     * @see org.apache.sis.io.wkt.Convention#GEOTIFF
+     * @category Specification
+     *
+     * @since 0.4
+     */
+    public static final Citation GEOTIFF = new SimpleCitation("GeoTIFF");
+
+    /**
+     * The <a href="http://trac.osgeo.org/proj/">Proj.4</a> project.
+     *
+     * @see org.apache.sis.io.wkt.Convention#PROJ4
+     * @category Code space
+     *
+     * @since 0.4
+     */
+    public static final IdentifierSpace<String> PROJ4 = new Authority<>("Proj.4", "PROJ4");
+
+    /**
+     * The <a href="http://www.epsg.org">European Petroleum Survey Group</a> authority.
+     * This citation is used as an authority for
+     * {@linkplain org.opengis.referencing.crs.CoordinateReferenceSystem coordinate reference system}
+     * identifiers. When searching an {@linkplain org.opengis.referencing.crs.CRSAuthorityFactory CRS
+     * authority factory} on EPSG data, SIS compares the {@code "EPSG"} string against the
+     * {@linkplain Citation#getIdentifiers identifiers} (or against the {@linkplain Citation#getTitle
+     * title} and {@linkplain Citation#getAlternateTitles alternate titles} if there is no identifier)
+     * using the {@link #identifierMatches(Citation,String) identifierMatches} method.
+     *
+     * @see #AUTO
+     * @see #AUTO2
+     * @see #CRS
+     * @see org.apache.sis.io.wkt.Convention#EPSG
+     * @category Code space
+     *
+     * @since 0.4
+     */
+    public static final IdentifierSpace<Integer> EPSG = new Authority<>("EPSG", "EPSG");
 
     /**
      * <cite>International Standard Book Number</cite> (ISBN) defined by ISO-2108.
@@ -83,7 +161,7 @@ public final class Citations extends Static {
      * List of citations declared in this class.
      */
     private static final Citation[] AUTHORITIES = {
-        ISO, OGC, ISBN, ISSN
+        ISO, OGC, SIS, ESRI, ORACLE, NETCDF, GEOTIFF, PROJ4, EPSG, ISBN, ISSN
     };
 
     /**
