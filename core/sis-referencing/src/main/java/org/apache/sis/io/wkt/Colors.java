@@ -127,10 +127,17 @@ public class Colors implements Serializable {
     }
 
     /**
+     * Returns an immutable copy of this set of colors, or {@code this} if this instance is already immutable.
+     */
+    Colors immutable() {
+        return new Immutable(this);
+    }
+
+    /**
      * An immutable subclass of {@link Colors} for the {@link Colors#DEFAULT} constant
      * or for the object to be used by {@link WKTFormat}.
      */
-    static final class Immutable extends Colors {
+    private static final class Immutable extends Colors {
         /**
          * For cross-version compatibility.
          */
@@ -148,6 +155,14 @@ public class Colors implements Serializable {
          */
         Immutable(final Colors colors) {
             super(colors);
+        }
+
+        /**
+         * Returns {@code this} since this set of colors is already immutable.
+         */
+        @Override
+        Colors immutable() {
+            return this;
         }
 
         /**

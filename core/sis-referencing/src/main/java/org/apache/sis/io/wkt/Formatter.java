@@ -39,6 +39,7 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.util.CodeList;
 
 import org.apache.sis.measure.Units;
+import org.apache.sis.math.MathFunctions;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
@@ -113,7 +114,7 @@ public class Formatter {
      * @see WKTFormat#getConvention()
      * @see WKTFormat#setConvention(Convention)
      */
-    private Convention convention = Convention.OGC;
+    private Convention convention;
 
     /**
      * The preferred authority for objects or parameter names.
@@ -177,9 +178,10 @@ public class Formatter {
 
     /**
      * {@code true} if a new line were requested during the execution of {@link #append(Formattable)}.
-     * This is used to determine if {@code UNIT} and {@code AUTHORITY} elements shall appear on a new line too.
+     * This is used to determine if the next {@code UNIT} and {@code AUTHORITY} elements shall appear
+     * on a new line.
      */
-    private boolean lineChanged;
+    private boolean requestNewLine;
 
     /**
      * {@code true} if the last formatted element was invalid WKT. This field is for internal use only.
@@ -206,29 +208,34 @@ public class Formatter {
      * Creates a new formatter instance with the default symbols, no syntax coloring and the default indentation.
      */
     public Formatter() {
-        this(Symbols.DEFAULT, null, WKTFormat.DEFAULT_INDENTATION);
+        this(Convention.OGC, Symbols.DEFAULT, null, WKTFormat.DEFAULT_INDENTATION);
     }
 
     /**
      * Creates a new formatter instance with the specified convention, colors and indentation.
      *
-     * @param  symbols The symbols.
-     * @param  colors  The syntax coloring, or {@code null} if none.
-     * @param  indentation The amount of spaces to use in indentation for WKT formatting,
-     *         or {@link WKTFormat#SINGLE_LINE} for formatting the whole WKT on a single line.
+     * @param convention  The convention to use.
+     * @param symbols     The symbols.
+     * @param colors      The syntax coloring, or {@code null} if none.
+     * @param indentation The amount of spaces to use in indentation for WKT formatting,
+     *        or {@link WKTFormat#SINGLE_LINE} for formatting the whole WKT on a single line.
      */
-    public Formatter(final Symbols symbols, final Colors colors, final int indentation) {
+    public Formatter(final Convention convention, final Symbols symbols, final Colors colors, final int indentation) {
+        ArgumentChecks.ensureNonNull("convention", convention);
         ArgumentChecks.ensureNonNull("symbols", symbols);
         if (indentation < WKTFormat.SINGLE_LINE) {
             throw new IllegalArgumentException(Errors.format(
                     Errors.Keys.IllegalArgumentValue_2, "indentation", indentation));
         }
-        this.symbols      = symbols;
-        this.colors       = colors;
+        this.convention   = convention;
+        this.symbols      = symbols.immutable();
         this.indentation  = indentation;
         this.numberFormat = symbols.createNumberFormat();
         this.unitFormat   = UnitFormat.getInstance(symbols.getLocale());
         this.buffer       = new StringBuffer();
+        if (colors != null) {
+            this.colors = colors.immutable();
+        }
     }
 
     /**
@@ -236,6 +243,7 @@ public class Formatter {
      * This constructor helps to share some objects with {@link Parser}.
      */
     Formatter(final Symbols symbols, final NumberFormat numberFormat) {
+        this.convention   = Convention.OGC;
         this.symbols      = symbols;
         this.indentation  = WKTFormat.DEFAULT_INDENTATION;
         this.numberFormat = numberFormat; // No clone needed.
@@ -268,6 +276,61 @@ public class Formatter {
         }
         this.convention = convention;
         this.authority  = (authority != null) ? authority : convention.authority; // NOT convention.getAuthority()
+    }
+
+    /**
+     * Returns the preferred name for the specified object.
+     * If the specified object contains a name from the preferred authority
+     * (usually {@linkplain org.apache.sis.metadata.iso.citation.Citations#OGC Open Geospatial}),
+     * then this name is returned. Otherwise, the first name found is returned.
+     *
+     * <p>The preferred authority can be set by the {@link WKTFormat#setAuthority(Citation)} method.
+     * This is not necessarily the authority of the given {@linkplain IdentifiedObject#getName() object name}.</p>
+     *
+     * {@example The EPSG name of the <code>EPSG:6326</code> datum is "<cite>World Geodetic System 1984</cite>".
+     *           However if the preferred authority is OGC (which is the case by default), then this method usually
+     *           returns "<cite>WGS84</cite>" (the exact string to be returned depends on the object aliases).}
+     *
+     * @param  object The object to look for a preferred name.
+     * @return The preferred name, or {@code null} if the given object has no name.
+     *
+     * @see WKTFormat#getAuthority()
+     * @see IdentifiedObjects#getName(IdentifiedObject, Citation)
+     */
+    public String getName(final IdentifiedObject object) {
+        String name = IdentifiedObjects.getName(object, authority);
+        if (name == null) {
+            name = IdentifiedObjects.getName(object, null);
+        }
+        return name;
+    }
+
+    /**
+     * Returns the preferred identifier for the specified object.
+     * If the specified object contains an identifier from the preferred authority
+     * (usually {@linkplain org.apache.sis.metadata.iso.citation.Citations#OGC Open Geospatial}),
+     * then this identifier is returned. Otherwise, the first identifier is returned.
+     * If the specified object contains no identifier, then this method returns {@code null}.
+     *
+     * @param  info The object to look for a preferred identifier, or {@code null} if none.
+     * @return The preferred identifier, or {@code null} if none.
+     */
+    public Identifier getIdentifier(final IdentifiedObject info) {
+        Identifier first = null;
+        if (info != null) {
+            final Collection<? extends Identifier> identifiers = info.getIdentifiers();
+            if (identifiers != null) {
+                for (final Identifier id : identifiers) {
+                    if (Citations.identifierMatches(authority, id.getAuthority())) {
+                        return id;
+                    }
+                    if (first == null) {
+                        first = id;
+                    }
+                }
+            }
+        }
+        return first;
     }
 
     /**
@@ -323,9 +386,8 @@ public class Formatter {
             length -= Character.charCount(c);
         } while (Character.isWhitespace(c));
         buffer.append(symbols.getSeparator());
-        if (newLine && indentation >= 0) {
+        if (newLine && indentation > WKTFormat.SINGLE_LINE) {
             buffer.append(System.lineSeparator()).append(CharSequences.spaces(margin));
-            lineChanged = true;
         }
     }
 
@@ -376,7 +438,7 @@ public class Formatter {
          *             ...etc...
          */
         indent(+1);
-        lineChanged = false;
+        requestNewLine = false;
         String keyword = object.formatTo(this);
         if (colors != null && wasInvalidWKT) {
             wasInvalidWKT = false;
@@ -405,7 +467,7 @@ public class Formatter {
             if (authority != null) {
                 final String title = Citations.getIdentifier(authority);
                 if (title != null) {
-                    appendSeparator(lineChanged);
+                    appendSeparator(requestNewLine);
                     buffer.append("AUTHORITY").appendCodePoint(open);
                     quote(title);
                     final String code = identifier.getCode();
@@ -418,7 +480,7 @@ public class Formatter {
             }
         }
         buffer.appendCodePoint(close);
-        lineChanged = true;
+        requestNewLine = true;
         indent(-1);
     }
 
@@ -461,20 +523,6 @@ public class Formatter {
     private static UnformattableObjectException unsupported(final Object object) {
         return new UnformattableObjectException(Errors.format(
                 Errors.Keys.IllegalClass_2, Formattable.class, object.getClass()));
-    }
-
-    /**
-     * Appends a code list.
-     *
-     * @param code The code list to append to the WKT, or {@code null} if none.
-     */
-    public void append(final CodeList<?> code) {
-        if (code != null) {
-            appendSeparator(false);
-            setColor(ElementKind.CODE_LIST);
-            buffer.append(code.name());
-            resetColor();
-        }
     }
 
     /**
@@ -538,6 +586,7 @@ public class Formatter {
                 appendObject(param.getValue());
             }
             buffer.appendCodePoint(symbols.getClosingBracket(0));
+            requestNewLine = true;
         }
     }
 
@@ -559,6 +608,8 @@ public class Formatter {
                 appendObject(Array.get(value, i));
             }
             buffer.appendCodePoint(symbols.getCloseSequence());
+        } else if (value instanceof CodeList<?>) {
+            append((CodeList<?>) value);
         } else if (value instanceof Number) {
             final Number number = (Number) value;
             if (Numbers.isInteger(number.getClass())) {
@@ -571,6 +622,40 @@ public class Formatter {
         } else {
             quote(value.toString());
         }
+    }
+
+    /**
+     * Appends a code list.
+     *
+     * @param code The code list to append to the WKT, or {@code null} if none.
+     */
+    public void append(final CodeList<?> code) {
+        if (code != null) {
+            appendSeparator(false);
+            setColor(ElementKind.CODE_LIST);
+            buffer.append(code.name());
+            resetColor();
+        }
+    }
+
+    /**
+     * Appends a character string between quotes.
+     * The {@linkplain Symbols#getSeparator() element separator} will be written before the text if needed.
+     *
+     * @param text The string to format to the WKT, or {@code null} if none.
+     */
+    public void append(final String text) {
+        if (text != null) {
+            appendSeparator(false);
+            quote(text);
+        }
+    }
+
+    /**
+     * Appends the given string as a quoted text.
+     */
+    private void quote(final String text) {
+        buffer.appendCodePoint(symbols.getOpenQuote()).append(text).appendCodePoint(symbols.getCloseQuote());
     }
 
     /**
@@ -600,11 +685,8 @@ public class Formatter {
      */
     private void format(final long number) {
         setColor(ElementKind.INTEGER);
-        final NumberFormat numberFormat = this.numberFormat;
-        final int fraction = numberFormat.getMinimumFractionDigits();
-        numberFormat.setMinimumFractionDigits(0);
+        numberFormat.setMaximumFractionDigits(0);
         numberFormat.format(number, buffer, dummy);
-        numberFormat.setMinimumFractionDigits(fraction);
         resetColor();
     }
 
@@ -613,6 +695,15 @@ public class Formatter {
      */
     private void format(double number) {
         setColor(ElementKind.NUMBER);
+        /*
+         * The -2 above is for using two less fraction digits than the expected number accuracy.
+         * The intend is to give to DecimalFormat a chance to hide rounding errors, keeping in
+         * mind that the number value is not necessarily the original one (we may have applied
+         * a unit conversion). In the case of WGS84 semi-major axis in metres, we still have a
+         * maximum of 8 fraction digits, which is more than enough.
+         */
+        numberFormat.setMaximumFractionDigits(MathFunctions.fractionDigitsForDelta(Math.ulp(number), false) - 2);
+        numberFormat.setMinimumFractionDigits(1); // Must be after setMaximumFractionDigits(…).
         numberFormat.format(number, buffer, dummy);
         resetColor();
     }
@@ -626,7 +717,7 @@ public class Formatter {
     public void append(final Unit<?> unit) {
         if (unit != null) {
             final StringBuffer buffer = this.buffer;
-            appendSeparator(lineChanged);
+            appendSeparator(requestNewLine);
             buffer.append("UNIT").appendCodePoint(symbols.getOpeningBracket(0));
             setColor(ElementKind.UNIT);
             buffer.appendCodePoint(symbols.getOpenQuote());
@@ -642,81 +733,6 @@ public class Formatter {
             append(Units.toStandardUnit(unit));
             buffer.appendCodePoint(symbols.getClosingBracket(0));
         }
-    }
-
-    /**
-     * Appends a character string between quotes.
-     * The {@linkplain Symbols#getSeparator() element separator} will be written before the text if needed.
-     *
-     * @param text The string to format to the WKT, or {@code null} if none.
-     */
-    public void append(final String text) {
-        if (text != null) {
-            appendSeparator(false);
-            quote(text);
-        }
-    }
-
-    /**
-     * Appends the given string as a quoted text.
-     */
-    private void quote(final String text) {
-        buffer.appendCodePoint(symbols.getOpenQuote()).append(text).appendCodePoint(symbols.getCloseQuote());
-    }
-
-    /**
-     * Returns the preferred identifier for the specified object.
-     * If the specified object contains an identifier from the preferred authority
-     * (usually {@linkplain org.apache.sis.metadata.iso.citation.Citations#OGC Open Geospatial}),
-     * then this identifier is returned. Otherwise, the first identifier is returned.
-     * If the specified object contains no identifier, then this method returns {@code null}.
-     *
-     * @param  info The object to looks for a preferred identifier, or {@code null} if none.
-     * @return The preferred identifier, or {@code null} if none.
-     */
-    public Identifier getIdentifier(final IdentifiedObject info) {
-        Identifier first = null;
-        if (info != null) {
-            final Collection<? extends Identifier> identifiers = info.getIdentifiers();
-            if (identifiers != null) {
-                for (final Identifier id : identifiers) {
-                    if (Citations.identifierMatches(authority, id.getAuthority())) {
-                        return id;
-                    }
-                    if (first == null) {
-                        first = id;
-                    }
-                }
-            }
-        }
-        return first;
-    }
-
-    /**
-     * Returns the preferred name for the specified object.
-     * If the specified object contains a name from the preferred authority
-     * (usually {@linkplain org.apache.sis.metadata.iso.citation.Citations#OGC Open Geospatial}),
-     * then this name is returned. Otherwise, the first name found is returned.
-     *
-     * <p>The preferred authority can be set by the {@link WKTFormat#setAuthority(Citation)} method.
-     * This is not necessarily the authority of the given {@linkplain IdentifiedObject#getName() object name}.</p>
-     *
-     * {@example The EPSG name of the <code>EPSG:6326</code> datum is "<cite>World Geodetic System 1984</cite>".
-     *           However if the preferred authority is OGC (which is the case by default), then this method usually
-     *           returns "<cite>WGS84</cite>" (the exact string to be returned depends on the object aliases).}
-     *
-     * @param  object The object to looks for a preferred name.
-     * @return The preferred name, or {@code null} if the given object has no name.
-     *
-     * @see WKTFormat#getAuthority()
-     * @see IdentifiedObjects#getName(IdentifiedObject, Citation)
-     */
-    public String getName(final IdentifiedObject object) {
-        String name = IdentifiedObjects.getName(object, authority);
-        if (name == null) {
-            name = IdentifiedObjects.getName(object, null);
-        }
-        return name;
     }
 
     /**
@@ -758,7 +774,7 @@ public class Formatter {
     }
 
     /**
-     * Returns {@code true} if the WKT in this formatter is not strictly compliant to the
+     * Returns {@code true} if the WKT written by this formatter is not strictly compliant to the
      * <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">WKT
      * specification</a>. This method returns {@code true} if {@link #setInvalidWKT(String)} has
      * been invoked at least once. The action to take regarding invalid WKT is caller-dependent.
@@ -818,12 +834,12 @@ public class Formatter {
         if (buffer != null) {
             buffer.setLength(0);
         }
-        linearUnit    = null;
-        angularUnit   = null;
-        unformattable = null;
-        warning       = null;
-        wasInvalidWKT = false;
-        lineChanged   = false;
-        margin        = 0;
+        linearUnit     = null;
+        angularUnit    = null;
+        unformattable  = null;
+        warning        = null;
+        wasInvalidWKT  = false;
+        requestNewLine = false;
+        margin         = 0;
     }
 }
