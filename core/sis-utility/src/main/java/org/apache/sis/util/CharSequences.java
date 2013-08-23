@@ -1783,8 +1783,11 @@ cmp:    while (ia < lga) {
         // because we compare code points while String.regionMatches(…) compares characters.
         final int limit  = text.length();
         final int length = part.length();
+        if (fromIndex < 0) { // Not checked before because we want NullPointerException if an argument is null.
+            return false;
+        }
         for (int i=0; i<length;) {
-            if (fromIndex < 0 || fromIndex >= limit) {
+            if (fromIndex >= limit) {
                 return false;
             }
             final int c1 = codePointAt(part, i);

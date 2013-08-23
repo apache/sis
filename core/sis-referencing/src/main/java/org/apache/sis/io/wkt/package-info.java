@@ -19,7 +19,7 @@
  * <a href="http://www.geoapi.org/snapshot/javadoc/org/opengis/referencing/doc-files/WKT.html"><cite>Well
  * Known Text</cite> (WKT)</a> parsing and formatting. This package provides the internal mechanism used
  * by SIS implementation. Most users do not need to know about it, except if they want to customize the
- * WKT output. For example it is possible to:
+ * parsing process or the WKT output. For example this package allows to:
  *
  * <ul>
  *   <li>{@linkplain org.apache.sis.io.wkt.WKTFormat#setConvention Format the parameters using the names
@@ -39,7 +39,7 @@
  * here in future versions.
  *
  * {@section Referencing WKT}
- * Parsing of {@linkplain org.apache.sis.referencing.crs.AbstractCoordinateReferenceSystem Coordinate Reference System}
+ * Parsing of {@linkplain org.apache.sis.referencing.crs.AbstractCRS Coordinate Reference System}
  * and {@linkplain org.apache.sis.referencing.operation.transform.AbstractMathTransform Math Transform} objects
  * are performed by the {@link org.apache.sis.io.wkt.ReferencingParser} class. The parser provides methods for:
  *
@@ -57,7 +57,7 @@
  *
  * {@section References}
  * <ul>
- *   <li><a href="http://www.geoapi.org/snapshot/javadoc/org/opengis/referencing/doc-files/WKT.html">Well Known Text specification</a></li>
+ *   <li><a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Well Known Text specification</a></li>
  *   <li><a href="http://home.gdal.org/projects/opengis/wktproblems.html">OGC WKT Coordinate System Issues</a></li>
  *   <li><a href="http://en.wikipedia.org/wiki/Well-known_text">Well Known Text in Wikipedia</a></li>
  * </ul>

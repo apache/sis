@@ -38,14 +38,14 @@ public enum ElementKind {
     INTEGER,
 
     /**
-     * {@linkplain javax.measure.unit.Unit Units of measurement}.
-     * In referencing WKT, this is the text inside {@code UNIT} elements.
+     * {@linkplain javax.measure.unit.Unit Units of measurement},
+     * often represented by {@code UNIT[…]} elements.
      */
     UNIT,
 
     /**
-     * {@linkplain org.opengis.referencing.cs.CoordinateSystemAxis Axes}.
-     * In referencing WKT, this is the text inside {@code AXIS} elements.
+     * {@linkplain org.opengis.referencing.cs.CoordinateSystemAxis Axes},
+     * often represented by {@code AXIS[…]} elements.
      */
     AXIS,
 
@@ -55,20 +55,20 @@ public enum ElementKind {
     CODE_LIST,
 
     /**
-     * {@linkplain org.opengis.parameter.ParameterValue Parameter values}.
-     * In referencing WKT, this is the text inside {@code PARAMETER} elements.
+     * {@linkplain org.opengis.parameter.ParameterValue Parameter values},
+     * often represented by {@code PARAMETER[…]} elements.
      */
     PARAMETER,
 
     /**
-     * {@linkplain org.opengis.referencing.operation.OperationMethod Operation methods}.
-     * In referencing WKT, this is the text inside {@code PROJECTION} elements.
+     * {@linkplain org.opengis.referencing.operation.OperationMethod Operation methods},
+     * often represented by {@code PROJECTION[…]} elements.
      */
     METHOD,
 
     /**
-     * {@linkplain org.opengis.referencing.datum.Datum Datum}.
-     * In referencing WKT, this is the text inside {@code DATUM} elements.
+     * {@linkplain org.opengis.referencing.datum.Datum Datum},
+     * often represented by {@code DATUM[…]} elements.
      */
     DATUM,
 

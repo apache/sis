@@ -31,15 +31,18 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * Newly created {@code Symbols} instances use the following defaults:
  *
  * <ul>
+ *   <li>An English locale for {@linkplain java.text.DecimalFormatSymbols decimal format symbols}.</li>
  *   <li>Square brackets, as in {@code DATUM["WGS84"]}. An alternative allowed by the WKT
  *       specification is curly brackets as in {@code DATUM("WGS84")}.</li>
+ *   <li>English quotation mark ({@code '"'}).</li>
+ *   <li>Coma separator followed by a space ({@code ", "}).</li>
  * </ul>
  *
- * {@section Relationship between <code>Symbols</code> locale and <code>WKTFormat</code> locale}
- * The {@link Locale} property of {@link WKTFormat} specifies the language to use when formatting
- * {@link org.opengis.util.InternationalString}. This can be set to any value. On the contrary,
- * the {@code Locale} property of {@code Symbols} specifies the {@linkplain java.text.DecimalFormatSymbols
- * decimal format symbols} and is very rarely set to an other locale than an English one.
+ * {@note <b>Relationship between <code>Symbols</code> locale and <code>WKTFormat</code> locale</b><br>
+ *        The <code>WKTFormat</code> <code>Locale</code> property specifies the language to use when
+ *        formatting <code>InternationalString</code> instances. This can be set to any value.
+ *        On the contrary, the <code>Locale</code> property of this <code>Symbols</code> class controls
+ *        the decimal format symbols and is very rarely set to an other locale than an English one.}
  *
  * @author  Martin Desruisseaux (IRD)
  * @since   0.4 (derived from geotk-2.1)
@@ -68,7 +71,7 @@ public class Symbols implements Localized, Serializable {
     public static final Symbols CURLY_BRACKETS = new Immutable('(', ')', '[', ']');
 
     /**
-     * The default set of symbols.
+     * The default set of symbols, as documented in the class javadoc.
      * This is currently set to {@link #SQUARE_BRACKETS}.
      *
      * @see Colors#DEFAULT
@@ -220,11 +223,21 @@ public class Symbols implements Localized, Serializable {
     }
 
     /**
+     * Returns the number of paired brackets. For example if the WKT parser accepts both the
+     * {@code [ ]} and {@code ( )} paired brackets, then this method returns 2.
+     *
+     * @return The number of bracket pairs.
+     */
+    public final int getNumPairedBracket() {
+        return brackets.length / 2;
+    }
+
+    /**
      * Returns the opening bracket character at the given index.
      * Index 0 stands for the default bracket used at formatting time.
      * All other index are for optional brackets accepted at parsing time.
      *
-     * @param  index Index of the opening bracket to get.
+     * @param  index Index of the opening bracket to get, from 0 to {@link #getNumPairedBracket()} exclusive.
      * @return The opening bracket at the given index, as a Unicode code point.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
      */
@@ -237,7 +250,7 @@ public class Symbols implements Localized, Serializable {
      * Index 0 stands for the default bracket used at formatting time.
      * All other index are for optional brackets accepted at parsing time.
      *
-     * @param  index Index of the closing bracket to get.
+     * @param  index Index of the closing bracket to get, from 0 to {@link #getNumPairedBracket()} exclusive.
      * @return The closing bracket at the given index, as a Unicode code point.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
      */
@@ -282,7 +295,7 @@ public class Symbols implements Localized, Serializable {
 
     /**
      * Returns the character used for opening a sequence of values.
-     * This is usually {@code '{'}.
+     * This is usually <code>'{'</code>.
      *
      * @return The character used for opening a sequence of values, as a Unicode code point.
      */
@@ -292,7 +305,7 @@ public class Symbols implements Localized, Serializable {
 
     /**
      * Returns the character used for closing a sequence of values.
-     * This is usually {@code '}'}.
+     * This is usually <code>'}'</code>.
      *
      * @return The character used for closing a sequence of values, as a Unicode code point.
      */
@@ -396,8 +409,9 @@ public class Symbols implements Localized, Serializable {
      * <ul>
      *   <li>The search is case-insensitive.</li>
      *   <li>Characters between the {@linkplain #getOpenQuote() open quote} and the
-     *       {@link #getCloseQuote() close quote} are ignored.</li>
-     *   <li>The element found in the given WKT must not be a substring of a larger Unicode identifier.</li>
+     *       {@linkplain #getCloseQuote() close quote} are ignored.</li>
+     *   <li>The element found in the given WKT can not be preceded by other
+     *       {@linkplain Character#isUnicodeIdentifierPart(int) Unicode identifier characters}.</li>
      *   <li>The element found in the given WKT must be followed, ignoring space, by an
      *       {@linkplain #getOpeningBracket(int) opening bracket}.</li>
      * </ul>
@@ -420,14 +434,15 @@ public class Symbols implements Localized, Serializable {
 
     /**
      * Returns {@code true} if the given WKT contains at least one instance of the {@code AXIS[…]} element.
-     * Invoking this method is equivalent to invoking {@link #containsElement(CharSequence, CharSequence)}
-     * for the {@code "AXIS"} element.
+     * Invoking this method is equivalent to invoking
+     * <code>{@linkplain #containsElement(CharSequence, String) containsElement}(wkt, "AXIS")</code>.
      *
      * <p>The check for axis elements is of particular interest because the axis order is a frequent cause
-     * of confusion when processing geographic data. Some applications just ignore the axis order declared
-     * in the WKT in favor of their hard-coded (<var>longitude</var>, <var>latitude</var>) axis order.
-     * Consequently, the presence of {@code AXIS[…]} elements in a WKT may be an indication that the encoded
-     * object may not be directly usable by some external softwares.</p>
+     * of confusion when processing geographic data. Some applications just ignore any declared axis order
+     * in favor of their own hard-coded (<var>longitude</var>, <var>latitude</var>) axis order.
+     * Consequently, the presence of {@code AXIS[…]} elements in a WKT is an indication that the encoded
+     * object may not be understood as intended by some external softwares.
+     * See for example {@link Convention#ESRI}.</p>
      *
      * @param  wkt The WKT to inspect.
      * @return {@code true} if the given WKT contains at least one instance of the {@code AXIS[…]} element.
