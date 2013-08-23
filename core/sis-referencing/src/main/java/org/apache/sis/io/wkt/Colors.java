@@ -25,6 +25,15 @@ import org.apache.sis.util.resources.Errors;
 
 /**
  * The colors to use for formatting <cite>Well Known Text</cite> (WKT) objects.
+ * Colors are identified by their names and can be mapped to {@link ElementKind}.
+ * The currently supported color names are:
+ *
+ * <ul>
+ *   <li>{@code "red"}, {@code "green"}, {@code "yellow"}, {@code "blue"}, {@code "magenta"}, {@code "cyan"},
+ *       {@code "gray"}.</li>
+ * </ul>
+ *
+ * The above list may be expanded in any future SIS version.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4 (derived from geotk-3.00)
@@ -81,16 +90,16 @@ public class Colors implements Serializable {
     }
 
     /**
-     * Sets the color of the given syntactic element.
+     * Sets the color of the given syntactic element from a color name.
      * The color names supported in the current implementation are
      * {@code "red"}, {@code "green"}, {@code "yellow"}, {@code "blue"}, {@code "magenta"}, {@code "cyan"}
-     * and {@code "gray"}.
+     * and {@code "gray"}, case-insensitive.
      *
      * @param  key   The syntactic element for which to set the color.
      * @param  color The color to give to the specified element, or {@code null} if none.
      * @throws IllegalArgumentException If the given color name is not recognized.
      */
-    public void set(final ElementKind key, final String color) throws IllegalArgumentException {
+    public void setName(final ElementKind key, final String color) throws IllegalArgumentException {
         if (color == null) {
             map.remove(key);
         } else {
@@ -104,7 +113,7 @@ public class Colors implements Serializable {
      * @param key The syntactic element for which to get the color.
      * @return The color of the specified element, or {@code null} if none.
      */
-    public String get(final ElementKind key) {
+    public String getName(final ElementKind key) {
         final X364 color = map.get(key);
         return (color != null) ? color.color : null;
     }
@@ -145,7 +154,7 @@ public class Colors implements Serializable {
          * Do not allow color changes.
          */
         @Override
-        public void set(final ElementKind key, final String color) {
+        public void setName(final ElementKind key, final String color) {
             throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnmodifiableObject_1, "Colors"));
         }
 

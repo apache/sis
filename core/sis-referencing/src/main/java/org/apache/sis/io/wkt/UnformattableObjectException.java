@@ -22,7 +22,7 @@ package org.apache.sis.io.wkt;
  * A formatting may fail because an object is too complex for the WKT format capability.
  *
  * {@example An engineering CRS can not be represented in the WKT 1 format if all axes
- *           does not use the same unit of measurement. However such CRS can be represented
+ *           do not use the same unit of measurement. However such CRS can be represented
  *           in the WKT 2 format.}
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)

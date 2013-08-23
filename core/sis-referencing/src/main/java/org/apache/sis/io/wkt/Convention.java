@@ -37,17 +37,20 @@ import static javax.measure.unit.NonSI.DEGREE_ANGLE;
 
 /**
  * The convention to use for WKT formatting.
- * This enumeration exists as an attempt to address some of the problems documented in the Frank Warmerdam's
+ * This enumeration attempts to address some of the variability documented in the Frank Warmerdam's
  * <a href="http://home.gdal.org/projects/opengis/wktproblems.html">OGC WKT Coordinate System Issues</a> page.
  *
- * <p>The various conventions differ mostly in parameter names, and sometime in WKT syntax.
- * For example the {@linkplain org.apache.sis.referencing.operation.projection.Mercator projection}
- * has a parameter named "<cite>Longitude of natural origin</cite>" by {@linkplain #EPSG},
- * "{@code central_meridian}" by {@linkplain #OGC} and "{@code NatOriginLong}" by {@linkplain #GEOTIFF}.
- * In addition the unit of the prime meridian shall be the angular unit of the enclosing
- * {@linkplain GeographicCRS geographic CRS} according the {@linkplain #OGC} standard,
- * but is restricted to decimal degrees by {@linkplain #ESRI}.
- * Other differences are documented in the javadoc of each enumeration value.</p>
+ * <p>The various conventions differ mostly in:</p>
+ * <ul>
+ *   <li><em>Parameter names</em> - for example the {@linkplain org.apache.sis.referencing.operation.projection.Mercator
+ *       Mercator projection} has a parameter named "<cite>Longitude of natural origin</cite>" by {@linkplain #EPSG},
+ *       "{@code central_meridian}" by {@linkplain #OGC} and "{@code NatOriginLong}" by {@linkplain #GEOTIFF}.</li>
+ *   <li><em>WKT syntax</em> - for example {@linkplain #ORACLE Oracle} does not enclose Bursa-Wolf parameters in a
+ *       {@code TOWGS84[…]} element.</li>
+ *   <li><em>Unit of measurement</em> - for example the unit of the prime meridian shall be the angular unit of the
+ *       enclosing {@linkplain GeographicCRS geographic CRS} according the {@linkplain #OGC} standard,
+ *       but is restricted to decimal degrees by {@linkplain #ESRI}.</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4 (derived from geotk-3.20)
@@ -61,13 +64,15 @@ public enum Convention {
     /**
      * The <a href="http://www.opengeospatial.org">Open Geospatial consortium</a> convention.
      * This is the default convention for all WKT formatting in the Apache SIS library.
+     * Some worthy aspects to note:
      *
-     * {@section Spacial case}
-     * For {@link GeocentricCRS}, this convention uses the legacy set of Cartesian axes.
-     * Those axes were defined in OGC 01-009 as <var>Other</var>,
-     * <var>{@linkplain DefaultCoordinateSystemAxis#EASTING Easting}</var> and
-     * <var>{@linkplain DefaultCoordinateSystemAxis#NORTHING Northing}</var>
-     * in metres, where the "<var>Other</var>" axis is toward prime meridian.
+     * <ul>
+     *   <li>For {@link GeocentricCRS}, this convention uses the legacy set of Cartesian axes.
+     *     Those axes were defined in OGC 01-009 as <var>Other</var>,
+     *     <var>{@linkplain DefaultCoordinateSystemAxis#EASTING Easting}</var> and
+     *     <var>{@linkplain DefaultCoordinateSystemAxis#NORTHING Northing}</var>
+     *     in metres, where the "<var>Other</var>" axis is toward prime meridian.</li>
+     * </ul>
      *
      * @see Citations#OGC
      * @see #toConformCS(CoordinateSystem)
@@ -77,13 +82,15 @@ public enum Convention {
     /**
      * The <a href="http://www.epsg.org">European Petroleum Survey Group</a> convention.
      * This convention uses the most descriptive parameter and projection names.
+     * Some worthy aspects to note:
      *
-     * {@section Spacial case}
-     * For {@link GeocentricCRS}, this convention uses the new set of Cartesian axes.
-     * Those axes are defined in ISO 19111 as
-     * <var>{@linkplain DefaultCoordinateSystemAxis#GEOCENTRIC_X Geocentric X}</var>,
-     * <var>{@linkplain DefaultCoordinateSystemAxis#GEOCENTRIC_Y Geocentric Y}</var> and
-     * <var>{@linkplain DefaultCoordinateSystemAxis#GEOCENTRIC_Z Geocentric Z}</var> in metres.
+     * <ul>
+     *   <li>For {@link GeocentricCRS}, this convention uses the new set of Cartesian axes.
+     *     Those axes are defined in ISO 19111 as
+     *     <var>{@linkplain DefaultCoordinateSystemAxis#GEOCENTRIC_X Geocentric X}</var>,
+     *     <var>{@linkplain DefaultCoordinateSystemAxis#GEOCENTRIC_Y Geocentric Y}</var> and
+     *     <var>{@linkplain DefaultCoordinateSystemAxis#GEOCENTRIC_Z Geocentric Z}</var> in metres.</li>
+     * </ul>
      *
      * @see Citations#EPSG
      * @see #toConformCS(CoordinateSystem)
@@ -134,7 +141,11 @@ public enum Convention {
 
     /**
      * The <a href="http://www.unidata.ucar.edu/software/netcdf-java">NetCDF</a> convention.
-     * This convention is similar to the {@link #OGC} convention except for parameter and projection names.
+     * This convention is similar to the {@link #OGC} convention except in the following aspects:
+     *
+     * <ul>
+     *   <li>Parameter and projection names.</li>
+     * </ul>
      *
      * @see Citations#NETCDF
      */
@@ -142,7 +153,11 @@ public enum Convention {
 
     /**
      * The <a href="http://www.remotesensing.org/geotiff/geotiff.html">GeoTIFF</a> convention.
-     * This convention is similar to the {@link #OGC} convention except for parameter and projection names.
+     * This convention is similar to the {@link #OGC} convention except in the following aspects:
+     *
+     * <ul>
+     *   <li>Parameter and projection names.</li>
+     * </ul>
      *
      * @see Citations#GEOTIFF
      */
@@ -150,10 +165,10 @@ public enum Convention {
 
     /**
      * The <a href="http://trac.osgeo.org/proj/">Proj.4</a> convention.
-     * This convention uses very short parameter and projection names.
-     * Other differences are:
+     * This convention is similar to the {@link #OGC} convention except in the following aspects:
      *
      * <ul>
+     *   <li>Very short parameter and projection names.</li>
      *   <li>The angular units of {@code PRIMEM} and {@code PARAMETER} elements are always degrees,
      *       no matter the units of the enclosing {@code GEOGCS} element.</li>
      * </ul>
@@ -209,44 +224,42 @@ public enum Convention {
     final boolean unitUS;
 
     /**
-     * The citation for this enumeration.
+     * The organization, standard or project that defines this convention.
      */
-    private final Citation citation;
+    private final Citation authority;
 
     /**
      * Creates a new enumeration value.
      */
-    private Convention(final Citation citation, final Unit<Angle> angularUnit, final boolean unitUS) {
-        this.citation = citation;
+    private Convention(final Citation authority, final Unit<Angle> angularUnit, final boolean unitUS) {
+        this.authority = authority;
         this.forcedAngularUnit = angularUnit;
         this.unitUS = unitUS;
     }
 
     /**
-     * Returns the citation for this enumeration.
-     * This is one of the constants defined in the {@link Citations} class.
+     * Returns the citation for the organization, standard of project that defines this convention.
      *
-     * @return The citation for this enum.
+     * @return The organization, standard or project that defines this convention.
      *
      * @see WKTFormat#getAuthority()
      */
-    public Citation getCitation() {
-        return citation;
+    public Citation getAuthority() {
+        return authority;
     }
 
     /**
-     * Returns the convention for the given citation.
+     * Returns the convention for the organization, standard or project specified by the given citation.
      *
-     * @param  citation The citation for which to get the convention, or {@code null}.
-     * @param  defaultConvention The default convention to return if none where found for
-     *         the given citation. May be {@code null}.
+     * @param  authority The organization, standard or project for which to get the convention, or {@code null}.
+     * @param  defaultConvention The default convention to return if none where found for the given citation.
      * @return The convention, or {@code null} if no matching convention were found and the
      *         {@code defaultConvention} argument is {@code null}.
      */
-    public static Convention forCitation(final Citation citation, final Convention defaultConvention) {
-        if (citation != null) {
+    public static Convention forCitation(final Citation authority, final Convention defaultConvention) {
+        if (authority != null) {
             for (final Convention candidate : values()) {
-                if (Citations.identifierMatches(candidate.getCitation(), citation)) {
+                if (Citations.identifierMatches(candidate.getAuthority(), authority)) {
                     return candidate;
                 }
             }
@@ -255,18 +268,17 @@ public enum Convention {
     }
 
     /**
-     * Returns the convention for the given identifier.
+     * Returns the convention for the organization, standard or project specified by the given identifier.
      *
-     * @param  identifier The identifier for which to get the convention, or {@code null}.
-     * @param  defaultConvention The default convention to return if none where found for
-     *         the given identifier. May be {@code null}.
+     * @param  authority The organization, standard or project for which to get the convention, or {@code null}.
+     * @param  defaultConvention The default convention to return if none where found for the given identifier.
      * @return The convention, or {@code null} if no matching convention were found and the
      *         {@code defaultConvention} argument is {@code null}.
      */
-    public static Convention forIdentifier(final String identifier, final Convention defaultConvention) {
-        if (identifier != null) {
+    public static Convention forIdentifier(final String authority, final Convention defaultConvention) {
+        if (authority != null) {
             for (final Convention candidate : values()) {
-                if (Citations.identifierMatches(candidate.getCitation(), identifier)) {
+                if (Citations.identifierMatches(candidate.getAuthority(), authority)) {
                     return candidate;
                 }
             }
@@ -279,17 +291,20 @@ public enum Convention {
      * for converting between the legacy (OGC 01-009) {@link GeocentricCRS} axis directions,
      * and the new (ISO 19111) directions. Those directions are:
      *
-     * <ul>
-     *   <li>OGC 01-009: Other,
-     *     {@linkplain DefaultCoordinateSystemAxis#EASTING Easting},
-     *     {@linkplain DefaultCoordinateSystemAxis#NORTHING Northing}.
-     *   </li>
-     *   <li>ISO 19111:
-     *     {@linkplain DefaultCoordinateSystemAxis#GEOCENTRIC_X Geocentric X},
-     *     {@linkplain DefaultCoordinateSystemAxis#GEOCENTRIC_Y Geocentric Y},
-     *     {@linkplain DefaultCoordinateSystemAxis#GEOCENTRIC_Z Geocentric Z}.
-     *   </li>
-     * </ul>
+     * <table class="sis">
+     * <tr>
+     *   <th>ISO 19111</th>
+     *   <th>OGC 01-009</th>
+     * </tr><tr>
+     *   <td>{@linkplain DefaultCoordinateSystemAxis#GEOCENTRIC_X Geocentric X}</td>
+     *   <td>Other</td>
+     * </tr><tr>
+     *   <td>{@linkplain DefaultCoordinateSystemAxis#GEOCENTRIC_Y Geocentric Y}</td>
+     *   <td>{@linkplain DefaultCoordinateSystemAxis#EASTING Easting}</td>
+     * </tr><tr>
+     *   <td>{@linkplain DefaultCoordinateSystemAxis#GEOCENTRIC_Z Geocentric Z}</td>
+     *   <td>{@linkplain DefaultCoordinateSystemAxis#NORTHING Northing}</td>
+     * </tr></table>
      *
      * @param  cs The coordinate system.
      * @return A coordinate system equivalent to the given one but with conform axis names,

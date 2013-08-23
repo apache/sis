@@ -544,15 +544,10 @@ public final class ArgumentChecks extends Static {
      * @since 0.4
      */
     public static void ensureValidUnicodeCodePoint(final String name, final int code) throws IllegalArgumentException {
-        final Object value;
-        if (code < Character.MIN_CODE_POINT) {
-            value = code;
-        } else if (code > Character.MAX_CODE_POINT) {
-            value = "U+" + Integer.toHexString(code).toUpperCase();
-        } else {
-            return;
+        if (!Character.isValidCodePoint(code)) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalUnicodeCodePoint_2, name,
+                    (code < Character.MIN_CODE_POINT) ? code : "U+" + Integer.toHexString(code).toUpperCase()));
         }
-        throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalUnicodeCodePoint_2, name, value));
     }
 
     /**
