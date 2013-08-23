@@ -16,6 +16,14 @@
  */
 package org.apache.sis.io.wkt;
 
+import javax.measure.unit.Unit;
+import org.opengis.util.CodeList;
+import org.opengis.referencing.datum.Datum;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.opengis.referencing.operation.OperationMethod;
+import org.opengis.parameter.GeneralParameterValue;
+import org.apache.sis.util.Numbers;
+
 
 /**
  * Kind of an element in a <cite>Well Known Text</cite>.
@@ -75,5 +83,41 @@ public enum ElementKind {
     /**
      * Unformattable elements.
      */
-    ERROR
+    ERROR;
+
+    /**
+     * Returns the element kind for an object of the given type.
+     * The current implementation defines the following associations:
+     *
+     * <table class="sis">
+     *   <tr><th>Base type</th>                     <th>Kind</th></tr>
+     *   <tr><td>{@link Datum}</td>                 <td>{@link #DATUM}</td></tr>
+     *   <tr><td>{@link OperationMethod}</td>       <td>{@link #METHOD}</td></tr>
+     *   <tr><td>{@link GeneralParameterValue}</td> <td>{@link #PARAMETER}</td></tr>
+     *   <tr><td>{@link CoordinateSystemAxis}</td>  <td>{@link #AXIS}</td></tr>
+     *   <tr><td>{@link CodeList}</td>              <td>{@link #CODE_LIST}</td></tr>
+     *   <tr><td>{@link Unit}</td>                  <td>{@link #UNIT}</td></tr>
+     *   <tr><td>{@link Number}</td>                <td>{@link #INTEGER} or {@link #NUMBER}</td></tr>
+     * </table>
+     *
+     * The given type can be any sub-type of the above types. If an object implements more
+     * than one of the above interfaces, then the selected {@code ElementKind} is arbitrary.
+     *
+     * @param  type The object type, or {@code null}.
+     * @return The element kind of the given type, or {@code null} if none match.
+     */
+    public static ElementKind forType(final Class<?> type) {
+        if (type != null) {
+            if (Datum                .class.isAssignableFrom(type)) return DATUM;
+            if (OperationMethod      .class.isAssignableFrom(type)) return METHOD;
+            if (GeneralParameterValue.class.isAssignableFrom(type)) return PARAMETER;
+            if (CoordinateSystemAxis .class.isAssignableFrom(type)) return AXIS;
+            if (CodeList             .class.isAssignableFrom(type)) return CODE_LIST;
+            if (Unit                 .class.isAssignableFrom(type)) return UNIT;
+            if (Number.class.isAssignableFrom(type)) {
+                return Numbers.isInteger(type) ? INTEGER : NUMBER;
+            }
+        }
+        return null;
+    }
 }
