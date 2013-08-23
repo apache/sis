@@ -23,7 +23,6 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.AxisDirection;
-import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.GeocentricCRS;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.CoordinateOperation;
@@ -39,17 +38,17 @@ import static javax.measure.unit.NonSI.DEGREE_ANGLE;
  * The convention to use for WKT formatting.
  * This enumeration attempts to address some of the variability documented in the Frank Warmerdam's
  * <a href="http://home.gdal.org/projects/opengis/wktproblems.html">OGC WKT Coordinate System Issues</a> page.
+ * The various conventions enumerated in this class differ mostly in:
  *
- * <p>The various conventions differ mostly in:</p>
  * <ul>
- *   <li><em>Parameter names</em> - for example the {@linkplain org.apache.sis.referencing.operation.projection.Mercator
- *       Mercator projection} has a parameter named "<cite>Longitude of natural origin</cite>" by {@linkplain #EPSG},
- *       "{@code central_meridian}" by {@linkplain #OGC} and "{@code NatOriginLong}" by {@linkplain #GEOTIFF}.</li>
+ *   <li><em>Parameter names</em> - for example a parameter named "<cite>Longitude of natural origin</cite>"
+ *       according {@linkplain #EPSG} may be named "{@code central_meridian}" according {@linkplain #OGC}
+ *       and "{@code NatOriginLong}" according {@linkplain #GEOTIFF GeoTIFF}.</li>
  *   <li><em>WKT syntax</em> - for example {@linkplain #ORACLE Oracle} does not enclose Bursa-Wolf parameters in a
  *       {@code TOWGS84[…]} element.</li>
- *   <li><em>Unit of measurement</em> - for example the unit of the prime meridian shall be the angular unit of the
- *       enclosing {@linkplain GeographicCRS geographic CRS} according the {@linkplain #OGC} standard,
- *       but is restricted to decimal degrees by {@linkplain #ESRI}.</li>
+ *   <li><em>Unit of measurement</em> - for example the unit of the Prime Meridian shall be the angular unit of the
+ *       enclosing Geographic CRS according the {@linkplain #OGC} standard, but is restricted to decimal degrees by
+ *       {@linkplain #ESRI}.</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
