@@ -483,11 +483,11 @@ public class Symbols implements Localized, Serializable {
         final int length = wkt.length();
         boolean isQuoting = false;
         while (offset < length) {
-            final int c = Character.codePointAt(wkt, offset);
+            int c = Character.codePointAt(wkt, offset);
             if (c == (isQuoting ? closeQuote : openQuote)) {
                 isQuoting = !isQuoting;
             }
-            if (!isQuoting && Character.isJavaIdentifierStart(c)) {
+            if (!isQuoting && Character.isUnicodeIdentifierStart(c)) {
                 /*
                  * Found the beginning of a Unicode identifier.
                  * Check if this is the identifier we were looking for.
@@ -497,11 +497,24 @@ public class Symbols implements Localized, Serializable {
                     if (offset >= length) {
                         break;
                     }
-                    if (matchingBracket(Character.codePointAt(wkt, offset)) >= 0) {
+                    c = Character.codePointAt(wkt, offset);
+                    if (matchingBracket(c) >= 0) {
                         return true;
                     }
+                } else {
+                    /*
+                     * Not the identifier we were looking for. Skip the whole identifier.
+                     */
+                    do {
+                        offset += Character.charCount(c);
+                        if (offset >= length) {
+                            return false;
+                        }
+                        c = Character.codePointAt(wkt, offset);
+                    } while (Character.isUnicodeIdentifierPart(c));
                 }
             }
+            offset += Character.charCount(c);
         }
         return false;
     }

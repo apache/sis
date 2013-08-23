@@ -16,8 +16,6 @@
  */
 package org.apache.sis.io.wkt;
 
-import org.apache.sis.internal.util.X364;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -25,21 +23,26 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests the {@link Formatter} class.
+ * Tests the {@link Symbols} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
+ * @since   0.4 (derived from geotk-2.4)
  * @version 0.4
  * @module
  */
-@DependsOn({ConventionTest.class, SymbolsTest.class})
-public final strictfp class FormatterTest extends TestCase {
+public final strictfp class SymbolsTest extends TestCase {
     /**
-     * Verifies the ANSI escape sequences hard-coded in {@link Formatter}.
+     * Tests the {@link Symbols#containsAxis(CharSequence)} method.
      */
     @Test
-    public void testAnsiEscapeSequences() {
-        assertEquals("FOREGROUND_DEFAULT", X364.FOREGROUND_DEFAULT.sequence(), Formatter.FOREGROUND_DEFAULT);
-        assertEquals("BACKGROUND_DEFAULT", X364.BACKGROUND_DEFAULT.sequence(), Formatter.BACKGROUND_DEFAULT);
+    public void testContainsAxis() {
+        final Symbols s = Symbols.DEFAULT;
+        assertTrue("At beginning of a line.",   s.containsAxis(                  "AXIS[\"Long\", EAST]"));
+        assertTrue("Embeded in GEOGCS.",        s.containsAxis("GEOGCS[\"WGS84\", AXIS[\"Long\", EAST]]"));
+        assertTrue("Using different brackets.", s.containsAxis("GEOGCS[\"WGS84\", AXIS (\"Long\", EAST)]"));
+        assertTrue("Mixed cases.",              s.containsAxis("GEOGCS[\"WGS84\", aXis[\"Long\", EAST]]"));
+        assertFalse("AXIS in quoted text.",     s.containsAxis("GEOGCS[\"AXIS\"]"));
+        assertFalse("Without opening bracket.", s.containsAxis("GEOGCS[\"WGS84\", AXIS]"));
+        assertFalse("No AXIS.",                 s.containsAxis("GEOGCS[\"WGS84\"]"));
     }
 }
