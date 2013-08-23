@@ -63,7 +63,7 @@ public final class Citations extends Static {
      * @param  collection The collection from which to get the iterator, or {@code null}.
      * @return The iterator over the given collection elements, or {@code null}.
      */
-    private static <E> Iterator<E> iterator(final Collection<E> collection) {
+    public static <E> Iterator<E> iterator(final Collection<E> collection) {
         return (collection != null && !collection.isEmpty()) ? collection.iterator() : null;
     }
 

@@ -86,16 +86,16 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
      * Returns the value to which this map maps the specified index.
      * Returns null if the map contains no mapping for the given index.
      *
-     * @param info The object from which to get the property value.
-     * @param key  The property index, as one of the values in the {@link #INDICES} map.
+     * @param object The object from which to get the property value.
+     * @param key    The property index, as one of the values in the {@link #INDICES} map.
      */
-    private static Object get(final IdentifiedObject info, final int key) {
+    private static Object get(final IdentifiedObject object, final int key) {
         switch (key) {
             case 0: {
-                return info.getName();
+                return object.getName();
             }
             case 1: {
-                final Collection<ReferenceIdentifier> c = info.getIdentifiers();
+                final Collection<ReferenceIdentifier> c = object.getIdentifiers();
                 if (c != null) {
                     final int size = c.size();
                     if (size != 0) {
@@ -105,7 +105,7 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
                 break;
             }
             case 2: {
-                final Collection<GenericName> c = info.getAlias();
+                final Collection<GenericName> c = object.getAlias();
                 if (c != null) {
                     final int size = c.size();
                     if (size != 0) {
@@ -115,37 +115,37 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
                 break;
             }
             case 3: {
-                return info.getRemarks();
+                return object.getRemarks();
             }
             case 4: {
-                if (info instanceof ReferenceSystem) {
-                    return ((ReferenceSystem) info).getScope();
-                } else if (info instanceof Datum) {
-                    return ((Datum) info).getScope();
-                } else if (info instanceof CoordinateOperation) {
-                    return ((CoordinateOperation) info).getScope();
+                if (object instanceof ReferenceSystem) {
+                    return ((ReferenceSystem) object).getScope();
+                } else if (object instanceof Datum) {
+                    return ((Datum) object).getScope();
+                } else if (object instanceof CoordinateOperation) {
+                    return ((CoordinateOperation) object).getScope();
                 }
                 break;
             }
             case 5: {
-                if (info instanceof ReferenceSystem) {
-                    return ((ReferenceSystem) info).getDomainOfValidity();
-                } else if (info instanceof Datum) {
-                    return ((Datum) info).getDomainOfValidity();
-                } else if (info instanceof CoordinateOperation) {
-                    return ((CoordinateOperation) info).getDomainOfValidity();
+                if (object instanceof ReferenceSystem) {
+                    return ((ReferenceSystem) object).getDomainOfValidity();
+                } else if (object instanceof Datum) {
+                    return ((Datum) object).getDomainOfValidity();
+                } else if (object instanceof CoordinateOperation) {
+                    return ((CoordinateOperation) object).getDomainOfValidity();
                 }
                 break;
             }
             case 6: {
-                if (info instanceof CoordinateOperation) {
-                    return ((CoordinateOperation) info).getOperationVersion();
+                if (object instanceof CoordinateOperation) {
+                    return ((CoordinateOperation) object).getOperationVersion();
                 }
                 break;
             }
             case 7: {
-                if (info instanceof CoordinateOperation) {
-                    final Collection<PositionalAccuracy> c = ((CoordinateOperation) info).getCoordinateOperationAccuracy();
+                if (object instanceof CoordinateOperation) {
+                    final Collection<PositionalAccuracy> c = ((CoordinateOperation) object).getCoordinateOperationAccuracy();
                     if (c != null) {
                         final int size = c.size();
                         if (size != 0) {
@@ -163,13 +163,13 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
     /**
      * The object where all properties come from.
      */
-    final IdentifiedObject info;
+    final IdentifiedObject object;
 
     /**
      * Creates new properties from the specified identified object.
      */
-    Properties(final IdentifiedObject info) {
-        this.info = info;
+    Properties(final IdentifiedObject object) {
+        this.object = object;
     }
 
     /**
@@ -178,7 +178,7 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
     @Override
     public boolean isEmpty() {
         for (int i=0; i<KEYS.length; i++) {
-            if (get(info, i) != null) {
+            if (get(object, i) != null) {
                 return false;
             }
         }
@@ -192,7 +192,7 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
     public int size() {
         int n = 0;
         for (int i=0; i<KEYS.length; i++) {
-            if (get(info, i) != null) {
+            if (get(object, i) != null) {
                 n++;
             }
         }
@@ -214,7 +214,7 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
     @Override
     public Object get(final Object key) {
         final Integer i = INDICES.get(key);
-        return (i != null) ? get(info, i) : null;
+        return (i != null) ? get(object, i) : null;
     }
 
     /**
@@ -248,7 +248,7 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
         /** Iterates over the {@link #KEYS}, returning only the entry having a non-null value. */
         @Override
         public Iterator<Entry<String, Object>> iterator() {
-            return new Iter(info);
+            return new Iter(object);
         }
     }
 
@@ -257,9 +257,9 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
      */
     private static final class Iter implements Iterator<Entry<String,Object>> {
         /**
-         * A copy of the {@link Properties#info} reference.
+         * A copy of the {@link Properties#object} reference.
          */
-        private final IdentifiedObject info;
+        private final IdentifiedObject object;
 
         /**
          * Index of the next element to return.
@@ -274,8 +274,8 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
         /**
          * Creates a new iterator wrapping the given object.
          */
-        Iter(final IdentifiedObject info) {
-            this.info = info;
+        Iter(final IdentifiedObject object) {
+            this.object = object;
         }
 
         /**
@@ -287,7 +287,7 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
                 if (nextIndex == KEYS.length) {
                     return false;
                 }
-                value = get(info, nextIndex++);
+                value = get(object, nextIndex++);
             }
             return true;
         }
