@@ -156,7 +156,7 @@ public class Symbols implements Localized, Serializable {
     /**
      * An immutable set of symbols.
      */
-    static final class Immutable extends Symbols {
+    private static final class Immutable extends Symbols {
         /**
          * For cross-version compatibility.
          */
@@ -168,6 +168,21 @@ public class Symbols implements Localized, Serializable {
          */
         Immutable(final int... brackets) {
             super(brackets);
+        }
+
+        /**
+         * Creates an immutable copy of the given set of symbols.
+         */
+        Immutable(final Symbols symbols) {
+            super(symbols);
+        }
+
+        /**
+         * Returns {@code this} since this set of symbols is already immutable.
+         */
+        @Override
+        Symbols immutable() {
+            return this;
         }
 
         /**
@@ -184,6 +199,13 @@ public class Symbols implements Localized, Serializable {
      * To be overridden by the {@link Immutable} subclass only.
      */
     void checkWritePermission() throws UnsupportedOperationException {
+    }
+
+    /**
+     * Returns an immutable copy of this set of symbols, or {@code this} if this instance is already immutable.
+     */
+    Symbols immutable() {
+        return new Immutable(this);
     }
 
     /**
@@ -396,8 +418,6 @@ public class Symbols implements Localized, Serializable {
     final NumberFormat createNumberFormat() {
         final NumberFormat format = NumberFormat.getNumberInstance(locale);
         format.setGroupingUsed(false);
-        format.setMinimumFractionDigits(1);
-        format.setMaximumFractionDigits(8);
         return format;
     }
 
