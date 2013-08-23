@@ -25,12 +25,15 @@ package org.apache.sis.io.wkt;
  *           do not use the same unit of measurement. However such CRS can be represented
  *           in the WKT 2 format.}
  *
+ * This exception may also be thrown by {@link Formatter} if the object given to an
+ * {@code append(…)} method is an instance of an unsupported class.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.0)
  * @version 0.4
  * @module
  *
- * @see Formatter#setInvalidWKT(Class)
+ * @see Formatter#setInvalidWKT(String)
  */
 public class UnformattableObjectException extends UnsupportedOperationException {
     /**

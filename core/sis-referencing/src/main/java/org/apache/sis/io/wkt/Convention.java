@@ -187,7 +187,16 @@ public enum Convention {
      * @see Formatter#isInternalWKT()
      */
     @Debug
-    INTERNAL(Citations.SIS, null, false) {
+    INTERNAL(Citations.OGC, null, false) {
+        /**
+         * Declares publicly that this convention is defined by Apache SIS, despite the
+         * package-private {@link #authority} field being set to OGC for {@link Formatter} needs.
+         */
+        @Override
+        public Citation getAuthority() {
+            return Citations.SIS;
+        }
+
         @Override
         public CoordinateSystem toConformCS(final CoordinateSystem cs) {
             return cs; // Prevent any modification on the internal CS.
@@ -223,9 +232,10 @@ public enum Convention {
     final boolean unitUS;
 
     /**
-     * The organization, standard or project that defines this convention.
+     * The organization, standard or project to use for fetching Map Projection parameter names.
+     * Shall be one of the authorities known to {@link org.apache.sis.referencing.operation.provider}.
      */
-    private final Citation authority;
+    final Citation authority;
 
     /**
      * Creates a new enumeration value.
