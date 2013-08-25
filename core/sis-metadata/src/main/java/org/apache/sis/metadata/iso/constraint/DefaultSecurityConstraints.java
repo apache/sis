@@ -97,16 +97,18 @@ public class DefaultSecurityConstraints extends DefaultConstraints implements Se
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(SecurityConstraints)
      */
     public DefaultSecurityConstraints(final SecurityConstraints object) {
         super(object);
-        classification       = object.getClassification();
-        userNote             = object.getUserNote();
-        classificationSystem = object.getClassificationSystem();
-        handlingDescription  = object.getHandlingDescription();
+        if (object != null) {
+            classification       = object.getClassification();
+            userNote             = object.getUserNote();
+            classificationSystem = object.getClassificationSystem();
+            handlingDescription  = object.getHandlingDescription();
+        }
     }
 
     /**
@@ -136,6 +138,8 @@ public class DefaultSecurityConstraints extends DefaultConstraints implements Se
 
     /**
      * Returns the name of the handling restrictions on the resource.
+     *
+     * @return Name of the handling restrictions on the resource, or {@code null}.
      */
     @Override
     @XmlElement(name = "classification", required = true)
@@ -156,6 +160,8 @@ public class DefaultSecurityConstraints extends DefaultConstraints implements Se
     /**
      * Returns the explanation of the application of the legal constraints or other restrictions and legal
      * prerequisites for obtaining and using the resource.
+     *
+     * @return Explanation of the application of the legal constraints, or {@code null}.
      */
     @Override
     @XmlElement(name = "userNote")
@@ -176,6 +182,8 @@ public class DefaultSecurityConstraints extends DefaultConstraints implements Se
 
     /**
      * Returns the name of the classification system.
+     *
+     * @return Name of the classification system, or {@code null}.
      */
     @Override
     @XmlElement(name = "classificationSystem")
@@ -195,6 +203,8 @@ public class DefaultSecurityConstraints extends DefaultConstraints implements Se
 
     /**
      * Returns the additional information about the restrictions on handling the resource.
+     *
+     * @return Additional information about the restrictions, or {@code null}.
      */
     @Override
     @XmlElement(name = "handlingDescription")

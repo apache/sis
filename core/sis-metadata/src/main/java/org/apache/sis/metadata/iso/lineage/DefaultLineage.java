@@ -83,15 +83,17 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Lineage)
      */
     public DefaultLineage(final Lineage object) {
         super(object);
-        statement    = object.getStatement();
-        processSteps = copyCollection(object.getProcessSteps(), ProcessStep.class);
-        sources      = copyCollection(object.getSources(), Source.class);
+        if (object != null) {
+            statement    = object.getStatement();
+            processSteps = copyCollection(object.getProcessSteps(), ProcessStep.class);
+            sources      = copyCollection(object.getSources(), Source.class);
+        }
     }
 
     /**
@@ -123,6 +125,8 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
      * Returns the general explanation of the data producer's knowledge about the lineage of a dataset.
      * Can be provided only if {@linkplain DefaultScope#getLevel scope level}
      * is {@link ScopeCode#DATASET DATASET} or {@link ScopeCode#SERIES SERIES}.
+     *
+     * @return Explanation of the data producer's knowledge about the lineage, or {@code null}.
      */
     @Override
     @XmlElement(name = "statement")
@@ -142,6 +146,8 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
 
     /**
      * Returns the information about an event in the creation process for the data specified by the scope.
+     *
+     * @return Information about an event in the creation process.
      */
     @Override
     @XmlElement(name = "processStep")
@@ -160,6 +166,8 @@ public class DefaultLineage extends ISOMetadata implements Lineage {
 
     /**
      * Returns information about the source data used in creating the data specified by the scope.
+     *
+     * @return Information about the source data.
      */
     @Override
     @XmlElement(name = "source")

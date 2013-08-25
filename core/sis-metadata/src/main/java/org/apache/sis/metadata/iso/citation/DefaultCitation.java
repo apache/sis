@@ -33,6 +33,7 @@ import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.xml.IdentifierSpace;
+import org.apache.sis.xml.IdentifierMap;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 import static org.apache.sis.internal.metadata.MetadataUtilities.toDate;
@@ -121,7 +122,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * Date of the edition in milliseconds elapsed sine January 1st, 1970,
      * or {@link Long#MIN_VALUE} if none.
      */
-    private long editionDate;
+    private long editionDate = Long.MIN_VALUE;
 
     /**
      * Name and position information for an individual or organization that is responsible
@@ -157,7 +158,6 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * Constructs an initially empty citation.
      */
     public DefaultCitation() {
-        editionDate = Long.MIN_VALUE;
     }
 
     /**
@@ -167,7 +167,6 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      *        or {@code null} if none.
      */
     public DefaultCitation(final CharSequence title) {
-        this(); // Initialize the date field.
         this.title = Types.toInternationalString(title);
     }
 
@@ -183,7 +182,6 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      *              responsible for the resource, or {@code null} if none.
      */
     public DefaultCitation(final ResponsibleParty party) {
-        this(); // Initialize the date field.
         if (party != null) {
             citedResponsibleParties = singleton(party, ResponsibleParty.class);
             title = party.getOrganisationName();
@@ -204,25 +202,32 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Citation)
      */
     public DefaultCitation(final Citation object) {
         super(object);
-        title                   = object.getTitle();
-        alternateTitles         = copyCollection(object.getAlternateTitles(), InternationalString.class);
-        dates                   = copyCollection(object.getDates(), CitationDate.class);
-        edition                 = object.getEdition();
-        editionDate             = toMilliseconds(object.getEditionDate());
-        identifiers             = copyCollection(object.getIdentifiers(), Identifier.class);
-        citedResponsibleParties = copyCollection(object.getCitedResponsibleParties(), ResponsibleParty.class);
-        presentationForms       = copyCollection(object.getPresentationForms(), PresentationForm.class);
-        series                  = object.getSeries();
-        otherCitationDetails    = object.getOtherCitationDetails();
-        collectiveTitle         = object.getCollectiveTitle();
-// TODO ISBN                    = object.getISBN();
-// TODO ISSN                    = object.getISSN();
+        if (object != null) {
+            title                   = object.getTitle();
+            alternateTitles         = copyCollection(object.getAlternateTitles(), InternationalString.class);
+            dates                   = copyCollection(object.getDates(), CitationDate.class);
+            edition                 = object.getEdition();
+            editionDate             = toMilliseconds(object.getEditionDate());
+            identifiers             = copyCollection(object.getIdentifiers(), Identifier.class);
+            citedResponsibleParties = copyCollection(object.getCitedResponsibleParties(), ResponsibleParty.class);
+            presentationForms       = copyCollection(object.getPresentationForms(), PresentationForm.class);
+            series                  = object.getSeries();
+            otherCitationDetails    = object.getOtherCitationDetails();
+            collectiveTitle         = object.getCollectiveTitle();
+            final String id1        = object.getISBN();
+            final String id2        = object.getISSN();
+            if (id1 != null || id2 != null) {
+                final IdentifierMap map = super.getIdentifierMap();
+                if (id1 != null) map.putSpecialized(ISBN, id1);
+                if (id2 != null) map.putSpecialized(ISSN, id2);
+            }
+        }
     }
 
     /**
@@ -252,6 +257,8 @@ public class DefaultCitation extends ISOMetadata implements Citation {
 
     /**
      * Returns the name by which the cited resource is known.
+     *
+     * @return The cited resource name, or {@code null}.
      */
     @Override
     @XmlElement(name = "title", required = true)
@@ -272,6 +279,8 @@ public class DefaultCitation extends ISOMetadata implements Citation {
     /**
      * Returns the short name or other language name by which the cited information is known.
      * Example: "DCW" as an alternative title for "<cite>Digital Chart of the World</cite>".
+     *
+     * @return Other names for the resource, or an empty collection if none.
      */
     @Override
     @XmlElement(name = "alternateTitle")
@@ -290,6 +299,8 @@ public class DefaultCitation extends ISOMetadata implements Citation {
 
     /**
      * Returns the reference date for the cited resource.
+     *
+     * @return The reference date.
      */
     @Override
     @XmlElement(name = "date", required = true)
@@ -308,6 +319,8 @@ public class DefaultCitation extends ISOMetadata implements Citation {
 
     /**
      * Returns the version of the cited resource.
+     *
+     * @return The version, or {@code null} if none.
      */
     @Override
     @XmlElement(name = "edition")
@@ -327,6 +340,8 @@ public class DefaultCitation extends ISOMetadata implements Citation {
 
     /**
      * Returns the date of the edition.
+     *
+     * @return The edition date, or {@code null} if none.
      */
     @Override
     @XmlElement(name = "editionDate")
@@ -357,6 +372,8 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * {@note The <code>&lt:gmd:identifier&gt;</code> element marshalled to XML will exclude
      *        all the above cited identifiers, for ISO 19139 compliance. Those identifiers
      *        will appear in other XML elements or attributes.}
+     *
+     * @return The identifiers, or an empty collection if none.
      *
      * @see #getISBN()
      * @see #getISSN()
@@ -393,6 +410,8 @@ public class DefaultCitation extends ISOMetadata implements Citation {
     /**
      * Returns the name and position information for an individual or organization that is
      * responsible for the resource.
+     *
+     * @return The individual or organization that is responsible, or an empty collection if none.
      */
     @Override
     @XmlElement(name = "citedResponsibleParty")
@@ -412,6 +431,8 @@ public class DefaultCitation extends ISOMetadata implements Citation {
 
     /**
      * Returns the mode in which the resource is represented.
+     *
+     * @return The presentation modes, or an empty collection if none.
      */
     @Override
     @XmlElement(name = "presentationForm")
@@ -430,6 +451,8 @@ public class DefaultCitation extends ISOMetadata implements Citation {
 
     /**
      * Returns the information about the series, or aggregate dataset, of which the dataset is a part.
+     *
+     * @return The series of which the dataset is a part, or {@code null} if none.
      */
     @Override
     @XmlElement(name = "series")
@@ -449,6 +472,8 @@ public class DefaultCitation extends ISOMetadata implements Citation {
 
     /**
      * Returns other information required to complete the citation that is not recorded elsewhere.
+     *
+     * @return Other details, or {@code null} if none.
      */
     @Override
     @XmlElement(name = "otherCitationDetails")
@@ -467,9 +492,10 @@ public class DefaultCitation extends ISOMetadata implements Citation {
     }
 
     /**
-     * Returns the common title with holdings note. Note: title identifies elements of a series
-     * collectively, combined with information about what volumes are available at the
-     * source cited.
+     * Returns the common title with holdings note. Note: title identifies elements of a series collectively,
+     * combined with information about what volumes are available at the source cited.
+     *
+     * @return The common title, or {@code null} if none.
      */
     @Override
     @XmlElement(name = "collectiveTitle")
@@ -478,8 +504,8 @@ public class DefaultCitation extends ISOMetadata implements Citation {
     }
 
     /**
-     * Sets the common title with holdings note. This title identifies elements of a series
-     * collectively, combined with information about what volumes are available at the source cited.
+     * Sets the common title with holdings note. This title identifies elements of a series collectively,
+     * combined with information about what volumes are available at the source cited.
      *
      * @param newValue The new collective title, or {@code null} if none.
      */
@@ -495,6 +521,8 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * {@preformat java
      *   return getIdentifierMap().getSpecialized(Citations.ISBN);
      * }
+     *
+     * @return The ISBN, or {@code null} if none.
      *
      * @see #getIdentifiers()
      * @see Citations#ISBN
@@ -532,6 +560,8 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * {@preformat java
      *   return getIdentifierMap().getSpecialized(Citations.ISSN);
      * }
+     *
+     * @return The ISSN, or {@code null} if none.
      *
      * @see #getIdentifiers()
      * @see Citations#ISSN

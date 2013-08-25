@@ -20,14 +20,12 @@ import java.util.Collection;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.distribution.DigitalTransferOptions;
 import org.opengis.metadata.distribution.Medium;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.metadata.iso.ISOMetadata;
-import org.apache.sis.internal.jaxb.gco.GO_Real;
 
 
 /**
@@ -85,16 +83,18 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(DigitalTransferOptions)
      */
     public DefaultDigitalTransferOptions(final DigitalTransferOptions object) {
         super(object);
-        unitsOfDistribution = object.getUnitsOfDistribution();
-        transferSize        = object.getTransferSize();
-        onLines             = copyCollection(object.getOnLines(), OnlineResource.class);
-        offLine             = object.getOffLine();
+        if (object != null) {
+            unitsOfDistribution = object.getUnitsOfDistribution();
+            transferSize        = object.getTransferSize();
+            onLines             = copyCollection(object.getOnLines(), OnlineResource.class);
+            offLine             = object.getOffLine();
+        }
     }
 
     /**
@@ -124,6 +124,8 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
 
     /**
      * Returns tiles, layers, geographic areas, <i>etc.</i>, in which data is available.
+     *
+     * @return Tiles, layers, geographic areas, <cite>etc.</cite> in which data is available, or {@code null}.
      */
     @Override
     @XmlElement(name = "unitsOfDistribution")
@@ -144,10 +146,11 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
     /**
      * Returns an estimated size of a unit in the specified transfer format, expressed in megabytes.
      * The transfer size is greater than zero.
+     *
+     * @return Estimated size of a unit in the specified transfer format in megabytes, or {@code null}.
      */
     @Override
     @XmlElement(name = "transferSize")
-    @XmlJavaTypeAdapter(GO_Real.class)
     @ValueRange(minimum=0, isMinIncluded=false)
     public Double getTransferSize() {
         return transferSize;
@@ -166,6 +169,8 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
 
     /**
      * Returns information about online sources from which the resource can be obtained.
+     *
+     * @return Online sources from which the resource can be obtained.
      */
     @Override
     @XmlElement(name = "onLine")
@@ -184,6 +189,8 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
 
     /**
      * Returns information about offline media on which the resource can be obtained.
+     *
+     * @return Offline media on which the resource can be obtained, or {@code null}.
      */
     @Override
     @XmlElement(name = "offLine")

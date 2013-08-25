@@ -28,9 +28,12 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.PropertyException;
 import javax.xml.bind.ValidationEventHandler;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
+import org.apache.sis.util.Locales;
 import org.apache.sis.util.Version;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.jaxb.Context;
 
@@ -83,33 +86,17 @@ abstract class Pooled {
      *   <li>For each entry having a key of type {@link String}, the value is the argument
      *       to be given to the {@code marshaller.setProperty(key, value)} method.</li>
      * </ul>
+     *
+     * This map is never {@code null}.
      */
-    private final Map<Object,Object> initialProperties;
+    final Map<Object,Object> initialProperties;
 
     /**
-     * The object converters to use during (un)marshalling.
-     * Can be set by the {@link XML#CONVERTER} property.
+     * Bit masks for various boolean attributes. This include whatever the language codes
+     * or the country codes should be substituted by a simpler character string elements.
+     * Those bits are determined by the {@link XML#STRING_SUBSTITUTES} property.
      */
-    private ValueConverter converter;
-
-    /**
-     * The reference resolver to use during unmarshalling.
-     * Can be set by the {@link XML#RESOLVER} property.
-     */
-    private ReferenceResolver resolver;
-
-    /**
-     * The GML version to be marshalled or unmarshalled, or {@code null} if unspecified.
-     * If null, then the latest version is assumed.
-     */
-    private Version gmlVersion;
-
-    /**
-     * The base URL of ISO 19139 (or other standards) schemas. It shall be an unmodifiable
-     * instance because {@link #getProperty(String)} returns a direct reference to the user.
-     * The valid values are documented in the {@link XML#SCHEMAS} property.
-     */
-    private Map<String,String> schemas;
+    private int bitMasks;
 
     /**
      * An optional locale for {@link org.opengis.util.InternationalString} and
@@ -124,21 +111,44 @@ abstract class Pooled {
     private TimeZone timezone;
 
     /**
-     * Bit masks for various boolean attributes. This include whatever the language codes
-     * or the country codes should be substituted by a simpler character string elements.
-     * Those bits are determined by the {@link XML#STRING_SUBSTITUTES} property.
+     * The base URL of ISO 19139 (or other standards) schemas. It shall be an unmodifiable
+     * instance because {@link #getProperty(String)} returns a direct reference to the user.
+     * The valid values are documented in the {@link XML#SCHEMAS} property.
      */
-    private int bitMasks;
+    private Map<String,String> schemas;
 
     /**
-     * The {@link System#nanoTime()} value of the last call to {@link #reset()}.
+     * The GML version to be marshalled or unmarshalled, or {@code null} if unspecified.
+     * If null, then the latest version is assumed.
+     */
+    private Version gmlVersion;
+
+    /**
+     * The reference resolver to use during unmarshalling.
+     * Can be set by the {@link XML#RESOLVER} property.
+     */
+    private ReferenceResolver resolver;
+
+    /**
+     * The object converters to use during (un)marshalling.
+     * Can be set by the {@link XML#CONVERTER} property.
+     */
+    private ValueConverter converter;
+
+    /**
+     * The object to inform about warnings, or {@code null} if none.
+     */
+    private WarningListener<?> warningListener;
+
+    /**
+     * The {@link System#nanoTime()} value of the last call to {@link #reset(Pooled)}.
      * This is used for disposing (un)marshallers that have not been used for a while,
      * since {@code reset()} is invoked just before to push a (un)marshaller in the pool.
      */
     volatile long resetTime;
 
     /**
-     * Default constructor.
+     * Creates a {@link PooledTemplate}.
      *
      * @param internal {@code true} if the JAXB implementation is the one bundled in JDK 6,
      *        or {@code false} if this is the external implementation provided as a JAR file
@@ -147,7 +157,32 @@ abstract class Pooled {
     Pooled(final boolean internal) {
         this.internal = internal;
         initialProperties = new LinkedHashMap<Object,Object>();
-        bitMasks = initialBitMasks();
+    }
+
+    /**
+     * Creates a {@link PooledMarshaller} or {@link PooledUnmarshaller}. The {@link #initialize(Pooled)}
+     * method must be invoked after this constructor for completing the initialization.
+     *
+     * @param template The {@link PooledTemplate} from which to get the initial values.
+     */
+    Pooled(final Pooled template) {
+        initialProperties = new LinkedHashMap<Object,Object>();
+        internal = template.internal;
+    }
+
+    /**
+     * Completes the creation of a {@link PooledMarshaller} or {@link PooledUnmarshaller}.
+     * This method is not invoked in the {@link #Pooled(Pooled)} constructor in order to
+     * give to subclasses a chance to complete their construction first.
+     *
+     * @param  template The {@link PooledTemplate} from which to get the initial values.
+     * @throws JAXBException If an error occurred while setting a property.
+     */
+    final void initialize(final Pooled template) throws JAXBException {
+        reset(template); // Set the SIS properties first. JAXB properties are set below.
+        for (final Map.Entry<Object,Object> entry : template.initialProperties.entrySet()) {
+            setStandardProperty((String) entry.getKey(), entry.getValue());
+        }
     }
 
     /**
@@ -163,26 +198,28 @@ abstract class Pooled {
      * This method is invoked by {@link MarshallerPool} just before to push a
      * (un)marshaller in the pool after its usage.
      *
+     * @param  template The {@link PooledTemplate} from which to get the initial values.
      * @throws JAXBException If an error occurred while restoring a property.
      */
-    public final void reset() throws JAXBException {
+    public final void reset(final Pooled template) throws JAXBException {
         for (final Map.Entry<Object,Object> entry : initialProperties.entrySet()) {
             reset(entry.getKey(), entry.getValue());
         }
         initialProperties.clear();
-        converter  = null;
-        resolver   = null;
-        gmlVersion = null;
-        schemas    = null;
-        locale     = null;
-        timezone   = null;
-        bitMasks   = initialBitMasks();
-        resetTime  = System.nanoTime();
+        bitMasks        = initialBitMasks();
+        locale          = template.locale;
+        timezone        = template.timezone;
+        schemas         = template.schemas;
+        gmlVersion      = template.gmlVersion;
+        resolver        = template.resolver;
+        converter       = template.converter;
+        warningListener = template.warningListener;
+        resetTime       = System.nanoTime();
     }
 
     /**
      * Resets the given marshaller property to its initial state. This method is invoked
-     * automatically by the {@link #reset()} method. The key is either a {@link String}
+     * automatically by the {@link #reset(Pooled)} method. The key is either a {@link String}
      * or a {@link Class}. If this is a string, then the value shall be given to the
      * {@code setProperty(key, value)} method. Otherwise the value shall be given to
      * {@code setFoo(value)} method where {@code "Foo"} is determined from the key.
@@ -203,8 +240,8 @@ abstract class Pooled {
 
     /**
      * Saves the current value of a property. This method is invoked before a value is
-     * modified for the first time, in order to allow {@link #reset()} to restore the
-     * (un)marshaller to its initial state.
+     * modified for the first time, in order to allow {@link #reset(Pooled)} to restore
+     * the (un)marshaller to its initial state.
      *
      * @param type  The property to save.
      * @param value The current value of the property.
@@ -241,12 +278,12 @@ abstract class Pooled {
     public final void setProperty(String name, final Object value) throws PropertyException {
         try {
             /* switch (name) */ {
-                if (name.equals(XML.CONVERTER)) {
-                    converter = (ValueConverter) value;
+                if (name.equals(XML.LOCALE)) {
+                    locale = (value instanceof CharSequence) ? Locales.parse(value.toString()) : (Locale) value;
                     return;
                 }
-                else if (name.equals(XML.RESOLVER)) {
-                    resolver = (ReferenceResolver) value;
+                else if (name.equals(XML.TIMEZONE)) {
+                    timezone = (value instanceof CharSequence) ? TimeZone.getTimeZone(value.toString()) : (TimeZone) value;
                     return;
                 }
                 else if (name.equals(XML.SCHEMAS)) {
@@ -273,34 +310,45 @@ abstract class Pooled {
                     gmlVersion = (value instanceof CharSequence) ? new Version(value.toString()) : (Version) value;
                     return;
                 }
-                else if (name.equals(XML.LOCALE)) {
-                    locale = (Locale) value;
+                else if (name.equals(XML.RESOLVER)) {
+                    resolver = (ReferenceResolver) value;
                     return;
                 }
-                else if (name.equals(XML.TIMEZONE)) {
-                    timezone = (TimeZone) value;
+                else if (name.equals(XML.CONVERTER)) {
+                    converter = (ValueConverter) value;
                     return;
                 }
                 else if (name.equals(XML.STRING_SUBSTITUTES)) {
                     int mask = initialBitMasks();
-                    final CharSequence[] substitutes = CharSequences.split((CharSequence) value, ',');
-                    if (substitutes != null) {
-                        for (final CharSequence substitute : substitutes) {
+                    if (value != null) {
+                        for (final CharSequence substitute : (CharSequence[]) value) {
                             if (CharSequences.equalsIgnoreCase(substitute, "language")) {
                                 mask |= Context.SUBSTITUTE_LANGUAGE;
                             } else if (CharSequences.equalsIgnoreCase(substitute, "country")) {
                                 mask |= Context.SUBSTITUTE_COUNTRY;
+                            } else if (CharSequences.equalsIgnoreCase(substitute, "filename")) {
+                                mask |= Context.SUBSTITUTE_FILENAME;
+                            } else if (CharSequences.equalsIgnoreCase(substitute, "mimetype")) {
+                                mask |= Context.SUBSTITUTE_MIMETYPE;
                             }
                         }
                     }
                     bitMasks = mask;
                     return;
                 }
+                else if (name.equals(XML.WARNING_LISTENER)) {
+                    warningListener = (WarningListener<?>) value;
+                    return;
+                }
             }
-        } catch (ClassCastException e) {
+        } catch (RuntimeException e) { // (ClassCastException | IllegalArgumentException) on the JDK7 branch.
             throw new PropertyException(Errors.format(
                     Errors.Keys.IllegalPropertyClass_2, name, value.getClass()), e);
         }
+        /*
+         * If we reach this point, the given name is not a SIS property. Try to handle
+         * it as a (un)marshaller-specific property, after saving the previous value.
+         */
         name = convertPropertyKey(name);
         if (!initialProperties.containsKey(name)) {
             if (initialProperties.put(name, getStandardProperty(name)) != null) {
@@ -316,22 +364,21 @@ abstract class Pooled {
      */
     public final Object getProperty(final String name) throws PropertyException {
         /*switch (name)*/ {
-            if (name.equals(XML.CONVERTER))   return converter;
-            if (name.equals(XML.RESOLVER))    return resolver;
-            if (name.equals(XML.SCHEMAS))     return schemas;
-            if (name.equals(XML.GML_VERSION)) return gmlVersion;
-            if (name.equals(XML.LOCALE))      return locale;
-            if (name.equals(XML.TIMEZONE))    return timezone;
+            if (name.equals(XML.LOCALE))           return locale;
+            if (name.equals(XML.TIMEZONE))         return timezone;
+            if (name.equals(XML.SCHEMAS))          return schemas;
+            if (name.equals(XML.GML_VERSION))      return gmlVersion;
+            if (name.equals(XML.RESOLVER))         return resolver;
+            if (name.equals(XML.CONVERTER))        return converter;
+            if (name.equals(XML.WARNING_LISTENER)) return warningListener;
             if (name.equals(XML.STRING_SUBSTITUTES)) {
-                final StringBuilder buffer = new StringBuilder();
-                if ((bitMasks & Context.SUBSTITUTE_LANGUAGE) != 0) buffer.append("language,");
-                if ((bitMasks & Context.SUBSTITUTE_COUNTRY)  != 0) buffer.append("country,");
-                final int length = buffer.length();
-                if (length != 0) {
-                    buffer.setLength(length - 1); // Remove the last coma.
-                    return buffer.toString();
-                }
-                return null;
+                int n = 0;
+                final String[] substitutes = new String[4];
+                if ((bitMasks & Context.SUBSTITUTE_LANGUAGE) != 0) substitutes[n++] = "language";
+                if ((bitMasks & Context.SUBSTITUTE_COUNTRY)  != 0) substitutes[n++] = "country";
+                if ((bitMasks & Context.SUBSTITUTE_FILENAME) != 0) substitutes[n++] = "filename";
+                if ((bitMasks & Context.SUBSTITUTE_MIMETYPE) != 0) substitutes[n++] = "mimetype";
+                return (n != 0) ? ArraysExt.resize(substitutes, n) : null;
             }
             else {
                 return getStandardProperty(convertPropertyKey(name));
@@ -428,6 +475,6 @@ abstract class Pooled {
      * @see Context#finish();
      */
     final Context begin() {
-        return new Context(converter, resolver, gmlVersion, schemas, locale, timezone, bitMasks);
+        return new Context(bitMasks, locale, timezone, schemas, gmlVersion, resolver, converter, warningListener);
     }
 }

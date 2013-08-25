@@ -106,18 +106,20 @@ public class DefaultFormat extends ISOMetadata implements Format {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Format)
      */
     public DefaultFormat(final Format object) {
         super(object);
-        name                       = object.getName();
-        version                    = object.getVersion();
-        amendmentNumber            = object.getAmendmentNumber();
-        specification              = object.getSpecification();
-        fileDecompressionTechnique = object.getFileDecompressionTechnique();
-        formatDistributors         = copyCollection(object.getFormatDistributors(), Distributor.class);
+        if (object != null) {
+            name                       = object.getName();
+            version                    = object.getVersion();
+            amendmentNumber            = object.getAmendmentNumber();
+            specification              = object.getSpecification();
+            fileDecompressionTechnique = object.getFileDecompressionTechnique();
+            formatDistributors         = copyCollection(object.getFormatDistributors(), Distributor.class);
+        }
     }
 
     /**
@@ -147,6 +149,8 @@ public class DefaultFormat extends ISOMetadata implements Format {
 
     /**
      * Returns the name of the data transfer format(s).
+     *
+     * @return Name of the data transfer format(s), or {@code null}.
      */
     @Override
     @XmlElement(name = "name", required = true)
@@ -166,6 +170,8 @@ public class DefaultFormat extends ISOMetadata implements Format {
 
     /**
      * Returns the version of the format (date, number, etc.).
+     *
+     * @return Version of the format, or {@code null}.
      */
     @Override
     @XmlElement(name = "version", required = true)
@@ -185,6 +191,8 @@ public class DefaultFormat extends ISOMetadata implements Format {
 
     /**
      * Returns the amendment number of the format version.
+     *
+     * @return Amendment number of the format version, or {@code null}.
      */
     @Override
     @XmlElement(name = "amendmentNumber")
@@ -204,6 +212,8 @@ public class DefaultFormat extends ISOMetadata implements Format {
 
     /**
      * Returns the name of a subset, profile, or product specification of the format.
+     *
+     * @return Name of a subset, profile, or product specification of the format, or {@code null}.
      */
     @Override
     @XmlElement(name = "specification")
@@ -224,6 +234,9 @@ public class DefaultFormat extends ISOMetadata implements Format {
     /**
      * Returns recommendations of algorithms or processes that can be applied to read or
      * expand resources to which compression techniques have been applied.
+     *
+     * @return Processes that can be applied to read resources to which compression techniques have
+     *         been applied, or {@code null}.
      */
     @Override
     @XmlElement(name = "fileDecompressionTechnique")
@@ -244,6 +257,8 @@ public class DefaultFormat extends ISOMetadata implements Format {
 
     /**
      * Provides information about the distributor's format.
+     *
+     * @return Information about the distributor's format.
      */
     @Override
     @XmlElement(name = "formatDistributor")

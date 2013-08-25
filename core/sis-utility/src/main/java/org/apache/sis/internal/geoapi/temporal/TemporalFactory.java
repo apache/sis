@@ -17,6 +17,7 @@
 package org.apache.sis.internal.geoapi.temporal;
 
 import java.util.Date;
+import org.opengis.util.InternationalString;
 
 
 /**
@@ -33,4 +34,8 @@ public interface TemporalFactory {
     Instant createInstant(Position instant);
 
     Period createPeriod(Instant begin, Instant end);
+
+    PeriodDuration createPeriodDuration(InternationalString years, InternationalString months,
+            InternationalString week, InternationalString days, InternationalString hours,
+            InternationalString minutes, InternationalString seconds);
 }

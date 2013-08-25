@@ -68,14 +68,16 @@ public class DefaultGCP extends ISOMetadata implements GCP {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(GCP)
      */
     public DefaultGCP(final GCP object) {
         super(object);
-        accuracyReports       = copyCollection(object.getAccuracyReports(), Element.class);
-        geographicCoordinates = object.getGeographicCoordinates();
+        if (object != null) {
+            accuracyReports       = copyCollection(object.getAccuracyReports(), Element.class);
+            geographicCoordinates = object.getGeographicCoordinates();
+        }
     }
 
     /**
@@ -106,10 +108,12 @@ public class DefaultGCP extends ISOMetadata implements GCP {
     /**
      * Returns the geographic or map position of the control point, in either two or three dimensions.
      *
+     * @return Geographic or map position of the control point, or {@code null}.
+     *
      * @todo finish the annotation on the referencing module before.
      */
     @Override
-    //@XmlElement(name = "geographicCoordinates")
+    //@XmlElement(name = "geographicCoordinates", required = true)
     public DirectPosition getGeographicCoordinates() {
         return geographicCoordinates;
     }
@@ -125,7 +129,9 @@ public class DefaultGCP extends ISOMetadata implements GCP {
     }
 
     /**
-     * Get the accuracy of a ground control point.
+     * Returns the accuracy of a ground control point.
+     *
+     * @return Accuracy of a ground control point.
      */
     @Override
     @XmlElement(name = "accuracyReport", namespace = Namespaces.GMI)

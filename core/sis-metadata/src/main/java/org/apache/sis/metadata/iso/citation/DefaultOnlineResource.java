@@ -104,18 +104,20 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(OnlineResource)
      */
     public DefaultOnlineResource(final OnlineResource object) {
         super(object);
-        linkage            = object.getLinkage();
-        protocol           = object.getProtocol();
-        applicationProfile = object.getApplicationProfile();
-        name               = object.getName();
-        description        = object.getDescription();
-        function           = object.getFunction();
+        if (object != null) {
+            linkage            = object.getLinkage();
+            protocol           = object.getProtocol();
+            applicationProfile = object.getApplicationProfile();
+            name               = object.getName();
+            description        = object.getDescription();
+            function           = object.getFunction();
+        }
     }
 
     /**
@@ -146,6 +148,8 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
     /**
      * Returns the name of an application profile that can be used with the online resource.
      * Returns {@code null} if none.
+     *
+     * @return Application profile that can be used with the online resource, or {@code null}.
      */
     @Override
     @XmlElement(name = "applicationProfile")
@@ -165,6 +169,8 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
 
     /**
      * Name of the online resource. Returns {@code null} if none.
+     *
+     * @return Name of the online resource, or {@code null}.
      */
     @Override
     @XmlElement(name = "name")
@@ -184,6 +190,8 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
 
     /**
      * Returns the detailed text description of what the online resource is/does.
+     *
+     * @return Text description of what the online resource is/does, or {@code null}.
      */
     @Override
     @XmlElement(name = "description")
@@ -203,6 +211,8 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
 
     /**
      * Returns the code for function performed by the online resource.
+     *
+     * @return Function performed by the online resource, or {@code null}.
      */
     @Override
     @XmlElement(name = "function")
@@ -223,6 +233,8 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
     /**
      * Returns the location (address) for on-line access using a Uniform Resource Locator address or
      * similar addressing scheme such as "{@code http://www.statkart.no/isotc211}".
+     *
+     * @return Location for on-line access using a Uniform Resource Locator address or similar scheme, or {@code null}.
      */
     @Override
     @XmlElement(name = "linkage", required = true)
@@ -242,18 +254,13 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
     }
 
     /**
-     * Returns the connection protocol to be used. If no protocol has been {@linkplain #setProtocol(String)
-     * explicitely set}, then this method returns the {@linkplain #getLinkage() linkage}
-     * {@linkplain URI#getScheme() scheme} (if any).
+     * Returns the connection protocol to be used.
      *
-     * @see <a href="../doc-files/auto-properties.html">List of automatic properties</a>
+     * @return Connection protocol to be used, or {@code null}.
      */
     @Override
     @XmlElement(name = "protocol")
     public String getProtocol() {
-        if (protocol == null && linkage != null) {
-            return linkage.getScheme();
-        }
         return protocol;
     }
 

@@ -23,9 +23,9 @@ import javax.xml.bind.JAXBException;
 import org.opengis.metadata.Metadata;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.ValueExistencePolicy;
+import org.apache.sis.storage.DataStore;
+import org.apache.sis.storage.DataStores;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.StorageConnector;
-import org.apache.sis.storage.netcdf.NetcdfStore;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TreeTableFormat;
@@ -39,7 +39,7 @@ import org.apache.sis.xml.XML;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.4
  * @module
  */
 final class MetadataSC extends SubCommand {
@@ -53,9 +53,7 @@ final class MetadataSC extends SubCommand {
     /**
      * Prints metadata information.
      *
-     * @todo NetCDF data store is hard-coded for now. Will need a dynamic mechanism in the future.
-     *
-     * @throws DataStoreException If an error occurred while reading the NetCDF file.
+     * @throws DataStoreException If an error occurred while reading the file.
      * @throws JAXBException If an error occurred while producing the XML output.
      * @throws IOException Should never happen, since we are appending to a print writer.
      */
@@ -80,7 +78,7 @@ final class MetadataSC extends SubCommand {
             return Command.INVALID_ARGUMENT_EXIT_CODE;
         }
         final Metadata metadata;
-        final NetcdfStore store = new NetcdfStore(new StorageConnector(files.get(0)));
+        final DataStore store = DataStores.open(files.get(0));
         try {
             metadata = store.getMetadata();
         } finally {

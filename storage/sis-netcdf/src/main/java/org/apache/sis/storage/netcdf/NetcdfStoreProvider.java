@@ -32,7 +32,10 @@ import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.util.logging.WarningListeners;
+import org.apache.sis.util.ThreadSafe;
+import org.apache.sis.util.Version;
 
 
 /**
@@ -44,12 +47,18 @@ import org.apache.sis.util.logging.WarningListeners;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.4
  * @module
  *
  * @see NetcdfStore
  */
+@ThreadSafe
 public class NetcdfStoreProvider extends DataStoreProvider {
+    /**
+     * The MIME type for NetCDF files.
+     */
+    static final String MIME_TYPE = "application/x-netcdf";
+
     /**
      * The name of the {@link ucar.nc2.NetcdfFile} class, which is {@value}.
      */
@@ -99,65 +108,81 @@ public class NetcdfStoreProvider extends DataStoreProvider {
     }
 
     /**
-     * Returns {@code TRUE} if the given storage appears to be supported by {@link NetcdfStore}.
-     * Returning {@code TRUE} from this method does not guarantee that reading or writing will succeed,
+     * Returns {@link ProbeResult#SUPPORTED} if the given storage appears to be supported by {@link NetcdfStore}.
+     * Returning {@code SUPPORTED} from this method does not guarantee that reading or writing will succeed,
      * only that there appears to be a reasonable chance of success based on a brief inspection of the
      * {@linkplain StorageConnector#getStorage() storage object} or contents.
      *
      * @param  storage Information about the storage (URL, stream, {@link ucar.nc2.NetcdfFile} instance, <i>etc</i>).
-     * @return {@link Boolean#TRUE} if the given storage seems to be usable by the {@code NetcdfStore} instances,
-     *         {@link Boolean#FALSE} if {@code NetcdfStore} will not be able to use the given storage,
-     *         or {@code null} if this method does not have enough information.
+     * @return {@code SUPPORTED} if the given storage seems to be usable by the {@code NetcdfStore} instances.
      * @throws DataStoreException if an I/O error occurred.
      */
     @Override
-    public Boolean canOpen(StorageConnector storage) throws DataStoreException {
+    public ProbeResult probeContent(StorageConnector storage) throws DataStoreException {
+        int     version     = 0;
+        boolean hasVersion  = false;
+        boolean isSupported = false;
         final ByteBuffer buffer = storage.getStorageAs(ByteBuffer.class);
         if (buffer != null) {
             if (buffer.remaining() < Integer.SIZE / Byte.SIZE) {
-                return null;
+                return ProbeResult.INSUFFICIENT_BYTES;
             }
             final int header = buffer.getInt(buffer.position());
             if ((header & 0xFFFFFF00) == ChannelDecoder.MAGIC_NUMBER) {
-                return Boolean.TRUE;
+                hasVersion  = true;
+                version     = header & 0xFF;
+                isSupported = (version >= 1 && version <= ChannelDecoder.MAX_VERSION);
             }
         }
         /*
          * If we failed to check using the embedded decoder, tries using the UCAR library.
+         * The UCAR library is an optional dependency. If that library is present and the
+         * input is a String, then the following code may trigs a large amount of classes
+         * loading.
          */
-        final String path = storage.getStorageAs(String.class);
-        if (path != null) {
-            ensureInitialized();
-            final Method method = canOpenFromPath;
-            if (method != null) try {
-                return (Boolean) method.invoke(null, path);
-            } catch (IllegalAccessException e) {
-                throw new AssertionError(e); // Should never happen, since the method is public.
-            } catch (InvocationTargetException e) {
-                final Throwable cause = e.getCause();
-                if (cause instanceof DataStoreException) throw (DataStoreException) cause;
-                if (cause instanceof RuntimeException)   throw (RuntimeException)   cause;
-                if (cause instanceof Error)              throw (Error)              cause;
-                throw new DataStoreException(e); // The cause may be IOException.
+        if (!isSupported) {
+            final String path = storage.getStorageAs(String.class);
+            if (path != null) {
+                ensureInitialized();
+                final Method method = canOpenFromPath;
+                if (method != null) try {
+                    isSupported = (Boolean) method.invoke(null, path);
+                } catch (IllegalAccessException e) {
+                    // Should never happen, since the method is public.
+                    throw (Error) new IncompatibleClassChangeError("canOpen").initCause(e);
+                } catch (InvocationTargetException e) {
+                    final Throwable cause = e.getCause();
+                    if (cause instanceof DataStoreException) throw (DataStoreException) cause;
+                    if (cause instanceof RuntimeException)   throw (RuntimeException)   cause;
+                    if (cause instanceof Error)              throw (Error)              cause;
+                    throw new DataStoreException(e); // The cause may be IOException.
+                }
+            } else {
+                /*
+                 * Check if the given input is itself an instance of the UCAR oject.
+                 * We check classnames instead of netcdfFileClass.isInstance(storage)
+                 * in order to avoid loading the UCAR library if not needed.
+                 */
+                for (Class<?> type = storage.getStorage().getClass(); type != null; type = type.getSuperclass()) {
+                    if (UCAR_CLASSNAME.equals(type.getName())) {
+                        isSupported = true;
+                        break;
+                    }
+                }
             }
         }
         /*
-         * Check if the given input is itself an instance of the UCAR oject.
-         * We check classnames instead of netcdfFileClass.isInstance(storage)
-         * in order to avoid loading the UCAR library if not needed.
+         * At this point, the readability status has been determined. The file version number
+         * is unknown if we are able to open the file only through the UCAR library.
          */
-        for (Class<?> type = storage.getStorage().getClass(); type != null; type = type.getSuperclass()) {
-            if (UCAR_CLASSNAME.equals(type.getName())) {
-                return Boolean.TRUE;
-            }
+        if (hasVersion) {
+            return new ProbeResult(isSupported, MIME_TYPE, Version.valueOf(version));
         }
-        return Boolean.FALSE;
+        return isSupported ? new ProbeResult(true, MIME_TYPE, null) : ProbeResult.UNSUPPORTED_STORAGE;
     }
 
     /**
-     * Returns a {@link NetcdfStore} implementation associated with this provider. This method invokes
-     * {@link StorageConnector#closeAllExcept(Object)} after data store creation, keeping open only
-     * the needed resource.
+     * Returns a {@link NetcdfStore} implementation associated with this provider.
      *
      * @param storage Information about the storage (URL, stream, {@link ucar.nc2.NetcdfFile} instance, <i>etc</i>).
      */

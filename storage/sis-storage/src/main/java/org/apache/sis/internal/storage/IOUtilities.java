@@ -16,6 +16,11 @@
  */
 package org.apache.sis.internal.storage;
 
+import java.util.Set;
+import java.util.List;
+import java.util.HashSet;
+import java.util.Collections;
+import java.util.Arrays;
 import java.util.Locale;
 import java.io.File;
 import java.io.FileInputStream;
@@ -28,13 +33,16 @@ import java.net.URISyntaxException;
 import java.net.MalformedURLException;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.resources.Errors;
 
 // Related to JDK7
+import org.apache.sis.internal.jdk7.Files;
 import org.apache.sis.internal.jdk7.StandardCharsets;
+import org.apache.sis.internal.jdk7.StandardOpenOption;
 
 
 /**
@@ -49,10 +57,16 @@ import org.apache.sis.internal.jdk7.StandardCharsets;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 public final class IOUtilities extends Static {
+    /**
+     * Options to be rejected by {@link #open(Object, String, OpenOption[])} for safety reasons.
+     */
+    private static final List<String> ILLEGAL_OPTIONS = Arrays.asList( // EnumSet of StandardOpenOption on JDK7 branch
+            StandardOpenOption.APPEND, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.DELETE_ON_CLOSE);
+
     /**
      * Do not allow instantiation of this class.
      */
@@ -276,14 +290,12 @@ public final class IOUtilities extends Static {
             return new File(uri);
         } catch (IllegalArgumentException cause) {
             /*
-             * Typically happen when the URI contains fragment that can not be represented
-             * in a File (e.g. a Query part), so it could be considered as if the URI with
-             * the fragment part can not represent an existing file.
+             * Typically happen when the URI scheme is not "file". But may also happen if the
+             * URI contains fragment that can not be represented in a File (e.g. a Query part).
+             * The IllegalArgumentException does not allow us to distinguish those cases.
              */
-            final MalformedURLException e = new MalformedURLException(Exceptions.formatChainedMessages(
-                    null, Errors.format(Errors.Keys.IllegalArgumentValue_2, "URL", url), cause));
-            e.initCause(cause);
-            throw e;
+            throw new IOException(Exceptions.formatChainedMessages(null,
+                    Errors.format(Errors.Keys.IllegalArgumentValue_2, "URL", url), cause), cause);
         }
     }
 
@@ -297,10 +309,6 @@ public final class IOUtilities extends Static {
      * A URL can represent a file, but {@link URL#openStream()} appears to return a {@code BufferedInputStream}
      * wrapping the {@link FileInputStream}, which is not a desirable feature when we want to obtain a channel.
      *
-     * <p>There is no {@code toPathOrURL} methods because {@link Path} can be associated to various file systems.
-     * It would be possible (not necessarily desirable, but at least doable) do create {@code Path} for HTTP or
-     * FTP protocols.</p>
-     *
      * @param  path The path to convert, or {@code null}.
      * @param  encoding If the URL is encoded in a {@code application/x-www-form-urlencoded}
      *         MIME format, the character encoding (normally {@code "UTF-8"}). If the URL is
@@ -313,7 +321,10 @@ public final class IOUtilities extends Static {
         if (path == null) {
             return null;
         }
-        // Check if the path seems to be an ordinary file.
+        /*
+         * Check if the path seems to be a local file. Those paths are assumed never encoded.
+         * The heuristic rules applied here may change in any future SIS version.
+         */
         if (path.indexOf('?') < 0 && path.indexOf('#') < 0) {
             final int s = path.indexOf(':');
             /*
@@ -326,9 +337,15 @@ public final class IOUtilities extends Static {
             }
         }
         final URL url = new URL(path);
-        if (url.getProtocol().equalsIgnoreCase("file")) {
+        final String scheme = url.getProtocol();
+        if (scheme != null && scheme.equalsIgnoreCase("file")) {
             return toFile(url, encoding);
         }
+        /*
+         * Leave the URL in its original encoding on the assumption that this is the encoding expected by
+         * the server. This is different than the policy for URI, because the later are always in UTF-8.
+         * If a URI is needed, callers should use toURI(url, encoding).
+         */
         return url;
     }
 
@@ -344,41 +361,116 @@ public final class IOUtilities extends Static {
      *       or {@link CharSequence}, then a new channel is opened.</li>
      * </ul>
      *
+     * The given options are used for opening the channel on a <em>best effort basis</em>.
+     * In particular, even if the caller provided the {@code WRITE} option, he still needs
+     * to verify if the returned channel implements {@link java.nio.channels.WritableByteChannel}.
+     * This is because the channel may be opened by {@link URL#openStream()}, in which case the
+     * options are ignored.
+     *
+     * <p>The following options are illegal and will cause an exception to be thrown if provided:
+     * {@code APPEND}, {@code TRUNCATE_EXISTING}, {@code DELETE_ON_CLOSE}. We reject those options
+     * because this method is primarily designed for readable channels, with optional data edition.
+     * Since the write option is not guaranteed to be honored, we have to reject the options that
+     * would alter significatively the channel behavior depending on whether we have been able to
+     * honor the options or not.</p>
+     *
      * @param  input The file to open, or {@code null}.
-     * @param  encoding If the URL is encoded in a {@code application/x-www-form-urlencoded}
-     *         MIME format, the character encoding (normally {@code "UTF-8"}). If the URL is
-     *         not encoded, then {@code null}. This argument is ignored if the given path does
-     *         not need to be converted from URL to {@code File}.
-     * @return The input stream for the given file, or {@code null} if the given type is unknown.
+     * @param  encoding If the input is an encoded URL, the character encoding (normally {@code "UTF-8"}).
+     *         If the URL is not encoded, then {@code null}. This argument is ignored if the given input
+     *         does not need to be converted from URL to {@code File}.
+     * @param  options The options to use for creating a new byte channel. Can be null or empty for read-only.
+     * @return The channel for the given input, or {@code null} if the given input is of unknown type.
      * @throws IOException If an error occurred while opening the given file.
      */
-    public static ReadableByteChannel open(Object input, final String encoding) throws IOException {
+    public static ReadableByteChannel open(Object input, final String encoding, Object... options) throws IOException {
+        /*
+         * Unconditionally verify the options, even if we may not use them.
+         */
+        final Set<Object> optionSet;
+        if (options == null || options.length == 0) {
+            optionSet = Collections.emptySet();
+        } else {
+            optionSet = new HashSet<Object>(Arrays.asList(options));
+            optionSet.add(StandardOpenOption.READ);
+            if (optionSet.removeAll(ILLEGAL_OPTIONS)) {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2,
+                        "options", Arrays.toString(options)));
+            }
+        }
+        /*
+         * Check for inputs that are already readable channels or input streams. We perform an explicit check
+         * for FileInputStream even if  Channels.newChannel(InputStream)  does this check implicitly, because
+         * Channels.newChannel(…) restricts itself to the exact FileInputStream class while we want to invoke
+         * getChannel() for any subclasses.
+         */
         if (input instanceof ReadableByteChannel) {
             return (ReadableByteChannel) input;
         }
         if (input instanceof InputStream) {
-            /*
-             * Channels.newChannel(InputStream) checks for FileInputStream, but it requires that exact class.
-             * Concequently we have to perform our own check if we want to allow any FileInputStream subclass
-             * to have their 'getChannel()' method invoked.
-             */
             if (input instanceof FileInputStream) {
                 return ((FileInputStream) input).getChannel();
             }
             return Channels.newChannel((InputStream) input);
         }
-        if (input instanceof CharSequence) { // Needs to be before the check for File or URL.
-            input = toFileOrURL(input.toString(), encoding);
+        // NOTE: Many comments below this point actually apply to the JDK7 branch.
+        //       We keep them here for making easier the synchonization between the branches.
+        /*
+         * In the following cases, we will try hard to convert to Path objects before to fallback
+         * on File, URL or URI, because only Path instances allow us to use the given OpenOptions.
+         */
+        if (input instanceof URL) {
+            try {
+                input = toFile((URL) input, encoding);
+            } catch (IOException e) {
+                // This is normal if the URL uses HTTP or FTP protocol for instance.
+                // Log the exception at FINE level without stack trace. We will open
+                // the channel later using the URL instead than using the Path.
+                recoverableException(e);
+            }
+        } else if (input instanceof URI) {
+            /*
+             * If the user gave us a URI, try to convert to a Path before to fallback to URL, in order to be
+             * able to use the given OpenOptions.  Note that the conversion to Path is likely to fail if the
+             * URL uses HTTP or FTP protocols, because JDK7 does not provide file systems for them by default.
+             */
+            final URI uri = (URI) input;
+            if (!uri.isAbsolute()) {
+                // All methods invoked in this block throws IllegalArgumentException if the URI has no scheme,
+                // so we are better to check now and provide a more appropriate exception for this method.
+                throw new IOException(Errors.format(Errors.Keys.MissingSchemeInURI));
+            } else try {
+                input = new File(uri);
+            } catch (IllegalArgumentException e) {
+                input = uri.toURL();
+                // We have been able to convert to URL, but the given OpenOptions may not be used.
+                // Log the exception at FINE level without stack trace, because the exception is
+                // probably a normal behavior in this context.
+                recoverableException(e);
+            }
+        } else {
+            if (input instanceof CharSequence) { // Needs to be before the check for File or URL.
+                input = toFileOrURL(input.toString(), encoding);
+            }
         }
-        if (input instanceof File) {
-            return new FileInputStream((File) input).getChannel();
-        }
-        if (input instanceof URI) { // Needs to be before the check for URL.
-            input = ((URI) input).toURL();
-        }
+        /*
+         * One last check for URL. The URL may be either the given input if we have not been able
+         * to convert it to a Path, or a URI, File or CharSequence input converted to URL. Do not
+         * try to convert the URL to a Path, because this has already been tried before this point.
+         */
         if (input instanceof URL) {
             return Channels.newChannel(((URL) input).openStream());
         }
+        if (input instanceof File) {
+            return Files.newByteChannel((File) input, optionSet);
+        }
         return null;
+    }
+
+    /**
+     * Invoked for reporting exceptions that may be normal behavior. This method logs
+     * the exception at {@link java.util.logging.Level#FINE} without stack trace.
+     */
+    private static void recoverableException(final Exception warning) {
+        Logging.recoverableException(Logging.getLogger("org.apache.sis.storage"), IOUtilities.class, "open", warning);
     }
 }

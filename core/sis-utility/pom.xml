@@ -28,13 +28,14 @@
   <parent>
     <groupId>org.apache.sis</groupId>
     <artifactId>core</artifactId>
-    <version>0.3-geoapi3.0-SNAPSHOT</version>
+    <version>0.4-SNAPSHOT</version>
   </parent>
 
 
   <!-- ===========================================================
            Module Description
        =========================================================== -->
+  <groupId>org.apache.sis.core</groupId>
   <artifactId>sis-utility</artifactId>
   <packaging>bundle</packaging>
   <name>Apache SIS utilities</name>
@@ -134,7 +135,7 @@ Miscellaneous utilities.
 
       <!-- Compile properties files into resources UTF files and collect JAR files. -->
       <plugin>
-        <groupId>org.apache.sis</groupId>
+        <groupId>org.apache.sis.core</groupId>
         <artifactId>sis-build-helper</artifactId>
         <version>${sis.plugin.version}</version>
         <executions>
@@ -170,6 +171,8 @@ Miscellaneous utilities.
       <groupId>org.opengis</groupId>
       <artifactId>geoapi</artifactId>
     </dependency>
+
+    <!-- Test dependencies -->
     <dependency>
       <groupId>org.opengis</groupId>
       <artifactId>geoapi-conformance</artifactId>

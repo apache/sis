@@ -76,15 +76,17 @@ public class DefaultDistribution extends ISOMetadata implements Distribution {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Distribution)
      */
     public DefaultDistribution(final Distribution object) {
         super(object);
-        distributionFormats = copyCollection(object.getDistributionFormats(), Format.class);
-        distributors        = copyCollection(object.getDistributors(), Distributor.class);
-        transferOptions     = copyCollection(object.getTransferOptions(), DigitalTransferOptions.class);
+        if (object != null) {
+            distributionFormats = copyCollection(object.getDistributionFormats(), Format.class);
+            distributors        = copyCollection(object.getDistributors(), Distributor.class);
+            transferOptions     = copyCollection(object.getTransferOptions(), DigitalTransferOptions.class);
+        }
     }
 
     /**
@@ -114,6 +116,8 @@ public class DefaultDistribution extends ISOMetadata implements Distribution {
 
     /**
      * Provides a description of the format of the data to be distributed.
+     *
+     * @return Description of the format of the data to be distributed.
      */
     @Override
     @XmlElement(name = "distributionFormat")
@@ -132,6 +136,8 @@ public class DefaultDistribution extends ISOMetadata implements Distribution {
 
     /**
      * Provides information about the distributor.
+     *
+     * @return Information about the distributor.
      */
     @Override
     @XmlElement(name = "distributor")
@@ -149,8 +155,9 @@ public class DefaultDistribution extends ISOMetadata implements Distribution {
     }
 
     /**
-     * Provides information about technical means and media by which a resource is obtained
-     * from the distributor.
+     * Provides information about technical means and media by which a resource is obtained from the distributor.
+     *
+     * @return Technical means and media by which a resource is obtained from the distributor.
      */
     @Override
     @XmlElement(name = "transferOptions")

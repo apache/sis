@@ -29,13 +29,20 @@ import org.apache.sis.internal.jdk7.AutoCloseable;
 
 
 /**
- * A storage object which manage a series of features, coverages or sensor data.
+ * Manages a series of features, coverages or sensor data.
+ *
+ * {@section Thread safety policy}
+ * This {@code DataStore} base class is thread-safe. However subclasses are usually not.
+ * Unless otherwise specified by subclasses, users should assume that {@code DataStore}
+ * instances are not thread-safe.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
  * @version 0.3
  * @module
+ *
+ * @see DataStores#open(Object)
  */
 public abstract class DataStore implements Localized, AutoCloseable {
     /**

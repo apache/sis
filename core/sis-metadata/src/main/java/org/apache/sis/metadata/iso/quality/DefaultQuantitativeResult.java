@@ -37,7 +37,7 @@ import org.opengis.util.RecordType;
  * @module
  */
 @XmlType(name = "DQ_QuantitativeResult_Type", propOrder = {
-// TODO    "valueType",
+    "valueType",
     "valueUnit",
     "errorStatistic"
 })
@@ -79,16 +79,18 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(QuantitativeResult)
      */
     public DefaultQuantitativeResult(final QuantitativeResult object) {
         super(object);
-        valueType      = object.getValueType();
-        valueUnit      = object.getValueUnit();
-        errorStatistic = object.getErrorStatistic();
-        values         = copyList(object.getValues(), Record.class);
+        if (object != null) {
+            valueType      = object.getValueType();
+            valueUnit      = object.getValueUnit();
+            errorStatistic = object.getErrorStatistic();
+            values         = copyList(object.getValues(), Record.class);
+        }
     }
 
     /**
@@ -118,6 +120,8 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
 
     /**
      * Returns the quantitative value or values, content determined by the evaluation procedure used.
+     *
+     * @return Quantitative value or values.
      */
     @Override
 //  @XmlElement(name = "value", required = true) // TODO
@@ -135,16 +139,18 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
     }
 
     /**
-     * Return the value type for reporting a data quality result, or {@code null} if none.
+     * Return the value type for reporting a data quality result.
+     *
+     * @return Value type for reporting a data quality result, or {@code null}.
      */
     @Override
-    // TODO @XmlElement(name = "valueType")
+    @XmlElement(name = "valueType")
     public RecordType getValueType()  {
         return valueType;
     }
 
     /**
-     * Sets the value type for reporting a data quality result, or {@code null} if none.
+     * Sets the value type for reporting a data quality result.
      *
      * @param newValue The new value type.
      */
@@ -154,7 +160,9 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
     }
 
     /**
-     * Returns the value unit for reporting a data quality result, or {@code null} if none.
+     * Returns the value unit for reporting a data quality result.
+     *
+     * @return Value unit for reporting a data quality result, or {@code null}.
      */
     @Override
     @XmlElement(name = "valueUnit", required = true)
@@ -163,7 +171,7 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
     }
 
     /**
-     * Sets the value unit for reporting a data quality result, or {@code null} if none.
+     * Sets the value unit for reporting a data quality result.
      *
      * @param newValue The new value unit.
      */
@@ -173,7 +181,9 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
     }
 
     /**
-     * Returns the statistical method used to determine the value, or {@code null} if none.
+     * Returns the statistical method used to determine the value.
+     *
+     * @return Statistical method used to determine the value, or {@code null}.
      */
     @Override
     @XmlElement(name = "errorStatistic")

@@ -28,13 +28,14 @@
   <parent>
     <groupId>org.apache.sis</groupId>
     <artifactId>application</artifactId>
-    <version>0.3-geoapi3.0-SNAPSHOT</version>
+    <version>0.4-SNAPSHOT</version>
   </parent>
 
 
   <!-- ===========================================================
            Module Description
        =========================================================== -->
+  <groupId>org.apache.sis.application</groupId>
   <artifactId>sis-console</artifactId>
   <packaging>bundle</packaging>
   <name>Apache SIS console</name>
@@ -108,7 +109,7 @@ Console application.
       <groupId>org.apache.sis.storage</groupId>
       <artifactId>sis-netcdf</artifactId>
       <version>${project.version}</version>
-      <!-- TODO: use test or runtime scope -->
+      <scope>runtime</scope>
     </dependency>
   </dependencies>
 

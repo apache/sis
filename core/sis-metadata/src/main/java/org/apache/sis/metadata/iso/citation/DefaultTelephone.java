@@ -65,14 +65,16 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Telephone)
      */
     public DefaultTelephone(final Telephone object) {
         super(object);
-        voices     = copyCollection(object.getVoices(), String.class);
-        facsimiles = copyCollection(object.getFacsimiles(), String.class);
+        if (object != null) {
+            voices     = copyCollection(object.getVoices(), String.class);
+            facsimiles = copyCollection(object.getFacsimiles(), String.class);
+        }
     }
 
     /**
@@ -101,8 +103,9 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
     }
 
     /**
-     * Returns the telephone numbers by which individuals can speak to the responsible
-     * organization or individual.
+     * Returns the telephone numbers by which individuals can speak to the responsible organization or individual.
+     *
+     * @return Telephone numbers by which individuals can speak to the responsible organization or individual.
      */
     @Override
     @XmlElement(name = "voice")
@@ -111,8 +114,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
     }
 
     /**
-     * Sets the telephone numbers by which individuals can speak to the responsible
-     * organization or individual.
+     * Sets the telephone numbers by which individuals can speak to the responsible organization or individual.
      *
      * @param newValues The new telephone numbers, or {@code null} if none.
      */
@@ -121,8 +123,9 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
     }
 
     /**
-     * Returns the telephone numbers of a facsimile machine for the responsible organization
-     * or individual.
+     * Returns the telephone numbers of a facsimile machine for the responsible organization or individual.
+     *
+     * @return Telephone numbers of a facsimile machine for the responsible organization or individual.
      */
     @Override
     @XmlElement(name = "facsimile")
@@ -131,8 +134,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
     }
 
     /**
-     * Sets the telephone number of a facsimile machine for the responsible organization
-     * or individual.
+     * Sets the telephone number of a facsimile machine for the responsible organization or individual.
      *
      * @param newValues The new telephone number, or {@code null} if none.
      */

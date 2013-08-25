@@ -483,15 +483,16 @@ public final class Numbers extends Static {
     }
 
     /**
-     * Casts a number to the specified class. The class must by one of {@link Byte},
+     * Casts a number to the specified type. The target type can be one of {@link Byte},
      * {@link Short}, {@link Integer}, {@link Long}, {@link Float}, {@link Double},
      * {@link BigInteger} or {@link BigDecimal}.
      * This method makes the following choice:
      *
      * <ul>
-     *   <li>If the given type is {@code Double.class}, then this method returns
+     *   <li>If the given value is {@code null} or an instance of the given type, then it is returned unchanged.</li>
+     *   <li>Otherwise if the given type is {@code Double.class}, then this method returns
      *       <code>{@linkplain Double#valueOf(double) Double.valueOf}(number.doubleValue())</code>;</li>
-     *   <li>If the given type is {@code Float.class}, then this method returns
+     *   <li>Otherwise if the given type is {@code Float.class}, then this method returns
      *       <code>{@linkplain Float#valueOf(float) Float.valueOf}(number.floatValue())</code>;</li>
      *   <li>And likewise for all remaining known types.</li>
      * </ul>
@@ -614,7 +615,7 @@ public final class Numbers extends Static {
      * @return The value object, or {@code null} if {@code value} was null.
      * @throws IllegalArgumentException if {@code type} is not a recognized type.
      * @throws NumberFormatException if {@code type} is a subclass of {@link Number} and the
-     *         string value is not parseable as a number of the specified type.
+     *         string value is not parsable as a number of the specified type.
      */
     @SuppressWarnings("unchecked")
     public static <T> T valueOf(final String value, final Class<T> type)

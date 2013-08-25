@@ -106,15 +106,14 @@
     @XmlJavaTypeAdapter(MI_TransferFunctionTypeCode.class),
 
     // Java types, primitive types and basic OGC types handling
-//  @XmlJavaTypeAdapter(UnitAdapter.class), // TODO
+    @XmlJavaTypeAdapter(UnitAdapter.class),
     @XmlJavaTypeAdapter(LocaleAdapter.class),
     @XmlJavaTypeAdapter(InternationalStringAdapter.class),
     @XmlJavaTypeAdapter(GO_GenericName.class),
-//  @XmlJavaTypeAdapter(GO_RecordType.class), // TODO
-    @XmlJavaTypeAdapter(GO_Boolean.class),        @XmlJavaTypeAdapter(type=boolean.class, value=GO_Boolean.class),
-    @XmlJavaTypeAdapter(GO_Decimal.class),        @XmlJavaTypeAdapter(type=double.class,  value=GO_Decimal.class),
-    @XmlJavaTypeAdapter(GO_Integer.class),        @XmlJavaTypeAdapter(type=int.class,     value=GO_Integer.class),
-    @XmlJavaTypeAdapter(GO_Integer.AsLong.class), @XmlJavaTypeAdapter(type=long.class,    value=GO_Integer.AsLong.class)
+    @XmlJavaTypeAdapter(GO_RecordType.class),
+    @XmlJavaTypeAdapter(GO_Boolean.class), @XmlJavaTypeAdapter(type=boolean.class, value=GO_Boolean.class),
+    @XmlJavaTypeAdapter(GO_Integer.class), @XmlJavaTypeAdapter(type=int.class,     value=GO_Integer.class),
+    @XmlJavaTypeAdapter(GO_Real.class),    @XmlJavaTypeAdapter(type=double.class,  value=GO_Real.class)
 })
 package org.apache.sis.metadata.iso.content;
 

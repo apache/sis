@@ -68,14 +68,16 @@ public class DefaultAlgorithm extends ISOMetadata implements Algorithm {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Algorithm)
      */
     public DefaultAlgorithm(final Algorithm object) {
         super(object);
-        citation    = object.getCitation();
-        description = object.getDescription();
+        if (object != null) {
+            citation    = object.getCitation();
+            description = object.getDescription();
+        }
     }
 
     /**
@@ -105,6 +107,8 @@ public class DefaultAlgorithm extends ISOMetadata implements Algorithm {
 
     /**
      * Returns the information identifying the algorithm and version or date.
+     *
+     * @return Algorithm and version or date, or {@code null}.
      */
     @Override
     @XmlElement(name = "citation", namespace = Namespaces.GMI, required = true)
@@ -124,6 +128,8 @@ public class DefaultAlgorithm extends ISOMetadata implements Algorithm {
 
     /**
      * Returns the information describing the algorithm used to generate the data.
+     *
+     * @return Algorithm used to generate the data, or {@code null}.
      */
     @Override
     @XmlElement(name = "description", namespace = Namespaces.GMI, required = true)

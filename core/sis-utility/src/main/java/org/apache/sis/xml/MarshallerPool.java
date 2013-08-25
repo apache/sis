@@ -18,6 +18,7 @@ package org.apache.sis.xml;
 
 import java.util.Map;
 import java.util.Deque;
+import java.util.ServiceLoader;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.xml.bind.JAXBContext;
@@ -60,6 +61,11 @@ import org.apache.sis.util.ArgumentChecks;
 @ThreadSafe
 public class MarshallerPool {
     /**
+     * The indentation string, fixed to 2 spaces instead of 4 because ISO/OGC XML are very verbose.
+     */
+    private static final String INDENTATION = "  ";
+
+    /**
      * Amount of nanoseconds to wait before to remove unused (un)marshallers.
      * This is a very approximative value: actual timeout will not be shorter,
      * but may be twice longer.
@@ -87,6 +93,22 @@ public class MarshallerPool {
      * The mapper between namespaces and prefix.
      */
     private final Object mapper;
+
+    /**
+     * The provider of {@code AdapterReplacement} instances.
+     * <strong>Every usage of this service loader must be synchronized.</strong>
+     *
+     * {@note Each <code>MarshallerPool</code> has its own service loader instance rather than using a
+     *        system-wide instance because the <code>ClassLoader</code> used by the service loader is
+     *        the <cite>context class loader</cite>, which depends on the thread that created the pool.
+     *        So two pools in two different applications could have two different set of replacements.}
+     */
+    private final ServiceLoader<AdapterReplacement> replacements;
+
+    /**
+     * The {@link PooledTemplate} to use for initializing recycled (un)marshaller.
+     */
+    private final PooledTemplate template;
 
     /**
      * The pool of marshaller. This pool is initially empty and will be filled with elements as needed.
@@ -124,42 +146,40 @@ public class MarshallerPool {
 
     /**
      * Creates a new factory using the SIS default {@code JAXBContext} instance.
-     * The keys in the {@code properties} map can be one or many of following constants:
+     * The {@code properties} map is optional. If non-null, then the keys can be {@link XML} constants or the
+     * names of any other properties recognized by <em>both</em> {@code Marshaller} and {@code Unmarshaller}
+     * implementations.
      *
-     * <ul>
-     *   <li>{@link XML#DEFAULT_NAMESPACE} for specifying the default namespace of the XML document to write.</li>
-     * </ul>
+     * <p><b>Tip:</b> if the properties for the {@code Marshaller} differ from the properties
+     * for the {@code Unmarshaller}, then consider overriding the {@link #createMarshaller()}
+     * or {@link #createUnmarshaller()} methods instead.</p>
      *
-     * @param  properties    The set of properties to be given to the pool, or {@code null} if none.
+     * @param  properties The set of properties to be given to the (un)marshaller, or {@code null} if none.
      * @throws JAXBException If the JAXB context can not be created.
      */
-    public MarshallerPool(final Map<String,String> properties) throws JAXBException {
+    public MarshallerPool(final Map<String,?> properties) throws JAXBException {
         this(TypeRegistration.getSharedContext(), properties);
     }
 
     /**
      * Creates a new factory using the given JAXB context.
-     * The keys in the {@code properties} map can be one or many of following constants:
+     * The {@code properties} map is optional. If non-null, then the keys can be {@link XML} constants or the
+     * names of any other properties recognized by <em>both</em> {@code Marshaller} and {@code Unmarshaller}
+     * implementations.
      *
-     * <ul>
-     *   <li>{@link XML#DEFAULT_NAMESPACE} for specifying the default namespace of the XML document to write.</li>
-     * </ul>
+     * <p><b>Tip:</b> if the properties for the {@code Marshaller} differ from the properties
+     * for the {@code Unmarshaller}, then consider overriding the {@link #createMarshaller()}
+     * or {@link #createUnmarshaller()} methods instead.</p>
      *
-     * @param  context       The JAXB context.
-     * @param  properties    The set of properties to be given to the pool, or {@code null} if none.
+     * @param  context The JAXB context.
+     * @param  properties The set of properties to be given to the (un)marshaller, or {@code null} if none.
      * @throws JAXBException If the marshaller pool can not be created.
      */
     @SuppressWarnings({"unchecked", "rawtypes"}) // Generic array creation
-    public MarshallerPool(final JAXBContext context, final Map<String,String> properties) throws JAXBException {
+    public MarshallerPool(final JAXBContext context, final Map<String,?> properties) throws JAXBException {
         ArgumentChecks.ensureNonNull("context", context);
         this.context = context;
-        String rootNamespace = "";
-        if (properties != null) {
-            rootNamespace = properties.get(XML.DEFAULT_NAMESPACE);
-            if (rootNamespace == null) {
-                rootNamespace = "";
-            }
-        }
+        replacements = ServiceLoader.load(AdapterReplacement.class);
         /*
          * Detects if we are using the endorsed JAXB implementation (i.e. the one provided in
          * separated JAR files) or the one bundled in JDK 6. We use the JAXB context package
@@ -179,6 +199,12 @@ public class MarshallerPool {
             classname = null;
             implementation = OTHER;
         }
+        /*
+         * Prepares a copy of the property map (if any), then removes the
+         * properties which are handled especially by this constructor.
+         */
+        template = new PooledTemplate(properties, implementation == INTERNAL);
+        final Object rootNamespace = template.remove(XML.DEFAULT_NAMESPACE, "");
         /*
          * Instantiates the OGCNamespacePrefixMapper appropriate for the implementation
          * we just detected. Note that we may get NoClassDefFoundError instead than the
@@ -202,14 +228,14 @@ public class MarshallerPool {
      * This method:
      *
      * <ul>
-     *   <li>{@link Pooled#reset() Resets} the (un)marshaller to its initial state.</li>
+     *   <li>{@link Pooled#reset(Pooled) Resets} the (un)marshaller to its initial state.</li>
      *   <li>{@linkplain Deque#push(Object) Pushes} the (un)marshaller in the given queue.</li>
      *   <li>Registers a delayed task for disposing expired (un)marshallers after the timeout.</li>
      * </ul>
      */
     private <T> void recycle(final Deque<T> queue, final T marshaller) {
         try {
-            ((Pooled) marshaller).reset();
+            ((Pooled) marshaller).reset(template);
         } catch (JAXBException exception) {
             // Not expected to happen because we are supposed
             // to reset the properties to their initial values.
@@ -307,7 +333,7 @@ public class MarshallerPool {
     public Marshaller acquireMarshaller() throws JAXBException {
         Marshaller marshaller = marshallers.poll();
         if (marshaller == null) {
-            marshaller = new PooledMarshaller(createMarshaller(), implementation == INTERNAL);
+            marshaller = new PooledMarshaller(createMarshaller(), template);
         }
         return marshaller;
     }
@@ -333,7 +359,7 @@ public class MarshallerPool {
     public Unmarshaller acquireUnmarshaller() throws JAXBException {
         Unmarshaller unmarshaller = unmarshallers.poll();
         if (unmarshaller == null) {
-            unmarshaller = new PooledUnmarshaller(createUnmarshaller(), implementation == INTERNAL);
+            unmarshaller = new PooledUnmarshaller(createUnmarshaller(), template);
         }
         return unmarshaller;
     }
@@ -387,7 +413,7 @@ public class MarshallerPool {
     }
 
     /**
-     * Creates an configure a new JAXB marshaller.
+     * Creates an configures a new JAXB marshaller.
      * This method is invoked only when no existing marshaller is available in the pool.
      * Subclasses can override this method if they need to change the marshaller configuration.
      *
@@ -401,16 +427,18 @@ public class MarshallerPool {
         switch (implementation) {
             case INTERNAL: {
                 marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", mapper);
+                marshaller.setProperty("com.sun.xml.internal.bind.indentString", INDENTATION);
                 break;
             }
             case ENDORSED: {
                 marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", mapper);
+                marshaller.setProperty("com.sun.xml.bind.indentString", INDENTATION);
                 break;
             }
             // Do nothing for the OTHER case.
         }
-        synchronized (AdapterReplacement.PROVIDER) {
-            for (final AdapterReplacement adapter : AdapterReplacement.PROVIDER) {
+        synchronized (replacements) {
+            for (final AdapterReplacement adapter : replacements) {
                 adapter.register(marshaller);
             }
         }
@@ -418,7 +446,7 @@ public class MarshallerPool {
     }
 
     /**
-     * Creates an configure a new JAXB unmarshaller.
+     * Creates an configures a new JAXB unmarshaller.
      * This method is invoked only when no existing unmarshaller is available in the pool.
      * Subclasses can override this method if they need to change the unmarshaller configuration.
      *
@@ -427,8 +455,8 @@ public class MarshallerPool {
      */
     protected Unmarshaller createUnmarshaller() throws JAXBException {
         final Unmarshaller unmarshaller = context.createUnmarshaller();
-        synchronized (AdapterReplacement.PROVIDER) {
-            for (final AdapterReplacement adapter : AdapterReplacement.PROVIDER) {
+        synchronized (replacements) {
+            for (final AdapterReplacement adapter : replacements) {
                 adapter.register(unmarshaller);
             }
         }

@@ -91,15 +91,17 @@ public class DefaultLegalConstraints extends DefaultConstraints implements Legal
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(LegalConstraints)
      */
     public DefaultLegalConstraints(final LegalConstraints object) {
         super(object);
-        accessConstraints = copyCollection(object.getAccessConstraints(), Restriction.class);
-        useConstraints    = copyCollection(object.getUseConstraints(), Restriction.class);
-        otherConstraints  = copyCollection(object.getOtherConstraints(), InternationalString.class);
+        if (object != null) {
+            accessConstraints = copyCollection(object.getAccessConstraints(), Restriction.class);
+            useConstraints    = copyCollection(object.getUseConstraints(), Restriction.class);
+            otherConstraints  = copyCollection(object.getOtherConstraints(), InternationalString.class);
+        }
     }
 
     /**
@@ -130,6 +132,8 @@ public class DefaultLegalConstraints extends DefaultConstraints implements Legal
     /**
      * Returns the access constraints applied to assure the protection of privacy or intellectual property,
      * and any special restrictions or limitations on obtaining the resource.
+     *
+     * @return Access constraints applied to assure the protection of privacy or intellectual property.
      */
     @Override
     @XmlElement(name = "accessConstraints")
@@ -150,6 +154,8 @@ public class DefaultLegalConstraints extends DefaultConstraints implements Legal
     /**
      * Returns the constraints applied to assure the protection of privacy or intellectual property,
      * and any special restrictions or limitations or warnings on using the resource.
+     *
+     * @return Constraints applied to assure the protection of privacy or intellectual property.
      */
     @Override
     @XmlElement(name = "useConstraints")
@@ -169,9 +175,11 @@ public class DefaultLegalConstraints extends DefaultConstraints implements Legal
 
     /**
      * Returns the other restrictions and legal prerequisites for accessing and using the resource.
-     * Should be a non-empty value only if {@linkplain #getAccessConstraints() access constraints}
+     * Shall be a non-empty value only if {@linkplain #getAccessConstraints() access constraints}
      * or {@linkplain #getUseConstraints() use constraints} declares
      * {@linkplain Restriction#OTHER_RESTRICTIONS other restrictions}.
+     *
+     * @return Other restrictions and legal prerequisites for accessing and using the resource.
      */
     @Override
     @XmlElement(name = "otherConstraints")

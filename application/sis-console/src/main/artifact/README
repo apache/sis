@@ -1,0 +1,102 @@
+=============================================
+Welcome to Apache SIS <http://sis.apache.org>
+=============================================
+
+SIS is a project of the Apache Software Foundation <http://www.apache.org>
+for developing geospatial applications in the Java programming language.
+The library can be used for desktop or server applications.
+
+Apache SIS, SIS, Apache, the Apache feather logo, and the Apache SIS
+project logo are trademarks of The Apache Software Foundation.
+
+
+Installation
+============
+
+SIS is based on Java 6 and provided as a unique standalone JAR file.
+
+Unix
+----
+1) Unzip 'apache-sis-0.3-bin.zip' in any directory.
+2) Add the 'apache-sis-0.3/bin' directory to the path.
+3) Invoke 'sis' on the command line.
+
+Windows
+-------
+There is not yet 'sis.bat' file for Windows.
+The following steps need to be done manually:
+
+1) Unzip 'apache-sis-0.3-bin.zip' in any directory.
+2) In the 'apache-sis-0.3/lib' directory, execute:
+
+     unpack200 --remove-pack-file sis.pack.gz sis.jar
+
+3) Invoke 'java -jar lib/sis.jar' on the command line.
+
+
+Configuration (Unix only)
+=========================
+
+A 'SIS_OPTS' environment variable can optionally be set for specifying options
+to be given to any execution of Apache SIS. For example for setting the
+encoding to UTF-8:
+
+    export SIS_OPTS="--encoding UTF-8"
+
+Optional dependencies can be added to the 'lib' folder. For example adding the
+UCAR NetCDF library in the 'lib' folder will cause Apache SIS to decode a
+wider range of file formats like NcML files.
+
+
+License (see also LICENSE)
+==========================
+
+Collective work: Copyright 2010-2013 The Apache Software Foundation.
+
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+Apache SIS includes a number of subcomponents with separate copyright
+notices and license terms. Your use of these subcomponents is subject to
+the terms and conditions of the licenses listed in the LICENSE file.
+
+
+Mailing Lists
+=============
+
+Discussion about SIS takes place on the following mailing lists:
+
+    user@sis.apache.org    - About using SIS
+    dev@sis.apache.org     - About developing SIS
+
+Notification on all code changes are sent to the following mailing list:
+
+    commits@sis.apache.org
+
+The mailing lists are open to anyone and publicly archived.
+
+You can subscribe the mailing lists by sending a message to
+<LIST>-subscribe@sis.apache.org (for example user-subscribe@...).
+To unsubscribe, send a message to <LIST>-unsubscribe@sis.apache.org.
+For more instructions, send a message to <LIST>-help@sis.apache.org.
+
+
+Issue Tracker
+=============
+
+If you encounter errors in SIS or want to suggest an improvement or
+a new feature, please visit the SIS issue tracker at
+https://issues.apache.org/jira/browse/SIS There you can also find the
+latest information on known issues and recent bug fixes and enhancements.

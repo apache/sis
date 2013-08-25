@@ -28,7 +28,7 @@
   <parent>
     <groupId>org.apache.sis</groupId>
     <artifactId>storage</artifactId>
-    <version>0.3-geoapi3.0-SNAPSHOT</version>
+    <version>0.4-SNAPSHOT</version>
   </parent>
 
 
@@ -104,5 +104,20 @@ Provides the interfaces and base classes to be implemented by various storage fo
       </plugin>
     </plugins>
   </build>
+
+
+  <!-- ===========================================================
+           Dependencies
+       =========================================================== -->
+  <dependencies>
+    <!-- Test dependencies -->
+    <dependency>
+      <groupId>org.apache.sis.core</groupId>
+      <artifactId>sis-metadata</artifactId>
+      <version>${project.version}</version>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
 
 </project>

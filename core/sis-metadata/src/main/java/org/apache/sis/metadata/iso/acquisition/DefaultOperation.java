@@ -64,8 +64,7 @@ public class DefaultOperation extends ISOMetadata implements Operation {
     private static final long serialVersionUID = 4828650802232651791L;
 
     /**
-     * Description of the mission on which the platform observations are made and the
-     * objectives of that mission.
+     * Description of the mission on which the platform observations are made and the objectives of that mission.
      */
     private InternationalString description;
 
@@ -125,23 +124,25 @@ public class DefaultOperation extends ISOMetadata implements Operation {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Operation)
      */
     public DefaultOperation(final Operation object) {
         super(object);
-        description       = object.getDescription();
-        citation          = object.getCitation();
-        identifiers       = singleton(object.getIdentifier(), Identifier.class); // TODO
-        status            = object.getStatus();
-        type              = object.getType();
-        childOperations   = copyCollection(object.getChildOperations(), Operation.class);
-        objectives        = copyCollection(object.getObjectives(), Objective.class);
-        parentOperation   = object.getParentOperation();
-        plan              = object.getPlan();
-        platforms         = copyCollection(object.getPlatforms(), Platform.class);
-        significantEvents = copyCollection(object.getSignificantEvents(), Event.class);
+        if (object != null) {
+            description       = object.getDescription();
+            citation          = object.getCitation();
+            identifiers       = singleton(object.getIdentifier(), Identifier.class);
+            status            = object.getStatus();
+            type              = object.getType();
+            childOperations   = copyCollection(object.getChildOperations(), Operation.class);
+            objectives        = copyCollection(object.getObjectives(), Objective.class);
+            parentOperation   = object.getParentOperation();
+            plan              = object.getPlan();
+            platforms         = copyCollection(object.getPlatforms(), Platform.class);
+            significantEvents = copyCollection(object.getSignificantEvents(), Event.class);
+        }
     }
 
     /**
@@ -172,6 +173,8 @@ public class DefaultOperation extends ISOMetadata implements Operation {
     /**
      * Returns the description of the mission on which the platform observations are made and the
      * objectives of that mission. {@code null} if unspecified.
+     *
+     * @return Description of the mission, or {@code null}.
      */
     @Override
     @XmlElement(name = "description")
@@ -192,6 +195,8 @@ public class DefaultOperation extends ISOMetadata implements Operation {
 
     /**
      * Returns the identification of the mission. {@code null} if unspecified.
+     *
+     * @return Identification of the mission, or {@code null}.
      */
     @Override
     @XmlElement(name = "citation")
@@ -211,6 +216,8 @@ public class DefaultOperation extends ISOMetadata implements Operation {
 
     /**
      * Returns the unique identification of the operation.
+     *
+     * @return Unique identification of the operation, or {@code null}.
      */
     @Override
     @XmlElement(name = "identifier", required = true)
@@ -231,6 +238,8 @@ public class DefaultOperation extends ISOMetadata implements Operation {
 
     /**
      * Returns the status of the data acquisition.
+     *
+     * @return Status of the data acquisition, or {@code null}.
      */
     @Override
     @XmlElement(name = "status", required = true)
@@ -250,6 +259,8 @@ public class DefaultOperation extends ISOMetadata implements Operation {
 
     /**
      * Returns the collection technique for the operation.
+     *
+     * @return Collection technique for the operation, or {@code null}.
      */
     @Override
     @XmlElement(name = "type")
@@ -269,6 +280,8 @@ public class DefaultOperation extends ISOMetadata implements Operation {
 
     /**
      * Returns the sub-missions that make up part of a larger mission.
+     *
+     * @return Sub-missions.
      */
     @Override
     @XmlElement(name = "childOperation")
@@ -287,6 +300,8 @@ public class DefaultOperation extends ISOMetadata implements Operation {
 
     /**
      * Returns object(s) or area(s) of interest to be sensed.
+     *
+     * @return Object(s) or area(s) of interest.
      */
     @Override
     @XmlElement(name = "objective")
@@ -305,6 +320,8 @@ public class DefaultOperation extends ISOMetadata implements Operation {
 
     /**
      * Returns the heritage of the operation.
+     *
+     * @return Heritage of the operation, or {@code null}.
      */
     @Override
     @XmlElement(name = "parentOperation", required = true)
@@ -324,6 +341,8 @@ public class DefaultOperation extends ISOMetadata implements Operation {
 
     /**
      * Returns the plan satisfied by the operation.
+     *
+     * @return Plan satisfied by the operation, or {@code null}.
      */
     @Override
     @XmlElement(name = "plan")
@@ -343,6 +362,8 @@ public class DefaultOperation extends ISOMetadata implements Operation {
 
     /**
      * Returns the platform (or platforms) used in the operation.
+     *
+     * @return Platforms used in the operation.
      */
     @Override
     @XmlElement(name = "platform")
@@ -361,6 +382,8 @@ public class DefaultOperation extends ISOMetadata implements Operation {
 
     /**
      * Returns the record of an event occurring during an operation.
+     *
+     * @return Record of an event occurring during an operation.
      */
     @Override
     @XmlElement(name = "significantEvent")

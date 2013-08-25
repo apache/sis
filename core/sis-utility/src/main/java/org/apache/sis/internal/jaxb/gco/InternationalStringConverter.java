@@ -58,6 +58,6 @@ public final class InternationalStringConverter extends XmlAdapter<String,Intern
      */
     @Override
     public String marshal(final InternationalString value) {
-        return (value != null) ? value.toString() : null;
+        return StringAdapter.toString(value);
     }
 }

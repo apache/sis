@@ -132,9 +132,7 @@
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({
-    @XmlJavaTypeAdapter(GO_GenericName.class),
-    @XmlJavaTypeAdapter(LocalNameAdapter.class),
-    @XmlJavaTypeAdapter(ScopedNameAdapter.class)
+    @XmlJavaTypeAdapter(GO_GenericName.class)
 })
 package org.apache.sis.util.iso;
 

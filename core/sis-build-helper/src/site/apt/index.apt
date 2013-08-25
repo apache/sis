@@ -1,3 +1,22 @@
+~~
+~~ Licensed to the Apache Software Foundation (ASF) under one
+~~ or more contributor license agreements.  See the NOTICE file
+~~ distributed with this work for additional information
+~~ regarding copyright ownership.  The ASF licenses this file
+~~ to you under the Apache License, Version 2.0 (the
+~~ "License"); you may not use this file except in compliance
+~~ with the License.  You may obtain a copy of the License at
+~~
+~~   http://www.apache.org/licenses/LICENSE-2.0
+~~
+~~ Unless required by applicable law or agreed to in writing,
+~~ software distributed under the License is distributed on an
+~~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+~~ KIND, either express or implied.  See the License for the
+~~ specific language governing permissions and limitations
+~~ under the License.
+~~
+
                              ------------------------------
                                         Overview
                              ------------------------------
@@ -10,13 +29,7 @@ Building Apache SIS
 
   Content:
 
-  * Javadoc taglets
-
-  * Localized resources compiler
-
-  * JAR files collector
-
-  * Pack200 bundles
+%{toc|fromDepth=2|toDepth=2}
 
 
 * Javadoc taglets
@@ -26,20 +39,23 @@ Building Apache SIS
 *----------------------+-------------------------------------------------------------------------------------------+
 || Javadoc tag         || Description                                                                             ||
 *----------------------+-------------------------------------------------------------------------------------------+
+| <<<\{@example\}>>>   | An inline taglet for an example.                                                          |
+|                      | Examples appear as indented paragraphs with a smaller font.                               |
+*----------------------+-------------------------------------------------------------------------------------------+
 | <<<@module>>>        | Create links to the module where the class is defined, source code and Maven artifacts.   |
-*----------------------+-------------------------------------------------------------------------------------------+
-| <<<\{@website\}>>>   | An inline taglet for the URL to the Apache SIS web site (Maven reports).                  |
-*----------------------+-------------------------------------------------------------------------------------------+
-| <<<\{@section\}>>>   | An inline taglet for the title of a new section in the javadoc.                           |
 *----------------------+-------------------------------------------------------------------------------------------+
 | <<<\{@note\}>>>      | An inline taglet for a remark that readers can safely ignore.                             |
 |                      | Notes appear as indented paragraphs with a smaller font.                                  |
 *----------------------+-------------------------------------------------------------------------------------------+
-| <<<\{@example\}>>>   | An inline taglet for an example.                                                          |
-|                      | Examples appear as indented paragraphs with a smaller font.                               |
-*----------------------+-------------------------------------------------------------------------------------------+
 | <<<\{@preformat\}>>> | An inline taglet for pre-formatted text. The first word inside the taglet shall be one of |
 |                      | <<<java>>>, <<<xml>>>, <<<sql>>>, <<<wkt>>>, <<<text>>>, <<<math>>> or <<<shell>>>.       |
+*----------------------+-------------------------------------------------------------------------------------------+
+| <<<\{@scmUrl\}>>>    | An inline taglet for a URL to the source code repository. The only word inside the taglet |
+|                      | shall be <<<gmd-data>>>.                                                                  |
+*----------------------+-------------------------------------------------------------------------------------------+
+| <<<\{@section\}>>>   | An inline taglet for the title of a new section in the javadoc.                           |
+*----------------------+-------------------------------------------------------------------------------------------+
+| <<<\{@website\}>>>   | An inline taglet for the URL to the Apache SIS web site (Maven reports).                  |
 *----------------------+-------------------------------------------------------------------------------------------+
 
 
@@ -69,7 +85,7 @@ Building Apache SIS
 <build>
   <plugins>
     <plugin>
-      <groupId>org.apache.sis</groupId>
+      <groupId>org.apache.sis.core</groupId>
       <artifactId>sis-build-helper</artifactId>
       <version>${sis.plugin.version}</version>
       <executions>
@@ -89,9 +105,9 @@ Building Apache SIS
   in the module containing the resources to recompile. This is sometime useful for regenerating
   the constants in the <<<Keys>>> inner class in a feaster way than building the project.
 
------------------------------------------------------------
-   mvn org.apache.sis:sis-build-helper:compile-resources
------------------------------------------------------------
+----------------------------------------------------------------
+   mvn org.apache.sis.core:sis-build-helper:compile-resources
+----------------------------------------------------------------
 
 
 * JAR files collector
@@ -107,7 +123,7 @@ Building Apache SIS
     so execution of this plugin should be very cheap and consume few disk space.
 
   * Dependencies already present in the <<<target/binaries>>> directory are presumed stables and
-    are not overwritten. Only artefacts produced by the Maven build are unconditionally overwritten.
+    are not overwritten. Only artifacts produced by the Maven build are unconditionally overwritten.
 
   This plugin can be activated by the following fragment in the parent <<<pom.xml>>> file:
 
@@ -115,7 +131,7 @@ Building Apache SIS
   <build>
     <plugins>
       <plugin>
-        <groupId>org.apache.sis</groupId>
+        <groupId>org.apache.sis.core</groupId>
         <artifactId>sis-build-helper</artifactId>
         <version>${sis.plugin.version}</version>
         <executions>
@@ -131,15 +147,15 @@ Building Apache SIS
 +-----------------------------------------------------
 
 
-* Pack200 bundles
+* Pack200 bundle
 
   To merges the binaries produced by the above step and compress them using Pack200,
   invoke the following from the command line. Do not forget the <<<--non-recursive>>>
   option, otherwise the Mojo will waste CPU by executing itself many time.
 
-----------------------------------------------------------------
-   mvn org.apache.sis:sis-build-helper:pack --non-recursive
-----------------------------------------------------------------
+-------------------------------------------------------------------
+   mvn org.apache.sis.core:sis-build-helper:pack --non-recursive
+-------------------------------------------------------------------
 
   The above command should create a <<<target/binaries/sis-\<version\>.pack.gz>>> file.
   To uncompress that file, use the following command:
@@ -147,3 +163,17 @@ Building Apache SIS
 ----------------------------------------------------------------
    unpack200 --remove-pack-file sis-<version>.pack.gz sis.jar
 ----------------------------------------------------------------
+
+  The Pack200 bundle does not include the <<<sis-webapp>>> module because the later can be downloaded
+  as a <<<WAR>>> file from the Maven repository.
+
+
+* Distribution file
+
+  The distribution file is a ZIP file containing the same Pack200 bundle than above,
+  together with a <<<README>>> file, configuration files and convenience shell scripts.
+  The distribution file is generated as below:
+
+-------------------------------------------------------------------
+   mvn org.apache.sis.core:sis-build-helper:dist --non-recursive
+-------------------------------------------------------------------

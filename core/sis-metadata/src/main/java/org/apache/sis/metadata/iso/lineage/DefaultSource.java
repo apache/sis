@@ -127,20 +127,22 @@ public class DefaultSource extends ISOMetadata implements Source {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Source)
      */
     public DefaultSource(final Source object) {
         super(object);
-        description           = object.getDescription();
-        scaleDenominator      = object.getScaleDenominator();
-        sourceCitation        = object.getSourceCitation();
-        sourceExtents         = copyCollection(object.getSourceExtents(), Extent.class);
-        sourceSteps           = copyCollection(object.getSourceSteps(), ProcessStep.class);
-        processedLevel        = object.getProcessedLevel();
-        resolution            = object.getResolution();
-        sourceReferenceSystem = object.getSourceReferenceSystem();
+        if (object != null) {
+            description           = object.getDescription();
+            scaleDenominator      = object.getScaleDenominator();
+            sourceCitation        = object.getSourceCitation();
+            sourceExtents         = copyCollection(object.getSourceExtents(), Extent.class);
+            sourceSteps           = copyCollection(object.getSourceSteps(), ProcessStep.class);
+            processedLevel        = object.getProcessedLevel();
+            resolution            = object.getResolution();
+            sourceReferenceSystem = object.getSourceReferenceSystem();
+        }
     }
 
     /**
@@ -170,6 +172,8 @@ public class DefaultSource extends ISOMetadata implements Source {
 
     /**
      * Returns a detailed description of the level of the source data.
+     *
+     * @return Description of the level of the source data, or {@code null}.
      */
     @Override
     @XmlElement(name = "description")
@@ -189,6 +193,8 @@ public class DefaultSource extends ISOMetadata implements Source {
 
     /**
      * Returns the denominator of the representative fraction on a source map.
+     *
+     * @return Representative fraction on a source map, or {@code null}.
      */
     @Override
     @XmlElement(name = "scaleDenominator")
@@ -209,7 +215,9 @@ public class DefaultSource extends ISOMetadata implements Source {
     /**
      * Returns the spatial reference system used by the source data.
      *
-     * @todo needs to annotate the referencing module before.
+     * @return Spatial reference system used by the source data, or {@code null}.
+     *
+     * @todo We need to annotate the referencing module before we can annotate this method.
      */
     @Override
     public ReferenceSystem getSourceReferenceSystem()  {
@@ -228,6 +236,8 @@ public class DefaultSource extends ISOMetadata implements Source {
 
     /**
      * Returns the recommended reference to be used for the source data.
+     *
+     * @return Recommended reference to be used for the source data, or {@code null}.
      */
     @Override
     @XmlElement(name = "sourceCitation")
@@ -247,6 +257,8 @@ public class DefaultSource extends ISOMetadata implements Source {
 
     /**
      * Returns the information about the spatial, vertical and temporal extent of the source data.
+     *
+     * @return Information about the extent of the source data.
      */
     @Override
     @XmlElement(name = "sourceExtent")
@@ -265,6 +277,8 @@ public class DefaultSource extends ISOMetadata implements Source {
 
     /**
      * Returns information about an event in the creation process for the source data.
+     *
+     * @return Information about an event in the creation process.
      */
     @Override
     @XmlElement(name = "sourceStep")
@@ -283,6 +297,8 @@ public class DefaultSource extends ISOMetadata implements Source {
 
     /**
      * Returns the processing level of the source data. {@code null} if unspecified.
+     *
+     * @return Processing level of the source data, or {@code null}.
      */
     @Override
     @XmlElement(name = "processedLevel", namespace = Namespaces.GMI)
@@ -301,8 +317,9 @@ public class DefaultSource extends ISOMetadata implements Source {
     }
 
     /**
-     * Returns the distance between consistent parts (centre, left side, right side) of
-     * two adjacent pixels. {@code null} if unspecified.
+     * Returns the distance between consistent parts (centre, left side, right side) of two adjacent pixels.
+     *
+     * @return Distance between consistent parts of two adjacent pixels, or {@code null}.
      */
     @Override
     @XmlElement(name = "resolution", namespace = Namespaces.GMI)
@@ -311,8 +328,7 @@ public class DefaultSource extends ISOMetadata implements Source {
     }
 
     /**
-     * Sets the distance between consistent parts (centre, left side, right side) of
-     * two adjacent pixels.
+     * Sets the distance between consistent parts (centre, left side, right side) of two adjacent pixels.
      *
      * @param newValue The new nominal resolution value.
      */

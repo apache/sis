@@ -114,19 +114,21 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(ApplicationSchemaInformation)
      */
     public DefaultApplicationSchemaInformation(final ApplicationSchemaInformation object) {
         super(object);
-        name                          = object.getName();
-        schemaLanguage                = object.getSchemaLanguage();
-        constraintLanguage            = object.getConstraintLanguage();
-        schemaAscii                   = object.getSchemaAscii();
-        graphicsFile                  = object.getGraphicsFile();
-        softwareDevelopmentFile       = object.getSoftwareDevelopmentFile();
-        softwareDevelopmentFileFormat = object.getSoftwareDevelopmentFileFormat();
+        if (object != null) {
+            name                          = object.getName();
+            schemaLanguage                = object.getSchemaLanguage();
+            constraintLanguage            = object.getConstraintLanguage();
+            schemaAscii                   = object.getSchemaAscii();
+            graphicsFile                  = object.getGraphicsFile();
+            softwareDevelopmentFile       = object.getSoftwareDevelopmentFile();
+            softwareDevelopmentFileFormat = object.getSoftwareDevelopmentFileFormat();
+        }
     }
 
     /**
@@ -156,6 +158,8 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata
 
     /**
      * Name of the application schema used.
+     *
+     * @return Name of the application schema, or {@code null}.
      */
     @Override
     @XmlElement(name = "name", required = true)
@@ -175,6 +179,8 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata
 
     /**
      * Identification of the schema language used.
+     *
+     * @return The schema language used, or {@code null}.
      */
     @Override
     @XmlElement(name = "schemaLanguage", required = true)
@@ -194,6 +200,8 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata
 
     /**
      * Formal language used in Application Schema.
+     *
+     * @return Formal language used in Application Schema, or {@code null}.
      */
     @Override
     @XmlElement(name = "constraintLanguage", required = true)
@@ -213,6 +221,8 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata
 
     /**
      * Full application schema given as an ASCII file.
+     *
+     * @return Application schema as an ASCII file, or {@code null}.
      */
     @Override
     @XmlElement(name = "schemaAscii")
@@ -232,6 +242,8 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata
 
     /**
      * Full application schema given as a graphics file.
+     *
+     * @return Application schema as a graphics file, or {@code null}.
      */
     @Override
     @XmlElement(name = "graphicsFile")
@@ -251,6 +263,8 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata
 
     /**
      * Full application schema given as a software development file.
+     *
+     * @return Application schema as a software development file, or {@code null}.
      */
     @Override
     @XmlElement(name = "softwareDevelopmentFile")
@@ -270,6 +284,8 @@ public class DefaultApplicationSchemaInformation extends ISOMetadata
 
     /**
      * Software dependent format used for the application schema software dependent file.
+     *
+     * @return Format used for the application schema software file, or {@code null}.
      */
     @Override
     @XmlElement(name = "softwareDevelopmentFileFormat")

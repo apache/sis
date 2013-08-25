@@ -26,7 +26,7 @@ import org.junit.BeforeClass;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.4
  * @module
  */
 @Suite.SuiteClasses({
@@ -41,6 +41,7 @@ import org.junit.BeforeClass;
     org.apache.sis.util.CharactersTest.class,
     org.apache.sis.util.CharSequencesTest.class,
     org.apache.sis.util.StringBuildersTest.class,
+    org.apache.sis.util.ExceptionsTest.class,
     org.apache.sis.util.UtilitiesTest.class,
     org.apache.sis.util.NumbersTest.class,
     org.apache.sis.util.ClassesTest.class,
@@ -51,6 +52,7 @@ import org.junit.BeforeClass;
     org.apache.sis.util.logging.PerformanceLevelTest.class,
     org.apache.sis.util.logging.WarningListenersTest.class,
     org.apache.sis.util.logging.MonolineFormatterTest.class,
+    org.apache.sis.util.logging.LoggerAdapterTest.class,
     org.apache.sis.math.MathFunctionsTest.class,
     org.apache.sis.math.StatisticsTest.class,
     org.apache.sis.math.StatisticsFormatTest.class,
@@ -98,11 +100,12 @@ import org.junit.BeforeClass;
     org.apache.sis.util.collection.TreeTableFormatTest.class,
     org.apache.sis.util.collection.RangeSetTest.class,
 
-    // Converters
+    // Converters.
     org.apache.sis.internal.converter.AngleConverterTest.class,
     org.apache.sis.internal.converter.StringConverterTest.class,
     org.apache.sis.internal.converter.PathConverterTest.class,
     org.apache.sis.internal.converter.FallbackConverterTest.class,
+    org.apache.sis.internal.converter.ArrayConverterTest.class,
     org.apache.sis.internal.converter.ConverterRegistryTest.class,
     org.apache.sis.internal.converter.SystemRegistryTest.class,
     org.apache.sis.internal.converter.NumberConverterTest.class, // Shall be after SystemRegistryTest.
@@ -112,8 +115,13 @@ import org.junit.BeforeClass;
     org.apache.sis.xml.NilReasonTest.class,
     org.apache.sis.xml.OGCNamespacePrefixMapperTest.class,
     org.apache.sis.xml.MarshallerPoolTest.class,
+    org.apache.sis.internal.jaxb.XmlUtilitiesTest.class,
     org.apache.sis.internal.jaxb.IdentifierMapAdapterTest.class,
-    org.apache.sis.internal.jaxb.IdentifierMapWithSpecialCasesTest.class
+    org.apache.sis.internal.jaxb.IdentifierMapWithSpecialCasesTest.class,
+    org.apache.sis.internal.jaxb.gco.StringAdapterTest.class,
+    org.apache.sis.internal.jaxb.gco.MeasureTest.class,
+    org.apache.sis.internal.jaxb.gco.PropertyTypeTest.class,
+    org.apache.sis.util.iso.NameMarshallingTest.class
 })
 public final strictfp class UtilityTestSuite extends TestSuite {
     /**

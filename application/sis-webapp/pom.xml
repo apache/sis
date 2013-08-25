@@ -28,9 +28,10 @@
   <parent>
     <groupId>org.apache.sis</groupId>
     <artifactId>application</artifactId>
-    <version>0.3-geoapi3.0-SNAPSHOT</version>
+    <version>0.4-SNAPSHOT</version>
   </parent>
 
+  <groupId>org.apache.sis.application</groupId>
   <artifactId>sis-webapp</artifactId>
   <packaging>war</packaging>
   <name>Apache SIS web services layer</name>
@@ -46,8 +47,8 @@
       <artifactId>georss-rome</artifactId>
       <version>0.9.8</version>
       <!-- We have to specify the version here because georss-rome is intentionally excluded from
-           the dependency management of the root pom.xml. The problem is that the artefact filename
-           is "georss-rome", but the <artefactId> element in its pom.xml declares "georss" without
+           the dependency management of the root pom.xml. The problem is that the artifact filename
+           is "georss-rome", but the <artifactId> element in its pom.xml declares "georss" without
            the "-rome" suffix, which causes some environments to complain about this inconsistency.
            Omitting the declaration from the root pom.xml limits the inconvenience to this "sis-webapp"
            module only. -->

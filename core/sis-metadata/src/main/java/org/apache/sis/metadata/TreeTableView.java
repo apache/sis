@@ -33,7 +33,7 @@ import org.apache.sis.internal.system.LocalizedStaticObject;
 
 /**
  * A tree table view over a metadata object.
- * The tree table is made of three columns:
+ * The tree table is made of the following columns:
  *
  * <ul>
  *   <li>{@link TableColumn#IDENTIFIER} - the property identifier as defined by the UML (if any).</li>

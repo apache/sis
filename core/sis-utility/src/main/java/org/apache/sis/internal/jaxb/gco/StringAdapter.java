@@ -34,11 +34,11 @@ import org.apache.sis.internal.jaxb.Context;
  * @version 0.3
  * @module
  */
-public final class StringAdapter extends XmlAdapter<GO_CharacterString, String> {
+public class StringAdapter extends XmlAdapter<GO_CharacterString, String> {
     /**
-     * Empty constructor for JAXB.
+     * Empty constructor for JAXB or subclasses.
      */
-    private StringAdapter() {
+    public StringAdapter() {
     }
 
     /**
@@ -48,28 +48,38 @@ public final class StringAdapter extends XmlAdapter<GO_CharacterString, String> 
      * If the context is {@code null} or does not specify any locale, then the choice
      * of locale is left to the {@link InternationalString#toString()} implementation.
      *
+     * @param  text The {@code CharSequence} to convert to a {@code String}, or {@code null}.
+     * @return The localized representation of the given text, or {@code null} if the text was null.
+     *
+     * @see org.apache.sis.xml.XML#LOCALE
+     */
+    static String toString(final CharSequence text) {
+        if (text == null) {
+            return null;
+        }
+        if (text instanceof InternationalString) {
+            final Context context = Context.current();
+            if (context != null) {
+                final Locale locale = context.getLocale();
+                if (locale != null) {
+                    // While Apache SIS accepts null locale, foreigner
+                    // implementations are not guaranteed to support null.
+                    return ((InternationalString) text).toString(locale);
+                }
+            }
+        }
+        return text.toString();
+    }
+
+    /**
+     * Returns the string representation of the given {@code GO_CharacterString} for the current locale.
+     * The locale is determined by the {@link org.apache.sis.xml.XML#LOCALE} property given to the marshaller.
+     *
      * @param  value The wrapper for the value, or {@code null}.
      * @return The string representation of the given text, or {@code null}.
      */
     public static String toString(final GO_CharacterString value) {
-        if (value != null) {
-            final CharSequence text = value.toCharSequence();
-            if (text != null) {
-                if (text instanceof InternationalString) {
-                    final Context context = Context.current();
-                    if (context != null) {
-                        final Locale locale = context.getLocale();
-                        if (locale != null) {
-                            // While Apache SIS accepts null locale, foreigner
-                            // implementations are not guaranteed to support null.
-                            return ((InternationalString) text).toString(locale);
-                        }
-                    }
-                }
-                return text.toString();
-            }
-        }
-        return null;
+        return (value != null) ? toString(value.toCharSequence()) : null;
     }
 
     /**
@@ -95,6 +105,6 @@ public final class StringAdapter extends XmlAdapter<GO_CharacterString, String> 
      */
     @Override
     public GO_CharacterString marshal(final String value) {
-        return CharSequenceAdapter.wrap(value, value);
+        return CharSequenceAdapter.wrap(Context.current(), value, value);
     }
 }

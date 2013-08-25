@@ -71,14 +71,16 @@ public class DefaultMetadataExtensionInformation extends ISOMetadata
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(MetadataExtensionInformation)
      */
     public DefaultMetadataExtensionInformation(final MetadataExtensionInformation object) {
         super(object);
-        extensionOnLineResource    = object.getExtensionOnLineResource();
-        extendedElementInformation = copyCollection(object.getExtendedElementInformation(), ExtendedElementInformation.class);
+        if (object != null) {
+            extensionOnLineResource    = object.getExtensionOnLineResource();
+            extendedElementInformation = copyCollection(object.getExtendedElementInformation(), ExtendedElementInformation.class);
+        }
     }
 
     /**
@@ -109,6 +111,8 @@ public class DefaultMetadataExtensionInformation extends ISOMetadata
     /**
      * Information about on-line sources containing the community profile name and
      * the extended metadata elements. Information for all new metadata elements.
+     *
+     * @return Online sources to community profile name and extended metadata elements, or {@code null}.
      */
     @Override
     @XmlElement(name = "extensionOnLineResource")
@@ -129,6 +133,8 @@ public class DefaultMetadataExtensionInformation extends ISOMetadata
     /**
      * Provides information about a new metadata element, not found in ISO 19115, which is
      * required to describe geographic data.
+     *
+     * @return New metadata elements not found in ISO 19115.
      */
     @Override
     @XmlElement(name = "extendedElementInformation")

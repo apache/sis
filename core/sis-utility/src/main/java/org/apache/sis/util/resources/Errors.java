@@ -99,6 +99,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int CanNotParseFile_2 = 79;
 
         /**
+         * Can not read “{0}”.
+         */
+        public static final int CanNotRead_1 = 108;
+
+        /**
          * Can not set a value for property “{0}”.
          */
         public static final int CanNotSetPropertyValue_1 = 75;
@@ -216,6 +221,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int IllegalLanguageCode_1 = 12;
 
         /**
+         * Member “{0}” can not be associated to type “{1}”.
+         */
+        public static final int IllegalMemberType_2 = 106;
+
+        /**
          * Option ‘{0}’ can not take the “{1}” value.
          */
         public static final int IllegalOptionValue_2 = 101;
@@ -304,6 +314,11 @@ public final class Errors extends IndexedResourceBundle {
          * This operation requires the “{0}” module.
          */
         public static final int MissingRequiredModule_1 = 84;
+
+        /**
+         * Missing scheme in URI.
+         */
+        public static final int MissingSchemeInURI = 109;
 
         /**
          * Missing value for option “{0}”.
@@ -504,6 +519,11 @@ public final class Errors extends IndexedResourceBundle {
          * Command “{0}” is not recognized.
          */
         public static final int UnknownCommand_1 = 102;
+
+        /**
+         * Format of “{0}” is not recognized.
+         */
+        public static final int UnknownFormatFor_1 = 107;
 
         /**
          * Option “{0}” is not recognized.

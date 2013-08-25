@@ -99,7 +99,7 @@ final class StandardImplementation extends MetadataStandard {
      * @return The implementation class, or {@code null} if none.
      */
     @Override
-    protected Class<?> getImplementation(final Class<?> type) {
+    public Class<?> getImplementation(final Class<?> type) {
         /*
          * We require the type to be an interface in order to exclude
          * CodeLists, Enums and Exceptions.

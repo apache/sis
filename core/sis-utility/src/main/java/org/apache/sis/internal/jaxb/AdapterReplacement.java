@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.jaxb;
 
-import java.util.ServiceLoader;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.JAXBException;
@@ -32,6 +31,11 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
  * <p>This interface is mostly for handling extensions to metadata profile provided as extension,
  * like the {@code FRA} extension for France provided in the {@code sis-metadata-fra} module.</p>
  *
+ * <p><b>WARNING:</b> there is currently no mechanism for ensuring that the registration performed
+ * by an {@code AdapterReplacement} instance does not overwrite the registration performed by an
+ * other {@code AdapterReplacement} instance. This is okay as long as the instances are defined
+ * only in SIS. However we will need to revisit this issue if we move this interface to public API.</p>
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
  * @version 0.3
@@ -41,20 +45,6 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
  * @see Unmarshaller#setAdapter(XmlAdapter)
  */
 public interface AdapterReplacement {
-    /**
-     * The system-wide provider of {@code AdapterReplacement} instances.
-     * <strong>Every usage of this service loader must be synchronized.</strong>
-     * This loader is public for allowing modules to unregister their instance
-     * when the module is unloaded (e.g. from an OSGi container), as below:
-     *
-     * {@preformat java
-     *     synchronized (AdapterReplacement.PROVIDER) {
-     *         AdapterReplacement.PROVIDER.reload();
-     *     }
-     * }
-     */
-    ServiceLoader<AdapterReplacement> PROVIDER = ServiceLoader.load(AdapterReplacement.class);
-
     /**
      * Invoked when a new adapter is created by {@link org.apache.sis.xml.MarshallerPool}.
      * Typical implementations will be as below:

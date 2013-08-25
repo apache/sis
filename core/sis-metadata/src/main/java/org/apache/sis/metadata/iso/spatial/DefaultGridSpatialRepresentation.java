@@ -104,17 +104,19 @@ public class DefaultGridSpatialRepresentation extends AbstractSpatialRepresentat
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(GridSpatialRepresentation)
      */
     public DefaultGridSpatialRepresentation(final GridSpatialRepresentation object) {
         super(object);
-        numberOfDimensions      = object.getNumberOfDimensions();
-        axisDimensionProperties = copyList(object.getAxisDimensionProperties(), Dimension.class);
-        cellGeometry            = object.getCellGeometry();
-        if (object.isTransformationParameterAvailable()) {
-            booleans = TRANSFORMATION_MASK;
+        if (object != null) {
+            numberOfDimensions      = object.getNumberOfDimensions();
+            axisDimensionProperties = copyList(object.getAxisDimensionProperties(), Dimension.class);
+            cellGeometry            = object.getCellGeometry();
+            if (object.isTransformationParameterAvailable()) {
+                booleans = TRANSFORMATION_MASK;
+            }
         }
     }
 
@@ -157,6 +159,8 @@ public class DefaultGridSpatialRepresentation extends AbstractSpatialRepresentat
 
     /**
      * Returns the number of independent spatial-temporal axes.
+     *
+     * @return Number of independent spatial-temporal axes, or {@code null}.
      */
     @Override
     @ValueRange(minimum=0)
@@ -177,6 +181,8 @@ public class DefaultGridSpatialRepresentation extends AbstractSpatialRepresentat
 
     /**
      * Returns information about spatial-temporal axis properties.
+     *
+     * @return Information about spatial-temporal axis properties.
      */
     @Override
     @XmlElement(name = "axisDimensionProperties", required = true)
@@ -197,6 +203,8 @@ public class DefaultGridSpatialRepresentation extends AbstractSpatialRepresentat
 
     /**
      * Returns the identification of grid data as point or cell.
+     *
+     * @return Identification of grid data as point or cell, or {@code null}.
      */
     @Override
     @XmlElement(name = "cellGeometry", required = true)
@@ -216,6 +224,8 @@ public class DefaultGridSpatialRepresentation extends AbstractSpatialRepresentat
 
     /**
      * Returns indication of whether or not parameters for transformation exists.
+     *
+     * @return Whether or not parameters for transformation exists.
      */
     @Override
     @XmlElement(name = "transformationParameterAvailability", required = true)

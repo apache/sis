@@ -103,19 +103,21 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(AcquisitionInformation)
      */
     public DefaultAcquisitionInformation(final AcquisitionInformation object) {
         super(object);
-        acquisitionPlans        = copyCollection(object.getAcquisitionPlans(), Plan.class);
-        acquisitionRequirements = copyCollection(object.getAcquisitionRequirements(), Requirement.class);
-        environmentalConditions = object.getEnvironmentalConditions();
-        instruments             = copyCollection(object.getInstruments(), Instrument.class);
-        objectives              = copyCollection(object.getObjectives(), Objective.class);
-        operations              = copyCollection(object.getOperations(), Operation.class);
-        platforms               = copyCollection(object.getPlatforms(), Platform.class);
+        if (object != null) {
+            acquisitionPlans        = copyCollection(object.getAcquisitionPlans(), Plan.class);
+            acquisitionRequirements = copyCollection(object.getAcquisitionRequirements(), Requirement.class);
+            environmentalConditions = object.getEnvironmentalConditions();
+            instruments             = copyCollection(object.getInstruments(), Instrument.class);
+            objectives              = copyCollection(object.getObjectives(), Objective.class);
+            operations              = copyCollection(object.getOperations(), Operation.class);
+            platforms               = copyCollection(object.getPlatforms(), Platform.class);
+        }
     }
 
     /**
@@ -145,6 +147,8 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
 
     /**
      * Returns the plan as implemented by the acquisition.
+     *
+     * @return Plan as implemented by the acquisition.
      */
     @Override
     @XmlElement(name = "acquisitionPlan")
@@ -163,6 +167,8 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
 
     /**
      * Returns the requirement the data acquisition intends to satisfy.
+     *
+     * @return Requirement the data acquisition intends to satisfy.
      */
     @Override
     @XmlElement(name = "acquisitionRequirement")
@@ -182,6 +188,8 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
     /**
      * Returns a record of the environmental circumstances during the data acquisition.
      * {@code null} if unspecified.
+     *
+     * @return Record of the environmental circumstances, or {@code null}.
      */
     @Override
     @XmlElement(name = "environmentalConditions")
@@ -201,6 +209,8 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
 
     /**
      * Returns the general information about the instrument used in data acquisition.
+     *
+     * @return Instrument used in data acquisition.
      */
     @Override
     @XmlElement(name = "instrument")
@@ -219,6 +229,8 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
 
     /**
      * Returns the area or object to be sensed.
+     *
+     * @return Area or object to be sensed.
      */
     @Override
     @XmlElement(name = "objective")
@@ -237,6 +249,8 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
 
     /**
      * Returns the general information about an identifiable activity which provided the data.
+     *
+     * @return Identifiable activity which provided the data.
      */
     @Override
     @XmlElement(name = "operation")
@@ -255,6 +269,8 @@ public class DefaultAcquisitionInformation extends ISOMetadata implements Acquis
 
     /**
      * Returns the general information about the platform from which the data were taken.
+     *
+     * @return Platform from which the data were taken.
      */
     @Override
     @XmlElement(name = "platform")

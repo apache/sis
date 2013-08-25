@@ -18,7 +18,7 @@
 package org.apache.sis.index.tree;
 
 //SIS imports
-import org.apache.sis.core.LatLon;
+import org.apache.sis.geometry.DirectPosition2D;
 
 /**
  * Interface representing data stored in quad tree. All data to be stored in
@@ -46,7 +46,7 @@ public interface QuadTreeData {
    *
    * @return the latitude/longitude pair.
    */
-  public LatLon getLatLon();
+  public DirectPosition2D getLatLon();
 
   /**
    * Returns the name of the file where the entry's info is saved.

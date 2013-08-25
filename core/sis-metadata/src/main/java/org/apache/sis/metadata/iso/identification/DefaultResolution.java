@@ -22,11 +22,12 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.metadata.identification.RepresentativeFraction;
 import org.opengis.metadata.identification.Resolution;
-// import org.apache.sis.internal.jaxb.gco.GO_Distance; // TODO
+import org.apache.sis.internal.jaxb.gco.GO_Distance;
+import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.util.resources.Messages;
-import org.apache.sis.internal.metadata.MetadataUtilities;
+import org.apache.sis.util.Workaround;
 
 
 /**
@@ -46,10 +47,7 @@ import org.apache.sis.internal.metadata.MetadataUtilities;
  * @version 0.3
  * @module
  */
-@XmlType(name = "MD_Resolution_Type", propOrder = {
-    "equivalentScale",
-// TODO    "distance"
-})
+@XmlType(name = "MD_Resolution_Type") // No need for propOrder since this structure is a union (see javadoc).
 @XmlRootElement(name = "MD_Resolution")
 public class DefaultResolution extends ISOMetadata implements Resolution {
     /**
@@ -70,6 +68,20 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
     }
 
     /**
+     * Creates a new resolution initialized to the given scale.
+     *
+     * @param scale The scale, or {@code null} if none.
+     *
+     * @since 0.4
+     */
+    public DefaultResolution(final RepresentativeFraction scale) {
+        scaleOrDistance = scale;
+    }
+
+    // Note: there is not yet DefaultResolution(double) method because
+    //       we need to update the Unit Of Measurement package first.
+
+    /**
      * Constructs a new instance initialized with the values from the specified metadata object.
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
@@ -77,15 +89,17 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      * <p>If both {@linkplain #getEquivalentScale() scale} and {@linkplain #getDistance() distance}
      * are specified, then the scale will have precedence and the distance is silently discarded.</p>
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Resolution)
      */
     public DefaultResolution(final Resolution object) {
         super(object);
-        scaleOrDistance = object.getEquivalentScale();
-        if (scaleOrDistance == null) {
-            scaleOrDistance = object.getDistance();
+        if (object != null) {
+            scaleOrDistance = object.getEquivalentScale();
+            if (scaleOrDistance == null) {
+                scaleOrDistance = object.getDistance();
+            }
         }
     }
 
@@ -134,7 +148,9 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
     /**
      * Returns the level of detail expressed as the scale of a comparable hardcopy map or chart.
      * Only one of {@linkplain #getEquivalentScale() equivalent scale} and
-     * {@linkplain #getDistance() ground sample distance} may be provided.
+     * {@linkplain #getDistance() ground sample distance} shall be provided.
+     *
+     * @return Level of detail expressed as the scale of a comparable hardcopy, or {@code null}.
      */
     @Override
     @XmlElement(name = "equivalentScale")
@@ -165,12 +181,12 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
     /**
      * Returns the ground sample distance.
      * Only one of {@linkplain #getEquivalentScale equivalent scale} and
-     * {@linkplain #getDistance ground sample distance} may be provided.
+     * {@linkplain #getDistance ground sample distance} shall be provided.
+     *
+     * @return The ground sample distance, or {@code null}.
      */
     @Override
     @ValueRange(minimum=0, isMinIncluded=false)
-//    @XmlJavaTypeAdapter(GO_Distance.class) // TODO
-//    @XmlElement(name = "distance")
     public Double getDistance() {
         return isDistance() ? (Double) scaleOrDistance : null;
     }
@@ -189,5 +205,32 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
             warning("setDistance", "equivalentScale", "distance");
         }
         scaleOrDistance = newValue;
+    }
+
+    /**
+     * Workaround for a strange JAXB behavior (bug?). For an unknown reason, we are unable to annotate the
+     * {@link #getDistance()} method directly. Doing so cause JAXB to randomly ignores the {@code <gmd:distance>}
+     * property. Annotating a separated method which in turn invokes the real method seems to work.
+     *
+     * <p>In order to check if this workaround is still needed with more recent JAXB versions, move the
+     * {@link XmlElement} and {@link XmlJavaTypeAdapter} annotations to the {@link #getDistance()} method,
+     * then execute the {@link DefaultResolutionTest#testXML()} test at least 10 times (because the failure
+     * happen randomly). If the test succeeded every time, then the {@code getValue()} and {@code setValue(Double)}
+     * methods can be completely deleted.</p>
+     *
+     * @see DefaultResolutionTest#testXML()
+     */
+    @XmlElement(name = "distance")
+    @XmlJavaTypeAdapter(GO_Distance.class)
+    @Workaround(library = "JAXB", version = "2.2.4-2")
+    private Double getValue() {
+        return getDistance();
+    }
+
+    /**
+     * The corresponding setter for the {@link #getValue()} workaround.
+     */
+    private void setValue(final Double newValue) {
+        setDistance(newValue);
     }
 }

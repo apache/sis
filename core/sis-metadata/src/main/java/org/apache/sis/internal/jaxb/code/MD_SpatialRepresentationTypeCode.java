@@ -16,10 +16,10 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
-import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
-import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.spatial.SpatialRepresentationType;
+import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
+import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
 
 
 /**
@@ -35,13 +35,6 @@ import org.opengis.metadata.spatial.SpatialRepresentationType;
 public final class MD_SpatialRepresentationTypeCode
         extends CodeListAdapter<MD_SpatialRepresentationTypeCode, SpatialRepresentationType>
 {
-    /**
-     * Ensures that the adapted code list class is loaded.
-     */
-    static {
-        ensureClassLoaded(SpatialRepresentationType.class);
-    }
-
     /**
      * Empty constructor for JAXB only.
      */

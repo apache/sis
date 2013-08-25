@@ -48,7 +48,7 @@ import static org.apache.sis.internal.metadata.MetadataUtilities.toMilliseconds;
 @XmlType(name = "MD_MaintenanceInformation_Type", propOrder = {
     "maintenanceAndUpdateFrequency",
     "dateOfNextUpdate",
-// TODO    "userDefinedMaintenanceFrequency",
+    "userDefinedMaintenanceFrequency",
     "updateScopes",
     "updateScopeDescriptions",
     "maintenanceNotes",
@@ -72,7 +72,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      * since January 1st, 1970. If there is no such date, then this field
      * is set to the special value {@link Long#MIN_VALUE}.
      */
-    private long dateOfNextUpdate;
+    private long dateOfNextUpdate = Long.MIN_VALUE;
 
     /**
      * Maintenance period other than those defined, in milliseconds.
@@ -104,7 +104,6 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      * Creates a an initially empty maintenance information.
      */
     public DefaultMaintenanceInformation() {
-        dateOfNextUpdate = Long.MIN_VALUE;
     }
 
     /**
@@ -114,7 +113,6 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      *        made to the resource after the initial resource is completed, or {@code null} if none.
      */
     public DefaultMaintenanceInformation(final MaintenanceFrequency maintenanceAndUpdateFrequency) {
-        this(); // Initialize the date field.
         this.maintenanceAndUpdateFrequency = maintenanceAndUpdateFrequency;
     }
 
@@ -123,19 +121,21 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(MaintenanceInformation)
      */
     public DefaultMaintenanceInformation(final MaintenanceInformation object) {
         super(object);
-        maintenanceAndUpdateFrequency   = object.getMaintenanceAndUpdateFrequency();
-        dateOfNextUpdate                = toMilliseconds(object.getDateOfNextUpdate());
-        userDefinedMaintenanceFrequency = object.getUserDefinedMaintenanceFrequency();
-        updateScopes                    = copyCollection(object.getUpdateScopes(), ScopeCode.class);
-        updateScopeDescriptions         = copyCollection(object.getUpdateScopeDescriptions(), ScopeDescription.class);
-        maintenanceNotes                = copyCollection(object.getMaintenanceNotes(), InternationalString.class);
-        contacts                        = copyCollection(object.getContacts(), ResponsibleParty.class);
+        if (object != null) {
+            maintenanceAndUpdateFrequency   = object.getMaintenanceAndUpdateFrequency();
+            dateOfNextUpdate                = toMilliseconds(object.getDateOfNextUpdate());
+            userDefinedMaintenanceFrequency = object.getUserDefinedMaintenanceFrequency();
+            updateScopes                    = copyCollection(object.getUpdateScopes(), ScopeCode.class);
+            updateScopeDescriptions         = copyCollection(object.getUpdateScopeDescriptions(), ScopeDescription.class);
+            maintenanceNotes                = copyCollection(object.getMaintenanceNotes(), InternationalString.class);
+            contacts                        = copyCollection(object.getContacts(), ResponsibleParty.class);
+        }
     }
 
     /**
@@ -166,6 +166,8 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     /**
      * Returns the frequency with which changes and additions are made to the resource
      * after the initial resource is completed.
+     *
+     * @return Frequency with which changes and additions are made to the resource, or {@code null}.
      */
     @Override
     @XmlElement(name = "maintenanceAndUpdateFrequency", required = true)
@@ -186,6 +188,8 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
 
     /**
      * Returns the scheduled revision date for resource.
+     *
+     * @return Scheduled revision date, or {@code null}.
      */
     @Override
     @XmlElement(name = "dateOfNextUpdate")
@@ -206,10 +210,10 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     /**
      * Returns the maintenance period other than those defined.
      *
-     * @todo needs an implementation of org.opengis.temporal modules to anntote this parameter.
+     * @return The Maintenance period, or {@code null}.
      */
     @Override
-    // TODO @XmlElement(name = "userDefinedMaintenanceFrequency")
+    @XmlElement(name = "userDefinedMaintenanceFrequency")
     public PeriodDuration getUserDefinedMaintenanceFrequency() {
         return userDefinedMaintenanceFrequency;
     }
@@ -226,6 +230,8 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
 
     /**
      * Returns the scope of data to which maintenance is applied.
+     *
+     * @return Scope of data to which maintenance is applied.
      */
     @Override
     @XmlElement(name = "updateScope")
@@ -244,6 +250,8 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
 
     /**
      * Returns additional information about the range or extent of the resource.
+     *
+     * @return Additional information about the range or extent of the resource.
      */
     @Override
     @XmlElement(name = "updateScopeDescription")
@@ -262,6 +270,8 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
 
     /**
      * Returns information regarding specific requirements for maintaining the resource.
+     *
+     * @return Information regarding specific requirements for maintaining the resource.
      */
     @Override
     @XmlElement(name = "maintenanceNote")
@@ -281,6 +291,9 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     /**
      * Returns identification of, and means of communicating with,
      * person(s) and organization(s) with responsibility for maintaining the metadata.
+     *
+     * @return Means of communicating with person(s) and organization(s) with responsibility
+     *         for maintaining the metadata.
      */
     @Override
     @XmlElement(name = "contact")

@@ -61,10 +61,10 @@ public final class LanguageCode extends GO_CharacterString {
     }
 
     /**
-     * Builds a {@code <gco:CharacterString>} element.
+     * Builds a {@code <gco:LanguageCode>} element.
      * For private use by {@link #create(Context, Locale)} only.
      */
-    private LanguageCode(final GO_CharacterString code) {
+    private LanguageCode(final CharSequence code) {
         super(code);
     }
 
@@ -89,7 +89,7 @@ public final class LanguageCode extends GO_CharacterString {
      * @return The language to marshal, or {@code null} if the given locale was null
      *         or if its {@link Locale#getLanguage()} attribute is the empty string.
      */
-    static LanguageCode create(final Context context, final Locale locale) {
+    public static LanguageCode create(final Context context, final Locale locale) {
         if (locale != null) {
             final String codeListValue = Context.converter(context).toLanguageCode(context, locale);
             if (!codeListValue.isEmpty() && Context.isFlagSet(context, Context.SUBSTITUTE_LANGUAGE)) {
@@ -97,22 +97,17 @@ public final class LanguageCode extends GO_CharacterString {
                  * Marshal the locale as a <gco:CharacterString> instead than <LanguageCode>,
                  * using the user-supplied anchors if any.
                  */
-                final GO_CharacterString string = CharSequenceAdapter.wrap(locale, codeListValue);
+                final CharSequence string = CharSequenceAdapter.value(context, locale, codeListValue);
                 if (string != null) {
                     return new LanguageCode(string);
                 }
             }
-            String codeSpace = null;
-            String value = null;
-            if (context != null) {
-                final Locale marshalLocale = context.getLocale();
-                if (marshalLocale != null) {
-                    codeSpace = Context.converter(context).toLanguageCode(context, locale);
-                    value = locale.getDisplayLanguage(marshalLocale);
-                    if (value.isEmpty()) {
-                        value = null;
-                    }
-                }
+            final Locale marshalLocale = (context != null) ? context.getLocale() : null;
+            final String codeSpace = Context.converter(context).toLanguageCode(context, locale);
+            String value = (marshalLocale != null) ? locale.getDisplayLanguage(marshalLocale)
+                                                   : locale.getDisplayLanguage();
+            if (value.isEmpty()) {
+                value = null;
             }
             if (!codeListValue.isEmpty() || value != null) {
                 return new LanguageCode(context, codeListValue, codeSpace, value);
@@ -124,6 +119,7 @@ public final class LanguageCode extends GO_CharacterString {
     /**
      * Returns the locale for the given language (which may be null), or {@code null} if none.
      *
+     * @param context The current (un)marshalling context, or {@code null} if none.
      * @param value The wrapper for this metadata value.
      * @param useCharSequence Whatever this method should fallback on the
      *        {@code gco:CharacterString} element if no value were specified for the
@@ -132,7 +128,7 @@ public final class LanguageCode extends GO_CharacterString {
      *
      * @see Country#getLocale(Country)
      */
-    static Locale getLocale(final Context context, final LanguageCode value, final boolean useCharSequence) {
+    public static Locale getLocale(final Context context, final LanguageCode value, final boolean useCharSequence) {
         if (value != null) {
             final CodeListProxy proxy = value.proxy;
             if (proxy != null) {

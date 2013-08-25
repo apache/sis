@@ -34,9 +34,18 @@ import org.apache.sis.util.iso.DefaultNameFactory;
  */
 public final class DefaultFactories extends SystemListener {
     /**
-     * The factory to use for creating names.
+     * A name factory which is guaranteed to be an instance of SIS {@link DefaultNameFactory}.
+     * We use this factory when we need to ensure that the created names are instances of the
+     * SIS {@link org.apache.sis.util.iso.AbstractName} implementation.
      */
-    public static final DefaultNameFactory NAMES = new DefaultNameFactory();
+    public static final DefaultNameFactory SIS_NAMES = new DefaultNameFactory();
+
+    /**
+     * The factory to use for creating names, not necessarily SIS instances.
+     * This is fixed to {@link #SIS_NAMES} for now, but will probably be fetched in a more
+     * dynamic way later.
+     */
+    public static final DefaultNameFactory NAMES = SIS_NAMES;
 
     /**
      * Cache of factories which are found by {@code META-INF/services}.
@@ -77,11 +86,17 @@ public final class DefaultFactories extends SystemListener {
         T factory = type.cast(FACTORIES.get(type));
         if (factory == null && !FACTORIES.containsKey(type)) {
             for (final T candidate : ServiceLoader.load(type)) {
-                if (candidate.getClass().getName().startsWith("org.apache.sis.")) {
+                final Class<?> ct = candidate.getClass();
+                if (ct.getName().startsWith("org.apache.sis.")) {
                     factory = candidate;
                     break;
                 }
-                if (factory == null) {
+                /*
+                 * Select the first provider found in the iteration. If more than one provider is found,
+                 * select the most specialized type. This is okay only for relatively simple configurations,
+                 * while we are waiting for a real dependency injection mechanism.
+                 */
+                if (factory == null || factory.getClass().isAssignableFrom(ct)) {
                     factory = candidate;
                 }
             }

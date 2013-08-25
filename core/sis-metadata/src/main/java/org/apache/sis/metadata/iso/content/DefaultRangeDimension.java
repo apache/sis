@@ -70,14 +70,16 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(RangeDimension)
      */
     public DefaultRangeDimension(final RangeDimension object) {
         super(object);
-        sequenceIdentifier = object.getSequenceIdentifier();
-        descriptor         = object.getDescriptor();
+        if (object != null) {
+            sequenceIdentifier = object.getSequenceIdentifier();
+            descriptor         = object.getDescriptor();
+        }
     }
 
     /**
@@ -112,8 +114,9 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
     }
 
     /**
-     * Returns the number that uniquely identifies instances of bands of wavelengths
-     * on which a sensor operates.
+     * Returns the number that uniquely identifies instances of bands of wavelengths on which a sensor operates.
+     *
+     * @return Identifier of bands on which a sensor operates, or {@code null}.
      */
     @Override
     @XmlElement(name = "sequenceIdentifier")
@@ -122,8 +125,7 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
     }
 
     /**
-     * Sets the number that uniquely identifies instances of bands of wavelengths
-     * on which a sensor operates.
+     * Sets the number that uniquely identifies instances of bands of wavelengths on which a sensor operates.
      *
      * @param newValue The new sequence identifier.
      */
@@ -134,6 +136,8 @@ public class DefaultRangeDimension extends ISOMetadata implements RangeDimension
 
     /**
      * Returns the description of the range of a cell measurement value.
+     *
+     * @return Description of the range of a cell measurement value, or {@code null}.
      */
     @Override
     @XmlElement(name = "descriptor")

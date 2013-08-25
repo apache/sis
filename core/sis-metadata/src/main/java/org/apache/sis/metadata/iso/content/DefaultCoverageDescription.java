@@ -41,7 +41,7 @@ import org.apache.sis.xml.Namespaces;
  * @module
  */
 @XmlType(name = "MD_CoverageDescription_Type", propOrder = {
-// TODO    "attributeDescription",
+    "attributeDescription",
     "contentType",
     "dimensions",
     "rangeElementDescriptions"
@@ -88,16 +88,18 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(CoverageDescription)
      */
     public DefaultCoverageDescription(final CoverageDescription object) {
         super(object);
-        attributeDescription     = object.getAttributeDescription();
-        contentType              = object.getContentType();
-        dimensions               = copyCollection(object.getDimensions(), RangeDimension.class);
-        rangeElementDescriptions = copyCollection(object.getRangeElementDescriptions(), RangeElementDescription.class);
+        if (object != null) {
+            attributeDescription     = object.getAttributeDescription();
+            contentType              = object.getContentType();
+            dimensions               = copyCollection(object.getDimensions(), RangeDimension.class);
+            rangeElementDescriptions = copyCollection(object.getRangeElementDescriptions(), RangeElementDescription.class);
+        }
     }
 
     /**
@@ -133,9 +135,11 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
 
     /**
      * Returns the description of the attribute described by the measurement value.
+     *
+     * @return Description of the attribute, or {@code null}.
      */
     @Override
-    // TODO @XmlElement(name = "attributeDescription", required = true)
+    @XmlElement(name = "attributeDescription", required = true)
     public RecordType getAttributeDescription() {
         return attributeDescription;
     }
@@ -152,6 +156,8 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
 
     /**
      * Returns the type of information represented by the cell value.
+     *
+     * @return Type of information represented by the cell value, or {@code null}.
      */
     @Override
     @XmlElement(name = "contentType", required = true)
@@ -171,6 +177,8 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
 
     /**
      * Returns the information on the dimensions of the cell measurement value.
+     *
+     * @return Dimensions of the cell measurement value.
      */
     @Override
     @XmlElement(name = "dimension")

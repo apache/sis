@@ -16,10 +16,10 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
-import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
-import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.spatial.GeometricObjectType;
+import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
+import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
 
 
 /**
@@ -35,13 +35,6 @@ import org.opengis.metadata.spatial.GeometricObjectType;
 public final class MD_GeometricObjectTypeCode
         extends CodeListAdapter<MD_GeometricObjectTypeCode, GeometricObjectType>
 {
-    /**
-     * Ensures that the adapted code list class is loaded.
-     */
-    static {
-        ensureClassLoaded(GeometricObjectType.class);
-    }
-
     /**
      * Empty constructor for JAXB only.
      */

@@ -101,22 +101,24 @@ public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation im
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Georeferenceable)
      */
     public DefaultGeoreferenceable(final Georeferenceable object) {
         super(object);
-        if (object.isControlPointAvailable()) {
-            booleans |= CONTROL_POINT_MASK;
+        if (object != null) {
+            if (object.isControlPointAvailable()) {
+                booleans |= CONTROL_POINT_MASK;
+            }
+            if (object.isOrientationParameterAvailable()) {
+                booleans |= OPERATION_MASK;
+            }
+            orientationParameterDescription = object.getOrientationParameterDescription();
+            parameterCitations              = copyCollection(object.getParameterCitations(), Citation.class);
+            geolocationInformation          = copyCollection(object.getGeolocationInformation(), GeolocationInformation.class);
+            georeferencedParameters         = object.getGeoreferencedParameters();
         }
-        if (object.isOrientationParameterAvailable()) {
-            booleans |= OPERATION_MASK;
-        }
-        orientationParameterDescription = object.getOrientationParameterDescription();
-        parameterCitations              = copyCollection(object.getParameterCitations(), Citation.class);
-        geolocationInformation          = copyCollection(object.getGeolocationInformation(), GeolocationInformation.class);
-        georeferencedParameters         = object.getGeoreferencedParameters();
     }
 
     /**
@@ -146,6 +148,8 @@ public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation im
 
     /**
      * Returns an indication of whether or not control point(s) exists.
+     *
+     * @return Whether or not control point(s) exists.
      */
     @Override
     @XmlElement(name = "controlPointAvailability", required = true)
@@ -169,6 +173,8 @@ public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation im
 
     /**
      * Returns an indication of whether or not orientation parameters are available.
+     *
+     * @return Whether or not orientation parameters are available.
      */
     @Override
     @XmlElement(name = "orientationParameterAvailability", required = true)
@@ -192,6 +198,8 @@ public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation im
 
     /**
      * Returns a description of parameters used to describe sensor orientation.
+     *
+     * @return Description of parameters used to describe sensor orientation, or {@code null}.
      */
     @Override
     @XmlElement(name = "orientationParameterDescription")
@@ -211,6 +219,8 @@ public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation im
 
     /**
      * Returns the terms which support grid data georeferencing.
+     *
+     * @return Terms which support grid data georeferencing, or {@code null}.
      */
     @Override
 /// @XmlElement(name = "georeferencedParameters", required = true)
@@ -230,6 +240,8 @@ public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation im
 
     /**
      * Returns a reference providing description of the parameters.
+     *
+     * @return Reference providing description of the parameters.
      */
     @Override
     @XmlElement(name = "parameterCitation")
@@ -249,9 +261,7 @@ public class DefaultGeoreferenceable extends DefaultGridSpatialRepresentation im
     /**
      * Returns the information that can be used to geolocate the data.
      *
-     * @todo This attribute is declared as mandatory in ISO 19115-2. However metadata compliant
-     *       with ISO 19115 (without the -2 part) do not contains this attribute. How should we
-     *       handle the XML formatting for this one?
+     * @return A geolocalisation of the data.
      */
     @Override
     @XmlElement(name = "geolocationInformation", namespace = Namespaces.GMI, required = true)

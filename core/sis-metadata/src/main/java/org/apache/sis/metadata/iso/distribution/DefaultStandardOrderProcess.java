@@ -62,7 +62,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
      * Date and time when the dataset will be available,
      * in milliseconds elapsed since January 1st, 1970.
      */
-    private long plannedAvailableDateTime;
+    private long plannedAvailableDateTime = Long.MIN_VALUE;
 
     /**
      * General instructions, terms and services provided by the distributor.
@@ -78,7 +78,6 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
      * Constructs an initially empty standard order process.
      */
     public DefaultStandardOrderProcess() {
-        plannedAvailableDateTime = Long.MIN_VALUE;
     }
 
     /**
@@ -86,16 +85,18 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(StandardOrderProcess)
      */
     public DefaultStandardOrderProcess(final StandardOrderProcess object) {
         super(object);
-        fees                     = object.getFees();
-        plannedAvailableDateTime = toMilliseconds(object.getPlannedAvailableDateTime());
-        orderingInstructions     = object.getOrderingInstructions();
-        turnaround               = object.getTurnaround();
+        if (object != null) {
+            fees                     = object.getFees();
+            plannedAvailableDateTime = toMilliseconds(object.getPlannedAvailableDateTime());
+            orderingInstructions     = object.getOrderingInstructions();
+            turnaround               = object.getTurnaround();
+        }
     }
 
     /**
@@ -126,6 +127,8 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
     /**
      * Returns fees and terms for retrieving the resource.
      * Include monetary units (as specified in ISO 4217).
+     *
+     * @return Fees and terms for retrieving the resource, or {@code null}.
      */
     @Override
     @XmlElement(name = "fees")
@@ -146,6 +149,8 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
 
     /**
      * Returns the date and time when the dataset will be available.
+     *
+     * @return Date and time when the dataset will be available, or {@code null}.
      */
     @Override
     @XmlElement(name = "plannedAvailableDateTime")
@@ -165,6 +170,8 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
 
     /**
      * Returns general instructions, terms and services provided by the distributor.
+     *
+     * @return General instructions, terms and services provided by the distributor, or {@code null}.
      */
     @Override
     @XmlElement(name = "orderingInstructions")
@@ -184,6 +191,8 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
 
     /**
      * Returns typical turnaround time for the filling of an order.
+     *
+     * @return Typical turnaround time for the filling of an order, or {@code null}.
      */
     @Override
     @XmlElement(name = "turnaround")

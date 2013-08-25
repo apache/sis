@@ -79,7 +79,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      * in milliseconds elapsed since January 1st, 1970. If there is no such date, then this
      * field is set to the special value {@link Long#MIN_VALUE}.
      */
-    private long date;
+    private long date = Long.MIN_VALUE;
 
     /**
      * Identification of, and means of communication with, person(s) and
@@ -113,7 +113,6 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      * Creates an initially empty process step.
      */
     public DefaultProcessStep() {
-        date = Long.MIN_VALUE;
     }
 
     /**
@@ -122,7 +121,6 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      * @param description Description of the event, including related parameters or tolerances.
      */
     public DefaultProcessStep(final CharSequence description) {
-        this(); // Initialize the date field.
         this.description = Types.toInternationalString(description);
     }
 
@@ -131,20 +129,22 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(ProcessStep)
      */
     public DefaultProcessStep(final ProcessStep object) {
         super(object);
-        description           = object.getDescription();
-        rationale             = object.getRationale();
-        date                  = toMilliseconds(object.getDate());
-        processors            = copyCollection(object.getProcessors(), ResponsibleParty.class);
-        sources               = copyCollection(object.getSources(), Source.class);
-        outputs               = copyCollection(object.getOutputs(), Source.class);
-        processingInformation = object.getProcessingInformation();
-        reports               = copyCollection(object.getReports(), ProcessStepReport.class);
+        if (object != null) {
+            description           = object.getDescription();
+            rationale             = object.getRationale();
+            date                  = toMilliseconds(object.getDate());
+            processors            = copyCollection(object.getProcessors(), ResponsibleParty.class);
+            sources               = copyCollection(object.getSources(), Source.class);
+            outputs               = copyCollection(object.getOutputs(), Source.class);
+            processingInformation = object.getProcessingInformation();
+            reports               = copyCollection(object.getReports(), ProcessStepReport.class);
+        }
     }
 
     /**
@@ -172,8 +172,10 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
         return new DefaultProcessStep(object);
     }
 
-     /**
+    /**
      * Returns the description of the event, including related parameters or tolerances.
+     *
+     * @return Description of the event, or {@code null}.
      */
     @Override
     @XmlElement(name = "description", required = true)
@@ -193,6 +195,8 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
 
     /**
      * Returns the requirement or purpose for the process step.
+     *
+     * @return Requirement or purpose for the process step, or {@code null}.
      */
     @Override
     @XmlElement(name = "rationale")
@@ -211,8 +215,9 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
     }
 
     /**
-     * Returns the date and time or range of date and time on or over which
-     * the process step occurred.
+     * Returns the date and time or range of date and time on or over which the process step occurred.
+     *
+     * @return Date on or over which the process step occurred, or {@code null}.
      */
     @Override
     @XmlElement(name = "dateTime")
@@ -221,8 +226,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
     }
 
     /**
-     * Sets the date and time or range of date and time on or over which the process
-     * step occurred.
+     * Sets the date and time or range of date and time on or over which the process step occurred.
      *
      * @param newValue The new date.
      */
@@ -234,6 +238,8 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
     /**
      * Returns the identification of, and means of communication with, person(s) and
      * organization(s) associated with the process step.
+     *
+     * @return Means of communication with person(s) and organization(s) associated with the process step.
      */
     @Override
     @XmlElement(name = "processor")
@@ -252,8 +258,9 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
     }
 
     /**
-     * Returns the information about the source data used in creating the data specified
-     * by the scope.
+     * Returns the information about the source data used in creating the data specified by the scope.
+     *
+     * @return Information about the source data used in creating the data.
      */
     @Override
     @XmlElement(name = "source")
@@ -272,6 +279,8 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
 
     /**
      * Returns the description of the product generated as a result of the process step.
+     *
+     * @return Product generated as a result of the process step.
      */
     @Override
     @XmlElement(name = "output", namespace = Namespaces.GMI)
@@ -291,7 +300,9 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
     /**
      * Returns the comprehensive information about the procedure by which the algorithm
      * was applied to derive geographic data from the raw instrument measurements, such
-     * as datasets, software used, and the processing environment. {@code null} if unspecified.
+     * as datasets, software used, and the processing environment.
+     *
+     * @return Procedure by which the algorithm was applied to derive geographic data, or {@code null}.
      */
     @Override
     @XmlElement(name = "processingInformation", namespace = Namespaces.GMI)
@@ -313,6 +324,8 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
 
     /**
      * Returns the report generated by the process step.
+     *
+     * @return Report generated by the process step.
      */
     @Override
     @XmlElement(name = "report", namespace = Namespaces.GMI)

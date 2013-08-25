@@ -19,11 +19,13 @@ package org.apache.sis.metadata.iso.extent;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.metadata.extent.VerticalExtent;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.internal.jaxb.gco.GO_Real;
 import org.apache.sis.internal.metadata.ReferencingServices;
 
 
@@ -45,7 +47,7 @@ import org.apache.sis.internal.metadata.ReferencingServices;
 @XmlType(name = "EX_VerticalExtent_Type", propOrder = {
     "minimumValue",
     "maximumValue",
-// TODO    "verticalCRS"
+    "verticalCRS"
 })
 @XmlRootElement(name = "EX_VerticalExtent")
 public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent {
@@ -98,15 +100,17 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(VerticalExtent)
      */
     public DefaultVerticalExtent(final VerticalExtent object) {
         super(object);
-        minimumValue = object.getMinimumValue();
-        maximumValue = object.getMaximumValue();
-        verticalCRS  = object.getVerticalCRS();
+        if (object != null) {
+            minimumValue = object.getMinimumValue();
+            maximumValue = object.getMaximumValue();
+            verticalCRS  = object.getVerticalCRS();
+        }
     }
 
     /**
@@ -136,9 +140,12 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
 
     /**
      * Returns the lowest vertical extent contained in the dataset.
+     *
+     * @return The lowest vertical extent, or {@code null}.
      */
     @Override
     @XmlElement(name = "minimumValue", required = true)
+    @XmlJavaTypeAdapter(GO_Real.class)
     public Double getMinimumValue() {
         return minimumValue;
     }
@@ -155,9 +162,12 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
 
     /**
      * Returns the highest vertical extent contained in the dataset.
+     *
+     * @return The highest vertical extent, or {@code null}.
      */
     @Override
     @XmlElement(name = "maximumValue", required = true)
+    @XmlJavaTypeAdapter(GO_Real.class)
     public Double getMaximumValue() {
         return maximumValue;
     }
@@ -174,11 +184,13 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
 
     /**
      * Provides information about the vertical coordinate reference system to
-     * which the maximum and minimum elevation values are measured. The CRS
-     * identification includes unit of measure.
+     * which the maximum and minimum elevation values are measured.
+     * The CRS identification includes unit of measure.
+     *
+     * @return The vertical CRS, or {@code null}.
      */
     @Override
-    // TODO @XmlElement(name = "verticalCRS", required = true)
+    @XmlElement(name = "verticalCRS", required = true)
     public VerticalCRS getVerticalCRS() {
         return verticalCRS;
     }

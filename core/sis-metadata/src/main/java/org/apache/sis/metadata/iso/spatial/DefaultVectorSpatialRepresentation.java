@@ -69,14 +69,16 @@ public class DefaultVectorSpatialRepresentation extends AbstractSpatialRepresent
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(VectorSpatialRepresentation)
      */
     public DefaultVectorSpatialRepresentation(final VectorSpatialRepresentation object) {
         super(object);
-        topologyLevel    = object.getTopologyLevel();
-        geometricObjects = copyCollection(object.getGeometricObjects(), GeometricObjects.class);
+        if (object != null) {
+            topologyLevel    = object.getTopologyLevel();
+            geometricObjects = copyCollection(object.getGeometricObjects(), GeometricObjects.class);
+        }
     }
 
     /**
@@ -106,6 +108,8 @@ public class DefaultVectorSpatialRepresentation extends AbstractSpatialRepresent
 
     /**
      * Returns the code which identifies the degree of complexity of the spatial relationships.
+     *
+     * @return The degree of complexity of the spatial relationships, or {@code null}.
      */
     @Override
     @XmlElement(name = "topologyLevel")
@@ -125,6 +129,8 @@ public class DefaultVectorSpatialRepresentation extends AbstractSpatialRepresent
 
     /**
      * Returns information about the geometric objects used in the dataset.
+     *
+     * @return Information about the geometric objects used in the dataset, or {@code null}.
      */
     @Override
     @XmlElement(name = "geometricObjects")

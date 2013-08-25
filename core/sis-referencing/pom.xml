@@ -28,9 +28,10 @@
   <parent>
     <groupId>org.apache.sis</groupId>
     <artifactId>core</artifactId>
-    <version>0.3-geoapi3.0-SNAPSHOT</version>
+    <version>0.4-SNAPSHOT</version>
   </parent>
 
+  <groupId>org.apache.sis.core</groupId>
   <artifactId>sis-referencing</artifactId>
   <packaging>bundle</packaging>
   <name>Apache SIS referencing</name>
@@ -80,7 +81,7 @@ Implementations of Coordinate Reference Systems (CRS),
 
       <!-- Collect JAR files in <root>/target/binaries directory. -->
       <plugin>
-        <groupId>org.apache.sis</groupId>
+        <groupId>org.apache.sis.core</groupId>
         <artifactId>sis-build-helper</artifactId>
         <version>${sis.plugin.version}</version>
         <executions>
@@ -111,7 +112,7 @@ Implementations of Coordinate Reference Systems (CRS),
        =========================================================== -->
   <dependencies>
     <dependency>
-      <groupId>org.apache.sis</groupId>
+      <groupId>org.apache.sis.core</groupId>
       <artifactId>sis-utility</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -119,14 +120,14 @@ Implementations of Coordinate Reference Systems (CRS),
       <groupId>org.opengis</groupId>
       <artifactId>geoapi</artifactId>
     </dependency>
+
+    <!-- Test dependencies -->
     <dependency>
       <groupId>org.opengis</groupId>
       <artifactId>geoapi-conformance</artifactId>
     </dependency>
-
-    <!-- Test dependencies -->
     <dependency>
-      <groupId>org.apache.sis</groupId>
+      <groupId>org.apache.sis.core</groupId>
       <artifactId>sis-utility</artifactId>
       <version>${project.version}</version>
       <type>test-jar</type>

@@ -99,14 +99,16 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Identifier)
      */
     public DefaultIdentifier(final Identifier object) {
         super(object);
-        code      = object.getCode();
-        authority = object.getAuthority();
+        if (object != null) {
+            code      = object.getCode();
+            authority = object.getAuthority();
+        }
     }
 
     /**
@@ -136,6 +138,8 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
 
     /**
      * Alphanumeric value identifying an instance in the namespace.
+     *
+     * @return Value identifying an instance in the namespace, or {@code null}.
      */
     @Override
     @XmlElement(name = "code", required = true)

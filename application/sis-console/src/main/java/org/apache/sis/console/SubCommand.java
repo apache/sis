@@ -28,6 +28,7 @@ import java.io.StringWriter;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import org.apache.sis.util.Locales;
+import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.X364;
 
@@ -69,7 +70,7 @@ abstract class SubCommand {
 
     /**
      * The locale specified by the {@code "--timezone"} option. If no such option was provided,
-     * then this field is left to {@code null}.
+     * then this field is set to the {@linkplain TimeZone#getDefault() default timezone}.
      */
     protected final TimeZone timezone;
 
@@ -191,7 +192,7 @@ abstract class SubCommand {
             locale = (value != null) ? Locales.parse(value) : Locale.getDefault();
 
             value = options.get(option = Option.TIMEZONE);
-            timezone = (value != null) ? TimeZone.getTimeZone(value) : null;
+            timezone = (value != null) ? TimeZone.getTimeZone(value) : TimeZone.getDefault();
 
             value = options.get(option = Option.ENCODING);
             explicitEncoding = (value != null);
@@ -275,6 +276,27 @@ abstract class SubCommand {
         }
         err.println(Errors.format(key, expected, size));
         return true;
+    }
+
+    /**
+     * Prints the "<cite>Can not open …</cite>" error message followed by the message in the given exception.
+     *
+     * @param fileIndex Index in the {@link #files} list of the file that can not be opened.
+     * @param e The exception which occurred.
+     */
+    final void canNotOpen(final int fileIndex, final Exception e) {
+        error(Errors.format(Errors.Keys.CanNotOpen_1, files.get(fileIndex)), e);
+    }
+
+    /**
+     * Prints the given error message followed by the message in the given exception.
+     *
+     * @param message The message to print before the exception, or {@code null}.
+     * @param e The exception which occurred.
+     */
+    final void error(final String message, final Exception e) {
+        out.flush();
+        err.println(Exceptions.formatChainedMessages(locale, message, e));
     }
 
     /**

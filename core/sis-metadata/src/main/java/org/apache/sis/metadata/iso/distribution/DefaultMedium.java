@@ -96,18 +96,20 @@ public class DefaultMedium extends ISOMetadata implements Medium {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Medium)
      */
     public DefaultMedium(final Medium object) {
         super(object);
-        name          = object.getName();
-        densities     = copyCollection(object.getDensities(), Double.class);
-        densityUnits  = object.getDensityUnits();
-        volumes       = object.getVolumes();
-        mediumFormats = copyCollection(object.getMediumFormats(), MediumFormat.class);
-        mediumNote    = object.getMediumNote();
+        if (object != null) {
+            name          = object.getName();
+            densities     = copyCollection(object.getDensities(), Double.class);
+            densityUnits  = object.getDensityUnits();
+            volumes       = object.getVolumes();
+            mediumFormats = copyCollection(object.getMediumFormats(), MediumFormat.class);
+            mediumNote    = object.getMediumNote();
+        }
     }
 
     /**
@@ -137,6 +139,8 @@ public class DefaultMedium extends ISOMetadata implements Medium {
 
     /**
      * Returns the name of the medium on which the resource can be received.
+     *
+     * @return Name of the medium, or {@code null}.
      */
     @Override
     @XmlElement(name = "name")
@@ -157,6 +161,8 @@ public class DefaultMedium extends ISOMetadata implements Medium {
     /**
      * Returns the density at which the data is recorded.
      * The numbers shall be greater than zero.
+     *
+     * @return Density at which the data is recorded, or {@code null}.
      */
     @Override
     @XmlElement(name = "density")
@@ -177,6 +183,8 @@ public class DefaultMedium extends ISOMetadata implements Medium {
 
     /**
      * Returns the units of measure for the recording density.
+     *
+     * @return Units of measure for the recording density, or {@code null}.
      */
     @Override
     @XmlElement(name = "densityUnits")
@@ -196,6 +204,8 @@ public class DefaultMedium extends ISOMetadata implements Medium {
 
     /**
      * Returns the number of items in the media identified.
+     *
+     * @return Number of items in the media identified, or {@code null}.
      */
     @Override
     @ValueRange(minimum=0)
@@ -216,6 +226,8 @@ public class DefaultMedium extends ISOMetadata implements Medium {
 
     /**
      * Returns the method used to write to the medium.
+     *
+     * @return Method used to write to the medium, or {@code null}.
      */
     @Override
     @XmlElement(name = "mediumFormat")
@@ -234,6 +246,8 @@ public class DefaultMedium extends ISOMetadata implements Medium {
 
     /**
      * Returns a description of other limitations or requirements for using the medium.
+     *
+     * @return Description of other limitations for using the medium, or {@code null}.
      */
     @Override
     @XmlElement(name = "mediumNote")

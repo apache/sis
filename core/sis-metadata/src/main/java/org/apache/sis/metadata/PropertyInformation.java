@@ -121,7 +121,7 @@ final class PropertyInformation<E> extends SimpleReferenceIdentifier
      * @param  getter      The getter method defined in the interface.
      * @param  elementType The value type, either the method return type if not a collection,
      *                     or the type of elements in the collection otherwise.
-     * @param  valueRange  The range of valid values, or {@code null} if none. This information is associated to the
+     * @param  range       The range of valid values, or {@code null} if none. This information is associated to the
      *                     implementation method rather than the interface one, because it is specific to SIS.
      */
     @SuppressWarnings({"unchecked","rawtypes"})
@@ -250,6 +250,8 @@ final class PropertyInformation<E> extends SimpleReferenceIdentifier
      * Returns the case type of values to be stored in the property.
      * If the property type is an array or a collection, then this method
      * returns the type of elements in the array or collection.
+     *
+     * @see TypeValuePolicy#ELEMENT_TYPE
      */
     @Override
     public Class<E> getElementType() {

@@ -70,15 +70,17 @@ public class DefaultPlatformPass extends ISOMetadata implements PlatformPass {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(PlatformPass)
      */
     public DefaultPlatformPass(final PlatformPass object) {
         super(object);
-        identifiers   = singleton(object.getIdentifier(), Identifier.class); // TODO
-        extent        = object.getExtent();
-        relatedEvents = copyCollection(object.getRelatedEvents(), Event.class);
+        if (object != null) {
+            identifiers   = singleton(object.getIdentifier(), Identifier.class);
+            extent        = object.getExtent();
+            relatedEvents = copyCollection(object.getRelatedEvents(), Event.class);
+        }
     }
 
     /**
@@ -108,6 +110,8 @@ public class DefaultPlatformPass extends ISOMetadata implements PlatformPass {
 
     /**
      * Returns the unique name of the pass.
+     *
+     * @return Unique name of the pass, or {@code null}.
      */
     @Override
     @XmlElement(name = "identifier", required = true)
@@ -129,7 +133,7 @@ public class DefaultPlatformPass extends ISOMetadata implements PlatformPass {
     /**
      * Returns the area covered by the pass. {@code null} if unspecified.
      *
-     * @todo annotate an implementation of {@link Geometry} in order to annotate this method.
+     * @return Area covered by the pass, or {@code null}.
      */
     @Override
     @XmlElement(name = "extent")
@@ -149,6 +153,8 @@ public class DefaultPlatformPass extends ISOMetadata implements PlatformPass {
 
     /**
      * Returns the occurrence of one or more events for a pass.
+     *
+     * @return Occurrence of one or more events for a pass.
      */
     @Override
     @XmlElement(name = "relatedEvent")

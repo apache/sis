@@ -63,20 +63,21 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
 
     /**
      * Creates a pooled unmarshaller wrapping the given one.
+     * Callers shall invoke {@link #reset(Pooled)} after construction for completing the initialization.
      *
-     * @param unmarshaller The unmarshaller to use for the actual work.
-     * @param internal {@code true} if the JAXB implementation is the one bundled in JDK 6,
-     *        or {@code false} if this is the external implementation provided as a JAR file
-     *        in the endorsed directory.
+     * @param  unmarshaller The unmarshaller to use for the actual work.
+     * @param  template The {@link PooledTemplate} from which to get the initial values.
+     * @throws JAXBException If an error occurred while setting a property.
      */
-    PooledUnmarshaller(final Unmarshaller unmarshaller, final boolean internal) {
-        super(internal);
+    PooledUnmarshaller(final Unmarshaller unmarshaller, final Pooled template) throws JAXBException {
+        super(template);
         this.unmarshaller = unmarshaller;
+        initialize(template);
     }
 
     /**
      * Resets the given unmarshaller property to its initial state.
-     * This method is invoked automatically by {@link #reset()}.
+     * This method is invoked automatically by {@link #reset(Pooled)}.
      *
      * @param  key   The property to reset.
      * @param  value The saved initial value to give to the property.
@@ -299,7 +300,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
 
     /**
      * Delegates to the wrapped unmarshaller. The initial state will be saved
-     * if it was not already done, for future restoration by {@link #reset()}.
+     * if it was not already done, for future restoration by {@link #reset(Pooled)}.
      */
     @Override
     @SuppressWarnings("rawtypes")
@@ -319,7 +320,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
 
     /**
      * Delegates to the wrapped unmarshaller. The initial state will be saved
-     * if it was not already done, for future restoration by {@link #reset()}.
+     * if it was not already done, for future restoration by {@link #reset(Pooled)}.
      *
      * @deprecated Replaced by {@link #setSchema(javax.xml.validation.Schema)} in JAXB 2.0.
      */
@@ -345,7 +346,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
 
     /**
      * Delegates to the wrapped unmarshaller. The initial state will be saved
-     * if it was not already done, for future restoration by {@link #reset()}.
+     * if it was not already done, for future restoration by {@link #reset(Pooled)}.
      */
     @Override
     public void setSchema(final Schema schema) {
@@ -363,7 +364,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
 
     /**
      * Delegates to the wrapped unmarshaller. The initial state will be saved
-     * if it was not already done, for future restoration by {@link #reset()}.
+     * if it was not already done, for future restoration by {@link #reset(Pooled)}.
      */
     @Override
     public void setEventHandler(final ValidationEventHandler handler) throws JAXBException {
@@ -381,7 +382,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
 
     /**
      * Delegates to the wrapped unmarshaller. The initial state will be saved
-     * if it was not already done, for future restoration by {@link #reset()}.
+     * if it was not already done, for future restoration by {@link #reset(Pooled)}.
      */
     @Override
     public void setAttachmentUnmarshaller(final AttachmentUnmarshaller au) {
@@ -401,7 +402,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
 
     /**
      * Delegates to the wrapped marshaller. The initial state will be saved
-     * if it was not already done, for future restoration by {@link #reset()}.
+     * if it was not already done, for future restoration by {@link #reset(Pooled)}.
      */
     @Override
     public void setListener(final Listener listener) {

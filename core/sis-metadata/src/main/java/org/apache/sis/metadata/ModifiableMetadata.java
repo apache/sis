@@ -18,13 +18,16 @@ package org.apache.sis.metadata;
 
 import java.util.Set;
 import java.util.List;
+import java.util.EnumSet;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.NoSuchElementException;
+import java.lang.reflect.Modifier;
 import org.opengis.util.CodeList;
 import org.apache.sis.util.ThreadSafe;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.collection.CodeListSet;
 import org.apache.sis.internal.util.CheckedHashSet;
 import org.apache.sis.internal.util.CheckedArrayList;
 
@@ -122,6 +125,13 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      * Returns {@code true} if this metadata is modifiable. This method returns
      * {@code false} if {@link #freeze()} has been invoked on this object.
      *
+     * <table width="80%" align="center" cellpadding="18" border="4" bgcolor="#FFE0B0">
+     *   <tr><td>
+     *     <b>Warning:</b> this method is likely to change. SIS 0.4 will probably uses a "state" enumeration
+     *     (modifiable, appendable, etc.).
+     *   </td></tr>
+     * </table>
+     *
      * @return {@code true} if this metadata is modifiable.
      *
      * @see #freeze()
@@ -158,6 +168,13 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      *   <li>Otherwise this method {@linkplain #clone() clone} this metadata and
      *       {@linkplain #freeze() freeze} the clone before to return it.</li>
      * </ul>
+     *
+     * <table width="80%" align="center" cellpadding="18" border="4" bgcolor="#FFE0B0">
+     *   <tr><td>
+     *     <b>Warning:</b> this method is likely to change. SIS 0.4 will probably uses a "state" enumeration
+     *     (modifiable, appendable, etc.).
+     *   </td></tr>
+     * </table>
      *
      * @return An unmodifiable copy of this metadata.
      */
@@ -196,6 +213,13 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
      *
      * <p>Subclasses usually don't need to override this method since the default implementation
      * performs its work using Java reflection.</p>
+     *
+     * <table width="80%" align="center" cellpadding="18" border="4" bgcolor="#FFE0B0">
+     *   <tr><td>
+     *     <b>Warning:</b> this method is likely to change. SIS 0.4 will probably uses a "state" enumeration
+     *     (modifiable, appendable, etc.).
+     *   </td></tr>
+     * </table>
      *
      * @see #isModifiable()
      * @see #checkWritePermission()
@@ -383,7 +407,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
                 } else {
                     final int capacity = source.size();
                     if (useSet(elementType)) {
-                        target = new CheckedHashSet<E>(elementType, capacity);
+                        target = createSet(elementType, capacity);
                     } else {
                         target = new CheckedArrayList<E>(elementType, capacity);
                     }
@@ -455,7 +479,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
         final Collection<E> target;
         final int capacity = source.size();
         if (useSet(elementType)) {
-            target = new CheckedHashSet<E>(elementType, capacity);
+            target = createSet(elementType, capacity);
         } else {
             target = new CheckedArrayList<E>(elementType, capacity);
         }
@@ -482,7 +506,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
         }
         final Collection<E> collection;
         if (useSet(elementType)) {
-            collection = new CheckedHashSet<E>(elementType, INITIAL_CAPACITY);
+            collection = createSet(elementType, INITIAL_CAPACITY);
         } else {
             collection = new CheckedArrayList<E>(elementType, INITIAL_CAPACITY);
         }
@@ -562,7 +586,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
         final boolean isModifiable = isModifiable();
         if (useSet(elementType)) {
             if (isModifiable) {
-                return new CheckedHashSet<E>(elementType, INITIAL_CAPACITY);
+                return createSet(elementType, INITIAL_CAPACITY);
             } else {
                 return Collections.emptySet();
             }
@@ -576,17 +600,28 @@ public abstract class ModifiableMetadata extends AbstractMetadata implements Clo
     }
 
     /**
+     * Creates a modifiable set for elements of the given type. This method will create an {@link EnumSet},
+     * {@link CodeListSet} or {@link LinkedHashSet} depending on the {@code elementType} argument.
+     */
+    @SuppressWarnings({"unchecked","rawtypes"})
+    private <E> Set<E> createSet(final Class<E> elementType, final int capacity) {
+        if (Enum.class.isAssignableFrom(elementType)) {
+            return EnumSet.noneOf((Class) elementType);
+        }
+        if (CodeList.class.isAssignableFrom(elementType) && Modifier.isFinal(elementType.getModifiers())) {
+            return new CodeListSet((Class) elementType);
+        }
+        return new CheckedHashSet<E>(elementType, capacity);
+    }
+
+    /**
      * Returns {@code true} if we should use a {@link Set} instead than a {@link List}
      * for elements of the given type.
      */
     private <E> boolean useSet(final Class<E> elementType) {
         final Class<? extends Collection<E>> type = collectionType(elementType);
-        if (Set.class.isAssignableFrom(type)) {
-            return true;
-        }
-        if (List.class.isAssignableFrom(type)) {
-            return false;
-        }
+        if (Set .class == (Class) type) return true;
+        if (List.class == (Class) type) return false;
         throw new NoSuchElementException(Errors.format(Errors.Keys.UnsupportedType_1, type));
     }
 

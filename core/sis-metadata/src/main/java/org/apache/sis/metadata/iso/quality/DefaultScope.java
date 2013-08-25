@@ -83,15 +83,17 @@ public class DefaultScope extends ISOMetadata implements Scope {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Scope)
      */
     public DefaultScope(final Scope object) {
         super(object);
-        level            = object.getLevel();
-        extent           = object.getExtent();
-        levelDescription = copyCollection(object.getLevelDescription(), ScopeDescription.class);
+        if (object != null) {
+            level            = object.getLevel();
+            extent           = object.getExtent();
+            levelDescription = copyCollection(object.getLevelDescription(), ScopeDescription.class);
+        }
     }
 
     /**
@@ -121,6 +123,8 @@ public class DefaultScope extends ISOMetadata implements Scope {
 
     /**
      * Returns the hierarchical level of the data specified by the scope.
+     *
+     * @return Hierarchical level of the data, or {@code null}.
      */
     @Override
     @XmlElement(name = "level", required = true)
@@ -140,6 +144,8 @@ public class DefaultScope extends ISOMetadata implements Scope {
 
     /**
      * Returns detailed descriptions about the level of the data specified by the scope.
+     *
+     * @return Detailed description about the level of the data.
      */
     @Override
     @XmlElement(name = "levelDescription")
@@ -157,8 +163,9 @@ public class DefaultScope extends ISOMetadata implements Scope {
     }
 
     /**
-     * Information about the spatial, vertical and temporal extent of the data specified by the
-     * scope.
+     * Information about the spatial, vertical and temporal extent of the data specified by the scope.
+     *
+     * @return Information about the extent of the data, or {@code null}.
      */
     @Override
     @XmlElement(name = "extent")

@@ -28,7 +28,9 @@ import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.IdentifiedObject;
+import org.apache.sis.xml.ReferenceResolver;
 import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.internal.jaxb.PrimitiveTypeProperties;
 import org.apache.sis.util.iso.SimpleInternationalString;
 
 
@@ -112,12 +114,12 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
         extends XmlAdapter<ValueType,BoundType>
 {
     /**
-     * The wrapped GeoAPI metadata interface.
+     * The wrapped GeoAPI metadata instance.
      */
     protected BoundType metadata;
 
     /**
-     * Either an {@link ObjectReference} or a {@link String}.
+     * Either {@code null}, an {@link ObjectReference} or a {@link String}.
      *
      * <ul>
      *   <li>{@link ObjectReference} defines the {@code idref}, {@code uuidref}, {@code xlink:href},
@@ -138,32 +140,84 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
     }
 
     /**
-     * Builds an adapter for the given GeoAPI interface.
+     * Builds an adapter for the given primitive wrapper. This constructor checks for nil reasons
+     * only if {@code check} is {@code true}.
+     *
+     * @param value The primitive type wrapper.
+     * @param mayBeNil {@code true} if we should check for nil reasons.
+     */
+    PropertyType(final BoundType value, final boolean mayBeNil) {
+        metadata = value;
+        if (mayBeNil) {
+            final Object property = PrimitiveTypeProperties.property(value);
+            if (property instanceof NilReason) {
+                reference = property.toString();
+            }
+        }
+    }
+
+    /**
+     * Builds an adapter for the given GeoAPI interface. This constructor checks if the given metadata
+     * implements the {@link NilObject} or {@link IdentifiedObject} interface. If the object implements
+     * both of them (should not happen, but we never know), then the identifiers will have precedence.
      *
      * @param metadata The interface to wrap.
      */
     protected PropertyType(final BoundType metadata) {
         this.metadata = metadata;
-        if (metadata instanceof IdentifiedObject) {
-            final IdentifierMap map = ((IdentifiedObject) metadata).getIdentifierMap();
-            XLink  link = map.getSpecialized(IdentifierSpace.XLINK);
-            UUID   uuid = map.getSpecialized(IdentifierSpace.UUID);
-            String anyUUID = (uuid != null) ? uuid.toString() : map.get(IdentifierSpace.UUID);
-            if (anyUUID != null || link != null) {
-                final Context context = Context.current();
-                if (uuid == null) {
-                    uuid = ObjectReference.toUUID(context, anyUUID); // May still null.
-                }
-                if (uuid == null || Context.resolver(context).canSubstituteByReference(context, getBoundType(), metadata, uuid)) {
-                    reference = new ObjectReference(uuid, anyUUID, link);
-                    return;
-                }
-            }
-        }
+        /*
+         * Do not invoke NilReason.forObject(metadata) in order to avoid unnecessary synchronization.
+         * Subclasses will use the PropertyType(BoundType, boolean) constructor instead when a check
+         * for primitive type is required.
+         */
         if (metadata instanceof NilObject) {
             final NilReason reason = ((NilObject) metadata).getNilReason();
             if (reason != null) {
                 reference = reason.toString();
+            }
+        }
+        if (metadata instanceof IdentifiedObject) {
+            /*
+             * Get the identifiers as full UUID or XLink objects. We do not use the more permissive methods
+             * working with arbitrary strings -- e.g. map.get(IdentifierSpace.HREF) -- because we are going
+             * to use those values for marshalling REFERENCES to an externally-defined metadata object, not
+             * for declaring the attributes to marshal together with the metadata. Since references REPLACE
+             * the original metadata object, we are better to ensure that they are well formed - in case of
+             * doubt, we are better to marshal the full object. We are not loosing information since in the
+             * later case, the identifiers will be marshalled as Strings by ISOMetadata. Example:
+             *
+             *   <gmd:CI_Citation>
+             *     <gmd:series uuidref="f8f5fcb1-d57b-4013-b3a4-4eaa40df6dcf">      ☚ marshalled by this
+             *       <gmd:CI_Series uuid="f8f5fcb1-d57b-4013-b3a4-4eaa40df6dcf">    ☚ marshalled by ISOMetadata
+             *         ...
+             *       </gmd:CI_Series>
+             *     </gmd:series>
+             *   </gmd:CI_Citation>
+             *
+             * We do not try to parse UUID or XLink objects from String because it should be the job of
+             * org.apache.sis.internal.jaxb.IdentifierMapWithSpecialCases.put(Citation, String).
+             */
+            final IdentifierMap map = ((IdentifiedObject) metadata).getIdentifierMap();
+            XLink  link = map.getSpecialized(IdentifierSpace.XLINK);
+            UUID   uuid = map.getSpecialized(IdentifierSpace.UUID);
+            if (uuid != null || link != null) {
+                final Context           context  = Context.current();
+                final ReferenceResolver resolver = Context.resolver(context);
+                final Class<BoundType>  type     = getBoundType();
+                /*
+                 * Check if the user gives us the permission to use reference to those identifiers.
+                 * If not, forget them in order to avoid marshalling the identifiers twice (see the
+                 * example in the above comment).
+                 */
+                if (uuid != null && !resolver.canSubstituteByReference(context, type, metadata, uuid)) {
+                    uuid = null;
+                }
+                if (link != null && !resolver.canSubstituteByReference(context, type, metadata, link)) {
+                    link = null;
+                }
+                if (uuid != null || link != null) {
+                    reference = new ObjectReference(uuid, link);
+                }
             }
         }
     }
@@ -239,15 +293,9 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
      * future implementations.
      *
      * @return {@code true} if the wrapped metadata should not be marshalled.
-     *
-     * @see #getElement()
      */
     protected final boolean skip() {
-        if (metadata instanceof NilObject) {
-            return true;
-        }
-        final Object ref = reference;
-        return (ref instanceof ObjectReference) && ((ObjectReference) ref).anyUUID != null;
+        return reference != null;
     }
 
     /**
@@ -258,27 +306,29 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
      * @return the current value, or {@code null} if none.
      * @category gco:ObjectReference
      */
-    @XmlAttribute(name = "uuidref", namespace = Namespaces.GCO)
+    @XmlAttribute(name = "uuidref")  // Defined in "gco" as unqualified attribute.
     public final String getUUIDREF() {
         final ObjectReference ref = reference(false);
-        return (ref != null) ? ref.anyUUID : null;
+        return (ref != null) ? toString(ref.uuid) : null;
     }
 
     /**
      * Sets the {@code uuidref} attribute value.
      *
-     * @param uuid The new attribute value.
+     * @param  uuid The new attribute value.
+     * @throws IllegalArgumentException If the given UUID can not be parsed.
      * @category gco:ObjectReference
      */
-    public final void setUUIDREF(final String uuid) {
-        reference(true).anyUUID = uuid;
+    public final void setUUIDREF(final String uuid) throws IllegalArgumentException {
+        final Context context = Context.current();
+        reference(true).uuid = Context.converter(context).toUUID(context, uuid);
     }
 
     /**
      * Returns the given URI as a string, or returns {@code null} if the given argument is null.
      */
-    private static String toString(final Object uri) {
-        return (uri != null) ? uri.toString() : null;
+    private static String toString(final Object text) {
+        return (text != null) ? text.toString() : null;
     }
 
     /**
@@ -370,7 +420,7 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
     @XmlAttribute(name = "title", namespace = Namespaces.XLINK)
     public final String getTitle() {
         final XLink link = xlink(false);
-        return (link != null) ? toString(link.getTitle()) : null;
+        return (link != null) ? StringAdapter.toString(link.getTitle()) : null;
     }
 
     /**
@@ -506,10 +556,9 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
      * If the {@linkplain #metadata} is still null, tries to resolve it using UUID, XLink
      * or NilReason information. This method is invoked at unmarshalling time.
      *
-     * @throws URISyntaxException If a URI can not be parsed.
-     * @throws IllegalArgumentException If the UUID can not be parsed.
+     * @throws URISyntaxException If a nil reason is present and can not be parsed.
      */
-    final BoundType resolve(final Context context) throws URISyntaxException, IllegalArgumentException {
+    final BoundType resolve(final Context context) throws URISyntaxException {
         final ObjectReference ref = reference(false);
         if (ref != null) {
             metadata = ref.resolve(context, getBoundType(), metadata);

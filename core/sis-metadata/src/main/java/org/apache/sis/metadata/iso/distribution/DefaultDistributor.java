@@ -92,16 +92,18 @@ public class DefaultDistributor extends ISOMetadata implements Distributor {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Distributor)
      */
     public DefaultDistributor(final Distributor object) {
         super(object);
-        distributorContact         = object.getDistributorContact();
-        distributionOrderProcesses = copyCollection(object.getDistributionOrderProcesses(), StandardOrderProcess.class);
-        distributorFormats         = copyCollection(object.getDistributorFormats(), Format.class);
-        distributorTransferOptions = copyCollection(object.getDistributorTransferOptions(), DigitalTransferOptions.class);
+        if (object != null) {
+            distributorContact         = object.getDistributorContact();
+            distributionOrderProcesses = copyCollection(object.getDistributionOrderProcesses(), StandardOrderProcess.class);
+            distributorFormats         = copyCollection(object.getDistributorFormats(), Format.class);
+            distributorTransferOptions = copyCollection(object.getDistributorTransferOptions(), DigitalTransferOptions.class);
+        }
     }
 
     /**
@@ -131,6 +133,8 @@ public class DefaultDistributor extends ISOMetadata implements Distributor {
 
     /**
      * Party from whom the resource may be obtained. This list need not be exhaustive.
+     *
+     * @return Party from whom the resource may be obtained, or {@code null}.
      */
     @Override
     @XmlElement(name = "distributorContact", required = true)
@@ -151,6 +155,8 @@ public class DefaultDistributor extends ISOMetadata implements Distributor {
     /**
      * Provides information about how the resource may be obtained,
      * and related instructions and fee information.
+     *
+     * @return Information about how the resource may be obtained.
      */
     @Override
     @XmlElement(name = "distributionOrderProcess")
@@ -170,6 +176,8 @@ public class DefaultDistributor extends ISOMetadata implements Distributor {
 
     /**
      * Provides information about the format used by the distributor.
+     *
+     * @return Information about the format used by the distributor.
      */
     @Override
     @XmlElement(name = "distributorFormat")
@@ -188,6 +196,8 @@ public class DefaultDistributor extends ISOMetadata implements Distributor {
 
     /**
      * Provides information about the technical means and media used by the distributor.
+     *
+     * @return Information about the technical means and media used by the distributor.
      */
     @Override
     @XmlElement(name = "distributorTransferOptions")

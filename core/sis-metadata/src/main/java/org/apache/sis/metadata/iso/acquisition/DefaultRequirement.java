@@ -90,7 +90,7 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
      * Date and time after which collection is no longer valid,
      * or {@link Long#MIN_VALUE} if none.
      */
-    private long expiryDate;
+    private long expiryDate = Long.MIN_VALUE;
 
     /**
      * Plan that identifies solution to satisfy the requirement.
@@ -101,7 +101,6 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
      * Constructs an initially empty requirement.
      */
     public DefaultRequirement() {
-        expiryDate = Long.MIN_VALUE;
     }
 
     /**
@@ -109,20 +108,22 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Requirement)
      */
     public DefaultRequirement(final Requirement object) {
         super(object);
-        citation       = object.getCitation();
-        identifiers    = singleton(object.getIdentifier(), Identifier.class); // TODO
-        requestors     = copyCollection(object.getRequestors(), ResponsibleParty.class);
-        recipients     = copyCollection(object.getRecipients(), ResponsibleParty.class);
-        priority       = object.getPriority();
-        requestedDate  = object.getRequestedDate();
-        expiryDate     = toMilliseconds(object.getExpiryDate());
-        satisfiedPlans = copyCollection(object.getSatisfiedPlans(), Plan.class);
+        if (object != null) {
+            citation       = object.getCitation();
+            identifiers    = singleton(object.getIdentifier(), Identifier.class);
+            requestors     = copyCollection(object.getRequestors(), ResponsibleParty.class);
+            recipients     = copyCollection(object.getRecipients(), ResponsibleParty.class);
+            priority       = object.getPriority();
+            requestedDate  = object.getRequestedDate();
+            expiryDate     = toMilliseconds(object.getExpiryDate());
+            satisfiedPlans = copyCollection(object.getSatisfiedPlans(), Plan.class);
+        }
     }
 
     /**
@@ -153,6 +154,8 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
     /**
      * Returns the identification of reference or guidance material for the requirement.
      * {@code null} if unspecified.
+     *
+     * @return Identification of reference or guidance material, or {@code null}.
      */
     @Override
     @XmlElement(name = "citation")
@@ -172,6 +175,8 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
 
     /**
      * Returns the unique name, or code, for the requirement.
+     *
+     * @return Unique name or code, or {@code null}.
      */
     @Override
     @XmlElement(name = "identifier", required = true)
@@ -192,6 +197,8 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
 
     /**
      * Returns the origin of requirement.
+     *
+     * @return Origin of requirement.
      */
     @Override
     @XmlElement(name = "requestor", required = true)
@@ -210,6 +217,8 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
 
     /**
      * Returns the person(s), or body(ies), to receive results of requirement.
+     *
+     * @return Person(s), or body(ies), to receive results.
      */
     @Override
     @XmlElement(name = "recipient", required = true)
@@ -228,6 +237,8 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
 
     /**
      * Returns the relative ordered importance, or urgency, of the requirement.
+     *
+     * @return Relative ordered importance, or urgency, or {@code null}.
      */
     @Override
     @XmlElement(name = "priority", required = true)
@@ -247,6 +258,8 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
 
     /**
      * Returns the required or preferred acquisition date and time.
+     *
+     * @return Required or preferred acquisition date and time, or {@code null}.
      */
     @Override
     @XmlElement(name = "requestedDate", required = true)
@@ -266,6 +279,8 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
 
     /**
      * Returns the date and time after which collection is no longer valid.
+     *
+     * @return Date and time after which collection is no longer valid, or {@code null}.
      */
     @Override
     @XmlElement(name = "expiryDate", required = true)
@@ -285,6 +300,8 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
 
     /**
      * Returns the plan that identifies solution to satisfy the requirement.
+     *
+     * @return Plan that identifies solution to satisfy the requirement.
      */
     @Override
     @XmlElement(name = "satisfiedPlan")

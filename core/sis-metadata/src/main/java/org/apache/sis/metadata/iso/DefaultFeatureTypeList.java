@@ -75,14 +75,16 @@ public class DefaultFeatureTypeList extends ISOMetadata implements FeatureTypeLi
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(FeatureTypeList)
      */
     public DefaultFeatureTypeList(final FeatureTypeList object) {
         super(object);
-        spatialObject     = object.getSpatialObject();
-        spatialSchemaName = object.getSpatialSchemaName();
+        if (object != null) {
+            spatialObject     = object.getSpatialObject();
+            spatialSchemaName = object.getSpatialSchemaName();
+        }
     }
 
     /**
@@ -112,6 +114,8 @@ public class DefaultFeatureTypeList extends ISOMetadata implements FeatureTypeLi
 
     /**
      * Instance of a type defined in the spatial schema.
+     *
+     * @return Instance of a type defined in the spatial schema, or {@code null}.
      */
     @Override
     @XmlElement(name = "spatialObject", required = true)
@@ -131,6 +135,8 @@ public class DefaultFeatureTypeList extends ISOMetadata implements FeatureTypeLi
 
     /**
      * Name of the spatial schema used.
+     *
+     * @return Name of the spatial schema used, or {@code null}.
      */
     @Override
     @XmlElement(name = "spatialSchemaName", required = true)

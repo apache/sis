@@ -20,9 +20,11 @@ import java.net.URI;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.identification.BrowseGraphic;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.internal.jaxb.gmx.MimeFileTypeAdapter;
 
 
 /**
@@ -32,7 +34,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 @XmlType(name = "MD_BrowseGraphic_Type", propOrder = {
@@ -83,15 +85,17 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(BrowseGraphic)
      */
     public DefaultBrowseGraphic(final BrowseGraphic object) {
         super(object);
-        fileName        = object.getFileName();
-        fileDescription = object.getFileDescription();
-        fileType        = object.getFileType();
+        if (object != null) {
+            fileName        = object.getFileName();
+            fileDescription = object.getFileDescription();
+            fileType        = object.getFileType();
+        }
     }
 
     /**
@@ -121,6 +125,8 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
 
     /**
      * Returns the name of the file that contains a graphic that provides an illustration of the dataset.
+     *
+     * @return File that contains a graphic that provides an illustration of the dataset, or {@code null}.
      */
     @Override
     @XmlElement(name = "fileName", required = true)
@@ -140,6 +146,8 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
 
     /**
      * Returns the text description of the illustration.
+     *
+     * @return Text description of the illustration, or {@code null}.
      */
     @Override
     @XmlElement(name = "fileDescription")
@@ -160,9 +168,12 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
     /**
      * Format in which the illustration is encoded.
      * Examples: CGM, EPS, GIF, JPEG, PBM, PS, TIFF, XWD.
+     *
+     * @return Format in which the illustration is encoded, or {@code null}.
      */
     @Override
     @XmlElement(name = "fileType")
+    @XmlJavaTypeAdapter(MimeFileTypeAdapter.class)
     public String getFileType() {
         return fileType;
     }

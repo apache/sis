@@ -84,17 +84,19 @@ public class DefaultPlatform extends ISOMetadata implements Platform {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Platform)
      */
     public DefaultPlatform(final Platform object) {
         super(object);
-        citation    = object.getCitation();
-        identifiers = singleton(object.getIdentifier(), Identifier.class); // TODO
-        description = object.getDescription();
-        sponsors    = copyCollection(object.getSponsors(), ResponsibleParty.class);
-        instruments = copyCollection(object.getInstruments(), Instrument.class);
+        if (object != null) {
+            citation    = object.getCitation();
+            identifiers = singleton(object.getIdentifier(), Identifier.class);
+            description = object.getDescription();
+            sponsors    = copyCollection(object.getSponsors(), ResponsibleParty.class);
+            instruments = copyCollection(object.getInstruments(), Instrument.class);
+        }
     }
 
     /**
@@ -123,8 +125,9 @@ public class DefaultPlatform extends ISOMetadata implements Platform {
     }
 
     /**
-     * Returns the source where information about the platform is described. {@code null}
-     * if unspecified.
+     * Returns the source where information about the platform is described. {@code null} if unspecified.
+     *
+     * @return Source where information about the platform is described, or {@code null}.
      */
     @Override
     @XmlElement(name = "citation")
@@ -144,6 +147,8 @@ public class DefaultPlatform extends ISOMetadata implements Platform {
 
     /**
      * Returns the unique identification of the platform.
+     *
+     * @return Unique identification of the platform, or {@code null}.
      */
     @Override
     @XmlElement(name = "identifier", required = true)
@@ -164,6 +169,8 @@ public class DefaultPlatform extends ISOMetadata implements Platform {
 
     /**
      * Gets the narrative description of the platform supporting the instrument.
+     *
+     * @return Narrative description of the platform, or {@code null}.
      */
     @Override
     @XmlElement(name = "description", required = true)
@@ -183,6 +190,8 @@ public class DefaultPlatform extends ISOMetadata implements Platform {
 
     /**
      * Returns the organization responsible for building, launch, or operation of the platform.
+     *
+     * @return Organization responsible for building, launch, or operation of the platform.
      */
     @Override
     @XmlElement(name = "sponsor")
@@ -201,6 +210,8 @@ public class DefaultPlatform extends ISOMetadata implements Platform {
 
     /**
      * Gets the instrument(s) mounted on a platform.
+     *
+     * @return Instrument(s) mounted on a platform.
      */
     @Override
     @XmlElement(name = "instrument", required = true)

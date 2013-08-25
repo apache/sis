@@ -94,15 +94,17 @@ public class DefaultConformanceResult extends AbstractResult implements Conforma
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(ConformanceResult)
      */
     public DefaultConformanceResult(final ConformanceResult object) {
         super(object);
-        specification = object.getSpecification();
-        explanation   = object.getExplanation();
-        pass          = object.pass();
+        if (object != null) {
+            specification = object.getSpecification();
+            explanation   = object.getExplanation();
+            pass          = object.pass();
+        }
     }
 
     /**
@@ -131,8 +133,9 @@ public class DefaultConformanceResult extends AbstractResult implements Conforma
     }
 
     /**
-     * Returns the citation of product specification or user
-     * requirement against which data is being evaluated.
+     * Returns the citation of product specification or user requirement against which data is being evaluated.
+     *
+     * @return Citation of product specification or user requirement, or {@code null}.
      */
     @Override
     @XmlElement(name = "specification", required = true)
@@ -141,8 +144,7 @@ public class DefaultConformanceResult extends AbstractResult implements Conforma
     }
 
     /**
-     * Sets the citation of product specification or user requirement against which data
-     * is being evaluated.
+     * Sets the citation of product specification or user requirement against which data is being evaluated.
      *
      * @param newValue The new specification.
      */
@@ -153,6 +155,8 @@ public class DefaultConformanceResult extends AbstractResult implements Conforma
 
     /**
      * Returns the explanation of the meaning of conformance for this result.
+     *
+     * @return Explanation of the meaning of conformance, or {@code null}.
      */
     @Override
     @XmlElement(name = "explanation", required = true)
@@ -172,6 +176,8 @@ public class DefaultConformanceResult extends AbstractResult implements Conforma
 
     /**
      * Returns an indication of the conformance result.
+     *
+     * @return Indication of the conformance result, or {@code null}.
      */
     @Override
     public Boolean pass() {

@@ -16,10 +16,10 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
-import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
-import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.acquisition.ObjectiveType;
+import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
+import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
 import org.apache.sis.xml.Namespaces;
 
 
@@ -34,13 +34,6 @@ import org.apache.sis.xml.Namespaces;
  * @module
  */
 public final class MI_ObjectiveTypeCode extends CodeListAdapter<MI_ObjectiveTypeCode, ObjectiveType> {
-    /**
-     * Ensures that the adapted code list class is loaded.
-     */
-    static {
-        ensureClassLoaded(ObjectiveType.class);
-    }
-
     /**
      * Empty constructor for JAXB only.
      */

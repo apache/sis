@@ -47,9 +47,9 @@ import org.apache.sis.internal.system.SystemListener;
  */
 public abstract class TypeRegistration {
     /**
-     * The JAXB context, or {@code null} if not yet created.
+     * The JAXB context, or {@code null} if not yet created or if the classpath changed.
      */
-    private static Reference<JAXBContext> context;
+    private static volatile Reference<JAXBContext> context;
     static {
         SystemListener.add(new SystemListener(Modules.UTILITIES) {
             @Override protected void classpathChanged() {
@@ -105,9 +105,9 @@ public abstract class TypeRegistration {
      * @throws JAXBException If an error occurred while creating the JAXB context.
      */
     public static synchronized JAXBContext getSharedContext() throws JAXBException {
-        final Reference<JAXBContext> ref = context; // Protect from changes by the listener.
-        if (ref != null) {
-            final JAXBContext instance = ref.get();
+        final Reference<JAXBContext> c = context;
+        if (c != null) {
+            final JAXBContext instance = c.get();
             if (instance != null) {
                 return instance;
             }

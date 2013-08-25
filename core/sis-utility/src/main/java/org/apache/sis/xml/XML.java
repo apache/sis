@@ -16,7 +16,11 @@
  */
 package org.apache.sis.xml;
 
+import java.util.Map;
 import java.util.Locale;
+import java.util.TimeZone;
+import java.util.logging.LogRecord; // For javadoc
+import java.net.URL;
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -25,10 +29,16 @@ import java.io.StringWriter;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.JAXBException;
+import javax.xml.transform.Source;
+import javax.xml.transform.Result;
 import org.apache.sis.util.Static;
+import org.apache.sis.util.Version;
+import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.jaxb.TypeRegistration;
+
+import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
 /**
@@ -36,20 +46,23 @@ import org.apache.sis.internal.jaxb.TypeRegistration;
  * This class defines also some property keys that can be given to the {@link Marshaller}
  * and {@link Unmarshaller} instances created by {@link PooledMarshaller}:
  *
- * <ul>
- *   <li>{@link #LOCALE} for specifying the locale to use for international strings and code lists.</li>
- *   <li>{@link #TIMEZONE} for specifying the timezone to use for dates and times.</li>
- *   <li>{@link #SCHEMAS} for specifying the root URL of metadata schemas to use.</li>
- *   <li>{@link #DEFAULT_NAMESPACE} for specifying the default namespace of the XML document to write.</li>
- *   <li>{@link #RESOLVER} for replacing {@code xlink} or {@code uuidref} attributes by the actual object to use.</li>
- *   <li>{@link #CONVERTER} for controlling the conversion of URL, UUID, Units or similar objects.</li>
- *   <li>{@link #STRING_SUBSTITUTES} for specifying which code lists to replace by simpler {@code <gco:CharacterString>} elements.</li>
- * </ul>
+ * <table class="sis">
+ *   <tr><th>Key</th>                         <th>Value type</th>                <th>Purpose</th></tr>
+ *   <tr><td>{@link #LOCALE}</td>             <td>{@link Locale}</td>            <td>for specifying the locale to use for international strings and code lists.</td></tr>
+ *   <tr><td>{@link #TIMEZONE}</td>           <td>{@link TimeZone}</td>          <td>for specifying the timezone to use for dates and times.</td></tr>
+ *   <tr><td>{@link #SCHEMAS}</td>            <td>{@link Map}</td>               <td>for specifying the root URL of metadata schemas to use.</td></tr>
+ *   <tr><td>{@link #DEFAULT_NAMESPACE}</td>  <td>{@link String}</td>            <td>for specifying the default namespace of the XML document to write.</td></tr>
+ *   <tr><td>{@link #GML_VERSION}</td>        <td>{@link Version}</td>           <td>for specifying the GML version to the document be (un)marshalled.</td></tr>
+ *   <tr><td>{@link #RESOLVER}</td>           <td>{@link ReferenceResolver}</td> <td>for replacing {@code xlink} or {@code uuidref} attributes by the actual object to use.</td></tr>
+ *   <tr><td>{@link #CONVERTER}</td>          <td>{@link ValueConverter}</td>    <td>for controlling the conversion of URL, UUID, Units or similar objects.</td></tr>
+ *   <tr><td>{@link #STRING_SUBSTITUTES}</td> <td>{@code String[]}</td>          <td>for specifying which code lists to replace by simpler {@code <gco:CharacterString>} elements.</td></tr>
+ *   <tr><td>{@link #WARNING_LISTENER}</td>   <td>{@link WarningListener}</td>   <td>for being notified about non-fatal warnings.</td></tr>
+ * </table>
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 public final class XML extends Static {
@@ -88,13 +101,13 @@ public final class XML extends Static {
      *
      * {@section Default behavior}
      * If this property is never set, then (un)marshalling will use the
-     * {@linkplain java.util.TimeZone#getDefault() default timezone}.
+     * {@linkplain TimeZone#getDefault() default timezone}.
      */
     public static final String TIMEZONE = "org.apache.sis.xml.timezone";
 
     /**
      * Specifies the root URL of schemas. The value for this property shall
-     * be an instance of {@link java.util.Map Map&lt;String,String&gt;}.
+     * be an instance of {@link Map Map&lt;String,String&gt;}.
      * This property controls the URL to be used when marshalling the following elements:
      *
      * <ul>
@@ -133,12 +146,13 @@ public final class XML extends Static {
     public static final String DEFAULT_NAMESPACE = "org.apache.sis.xml.defaultNamespace";
 
     /**
-     * Specifies the GML version to be marshalled or unmarshalled. The GML version may affect the
-     * set of XML elements to be marshalled. Newer versions typically have more elements, but not
-     * always. For example in {@code gml:VerticalDatum}, the {@code gml:verticalDatumType} property
+     * Specifies the GML version of the document to be marshalled or unmarshalled.
+     * The GML version may affect the set of XML elements to be marshalled.
+     * Newer versions typically have more elements, but not always.
+     * For example in {@code gml:VerticalDatum}, the {@code gml:verticalDatumType} property
      * presents in GML 3.0 and 3.1 has been removed in GML 3.2.
      *
-     * <p>The value can be {@link String} or {@link org.apache.sis.util.Version} objects.
+     * <p>The value can be {@link String} or {@link Version} objects.
      * If no version is specified, then the most recent GML version is assumed.</p>
      */
     public static final String GML_VERSION = "org.apache.sis.gml.version";
@@ -219,9 +233,15 @@ public final class XML extends Static {
     public static final String CONVERTER = "org.apache.sis.xml.converter";
 
     /**
-     * Allows marshallers to substitute some code lists by the simpler {@code <gco:CharacterString>}
-     * element. The value for this property shall be a coma-separated list of any of the following
-     * values: "{@code language}", "{@code country}".
+     * Allows marshallers to substitute some code lists by the simpler {@code <gco:CharacterString>} element.
+     * The value for this property shall be a {@code String[]} array of any of the following values:
+     *
+     * <ul>
+     *   <li>"{@code language}" for substituting {@code <gmd:LanguageCode>} elements</li>
+     *   <li>"{@code country}"  for substituting {@code <gmd:Country>} elements</li>
+     *   <li>"{@code filename}" for substituting {@code <gmx:FileName>} elements</li>
+     *   <li>"{@code mimetype}" for substituting {@code <gmx:MimeFileType>} elements</li>
+     * </ul>
      *
      * {@section Example}
      * INSPIRE compliant language code shall be formatted like below (formatting may vary):
@@ -245,6 +265,18 @@ public final class XML extends Static {
      * }
      */
     public static final String STRING_SUBSTITUTES = "org.apache.sis.xml.stringSubstitutes";
+
+    /**
+     * Specifies a listener to be notified when a non-fatal error occurred during the (un)marshalling.
+     * The value for this property shall be an instance of {@code WarningListener<Object>}.
+     *
+     * <p>By default, warnings that occur during the (un)marshalling process are logged. However if a
+     * property is set for this key, then the {@link WarningListener#warningOccured(Object, LogRecord)}
+     * method will be invoked and the warning will <em>not</em> be logged by the (un)marshaller.</p>
+     *
+     * @see WarningListener
+     */
+    public static final String WARNING_LISTENER = "org.apache.sis.xml.warningListener";
 
     /**
      * The pool of marshallers and unmarshallers used by this class.
@@ -306,6 +338,7 @@ public final class XML extends Static {
      * @throws JAXBException If an error occurred during the marshalling.
      */
     public static String marshal(final Object object) throws JAXBException {
+        ensureNonNull("object", object);
         final StringWriter output = new StringWriter();
         final MarshallerPool pool = getPool();
         final Marshaller marshaller = pool.acquireMarshaller();
@@ -322,6 +355,8 @@ public final class XML extends Static {
      * @throws JAXBException If an error occurred during the marshalling.
      */
     public static void marshal(final Object object, final OutputStream output) throws JAXBException {
+        ensureNonNull("object", object);
+        ensureNonNull("output", output);
         final MarshallerPool pool = getPool();
         final Marshaller marshaller = pool.acquireMarshaller();
         marshaller.marshal(object, output);
@@ -336,8 +371,40 @@ public final class XML extends Static {
      * @throws JAXBException If an error occurred during the marshalling.
      */
     public static void marshal(final Object object, final File output) throws JAXBException {
+        ensureNonNull("object", object);
+        ensureNonNull("output", output);
         final MarshallerPool pool = getPool();
         final Marshaller marshaller = pool.acquireMarshaller();
+        marshaller.marshal(object, output);
+        pool.recycle(marshaller);
+    }
+
+    /**
+     * Marshall the given object to a stream, DOM or other destinations.
+     * This is the most flexible marshalling method provided in this {@code XML} class.
+     * The destination is specified by the {@code output} argument implementation, for example
+     * {@link javax.xml.transform.stream.StreamResult} for writing to a file or output stream.
+     * The optional {@code properties} map can contain any key documented in this {@code XML} class,
+     * together with the keys documented in the <cite>supported properties</cite> section of the the
+     * {@link Marshaller} class.
+     *
+     * @param  object The root of content tree to be marshalled.
+     * @param  output The file to be written.
+     * @param  properties An optional map of properties to give to the marshaller, or {@code null} if none.
+     * @throws JAXBException If a property has an illegal value, or if an error occurred during the marshalling.
+     *
+     * @since 0.4
+     */
+    public static void marshal(final Object object, final Result output, final Map<String,?> properties) throws JAXBException {
+        ensureNonNull("object", object);
+        ensureNonNull("output", output);
+        final MarshallerPool pool = getPool();
+        final Marshaller marshaller = pool.acquireMarshaller();
+        if (properties != null) {
+            for (final Map.Entry<String,?> entry : properties.entrySet()) {
+                marshaller.setProperty(entry.getKey(), entry.getValue());
+            }
+        }
         marshaller.marshal(object, output);
         pool.recycle(marshaller);
     }
@@ -350,6 +417,7 @@ public final class XML extends Static {
      * @throws JAXBException If an error occurred during the unmarshalling.
      */
     public static Object unmarshal(final String input) throws JAXBException {
+        ensureNonNull("input", input);
         final StringReader in = new StringReader(input);
         final MarshallerPool pool = getPool();
         final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
@@ -366,6 +434,23 @@ public final class XML extends Static {
      * @throws JAXBException If an error occurred during the unmarshalling.
      */
     public static Object unmarshal(final InputStream input) throws JAXBException {
+        ensureNonNull("input", input);
+        final MarshallerPool pool = getPool();
+        final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
+        final Object object = unmarshaller.unmarshal(input);
+        pool.recycle(unmarshaller);
+        return object;
+    }
+
+    /**
+     * Unmarshall an object from the given URL.
+     *
+     * @param  input The URL from which to read a XML representation.
+     * @return The object unmarshalled from the given input.
+     * @throws JAXBException If an error occurred during the unmarshalling.
+     */
+    public static Object unmarshal(final URL input) throws JAXBException {
+        ensureNonNull("input", input);
         final MarshallerPool pool = getPool();
         final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
         final Object object = unmarshaller.unmarshal(input);
@@ -381,8 +466,41 @@ public final class XML extends Static {
      * @throws JAXBException If an error occurred during the unmarshalling.
      */
     public static Object unmarshal(final File input) throws JAXBException {
+        ensureNonNull("input", input);
         final MarshallerPool pool = getPool();
         final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
+        final Object object = unmarshaller.unmarshal(input);
+        pool.recycle(unmarshaller);
+        return object;
+    }
+
+    /**
+     * Unmarshall an object from the given stream, DOM or other sources.
+     * This is the most flexible unmarshalling method provided in this {@code XML} class.
+     * The source is specified by the {@code input} argument implementation, for example
+     * {@link javax.xml.transform.stream.StreamSource} for reading from a file or input stream.
+     * The optional {@code properties} map can contain any key documented in this {@code XML} class,
+     * together with the keys documented in the <cite>supported properties</cite> section of the the
+     * {@link Unmarshaller} class.
+     *
+     * @param  input The file from which to read a XML representation.
+     * @param  properties An optional map of properties to give to the unmarshaller, or {@code null} if none.
+     * @return The object unmarshalled from the given input.
+     * @throws JAXBException If a property has an illegal value, or if an error occurred during the unmarshalling.
+     *
+     * @since 0.4
+     *
+     * @see org.apache.sis.storage.xml.XMLStore
+     */
+    public static Object unmarshal(final Source input, final Map<String,?> properties) throws JAXBException {
+        ensureNonNull("input", input);
+        final MarshallerPool pool = getPool();
+        final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
+        if (properties != null) {
+            for (final Map.Entry<String,?> entry : properties.entrySet()) {
+                unmarshaller.setProperty(entry.getKey(), entry.getValue());
+            }
+        }
         final Object object = unmarshaller.unmarshal(input);
         pool.recycle(unmarshaller);
         return object;

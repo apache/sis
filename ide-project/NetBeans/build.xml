@@ -1,4 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+
 <!--
   Customization of Apache SIS build from NetBeans IDE.
 -->
@@ -7,11 +27,11 @@
   <import file="nbproject/build-impl.xml"/>
 
   <!--
-    Called before JAR creation. Copies the "*.utf" resources files created by Maven.
+    Called after compilation. Copies the "*.utf" resources files created by Maven.
     Note that the Apache SIS project must have been build by Maven at least once it
     can be built by the NetBeans IDE.
   -->
-  <target name="-pre-jar">
+  <target name="-post-compile">
     <copy todir="${build.classes.dir}/org/apache/sis/util/iso">
       <fileset dir="${project.root}/core/sis-utility/src/main/resources/org/apache/sis/util/iso">
         <include name="class-index.properties"/>
@@ -26,10 +46,49 @@
     <!-- Following are classical properties resources files. -->
     <copy todir="${build.classes.dir}">
       <fileset dir="${project.root}/core/sis-utility/src/main/resources">
-        <include name="META-INF/services/*"/>
+        <include name="**/*.properties"/>
       </fileset>
-      <fileset dir="${project.root}/core/sis-metadata/src/main/resources">
-        <include name="META-INF/services/*"/>
+      <fileset dir="${project.root}/application/sis-console/src/main/resources">
+        <include name="**/*.properties"/>
+      </fileset>
+    </copy>
+
+    <!-- FileTypeDetector implementations to be loaded by ServiceLoader. -->
+    <concat destfile="${build.classes.dir}/META-INF/services/java.nio.file.spi.FileTypeDetector" encoding="UTF-8" fixlastline="yes">
+      <fileset dir="${project.root}">
+        <include name="*/*/src/main/resources/META-INF/services/java.nio.file.spi.FileTypeDetector"/>
+      </fileset>
+    </concat>
+
+    <!-- ObjectConverter implementations to be loaded by ServiceLoader. -->
+    <concat destfile="${build.classes.dir}/META-INF/services/org.apache.sis.util.ObjectConverter" encoding="UTF-8" fixlastline="yes">
+      <fileset dir="${project.root}">
+        <include name="*/*/src/main/resources/META-INF/services/org.apache.sis.util.ObjectConverter"/>
+      </fileset>
+    </concat>
+
+    <!-- TypeRegistration implementations to be loaded by ServiceLoader. -->
+    <concat destfile="${build.classes.dir}/META-INF/services/org.apache.sis.internal.jaxb.TypeRegistration" encoding="UTF-8" fixlastline="yes">
+      <fileset dir="${project.root}">
+        <include name="*/*/src/main/resources/META-INF/services/org.apache.sis.internal.jaxb.TypeRegistration"/>
+      </fileset>
+    </concat>
+
+    <!-- DataStoreProvider implementations to be loaded by ServiceLoader. -->
+    <concat destfile="${build.classes.dir}/META-INF/services/org.apache.sis.storage.DataStoreProvider" encoding="UTF-8" fixlastline="yes">
+      <fileset dir="${project.root}">
+        <include name="*/*/src/main/resources/META-INF/services/org.apache.sis.storage.DataStoreProvider"/>
+      </fileset>
+    </concat>
+  </target>
+
+  <!--
+    Called after compilation of test classes in order to copy test files.
+  -->
+  <target name="-post-compile-test">
+    <copy todir="${build.test.classes.dir}">
+      <fileset dir="${project.root}/core/sis-metadata/src/test/resources">
+        <include name="**/*.xml"/>
       </fileset>
     </copy>
   </target>

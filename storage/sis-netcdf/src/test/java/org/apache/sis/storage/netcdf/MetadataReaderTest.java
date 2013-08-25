@@ -88,7 +88,7 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
      */
     static void compareToExpected(final Metadata actual) {
         assertMultilinesEquals(
-            "DefaultMetadata\n" +
+            "Metadata\n" +
             "  ├─File identifier………………………………………………………………………… edu.ucar.unidata:NCEP/SST/Global_5x2p5deg/SST_Global_5x2p5deg_20050922_0000.nc\n" +
             "  ├─Hierarchy level………………………………………………………………………… Dataset\n" +
             "  ├─Contact\n" +
@@ -113,10 +113,10 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
             "  │   ├─Spatial representation type……………………………… Grid\n" +
             "  │   ├─Extent\n" +
             "  │   │   ├─Geographic element\n" +
-            "  │   │   │   ├─West bound longitude…………………………… -180.0\n" +
-            "  │   │   │   ├─East bound longitude…………………………… 180.0\n" +
-            "  │   │   │   ├─South bound latitude…………………………… -90.0\n" +
-            "  │   │   │   ├─North bound latitude…………………………… 90.0\n" +
+            "  │   │   │   ├─West bound longitude…………………………… 180°W\n" +
+            "  │   │   │   ├─East bound longitude…………………………… 180°E\n" +
+            "  │   │   │   ├─South bound latitude…………………………… 90°S\n" +
+            "  │   │   │   ├─North bound latitude…………………………… 90°N\n" +
             "  │   │   │   └─Extent type code……………………………………… true\n" +
             "  │   │   └─Vertical element\n" +
             "  │   │       ├─Minimum value……………………………………………… 0.0\n" +
@@ -125,7 +125,7 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
             "  │   ├─Citation\n" +
             "  │   │   ├─Title……………………………………………………………………………… Sea Surface Temperature Analysis Model\n" +
             "  │   │   ├─Date\n" +
-            "  │   │   │   ├─Date……………………………………………………………………… Thu Sep 22 02:00:00 CEST 2005\n" +
+            "  │   │   │   ├─Date……………………………………………………………………… 2005/09/22 00:00:00\n" +
             "  │   │   │   └─Date type………………………………………………………… Creation\n" +
             "  │   │   ├─Identifier\n" +
             "  │   │   │   ├─Code……………………………………………………………………… NCEP/SST/Global_5x2p5deg/SST_Global_5x2p5deg_20050922_0000.nc\n" +

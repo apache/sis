@@ -19,15 +19,22 @@ package org.apache.sis.metadata.iso;
 import java.util.Collection;
 import java.util.logging.Logger;
 import java.io.Serializable;
+import javax.xml.bind.annotation.XmlID;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import org.opengis.metadata.Identifier;
 import org.apache.sis.xml.IdentifierMap;
+import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.IdentifiedObject;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.ModifiableMetadata;
 import org.apache.sis.internal.jaxb.IdentifierMapWithSpecialCases;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ThreadSafe;
+
+import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 
 
 /**
@@ -71,10 +78,9 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
      * If the given object is an instance of {@link IdentifiedObject}, then this constructor
      * copies the {@linkplain #identifiers collection of identifiers}.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      */
     protected ISOMetadata(final Object object) {
-        ArgumentChecks.ensureNonNull("object", object);
         if (object instanceof IdentifiedObject) {
             identifiers = copyCollection(((IdentifiedObject) object).getIdentifiers(), Identifier.class);
         }
@@ -93,6 +99,16 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
         return MetadataStandard.ISO_19115;
     }
 
+
+
+
+    // --------------------------------------------------------------------------------------
+    // Code below this point also appears in other IdentifiedObject implementations.
+    // If this code is modified, consider revisiting also the following classes:
+    //
+    //   * org.apache.sis.metadata.iso.identification.DefaultRepresentativeFraction
+    // --------------------------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */
@@ -104,20 +120,73 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
     /**
      * {@inheritDoc}
      *
-     * <p>The default implementation returns a wrapper around the list returned by {@link #getIdentifiers()}.
+     * <p>The default implementation returns a wrapper around the {@link #identifiers} list.
      * That map is <cite>live</cite>: changes in the identifiers list will be reflected in the map,
      * and conversely.</p>
      */
     @Override
     public IdentifierMap getIdentifierMap() {
         /*
-         * We do not cache (for now) the IdentifierMap because it is cheap to create, and if were
-         * caching it we would need anyway to check if 'identifiers' still references the same list.
+         * Do not invoke getIdentifiers(), because some subclasses like DefaultCitation and
+         * DefaultObjective override getIdentifiers() in order to return a filtered list.
          */
-        final Collection<Identifier> identifiers = getIdentifiers();
+        identifiers = nonNullCollection(identifiers, Identifier.class);
         if (identifiers == null) {
             return IdentifierMapWithSpecialCases.EMPTY;
         }
+        /*
+         * We do not cache (for now) the IdentifierMap because it is cheap to create, and if we were
+         * caching it we would need anyway to check if 'identifiers' still references the same list.
+         */
         return new IdentifierMapWithSpecialCases(identifiers);
+    }
+
+    /**
+     * Returns an identifier unique for the XML document, or {@code null} if none.
+     * This method is invoked automatically by JAXB and should never be invoked explicitely.
+     */
+    @XmlID
+    @XmlAttribute  // Defined in "gco" as unqualified attribute.
+    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+    private String getID() {
+        return isNullOrEmpty(identifiers) ? null : getIdentifierMap().getSpecialized(IdentifierSpace.ID);
+    }
+
+    /**
+     * Sets an identifier unique for the XML document.
+     * This method is invoked automatically by JAXB and should never be invoked explicitely.
+     */
+    private void setID(String id) {
+        id = CharSequences.trimWhitespaces(id);
+        if (id != null && !id.isEmpty()) {
+            getIdentifierMap().putSpecialized(IdentifierSpace.ID, id);
+        }
+    }
+
+    /**
+     * Returns an unique identifier, or {@code null} if none.
+     * This method is invoked automatically by JAXB and should never be invoked explicitely.
+     */
+    @XmlAttribute  // Defined in "gco" as unqualified attribute.
+    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+    private String getUUID() {
+        /*
+         * IdentifierMapWithSpecialCases will take care of converting UUID to String,
+         * or to return a previously stored String if it was an unparsable UUID.
+         */
+        return isNullOrEmpty(identifiers) ? null : getIdentifierMap().get(IdentifierSpace.UUID);
+    }
+
+    /**
+     * Sets an unique identifier.
+     * This method is invoked automatically by JAXB and should never be invoked explicitely.
+     */
+    private void setUUID(final String id) {
+        /*
+         * IdentifierMapWithSpecialCases will take care of converting the String to UUID if possible,
+         * or will store the value as a plain String if it can not be converted. In the later case, a
+         * warning will be emitted (logged or processed by listeners).
+         */
+        getIdentifierMap().put(IdentifierSpace.UUID, id);
     }
 }

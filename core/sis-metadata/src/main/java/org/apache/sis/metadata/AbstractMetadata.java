@@ -112,14 +112,15 @@ public abstract class AbstractMetadata implements LenientComparable {
     }
 
     /**
-     * Returns {@code true} if this metadata contains only {@code null} or empty properties.
-     * A property is considered empty in any of the following cases:
+     * Returns {@code true} if this metadata contains only {@code null},
+     * {@linkplain org.apache.sis.xml.NilObject nil} or empty properties.
+     * A non-null and non-nil property is considered empty in any of the following cases:
      *
      * <ul>
      *   <li>An empty {@linkplain CharSequence character sequences}.</li>
      *   <li>An {@linkplain java.util.Collection#isEmpty() empty collection} or an empty array.</li>
-     *   <li>A collection or array containing only {@code null} or empty elements.</li>
-     *   <li>An other metadata object containing only {@code null} or empty properties.</li>
+     *   <li>A collection or array containing only {@code null}, nil or empty elements.</li>
+     *   <li>An other metadata object containing only {@code null}, nil or empty properties.</li>
      * </ul>
      *
      * Note that empty properties can be removed by calling the {@link ModifiableMetadata#prune()}
@@ -314,13 +315,15 @@ public abstract class AbstractMetadata implements LenientComparable {
 
     /**
      * Computes a hash code value for this metadata using Java reflection. The hash code
-     * is defined as the sum of hash code values of all non-empty properties. This is a
-     * similar contract than {@link java.util.Set#hashCode()} and ensures that the hash code
-     * value is insensitive to the ordering of properties.
+     * is defined as the sum of hash code values of all non-empty properties, excluding
+     * cyclic dependencies. For acyclic metadata, this method contract is compatible with
+     * the {@link java.util.Set#hashCode()} one and ensures that the hash code value is
+     * insensitive to the ordering of properties.
      *
      * {@note This method does not cache the value because current implementation has no notification
      *        mechanism for tracking changes in children properties. If this metadata is known to be
-     *        immutable, then subclasses may consider caching the hash code value at their choice.}
+     *        immutable, then subclasses may consider caching the hash code value if performance is
+     *        important.}
      *
      * @see MetadataStandard#hashCode(Object)
      */

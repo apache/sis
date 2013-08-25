@@ -118,7 +118,7 @@
     @XmlJavaTypeAdapter(LocaleAdapter.class),
     @XmlJavaTypeAdapter(StringAdapter.class),
     @XmlJavaTypeAdapter(InternationalStringAdapter.class),
-//    @XmlJavaTypeAdapter(GO_DateTime.class), // TODO
+    @XmlJavaTypeAdapter(GO_DateTime.class),
     @XmlJavaTypeAdapter(GO_Boolean.class), @XmlJavaTypeAdapter(type=boolean.class, value=GO_Boolean.class),
     @XmlJavaTypeAdapter(GO_Integer.class), @XmlJavaTypeAdapter(type=int.class,     value=GO_Integer.class)
 })

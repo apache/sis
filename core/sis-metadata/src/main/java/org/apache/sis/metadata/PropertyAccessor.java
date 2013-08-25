@@ -82,7 +82,7 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * @module
  */
 @ThreadSafe
-final class PropertyAccessor {
+class PropertyAccessor {
     /**
      * Getters shared between many instances of this class. Two different implementations
      * may share the same getters but different setters.
@@ -535,7 +535,7 @@ final class PropertyAccessor {
      * @param  policy The kind of type to return.
      * @return The type of property values, or {@code null} if unknown.
      */
-    final Class<?> type(final int index, final TypeValuePolicy policy) {
+    Class<?> type(final int index, final TypeValuePolicy policy) {
         if (index >= 0 && index < standardCount) {
             switch (policy) {
                 case ELEMENT_TYPE: {
@@ -633,7 +633,7 @@ final class PropertyAccessor {
      * @return The value, or {@code null} if none or if the given is out of bounds.
      * @throws BackingStoreException If the implementation threw a checked exception.
      */
-    final Object get(final int index, final Object metadata) throws BackingStoreException {
+    Object get(final int index, final Object metadata) throws BackingStoreException {
         return (index >= 0 && index < standardCount) ? get(getters[index], metadata) : null;
     }
 
@@ -680,7 +680,7 @@ final class PropertyAccessor {
      *                        new collection in their existing instance.</li>
      *   <li>APPEND:          Set the value only if it doesn't overwrite an existing value, then returns
      *                        {@link Boolean#TRUE} if the metadata changed as a result of this method call,
-     *                        {@code Boolean#FALSE} if the metadata didn't changed or {@code null} if the
+     *                        {@link Boolean#FALSE} if the metadata didn't changed or {@code null} if the
      *                        value can not be set because an other value already exists.</li>
      * </ul>
      *
@@ -704,7 +704,7 @@ final class PropertyAccessor {
      * @throws ClassCastException if the given value is not of the expected type.
      * @throws BackingStoreException if the implementation threw a checked exception.
      */
-    final Object set(final int index, final Object metadata, final Object value, final int mode)
+    Object set(final int index, final Object metadata, final Object value, final int mode)
             throws UnmodifiableMetadataException, ClassCastException, BackingStoreException
     {
         if (index < 0 || index >= standardCount) {
@@ -884,9 +884,7 @@ final class PropertyAccessor {
                 // Other cases: let the collection unchanged. It is likely to
                 // cause an exception later. The message should be appropriate.
             }
-            // Getter type (targetType) shall be the same than the setter type (elementType).
-            assert elementType == Numbers.primitiveToWrapper(targetType) : elementType;
-            targetType = elementType; // Ensure that we use primitive wrapper.
+            targetType = Numbers.primitiveToWrapper(targetType);
         } else {
             /*
              * We expect a collection. Collections are handled in one of the two ways below:
@@ -1082,47 +1080,6 @@ final class PropertyAccessor {
             }
         }
         return true;
-    }
-
-    /**
-     * Appends all non-empty metadata from source to target. The source can be any implementation
-     * of the metadata interface, but the target must be the implementation expected by this class.
-     *
-     * <p>If the source contains any null or empty properties, then those properties will
-     * not overwrite the corresponding properties in the destination metadata.</p>
-     *
-     * @param  source The metadata to copy.
-     * @param  target The target metadata where to append.
-     * @return {@code true} in case of success, or {@code false} if at least
-     *         one setter method was not found.
-     * @throws UnmodifiableMetadataException if the target metadata is unmodifiable.
-     * @throws BackingStoreException If the implementation threw a checked exception.
-     */
-    public boolean append(final Object source, final Object target)
-            throws UnmodifiableMetadataException, BackingStoreException
-    {
-        // Because this PropertyAccesssor is designed for the target, we must
-        // check if the extra methods are suitable for the source object.
-        assert type.isInstance(source) : Classes.getClass(source);
-        boolean success = true;
-        final Object[] arguments = new Object[1];
-        for (int i=0; i<standardCount; i++) {
-            final Method getter = getters[i];
-            arguments[0] = get(getter, source);
-            if (!isNullOrEmpty(arguments[0])) {
-                if (setters == null) {
-                    return false;
-                }
-                final Method setter = setters[i];
-                if (setter != null) {
-                    convert(getter, target, null, arguments, elementTypes[i], true);
-                    set(setter, target, arguments);
-                } else {
-                    success = false;
-                }
-            }
-        }
-        return success;
     }
 
     /**

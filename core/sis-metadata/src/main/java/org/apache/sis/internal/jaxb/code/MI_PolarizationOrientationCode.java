@@ -16,10 +16,10 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
-import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
-import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.content.PolarizationOrientation;
+import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
+import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
 import org.apache.sis.xml.Namespaces;
 
 
@@ -37,13 +37,6 @@ import org.apache.sis.xml.Namespaces;
 public final class MI_PolarizationOrientationCode
         extends CodeListAdapter<MI_PolarizationOrientationCode, PolarizationOrientation>
 {
-    /**
-     * Ensures that the adapted code list class is loaded.
-     */
-    static {
-        ensureClassLoaded(PolarizationOrientation.class);
-    }
-
     /**
      * Empty constructor for JAXB only.
      */

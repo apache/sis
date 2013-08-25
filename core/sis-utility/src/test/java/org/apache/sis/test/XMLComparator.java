@@ -30,7 +30,6 @@ import java.io.IOException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-
 import org.w3c.dom.Attr;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Comment;
@@ -41,7 +40,6 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.ProcessingInstruction;
 import org.w3c.dom.Text;
 import org.xml.sax.SAXException;
-
 import org.apache.sis.util.ArgumentChecks;
 
 import static java.lang.StrictMath.*;
@@ -60,11 +58,14 @@ import org.apache.sis.internal.jdk7.JDK7;
  * protected methods defined in this class, which can be overridden.
  *
  * <p>By default, this comparator expects the documents to contain the same elements and
- * the same attributes (but the order of attributes may be different). However it is
- * possible to:</p>
+ * the same attributes (but the order of attributes may be different).
+ * However it is possible to:</p>
  *
  * <ul>
+ *   <li>Specify whether comments shall be ignored (see {@link #ignoreComments})</li>
  *   <li>Specify attributes to ignore in comparisons (see {@link #ignoredAttributes})</li>
+ *   <li>Specify nodes to ignore, including children (see {@link #ignoredNodes})</li>
+ *   <li>Specify a tolerance threshold for comparisons of numerical values (see {@link #tolerance})</li>
  * </ul>
  *
  * @author  Johann Sorel (Geomatys)
@@ -72,6 +73,9 @@ import org.apache.sis.internal.jdk7.JDK7;
  * @since   0.3 (derived from geotk-3.17)
  * @version 0.3
  * @module
+ *
+ * @see XMLTestCase
+ * @see Assert#assertXmlEquals(Object, Object, String[])
  */
 public strictfp class XMLComparator {
     /**

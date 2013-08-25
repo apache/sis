@@ -88,17 +88,19 @@ public class DefaultPlan extends ISOMetadata implements Plan {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Plan)
      */
     public DefaultPlan(final Plan object) {
         super(object);
-        type                  = object.getType();
-        status                = object.getStatus();
-        citation              = object.getCitation();
-        operations            = copyCollection(object.getOperations(), Operation.class);
-        satisfiedRequirements = copyCollection(object.getSatisfiedRequirements(), Requirement.class);
+        if (object != null) {
+            type                  = object.getType();
+            status                = object.getStatus();
+            citation              = object.getCitation();
+            operations            = copyCollection(object.getOperations(), Operation.class);
+            satisfiedRequirements = copyCollection(object.getSatisfiedRequirements(), Requirement.class);
+        }
     }
 
     /**
@@ -129,6 +131,8 @@ public class DefaultPlan extends ISOMetadata implements Plan {
     /**
      * Returns the manner of sampling geometry that the planner expects for collection of
      * objective data. {@code null} if unspecified.
+     *
+     * @return Manner of sampling geometry, or {@code null}.
      */
     @Override
     @XmlElement(name = "type")
@@ -149,6 +153,8 @@ public class DefaultPlan extends ISOMetadata implements Plan {
 
     /**
      * Returns the current status of the plan (pending, completed, etc.)
+     *
+     * @return Current status of the plan, or {@code null}.
      */
     @Override
     @XmlElement(name = "status", required = true)
@@ -168,6 +174,8 @@ public class DefaultPlan extends ISOMetadata implements Plan {
 
     /**
      * Returns the identification of authority requesting target collection.
+     *
+     * @return Identification of authority requesting target collection, or {@code null}.
      */
     @Override
     @XmlElement(name = "citation", required = true)
@@ -187,6 +195,8 @@ public class DefaultPlan extends ISOMetadata implements Plan {
 
     /**
      * Returns the identification of the activity or activities that satisfy a plan.
+     *
+     * @return Identification of the activity or activities.
      */
     @Override
     @XmlElement(name = "operation")
@@ -205,6 +215,8 @@ public class DefaultPlan extends ISOMetadata implements Plan {
 
     /**
      * Returns the requirement satisfied by the plan.
+     *
+     * @return Requirement satisfied by the plan.
      */
     @Override
     @XmlElement(name = "satisfiedRequirement")

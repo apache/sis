@@ -73,15 +73,17 @@ public class DefaultProcessStepReport extends ISOMetadata implements ProcessStep
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from.
+     * @param object The metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(ProcessStepReport)
      */
     public DefaultProcessStepReport(final ProcessStepReport object) {
         super(object);
-        name        = object.getName();
-        description = object.getDescription();
-        fileType    = object.getFileType();
+        if (object != null) {
+            name        = object.getName();
+            description = object.getDescription();
+            fileType    = object.getFileType();
+        }
     }
 
     /**
@@ -111,6 +113,8 @@ public class DefaultProcessStepReport extends ISOMetadata implements ProcessStep
 
     /**
      * Returns the name of the processing report.
+     *
+     * @return Name of the processing report, or {@code null}.
      */
     @Override
     @XmlElement(name = "name", namespace = Namespaces.GMI, required = true)
@@ -130,7 +134,8 @@ public class DefaultProcessStepReport extends ISOMetadata implements ProcessStep
 
     /**
      * Returns the textual description of what occurred during the process step.
-     * Returns {@code null} if unspecified.
+     *
+     * @return What occurred during the process step, or {@code null}.
      */
     @Override
     @XmlElement(name = "description", namespace = Namespaces.GMI)
@@ -149,7 +154,9 @@ public class DefaultProcessStepReport extends ISOMetadata implements ProcessStep
     }
 
     /**
-     * Returns the type of file that contains the processing report. {@code null} if unspecified.
+     * Returns the type of file that contains the processing report.
+     *
+     * @return Type of file that contains the processing report, or {@code null}.
      */
     @Override
     @XmlElement(name = "fileType", namespace = Namespaces.GMI)

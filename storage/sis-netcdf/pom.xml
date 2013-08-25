@@ -28,7 +28,7 @@
   <parent>
     <groupId>org.apache.sis</groupId>
     <artifactId>storage</artifactId>
-    <version>0.3-geoapi3.0-SNAPSHOT</version>
+    <version>0.4-SNAPSHOT</version>
   </parent>
 
 
@@ -115,6 +115,7 @@ Bridge between NetCDF Climate and Forecast (CF) convention and ISO 19115 metadat
     <dependency>
       <groupId>edu.ucar</groupId>
       <artifactId>netcdf</artifactId>
+      <optional>true</optional>
     </dependency>
 
     <dependency>

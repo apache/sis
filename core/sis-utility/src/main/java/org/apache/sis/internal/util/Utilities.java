@@ -19,6 +19,7 @@ package org.apache.sis.internal.util;
 import java.util.Formatter;
 import java.util.FormattableFlags;
 import org.apache.sis.util.Static;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.CharSequences;
 
 import static java.lang.Math.abs;
@@ -30,7 +31,7 @@ import static java.lang.Math.max;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 public final class Utilities extends Static {
@@ -114,6 +115,37 @@ public final class Utilities extends Static {
         return (v1 instanceof Float || v1 instanceof Double) &&
                (v2 instanceof Float || v2 instanceof Double) &&
                epsilonEqual(((Number) v1).doubleValue(), ((Number) v2).doubleValue());
+    }
+
+    /**
+     * Returns a string representation of an instance of the given class having the given properties.
+     * This is a convenience method for implementation of {@link Object#toString()} methods that are
+     * used mostly for debugging purpose.
+     *
+     * @param  classe     The class to format.
+     * @param  properties The (<var>key</var>=</var>value</var>) pairs.
+     * @return A string representation of an instance of the given class having the given properties.
+     *
+     * @since 0.4
+     */
+    public static String toString(final Class<?> classe, final Object... properties) {
+        final StringBuffer buffer = new StringBuffer(32).append(Classes.getShortName(classe)).append('[');
+        boolean isNext = false;
+        for (int i=0; i<properties.length; i++) {
+            final Object value = properties[++i];
+            if (value != null) {
+                if (isNext) {
+                    buffer.append(", ");
+                }
+                buffer.append(properties[i-1]).append('=');
+                final boolean isText = (value instanceof CharSequence);
+                if (isText) buffer.append('“');
+                buffer.append(value);
+                if (isText) buffer.append('”');
+                isNext = true;
+            }
+        }
+        return buffer.append(']').toString();
     }
 
     /**

@@ -50,9 +50,11 @@ public class RS_ReferenceSystem extends PropertyType<RS_ReferenceSystem, Referen
     }
 
     /**
-     * Constructor for the {@link #wrap} method only.
+     * Wraps a Reference System value in a {@code MD_ReferenceSystem} element at marshalling-time.
+     *
+     * @param metadata The metadata value to marshal.
      */
-    RS_ReferenceSystem(final ReferenceSystem metadata) {
+    protected RS_ReferenceSystem(final ReferenceSystem metadata) {
         super(metadata);
     }
 
