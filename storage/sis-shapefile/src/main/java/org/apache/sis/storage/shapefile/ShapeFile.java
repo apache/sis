@@ -31,6 +31,9 @@ import com.esri.core.geometry.Polygon;
 import com.esri.core.geometry.Polyline;
 //import org.apache.sis.internal.storage.ChannelImageInputStream;
 
+import org.apache.sis.storage.DataStoreException;
+
+
 
 /**
  * Provides a ShapeFile Reader
@@ -69,7 +72,7 @@ public class ShapeFile {
 	
 	
 	
-	public ShapeFile(String shpfile) throws IOException {
+	public ShapeFile(String shpfile) throws IOException, DataStoreException {
 			
 		FileInputStream fis = new FileInputStream(shpfile);
 		FileChannel fc = fis.getChannel();
@@ -171,10 +174,7 @@ public class ShapeFile {
 				int NumPoints = rf.getInt();
 				
 				if (NumParts > 1) {
-					// not implemented yet
-					// TODO: throw an exception
-					System.out.println("Not implemented yet.");
-					System.exit(-1);
+                    throw new DataStoreException("Polygons with multiple linear rings have not implemented yet.");
 				}
 				
 				// read the one part 
@@ -232,10 +232,7 @@ public class ShapeFile {
 				f.setGeom(ply);
 				
 			} else {
-				// TODO: throw an exception
-				System.out.println("Unsupported shapefile type");
-				System.out.println(this.ShapeType);
-				System.exit(-1);
+                throw new DataStoreException("Unsupported shapefile type: " + this.ShapeType);
 			}
 			
 			rf.order(ByteOrder.BIG_ENDIAN);
