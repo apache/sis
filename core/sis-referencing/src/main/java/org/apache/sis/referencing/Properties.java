@@ -298,7 +298,9 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
         @Override
         public Entry<String, Object> next() {
             if (hasNext()) {
-                return new SimpleImmutableEntry<>(KEYS[nextIndex-1], value);
+                final Entry<String, Object> entry = new SimpleImmutableEntry<>(KEYS[nextIndex-1], value);
+                value = null; // For forcing the next call to 'hasNext()' to increment 'nextIndex'.
+                return entry;
             }
             throw new NoSuchElementException();
         }
