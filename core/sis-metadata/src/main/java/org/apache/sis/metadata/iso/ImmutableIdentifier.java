@@ -38,8 +38,8 @@ import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.iso.DefaultInternationalString;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.jaxb.metadata.CI_Citation;
-import org.apache.sis.internal.jaxb.metadata.ReferenceSystemMetadata;
 import org.apache.sis.internal.jaxb.gco.StringAdapter;
+import org.apache.sis.internal.simple.SimpleIdentifiedObject;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.opengis.referencing.IdentifiedObject.REMARKS_KEY;
@@ -502,6 +502,6 @@ public class ImmutableIdentifier implements ReferenceIdentifier, Deprecable, Ser
      */
     @Override
     public String toString() {
-        return ReferenceSystemMetadata.toString("IDENTIFIER", authority, codeSpace, code, isDeprecated());
+        return SimpleIdentifiedObject.toString("IDENTIFIER", authority, codeSpace, code, isDeprecated());
     }
 }

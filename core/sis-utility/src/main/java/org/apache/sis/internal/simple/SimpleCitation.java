@@ -20,7 +20,6 @@ import java.util.Date;
 import java.util.Collection;
 import java.util.Collections;
 import java.io.Serializable;
-
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
@@ -36,7 +35,7 @@ import java.util.Objects;
 
 
 /**
- * A trivial implementation of {@link Citation}.
+ * A trivial implementation of {@link Citation} containing only a title.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.19)
@@ -65,6 +64,8 @@ public class SimpleCitation implements Citation, Serializable {
 
     /**
      * Returns the title as an international string.
+     *
+     * @return The title given at construction time.
      */
     @Override
     public InternationalString getTitle() {
@@ -75,6 +76,8 @@ public class SimpleCitation implements Citation, Serializable {
      * Methods inherited from the {@link Citation} interface which are
      * not of interest to this {@code SimpleCitation} implementation.
      * Those methods will be removed in the JDK8 branch.
+     *
+     * @return An empty list.
      */
     @Override public Collection<InternationalString>  getAlternateTitles()         {return Collections.emptyList();}
     @Override public Collection<CitationDate>         getDates()                   {return Collections.emptyList();}
