@@ -16,19 +16,10 @@
  */
 
 /**
- * French extensions defined by the <cite>Association Française de Normalisation</cite> (AFNOR).
- *
- * {@section Historical note}
- * The French profile also added two properties to the ISO 19115:2003 standard.
- * Equivalent properties have been added to the 2013 revision of ISO 19115,
- * so the French profile should not be needed anymore except for compatibility with oldest specifications.
- * The following table lists the French extentions and their replacement in the newer ISO standard:
- *
- * <table class="sis">
- *   <tr><th>French profile</th> <th>ISO 19115:2013 equivalent</th></tr>
- *   <tr><td>{@code FRA_DataIdentification.relatedCitation}</td> <td>MD_Identification.additionalDocumentation</td></tr>
- *   <tr><td>{@code FRA_Constraints.citation}</td> <td>MD_Constraints.reference</td></tr>
- * </table>
+ * French extensions defined by the <cite>Association Française de Normalisation</cite> (AFNOR)
+ * which are now incorporated in latest ISO standard. We provide those extensions in an internal
+ * package because they should not be needed anymore except for backward compatibility with old
+ * standard.
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)
@@ -38,10 +29,16 @@
  */
 @XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.FRA)
 @XmlAccessorType(XmlAccessType.NONE)
-package org.apache.sis.profile.fra;
+@XmlJavaTypeAdapters({
+    @XmlJavaTypeAdapter(CI_Citation.class)
+})
+package org.apache.sis.internal.profile.fra;
 
 import javax.xml.bind.annotation.XmlSchema;
 import javax.xml.bind.annotation.XmlNsForm;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
+import org.apache.sis.internal.jaxb.metadata.CI_Citation;
 import org.apache.sis.xml.Namespaces;

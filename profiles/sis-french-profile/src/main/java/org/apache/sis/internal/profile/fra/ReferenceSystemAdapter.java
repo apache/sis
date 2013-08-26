@@ -35,11 +35,11 @@ import org.apache.sis.internal.jaxb.metadata.ReferenceSystemMetadata;
  * @since   0.4
  * @module
  */
-public final class FRA_ReferenceSystemAdapter extends RS_ReferenceSystem implements AdapterReplacement {
+public final class ReferenceSystemAdapter extends RS_ReferenceSystem implements AdapterReplacement {
     /**
      * Empty constructor for JAXB only.
      */
-    public FRA_ReferenceSystemAdapter() {
+    public ReferenceSystemAdapter() {
     }
 
     /**
@@ -47,7 +47,7 @@ public final class FRA_ReferenceSystemAdapter extends RS_ReferenceSystem impleme
      *
      * @param metadata The metadata value to marshall.
      */
-    private FRA_ReferenceSystemAdapter(final ReferenceSystem metadata) {
+    private ReferenceSystemAdapter(final ReferenceSystem metadata) {
         super(metadata);
     }
 
@@ -79,7 +79,7 @@ public final class FRA_ReferenceSystemAdapter extends RS_ReferenceSystem impleme
      */
     @Override
     protected RS_ReferenceSystem wrap(ReferenceSystem value) {
-        return new FRA_ReferenceSystemAdapter(value);
+        return new ReferenceSystemAdapter(value);
     }
 
     /**
