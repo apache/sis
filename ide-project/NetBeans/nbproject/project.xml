@@ -32,6 +32,7 @@
                 <root id="src.referencing.dir" name="Referencing"/>
                 <root id="src.metadata.dir" name="Metadata"/>
                 <root id="src.utility.dir" name="Utility"/>
+                <root id="src.fra-profile.dir" name="French profile"/>
             </source-roots>
             <test-roots>
                 <root id="test.console.dir" name="Test Console"/>
@@ -41,6 +42,7 @@
                 <root id="test.referencing.dir" name="Test Referencing"/>
                 <root id="test.metadata.dir" name="Test Metadata"/>
                 <root id="test.utility.dir" name="Test Utility"/>
+                <root id="test.fra-profile.dir" name="Test French profile"/>
             </test-roots>
         </data>
         <spellchecker-wordlist xmlns="http://www.netbeans.org/ns/spellchecker-wordlist/1">

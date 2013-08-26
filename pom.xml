@@ -630,12 +630,12 @@ Apache SIS is a free software, Java language library for developing geospatial a
               <packages>org.apache.sis.storage*:org.apache.sis.index*</packages>
             </group>
             <group>
-              <title>Geometry</title>
-              <packages>org.apache.sis.geometry*</packages>
+              <title>Feature and Geometry</title>
+              <packages>org.apache.sis.feature*:org.apache.sis.geometry*</packages>
             </group>
             <group>
               <title>Referencing</title>
-              <packages>org.apache.sis.referencing*:org.apache.sis.parameter*</packages>
+              <packages>org.apache.sis.referencing*:org.apache.sis.parameter*:org.apache.sis.io.wkt</packages>
             </group>
             <group>
               <title>Metadata</title>
@@ -643,7 +643,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
             </group>
             <group>
               <title>Utilities</title>
-              <packages>org.apache.sis.math*:org.apache.sis.measure*:org.apache.sis.util*:org.apache.sis.io*:org.apache.sis.xml*:org.apache.sis.setup*</packages>
+              <packages>org.apache.sis.math*:org.apache.sis.measure*:org.apache.sis.util*:org.apache.sis.io:org.apache.sis.xml*:org.apache.sis.setup*</packages>
             </group>
           </groups>
 
@@ -747,6 +747,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
     <module>core</module>
     <module>storage</module>
     <module>application</module>
+    <module>profiles</module>
   </modules>
 
 </project>

@@ -85,6 +85,8 @@ public class SimpleReferenceIdentifier implements ReferenceIdentifier, Serializa
      * bibliographical reference to an international standard such as ISO 19115.
      *
      * <p>The default implementation returns the citation specified at construction time;</p>
+     *
+     * @return The authority given at construction time, or {@code null} if none.
      */
     @Override
     public Citation getAuthority() {
@@ -95,6 +97,8 @@ public class SimpleReferenceIdentifier implements ReferenceIdentifier, Serializa
      * Returns the name or identifier of the person or organization responsible for namespace,
      * or {@code null} if none. The default implementation returns the shortest identifier of
      * the {@linkplain #getAuthority() authority}, if any.
+     *
+     * @return A code space inferred from the authority given at construction time, or {@code null} if none.
      */
     @Override
     public String getCodeSpace() {
@@ -107,6 +111,8 @@ public class SimpleReferenceIdentifier implements ReferenceIdentifier, Serializa
      * referenced by the {@linkplain #getAuthority() authority} citation.
      *
      * <p>The default implementation returns the code specified at construction time;</p>
+     *
+     * @return The code given at construction time, or {@code null} if none.
      */
     @Override
     public String getCode() {
@@ -117,6 +123,8 @@ public class SimpleReferenceIdentifier implements ReferenceIdentifier, Serializa
      * Version identifier for the namespace, as specified by the code authority.
      * When appropriate, the edition is identified by the effective date, coded
      * using ISO 8601 date format.
+     *
+     * @return A version inferred from the authority given at construction time, or {@code null} if none.
      */
     @Override
     public String getVersion() {
