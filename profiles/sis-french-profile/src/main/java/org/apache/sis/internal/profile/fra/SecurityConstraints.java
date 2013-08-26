@@ -14,25 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.profile.fra;
+package org.apache.sis.internal.profile.fra;
 
 import java.util.Collection;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.constraint.LegalConstraints;
-import org.apache.sis.metadata.iso.constraint.DefaultLegalConstraints;
+import org.apache.sis.metadata.iso.constraint.DefaultSecurityConstraints;
 
 
 /**
- * AFNOR extension to ISO {@link LegalConstraints}.
- * The following schema fragment specifies the expected content contained within this class.
+ * AFNOR extension to ISO {@link SecurityConstraints}.
+ * This extension adds a {@link #getCitations()} property citing the documents that specify the constraints.
+ * In the 2013 revision of ISO 19115, this property is available as {@link #getReferences()}.
+ *
+ * <p>The following schema fragment specifies the expected content contained within this class.</p>
  *
  * {@preformat xml
- *   <complexType name="FRA_LegalConstraints_Type">
+ *   <complexType name="FRA_SecurityConstraints_Type">
  *     <complexContent>
- *       <extension base="{http://www.isotc211.org/2005/gmd}MD_LegalConstraints_Type">
+ *       <extension base="{http://www.isotc211.org/2005/gmd}MD_SecurityConstraints_Type">
  *         <sequence>
  *           <element name="citation" type="{http://www.isotc211.org/2005/gmd}CI_Citation_PropertyType" maxOccurs="unbounded" minOccurs="0"/>
  *         </sequence>
@@ -48,13 +50,13 @@ import org.apache.sis.metadata.iso.constraint.DefaultLegalConstraints;
  * @since   0.4
  * @module
  */
-@XmlType(name = "FRA_LegalConstraints_Type")
-@XmlRootElement(name="FRA_LegalConstraints")
-public class FRA_LegalConstraints extends DefaultLegalConstraints {
+@XmlType(name = "FRA_SecurityConstraints_Type")
+@XmlRootElement(name = "FRA_SecurityConstraints")
+public class SecurityConstraints extends DefaultSecurityConstraints {
     /**
      * For serialization purpose.
      */
-    private static final long serialVersionUID = -4139267154783806229L;
+    private static final long serialVersionUID = 1060402314281487284L;
 
     /**
      * The documents that specifies the nature of the constraints.
@@ -64,16 +66,7 @@ public class FRA_LegalConstraints extends DefaultLegalConstraints {
     /**
      * Constructs an initially empty constraints.
      */
-    public FRA_LegalConstraints() {
-    }
-
-    /**
-     * Constructs a metadata entity initialized with the values from the specified metadata.
-     *
-     * @param source The metadata to copy.
-     */
-    public FRA_LegalConstraints(final LegalConstraints source) {
-        super(source);
+    public SecurityConstraints() {
     }
 
     /**

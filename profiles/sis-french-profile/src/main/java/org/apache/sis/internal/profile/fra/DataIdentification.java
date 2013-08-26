@@ -14,20 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.profile.fra;
+package org.apache.sis.internal.profile.fra;
 
 import java.util.Collection;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.identification.DataIdentification;
 import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
 
 
 /**
  * AFNOR extension to ISO {@link DataIdentification}.
- * The following schema fragment specifies the expected content contained within this class.
+ * This extension adds a {@link #getRelatedCitations()} property citing the documents that specify the constraints.
+ * In the 2013 revision of ISO 19115, this property is available as {@link #getAdditionalDocumentations()}.
+ *
+ * <p>The following schema fragment specifies the expected content contained within this class.</p>
  *
  * {@preformat xml
  *   <complexType name="FRA_DataIdentification_Type">
@@ -49,7 +51,7 @@ import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
  */
 @XmlType(name = "FRA_DataIdentification_Type")
 @XmlRootElement(name ="FRA_DataIdentification")
-public class FRA_DataIdentification extends DefaultDataIdentification {
+public class DataIdentification extends DefaultDataIdentification {
     /**
      * For serialization purpose.
      */
@@ -63,16 +65,7 @@ public class FRA_DataIdentification extends DefaultDataIdentification {
     /**
      * Constructs an initially empty data identification.
      */
-    public FRA_DataIdentification() {
-    }
-
-    /**
-     * Constructs a metadata entity initialized with the values from the specified metadata.
-     *
-     * @param source The metadata to copy.
-     */
-    public FRA_DataIdentification(final DataIdentification source) {
-        super(source);
+    public DataIdentification() {
     }
 
     /**
