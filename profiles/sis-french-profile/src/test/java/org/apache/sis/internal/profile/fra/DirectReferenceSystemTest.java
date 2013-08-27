@@ -34,7 +34,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
 /**
- * Tests (un)marshalling of French profile of metadata.
+ * Tests (un)marshalling of French profile of reference system.
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)
