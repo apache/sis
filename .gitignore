@@ -1,0 +1,28 @@
+# Eclipse IDE files
+.classpath
+.project
+.settings/
+
+# Maven output
+target/
+
+# Apple 
+.DS_Store
+*.tmp
+tmp/
+*.log
+*.orig
+
+# Old SVN files
+.svn/
+
+
+nbactions.xml
+nbproject
+
+# Intellij files
+*.iml
+*.ipr
+*.iws
+.idea/
+
