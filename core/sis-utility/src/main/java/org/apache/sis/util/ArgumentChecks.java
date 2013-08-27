@@ -79,7 +79,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.17)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 public final class ArgumentChecks extends Static {
@@ -534,13 +534,30 @@ public final class ArgumentChecks extends Static {
     }
 
     /**
+     * Ensures that the given integer is a valid Unicode code point. The range of valid code points goes
+     * from {@link Character#MIN_CODE_POINT U+0000} to {@link Character#MAX_CODE_POINT U+10FFFF} inclusive.
+     *
+     * @param  name The name of the argument to be checked. Used only if an exception is thrown.
+     * @param  code The Unicode code point to verify.
+     * @throws IllegalArgumentException if the given value is not a valid Unicode code point.
+     *
+     * @since 0.4
+     */
+    public static void ensureValidUnicodeCodePoint(final String name, final int code) throws IllegalArgumentException {
+        if (!Character.isValidCodePoint(code)) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalUnicodeCodePoint_2, name,
+                    (code < Character.MIN_CODE_POINT) ? code : "U+" + Integer.toHexString(code).toUpperCase()));
+        }
+    }
+
+    /**
      * Ensures that the given CRS, if non-null, has the expected number of dimensions.
      * This method does nothing if the given coordinate reference system is null.
      *
      * @param  name     The name of the argument to be checked. Used only if an exception is thrown.
      * @param  expected The expected number of dimensions.
      * @param  crs      The coordinate reference system to check for its dimension, or {@code null}.
-     * @throws MismatchedDimensionException If the given coordinate reference system is non-null
+     * @throws MismatchedDimensionException if the given coordinate reference system is non-null
      *         and does not have the expected number of dimensions.
      */
     public static void ensureDimensionMatches(final String name, final int expected,

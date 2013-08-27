@@ -25,13 +25,22 @@ import org.apache.sis.util.ArgumentChecks;
 
 
 /**
- * List some namespaces URLs used by JAXB when (un)marshalling.
+ * Lists some namespaces URLs used by JAXB when (un)marshalling.
+ *
+ * {@section Profiles}
+ * Some countries or organizations define profiles of international standards, which may contain
+ * country-specific extensions. The namespace of such extensions are usually defined in a separated
+ * class dedicated to the profile. Some of them are listed below:
+ *
+ * <ul>
+ *   <li>{@value org.apache.sis.profile.france.FrenchProfile#NAMESPACE}</li>
+ * </ul>
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Quentin Boileau (Geomatys)
  * @author  Guilhem Legal (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 public final class Namespaces extends Static {
@@ -129,14 +138,6 @@ public final class Namespaces extends Static {
      * @category W3C
      */
     public static final String XLINK = "http://www.w3.org/1999/xlink";
-
-    /**
-     * The <code>{@value}</code> URL.
-     * The usual prefix for this namespace is {@code "fra"}.
-     *
-     * @category Profiles
-     */
-    public static final String FRA = "http://www.cnig.gouv.fr/2005/fra";
 
     /**
      * URLs for which the prefix to use directly follows them.

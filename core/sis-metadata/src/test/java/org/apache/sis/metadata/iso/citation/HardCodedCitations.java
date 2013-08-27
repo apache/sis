@@ -16,9 +16,12 @@
  */
 package org.apache.sis.metadata.iso.citation;
 
+import java.net.URI;
 import java.util.Collection;
 import org.opengis.metadata.Identifier;
+import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.Citation;
+import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.citation.PresentationForm;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.util.iso.SimpleInternationalString;
@@ -37,7 +40,7 @@ import static java.util.Collections.singleton;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.4)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 public final strictfp class HardCodedCitations extends Static {
@@ -91,10 +94,19 @@ public final strictfp class HardCodedCitations extends Static {
      */
     public static final DefaultCitation EPSG;
     static {
-        final DefaultCitation c = new DefaultCitation("European Petroleum Survey Group");
+        final SimpleInternationalString title = new SimpleInternationalString("European Petroleum Survey Group");
+        final DefaultOnlineResource r = new DefaultOnlineResource(URI.create("http://www.epsg.org"));
+        r.setFunction(OnLineFunction.INFORMATION);
+
+        final DefaultResponsibleParty p = new DefaultResponsibleParty(Role.PRINCIPAL_INVESTIGATOR);
+        p.setOrganisationName(title);
+        p.setContactInfo(new DefaultContact(r));
+
+        final DefaultCitation c = new DefaultCitation(title);
         c.setAlternateTitles(singleton(new SimpleInternationalString("EPSG")));
         c.setPresentationForms(singleton(PresentationForm.TABLE_DIGITAL));
         c.getIdentifiers().add(new DefaultIdentifier("EPSG"));
+        c.getCitedResponsibleParties().add(p);
         c.freeze();
         EPSG = c;
     }

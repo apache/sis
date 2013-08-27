@@ -69,6 +69,13 @@
       </fileset>
     </concat>
 
+    <!-- AdapterReplacement implementations to be loaded by ServiceLoader. -->
+    <concat destfile="${build.classes.dir}/META-INF/services/org.apache.sis.internal.jaxb.AdapterReplacement" encoding="UTF-8" fixlastline="yes">
+      <fileset dir="${project.root}">
+        <include name="*/*/src/main/resources/META-INF/services/org.apache.sis.internal.jaxb.AdapterReplacement"/>
+      </fileset>
+    </concat>
+
     <!-- DataStoreProvider implementations to be loaded by ServiceLoader. -->
     <concat destfile="${build.classes.dir}/META-INF/services/org.apache.sis.storage.DataStoreProvider" encoding="UTF-8" fixlastline="yes">
       <fileset dir="${project.root}">
@@ -83,6 +90,19 @@
   <target name="-post-compile-test">
     <copy todir="${build.test.classes.dir}">
       <fileset dir="${project.root}/core/sis-metadata/src/test/resources">
+        <include name="**/*.xml"/>
+      </fileset>
+    </copy>
+    <copy todir="${build.test.classes.dir}">
+      <fileset dir="${project.root}/storage/sis-shapefile/src/test/resources">
+        <include name="**/*.dbf"/>
+        <include name="**/*.prj"/>
+        <include name="**/*.shp"/>
+        <include name="**/*.shx"/>
+      </fileset>
+    </copy>
+    <copy todir="${build.test.classes.dir}">
+      <fileset dir="${project.root}/profiles/sis-french-profile/src/test/resources">
         <include name="**/*.xml"/>
       </fileset>
     </copy>

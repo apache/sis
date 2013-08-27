@@ -8,5 +8,8 @@ The Javadoc contains documentation from the Open Geospatial Consortium
 (OGC®) specifications (http://www.opengeospatial.org/standards/), also
 known as OpenGIS.
 
-The test suite includes software developed by
-the JUnit community (http://github.com/junit-team/junit.contrib/)
+Some modules use the Esri Geometry API developed by ESRI
+(http://github.com/Esri/geometry-api-java/)
+
+The test suite uses software developed by the JUnit community
+(http://github.com/junit-team/junit.contrib/)
