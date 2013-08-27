@@ -152,7 +152,7 @@ public final strictfp class MetadataStandardTest extends TestCase {
         final Map<String,Object> map = MetadataStandard.ISO_19115.asValueMap(instance,
                 KeyNamePolicy.JAVABEANS_PROPERTY, ValueExistencePolicy.NON_EMPTY);
         assertFalse("The properties map shall not be empty.", map.isEmpty());
-        assertEquals("Unexpected number of properties.", 4, map.size());
+        assertEquals("Unexpected number of properties.", 5, map.size());
         /*
          * Verify the set of keys in the ValueMap.
          *
@@ -161,12 +161,14 @@ public final strictfp class MetadataStandardTest extends TestCase {
          * PropertyAccessorTest.testConstructor().
          */
         final Set<String> keys = map.keySet();
-        assertEquals("[title, alternateTitles, identifiers, presentationForms]", keys.toString());
+        assertEquals("[title, alternateTitles, identifiers, citedResponsibleParties, presentationForms]", keys.toString());
         assertTrue  ("Shall exist and be defined.",   keys.contains("title"));
         assertTrue  ("Shall exist and be defined.",   keys.contains("getTitle"));
         assertTrue  ("Shall exist and be defined.",   keys.contains("identifier"));
         assertTrue  ("Shall exist and be defined.",   keys.contains("identifiers"));
         assertTrue  ("Shall exist and be defined.",   keys.contains("getIdentifiers"));
+        assertTrue  ("Shall exist and be defined.",   keys.contains("citedResponsibleParty"));
+        assertTrue  ("Shall exist and be defined.",   keys.contains("citedResponsibleParties"));
         assertFalse ("Shall exist but be undefined.", keys.contains("ISBN"));
         assertFalse ("Shall not exists.",             keys.contains("dummy"));
         /*

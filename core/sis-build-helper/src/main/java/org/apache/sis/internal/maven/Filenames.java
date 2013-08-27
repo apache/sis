@@ -23,6 +23,10 @@ import java.io.IOException;
 /**
  * Hard-coded file and directory names used by this package.
  *
+ * <p><b>Reminder:</b>
+ * If the above constants are modified, please remind to edit the <cite>Distribution file
+ * and Pack200 bundle</cite> section in the <code>src/site/apt/index.apt</code> file.</p>
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
  * @version 0.4
@@ -30,39 +34,45 @@ import java.io.IOException;
  */
 final class Filenames {
     /**
-     * The target directory.
+     * The target directory. This directory name is hard-coded instead than using a property annotated
+     * by {@code @parameter default-value="${project.build.directory}"} - or alternatively by invoking
+     * {@code MavenProject.getModel().getBuild().getDirectory()}, because we need the target directory
+     * of the project root rather than the directory of the module being built.
      */
     static final String TARGET_DIRECTORY = "target";
 
     /**
-     * The sub-directory (inside {@code target}) for binaries.
+     * The sub-directory inside {@value #TARGET_DIRECTORY} for binaries.
      */
     static final String BINARIES_DIRECTORY = "binaries";
 
     /**
-     * The name of the file where to list SIS JAR files and their dependencies
-     * on platforms that do not support hard links.
+     * The name of the file inside {@value #BINARIES_DIRECTORY} where to list SIS JAR files and their
+     * dependencies on platforms that do not support hard links.
      */
     static final String CONTENT_FILE = "content.txt";
 
     /**
-     * The sub-directory (inside {@code target}) containing pack files.
+     * The sub-directory inside {@value #TARGET_DIRECTORY} containing pack files.
      * This directory will be automatically created if it does not already exist.
      */
     static final String DISTRIBUTION_DIRECTORY = "distribution";
 
     /**
-     * The directory to zip for creating the distribution ZIP file.
+     * The path to the directory (relative to the project root) to zip for creating the distribution ZIP file.
      */
     static final String ARTIFACT_PATH = "application/sis-console/src/main/artifact";
 
     /**
-     * The name of the {@code lib} directory in the artifact.
+     * The name of the sub-directory inside {@value #ARTIFACT_PATH} where the Pack200 file will be located.
+     * Note that we will not write in the real directory, but only in the directory structure which is
+     * reproduced in the ZIP file.
      */
     static final String LIB_DIRECTORY = "lib";
 
     /**
-     * The big JAR file which will contains everything, without extension.
+     * The name (without extension) of the big JAR file which will contains everything.
+     * This file will be located in the {@value #LIB_DIRECTORY} directory.
      */
     static final String FATJAR_FILE = "sis";
 

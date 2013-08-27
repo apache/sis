@@ -38,7 +38,10 @@ import org.junit.BeforeClass;
     org.apache.sis.geometry.GeneralEnvelopeTest.class,
     org.apache.sis.geometry.SubEnvelopeTest.class,
     org.apache.sis.geometry.ImmutableEnvelopeTest.class,
-    org.apache.sis.geometry.Envelope2DTest.class
+    org.apache.sis.geometry.Envelope2DTest.class,
+    org.apache.sis.io.wkt.ConventionTest.class,
+    org.apache.sis.io.wkt.SymbolsTest.class,
+    org.apache.sis.io.wkt.FormatterTest.class
 })
 public final strictfp class ReferencingTestSuite extends TestSuite {
     /**

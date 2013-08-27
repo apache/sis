@@ -34,7 +34,7 @@ import static org.apache.sis.util.CharSequences.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 @DependsOn({
@@ -410,12 +410,14 @@ public final strictfp class CharSequencesTest extends TestCase {
     }
 
     /**
-     * Tests the {@link CharSequences#regionMatches(CharSequence, int, CharSequence)} method.
+     * Tests the {@link CharSequences#regionMatches(CharSequence, int, CharSequence)} and
+     * {@link CharSequences#regionMatches(CharSequence, int, CharSequence, boolean)} methods.
      */
     @Test
     public void testRegionMatches() {
         assertTrue (regionMatches(new StringBuilder("Un chasseur sachant chasser sans son chien"), 12, "sachant"));
         assertFalse(regionMatches(new StringBuilder("Un chasseur sachant chasser sans son chien"), 12, "sacHant"));
+        assertTrue (regionMatches(new StringBuilder("Un chasseur sachant chasser sans son chien"), 12, "sacHant", true));
     }
 
     /**

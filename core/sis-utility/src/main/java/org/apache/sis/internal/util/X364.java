@@ -18,6 +18,7 @@ package org.apache.sis.internal.util;
 
 import java.util.Arrays;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -259,6 +260,7 @@ search: do {
      */
     public static X364 forColorName(String color) throws IllegalArgumentException {
         color = CharSequences.trimWhitespaces(color);
+        ArgumentChecks.ensureNonEmpty("color", color);
         for (final X364 code : NAMED) {
             if (color.equalsIgnoreCase(code.color)) {
                 return code;
