@@ -14,59 +14,57 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.sis.storage.shapefile;
 
 import java.util.HashMap;
 import com.esri.core.geometry.Geometry;
 
-// 
 
 /**
- * Provides a simple Feature class
+ * Provides a simple Feature class.
  *
- * when dealing with codepages, should first check if there is a .cpg file 
- * 
+ * when dealing with codepages, should first check if there is a .cpg file
+ *
+ * @author  Travis L. Pinney
+ * @since   0.4
+ * @version 0.4
+ * @module
+ *
  * @see <a href="http://www.clicketyclick.dk/databases/xbase/format/dbf.html#DBF_STRUCT">Xbase Data file</a>
  */
-
 public class Feature {
-	
-	private HashMap<String, String> record;  
-	private	Geometry geom;
-	
-	
-	public String toString() {
-		StringBuilder sb = new StringBuilder();
-		String lineSeparator = System.getProperty("line.separator", "\n");
-		
-		for (String s : this.record.keySet()) {
-			sb.append(s).append(": ").append(record.get(s)).append(lineSeparator);
-		}
 
-		return sb.toString();
-	}
-	
-	
-	// getters and setters
-	
-	public HashMap<String, String> getRecord() {
-		return record;
-	}
+    private HashMap<String, String> record;
+    private Geometry geom;
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        String lineSeparator = System.getProperty("line.separator", "\n");
+
+        for (String s : this.record.keySet()) {
+            sb.append(s).append(": ").append(record.get(s)).append(lineSeparator);
+        }
+
+        return sb.toString();
+    }
 
 
-	public void setRecord(HashMap<String, String> record) {
-		this.record = record;
-	}
+    // getters and setters
 
+    public HashMap<String, String> getRecord() {
+        return record;
+    }
 
-	public Geometry getGeom() {
-		return geom;
-	}
+    public void setRecord(HashMap<String, String> record) {
+        this.record = record;
+    }
 
+    public Geometry getGeom() {
+        return geom;
+    }
 
-	public void setGeom(Geometry geom) {
-		this.geom = geom;
-	}
-
+    public void setGeom(Geometry geom) {
+        this.geom = geom;
+    }
 }
