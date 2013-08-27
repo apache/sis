@@ -94,6 +94,14 @@
       </fileset>
     </copy>
     <copy todir="${build.test.classes.dir}">
+      <fileset dir="${project.root}/storage/sis-shapefile/src/test/resources">
+        <include name="**/*.dbf"/>
+        <include name="**/*.prj"/>
+        <include name="**/*.shp"/>
+        <include name="**/*.shx"/>
+      </fileset>
+    </copy>
+    <copy todir="${build.test.classes.dir}">
       <fileset dir="${project.root}/profiles/sis-french-profile/src/test/resources">
         <include name="**/*.xml"/>
       </fileset>

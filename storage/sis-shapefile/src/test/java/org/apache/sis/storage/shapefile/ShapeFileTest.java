@@ -14,12 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.shapefile.test;
+package org.apache.sis.storage.shapefile;
 
+import java.io.File;
 import java.io.IOException;
 
+import java.net.URISyntaxException;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.shapefile.ShapeFile;
 import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;
@@ -33,21 +34,25 @@ import static junit.framework.Assert.assertEquals;
  * @module
  */
 public final strictfp class ShapeFileTest {
+    private static String path(final String name) throws IOException, URISyntaxException {
+        return new File(ShapeFileTest.class.getResource(name).toURI()).getPath();
+    }
+
     @Test
-    public void testPolyineCount() throws IOException, DataStoreException {
-        ShapeFile shp = new ShapeFile("data/SignedBikeRoute_4326_clipped.shp");
+    public void testPolyineCount() throws URISyntaxException, IOException, DataStoreException {
+        ShapeFile shp = new ShapeFile(path("SignedBikeRoute_4326_clipped.shp"));
         assertEquals(shp.FeatureMap.size(), shp.FeatureCount);
     }
 
     @Test
-    public void testPolygonCount() throws IOException, DataStoreException {
-        ShapeFile shp = new ShapeFile("data/ANC90Ply_4326.shp");
+    public void testPolygonCount() throws URISyntaxException, IOException, DataStoreException {
+        ShapeFile shp = new ShapeFile(path("ANC90Ply_4326.shp"));
         assertEquals(shp.FeatureMap.size(), shp.FeatureCount);
     }
 
     @Test
-    public void testPointCount() throws IOException, DataStoreException {
-        ShapeFile shp = new ShapeFile("data/ABRALicenseePt_4326_clipped.shp");
+    public void testPointCount() throws URISyntaxException, IOException, DataStoreException {
+        ShapeFile shp = new ShapeFile(path("ABRALicenseePt_4326_clipped.shp"));
         assertEquals(shp.FeatureMap.size(), shp.FeatureCount);
     }
 }
