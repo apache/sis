@@ -20,8 +20,6 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import org.opengis.referencing.ReferenceSystem;
 import org.apache.sis.internal.jaxb.AdapterReplacement;
-import org.apache.sis.profile.fra.FRA_DirectReferenceSystem;
-import org.apache.sis.profile.fra.FRA_IndirectReferenceSystem;
 import org.apache.sis.internal.jaxb.metadata.RS_ReferenceSystem;
 import org.apache.sis.internal.jaxb.metadata.ReferenceSystemMetadata;
 
@@ -91,7 +89,7 @@ public final class ReferenceSystemAdapter extends RS_ReferenceSystem implements 
     public ReferenceSystemMetadata getElement() {
         if (skip()) return null;
         final ReferenceSystem metadata = this.metadata;
-        if (metadata instanceof FRA_DirectReferenceSystem || metadata instanceof FRA_IndirectReferenceSystem) {
+        if (metadata instanceof DirectReferenceSystem || metadata instanceof IndirectReferenceSystem) {
             return null;
         }
         return super.getElement();
@@ -106,8 +104,8 @@ public final class ReferenceSystemAdapter extends RS_ReferenceSystem implements 
     @Override
     public ReferenceSystemMetadata getDirectReferenceSystem() {
         final ReferenceSystem metadata = this.metadata;
-        if (metadata instanceof FRA_DirectReferenceSystem) {
-            return (FRA_DirectReferenceSystem) metadata;
+        if (metadata instanceof DirectReferenceSystem) {
+            return (DirectReferenceSystem) metadata;
         }
         return null;
     }
@@ -121,8 +119,8 @@ public final class ReferenceSystemAdapter extends RS_ReferenceSystem implements 
     @Override
     public ReferenceSystemMetadata getIndirectReferenceSystem() {
         final ReferenceSystem metadata = this.metadata;
-        if (metadata instanceof FRA_IndirectReferenceSystem) {
-            return (FRA_IndirectReferenceSystem) metadata;
+        if (metadata instanceof IndirectReferenceSystem) {
+            return (IndirectReferenceSystem) metadata;
         }
         return null;
     }

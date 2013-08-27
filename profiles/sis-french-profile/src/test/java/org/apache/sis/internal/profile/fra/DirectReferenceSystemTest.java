@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.profile.fra;
+package org.apache.sis.internal.profile.fra;
 
 import java.util.Arrays;
 import java.io.IOException;
@@ -41,7 +41,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @since   0.4
  * @module
  */
-public final strictfp class XMLBindingsTest extends TestCase {
+public final strictfp class DirectReferenceSystemTest extends TestCase {
     /**
      * An XML file representing a reference system tree.
      */
@@ -52,7 +52,7 @@ public final strictfp class XMLBindingsTest extends TestCase {
      */
     private static DefaultMetadata createMetadata() {
         final DefaultMetadata metadata = new DefaultMetadata();
-        final FRA_DirectReferenceSystem refSys = new FRA_DirectReferenceSystem(
+        final DirectReferenceSystem refSys = new DirectReferenceSystem(
                 new DefaultCitation(getSingleton(HardCodedCitations.EPSG.getCitedResponsibleParties())), null, "4326");
         metadata.setReferenceSystemInfo(Arrays.asList(refSys));
         return metadata;
@@ -68,7 +68,7 @@ public final strictfp class XMLBindingsTest extends TestCase {
     @Test
     public void marshallingTest() throws IOException, JAXBException {
         final String actual = XML.marshal(createMetadata());
-        assertXmlEquals(XMLBindingsTest.class.getResource(RESOURCE_FILE), actual, "xmlns:*", "xsi:schemaLocation");
+        assertXmlEquals(DirectReferenceSystemTest.class.getResource(RESOURCE_FILE), actual, "xmlns:*", "xsi:schemaLocation");
     }
 
     /**
@@ -81,7 +81,7 @@ public final strictfp class XMLBindingsTest extends TestCase {
     @Test
     public void unmarshallingTest() throws JAXBException, IOException {
         final DefaultMetadata result;
-        try (InputStream in = XMLBindingsTest.class.getResourceAsStream(RESOURCE_FILE)) {
+        try (InputStream in = DirectReferenceSystemTest.class.getResourceAsStream(RESOURCE_FILE)) {
             result = (DefaultMetadata) XML.unmarshal(in);
         }
         final DefaultMetadata expected = createMetadata();

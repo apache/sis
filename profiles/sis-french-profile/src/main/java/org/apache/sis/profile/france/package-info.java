@@ -26,8 +26,8 @@
  *
  * <table class="sis">
  *   <tr><th>French profile</th> <th>ISO 19115:2013 equivalent</th></tr>
- *   <tr><td>{@code FRA_DataIdentification.relatedCitation}</td> <td>MD_Identification.additionalDocumentation</td></tr>
- *   <tr><td>{@code FRA_Constraints.citation}</td> <td>MD_Constraints.reference</td></tr>
+ *   <tr><td>{@code FRA_DataIdentification.relatedCitation}</td> <td>{@code MD_Identification.additionalDocumentation}</td></tr>
+ *   <tr><td>{@code FRA_Constraints.citation}</td> <td>{@code MD_Constraints.reference}</td></tr>
  * </table>
  *
  * @author  Cédric Briançon (Geomatys)
@@ -36,12 +36,4 @@
  * @since   0.4
  * @module
  */
-@XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.FRA)
-@XmlAccessorType(XmlAccessType.NONE)
-package org.apache.sis.profile.fra;
-
-import javax.xml.bind.annotation.XmlSchema;
-import javax.xml.bind.annotation.XmlNsForm;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import org.apache.sis.xml.Namespaces;
+package org.apache.sis.profile.france;

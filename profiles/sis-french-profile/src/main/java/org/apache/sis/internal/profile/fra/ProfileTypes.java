@@ -18,8 +18,6 @@ package org.apache.sis.internal.profile.fra;
 
 import java.util.Collection;
 import org.apache.sis.internal.jaxb.TypeRegistration;
-import org.apache.sis.profile.fra.FRA_DirectReferenceSystem;
-import org.apache.sis.profile.fra.FRA_IndirectReferenceSystem;
 
 
 /**
@@ -37,7 +35,7 @@ public final class ProfileTypes extends TypeRegistration {
      */
     @Override
     public void getTypes(final Collection<Class<?>> addTo) {
-        addTo.add(FRA_DirectReferenceSystem.class);
-        addTo.add(FRA_IndirectReferenceSystem.class);
+        addTo.add(DirectReferenceSystem.class);
+        addTo.add(IndirectReferenceSystem.class);
     }
 }

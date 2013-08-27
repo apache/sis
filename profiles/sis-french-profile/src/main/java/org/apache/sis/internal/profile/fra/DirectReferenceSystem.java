@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.profile.fra;
+package org.apache.sis.internal.profile.fra;
 
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -46,7 +46,7 @@ import org.apache.sis.internal.jaxb.metadata.ReferenceSystemMetadata;
  */
 @XmlType(name = "FRA_DirectReferenceSystem_Type")
 @XmlRootElement(name= "FRA_DirectReferenceSystem")
-public class FRA_DirectReferenceSystem extends ReferenceSystemMetadata {
+public class DirectReferenceSystem extends ReferenceSystemMetadata {
     /**
      * For serialization purpose.
      */
@@ -55,7 +55,7 @@ public class FRA_DirectReferenceSystem extends ReferenceSystemMetadata {
     /**
      * Empty constructor for JAXB.
      */
-    private FRA_DirectReferenceSystem() {
+    private DirectReferenceSystem() {
     }
 
     /**
@@ -63,7 +63,7 @@ public class FRA_DirectReferenceSystem extends ReferenceSystemMetadata {
      *
      * @param crs The reference system to partially copy.
      */
-    public FRA_DirectReferenceSystem(final ReferenceSystem crs) {
+    public DirectReferenceSystem(final ReferenceSystem crs) {
         super(crs);
     }
 
@@ -72,7 +72,7 @@ public class FRA_DirectReferenceSystem extends ReferenceSystemMetadata {
      *
      * @param identifier The reference system identifier.
      */
-    public FRA_DirectReferenceSystem(final ReferenceIdentifier identifier) {
+    public DirectReferenceSystem(final ReferenceIdentifier identifier) {
         super(identifier);
     }
 
@@ -87,7 +87,7 @@ public class FRA_DirectReferenceSystem extends ReferenceSystemMetadata {
      * @param code
      *          Identifier code or name, optionally from a controlled list or pattern defined by a code space.
      */
-    public FRA_DirectReferenceSystem(final Citation authority, final String codespace, final String code) {
+    public DirectReferenceSystem(final Citation authority, final String codespace, final String code) {
         super(new ImmutableIdentifier(authority, codespace, code));
     }
 }
