@@ -35,7 +35,7 @@
   <!-- ===========================================================
            Module Description
        =========================================================== -->
-  <groupId>org.apache.sis.storage</groupId>
+  <groupId>org.apache.sis.profiles</groupId>
   <artifactId>sis-french-profile</artifactId>
   <packaging>bundle</packaging>
   <name>Apache SIS French profiles</name>
