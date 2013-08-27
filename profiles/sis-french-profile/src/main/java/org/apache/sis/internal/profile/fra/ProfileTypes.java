@@ -35,7 +35,11 @@ public final class ProfileTypes extends TypeRegistration {
      */
     @Override
     public void getTypes(final Collection<Class<?>> addTo) {
+        addTo.add(DataIdentification.class);
         addTo.add(DirectReferenceSystem.class);
         addTo.add(IndirectReferenceSystem.class);
+        addTo.add(Constraints.class);
+        addTo.add(LegalConstraints.class);
+        addTo.add(SecurityConstraints.class);
     }
 }

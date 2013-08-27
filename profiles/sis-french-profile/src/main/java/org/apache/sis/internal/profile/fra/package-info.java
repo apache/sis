@@ -26,6 +26,8 @@
  * @version 0.4 (derived from geotk-3.00)
  * @since   0.4
  * @module
+ *
+ * @see org.apache.sis.profile.france
  */
 @XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.FRA)
 @XmlAccessorType(XmlAccessType.NONE)

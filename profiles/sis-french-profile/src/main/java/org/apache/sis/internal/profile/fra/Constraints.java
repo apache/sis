@@ -70,6 +70,16 @@ public class Constraints extends DefaultConstraints {
     }
 
     /**
+     * Constructs an instance initialized to a copy of the given object.
+     * This constructor does <strong>not</strong> copy the FRA-specific properties.
+     *
+     * @param object The metadata to copy values from, or {@code null} if none.
+     */
+    public Constraints(final org.opengis.metadata.constraint.Constraints object) {
+        super(object);
+    }
+
+    /**
      * Returns the documents that specifies the nature of the constraints.
      *
      * @return Citations to the current documents.

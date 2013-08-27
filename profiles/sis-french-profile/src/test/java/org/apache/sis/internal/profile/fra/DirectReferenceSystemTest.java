@@ -22,6 +22,7 @@ import java.io.InputStream;
 import javax.xml.bind.JAXBException;
 import org.apache.sis.xml.XML;
 import org.apache.sis.metadata.iso.DefaultMetadata;
+import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import org.apache.sis.util.ComparisonMode;
@@ -52,8 +53,8 @@ public final strictfp class DirectReferenceSystemTest extends TestCase {
      */
     private static DefaultMetadata createMetadata() {
         final DefaultMetadata metadata = new DefaultMetadata();
-        final DirectReferenceSystem refSys = new DirectReferenceSystem(
-                new DefaultCitation(getSingleton(HardCodedCitations.EPSG.getCitedResponsibleParties())), null, "4326");
+        final DirectReferenceSystem refSys = new DirectReferenceSystem(new ImmutableIdentifier(
+                new DefaultCitation(getSingleton(HardCodedCitations.EPSG.getCitedResponsibleParties())), null, "4326"));
         metadata.setReferenceSystemInfo(Arrays.asList(refSys));
         return metadata;
     }
