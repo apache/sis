@@ -27,7 +27,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 /**
  * Static methods working on {@linkplain CoordinateReferenceSystem Coordinate Reference Systems}.
  *
- * @author Martin Desruisseaux (IRD, Geomatys)
+ * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.1)
  * @version 0.3
  * @module

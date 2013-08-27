@@ -104,6 +104,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int CanNotRead_1 = 108;
 
         /**
+         * Can not represent “{1}” in the {0} format.
+         */
+        public static final int CanNotRepresentInFormat_2 = 110;
+
+        /**
          * Can not set a value for property “{0}”.
          */
         public static final int CanNotSetPropertyValue_1 = 75;
@@ -246,6 +251,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int IllegalRange_2 = 11;
 
         /**
+         * Value {1} for “{0}” is not a valid Unicode code point.
+         */
+        public static final int IllegalUnicodeCodePoint_2 = 112;
+
+        /**
          * Property “{0}” has an incompatible value.
          */
         public static final int IncompatiblePropertyValue_1 = 86;
@@ -294,6 +304,11 @@ public final class Errors extends IndexedResourceBundle {
          * Attribute “{0}” is mandatory for an object of type ‘{1}’.
          */
         public static final int MandatoryAttribute_2 = 22;
+
+        /**
+         * Mismatched array lengths.
+         */
+        public static final int MismatchedArrayLengths = 111;
 
         /**
          * The coordinate reference system must be the same for all objects.
@@ -434,6 +449,11 @@ public final class Errors extends IndexedResourceBundle {
          * Class ‘{0}’ is not a primitive type wrapper.
          */
         public static final int NotAPrimitiveWrapper_1 = 10;
+
+        /**
+         * Text “{0}” is not a Unicode identifier.
+         */
+        public static final int NotAUnicodeIdentifier_1 = 113;
 
         /**
          * Class ‘{0}’ is not a comparable.
