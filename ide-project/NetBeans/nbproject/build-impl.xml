@@ -137,6 +137,7 @@ is divided into following sections:
             <or>
                 <available file="${test.console.dir}"/>
                 <available file="${test.netcdf.dir}"/>
+                <available file="${test.shapefile.dir}"/>
                 <available file="${test.storage.dir}"/>
                 <available file="${test.feature.dir}"/>
                 <available file="${test.referencing.dir}"/>
@@ -151,6 +152,7 @@ is divided into following sections:
                 <available file="${src.webapp.dir}"/>
                 <available file="${src.console.dir}"/>
                 <available file="${src.netcdf.dir}"/>
+                <available file="${src.shapefile.dir}"/>
                 <available file="${src.storage.dir}"/>
                 <available file="${src.feature.dir}"/>
                 <available file="${src.referencing.dir}"/>
@@ -248,6 +250,7 @@ is divided into following sections:
         <fail unless="src.webapp.dir">Must set src.webapp.dir</fail>
         <fail unless="src.console.dir">Must set src.console.dir</fail>
         <fail unless="src.netcdf.dir">Must set src.netcdf.dir</fail>
+        <fail unless="src.shapefile.dir">Must set src.shapefile.dir</fail>
         <fail unless="src.storage.dir">Must set src.storage.dir</fail>
         <fail unless="src.feature.dir">Must set src.feature.dir</fail>
         <fail unless="src.referencing.dir">Must set src.referencing.dir</fail>
@@ -256,6 +259,7 @@ is divided into following sections:
         <fail unless="src.fra-profile.dir">Must set src.fra-profile.dir</fail>
         <fail unless="test.console.dir">Must set test.console.dir</fail>
         <fail unless="test.netcdf.dir">Must set test.netcdf.dir</fail>
+        <fail unless="test.shapefile.dir">Must set test.shapefile.dir</fail>
         <fail unless="test.storage.dir">Must set test.storage.dir</fail>
         <fail unless="test.feature.dir">Must set test.feature.dir</fail>
         <fail unless="test.referencing.dir">Must set test.referencing.dir</fail>
@@ -282,7 +286,7 @@ is divided into following sections:
     </target>
     <target depends="-init-ap-cmdline-properties" if="ap.supported.internal" name="-init-macrodef-javac-with-processors">
         <macrodef name="javac" uri="http://www.netbeans.org/ns/j2se-project/3">
-            <attribute default="${src.local-src.dir}:${src.webapp.dir}:${src.console.dir}:${src.netcdf.dir}:${src.storage.dir}:${src.feature.dir}:${src.referencing.dir}:${src.metadata.dir}:${src.utility.dir}:${src.fra-profile.dir}" name="srcdir"/>
+            <attribute default="${src.local-src.dir}:${src.webapp.dir}:${src.console.dir}:${src.netcdf.dir}:${src.shapefile.dir}:${src.storage.dir}:${src.feature.dir}:${src.referencing.dir}:${src.metadata.dir}:${src.utility.dir}:${src.fra-profile.dir}" name="srcdir"/>
             <attribute default="${build.classes.dir}" name="destdir"/>
             <attribute default="${javac.classpath}" name="classpath"/>
             <attribute default="${javac.processorpath}" name="processorpath"/>
@@ -322,7 +326,7 @@ is divided into following sections:
     </target>
     <target depends="-init-ap-cmdline-properties" name="-init-macrodef-javac-without-processors" unless="ap.supported.internal">
         <macrodef name="javac" uri="http://www.netbeans.org/ns/j2se-project/3">
-            <attribute default="${src.local-src.dir}:${src.webapp.dir}:${src.console.dir}:${src.netcdf.dir}:${src.storage.dir}:${src.feature.dir}:${src.referencing.dir}:${src.metadata.dir}:${src.utility.dir}:${src.fra-profile.dir}" name="srcdir"/>
+            <attribute default="${src.local-src.dir}:${src.webapp.dir}:${src.console.dir}:${src.netcdf.dir}:${src.shapefile.dir}:${src.storage.dir}:${src.feature.dir}:${src.referencing.dir}:${src.metadata.dir}:${src.utility.dir}:${src.fra-profile.dir}" name="srcdir"/>
             <attribute default="${build.classes.dir}" name="destdir"/>
             <attribute default="${javac.classpath}" name="classpath"/>
             <attribute default="${javac.processorpath}" name="processorpath"/>
@@ -354,7 +358,7 @@ is divided into following sections:
     </target>
     <target depends="-init-macrodef-javac-with-processors,-init-macrodef-javac-without-processors" name="-init-macrodef-javac">
         <macrodef name="depend" uri="http://www.netbeans.org/ns/j2se-project/3">
-            <attribute default="${src.local-src.dir}:${src.webapp.dir}:${src.console.dir}:${src.netcdf.dir}:${src.storage.dir}:${src.feature.dir}:${src.referencing.dir}:${src.metadata.dir}:${src.utility.dir}:${src.fra-profile.dir}" name="srcdir"/>
+            <attribute default="${src.local-src.dir}:${src.webapp.dir}:${src.console.dir}:${src.netcdf.dir}:${src.shapefile.dir}:${src.storage.dir}:${src.feature.dir}:${src.referencing.dir}:${src.metadata.dir}:${src.utility.dir}:${src.fra-profile.dir}" name="srcdir"/>
             <attribute default="${build.classes.dir}" name="destdir"/>
             <attribute default="${javac.classpath}" name="classpath"/>
             <sequential>
@@ -447,6 +451,9 @@ is divided into following sections:
                         <fileset dir="${test.netcdf.dir}" excludes="@{excludes},${excludes}" includes="@{includes}">
                             <filename name="@{testincludes}"/>
                         </fileset>
+                        <fileset dir="${test.shapefile.dir}" excludes="@{excludes},${excludes}" includes="@{includes}">
+                            <filename name="@{testincludes}"/>
+                        </fileset>
                         <fileset dir="${test.storage.dir}" excludes="@{excludes},${excludes}" includes="@{includes}">
                             <filename name="@{testincludes}"/>
                         </fileset>
@@ -498,6 +505,9 @@ is divided into following sections:
                         <filename name="@{testincludes}"/>
                     </fileset>
                     <fileset dir="${test.netcdf.dir}" excludes="@{excludes},**/*.xml,${excludes}" includes="@{includes}">
+                        <filename name="@{testincludes}"/>
+                    </fileset>
+                    <fileset dir="${test.shapefile.dir}" excludes="@{excludes},**/*.xml,${excludes}" includes="@{includes}">
                         <filename name="@{testincludes}"/>
                     </fileset>
                     <fileset dir="${test.storage.dir}" excludes="@{excludes},**/*.xml,${excludes}" includes="@{includes}">
@@ -631,6 +641,9 @@ is divided into following sections:
                             <filename name="@{testincludes}"/>
                         </fileset>
                         <fileset dir="${test.netcdf.dir}" excludes="@{excludes},${excludes}" includes="@{includes}">
+                            <filename name="@{testincludes}"/>
+                        </fileset>
+                        <fileset dir="${test.shapefile.dir}" excludes="@{excludes},${excludes}" includes="@{includes}">
                             <filename name="@{testincludes}"/>
                         </fileset>
                         <fileset dir="${test.storage.dir}" excludes="@{excludes},${excludes}" includes="@{includes}">
@@ -1015,7 +1028,7 @@ is divided into following sections:
                 <include name="*"/>
             </dirset>
         </pathconvert>
-        <j2seproject3:depend srcdir="${src.local-src.dir}:${src.webapp.dir}:${src.console.dir}:${src.netcdf.dir}:${src.storage.dir}:${src.feature.dir}:${src.referencing.dir}:${src.metadata.dir}:${src.utility.dir}:${src.fra-profile.dir}:${build.generated.subdirs}"/>
+        <j2seproject3:depend srcdir="${src.local-src.dir}:${src.webapp.dir}:${src.console.dir}:${src.netcdf.dir}:${src.shapefile.dir}:${src.storage.dir}:${src.feature.dir}:${src.referencing.dir}:${src.metadata.dir}:${src.utility.dir}:${src.fra-profile.dir}:${build.generated.subdirs}"/>
     </target>
     <target depends="init,deps-jar,-pre-pre-compile,-pre-compile, -copy-persistence-xml,-compile-depend" if="have.sources" name="-do-compile">
         <j2seproject3:javac gensrcdir="${build.generated.sources.dir}"/>
@@ -1024,6 +1037,7 @@ is divided into following sections:
             <fileset dir="${src.webapp.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${src.console.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${src.netcdf.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
+            <fileset dir="${src.shapefile.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${src.storage.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${src.feature.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${src.referencing.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
@@ -1050,7 +1064,7 @@ is divided into following sections:
     <target depends="init,deps-jar,-pre-pre-compile" name="-do-compile-single">
         <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
         <j2seproject3:force-recompile/>
-        <j2seproject3:javac excludes="" gensrcdir="${build.generated.sources.dir}" includes="${javac.includes}" sourcepath="${src.local-src.dir}:${src.webapp.dir}:${src.console.dir}:${src.netcdf.dir}:${src.storage.dir}:${src.feature.dir}:${src.referencing.dir}:${src.metadata.dir}:${src.utility.dir}:${src.fra-profile.dir}"/>
+        <j2seproject3:javac excludes="" gensrcdir="${build.generated.sources.dir}" includes="${javac.includes}" sourcepath="${src.local-src.dir}:${src.webapp.dir}:${src.console.dir}:${src.netcdf.dir}:${src.shapefile.dir}:${src.storage.dir}:${src.feature.dir}:${src.referencing.dir}:${src.metadata.dir}:${src.utility.dir}:${src.fra-profile.dir}"/>
     </target>
     <target name="-post-compile-single">
         <!-- Empty placeholder for easier customization. -->
@@ -1323,6 +1337,9 @@ is divided into following sections:
             <fileset dir="${src.netcdf.dir}" excludes="*.java,${excludes}" includes="${includes}">
                 <filename name="**/*.java"/>
             </fileset>
+            <fileset dir="${src.shapefile.dir}" excludes="*.java,${excludes}" includes="${includes}">
+                <filename name="**/*.java"/>
+            </fileset>
             <fileset dir="${src.storage.dir}" excludes="*.java,${excludes}" includes="${includes}">
                 <filename name="**/*.java"/>
             </fileset>
@@ -1358,6 +1375,9 @@ is divided into following sections:
                 <filename name="**/doc-files/**"/>
             </fileset>
             <fileset dir="${src.netcdf.dir}" excludes="${excludes}" includes="${includes}">
+                <filename name="**/doc-files/**"/>
+            </fileset>
+            <fileset dir="${src.shapefile.dir}" excludes="${excludes}" includes="${includes}">
                 <filename name="**/doc-files/**"/>
             </fileset>
             <fileset dir="${src.storage.dir}" excludes="${excludes}" includes="${includes}">
@@ -1400,13 +1420,14 @@ is divided into following sections:
         <!-- You can override this target in the ../build.xml file. -->
     </target>
     <target if="do.depend.true" name="-compile-test-depend">
-        <j2seproject3:depend classpath="${javac.test.classpath}" destdir="${build.test.classes.dir}" srcdir="${test.console.dir}:${test.netcdf.dir}:${test.storage.dir}:${test.feature.dir}:${test.referencing.dir}:${test.metadata.dir}:${test.utility.dir}:${test.fra-profile.dir}"/>
+        <j2seproject3:depend classpath="${javac.test.classpath}" destdir="${build.test.classes.dir}" srcdir="${test.console.dir}:${test.netcdf.dir}:${test.shapefile.dir}:${test.storage.dir}:${test.feature.dir}:${test.referencing.dir}:${test.metadata.dir}:${test.utility.dir}:${test.fra-profile.dir}"/>
     </target>
     <target depends="init,deps-jar,compile,-pre-pre-compile-test,-pre-compile-test,-compile-test-depend" if="have.tests" name="-do-compile-test">
-        <j2seproject3:javac apgeneratedsrcdir="${build.test.classes.dir}" classpath="${javac.test.classpath}" debug="true" destdir="${build.test.classes.dir}" processorpath="${javac.test.processorpath}" srcdir="${test.console.dir}:${test.netcdf.dir}:${test.storage.dir}:${test.feature.dir}:${test.referencing.dir}:${test.metadata.dir}:${test.utility.dir}:${test.fra-profile.dir}"/>
+        <j2seproject3:javac apgeneratedsrcdir="${build.test.classes.dir}" classpath="${javac.test.classpath}" debug="true" destdir="${build.test.classes.dir}" processorpath="${javac.test.processorpath}" srcdir="${test.console.dir}:${test.netcdf.dir}:${test.shapefile.dir}:${test.storage.dir}:${test.feature.dir}:${test.referencing.dir}:${test.metadata.dir}:${test.utility.dir}:${test.fra-profile.dir}"/>
         <copy todir="${build.test.classes.dir}">
             <fileset dir="${test.console.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${test.netcdf.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
+            <fileset dir="${test.shapefile.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${test.storage.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${test.feature.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${test.referencing.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
@@ -1427,10 +1448,11 @@ is divided into following sections:
     <target depends="init,deps-jar,compile,-pre-pre-compile-test,-pre-compile-test-single" if="have.tests" name="-do-compile-test-single">
         <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
         <j2seproject3:force-recompile destdir="${build.test.classes.dir}"/>
-        <j2seproject3:javac apgeneratedsrcdir="${build.test.classes.dir}" classpath="${javac.test.classpath}" debug="true" destdir="${build.test.classes.dir}" excludes="" includes="${javac.includes}" processorpath="${javac.test.processorpath}" sourcepath="${test.console.dir}:${test.netcdf.dir}:${test.storage.dir}:${test.feature.dir}:${test.referencing.dir}:${test.metadata.dir}:${test.utility.dir}:${test.fra-profile.dir}" srcdir="${test.console.dir}:${test.netcdf.dir}:${test.storage.dir}:${test.feature.dir}:${test.referencing.dir}:${test.metadata.dir}:${test.utility.dir}:${test.fra-profile.dir}"/>
+        <j2seproject3:javac apgeneratedsrcdir="${build.test.classes.dir}" classpath="${javac.test.classpath}" debug="true" destdir="${build.test.classes.dir}" excludes="" includes="${javac.includes}" processorpath="${javac.test.processorpath}" sourcepath="${test.console.dir}:${test.netcdf.dir}:${test.shapefile.dir}:${test.storage.dir}:${test.feature.dir}:${test.referencing.dir}:${test.metadata.dir}:${test.utility.dir}:${test.fra-profile.dir}" srcdir="${test.console.dir}:${test.netcdf.dir}:${test.shapefile.dir}:${test.storage.dir}:${test.feature.dir}:${test.referencing.dir}:${test.metadata.dir}:${test.utility.dir}:${test.fra-profile.dir}"/>
         <copy todir="${build.test.classes.dir}">
             <fileset dir="${test.console.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${test.netcdf.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
+            <fileset dir="${test.shapefile.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${test.storage.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${test.feature.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
             <fileset dir="${test.referencing.dir}" excludes="${build.classes.excludes},${excludes}" includes="${includes}"/>
