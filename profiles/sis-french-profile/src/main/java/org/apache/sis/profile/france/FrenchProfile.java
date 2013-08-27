@@ -40,7 +40,7 @@ public final class FrenchProfile extends Static {
      * Returns the given metadata object as an AFNOR-compliant instance.
      * The current implementation recognizes the following types:
      *
-     * <table>
+     * <table class="sis">
      *   <tr><th>GeoAPI type</th> <th>AFNOR XML element</th></tr>
      *   <tr><td>{@link org.opengis.metadata.identification.DataIdentification}</td> <td>{@code FRA_DataIdentification}</td>
      *   <tr><td>{@link org.opengis.metadata.constraint.Constraints}</td>            <td>{@code FRA_Constraints}</td>
@@ -86,28 +86,23 @@ public final class FrenchProfile extends Static {
      * AFNOR requires the reference systems to be either <cite>direct</cite> or <cite>indirect</cite>.
      * Those two cases are represented by the following schema fragments:
      *
-     * <table class="sis">
-     * <tr><th>Direct</th><th>Indirect</th></tr>
-     * <tr><td>
+     * <p><b>Direct:</b></p>
      * {@preformat xml
      *   <complexType name="FRA_DirectReferenceSystem_Type">
      *     <complexContent>
-     *       <extension base="{http://www.isotc211.org/2005/gmd}MD_ReferenceSystem_Type">
-     *       </extension>
+     *       <extension base="{http://www.isotc211.org/2005/gmd}MD_ReferenceSystem_Type"/>
      *     </complexContent>
      *   </complexType>
      * }
-     * </td><td>
+     *
+     * <p><b>Indirect:</b></p>
      * {@preformat xml
      *   <complexType name="FRA_IndirectReferenceSystem_Type">
      *     <complexContent>
-     *       <extension base="{http://www.isotc211.org/2005/gmd}MD_ReferenceSystem_Type">
-     *       </extension>
+     *       <extension base="{http://www.isotc211.org/2005/gmd}MD_ReferenceSystem_Type"/>
      *     </complexContent>
      *   </complexType>
      * }
-     * </td></tr>
-     * </table>
      *
      * @param  rs The reference system to make AFNOR-compliant, or {@code null}.
      * @param  indirect {@code false} for {@code FRA_DirectReferenceSystem},
