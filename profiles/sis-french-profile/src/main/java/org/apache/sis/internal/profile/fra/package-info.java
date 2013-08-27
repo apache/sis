@@ -29,7 +29,7 @@
  *
  * @see org.apache.sis.profile.france
  */
-@XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.FRA)
+@XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = FrenchProfile.NAMESPACE)
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({
     @XmlJavaTypeAdapter(CI_Citation.class)
@@ -43,4 +43,4 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
 import org.apache.sis.internal.jaxb.metadata.CI_Citation;
-import org.apache.sis.xml.Namespaces;
+import org.apache.sis.profile.france.FrenchProfile;

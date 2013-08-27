@@ -86,6 +86,11 @@ public final strictfp class DirectReferenceSystemTest extends TestCase {
             result = (DefaultMetadata) XML.unmarshal(in);
         }
         final DefaultMetadata expected = createMetadata();
+        /*
+         * Compare in debug mode before to perform the real comparison,
+         * for making easier to analyze the stack trace in case of failure.
+         */
         assertTrue(expected.equals(result, ComparisonMode.DEBUG));
+        assertEquals(expected, result);
     }
 }
