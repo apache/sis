@@ -147,33 +147,54 @@ Building Apache SIS
 +-----------------------------------------------------
 
 
-* Pack200 bundle
+* Distribution file and Pack200 bundle
 
-  To merges the binaries produced by the above step and compress them using Pack200,
-  invoke the following from the command line. Do not forget the <<<--non-recursive>>>
-  option, otherwise the Mojo will waste CPU by executing itself many time.
+  The Pack200 bundle is a file with the <<<.pack.gz>>> extension containing all SIS modules except <<<sis-webapp>>>
+  (because Web applications use an other packaging) together with their dependencies.
+  Pack200 files are uncompressed by the <<<unpack200>>> command provided in JDK/JRE installation.
+  However for users convenience, we provide a shell script for uncompressing and launching the SIS
+  command line tool in a single step. That shell script, together with the Pack200 file and other
+  files (<<<README>>>, <<<LICENSE>>>, <etc.>) are bundled in a ZIP file created as below:
+
+-------------------------------------------------------------------
+   mvn org.apache.sis.core:sis-build-helper:dist --non-recursive
+-------------------------------------------------------------------
+
+  Do not forget the <<<--non-recursive>>> option, otherwise the Mojo will waste CPU by executing itself many time.
+  Optionally, the Apache SIS version can be inserted as a 4th element between <<<sis-build-helper:>>> and <<<:dist>>>
+  if there is many versions of the plugin in the local repository.
+
+  The result will be created in the <<<target/distribution/apache-sis-<version>.zip>>> file.
+  To test, uncompress in any directory and execute <<<apache-sis-<version>/bin/sis>>>.
+  The Pack200 file will be automatically uncompressed when first needed.
+
+
+** Generating the Pack200 file alone
+
+  If only the Pack200 file is desired, without the distribution ZIP file,
+  one can use the following command:
 
 -------------------------------------------------------------------
    mvn org.apache.sis.core:sis-build-helper:pack --non-recursive
 -------------------------------------------------------------------
 
-  The above command should create a <<<target/binaries/sis-\<version\>.pack.gz>>> file.
+  The above command should create a <<<target/distribution/apache-sis-\<version\>.pack.gz>>> file.
   To uncompress that file, use the following command:
 
-----------------------------------------------------------------
-   unpack200 --remove-pack-file sis-<version>.pack.gz sis.jar
-----------------------------------------------------------------
+-----------------------------------------------------------------------
+   unpack200 --remove-pack-file apache-sis-<version>.pack.gz sis.jar
+-----------------------------------------------------------------------
 
   The Pack200 bundle does not include the <<<sis-webapp>>> module because the later can be downloaded
   as a <<<WAR>>> file from the Maven repository.
 
 
-* Distribution file
+** Known limitations
 
-  The distribution file is a ZIP file containing the same Pack200 bundle than above,
-  together with a <<<README>>> file, configuration files and convenience shell scripts.
-  The distribution file is generated as below:
+  The current plugin implementation has some hard-coded values, especially:
 
--------------------------------------------------------------------
-   mvn org.apache.sis.core:sis-build-helper:dist --non-recursive
--------------------------------------------------------------------
+    * The ZIP file content is copied from the <<<application/sis-console/src/main/artifact>>> directory.
+
+    * The Pack200 file path inside the ZIP file is hard-coded to <<<lib/sis.pack.gz>>>.
+
+    * The final filename is hard-coded to <<<apache-sis-<version>.zip>>>.
