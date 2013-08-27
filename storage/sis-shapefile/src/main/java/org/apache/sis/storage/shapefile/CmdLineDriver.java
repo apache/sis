@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.sis.storage.shapefile;
 
 import java.io.FileNotFoundException;
@@ -29,17 +28,17 @@ import com.esri.core.geometry.OperatorExportToWkt;
 import com.esri.core.geometry.Operator;
 
 
+/**
+ *
+ * @author  Travis L. Pinney
+ * @since   0.4
+ * @version 0.4
+ * @module
+ */
+public class CmdLineDriver {
+    public static void main( String[] args ) throws IOException {
 
-
-public class CmdLineDriver
-{
-    public static void main( String[] args ) throws IOException
-    {
-
-    	// code will eventually added here to deal with the command line...
-
-
+        // code will eventually added here to deal with the command line...
 
     }
-
 }
