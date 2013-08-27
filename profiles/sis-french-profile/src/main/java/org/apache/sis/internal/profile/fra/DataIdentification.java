@@ -69,6 +69,16 @@ public class DataIdentification extends DefaultDataIdentification {
     }
 
     /**
+     * Constructs an instance initialized to a copy of the given object.
+     * This constructor does <strong>not</strong> copy the FRA-specific properties.
+     *
+     * @param object The metadata to copy values from, or {@code null} if none.
+     */
+    public DataIdentification(final org.opengis.metadata.identification.DataIdentification object) {
+        super(object);
+    }
+
+    /**
      * Returns the documents at the origin of the creation of the identified resources.
      *
      * @return Citations to the current documents.

@@ -70,6 +70,16 @@ public class LegalConstraints extends DefaultLegalConstraints {
     }
 
     /**
+     * Constructs an instance initialized to a copy of the given object.
+     * This constructor does <strong>not</strong> copy the FRA-specific properties.
+     *
+     * @param object The metadata to copy values from, or {@code null} if none.
+     */
+    public LegalConstraints(final org.opengis.metadata.constraint.LegalConstraints object) {
+        super(object);
+    }
+
+    /**
      * Returns the documents that specifies the nature of the constraints.
      *
      * @return Citations to the current documents.

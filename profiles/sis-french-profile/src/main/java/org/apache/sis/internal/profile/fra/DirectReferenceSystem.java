@@ -18,10 +18,8 @@ package org.apache.sis.internal.profile.fra;
 
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.ReferenceIdentifier;
-import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.internal.jaxb.metadata.ReferenceSystemMetadata;
 
 
@@ -74,20 +72,5 @@ public class DirectReferenceSystem extends ReferenceSystemMetadata {
      */
     public DirectReferenceSystem(final ReferenceIdentifier identifier) {
         super(identifier);
-    }
-
-    /**
-     * Creates a new reference system from the specified code and authority.
-     *
-     * @param authority
-     *          Organization or party responsible for definition and maintenance of the code space or code.
-     * @param codespace
-     *          Name or identifier of the person or organization responsible for namespace.
-     *          This is often an abbreviation of the authority name.
-     * @param code
-     *          Identifier code or name, optionally from a controlled list or pattern defined by a code space.
-     */
-    public DirectReferenceSystem(final Citation authority, final String codespace, final String code) {
-        super(new ImmutableIdentifier(authority, codespace, code));
     }
 }
