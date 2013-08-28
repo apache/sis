@@ -35,7 +35,7 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 public final strictfp class IOUtilitiesTest extends TestCase {
@@ -72,6 +72,26 @@ public final strictfp class IOUtilitiesTest extends TestCase {
         assertEquals("",    IOUtilities.extension(new File(     "/Users/name/.png")));
         assertNull(IOUtilities.extension(Boolean.FALSE));
         assertNull(IOUtilities.extension(null));
+    }
+
+    /**
+     * Tests again {@link IOUtilities#filename(Object)} and {@link IOUtilities#extension(Object)}, but with a URI
+     * that point to a JAR entry. Such URI are opaque, in which case {@link URI#getPath()} returns {@code null}.
+     *
+     * @throws URISyntaxException Should never happen.
+     * @throws MalformedURLException Should never happen.
+     */
+    @Test
+    @DependsOnMethod({"testFilename", "testExtension"})
+    public void testWithOpaqueURI() throws URISyntaxException, MalformedURLException {
+        final URI uri = new URI("jar:file:/sis-storage-tests.jar!/org/apache/sis/Any.xml");
+        assertTrue(uri.isOpaque()); // This test would be useless if this condition is false.
+        assertEquals("Any.xml", IOUtilities.filename (uri));
+        assertEquals(    "xml", IOUtilities.extension(uri));
+
+        final URL url = new URL("jar:file:/sis-storage-tests.jar!/org/apache/sis/Any.xml");
+        assertEquals("Any.xml", IOUtilities.filename (url));
+        assertEquals(    "xml", IOUtilities.extension(url));
     }
 
     /**
