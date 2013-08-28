@@ -119,7 +119,8 @@ public final class IOUtilities extends Static {
             if (path instanceof URL) {
                 name = ((URL) path).getPath();
             } else if (path instanceof URI) {
-                name = ((URI) path).getPath();
+                final URI uri = (URI) path;
+                name = uri.isOpaque() ? uri.getSchemeSpecificPart() : uri.getPath();
             } else if (path instanceof CharSequence) {
                 name = path.toString();
                 separator = File.separatorChar;
