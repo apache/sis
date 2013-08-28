@@ -74,6 +74,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int CanNotComputeDerivative = 44;
 
         /**
+         * Can not connect to “{0}”.
+         */
+        public static final int CanNotConnectTo_1 = 114;
+
+        /**
          * Can not convert from type ‘{0}’ to type ‘{1}’.
          */
         public static final int CanNotConvertFromType_2 = 72;

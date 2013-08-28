@@ -31,7 +31,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.4
  * @module
  */
 @DependsOn(SubCommandTest.class)
@@ -39,10 +39,10 @@ public final strictfp class AboutSCTest extends TestCase {
     /**
      * Tests the sub-command without option.
      *
-     * @throws InvalidOptionException Should never happen.
+     * @throws Exception Should never happen.
      */
     @Test
-    public void testDefault() throws InvalidOptionException {
+    public void testDefault() throws Exception {
         final AboutSC test = new AboutSC(0, SubCommand.TEST);
         test.run();
         verify(test.outputBuffer.toString());
@@ -68,10 +68,10 @@ public final strictfp class AboutSCTest extends TestCase {
     /**
      * Tests the sub-command with the {@code --brief} option.
      *
-     * @throws InvalidOptionException Should never happen.
+     * @throws Exception Should never happen.
      */
     @Test
-    public void testBrief() throws InvalidOptionException {
+    public void testBrief() throws Exception {
         final AboutSC test = new AboutSC(0, SubCommand.TEST, "--brief");
         test.run();
         final String result = getSingleton(CharSequences.splitOnEOL(test.outputBuffer.toString().trim())).toString();
@@ -81,10 +81,10 @@ public final strictfp class AboutSCTest extends TestCase {
     /**
      * Tests the sub-command with the {@code --verbose} option.
      *
-     * @throws InvalidOptionException Should never happen.
+     * @throws Exception Should never happen.
      */
     @Test
-    public void testVerbose() throws InvalidOptionException {
+    public void testVerbose() throws Exception {
         final AboutSC test = new AboutSC(0, SubCommand.TEST, "--verbose");
         test.run();
         final String result = test.outputBuffer.toString();
@@ -92,5 +92,18 @@ public final strictfp class AboutSCTest extends TestCase {
 
         // Check for a dependency which should be present.
         assertTrue("geoapi", result.contains("geoapi"));
+    }
+
+    /**
+     * Tests the {@link AboutSC#toRemoveURL(String)} method.
+     */
+    @Test
+    public void testToRemoveURL() {
+        assertEquals("service:jmx:rmi:///jndi/rmi://myhost:9999/jmxrmi",    AboutSC.toRemoveURL("myhost:9999"));
+        assertEquals("service:jmx:rmi:///jndi/rmi://myhost:1099/jmxrmi",    AboutSC.toRemoveURL("myhost"));
+        assertEquals("service:jmx:rmi:///jndi/rmi://:9999/jmxrmi",          AboutSC.toRemoveURL("localhost:9999"));
+        assertEquals("service:jmx:rmi:///jndi/rmi://:1099/jmxrmi",          AboutSC.toRemoveURL("localhost"));
+        assertEquals("service:jmx:rmi:///jndi/rmi://:9999/jmxrmi",          AboutSC.toRemoveURL(":9999"));
+        assertEquals("service:jmx:rmi:///jndi/rmi://localhosx:1099/jmxrmi", AboutSC.toRemoveURL("localhosx"));
     }
 }

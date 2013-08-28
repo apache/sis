@@ -49,7 +49,7 @@ import org.apache.sis.util.collection.TreeTable;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.4
  * @module
  */
 public final class Supervisor extends StandardMBean implements SupervisorMBean, Localized {
@@ -58,6 +58,11 @@ public final class Supervisor extends StandardMBean implements SupervisorMBean, 
      * Java compiler to omit any dependency to this {@code Supervisor} class.
      */
     static final boolean ENABLED = true;
+
+    /**
+     * The JMX object name for the {@code Supervisor} service.
+     */
+    public static final String NAME = "org.apache.sis:type=Supervisor";
 
     /**
      * The JMX object name, created when the {@link #register()} is first invoked.
@@ -79,7 +84,7 @@ public final class Supervisor extends StandardMBean implements SupervisorMBean, 
             name = ObjectName.WILDCARD; // In case of failure.
             final MBeanServer server = ManagementFactory.getPlatformMBeanServer();
             try {
-                final ObjectName n = new ObjectName("org.apache.sis:type=Supervisor");
+                final ObjectName n = new ObjectName(NAME);
                 server.registerMBean(new Supervisor(null, null), n);
                 name = n; // Store only on success.
             } catch (SecurityException | JMException e) {
