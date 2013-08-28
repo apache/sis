@@ -49,7 +49,7 @@ import org.apache.sis.internal.jdk8.Function;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-3.00)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 public final class CollectionsExt extends Static {
@@ -88,6 +88,28 @@ public final class CollectionsExt extends Static {
     @SuppressWarnings({"unchecked","rawtype"})
     public static <E> SortedSet<E> emptySortedSet() {
         return EmptySortedSet.INSTANCE;
+    }
+
+    /**
+     * Returns the given collection, or {@link Collections#EMPTY_SET} if the given collection is null.
+     *
+     * @param  <E> The type of elements in the collection.
+     * @param  c The collection, or {@code null}.
+     * @return The given collection, or an empty set of the given collection was null.
+     */
+    public static <E> Collection<E> nonNull(final Collection<E> c) {
+        return (c != null) ? c : Collections.<E>emptySet();
+    }
+
+    /**
+     * Returns the given set, or {@link Collections#EMPTY_SET} if the given set is null.
+     *
+     * @param  <E> The type of elements in the collection.
+     * @param  c The collection, or {@code null}.
+     * @return The given collection, or an empty set of the given collection was null.
+     */
+    public static <E> Set<E> nonNull(final Set<E> c) {
+        return (c != null) ? c : Collections.<E>emptySet();
     }
 
     /**
