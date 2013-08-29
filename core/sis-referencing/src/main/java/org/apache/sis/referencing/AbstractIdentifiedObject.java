@@ -137,7 +137,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
 
     /**
      * Constructs an object from a set of properties. Keys are strings from the table below.
-     * The map given in argument shall contains an entry at least for the
+     * The map given in argument shall contain an entry at least for the
      * {@value org.opengis.referencing.IdentifiedObject#NAME_KEY} key.
      * Other properties listed in the table below are optional.
      *

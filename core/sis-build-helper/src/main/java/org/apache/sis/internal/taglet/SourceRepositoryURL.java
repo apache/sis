@@ -24,7 +24,7 @@ import com.sun.tools.doclets.formats.html.ConfigurationImpl;
 
 /**
  * The <code>@scmUrl</code> tag for inserting a URL to a file in the source code repository.
- * This tag shall contains a keyword, for example <code>{@scmUrl gmd-data}</code>.
+ * This tag shall contain a keyword, for example <code>{@scmUrl gmd-data}</code>.
  * Valid keywords are:
  *
  * <table class="sis>
