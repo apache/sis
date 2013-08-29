@@ -145,7 +145,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *   <tr>
      *     <th>Property name</th>
      *     <th>Value type</th>
-     *     <th>Value given to</th>
+     *     <th>Returned by</th>
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#NAME_KEY}</td>

@@ -19,7 +19,7 @@ package org.apache.sis.metadata.iso;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
-import org.opengis.parameter.InvalidParameterValueException;
+import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.test.DependsOnMethod;
@@ -65,6 +65,7 @@ public final strictfp class ImmutableIdentifierTest extends TestCase {
         Validators.validate(identifier);
 
         assertEquals(CODE_KEY,        "This is a code",       identifier.getCode());
+        assertNull  (CODESPACE_KEY,                           identifier.getCodeSpace());
         assertEquals(AUTHORITY_KEY,   "This is an authority", identifier.getAuthority().getTitle().toString());
         assertEquals(VERSION_KEY,     "This is a version",    identifier.getVersion());
         assertEquals("remarks",       "There is remarks",     identifier.getRemarks().toString(Locale.ENGLISH));
@@ -85,6 +86,7 @@ public final strictfp class ImmutableIdentifierTest extends TestCase {
         Validators.validate(identifier);
 
         assertEquals(CODE_KEY,        "This is a code",       identifier.getCode());
+        assertNull  (CODESPACE_KEY,                           identifier.getCodeSpace());
         assertEquals(AUTHORITY_KEY,   "This is an authority", identifier.getAuthority().getTitle().toString());
         assertEquals(VERSION_KEY,     "This is a version",    identifier.getVersion());
         assertEquals("remarks",       "Overwritten remarks",  identifier.getRemarks().toString(Locale.ENGLISH));
@@ -94,19 +96,40 @@ public final strictfp class ImmutableIdentifierTest extends TestCase {
 
     /**
      * Tests the constructor with the {@code "authority"} attribute as a {@link DefaultCitation}.
-     * This test also opportunistically test mixed-case key.
      */
     @Test
     @DependsOnMethod("testConstructorWithStringValues")
     public void testConstructorWithCitation() {
         final Map<String,Object> properties = properties();
-        assertNotNull(properties.remove(AUTHORITY_KEY));
-        assertNull(properties.put("AutHOrITY", new DefaultCitation("An other authority")));
+        assertNotNull(properties.put(AUTHORITY_KEY, new DefaultCitation("An other authority")));
         final ImmutableIdentifier identifier = new ImmutableIdentifier(properties);
         Validators.validate(identifier);
 
         assertEquals(CODE_KEY,        "This is a code",       identifier.getCode());
+        assertNull  (CODESPACE_KEY,                           identifier.getCodeSpace());
         assertEquals(AUTHORITY_KEY,   "An other authority",   identifier.getAuthority().getTitle().toString());
+        assertEquals(VERSION_KEY,     "This is a version",    identifier.getVersion());
+        assertEquals("remarks",       "There is remarks",     identifier.getRemarks().toString(Locale.ENGLISH));
+        assertEquals("remarks_fr",    "Voici des remarques",  identifier.getRemarks().toString(Locale.FRENCH));
+        assertEquals("remarks_fr_CA", "Pareil",               identifier.getRemarks().toString(Locale.CANADA_FRENCH));
+    }
+
+    /**
+     * Tests the constructor with the {@code "authority"} attribute as one of the pre-defined constants.
+     *
+     * @see Citations#fromName(String)
+     */
+    @Test
+    @DependsOnMethod("testConstructorWithStringValues")
+    public void testPredefinedCitation() {
+        final Map<String,Object> properties = properties();
+        assertNotNull(properties.put(AUTHORITY_KEY, "EPSG"));
+        final ImmutableIdentifier identifier = new ImmutableIdentifier(properties);
+        Validators.validate(identifier);
+
+        assertEquals(CODE_KEY,        "This is a code",       identifier.getCode());
+        assertSame  (AUTHORITY_KEY,   Citations.EPSG,         identifier.getAuthority());
+        assertEquals(CODESPACE_KEY,   "EPSG",                 identifier.getCodeSpace()); // Inferred from authority.
         assertEquals(VERSION_KEY,     "This is a version",    identifier.getVersion());
         assertEquals("remarks",       "There is remarks",     identifier.getRemarks().toString(Locale.ENGLISH));
         assertEquals("remarks_fr",    "Voici des remarques",  identifier.getRemarks().toString(Locale.FRENCH));
@@ -124,7 +147,7 @@ public final strictfp class ImmutableIdentifierTest extends TestCase {
         try {
             final ImmutableIdentifier identifier = new ImmutableIdentifier(properties);
             fail(identifier.toString());
-        } catch (InvalidParameterValueException e) {
+        } catch (IllegalArgumentException e) {
             // This is the expected exception
             final String message = e.getMessage();
             assertTrue(message, message.contains(AUTHORITY_KEY));

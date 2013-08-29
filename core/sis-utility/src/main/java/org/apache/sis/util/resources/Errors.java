@@ -246,7 +246,7 @@ public final class Errors extends IndexedResourceBundle {
         public static final int IllegalOrdinateRange_3 = 5;
 
         /**
-         * Property ‘{0}’ can be associated to an instance of ‘{1}’.
+         * Property ‘{0}’ does not accept instances of ‘{1}’.
          */
         public static final int IllegalPropertyClass_2 = 62;
 

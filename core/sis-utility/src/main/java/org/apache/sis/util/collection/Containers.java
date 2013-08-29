@@ -23,17 +23,18 @@ import java.util.Collection;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverter;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 
 /**
  * Static methods working on {@link Collection} or {@link CheckedContainer} objects.
- * Unless otherwise noted in the javadoc, every collections except {@link Map} returned
- * by the methods in this class implement the {@code CheckedContainer} interface.
+ * Unless otherwise noted in the javadoc, every collections returned by the methods
+ * in this class implement the {@code CheckedContainer} interface.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-3.00)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 public final class Containers extends Static {
@@ -185,6 +186,10 @@ public final class Containers extends Static {
      * <p>The returned map can be serialized if the given map and converters are serializable.
      * The returned map is <strong>not</strong> thread-safe.</p>
      *
+     * <p>The returned map does not implement the {@link CheckedContainer} interface since {@code Map}
+     * is not {@code Collection} sub-type, but the derived map {@linkplain Map#keySet() key set} and
+     * {@linkplain Map#entrySet() entry set} do.</p>
+     *
      * @param <SK>         The type of keys   in the storage map.
      * @param <SV>         The type of values in the storage map.
      * @param <K>          The type of keys   in the derived map.
@@ -209,6 +214,41 @@ public final class Containers extends Static {
             return null;
         }
         return DerivedMap.create(storage, keyConverter, valueConverter);
+    }
+
+    /**
+     * Returns the value mapped to the given key casted to the given type,
+     * or {@code null} if the map is null or does not contain a value for the key.
+     * If the mapped value is non-null but can not be casted to the given type, then this
+     * method throws an {@link IllegalArgumentException} with a message of the form
+     * "<cite>Property ‘{@code key}’ does not accept instances of ‘{@code value.class}’.</cite>".
+     *
+     * <p>This is a helper method for processing a {@code Map} argument containing property values of various
+     * kinds, as in the {@link org.apache.sis.referencing.AbstractIdentifiedObject#AbstractIdentifiedObject(Map)
+     * AbstractIdentifiedObject} constructor.</p>
+     *
+     * @param  <T>        The compile-time value of the {@code type} argument.
+     * @param  properties The map of properties from which to get a value, or {@code null} if none.
+     * @param  key        The key of the property value to return. Can be {@code null} if the map supports null key.
+     * @param  type       The expected type of the property value. Can not be null.
+     * @return The property value for the given key casted to the given type, or {@code null} if none.
+     * @throws IllegalArgumentException If a non-null property value exists for the given key but can
+     *         not be casted to the given type.
+     *
+     * @see ArgumentChecks#ensureCanCast(String, Class, Object)
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> T property(final Map<?,?> properties, final Object key, final Class<T> type)
+            throws IllegalArgumentException
+    {
+        if (properties == null) {
+            return null;
+        }
+        final Object value = properties.get(key);
+        if (value != null && !type.isInstance(value)) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalPropertyClass_2, key, value.getClass()));
+        }
+        return (T) value;
     }
 
     /**

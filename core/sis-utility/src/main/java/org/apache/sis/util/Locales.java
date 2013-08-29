@@ -208,20 +208,33 @@ public final class Locales extends Static {
      * anyway.</p>
      *
      * @param  code The language code, which may be followed by country code.
-     * @return The language for the given code.
+     * @return The language for the given code (never {@code null}).
      * @throws IllegalArgumentException If the given code doesn't seem to be a valid locale.
      *
      * @see Locale#forLanguageTag(String)
      */
     public static Locale parse(final String code) throws IllegalArgumentException {
+        ArgumentChecks.ensureNonNull("code", code);
+        return parse(code, 0);
+    }
+
+    /**
+     * Implementation of {@link #parse(String)} which start the parsing process from the given {@code fromIndex}.
+     *
+     * @param  code The language code, which may be followed by country code.
+     * @param  fromIndex Index of the first character to parse.
+     * @return The language for the given code (never {@code null}).
+     * @throws IllegalArgumentException If the given code doesn't seem to be a valid locale.
+     */
+    private static Locale parse(final String code, final int fromIndex) throws IllegalArgumentException {
         final String language, country, variant;
-        int ci = code.indexOf('_');
+        int ci = code.indexOf('_', fromIndex);
         if (ci < 0) {
-            language = trimWhitespaces(code);
+            language = (String) trimWhitespaces(code, fromIndex, code.length());
             country  = "";
             variant  = "";
         } else {
-            language = (String) trimWhitespaces(code, 0, ci);
+            language = (String) trimWhitespaces(code, fromIndex, ci);
             int vi = code.indexOf('_', ++ci);
             if (vi < 0) {
                 country = (String) trimWhitespaces(code, ci, code.length());
@@ -230,7 +243,8 @@ public final class Locales extends Static {
                 country = (String) trimWhitespaces(code, ci, vi);
                 variant = (String) trimWhitespaces(code, ++vi, code.length());
                 if (code.indexOf('_', vi) >= 0) {
-                    throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalLanguageCode_1, code));
+                    throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalLanguageCode_1,
+                            code.substring(fromIndex)));
                 }
             }
         }
@@ -289,18 +303,23 @@ public final class Locales extends Static {
      * </ul>
      *
      * @param  prefix The prefix to skip at the beginning of the {@code key}.
-     * @param  key    The property key from which to extract the locale.
-     * @return {@code true} if the key has been recognized, or {@code false} otherwise.
+     * @param  key    The property key from which to extract the locale, or {@code null}.
+     * @return The locale encoded in the given key name, or {@code null} if the key has not been recognized.
      * @throws IllegalArgumentException if the locale after the prefix is an illegal code.
+     *
+     * @see org.apache.sis.util.iso.Types#toInternationalString(Map, String)
      */
     public static Locale parseSuffix(final String prefix, final String key) throws IllegalArgumentException {
-        if (key.startsWith(prefix)) {
-            final int offset = prefix.length();
-            if (key.length() == offset) {
-                return Locale.ROOT;
-            }
-            if (key.charAt(offset) == '_') {
-                return parse(key.substring(offset + 1));
+        ArgumentChecks.ensureNonNull("prefix", prefix);
+        if (key != null) { // Tolerance for Map that accept null keys.
+            if (key.startsWith(prefix)) {
+                final int offset = prefix.length();
+                if (key.length() == offset) {
+                    return Locale.ROOT;
+                }
+                if (key.charAt(offset) == '_') {
+                    return parse(key, offset + 1);
+                }
             }
         }
         return null;

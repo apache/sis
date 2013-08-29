@@ -18,7 +18,6 @@ package org.apache.sis.metadata.iso;
 
 import java.util.Map;
 import java.util.Locale;
-import java.util.logging.Level;
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -28,20 +27,18 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.parameter.InvalidParameterValueException;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.util.InternationalString;
-import org.apache.sis.util.Locales;
 import org.apache.sis.util.Immutable;
 import org.apache.sis.util.Deprecable;
-import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.resources.Messages;
-import org.apache.sis.util.iso.SimpleInternationalString;
-import org.apache.sis.util.iso.DefaultInternationalString;
+import org.apache.sis.util.iso.Types;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.jaxb.metadata.CI_Citation;
 import org.apache.sis.internal.jaxb.gco.StringAdapter;
 import org.apache.sis.internal.simple.SimpleIdentifiedObject;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+import static org.apache.sis.util.collection.Containers.property;
 import static org.opengis.referencing.IdentifiedObject.REMARKS_KEY;
 
 // Related to JDK7
@@ -60,7 +57,7 @@ import java.util.Objects;
  *
  * @author Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.03)
- * @version 0.3
+ * @version 0.4
  * @module
  *
  * @see DefaultIdentifier
@@ -209,7 +206,7 @@ public class ImmutableIdentifier implements ReferenceIdentifier, Deprecable, Ser
      *   <tr>
      *     <th>Property name</th>
      *     <th>Value type</th>
-     *     <th>Value given to</th>
+     *     <th>Returned by</th>
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.metadata.Identifier#CODE_KEY}</td>
@@ -249,106 +246,43 @@ public class ImmutableIdentifier implements ReferenceIdentifier, Deprecable, Ser
      */
     public ImmutableIdentifier(final Map<String,?> properties) throws IllegalArgumentException {
         ensureNonNull("properties", properties);
-        Object code      = null;
-        Object codeSpace = null;
-        Object version   = null;
-        Object authority = null;
-        Object remarks   = null;
-        DefaultInternationalString localized = null;
+        code      = property(properties, CODE_KEY,      String.class);
+        version   = property(properties, VERSION_KEY,   String.class);
+        remarks   = Types.toInternationalString(properties, REMARKS_KEY);
         /*
-         * Iterate through each map entry. This have two purposes:
-         *
-         *   1) Ignore case (a call to properties.get("foo") can't do that)
-         *   2) Find localized remarks.
-         *
-         * This algorithm is sub-optimal if the map contains a lot of entries of no interest to
-         * this identifier. Hopefully, most users will fill a map with only useful entries.
+         * Map String authority to one of the pre-defined constants (typically EPSG or OGC).
          */
-        for (final Map.Entry<String,?> entry : properties.entrySet()) {
-            String key   = entry.getKey().trim().toLowerCase();
-            Object value = entry.getValue();
-            switch (key) {
-                case CODE_KEY: {
-                    code = value;
-                    continue;
-                }
-                case CODESPACE_KEY: {
-                    codeSpace = value;
-                    continue;
-                }
-                case VERSION_KEY: {
-                    version = value;
-                    continue;
-                }
-                case AUTHORITY_KEY: {
-                    if (value instanceof String) {
-                        value = Citations.fromName((String) value);
-                    }
-                    authority = value;
-                    continue;
-                }
-                case REMARKS_KEY: {
-                    if (value instanceof String) {
-                        value = new SimpleInternationalString((String) value);
-                    }
-                    remarks = value;
-                    continue;
-                }
-            }
-            /*
-             * Search for additional locales (e.g. "remarks_fr").
-             */
-            final Locale locale = Locales.parseSuffix(REMARKS_KEY, key);
-            if (locale != null) {
-                if (localized == null) {
-                    localized = new DefaultInternationalString();
-                }
-                localized.add(locale, (String) value);
-            }
-        }
-        /*
-         * Get the localized remarks, if it was not yet set. If a user specified remarks
-         * both as InternationalString and as String for some locales (which is a weird
-         * usage...), then current implementation discards the later with a warning.
-         */
-        if (localized != null) {
-            if (remarks == null) {
-                remarks = localized;
-            } else if (remarks instanceof SimpleInternationalString) {
-                localized.add(Locale.ROOT, remarks.toString());
-                remarks = localized;
-            } else {
-                Logging.log(ImmutableIdentifier.class, "<init>",
-                    Messages.getResources(null).getLogRecord(Level.WARNING, Messages.Keys.LocalesDiscarded));
-            }
+        Object value = properties.get(AUTHORITY_KEY);
+        if (value instanceof String) {
+            authority = Citations.fromName((String) value);
+        } else if (value == null || value instanceof Citation) {
+            authority = (Citation) value;
+        } else {
+            throw illegalPropertyType(AUTHORITY_KEY, value);
         }
         /*
          * Complete the code space if it was not explicitly set. We take the first
          * identifier if there is any, otherwise we take the shortest title.
          */
-        if (codeSpace == null && authority instanceof Citation) {
-            codeSpace = Citations.getIdentifier((Citation) authority);
-        }
-        /*
-         * Store the definitive reference to the attributes. Note that casts are performed only
-         * there (not before). This is a wanted feature, since we want to catch ClassCastExceptions
-         * and rethrown them as more informative exceptions.
-         */
-        String key   = null;
-        Object value = null;
-        try {
-            key=      CODE_KEY; this.code      = (String)              (value = code);
-            key=   VERSION_KEY; this.version   = (String)              (value = version);
-            key= CODESPACE_KEY; this.codeSpace = (String)              (value = codeSpace);
-            key= AUTHORITY_KEY; this.authority = (Citation)            (value = authority);
-            key=   REMARKS_KEY; this.remarks   = (InternationalString) (value = remarks);
-        } catch (ClassCastException exception) {
-            throw new InvalidParameterValueException(
-                    Errors.format(Errors.Keys.IllegalArgumentValue_2, key, value), exception, key, value);
+        value = properties.get(CODESPACE_KEY);
+        if (value == null) {
+            final String id = Citations.getIdentifier(authority);
+            codeSpace = (id != null && CharSequences.isUnicodeIdentifier(id)) ? id : null;
+        } else if (value instanceof String) {
+            codeSpace = (String) value;
+        } else {
+            throw illegalPropertyType(CODESPACE_KEY, value);
         }
         if (code == null) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.MissingValueForProperty_1, CODE_KEY));
         }
+    }
+
+    /**
+     * Returns the exception to be thrown when a property if of illegal type.
+     */
+    private static IllegalArgumentException illegalPropertyType(final String key, final Object value) {
+        return new IllegalArgumentException(Errors.format(Errors.Keys.IllegalPropertyClass_2, key, value.getClass()));
     }
 
     /**
