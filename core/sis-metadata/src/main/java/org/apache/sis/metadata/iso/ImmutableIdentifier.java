@@ -29,7 +29,6 @@ import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.Immutable;
 import org.apache.sis.util.Deprecable;
-import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.metadata.iso.citation.Citations;
@@ -147,6 +146,7 @@ public class ImmutableIdentifier implements ReferenceIdentifier, Deprecable, Ser
         } else {
             remarks = null;
         }
+        validate();
     }
 
     /**
@@ -188,12 +188,12 @@ public class ImmutableIdentifier implements ReferenceIdentifier, Deprecable, Ser
     public ImmutableIdentifier(final Citation authority, final String codeSpace,
             final String code, final String version, final InternationalString remarks)
     {
-        ensureNonNull("code", code);
         this.code      = code;
         this.codeSpace = codeSpace;
         this.authority = authority;
         this.version   = version;
         this.remarks   = remarks;
+        validate();
     }
 
     /**
@@ -261,20 +261,30 @@ public class ImmutableIdentifier implements ReferenceIdentifier, Deprecable, Ser
             throw illegalPropertyType(AUTHORITY_KEY, value);
         }
         /*
-         * Complete the code space if it was not explicitly set. We take the first
-         * identifier if there is any, otherwise we take the shortest title.
+         * Complete the code space if it was not explicitly set. We take a short identifier (preferred) or title
+         * (as a fallback), with precedence given to Unicode identifier (see Citations.getIdentifier(…) for more
+         * information). Then the getCodeSpace(…) method applies additional restrictions in order to reduce the
+         * risk of false code space.
          */
         value = properties.get(CODESPACE_KEY);
-        if (value == null) {
-            final String id = Citations.getIdentifier(authority);
-            codeSpace = (id != null && CharSequences.isUnicodeIdentifier(id)) ? id : null;
+        if (value == null && !properties.containsKey(CODESPACE_KEY)) {
+            codeSpace = getCodeSpace(authority);
         } else if (value instanceof String) {
             codeSpace = (String) value;
         } else {
             throw illegalPropertyType(CODESPACE_KEY, value);
         }
-        if (code == null) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.MissingValueForProperty_1, CODE_KEY));
+        validate();
+    }
+
+    /**
+     * Ensures that the properties of this {@code ImmutableIdentifier} are valid.
+     */
+    private void validate() {
+        if (code == null || code.isEmpty()) {
+            throw new IllegalArgumentException(Errors.format((code == null)
+                    ? Errors.Keys.MissingValueForProperty_1
+                    : Errors.Keys.EmptyProperty_1, CODE_KEY));
         }
     }
 
@@ -333,6 +343,37 @@ public class ImmutableIdentifier implements ReferenceIdentifier, Deprecable, Ser
     @Override
     public String getCodeSpace() {
         return codeSpace;
+    }
+
+    /**
+     * Infers a code space from the given authority. First, this method takes a short identifier or title with
+     * preference for Unicode identifier - see {@link Citations#getIdentifier(Citation)} for more information.
+     * Next this method applies additional restrictions in order to reduce the risk of undesired code space.
+     * Those restrictions are arbitrary and may change in any future SIS version. Currently, the restriction
+     * is to accept only letters or digits.
+     *
+     * @param  authority The authority for which to get a code space.
+     * @return The code space, or {@code null} if none.
+     *
+     * @see Citations#getIdentifier(Citation)
+     */
+    private static String getCodeSpace(final Citation authority) {
+        final String codeSpace = Citations.getIdentifier(authority);
+        if (codeSpace != null) {
+            final int length = codeSpace.length();
+            if (length != 0) {
+                int i = 0;
+                do {
+                    final int c = codeSpace.charAt(i);
+                    if (!Character.isLetterOrDigit(c)) {
+                        return null;
+                    }
+                    i += Character.charCount(c);
+                } while (i < length);
+                return codeSpace;
+            }
+        }
+        return null;
     }
 
     /**

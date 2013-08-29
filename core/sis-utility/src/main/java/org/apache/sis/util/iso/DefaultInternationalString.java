@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.Locales;
 import org.apache.sis.util.ThreadSafe;
@@ -174,8 +175,17 @@ public class DefaultInternationalString extends AbstractInternationalString impl
         final boolean i18n = (string instanceof InternationalString);
         add(locale, i18n ? ((InternationalString) string).toString(locale) : string.toString());
         if (i18n && !(string instanceof SimpleInternationalString)) {
-            Logging.log(Types.class, "toInternationalString", // This is the public facade invoking this method.
-                    Messages.getResources(null).getLogRecord(Level.WARNING, Messages.Keys.LocalesDiscarded));
+            /*
+             * If the string may have more than one locale, log a warning telling that some locales
+             * may have been ignored. We declare Types.toInternationalString(…) as the source since
+             * it is the public facade invoking this method. We declare the source class using only
+             * its name rather than Types.class in order to avoid unnecessary real dependency.
+             */
+            final LogRecord record = Messages.getResources(null).getLogRecord(Level.WARNING, Messages.Keys.LocalesDiscarded);
+            record.setSourceClassName("org.apache.sis.util.iso.Types");
+            record.setSourceMethodName("toInternationalString");
+            record.setLoggerName("org.apache.sis.util.iso");
+            Logging.getLogger("org.apache.sis.util.iso").log(record);
         }
     }
 

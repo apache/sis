@@ -1514,7 +1514,7 @@ cmp:    while (ia < lga) {
      * Unicode identifier start} and all remaining characters (if any) are
      * {@linkplain Character#isUnicodeIdentifierPart(int) Unicode identifier parts}.
      *
-     * @param identifier The character sequence to test.
+     * @param  identifier The character sequence to test.
      * @return {@code true} if the given character sequence is a legal Unicode identifier.
      * @throws NullPointerException if the argument is null.
      */
