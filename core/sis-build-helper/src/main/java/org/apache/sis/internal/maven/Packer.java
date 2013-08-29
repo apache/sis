@@ -46,7 +46,7 @@ final class Packer implements FilenameFilter {
 
     /**
      * The Maven target directory. Shall contain the {@code "binaries"} sub-directory,
-     * which shall contains all JAR files collected by {@code sis-build-helper} plugin.
+     * which shall contain all JAR files collected by {@code sis-build-helper} plugin.
      */
     private final File targetDirectory;
 

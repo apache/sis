@@ -201,9 +201,9 @@ public class ImmutableIdentifier implements ReferenceIdentifier, Deprecable, Ser
 
     /**
      * Constructs an identifier from a set of properties. Keys are strings from the table below.
-     * Keys are case-insensitive, and leading and trailing spaces are ignored. The map given in
-     * argument shall contains at least a {@code "code"} property. Other properties listed in
-     * the table below are optional.
+     * The map given in argument shall contain an entry at least for the
+     * {@value org.opengis.metadata.Identifier#CODE_KEY} key.
+     * Other properties listed in the table below are optional.
      *
      * <table class="sis">
      *   <tr>

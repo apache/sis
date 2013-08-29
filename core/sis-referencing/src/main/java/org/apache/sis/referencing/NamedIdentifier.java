@@ -18,7 +18,7 @@ package org.apache.sis.referencing;
 
 import java.util.Map;
 import java.util.List;
-import java.util.Objects;
+import java.util.Locale;
 import org.opengis.util.NameSpace;
 import org.opengis.util.LocalName;
 import org.opengis.util.ScopedName;
@@ -34,6 +34,9 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.Immutable;
+
+// Related to JDK7
+import java.util.Objects;
 
 
 /**
@@ -112,17 +115,14 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      * If more control are wanted (for example adding remarks), use the
      * {@linkplain #NamedIdentifier(Map) constructor with a properties map}.
      *
-     * @param authority
-     *          The authority (e.g. {@link Citations#OGC} or {@link Citations#EPSG}),
-     *          or {@code null} if not available.
-     * @param code
-     *          The code. The {@link InternationalString#toString(Locale) code.toString(null)} return
-     *          value will be used for the {@link #getCode() code} property, and the complete international
-     *          string will be used for the {@link #getName() name} property.
+     * @param authority The authority (e.g. {@link Citations#OGC} or {@link Citations#EPSG}),
+     *                  or {@code null} if not available.
+     * @param code      The code. The {@code code.toString(Locale.ROOT)} return value will be used for the
+     *                  {@link #getCode() code} property, and the complete international string will be used
+     *                  for the {@link #getName() name} property.
      */
     public NamedIdentifier(final Citation authority, final InternationalString code) {
-        // The "null" locale argument is required for getting the unlocalized version.
-        this(authority, code.toString(null));
+        this(authority, code.toString(Locale.ROOT));
         name = createName(authority, code);
     }
 
@@ -206,7 +206,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
 
     /**
      * The last element in the sequence of {@linkplain #getParsedNames() parsed names}.
-     * By default, this is the same value than {@link #getCode()} provided as a local name.
+     * By default, this is the same value than the {@linkplain #getCode() code} provided as a local name.
      *
      * @return The last element in the list of {@linkplain #getParsedNames() parsed names}.
      *
@@ -219,7 +219,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
 
     /**
      * Returns the first element in the sequence of {@linkplain #getParsedNames() parsed names}.
-     * By default, this is the same value than {@link #getCodeSpace()} provided as a local name.
+     * By default, this is the same value than the {@linkplain #getCodeSpace() code space} provided as a local name.
      *
      * @return The first element in the list of {@linkplain #getParsedNames() parsed names}.
      *

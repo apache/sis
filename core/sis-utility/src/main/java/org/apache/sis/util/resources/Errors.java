@@ -154,7 +154,7 @@ public final class Errors extends IndexedResourceBundle {
         public static final int EmptyArgument_1 = 1;
 
         /**
-         * The dictionary shall contains at least one entry.
+         * The dictionary shall contain at least one entry.
          */
         public static final int EmptyDictionary = 54;
 

@@ -54,7 +54,7 @@ public final strictfp class HelpSCTest extends TestCase {
 
     /**
      * Tests the sub-command with the {@code --help} option.
-     * Shall contains only a subset of {@link #testDefault()}.
+     * Shall contain only a subset of {@link #testDefault()}.
      *
      * @throws InvalidOptionException Should never happen.
      */
