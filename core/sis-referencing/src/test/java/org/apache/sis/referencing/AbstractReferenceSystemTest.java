@@ -20,11 +20,12 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
 import org.opengis.test.Validators;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.apache.sis.test.Assert.*;
 
 
 /**
@@ -41,7 +42,7 @@ public final strictfp class AbstractReferenceSystemTest extends TestCase {
      * Tests {@link AbstractReferenceSystem}.
      */
     @Test
-    public void testReferenceSystem() {
+    public void testCreateFromMap() {
         final Map<String,Object> properties = new HashMap<>();
         assertNull(properties.put("name",       "This is a name"));
         assertNull(properties.put("scope",      "This is a scope"));
@@ -57,5 +58,24 @@ public final strictfp class AbstractReferenceSystemTest extends TestCase {
         assertEquals("scope_fr",   "Valide dans ce domaine", reference.getScope()  .toString(Locale.FRENCH));
         assertEquals("remarks",    "There is remarks",       reference.getRemarks().toString(Locale.ENGLISH));
         assertEquals("remarks_fr", "Voici des remarques",    reference.getRemarks().toString(Locale.FRENCH));
+    }
+
+    /**
+     * Tests serialization.
+     */
+    @Test
+    @DependsOnMethod("testCreateFromMap")
+    public void testSerialization() {
+        final Map<String,Object> properties = new HashMap<>(8);
+        assertNull(properties.put("code",       "4326"));
+        assertNull(properties.put("codeSpace",  "EPSG"));
+        assertNull(properties.put("scope",      "This is a scope"));
+        assertNull(properties.put("remarks",    "There is remarks"));
+        assertNull(properties.put("remarks_fr", "Voici des remarques"));
+
+        final AbstractReferenceSystem object = new AbstractReferenceSystem(properties);
+        Validators.validate(object);
+
+        assertNotSame(object, assertSerializedEquals(object));
     }
 }
