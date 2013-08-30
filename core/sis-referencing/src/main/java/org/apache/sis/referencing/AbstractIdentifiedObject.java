@@ -55,17 +55,23 @@ import static org.apache.sis.internal.util.CollectionsExt.immutableSet;
 
 
 /**
- * A base class for metadata applicable to reference system objects.
- * {@code IdentifiedObject} instances are created in two main ways:
+ * Base class for objects identified by a name or a code. Those objects are typically
+ * {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum geodetic datum}   (e.g. "<cite>World Geodetic System 1984</cite>"),
+ * {@linkplain org.apache.sis.referencing.crs.AbstractCRS Coordinate Reference System} (e.g. "<cite>WGS 84 / World Mercator</cite>") or
+ * {@linkplain org.apache.sis.referencing.operation.DefaultProjection map projection}  (e.g. "<cite>Mercator (variant A)</cite>").
+ * Those names, or a code (e.g. {@code "EPSG:3395"}) can be used for fetching an object from a database.
+ * However it is not sufficient to know the object name. We also need to know who define that name
+ * (the {@linkplain NamedIdentifier#getAuthority() authority}) since the same objects are often named differently
+ * depending on the providers, or conversely the same name is used for different objects depending on the provider.
  *
+ * <p>The main information stored in an {@code IdentifiedObject} are:</p>
  * <ul>
- *   <li>When {@link AuthorityFactory} is used to create an object, the {@linkplain ReferenceIdentifier#getAuthority()
- *       authority} and {@linkplain ReferenceIdentifier#getCode() authority code} values are set to the authority name
- *       of the factory object, and the authority code supplied by the client, respectively.</li>
- *   <li>When {@link ObjectFactory} creates an object, the {@linkplain #getName() name} is set to the value supplied
- *       by the client and all of the other metadata items are left empty.</li>
+ *   <li>a primary {@linkplain #getName() name}, considered by the object creator as the preferred name,</li>
+ *   <li>an arbitrary amount of {@linkplain #getAlias() aliases}, for example a list of names used by other providers,</li>
+ *   <li>an arbitrary amount of {@linkplain #getIdentifiers() identifiers}, typically primary keys in the provider database.</li>
  * </ul>
  *
+ * {@section Instantiation}
  * This class is conceptually <cite>abstract</cite>, even if it is technically possible to instantiate it.
  * Applications should instead instantiate the most specific subclass having a name starting by {@code Default}.
  * However exceptions to this rule may occur when it is not possible to identify the exact type.
@@ -74,6 +80,17 @@ import static org.apache.sis.internal.util.CollectionsExt.immutableSet;
  *           <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html"><cite>Well
  *           Known Text</cite></a>, for example when parsing a <code>LOCAL_CS</code> element. In such exceptional
  *           situation, a plain <code>AbstractCS</code> object may be instantiated.}
+ *
+ * {@code IdentifiedObject} instances are created in two main ways:
+ *
+ * <ul>
+ *   <li>Using an {@link ObjectFactory}, in which case all properties can be explicitely specified.</li>
+ *   <li>Using an {@link AuthorityFactory}, in which case only a code (typically a primary key) is specified.
+ *       The {@linkplain NamedIdentifier#getAuthority() authority}
+ *       and {@linkplain NamedIdentifier#getCode() authority code} values are set to the authority name
+ *       of the factory object, and the authority code supplied by the client, respectively.
+ *       All other information are fetched from the database.</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-1.2)
@@ -172,22 +189,22 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *   <tr>
      *     <td>{@value org.opengis.metadata.Identifier#AUTHORITY_KEY}</td>
      *     <td>{@link String} or {@link Citation}</td>
-     *     <td>{@link ReferenceIdentifier#getAuthority()} on the {@linkplain #getName() name}</td>
+     *     <td>{@link NamedIdentifier#getAuthority()} on the {@linkplain #getName() name}</td>
      *   </tr>
      *   <tr>
-     *     <td>{@value org.opengis.referencing.ReferenceIdentifier#CODE_KEY}</td>
+     *     <td>{@value org.opengis.metadata.Identifier#CODE_KEY}</td>
      *     <td>{@link String}</td>
-     *     <td>{@link ReferenceIdentifier#getCode()} on the {@linkplain #getName() name}</td>
+     *     <td>{@link NamedIdentifier#getCode()} on the {@linkplain #getName() name}</td>
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.ReferenceIdentifier#CODESPACE_KEY}</td>
      *     <td>{@link String}</td>
-     *     <td>{@link ReferenceIdentifier#getCodeSpace()} on the {@linkplain #getName() name}</td>
+     *     <td>{@link NamedIdentifier#getCodeSpace()} on the {@linkplain #getName() name}</td>
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.ReferenceIdentifier#VERSION_KEY}</td>
      *     <td>{@link String}</td>
-     *     <td>{@link ReferenceIdentifier#getVersion()} on the {@linkplain #getName() name}</td>
+     *     <td>{@link NamedIdentifier#getVersion()} on the {@linkplain #getName() name}</td>
      *   </tr>
      *   <tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#IDENTIFIERS_KEY}</td>

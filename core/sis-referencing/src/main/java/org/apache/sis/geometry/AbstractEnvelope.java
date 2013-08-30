@@ -612,8 +612,8 @@ public abstract class AbstractEnvelope implements Envelope {
      * {@linkplain #getDimension() dimension}, or if the {@linkplain #getSpan(int) span} of
      * at least one axis is negative, 0 or {@link Double#NaN NaN}.
      *
-     * {@note Strictly speaking, there is an ambiguity if the span of at least one axis is infinite
-     *        while all other axes meet the criterion for an empty envelope. In such cases, this method
+     * {@note Strictly speaking, there is an ambiguity if a span is <code>NaN</code> or if the envelope
+     *        contains both 0 and infinite spans (since 0⋅∞ = <code>NaN</code>). In such cases, this method
      *        arbitrarily ignores the infinite values and returns <code>true</code>.}
      *
      * If {@code isEmpty()} returns {@code false}, then {@link #isAllNaN()} is guaranteed to
