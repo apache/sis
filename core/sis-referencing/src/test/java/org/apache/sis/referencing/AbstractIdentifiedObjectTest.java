@@ -20,11 +20,13 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
 import org.opengis.test.Validators;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.apache.sis.test.Assert.*;
+import static org.apache.sis.metadata.iso.citation.HardCodedCitations.EPSG;
 
 
 /**
@@ -56,10 +58,59 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
         assertEquals("name",       "This is a name",      object.getName().getCode());
         assertNull  ("codeSpace",                         object.getName().getCodeSpace());
         assertNull  ("version",                           object.getName().getVersion());
-        assertEquals("remarks",    "There is remarks",    object.getRemarks().toString(Locale.ENGLISH));
-        assertEquals("remarks_fr", "Voici des remarques", object.getRemarks().toString(Locale.FRENCH));
+        assertTrue  ("aliases",                           object.getAlias().isEmpty());
         assertTrue  ("identifiers",                       object.getIdentifiers().isEmpty());
         assertNull  ("identifier",                        object.getIdentifier());
-        assertTrue  ("aliases",                           object.getAlias().isEmpty());
+        assertEquals("ID",         "Thisisaname",         object.getID());
+        assertEquals("remarks",    "There is remarks",    object.getRemarks().toString(Locale.ENGLISH));
+        assertEquals("remarks_fr", "Voici des remarques", object.getRemarks().toString(Locale.FRENCH));
+    }
+
+    /**
+     * Tests identifiers getter. The methods of interest to this test are:
+     *
+     * <ul>
+     *   <li>{@link AbstractIdentifiedObject#getIdentifiers()}</li>
+     *   <li>{@link AbstractIdentifiedObject#getIdentifier()}</li>
+     *   <li>{@link AbstractIdentifiedObject#getID()}</li>
+     * </ul>
+     *
+     * Note that {@code getID()} were also tested in {@link #testCreateFromMap()}
+     * but in the absence of identifiers.
+     */
+    @Test
+    @DependsOnMethod("testCreateFromMap")
+    public void testGetIdentifiers() {
+        final Map<String,Object> properties = new HashMap<>(8);
+        assertNull(properties.put("name", "WGS 84"));
+        assertNull(properties.put("identifiers", new NamedIdentifier[] {
+            new NamedIdentifier(EPSG, "4326"),
+            new NamedIdentifier(EPSG, "IgnoreMe")
+        }));
+
+        final AbstractIdentifiedObject object = new AbstractIdentifiedObject(properties);
+        Validators.validate(object);
+
+        assertEquals("name",        "WGS 84",                     object.getName().getCode());
+        assertEquals("identifiers", "[EPSG:4326, EPSG:IgnoreMe]", object.getIdentifiers().toString());
+        assertEquals("identifier",  "EPSG:4326",                  object.getIdentifier().toString());
+        assertEquals("ID",          "EPSG4326",                   object.getID());
+    }
+
+    /**
+     * Tests serialization.
+     */
+    @Test
+    @DependsOnMethod("testCreateFromMap")
+    public void testSerialization() {
+        final Map<String,Object> properties = new HashMap<>(8);
+        assertNull(properties.put("code",      "4326"));
+        assertNull(properties.put("codeSpace", "EPSG"));
+        assertNull(properties.put("remarks",   "There is remarks"));
+
+        final AbstractIdentifiedObject object = new AbstractIdentifiedObject(properties);
+        Validators.validate(object);
+
+        assertNotSame(object, assertSerializedEquals(object));
     }
 }
