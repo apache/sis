@@ -26,10 +26,15 @@ import org.junit.BeforeClass;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.4
  * @module
  */
 @Suite.SuiteClasses({
+    org.apache.sis.io.wkt.ConventionTest.class,
+    org.apache.sis.io.wkt.SymbolsTest.class,
+    org.apache.sis.io.wkt.FormatterTest.class,
+    org.apache.sis.referencing.NamedIdentifierTest.class,
+    org.apache.sis.referencing.AbstractIdentifiedObjectTest.class,
     org.apache.sis.geometry.AbstractDirectPositionTest.class,
     org.apache.sis.geometry.GeneralDirectPositionTest.class,
     org.apache.sis.geometry.DirectPosition1DTest.class,
@@ -38,10 +43,7 @@ import org.junit.BeforeClass;
     org.apache.sis.geometry.GeneralEnvelopeTest.class,
     org.apache.sis.geometry.SubEnvelopeTest.class,
     org.apache.sis.geometry.ImmutableEnvelopeTest.class,
-    org.apache.sis.geometry.Envelope2DTest.class,
-    org.apache.sis.io.wkt.ConventionTest.class,
-    org.apache.sis.io.wkt.SymbolsTest.class,
-    org.apache.sis.io.wkt.FormatterTest.class
+    org.apache.sis.geometry.Envelope2DTest.class
 })
 public final strictfp class ReferencingTestSuite extends TestSuite {
     /**
