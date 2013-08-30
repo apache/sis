@@ -733,6 +733,14 @@ Apache SIS is a free software, Java language library for developing geospatial a
     </pluginRepository>
   </pluginRepositories>
 
+  <repositories>
+    <!--  UCAR repository from which to download the NetCDF library. -->
+    <repository>
+      <id>UCAR</id>
+      <name>UCAR repository</name>
+      <url>https://artifacts.unidata.ucar.edu/content/repositories/unidata-releases</url>
+    </repository>
+  </repositories>
 
 
   <!-- ==============================================================

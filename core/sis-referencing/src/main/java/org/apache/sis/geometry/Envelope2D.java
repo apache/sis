@@ -37,7 +37,7 @@ import static org.apache.sis.math.MathFunctions.isPositive;
 import static org.apache.sis.math.MathFunctions.isNegative;
 import static org.apache.sis.math.MathFunctions.isSameSign;
 import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
-import static org.apache.sis.internal.referencing.Utilities.isPoleToPole;
+import static org.apache.sis.internal.referencing.Formulas.isPoleToPole;
 
 // Following imports are needed because we can't extend AbstractEnvelope.
 // We want to write this class as if it was an AbstractEnvelope subclass.

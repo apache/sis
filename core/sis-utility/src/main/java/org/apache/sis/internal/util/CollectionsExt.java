@@ -50,7 +50,7 @@ import org.apache.sis.internal.jdk8.Function;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-3.00)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 public final class CollectionsExt extends Static {
@@ -92,25 +92,79 @@ public final class CollectionsExt extends Static {
     }
 
     /**
+     * Returns the given collection if non-empty, or {@code null} if the given collection is null or empty.
+     * This method is generally not recommended, since public API should prefer empty collection instead of
+     * null. However it is occasionally useful for managing private fields, especially for inter-operability
+     * with frameworks that may expect or return null (e.g. if we want to exclude completely an empty collection
+     * from marshalling with JAXB).
+     *
+     * @param  <T> The type of the collection.
+     * @param  <E> The type of elements in the collection.
+     * @param  c   The collection, or {@code null}.
+     * @return The given collection, or an empty set of the given collection was null.
+     */
+    public static <T extends Collection<E>, E> T nonEmpty(final T c) {
+        return (c != null && c.isEmpty()) ? null : c;
+    }
+
+    /**
+     * Returns the given collection, or {@link Collections#EMPTY_SET} if the given collection is null.
+     *
+     * @param  <E> The type of elements in the collection.
+     * @param  c The collection, or {@code null}.
+     * @return The given collection, or an empty set of the given collection was null.
+     */
+    public static <E> Collection<E> nonNull(final Collection<E> c) {
+        return (c != null) ? c : Collections.<E>emptySet();
+    }
+
+    /**
+     * Returns the given set, or {@link Collections#EMPTY_SET} if the given set is null.
+     *
+     * @param  <E> The type of elements in the collection.
+     * @param  c The collection, or {@code null}.
+     * @return The given collection, or an empty set of the given collection was null.
+     */
+    public static <E> Set<E> nonNull(final Set<E> c) {
+        return (c != null) ? c : Collections.<E>emptySet();
+    }
+
+    /**
      * Returns the specified array as an immutable set, or {@code null} if the array is null.
      * If the given array contains duplicated elements, i.e. elements that are equal in the
      * sense of {@link Object#equals(Object)}, then only the last instance of the duplicated
      * values will be included in the returned set.
      *
-     * @param  <E> The type of array elements.
-     * @param  array The array to copy in a set. May be {@code null}.
+     * @param  <E>         The type of array elements.
+     * @param  excludeNull {@code true} for excluding the {@code null} element from the returned set.
+     * @param  array       The array to copy in a set. May be {@code null} or contain null elements.
      * @return A set containing the array elements, or {@code null} if the given array was null.
      *
      * @see Collections#unmodifiableSet(Set)
      */
-    public static <E> Set<E> immutableSet(final E... array) {
+    @SuppressWarnings("fallthrough")
+    public static <E> Set<E> immutableSet(final boolean excludeNull, final E... array) {
         if (array == null) {
             return null;
         }
         switch (array.length) {
-            case 0:  return Collections.emptySet();
-            case 1:  return Collections.singleton(array[0]);
-            default: return Collections.unmodifiableSet(new LinkedHashSet<E>(Arrays.asList(array)));
+            case 1: {
+                final E element = array[0];
+                if (element != null || !excludeNull) {
+                    return Collections.singleton(element);
+                }
+                // Fallthrough for an empty set.
+            }
+            case 0: {
+                return Collections.emptySet();
+            }
+            default: {
+                final Set<E> set = new LinkedHashSet<E>(Arrays.asList(array));
+                if (excludeNull) {
+                    set.remove(null);
+                }
+                return unmodifiableOrCopy(set);
+            }
         }
     }
 

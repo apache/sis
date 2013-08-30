@@ -37,7 +37,7 @@ import org.apache.sis.referencing.CRS;
 
 import static org.apache.sis.util.ArgumentChecks.*;
 import static org.apache.sis.math.MathFunctions.isNegative;
-import static org.apache.sis.internal.referencing.Utilities.isPoleToPole;
+import static org.apache.sis.internal.referencing.Formulas.isPoleToPole;
 
 // Related to JDK7
 import org.apache.sis.internal.jdk7.Objects;
@@ -88,6 +88,11 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
     ArrayEnvelope(final double[] ordinates) {
         this.ordinates = ordinates;
     }
+
+    /*
+     * Constructors below this point have public access because if we decided to make class
+     * ArrayEnvelope public, then we would probably want to make those constructors public too.
+     */
 
     /**
      * Constructs an envelope defined by two corners given as direct positions.
