@@ -26,11 +26,15 @@ import java.util.LinkedHashMap;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.Locales;
 import org.apache.sis.util.ThreadSafe;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.resources.Messages;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 
@@ -49,6 +53,8 @@ import org.apache.sis.internal.jdk7.Objects;
  * @since   0.3 (derived from geotk-2.1)
  * @version 0.3
  * @module
+ *
+ * @see Types#toInternationalString(Map, String)
  */
 @ThreadSafe
 public class DefaultInternationalString extends AbstractInternationalString implements Serializable {
@@ -98,6 +104,8 @@ public class DefaultInternationalString extends AbstractInternationalString impl
      * will not be reflected into this international string.
      *
      * @param strings The strings in various locales, or {@code null} if none.
+     *
+     * @see Types#toInternationalString(Map, String)
      */
     public DefaultInternationalString(final Map<Locale,String> strings) {
         if (isNullOrEmpty(strings)) {
@@ -124,8 +132,7 @@ public class DefaultInternationalString extends AbstractInternationalString impl
      *
      * @param  locale The locale for the {@code string} value.
      * @param  string The localized string.
-     * @throws IllegalArgumentException if a different string value was already set for
-     *         the given locale.
+     * @throws IllegalArgumentException if a different string value was already set for the given locale.
      */
     public synchronized void add(final Locale locale, final String string) throws IllegalArgumentException {
         ArgumentChecks.ensureNonNull("locale", locale);
@@ -154,6 +161,32 @@ public class DefaultInternationalString extends AbstractInternationalString impl
                     Errors.Keys.ValueAlreadyDefined_1, locale));
         }
         defaultValue = null; // Will be recomputed when first needed.
+    }
+
+    /**
+     * Adds the given character sequence. If the given sequence is an other {@link InternationalString} instance,
+     * then only the string for the given locale is added. This method is for {@link Types} internal usage only.
+     *
+     * @param  locale The locale for the {@code string} value.
+     * @param  string The character sequence to add.
+     * @throws IllegalArgumentException if a different string value was already set for the given locale.
+     */
+    final void add(final Locale locale, final CharSequence string) throws IllegalArgumentException {
+        final boolean i18n = (string instanceof InternationalString);
+        add(locale, i18n ? ((InternationalString) string).toString(locale) : string.toString());
+        if (i18n && !(string instanceof SimpleInternationalString)) {
+            /*
+             * If the string may have more than one locale, log a warning telling that some locales
+             * may have been ignored. We declare Types.toInternationalString(…) as the source since
+             * it is the public facade invoking this method. We declare the source class using only
+             * its name rather than Types.class in order to avoid unnecessary real dependency.
+             */
+            final LogRecord record = Messages.getResources(null).getLogRecord(Level.WARNING, Messages.Keys.LocalesDiscarded);
+            record.setSourceClassName("org.apache.sis.util.iso.Types");
+            record.setSourceMethodName("toInternationalString");
+            record.setLoggerName("org.apache.sis.util.iso");
+            Logging.getLogger("org.apache.sis.util.iso").log(record);
+        }
     }
 
     /**

@@ -140,7 +140,7 @@ public enum FunctionProperty {
     ORDER_REVERSING;
 
     /**
-     * Bijective functions shall contains all the value in this set.
+     * Bijective functions shall contain all the value in this set.
      *
      * @see #isBijective(Set)
      */

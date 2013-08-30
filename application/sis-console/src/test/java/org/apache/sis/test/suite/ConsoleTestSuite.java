@@ -26,13 +26,14 @@ import org.junit.BeforeClass;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.4
  * @module
  */
 @Suite.SuiteClasses({
     org.apache.sis.console.SubCommandTest.class,
     org.apache.sis.console.HelpSCTest.class,
     org.apache.sis.console.AboutSCTest.class,
+    org.apache.sis.console.MimeTypeSCTest.class,
     org.apache.sis.console.MetadataSCTest.class
 })
 public final strictfp class ConsoleTestSuite extends TestSuite {

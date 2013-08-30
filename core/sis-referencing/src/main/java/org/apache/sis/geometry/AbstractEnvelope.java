@@ -606,10 +606,16 @@ public abstract class AbstractEnvelope implements Envelope {
     }
 
     /**
-     * Determines whether or not this envelope is empty. An envelope is non-empty only if it has
-     * at least one {@linkplain #getDimension() dimension}, and the {@linkplain #getSpan(int) span}
-     * is greater than 0 along all dimensions. Note that {@link #isAllNaN()} always returns
-     * {@code false} for a non-empty envelope, but the converse is not always true.
+     * Determines whether or not this envelope is empty. An envelope is empty if it has zero
+     * {@linkplain #getDimension() dimension}, or if the {@linkplain #getSpan(int) span} of
+     * at least one axis is negative, 0 or {@link Double#NaN NaN}.
+     *
+     * {@note Strictly speaking, there is an ambiguity if a span is <code>NaN</code> or if the envelope
+     *        contains both 0 and infinite spans (since 0⋅∞ = <code>NaN</code>). In such cases, this method
+     *        arbitrarily ignores the infinite values and returns <code>true</code>.}
+     *
+     * If {@code isEmpty()} returns {@code false}, then {@link #isAllNaN()} is guaranteed to
+     * also return {@code false}. However the converse is not always true.
      *
      * @return {@code true} if this envelope is empty.
      *
@@ -632,10 +638,10 @@ public abstract class AbstractEnvelope implements Envelope {
 
     /**
      * Returns {@code false} if at least one ordinate value is not {@linkplain Double#NaN NaN}.
-     * This {@code isAllNaN()} check is a little bit different than the {@link #isEmpty()} check
-     * since it returns {@code false} for a partially initialized envelope, while {@code isEmpty()}
-     * returns {@code false} only after all dimensions have been initialized. More specifically,
-     * the following rules apply:
+     * This {@code isAllNaN()} check is different than the {@link #isEmpty()} check since it
+     * returns {@code false} for a partially initialized envelope, while {@code isEmpty()}
+     * returns {@code false} only after all dimensions have been initialized.
+     * More specifically, the following rules apply:
      *
      * <ul>
      *   <li>If {@code isAllNaN() == true}, then {@code isEmpty() == true}</li>
@@ -643,7 +649,7 @@ public abstract class AbstractEnvelope implements Envelope {
      *   <li>The converse of the above-cited rules are not always true.</li>
      * </ul>
      *
-     * Note that a all-NaN envelope can still have a non-null
+     * Note that an all-NaN envelope can still have a non-null
      * {@linkplain #getCoordinateReferenceSystem() coordinate reference system}.
      *
      * @return {@code true} if this envelope has NaN values.

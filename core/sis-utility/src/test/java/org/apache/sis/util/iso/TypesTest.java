@@ -17,8 +17,11 @@
 package org.apache.sis.util.iso;
 
 import java.util.Set;
+import java.util.Map;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.HashMap;
+import java.util.TreeMap;
 import java.util.Locale;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Address;
@@ -31,7 +34,7 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.opengis.test.Assert.*;
 
 
 /**
@@ -39,10 +42,48 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 public final strictfp class TypesTest extends TestCase {
+    /**
+     * Tests the {@link Types#toInternationalString(Map, String)} method.
+     */
+    @Test
+    public void testToInternationalString() {
+        testToInternationalString(new HashMap<String,Object>());
+        testToInternationalString(new TreeMap<String,Object>());
+    }
+
+    /**
+     * Implementation of {@link #testToInternationalString()} using the given map implementation.
+     */
+    private static void testToInternationalString(final Map<String,Object> properties) {
+        assertNull(properties.put("name",       "Some name"));
+        assertNull(properties.put("identifier", "Some identifier"));
+        assertNull(properties.put("code",       "Some code"));
+        assertNull(properties.put("codeSpace",  "Some code space"));
+        assertNull(properties.put("authority",  "Some authority"));
+        assertNull(properties.put("version",    "Some version"));
+        assertNull(properties.put("remarks",    "Some remarks"));
+        assertNull(Types.toInternationalString(properties, "dummy"));
+
+        InternationalString i18n = Types.toInternationalString(properties, "remarks");
+        assertInstanceOf("Single locale", SimpleInternationalString.class, i18n);
+        assertEquals("Some remarks", i18n.toString());
+
+        assertNull(properties.put("remarks_fr", "Une remarque"));
+        i18n = Types.toInternationalString(properties, "remarks");
+        assertInstanceOf("Two locales", DefaultInternationalString.class, i18n);
+        assertEquals("Some remarks", i18n.toString(Locale.ROOT));
+        assertEquals("Une remarque", i18n.toString(Locale.FRENCH));
+
+        assertNotNull(properties.remove("remarks"));
+        i18n = Types.toInternationalString(properties, "remarks");
+        assertInstanceOf("Single locale", SimpleInternationalString.class, i18n);
+        assertEquals("Une remarque", i18n.toString());
+    }
+
     /**
      * Tests the {@link Types#getStandardName(Class)} method.
      */

@@ -308,6 +308,8 @@ public final class IdentifiedObjects extends Static {
      */
     public static boolean nameMatches(final IdentifiedObject object, final String name) {
         if (object instanceof AbstractIdentifiedObject) {
+            // DefaultCoordinateSystemAxis overrides this method.
+            // We really need to delegate to the overridden method.
             return ((AbstractIdentifiedObject) object).nameMatches(name);
         } else {
             ensureNonNull("object", object);

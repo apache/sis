@@ -425,7 +425,7 @@ public final strictfp class PropertyAccessorTest extends TestCase {
         assertInstanceOf("alternateTitles", Collection.class, oldValue);
         assertTrue("alternateTitles", ((Collection<?>) oldValue).isEmpty());
 
-        // Insert the second value. Old collection shall contains the first value.
+        // Insert the second value. Old collection shall contain the first value.
         oldValue = accessor.set(index, instance, conversion ? text2 : title2, RETURN_PREVIOUS);
         assertInstanceOf("alternateTitles", Collection.class, oldValue);
         oldValue = getSingleton((Collection<?>) oldValue);
