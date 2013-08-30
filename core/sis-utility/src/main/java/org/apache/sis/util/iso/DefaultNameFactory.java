@@ -222,10 +222,10 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
      * array is 1, or an instance of {@link DefaultScopedName} if the length of the array is 2
      * or more.
      *
-     * @param  scope The {@linkplain AbstractName#scope() scope} of the generic name to
-     *         be created, or {@code null} for a global namespace.
-     * @param  parsedNames The local names as an array of {@link String} or {@link InternationalString}
-     *         instances. This array shall contains at least one element.
+     * @param  scope The {@linkplain AbstractName#scope() scope} of the generic name to be created,
+     *         or {@code null} for a global namespace.
+     * @param  parsedNames The local names as an array of {@link String} or {@link InternationalString} instances.
+     *         This array shall contain at least one element.
      * @return The generic name for the given parsed names.
      * @throws NullArgumentException If the given array is empty.
      */

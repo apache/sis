@@ -17,10 +17,37 @@
 
 /**
  * Command line interface for Apache SIS.
+ * See {@link org.apache.sis.console.Command} for the list of supported commands.
+ *
+ * {@section SIS installation on remote machines}
+ * Some sub-commands can operate on SIS installation on remote machines, provided
+ * that the remote Java Virtual Machine has been started with the following options:
+ *
+ * {@preformat shell
+ *   java -Dcom.sun.management.jmxremote.port=1099 \
+ *        -Dcom.sun.management.jmxremote.authenticate=false \
+ *        -Dcom.sun.management.jmxremote.ssl=false \
+ *        -Dcom.sun.management.jmxremote.local.only=true \
+ *        <other options>
+ * }
+ *
+ * If the port number is different than {@value java.rmi.registry.Registry#REGISTRY_PORT}, then it must be specified
+ * to the {@code sis} subcommand after the host name. For example if the port number has been set to 9999, then the
+ * {@code about} sub-command shall be invoked as below:
+ *
+ * {@preformat shell
+ *   java org.apache.sis.console.Command about localhost:9999
+ * }
+ *
+ * The {@code com.sun.management.jmxremote.local.only} property is recommended if the remote JVM is an other
+ * JVM instance running on the local machine. Otherwise this property can be omitted for debugging purpose.
+ * For production environment, see the security settings documented on the
+ * <a href="http://docs.oracle.com/javase/7/docs/technotes/guides/management/agent.html">Monitoring
+ * and Management Using JMX Technology</a> page.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.4
  * @module
  */
 package org.apache.sis.console;

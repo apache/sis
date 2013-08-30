@@ -23,7 +23,7 @@ import static java.lang.Math.*;
 
 
 /**
- * Miscellaneous utilities which should not be put in public API.
+ * Miscellaneous numerical utilities which should not be put in public API.
  * This class contains methods that depend on hard-coded arbitrary tolerance threshold, and we
  * do not want to expose publicly those arbitrary values (or at least not in a too direct way).
  *
@@ -32,7 +32,7 @@ import static java.lang.Math.*;
  * @version 0.3
  * @module
  */
-public final class Utilities extends Static {
+public final class Formulas extends Static {
     /**
      * Default tolerance threshold for comparing ordinate values in a projected CRS,
      * assuming that the unit of measurement is metre. This is not a tolerance for
@@ -56,7 +56,7 @@ public final class Utilities extends Static {
     /**
      * Do not allow instantiation of this class.
      */
-    private Utilities() {
+    private Formulas() {
     }
 
     /**

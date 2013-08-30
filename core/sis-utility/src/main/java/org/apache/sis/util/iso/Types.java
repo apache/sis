@@ -18,6 +18,7 @@ package org.apache.sis.util.iso;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.SortedMap;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.Properties;
@@ -35,7 +36,9 @@ import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.apache.sis.util.Static;
+import org.apache.sis.util.Locales;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.BackingStoreException;
@@ -59,7 +62,7 @@ import org.apache.sis.internal.system.DefaultFactories;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-3.19)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 public final class Types extends Static {
@@ -549,6 +552,102 @@ public final class Types extends Static {
             return (InternationalString) string;
         }
         return new SimpleInternationalString(string.toString());
+    }
+
+    /**
+     * Returns an international strings for the values in the given properties map, or {@code null} if none.
+     * If the given map is {@code null}, then this method returns {@code null}.
+     * Otherwise this method iterates over the entries having a key that starts with the specified prefix.
+     * For each such key:
+     *
+     * <ul>
+     *   <li>The part after the prefix is parsed as specified by the {@link Locales#parseSuffix(String, String)}
+     *       method.</li>
+     *   <li>If {@code parseSuffix(…)} returned a non-null locale, then the value for that locale is added in the
+     *       international string to be returned.</li>
+     * </ul>
+     *
+     * For example the given map may contains a {@code "remarks"} property defined by values associated to the
+     * {@code "remarks_en"} and {@code "remarks_fr"} keys, for English and French locales respectively.
+     *
+     * @param  properties The map from which to get the string values for an international string, or {@code null}.
+     * @param  prefix     The prefix of keys to use for creating the international string.
+     * @return The international string, or {@code null} if the given map is null or does not contain values
+     *         associated to keys starting with the given prefix.
+     * @throws IllegalArgumentException If a key starts by the given prefix and:
+     *         <ul>
+     *           <li>The key suffix is an illegal {@link Locale} code,</li>
+     *           <li>or the value associated to that key is a not a {@link CharSequence}.</li>
+     *         </ul>
+     *
+     * @see Locales#parseSuffix(String, String)
+     * @see DefaultInternationalString#DefaultInternationalString(Map)
+     *
+     * @since 0.4
+     */
+    public static InternationalString toInternationalString(Map<String,?> properties, final String prefix)
+            throws IllegalArgumentException
+    {
+        ArgumentChecks.ensureNonEmpty("prefix", prefix);
+        if (properties == null) {
+            return null;
+        }
+        /*
+         * If the given map is an instance of SortedMap using the natural ordering of keys,
+         * we can skip all keys that lexicographically precedes the given prefix.
+         */
+        boolean isSorted = false;
+        if (properties instanceof SortedMap<?,?>) {
+            final SortedMap<String,?> sorted = (SortedMap<String,?>) properties;
+            if (sorted.comparator() == null) { // We want natural ordering.
+                properties = sorted.tailMap(prefix);
+                isSorted = true;
+            }
+        }
+        /*
+         * Now iterates over the map entry and lazily create the InternationalString
+         * only when first needed. In most cases, we have 0 or 1 matching entry.
+         */
+        CharSequence i18n = null;
+        Locale firstLocale = null;
+        DefaultInternationalString dis = null;
+        final int length = prefix.length();
+        for (final Map.Entry<String,?> entry : properties.entrySet()) {
+            final String key = entry.getKey();
+            final Locale locale = Locales.parseSuffix(prefix, key);
+            if (locale == null) {
+                if (isSorted) {
+                    /*
+                     * If the map is sorted using natural ordering, we can stop as soon as we find a key which
+                     * is lexicographically greater than prefix + '_'. We check 'startsWith' last since the other
+                     * tests are cheaper and usually sufficient.
+                     */
+                    if (key.length() <= length || key.charAt(length) > '_' || !key.startsWith(prefix)) {
+                        break;
+                    }
+                }
+            } else {
+                final Object value = entry.getValue();
+                if (value != null) {
+                    if (!(value instanceof CharSequence)) {
+                        throw new IllegalArgumentException(Errors.format(
+                                Errors.Keys.IllegalPropertyClass_2, key, value.getClass()));
+                    }
+                    if (i18n == null) {
+                        i18n = (CharSequence) value;
+                        firstLocale = locale;
+                    } else {
+                        if (dis == null) {
+                            dis = new DefaultInternationalString();
+                            dis.add(firstLocale, i18n);
+                            i18n = dis;
+                        }
+                        dis.add(locale, (CharSequence) value);
+                    }
+                }
+            }
+        }
+        return toInternationalString(i18n);
     }
 
     /**

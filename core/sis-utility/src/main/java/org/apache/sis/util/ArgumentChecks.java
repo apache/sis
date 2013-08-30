@@ -16,6 +16,7 @@
  */
 package org.apache.sis.util;
 
+import java.util.Map; // For javadoc
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.geometry.Envelope;
@@ -155,8 +156,9 @@ public final class ArgumentChecks extends Static {
      *         Can be {@code null} if the name is unknown.
      * @param  expectedType the expected type (class or interface).
      * @param  value The value to check, or {@code null}.
-     * @throws IllegalArgumentException if {@code value} is non-null and is not assignable
-     *         to the given type.
+     * @throws IllegalArgumentException if {@code value} is non-null and is not assignable to the given type.
+     *
+     * @see org.apache.sis.util.collection.Containers#property(Map, Object, Class)
      */
     public static void ensureCanCast(final String name, final Class<?> expectedType, final Object value)
             throws IllegalArgumentException
