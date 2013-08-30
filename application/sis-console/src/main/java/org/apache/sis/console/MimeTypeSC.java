@@ -23,10 +23,17 @@ import java.net.URISyntaxException;
 import org.apache.sis.storage.DataStores;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.CharSequences;
 
 
 /**
  * The "mime-type" subcommand.
+ * This sub-command reproduces the functionality of the following Unix command,
+ * except that {@code MimeTypeSC} uses the SIS detection mechanism instead than the OS one.
+ *
+ * {@preformat shell
+ *   file --mime-type <files>
+ * }
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
@@ -51,28 +58,50 @@ final class MimeTypeSC extends SubCommand {
      */
     @Override
     public int run() throws InvalidOptionException, IOException, DataStoreException, URISyntaxException {
-        if (hasUnexpectedFileCount(1, 1)) {
+        if (hasUnexpectedFileCount(1, Integer.MAX_VALUE)) {
             return Command.INVALID_ARGUMENT_EXIT_CODE;
         }
-        final String file = files.get(0);
-        final URI uri;
-        try {
-            uri = new URI(file);
-        } catch (URISyntaxException e) {
-            canNotOpen(0, e);
-            return Command.IO_EXCEPTION_EXIT_CODE;
+        /*
+         * Computes the width of the first column, which will contain file names.
+         */
+        int width = 0;
+        for (final String file : files) {
+            final int length = file.length() + 1;
+            if (length > width) {
+                width = length;
+            }
         }
-        String type;
-        if (!uri.isAbsolute()) {
-            // If the URI is not absolute, we will not be able to convert to Path.
-            // Open as a String, leaving the conversion to DataStore implementations.
-            type = DataStores.probeContentType(file);
-        } else {
-            type = DataStores.probeContentType(uri);
-        }
-        if (type != null) {
-            out.println(type);
-            out.flush();
+        /*
+         * Now detect and print MIME type.
+         */
+        for (final String file : files) {
+            final URI uri;
+            try {
+                uri = new URI(file);
+            } catch (URISyntaxException e) {
+                canNotOpen(0, e);
+                return Command.IO_EXCEPTION_EXIT_CODE;
+            }
+            String type;
+            if (!uri.isAbsolute()) {
+                // If the URI is not absolute, we will not be able to convert to Path.
+                // Open as a String, leaving the conversion to DataStore implementations.
+                type = DataStores.probeContentType(file);
+            } else {
+                type = DataStores.probeContentType(uri);
+            }
+            /*
+             * Output of Unix "file --mime-type" Unix command is of the form:
+             *
+             *   file: type
+             */
+            if (type != null) {
+                out.print(file);
+                out.print(':');
+                out.print(CharSequences.spaces(width - file.length()));
+                out.println(type);
+                out.flush();
+            }
         }
         return 0;
     }

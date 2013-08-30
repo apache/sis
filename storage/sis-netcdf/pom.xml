@@ -139,13 +139,4 @@ Bridge between NetCDF Climate and Forecast (CF) convention and ISO 19115 metadat
     </dependency>
   </dependencies>
 
-  <!--  UCAR repository from which to download the NetCDF library. -->
-  <repositories>
-    <repository>
-      <id>UCAR</id>
-      <name>UCAR repository</name>
-      <url>https://artifacts.unidata.ucar.edu/content/repositories/unidata-releases</url>
-    </repository>
-  </repositories>
-
 </project>

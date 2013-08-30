@@ -74,6 +74,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int CanNotComputeDerivative = 44;
 
         /**
+         * Can not connect to “{0}”.
+         */
+        public static final int CanNotConnectTo_1 = 114;
+
+        /**
          * Can not convert from type ‘{0}’ to type ‘{1}’.
          */
         public static final int CanNotConvertFromType_2 = 72;
@@ -149,7 +154,7 @@ public final class Errors extends IndexedResourceBundle {
         public static final int EmptyArgument_1 = 1;
 
         /**
-         * The dictionary shall contains at least one entry.
+         * The dictionary shall contain at least one entry.
          */
         public static final int EmptyDictionary = 54;
 
@@ -241,7 +246,7 @@ public final class Errors extends IndexedResourceBundle {
         public static final int IllegalOrdinateRange_3 = 5;
 
         /**
-         * Property ‘{0}’ can be associated to an instance of ‘{1}’.
+         * Property ‘{0}’ does not accept instances of ‘{1}’.
          */
         public static final int IllegalPropertyClass_2 = 62;
 
@@ -539,6 +544,11 @@ public final class Errors extends IndexedResourceBundle {
          * Command “{0}” is not recognized.
          */
         public static final int UnknownCommand_1 = 102;
+
+        /**
+         * Unknown enumeration value: {0}.
+         */
+        public static final int UnknownEnumValue_1 = 115;
 
         /**
          * Format of “{0}” is not recognized.

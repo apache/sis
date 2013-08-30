@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.netcdf;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.lang.reflect.Method;
@@ -34,6 +35,7 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.util.logging.WarningListeners;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ThreadSafe;
 import org.apache.sis.util.Version;
 
@@ -139,6 +141,9 @@ public class NetcdfStoreProvider extends DataStoreProvider {
          * The UCAR library is an optional dependency. If that library is present and the
          * input is a String, then the following code may trigs a large amount of classes
          * loading.
+         *
+         * Note that the UCAR library expects a String argument, not a File, because it
+         * has special cases for "file:", "http:", "nodods:" and "slurp:" protocols.
          */
         if (!isSupported) {
             final String path = storage.getStorageAs(String.class);
@@ -155,6 +160,16 @@ public class NetcdfStoreProvider extends DataStoreProvider {
                     if (cause instanceof DataStoreException) throw (DataStoreException) cause;
                     if (cause instanceof RuntimeException)   throw (RuntimeException)   cause;
                     if (cause instanceof Error)              throw (Error)              cause;
+                    if (cause instanceof FileNotFoundException) {
+                        /*
+                         * Happen if the String argument uses any protocol not recognized by the UCAR library,
+                         * in which case UCAR tries to open it as a file even if it is not a file. For example
+                         * we get this exception for "jar:file:/file.jar!/entry.nc".
+                         */
+                        Logging.recoverableException(
+                                Logging.getLogger("org.apache.sis.storage"), netcdfFileClass, "canOpen", cause);
+                        return ProbeResult.UNSUPPORTED_STORAGE;
+                    }
                     throw new DataStoreException(e); // The cause may be IOException.
                 }
             } else {
