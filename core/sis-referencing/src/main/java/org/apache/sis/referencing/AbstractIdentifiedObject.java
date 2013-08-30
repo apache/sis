@@ -49,9 +49,14 @@ import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.ArgumentChecks.*;
+import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.internal.util.Citations.iterator;
 import static org.apache.sis.internal.util.CollectionsExt.nonNull;
+import static org.apache.sis.internal.util.CollectionsExt.nonEmpty;
 import static org.apache.sis.internal.util.CollectionsExt.immutableSet;
+
+// Related to JDK7
+import java.util.Objects;
 
 
 /**
@@ -59,7 +64,7 @@ import static org.apache.sis.internal.util.CollectionsExt.immutableSet;
  * {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum geodetic datum}   (e.g. "<cite>World Geodetic System 1984</cite>"),
  * {@linkplain org.apache.sis.referencing.crs.AbstractCRS Coordinate Reference System} (e.g. "<cite>WGS 84 / World Mercator</cite>") or
  * {@linkplain org.apache.sis.referencing.operation.DefaultProjection map projection}  (e.g. "<cite>Mercator (variant A)</cite>").
- * Those names, or a code (e.g. {@code "EPSG:3395"}) can be used for fetching an object from a database.
+ * Those names, or a code (e.g. {@code "EPSG:3395"}), can be used for fetching an object from a database.
  * However it is not sufficient to know the object name. We also need to know who define that name
  * (the {@linkplain NamedIdentifier#getAuthority() authority}) since the same objects are often named differently
  * depending on the providers, or conversely the same name is used for different objects depending on the provider.
@@ -121,13 +126,18 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     private final ReferenceIdentifier name;
 
     /**
-     * An alternative name by which this object is identified.
+     * An alternative name by which this object is identified, or {@code null} if none.
+     * We must be prepared to handle either null or an empty set for "no alias" because
+     * we may get both on unmarshalling.
      */
     private final Collection<GenericName> alias;
 
     /**
      * An identifier which references elsewhere the object's defining information.
      * Alternatively an identifier by which this object can be referenced.
+     *
+     * <p>We must be prepared to handle either null or an empty set for
+     * "no identifiers" because we may get both on unmarshalling.</p>
      *
      * @see #getIdentifiers()
      * @see #getIdentifier()
@@ -158,10 +168,10 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      */
     public AbstractIdentifiedObject(final IdentifiedObject object) {
         ensureNonNull("object", object);
-        name        =         object.getName();
-        alias       = nonNull(object.getAlias());
-        identifiers = nonNull(object.getIdentifiers());
-        remarks     =         object.getRemarks();
+        name        =          object.getName();
+        alias       = nonEmpty(object.getAlias()); // Favor null for empty set in case it is not Collections.EMPTY_SET
+        identifiers = nonEmpty(object.getIdentifiers());
+        remarks     =          object.getRemarks();
     }
 
     /**
@@ -248,7 +258,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
         // -------------------------------------------------------------------
         value = properties.get(ALIAS_KEY);
         try {
-            alias = immutableSet(Types.toGenericNames(value, null));
+            alias = immutableSet(true, Types.toGenericNames(value, null));
         } catch (ClassCastException e) {
             throw (IllegalArgumentException) illegalPropertyType(ALIAS_KEY, value).initCause(e);
         }
@@ -262,7 +272,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
         } else if (value instanceof ReferenceIdentifier) {
             identifiers = Collections.singleton((ReferenceIdentifier) value);
         } else if (value instanceof ReferenceIdentifier[]) {
-            identifiers = immutableSet((ReferenceIdentifier[]) value);
+            identifiers = immutableSet(true, (ReferenceIdentifier[]) value);
         } else {
             throw illegalPropertyType(IDENTIFIERS_KEY, value);
         }
@@ -348,7 +358,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *
      * @return The primary name.
      *
-     * @see Citations#getName(IdentifiedObject, Citation)
+     * @see IdentifiedObjects#getName(IdentifiedObject, Citation)
      */
     @Override
     public ReferenceIdentifier getName() {
@@ -478,9 +488,89 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
         return eq;
     }
 
+    /**
+     * Compares this object with the specified object for equality.
+     * The strictness level is controlled by the second argument:
+     *
+     * <ul>
+     *   <li>If {@code mode} is {@link ComparisonMode#STRICT STRICT}, then all available properties
+     *       are compared including {@linkplain #getName() name}, {@linkplain #getRemarks() remarks},
+     *       {@linkplain #getIdentifiers() identifiers code}, <i>etc.</i></li>
+     *   <li>If {@code mode} is {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA},
+     *       then this method compare only the properties needed for computing transformations.
+     *       In other words, {@code sourceCS.equals(targetCS, IGNORE_METADATA)} returns {@code true}
+     *       if the transformation from {@code sourceCS} to {@code targetCS} is likely to be the
+     *       identity transform, no matter what {@link #getName()} said.</li>
+     * </ul>
+     *
+     * {@section Exceptions to the above rules}
+     * Some subclasses (especially {@link org.apache.sis.referencing.datum.AbstractDatum}
+     * and {@link org.apache.sis.parameter.AbstractParameterDescriptor}) will test for the
+     * {@linkplain #getName() name}, since objects with different name have completely
+     * different meaning. For example nothing differentiate the {@code "semi_major"} and
+     * {@code "semi_minor"} parameters except the name. The name comparison may be loose
+     * however, i.e. we may accept a name matching an alias.
+     *
+     * @param  object The object to compare to {@code this}.
+     * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
+     *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
+     *         relevant to transformations.
+     * @return {@code true} if both objects are equal.
+     */
     @Override
-    public boolean equals(Object other, ComparisonMode mode) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public boolean equals(final Object object, final ComparisonMode mode) {
+        if (object == null) {
+            return false;
+        }
+        if (getClass() == object.getClass()) {
+            /*
+             * If the classes are the same, then the hash codes should be computed in the same
+             * way. Since those codes are cached, this is an efficient way to quickly check if
+             * the two objects are different. Note that using the hash codes for comparisons
+             * that ignore metadata is okay only if the implementation note described in the
+             * 'computeHashCode()' javadoc hold (metadata not used in hash code computation).
+             */
+            if (mode.ordinal() < ComparisonMode.APPROXIMATIVE.ordinal()) {
+                final int tc = hashCode;
+                if (tc != 0) {
+                    final int oc = ((AbstractIdentifiedObject) object).hashCode;
+                    if (oc != 0 && tc != oc) {
+                        return false;
+                    }
+                }
+            }
+        } else {
+            if (mode == ComparisonMode.STRICT) { // Same classes was required for this mode.
+                return false;
+            }
+            if (!(object instanceof IdentifiedObject)) {
+                return false;
+            }
+        }
+        switch (mode) {
+            case STRICT: {
+                final AbstractIdentifiedObject that = (AbstractIdentifiedObject) object;
+                return Objects.equals(        name,                 that.name)         &&
+                       Objects.equals(nonNull(alias),       nonNull(that.alias))       &&
+                       Objects.equals(nonNull(identifiers), nonNull(that.identifiers)) &&
+                       Objects.equals(        remarks,              that.remarks);
+            }
+            case BY_CONTRACT: {
+                final IdentifiedObject that = (IdentifiedObject) object;
+                return deepEquals(        getName(),                 that.getName(),         mode) &&
+                       deepEquals(nonNull(getAlias()),       nonNull(that.getAlias()),       mode) &&
+                       deepEquals(nonNull(getIdentifiers()), nonNull(that.getIdentifiers()), mode) &&
+                       deepEquals(        getRemarks(),              that.getRemarks(),      mode);
+            }
+            case IGNORE_METADATA:
+            case APPROXIMATIVE:
+            case DEBUG: {
+                return true;
+            }
+            default: {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.UnknownEnumValue_1, mode));
+            }
+        }
     }
 
     /**
