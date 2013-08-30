@@ -101,7 +101,7 @@ final class Cloner extends org.apache.sis.internal.util.Cloner {
                 // Do not use the SIS Checked* classes since
                 // we don't need type checking anymore.
                 if (isSet) {
-                    collection = CollectionsExt.immutableSet(array);
+                    collection = CollectionsExt.immutableSet(false, array);
                 } else {
                     // Conservatively assumes a List if we are not sure to have a Set,
                     // since the list is less destructive (no removal of duplicated).

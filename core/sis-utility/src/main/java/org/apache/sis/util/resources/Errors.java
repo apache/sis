@@ -546,6 +546,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int UnknownCommand_1 = 102;
 
         /**
+         * Unknown enumeration value: {0}.
+         */
+        public static final int UnknownEnumValue_1 = 115;
+
+        /**
          * Format of “{0}” is not recognized.
          */
         public static final int UnknownFormatFor_1 = 107;
