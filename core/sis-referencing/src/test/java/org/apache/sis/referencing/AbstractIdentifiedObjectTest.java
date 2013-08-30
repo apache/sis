@@ -50,16 +50,16 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
         assertNull(properties.put("realizationEpoch", "Realization epoch"));
         assertNull(properties.put("validArea",        "Valid area"));
 
-        final AbstractIdentifiedObject reference = new AbstractIdentifiedObject(properties);
-        Validators.validate(reference);
+        final AbstractIdentifiedObject object = new AbstractIdentifiedObject(properties);
+        Validators.validate(object);
 
-        assertEquals("name",       "This is a name",      reference.getName().getCode());
-        assertNull  ("codeSpace",                         reference.getName().getCodeSpace());
-        assertNull  ("version",                           reference.getName().getVersion());
-        assertEquals("remarks",    "There is remarks",    reference.getRemarks().toString(Locale.ENGLISH));
-        assertEquals("remarks_fr", "Voici des remarques", reference.getRemarks().toString(Locale.FRENCH));
-        assertTrue  ("identifiers",                       reference.getIdentifiers().isEmpty());
-        assertNull  ("identifier",                        reference.getIdentifier());
-        assertTrue  ("aliases",                           reference.getAlias().isEmpty());
+        assertEquals("name",       "This is a name",      object.getName().getCode());
+        assertNull  ("codeSpace",                         object.getName().getCodeSpace());
+        assertNull  ("version",                           object.getName().getVersion());
+        assertEquals("remarks",    "There is remarks",    object.getRemarks().toString(Locale.ENGLISH));
+        assertEquals("remarks_fr", "Voici des remarques", object.getRemarks().toString(Locale.FRENCH));
+        assertTrue  ("identifiers",                       object.getIdentifiers().isEmpty());
+        assertNull  ("identifier",                        object.getIdentifier());
+        assertTrue  ("aliases",                           object.getAlias().isEmpty());
     }
 }

@@ -73,7 +73,8 @@ import java.util.Objects;
  * <ul>
  *   <li>a primary {@linkplain #getName() name}, considered by the object creator as the preferred name,</li>
  *   <li>an arbitrary amount of {@linkplain #getAlias() aliases}, for example a list of names used by other providers,</li>
- *   <li>an arbitrary amount of {@linkplain #getIdentifiers() identifiers}, typically primary keys in the provider database.</li>
+ *   <li>an arbitrary amount of {@linkplain #getIdentifiers() identifiers}, typically primary keys in the provider database,</li>
+ *   <li>optional {@linkplain #getRemarks() remarks}.</li>
  * </ul>
  *
  * {@section Instantiation}
