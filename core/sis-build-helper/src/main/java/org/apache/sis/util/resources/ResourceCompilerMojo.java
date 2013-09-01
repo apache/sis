@@ -24,6 +24,8 @@ import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.util.Scanner;
+import org.sonatype.plexus.build.incremental.BuildContext;
 
 
 /**
@@ -47,6 +49,13 @@ public class ResourceCompilerMojo extends AbstractMojo implements FilenameFilter
      * @readonly
      */
 	private MavenProject project;
+	
+	
+	/**
+	 * @component
+	 */
+	private BuildContext buildContext;
+	
     /**
      * The source directories containing the sources to be compiled.
      *
@@ -77,25 +86,38 @@ public class ResourceCompilerMojo extends AbstractMojo implements FilenameFilter
      * @throws MojoExecutionException if the plugin execution failed.
      */
     @Override
-    @SuppressWarnings({"unchecked","rawtypes"}) // Generic array creation.
     public void execute() throws MojoExecutionException {
-    	Resource resource = new Resource();
-    	resource.setDirectory(outputDirectory.getPath());
-    	project.addResource( resource );
-//    	project.addCompileSourceRoot(outputDirectory.getPath());
-        
+
+    	declareOutputDirectory();
+      
         int errors = 0;
         for (final String sourceDirectory : compileSourceRoots) {
             final File directory = new File(sourceDirectory);
             if (directory.getName().equals("java")) {
                 javaDirectoryFile = directory;
-                errors += processAllResourceDirectories(directory);
+                
+                Scanner scanner = buildContext.newScanner(directory);
+                scanner.setIncludes(new String[] {"*.properties"});
+                scanner.scan();
+                if ( scanner.getIncludedFiles() != null ) {
+                  errors += processAllResourceDirectories(directory);
+                  buildContext.refresh(directory);
+                }
             }
         }
         if (errors != 0) {
             throw new ResourceCompilerException(String.valueOf(errors) + " errors in resources bundles.");
         }
     }
+    
+    /**
+     * Declare outputDirectory as resource.
+     */
+	private void declareOutputDirectory() {
+		Resource resource = new Resource();
+    	resource.setDirectory(outputDirectory.getPath());
+    	project.addResource( resource );
+	}
 
     /**
      * Recursively scans the directories for a sub-package named "resources",
