@@ -19,8 +19,11 @@ package org.apache.sis.util.resources;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.List;
+
+import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.project.MavenProject;
 
 
 /**
@@ -37,6 +40,13 @@ import org.apache.maven.plugin.MojoExecutionException;
  * @phase generate-resources
  */
 public class ResourceCompilerMojo extends AbstractMojo implements FilenameFilter {
+	
+	/**
+     * @parameter expression="${project}"
+     * @required
+     * @readonly
+     */
+	private MavenProject project;
     /**
      * The source directories containing the sources to be compiled.
      *
@@ -49,21 +59,18 @@ public class ResourceCompilerMojo extends AbstractMojo implements FilenameFilter
     /**
      * Directory containing the generated class files.
      *
-     * @parameter property="project.build.outputDirectory"
+     * @parameter default-value="${project.build.directory}/generated-resources/sis"
      * @required
      */
-    private String outputDirectory;
+    private File outputDirectory;
 
     /**
      * The <code>compileSourceRoots</code> named "java" as a <code>File</code>.
      */
     private File javaDirectoryFile;
 
-    /**
-     * The <code>outputDirectory</code> as a <code>File</code>.
-     */
-    private File outputDirectoryFile;
-
+        
+    
     /**
      * Executes the mojo.
      *
@@ -72,8 +79,12 @@ public class ResourceCompilerMojo extends AbstractMojo implements FilenameFilter
     @Override
     @SuppressWarnings({"unchecked","rawtypes"}) // Generic array creation.
     public void execute() throws MojoExecutionException {
+    	Resource resource = new Resource();
+    	resource.setDirectory(outputDirectory.getPath());
+    	project.addResource( resource );
+//    	project.addCompileSourceRoot(outputDirectory.getPath());
+        
         int errors = 0;
-        outputDirectoryFile = new File(outputDirectory);
         for (final String sourceDirectory : compileSourceRoots) {
             final File directory = new File(sourceDirectory);
             if (directory.getName().equals("java")) {
@@ -134,7 +145,7 @@ public class ResourceCompilerMojo extends AbstractMojo implements FilenameFilter
      */
     private final class Compiler extends IndexedResourceCompiler {
         public Compiler(File[] resourcesToProcess) {
-            super(javaDirectoryFile, outputDirectoryFile, resourcesToProcess);
+            super(javaDirectoryFile, outputDirectory, resourcesToProcess);
         }
 
         /**
