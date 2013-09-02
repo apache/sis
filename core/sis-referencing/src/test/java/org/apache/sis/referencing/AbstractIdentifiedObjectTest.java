@@ -45,12 +45,9 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
     @Test
     public void testCreateFromMap() {
         final Map<String,Object> properties = new HashMap<>(10);
-        assertNull(properties.put("name",             "This is a name"));
-        assertNull(properties.put("remarks",          "There is remarks"));
-        assertNull(properties.put("remarks_fr",       "Voici des remarques"));
-        assertNull(properties.put("anchorPoint",      "Anchor point"));
-        assertNull(properties.put("realizationEpoch", "Realization epoch"));
-        assertNull(properties.put("validArea",        "Valid area"));
+        assertNull(properties.put("name",       "This is a name"));
+        assertNull(properties.put("remarks",    "There is remarks"));
+        assertNull(properties.put("remarks_fr", "Voici des remarques"));
 
         final AbstractIdentifiedObject object = new AbstractIdentifiedObject(properties);
         Validators.validate(object);
