@@ -20,31 +20,41 @@ import java.util.Map;
 import java.util.Collections;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.opengis.referencing.datum.EngineeringDatum;
+import org.opengis.referencing.datum.ImageDatum;
+import org.opengis.referencing.datum.PixelInCell;
+import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Immutable;
-import org.apache.sis.io.wkt.Formatter;
+
+import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+
+// Related to JDK7
+import java.util.Objects;
 
 
 /**
- * Defines the origin of an engineering coordinate reference system.
- * An engineering datum is used in a region around that origin.
- * This origin can be fixed with respect to the earth (such as a defined point at a construction site),
- * or be a defined point on a moving vehicle (such as on a ship or satellite).
+ * Defines the origin of an image coordinate reference system. An image datum is used in a local
+ * context only. For an image datum, the anchor point is usually either the centre of the image
+ * or the corner of the image.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-1.2)
+ * @since   0.3 (derived from geotk-2.0)
  * @version 0.3
  * @module
  */
 @Immutable
-@XmlType(name = "EngineeringDatumType")
-@XmlRootElement(name = "EngineeringDatum")
-public class DefaultEngineeringDatum extends AbstractDatum implements EngineeringDatum {
+@XmlType(name = "ImageDatumType")
+@XmlRootElement(name = "ImageDatum")
+public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 1498304918725248637L;
+    private static final long serialVersionUID = -4304193511244150936L;
+
+    /**
+     * Specification of the way the image grid is associated with the image data attributes.
+     */
+    private final PixelInCell pixelInCell;
 
     /**
      * Constructs a new datum with the same values than the specified one.
@@ -55,27 +65,32 @@ public class DefaultEngineeringDatum extends AbstractDatum implements Engineerin
      *
      * @param datum The datum to copy.
      */
-    public DefaultEngineeringDatum(final EngineeringDatum datum) {
+    public DefaultImageDatum(final ImageDatum datum) {
         super(datum);
+        pixelInCell = datum.getPixelInCell();
     }
 
     /**
-     * Constructs an engineering datum from a name.
+     * Constructs an image datum from a name.
      *
      * @param name The datum name.
+     * @param pixelInCell the way the image grid is associated with the image data attributes.
      */
-    public DefaultEngineeringDatum(final String name) {
-        this(Collections.singletonMap(NAME_KEY, name));
+    public DefaultImageDatum(final String name, final PixelInCell pixelInCell) {
+        this(Collections.singletonMap(NAME_KEY, name), pixelInCell);
     }
 
     /**
-     * Constructs an engineering datum from a set of properties. The properties map is given
+     * Constructs an image datum from a set of properties. The properties map is given
      * unchanged to the {@linkplain AbstractDatum#AbstractDatum(Map) super-class constructor}.
      *
-     * @param properties Set of properties. Shall contains at least {@code "name"}.
+     * @param properties  Set of properties. Should contains at least {@code "name"}.
+     * @param pixelInCell the way the image grid is associated with the image data attributes.
      */
-    public DefaultEngineeringDatum(final Map<String,?> properties) {
+    public DefaultImageDatum(final Map<String,?> properties, final PixelInCell pixelInCell) {
         super(properties);
+        this.pixelInCell = pixelInCell;
+        ensureNonNull("pixelInCell", pixelInCell);
     }
 
     /**
@@ -88,9 +103,19 @@ public class DefaultEngineeringDatum extends AbstractDatum implements Engineerin
      * @return A SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
-    public static DefaultEngineeringDatum castOrCopy(final EngineeringDatum object) {
-        return (object == null) || (object instanceof DefaultEngineeringDatum) ?
-                (DefaultEngineeringDatum) object : new DefaultEngineeringDatum(object);
+    public static DefaultImageDatum castOrCopy(final ImageDatum object) {
+        return (object == null) || (object instanceof DefaultImageDatum)
+                ? (DefaultImageDatum) object : new DefaultImageDatum(object);
+    }
+
+    /**
+     * Specification of the way the image grid is associated with the image data attributes.
+     *
+     * @return The way image grid is associated with image data attributes.
+     */
+    @Override
+    public PixelInCell getPixelInCell() {
+        return pixelInCell;
     }
 
     /**
@@ -107,19 +132,43 @@ public class DefaultEngineeringDatum extends AbstractDatum implements Engineerin
         if (object == this) {
             return true; // Slight optimization.
         }
-        return  (object instanceof EngineeringDatum) && super.equals(object, mode);
+        if (super.equals(object, mode)) {
+            switch (mode) {
+                case STRICT: {
+                    final DefaultImageDatum that = (DefaultImageDatum) object;
+                    return Objects.equals(this.pixelInCell, that.pixelInCell);
+                }
+                default: {
+                    if (!(object instanceof ImageDatum)) break;
+                    final ImageDatum that = (ImageDatum) object;
+                    return Objects.equals(getPixelInCell(), that.getPixelInCell());
+                }
+            }
+        }
+        return false;
     }
 
     /**
-     * Formats the inner part of a <cite>Well Known Text</cite> (WKT)</a> element.
-     * The keyword is "{@code LOCAL_DATUM}" in WKT 1.
+     * Computes a hash value for this identified object.
+     * This method is invoked by {@link #hashCode()} when first needed.
+     */
+    @Override
+    protected int computeHashCode() {
+        return super.computeHashCode() * 31 + Objects.hashCode(pixelInCell);
+    }
+
+    /**
+     * Format the inner part of a <cite>Well Known Text</cite> (WKT) element.
+     * {@code ImageDatum} are defined in the WKT 2 specification only.
      *
      * @param  formatter The formatter to use.
-     * @return The WKT element name, which is {@code "LOCAL_DATUM"}.
+     * @return The WKT element name.
      */
     @Override
     public String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
-        return "LOCAL_DATUM";
+        formatter.append(pixelInCell);
+        formatter.setInvalidWKT("ImageDatum");
+        return "GENDATUM"; // Generic datum (WKT 2)
     }
 }
