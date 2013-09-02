@@ -89,7 +89,7 @@ public final class IdentifiedObjects extends Static {
      *
      *   <li><p>Otherwise, if the alias implements the {@link GenericName} interface, then this method
      *       compares the {@linkplain GenericName#scope() name scope} against the specified citation
-     *       using the {@linkplain Citations#identifierMatches(Citation, String)} method.
+     *       using the {@link Citations#identifierMatches(Citation, String)} method.
      *       If a matching is found, then this method returns the
      *       {@linkplain GenericName#tip() name tip} of that object.</p></li>
      * </ul>
@@ -390,7 +390,7 @@ public final class IdentifiedObjects extends Static {
      * @param  identifier The identifier, or {@code null}.
      * @return A string representation of the given identifier, or {@code null}.
      *
-     * @see DefaultIdentifier#toString()
+     * @see org.apache.sis.metadata.iso.ImmutableIdentifier#toString()
      * @see NamedIdentifier#toString()
      */
     public static String toString(final Identifier identifier) {
