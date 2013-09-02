@@ -26,7 +26,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.datum.Datum;
-import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.io.wkt.Formatter;
@@ -269,14 +268,12 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
                            Objects.equals(this.scope,            that.scope);
                 }
                 case BY_CONTRACT: {
-                    if (object instanceof Datum) {
-                        final Datum that = (Datum) object;
-                        return deepEquals(getRealizationEpoch(), that.getRealizationEpoch(), mode) &&
-                               deepEquals(getDomainOfValidity(), that.getDomainOfValidity(), mode) &&
-                               deepEquals(getAnchorPoint(),      that.getAnchorPoint(),      mode) &&
-                               deepEquals(getScope(),            that.getScope(),            mode);
-                    }
-                    break;
+                    if (!(object instanceof Datum)) break;
+                    final Datum that = (Datum) object;
+                    return deepEquals(getRealizationEpoch(), that.getRealizationEpoch(), mode) &&
+                           deepEquals(getDomainOfValidity(), that.getDomainOfValidity(), mode) &&
+                           deepEquals(getAnchorPoint(),      that.getAnchorPoint(),      mode) &&
+                           deepEquals(getScope(),            that.getScope(),            mode);
                 }
                 default: {
                     /*
@@ -285,12 +282,10 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
                      * asked for metadata comparison, because in such case the names
                      * have already been compared by the subclass.
                      */
-                    if (object instanceof Datum) {
-                        final IdentifiedObject that = (IdentifiedObject) object;
-                        return nameMatches(that. getName().getCode()) ||
-                               IdentifiedObjects.nameMatches(that, getName().getCode());
-                    }
-                    break;
+                    if (!(object instanceof Datum)) break;
+                    final Datum that = (Datum) object;
+                    return nameMatches(that. getName().getCode()) ||
+                           IdentifiedObjects.nameMatches(that, getName().getCode());
                 }
             }
         }
