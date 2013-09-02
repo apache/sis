@@ -50,7 +50,7 @@ import org.apache.sis.xml.IdentifiedObject;
 
 import static org.apache.sis.metadata.PropertyComparator.*;
 import static org.apache.sis.metadata.ValueExistencePolicy.isNullOrEmpty;
-import static org.apache.sis.internal.util.Utilities.floatEpsilonEqual;
+import static org.apache.sis.internal.util.Numerics.floatEpsilonEqual;
 import static org.apache.sis.internal.util.CollectionsExt.snapshot;
 import static org.apache.sis.internal.util.CollectionsExt.modifiableCopy;
 import static org.apache.sis.util.collection.Containers.hashMapCapacity;
