@@ -44,6 +44,11 @@ import org.sonatype.plexus.build.incremental.BuildContext;
  */
 public class ResourceCompilerMojo extends AbstractMojo implements FilenameFilter {
     /**
+     * Pattern to filter properties files that were modified.
+     */
+    private static final String[] PROPERTIES_PATTERN = new String[] {"**/*.properties"};
+
+    /**
      * Project information (name, version, URL).
      *
      * @parameter property="project"
@@ -113,17 +118,18 @@ public class ResourceCompilerMojo extends AbstractMojo implements FilenameFilter
                  * been modified. This is okay for now since changes in resource files are rare and compiling
                  * them is very fast.
                  */
-                if (!isIncremental) {
+                if (isIncremental) {
                     Scanner scanner = buildContext.newScanner(directory);
-                    scanner.setIncludes(new String[] {"*.properties"});
+                    scanner.setIncludes(PROPERTIES_PATTERN);
                     scanner.scan();
-                    if (scanner.getIncludedFiles() == null) {
+                    final String[] includedFiles = scanner.getIncludedFiles();
+                    if (includedFiles == null || includedFiles.length == 0) {
                         continue;
                     }
                 }
                 javaDirectoryFile = directory;
                 errors += processAllResourceDirectories(directory);
-                buildContext.refresh(directory);
+                buildContext.refresh(outputDirectory);
             }
         }
         if (errors != 0) {
