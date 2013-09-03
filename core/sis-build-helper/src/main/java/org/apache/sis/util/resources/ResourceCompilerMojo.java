@@ -19,8 +19,13 @@ package org.apache.sis.util.resources;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.List;
+
+import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.util.Scanner;
+import org.sonatype.plexus.build.incremental.BuildContext;
 
 
 /**
@@ -28,15 +33,35 @@ import org.apache.maven.plugin.MojoExecutionException;
  * See the <code><a href="{@website}/sis-build-helper/index.html">sis-build-helper</a></code> module
  * for more information.
  *
- * @author Martin Desruisseaux (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
+ * @author  Olivier Nouguier (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
- * @version 0.3
+ * @version 0.4
  * @module
  *
  * @goal compile-resources
  * @phase generate-resources
  */
 public class ResourceCompilerMojo extends AbstractMojo implements FilenameFilter {
+    /**
+     * Project information (name, version, URL).
+     *
+     * @parameter expression="${project}"
+     * @required
+     * @readonly
+     */
+    private MavenProject project;
+
+    /**
+     * A handler for the Eclipse workspace, used for declaring new resources.
+     * When Maven is run from the command line, this object does nothing.
+     *
+     * @see <a href="http://wiki.eclipse.org/M2E_compatible_maven_plugins">M2E compatible maven plugins</a>
+     *
+     * @component
+     */
+    private BuildContext buildContext;
+
     /**
      * The source directories containing the sources to be compiled.
      *
@@ -49,10 +74,17 @@ public class ResourceCompilerMojo extends AbstractMojo implements FilenameFilter
     /**
      * Directory containing the generated class files.
      *
-     * @parameter property="project.build.outputDirectory"
+     * <p><b>Note:</b> at the time of writing, we found no well-established convention for generated resources.
+     * The conventions that we found were rather for generated sources. In the later case, the conventions use
+     * a different directory for each Maven plugin, e.g. <code>"generated-sources/xxx"</code>. But in our case
+     * (for resources), such separation seems of limited use since the resources are copied verbatim in the JAR
+     * file, so preventing clash in the <code>generated-resources</code> directory would not prevent clash in
+     * the JAR file anyway.</p>
+     *
+     * @parameter default-value="${project.build.directory}/generated-resources"
      * @required
      */
-    private String outputDirectory;
+    private File outputDirectory;
 
     /**
      * The <code>compileSourceRoots</code> named "java" as a <code>File</code>.
@@ -60,30 +92,52 @@ public class ResourceCompilerMojo extends AbstractMojo implements FilenameFilter
     private File javaDirectoryFile;
 
     /**
-     * The <code>outputDirectory</code> as a <code>File</code>.
-     */
-    private File outputDirectoryFile;
-
-    /**
      * Executes the mojo.
      *
      * @throws MojoExecutionException if the plugin execution failed.
      */
     @Override
-    @SuppressWarnings({"unchecked","rawtypes"}) // Generic array creation.
     public void execute() throws MojoExecutionException {
+        final boolean isIncremental = buildContext.isIncremental();
+    	declareOutputDirectory();
+
         int errors = 0;
-        outputDirectoryFile = new File(outputDirectory);
         for (final String sourceDirectory : compileSourceRoots) {
             final File directory = new File(sourceDirectory);
             if (directory.getName().equals("java")) {
+                /*
+                 * Check if we can skip the resources compilation (Eclipse environment only).
+                 *
+                 * Scanner.getIncludedFiles() returns an array of modified files. For now we ignore the array
+                 * content and unconditionally re-compile all resource files as soon as at least one file has
+                 * been modified. This is okay for now since changes in resource files are rare and compiling
+                 * them is very fast.
+                 */
+                if (!isIncremental) {
+                    Scanner scanner = buildContext.newScanner(directory);
+                    scanner.setIncludes(new String[] {"*.properties"});
+                    scanner.scan();
+                    if (scanner.getIncludedFiles() == null) {
+                        continue;
+                    }
+                }
                 javaDirectoryFile = directory;
                 errors += processAllResourceDirectories(directory);
+                buildContext.refresh(directory);
             }
         }
         if (errors != 0) {
             throw new ResourceCompilerException(String.valueOf(errors) + " errors in resources bundles.");
         }
+    }
+
+    /**
+     * Declares {@link #outputDirectory} as resource, for inclusion by Maven in the JAR file.
+     */
+    private void declareOutputDirectory() {
+        final Resource resource = new Resource();
+        resource.setDirectory(outputDirectory.getPath());
+        project.addResource(resource);
     }
 
     /**
@@ -134,7 +188,7 @@ public class ResourceCompilerMojo extends AbstractMojo implements FilenameFilter
      */
     private final class Compiler extends IndexedResourceCompiler {
         public Compiler(File[] resourcesToProcess) {
-            super(javaDirectoryFile, outputDirectoryFile, resourcesToProcess);
+            super(javaDirectoryFile, outputDirectory, resourcesToProcess);
         }
 
         /**
