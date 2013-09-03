@@ -56,6 +56,7 @@ public final class JarCollector extends AbstractMojo implements FileFilter {
      *
      * @parameter property="project"
      * @required
+     * @readonly
      */
     private MavenProject project;
 

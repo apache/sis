@@ -46,7 +46,7 @@ public class ResourceCompilerMojo extends AbstractMojo implements FilenameFilter
     /**
      * Project information (name, version, URL).
      *
-     * @parameter expression="${project}"
+     * @parameter property="project"
      * @required
      * @readonly
      */
