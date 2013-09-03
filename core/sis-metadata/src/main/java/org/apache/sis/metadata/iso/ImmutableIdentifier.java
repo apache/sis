@@ -472,8 +472,8 @@ public class ImmutableIdentifier implements ReferenceIdentifier, Deprecable, Ser
      *        behavior, in order to be compliant with the contract of the <code>GenericName</code>
      *        interface.}
      *
-     * @see IdentifiedObjects#toString(Identifier)
-     * @see NamedIdentifier#toString()
+     * @see org.apache.sis.referencing.IdentifiedObjects#toString(Identifier)
+     * @see org.apache.sis.referencing.NamedIdentifier#toString()
      */
     @Override
     public String toString() {

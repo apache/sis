@@ -19,6 +19,7 @@ package org.apache.sis.io.wkt;
 import javax.measure.unit.SI;
 import javax.measure.unit.Unit;
 import javax.measure.quantity.Angle;
+import javax.measure.quantity.Quantity;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.CoordinateSystem;
@@ -221,7 +222,7 @@ public enum Convention {
      * which means that the angular units are inferred from the context as required by the
      * <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html#PRIMEM">WKT specification</a>.
      *
-     * @see ReferencingParser#getForcedAngularUnit()
+     * @see #getForcedUnit(Class)
      */
     final Unit<Angle> forcedAngularUnit;
 
@@ -241,9 +242,9 @@ public enum Convention {
      * Creates a new enumeration value.
      */
     private Convention(final Citation authority, final Unit<Angle> angularUnit, final boolean unitUS) {
-        this.authority = authority;
+        this.authority         = authority;
         this.forcedAngularUnit = angularUnit;
-        this.unitUS = unitUS;
+        this.unitUS            = unitUS;
     }
 
     /**
@@ -255,6 +256,25 @@ public enum Convention {
      */
     public Citation getAuthority() {
         return authority;
+    }
+
+    /**
+     * If non-null, {@code PRIMEM} and {@code PARAMETER} values shall unconditionally use the returned units.
+     * The standard value is {@code null}, which means that units are inferred from the context as required by the
+     * <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html#PRIMEM">WKT specification</a>.
+     * However some conventions ignore the above WKT specification and use hard-coded units instead.
+     *
+     * @param  <T>       The compile-time type specified by the {@code quantity} argument.
+     * @param  quantity  The kind of quantity for which to get the unit.
+     *                   The most typical value for this argument is <code>{@linkplain Angle}.class</code>.
+     * @return The unit to use for the given kind of quantity, or {@code null} for inferring the unit in the standard way.
+     */
+    @SuppressWarnings("unchecked")
+    public <T extends Quantity> Unit<T> getForcedUnit(final Class<T> quantity) {
+        if (quantity == Angle.class) {
+            return (Unit) forcedAngularUnit;
+        }
+        return null;
     }
 
     /**

@@ -443,6 +443,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
         <artifactId>maven-jar-plugin</artifactId>
         <configuration>
           <archive>
+            <addMavenDescriptor>false</addMavenDescriptor>
             <index>false</index>
             <manifest>
               <addClasspath>true</addClasspath>
