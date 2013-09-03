@@ -89,7 +89,7 @@ public final class IdentifiedObjects extends Static {
      *
      *   <li><p>Otherwise, if the alias implements the {@link GenericName} interface, then this method
      *       compares the {@linkplain GenericName#scope() name scope} against the specified citation
-     *       using the {@linkplain Citations#identifierMatches(Citation, String)} method.
+     *       using the {@link Citations#identifierMatches(Citation, String)} method.
      *       If a matching is found, then this method returns the
      *       {@linkplain GenericName#tip() name tip} of that object.</p></li>
      * </ul>
@@ -291,18 +291,22 @@ public final class IdentifiedObjects extends Static {
     /**
      * Returns {@code true} if either the {@linkplain IdentifiedObject#getName() primary name} or
      * at least one {@linkplain IdentifiedObject#getAlias() alias} matches the specified string.
-     * This method performs the search in the following order, regardless of any authority:
+     * This method returns {@code true} if the given name is equal to one of the following names,
+     * regardless of any authority:
      *
-     * <ol>
+     * <ul>
      *   <li>The {@linkplain IdentifiedObject#getName() primary name} of the object.</li>
-     *   <li>The {@linkplain ScopedName fully qualified name} of an alias.</li>
-     *   <li>The {@linkplain LocalName local name} of an alias.</li>
-     * </ol>
+     *   <li>The {@linkplain GenericName#toFullyQualifiedName() fully qualified name} of an alias.</li>
+     *   <li>The {@linkplain ScopedName#tail() tail} of an alias.</li>
+     *   <li>The tail of the previous tail, recursively up to the {@linkplain ScopedName#tip() tip}.</li>
+     * </ul>
+     *
+     * If the given object is an instance of {@link AbstractIdentifiedObject}, then this method delegates
+     * to its {@code nameMatches(String)} method. Otherwise this method fallbacks on a generic algorithm.
      *
      * @param  object The object for which to check the name or alias.
-     * @param  name The name.
-     * @return {@code true} if the primary name of at least one alias
-     *         matches the specified {@code name}.
+     * @param  name The name to compare with the object name or aliases.
+     * @return {@code true} if the primary name of at least one alias matches the specified {@code name}.
      *
      * @see AbstractIdentifiedObject#nameMatches(String)
      */
@@ -390,7 +394,7 @@ public final class IdentifiedObjects extends Static {
      * @param  identifier The identifier, or {@code null}.
      * @return A string representation of the given identifier, or {@code null}.
      *
-     * @see DefaultIdentifier#toString()
+     * @see org.apache.sis.metadata.iso.ImmutableIdentifier#toString()
      * @see NamedIdentifier#toString()
      */
     public static String toString(final Identifier identifier) {

@@ -27,7 +27,7 @@ import static java.lang.Float.intBitsToFloat;
 import static java.lang.Float.floatToRawIntBits;
 import static java.lang.Double.longBitsToDouble;
 import static java.lang.Double.doubleToRawLongBits;
-import static org.apache.sis.internal.util.Utilities.SIGN_BIT_MASK;
+import static org.apache.sis.internal.util.Numerics.SIGN_BIT_MASK;
 
 
 /**
