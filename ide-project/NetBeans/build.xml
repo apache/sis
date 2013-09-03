@@ -33,7 +33,7 @@
   -->
   <target name="-post-compile">
     <copy todir="${build.classes.dir}/org/apache/sis/util/resources">
-      <fileset dir="${project.root}/core/sis-utility/target/classes/org/apache/sis/util/resources">
+      <fileset dir="${project.root}/core/sis-utility/target/generated-resources/org/apache/sis/util/resources">
         <include name="*.utf"/>
       </fileset>
     </copy>
