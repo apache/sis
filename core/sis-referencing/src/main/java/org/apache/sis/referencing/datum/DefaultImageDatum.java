@@ -149,12 +149,22 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
     }
 
     /**
-     * Computes a hash value for this identified object.
-     * This method is invoked by {@link #hashCode()} when first needed.
+     * Computes a hash value consistent with the given comparison mode.
      */
     @Override
-    protected int computeHashCode() {
-        return super.computeHashCode() * 31 + Objects.hashCode(pixelInCell);
+    public int hashCode(final ComparisonMode mode) throws IllegalArgumentException {
+        int code = super.hashCode(mode) ^ (int) serialVersionUID;
+        switch (mode) {
+            case STRICT: {
+                code += Objects.hashCode(pixelInCell);
+                break;
+            }
+            default: {
+                code += Objects.hashCode(getPixelInCell());
+                break;
+            }
+        }
+        return code;
     }
 
     /**

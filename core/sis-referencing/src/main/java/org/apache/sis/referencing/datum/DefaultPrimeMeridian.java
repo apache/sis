@@ -241,11 +241,22 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
     }
 
     /**
-     * {@inheritDoc}
+     * Computes a hash value consistent with the given comparison mode.
      */
     @Override
-    protected int computeHashCode() {
-        return Numerics.hash(greenwichLongitude, super.computeHashCode());
+    public int hashCode(final ComparisonMode mode) throws IllegalArgumentException {
+        int code = super.hashCode(mode) ^ (int) serialVersionUID;
+        switch (mode) {
+            case STRICT: {
+                code += Numerics.hash(greenwichLongitude, Objects.hashCode(angularUnit));
+                break;
+            }
+            default: {
+                code += Numerics.hash(getGreenwichLongitude(), Objects.hashCode(getAngularUnit()));
+                break;
+            }
+        }
+        return code;
     }
 
     /**

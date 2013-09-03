@@ -39,7 +39,6 @@ import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.util.Classes;
 import org.apache.sis.util.Immutable;
 import org.apache.sis.util.ThreadSafe;
 import org.apache.sis.util.Deprecable;
@@ -452,41 +451,24 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
 
     /**
      * Returns {@code true} if either the {@linkplain #getName() primary name} or at least
-     * one {@linkplain #getAlias alias} matches the specified string.
-     * This method performs the search in the following order, regardless of any authority:
+     * one {@linkplain #getAlias() alias} matches the specified string.
+     * This method returns {@code true} if the given name is equal to one of the following names,
+     * regardless of any authority:
      *
      * <ul>
-     *   <li>The {@linkplain #getName() primary name} of this object</li>
-     *   <li>The {@linkplain ScopedName fully qualified name} of an alias</li>
-     *   <li>The {@linkplain LocalName local name} of an alias</li>
+     *   <li>The {@linkplain #getName() primary name} of this object.</li>
+     *   <li>The {@linkplain org.opengis.util.GenericName#toFullyQualifiedName() fully qualified name} of an alias.</li>
+     *   <li>The {@linkplain org.opengis.util.ScopedName#tail() tail} of an alias.</li>
+     *   <li>The tail of the previous tail, recursively up to the {@linkplain org.opengis.util.ScopedName#tip() tip}.</li>
      * </ul>
      *
-     * @param  name The name to compare.
+     * @param  name The name to compare with the object name or aliases.
      * @return {@code true} if the primary name of at least one alias matches the specified {@code name}.
      *
      * @see IdentifiedObjects#nameMatches(IdentifiedObject, String)
      */
     public boolean nameMatches(final String name) {
         return IdentifiedObjects.nameMatches(this, alias, name);
-    }
-
-    /**
-     * Compares the specified object with this object for equality.
-     * This method is implemented as below (omitting assertions):
-     *
-     * {@preformat java
-     *     return equals(other, ComparisonMode.STRICT);
-     * }
-     *
-     * @param  object The other object (may be {@code null}).
-     * @return {@code true} if both objects are equal.
-     */
-    @Override
-    public final boolean equals(final Object object) {
-        final boolean eq = equals(object, ComparisonMode.STRICT);
-        // If objects are equal, then they must have the same hash code value.
-        assert !eq || hashCode() == object.hashCode() : this;
-        return eq;
     }
 
     /**
@@ -498,9 +480,9 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *       are compared including {@linkplain #getName() name}, {@linkplain #getRemarks() remarks},
      *       {@linkplain #getIdentifiers() identifiers code}, <i>etc.</i></li>
      *   <li>If {@code mode} is {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA},
-     *       then this method compare only the properties needed for computing transformations.
-     *       In other words, {@code sourceCS.equals(targetCS, IGNORE_METADATA)} returns {@code true}
-     *       if the transformation from {@code sourceCS} to {@code targetCS} is likely to be the
+     *       then this method compares only the properties needed for computing transformations.
+     *       In other words, {@code sourceCRS.equals(targetCRS, IGNORE_METADATA)} returns {@code true}
+     *       if the transformation from {@code sourceCRS} to {@code targetCRS} is likely to be the
      *       identity transform, no matter what {@link #getName()} said.</li>
      * </ul>
      *
@@ -517,6 +499,9 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *         {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only properties
      *         relevant to transformations.
      * @return {@code true} if both objects are equal.
+     *
+     * @see #hashCode(ComparisonMode)
+     * @see org.apache.sis.util.Utilities#deepEquals(Object, Object, ComparisonMode)
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
@@ -575,16 +560,74 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     }
 
     /**
-     * Returns a hash value for this identified object.
-     * This method invokes {@link #computeHashCode()} when first needed and caches the value for future invocations.
-     * Subclasses shall override {@code computeHashCode()} instead than this method.
+     * Computes a hash value consistent with the given comparison mode.
+     * This method accepts only the following enumeration values:
      *
-     * {@section Implementation specific feature}
-     * In the Apache SIS implementation, the {@linkplain #getName() name}, {@linkplain #getIdentifiers() identifiers}
-     * and {@linkplain #getRemarks() remarks} are not used for hash code computation.
-     * Consequently two identified objects will return the same hash value if they are equal in the sense of
-     * <code>{@linkplain #equals(Object, ComparisonMode) equals}(…, {@linkplain ComparisonMode#IGNORE_METADATA})</code>.
+     * <ul>
+     *   <li>{@link ComparisonMode#STRICT} (the default): this method may use any property,
+     *       including implementation-specific ones if any, at implementation choice.</li>
+     *   <li>{@link ComparisonMode#BY_CONTRACT}: this method can use any property defined
+     *       in the implemented interface (typically a GeoAPI interface).</li>
+     *   <li>{@link ComparisonMode#IGNORE_METADATA}: this method ignores the metadata that do not affect
+     *       coordinate operations. By default, the ignored properties are the {@linkplain #getName() name},
+     *       {@linkplain #getIdentifiers() identifiers} and {@linkplain #getRemarks() remarks}.
+     *       However subclasses may ignore a different list of properties.</li>
+     * </ul>
+     *
+     * In the later case, two identified objects will return the same hash value if they are equal in the sense of
+     * <code>{@linkplain #equals(Object, ComparisonMode) equals}(object, {@linkplain ComparisonMode#IGNORE_METADATA})</code>.
      * This feature allows users to implement metadata-insensitive {@link java.util.HashMap}.
+     *
+     * @param  mode Specifies the set of properties that can be used for hash code computation.
+     * @return The hash code value. This value may change between different execution of the Apache SIS library.
+     * @throws IllegalArgumentException If the given {@code mode} is not one of {@code STRICT}, {@code BY_CONTRACT}
+     *         or {@code IGNORE_METADATA} enumeration values.
+     */
+    public int hashCode(final ComparisonMode mode) throws IllegalArgumentException {
+        int code = (int) serialVersionUID;
+        switch (mode) {
+            case STRICT: {
+                code ^= Objects.hash(name, nonNull(alias), nonNull(identifiers), remarks);
+                break;
+            }
+            case BY_CONTRACT: {
+                code ^= Objects.hash(getName(), getAlias(), getIdentifiers(), getRemarks());
+                break;
+            }
+            case IGNORE_METADATA: {
+                break;
+            }
+            default: {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "mode", mode));
+            }
+        }
+        return code;
+    }
+
+    /**
+     * Compares the specified object with this object for equality.
+     * This method is implemented as below (omitting assertions):
+     *
+     * {@preformat java
+     *     return equals(other, ComparisonMode.STRICT);
+     * }
+     *
+     * @param  object The other object (may be {@code null}).
+     * @return {@code true} if both objects are equal.
+     */
+    @Override
+    public final boolean equals(final Object object) {
+        final boolean eq = equals(object, ComparisonMode.STRICT);
+        // If objects are equal, then they must have the same hash code value.
+        assert !eq || hashCode() == object.hashCode() : this;
+        return eq;
+    }
+
+    /**
+     * Returns a hash value for this identified object.
+     * This method invokes <code>{@linkplain #hashCode(ComparisonMode) hashCode}(ComparisonMode.STRICT)</code>
+     * when first needed and caches the value for future invocations.
+     * Subclasses shall override {@link #hashCode(ComparisonMode)} instead than this method.
      *
      * @return The hash code value. This value may change between different execution of the Apache SIS library.
      */
@@ -592,34 +635,13 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     public final int hashCode() { // No need to synchronize; ok if invoked twice.
         int hash = hashCode;
         if (hash == 0) {
-            hash = computeHashCode();
+            hash = hashCode(ComparisonMode.STRICT);
             if (hash == 0) {
                 hash = -1;
             }
             hashCode = hash;
         }
-        assert hash == -1 || hash == computeHashCode() : this;
+        assert hash == -1 || hash == hashCode(ComparisonMode.STRICT) : this;
         return hash;
-    }
-
-    /**
-     * Computes a hash value for this identified object.
-     * This method is invoked by {@link #hashCode()} when first needed.
-     *
-     * <p>The default implementation computes a code derived from the list of {@link IdentifiedObject} interfaces
-     * implemented by this instance. The {@linkplain #getName() name}, {@linkplain #getIdentifiers() identifiers}
-     * and {@linkplain #getRemarks() remarks} are intentionally <strong>not</strong> used for hash code computation.
-     * See the <cite>Implementation specific feature</cite> section in {@link #hashCode()} for more information.</p>
-     *
-     * @return The hash code value. This value may change between different execution of the Apache SIS library.
-     */
-    protected int computeHashCode() {
-        // Subclasses need to overrides this!!!!
-        int code = (int) serialVersionUID;
-        for (final Class<?> type : Classes.getLeafInterfaces(getClass(), IdentifiedObject.class)) {
-            // Use a plain addition in order to be insensitive to array element order.
-            code += type.hashCode();
-        }
-        return code;
     }
 }
