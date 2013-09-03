@@ -638,7 +638,7 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
      * Shall be invoked after every successful test in order
      * to disable the report of failed class or method.
      */
-    private void done() {
+    protected final void done() {
         testingClass  = null;
         testingMethod = null;
     }
