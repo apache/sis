@@ -56,6 +56,8 @@ import org.apache.sis.internal.metadata.ReferencingServices;
  * @module
  *
  * @see Extents#getGeographicBoundingBox(Extent)
+ * @see org.apache.sis.referencing.AbstractReferenceSystem#getDomainOfValidity()
+ * @see org.apache.sis.referencing.datum.AbstractDatum#getDomainOfValidity()
  */
 @XmlType(name = "EX_Extent_Type", propOrder = {
     "description",

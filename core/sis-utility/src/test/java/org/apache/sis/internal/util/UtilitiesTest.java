@@ -19,10 +19,6 @@ package org.apache.sis.internal.util;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static java.lang.Double.NaN;
-import static java.lang.Double.POSITIVE_INFINITY;
-import static java.lang.Double.NEGATIVE_INFINITY;
-import static org.apache.sis.internal.util.Utilities.*;
 import static org.apache.sis.test.Assert.*;
 
 
@@ -35,23 +31,6 @@ import static org.apache.sis.test.Assert.*;
  * @module
  */
 public final strictfp class UtilitiesTest extends TestCase {
-    /**
-     * Tests the {@link Utilities#epsilonEqual(double, double)} method.
-     */
-    @Test
-    public void testEpsilonEqual() {
-        assertTrue (epsilonEqual(POSITIVE_INFINITY, POSITIVE_INFINITY));
-        assertTrue (epsilonEqual(NEGATIVE_INFINITY, NEGATIVE_INFINITY));
-        assertFalse(epsilonEqual(POSITIVE_INFINITY, NEGATIVE_INFINITY));
-        assertFalse(epsilonEqual(POSITIVE_INFINITY, NaN));
-        assertTrue (epsilonEqual(NaN,               NaN));
-        assertFalse(epsilonEqual(   0,        COMPARISON_THRESHOLD / 2));
-        assertTrue (epsilonEqual(   1,    1 + COMPARISON_THRESHOLD / 2));
-        assertFalse(epsilonEqual(   1,    1 + COMPARISON_THRESHOLD * 2));
-        assertTrue (epsilonEqual(-100, -100 + COMPARISON_THRESHOLD * 50));
-        assertFalse(epsilonEqual( 100,  100 + COMPARISON_THRESHOLD * 150));
-    }
-
     /**
      * Tests the {@link Utilities#toString(Class, Object[])} method.
      */

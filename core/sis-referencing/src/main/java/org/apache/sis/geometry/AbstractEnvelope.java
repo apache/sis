@@ -38,7 +38,7 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 
 import static java.lang.Double.doubleToLongBits;
-import static org.apache.sis.internal.util.Utilities.SIGN_BIT_MASK;
+import static org.apache.sis.internal.util.Numerics.SIGN_BIT_MASK;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
 import static org.apache.sis.util.StringBuilders.trimFractionalPart;
