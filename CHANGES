@@ -2,7 +2,7 @@ Apache SIS Change Log
 ======================
 Release 0.4 - Current Development
 
-* SIS-133 ResourceCompilerMojo should execute only when properties files are modified 
+* SIS-133 ResourceCompilerMojo should execute only when properties files are modified
           (Olivier Nouguier via mattmann)
 
 * SIS-132 Better support for eclipse IDE (Olivier Nouguier via mattmann)
