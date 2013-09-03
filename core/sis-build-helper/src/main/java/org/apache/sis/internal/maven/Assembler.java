@@ -56,7 +56,7 @@ public class Assembler extends AbstractMojo implements FilenameFilter {
     /**
      * Project information (name, version, URL).
      *
-     * @parameter default-value="${project}"
+     * @parameter property="project"
      * @required
      * @readonly
      */
