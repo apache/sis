@@ -22,9 +22,6 @@ import org.apache.sis.util.Static;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.CharSequences;
 
-import static java.lang.Math.abs;
-import static java.lang.Math.max;
-
 
 /**
  * Miscellaneous utilities which should not be put in public API.
@@ -35,86 +32,11 @@ import static java.lang.Math.max;
  * @module
  */
 public final class Utilities extends Static {
-    /**
-     * Relative difference tolerated when comparing floating point numbers using
-     * {@link org.apache.sis.util.ComparisonMode#APPROXIMATIVE}.
-     *
-     * <p>Historically, this was the relative tolerance threshold for considering two
-     * matrixes as equal. This value has been determined empirically in order to allow
-     * {@link org.apache.sis.referencing.operation.transform.ConcatenatedTransform} to
-     * detect the cases where two {@link org.apache.sis.referencing.operation.transform.LinearTransform}
-     * are equal for practical purpose. This threshold can be used as below:</p>
-     *
-     * {@preformat java
-     *     Matrix m1 = ...;
-     *     Matrix m2 = ...;
-     *     if (Matrices.epsilonEqual(m1, m2, EQUIVALENT_THRESHOLD, true)) {
-     *         // Consider that matrixes are equal.
-     *     }
-     * }
-     *
-     * By extension, the same threshold value is used for comparing other floating point values.
-     *
-     * @see org.apache.sis.internal.referencing.Utilities#LINEAR_TOLERANCE
-     * @see org.apache.sis.internal.referencing.Utilities#ANGULAR_TOLERANCE
-     */
-    public static final double COMPARISON_THRESHOLD = 1E-14;
-
-    /**
-     * Bit mask to isolate the sign bit of non-{@linkplain Double#isNaN(double) NaN} values in a
-     * {@code double}. For any real value, the following code evaluate to 0 if the given value is
-     * positive:
-     *
-     * {@preformat java
-     *     Double.doubleToRawLongBits(value) & SIGN_BIT_MASK;
-     * }
-     *
-     * Note that this idiom differentiates positive zero from negative zero.
-     * It should be used only when such difference matter.
-     *
-     * @see org.apache.sis.math.MathFunctions#isPositive(double)
-     * @see org.apache.sis.math.MathFunctions#isNegative(double)
-     * @see org.apache.sis.math.MathFunctions#isSameSign(double, double)
-     * @see org.apache.sis.math.MathFunctions#xorSign(double, double)
-     */
-    public static final long SIGN_BIT_MASK = Long.MIN_VALUE;
 
     /**
      * Do not allow instantiation of this class.
      */
     private Utilities() {
-    }
-
-    /**
-     * Returns {@code true} if the given values are approximatively equal,
-     * up to the {@linkplain #COMPARISON_THRESHOLD comparison threshold}.
-     *
-     * @param  v1 The first value to compare.
-     * @param  v2 The second value to compare.
-     * @return {@code true} If both values are approximatively equal.
-     */
-    public static boolean epsilonEqual(final double v1, final double v2) {
-        final double threshold = COMPARISON_THRESHOLD * max(abs(v1), abs(v2));
-        if (threshold == Double.POSITIVE_INFINITY || Double.isNaN(threshold)) {
-            return Double.doubleToLongBits(v1) == Double.doubleToLongBits(v2);
-        }
-        return abs(v1 - v2) <= threshold;
-    }
-
-    /**
-     * Returns {@code true} if the following objects are floating point numbers ({@link Float} or
-     * {@link Double} types) and approximatively equal. If the given object are not floating point
-     * numbers, then this method returns {@code false} unconditionally on the assumption that
-     * strict equality has already been checked before this method call.
-     *
-     * @param  v1 The first value to compare.
-     * @param  v2 The second value to compare.
-     * @return {@code true} If both values are real number and approximatively equal.
-     */
-    public static boolean floatEpsilonEqual(final Object v1, final Object v2) {
-        return (v1 instanceof Float || v1 instanceof Double) &&
-               (v2 instanceof Float || v2 instanceof Double) &&
-               epsilonEqual(((Number) v1).doubleValue(), ((Number) v2).doubleValue());
     }
 
     /**
