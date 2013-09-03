@@ -185,6 +185,7 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
                 }
             }
         }
+        done();
     }
 
     /**
