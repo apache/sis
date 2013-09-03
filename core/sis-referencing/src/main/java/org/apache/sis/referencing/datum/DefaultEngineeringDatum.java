@@ -111,6 +111,14 @@ public class DefaultEngineeringDatum extends AbstractDatum implements Engineerin
     }
 
     /**
+     * Computes a hash value consistent with the given comparison mode.
+     */
+    @Override
+    public int hashCode(final ComparisonMode mode) throws IllegalArgumentException {
+        return super.hashCode(mode) ^ (int) serialVersionUID;
+    }
+
+    /**
      * Formats the inner part of a <cite>Well Known Text</cite> (WKT)</a> element.
      * The keyword is "{@code LOCAL_DATUM}" in WKT 1.
      *

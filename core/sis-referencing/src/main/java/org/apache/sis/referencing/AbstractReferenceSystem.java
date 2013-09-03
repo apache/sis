@@ -182,4 +182,27 @@ public class AbstractReferenceSystem extends AbstractIdentifiedObject implements
         }
         return false;
     }
+
+    /**
+     * Computes a hash value consistent with the given comparison mode.
+     * If the given argument is {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA}, then the
+     * {@linkplain #getDomainOfValidity() domain of validity} and the {@linkplain #getScope() scope}
+     * properties are ignored, in addition to other ignored properties documented in the
+     * {@linkplain AbstractIdentifiedObject#hashCode(ComparisonMode) super-class}.
+     */
+    @Override
+    public int hashCode(final ComparisonMode mode) throws IllegalArgumentException {
+        int code = super.hashCode(mode) ^ (int) serialVersionUID;
+        switch (mode) {
+            case STRICT: {
+                code ^= Objects.hash(domainOfValidity, scope);
+                break;
+            }
+            case BY_CONTRACT: {
+                code ^= Objects.hash(getDomainOfValidity(), getScope());
+                break;
+            }
+        }
+        return code;
+    }
 }

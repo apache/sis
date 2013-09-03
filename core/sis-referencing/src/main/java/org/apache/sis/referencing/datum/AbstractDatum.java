@@ -249,6 +249,10 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
 
     /**
      * Compares the specified object with this datum for equality.
+     * If the {@code mode} argument value is {@link ComparisonMode#STRICT STRICT} or
+     * {@link ComparisonMode#BY_CONTRACT BY_CONTRACT}, then all available properties are compared including the
+     * {@linkplain #getAnchorPoint() anchor point}, {@link #getRealizationEpoch() realization epoch},
+     * {@linkplain #getDomainOfValidity() domain of validity} and the {@linkplain #getScope() scope}.
      *
      * @param  object The object to compare to {@code this}.
      * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
@@ -293,9 +297,35 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     }
 
     /**
-     * Formats the inner part of a
-     * <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html"><cite>Well
-     * Known Text</cite> (WKT)</a> element.
+     * Computes a hash value consistent with the given comparison mode.
+     * If the given argument is {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA}, then the
+     * {@linkplain #getAnchorPoint() anchor point}, {@link #getRealizationEpoch() realization epoch},
+     * {@linkplain #getDomainOfValidity() domain of validity} and the {@linkplain #getScope() scope}
+     * properties are ignored.
+     */
+    @Override
+    public int hashCode(final ComparisonMode mode) throws IllegalArgumentException {
+        int code = super.hashCode(mode) ^ (int) serialVersionUID;
+        switch (mode) {
+            case STRICT: {
+                code += Objects.hash(anchorPoint, realizationEpoch, domainOfValidity, scope);
+                break;
+            }
+            case BY_CONTRACT: {
+                code += Objects.hash(getAnchorPoint(), getRealizationEpoch(), getDomainOfValidity(), getScope());
+                break;
+            }
+            /*
+             * The name is significant for all modes, but we nevertheless ignore it because
+             * of the way the name is compared in the equals(Object, ComparisonMode) method
+             * which make hash code computation impractical in the IGNORE_METADATA case.
+             */
+        }
+        return code;
+    }
+
+    /**
+     * Formats the inner part of a <cite>Well Known Text</cite> (WKT)</a> element.
      *
      * {@note All subclasses will override this method, but only <code>DefaultGeodeticDatum</code>
      *        will <strong>not</strong> invoke this parent method, because horizontal datum do not
