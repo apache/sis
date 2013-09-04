@@ -134,6 +134,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int DeadThread_1 = 43;
 
         /**
+         * Element “{0}” is duplicated.
+         */
+        public static final int DuplicatedElement_1 = 116;
+
+        /**
          * Identifier “{0}” is duplicated.
          */
         public static final int DuplicatedIdentifier_1 = 38;
@@ -369,6 +374,11 @@ public final class Errors extends IndexedResourceBundle {
          * Can not create a “{0}” array of negative length.
          */
         public static final int NegativeArrayLength_1 = 78;
+
+        /**
+         * No convergence for points {0} and {1}.
+         */
+        public static final int NoConvergenceForPoints_2 = 117;
 
         /**
          * Element “{0}” has not been found.

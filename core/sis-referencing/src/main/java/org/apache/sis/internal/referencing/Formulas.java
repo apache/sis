@@ -20,6 +20,7 @@ import org.apache.sis.util.Static;
 import org.apache.sis.measure.Latitude;
 
 import static java.lang.Math.*;
+import static org.apache.sis.math.MathFunctions.atanh;
 
 
 /**
@@ -28,8 +29,8 @@ import static java.lang.Math.*;
  * do not want to expose publicly those arbitrary values (or at least not in a too direct way).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3 (derived from geotk-3.00)
- * @version 0.3
+ * @since   0.4 (derived from geotk-3.00)
+ * @version 0.4
  * @module
  */
 public final class Formulas extends Static {
@@ -39,7 +40,7 @@ public final class Formulas extends Static {
      * testing map projection accuracy.
      *
      * @see #ANGULAR_TOLERANCE
-     * @see org.apache.sis.internal.util.Utilities#COMPARISON_THRESHOLD
+     * @see org.apache.sis.internal.util.Numerics#COMPARISON_THRESHOLD
      */
     public static final double LINEAR_TOLERANCE = 1.0;
 
@@ -49,7 +50,7 @@ public final class Formulas extends Static {
      * nautical mile length.
      *
      * @see #LINEAR_TOLERANCE
-     * @see org.apache.sis.internal.util.Utilities#COMPARISON_THRESHOLD
+     * @see org.apache.sis.internal.util.Numerics#COMPARISON_THRESHOLD
      */
     public static final double ANGULAR_TOLERANCE = LINEAR_TOLERANCE / (1852 * 60);
 
@@ -69,5 +70,23 @@ public final class Formulas extends Static {
     public static boolean isPoleToPole(final double ymin, final double ymax) {
         return abs(ymin - Latitude.MIN_VALUE) <= ANGULAR_TOLERANCE &&
                abs(ymax - Latitude.MAX_VALUE) <= ANGULAR_TOLERANCE;
+    }
+
+    /**
+     * Returns the radius of a hypothetical sphere having the same surface than the ellipsoid
+     * specified by the given axis length. This method does not verify if {@code a == b}
+     * (in which case {@code a} could be returned directly); it is up to the caller to perform
+     * such optimization if desired.
+     *
+     * @param  a The semi-major axis length.
+     * @param  b The semi-minor axis length.
+     * @return The radius of a sphere having the same surface than the specified ellipsoid.
+     *
+     * @see org.apache.sis.referencing.datum.DefaultEllipsoid#getAuthalicRadius()
+     */
+    public static double getAuthalicRadius(final double a, final double b) {
+        final double f = 1 - b/a;
+        final double e = sqrt(2*f - f*f);
+        return sqrt(0.5 * (a*a + b*b*atanh(e)/e));
     }
 }
