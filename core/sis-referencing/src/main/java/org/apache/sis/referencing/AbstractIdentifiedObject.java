@@ -564,18 +564,18 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * This method accepts only the following enumeration values:
      *
      * <ul>
-     *   <li>{@link ComparisonMode#STRICT} (the default): this method may use any property,
+     *   <li>{@link ComparisonMode#STRICT STRICT}: this method may use any property,
      *       including implementation-specific ones if any, at implementation choice.</li>
-     *   <li>{@link ComparisonMode#BY_CONTRACT}: this method can use any property defined
+     *   <li>{@link ComparisonMode#BY_CONTRACT BY_CONTRACT}: this method can use any property defined
      *       in the implemented interface (typically a GeoAPI interface).</li>
-     *   <li>{@link ComparisonMode#IGNORE_METADATA}: this method ignores the metadata that do not affect
-     *       coordinate operations. By default, the ignored properties are the {@linkplain #getName() name},
+     *   <li>{@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA}: this method ignores the metadata that do not
+     *       affect coordinate operations. By default, the ignored properties are the {@linkplain #getName() name},
      *       {@linkplain #getIdentifiers() identifiers} and {@linkplain #getRemarks() remarks}.
      *       However subclasses may ignore a different list of properties.</li>
      * </ul>
      *
      * In the later case, two identified objects will return the same hash value if they are equal in the sense of
-     * <code>{@linkplain #equals(Object, ComparisonMode) equals}(object, {@linkplain ComparisonMode#IGNORE_METADATA})</code>.
+     * <code>{@linkplain #equals(Object, ComparisonMode) equals}(object, IGNORE_METADATA)</code>.
      * This feature allows users to implement metadata-insensitive {@link java.util.HashMap}.
      *
      * @param  mode Specifies the set of properties that can be used for hash code computation.
@@ -612,6 +612,8 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *     return equals(other, ComparisonMode.STRICT);
      * }
      *
+     * Subclasses shall override {@link #equals(Object, ComparisonMode)} instead than this method.
+     *
      * @param  object The other object (may be {@code null}).
      * @return {@code true} if both objects are equal.
      */
@@ -625,8 +627,14 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
 
     /**
      * Returns a hash value for this identified object.
-     * This method invokes <code>{@linkplain #hashCode(ComparisonMode) hashCode}(ComparisonMode.STRICT)</code>
-     * when first needed and caches the value for future invocations.
+     * This method derives a value from <code>{@linkplain #hashCode(ComparisonMode) hashCode}(STRICT)</code>.
+     * Notes:
+     *
+     * <ul>
+     *   <li>The derived value may be different than {@code hashCode(STRICT)}.</li>
+     *   <li>This method may cache the hash code value.</li>
+     * </ul>
+     *
      * Subclasses shall override {@link #hashCode(ComparisonMode)} instead than this method.
      *
      * @return The hash code value. This value may change between different execution of the Apache SIS library.
