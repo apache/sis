@@ -36,7 +36,7 @@ import static java.lang.Math.*;
  */
 @Immutable
 @XmlTransient
-final class Spheroid extends DefaultEllipsoid {
+final class Sphere extends DefaultEllipsoid {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -50,7 +50,7 @@ final class Spheroid extends DefaultEllipsoid {
      * @param ivfDefinitive {@code true} if the inverse flattening is definitive.
      * @param unit          The units of the radius value.
      */
-    protected Spheroid(Map<String,?> properties, double radius, boolean ivfDefinitive, Unit<Length> unit) {
+    protected Sphere(Map<String,?> properties, double radius, boolean ivfDefinitive, Unit<Length> unit) {
         super(properties, radius, radius, Double.POSITIVE_INFINITY, ivfDefinitive, unit);
     }
 
