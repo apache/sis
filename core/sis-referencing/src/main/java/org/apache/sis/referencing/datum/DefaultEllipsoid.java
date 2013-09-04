@@ -310,7 +310,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
                                                    final Unit<Length> unit)
     {
         if (semiMajorAxis == semiMinorAxis) {
-            return new Spheroid(properties, semiMajorAxis, false, unit);
+            return new Sphere(properties, semiMajorAxis, false, unit);
         } else {
             return new DefaultEllipsoid(properties, semiMajorAxis, semiMinorAxis,
                        semiMajorAxis / (semiMajorAxis - semiMinorAxis), false, unit);
@@ -351,7 +351,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
                                                          final Unit<Length> unit)
     {
         if (isInfinite(inverseFlattening)) {
-            return new Spheroid(properties, semiMajorAxis, true, unit);
+            return new Sphere(properties, semiMajorAxis, true, unit);
         } else {
             return new DefaultEllipsoid(properties, semiMajorAxis,
                     semiMajorAxis * (1 - 1/inverseFlattening), inverseFlattening, true, unit);
