@@ -33,8 +33,8 @@ import org.apache.sis.io.wkt.Formatter;
  * or be a defined point on a moving vehicle (such as on a ship or satellite).
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-1.2)
- * @version 0.3
+ * @since   0.4 (derived from geotk-1.2)
+ * @version 0.4
  * @module
  */
 @Immutable

@@ -46,8 +46,8 @@ import java.util.Objects;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3 (derived from geotk-1.2)
- * @version 0.3
+ * @since   0.4 (derived from geotk-1.2)
+ * @version 0.4
  * @module
  */
 @Immutable
