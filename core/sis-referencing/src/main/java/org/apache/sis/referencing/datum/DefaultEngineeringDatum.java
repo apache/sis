@@ -115,6 +115,10 @@ public class DefaultEngineeringDatum extends AbstractDatum implements Engineerin
      */
     @Override
     public int hashCode(final ComparisonMode mode) throws IllegalArgumentException {
+        /*
+         * The "^ (int) serialVersionUID" is an arbitrary change applied to the hash code value in order to
+         * differentiate this EngineeringDatum implementation from implementations of other GeoAPI interfaces.
+         */
         return super.hashCode(mode) ^ (int) serialVersionUID;
     }
 
