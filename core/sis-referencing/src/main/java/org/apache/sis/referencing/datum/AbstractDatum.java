@@ -251,7 +251,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * Compares the specified object with this datum for equality.
      * If the {@code mode} argument value is {@link ComparisonMode#STRICT STRICT} or
      * {@link ComparisonMode#BY_CONTRACT BY_CONTRACT}, then all available properties are compared including the
-     * {@linkplain #getAnchorPoint() anchor point}, {@link #getRealizationEpoch() realization epoch},
+     * {@linkplain #getAnchorPoint() anchor point}, {@linkplain #getRealizationEpoch() realization epoch},
      * {@linkplain #getDomainOfValidity() domain of validity} and the {@linkplain #getScope() scope}.
      *
      * @param  object The object to compare to {@code this}.
@@ -299,7 +299,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     /**
      * Computes a hash value consistent with the given comparison mode.
      * If the given argument is {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA}, then the
-     * {@linkplain #getAnchorPoint() anchor point}, {@link #getRealizationEpoch() realization epoch},
+     * {@linkplain #getAnchorPoint() anchor point}, {@linkplain #getRealizationEpoch() realization epoch},
      * {@linkplain #getDomainOfValidity() domain of validity} and the {@linkplain #getScope() scope}
      * properties are ignored.
      */
