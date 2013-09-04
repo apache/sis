@@ -38,8 +38,8 @@ import java.util.Objects;
  * or the corner of the image.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.0)
- * @version 0.3
+ * @since   0.4 (derived from geotk-2.0)
+ * @version 0.4
  * @module
  */
 @Immutable
