@@ -305,6 +305,10 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      */
     @Override
     public int hashCode(final ComparisonMode mode) throws IllegalArgumentException {
+        /*
+         * The "^ (int) serialVersionUID" is an arbitrary change applied to the hash code value in order to
+         * differentiate this Datum implementation from implementations of other GeoAPI interfaces.
+         */
         int code = super.hashCode(mode) ^ (int) serialVersionUID;
         switch (mode) {
             case STRICT: {
