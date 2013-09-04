@@ -150,8 +150,8 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultTemporalDatum castOrCopy(final TemporalDatum object) {
-        return (object == null) || (object instanceof DefaultTemporalDatum)
-                ? (DefaultTemporalDatum) object : new DefaultTemporalDatum(object);
+        return (object == null) || (object instanceof DefaultTemporalDatum) ?
+                (DefaultTemporalDatum) object : new DefaultTemporalDatum(object);
     }
 
     /**
