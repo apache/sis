@@ -45,15 +45,15 @@ public final class Numerics extends Static {
      * {@preformat java
      *     Matrix m1 = ...;
      *     Matrix m2 = ...;
-     *     if (Matrices.epsilonEqual(m1, m2, EQUIVALENT_THRESHOLD, true)) {
+     *     if (Matrices.epsilonEqual(m1, m2, COMPARISON_THRESHOLD, true)) {
      *         // Consider that matrixes are equal.
      *     }
      * }
      *
      * By extension, the same threshold value is used for comparing other floating point values.
      *
-     * @see org.apache.sis.internal.referencing.Utilities#LINEAR_TOLERANCE
-     * @see org.apache.sis.internal.referencing.Utilities#ANGULAR_TOLERANCE
+     * @see org.apache.sis.internal.referencing.Formulas#LINEAR_TOLERANCE
+     * @see org.apache.sis.internal.referencing.Formulas#ANGULAR_TOLERANCE
      */
     public static final double COMPARISON_THRESHOLD = 1E-14;
 
