@@ -18,17 +18,15 @@ package org.apache.sis.internal.jdk8;
 
 
 /**
- * Placeholder for the {@link java.util.function.Function} interface.
+ * Placeholder for the {@link java.util.function.Supplier} interface.
  *
- * @param <T> The type of parameters (source type).
- * @param <R> The type of return values (target type).
+ * @param <T> The type of results.
  */
-public interface Function<T,R> {
+public interface Supplier<T> {
     /**
-     * Computes a value for the given argument.
+     * Gets a result.
      *
-     * @param value The source value.
-     * @return The target value.
+     * @return A result.
      */
-    R apply(T value);
+    T get();
 }
