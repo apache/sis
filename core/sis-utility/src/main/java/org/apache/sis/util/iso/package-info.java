@@ -16,7 +16,7 @@
  */
 
 /**
- * Implementation of GeoAPI types from the {@link org.opengis.util} package.
+ * Implementations of GeoAPI types from the {@link org.opengis.util} package.
  * {@code InternationalString} implementations are closely related to the {@code <gmd:textGroup>}
  * XML element found in ISO specifications. All other non-static types except the {@code Factory}
  * implementations are derived from the ISO 19103 specification.
@@ -25,102 +25,64 @@
  * <ul>
  *   <li>Implementations of {@link org.opengis.util.InternationalString}:
  *     <ul>
- *       <li>{@link org.apache.sis.util.iso.SimpleInternationalString} for wrapping a single {@link java.lang.String};</li>
- *       <li>{@link org.apache.sis.util.iso.DefaultInternationalString} for providing many localizations in a {@link java.util.Map};</li>
+ *       <li>{@link org.apache.sis.util.iso.SimpleInternationalString}   for wrapping a single {@link java.lang.String};</li>
+ *       <li>{@link org.apache.sis.util.iso.DefaultInternationalString}  for providing many localizations in a {@link java.util.Map};</li>
  *       <li>{@link org.apache.sis.util.iso.ResourceInternationalString} for providing localizations from a {@link java.util.ResourceBundle}.</li>
  *     </ul>
  *   </li>
  *   <li>Implementations of {@link org.opengis.util.GenericName}:
  *     <ul>
- *       <li>{@link org.apache.sis.util.iso.DefaultLocalName} for identifier within a namespace.</li>
+ *       <li>{@link org.apache.sis.util.iso.DefaultLocalName}  for identifier within a {@linkplain org.apache.sis.util.iso.DefaultNameSpace name space}.</li>
+ *       <li>{@link org.apache.sis.util.iso.DefaultMemberName} for identifying a member of a {@linkplain org.apache.sis.util.iso.DefaultRecord record}.</li>
+ *       <li>{@link org.apache.sis.util.iso.DefaultTypeName}   for identifying an attribute type associated to a member.</li>
  *       <li>{@link org.apache.sis.util.iso.DefaultScopedName} for a composite of a <cite>head</cite> name and a <cite>tail</cite> name.</li>
- *       <li>{@link org.apache.sis.util.iso.DefaultMemberName} for identifying a member of a record.</li>
- *       <li>{@link org.apache.sis.util.iso.DefaultTypeName} for identifying an attribute type associated to a member.</li>
- *       <li>{@link org.apache.sis.util.iso.DefaultNameSpace} for identifying the domain in which above names are defined.</li>
  *     </ul>
  *   </li>
  * </ul>
  *
- * {@section Relationship between naming types}
+ * {@section Anatomy of a name}
  * Names may be {@linkplain org.apache.sis.util.iso.AbstractName#toFullyQualifiedName()
  * fully qualified} (like {@code "org.opengis.util.Record"}), or they may be relative to a
  * {@linkplain org.apache.sis.util.iso.AbstractName#scope() scope} (like {@code "util.Record"}
- * in the {@code "org.opengis"} scope). The illustration below shows all possible constructions
- * for {@code "org.opengis.util.Record"}:
+ * in the {@code "org.opengis"} scope). In the following illustration,
+ * each line is one possible construction for {@code "org.apache.sis.util.iso"}.
+ * For each construction, the columns shows the values of a pair of attributes in the form
+ * <span style="background:LightSkyBlue"><var>left</var></span>.<span style="background:Yellow"><var>right</var></span>:
  *
- * <blockquote><table class="compact"><tr><td><table class="compact">
+ * <blockquote><table class="compact" style="border-spacing:21pt 0">
  *   <tr>
- *     <th align="right">org</th>
- *     <th>.</th><th>opengis</th>
- *     <th>.</th><th>util</th>
- *     <th>.</th><th>Record</th>
- *     <th width="50"></th>
- *     <th>{@link org.apache.sis.util.iso.AbstractName#scope() scope()}</th>
- *     <th>{@link org.apache.sis.util.iso.AbstractName#getParsedNames() getParsedNames()}</th>
- *     <th width="50"></th>
+ *     <th>{@linkplain org.apache.sis.util.iso.AbstractName#scope() scope}.this</th>
+ *     <th>{@linkplain org.apache.sis.util.iso.AbstractName#head() head}.{@linkplain org.apache.sis.util.iso.DefaultScopedName#tail() tail}</th>
+ *     <th>{@linkplain org.apache.sis.util.iso.DefaultScopedName#path() path}.{@linkplain org.apache.sis.util.iso.AbstractName#tip() tip}</th>
  *     <th>Type</th>
+ *   </tr><tr>
+ *     <td><code><span style="background:Yellow">org.apache.sis.util.iso</span></code></td>
+ *     <td><code><span style="background:LightSkyBlue">org.</span><span style="background:Yellow">apache.sis.util.iso</span></code></td>
+ *     <td><code><span style="background:LightSkyBlue">org.apache.sis.util.</span><span style="background:Yellow">iso</span></code></td>
+ *     <td>{@linkplain org.apache.sis.util.iso.DefaultScopedName Scoped name} with
+ *         {@linkplain org.apache.sis.util.iso.DefaultNameSpace#isGlobal() global namespace}</td>
+ *   </tr><tr>
+ *     <td><code><span style="background:LightSkyBlue">org</span>.<span style="background:Yellow">apache.sis.util.iso</span></code></td>
+ *     <td><code>org.<span style="background:LightSkyBlue">apache.</span><span style="background:Yellow">sis.util.iso</span></code></td>
+ *     <td><code>org.<span style="background:LightSkyBlue">apache.sis.util.</span><span style="background:Yellow">iso</span></code></td>
+ *     <td>{@linkplain org.apache.sis.util.iso.DefaultScopedName Scoped name}</td>
+ *   </tr><tr>
+ *     <td><code><span style="background:LightSkyBlue">org.apache</span>.<span style="background:Yellow">sis.util.iso</span></code></td>
+ *     <td><code>org.apache.<span style="background:LightSkyBlue">sis.</span><span style="background:Yellow">util.iso</span></code></td>
+ *     <td><code>org.apache.<span style="background:LightSkyBlue">sis.util.</span><span style="background:Yellow">iso</span></code></td>
+ *     <td>{@linkplain org.apache.sis.util.iso.DefaultScopedName Scoped name}</td>
+ *   </tr><tr>
+ *     <td><code><span style="background:LightSkyBlue">org.apache.sis</span>.<span style="background:Yellow">util.iso</span></code></td>
+ *     <td><code>org.apache.sis.<span style="background:LightSkyBlue">util.</span><span style="background:Yellow">iso</span></code></td>
+ *     <td><code>org.apache.sis.<span style="background:LightSkyBlue">util.</span><span style="background:Yellow">iso</span></code></td>
+ *     <td>{@linkplain org.apache.sis.util.iso.DefaultScopedName Scoped name}</td>
+ *   </tr><tr>
+ *     <td><code><span style="background:LightSkyBlue">org.apache.sis.util</span>.<span style="background:Yellow">iso</span></code></td>
+ *     <td><code>org.apache.sis.util.<span style="background:LightSkyBlue">iso</span></code></td>
+ *     <td><code>org.apache.sis.util.<span style="background:Yellow">iso</span></code></td>
+ *     <td>{@linkplain org.apache.sis.util.iso.DefaultLocalName Local name}</td>
  *   </tr>
- *
- *   <tr align="center">
- *     <td style="background:palegoldenrod" colspan="1"><font size="-1">{@linkplain org.apache.sis.util.iso.AbstractName#head() head}</font></td><td></td>
- *     <td style="background:palegoldenrod" colspan="5"><font size="-1">{@linkplain org.apache.sis.util.iso.DefaultScopedName#tail() tail}</font></td>
- *     <td rowspan="2"></td>
- *     <td rowspan="2" style="background:beige" align="left">{@linkplain org.apache.sis.util.iso.DefaultNameSpace#isGlobal() global}</td>
- *     <td rowspan="2" style="background:beige" align="right">{@code {"org", "opengis", "util", "Record"}}</td>
- *     <td rowspan="2"></td>
- *     <td rowspan="2">{@link org.apache.sis.util.iso.DefaultScopedName ScopedName}</td>
- *   </tr>
- *   <tr align="center">
- *     <td style="background:wheat" colspan="5"><font size="-1">{@linkplain org.apache.sis.util.iso.DefaultScopedName#path() path}</font></td><td></td>
- *     <td style="background:wheat" colspan="1"><font size="-1">{@linkplain org.apache.sis.util.iso.AbstractName#tip() tip}</font></td>
- *   </tr>
- *
- *   <tr><td colspan="9" height="2"></td></tr>
- *   <tr align="center">
- *     <td style="background:palegoldenrod" colspan="1" rowspan="2"><font size="-1">{@linkplain org.apache.sis.util.iso.AbstractName#scope() scope}</font></td><td rowspan="2"></td>
- *     <td style="background:palegoldenrod" colspan="1"><font size="-1">head</font></td><td></td>
- *     <td style="background:palegoldenrod" colspan="3"><font size="-1">tail</font></td>
- *     <td rowspan="2"></td>
- *     <td rowspan="2" style="background:beige" align="left">{@code "org"}</td>
- *     <td rowspan="2" style="background:beige" align="right">{@code {"opengis", "util", "Record"}}</td>
- *     <td rowspan="2"></td>
- *     <td rowspan="2">{@code ScopedName}</td>
- *   </tr>
- *   <tr align="center">
- *     <td style="background:wheat" colspan="3"><font size="-1">path</font></td><td></td>
- *     <td style="background:wheat" colspan="1"><font size="-1">tip</font></td>
- *   </tr>
- *
- *   <tr><td colspan="9" height="3"></td></tr>
- *   <tr align="center">
- *     <td style="background:palegoldenrod" colspan="3" rowspan="2"><font size="-1">scope</font></td><td rowspan="2"></td>
- *     <td style="background:palegoldenrod" colspan="1"><font size="-1">head</font></td><td></td>
- *     <td style="background:palegoldenrod" colspan="1"><font size="-1">tail</font></td>
- *     <td rowspan="2"></td>
- *     <td rowspan="2" style="background:beige" align="left">{@code "org.opengis"}</td>
- *     <td rowspan="2" style="background:beige" align="right">{@code {"util", "Record"}}</td>
- *     <td rowspan="2"></td>
- *     <td rowspan="2">{@code ScopedName}</td>
- *   </tr>
- *   <tr align="center">
- *     <td style="background:wheat" colspan="1"><font size="-1">path</font></td><td></td>
- *     <td style="background:wheat" colspan="1"><font size="-1">tip</font></td>
- *   </tr>
- *
- *   <tr><td colspan="9" height="3"></td></tr>
- *   <tr align="center">
- *     <td style="background:palegoldenrod" colspan="5" rowspan="2"><font size="-1">scope</font></td><td rowspan="2"></td>
- *     <td style="background:palegoldenrod" colspan="1"><font size="-1">head</font></td>
- *     <td rowspan="2"></td>
- *     <td rowspan="2" style="background:beige" align="left">{@code "org.opengis.util"}</td>
- *     <td rowspan="2" style="background:beige" align="right">{@code {"Record"}}</td>
- *     <td rowspan="2"></td>
- *     <td rowspan="2">{@link org.apache.sis.util.iso.DefaultLocalName LocalName}</td>
- *   </tr>
- *   <tr align="center">
- *     <td style="background:wheat" colspan="1"><font size="-1">tip</font></td>
- *   </tr>
- * </table></td></tr></table></blockquote>
+ * </table></blockquote>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-3.00)

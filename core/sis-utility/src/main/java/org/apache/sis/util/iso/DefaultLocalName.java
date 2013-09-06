@@ -255,7 +255,7 @@ public class DefaultLocalName extends AbstractName implements LocalName {
     /**
      * Compares this name with the specified object for order. Returns a negative integer,
      * zero, or a positive integer as this name lexicographically precedes, is equal to,
-     * or follows the specified object. The comparison is case-insensitive.
+     * or follows the specified object.
      *
      * @param name The other name to compare with this name.
      * @return -1 if this name precedes the given one, +1 if it follows, 0 if equals.
@@ -263,7 +263,14 @@ public class DefaultLocalName extends AbstractName implements LocalName {
     @Override
     public int compareTo(final GenericName name) {
         if (name instanceof LocalName) {
-            return toString().compareToIgnoreCase(name.toString());
+            /*
+             * Note: a previous version was using String.compareToIgnoreCase(String).
+             * However it is slightly slower than String.compareTo(String), increase
+             * the inconsistency with equals(Object), may be more suprising to the
+             * developer and result in unsatisfactory ordering for certain locales
+             * anyway (we are supposed to use Collator instead).
+             */
+            return toString().compareTo(name.toString());
         } else {
             return super.compareTo(name);
         }

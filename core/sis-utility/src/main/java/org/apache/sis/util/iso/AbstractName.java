@@ -50,8 +50,7 @@ import java.util.Objects;
  *
  * {@section <code>Comparable</code> ordering}
  * This class has a natural ordering that is inconsistent with {@link #equals(Object)}.
- * The natural ordering is case-insensitive and ignores the character separator between
- * name elements.
+ * See {@link #compareTo(GenericName)} for more information.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.1)
