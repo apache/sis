@@ -1,0 +1,225 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.sis.referencing.operation.matrix;
+
+import org.opengis.referencing.operation.Matrix;
+import org.apache.sis.internal.util.Numerics;
+
+
+/**
+ * A matrix of fixed {@value #SIZE}×{@value #SIZE} size. This trivial matrix is returned as a result
+ * of {@linkplain org.opengis.referencing.operation.MathTransform1D} derivative computation.
+ *
+ * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @since   0.4 (derived from geotk-2.2)
+ * @version 0.4
+ * @module
+ */
+final class Matrix1 extends MatrixSIS {
+    /**
+     * Serial number for inter-operability with different versions.
+     */
+    private static final long serialVersionUID = -4829171016106097031L;
+
+    /**
+     * The matrix size, which is {@value}.
+     */
+    public static final int SIZE = 1;
+
+    /**
+     * The only element in this matrix.
+     */
+    private double m00;
+
+    /**
+     * Creates a new identity matrix.
+     */
+    public Matrix1() {
+        m00 = 1;
+    }
+
+    /**
+     * Creates a new matrix initialized to the specified value.
+     *
+     * @param m00 The element in this matrix.
+     */
+    public Matrix1(final double m00) {
+        this.m00 = m00;
+    }
+
+    /**
+     * Creates a new matrix initialized to the same value than the specified one.
+     * The specified matrix size must be {@value #SIZE}×{@value #SIZE}.
+     * This is not verified by this constructor, since it shall be verified by {@link Matrices}.
+     *
+     * @param  matrix The matrix to copy.
+     */
+    Matrix1(final Matrix matrix) {
+        m00 = matrix.getElement(0,0);
+    }
+
+    /**
+     * Returns the number of rows in this matrix, which is always {@value #SIZE} in this implementation.
+     */
+    @Override
+    public final int getNumRow() {
+        return SIZE;
+    }
+
+    /**
+     * Returns the number of columns in this matrix, which is always {@value #SIZE} in this implementation.
+     */
+    @Override
+    public final int getNumCol() {
+        return SIZE;
+    }
+
+    /**
+     * Retrieves the value at the specified row and column of this matrix.
+     */
+    @Override
+    public double getElement(final int row, final int column) {
+        if (row == 0 && column == 0) {
+            return m00;
+        } else {
+            throw new IndexOutOfBoundsException();
+        }
+    }
+
+    /**
+     * Modifies the value at the specified row and column of this matrix.
+     */
+    @Override
+    public void setElement(final int row, final int column, final double value) {
+        if (row == 0 && column == 0) {
+            m00 = value;
+        } else {
+            throw new IndexOutOfBoundsException();
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isAffine() {
+        return m00 == 1;
+    }
+
+    /**
+     * Returns {@code true} if this matrix is an identity matrix.
+     */
+    @Override
+    public boolean isIdentity() {
+        return m00 == 1;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isIdentity(final double tolerance) {
+        return Math.abs(m00 - 1) <= Math.abs(tolerance);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setToIdentity() {
+        m00 = 1;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setToZero() {
+        m00 = 0;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void negate() {
+        m00 = -m00;
+    }
+
+    /**
+     * Sets the value of this matrix to its transpose.
+     * For a 1×1 matrix, this method does nothing.
+     */
+    @Override
+    public void transpose() {
+        // Nothing to do for a 1x1 matrix.
+    }
+
+    /**
+     * Normalizes all columns in-place.
+     * For a 1×1 matrix, this method just sets unconditionally the {@link #m00} value to 1.
+     */
+    @Override
+    public final void normalizeColumns() {
+        m00 = 1;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public MatrixSIS inverse() {
+        if (m00 == 0) {
+            throw new SingularMatrixException();
+        }
+        return new Matrix1(1 / m00);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public MatrixSIS multiply(final Matrix matrix) {
+        ensureSizeMatch(SIZE, matrix);
+        return new Matrix1(m00 * matrix.getElement(0,0));
+    }
+
+    /**
+     * Returns {@code true} if the specified object is of type {@code Matrix1} and
+     * all of the data members are equal to the corresponding data members in this matrix.
+     *
+     * @param object The object to compare with this matrix for equality.
+     * @return {@code true} if the given object is equal to this matrix.
+     */
+    @Override
+    public boolean equals(final Object object) {
+        if (object != null && object.getClass() == getClass()) {
+            final Matrix1 that = (Matrix1) object;
+            return Numerics.equals(m00, that.m00);
+        }
+        return false;
+    }
+
+    /**
+     * Returns a hash code value based on the data values in this object.
+     */
+    @Override
+    public int hashCode() {
+        final long code = Double.doubleToLongBits(m00) ^ serialVersionUID;
+        return ((int) code) ^ ((int) (code >>> 32));
+    }
+}
