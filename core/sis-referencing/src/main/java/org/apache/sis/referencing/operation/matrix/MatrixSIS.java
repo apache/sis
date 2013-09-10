@@ -18,6 +18,7 @@ package org.apache.sis.referencing.operation.matrix;
 
 import java.io.Serializable;
 import org.opengis.referencing.operation.Matrix;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.resources.Errors;
@@ -54,6 +55,18 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     }
 
     /**
+     * Ensures that the given array is non-null and has the expected length.
+     * This is a convenience method for subclasses constructors.
+     */
+    static void ensureLengthMatch(final int expected, final double[] elements) {
+        ArgumentChecks.ensureNonNull("elements", elements);
+        if (elements.length != expected) {
+            throw new IllegalArgumentException(Errors.format(
+                    Errors.Keys.UnexpectedArrayLength_2, expected, elements.length));
+        }
+    }
+
+    /**
      * Ensures that the given matrix is a square matrix having the given dimension.
      * This is a convenience method for subclasses.
      */
@@ -61,7 +74,9 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
         final int numRow = matrix.getNumRow();
         final int numCol = matrix.getNumCol();
         if (numRow != size || numCol != size) {
-            throw new MismatchedMatrixSizeException(Errors.format(Errors.Keys.MismatchedMatrixSize_2, numRow, numCol));
+            final Integer n = size;
+            throw new MismatchedMatrixSizeException(Errors.format(
+                    Errors.Keys.MismatchedMatrixSize_4, n, n, numRow, numCol));
         }
     }
 
@@ -76,6 +91,8 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
 
     /**
      * Returns {@code true} if this matrix is an identity matrix.
+     * Invoking this method is equivalent to invoking <code>{@linkplain #isIdentity(double) isIdentity}(0.0)</code>,
+     * except that it is potentially more efficient.
      *
      * @return {@code true} if this matrix is an identity matrix.
      *
@@ -96,12 +113,24 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      *
      * @see Matrices#isIdentity(Matrix, double)
      */
-    public abstract boolean isIdentity(double tolerance);
+    public boolean isIdentity(final double tolerance) {
+        return Matrices.isIdentity(this, tolerance);
+    }
 
     /**
      * Sets this matrix to zero everywhere except for the elements on the diagonal, which are set to 1.
      * If this matrix contains more rows than columns, then the extra rows will contain only zero values.
      * If this matrix contains more columns than rows, then the extra columns will contain only zero values.
+     *
+     * {@section Use case}
+     * This method is often used together with {@link #isIdentity(double)} in order to workaround rounding errors,
+     * like below:
+     *
+     * {@preformat
+     *     if (matrix.isIdentity(1E-10)) {
+     *         matrix.setToIdentity();
+     *     }
+     * }
      *
      * @see #isIdentity()
      * @see java.awt.geom.AffineTransform#setToIdentity()

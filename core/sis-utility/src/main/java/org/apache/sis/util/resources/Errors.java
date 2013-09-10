@@ -326,7 +326,7 @@ public final class Errors extends IndexedResourceBundle {
         public static final int MismatchedCRS = 57;
 
         /**
-         * Mismatched object dimension: {0}D and {1}D.
+         * Mismatched object dimensions: {0}D and {1}D.
          */
         public static final int MismatchedDimension_2 = 60;
 
@@ -336,9 +336,9 @@ public final class Errors extends IndexedResourceBundle {
         public static final int MismatchedDimension_3 = 58;
 
         /**
-         * Matrix can not be of size {0}×{1}.
+         * Mismatched matrix sizes: expected {0}×{1} but got {2}×{3}.
          */
-        public static final int MismatchedMatrixSize_2 = 118;
+        public static final int MismatchedMatrixSize_4 = 118;
 
         /**
          * This operation requires the “{0}” module.
@@ -534,6 +534,11 @@ public final class Errors extends IndexedResourceBundle {
          * Ordering between “{0}” and “{1}” elements is undefined.
          */
         public static final int UndefinedOrderingForElements_2 = 70;
+
+        /**
+         * Expected an array of length {0}, but got {1}.
+         */
+        public static final int UnexpectedArrayLength_2 = 119;
 
         /**
          * Unexpected change in ‘{0}’.

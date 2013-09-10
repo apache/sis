@@ -21,7 +21,9 @@ import org.apache.sis.internal.util.Numerics;
 
 
 /**
- * A matrix of fixed {@value #SIZE}&times;{@value #SIZE} size.
+ * A matrix of fixed {@value #SIZE}×{@value #SIZE} size.
+ * This simple matrix is returned as a result of {@linkplain org.opengis.referencing.operation.MathTransform2D}
+ * derivative computation.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.2)
@@ -71,11 +73,11 @@ final class Matrix2 extends MatrixSIS {
     /**
      * Creates a new matrix initialized to the specified values.
      * The length of the given array must be 4 and the values in the same order than the above constructor.
-     * The array length is not verified by this constructor, since it shall be verified by {@link Matrices}.
      *
      * @param elements Elements of the matrix. Column indices vary fastest.
      */
-    Matrix2(final double[] elements) {
+    public Matrix2(final double[] elements) {
+        ensureLengthMatch(SIZE*SIZE, elements);
         m00 = elements[0];
         m01 = elements[1];
         m10 = elements[2];
@@ -117,23 +119,13 @@ final class Matrix2 extends MatrixSIS {
      */
     @Override
     public double getElement(final int row, final int column) {
-        switch (row) {
-            case 0: {
-                switch (column) {
-                    case 0: return m00;
-                    case 1: return m01;
-                }
-                break;
-            }
-            case 1: {
-                switch (column) {
-                    case 0: return m10;
-                    case 1: return m11;
-                }
-                break;
-            }
+        switch (row*SIZE + column) {
+            case 0:  return m00;
+            case 1:  return m01;
+            case 2:  return m10;
+            case 3:  return m11;
+            default: throw new IndexOutOfBoundsException();
         }
-        throw new IndexOutOfBoundsException();
     }
 
     /**
@@ -141,23 +133,13 @@ final class Matrix2 extends MatrixSIS {
      */
     @Override
     public void setElement(final int row, final int column, final double value) {
-        switch (row) {
-            case 0: {
-                switch (column) {
-                    case 0: m00 = value; return;
-                    case 1: m01 = value; return;
-                }
-                break;
-            }
-            case 1: {
-                switch (column) {
-                    case 0: m10 = value; return;
-                    case 1: m11 = value; return;
-                }
-                break;
-            }
+        switch (row*SIZE + column) {
+            case 0:  m00 = value; break;
+            case 1:  m01 = value; break;
+            case 2:  m10 = value; break;
+            case 3:  m11 = value; break;
+            default: throw new IndexOutOfBoundsException();
         }
-        throw new IndexOutOfBoundsException();
     }
 
     /**
@@ -175,14 +157,6 @@ final class Matrix2 extends MatrixSIS {
     public boolean isIdentity() {
         return m00 == 1 && m10 == 0 &&
                m01 == 0 && m11 == 1;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean isIdentity(final double tolerance) {
-        return Matrices.isIdentity(this, tolerance);
     }
 
     /**
@@ -258,18 +232,10 @@ final class Matrix2 extends MatrixSIS {
             ensureSizeMatch(SIZE, matrix);
             k = new Matrix2(matrix);
         }
-        return new Matrix2(m00*k.m00 + m01*k.m10,
-                           m00*k.m01 + m01*k.m11,
-                           m10*k.m00 + m11*k.m10,
-                           m10*k.m01 + m11*k.m11);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean equals(final Matrix matrix, final double tolerance) {
-        return Matrices.equals(this, matrix, tolerance, false);
+        return new Matrix2(m00 * k.m00  +  m01 * k.m10,
+                           m00 * k.m01  +  m01 * k.m11,
+                           m10 * k.m00  +  m11 * k.m10,
+                           m10 * k.m01  +  m11 * k.m11);
     }
 
     /**
