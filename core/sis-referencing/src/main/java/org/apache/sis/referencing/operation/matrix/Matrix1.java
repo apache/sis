@@ -29,7 +29,7 @@ import org.apache.sis.internal.util.Numerics;
  * @version 0.4
  * @module
  */
-final class Matrix1 extends MatrixSIS {
+public final class Matrix1 extends MatrixSIS {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -43,7 +43,7 @@ final class Matrix1 extends MatrixSIS {
     /**
      * The only element in this matrix.
      */
-    private double m00;
+    public double m00;
 
     /**
      * Creates a new identity matrix.
@@ -74,6 +74,8 @@ final class Matrix1 extends MatrixSIS {
 
     /**
      * Returns the number of rows in this matrix, which is always {@value #SIZE} in this implementation.
+     *
+     * @return {@value SIZE}.
      */
     @Override
     public final int getNumRow() {
@@ -82,6 +84,8 @@ final class Matrix1 extends MatrixSIS {
 
     /**
      * Returns the number of columns in this matrix, which is always {@value #SIZE} in this implementation.
+     *
+     * @return {@value SIZE}.
      */
     @Override
     public final int getNumCol() {
@@ -90,6 +94,13 @@ final class Matrix1 extends MatrixSIS {
 
     /**
      * Retrieves the value at the specified row and column of this matrix.
+     * This method can be invoked when the matrix size or type is unknown.
+     * If the matrix is known to be an instance of {@code Matrix1},
+     * then the {@link #m00} field can be read directly for efficiency.
+     *
+     * @param row    The row index, which can only be 0.
+     * @param column The column index, which can only be 0.
+     * @return       The current value.
      */
     @Override
     public double getElement(final int row, final int column) {
@@ -102,6 +113,13 @@ final class Matrix1 extends MatrixSIS {
 
     /**
      * Modifies the value at the specified row and column of this matrix.
+     * This method can be invoked when the matrix size or type is unknown.
+     * If the matrix is known to be an instance of {@code Matrix1},
+     * then the {@link #m00} field can be set directly for efficiency.
+     *
+     * @param row    The row index, which can only be 0.
+     * @param column The column index, which can only be 0.
+     * @param value  The new value to set.
      */
     @Override
     public void setElement(final int row, final int column, final double value) {

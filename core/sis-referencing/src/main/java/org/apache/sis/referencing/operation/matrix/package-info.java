@@ -17,11 +17,19 @@
 
 /**
  * {@linkplain org.opengis.referencing.operation.Matrix} implementations tuned for spatio-temporal referencing.
- * Matrices can be of arbitrary size, but the most common ones in the context of spatio-temporal referencing are
- * not greater than 5×5 (because the matrix size in affine transforms is the number of dimensions + 1).
+ * Matrices can be of arbitrary size, but the most common ones in the context of geospatial coordinate operations
+ * are not greater than 5×5 (number of spatio-temporal dimensions + 1).
  * This package differs from other matrix packages by the special treatment done for such small matrices.
  *
- * <p><b>Example:</b> In the two dimensional case, an affine transform from a map projection (units in metres)
+ * <p>This package provides public implementations of small square matrices, with size ranging from 1×1 to 4×4.
+ * Those implementations are made public because in many cases, the user know that (s)he is working with (for
+ * example) three-dimensional Coordinate Reference Systems (CRS). If the number of CRS dimensions is fixed to 3,
+ * then <cite>affine transforms</cite> between those CRS can be represented by 4×4 matrices,
+ * and the <cite>derivatives</cite> of those transforms can be represented by 3×3 matrices.
+ * Since the user know the matrices size, (s)he can use the specific implementation and read or write
+ * directly the <var>m</var><sub><var>row</var> <var>column</var></sub> field.</p>
+ *
+ * <p><b>Example:</b> in the two dimensional case, an affine transform from a map projection (units in metres)
  * to the screen (units in pixels) can be performed by the following matrix multiplication:</p>
  *
  * <p><center><img src="doc-files/AffineTransform.png"></center></p>
