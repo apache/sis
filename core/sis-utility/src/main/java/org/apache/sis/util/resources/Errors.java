@@ -336,6 +336,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int MismatchedDimension_3 = 58;
 
         /**
+         * Matrix can not be of size {0}×{1}.
+         */
+        public static final int MismatchedMatrixSize_2 = 118;
+
+        /**
          * This operation requires the “{0}” module.
          */
         public static final int MissingRequiredModule_1 = 84;

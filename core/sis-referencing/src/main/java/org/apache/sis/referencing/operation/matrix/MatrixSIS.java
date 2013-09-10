@@ -16,30 +16,55 @@
  */
 package org.apache.sis.referencing.operation.matrix;
 
+import java.io.Serializable;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
  * A matrix able to perform some operations of interest to Spatial Information Systems (SIS).
- * The GeoAPI {@link Matrix} interface is basically a two dimensional array of numbers.
- * The {@code MatrixSIS} class adds some operations.
+ * This class completes the GeoAPI {@link Matrix} interface with some operations used by {@code sis-referencing}.
+ * It is not a {@code MatrixSIS} goal to provide all possible Matrix operations, as there is too many of them.
+ * This class focuses only on:
  *
- * <p>It is not a {@code MatrixSIS} goal to provide all possible Matrix operations, as there is too many of them.
- * This interface focuses only on basic operations needed for <cite>referencing by coordinates</cite>
- * ({@link #negate()}, {@link #transpose()}, {@link #inverse()}, {@link #multiply(Matrix)}),
- * completed by some operations more specific to referencing by coordinates
- * ({@link #isAffine()}, {@link #normalizeColumns()}).</p>
+ * <ul>
+ *   <li>basic operations needed for <cite>referencing by coordinates</cite>:
+ *       {@link #negate()}, {@link #transpose()}, {@link #inverse()}, {@link #multiply(Matrix)};</li>
+ *   <li>some operations more specific to referencing by coordinates:
+ *       {@link #isAffine()}, {@link #normalizeColumns()}.</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.2)
  * @version 0.4
  * @module
- *
- * @see Matrices#toSIS(Matrix)
  */
-public interface MatrixSIS extends Matrix, LenientComparable {
+public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable, Serializable {
+    /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = 3075280376118406219L;
+
+    /**
+     * For sub-class constructors.
+     */
+    protected MatrixSIS() {
+    }
+
+    /**
+     * Ensures that the given matrix is a square matrix having the given dimension.
+     * This is a convenience method for subclasses.
+     */
+    static void ensureSizeMatch(final int size, final Matrix matrix) {
+        final int numRow = matrix.getNumRow();
+        final int numCol = matrix.getNumCol();
+        if (numRow != size || numCol != size) {
+            throw new MismatchedMatrixSizeException(Errors.format(Errors.Keys.MismatchedMatrixSize_2, numRow, numCol));
+        }
+    }
+
     /**
      * Returns {@code true} if this matrix represents an affine transform.
      * A transform is affine if the matrix is square and its last row contains
@@ -47,7 +72,18 @@ public interface MatrixSIS extends Matrix, LenientComparable {
      *
      * @return {@code true} if this matrix is affine.
      */
-    boolean isAffine();
+    public abstract boolean isAffine();
+
+    /**
+     * Returns {@code true} if this matrix is an identity matrix.
+     *
+     * @return {@code true} if this matrix is an identity matrix.
+     *
+     * @see #setToIdentity()
+     * @see java.awt.geom.AffineTransform#isIdentity()
+     */
+    @Override
+    public abstract boolean isIdentity();
 
     /**
      * Returns {@code true} if this matrix is close to an identity matrix, given a tolerance threshold.
@@ -57,34 +93,33 @@ public interface MatrixSIS extends Matrix, LenientComparable {
      *
      * @param  tolerance The tolerance value, or 0 for a strict comparison.
      * @return {@code true} if this matrix is close to the identity matrix given the tolerance threshold.
-     *
-     * @see java.awt.geom.AffineTransform#isIdentity()
      */
-    boolean isIdentity(double tolerance);
+    public abstract boolean isIdentity(double tolerance);
 
     /**
      * Sets this matrix to zero everywhere except for the elements on the diagonal, which are set to 1.
      * If this matrix contains more rows than columns, then the extra rows will contain only zero values.
      * If this matrix contains more columns than rows, then the extra columns will contain only zero values.
      *
+     * @see #isIdentity()
      * @see java.awt.geom.AffineTransform#setToIdentity()
      */
-    void setToIdentity();
+    public abstract void setToIdentity();
 
     /**
      * Sets all the values in this matrix to zero.
      */
-    void setToZero();
+    public abstract void setToZero();
 
     /**
      * Negates the values of this matrix: {@code this} = {@code -this}.
      */
-    void negate();
+    public abstract void negate();
 
     /**
      * Sets the value of this matrix to its transpose.
      */
-    void transpose();
+    public abstract void transpose();
 
     /**
      * Normalizes all columns in-place. Each columns in this matrix is considered as a vector.
@@ -98,7 +133,7 @@ public interface MatrixSIS extends Matrix, LenientComparable {
      * ordinate in the source space is increased by one. Invoking this method turns those vectors
      * into unitary vectors, which is useful for forming the basis of a new coordinate system.</p>
      */
-    void normalizeColumns();
+    public abstract void normalizeColumns();
 
     /**
      * Returns a new matrix which is the result of multiplying this matrix with the specified one.
@@ -113,15 +148,17 @@ public interface MatrixSIS extends Matrix, LenientComparable {
      * @throws MismatchedMatrixSizeException if the number of rows in the given matrix is not equals to the
      *         number of columns in this matrix.
      */
-    MatrixSIS multiply(Matrix matrix) throws MismatchedMatrixSizeException;
+    public abstract MatrixSIS multiply(Matrix matrix) throws MismatchedMatrixSizeException;
 
     /**
      * Returns the inverse of this matrix.
      *
      * @return The inverse of this matrix.
      * @throws SingularMatrixException if this matrix is not invertible.
+     *
+     * @see java.awt.geom.AffineTransform#createInverse()
      */
-    MatrixSIS inverse() throws SingularMatrixException;
+    public abstract MatrixSIS inverse() throws SingularMatrixException;
 
     /**
      * Compares the given matrices for equality, using the given absolute tolerance threshold.
@@ -141,7 +178,9 @@ public interface MatrixSIS extends Matrix, LenientComparable {
      *
      * @see Matrices#equals(Matrix, Matrix, double, boolean)
      */
-    boolean equals(Matrix matrix, double tolerance);
+    public boolean equals(final Matrix matrix, final double tolerance) {
+        return Matrices.equals(this, matrix, tolerance, false);
+    }
 
     /**
      * Compares this matrix with the given object for equality. To be considered equal, the two
@@ -165,7 +204,9 @@ public interface MatrixSIS extends Matrix, LenientComparable {
      * @see Matrices#equals(Matrix, Matrix, ComparisonMode)
      */
     @Override
-    boolean equals(Object object, ComparisonMode mode);
+    public boolean equals(final Object object, final ComparisonMode mode) {
+        return (object instanceof Matrix) && Matrices.equals(this, (Matrix) object, mode);
+    }
 
     /**
      * Returns a clone of this matrix.
@@ -173,5 +214,22 @@ public interface MatrixSIS extends Matrix, LenientComparable {
      * @return A new matrix of the same class and with the same values than this matrix.
      */
     @Override
-    MatrixSIS clone();
+    public MatrixSIS clone() {
+        try {
+            return (MatrixSIS) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError(e); // Should never happen, since we are cloneable.
+        }
+    }
+
+    /**
+     * Returns a unlocalized string representation of this matrix.
+     * For each column, the numbers are aligned on the decimal separator.
+     *
+     * @see Matrices#toString(Matrix)
+     */
+    @Override
+    public String toString() {
+        return Matrices.toString(this);
+    }
 }
