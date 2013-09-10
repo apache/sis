@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.math.matrix;
+package org.apache.sis.referencing.operation.matrix;
 
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.util.ComparisonMode;
@@ -45,10 +45,6 @@ public interface MatrixSIS extends Matrix, LenientComparable {
      * A transform is affine if the matrix is square and its last row contains
      * only zeros, except in the last column which contains 1.
      *
-     * <p>In the two dimensional case, the matrix for an affine transform is:</p>
-     *
-     * <p><center><img src="doc-files/AffineTransform.png"></center></p>
-     *
      * @return {@code true} if this matrix is affine.
      */
     boolean isAffine();
@@ -61,6 +57,8 @@ public interface MatrixSIS extends Matrix, LenientComparable {
      *
      * @param  tolerance The tolerance value, or 0 for a strict comparison.
      * @return {@code true} if this matrix is close to the identity matrix given the tolerance threshold.
+     *
+     * @see java.awt.geom.AffineTransform#isIdentity()
      */
     boolean isIdentity(double tolerance);
 
@@ -68,6 +66,8 @@ public interface MatrixSIS extends Matrix, LenientComparable {
      * Sets this matrix to zero everywhere except for the elements on the diagonal, which are set to 1.
      * If this matrix contains more rows than columns, then the extra rows will contain only zero values.
      * If this matrix contains more columns than rows, then the extra columns will contain only zero values.
+     *
+     * @see java.awt.geom.AffineTransform#setToIdentity()
      */
     void setToIdentity();
 
@@ -148,12 +148,12 @@ public interface MatrixSIS extends Matrix, LenientComparable {
      * objects must meet the following conditions, which depend on the {@code mode} argument:
      *
      * <ul>
-     *   <li><b>{@link ComparisonMode#STRICT STRICT}:</b> the two matrices must be of the same class,
+     *   <li>{@link ComparisonMode#STRICT STRICT}: the two matrices must be of the same class,
      *       have the same size and the same element values.</li>
-     *   <li><b>{@link ComparisonMode#BY_CONTRACT BY_CONTRACT} or {@link ComparisonMode#IGNORE_METADATA
-     *       IGNORE_METADATA}:</b> the two matrices must have the same size and the same element values,
+     *   <li>{@link ComparisonMode#BY_CONTRACT BY_CONTRACT} or {@link ComparisonMode#IGNORE_METADATA
+     *       IGNORE_METADATA}: the two matrices must have the same size and the same element values,
      *       but are not required to be the same implementation class (any {@link Matrix} is okay).</li>
-     *   <li><b>{@link ComparisonMode#APPROXIMATIVE APPROXIMATIVE}:</b> the two matrices must have
+     *   <li>{@link ComparisonMode#APPROXIMATIVE APPROXIMATIVE}: the two matrices must have
      *       the same size, but the element values can differ up to some threshold. The threshold
      *       value is determined empirically and may change in future SIS versions.</li>
      * </ul>
