@@ -23,8 +23,6 @@ import java.io.FileWriter;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Files;
 import java.util.Set;
 import java.util.LinkedHashSet;
 import org.apache.maven.plugin.AbstractMojo;
@@ -33,6 +31,11 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.artifact.Artifact;
 
 import static org.apache.sis.internal.maven.Filenames.*;
+
+// Related to JDK7
+import java.nio.file.Path;
+import java.nio.file.Files;
+import java.nio.file.FileSystemException;
 
 
 /**
@@ -230,8 +233,13 @@ public final class JarCollector extends AbstractMojo implements FileFilter {
         try {
             Files.createLink(target, source);
             return;
-        } catch (UnsupportedOperationException e) {
-            // If hard links are not supported, edit the "content.txt" file instead.
+        } catch (UnsupportedOperationException | FileSystemException e) {
+            /*
+             * If hard links are not supported, edit the "content.txt" file instead.
+             * Note that a hard link may be unsupported because the source and target
+             * are on different Windows drives or mount points, in which case we get
+             * a FileSystemException instead than UnsupportedOperationException.
+             */
         }
         /*
          * If we can not use hard links, creates or updates a "target/content.txt" file instead.
