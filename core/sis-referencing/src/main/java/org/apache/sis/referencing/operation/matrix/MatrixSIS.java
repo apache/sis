@@ -24,7 +24,7 @@ import org.apache.sis.util.resources.Errors;
 
 
 /**
- * A matrix able to perform some operations of interest to Spatial Information Systems (SIS).
+ * A {@link Matrix} able to perform some operations of interest to Spatial Information Systems (SIS).
  * This class completes the GeoAPI {@link Matrix} interface with some operations used by {@code sis-referencing}.
  * It is not a {@code MatrixSIS} goal to provide all possible Matrix operations, as there is too many of them.
  * This class focuses only on:
@@ -93,6 +93,8 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      *
      * @param  tolerance The tolerance value, or 0 for a strict comparison.
      * @return {@code true} if this matrix is close to the identity matrix given the tolerance threshold.
+     *
+     * @see Matrices#isIdentity(Matrix, double)
      */
     public abstract boolean isIdentity(double tolerance);
 
@@ -192,9 +194,9 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      *   <li>{@link ComparisonMode#BY_CONTRACT BY_CONTRACT} or {@link ComparisonMode#IGNORE_METADATA
      *       IGNORE_METADATA}: the two matrices must have the same size and the same element values,
      *       but are not required to be the same implementation class (any {@link Matrix} is okay).</li>
-     *   <li>{@link ComparisonMode#APPROXIMATIVE APPROXIMATIVE}: the two matrices must have
-     *       the same size, but the element values can differ up to some threshold. The threshold
-     *       value is determined empirically and may change in future SIS versions.</li>
+     *   <li>{@link ComparisonMode#APPROXIMATIVE APPROXIMATIVE}: the two matrices must have the same size,
+     *       but the element values can differ up to some threshold.
+     *       The threshold value is determined empirically and may change in any future SIS versions.</li>
      * </ul>
      *
      * @param  object The object to compare to {@code this}.
