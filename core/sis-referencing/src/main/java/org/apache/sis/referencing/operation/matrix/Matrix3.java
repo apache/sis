@@ -31,7 +31,11 @@ import org.apache.sis.math.MathFunctions;
  * @version 0.4
  * @module
  */
-final class Matrix3 extends MatrixSIS {
+public final class Matrix3 extends MatrixSIS {
+// Note: if the above 'final' keyword is removed, revisit the methods in this class
+// which invoke other methods: Matrix3(Matrix) constructor, setToIdentity(), etc.
+// We may want to protect them against overriding of the method they invoke.
+
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -42,15 +46,15 @@ final class Matrix3 extends MatrixSIS {
      */
     public static final int SIZE = 3;
 
-     /** The first matrix element in the first row.   */ private double m00;
-     /** The second matrix element in the first row.  */ private double m01;
-     /** The third matrix element in the first row.   */ private double m02;
-     /** The first matrix element in the second row.  */ private double m10;
-     /** The second matrix element in the second row. */ private double m11;
-     /** The third matrix element in the second row.  */ private double m12;
-     /** The first matrix element in the third row.   */ private double m20;
-     /** The second matrix element in the third row.  */ private double m21;
-     /** The third matrix element in the third row.   */ private double m22;
+     /** The first matrix element in the first row.   */ public double m00;
+     /** The second matrix element in the first row.  */ public double m01;
+     /** The third matrix element in the first row.   */ public double m02;
+     /** The first matrix element in the second row.  */ public double m10;
+     /** The second matrix element in the second row. */ public double m11;
+     /** The third matrix element in the second row.  */ public double m12;
+     /** The first matrix element in the third row.   */ public double m20;
+     /** The second matrix element in the third row.  */ public double m21;
+     /** The third matrix element in the third row.   */ public double m22;
 
     /**
      * Creates a new identity matrix.
@@ -123,6 +127,8 @@ final class Matrix3 extends MatrixSIS {
 
     /**
      * Returns the number of rows in this matrix, which is always {@value #SIZE} in this implementation.
+     *
+     * @return {@value SIZE}.
      */
     @Override
     public final int getNumRow() {
@@ -131,6 +137,8 @@ final class Matrix3 extends MatrixSIS {
 
     /**
      * Returns the number of columns in this matrix, which is always {@value #SIZE} in this implementation.
+     *
+     * @return {@value SIZE}.
      */
     @Override
     public final int getNumCol() {
@@ -150,6 +158,13 @@ final class Matrix3 extends MatrixSIS {
 
     /**
      * Retrieves the value at the specified row and column of this matrix.
+     * This method can be invoked when the matrix size or type is unknown.
+     * If the matrix is known to be an instance of {@code Matrix3},
+     * then the {@link #m00} … {@link #m22} fields can be read directly for efficiency.
+     *
+     * @param row    The row index, from 0 inclusive to {@value #SIZE} exclusive.
+     * @param column The column index, from 0 inclusive to {@value #SIZE} exclusive.
+     * @return       The current value at the given row and column.
      */
     @Override
     public double getElement(final int row, final int column) {
@@ -169,6 +184,13 @@ final class Matrix3 extends MatrixSIS {
 
     /**
      * Modifies the value at the specified row and column of this matrix.
+     * This method can be invoked when the matrix size or type is unknown.
+     * If the matrix is known to be an instance of {@code Matrix3},
+     * then the {@link #m00} … {@link #m22} fields can be set directly for efficiency.
+     *
+     * @param row    The row index, from 0 inclusive to {@value #SIZE} exclusive.
+     * @param column The column index, from 0 inclusive to {@value #SIZE} exclusive.
+     * @param value  The new value to set at the given row and column.
      */
     @Override
     public void setElement(final int row, final int column, final double value) {
@@ -243,7 +265,7 @@ final class Matrix3 extends MatrixSIS {
      * {@inheritDoc}
      */
     @Override
-    public final void transpose() {
+    public void transpose() {
         double swap;
         swap = m01; m01 = m10; m10 = swap;
         swap = m02; m02 = m20; m20 = swap;

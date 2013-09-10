@@ -30,7 +30,7 @@ import org.apache.sis.internal.util.Numerics;
  * @version 0.4
  * @module
  */
-final class Matrix2 extends MatrixSIS {
+public final class Matrix2 extends MatrixSIS {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -41,10 +41,10 @@ final class Matrix2 extends MatrixSIS {
      */
     public static final int SIZE = 2;
 
-    /** The first matrix element in the first row.   */ private double m00;
-    /** The second matrix element in the first row.  */ private double m01;
-    /** The first matrix element in the second row.  */ private double m10;
-    /** The second matrix element in the second row. */ private double m11;
+    /** The first matrix element in the first row.   */ public double m00;
+    /** The second matrix element in the first row.  */ public double m01;
+    /** The first matrix element in the second row.  */ public double m10;
+    /** The second matrix element in the second row. */ public double m11;
 
     /**
      * Creates a new identity matrix.
@@ -100,6 +100,8 @@ final class Matrix2 extends MatrixSIS {
 
     /**
      * Returns the number of rows in this matrix, which is always {@value #SIZE} in this implementation.
+     *
+     * @return {@value SIZE}.
      */
     @Override
     public final int getNumRow() {
@@ -108,6 +110,8 @@ final class Matrix2 extends MatrixSIS {
 
     /**
      * Returns the number of columns in this matrix, which is always {@value #SIZE} in this implementation.
+     *
+     * @return {@value SIZE}.
      */
     @Override
     public final int getNumCol() {
@@ -116,6 +120,13 @@ final class Matrix2 extends MatrixSIS {
 
     /**
      * Retrieves the value at the specified row and column of this matrix.
+     * This method can be invoked when the matrix size or type is unknown.
+     * If the matrix is known to be an instance of {@code Matrix2},
+     * then the {@link #m00} … {@link #m11} fields can be read directly for efficiency.
+     *
+     * @param row    The row index, which can only be 0 or 1.
+     * @param column The column index, which can only be 0 or 1.
+     * @return       The current value at the given row and column.
      */
     @Override
     public double getElement(final int row, final int column) {
@@ -130,6 +141,13 @@ final class Matrix2 extends MatrixSIS {
 
     /**
      * Modifies the value at the specified row and column of this matrix.
+     * This method can be invoked when the matrix size or type is unknown.
+     * If the matrix is known to be an instance of {@code Matrix2},
+     * then the {@link #m00} … {@link #m11} fields can be set directly for efficiency.
+     *
+     * @param row    The row index, which can only be 0 or 1.
+     * @param column The column index, which can only be 0 or 1.
+     * @param value  The new value to set at the given row and column.
      */
     @Override
     public void setElement(final int row, final int column, final double value) {
