@@ -48,6 +48,39 @@ public final class Matrices extends Static {
     }
 
     /**
+     * Returns {@code true} if the given matrix is close to an identity matrix, given a tolerance threshold.
+     * This method is equivalent to computing the difference between the given matrix and an identity matrix
+     * of identical size, and returning {@code true} if and only if all differences are smaller than or equal
+     * to {@code tolerance}.
+     *
+     * @param  matrix The matrix to test for identity.
+     * @param  tolerance The tolerance value, or 0 for a strict comparison.
+     * @return {@code true} if this matrix is close to the identity matrix given the tolerance threshold.
+     *
+     * @see MatrixSIS#isIdentity(double)
+     */
+    public static boolean isIdentity(final Matrix matrix, double tolerance) {
+        final int numRow = matrix.getNumRow();
+        final int numCol = matrix.getNumCol();
+        if (numRow != numCol) {
+            return false;
+        }
+        tolerance = Math.abs(tolerance);
+        for (int j=0; j<numRow; j++) {
+            for (int i=0; i<numCol; i++) {
+                double e = matrix.getElement(j,i);
+                if (i == j) {
+                    e--;
+                }
+                if (!(Math.abs(e) <= tolerance)) {  // Uses '!' in order to catch NaN values.
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
      * Compares the given matrices for equality, using the given relative or absolute tolerance threshold.
      * The matrix elements are compared as below:
      *
@@ -112,15 +145,14 @@ public final class Matrices extends Static {
      * on the {@code mode} argument:
      *
      * <ul>
-     *   <li><b>{@link ComparisonMode#STRICT STRICT}:</b> the two matrices must be of the same
-     *       class, have the same size and the same element values.</li>
-     *   <li><b>{@link ComparisonMode#BY_CONTRACT BY_CONTRACT}/{@link ComparisonMode#IGNORE_METADATA
-     *       IGNORE_METADATA}:</b> the two matrices must have the same size and the same element
-     *       values, but are not required to be the same implementation class (any {@link Matrix}
-     *       is okay).</li>
-     *   <li><b>{@link ComparisonMode#APPROXIMATIVE APPROXIMATIVE}:</b> the two matrixes must have
-     *       the same size, but the element values can differ up to some threshold. The threshold
-     *       value is determined empirically and may change in future SIS versions.</li>
+     *   <li>{@link ComparisonMode#STRICT STRICT}: the two matrices must be of the same class,
+     *       have the same size and the same element values.</li>
+     *   <li>{@link ComparisonMode#BY_CONTRACT BY_CONTRACT}/{@link ComparisonMode#IGNORE_METADATA
+     *       IGNORE_METADATA}: the two matrices must have the same size and the same element values,
+     *       but are not required to be the same implementation class (any {@link Matrix} is okay).</li>
+     *   <li>{@link ComparisonMode#APPROXIMATIVE APPROXIMATIVE}: the two matrixes must have the same size,
+     *       but the element values can differ up to some threshold.
+     *       The threshold value is determined empirically and may change in any future SIS versions.</li>
      * </ul>
      *
      * @param  m1  The first matrix to compare, or {@code null}.

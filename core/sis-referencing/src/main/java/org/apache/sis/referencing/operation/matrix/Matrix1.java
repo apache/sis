@@ -121,7 +121,7 @@ final class Matrix1 extends MatrixSIS {
     }
 
     /**
-     * Returns {@code true} if this matrix is an identity matrix.
+     * {@inheritDoc}
      */
     @Override
     public boolean isIdentity() {
@@ -174,7 +174,7 @@ final class Matrix1 extends MatrixSIS {
      * For a 1×1 matrix, this method just sets unconditionally the {@link #m00} value to 1.
      */
     @Override
-    public final void normalizeColumns() {
+    public void normalizeColumns() {
         m00 = 1;
     }
 
@@ -207,7 +207,7 @@ final class Matrix1 extends MatrixSIS {
      */
     @Override
     public boolean equals(final Object object) {
-        if (object != null && object.getClass() == getClass()) {
+        if (object instanceof Matrix1) {
             final Matrix1 that = (Matrix1) object;
             return Numerics.equals(m00, that.m00);
         }
