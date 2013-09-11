@@ -90,10 +90,10 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     }
 
     /**
-     * Returns all matrix elements in a flat, row-major (column indices vary fastest) array.
+     * Returns a copy of all matrix elements in a flat, row-major (column indices vary fastest) array.
      * The array length is <code>{@linkplain #getNumRow()} * {@linkplain #getNumCol()}</code>.
      *
-     * @return The current matrix elements in a row-major array.
+     * @return A copy of all current matrix elements in a row-major array.
      */
     public abstract double[] getElements();
 

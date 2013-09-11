@@ -162,18 +162,20 @@ public final class Matrix3 extends MatrixSIS {
      */
     @Override
     public double getElement(final int row, final int column) {
-        switch (row*SIZE + column) {
-            case 0:  return m00;
-            case 1:  return m01;
-            case 2:  return m02;
-            case 3:  return m10;
-            case 4:  return m11;
-            case 5:  return m12;
-            case 6:  return m20;
-            case 7:  return m21;
-            case 8:  return m22;
-            default: throw indexOutOfBounds(row, column);
+        if (row >= 0 && row < SIZE && column >= 0 && column < SIZE) {
+            switch (row*SIZE + column) {
+                case 0: return m00;
+                case 1: return m01;
+                case 2: return m02;
+                case 3: return m10;
+                case 4: return m11;
+                case 5: return m12;
+                case 6: return m20;
+                case 7: return m21;
+                case 8: return m22;
+            }
         }
+        throw indexOutOfBounds(row, column);
     }
 
     /**
@@ -188,18 +190,20 @@ public final class Matrix3 extends MatrixSIS {
      */
     @Override
     public void setElement(final int row, final int column, final double value) {
-        switch (row*SIZE + column) {
-            case 0:  m00 = value; break;
-            case 1:  m01 = value; break;
-            case 2:  m02 = value; break;
-            case 3:  m10 = value; break;
-            case 4:  m11 = value; break;
-            case 5:  m12 = value; break;
-            case 6:  m20 = value; break;
-            case 7:  m21 = value; break;
-            case 8:  m22 = value; break;
-            default: throw indexOutOfBounds(row, column);
+        if (row >= 0 && row < SIZE && column >= 0 && column < SIZE) {
+            switch (row*SIZE + column) {
+                case 0: m00 = value; return;
+                case 1: m01 = value; return;
+                case 2: m02 = value; return;
+                case 3: m10 = value; return;
+                case 4: m11 = value; return;
+                case 5: m12 = value; return;
+                case 6: m20 = value; return;
+                case 7: m21 = value; return;
+                case 8: m22 = value; return;
+            }
         }
+        throw indexOutOfBounds(row, column);
     }
 
     /**

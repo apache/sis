@@ -138,13 +138,15 @@ public final class Matrix2 extends MatrixSIS {
      */
     @Override
     public double getElement(final int row, final int column) {
-        switch (row*SIZE + column) {
-            case 0:  return m00;
-            case 1:  return m01;
-            case 2:  return m10;
-            case 3:  return m11;
-            default: throw indexOutOfBounds(row, column);
+        if (row >= 0 && row < SIZE && column >= 0 && column < SIZE) {
+            switch (row*SIZE + column) {
+                case 0: return m00;
+                case 1: return m01;
+                case 2: return m10;
+                case 3: return m11;
+            }
         }
+        throw indexOutOfBounds(row, column);
     }
 
     /**
@@ -159,13 +161,15 @@ public final class Matrix2 extends MatrixSIS {
      */
     @Override
     public void setElement(final int row, final int column, final double value) {
-        switch (row*SIZE + column) {
-            case 0:  m00 = value; break;
-            case 1:  m01 = value; break;
-            case 2:  m10 = value; break;
-            case 3:  m11 = value; break;
-            default: throw indexOutOfBounds(row, column);
+        if (row >= 0 && row < SIZE && column >= 0 && column < SIZE) {
+            switch (row*SIZE + column) {
+                case 0: m00 = value; return;
+                case 1: m01 = value; return;
+                case 2: m10 = value; return;
+                case 3: m11 = value; return;
+            }
         }
+        throw indexOutOfBounds(row, column);
     }
 
     /**
