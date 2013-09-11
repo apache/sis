@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.operation.matrix;
 
 import org.opengis.referencing.operation.Matrix;
+import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ComparisonMode;
@@ -45,6 +46,102 @@ public final class Matrices extends Static {
      * Do not allows instantiation of this class.
      */
     private Matrices() {
+    }
+
+    /**
+     * Creates a square identity matrix of size {@code size} × {@code size}.
+     * Elements on the diagonal (<var>j</var> == <var>i</var>) are set to 1.
+     *
+     * <p>For an affine transform, the {@code size} is the number of
+     * {@linkplain MathTransform#getSourceDimensions() source} and
+     * {@linkplain MathTransform#getTargetDimensions() target} dimensions + 1.</p>
+     *
+     * @param size Numbers of row and columns.
+     * @return An identity matrix of the given size.
+     */
+    public static MatrixSIS create(final int size) {
+        switch (size) {
+            case 1: return new Matrix1();
+            case 2: return new Matrix2();
+            case 3: return new Matrix3();
+            case 4: return new Matrix4();
+        }
+        return new GeneralMatrix(size, size);
+    }
+
+    /**
+     * Creates an identity matrix of size {@code numRow} × {@code numCol}.
+     * Elements on the diagonal (<var>j</var> == <var>i</var>) are set to 1.
+     *
+     * @param numRow For an affine transform, this is the number of {@linkplain MathTransform#getTargetDimensions() target dimensions} + 1.
+     * @param numCol For an affine transform, this is the number of {@linkplain MathTransform#getSourceDimensions() source dimensions} + 1.
+     * @return An identity matrix of the given size.
+     */
+    public static MatrixSIS create(final int numRow, final int numCol) {
+        if (numRow == numCol) {
+            return create(numRow);
+        } else {
+            return new GeneralMatrix(numRow, numCol);
+        }
+    }
+
+    /**
+     * Creates a matrix of size {@code numRow} × {@code numCol} initialized to the given elements.
+     * The elements array size must be equals to {@code numRow*numCol}. Column indices vary fastest.
+     *
+     * @param  numRow   Number of rows.
+     * @param  numCol   Number of columns.
+     * @param  elements The matrix elements in a row-major array. Column indices vary fastest.
+     * @return A matrix initialized to the given elements.
+     *
+     * @see MatrixSIS#setElements(double[])
+     */
+    public static MatrixSIS create(final int numRow, final int numCol, final double[] elements) {
+        if (numRow == numCol) switch (numRow) {
+            case 1: return new Matrix1(elements);
+            case 2: return new Matrix2(elements);
+            case 3: return new Matrix3(elements);
+            case 4: return new Matrix4(elements);
+        }
+        return new GeneralMatrix(numRow, numCol, elements);
+    }
+
+    /**
+     * Creates a new matrix which is a copy of the given matrix.
+     *
+     * @param matrix The matrix to copy, or {@code null}.
+     * @return A copy of the given matrix, or {@code null} if the given matrix was null.
+     */
+    public static MatrixSIS copy(final Matrix matrix) {
+        if (matrix == null) {
+            return null;
+        }
+        final int size = matrix.getNumRow();
+        if (size == matrix.getNumCol()) {
+            switch (size) {
+                case 1: return new Matrix1(matrix);
+                case 2: return new Matrix2(matrix);
+                case 3: return new Matrix3(matrix);
+                case 4: return new Matrix4(matrix);
+            }
+        }
+        return new GeneralMatrix(matrix);
+    }
+
+    /**
+     * Casts or copies the given matrix to a SIS implementation. If {@code matrix} is already
+     * an instance of {@code MatrixSIS}, then it is returned unchanged. Otherwise all elements
+     * are copied in a new {@code MatrixSIS} object.
+     *
+     * @param  matrix The matrix to cast or copy, or {@code null}.
+     * @return The matrix argument if it can be safely casted (including {@code null} argument),
+     *         or a copy of the given matrix otherwise.
+     */
+    public static MatrixSIS castOrCopy(final Matrix matrix) {
+        if (matrix instanceof MatrixSIS) {
+            return (MatrixSIS) matrix;
+        }
+        return copy(matrix);
     }
 
     /**
