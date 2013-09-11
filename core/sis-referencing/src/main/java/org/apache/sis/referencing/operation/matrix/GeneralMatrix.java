@@ -246,17 +246,7 @@ class GeneralMatrix extends MatrixSIS {
      * {@inheritDoc}
      */
     @Override
-    public final void negate() {
-        for (int i=0; i<elements.length; i++) {
-            elements[i] = -elements[i];
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public final void transpose() {
+    public final void setToTranspose() {
         for (int j=0; j<numRow; j++) {
             for (int i=0; i<j; i++) {
                 final int lowerLeft  = j*numCol + i;
