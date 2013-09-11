@@ -59,13 +59,12 @@ public final class Matrices extends Static {
      *
      * @see MatrixSIS#isIdentity(double)
      */
-    public static boolean isIdentity(final Matrix matrix, double tolerance) {
+    public static boolean isIdentity(final Matrix matrix, final double tolerance) {
         final int numRow = matrix.getNumRow();
         final int numCol = matrix.getNumCol();
         if (numRow != numCol) {
             return false;
         }
-        tolerance = Math.abs(tolerance);
         for (int j=0; j<numRow; j++) {
             for (int i=0; i<numCol; i++) {
                 double e = matrix.getElement(j,i);
