@@ -81,6 +81,14 @@ public final class Matrix4 extends MatrixSIS {
     }
 
     /**
+     * Creates a new matrix filled with only zero values.
+     *
+     * @param ignore Shall always be {@code false} in current version.
+     */
+    Matrix4(final boolean ignore) {
+    }
+
+    /**
      * Creates a new matrix initialized to the specified values.
      *
      * @param m00 The first matrix element in the first row.
@@ -317,10 +325,9 @@ public final class Matrix4 extends MatrixSIS {
     }
 
     /**
-     * {@inheritDoc}
+     * Sets all the values in this matrix to zero.
      */
-    @Override
-    public final void setToZero() {
+    private void setToZero() {
         m00 = m01 = m02 = m03 = 0;
         m10 = m11 = m12 = m13 = 0;
         m20 = m21 = m22 = m23 = 0;

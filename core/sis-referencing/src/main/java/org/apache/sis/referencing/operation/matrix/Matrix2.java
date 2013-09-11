@@ -65,6 +65,14 @@ public final class Matrix2 extends MatrixSIS {
     }
 
     /**
+     * Creates a new matrix filled with only zero values.
+     *
+     * @param ignore Shall always be {@code false} in current version.
+     */
+    Matrix2(final boolean ignore) {
+    }
+
+    /**
      * Creates a new matrix initialized to the specified values.
      *
      * @param m00 The first matrix element in the first row.
@@ -227,14 +235,6 @@ public final class Matrix2 extends MatrixSIS {
     public final void setToIdentity() {
         m01 = m10 = 0;
         m00 = m11 = 1;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public final void setToZero() {
-        m00 = m01 = m10 = m11 = 0;
     }
 
     /**
