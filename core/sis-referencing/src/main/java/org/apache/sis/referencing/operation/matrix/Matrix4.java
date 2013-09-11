@@ -46,10 +46,6 @@ import org.apache.sis.math.MathFunctions;
  * @see Matrix3
  */
 public final class Matrix4 extends MatrixSIS {
-// Note: if the above 'final' keyword is removed, revisit the methods in this class
-// which invoke other methods: Matrix3(Matrix) constructor, setToIdentity(), etc.
-// We may want to protect them against overriding of the method they invoke.
-
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -154,6 +150,15 @@ public final class Matrix4 extends MatrixSIS {
         }
     }
 
+    /*
+     * The 'final' modifier in following method declarations is redundant with the 'final' modifier
+     * in this class declaration, but we keep them as a reminder of which methods should stay final
+     * if this class was modified to a non-final class. Some methods should stay final because:
+     *
+     *  - returning a different value would make no-sense for this class (e.g. 'getNumRow()');
+     *  - they are invoked by a constructor or by an other method expecting this exact semantic.
+     */
+
     /**
      * Returns the number of rows in this matrix, which is always {@value #SIZE} in this implementation.
      *
@@ -185,7 +190,7 @@ public final class Matrix4 extends MatrixSIS {
      * @return       The current value at the given row and column.
      */
     @Override
-    public double getElement(final int row, final int column) {
+    public final double getElement(final int row, final int column) {
         if (row >= 0 && row < SIZE && column >= 0 && column < SIZE) {
             switch (row*SIZE + column) {
                 case  0: return m00;
@@ -220,7 +225,7 @@ public final class Matrix4 extends MatrixSIS {
      * @param value  The new value to set at the given row and column.
      */
     @Override
-    public void setElement(final int row, final int column, final double value) {
+    public final void setElement(final int row, final int column, final double value) {
         if (row >= 0 && row < SIZE && column >= 0 && column < SIZE) {
             switch (row*SIZE + column) {
                 case  0: m00 = value; return;
@@ -249,7 +254,7 @@ public final class Matrix4 extends MatrixSIS {
      * The array length is 16.
      */
     @Override
-    public double[] getElements() {
+    public final double[] getElements() {
         return new double[] {
             m00, m01, m02, m03,
             m10, m11, m12, m13,
@@ -263,7 +268,7 @@ public final class Matrix4 extends MatrixSIS {
      * The array length shall be 16.
      */
     @Override
-    public void setElements(final double[] elements) {
+    public final void setElements(final double[] elements) {
         ensureLengthMatch(SIZE*SIZE, elements);
         m00 = elements[ 0];
         m01 = elements[ 1];
@@ -287,7 +292,7 @@ public final class Matrix4 extends MatrixSIS {
      * {@inheritDoc}
      */
     @Override
-    public boolean isAffine() {
+    public final boolean isAffine() {
         return m30 == 0 && m31 == 0 && m32 == 0 && m33 == 1;
     }
 
@@ -295,7 +300,7 @@ public final class Matrix4 extends MatrixSIS {
      * {@inheritDoc}
      */
     @Override
-    public boolean isIdentity() {
+    public final boolean isIdentity() {
         return m00 == 1 && m01 == 0 && m02 == 0 && m03 == 0 &&
                m10 == 0 && m11 == 1 && m12 == 0 && m13 == 0 &&
                m20 == 0 && m21 == 0 && m22 == 1 && m23 == 0 &&
@@ -306,7 +311,7 @@ public final class Matrix4 extends MatrixSIS {
      * {@inheritDoc}
      */
     @Override
-    public void setToIdentity() {
+    public final void setToIdentity() {
         setToZero();
         m00 = m11 = m22 = m33 = 1;
     }
@@ -315,7 +320,7 @@ public final class Matrix4 extends MatrixSIS {
      * {@inheritDoc}
      */
     @Override
-    public void setToZero() {
+    public final void setToZero() {
         m00 = m01 = m02 = m03 = 0;
         m10 = m11 = m12 = m13 = 0;
         m20 = m21 = m22 = m23 = 0;
@@ -363,7 +368,7 @@ public final class Matrix4 extends MatrixSIS {
      * {@inheritDoc}
      */
     @Override
-    public final void normalizeColumns() {
+    public void normalizeColumns() {
         double m;
         final double[] v = new double[4];
         v[0]=m00; v[1]=m10; v[2]=m20; v[3]=m30; m = MathFunctions.magnitude(v); m00 /= m; m10 /= m; m20 /= m; m30 /= m;

@@ -106,6 +106,15 @@ public final class Matrix2 extends MatrixSIS {
         m11 = matrix.getElement(1,1);
     }
 
+    /*
+     * The 'final' modifier in following method declarations is redundant with the 'final' modifier
+     * in this class declaration, but we keep them as a reminder of which methods should stay final
+     * if this class was modified to a non-final class. Some methods should stay final because:
+     *
+     *  - returning a different value would make no-sense for this class (e.g. 'getNumRow()');
+     *  - they are invoked by a constructor or by an other method expecting this exact semantic.
+     */
+
     /**
      * Returns the number of rows in this matrix, which is always {@value #SIZE} in this implementation.
      *
@@ -137,7 +146,7 @@ public final class Matrix2 extends MatrixSIS {
      * @return       The current value at the given row and column.
      */
     @Override
-    public double getElement(final int row, final int column) {
+    public final double getElement(final int row, final int column) {
         if (row >= 0 && row < SIZE && column >= 0 && column < SIZE) {
             switch (row*SIZE + column) {
                 case 0: return m00;
@@ -160,7 +169,7 @@ public final class Matrix2 extends MatrixSIS {
      * @param value  The new value to set at the given row and column.
      */
     @Override
-    public void setElement(final int row, final int column, final double value) {
+    public final void setElement(final int row, final int column, final double value) {
         if (row >= 0 && row < SIZE && column >= 0 && column < SIZE) {
             switch (row*SIZE + column) {
                 case 0: m00 = value; return;
@@ -177,7 +186,7 @@ public final class Matrix2 extends MatrixSIS {
      * The array length is 4.
      */
     @Override
-    public double[] getElements() {
+    public final double[] getElements() {
         return new double[] {m00, m01, m10, m11};
     }
 
@@ -186,7 +195,7 @@ public final class Matrix2 extends MatrixSIS {
      * The array length shall be 4.
      */
     @Override
-    public void setElements(final double[] elements) {
+    public final void setElements(final double[] elements) {
         ensureLengthMatch(SIZE*SIZE, elements);
         m00 = elements[0];
         m01 = elements[1];
@@ -198,7 +207,7 @@ public final class Matrix2 extends MatrixSIS {
      * {@inheritDoc}
      */
     @Override
-    public boolean isAffine() {
+    public final boolean isAffine() {
         return m10 == 0 && m11 == 1;
     }
 
@@ -206,7 +215,7 @@ public final class Matrix2 extends MatrixSIS {
      * {@inheritDoc}
      */
     @Override
-    public boolean isIdentity() {
+    public final boolean isIdentity() {
         return m00 == 1 && m10 == 0 &&
                m01 == 0 && m11 == 1;
     }
@@ -215,7 +224,7 @@ public final class Matrix2 extends MatrixSIS {
      * {@inheritDoc}
      */
     @Override
-    public void setToIdentity() {
+    public final void setToIdentity() {
         m01 = m10 = 0;
         m00 = m11 = 1;
     }
@@ -224,7 +233,7 @@ public final class Matrix2 extends MatrixSIS {
      * {@inheritDoc}
      */
     @Override
-    public void setToZero() {
+    public final void setToZero() {
         m00 = m01 = m10 = m11 = 0;
     }
 
