@@ -90,6 +90,23 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     }
 
     /**
+     * Returns all matrix elements in a flat, row-major (column indices vary fastest) array.
+     * The array length is <code>{@linkplain #getNumRow()} * {@linkplain #getNumCol()}</code>.
+     *
+     * @return The current matrix elements in a row-major array.
+     */
+    public abstract double[] getElements();
+
+    /**
+     * Sets all matrix elements from a flat, row-major (column indices vary fastest) array.
+     * The array length shall be <code>{@linkplain #getNumRow()} * {@linkplain #getNumCol()}</code>.
+     *
+     * @param elements The new matrix elements in a row-major array.
+     * @throws IllegalArgumentException If the given array does not have the expected length.
+     */
+    public abstract void setElements(final double[] elements);
+
+    /**
      * Returns {@code true} if this matrix represents an affine transform.
      * A transform is affine if the matrix is square and its last row contains
      * only zeros, except in the last column which contains 1.

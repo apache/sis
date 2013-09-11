@@ -24,7 +24,7 @@ import org.apache.sis.internal.util.Numerics;
  * A matrix of fixed {@value #SIZE}×{@value #SIZE} size.
  * The matrix member is:
  *
- * <blockquote><pre>┌     ┐
+ * <blockquote><pre> ┌     ┐
  * │ {@link #m00} │
  * └     ┘</pre></blockquote>
  *
@@ -139,6 +139,25 @@ public final class Matrix1 extends MatrixSIS {
         } else {
             throw indexOutOfBounds(row, column);
         }
+    }
+
+    /**
+     * Returns all matrix elements in a flat, row-major (column indices vary fastest) array.
+     * The array length is 1.
+     */
+    @Override
+    public double[] getElements() {
+        return new double[] {m00};
+    }
+
+    /**
+     * Sets all matrix elements from a flat, row-major (column indices vary fastest) array.
+     * The array length shall be 1.
+     */
+    @Override
+    public void setElements(final double[] elements) {
+        ensureLengthMatch(SIZE*SIZE, elements);
+        m00 = elements[0];
     }
 
     /**

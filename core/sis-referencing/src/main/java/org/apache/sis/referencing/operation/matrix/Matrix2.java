@@ -24,7 +24,7 @@ import org.apache.sis.internal.util.Numerics;
  * A matrix of fixed {@value #SIZE}×{@value #SIZE} size.
  * The matrix members are:
  *
- * <blockquote><pre>┌         ┐
+ * <blockquote><pre> ┌         ┐
  * │ {@link #m00} {@link #m01} │
  * │ {@link #m10} {@link #m11} │
  * └         ┘</pre></blockquote>
@@ -89,11 +89,7 @@ public final class Matrix2 extends MatrixSIS {
      * @throws IllegalArgumentException If the given array does not have the expected length.
      */
     public Matrix2(final double[] elements) throws IllegalArgumentException {
-        ensureLengthMatch(SIZE*SIZE, elements);
-        m00 = elements[0];
-        m01 = elements[1];
-        m10 = elements[2];
-        m11 = elements[3];
+        setElements(elements);
     }
 
     /**
@@ -170,6 +166,28 @@ public final class Matrix2 extends MatrixSIS {
             case 3:  m11 = value; break;
             default: throw indexOutOfBounds(row, column);
         }
+    }
+
+    /**
+     * Returns all matrix elements in a flat, row-major (column indices vary fastest) array.
+     * The array length is 4.
+     */
+    @Override
+    public double[] getElements() {
+        return new double[] {m00, m01, m10, m11};
+    }
+
+    /**
+     * Sets all matrix elements from a flat, row-major (column indices vary fastest) array.
+     * The array length shall be 4.
+     */
+    @Override
+    public void setElements(final double[] elements) {
+        ensureLengthMatch(SIZE*SIZE, elements);
+        m00 = elements[0];
+        m01 = elements[1];
+        m10 = elements[2];
+        m11 = elements[3];
     }
 
     /**
