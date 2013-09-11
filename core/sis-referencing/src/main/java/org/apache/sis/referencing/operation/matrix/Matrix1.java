@@ -64,6 +64,14 @@ public final class Matrix1 extends MatrixSIS {
     }
 
     /**
+     * Creates a new matrix filled with only zero values.
+     *
+     * @param ignore Shall always be {@code false} in current version.
+     */
+    Matrix1(final boolean ignore) {
+    }
+
+    /**
      * Creates a new matrix initialized to the specified value.
      *
      * @param m00 The element in this matrix.
@@ -210,14 +218,6 @@ public final class Matrix1 extends MatrixSIS {
     @Override
     public final void setToIdentity() {
         m00 = 1;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public final void setToZero() {
-        m00 = 0;
     }
 
     /**

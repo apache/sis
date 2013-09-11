@@ -59,18 +59,18 @@ public final class Matrices extends Static {
      * @param size Numbers of row and columns.
      * @return An identity matrix of the given size.
      */
-    public static MatrixSIS create(final int size) {
+    public static MatrixSIS createIdentity(final int size) {
         switch (size) {
             case 1: return new Matrix1();
             case 2: return new Matrix2();
             case 3: return new Matrix3();
             case 4: return new Matrix4();
         }
-        return new GeneralMatrix(size, size);
+        return new GeneralMatrix(size, size, true);
     }
 
     /**
-     * Creates an identity matrix of size {@code numRow} × {@code numCol}.
+     * Creates a matrix of size {@code numRow} × {@code numCol}.
      * Elements on the diagonal (<var>j</var> == <var>i</var>) are set to 1.
      *
      * @param numRow For an affine transform, this is the number of {@linkplain MathTransform#getTargetDimensions() target dimensions} + 1.
@@ -79,10 +79,30 @@ public final class Matrices extends Static {
      */
     public static MatrixSIS create(final int numRow, final int numCol) {
         if (numRow == numCol) {
-            return create(numRow);
+            return createIdentity(numRow);
         } else {
-            return new GeneralMatrix(numRow, numCol);
+            return new GeneralMatrix(numRow, numCol, true);
         }
+    }
+
+    /**
+     * Creates a matrix of size {@code numRow} × {@code numCol} filled with zero values.
+     * This constructor is convenient when the caller want to initialize the matrix elements himself.
+     *
+     * @param numRow For an affine transform, this is the number of {@linkplain MathTransform#getTargetDimensions() target dimensions} + 1.
+     * @param numCol For an affine transform, this is the number of {@linkplain MathTransform#getSourceDimensions() source dimensions} + 1.
+     * @return A matrix of the given size with only zero values.
+     */
+    public static MatrixSIS createZero(final int numRow, final int numCol) {
+        if (numRow == numCol) {
+            switch (numRow) {
+                case 1: return new Matrix1(false);
+                case 2: return new Matrix2(false);
+                case 3: return new Matrix3(false);
+                case 4: return new Matrix4(false);
+            }
+        }
+        return new GeneralMatrix(numRow, numCol, false);
     }
 
     /**

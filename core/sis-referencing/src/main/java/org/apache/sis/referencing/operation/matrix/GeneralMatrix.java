@@ -18,6 +18,7 @@ package org.apache.sis.referencing.operation.matrix;
 
 import java.util.Arrays;
 import org.opengis.referencing.operation.Matrix;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.math.MathFunctions;
 
@@ -51,18 +52,23 @@ class GeneralMatrix extends MatrixSIS {
 
     /**
      * Creates a matrix of size {@code numRow} × {@code numCol}.
-     * Elements on the diagonal (<var>j</var> == <var>i</var>) are set to 1.
+     * If {@code setToIdentity} is {@code true}, then the elements
+     * on the diagonal (<var>j</var> == <var>i</var>) are set to 1.
      *
      * @param numRow Number of rows.
      * @param numCol Number of columns.
+     * @param setToIdentity {@code true} for initializing the matrix to the identity matrix,
+     *        or {@code false} for leaving it initialized to zero.
      */
-    public GeneralMatrix(final int numRow, final int numCol) {
+    public GeneralMatrix(final int numRow, final int numCol, final boolean setToIdentity) {
         ensureValidSize(numRow, numCol);
         this.numRow = (short) numRow;
         this.numCol = (short) numCol;
         elements = new double[numRow * numCol];
-        for (int i=0; i<elements.length; i += numCol+1) {
-            elements[i] = 1;
+        if (setToIdentity) {
+            for (int i=0; i<elements.length; i += numCol+1) {
+                elements[i] = 1;
+            }
         }
     }
 
@@ -80,7 +86,7 @@ class GeneralMatrix extends MatrixSIS {
         ensureLengthMatch(numRow*numCol, elements);
         this.numRow = (short) numRow;
         this.numCol = (short) numCol;
-        this.elements = elements;
+        this.elements = elements.clone();
     }
 
     /**
@@ -230,18 +236,10 @@ class GeneralMatrix extends MatrixSIS {
      */
     @Override
     public final void setToIdentity() {
-        setToZero();
+        Arrays.fill(elements, 0);
         for (int i=0; i<elements.length; i += numCol+1) {
             elements[i] = 1;
         }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public final void setToZero() {
-        Arrays.fill(elements, 0);
     }
 
     /**
@@ -300,7 +298,23 @@ class GeneralMatrix extends MatrixSIS {
      */
     @Override
     public MatrixSIS multiply(final Matrix matrix) {
-        throw new UnsupportedOperationException(); // TODO
+        final int nc = matrix.getNumCol();
+        if (matrix.getNumRow() != numCol) {
+            throw new MismatchedMatrixSizeException(Errors.format(
+                    Errors.Keys.MismatchedMatrixSize_4, numCol, nc, matrix.getNumRow(), nc));
+        }
+        final MatrixSIS result = Matrices.createZero(numRow, nc);
+        for (int j=0; j<numRow; j++) {
+            final int srcOff = j * numCol;
+            for (int i=0; i<nc; i++) {
+                double sum = 0;
+                for (int k=0; k<numCol; k++) {
+                    sum += elements[srcOff + k] * matrix.getElement(k, i);
+                }
+                result.setElement(j, i, sum);
+            }
+        }
+        return result;
     }
 
     /**

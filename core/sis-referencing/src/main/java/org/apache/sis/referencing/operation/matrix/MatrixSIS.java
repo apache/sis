@@ -166,11 +166,6 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     public abstract void setToIdentity();
 
     /**
-     * Sets all the values in this matrix to zero.
-     */
-    public abstract void setToZero();
-
-    /**
      * Negates the values of this matrix: {@code this} = {@code -this}.
      */
     public abstract void negate();
