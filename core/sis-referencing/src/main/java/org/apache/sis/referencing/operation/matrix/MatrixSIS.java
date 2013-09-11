@@ -57,8 +57,10 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     /**
      * Ensures that the given array is non-null and has the expected length.
      * This is a convenience method for subclasses constructors.
+     *
+     * @throws IllegalArgumentException If the given array does not have the expected length.
      */
-    static void ensureLengthMatch(final int expected, final double[] elements) {
+    static void ensureLengthMatch(final int expected, final double[] elements) throws IllegalArgumentException {
         ArgumentChecks.ensureNonNull("elements", elements);
         if (elements.length != expected) {
             throw new IllegalArgumentException(Errors.format(
@@ -78,6 +80,13 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
             throw new MismatchedMatrixSizeException(Errors.format(
                     Errors.Keys.MismatchedMatrixSize_4, n, n, numRow, numCol));
         }
+    }
+
+    /**
+     * Returns an exception for the given indices.
+     */
+    static IndexOutOfBoundsException indexOutOfBounds(final int row, final int column) {
+        return new IndexOutOfBoundsException(Errors.format(Errors.Keys.IndicesOutOfBounds_2, row, column));
     }
 
     /**
@@ -126,7 +135,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * This method is often used together with {@link #isIdentity(double)} in order to workaround rounding errors,
      * like below:
      *
-     * {@preformat
+     * {@preformat java
      *     if (matrix.isIdentity(1E-10)) {
      *         matrix.setToIdentity();
      *     }
@@ -170,9 +179,10 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * Returns a new matrix which is the result of multiplying this matrix with the specified one.
      * In other words, returns {@code this} × {@code matrix}.
      *
-     * <p>In the context of coordinate transformations, this is equivalent to
-     * {@link java.awt.geom.AffineTransform#concatenate AffineTransform.concatenate(…)}:
-     * first transforms by the supplied transform and then transform the result by the original transform.</p>
+     * {@section Relationship with coordinate operations}
+     * In the context of coordinate operations, {@code Matrix.multiply(other)} is equivalent to
+     * <code>{@linkplain java.awt.geom.AffineTransform#concatenate AffineTransform.concatenate}(other)</code>:
+     * first transforms by the supplied transform and then transform the result by the original transform.
      *
      * @param  matrix The matrix to multiply to this matrix.
      * @return The result of {@code this} × {@code matrix}.
@@ -218,13 +228,14 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * objects must meet the following conditions, which depend on the {@code mode} argument:
      *
      * <ul>
-     *   <li>{@link ComparisonMode#STRICT STRICT}: the two matrices must be of the same class,
-     *       have the same size and the same element values.</li>
-     *   <li>{@link ComparisonMode#BY_CONTRACT BY_CONTRACT} or {@link ComparisonMode#IGNORE_METADATA
-     *       IGNORE_METADATA}: the two matrices must have the same size and the same element values,
+     *   <li>{@link ComparisonMode#STRICT STRICT}:
+     *       the two matrices must be of the same class, have the same size and the same element values.</li>
+     *   <li>{@link ComparisonMode#BY_CONTRACT BY_CONTRACT}:
+     *       the two matrices must have the same size and the same element values,
      *       but are not required to be the same implementation class (any {@link Matrix} is okay).</li>
-     *   <li>{@link ComparisonMode#APPROXIMATIVE APPROXIMATIVE}: the two matrices must have the same size,
-     *       but the element values can differ up to some threshold.
+     *   <li>{@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA}: same as {@code BY_CONTRACT}.
+     *   <li>{@link ComparisonMode#APPROXIMATIVE APPROXIMATIVE}:
+     *       the two matrices must have the same size, but the element values can differ up to some threshold.
      *       The threshold value is determined empirically and may change in any future SIS versions.</li>
      * </ul>
      *

@@ -23,13 +23,26 @@ import org.apache.sis.math.MathFunctions;
 
 
 /**
- * A matrix of fixed {@value #SIZE}×{@value #SIZE} size. This specialized matrix provides
- * better accuracy than {@link GeneralMatrix} for matrix inversion and multiplication.
+ * A matrix of fixed {@value #SIZE}×{@value #SIZE} size.
+ * The matrix members are:
+ *
+ * <blockquote><pre>┌             ┐
+ * │ {@link #m00} {@link #m01} {@link #m02} │
+ * │ {@link #m10} {@link #m11} {@link #m12} │
+ * │ {@link #m20} {@link #m21} {@link #m22} │
+ * └             ┘</pre></blockquote>
+ *
+ * This specialized matrix implementation provides better accuracy than generic implementation
+ * for some operations.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.2)
  * @version 0.4
  * @module
+ *
+ * @see Matrix1
+ * @see Matrix2
+ * @see Matrix4
  */
 public final class Matrix3 extends MatrixSIS {
 // Note: if the above 'final' keyword is removed, revisit the methods in this class
@@ -96,8 +109,9 @@ public final class Matrix3 extends MatrixSIS {
      * The length of the given array must be 9 and the values in the same order than the above constructor.
      *
      * @param elements Elements of the matrix. Column indices vary fastest.
+     * @throws IllegalArgumentException If the given array does not have the expected length.
      */
-    public Matrix3(final double[] elements) {
+    public Matrix3(final double[] elements) throws IllegalArgumentException {
         ensureLengthMatch(SIZE*SIZE, elements);
         m00 = elements[0];
         m01 = elements[1];
@@ -128,7 +142,7 @@ public final class Matrix3 extends MatrixSIS {
     /**
      * Returns the number of rows in this matrix, which is always {@value #SIZE} in this implementation.
      *
-     * @return {@value SIZE}.
+     * @return Always {@value SIZE}.
      */
     @Override
     public final int getNumRow() {
@@ -138,7 +152,7 @@ public final class Matrix3 extends MatrixSIS {
     /**
      * Returns the number of columns in this matrix, which is always {@value #SIZE} in this implementation.
      *
-     * @return {@value SIZE}.
+     * @return Always {@value SIZE}.
      */
     @Override
     public final int getNumCol() {
@@ -178,7 +192,7 @@ public final class Matrix3 extends MatrixSIS {
             case 6:  return m20;
             case 7:  return m21;
             case 8:  return m22;
-            default: throw new IndexOutOfBoundsException();
+            default: throw indexOutOfBounds(row, column);
         }
     }
 
@@ -204,7 +218,7 @@ public final class Matrix3 extends MatrixSIS {
             case 6:  m20 = value; break;
             case 7:  m21 = value; break;
             case 8:  m22 = value; break;
-            default: throw new IndexOutOfBoundsException();
+            default: throw indexOutOfBounds(row, column);
         }
     }
 

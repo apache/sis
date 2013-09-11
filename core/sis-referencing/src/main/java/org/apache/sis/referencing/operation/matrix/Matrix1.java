@@ -21,13 +21,24 @@ import org.apache.sis.internal.util.Numerics;
 
 
 /**
- * A matrix of fixed {@value #SIZE}×{@value #SIZE} size. This trivial matrix is returned as a result
- * of {@linkplain org.opengis.referencing.operation.MathTransform1D} derivative computation.
+ * A matrix of fixed {@value #SIZE}×{@value #SIZE} size.
+ * The matrix member is:
+ *
+ * <blockquote><pre>┌     ┐
+ * │ {@link #m00} │
+ * └     ┘</pre></blockquote>
+ *
+ * This trivial matrix can be returned as a result of
+ * {@linkplain org.opengis.referencing.operation.MathTransform1D} derivative computation.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.2)
  * @version 0.4
  * @module
+ *
+ * @see Matrix2
+ * @see Matrix3
+ * @see Matrix4
  */
 public final class Matrix1 extends MatrixSIS {
     /**
@@ -75,7 +86,7 @@ public final class Matrix1 extends MatrixSIS {
     /**
      * Returns the number of rows in this matrix, which is always {@value #SIZE} in this implementation.
      *
-     * @return {@value SIZE}.
+     * @return Always {@value SIZE}.
      */
     @Override
     public final int getNumRow() {
@@ -85,7 +96,7 @@ public final class Matrix1 extends MatrixSIS {
     /**
      * Returns the number of columns in this matrix, which is always {@value #SIZE} in this implementation.
      *
-     * @return {@value SIZE}.
+     * @return Always {@value SIZE}.
      */
     @Override
     public final int getNumCol() {
@@ -107,7 +118,7 @@ public final class Matrix1 extends MatrixSIS {
         if (row == 0 && column == 0) {
             return m00;
         } else {
-            throw new IndexOutOfBoundsException();
+            throw indexOutOfBounds(row, column);
         }
     }
 
@@ -126,7 +137,7 @@ public final class Matrix1 extends MatrixSIS {
         if (row == 0 && column == 0) {
             m00 = value;
         } else {
-            throw new IndexOutOfBoundsException();
+            throw indexOutOfBounds(row, column);
         }
     }
 
