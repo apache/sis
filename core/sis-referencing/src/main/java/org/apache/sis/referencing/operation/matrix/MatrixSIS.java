@@ -103,6 +103,8 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      *
      * @param elements The new matrix elements in a row-major array.
      * @throws IllegalArgumentException If the given array does not have the expected length.
+     *
+     * @see Matrices#create(int, int, double[])
      */
     public abstract void setElements(final double[] elements);
 

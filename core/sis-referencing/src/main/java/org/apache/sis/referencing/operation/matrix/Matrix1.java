@@ -73,6 +73,17 @@ public final class Matrix1 extends MatrixSIS {
     }
 
     /**
+     * Creates a new matrix initialized to the specified values.
+     * The length of the given array must be 1.
+     *
+     * @param elements Elements of the matrix.
+     * @throws IllegalArgumentException If the given array does not have the expected length.
+     */
+    public Matrix1(final double[] elements) throws IllegalArgumentException {
+        setElements(elements);
+    }
+
+    /**
      * Creates a new matrix initialized to the same value than the specified one.
      * The specified matrix size must be {@value #SIZE}×{@value #SIZE}.
      * This is not verified by this constructor, since it shall be verified by {@link Matrices}.
