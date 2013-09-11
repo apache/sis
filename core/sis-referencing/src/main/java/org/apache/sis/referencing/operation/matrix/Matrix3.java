@@ -26,14 +26,14 @@ import org.apache.sis.math.MathFunctions;
  * A matrix of fixed {@value #SIZE}×{@value #SIZE} size.
  * The matrix members are:
  *
- * <blockquote><pre>┌             ┐
+ * <blockquote><pre> ┌             ┐
  * │ {@link #m00} {@link #m01} {@link #m02} │
  * │ {@link #m10} {@link #m11} {@link #m12} │
  * │ {@link #m20} {@link #m21} {@link #m22} │
  * └             ┘</pre></blockquote>
  *
- * This specialized matrix implementation provides better accuracy than generic implementation
- * for some operations.
+ * In some situations, this specialized matrix implementation may provide better accuracy than the
+ * generic implementation for matrix inversions and multiplications.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.2)
@@ -59,15 +59,15 @@ public final class Matrix3 extends MatrixSIS {
      */
     public static final int SIZE = 3;
 
-     /** The first matrix element in the first row.   */ public double m00;
-     /** The second matrix element in the first row.  */ public double m01;
-     /** The third matrix element in the first row.   */ public double m02;
-     /** The first matrix element in the second row.  */ public double m10;
-     /** The second matrix element in the second row. */ public double m11;
-     /** The third matrix element in the second row.  */ public double m12;
-     /** The first matrix element in the third row.   */ public double m20;
-     /** The second matrix element in the third row.  */ public double m21;
-     /** The third matrix element in the third row.   */ public double m22;
+    /** The first matrix element in the first row.   */ public double m00;
+    /** The second matrix element in the first row.  */ public double m01;
+    /** The third matrix element in the first row.   */ public double m02;
+    /** The first matrix element in the second row.  */ public double m10;
+    /** The second matrix element in the second row. */ public double m11;
+    /** The third matrix element in the second row.  */ public double m12;
+    /** The first matrix element in the third row.   */ public double m20;
+    /** The second matrix element in the third row.  */ public double m21;
+    /** The third matrix element in the third row.   */ public double m22;
 
     /**
      * Creates a new identity matrix.
@@ -112,16 +112,7 @@ public final class Matrix3 extends MatrixSIS {
      * @throws IllegalArgumentException If the given array does not have the expected length.
      */
     public Matrix3(final double[] elements) throws IllegalArgumentException {
-        ensureLengthMatch(SIZE*SIZE, elements);
-        m00 = elements[0];
-        m01 = elements[1];
-        m02 = elements[2];
-        m10 = elements[3];
-        m11 = elements[4];
-        m12 = elements[5];
-        m20 = elements[6];
-        m21 = elements[7];
-        m22 = elements[8];
+        setElements(elements);
     }
 
     /**
@@ -157,17 +148,6 @@ public final class Matrix3 extends MatrixSIS {
     @Override
     public final int getNumCol() {
         return SIZE;
-    }
-
-    /**
-     * Returns all elements in a flat, row-major, array.
-     */
-    private double[] getElements() {
-        return new double[] {
-            m00, m01, m02,
-            m10, m11, m12,
-            m20, m21, m22
-        };
     }
 
     /**
@@ -220,6 +200,37 @@ public final class Matrix3 extends MatrixSIS {
             case 8:  m22 = value; break;
             default: throw indexOutOfBounds(row, column);
         }
+    }
+
+    /**
+     * Returns all matrix elements in a flat, row-major (column indices vary fastest) array.
+     * The array length is 9.
+     */
+    @Override
+    public double[] getElements() {
+        return new double[] {
+            m00, m01, m02,
+            m10, m11, m12,
+            m20, m21, m22
+        };
+    }
+
+    /**
+     * Sets all matrix elements from a flat, row-major (column indices vary fastest) array.
+     * The array length shall be 9.
+     */
+    @Override
+    public void setElements(final double[] elements) {
+        ensureLengthMatch(SIZE*SIZE, elements);
+        m00 = elements[0];
+        m01 = elements[1];
+        m02 = elements[2];
+        m10 = elements[3];
+        m11 = elements[4];
+        m12 = elements[5];
+        m20 = elements[6];
+        m21 = elements[7];
+        m22 = elements[8];
     }
 
     /**
@@ -330,7 +341,7 @@ public final class Matrix3 extends MatrixSIS {
     }
 
     /**
-     * Returns {@code true} if the specified object is of type {@code Matrix2} and
+     * Returns {@code true} if the specified object is of type {@code Matrix3} and
      * all of the data members are equal to the corresponding data members in this matrix.
      *
      * @param object The object to compare with this matrix for equality.
