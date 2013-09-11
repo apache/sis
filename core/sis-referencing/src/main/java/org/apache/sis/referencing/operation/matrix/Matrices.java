@@ -145,13 +145,14 @@ public final class Matrices extends Static {
      * on the {@code mode} argument:
      *
      * <ul>
-     *   <li>{@link ComparisonMode#STRICT STRICT}: the two matrices must be of the same class,
-     *       have the same size and the same element values.</li>
-     *   <li>{@link ComparisonMode#BY_CONTRACT BY_CONTRACT}/{@link ComparisonMode#IGNORE_METADATA
-     *       IGNORE_METADATA}: the two matrices must have the same size and the same element values,
+     *   <li>{@link ComparisonMode#STRICT STRICT}:
+     *       the two matrices must be of the same class, have the same size and the same element values.</li>
+     *   <li>{@link ComparisonMode#BY_CONTRACT BY_CONTRACT}:
+     *       the two matrices must have the same size and the same element values,
      *       but are not required to be the same implementation class (any {@link Matrix} is okay).</li>
-     *   <li>{@link ComparisonMode#APPROXIMATIVE APPROXIMATIVE}: the two matrixes must have the same size,
-     *       but the element values can differ up to some threshold.
+     *   <li>{@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA}: same as {@code BY_CONTRACT}.
+     *   <li>{@link ComparisonMode#APPROXIMATIVE APPROXIMATIVE}:
+     *       the two matrices must have the same size, but the element values can differ up to some threshold.
      *       The threshold value is determined empirically and may change in any future SIS versions.</li>
      * </ul>
      *

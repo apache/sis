@@ -291,6 +291,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int IndexOutOfBounds_1 = 4;
 
         /**
+         * Indices ({0}, {1}) are out of bounds.
+         */
+        public static final int IndicesOutOfBounds_2 = 120;
+
+        /**
          * Argument ‘{0}’ can not take an infinite value.
          */
         public static final int InfiniteArgumentValue_1 = 45;

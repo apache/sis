@@ -22,6 +22,13 @@ import org.apache.sis.internal.util.Numerics;
 
 /**
  * A matrix of fixed {@value #SIZE}×{@value #SIZE} size.
+ * The matrix members are:
+ *
+ * <blockquote><pre>┌         ┐
+ * │ {@link #m00} {@link #m01} │
+ * │ {@link #m10} {@link #m11} │
+ * └         ┘</pre></blockquote>
+ *
  * This simple matrix is returned as a result of {@linkplain org.opengis.referencing.operation.MathTransform2D}
  * derivative computation.
  *
@@ -29,6 +36,10 @@ import org.apache.sis.internal.util.Numerics;
  * @since   0.4 (derived from geotk-2.2)
  * @version 0.4
  * @module
+ *
+ * @see Matrix1
+ * @see Matrix3
+ * @see Matrix4
  */
 public final class Matrix2 extends MatrixSIS {
     /**
@@ -75,8 +86,9 @@ public final class Matrix2 extends MatrixSIS {
      * The length of the given array must be 4 and the values in the same order than the above constructor.
      *
      * @param elements Elements of the matrix. Column indices vary fastest.
+     * @throws IllegalArgumentException If the given array does not have the expected length.
      */
-    public Matrix2(final double[] elements) {
+    public Matrix2(final double[] elements) throws IllegalArgumentException {
         ensureLengthMatch(SIZE*SIZE, elements);
         m00 = elements[0];
         m01 = elements[1];
@@ -101,7 +113,7 @@ public final class Matrix2 extends MatrixSIS {
     /**
      * Returns the number of rows in this matrix, which is always {@value #SIZE} in this implementation.
      *
-     * @return {@value SIZE}.
+     * @return Always {@value SIZE}.
      */
     @Override
     public final int getNumRow() {
@@ -111,7 +123,7 @@ public final class Matrix2 extends MatrixSIS {
     /**
      * Returns the number of columns in this matrix, which is always {@value #SIZE} in this implementation.
      *
-     * @return {@value SIZE}.
+     * @return Always {@value SIZE}.
      */
     @Override
     public final int getNumCol() {
@@ -135,7 +147,7 @@ public final class Matrix2 extends MatrixSIS {
             case 1:  return m01;
             case 2:  return m10;
             case 3:  return m11;
-            default: throw new IndexOutOfBoundsException();
+            default: throw indexOutOfBounds(row, column);
         }
     }
 
@@ -156,7 +168,7 @@ public final class Matrix2 extends MatrixSIS {
             case 1:  m01 = value; break;
             case 2:  m10 = value; break;
             case 3:  m11 = value; break;
-            default: throw new IndexOutOfBoundsException();
+            default: throw indexOutOfBounds(row, column);
         }
     }
 
