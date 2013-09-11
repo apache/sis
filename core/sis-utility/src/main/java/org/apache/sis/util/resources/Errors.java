@@ -481,6 +481,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int NotAUnicodeIdentifier_1 = 113;
 
         /**
+         * Transform is not affine.
+         */
+        public static final int NotAnAffineTransform = 121;
+
+        /**
          * Class ‘{0}’ is not a comparable.
          */
         public static final int NotComparableClass_1 = 66;

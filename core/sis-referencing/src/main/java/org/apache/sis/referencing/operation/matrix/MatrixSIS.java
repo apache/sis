@@ -114,6 +114,8 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * only zeros, except in the last column which contains 1.
      *
      * @return {@code true} if this matrix is affine.
+     *
+     * @see Matrices#isAffine(Matrix)
      */
     public abstract boolean isAffine();
 
