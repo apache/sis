@@ -32,7 +32,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * <ul>
  *   <li>basic operations needed for <cite>referencing by coordinates</cite>:
- *       {@link #negate()}, {@link #transpose()}, {@link #inverse()}, {@link #multiply(Matrix)};</li>
+ *       {@link #setToTranspose()}, {@link #inverse()}, {@link #multiply(Matrix)};</li>
  *   <li>some operations more specific to referencing by coordinates:
  *       {@link #isAffine()}, {@link #normalizeColumns()}.</li>
  * </ul>
@@ -168,14 +168,9 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     public abstract void setToIdentity();
 
     /**
-     * Negates the values of this matrix: {@code this} = {@code -this}.
-     */
-    public abstract void negate();
-
-    /**
      * Sets the value of this matrix to its transpose.
      */
-    public abstract void transpose();
+    public abstract void setToTranspose();
 
     /**
      * Normalizes all columns in-place. Each columns in this matrix is considered as a vector.

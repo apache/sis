@@ -221,19 +221,10 @@ public final class Matrix1 extends MatrixSIS {
     }
 
     /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void negate() {
-        m00 = -m00;
-    }
-
-    /**
-     * Sets the value of this matrix to its transpose.
      * For a 1×1 matrix, this method does nothing.
      */
     @Override
-    public void transpose() {
+    public void setToTranspose() {
         // Nothing to do for a 1x1 matrix.
     }
 
