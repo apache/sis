@@ -18,7 +18,6 @@ package org.apache.sis.referencing.operation.matrix;
 
 import java.util.Arrays;
 import org.opengis.referencing.operation.Matrix;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.math.MathFunctions;
 
@@ -289,14 +288,11 @@ class GeneralMatrix extends MatrixSIS {
      * {@inheritDoc}
      */
     @Override
-    public MatrixSIS multiply(final Matrix matrix) {
+    public final MatrixSIS multiply(final Matrix matrix) {
         final int numRow = this.numRow; // Protection against accidental changes.
         final int numCol = this.numCol;
         final int nc = matrix.getNumCol();
-        if (matrix.getNumRow() != numCol) {
-            throw new MismatchedMatrixSizeException(Errors.format(
-                    Errors.Keys.MismatchedMatrixSize_4, numCol, nc, matrix.getNumRow(), nc));
-        }
+        ensureNumRowMatch(numCol, matrix, nc);
         final MatrixSIS result = Matrices.createZero(numRow, nc);
         for (int j=0; j<numRow; j++) {
             final int srcOff = j * numCol;
@@ -319,7 +315,7 @@ class GeneralMatrix extends MatrixSIS {
      * @return {@code true} if the given object is equal to this matrix.
      */
     @Override
-    public boolean equals(final Object object) {
+    public final boolean equals(final Object object) {
         if (object instanceof GeneralMatrix) {
             final GeneralMatrix that = (GeneralMatrix) object;
             return numRow == that.numRow &&
@@ -333,7 +329,7 @@ class GeneralMatrix extends MatrixSIS {
      * Returns a hash code value based on the data values in this object.
      */
     @Override
-    public int hashCode() {
+    public final int hashCode() {
         return ((numRow << Short.SIZE) | numCol) ^ Arrays.hashCode(elements) ^ (int) serialVersionUID;
     }
 

@@ -266,13 +266,12 @@ public final class Matrix2 extends MatrixSIS {
      */
     @Override
     public MatrixSIS multiply(final Matrix matrix) {
-        final Matrix2 k;
-        if (matrix instanceof Matrix2) {
-            k = (Matrix2) matrix;
-        } else {
-            ensureSizeMatch(SIZE, matrix);
-            k = new Matrix2(matrix);
+        final int nc = matrix.getNumCol();
+        ensureNumRowMatch(SIZE, matrix, nc);
+        if (nc != SIZE) {
+            return new NonSquareMatrix(this, matrix);
         }
+        final Matrix2 k = (matrix instanceof Matrix2) ? (Matrix2) matrix : new Matrix2(matrix);
         return new Matrix2(m00 * k.m00  +  m01 * k.m10,
                            m00 * k.m01  +  m01 * k.m11,
                            m10 * k.m00  +  m11 * k.m10,

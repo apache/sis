@@ -53,7 +53,7 @@ public final strictfp class Matrix2Test extends MatrixTestCase {
      */
     @Test
     public void testConstructor() {
-        final double[] elements = createRandomElements(SIZE * SIZE);
+        final double[] elements = createRandomPositiveValues(SIZE * SIZE);
         final Matrix2 matrix = new Matrix2(
                 elements[0],
                 elements[1],
