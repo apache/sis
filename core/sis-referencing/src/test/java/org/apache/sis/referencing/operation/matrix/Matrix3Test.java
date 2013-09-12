@@ -16,11 +16,15 @@
  */
 package org.apache.sis.referencing.operation.matrix;
 
+import org.junit.Test;
+
 import static org.junit.Assert.*;
+import static org.apache.sis.referencing.operation.matrix.Matrix3.SIZE;
 
 
 /**
  * Tests the {@link Matrix3} implementation.
+ * This class inherits all tests defined in {@link MatrixTestCase}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
@@ -28,8 +32,11 @@ import static org.junit.Assert.*;
  * @module
  */
 public final strictfp class Matrix3Test extends MatrixTestCase {
-    /** {@inheritDoc} */ @Override int getNumRow() {return 3;}
-    /** {@inheritDoc} */ @Override int getNumCol() {return 3;}
+    /**
+     * Returns the size of the matrix of interest for this test class.
+     */
+    @Override int getNumRow() {return SIZE;}
+    @Override int getNumCol() {return SIZE;}
 
     /**
      * Ensures that the given matrix is an instance of the expected type.
@@ -38,5 +45,27 @@ public final strictfp class Matrix3Test extends MatrixTestCase {
     void validate(final MatrixSIS matrix) {
         super.validate(matrix);
         assertEquals(Matrix3.class, matrix.getClass());
+    }
+
+    /**
+     * Tests the {@link Matrix3#Matrix3(double, double, double,
+     * double, double, double, double, double, double)} constructor.
+     * This constructor is specific to the implementation class.
+     */
+    @Test
+    public void testConstructor() {
+        final double[] elements = initConstructorTest(SIZE * SIZE);
+        final Matrix3 matrix = new Matrix3(
+                elements[0],
+                elements[1],
+                elements[2],
+                elements[3],
+                elements[4],
+                elements[5],
+                elements[6],
+                elements[7],
+                elements[8]);
+        validate(matrix);
+        assertArrayEquals(elements, matrix.getElements(), STRICT);
     }
 }

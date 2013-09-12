@@ -16,11 +16,15 @@
  */
 package org.apache.sis.referencing.operation.matrix;
 
+import org.junit.Test;
+
 import static org.junit.Assert.*;
+import static org.apache.sis.referencing.operation.matrix.Matrix2.SIZE;
 
 
 /**
  * Tests the {@link Matrix2} implementation.
+ * This class inherits all tests defined in {@link MatrixTestCase}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
@@ -28,8 +32,11 @@ import static org.junit.Assert.*;
  * @module
  */
 public final strictfp class Matrix2Test extends MatrixTestCase {
-    /** {@inheritDoc} */ @Override int getNumRow() {return 2;}
-    /** {@inheritDoc} */ @Override int getNumCol() {return 2;}
+    /**
+     * Returns the size of the matrix of interest for this test class.
+     */
+    @Override int getNumRow() {return SIZE;}
+    @Override int getNumCol() {return SIZE;}
 
     /**
      * Ensures that the given matrix is an instance of the expected type.
@@ -38,5 +45,21 @@ public final strictfp class Matrix2Test extends MatrixTestCase {
     void validate(final MatrixSIS matrix) {
         super.validate(matrix);
         assertEquals(Matrix2.class, matrix.getClass());
+    }
+
+    /**
+     * Tests the {@link Matrix2#Matrix2(double, double, double, double)} constructor.
+     * This constructor is specific to the implementation class.
+     */
+    @Test
+    public void testConstructor() {
+        final double[] elements = initConstructorTest(SIZE * SIZE);
+        final Matrix2 matrix = new Matrix2(
+                elements[0],
+                elements[1],
+                elements[2],
+                elements[3]);
+        validate(matrix);
+        assertArrayEquals(elements, matrix.getElements(), STRICT);
     }
 }
