@@ -35,23 +35,21 @@ public final strictfp class NonSquareMatrixTest extends MatrixTestCase {
     /**
      * Number of rows and columns, initialized by {@link #initialize(String, boolean)}.
      */
-    private int numRow, numCol;
+    private final int numRow, numCol;
+
+    /**
+     * Creates a test with a random size for the matrix and ensure that the matrix is not square.
+     */
+    public NonSquareMatrixTest() {
+        numRow = 5 + random.nextInt(8); // Matrix sizes from 5 to 12 inclusive.
+        int n;
+        do n = 5 + random.nextInt(8);
+        while (n == numRow);
+        numCol = n;
+    }
 
     /** {@inheritDoc} */ @Override int getNumRow() {return numRow;}
     /** {@inheritDoc} */ @Override int getNumCol() {return numCol;}
-
-    /**
-     * Chooses a random size for the matrix and ensure that the matrix is not square.
-     *
-     * @param needsRandom Ignored.
-     */
-    @Override
-    void initialize(final boolean needsRandom) {
-        super.initialize(true);
-        numRow = 5 + random.nextInt(8); // Matrix sizes from 5 to 12 inclusive.
-        do numCol = 5 + random.nextInt(8);
-        while (numCol == numRow);
-    }
 
     /**
      * Ensures that the given matrix is an instance of the expected type.

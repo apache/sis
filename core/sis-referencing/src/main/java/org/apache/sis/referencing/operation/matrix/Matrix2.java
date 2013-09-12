@@ -232,16 +232,7 @@ public final class Matrix2 extends MatrixSIS {
      * {@inheritDoc}
      */
     @Override
-    public final void setToIdentity() {
-        m01 = m10 = 0;
-        m00 = m11 = 1;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setToTranspose() {
+    public void transpose() {
         final double swap = m10;
         m10 = m01;
         m01 = swap;

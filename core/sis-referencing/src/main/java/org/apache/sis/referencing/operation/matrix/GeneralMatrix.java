@@ -47,7 +47,7 @@ class GeneralMatrix extends MatrixSIS {
 
     /**
      * Number of rows and columns.
-     * This is non-final only for {@link NonSquareMatrix#setToTranspose()} purpose.
+     * This is non-final only for {@link NonSquareMatrix#transpose()} purpose.
      */
     short numRow, numCol;
 
@@ -239,24 +239,12 @@ class GeneralMatrix extends MatrixSIS {
 
     /**
      * {@inheritDoc}
-     */
-    @Override
-    public final void setToIdentity() {
-        final int numCol = this.numCol; // Protection against accidental changes.
-        Arrays.fill(elements, 0);
-        for (int i=0; i<elements.length; i += numCol+1) {
-            elements[i] = 1;
-        }
-    }
-
-    /**
-     * {@inheritDoc}
      *
      * The implementation provided by {@code GeneralMatrix} is valid only for square matrix.
      * {@link NonSquareMatrix} must override.
      */
     @Override
-    public void setToTranspose() {
+    public void transpose() {
         final int numRow = this.numRow; // Protection against accidental changes.
         final int numCol = this.numCol;
         for (int j=0; j<numRow; j++) {

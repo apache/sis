@@ -30,23 +30,19 @@ import static org.junit.Assert.*;
  */
 public final strictfp class GeneralMatrixTest extends MatrixTestCase {
     /**
-     * Number of rows and columns, initialized by {@link #initialize(String, boolean)}.
+     * Number of rows and columns.
      */
-    private int size;
+    private final int size;
+
+    /**
+     * Creates a test with a random size for the square matrix.
+     */
+    public GeneralMatrixTest() {
+        size = 5 + random.nextInt(8); // Matrix sizes from 5 to 12 inclusive.
+    }
 
     /** {@inheritDoc} */ @Override int getNumRow() {return size;}
     /** {@inheritDoc} */ @Override int getNumCol() {return size;}
-
-    /**
-     * Chooses a random size for the square matrix.
-     *
-     * @param needsRandom Ignored.
-     */
-    @Override
-    void initialize(final boolean needsRandom) {
-        super.initialize(true);
-        size = 5 + random.nextInt(8); // Matrix sizes from 5 to 12 inclusive.
-    }
 
     /**
      * Ensures that the given matrix is an instance of the expected type.
