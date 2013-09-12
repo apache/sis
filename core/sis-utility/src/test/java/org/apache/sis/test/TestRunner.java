@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.HashSet;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.io.PrintWriter;
 
 import org.junit.Test;
 import org.junit.runner.Description;
@@ -55,7 +56,7 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * @author  Stephen Connolly
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from <a href="http://github.com/junit-team/junit.contrib/tree/master/assumes">junit-team</a>)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 public final class TestRunner extends BlockJUnit4ClassRunner {
@@ -117,10 +118,22 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
          */
         @Override
         public void testFailure(final Failure failure) {
-            addDependencyFailure(failure.getDescription().getMethodName());
+            final String methodName = failure.getDescription().getMethodName();
+            addDependencyFailure(methodName);
+            final long seed = TestCase.randomSeed;
+            if (seed != 0) {
+                final PrintWriter out = TestCase.out;
+                out.print("Random number generator for “");
+                out.print(methodName);
+                out.print("” was created with seed ");
+                out.print(seed);
+                out.println('.');
+                // Seed we be cleared by TestCase.flushOutput()
+            }
             if (!TestCase.verbose) {
                 TestCase.flushOutput();
             }
+            // In verbose mode, the flush will be done by testFinished(…).
         }
 
         /**
@@ -335,8 +348,8 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
     }
 
     /**
-     * Declares that the given method failed. Other methods depending on this method
-     * will be ignored.
+     * Declares that the given method failed.
+     * Other methods depending on this method will be ignored.
      *
      * @param methodName The name of the method that failed.
      */

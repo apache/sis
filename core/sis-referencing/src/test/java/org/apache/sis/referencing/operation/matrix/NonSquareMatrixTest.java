@@ -43,12 +43,11 @@ public final strictfp class NonSquareMatrixTest extends MatrixTestCase {
     /**
      * Chooses a random size for the matrix and ensure that the matrix is not square.
      *
-     * @param testMethod  The name of the method which need a random number generator.
      * @param needsRandom Ignored.
      */
     @Override
-    void initialize(final String testMethod, final boolean needsRandom) {
-        super.initialize(testMethod, true);
+    void initialize(final boolean needsRandom) {
+        super.initialize(true);
         numRow = 5 + random.nextInt(8); // Matrix sizes from 5 to 12 inclusive.
         do numCol = 5 + random.nextInt(8);
         while (numCol == numRow);
