@@ -304,13 +304,12 @@ public final class Matrix3 extends MatrixSIS {
      */
     @Override
     public MatrixSIS multiply(final Matrix matrix) {
-        final Matrix3 k;
-        if (matrix instanceof Matrix3) {
-            k = (Matrix3) matrix;
-        } else {
-            ensureSizeMatch(SIZE, matrix);
-            k = new Matrix3(matrix);
+        final int nc = matrix.getNumCol();
+        ensureNumRowMatch(SIZE, matrix, nc);
+        if (nc != SIZE) {
+            return new NonSquareMatrix(this, matrix);
         }
+        final Matrix3 k = (matrix instanceof Matrix3) ? (Matrix3) matrix : new Matrix3(matrix);
         return new Matrix3(m00 * k.m00  +  m01 * k.m10  +  m02 * k.m20,
                            m00 * k.m01  +  m01 * k.m11  +  m02 * k.m21,
                            m00 * k.m02  +  m01 * k.m12  +  m02 * k.m22,

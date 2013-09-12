@@ -355,13 +355,12 @@ public final class Matrix4 extends MatrixSIS {
      */
     @Override
     public MatrixSIS multiply(final Matrix matrix) {
-        final Matrix4 k;
-        if (matrix instanceof Matrix4) {
-            k = (Matrix4) matrix;
-        } else {
-            ensureSizeMatch(SIZE, matrix);
-            k = new Matrix4(matrix);
+        final int nc = matrix.getNumCol();
+        ensureNumRowMatch(SIZE, matrix, nc);
+        if (nc != SIZE) {
+            return new NonSquareMatrix(this, matrix);
         }
+        final Matrix4 k = (matrix instanceof Matrix4) ? (Matrix4) matrix : new Matrix4(matrix);
         return new Matrix4(m00 * k.m00  +  m01 * k.m10  +  m02 * k.m20  +  m03 * k.m30,
                            m00 * k.m01  +  m01 * k.m11  +  m02 * k.m21  +  m03 * k.m31,
                            m00 * k.m02  +  m01 * k.m12  +  m02 * k.m22  +  m03 * k.m32,

@@ -79,6 +79,28 @@ final class NonSquareMatrix extends GeneralMatrix {
     }
 
     /**
+     * Initializes this matrix to the product of the given matrices.
+     * This constructor shall be invoked only when the result is known to be a non-square matrix.
+     */
+    NonSquareMatrix(final Matrix A, final Matrix B) {
+        super(A.getNumRow(), B.getNumCol(), false);
+        final int numRow = this.numRow; // Protection against accidental changes.
+        final int numCol = this.numCol;
+        final int common = A.getNumCol();
+        ensureNumRowMatch(common, B, numCol);
+        int offset = 0;
+        for (int j=0; j<numRow; j++) {
+            for (int i=0; i<numCol; i++) {
+                double sum = 0;
+                for (int k=0; k<common; k++) {
+                    sum += A.getElement(j, k) * B.getElement(k, i);
+                }
+                elements[offset++] = sum;
+            }
+        }
+    }
+
+    /**
      * Sets the value of this matrix to its transpose.
      */
     @Override

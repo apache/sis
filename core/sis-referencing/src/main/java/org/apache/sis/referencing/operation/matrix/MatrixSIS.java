@@ -83,6 +83,24 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     }
 
     /**
+     * Ensures that the number of rows of the given matrix matches the given value.
+     * This is a convenience method for {@link #multiply(Matrix)} implementations.
+     *
+     * @param expected The expected number of rows.
+     * @param matrix   The matrix to verify.
+     * @param numCol   The number of columns to report in case of errors. This is an arbitrary
+     *                 value and have no incidence on the verification performed by this method.
+     */
+    static void ensureNumRowMatch(final int expected, final Matrix matrix, final int numCol) {
+        final int actual = matrix.getNumRow();
+        if (actual != expected) {
+            final Integer n = numCol;
+            throw new MismatchedMatrixSizeException(Errors.format(
+                    Errors.Keys.MismatchedMatrixSize_4, expected, n, actual, n));
+        }
+    }
+
+    /**
      * Returns an exception for the given indices.
      */
     static IndexOutOfBoundsException indexOutOfBounds(final int row, final int column) {

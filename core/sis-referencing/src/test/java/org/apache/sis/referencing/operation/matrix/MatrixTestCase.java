@@ -54,6 +54,13 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     static final double STRICT = 0;
 
     /**
+     * Tolerance factor for comparisons of floating point numbers.
+     * The matrix elements used in this class varies between 0 and 100,
+     * and the {@code Math.ulp(100.0)} value is approximatively 1.4E-14.
+     */
+    static final double TOLERANCE = 1E-10;
+
+    /**
      * Random number generator, created by {@link #initialize(String, boolean)} when first needed.
      */
     final Random random;
@@ -94,10 +101,11 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     }
 
     /**
-     * Creates an array of the given length filled with random values.
-     * This is a convenience method for the {@link testConstructor()} methods in {@code Matrix1…4Test} subclasses.
+     * Creates an array of the given length filled with random values. All random values are between 0 inclusive
+     * and 100 exclusive. This method never write negative values. Consequently, any strictly negative value set
+     * by the test method is guaranteed to be different than all original values in the returned array.
      */
-    final double[] createRandomElements(final int length) {
+    final double[] createRandomPositiveValues(final int length) {
         final double[] elements = new double[length];
         for (int k=0; k<length; k++) {
             elements[k] = random.nextDouble() * 100;
@@ -117,7 +125,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     public void testGetElements() {
         final int numRow = getNumRow();
         final int numCol = getNumCol();
-        final double[] elements = createRandomElements(numRow * numCol);
+        final double[] elements = createRandomPositiveValues(numRow * numCol);
         final MatrixSIS matrix = Matrices.create(numRow, numCol, elements);
         validate(matrix);
         /*
@@ -189,6 +197,34 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     }
 
     /**
+     * Tests {@link MatrixSIS#clone()}, {@link MatrixSIS#equals(Object)} and {@link MatrixSIS#hashCode()}.
+     */
+    @Test
+    @DependsOnMethod("testSetElement")
+    public void testCloneEquals() {
+        final int numRow = getNumRow();
+        final int numCol = getNumCol();
+        final double[] elements = createRandomPositiveValues(numRow * numCol);
+        final MatrixSIS matrix = Matrices.create(numRow, numCol, elements);
+        final MatrixSIS clone  = matrix.clone();
+        validate(matrix);
+        validate(clone);
+        assertNotSame("clone", matrix, clone);
+        assertEquals("equals", matrix, clone);
+        assertEquals("hashCode", matrix.hashCode(), clone.hashCode());
+        for (int j=0; j<numRow; j++) {
+            for (int i=0; i<numCol; i++) {
+                final double element = clone.getElement(j,i);
+                clone.setElement(j, i, random.nextDouble() - 2); // Negative value is guaranteed to be different.
+                assertFalse(matrix.equals(clone));
+                assertFalse(clone.equals(matrix));
+                clone.setElement(j, i, element);
+            }
+        }
+        assertEquals("equals", matrix, clone);
+    }
+
+    /**
      * Tests {@link MatrixSIS#transpose()}.
      */
     @Test
@@ -196,7 +232,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     public void testTranspose() {
         final int numRow = getNumRow();
         final int numCol = getNumCol();
-        final double[] elements = createRandomElements(numRow * numCol);
+        final double[] elements = createRandomPositiveValues(numRow * numCol);
         final MatrixSIS matrix = Matrices.create(numRow, numCol, elements);
         validate(matrix);
         /*
@@ -205,5 +241,88 @@ public abstract strictfp class MatrixTestCase extends TestCase {
          */
         matrix.transpose();
         assertMatrixEquals(new Matrix(elements, numCol), matrix, STRICT);
+    }
+
+    /**
+     * Tests {@link MatrixSIS#normalizeColumns()}.
+     */
+    @Test
+    @DependsOnMethod("testGetElements")
+    public void testNormalizeColumns() {
+        final int numRow = getNumRow();
+        final int numCol = getNumCol();
+        final double[] elements = createRandomPositiveValues(numRow * numCol);
+        final MatrixSIS matrix = Matrices.create(numRow, numCol, elements);
+        validate(matrix);
+        matrix.normalizeColumns();
+        for (int i=0; i<numCol; i++) {
+            double m = 0;
+            for (int j=0; j<numRow; j++) {
+                final double e = matrix.getElement(j, i);
+                m += e*e;
+            }
+            m = StrictMath.sqrt(m);
+            assertEquals(1, m, TOLERANCE);
+        }
+    }
+
+    /**
+     * Tests {@link MatrixSIS#multiply(Matrix)} with a matrix argument of size {@code numCol} × {@code numRow}
+     * (i.e. the shape of a transposed matrix).
+     */
+    @Test
+    @DependsOnMethod("testGetElements")
+    public void testMultiplyByMatrix() {
+        final int numRow = getNumRow();
+        final int numCol = getNumCol();
+        final double[] elements = createRandomPositiveValues(numRow * numCol);
+        final MatrixSIS matrix = Matrices.create(numRow, numCol, elements);
+        final Matrix reference = new Matrix(elements, numCol).transpose();
+        /*
+         * Computes new random value for the argument. We mix positive and negative values,
+         * but with more positive values than negative ones in order to reduce the chances
+         * to have a product of zero for an element.
+         */
+        for (int k=0; k<elements.length; k++) {
+            elements[k] = 8 - random.nextDouble() * 10;
+        }
+        final MatrixSIS matrixArg = Matrices.create(numCol, numRow, elements);
+        final Matrix referenceArg = new Matrix(elements, numRow).transpose();
+        /*
+         * Performs the multiplication and compare.
+         */
+        final MatrixSIS matrixResult = matrix.multiply(matrixArg);
+        final Matrix referenceResult = reference.times(referenceArg);
+        assertMatrixEquals(referenceResult, matrixResult, TOLERANCE);
+    }
+
+    /**
+     * Tests {@link MatrixSIS#multiply(Matrix)} with a matrix argument of size {@code numCol} × 1.
+     */
+    @Test
+    @DependsOnMethod("testMultiplyByMatrix")
+    public void testMultiplyByVector() {
+        final int numRow = getNumRow();
+        final int numCol = getNumCol();
+        double[] elements = createRandomPositiveValues(numRow * numCol);
+        final MatrixSIS matrix = Matrices.create(numRow, numCol, elements);
+        final Matrix reference = new Matrix(elements, numCol).transpose();
+        /*
+         * Computes new random value for the argument. We mix positive and negative values,
+         * but with more positive values than negative ones in order to reduce the chances
+         * to have a product of zero for an element.
+         */
+        elements = new double[numCol];
+        for (int k=0; k<numCol; k++) {
+            elements[k] = 8 - random.nextDouble() * 10;
+        }
+        final MatrixSIS matrixArg = Matrices.create(numCol, 1, elements);
+        final Matrix referenceArg = new Matrix(elements, numCol);
+        /*
+         * Performs the multiplication and compare.
+         */
+        final MatrixSIS matrixResult = matrix.multiply(matrixArg);
+        final Matrix referenceResult = reference.times(referenceArg);
+        assertMatrixEquals(referenceResult, matrixResult, TOLERANCE);
     }
 }
