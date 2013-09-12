@@ -225,7 +225,7 @@ public final class Matrix1 extends MatrixSIS {
      * {@inheritDoc}
      */
     @Override
-    public MatrixSIS inverse() {
+    public MatrixSIS inverse() throws SingularMatrixException {
         if (m00 == 0) {
             throw new SingularMatrixException();
         }
