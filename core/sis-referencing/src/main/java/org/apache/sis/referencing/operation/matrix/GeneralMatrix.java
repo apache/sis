@@ -67,7 +67,8 @@ class GeneralMatrix extends MatrixSIS {
         this.numCol = (short) numCol;
         elements = new double[numRow * numCol];
         if (setToIdentity) {
-            for (int i=0; i<elements.length; i += numCol+1) {
+            final int stop = Math.min(numRow, numCol) * numCol;
+            for (int i=0; i<stop; i += numCol+1) {
                 elements[i] = 1;
             }
         }
