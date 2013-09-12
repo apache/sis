@@ -272,25 +272,7 @@ public final class Matrix3 extends MatrixSIS {
      * {@inheritDoc}
      */
     @Override
-    public final void setToIdentity() {
-        setToZero();
-        m00 = m11 = m22 = 1;
-    }
-
-    /**
-     * Sets all the values in this matrix to zero.
-     */
-    private void setToZero() {
-        m00 = m01 = m02 = 0;
-        m10 = m11 = m12 = 0;
-        m20 = m21 = m22 = 0;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setToTranspose() {
+    public void transpose() {
         double swap;
         swap = m01; m01 = m10; m10 = swap;
         swap = m02; m02 = m20; m20 = swap;

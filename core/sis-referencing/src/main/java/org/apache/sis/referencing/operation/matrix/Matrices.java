@@ -236,7 +236,7 @@ public final class Matrices extends Static {
      * @param  tolerance The tolerance value, or 0 for a strict comparison.
      * @return {@code true} if this matrix is close to the identity matrix given the tolerance threshold.
      *
-     * @see MatrixSIS#isIdentity(double)
+     * @see MatrixSIS#isIdentity()
      */
     public static boolean isIdentity(final Matrix matrix, final double tolerance) {
         final int numRow = matrix.getNumRow();

@@ -205,26 +205,10 @@ public final class Matrix1 extends MatrixSIS {
     }
 
     /**
-     * {@inheritDoc}
-     */
-    @Override
-    public final boolean isIdentity(final double tolerance) {
-        return Math.abs(m00 - 1) <= Math.abs(tolerance);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public final void setToIdentity() {
-        m00 = 1;
-    }
-
-    /**
      * For a 1×1 matrix, this method does nothing.
      */
     @Override
-    public void setToTranspose() {
+    public void transpose() {
         // Nothing to do for a 1x1 matrix.
     }
 

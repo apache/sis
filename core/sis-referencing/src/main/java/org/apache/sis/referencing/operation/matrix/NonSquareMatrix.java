@@ -82,7 +82,7 @@ final class NonSquareMatrix extends GeneralMatrix {
      * Sets the value of this matrix to its transpose.
      */
     @Override
-    public void setToTranspose() {
+    public void transpose() {
         final short numRow = this.numRow; // Protection against accidental changes before we are done.
         final short numCol = this.numCol;
         final double[] copy = elements.clone();

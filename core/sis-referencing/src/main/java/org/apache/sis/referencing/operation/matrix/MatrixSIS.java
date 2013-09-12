@@ -32,7 +32,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * <ul>
  *   <li>basic operations needed for <cite>referencing by coordinates</cite>:
- *       {@link #setToTranspose()}, {@link #inverse()}, {@link #multiply(Matrix)};</li>
+ *       {@link #transpose()}, {@link #inverse()}, {@link #multiply(Matrix)};</li>
  *   <li>some operations more specific to referencing by coordinates:
  *       {@link #isAffine()}, {@link #normalizeColumns()}.</li>
  * </ul>
@@ -121,59 +121,24 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
 
     /**
      * Returns {@code true} if this matrix is an identity matrix.
-     * Invoking this method is equivalent to invoking <code>{@linkplain #isIdentity(double) isIdentity}(0.0)</code>,
-     * except that it is potentially more efficient.
+     * This method is equivalent to the following code, except that it is potentially more efficient:
+     *
+     * {@preformat java
+     *     return Matrices.isIdentity(this, 0.0);
+     * }
      *
      * @return {@code true} if this matrix is an identity matrix.
      *
-     * @see #setToIdentity()
+     * @see Matrices#isIdentity(Matrix, double)
      * @see java.awt.geom.AffineTransform#isIdentity()
      */
     @Override
     public abstract boolean isIdentity();
 
     /**
-     * Returns {@code true} if this matrix is close to an identity matrix, given a tolerance threshold.
-     * This method is equivalent to computing the difference between this matrix and an identity
-     * matrix of identical size, and returning {@code true} if and only if all differences are
-     * smaller than or equal to {@code tolerance}.
-     *
-     * @param  tolerance The tolerance value, or 0 for a strict comparison.
-     * @return {@code true} if this matrix is close to the identity matrix given the tolerance threshold.
-     *
-     * @see Matrices#isIdentity(Matrix, double)
-     */
-    public boolean isIdentity(final double tolerance) {
-        return Matrices.isIdentity(this, tolerance);
-    }
-
-    /**
-     * Sets this matrix to zero everywhere except for the elements on the diagonal, which are set to 1.
-     * If this matrix contains more rows than columns, then the extra rows will contain only zero values.
-     * If this matrix contains more columns than rows, then the extra columns will contain only zero values.
-     *
-     * {@section Use case}
-     * This method is often used together with {@link #isIdentity(double)} in order to workaround rounding errors,
-     * like below:
-     *
-     * {@preformat java
-     *     if (matrix.isIdentity(1E-10)) {
-     *         matrix.setToIdentity();
-     *     }
-     * }
-     *
-     * Be aware that in the particular case of datum shifts, the matrix may be very close to an identity matrix.
-     * Such matrices for datum shift may look like spurious results of rounding errors, but are not.
-     *
-     * @see #isIdentity()
-     * @see java.awt.geom.AffineTransform#setToIdentity()
-     */
-    public abstract void setToIdentity();
-
-    /**
      * Sets the value of this matrix to its transpose.
      */
-    public abstract void setToTranspose();
+    public abstract void transpose();
 
     /**
      * Normalizes all columns in-place. Each columns in this matrix is considered as a vector.
