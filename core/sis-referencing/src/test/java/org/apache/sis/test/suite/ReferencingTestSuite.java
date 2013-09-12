@@ -37,6 +37,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.matrix.Matrix4Test.class,
     org.apache.sis.referencing.operation.matrix.GeneralMatrixTest.class,
     org.apache.sis.referencing.operation.matrix.NonSquareMatrixTest.class,
+    org.apache.sis.referencing.operation.matrix.AffineTransforms2DTest.class,
 
     org.apache.sis.io.wkt.ConventionTest.class,
     org.apache.sis.io.wkt.SymbolsTest.class,
