@@ -111,14 +111,12 @@ public final class Matrices extends Static {
      * @return A matrix of the given size with only zero values.
      */
     public static MatrixSIS createZero(final int numRow, final int numCol) {
-        if (numRow == numCol) {
-            switch (numRow) {
-                case 1:  return new Matrix1(false);
-                case 2:  return new Matrix2(false);
-                case 3:  return new Matrix3(false);
-                case 4:  return new Matrix4(false);
-                default: return new GeneralMatrix(numRow, numCol, false);
-            }
+        if (numRow == numCol) switch (numRow) {
+            case 1:  return new Matrix1(false);
+            case 2:  return new Matrix2(false);
+            case 3:  return new Matrix3(false);
+            case 4:  return new Matrix4(false);
+            default: return new GeneralMatrix(numRow, numCol, false);
         }
         return new NonSquareMatrix(numRow, numCol, false);
     }
@@ -142,12 +140,13 @@ public final class Matrices extends Static {
      */
     public static MatrixSIS create(final int numRow, final int numCol, final double[] elements) {
         if (numRow == numCol) switch (numRow) {
-            case 1: return new Matrix1(elements);
-            case 2: return new Matrix2(elements);
-            case 3: return new Matrix3(elements);
-            case 4: return new Matrix4(elements);
+            case 1:  return new Matrix1(elements);
+            case 2:  return new Matrix2(elements);
+            case 3:  return new Matrix3(elements);
+            case 4:  return new Matrix4(elements);
+            default: return new GeneralMatrix(numRow, numCol, elements);
         }
-        return new GeneralMatrix(numRow, numCol, elements);
+        return new NonSquareMatrix(numRow, numCol, elements);
     }
 
     /**

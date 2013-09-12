@@ -21,6 +21,7 @@ import static org.junit.Assert.*;
 
 /**
  * Tests the {@link GeneralMatrix} implementation with square matrices.
+ * This class inherits all tests defined in {@link MatrixTestCase}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4

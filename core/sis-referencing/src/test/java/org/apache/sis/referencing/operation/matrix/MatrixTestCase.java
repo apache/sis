@@ -20,6 +20,7 @@ import java.util.Random;
 import Jama.Matrix;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
+import org.apache.sis.test.DependsOnMethod;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -46,6 +47,12 @@ import static org.junit.Assert.*;
  * @module
  */
 public abstract strictfp class MatrixTestCase extends TestCase {
+    /**
+     * A constant for any test in this class or a subclass which expect
+     * a floating point value to be strictly equals to an other value.
+     */
+    static final double STRICT = 0;
+
     /**
      * Random number generator, created by {@link #initialize(String, boolean)} when first needed.
      */
@@ -83,21 +90,108 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     }
 
     /**
+     * Verifies that the SIS matrix is equals to the JAMA one, up to the given tolerance value.
+     */
+    private static void assertMatrixEquals(final Matrix expected, final MatrixSIS actual, final double tolerance) {
+        final int numRow = actual.getNumRow();
+        final int numCol = actual.getNumCol();
+        assertEquals("numRow", expected.getRowDimension(),    numRow);
+        assertEquals("numCol", expected.getColumnDimension(), numCol);
+        for (int j=0; j<numRow; j++) {
+            for (int i=0; i<numCol; i++) {
+                assertEquals(expected.get(j,i), actual.getElement(j,i), tolerance);
+            }
+        }
+    }
+
+    /**
+     * Initializes the random number generator and creates an array of the given length filled with random values.
+     * This is a convenience method for the {@link testConstructor()} methods in {@code Matrix1…4Test} subclasses.
+     */
+    final double[] initConstructorTest(final int length) {
+        initialize("testConstructor", true);
+        final double[] elements = new double[length];
+        for (int k=0; k<length; k++) {
+            elements[k] = random.nextDouble() * 100;
+        }
+        return elements;
+    }
+
+    /**
+     * Creates a matrix initialized with a random array of element values,
+     * then tests the {@link MatrixSIS#getElement(int, int)} method for each element.
+     * This test will use {@link Matrices#create(int, int, double[])} for creating the matrix.
+     *
+     * <p>If this test fails, then all other tests in this class will be skipped since it would
+     * not be possible to verify the result of any matrix operation.</p>
+     */
+    @Test
+    public void testGetElements() {
+        initialize("testGetElements", true);
+        final int numRow = getNumRow();
+        final int numCol = getNumCol();
+        final double[] elements = new double[numRow * numCol];
+        for (int k=0; k<elements.length; k++) {
+            elements[k] = random.nextDouble() * 100;
+        }
+        final MatrixSIS matrix = Matrices.create(numRow, numCol, elements);
+        validate(matrix);
+        /*
+         * The JAMA constructor uses column-major array (FORTRAN convention), while SIS uses
+         * row-major array. So we have to transpose the JAMA matrix after construction.
+         */
+        assertMatrixEquals(new Matrix(elements, numCol).transpose(), matrix, STRICT);
+        assertArrayEquals("getElements", elements, matrix.getElements(), STRICT);
+    }
+
+    /**
+     * Tests {@link MatrixSIS#getElement(int, int)} and {@link MatrixSIS#setElement(int, int, double)}.
+     * This test sets random values in elements at random index, and compares with a JAMA matrix taken
+     * as the reference implementation.
+     */
+    @Test
+    @DependsOnMethod("testGetElements")
+    public void testSetElement() {
+        initialize("testSetElement", true);
+        final int numRow = getNumRow();
+        final int numCol = getNumCol();
+        final MatrixSIS matrix = Matrices.createZero(numRow, numCol);
+        validate(matrix);
+        final Matrix reference = new Matrix(numRow, numCol);
+        /*
+         * End of initialization - now perform the actual test.
+         */
+        assertMatrixEquals(reference, matrix, STRICT);
+        for (int k=0; k<50; k++) {
+            final int    j = random.nextInt(numRow);
+            final int    i = random.nextInt(numCol);
+            final double e = random.nextDouble() * 100;
+            reference.set(j, i, e);
+            matrix.setElement(j, i, e);
+            assertMatrixEquals(reference, matrix, STRICT);
+        }
+    }
+
+    /**
      * Tests {@link MatrixSIS#isIdentity()}. This method will first invoke {@link Matrices#create(int, int)}
      * and ensure that the result contains 1 on the diagonal and 0 elsewhere.
      */
     @Test
+    @DependsOnMethod("testSetElement")
     public void testIsIdentity() {
         initialize("testIsIdentity", false);
         final int numRow = getNumRow();
         final int numCol = getNumCol();
         final MatrixSIS matrix = Matrices.create(numRow, numCol);
         validate(matrix);
+        /*
+         * End of initialization - now perform the actual test.
+         */
         assertEquals("isIdentity", numRow == numCol, matrix.isIdentity());
         for (int j=0; j<numRow; j++) {
             for (int i=0; i<numCol; i++) {
                 final double element = matrix.getElement(j,i);
-                assertEquals((i == j) ? 1 : 0, element, 0);
+                assertEquals((i == j) ? 1 : 0, element, STRICT);
                 matrix.setElement(j, i, 2);
                 assertFalse("isIdentity", matrix.isIdentity());
                 matrix.setElement(j, i, element);
