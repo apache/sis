@@ -202,7 +202,7 @@ public final class Matrices extends Static {
      * @return {@code true} if the matrix is affine.
      *
      * @see MatrixSIS#isAffine()
-     * @see #toAffineTransform(Matrix)
+     * @see AffineTransforms2D#castOrCopy(Matrix)
      */
     public static boolean isAffine(final Matrix matrix) {
         if (matrix instanceof MatrixSIS) {
@@ -351,29 +351,6 @@ public final class Matrices extends Static {
             case APPROXIMATIVE:   return equals(m1, m2, Numerics.COMPARISON_THRESHOLD, true);
             default: throw new IllegalArgumentException(Errors.format(Errors.Keys.UnknownEnumValue_1, mode));
         }
-    }
-
-    /**
-     * Returns the given matrix as a Java2D affine transform.
-     *
-     * @param  matrix The matrix to returns as an affine transform.
-     * @return The matrix argument if it can be safely casted (including {@code null} argument),
-     *         or a copy of the given matrix otherwise.
-     * @throws IllegalArgumentException if the given matrix size is not 3×3 or if the matrix is not affine.
-     *
-     * @see #isAffine(Matrix)
-     */
-    public static AffineTransform toAffineTransform(final Matrix matrix) throws IllegalArgumentException {
-        if (matrix == null || matrix instanceof AffineTransform) {
-            return (AffineTransform) matrix;
-        }
-        MatrixSIS.ensureSizeMatch(3, matrix);
-        if (isAffine(matrix)) {
-            return new AffineTransform(matrix.getElement(0,0), matrix.getElement(1,0),
-                                       matrix.getElement(0,1), matrix.getElement(1,1),
-                                       matrix.getElement(0,2), matrix.getElement(1,2));
-        }
-        throw new IllegalStateException(Errors.format(Errors.Keys.NotAnAffineTransform));
     }
 
     /**
