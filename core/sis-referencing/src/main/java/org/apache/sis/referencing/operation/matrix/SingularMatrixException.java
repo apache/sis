@@ -16,16 +16,22 @@
  */
 package org.apache.sis.referencing.operation.matrix;
 
+import org.opengis.referencing.operation.NoninvertibleTransformException;
+
 
 /**
  * Thrown when a matrix can not be inverted because it is singular.
+ *
+ * {@note This exception extends <code>NoninvertibleTransformException</code> because the matrices in this package
+ *        are used in <cite>Coordinate Operation Steps</cite>, in which case a singular matrix means that the
+ *        operation is not invertible.}
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
  * @version 0.4
  * @module
  */
-public class SingularMatrixException extends IllegalStateException {
+public class SingularMatrixException extends NoninvertibleTransformException {
     /**
      * For cross-version compatibility.
      */
@@ -55,14 +61,5 @@ public class SingularMatrixException extends IllegalStateException {
      */
     public SingularMatrixException(final String message, final Throwable cause) {
         super(message, cause);
-    }
-
-    /**
-     * Constructs a new exception with the specified cause.
-     *
-     * @param cause The cause, or {@code null} if none.
-     */
-    public SingularMatrixException(final Throwable cause) {
-        super(cause);
     }
 }

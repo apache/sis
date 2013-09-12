@@ -16,16 +16,22 @@
  */
 package org.apache.sis.referencing.operation.matrix;
 
+import org.opengis.geometry.MismatchedDimensionException;
+
 
 /**
- * Thrown when two matrix can not be added or multiplied because the sizes do not match.
+ * Thrown when two matrices can not be added or multiplied because the sizes do not match.
+ *
+ * {@note This exception extends <code>MismatchedDimensionException</code> because the matrices in this package
+ *        are used in <cite>Coordinate Operation Steps</cite>, in which case a mismatched matrix size means that
+ *        the operation involves two Coordinate Reference Systems of incompatible dimensions.}
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
  * @version 0.4
  * @module
  */
-public class MismatchedMatrixSizeException extends IllegalArgumentException {
+public class MismatchedMatrixSizeException extends MismatchedDimensionException {
     /**
      * For cross-version compatibility.
      */
@@ -55,14 +61,5 @@ public class MismatchedMatrixSizeException extends IllegalArgumentException {
      */
     public MismatchedMatrixSizeException(final String message, final Throwable cause) {
         super(message, cause);
-    }
-
-    /**
-     * Constructs a new exception with the specified cause.
-     *
-     * @param cause The cause, or {@code null} if none.
-     */
-    public MismatchedMatrixSizeException(final Throwable cause) {
-        super(cause);
     }
 }
