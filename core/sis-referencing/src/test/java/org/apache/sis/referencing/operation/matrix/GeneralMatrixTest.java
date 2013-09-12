@@ -40,12 +40,11 @@ public final strictfp class GeneralMatrixTest extends MatrixTestCase {
     /**
      * Chooses a random size for the square matrix.
      *
-     * @param testMethod  The name of the method which need a random number generator.
      * @param needsRandom Ignored.
      */
     @Override
-    void initialize(final String testMethod, final boolean needsRandom) {
-        super.initialize(testMethod, true);
+    void initialize(final boolean needsRandom) {
+        super.initialize(true);
         size = 5 + random.nextInt(8); // Matrix sizes from 5 to 12 inclusive.
     }
 

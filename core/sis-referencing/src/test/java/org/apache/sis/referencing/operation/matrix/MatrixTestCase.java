@@ -67,12 +67,11 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     /**
      * Initializes the test. This method shall be invoked at the beginning of each test method.
      *
-     * @param testMethod The name of the method which need a random number generator.
      * @param needsRandom {@code true} if the test method will need random numbers.
      */
-    void initialize(final String testMethod, final boolean needsRandom) {
+    void initialize(final boolean needsRandom) {
         if (needsRandom && random == null) {
-            random = TestUtilities.createRandomNumberGenerator(testMethod);
+            random = TestUtilities.createRandomNumberGenerator();
         }
     }
 
@@ -109,7 +108,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
      * This is a convenience method for the {@link testConstructor()} methods in {@code Matrix1…4Test} subclasses.
      */
     final double[] initConstructorTest(final int length) {
-        initialize("testConstructor", true);
+        initialize(true);
         final double[] elements = new double[length];
         for (int k=0; k<length; k++) {
             elements[k] = random.nextDouble() * 100;
@@ -127,7 +126,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
      */
     @Test
     public void testGetElements() {
-        initialize("testGetElements", true);
+        initialize(true);
         final int numRow = getNumRow();
         final int numCol = getNumCol();
         final double[] elements = new double[numRow * numCol];
@@ -152,7 +151,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     @Test
     @DependsOnMethod("testGetElements")
     public void testSetElement() {
-        initialize("testSetElement", true);
+        initialize(true);
         final int numRow = getNumRow();
         final int numCol = getNumCol();
         final MatrixSIS matrix = Matrices.createZero(numRow, numCol);
@@ -179,7 +178,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     @Test
     @DependsOnMethod("testSetElement")
     public void testIsIdentity() {
-        initialize("testIsIdentity", false);
+        initialize(false);
         final int numRow = getNumRow();
         final int numCol = getNumCol();
         final MatrixSIS matrix = Matrices.create(numRow, numCol);

@@ -175,7 +175,7 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
      */
     @Test
     public void testPropertyValues() {
-        random = TestUtilities.createRandomNumberGenerator("testPropertyValues");
+        random = TestUtilities.createRandomNumberGenerator();
         for (final Class<?> type : types) {
             if (!CodeList.class.isAssignableFrom(type)) {
                 final Class<?> impl = getImplementation(type);

@@ -240,7 +240,7 @@ public final strictfp class TreeNodeChildrenTest extends TestCase {
     public void testRemoveWithoutCollections() {
         final DefaultCitation  citation = metadataWithoutCollections();
         final TreeNodeChildren children = create(citation, ValueExistencePolicy.NON_EMPTY);
-        testRemove(createRandomNumberGenerator("testRemoveWithoutCollections"), children);
+        testRemove(createRandomNumberGenerator(), children);
     }
 
     /**
@@ -255,7 +255,7 @@ public final strictfp class TreeNodeChildrenTest extends TestCase {
     public void testRemoveWithSingletonInCollections() {
         final DefaultCitation  citation = metadataWithSingletonInCollections();
         final TreeNodeChildren children = create(citation, ValueExistencePolicy.NON_EMPTY);
-        testRemove(createRandomNumberGenerator("testRemoveWithSingletonInCollections"), children);
+        testRemove(createRandomNumberGenerator(), children);
     }
 
     /**
@@ -270,7 +270,7 @@ public final strictfp class TreeNodeChildrenTest extends TestCase {
     public void testRemoveWithMultiOccurrences() {
         final DefaultCitation  citation = metadataWithSingletonInCollections();
         final TreeNodeChildren children = create(citation, ValueExistencePolicy.NON_EMPTY);
-        testRemove(createRandomNumberGenerator("testRemoveWithMultiOccurrences"), children);
+        testRemove(createRandomNumberGenerator(), children);
     }
 
     /**
