@@ -43,12 +43,13 @@ class GeneralMatrix extends MatrixSIS {
      * All matrix elements in a flat, row-major (column indices vary fastest) array.
      * The array length is <code>{@linkplain #numRow} * {@linkplain #numCol}</code>.
      */
-    private final double[] elements;
+    final double[] elements;
 
     /**
      * Number of rows and columns.
+     * This is non-final only for {@link NonSquareMatrix#setToTranspose()} purpose.
      */
-    private final short numRow, numCol;
+    short numRow, numCol;
 
     /**
      * Creates a matrix of size {@code numRow} × {@code numCol}.
@@ -60,7 +61,7 @@ class GeneralMatrix extends MatrixSIS {
      * @param setToIdentity {@code true} for initializing the matrix to the identity matrix,
      *        or {@code false} for leaving it initialized to zero.
      */
-    public GeneralMatrix(final int numRow, final int numCol, final boolean setToIdentity) {
+    GeneralMatrix(final int numRow, final int numCol, final boolean setToIdentity) {
         ensureValidSize(numRow, numCol);
         this.numRow = (short) numRow;
         this.numCol = (short) numCol;
@@ -81,7 +82,7 @@ class GeneralMatrix extends MatrixSIS {
      * @param numCol Number of columns.
      * @param elements Initial values.
      */
-    public GeneralMatrix(final int numRow, final int numCol, final double[] elements) {
+    GeneralMatrix(final int numRow, final int numCol, final double[] elements) {
         ensureValidSize(numRow, numCol);
         ensureLengthMatch(numRow*numCol, elements);
         this.numRow = (short) numRow;
@@ -94,7 +95,7 @@ class GeneralMatrix extends MatrixSIS {
      *
      * @param matrix The matrix to copy.
      */
-    public GeneralMatrix(final Matrix matrix) {
+    GeneralMatrix(final Matrix matrix) {
         final int numRow = matrix.getNumRow();
         final int numCol = matrix.getNumCol();
         ensureValidSize(numRow, numCol);
@@ -195,6 +196,8 @@ class GeneralMatrix extends MatrixSIS {
      */
     @Override
     public final boolean isAffine() {
+        final int numRow = this.numRow; // Protection against accidental changes.
+        final int numCol = this.numCol;
         if (numRow == numCol) {
             int i = elements.length;
             if (elements[--i] == 1) {
@@ -215,6 +218,8 @@ class GeneralMatrix extends MatrixSIS {
      */
     @Override
     public final boolean isIdentity() {
+        final int numRow = this.numRow; // Protection against accidental changes.
+        final int numCol = this.numCol;
         if (numRow != numCol) {
             return false;
         }
@@ -236,6 +241,7 @@ class GeneralMatrix extends MatrixSIS {
      */
     @Override
     public final void setToIdentity() {
+        final int numCol = this.numCol; // Protection against accidental changes.
         Arrays.fill(elements, 0);
         for (int i=0; i<elements.length; i += numCol+1) {
             elements[i] = 1;
@@ -244,9 +250,14 @@ class GeneralMatrix extends MatrixSIS {
 
     /**
      * {@inheritDoc}
+     *
+     * The implementation provided by {@code GeneralMatrix} is valid only for square matrix.
+     * {@link NonSquareMatrix} must override.
      */
     @Override
-    public final void setToTranspose() {
+    public void setToTranspose() {
+        final int numRow = this.numRow; // Protection against accidental changes.
+        final int numCol = this.numCol;
         for (int j=0; j<numRow; j++) {
             for (int i=0; i<j; i++) {
                 final int lowerLeft  = j*numCol + i;
@@ -263,6 +274,8 @@ class GeneralMatrix extends MatrixSIS {
      */
     @Override
     public final void normalizeColumns() {
+        final int numRow = this.numRow; // Protection against accidental changes.
+        final int numCol = this.numCol;
         final double[] column = new double[numRow];
         for (int i=0; i<numCol; i++) {
             for (int j=0; j<numRow; j++) {
@@ -288,6 +301,8 @@ class GeneralMatrix extends MatrixSIS {
      */
     @Override
     public MatrixSIS multiply(final Matrix matrix) {
+        final int numRow = this.numRow; // Protection against accidental changes.
+        final int numCol = this.numCol;
         final int nc = matrix.getNumCol();
         if (matrix.getNumRow() != numCol) {
             throw new MismatchedMatrixSizeException(Errors.format(

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.operation.matrix;
 
+import java.awt.geom.AffineTransform;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.util.Static;
@@ -26,7 +27,6 @@ import org.apache.sis.internal.util.Numerics;
 
 // Related to JDK7
 import java.util.Objects;
-import java.awt.geom.AffineTransform;
 
 
 /**
@@ -53,26 +53,36 @@ public final class Matrices extends Static {
      * Creates a square identity matrix of size {@code size} × {@code size}.
      * Elements on the diagonal (<var>j</var> == <var>i</var>) are set to 1.
      *
-     * <p>For an affine transform, the {@code size} is the number of
-     * {@linkplain MathTransform#getSourceDimensions() source} and
-     * {@linkplain MathTransform#getTargetDimensions() target} dimensions + 1.</p>
+     * {@section Implementation note}
+     * For sizes between {@value org.apache.sis.referencing.operation.matrix.Matrix1#SIZE} and
+     * {@value org.apache.sis.referencing.operation.matrix.Matrix4#SIZE} inclusive, the matrix
+     * is guaranteed to be an instance of one of {@link Matrix1} … {@link Matrix4} subtypes.
      *
-     * @param size Numbers of row and columns.
+     * @param  size Numbers of row and columns. For an affine transform, this is the number of
+     *         {@linkplain MathTransform#getSourceDimensions() source} and
+     *         {@linkplain MathTransform#getTargetDimensions() target} dimensions + 1.
      * @return An identity matrix of the given size.
      */
     public static MatrixSIS createIdentity(final int size) {
         switch (size) {
-            case 1: return new Matrix1();
-            case 2: return new Matrix2();
-            case 3: return new Matrix3();
-            case 4: return new Matrix4();
+            case 1:  return new Matrix1();
+            case 2:  return new Matrix2();
+            case 3:  return new Matrix3();
+            case 4:  return new Matrix4();
+            default: return new GeneralMatrix(size, size, true);
         }
-        return new GeneralMatrix(size, size, true);
     }
 
     /**
      * Creates a matrix of size {@code numRow} × {@code numCol}.
      * Elements on the diagonal (<var>j</var> == <var>i</var>) are set to 1.
+     * The result is an identity matrix if {@code numRow} = {@code numCol}.
+     *
+     * {@section Implementation note}
+     * For {@code numRow} == {@code numCol} with a value between
+     * {@value org.apache.sis.referencing.operation.matrix.Matrix1#SIZE} and
+     * {@value org.apache.sis.referencing.operation.matrix.Matrix4#SIZE} inclusive, the matrix
+     * is guaranteed to be an instance of one of {@link Matrix1} … {@link Matrix4} subtypes.
      *
      * @param numRow For an affine transform, this is the number of {@linkplain MathTransform#getTargetDimensions() target dimensions} + 1.
      * @param numCol For an affine transform, this is the number of {@linkplain MathTransform#getSourceDimensions() source dimensions} + 1.
@@ -82,13 +92,19 @@ public final class Matrices extends Static {
         if (numRow == numCol) {
             return createIdentity(numRow);
         } else {
-            return new GeneralMatrix(numRow, numCol, true);
+            return new NonSquareMatrix(numRow, numCol, true);
         }
     }
 
     /**
      * Creates a matrix of size {@code numRow} × {@code numCol} filled with zero values.
      * This constructor is convenient when the caller want to initialize the matrix elements himself.
+     *
+     * {@section Implementation note}
+     * For {@code numRow} == {@code numCol} with a value between
+     * {@value org.apache.sis.referencing.operation.matrix.Matrix1#SIZE} and
+     * {@value org.apache.sis.referencing.operation.matrix.Matrix4#SIZE} inclusive, the matrix
+     * is guaranteed to be an instance of one of {@link Matrix1} … {@link Matrix4} subtypes.
      *
      * @param numRow For an affine transform, this is the number of {@linkplain MathTransform#getTargetDimensions() target dimensions} + 1.
      * @param numCol For an affine transform, this is the number of {@linkplain MathTransform#getSourceDimensions() source dimensions} + 1.
@@ -97,18 +113,25 @@ public final class Matrices extends Static {
     public static MatrixSIS createZero(final int numRow, final int numCol) {
         if (numRow == numCol) {
             switch (numRow) {
-                case 1: return new Matrix1(false);
-                case 2: return new Matrix2(false);
-                case 3: return new Matrix3(false);
-                case 4: return new Matrix4(false);
+                case 1:  return new Matrix1(false);
+                case 2:  return new Matrix2(false);
+                case 3:  return new Matrix3(false);
+                case 4:  return new Matrix4(false);
+                default: return new GeneralMatrix(numRow, numCol, false);
             }
         }
-        return new GeneralMatrix(numRow, numCol, false);
+        return new NonSquareMatrix(numRow, numCol, false);
     }
 
     /**
      * Creates a matrix of size {@code numRow} × {@code numCol} initialized to the given elements.
      * The elements array size must be equals to {@code numRow*numCol}. Column indices vary fastest.
+     *
+     * {@section Implementation note}
+     * For {@code numRow} == {@code numCol} with a value between
+     * {@value org.apache.sis.referencing.operation.matrix.Matrix1#SIZE} and
+     * {@value org.apache.sis.referencing.operation.matrix.Matrix4#SIZE} inclusive, the matrix
+     * is guaranteed to be an instance of one of {@link Matrix1} … {@link Matrix4} subtypes.
      *
      * @param  numRow   Number of rows.
      * @param  numCol   Number of columns.
@@ -130,8 +153,15 @@ public final class Matrices extends Static {
     /**
      * Creates a new matrix which is a copy of the given matrix.
      *
+     * {@section Implementation note}
+     * For square matrix with a size between {@value org.apache.sis.referencing.operation.matrix.Matrix1#SIZE}
+     * and {@value org.apache.sis.referencing.operation.matrix.Matrix4#SIZE} inclusive, the returned matrix is
+     * guaranteed to be an instance of one of {@link Matrix1} … {@link Matrix4} subtypes.
+     *
      * @param matrix The matrix to copy, or {@code null}.
      * @return A copy of the given matrix, or {@code null} if the given matrix was null.
+     *
+     * @see MatrixSIS#clone()
      */
     public static MatrixSIS copy(final Matrix matrix) {
         if (matrix == null) {

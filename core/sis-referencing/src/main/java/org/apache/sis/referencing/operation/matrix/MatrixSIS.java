@@ -162,6 +162,9 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      *     }
      * }
      *
+     * Be aware that in the particular case of datum shifts, the matrix may be very close to an identity matrix.
+     * Such matrices for datum shift may look like spurious results of rounding errors, but are not.
+     *
      * @see #isIdentity()
      * @see java.awt.geom.AffineTransform#setToIdentity()
      */
@@ -265,6 +268,8 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * Returns a clone of this matrix.
      *
      * @return A new matrix of the same class and with the same values than this matrix.
+     *
+     * @see Matrices#copy(Matrix)
      */
     @Override
     public MatrixSIS clone() {
