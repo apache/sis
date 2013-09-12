@@ -187,4 +187,23 @@ public abstract strictfp class MatrixTestCase extends TestCase {
         assertEquals("isAffine",   numRow == numCol, matrix.isAffine());
         assertEquals("isIdentity", numRow == numCol, matrix.isIdentity());
     }
+
+    /**
+     * Tests {@link MatrixSIS#transpose()}.
+     */
+    @Test
+    @DependsOnMethod("testGetElements")
+    public void testTranspose() {
+        final int numRow = getNumRow();
+        final int numCol = getNumCol();
+        final double[] elements = createRandomElements(numRow * numCol);
+        final MatrixSIS matrix = Matrices.create(numRow, numCol, elements);
+        validate(matrix);
+        /*
+         * The JAMA constructor uses column-major array (FORTRAN convention) while SIS uses row-major
+         * array. In other words, the JAMA matrix is already transposed from the SIS point of view.
+         */
+        matrix.transpose();
+        assertMatrixEquals(new Matrix(elements, numCol), matrix, STRICT);
+    }
 }

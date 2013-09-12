@@ -89,7 +89,7 @@ final class NonSquareMatrix extends GeneralMatrix {
         int k = 0;
         for (int j=0; j<numRow; j++) {
             for (int i=0; i<numCol; i++) {
-                elements[i*numCol + j] = copy[k++];
+                elements[i*numRow + j] = copy[k++];
             }
         }
         this.numRow = numCol;
