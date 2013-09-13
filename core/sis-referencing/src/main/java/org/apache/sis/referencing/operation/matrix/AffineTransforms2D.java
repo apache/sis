@@ -153,7 +153,7 @@ public final class AffineTransforms2D extends Static {
      * given {@code dest} rectangle and is potentially more efficient:
      *
      * {@preformat java
-     *     return transform.createTransformedShape(bounds).getBounds2D()
+     *     return transform.createTransformedShape(bounds).getBounds2D();
      * }
      *
      * Note that if the given rectangle is an image bounds, then the given transform shall map the
@@ -203,7 +203,7 @@ public final class AffineTransforms2D extends Static {
      * given {@code dest} rectangle and is potentially more efficient:
      *
      * {@preformat java
-     *     return createInverse().createTransformedShape(bounds).getBounds2D()
+     *     return createInverse().createTransformedShape(bounds).getBounds2D();
      * }
      *
      * @param transform The affine transform to use.
@@ -372,7 +372,7 @@ public final class AffineTransforms2D extends Static {
      * Returns the magnitude of scale factor <var>x</var> by canceling the
      * effect of eventual flip and rotation. This factor is calculated by:
      *
-     * <p><center><img src="doc-files/scaleX0.png"></center></p>
+     * <p><img src="doc-files/scaleX0.png"></p>
      *
      * @param  transform The affine transform to inspect.
      * @return The magnitude of scale factor <var>x</var>.
@@ -390,7 +390,7 @@ public final class AffineTransforms2D extends Static {
      * Returns the magnitude of scale factor <var>y</var> by canceling the
      * effect of eventual flip and rotation. This factor is calculated by:
      *
-     * <p><center><img src="doc-files/scaleY0.png"></center></p>
+     * <p><img src="doc-files/scaleY0.png"></p>
      *
      * @param  transform The affine transform to inspect.
      * @return The magnitude of scale factor <var>y</var>.
