@@ -122,6 +122,15 @@ final class NonSquareMatrix extends GeneralMatrix {
      * {@inheritDoc}
      */
     @Override
+    public MatrixSIS inverse() throws NoninvertibleMatrixException {
+        // TODO: This is where we will need a special treatment different than what JAMA do (because different needs).
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public MatrixSIS clone() {
         return new NonSquareMatrix(this);
     }

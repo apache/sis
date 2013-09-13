@@ -63,7 +63,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     /**
      * Number of random matrices to try in arithmetic operation tests.
      */
-    private static final int NUM_TRIES = 10;
+    static final int NUMBER_OF_REPETITIONS = 10;
 
     /**
      * The threshold in matrix determinant for attempting to compute the inverse.
@@ -99,7 +99,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     /**
      * Verifies that the SIS matrix is equals to the JAMA one, up to the given tolerance value.
      */
-    private static void assertMatrixEquals(final Matrix expected, final MatrixSIS actual, final double tolerance) {
+    static void assertMatrixEquals(final Matrix expected, final MatrixSIS actual, final double tolerance) {
         final int numRow = actual.getNumRow();
         final int numCol = actual.getNumCol();
         assertEquals("numRow", expected.getRowDimension(),    numRow);
@@ -285,7 +285,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     public void testMultiply() {
         final int numRow = getNumRow();
         final int numCol = getNumCol();
-        for (int n=0; n<NUM_TRIES; n++) {
+        for (int n=0; n<NUMBER_OF_REPETITIONS; n++) {
             double[] elements = createRandomPositiveValues(numRow * numCol);
             final MatrixSIS matrix = Matrices.create(numRow, numCol, elements);
             final Matrix reference = new Matrix(elements, numCol).transpose();
@@ -321,9 +321,9 @@ public abstract strictfp class MatrixTestCase extends TestCase {
         final int numRow = getNumRow();
         final int numCol = getNumCol();
 
-        org.junit.Assume.assumeTrue(numRow == 1 && numCol == 1); // Temporary limitation.
+        if (numRow != 1 || numCol != 1) return; // Temporary limitation.
 
-        for (int n=0; n<NUM_TRIES; n++) {
+        for (int n=0; n<NUMBER_OF_REPETITIONS; n++) {
             double[] elements = createRandomPositiveValues(numRow * numCol);
             final Matrix reference = new Matrix(elements, numCol).transpose();
             if (!(reference.det() >= DETERMINANT_THRESHOLD)) {
@@ -362,10 +362,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     public void testInverse() throws NoninvertibleMatrixException {
         final int numRow = getNumRow();
         final int numCol = getNumCol();
-
-        org.junit.Assume.assumeTrue(numRow == 1 && numCol == 1); // Temporary limitation.
-
-        for (int n=0; n<NUM_TRIES; n++) {
+        for (int n=0; n<NUMBER_OF_REPETITIONS; n++) {
             final double[] elements = createRandomPositiveValues(numRow * numCol);
             final Matrix reference = new Matrix(elements, numCol).transpose();
             if (!(reference.det() >= DETERMINANT_THRESHOLD)) {

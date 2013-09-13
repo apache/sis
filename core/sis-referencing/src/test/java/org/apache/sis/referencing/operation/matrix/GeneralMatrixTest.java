@@ -16,6 +16,8 @@
  */
 package org.apache.sis.referencing.operation.matrix;
 
+import org.apache.sis.test.DependsOn;
+
 import static org.junit.Assert.*;
 
 
@@ -28,6 +30,7 @@ import static org.junit.Assert.*;
  * @version 0.4
  * @module
  */
+@DependsOn(SolverTest.class)
 public final strictfp class GeneralMatrixTest extends MatrixTestCase {
     /**
      * Number of rows and columns.
