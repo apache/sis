@@ -225,9 +225,9 @@ public final class Matrix1 extends MatrixSIS {
      * {@inheritDoc}
      */
     @Override
-    public MatrixSIS inverse() throws SingularMatrixException {
+    public MatrixSIS inverse() throws NoninvertibleMatrixException {
         if (m00 == 0) {
-            throw new SingularMatrixException();
+            throw new NoninvertibleMatrixException();
         }
         return new Matrix1(1 / m00);
     }
@@ -236,11 +236,11 @@ public final class Matrix1 extends MatrixSIS {
      * {@inheritDoc}
      */
     @Override
-    public MatrixSIS solve(final Matrix matrix) throws MismatchedMatrixSizeException, SingularMatrixException {
+    public MatrixSIS solve(final Matrix matrix) throws MismatchedMatrixSizeException, NoninvertibleMatrixException {
         final int nc = matrix.getNumCol();
         ensureNumRowMatch(SIZE, matrix, nc);
         if (m00 == 0) {
-            throw new SingularMatrixException();
+            throw new NoninvertibleMatrixException();
         }
         if (nc != SIZE) {
             final NonSquareMatrix m = new NonSquareMatrix(SIZE, nc, false);

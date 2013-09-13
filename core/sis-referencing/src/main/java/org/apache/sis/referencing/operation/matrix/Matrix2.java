@@ -252,10 +252,10 @@ public final class Matrix2 extends MatrixSIS {
      * {@inheritDoc}
      */
     @Override
-    public MatrixSIS inverse() throws SingularMatrixException {
+    public MatrixSIS inverse() throws NoninvertibleMatrixException {
         final double det = m00*m11 - m01*m10;
         if (det == 0) {
-            throw new SingularMatrixException();
+            throw new NoninvertibleMatrixException();
         }
         return new Matrix2(m11 / det, -m01 / det,
                           -m10 / det,  m00 / det);
@@ -265,7 +265,7 @@ public final class Matrix2 extends MatrixSIS {
      * {@inheritDoc}
      */
     @Override
-    public MatrixSIS solve(final Matrix matrix) throws MismatchedMatrixSizeException, SingularMatrixException {
+    public MatrixSIS solve(final Matrix matrix) throws MismatchedMatrixSizeException, NoninvertibleMatrixException {
         throw new UnsupportedOperationException(); // TODO
     }
 

@@ -20,7 +20,8 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
 
 
 /**
- * Thrown when a matrix can not be inverted because it is singular.
+ * Thrown when a matrix can not be inverted.
+ * This may be because the matrix is singular, or because the matrix is not square.
  *
  * {@note This exception extends <code>NoninvertibleTransformException</code> because the matrices in this package
  *        are used in <cite>Coordinate Operation Steps</cite>, in which case a singular matrix means that the
@@ -31,7 +32,7 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
  * @version 0.4
  * @module
  */
-public class SingularMatrixException extends NoninvertibleTransformException {
+public class NoninvertibleMatrixException extends NoninvertibleTransformException {
     /**
      * For cross-version compatibility.
      */
@@ -40,7 +41,7 @@ public class SingularMatrixException extends NoninvertibleTransformException {
     /**
      * Constructs a new exception with no message.
      */
-    public SingularMatrixException() {
+    public NoninvertibleMatrixException() {
         super();
     }
 
@@ -49,7 +50,7 @@ public class SingularMatrixException extends NoninvertibleTransformException {
      *
      * @param message The detail message, or {@code null} if none.
      */
-    public SingularMatrixException(final String message) {
+    public NoninvertibleMatrixException(final String message) {
         super(message);
     }
 
@@ -59,7 +60,7 @@ public class SingularMatrixException extends NoninvertibleTransformException {
      * @param message The detail message, or {@code null} if none.
      * @param cause The cause, or {@code null} if none.
      */
-    public SingularMatrixException(final String message, final Throwable cause) {
+    public NoninvertibleMatrixException(final String message, final Throwable cause) {
         super(message, cause);
     }
 }
