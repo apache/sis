@@ -303,6 +303,14 @@ public final class Matrix3 extends MatrixSIS {
      * {@inheritDoc}
      */
     @Override
+    public MatrixSIS solve(final Matrix matrix) throws MismatchedMatrixSizeException, SingularMatrixException {
+        throw new UnsupportedOperationException(); // TODO
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public MatrixSIS multiply(final Matrix matrix) {
         final int nc = matrix.getNumCol();
         ensureNumRowMatch(SIZE, matrix, nc);
