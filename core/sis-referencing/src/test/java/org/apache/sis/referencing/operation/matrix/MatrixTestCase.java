@@ -313,11 +313,11 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     /**
      * Tests {@link MatrixSIS#solve(Matrix)}.
      *
-     * @throws SingularMatrixException Should never happen.
+     * @throws NoninvertibleMatrixException Should never happen.
      */
     @Test
     @DependsOnMethod("testMultiply")
-    public void testSolve() throws SingularMatrixException {
+    public void testSolve() throws NoninvertibleMatrixException {
         final int numRow = getNumRow();
         final int numCol = getNumCol();
 
@@ -355,11 +355,11 @@ public abstract strictfp class MatrixTestCase extends TestCase {
      * Tests {@link MatrixSIS#inverse()}.
      * SIS implements the {@code inverse} operation as a special case of the {@code solve} operation.
      *
-     * @throws SingularMatrixException Should never happen.
+     * @throws NoninvertibleMatrixException Should never happen.
      */
     @Test
     @DependsOnMethod("testSolve")
-    public void testInverse() throws SingularMatrixException {
+    public void testInverse() throws NoninvertibleMatrixException {
         final int numRow = getNumRow();
         final int numCol = getNumCol();
 

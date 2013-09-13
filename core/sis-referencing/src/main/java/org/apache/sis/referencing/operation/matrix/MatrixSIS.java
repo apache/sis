@@ -197,19 +197,19 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * @return The <var>U</var> matrix that satisfies {@code this} × <var>U</var> = {@code matrix}.
      * @throws MismatchedMatrixSizeException if the number of rows in the given matrix is not equals
      *         to the number of columns in this matrix.
-     * @throws SingularMatrixException if this matrix is not invertible.
+     * @throws NoninvertibleMatrixException if this matrix is not invertible.
      */
-    public abstract MatrixSIS solve(Matrix matrix) throws MismatchedMatrixSizeException, SingularMatrixException;
+    public abstract MatrixSIS solve(Matrix matrix) throws MismatchedMatrixSizeException, NoninvertibleMatrixException;
 
     /**
      * Returns the inverse of this matrix.
      *
      * @return The inverse of this matrix.
-     * @throws SingularMatrixException if this matrix is not invertible.
+     * @throws NoninvertibleMatrixException if this matrix is not invertible.
      *
      * @see java.awt.geom.AffineTransform#createInverse()
      */
-    public abstract MatrixSIS inverse() throws SingularMatrixException;
+    public abstract MatrixSIS inverse() throws NoninvertibleMatrixException;
 
     /**
      * Compares the given matrices for equality, using the given absolute tolerance threshold.

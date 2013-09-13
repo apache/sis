@@ -346,7 +346,7 @@ public final class Matrix4 extends MatrixSIS {
      * {@inheritDoc}
      */
     @Override
-    public MatrixSIS inverse() throws SingularMatrixException {
+    public MatrixSIS inverse() throws NoninvertibleMatrixException {
         throw new UnsupportedOperationException(); // TODO
     }
 
@@ -354,7 +354,7 @@ public final class Matrix4 extends MatrixSIS {
      * {@inheritDoc}
      */
     @Override
-    public MatrixSIS solve(final Matrix matrix) throws MismatchedMatrixSizeException, SingularMatrixException {
+    public MatrixSIS solve(final Matrix matrix) throws MismatchedMatrixSizeException, NoninvertibleMatrixException {
         throw new UnsupportedOperationException(); // TODO
     }
 
