@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.netcdf;
 
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.storage.netcdf.AttributeNames;
 
 
@@ -60,7 +61,7 @@ public final class Axis {
     /**
      * Constructs a new axis associated to an arbitrary number of grid dimension.
      * In the particular case where the number of dimensions is equals to 2, this
-     * his constructor will detects by itself which grid dimension varies fastest.
+     * constructor will detects by itself which grid dimension varies fastest.
      *
      * @param owner            Provides callback for the conversion from grid coordinates to geodetic coordinates.
      * @param attributeNames   The attributes to use for fetching dimension information, or {@code null} if unknown.
@@ -83,9 +84,7 @@ public final class Axis {
             if (Math.abs(d2) > Math.abs(d1)) {
                 sourceSizes[0] = up1;
                 sourceSizes[1] = up0;
-                final int swap = sourceDimensions[0];
-                sourceDimensions[0] = sourceDimensions[1];
-                sourceDimensions[1] = swap;
+                ArraysExt.swap(sourceDimensions, 0, 1);
             }
         }
     }
