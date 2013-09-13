@@ -93,7 +93,7 @@ final class FallbackConverter<S,T> extends SystemConverter<S,T> {
                               final ObjectConverter<S, ? extends T> fallback)
     {
         super(sourceClass, targetClass);
-        if (swap(primary, fallback.getClass())) {
+        if (needSwap(primary, fallback.getClass())) {
             this.primary  = fallback;
             this.fallback = primary;
         } else {
@@ -110,11 +110,11 @@ final class FallbackConverter<S,T> extends SystemConverter<S,T> {
      * @param  fallbackClass The target class of the fallback converter to test.
      * @return {@code true} if the given primary and fallback converters should be interchanged.
      */
-    private static <S> boolean swap(final ObjectConverter<S,?> primary, final Class<?> fallbackClass) {
+    private static <S> boolean needSwap(final ObjectConverter<S,?> primary, final Class<?> fallbackClass) {
         if (primary instanceof FallbackConverter<?,?>) {
             final FallbackConverter<S,?> candidate = (FallbackConverter<S,?>) primary;
-            return swap(candidate.primary,  fallbackClass) &&
-                   swap(candidate.fallback, fallbackClass);
+            return needSwap(candidate.primary,  fallbackClass) &&
+                   needSwap(candidate.fallback, fallbackClass);
         } else {
             final Class<?> targetClass = primary.getTargetClass();
             return fallbackClass.isAssignableFrom(targetClass) && // This condition is more likely to fail first.

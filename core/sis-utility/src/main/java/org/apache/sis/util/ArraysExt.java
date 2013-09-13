@@ -69,7 +69,7 @@ import java.util.Objects;
  *
  * @author Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-2.0)
- * @version 0.3
+ * @version 0.4
  * @module
  *
  * @see Arrays
@@ -1395,14 +1395,13 @@ public final class ArraysExt extends Static {
      * @param  data The array to copy, or {@code null}.
      * @return A copy of the given array with values casted to the {@code float} type, or
      *         {@code null} if the given array was null.
+     *
+     * @deprecated Will be removed since we do not plan to provide static converter methods for every possible
+     *             type combination, and user should probably control himself the rounding behavior.
      */
+    @Deprecated
     public static float[] copyAsFloats(final double[] data) {
-        if (data == null) return null;
-        final float[] result = new float[data.length];
-        for (int i=0; i<data.length; i++) {
-            result[i] = (float) data[i];
-        }
-        return result;
+        return org.apache.sis.internal.util.Numerics.copyAsFloats(data);
     }
 
     /**
@@ -1412,14 +1411,13 @@ public final class ArraysExt extends Static {
      * @param  data The array to copy, or {@code null}.
      * @return A copy of the given array with values rounded to the {@code int} type, or
      *         {@code null} if the given array was null.
+     *
+     * @deprecated Will be removed since we do not plan to provide static converter methods for every possible
+     *             type combination, and user should probably control himself the rounding behavior.
      */
+    @Deprecated
     public static int[] copyAsInts(final double[] data) {
-        if (data == null) return null;
-        final int[] result = new int[data.length];
-        for (int i=0; i<data.length; i++) {
-            result[i] = (int) Math.round(data[i]);
-        }
-        return result;
+        return org.apache.sis.internal.util.Numerics.copyAsInts(data);
     }
 
     /**
@@ -1714,6 +1712,117 @@ public final class ArraysExt extends Static {
             }
         }
         return true;
+    }
+
+    /**
+     * Swaps the elements at the given indices in the given array of {@code double} values.
+     *
+     * {@note While trivial, this method is provided because its need occurs relatively often
+     *        and the availability of a <code>swap</code> method makes the code easier to read.}
+     *
+     * @param data The array in which to swap elements.
+     * @param i0   Index of one element to be swapped.
+     * @param i1   Index of the other element to be swapped.
+     *
+     * @since 0.4
+     */
+    public static void swap(final double[] data, final int i0, final int i1) {
+        final double t = data[i0];
+        data[i0] = data[i1];
+        data[i1] = t;
+    }
+
+    /**
+     * Swaps the elements at the given indices in the given array of {@code float} values.
+     *
+     * @param data The array in which to swap elements.
+     * @param i0   Index of one element to be swapped.
+     * @param i1   Index of the other element to be swapped.
+     *
+     * @since 0.4
+     */
+    public static void swap(final float[] data, final int i0, final int i1) {
+        final float t = data[i0];
+        data[i0] = data[i1];
+        data[i1] = t;
+    }
+
+    /**
+     * Swaps the elements at the given indices in the given array of {@code long} values.
+     *
+     * @param data The array in which to swap elements.
+     * @param i0   Index of one element to be swapped.
+     * @param i1   Index of the other element to be swapped.
+     *
+     * @since 0.4
+     */
+    public static void swap(final long[] data, final int i0, final int i1) {
+        final long t = data[i0];
+        data[i0] = data[i1];
+        data[i1] = t;
+    }
+
+    /**
+     * Swaps the elements at the given indices in the given array of {@code int} values.
+     *
+     * {@note While trivial, this method is provided because its need occurs relatively often
+     *        and the availability of a <code>swap</code> method makes the code easier to read.}
+     *
+     * @param data The array in which to swap elements.
+     * @param i0   Index of one element to be swapped.
+     * @param i1   Index of the other element to be swapped.
+     *
+     * @since 0.4
+     */
+    public static void swap(final int[] data, final int i0, final int i1) {
+        final int t = data[i0];
+        data[i0] = data[i1];
+        data[i1] = t;
+    }
+
+    /**
+     * Swaps the elements at the given indices in the given array of {@code short} values.
+     *
+     * @param data The array in which to swap elements.
+     * @param i0   Index of one element to be swapped.
+     * @param i1   Index of the other element to be swapped.
+     *
+     * @since 0.4
+     */
+    public static void swap(final short[] data, final int i0, final int i1) {
+        final short t = data[i0];
+        data[i0] = data[i1];
+        data[i1] = t;
+    }
+
+    /**
+     * Swaps the elements at the given indices in the given array of {@code byte} values.
+     *
+     * @param data The array in which to swap elements.
+     * @param i0   Index of one element to be swapped.
+     * @param i1   Index of the other element to be swapped.
+     *
+     * @since 0.4
+     */
+    public static void swap(final byte[] data, final int i0, final int i1) {
+        final byte t = data[i0];
+        data[i0] = data[i1];
+        data[i1] = t;
+    }
+
+    /**
+     * Swaps the elements at the given indices in the given array of {@code char} values.
+     *
+     * @param data The array in which to swap elements.
+     * @param i0   Index of one element to be swapped.
+     * @param i1   Index of the other element to be swapped.
+     *
+     * @since 0.4
+     */
+    public static void swap(final char[] data, final int i0, final int i1) {
+        final char t = data[i0];
+        data[i0] = data[i1];
+        data[i1] = t;
     }
 
     /**

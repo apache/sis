@@ -19,6 +19,7 @@ package org.apache.sis.referencing.operation.matrix;
 import java.util.Arrays;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.math.MathFunctions;
 
 
@@ -248,11 +249,7 @@ class GeneralMatrix extends MatrixSIS {
         final int numCol = this.numCol;
         for (int j=0; j<numRow; j++) {
             for (int i=0; i<j; i++) {
-                final int lowerLeft  = j*numCol + i;
-                final int upperRight = i*numCol + j;
-                final double swap = elements[lowerLeft];
-                elements[lowerLeft] = elements[upperRight];
-                elements[upperRight] = swap;
+                ArraysExt.swap(elements, j*numCol + i, i*numCol + j);
             }
         }
     }
