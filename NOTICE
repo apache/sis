@@ -8,6 +8,9 @@ The Javadoc contains documentation from the Open Geospatial Consortium
 (OGC®) specifications (http://www.opengeospatial.org/standards/), also
 known as OpenGIS.
 
+The matrix package contains code adapted from JAMA Java Matrix Package
+(http://math.nist.gov/javanumerics/jama/)
+
 Some modules use the Esri Geometry API developed by ESRI
 (http://github.com/Esri/geometry-api-java/)
 

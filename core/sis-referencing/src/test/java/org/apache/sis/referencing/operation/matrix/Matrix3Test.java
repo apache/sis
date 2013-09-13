@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.operation.matrix;
 
+import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -31,6 +32,7 @@ import static org.apache.sis.referencing.operation.matrix.Matrix3.SIZE;
  * @version 0.4
  * @module
  */
+@DependsOn(SolverTest.class)
 public final strictfp class Matrix3Test extends MatrixTestCase {
     /**
      * Returns the size of the matrix of interest for this test class.

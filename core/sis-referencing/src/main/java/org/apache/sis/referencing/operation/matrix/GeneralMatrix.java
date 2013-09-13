@@ -278,7 +278,7 @@ class GeneralMatrix extends MatrixSIS {
      */
     @Override
     public MatrixSIS inverse() throws NoninvertibleMatrixException {
-        throw new UnsupportedOperationException(); // TODO
+        return Solver.inverse(this);
     }
 
     /**

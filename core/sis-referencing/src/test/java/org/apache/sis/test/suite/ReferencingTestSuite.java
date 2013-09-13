@@ -31,6 +31,7 @@ import org.junit.BeforeClass;
  */
 @Suite.SuiteClasses({
     // Test matrix first because they may be used in about every SIS corners.
+    org.apache.sis.referencing.operation.matrix.SolverTest.class,
     org.apache.sis.referencing.operation.matrix.Matrix1Test.class,
     org.apache.sis.referencing.operation.matrix.Matrix2Test.class,
     org.apache.sis.referencing.operation.matrix.Matrix3Test.class,
