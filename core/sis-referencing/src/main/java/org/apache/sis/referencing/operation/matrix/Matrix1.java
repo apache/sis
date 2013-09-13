@@ -236,8 +236,32 @@ public final class Matrix1 extends MatrixSIS {
      * {@inheritDoc}
      */
     @Override
+    public MatrixSIS solve(final Matrix matrix) throws MismatchedMatrixSizeException, SingularMatrixException {
+        final int nc = matrix.getNumCol();
+        ensureNumRowMatch(SIZE, matrix, nc);
+        if (m00 == 0) {
+            throw new SingularMatrixException();
+        }
+        if (nc != SIZE) {
+            final NonSquareMatrix m = new NonSquareMatrix(SIZE, nc, false);
+            for (int i=0; i<nc; i++) {
+                m.elements[i] = matrix.getElement(0, i) / m00;
+            }
+            return m;
+        }
+        return new Matrix1(matrix.getElement(0,0) / m00);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public MatrixSIS multiply(final Matrix matrix) {
-        ensureSizeMatch(SIZE, matrix);
+        final int nc = matrix.getNumCol();
+        ensureNumRowMatch(SIZE, matrix, nc);
+        if (nc != SIZE) {
+            return new NonSquareMatrix(this, matrix);
+        }
         return new Matrix1(m00 * matrix.getElement(0,0));
     }
 

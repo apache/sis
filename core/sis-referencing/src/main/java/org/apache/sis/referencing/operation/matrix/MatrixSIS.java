@@ -189,6 +189,19 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     public abstract MatrixSIS multiply(Matrix matrix) throws MismatchedMatrixSizeException;
 
     /**
+     * Returns the value of <var>U</var> which solves {@code this} × <var>U</var> = {@code matrix}.
+     * This is equivalent to first computing the inverse of {@code this}, then multiplying the result
+     * by the given matrix.
+     *
+     * @param  matrix The matrix to solve.
+     * @return The <var>U</var> matrix that satisfies {@code this} × <var>U</var> = {@code matrix}.
+     * @throws MismatchedMatrixSizeException if the number of rows in the given matrix is not equals
+     *         to the number of columns in this matrix.
+     * @throws SingularMatrixException if this matrix is not invertible.
+     */
+    public abstract MatrixSIS solve(Matrix matrix) throws MismatchedMatrixSizeException, SingularMatrixException;
+
+    /**
      * Returns the inverse of this matrix.
      *
      * @return The inverse of this matrix.

@@ -61,6 +61,17 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     static final double TOLERANCE = 1E-10;
 
     /**
+     * Number of random matrices to try in arithmetic operation tests.
+     */
+    private static final int NUM_TRIES = 10;
+
+    /**
+     * The threshold in matrix determinant for attempting to compute the inverse.
+     * Matrix with a determinant of 0 are not invertible, but we keep a margin for safety.
+     */
+    private static final double DETERMINANT_THRESHOLD = 0.001;
+
+    /**
      * Random number generator, created by {@link #initialize(String, boolean)} when first needed.
      */
     final Random random;
@@ -267,62 +278,101 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     }
 
     /**
-     * Tests {@link MatrixSIS#multiply(Matrix)} with a matrix argument of size {@code numCol} × {@code numRow}
-     * (i.e. the shape of a transposed matrix).
+     * Tests {@link MatrixSIS#multiply(Matrix)}.
      */
     @Test
     @DependsOnMethod("testGetElements")
-    public void testMultiplyByMatrix() {
+    public void testMultiply() {
         final int numRow = getNumRow();
         final int numCol = getNumCol();
-        final double[] elements = createRandomPositiveValues(numRow * numCol);
-        final MatrixSIS matrix = Matrices.create(numRow, numCol, elements);
-        final Matrix reference = new Matrix(elements, numCol).transpose();
-        /*
-         * Computes new random value for the argument. We mix positive and negative values,
-         * but with more positive values than negative ones in order to reduce the chances
-         * to have a product of zero for an element.
-         */
-        for (int k=0; k<elements.length; k++) {
-            elements[k] = 8 - random.nextDouble() * 10;
+        for (int n=0; n<NUM_TRIES; n++) {
+            double[] elements = createRandomPositiveValues(numRow * numCol);
+            final MatrixSIS matrix = Matrices.create(numRow, numCol, elements);
+            final Matrix reference = new Matrix(elements, numCol).transpose();
+            /*
+             * Computes new random value for the argument. We mix positive and negative values,
+             * but with more positive values than negative ones in order to reduce the chances
+             * to have a product of zero for an element.
+             */
+            final int nx = random.nextInt(8) + 1;
+            elements = new double[numCol * nx];
+            for (int k=0; k<elements.length; k++) {
+                elements[k] = 8 - random.nextDouble() * 10;
+            }
+            final Matrix referenceArg = new Matrix(elements, nx).transpose();
+            final MatrixSIS matrixArg = Matrices.create(numCol, nx, elements);
+            /*
+             * Performs the multiplication and compare.
+             */
+            final Matrix referenceResult = reference.times(referenceArg);
+            final MatrixSIS matrixResult = matrix.multiply(matrixArg);
+            assertMatrixEquals(referenceResult, matrixResult, TOLERANCE);
         }
-        final MatrixSIS matrixArg = Matrices.create(numCol, numRow, elements);
-        final Matrix referenceArg = new Matrix(elements, numRow).transpose();
-        /*
-         * Performs the multiplication and compare.
-         */
-        final MatrixSIS matrixResult = matrix.multiply(matrixArg);
-        final Matrix referenceResult = reference.times(referenceArg);
-        assertMatrixEquals(referenceResult, matrixResult, TOLERANCE);
     }
 
     /**
-     * Tests {@link MatrixSIS#multiply(Matrix)} with a matrix argument of size {@code numCol} × 1.
+     * Tests {@link MatrixSIS#solve(Matrix)}.
+     *
+     * @throws SingularMatrixException Should never happen.
      */
     @Test
-    @DependsOnMethod("testMultiplyByMatrix")
-    public void testMultiplyByVector() {
+    @DependsOnMethod("testMultiply")
+    public void testSolve() throws SingularMatrixException {
         final int numRow = getNumRow();
         final int numCol = getNumCol();
-        double[] elements = createRandomPositiveValues(numRow * numCol);
-        final MatrixSIS matrix = Matrices.create(numRow, numCol, elements);
-        final Matrix reference = new Matrix(elements, numCol).transpose();
-        /*
-         * Computes new random value for the argument. We mix positive and negative values,
-         * but with more positive values than negative ones in order to reduce the chances
-         * to have a product of zero for an element.
-         */
-        elements = new double[numCol];
-        for (int k=0; k<numCol; k++) {
-            elements[k] = 8 - random.nextDouble() * 10;
+
+        org.junit.Assume.assumeTrue(numRow == 1 && numCol == 1); // Temporary limitation.
+
+        for (int n=0; n<NUM_TRIES; n++) {
+            double[] elements = createRandomPositiveValues(numRow * numCol);
+            final Matrix reference = new Matrix(elements, numCol).transpose();
+            if (!(reference.det() >= DETERMINANT_THRESHOLD)) {
+                continue; // To close to a singular matrix - search an other one.
+            }
+            final MatrixSIS matrix = Matrices.create(numRow, numCol, elements);
+            /*
+             * Computes new random value for the argument. We mix positive and negative values,
+             * but with more positive values than negative ones in order to reduce the chances
+             * to have a product of zero for an element.
+             */
+            final int nx = random.nextInt(8) + 1;
+            elements = new double[numCol * nx];
+            for (int k=0; k<elements.length; k++) {
+                elements[k] = 8 - random.nextDouble() * 10;
+            }
+            final Matrix referenceArg = new Matrix(elements, nx).transpose();
+            final MatrixSIS matrixArg = Matrices.create(numCol, nx, elements);
+            /*
+             * Performs the operation and compare.
+             */
+            final Matrix referenceResult = reference.solve(referenceArg);
+            final MatrixSIS matrixResult = matrix.solve(matrixArg);
+            assertMatrixEquals(referenceResult, matrixResult, TOLERANCE);
         }
-        final MatrixSIS matrixArg = Matrices.create(numCol, 1, elements);
-        final Matrix referenceArg = new Matrix(elements, numCol);
-        /*
-         * Performs the multiplication and compare.
-         */
-        final MatrixSIS matrixResult = matrix.multiply(matrixArg);
-        final Matrix referenceResult = reference.times(referenceArg);
-        assertMatrixEquals(referenceResult, matrixResult, TOLERANCE);
+    }
+
+    /**
+     * Tests {@link MatrixSIS#inverse()}.
+     * SIS implements the {@code inverse} operation as a special case of the {@code solve} operation.
+     *
+     * @throws SingularMatrixException Should never happen.
+     */
+    @Test
+    @DependsOnMethod("testSolve")
+    public void testInverse() throws SingularMatrixException {
+        final int numRow = getNumRow();
+        final int numCol = getNumCol();
+
+        org.junit.Assume.assumeTrue(numRow == 1 && numCol == 1); // Temporary limitation.
+
+        for (int n=0; n<NUM_TRIES; n++) {
+            final double[] elements = createRandomPositiveValues(numRow * numCol);
+            final Matrix reference = new Matrix(elements, numCol).transpose();
+            if (!(reference.det() >= DETERMINANT_THRESHOLD)) {
+                continue; // To close to a singular matrix - search an other one.
+            }
+            final MatrixSIS matrix = Matrices.create(numRow, numCol, elements);
+            assertMatrixEquals(reference.inverse(), matrix.inverse(), TOLERANCE);
+        }
     }
 }

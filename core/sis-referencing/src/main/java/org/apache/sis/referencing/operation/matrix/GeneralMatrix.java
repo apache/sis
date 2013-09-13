@@ -285,6 +285,14 @@ class GeneralMatrix extends MatrixSIS {
      * {@inheritDoc}
      */
     @Override
+    public MatrixSIS solve(final Matrix matrix) throws MismatchedMatrixSizeException, SingularMatrixException {
+        throw new UnsupportedOperationException(); // TODO
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public final MatrixSIS multiply(final Matrix matrix) {
         final int numRow = this.numRow; // Protection against accidental changes.
         final int numCol = this.numCol;
