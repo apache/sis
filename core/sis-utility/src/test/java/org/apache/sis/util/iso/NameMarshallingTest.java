@@ -25,6 +25,7 @@ import org.opengis.util.LocalName;
 import org.opengis.util.GenericName;
 import org.opengis.util.NameFactory;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.test.mock.IdentifiedObjectMock;
 import org.apache.sis.test.XMLTestCase;
@@ -88,7 +89,8 @@ public final strictfp class NameMarshallingTest extends XMLTestCase {
         final LocalName name = factory.createLocalName(null, "An ordinary local name");
         assertEquals("An ordinary local name", name.toString());
         final String expected =
-                "<gml:IO_IdentifiedObject>\n" +
+                "<gml:IO_IdentifiedObject xmlns:gml=\"" + Namespaces.GML + '"' +
+                                        " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
                 "  <gml:alias>\n" +
                 "    <gco:LocalName>An ordinary local name</gco:LocalName>\n" +
                 "  </gml:alias>\n" +
@@ -110,7 +112,8 @@ public final strictfp class NameMarshallingTest extends XMLTestCase {
         final LocalName name = factory.createLocalName(null, "A name with & and > and <.");
         assertEquals("A name with & and > and <.", name.toString());
         final String expected =
-                "<gml:IO_IdentifiedObject>\n" +
+                "<gml:IO_IdentifiedObject xmlns:gml=\"" + Namespaces.GML + '"' +
+                                        " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
                 "  <gml:alias>\n" +
                 "    <gco:LocalName>A name with &amp; and &gt; and &lt;.</gco:LocalName>\n" +
                 "  </gml:alias>\n" +
@@ -131,7 +134,8 @@ public final strictfp class NameMarshallingTest extends XMLTestCase {
         final TypeName name = factory.createTypeName(null, "An other local name");
         assertEquals("An other local name", name.toString());
         final String expected =
-                "<gml:IO_IdentifiedObject>\n" +
+                "<gml:IO_IdentifiedObject xmlns:gml=\"" + Namespaces.GML + '"' +
+                                        " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
                 "  <gml:alias>\n" +
                 "    <gco:TypeName>\n" +
                 "      <gco:aName>\n" +
@@ -156,7 +160,8 @@ public final strictfp class NameMarshallingTest extends XMLTestCase {
         final GenericName name = factory.createGenericName(null, "myScope","myName");
         assertEquals("myScope:myName", name.toString());
         final String expected =
-                "<gml:IO_IdentifiedObject>\n" +
+                "<gml:IO_IdentifiedObject xmlns:gml=\"" + Namespaces.GML + '"' +
+                                        " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
                 "  <gml:alias>\n" +
                 "    <gco:ScopedName>myScope:myName</gco:ScopedName>\n" +
                 "  </gml:alias>\n" +

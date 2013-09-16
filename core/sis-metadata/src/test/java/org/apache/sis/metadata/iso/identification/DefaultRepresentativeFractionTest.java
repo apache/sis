@@ -18,6 +18,7 @@ package org.apache.sis.metadata.iso.identification;
 
 import javax.xml.bind.JAXBException;
 import org.apache.sis.xml.XML;
+import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -59,7 +60,9 @@ public final strictfp class DefaultRepresentativeFractionTest extends TestCase {
         fraction.getIdentifierMap().putSpecialized(IdentifierSpace.ID, "scale");
         final String xml = XML.marshal(fraction);
         assertXmlEquals(
-                "<gmd:MD_RepresentativeFraction id=\"scale\">\n" +
+                "<gmd:MD_RepresentativeFraction xmlns:gmd=\"" + Namespaces.GMD + '"' +
+                                              " xmlns:gco=\"" + Namespaces.GCO + '"' +
+                                              " id=\"scale\">\n" +
                 "  <gmd:denominator>\n" +
                 "    <gco:Integer>8</gco:Integer>\n" +
                 "  </gmd:denominator>\n" +

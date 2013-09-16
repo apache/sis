@@ -55,7 +55,8 @@ public final strictfp class DefaultBrowseGraphicTest extends TestCase {
         browse.setFileType("image/tiff");
         final String xml = XML.marshal(browse);
         assertXmlEquals(
-                "<gmd:MD_BrowseGraphic>\n" +
+                "<gmd:MD_BrowseGraphic xmlns:gmd=\"" + Namespaces.GMD + '"' +
+                                     " xmlns:gmx=\"" + Namespaces.GMX + "\">\n" +
                 "  <gmd:fileType>\n" +
                 "    <gmx:MimeFileType type=\"image/tiff\">image/tiff</gmx:MimeFileType>\n" +
                 "  </gmd:fileType>\n" +
@@ -77,7 +78,8 @@ public final strictfp class DefaultBrowseGraphicTest extends TestCase {
         final DefaultBrowseGraphic browse = new DefaultBrowseGraphic(uri);
         final String xml = XML.marshal(browse);
         assertXmlEquals(
-                "<gmd:MD_BrowseGraphic>\n" +
+                "<gmd:MD_BrowseGraphic xmlns:gmd=\"" + Namespaces.GMD + '"' +
+                                     " xmlns:gmx=\"" + Namespaces.GMX + "\">\n" +
                 "  <gmd:fileName>\n" +
                 "    <gmx:FileName src=\"file:/catalog/image.png\">image.png</gmx:FileName>\n" +
                 "  </gmd:fileName>\n" +
@@ -120,7 +122,8 @@ public final strictfp class DefaultBrowseGraphicTest extends TestCase {
         browse.setFileType("image/tiff");
         final String xml = XML.marshal(browse);
         assertXmlEquals(
-                "<gmd:MD_BrowseGraphic>\n" +
+                "<gmd:MD_BrowseGraphic xmlns:gmd=\"" + Namespaces.GMD + '"' +
+                                     " xmlns:gmx=\"" + Namespaces.GMX + "\">\n" +
                 "  <gmd:fileName>\n" +
                 "    <gmx:FileName src=\"file:/catalog/image.png\">image.png</gmx:FileName>\n" +
                 "  </gmd:fileName>\n" +
@@ -151,7 +154,8 @@ public final strictfp class DefaultBrowseGraphicTest extends TestCase {
                 singletonMap(XML.STRING_SUBSTITUTES, new String[] {"filename", "mimetype"}));
         final String xml = buffer.toString();
         assertXmlEquals(
-                "<gmd:MD_BrowseGraphic>\n" +
+                "<gmd:MD_BrowseGraphic xmlns:gmd=\"" + Namespaces.GMD + '"' +
+                                     " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
                 "  <gmd:fileName>\n" +
                 "    <gco:CharacterString>file:/catalog/image.png</gco:CharacterString>\n" +
                 "  </gmd:fileName>\n" +
