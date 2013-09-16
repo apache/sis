@@ -67,6 +67,7 @@ import static org.apache.sis.util.CharSequences.trimWhitespaces;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Guilhem Legal (Geomatys)
  * @since   0.3 (derived from geotk-3.17)
  * @version 0.3
  * @module
@@ -401,7 +402,23 @@ public strictfp class XMLComparator {
         for (int i=0; i<n; i++) {
             final Node expAttr = expectedAttributes.item(i);
             final String ns    = expAttr.getNamespaceURI();
-            final String name  = expAttr.getNodeName();
+            String name        = expAttr.getLocalName();
+            if (name == null) {
+                /*
+                 * Experience shows that the namespace and name value varies depending on how the document
+                 * has been built. The LocalName is sometime null, in which case we have to fetch the full
+                 * name. We observe:
+                 *
+                 * ┌───────────────────┬───────────┬─────────────────────────────────┐
+                 * │ Node method       │ Example 1 │ Example 2                       │
+                 * ├───────────────────┼───────────┼─────────────────────────────────┤
+                 * │ getNamespaceURI() │ "xmlns"   │ "http://www.w3.org/2000/xmlns/" │
+                 * │ getLocalName()    │ "test"    │  null                           │
+                 * │ getNodeName()     │           │ "xmlns:test"                    │
+                 * └───────────────────┴───────────┴─────────────────────────────────┘
+                 */
+                name = expAttr.getNodeName();
+            }
             if (!isIgnored(ignoredAttributes, ns, name)) {
                 final Node actAttr;
                 if (ns == null) {
@@ -424,10 +441,18 @@ public strictfp class XMLComparator {
      */
     private static boolean isIgnored(final Set<String> ignored, String ns, final String name) {
         if (!ignored.isEmpty()) {
+            /*
+             * Check if the fully qualified attribute name is one of the attributes to ignore.
+             * Typical example: "xsi:schemaLocation"
+             */
             if (ignored.contains((ns != null) ? ns + ':' + name : name)) {
-                // Ignore a specific node (for example "xsi:schemaLocation")
                 return true;
             }
+            /*
+             * The given attribute does not appear explicitely in the set of attributes to ignore.
+             * But maybe the user asked to ignore all attributes in the namespace.
+             * Typical example: "xmlns:*"
+             */
             if (ns == null) {
                 final int s = name.indexOf(':');
                 if (s >= 1) {
@@ -435,7 +460,6 @@ public strictfp class XMLComparator {
                 }
             }
             if (ns != null && ignored.contains(ns + ":*")) {
-                // Ignore a full namespace (typically "xmlns:*")
                 return true;
             }
         }
