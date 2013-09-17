@@ -91,7 +91,7 @@ public class ProbeResult implements Serializable {
     public static final ProbeResult UNSUPPORTED_STORAGE = new Constant(false, "UNSUPPORTED_STORAGE");
 
     /**
-     * The open capability can not be determined because the {@link ByteBuffer} contains an insufficient
+     * The open capability can not be determined because the {@link java.nio.ByteBuffer} contains an insufficient
      * amount of bytes. This value can be returned by {@link DataStoreProvider#probeContent(StorageConnector)}
      * implementations as below:
      *

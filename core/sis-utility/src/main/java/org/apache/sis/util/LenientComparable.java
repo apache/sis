@@ -82,7 +82,7 @@ package org.apache.sis.util;
  *           difference is tolerated in floating point numbers.</li>
  *     </ol>
  *   </li>
- *   <li>{@link org.apache.sis.referencing.operation.matrix.XMatrix} and
+ *   <li>{@link org.apache.sis.referencing.operation.matrix.MatrixSIS} and
  *       {@link org.apache.sis.referencing.operation.transform.LinearTransform} implementations
  *     <ol>
  *       <li>{@link ComparisonMode#STRICT STRICT} – Objects must be of the same class, matrixes

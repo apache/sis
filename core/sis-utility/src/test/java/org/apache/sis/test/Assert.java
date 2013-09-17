@@ -266,7 +266,7 @@ public strictfp class Assert extends org.opengis.test.Assert {
      * <p>For example in order to ignore the namespace, type and schema location declaration,
      * the following strings can be given to the {@code ignoredAttributes} argument:</p>
      *
-     * {@preformat
+     * {@preformat text
      *   "xmlns:*", "xsi:schemaLocation", "xsi:type"
      * }
      *
