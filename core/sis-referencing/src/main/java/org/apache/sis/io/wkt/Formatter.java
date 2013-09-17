@@ -258,7 +258,7 @@ public class Formatter {
      * @return The convention (never {@code null}).
      *
      * @see WKTFormat#setConvention(Convention)
-     * @see FormattableObject#toWKT(Convention)
+     * @see FormattableObject#toString(Convention)
      */
     public Convention getConvention() {
         return convention;
