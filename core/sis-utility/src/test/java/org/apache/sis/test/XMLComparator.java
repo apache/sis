@@ -186,11 +186,8 @@ public strictfp class XMLComparator {
      *
      * <ul>
      *   <li>{@link Node}; used directly without further processing.</li>
-     *   <li>{@link File}, {@link URL} or {@link URI}: the stream is opened and parsed
-     *       as a XML document.</li>
-     *   <li>{@link String}: The string content is parsed directly as a XML document.
-     *       Encoding <strong>must</strong> be UTF-8 (no other encoding is supported
-     *       by current implementation of this method).</li>
+     *   <li>{@link File}, {@link URL} or {@link URI}: the stream is opened and parsed as a XML document.</li>
+     *   <li>{@link String}: The string content is parsed directly as a XML document.</li>
      * </ul>
      *
      * @param  expected  The expected XML document.
@@ -441,7 +438,13 @@ public strictfp class XMLComparator {
      */
     protected void compareNames(final Node expected, final Node actual) {
         assertPropertyEquals("namespace", expected.getNamespaceURI(), actual.getNamespaceURI(), expected, actual);
-        assertPropertyEquals("name",      expected.getNodeName(),     actual.getNodeName(),     expected, actual);
+        String expectedName = expected.getLocalName();
+        String actualName   = actual.getLocalName();
+        if (expectedName == null || actualName == null) {
+            expectedName = expected.getNodeName();
+            actualName   = actual.getNodeName();
+        }
+        assertPropertyEquals("name", expectedName, actualName, expected, actual);
     }
 
     /**
