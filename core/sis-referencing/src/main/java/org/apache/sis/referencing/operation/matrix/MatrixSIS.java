@@ -131,7 +131,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * A transform is affine if the matrix is square and its last row contains
      * only zeros, except in the last column which contains 1.
      *
-     * @return {@code true} if this matrix is affine.
+     * @return {@code true} if this matrix represents an affine transform.
      *
      * @see Matrices#isAffine(Matrix)
      */

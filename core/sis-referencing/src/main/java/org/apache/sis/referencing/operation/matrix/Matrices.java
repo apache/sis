@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.operation.matrix;
 
-import java.awt.geom.AffineTransform;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.util.Static;
@@ -88,7 +87,7 @@ public final class Matrices extends Static {
      * @param numCol For an affine transform, this is the number of {@linkplain MathTransform#getSourceDimensions() source dimensions} + 1.
      * @return An identity matrix of the given size.
      */
-    public static MatrixSIS create(final int numRow, final int numCol) {
+    public static MatrixSIS createDiagonal(final int numRow, final int numCol) {
         if (numRow == numCol) {
             return createIdentity(numRow);
         } else {
@@ -195,10 +194,12 @@ public final class Matrices extends Static {
     }
 
     /**
-     * Returns {@code true} if the given matrix is affine.
+     * Returns {@code true} if the given matrix represents an affine transform.
+     * A transform is affine if the matrix is square and its last row contains
+     * only zeros, except in the last column which contains 1.
      *
      * @param matrix The matrix to test.
-     * @return {@code true} if the matrix is affine.
+     * @return {@code true} if the matrix represents an affine transform.
      *
      * @see MatrixSIS#isAffine()
      * @see AffineTransforms2D#castOrCopy(Matrix)
@@ -206,9 +207,6 @@ public final class Matrices extends Static {
     public static boolean isAffine(final Matrix matrix) {
         if (matrix instanceof MatrixSIS) {
             return ((MatrixSIS) matrix).isAffine();
-        }
-        if (matrix instanceof AffineTransform) {
-            return true;
         }
         // Following is executed only if the given matrix is not a SIS implementation.
         int j = matrix.getNumRow();

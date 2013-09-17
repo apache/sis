@@ -31,7 +31,7 @@ import org.apache.sis.math.MathFunctions;
  * @version 0.4
  * @module
  *
- * @see Matrices#create(int, int)
+ * @see Matrices#createDiagonal(int, int)
  */
 class GeneralMatrix extends MatrixSIS {
     /**

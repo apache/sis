@@ -22,7 +22,7 @@ import org.opengis.referencing.operation.Matrix;
 /**
  * A matrix which is not square.
  *
- * @author  Martin Desruisseaux
+ * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
  * @version 0.4
  * @module

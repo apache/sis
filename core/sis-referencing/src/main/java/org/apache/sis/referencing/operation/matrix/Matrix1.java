@@ -21,15 +21,13 @@ import org.apache.sis.internal.util.Numerics;
 
 
 /**
- * A matrix of fixed {@value #SIZE}×{@value #SIZE} size.
+ * A matrix of fixed {@value #SIZE}×{@value #SIZE} size,
+ * typically resulting from {@linkplain org.opengis.referencing.operation.MathTransform1D} derivative computation.
  * The matrix member is:
  *
  * <blockquote><pre> ┌     ┐
  * │ {@link #m00} │
  * └     ┘</pre></blockquote>
- *
- * This trivial matrix can be returned as a result of
- * {@linkplain org.opengis.referencing.operation.MathTransform1D} derivative computation.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.2)

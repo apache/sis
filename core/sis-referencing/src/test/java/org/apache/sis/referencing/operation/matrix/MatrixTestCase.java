@@ -31,7 +31,7 @@ import static org.junit.Assert.*;
  * This class uses the following {@code Matrices} factory methods:
  *
  * <ul>
- *   <li>{@link Matrices#create(int, int)} (sometime delegates to {@link Matrices#createIdentity(int)})</li>
+ *   <li>{@link Matrices#createDiagonal(int, int)} (sometime delegates to {@link Matrices#createIdentity(int)})</li>
  *   <li>{@link Matrices#create(int, int, double[])}</li>
  *   <li>{@link Matrices#createZero(int, int)}</li>
  * </ul>
@@ -175,7 +175,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     }
 
     /**
-     * Tests {@link MatrixSIS#isIdentity()}. This method will first invoke {@link Matrices#create(int, int)}
+     * Tests {@link MatrixSIS#isIdentity()}. This method will first invoke {@link Matrices#createDiagonal(int, int)}
      * and ensure that the result contains 1 on the diagonal and 0 elsewhere.
      *
      * <p>This method will opportunistically tests {@link MatrixSIS#isAffine()}. The two methods are related
@@ -186,7 +186,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     public void testIsIdentity() {
         final int numRow = getNumRow();
         final int numCol = getNumCol();
-        final MatrixSIS matrix = Matrices.create(numRow, numCol);
+        final MatrixSIS matrix = Matrices.createDiagonal(numRow, numCol);
         validate(matrix);
         /*
          * End of initialization - now perform the actual test.
