@@ -21,16 +21,14 @@ import org.apache.sis.internal.util.Numerics;
 
 
 /**
- * A matrix of fixed {@value #SIZE}×{@value #SIZE} size.
+ * A matrix of fixed {@value #SIZE}×{@value #SIZE} size,
+ * typically resulting from {@linkplain org.opengis.referencing.operation.MathTransform2D} derivative computation.
  * The matrix members are:
  *
  * <blockquote><pre> ┌         ┐
  * │ {@link #m00} {@link #m01} │
  * │ {@link #m10} {@link #m11} │
  * └         ┘</pre></blockquote>
- *
- * This simple matrix is returned as a result of {@linkplain org.opengis.referencing.operation.MathTransform2D}
- * derivative computation.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.2)

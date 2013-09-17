@@ -32,9 +32,6 @@ import org.apache.sis.math.MathFunctions;
  * │ {@link #m20} {@link #m21} {@link #m22} │
  * └             ┘</pre></blockquote>
  *
- * In some situations, this specialized matrix implementation may provide better accuracy than the
- * generic implementation for matrix inversions.
- *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.2)
  * @version 0.4

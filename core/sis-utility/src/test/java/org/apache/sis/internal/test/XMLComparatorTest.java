@@ -28,7 +28,7 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.17)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 public final strictfp class XMLComparatorTest extends TestCase {
@@ -47,6 +47,7 @@ public final strictfp class XMLComparatorTest extends TestCase {
             "    </table>\n" +
             "  </form>\n" +
             "</body>",
+
             "<body>\n" +
             "  <form id=\"MyForm\">\n" +
             "    <table cellpading=\"2\">\n" +
@@ -72,6 +73,29 @@ public final strictfp class XMLComparatorTest extends TestCase {
         // Ignore the form node and all its children.
         cmp.ignoredNodes.clear();
         cmp.ignoredNodes.add("form");
+        cmp.compare();
+    }
+
+    /**
+     * Verifies that comparisons of XML documents compare the namespace URIs, not the prefixes.
+     *
+     * @see javax.xml.parsers.DocumentBuilderFactory#setNamespaceAware(boolean)
+     *
+     * @throws Exception Should never happen.
+     */
+    @Test
+    public void testNamespaceAware() throws Exception {
+        final XMLComparator cmp = new XMLComparator(
+            "<ns1:body xmlns:ns1=\"http://myns1\" xmlns:ns2=\"http://myns2\">\n" +
+            "  <ns1:table ns2:cellpading=\"1\"/>\n" +
+            "</ns1:body>",
+
+            "<ns4:body xmlns:ns4=\"http://myns1\" xmlns:ns3=\"http://myns2\">\n" +
+            "  <ns4:table ns3:cellpading=\"1\"/>\n" +
+            "</ns4:body>");
+
+        // Following comparison should not fail anymore.
+        cmp.ignoredAttributes.add("http://www.w3.org/2000/xmlns:*");
         cmp.compare();
     }
 
