@@ -21,6 +21,7 @@ import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Numerics;
 
@@ -146,6 +147,53 @@ public final class Matrices extends Static {
             default: return new GeneralMatrix(numRow, numCol, elements);
         }
         return new NonSquareMatrix(numRow, numCol, elements);
+    }
+
+    /**
+     * Creates a matrix for a transform that keep only a subset of source ordinate values.
+     * The matrix size will be ({@code selectedSourceDim.length}+1) × ({@code numSourceDim}+1).
+     * The matrix will contain only zero elements, except for the following cells which will contain 1:
+     *
+     * <ul>
+     *   <li>The last column in the last row.</li>
+     *   <li>For any row <var>j</var> other than the last row, the column {@code selectedSourceDim[j]}.</li>
+     * </ul>
+     *
+     * {@example Given (<var>x</var>,<var>y</var>,<var>z</var>,<var>t</var>) ordinate values, if one wants to
+     * keep (<var>y</var>,<var>x</var>,<var>t</var>) ordinates (note the <var>x</var> ↔ <var>y</var> swapping)
+     * and discard the <var>z</var> values, then one can use the following method call:
+     *
+     * <blockquote><pre>matrix = createDimensionFilter(4, new int[] {1, 0, 3});</pre></blockquote>
+     *
+     * The above method call will create the following 4×5 matrix,
+     * which can be used for converting coordinates as below:
+     *
+     * <blockquote><pre> ┌   ┐   ┌           ┐   ┌   ┐
+     * │ y │   │ 0 1 0 0 0 │   │ x │
+     * │ x │   │ 1 0 0 0 0 │   │ y │
+     * │ t │ = │ 0 0 0 1 0 │ × │ z │
+     * │ 1 │   │ 0 0 0 0 1 │   │ t │
+     * └   ┘   └           ┘   │ 1 │
+     *                         └   ┘</pre></blockquote>}
+     *
+     * @param  numSourceDim The number of dimension of source coordinates.
+     * @param  selectedSourceDim The indices of source ordinate values to keep.
+     * @return The matrix for an affine transform keeping only the given source dimensions, and discarding all others.
+     * @throws IllegalArgumentException if a value of {@code selectedSourceDim} is lower than 0
+     *         or not smaller than {@code numSourceDim}.
+     *
+     * @see org.apache.sis.referencing.operation.MathTransforms#dimensionFilter(int, int[])
+     */
+    public static MatrixSIS createDimensionFilter(final int numSourceDim, final int[] selectedSourceDim) {
+        final int numTargetDim = selectedSourceDim.length;
+        final MatrixSIS matrix = createZero(numTargetDim+1, numSourceDim+1);
+        for (int j=0; j<numTargetDim; j++) {
+            final int i = selectedSourceDim[j];
+            ArgumentChecks.ensureValidIndex(numSourceDim, i);
+            matrix.setElement(j, i, 1);
+        }
+        matrix.setElement(numTargetDim, numSourceDim, 1);
+        return matrix;
     }
 
     /**
