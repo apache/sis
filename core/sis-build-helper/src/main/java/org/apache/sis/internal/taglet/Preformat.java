@@ -24,7 +24,8 @@ import com.sun.tools.doclets.formats.html.ConfigurationImpl;
 
 /**
  * The <code>@preformat</code> tag for inserting a pre-formatted code in a javadoc comment.
- * The first word after the tag must be the format name ("java", "math", "wkt" or "text").
+ * The first word after the tag must be the format name ("java", "math", "wkt", "xml", "sql",
+ * "shell" or "text").
  * The remaining is the text to format.
  *
  * <p>This taglet will automatically replace {@code &}, {@code <} and {@code >} by their HTML entities.
@@ -37,6 +38,15 @@ import com.sun.tools.doclets.formats.html.ConfigurationImpl;
  * @module
  */
 public final class Preformat extends InlineTaglet {
+    /**
+     * The set of legal words after {@code preformat}. We write them in lower-cases even if this is not
+     * conform to the Java convention for enumeration constants, because we will use {@link Enum#name()}
+     * for getting the string to look for after {@code preformat}.
+     */
+    private static enum Style {
+        java, math, wkt, xml, sql, shell, text
+    }
+
     /**
      * Special characters to replace by HTML entities.
      */
@@ -104,14 +114,12 @@ public final class Preformat extends InlineTaglet {
                 break;
             }
         }
-        final boolean java  = format.equals("java");
-        final boolean math  = format.equals("math");
-        final boolean wkt   = format.equals("wkt");
-        final boolean xml   = format.equals("xml");
-        final boolean sql   = format.equals("sql");
-        final boolean shell = format.equals("shell");
-        if (!java && !math && !wkt && !xml && !sql && !shell && !format.equals("text")) {
+        Style style;
+        try {
+            style = Style.valueOf(format);
+        } catch (IllegalArgumentException e) {
             ConfigurationImpl.getInstance().root.printWarning(tag.position(), "Unknown format: " + format);
+            style = Style.text;
         }
         /*
          * Counts the minimal amount of spaces in the margin.
@@ -150,9 +158,9 @@ all:    while (tk.hasMoreTokens()) {
                 for (int i=0; i<SPECIAL_CHARS.length;) {
                     line = line.replace(SPECIAL_CHARS[i++], SPECIAL_CHARS[i++]);
                 }
-                if (java) {
-                    colorJava(line, buffer);
-                    continue;
+                switch (style) {
+                    case java: colorJava(line, buffer); continue;
+                    case math: styleMath(line, buffer); continue;
                 }
             }
             buffer.append(line);
@@ -229,6 +237,26 @@ all:    while (tk.hasMoreTokens()) {
                 quote = 0;
                 buffer.append(c).append("</font>");
                 continue;
+            }
+            buffer.append(c);
+        }
+    }
+
+    /**
+     * Adds italic on variables in a math formulas.
+     * We will put in italic only the single latin letters.
+     */
+    private static void styleMath(final String line, final StringBuilder buffer) {
+        final int length = line.length();
+        for (int i=0; i<length; i++) {
+            final char c = line.charAt(i);
+            if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) {
+                if ((i == 0 || !Character.isLetterOrDigit(line.codePointBefore(i))) &&
+                    (i+1 >= length || !Character.isLetterOrDigit(line.codePointAt(i+1))))
+                {
+                    buffer.append("<var>").append(c).append("</var>");
+                    continue;
+                }
             }
             buffer.append(c);
         }
