@@ -35,7 +35,7 @@ public final strictfp class XMLComparatorTest extends TestCase {
     /**
      * Tests the {@link XMLComparator#ignoredAttributes} and {@link XMLComparator#ignoredNodes} sets.
      *
-     * @throws Exception Should never happen.
+     * @throws Exception Shall never happen.
      */
     @Test
     public void testIgnore() throws Exception {
@@ -56,7 +56,7 @@ public final strictfp class XMLComparatorTest extends TestCase {
             "  </form>\n" +
             "</body>");
 
-        ensureFail("Should fail because the \"cellpading\" attribute value is different.", cmp);
+        assertFail("Shall fail because the \"cellpading\" attribute value is different.", cmp);
 
         // Following comparison should not fail anymore.
         cmp.ignoredAttributes.add("cellpading");
@@ -64,7 +64,7 @@ public final strictfp class XMLComparatorTest extends TestCase {
 
         cmp.ignoredAttributes.clear();
         cmp.ignoredAttributes.add("bgcolor");
-        ensureFail("The \"cellpading\" attribute should not be ignored anymore.", cmp);
+        assertFail("The \"cellpading\" attribute should not be ignored anymore.", cmp);
 
         // Ignore the table node, which contains the faulty attribute.
         cmp.ignoredNodes.add("table");
@@ -81,11 +81,11 @@ public final strictfp class XMLComparatorTest extends TestCase {
      *
      * @see javax.xml.parsers.DocumentBuilderFactory#setNamespaceAware(boolean)
      *
-     * @throws Exception Should never happen.
+     * @throws Exception Shall never happen.
      */
     @Test
     public void testNamespaceAware() throws Exception {
-        final XMLComparator cmp = new XMLComparator(
+        XMLComparator cmp = new XMLComparator(
             "<ns1:body xmlns:ns1=\"http://myns1\" xmlns:ns2=\"http://myns2\">\n" +
             "  <ns1:table ns2:cellpading=\"1\"/>\n" +
             "</ns1:body>",
@@ -97,6 +97,22 @@ public final strictfp class XMLComparatorTest extends TestCase {
         // Following comparison should not fail anymore.
         cmp.ignoredAttributes.add("http://www.w3.org/2000/xmlns:*");
         cmp.compare();
+        /*
+         * Opposite case: same prefix, but different URL.
+         * The XML comparison is expected to fail.
+         */
+        cmp = new XMLComparator(
+            "<ns1:body xmlns:ns1=\"http://myns1\" xmlns:ns2=\"http://myns2\">\n" +
+            "  <ns1:table ns2:cellpading=\"1\"/>\n" +
+            "</ns1:body>",
+
+            "<ns1:body xmlns:ns1=\"http://myns1\" xmlns:ns2=\"http://myns3\">\n" +
+            "  <ns1:table ns2:cellpading=\"1\"/>\n" +
+            "</ns1:body>");
+
+        // Following comparison should not fail anymore.
+        cmp.ignoredAttributes.add("http://www.w3.org/2000/xmlns:*");
+        assertFail("Shall fail because the \"cellpading\" attribute has a different namespace.", cmp);
     }
 
     /**
@@ -107,7 +123,7 @@ public final strictfp class XMLComparatorTest extends TestCase {
      * @param message The message for JUnit if the comparison does not fail.
      * @param cmp The comparator on which to invoke {@link XMLComparator#compare()}.
      */
-    private static void ensureFail(final String message, final XMLComparator cmp) {
+    private static void assertFail(final String message, final XMLComparator cmp) {
         try {
             cmp.compare();
         } catch (AssertionError e) {
