@@ -16,14 +16,18 @@
  */
 package org.apache.sis.referencing.operation.matrix;
 
+import org.opengis.geometry.Envelope;
+import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.internal.referencing.AxisDirections;
 
 // Related to JDK7
 import java.util.Objects;
@@ -41,6 +45,7 @@ import java.util.Objects;
  *       {@link #create         create}.
  *   </li>
  *   <li>Creating new matrices for coordinate operation steps:
+ *       {@link #createTransform(Envelope, AxisDirection[], Envelope, AxisDirection[]) createTransform},
  *       {@link #createDimensionSelect createDimensionSelect},
  *       {@link #createPassThrough     createPassThrough}.
  *   </li>
@@ -175,6 +180,196 @@ public final class Matrices extends Static {
             default: return new GeneralMatrix(numRow, numCol, elements);
         }
         return new NonSquareMatrix(numRow, numCol, elements);
+    }
+
+    /**
+     * Implementation of {@code createTransform(…)} public methods expecting envelopes and/or axis directions.
+     *
+     * @param useEnvelopes {@code true} if source and destination envelopes shall be taken in account.
+     *        If {@code false}, then source and destination envelopes will be ignored and may be null.
+     */
+    private static MatrixSIS createTransform(final Envelope srcEnvelope, final AxisDirection[] srcAxes,
+                                             final Envelope dstEnvelope, final AxisDirection[] dstAxes,
+                                             final boolean useEnvelopes)
+    {
+        final MatrixSIS matrix = createZero(dstAxes.length+1, srcAxes.length+1);
+        /*
+         * Maps source axes to destination axes. If no axis is moved (for example if the user
+         * want to transform (NORTH,EAST) to (SOUTH,EAST)), then source and destination index
+         * will be equal.   If some axes are moved (for example if the user want to transform
+         * (NORTH,EAST) to (EAST,NORTH)), then ordinates at index {@code srcIndex} will have
+         * to be moved at index {@code dstIndex}.
+         */
+        for (int dstIndex = 0; dstIndex < dstAxes.length; dstIndex++) {
+            boolean hasFound = false;
+            final AxisDirection dstDir = dstAxes[dstIndex];
+            final AxisDirection search = AxisDirections.absolute(dstDir);
+            for (int srcIndex = 0; srcIndex < srcAxes.length; srcIndex++) {
+                final AxisDirection srcDir = srcAxes[srcIndex];
+                if (search.equals(AxisDirections.absolute(srcDir))) {
+                    if (hasFound) {
+                        throw new IllegalArgumentException(Errors.format(
+                                Errors.Keys.ColinearAxisDirections_2, srcDir, dstDir));
+                    }
+                    hasFound = true;
+                    /*
+                     * Set the matrix elements. Some matrix elements will never be set.
+                     * They will be left to zero, which is their desired value.
+                     */
+                    final boolean same = srcDir.equals(dstDir);
+                    double scale = same ? +1 : -1;
+                    double translate = 0;
+                    if (useEnvelopes) {
+                        translate  = same ? dstEnvelope.getMinimum(dstIndex)
+                                          : dstEnvelope.getMaximum(dstIndex);
+                        scale     *= dstEnvelope.getSpan(dstIndex) /
+                                     srcEnvelope.getSpan(srcIndex);
+                        translate -= srcEnvelope.getMinimum(srcIndex) * scale;
+                    }
+                    matrix.setElement(dstIndex, srcIndex,       scale);
+                    matrix.setElement(dstIndex, srcAxes.length, translate);
+                }
+            }
+            if (!hasFound) {
+                throw new IllegalArgumentException(Errors.format(
+                        Errors.Keys.CanNotMapAxisToDirection_2, dstAxes[dstIndex], "srcAxes"));
+            }
+        }
+        matrix.setElement(dstAxes.length, srcAxes.length, 1);
+        return matrix;
+    }
+
+    /**
+     * Creates a transform matrix mapping the given source envelope to the given destination envelope.
+     * The given envelopes can have any dimensions, which are handled as below:
+     *
+     * <ul>
+     *   <li>If the two envelopes have the same {@linkplain Envelope#getDimension() dimension},
+     *       then the transform is {@linkplain #isAffine(Matrix) affine}.</li>
+     *   <li>If the destination envelope has less dimensions than the source envelope,
+     *       then trailing dimensions are silently dropped.</li>
+     *   <li>If the target envelope has more dimensions than the source envelope,
+     *       then the transform will append trailing ordinates with the 0 value.</li>
+     * </ul>
+     *
+     * @param  srcEnvelope The source envelope.
+     * @param  dstEnvelope The destination envelope.
+     * @return The transform from the given source envelope to target envelope.
+     *
+     * @see #createTransform(AxisDirection[], AxisDirection[])
+     * @see #createTransform(Envelope, AxisDirection[], Envelope, AxisDirection[])
+     */
+    public static MatrixSIS createTransform(final Envelope srcEnvelope, final Envelope dstEnvelope) {
+        final int srcDim = srcEnvelope.getDimension();
+        final int dstDim = dstEnvelope.getDimension();
+        final MatrixSIS matrix = createZero(dstDim+1, srcDim+1);
+        for (int i = Math.min(srcDim, dstDim); --i >= 0;) {
+            double scale     = dstEnvelope.getSpan(i)    / srcEnvelope.getSpan(i);
+            double translate = dstEnvelope.getMinimum(i) - srcEnvelope.getMinimum(i)*scale;
+            matrix.setElement(i, i,         scale);
+            matrix.setElement(i, srcDim, translate);
+        }
+        matrix.setElement(dstDim, srcDim, 1);
+        return matrix;
+    }
+
+    /**
+     * Creates a transform matrix changing axis order and/or direction. For example the transform may convert
+     * (<i>northing</i>, <i>westing</i>) coordinates into (<i>easting</i>, <i>northing</i>) coordinates.
+     * This method tries to associate each {@code dstAxes} direction to either an equals {@code srcAxis}
+     * direction, or to an opposite {@code srcAxis} direction.
+     *
+     * <ul>
+     *   <li>If some {@code srcAxes} directions can not be mapped to {@code dstAxes} directions, then the transform
+     *       will silently drops the ordinates associated to those extra source axis directions.</li>
+     *   <li>If some {@code dstAxes} directions can not be mapped to {@code srcAxes} directions,
+     *       then an exception will be thrown.</li>
+     * </ul>
+     *
+     * {@example It is legal to transform from (<i>easting</i>, <i>northing</i>, <i>up</i>) to
+     *           (<i>easting</i>, <i>northing</i>) - this is the first above case, but illegal
+     *           to transform (<i>easting</i>, <i>northing</i>) to (<i>easting</i>, <i>up</i>).}
+     *
+     * <b>Code example:</b> the following method call:
+     *
+     * {@preformat java
+     *   matrix = Matrices.createTransform(new AxisDirection[] {AxisDirection.NORTH, AxisDirection.WEST},
+     *                                     new AxisDirection[] {AxisDirection.EAST, AxisDirection.NORTH});
+     * }
+     *
+     * will return the following square matrix, which can be used in coordinate conversions as below:
+     *
+     * {@preformat math
+     *   ┌    ┐   ┌         ┐   ┌    ┐
+     *   │ -x │   │ 0 -1  0 │   │  y │
+     *   │  y │ = │ 1  0  0 │ × │ +x │
+     *   │  1 │   │ 0  0  1 │   │  1 │
+     *   └    ┘   └         ┘   └    ┘
+     * }
+     *
+     * @param  srcAxes The ordered sequence of axis directions for source coordinate system.
+     * @param  dstAxes The ordered sequence of axis directions for destination coordinate system.
+     * @return The transform from the given source axis directions to the given target axis directions.
+     * @throws IllegalArgumentException If {@code dstAxes} contains at least one axis not found in {@code srcAxes},
+     *         or if some colinear axes were found.
+     *
+     * @see #createTransform(Envelope, Envelope)
+     * @see #createTransform(Envelope, AxisDirection[], Envelope, AxisDirection[])
+     */
+    public static MatrixSIS createTransform(final AxisDirection[] srcAxes, final AxisDirection[] dstAxes) {
+        return createTransform(null, srcAxes, null, dstAxes, false);
+    }
+
+    /**
+     * Creates a transform matrix mapping the given source envelope to the given destination envelope,
+     * combined with changes in axis order and/or direction.
+     * Invoking this method is equivalent to concatenating the following matrix transforms:
+     *
+     * <ul>
+     *   <li><code>{@linkplain #createTransform(Envelope, Envelope) createTransform}(srcEnvelope, dstEnvelope)</code></li>
+     *   <li><code>{@linkplain #createTransform(AxisDirection[], AxisDirection[]) createTransform}(srcAxes, dstAxes)</code></li>
+     * </ul>
+     *
+     * @param  srcEnvelope The source envelope.
+     * @param  srcAxes     The ordered sequence of axis directions for source coordinate system.
+     * @param  dstEnvelope The destination envelope.
+     * @param  dstAxes     The ordered sequence of axis directions for destination coordinate system.
+     * @return The transform from the given source envelope and axis directions
+     *         to the given envelope and target axis directions.
+     * @throws MismatchedDimensionException If an envelope {@linkplain Envelope#getDimension() dimension} does not
+     *         match the length of the axis directions sequence.
+     * @throws IllegalArgumentException If {@code dstAxes} contains at least one axis not found in {@code srcAxes},
+     *         or if some colinear axes were found.
+     *
+     * @see #createTransform(Envelope, Envelope)
+     * @see #createTransform(AxisDirection[], AxisDirection[])
+     */
+    public static MatrixSIS createTransform(final Envelope srcEnvelope, final AxisDirection[] srcAxes,
+                                            final Envelope dstEnvelope, final AxisDirection[] dstAxes)
+    {
+        ensureDimensionMatch("srcEnvelope", srcEnvelope, srcAxes.length);
+        ensureDimensionMatch("dstEnvelope", dstEnvelope, dstAxes.length);
+        return createTransform(srcEnvelope, srcAxes, dstEnvelope, dstAxes, true);
+    }
+
+    /**
+     * Convenience method for checking object dimension validity.
+     * This method is invoked for argument checking.
+     *
+     * @param  name      The name of the argument to check.
+     * @param  envelope  The envelope to check.
+     * @param  dimension The expected dimension for the object.
+     * @throws MismatchedDimensionException if the envelope doesn't have the expected dimension.
+     */
+    private static void ensureDimensionMatch(final String name, final Envelope envelope,
+            final int dimension) throws MismatchedDimensionException
+    {
+        ArgumentChecks.ensureNonNull(name, envelope);
+        final int dim = envelope.getDimension();
+        if (dimension != dim) {
+            throw new MismatchedDimensionException(Errors.format(
+                    Errors.Keys.MismatchedDimension_3, name, dimension, dim));
+        }
     }
 
     /**
