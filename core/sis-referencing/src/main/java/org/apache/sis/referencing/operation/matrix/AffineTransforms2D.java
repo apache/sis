@@ -67,12 +67,24 @@ public final class AffineTransforms2D extends Static {
             return (AffineTransform) matrix;
         }
         MatrixSIS.ensureSizeMatch(3, matrix);
-        if (Matrices.isAffine(matrix)) {
-            return new AffineTransform(matrix.getElement(0,0), matrix.getElement(1,0),
-                                       matrix.getElement(0,1), matrix.getElement(1,1),
-                                       matrix.getElement(0,2), matrix.getElement(1,2));
+        if (!Matrices.isAffine(matrix)) {
+            throw new IllegalStateException(Errors.format(Errors.Keys.NotAnAffineTransform));
         }
-        throw new IllegalStateException(Errors.format(Errors.Keys.NotAnAffineTransform));
+        return new AffineTransform(matrix.getElement(0,0), matrix.getElement(1,0),
+                                   matrix.getElement(0,1), matrix.getElement(1,1),
+                                   matrix.getElement(0,2), matrix.getElement(1,2));
+    }
+
+    /**
+     * Creates a 3×3 matrix from the given affine transform.
+     *
+     * @param  transform The affine transform to copy as a matrix.
+     * @return A matrix containing the same terms than the given affine transform.
+     */
+    public static Matrix3 toMatrix(final AffineTransform transform) {
+        return new Matrix3(transform.getScaleX(), transform.getShearX(), transform.getTranslateX(),
+                           transform.getShearY(), transform.getScaleY(), transform.getTranslateY(),
+                           0,                     0,                     1);
     }
 
     /**

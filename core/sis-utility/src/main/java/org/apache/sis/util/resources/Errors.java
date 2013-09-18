@@ -94,6 +94,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int CanNotInstantiate_1 = 81;
 
         /**
+         * Can not map an axis from “{0}” to direction “{1}”.
+         */
+        public static final int CanNotMapAxisToDirection_2 = 123;
+
+        /**
          * Can not open “{0}”.
          */
         public static final int CanNotOpen_1 = 97;
@@ -127,6 +132,11 @@ public final class Errors extends IndexedResourceBundle {
          * Can not clone an object of type ‘{0}’.
          */
         public static final int CloneNotSupported_1 = 42;
+
+        /**
+         * Axis directions {0} and {1} are colinear.
+         */
+        public static final int ColinearAxisDirections_2 = 122;
 
         /**
          * Thread “{0}” is dead.
