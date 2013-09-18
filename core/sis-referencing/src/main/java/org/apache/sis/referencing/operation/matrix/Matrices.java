@@ -31,6 +31,30 @@ import java.util.Objects;
 
 /**
  * {@link Matrix} factory methods and utilities.
+ * This class provides the following methods:
+ *
+ * <ul>
+ *   <li>Creating new matrices of arbitrary size:
+ *       {@link #createIdentity(int)},
+ *       {@link #createDiagonal(int, int)},
+ *       {@link #createZero(int, int)},
+ *       {@link #create(int, int, double[])}.
+ *   </li>
+ *   <li>Creating new matrices for coordinate operation steps:
+ *       {@link #createDimensionFilter(int, int[])},
+ *       {@link #createPassThrough(int, Matrix, int)}.
+ *   </li>
+ *   <li>Copies matrices to a SIS implementation:
+ *       {@link #copy(Matrix)},
+ *       {@link #castOrCopy(Matrix)}.
+ *   </li>
+ *   <li>Information:
+ *       {@link #isAffine(Matrix)},
+ *       {@link #isIdentity(Matrix, double)},
+ *       {@link #equals(Matrix, Matrix, double, boolean)},
+ *       {@link #equals(Matrix, Matrix, ComparisonMode)}.
+ *   </li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4 (derived from geotk-2.2)
@@ -58,7 +82,7 @@ public final class Matrices extends Static {
      * {@value org.apache.sis.referencing.operation.matrix.Matrix4#SIZE} inclusive, the matrix
      * is guaranteed to be an instance of one of {@link Matrix1} … {@link Matrix4} subtypes.
      *
-     * @param  size Numbers of row and columns. For an affine transform, this is the number of
+     * @param  size Numbers of row and columns. For an affine transform matrix, this is the number of
      *         {@linkplain MathTransform#getSourceDimensions() source} and
      *         {@linkplain MathTransform#getTargetDimensions() target} dimensions + 1.
      * @return An identity matrix of the given size.
@@ -84,8 +108,8 @@ public final class Matrices extends Static {
      * {@value org.apache.sis.referencing.operation.matrix.Matrix4#SIZE} inclusive, the matrix
      * is guaranteed to be an instance of one of {@link Matrix1} … {@link Matrix4} subtypes.
      *
-     * @param numRow For an affine transform, this is the number of {@linkplain MathTransform#getTargetDimensions() target dimensions} + 1.
-     * @param numCol For an affine transform, this is the number of {@linkplain MathTransform#getSourceDimensions() source dimensions} + 1.
+     * @param numRow For a math transform, this is the number of {@linkplain MathTransform#getTargetDimensions() target dimensions} + 1.
+     * @param numCol For a math transform, this is the number of {@linkplain MathTransform#getSourceDimensions() source dimensions} + 1.
      * @return An identity matrix of the given size.
      */
     public static MatrixSIS createDiagonal(final int numRow, final int numCol) {
@@ -106,8 +130,8 @@ public final class Matrices extends Static {
      * {@value org.apache.sis.referencing.operation.matrix.Matrix4#SIZE} inclusive, the matrix
      * is guaranteed to be an instance of one of {@link Matrix1} … {@link Matrix4} subtypes.
      *
-     * @param numRow For an affine transform, this is the number of {@linkplain MathTransform#getTargetDimensions() target dimensions} + 1.
-     * @param numCol For an affine transform, this is the number of {@linkplain MathTransform#getSourceDimensions() source dimensions} + 1.
+     * @param numRow For a math transform, this is the number of {@linkplain MathTransform#getTargetDimensions() target dimensions} + 1.
+     * @param numCol For a math transform, this is the number of {@linkplain MathTransform#getSourceDimensions() source dimensions} + 1.
      * @return A matrix of the given size with only zero values.
      */
     public static MatrixSIS createZero(final int numRow, final int numCol) {
@@ -151,48 +175,161 @@ public final class Matrices extends Static {
 
     /**
      * Creates a matrix for a transform that keep only a subset of source ordinate values.
-     * The matrix size will be ({@code selectedSourceDim.length}+1) × ({@code numSourceDim}+1).
+     * The matrix size will be ({@code selectedDimensions.length}+1) × ({@code sourceDimensions}+1).
      * The matrix will contain only zero elements, except for the following cells which will contain 1:
      *
      * <ul>
      *   <li>The last column in the last row.</li>
-     *   <li>For any row <var>j</var> other than the last row, the column {@code selectedSourceDim[j]}.</li>
+     *   <li>For any row <var>j</var> other than the last row, the column {@code selectedDimensions[j]}.</li>
      * </ul>
      *
-     * {@example Given (<var>x</var>,<var>y</var>,<var>z</var>,<var>t</var>) ordinate values, if one wants to
+     * <b>Example:</b> Given (<var>x</var>,<var>y</var>,<var>z</var>,<var>t</var>) ordinate values, if one wants to
      * keep (<var>y</var>,<var>x</var>,<var>t</var>) ordinates (note the <var>x</var> ↔ <var>y</var> swapping)
-     * and discard the <var>z</var> values, then one can use the following method call:
+     * and discard the <var>z</var> values, then the indices of source ordinates to select are 1 for <var>y</var>,
+     * 0 for <var>x</var> and 3 for <var>t</var>. One can use the following method call:
      *
-     * <blockquote><pre>matrix = createDimensionFilter(4, new int[] {1, 0, 3});</pre></blockquote>
+     * {@preformat java
+     *   matrix = Matrices.createDimensionFilter(4, new int[] {1, 0, 3});
+     * }
      *
      * The above method call will create the following 4×5 matrix,
      * which can be used for converting coordinates as below:
      *
-     * <blockquote><pre> ┌   ┐   ┌           ┐   ┌   ┐
-     * │ y │   │ 0 1 0 0 0 │   │ x │
-     * │ x │   │ 1 0 0 0 0 │   │ y │
-     * │ t │ = │ 0 0 0 1 0 │ × │ z │
-     * │ 1 │   │ 0 0 0 0 1 │   │ t │
-     * └   ┘   └           ┘   │ 1 │
-     *                         └   ┘</pre></blockquote>}
+     * {@preformat math
+     *   ┌   ┐   ┌           ┐   ┌   ┐
+     *   │ y │   │ 0 1 0 0 0 │   │ x │
+     *   │ x │   │ 1 0 0 0 0 │   │ y │
+     *   │ t │ = │ 0 0 0 1 0 │ × │ z │
+     *   │ 1 │   │ 0 0 0 0 1 │   │ t │
+     *   └   ┘   └           ┘   │ 1 │
+     *                           └   ┘
+     * }
      *
-     * @param  numSourceDim The number of dimension of source coordinates.
-     * @param  selectedSourceDim The indices of source ordinate values to keep.
-     * @return The matrix for an affine transform keeping only the given source dimensions, and discarding all others.
-     * @throws IllegalArgumentException if a value of {@code selectedSourceDim} is lower than 0
-     *         or not smaller than {@code numSourceDim}.
+     * @param  sourceDimensions The number of dimensions in source coordinates.
+     * @param  selectedDimensions The 0-based indices of source ordinate values to keep.
+     *         The length of this array will be the number of dimensions in target coordinates.
+     * @return An affine transform matrix keeping only the given source dimensions, and discarding all others.
+     * @throws IllegalArgumentException if a value of {@code selectedDimensions} is lower than 0
+     *         or not smaller than {@code sourceDimensions}.
      *
      * @see org.apache.sis.referencing.operation.MathTransforms#dimensionFilter(int, int[])
      */
-    public static MatrixSIS createDimensionFilter(final int numSourceDim, final int[] selectedSourceDim) {
-        final int numTargetDim = selectedSourceDim.length;
-        final MatrixSIS matrix = createZero(numTargetDim+1, numSourceDim+1);
+    public static MatrixSIS createDimensionFilter(final int sourceDimensions, final int[] selectedDimensions) {
+        final int numTargetDim = selectedDimensions.length;
+        final MatrixSIS matrix = createZero(numTargetDim+1, sourceDimensions+1);
         for (int j=0; j<numTargetDim; j++) {
-            final int i = selectedSourceDim[j];
-            ArgumentChecks.ensureValidIndex(numSourceDim, i);
+            final int i = selectedDimensions[j];
+            ArgumentChecks.ensureValidIndex(sourceDimensions, i);
             matrix.setElement(j, i, 1);
         }
-        matrix.setElement(numTargetDim, numSourceDim, 1);
+        matrix.setElement(numTargetDim, sourceDimensions, 1);
+        return matrix;
+    }
+
+    /**
+     * Creates a matrix which converts a subset of ordinates with another matrix.
+     * For example giving (<var>latitude</var>, <var>longitude</var>, <var>height</var>) coordinates,
+     * a pass through operation can convert the height values from feet to metres without affecting
+     * the (<var>latitude</var>, <var>longitude</var>) values.
+     *
+     * <p>The given sub-matrix shall have the following properties:</p>
+     * <ul>
+     *   <li>The last column contains translation terms, except in the last row.</li>
+     *   <li>The last row often (but not necessarily) contains 0 values except in the last column.</li>
+     * </ul>
+     *
+     * A square matrix complying with the above conditions is often {@linkplain #isAffine(Matrix) affine},
+     * but this is not mandatory
+     * (for example a <cite>perspective transform</cite> may contain non-zero values in the last row).
+     *
+     * <p>This method builds a new matrix with the following content:</p>
+     * <ul>
+     *   <li>An amount of {@code firstAffectedOrdinate} rows and columns are inserted before the first
+     *       row and columns of the sub-matrix. The elements for the new rows and columns are set to 1
+     *       on the diagonal, and 0 elsewhere.</li>
+     *   <li>The sub-matrix - except for its last row and column - is copied in the new matrix starting
+     *       at index ({@code firstAffectedOrdinate}, {@code firstAffectedOrdinate}).</li>
+     *   <li>An amount of {@code numTrailingOrdinates} rows and columns are appended after the above sub-matrix.
+     *       Their elements are set to 1 on the pseudo-diagonal ending in the lower-right corner, and 0 elsewhere.</li>
+     *   <li>The last sub-matrix row is copied in the last row of the new matrix, and the last sub-matrix column
+     *       is copied in the last column of the sub-matrix.</li>
+     * </ul>
+     *
+     * <b>Example:</b> Given the following sub-matrix which convert height values from feet to metres:
+     *
+     * {@preformat math
+     *   ┌    ┐   ┌           ┐   ┌   ┐
+     *   │ z' │ = │ 0.3048  0 │ × │ z │
+     *   │ 1  │   │ 0       1 │   │ 1 │
+     *   └    ┘   └           ┘   └   ┘
+     * }
+     *
+     * Then a call to {@code Matrices.createPassThrough(2, subMatrix, 1)} will return the following matrix,
+     * which can be used for converting the height (<var>z</var>) without affecting the other ordinate values
+     * in (<var>x</var>,<var>y</var>,<var>z</var>,<var>t</var>) coordinates:
+     *
+     * {@preformat math
+     *   ┌    ┐   ┌                    ┐   ┌   ┐
+     *   │ x  │   │ 1  0  0       0  0 │   │ x │
+     *   │ y  │   │ 0  1  0       0  0 │   │ y │
+     *   │ z' │ = │ 0  0  0.3048  0  0 │ × │ z │
+     *   │ t  │   │ 0  0  0       1  0 │   │ t │
+     *   │ 1  │   │ 0  0  0       0  1 │   │ 1 │
+     *   └    ┘   └                    ┘   └   ┘
+     * }
+     *
+     * @param  firstAffectedOrdinate The lowest index of the affected ordinates.
+     * @param  subMatrix The matrix to use for affected ordinates.
+     * @param  numTrailingOrdinates Number of trailing ordinates to pass through.
+     * @return A matrix
+     *
+     * @see org.apache.sis.referencing.operation.DefaultMathTransformFactory#createPassThroughTransform(int, MathTransform, int)
+     */
+    public static MatrixSIS createPassThrough(final int firstAffectedOrdinate,
+            final Matrix subMatrix, final int numTrailingOrdinates)
+    {
+        ArgumentChecks.ensurePositive("firstAffectedOrdinate", firstAffectedOrdinate);
+        ArgumentChecks.ensurePositive("numTrailingOrdinates",  numTrailingOrdinates);
+        final int  expansion = firstAffectedOrdinate + numTrailingOrdinates;
+        int sourceDimensions = subMatrix.getNumCol();
+        int targetDimensions = subMatrix.getNumRow();
+        final MatrixSIS matrix = createZero(targetDimensions-- + expansion,
+                                            sourceDimensions-- + expansion);
+        /*
+         * Following code process for upper row to lower row.
+         * First, set the diagonal elements on leading new dimensions.
+         */
+        for (int j=0; j<firstAffectedOrdinate; j++) {
+            matrix.setElement(j, j, 1);
+        }
+        /*
+         * Copy the sub-matrix, with special case for the translation terms
+         * which are unconditionally stored in the last column.
+         */
+        final int lastColumn = sourceDimensions + expansion;
+        for (int j=0; j<targetDimensions; j++) {
+            for (int i=0; i<sourceDimensions; i++) {
+                matrix.setElement(firstAffectedOrdinate + j, firstAffectedOrdinate + i, subMatrix.getElement(j, i));
+            }
+            matrix.setElement(firstAffectedOrdinate + j, lastColumn, subMatrix.getElement(j, sourceDimensions));
+        }
+        /*
+         * Set the pseudo-diagonal elements on the trailing new dimensions.
+         * 'diff' is zero for a square matrix and non-zero for rectangular matrix.
+         */
+        final int diff = targetDimensions - sourceDimensions;
+        for (int i=lastColumn - numTrailingOrdinates; i<lastColumn; i++) {
+            matrix.setElement(diff + i, i, 1);
+        }
+        /*
+         * Copy the last row from the sub-matrix. In the usual affine transform,
+         * this row contains only 0 element except for the last one, which is 1.
+         */
+        final int lastRow = targetDimensions + expansion;
+        for (int i=0; i<sourceDimensions; i++) {
+            matrix.setElement(lastRow, i + firstAffectedOrdinate, subMatrix.getElement(targetDimensions, i));
+        }
+        matrix.setElement(lastRow, lastColumn, subMatrix.getElement(targetDimensions, sourceDimensions));
         return matrix;
     }
 
