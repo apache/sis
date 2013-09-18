@@ -35,24 +35,24 @@ import java.util.Objects;
  *
  * <ul>
  *   <li>Creating new matrices of arbitrary size:
- *       {@link #createIdentity(int)},
- *       {@link #createDiagonal(int, int)},
- *       {@link #createZero(int, int)},
- *       {@link #create(int, int, double[])}.
+ *       {@link #createIdentity createIdentity},
+ *       {@link #createDiagonal createDiagonal},
+ *       {@link #createZero     createZero},
+ *       {@link #create         create}.
  *   </li>
  *   <li>Creating new matrices for coordinate operation steps:
- *       {@link #createDimensionFilter(int, int[])},
- *       {@link #createPassThrough(int, Matrix, int)}.
+ *       {@link #createDimensionSelect createDimensionSelect},
+ *       {@link #createPassThrough     createPassThrough}.
  *   </li>
  *   <li>Copies matrices to a SIS implementation:
- *       {@link #copy(Matrix)},
- *       {@link #castOrCopy(Matrix)}.
+ *       {@link #copy       copy},
+ *       {@link #castOrCopy castOrCopy}.
  *   </li>
  *   <li>Information:
- *       {@link #isAffine(Matrix)},
- *       {@link #isIdentity(Matrix, double)},
- *       {@link #equals(Matrix, Matrix, double, boolean)},
- *       {@link #equals(Matrix, Matrix, ComparisonMode)}.
+ *       {@link #isAffine   isAffine},
+ *       {@link #isIdentity isIdentity},
+ *       {@link #equals(Matrix, Matrix, double, boolean) equals},
+ *       {@link #equals(Matrix, Matrix, ComparisonMode)  equals}.
  *   </li>
  * </ul>
  *
@@ -77,10 +77,11 @@ public final class Matrices extends Static {
      * Creates a square identity matrix of size {@code size} × {@code size}.
      * Elements on the diagonal (<var>j</var> == <var>i</var>) are set to 1.
      *
-     * {@section Implementation note}
+     * <blockquote><font size=-1><b>Implementation note:</b>
      * For sizes between {@value org.apache.sis.referencing.operation.matrix.Matrix1#SIZE} and
      * {@value org.apache.sis.referencing.operation.matrix.Matrix4#SIZE} inclusive, the matrix
      * is guaranteed to be an instance of one of {@link Matrix1} … {@link Matrix4} subtypes.
+     * </font></blockquote>
      *
      * @param  size Numbers of row and columns. For an affine transform matrix, this is the number of
      *         {@linkplain MathTransform#getSourceDimensions() source} and
@@ -102,11 +103,12 @@ public final class Matrices extends Static {
      * Elements on the diagonal (<var>j</var> == <var>i</var>) are set to 1.
      * The result is an identity matrix if {@code numRow} = {@code numCol}.
      *
-     * {@section Implementation note}
+     * <blockquote><font size=-1><b>Implementation note:</b>
      * For {@code numRow} == {@code numCol} with a value between
      * {@value org.apache.sis.referencing.operation.matrix.Matrix1#SIZE} and
      * {@value org.apache.sis.referencing.operation.matrix.Matrix4#SIZE} inclusive, the matrix
      * is guaranteed to be an instance of one of {@link Matrix1} … {@link Matrix4} subtypes.
+     * </font></blockquote>
      *
      * @param numRow For a math transform, this is the number of {@linkplain MathTransform#getTargetDimensions() target dimensions} + 1.
      * @param numCol For a math transform, this is the number of {@linkplain MathTransform#getSourceDimensions() source dimensions} + 1.
@@ -124,11 +126,12 @@ public final class Matrices extends Static {
      * Creates a matrix of size {@code numRow} × {@code numCol} filled with zero values.
      * This constructor is convenient when the caller want to initialize the matrix elements himself.
      *
-     * {@section Implementation note}
+     * <blockquote><font size=-1><b>Implementation note:</b>
      * For {@code numRow} == {@code numCol} with a value between
      * {@value org.apache.sis.referencing.operation.matrix.Matrix1#SIZE} and
      * {@value org.apache.sis.referencing.operation.matrix.Matrix4#SIZE} inclusive, the matrix
      * is guaranteed to be an instance of one of {@link Matrix1} … {@link Matrix4} subtypes.
+     * </font></blockquote>
      *
      * @param numRow For a math transform, this is the number of {@linkplain MathTransform#getTargetDimensions() target dimensions} + 1.
      * @param numCol For a math transform, this is the number of {@linkplain MathTransform#getSourceDimensions() source dimensions} + 1.
@@ -149,11 +152,12 @@ public final class Matrices extends Static {
      * Creates a matrix of size {@code numRow} × {@code numCol} initialized to the given elements.
      * The elements array size must be equals to {@code numRow*numCol}. Column indices vary fastest.
      *
-     * {@section Implementation note}
+     * <blockquote><font size=-1><b>Implementation note:</b>
      * For {@code numRow} == {@code numCol} with a value between
      * {@value org.apache.sis.referencing.operation.matrix.Matrix1#SIZE} and
      * {@value org.apache.sis.referencing.operation.matrix.Matrix4#SIZE} inclusive, the matrix
      * is guaranteed to be an instance of one of {@link Matrix1} … {@link Matrix4} subtypes.
+     * </font></blockquote>
      *
      * @param  numRow   Number of rows.
      * @param  numCol   Number of columns.
@@ -189,7 +193,7 @@ public final class Matrices extends Static {
      * 0 for <var>x</var> and 3 for <var>t</var>. One can use the following method call:
      *
      * {@preformat java
-     *   matrix = Matrices.createDimensionFilter(4, new int[] {1, 0, 3});
+     *   matrix = Matrices.createDimensionSelect(4, new int[] {1, 0, 3});
      * }
      *
      * The above method call will create the following 4×5 matrix,
@@ -214,7 +218,7 @@ public final class Matrices extends Static {
      *
      * @see org.apache.sis.referencing.operation.MathTransforms#dimensionFilter(int, int[])
      */
-    public static MatrixSIS createDimensionFilter(final int sourceDimensions, final int[] selectedDimensions) {
+    public static MatrixSIS createDimensionSelect(final int sourceDimensions, final int[] selectedDimensions) {
         final int numTargetDim = selectedDimensions.length;
         final MatrixSIS matrix = createZero(numTargetDim+1, sourceDimensions+1);
         for (int j=0; j<numTargetDim; j++) {
@@ -255,27 +259,28 @@ public final class Matrices extends Static {
      *       is copied in the last column of the sub-matrix.</li>
      * </ul>
      *
-     * <b>Example:</b> Given the following sub-matrix which convert height values from feet to metres:
+     * <b>Example:</b> Given the following sub-matrix which converts height values from feet to metres,
+     * then subtract 25 metres:
      *
      * {@preformat math
-     *   ┌    ┐   ┌           ┐   ┌   ┐
-     *   │ z' │ = │ 0.3048  0 │ × │ z │
-     *   │ 1  │   │ 0       1 │   │ 1 │
-     *   └    ┘   └           ┘   └   ┘
+     *   ┌    ┐   ┌             ┐   ┌   ┐
+     *   │ z' │ = │ 0.3048  -25 │ × │ z │
+     *   │ 1  │   │ 0         1 │   │ 1 │
+     *   └    ┘   └             ┘   └   ┘
      * }
      *
      * Then a call to {@code Matrices.createPassThrough(2, subMatrix, 1)} will return the following matrix,
      * which can be used for converting the height (<var>z</var>) without affecting the other ordinate values
-     * in (<var>x</var>,<var>y</var>,<var>z</var>,<var>t</var>) coordinates:
+     * in (<var>x</var>,<var>y</var>,<var>t</var>) coordinates:
      *
      * {@preformat math
-     *   ┌    ┐   ┌                    ┐   ┌   ┐
-     *   │ x  │   │ 1  0  0       0  0 │   │ x │
-     *   │ y  │   │ 0  1  0       0  0 │   │ y │
-     *   │ z' │ = │ 0  0  0.3048  0  0 │ × │ z │
-     *   │ t  │   │ 0  0  0       1  0 │   │ t │
-     *   │ 1  │   │ 0  0  0       0  1 │   │ 1 │
-     *   └    ┘   └                    ┘   └   ┘
+     *   ┌    ┐   ┌                      ┐   ┌   ┐
+     *   │ x  │   │ 1  0  0       0    0 │   │ x │
+     *   │ y  │   │ 0  1  0       0    0 │   │ y │
+     *   │ z' │ = │ 0  0  0.3048  0  -25 │ × │ z │
+     *   │ t  │   │ 0  0  0       1    0 │   │ t │
+     *   │ 1  │   │ 0  0  0       0    1 │   │ 1 │
+     *   └    ┘   └                      ┘   └   ┘
      * }
      *
      * @param  firstAffectedOrdinate The lowest index of the affected ordinates.
@@ -336,10 +341,11 @@ public final class Matrices extends Static {
     /**
      * Creates a new matrix which is a copy of the given matrix.
      *
-     * {@section Implementation note}
+     * <blockquote><font size=-1><b>Implementation note:</b>
      * For square matrix with a size between {@value org.apache.sis.referencing.operation.matrix.Matrix1#SIZE}
      * and {@value org.apache.sis.referencing.operation.matrix.Matrix4#SIZE} inclusive, the returned matrix is
      * guaranteed to be an instance of one of {@link Matrix1} … {@link Matrix4} subtypes.
+     * </font></blockquote>
      *
      * @param matrix The matrix to copy, or {@code null}.
      * @return A copy of the given matrix, or {@code null} if the given matrix was null.
