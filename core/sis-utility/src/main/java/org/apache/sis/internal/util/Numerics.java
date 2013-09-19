@@ -45,15 +45,15 @@ public final class Numerics extends Static {
      * {@preformat java
      *     Matrix m1 = ...;
      *     Matrix m2 = ...;
-     *     if (Matrices.epsilonEqual(m1, m2, EQUIVALENT_THRESHOLD, true)) {
+     *     if (Matrices.epsilonEqual(m1, m2, COMPARISON_THRESHOLD, true)) {
      *         // Consider that matrixes are equal.
      *     }
      * }
      *
      * By extension, the same threshold value is used for comparing other floating point values.
      *
-     * @see org.apache.sis.internal.referencing.Utilities#LINEAR_TOLERANCE
-     * @see org.apache.sis.internal.referencing.Utilities#ANGULAR_TOLERANCE
+     * @see org.apache.sis.internal.referencing.Formulas#LINEAR_TOLERANCE
+     * @see org.apache.sis.internal.referencing.Formulas#ANGULAR_TOLERANCE
      */
     public static final double COMPARISON_THRESHOLD = 1E-14;
 
@@ -87,6 +87,39 @@ public final class Numerics extends Static {
      * Do not allow instantiation of this class.
      */
     private Numerics() {
+    }
+
+    /**
+     * Returns a copy of the given array where each value has been casted to the {@code float} type.
+     *
+     * @param  data The array to copy, or {@code null}.
+     * @return A copy of the given array with values casted to the {@code float} type, or
+     *         {@code null} if the given array was null.
+     */
+    public static float[] copyAsFloats(final double[] data) {
+        if (data == null) return null;
+        final float[] result = new float[data.length];
+        for (int i=0; i<data.length; i++) {
+            result[i] = (float) data[i];
+        }
+        return result;
+    }
+
+    /**
+     * Returns a copy of the given array where each value has been
+     * {@linkplain Math#round(double) rounded} to the {@code int} type.
+     *
+     * @param  data The array to copy, or {@code null}.
+     * @return A copy of the given array with values rounded to the {@code int} type, or
+     *         {@code null} if the given array was null.
+     */
+    public static int[] copyAsInts(final double[] data) {
+        if (data == null) return null;
+        final int[] result = new int[data.length];
+        for (int i=0; i<data.length; i++) {
+            result[i] = (int) Math.round(data[i]);
+        }
+        return result;
     }
 
     /**

@@ -38,8 +38,8 @@ import org.apache.sis.internal.jdk7.Objects;
  * or the corner of the image.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.3 (derived from geotk-2.0)
- * @version 0.3
+ * @since   0.4 (derived from geotk-2.0)
+ * @version 0.4
  * @module
  */
 @Immutable
@@ -153,6 +153,10 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
      */
     @Override
     public int hashCode(final ComparisonMode mode) throws IllegalArgumentException {
+        /*
+         * The "^ (int) serialVersionUID" is an arbitrary change applied to the hash code value in order to
+         * differentiate this ImageDatum implementation from implementations of other GeoAPI interfaces.
+         */
         int code = super.hashCode(mode) ^ (int) serialVersionUID;
         switch (mode) {
             case STRICT: {

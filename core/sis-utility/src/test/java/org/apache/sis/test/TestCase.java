@@ -89,6 +89,13 @@ public abstract strictfp class TestCase {
     public static final boolean PENDING_FUTURE_SIS_VERSION = false;
 
     /**
+     * The seed for the random number generator created by {@link TestUtilities#createRandomNumberGenerator(String)},
+     * or 0 if none. This information is used for printing the seed in case of test failure, in order to allow the
+     * developer to reproduce the failure.
+     */
+    static long randomSeed;
+
+    /**
      * The output writer where to print debugging information (never {@code null}).
      * Texts sent to this printer will be show only if the test fails, or if the
      * {@value org.apache.sis.test.TestConfiguration#VERBOSE_OUTPUT_KEY} system property
@@ -174,6 +181,7 @@ public abstract strictfp class TestCase {
      * @param success {@code true} if this method is invoked on build success,
      */
     static void flushOutput() {
+        randomSeed = 0;
         System.out.flush();
         System.err.flush();
         synchronized (buffer) { // This is the lock used by the 'out' PrintWriter.

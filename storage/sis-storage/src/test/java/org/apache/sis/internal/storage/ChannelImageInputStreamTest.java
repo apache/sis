@@ -62,7 +62,7 @@ public final strictfp class ChannelImageInputStreamTest extends TestCase {
         int bitOffset = 0;
         int operation = 0;
         final ByteBuffer buffer = ByteBuffer.allocate(128);
-        final Random random = TestUtilities.createRandomNumberGenerator("testWithRandomData");
+        final Random random = TestUtilities.createRandomNumberGenerator();
         final ByteOrder byteOrder = random.nextBoolean() ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN;
         final byte[] data = ChannelDataInputTest.createRandomArray(512 * 1024, random);
         final ImageInputStream r = ImageIO.createImageInputStream(new ByteArrayInputStream(data));

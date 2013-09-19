@@ -127,8 +127,13 @@ public final strictfp class TestUtilities extends Static {
     }
 
     /**
-     * Returns a new random number generator with a random seed. This method logs the seed value
-     * to the {@link TestCase#out} stream, in order to allow reproducing a test in case of failure.
+     * Returns a new random number generator with a random seed.
+     * If the test succeed, nothing else will happen. But if the test fails, then the seed value will
+     * be logged to the {@link TestCase#out} stream in order to allow the developer to reproduce the
+     * test failure.
+     *
+     * <p>This method shall be invoked only in the body of a test method - the random number generator
+     * is not valid anymore after the test finished.</p>
      *
      * <p>This method doesn't need to be used in every cases. For example test cases using
      * {@link Random#nextGaussian()} should create their own random numbers generator with
@@ -144,17 +149,13 @@ public final strictfp class TestUtilities extends Static {
      * the developer to reproduce the test with the exact same sequence of numbers.
      * Using this method, the seed can be retrieved in the messages sent to the output stream.</p>
      *
-     * @param  testMethod The name of the method which need a random number generator.
      * @return A new random number generator initialized with a random seed.
      */
-    public static Random createRandomNumberGenerator(final String testMethod) {
-        final long seed = StrictMath.round(StrictMath.random() * (1L << 48));
-        final PrintWriter out = TestCase.out;
-        out.print("Random number generator for “");
-        out.print(testMethod);
-        out.print("” created with seed ");
-        out.print(seed);
-        out.println('.');
+    public static Random createRandomNumberGenerator() {
+        long seed;
+        do seed = StrictMath.round(StrictMath.random() * (1L << 48));
+        while (seed == 0); // 0 is a sentinal value for "no generator".
+        TestCase.randomSeed = seed;
         return new Random(seed);
     }
 
