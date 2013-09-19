@@ -73,7 +73,7 @@
  *     String text = i18n.toString(locale); // Localize now.
  * }
  *
- * If optional arguments are present, then the following types are handled especially
+ * If optional arguments are present, then the following types are handled in a special way
  * (non exhaustive list):
  *
  * <ul>

@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.operation.matrix;
 
 import org.opengis.geometry.Envelope;
+import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
@@ -193,6 +194,14 @@ public final class Matrices extends Static {
                                              final Envelope dstEnvelope, final AxisDirection[] dstAxes,
                                              final boolean useEnvelopes)
     {
+        final DirectPosition dstCorner, srcCorner, srcOppositeCorner;
+        if (useEnvelopes) {
+            dstCorner         = dstEnvelope.getLowerCorner();
+            srcCorner         = srcEnvelope.getLowerCorner();
+            srcOppositeCorner = srcEnvelope.getUpperCorner();
+        } else {
+            dstCorner = srcCorner = srcOppositeCorner = null;
+        }
         final MatrixSIS matrix = createZero(dstAxes.length+1, srcAxes.length+1);
         /*
          * Maps source axes to destination axes. If no axis is moved (for example if the user
@@ -221,11 +230,12 @@ public final class Matrices extends Static {
                     double scale = same ? +1 : -1;
                     double translate = 0;
                     if (useEnvelopes) {
-                        translate  = dstEnvelope.getMinimum(dstIndex);
+                        // See the comment in transform(Envelope, Envelope) for an explanation about why
+                        // we use the lower/upper corners instead than getMinimum()/getMaximum() methods.
+                        translate  = dstCorner.getOrdinate(dstIndex);
                         scale     *= dstEnvelope.getSpan(dstIndex) /
                                      srcEnvelope.getSpan(srcIndex);
-                        translate -= (same ? srcEnvelope.getMinimum(srcIndex)
-                                           : srcEnvelope.getMaximum(srcIndex)) * scale;
+                        translate -= scale * (same ? srcCorner : srcOppositeCorner).getOrdinate(srcIndex);
                     }
                     matrix.setElement(dstIndex, srcIndex,       scale);
                     matrix.setElement(dstIndex, srcAxes.length, translate);
@@ -273,6 +283,12 @@ public final class Matrices extends Static {
      *   └     ┘   └              ┘   └     ┘
      * }
      *
+     * {@section Spanning the anti-meridian of a Geographic CRS}
+     * If the given envelope is crossing the date line, then this method requires the envelope {@code getSpan(int)}
+     * method to behave as documented in the {@link org.apache.sis.geometry.AbstractEnvelope#getSpan(int)} javadoc.
+     * Furthermore the matrix created by this method will produce expected results only for source or destination
+     * points before the date line, since the wrap around operation can not be represented by an affine transform.
+     *
      * @param  srcEnvelope The source envelope.
      * @param  dstEnvelope The destination envelope.
      * @return The transform from the given source envelope to target envelope.
@@ -283,13 +299,29 @@ public final class Matrices extends Static {
     public static MatrixSIS createTransform(final Envelope srcEnvelope, final Envelope dstEnvelope) {
         ArgumentChecks.ensureNonNull("srcEnvelope", srcEnvelope);
         ArgumentChecks.ensureNonNull("dstEnvelope", dstEnvelope);
+        /*
+         * Following code is a simplified version of above createTransform(Envelope, AxisDirection[], ...) method.
+         * We need to make sure that those two methods are consistent and compute the matrix values in the same way.
+         */
         final int srcDim = srcEnvelope.getDimension();
         final int dstDim = dstEnvelope.getDimension();
+        final DirectPosition srcCorner = srcEnvelope.getLowerCorner();
+        final DirectPosition dstCorner = dstEnvelope.getLowerCorner();
         final MatrixSIS matrix = createZero(dstDim+1, srcDim+1);
         for (int i = Math.min(srcDim, dstDim); --i >= 0;) {
-            double scale     = dstEnvelope.getSpan(i)    / srcEnvelope.getSpan(i);
-            double translate = dstEnvelope.getMinimum(i) - srcEnvelope.getMinimum(i)*scale;
-            matrix.setElement(i, i,         scale);
+            /*
+             * Note on envelope spanning over the anti-meridian: the GeoAPI javadoc does not mandate the
+             * precise behavior of getSpan(int) in such situation.  In the particular case of Apache SIS
+             * implementations, the envelope will compute the span correctly (taking in account the wrap
+             * around behavior). For non-SIS implementations, we can not know.
+             *
+             * For the translation term, we really need the lower corner, NOT envelope.getMinimum(i),
+             * because we need the starting point, which is not the minimal value when spanning over
+             * the anti-meridian.
+             */
+            final double scale     = dstEnvelope.getSpan(i)   / srcEnvelope.getSpan(i);
+            final double translate = dstCorner.getOrdinate(i) - srcCorner.getOrdinate(i)*scale;
+            matrix.setElement(i, i,      scale);
             matrix.setElement(i, srcDim, translate);
         }
         matrix.setElement(dstDim, srcDim, 1);
@@ -377,6 +409,13 @@ public final class Matrices extends Static {
      *   │   1 │   │ 0    0      1 │   │   1 │
      *   └     ┘   └               ┘   └     ┘
      * }
+     *
+     * {@section Spanning the anti-meridian of a Geographic CRS}
+     * If the given envelope is crossing the date line, then this method requires the envelope {@code getSpan(int)}
+     * method to behave as documented in the {@link org.apache.sis.geometry.AbstractEnvelope#getSpan(int)} javadoc.
+     * Furthermore the matrix created by this method will produce expected results only for source or destination
+     * points on one side of the date line (depending on whether axis direction is reversed), since the wrap around
+     * operation can not be represented by an affine transform.
      *
      * @param  srcEnvelope The source envelope.
      * @param  srcAxes     The ordered sequence of axis directions for source coordinate system.
