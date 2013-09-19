@@ -24,7 +24,9 @@
  * <ul>
  *   <li>The class specializations for such small matrices.</li>
  *   <li>Methods specific to coordinate systems support like
- *       {@link org.apache.sis.referencing.operation.matrix.Matrices#createTransform Matrices.createTransform(…)}.</li>
+ *       {@link org.apache.sis.referencing.operation.matrix.Matrices#createTransform(org.opengis.geometry.Envelope,
+ *       org.opengis.referencing.cs.AxisDirection[], org.opengis.geometry.Envelope,
+ *       org.opengis.referencing.cs.AxisDirection[]) Matrices.createTransform(…)}.</li>
  *   <li>Matrix inversions tolerant to {@link java.lang.Double#NaN NaN} values and non-square matrix in some situations.</li>
  * </ul>
  *
