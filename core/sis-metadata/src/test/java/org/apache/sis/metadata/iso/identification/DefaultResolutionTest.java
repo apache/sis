@@ -18,6 +18,7 @@ package org.apache.sis.metadata.iso.identification;
 
 import javax.xml.bind.JAXBException;
 import org.apache.sis.xml.XML;
+import org.apache.sis.xml.Namespaces;
 import org.apache.sis.metadata.iso.LoggingWatcher;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -131,7 +132,8 @@ public final strictfp class DefaultResolutionTest extends TestCase {
          * an unknown reason.
          */
         assertXmlEquals(
-                "<gmd:MD_Resolution>\n" +
+                "<gmd:MD_Resolution xmlns:gmd=\"" + Namespaces.GMD + '"' +
+                                  " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
                 "  <gmd:distance>\n" +
                 "    <gco:Distance uom=\"http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])\">1000.0</gco:Distance>\n" +
                 "  </gmd:distance>\n" +

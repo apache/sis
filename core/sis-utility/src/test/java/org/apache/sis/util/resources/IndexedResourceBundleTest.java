@@ -17,12 +17,12 @@
 package org.apache.sis.util.resources;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.Locale;
 import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.SimpleFormatter;
+import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.util.InternationalString;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -35,10 +35,18 @@ import static org.apache.sis.test.Assert.*;
 
 /**
  * Tests the {@link IndexedResourceBundle} subclasses.
+ * This class arbitrarily use the following keys:
+ *
+ * <ul>
+ *   <li>{@link org.apache.sis.util.resources.Errors.Keys#NullArgument_1}</li>
+ * </ul>
+ *
+ * If the localized strings associated to those keys are modified,
+ * then this {@code IndexedResourceBundleTest} class will need to be updated.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.2)
- * @version 0.3
+ * @version 0.4
  */
 @DependsOn(LoaderTest.class)
 public final strictfp class IndexedResourceBundleTest extends TestCase {
@@ -151,6 +159,20 @@ public final strictfp class IndexedResourceBundleTest extends TestCase {
     }
 
     /**
+     * Tests the {@link IndexedResourceBundle#getString(int, Object)} method with a {@code CodeList} argument.
+     * The intend is to test the code list localization.
+     */
+    @Test
+    @DependsOnMethod("testGetStringWithParameter")
+    public void testGetStringWithCodeList() {
+        testing = Errors.getResources(Locale.ENGLISH);
+        assertEquals("Argument ‘Series’ shall not be null.", testing.getString(Errors.Keys.NullArgument_1, ScopeCode.SERIES));
+        testing = Errors.getResources(Locale.FRENCH);
+        assertEquals("L’argument ‘Série’ ne doit pas être nul.", testing.getString(Errors.Keys.NullArgument_1, ScopeCode.SERIES));
+        testing = null;
+    }
+
+    /**
      * Tests the formatting of an international string.
      */
     @Test
@@ -186,20 +208,17 @@ public final strictfp class IndexedResourceBundleTest extends TestCase {
     }
 
     /**
-     * If a test failed, lists the resource bundle content to the
-     * {@linkplain System#err standard error stream}.
+     * If a test failed, lists the resource bundle content to {@link #out}.
      *
      * @throws IOException Should never happen.
      */
     @After
     public void dumpResourcesOnError() throws IOException {
         if (testing != null) {
-            final PrintStream err = System.err;
-            err.print("Error while testing ");
-            err.print(testing);
-            err.println(". Bundle content is:");
-            testing.list(err);
-            err.flush();
+            out.print("Error while testing ");
+            out.print(testing);
+            out.println(". Bundle content is:");
+            testing.list(out);
         }
     }
 }

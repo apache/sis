@@ -46,8 +46,8 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cédric Briançon (Geomatys)
- * @since   0.3 (derived from geotk-1.2)
- * @version 0.3
+ * @since   0.4 (derived from geotk-1.2)
+ * @version 0.4
  * @module
  */
 @Immutable
@@ -245,6 +245,10 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      */
     @Override
     public int hashCode(final ComparisonMode mode) throws IllegalArgumentException {
+        /*
+         * The "^ (int) serialVersionUID" is an arbitrary change applied to the hash code value in order to
+         * differentiate this PrimeMeridian implementation from implementations of other GeoAPI interfaces.
+         */
         int code = super.hashCode(mode) ^ (int) serialVersionUID;
         switch (mode) {
             case STRICT: {

@@ -18,7 +18,7 @@ package org.apache.sis.internal.jdk8;
 
 
 /**
- * Placeholder for the {@link ava.util.function.Function} interface.
+ * Placeholder for the {@link java.util.function.Function} interface.
  *
  * @param <T> The type of parameters (source type).
  * @param <R> The type of return values (target type).

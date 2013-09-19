@@ -94,6 +94,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int CanNotInstantiate_1 = 81;
 
         /**
+         * Can not map an axis from “{0}” to direction “{1}”.
+         */
+        public static final int CanNotMapAxisToDirection_2 = 123;
+
+        /**
          * Can not open “{0}”.
          */
         public static final int CanNotOpen_1 = 97;
@@ -129,9 +134,19 @@ public final class Errors extends IndexedResourceBundle {
         public static final int CloneNotSupported_1 = 42;
 
         /**
+         * Axis directions {0} and {1} are colinear.
+         */
+        public static final int ColinearAxisDirections_2 = 122;
+
+        /**
          * Thread “{0}” is dead.
          */
         public static final int DeadThread_1 = 43;
+
+        /**
+         * Element “{0}” is duplicated.
+         */
+        public static final int DuplicatedElement_1 = 116;
 
         /**
          * Identifier “{0}” is duplicated.
@@ -286,6 +301,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int IndexOutOfBounds_1 = 4;
 
         /**
+         * Indices ({0}, {1}) are out of bounds.
+         */
+        public static final int IndicesOutOfBounds_2 = 120;
+
+        /**
          * Argument ‘{0}’ can not take an infinite value.
          */
         public static final int InfiniteArgumentValue_1 = 45;
@@ -321,7 +341,7 @@ public final class Errors extends IndexedResourceBundle {
         public static final int MismatchedCRS = 57;
 
         /**
-         * Mismatched object dimension: {0}D and {1}D.
+         * Mismatched object dimensions: {0}D and {1}D.
          */
         public static final int MismatchedDimension_2 = 60;
 
@@ -329,6 +349,11 @@ public final class Errors extends IndexedResourceBundle {
          * Argument ‘{0}’ has {2} dimension{2,choice,1#|2#s}, while {1} was expected.
          */
         public static final int MismatchedDimension_3 = 58;
+
+        /**
+         * Mismatched matrix sizes: expected {0}×{1} but got {2}×{3}.
+         */
+        public static final int MismatchedMatrixSize_4 = 118;
 
         /**
          * This operation requires the “{0}” module.
@@ -369,6 +394,11 @@ public final class Errors extends IndexedResourceBundle {
          * Can not create a “{0}” array of negative length.
          */
         public static final int NegativeArrayLength_1 = 78;
+
+        /**
+         * No convergence for points {0} and {1}.
+         */
+        public static final int NoConvergenceForPoints_2 = 117;
 
         /**
          * Element “{0}” has not been found.
@@ -461,6 +491,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final int NotAUnicodeIdentifier_1 = 113;
 
         /**
+         * Transform is not affine.
+         */
+        public static final int NotAnAffineTransform = 121;
+
+        /**
          * Class ‘{0}’ is not a comparable.
          */
         public static final int NotComparableClass_1 = 66;
@@ -519,6 +554,11 @@ public final class Errors extends IndexedResourceBundle {
          * Ordering between “{0}” and “{1}” elements is undefined.
          */
         public static final int UndefinedOrderingForElements_2 = 70;
+
+        /**
+         * Expected an array of length {0}, but got {1}.
+         */
+        public static final int UnexpectedArrayLength_2 = 119;
 
         /**
          * Unexpected change in ‘{0}’.
