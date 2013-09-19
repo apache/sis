@@ -30,12 +30,24 @@ import org.junit.BeforeClass;
  * @module
  */
 @Suite.SuiteClasses({
+    // Test matrix first because they may be used in about every SIS corners.
+    org.apache.sis.referencing.operation.matrix.SolverTest.class,
+    org.apache.sis.referencing.operation.matrix.Matrix1Test.class,
+    org.apache.sis.referencing.operation.matrix.Matrix2Test.class,
+    org.apache.sis.referencing.operation.matrix.Matrix3Test.class,
+    org.apache.sis.referencing.operation.matrix.Matrix4Test.class,
+    org.apache.sis.referencing.operation.matrix.GeneralMatrixTest.class,
+    org.apache.sis.referencing.operation.matrix.NonSquareMatrixTest.class,
+    org.apache.sis.referencing.operation.matrix.MatricesTest.class,
+    org.apache.sis.referencing.operation.matrix.AffineTransforms2DTest.class,
+
     org.apache.sis.io.wkt.ConventionTest.class,
     org.apache.sis.io.wkt.SymbolsTest.class,
     org.apache.sis.io.wkt.FormatterTest.class,
     org.apache.sis.referencing.NamedIdentifierTest.class,
     org.apache.sis.referencing.AbstractIdentifiedObjectTest.class,
     org.apache.sis.referencing.AbstractReferenceSystemTest.class,
+
     org.apache.sis.geometry.AbstractDirectPositionTest.class,
     org.apache.sis.geometry.GeneralDirectPositionTest.class,
     org.apache.sis.geometry.DirectPosition1DTest.class,

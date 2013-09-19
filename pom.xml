@@ -311,7 +311,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
   <dependencyManagement>
     <dependencies>
       <!-- Import all dependency management used by the GeAPI project.
-           This include JUnit, vecmath and units of measurement. -->
+           This include JUnit and units of measurement. -->
       <dependency>
         <groupId>org.opengis</groupId>
         <artifactId>geoapi-parent</artifactId>
@@ -336,6 +336,11 @@ Apache SIS is a free software, Java language library for developing geospatial a
         <groupId>com.esri.geometry</groupId>
         <artifactId>esri-geometry-api</artifactId>
         <version>1.1</version>
+      </dependency>
+      <dependency>
+        <groupId>gov.nist.math</groupId>
+        <artifactId>jama</artifactId>
+        <version>1.0.3</version>
       </dependency>
       <dependency>
         <groupId>javax</groupId>

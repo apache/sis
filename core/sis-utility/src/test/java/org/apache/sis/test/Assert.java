@@ -18,7 +18,6 @@ package org.apache.sis.test;
 
 import java.util.Set;
 import java.util.Map;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
@@ -237,12 +236,37 @@ public strictfp class Assert extends org.opengis.test.Assert {
      *   <li>{@link org.w3c.dom.Node}: used directly without further processing.</li>
      *   <li>{@link java.io.File}, {@link java.net.URL} or {@link java.net.URI}: the
      *       stream is opened and parsed as a XML document.</li>
-     *   <li>{@link String}: The string content is parsed directly as a XML document.
-     *       Encoding <strong>must</strong> be UTF-8 (no other encoding is supported
-     *       by current implementation of this method).</li>
+     *   <li>{@link String}: The string content is parsed directly as a XML document.</li>
      * </ul>
      *
      * This method will ignore comments and the optional attributes given in arguments.
+     *
+     * {@section Ignored attributes substitution}
+     * For convenience, this method replaces some well known prefixes in the {@code ignoredAttributes}
+     * array by their full namespace URLs. For example this method replaces{@code "xsi:schemaLocation"}
+     * by {@code "http://www.w3.org/2001/XMLSchema-instance:schemaLocation"}.
+     * If such substitution is not desired, consider using {@link XMLComparator} directly instead.
+     *
+     * <p>The current substitution map is as below (may be expanded in any future SIS version):</p>
+     *
+     * <table class="sis">
+     *   <tr><th>Prefix</th> <th>URL</th></tr>
+     *   <tr><td>xmlns</td>  <td>{@code "http://www.w3.org/2000/xmlns"}</td></tr>
+     *   <tr><td>xlink</td>  <td>{@value org.apache.sis.xml.Namespaces#XLINK}</td></tr>
+     *   <tr><td>xsi</td>    <td>{@value org.apache.sis.xml.Namespaces#XSI}</td></tr>
+     *   <tr><td>gml</td>    <td>{@value org.apache.sis.xml.Namespaces#GML}</td></tr>
+     *   <tr><td>gmd</td>    <td>{@value org.apache.sis.xml.Namespaces#GMD}</td></tr>
+     *   <tr><td>gmx</td>    <td>{@value org.apache.sis.xml.Namespaces#GMX}</td></tr>
+     *   <tr><td>gmi</td>    <td>{@value org.apache.sis.xml.Namespaces#GMI}</td></tr>
+     *   <tr><td>gco</td>    <td>{@value org.apache.sis.xml.Namespaces#GCO}</td></tr>
+     * </table>
+     *
+     * <p>For example in order to ignore the namespace, type and schema location declaration,
+     * the following strings can be given to the {@code ignoredAttributes} argument:</p>
+     *
+     * {@preformat text
+     *   "xmlns:*", "xsi:schemaLocation", "xsi:type"
+     * }
      *
      * @param  expected The expected XML document.
      * @param  actual   The XML document to compare.
@@ -261,7 +285,8 @@ public strictfp class Assert extends org.opengis.test.Assert {
      * Parses two XML tree as DOM documents, and compares the nodes with the given tolerance
      * threshold for numerical values. The inputs given to this method can be any of the types
      * documented {@linkplain #assertXmlEquals(Object, Object, String[]) above}. This method
-     * will ignore comments and the optional attributes given in arguments.
+     * will ignore comments and the optional attributes given in arguments as documented in the
+     * above method.
      *
      * @param  expected  The expected XML document.
      * @param  actual    The XML document to compare.
@@ -290,7 +315,9 @@ public strictfp class Assert extends org.opengis.test.Assert {
         }
         comparator.tolerance = tolerance;
         comparator.ignoreComments = true;
-        comparator.ignoredAttributes.addAll(Arrays.asList(ignoredAttributes));
+        for (final String attribute : ignoredAttributes) {
+            comparator.ignoredAttributes.add(XMLComparator.substitutePrefix(attribute));
+        }
         comparator.compare();
     }
 

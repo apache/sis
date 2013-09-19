@@ -67,7 +67,7 @@ public final strictfp class ChannelDataInputTest extends TestCase {
      */
     @Test
     public void testAllReadMethods() throws IOException {
-        final Random random = TestUtilities.createRandomNumberGenerator("testAllReadMethods");
+        final Random random = TestUtilities.createRandomNumberGenerator();
         final byte[] array = createRandomArray(ARRAY_MAX_SIZE * 1024, random);
         compareStreamToBuffer(random, array.length,
                 new DataInputStream(new ByteArrayInputStream(array)),
@@ -162,7 +162,7 @@ public final strictfp class ChannelDataInputTest extends TestCase {
      */
     @Test
     public void testReadString() throws IOException {
-        final Random random   = TestUtilities.createRandomNumberGenerator("testReadString");
+        final Random random   = TestUtilities.createRandomNumberGenerator();
         final String expected = "お元気ですか";
         final byte[] array    = expected.getBytes("UTF-8");
         assertEquals(expected.length()*3, array.length); // Sanity check.
@@ -181,7 +181,7 @@ public final strictfp class ChannelDataInputTest extends TestCase {
      */
     @Test
     public void testSeekOnForwardOnlyChannel() throws IOException {
-        final Random random = TestUtilities.createRandomNumberGenerator("testSeekOnForwardOnlyChannel");
+        final Random random = TestUtilities.createRandomNumberGenerator();
         int length = random.nextInt(2048) + 1024;
         final byte[] array = createRandomArray(length, random);
         length -= (Long.SIZE / Byte.SIZE); // Safety against buffer underflow.
@@ -205,7 +205,7 @@ public final strictfp class ChannelDataInputTest extends TestCase {
      */
     @Test
     public void testPrefetch() throws IOException {
-        final Random     random = TestUtilities.createRandomNumberGenerator("testPrefetch");
+        final Random     random = TestUtilities.createRandomNumberGenerator();
         final int        length = random.nextInt(256) + 128;
         final byte[]     array  = createRandomArray(length, random);
         final ByteBuffer buffer = ByteBuffer.allocate(random.nextInt(64) + 16);

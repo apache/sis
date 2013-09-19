@@ -37,6 +37,9 @@ import org.apache.sis.internal.system.ReferenceQueueConsumer;
 
 import static org.apache.sis.internal.system.DelayedExecutor.executeDaemonTask;
 
+// Related to JDK8
+import org.apache.sis.internal.jdk8.Supplier;
+
 
 /**
  * A concurrent cache mechanism. This implementation is thread-safe and supports concurrency.
@@ -135,7 +138,7 @@ import static org.apache.sis.internal.system.DelayedExecutor.executeDaemonTask;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.00)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 @ThreadSafe
@@ -143,7 +146,7 @@ public class Cache<K,V> extends AbstractMap<K,V> {
     /**
      * The map that contains the cached values. If a value is under the process of being
      * calculated, then the value will be a temporary instance of {@link Handler}. The
-     * value may also be weak of soft {@link Reference} objects.
+     * value may also be weak or soft {@link Reference} objects.
      */
     private final ConcurrentMap<K,Object> map;
 
@@ -277,22 +280,11 @@ public class Cache<K,V> extends AbstractMap<K,V> {
             return ((Reference<V>) value).get();
         }
         if (value instanceof Handler<?>) {
-            final Handler<V> handler = (Handler<V>) value;
-            final ReentrantLock lock = (ReentrantLock) value;
+            return ((Supplier<V>) value).get();
             /*
              * A ClassCastException on the above line would be a bug in this class.
-             * See the comment in Cache.lock(K) method for more explanations.  The
-             * remainder of this block is an adaptation of Cache.Work.get().
+             * See the comment in Cache.lock(K) method for more explanations.
              */
-            if (lock.isHeldByCurrentThread()) {
-                return null;
-            }
-            lock.lock();
-            try {
-                return handler.peek();
-            } finally {
-                lock.unlock();
-            }
         }
         return (V) value;
     }
@@ -446,6 +438,7 @@ public class Cache<K,V> extends AbstractMap<K,V> {
      */
     public Handler<V> lock(final K key) {
         final Work handler = new Work(key);
+        boolean unlock = true;
         handler.lock.lock();
         Object value;
         try {
@@ -459,15 +452,15 @@ public class Cache<K,V> extends AbstractMap<K,V> {
                     /*
                      * We succeed in adding the handler in the map (we know that because all our
                      * map.put(...) or map.replace(...) operations are guaranteed to put non-null
-                     * values). We are done. But before to leave, lock again for canceling the
-                     * effect of unlock in the finally clause (we want the lock to still active).
+                     * values). We are done. But before to leave, declare that we do not want to
+                     * unlock in the finally clause (we want the lock to still active).
                      */
-                    handler.lock.lock();
+                    unlock = false;
                     return handler;
                 }
                 /*
-                 * If the value is a valid reference (strong, soft or weak), stop the loop and
-                 * release the lock. We will process that value after the finally block.
+                 * If the value is a strong reference or other handler, stop the loop and release the lock.
+                 * We will process that value after the finally block.
                  */
                 if (!(value instanceof Reference<?>)) {
                     break;
@@ -495,13 +488,15 @@ public class Cache<K,V> extends AbstractMap<K,V> {
                  * handler.
                  */
                 if (map.replace(key, ref, handler)) {
-                    handler.lock.lock();
+                    unlock = false;
                     return handler;
                 }
                 // The map content changed. Try again.
             } while (true);
         } finally {
-            handler.lock.unlock();
+            if (unlock) {
+                handler.lock.unlock();
+            }
         }
         /*
          * From this point, we abandon our handler.
@@ -640,7 +635,7 @@ public class Cache<K,V> extends AbstractMap<K,V> {
      * A handler implementation used for telling to other threads that the current thread is
      * computing a value.
      */
-    final class Work extends DelayedRunnable.Immediate implements Handler<V> {
+    final class Work extends DelayedRunnable.Immediate implements Handler<V>, Supplier<V> {
         /**
          * The synchronization lock.
          */
@@ -669,9 +664,10 @@ public class Cache<K,V> extends AbstractMap<K,V> {
          * Waits for the completion of the value computation and returns this result. This
          * method should be invoked only from an other thread than the one doing the calculation.
          */
-        final V get() {
+        @Override
+        public V get() {
             if (lock.isHeldByCurrentThread()) {
-                throw new IllegalStateException();
+                return null;
             }
             final V v;
             lock.lock();
@@ -736,12 +732,12 @@ public class Cache<K,V> extends AbstractMap<K,V> {
              * Do nothing (except checking for programming error), since we don't hold any lock.
              *
              * {@note An alternative would have been to store the result in the map anyway.
-             *        But doing so is unsafe because we have no lock; we have no guarantee and
+             *        But doing so is unsafe because we have no lock; we have no guarantee that
              *        nothing has happened in an other thread between peek and putAndUnlock.}
              */
             @Override
             public void putAndUnlock(final V result) throws IllegalStateException {
-                if (result != get() && !isKeyCollisionAllowed()) {
+                if (result != null && !isKeyCollisionAllowed() && result != get()) {
                     throw new IllegalStateException(Errors.format(Errors.Keys.KeyCollision_1, key));
                 }
             }

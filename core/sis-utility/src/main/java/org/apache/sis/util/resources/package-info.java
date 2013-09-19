@@ -58,17 +58,31 @@
  *     String text = TheBundle.getResources(locale).getString(key, optionalArguments);
  * }
  *
- * For convenience, all {@code IndexedResourceBundle} subclasses provide also various
- * {@code format(int, …)} and {@code formatInternational(int, …)} static methods for
- * fetching localized texts in the {@linkplain java.util.Locale#getDefault() system
- * default locale}, or localizable texts:
+ * For convenience, all {@code IndexedResourceBundle} subclasses provide also various {@code format(int, …)} static
+ * methods for fetching localized texts in the {@linkplain java.util.Locale#getDefault() system default locale}:
+ *
+ * {@preformat java
+ *     text = TheBundle.format(key, optionalArguments); // Uses the default locale.
+ * }
+ *
+ * If the locale is not known at method invocation time, {@code formatInternational(int, …)} static methods
+ * returns a localizable string which can be localized later:
  *
  * {@preformat java
  *     InternationalString i18n = TheBundle.formatInternational(key, optionalArguments);
- *     String text = i18n.toString(locale); // Equivalent to the above example.
- *
- *     text = TheBundle.format(key, optionalArguments); // Uses the default locale.
+ *     String text = i18n.toString(locale); // Localize now.
  * }
+ *
+ * If optional arguments are present, then the following types are handled in a special way
+ * (non exhaustive list):
+ *
+ * <ul>
+ *   <li>{@link java.lang.Number}, {@link java.util.Date}, {@link org.opengis.util.CodeList} and
+ *       {@link org.opengis.util.InternationalString} instances are localized using the current
+ *       {@code ResourceBundle} locale.</li>
+ *   <li>Long {@link java.lang.CharSequence} instances are shortened.</li>
+ *   <li>{@link java.lang.Class} and {@link java.lang.Throwable} instances are summarized.</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-1.2)

@@ -28,6 +28,7 @@ import java.util.NoSuchElementException;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import org.opengis.util.CodeList;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
@@ -35,6 +36,7 @@ import org.apache.sis.util.Localized;
 import org.apache.sis.util.ThreadSafe;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.logging.Logging;
 
 // Related to JDK7
@@ -45,16 +47,25 @@ import org.apache.sis.internal.jdk7.JDK7;
  * {@link ResourceBundle} implementation accepting integers instead of strings for resource keys.
  * Using integers allow implementations to avoid adding large string constants into their
  * {@code .class} files and runtime images. Developers still have meaningful labels in their
- * code (e.g. {@code DimensionMismatch}) through a set of constants defined in {@code Keys}
+ * code (e.g. {@code MismatchedDimension}) through a set of constants defined in {@code Keys}
  * inner classes, with the side-effect of compile-time safety. Because integer constants are
- * inlined right into class files at compile time, the declarative classes is never loaded at
- * run time.
+ * inlined right into class files at compile time, the declarative classes is not loaded at run time.
  *
- * <p>This class also provides facilities for string formatting using {@link MessageFormat}.</p>
+ * <p>Localized resources are fetched by calls to {@link #getString(int)}.
+ * Arguments can optionally be provided by calls to {@link #getString(int, Object) getString(int, Object, ...)}.
+ * If arguments are present, then the string will be formatted using {@link MessageFormat},
+ * completed by some special cases handled by this class. Roughly speaking:</p>
+ *
+ * <ul>
+ *   <li>{@link Number}, {@link java.util.Date}, {@link CodeList} and {@link InternationalString} instances
+ *       are localized using the current {@code ResourceBundle} locale.</li>
+ *   <li>Long {@link CharSequence} instances are shortened by {@link CharSequences#shortSentence(CharSequence, int)}.</li>
+ *   <li>{@link Class} and {@link Throwable} instances are summarized.</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3 (derived from geotk-1.2)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 @ThreadSafe
@@ -350,10 +361,12 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * placed in an array of length 1.
      *
      * <p>All the array elements will be checked for {@link CharSequence}, {@link InternationalString},
-     * {@link Throwable} or {@link Class} instances. All {@code InternationalString} instances will
-     * be localized according this resource bundle locale. Any characters sequences of length
-     * greater than {@link #MAX_STRING_LENGTH} will be reduced using the
-     * {@link CharSequences#shortSentence(CharSequence, int)} method.</p>
+     * {@link CodeList}, {@link Throwable} or {@link Class} instances.
+     * All {@code InternationalString} instances will be localized according this resource bundle locale.
+     * Any characters sequences of length greater than {@link #MAX_STRING_LENGTH} will be shortened using
+     * the {@link CharSequences#shortSentence(CharSequence, int)} method.</p>
+     *
+     * {@note if more cases are added, remember to update class and package javadoc.}
      *
      * @param  arguments The object to check.
      * @return {@code arguments} as an array, eventually with some elements replaced.
@@ -382,6 +395,8 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
                 replacement = message;
             } else if (element instanceof Class<?>) {
                 replacement = Classes.getShortName((Class<?>) element);
+            } else if (element instanceof CodeList<?>) {
+                replacement = Types.getCodeTitle((CodeList<?>) element).toString(getLocale());
             }
             // No need to check for Numbers or Dates instances, since they are
             // properly formatted in the ResourceBundle locale by MessageFormat.

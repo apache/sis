@@ -132,6 +132,11 @@ Implementations of Coordinate Reference Systems (CRS),
       <artifactId>geoapi-conformance</artifactId>
     </dependency>
     <dependency>
+      <groupId>gov.nist.math</groupId>
+      <artifactId>jama</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.apache.sis.core</groupId>
       <artifactId>sis-utility</artifactId>
       <version>${project.version}</version>

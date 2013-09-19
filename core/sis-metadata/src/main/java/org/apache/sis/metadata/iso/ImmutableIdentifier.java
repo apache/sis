@@ -325,7 +325,7 @@ public class ImmutableIdentifier implements ReferenceIdentifier, Deprecable, Ser
      *
      * @return The code, never {@code null}.
      *
-     * @see NamedIdentifier#tip()
+     * @see org.apache.sis.referencing.NamedIdentifier#tip()
      */
     @Override
     public String getCode() {
@@ -337,8 +337,8 @@ public class ImmutableIdentifier implements ReferenceIdentifier, Deprecable, Ser
      *
      * @return The code space, or {@code null} if not available.
      *
-     * @see NamedIdentifier#head()
-     * @see NamedIdentifier#scope()
+     * @see org.apache.sis.referencing.NamedIdentifier#head()
+     * @see org.apache.sis.referencing.NamedIdentifier#scope()
      */
     @Override
     public String getCodeSpace() {
@@ -418,7 +418,7 @@ public class ImmutableIdentifier implements ReferenceIdentifier, Deprecable, Ser
      *
      * <p>The default implementation returns {@code false} in all cases.</p>
      *
-     * @see AbstractIdentifiedObject#isDeprecated()
+     * @see org.apache.sis.referencing.AbstractIdentifiedObject#isDeprecated()
      *
      * @return {@code true} if this code is deprecated.
      */

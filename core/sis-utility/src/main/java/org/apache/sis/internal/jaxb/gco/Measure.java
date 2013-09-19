@@ -19,6 +19,8 @@ package org.apache.sis.internal.jaxb.gco;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import javax.measure.unit.Unit;
 import javax.measure.unit.NonSI;
 import javax.xml.bind.annotation.XmlValue;
@@ -27,6 +29,7 @@ import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.xml.ValueConverter;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -149,5 +152,25 @@ public final class Measure {
             }
         }
         unit = converter.toUnit(context, uom);
+    }
+
+    /**
+     * Sets the unit to the given value, with a warning logged if the user specified an other unit.
+     *
+     * {@example Some users wrongly assign the "m" unit to <code>Ellipsoid.inverseFlattening</code>.
+     *           The SIS adapter force the unit to <code>Unit.ONE</code>, but we want to let the user
+     *           know that he probably did something wrong.}
+     *
+     * @param newUnit The new unit (can not be null).
+     */
+    public void setUnit(final Unit<?> newUnit) {
+        if (unit != null && !unit.equals(newUnit)) {
+            final LogRecord record = Errors.getResources(null)
+                    .getLogRecord(Level.WARNING, Errors.Keys.IncompatiblePropertyValue_1, unit);
+            record.setSourceClassName(getClass().getName());
+            record.setSourceMethodName("setUnit");
+            Context.warningOccured(Context.current(), this, record);
+        }
+        unit = newUnit;
     }
 }

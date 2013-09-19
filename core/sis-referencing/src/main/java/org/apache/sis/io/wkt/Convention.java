@@ -184,8 +184,6 @@ public enum Convention {
      * SIS separates the linear from the non-linear parameters.
      *
      * <p>This convention is used only for debugging purpose.</p>
-     *
-     * @see Formatter#isInternalWKT()
      */
     @Debug
     INTERNAL(Citations.OGC, null, false) {
