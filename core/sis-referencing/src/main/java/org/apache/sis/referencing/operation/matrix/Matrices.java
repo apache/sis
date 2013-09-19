@@ -184,6 +184,7 @@ public final class Matrices extends Static {
 
     /**
      * Implementation of {@code createTransform(…)} public methods expecting envelopes and/or axis directions.
+     * Argument validity shall be verified by the caller.
      *
      * @param useEnvelopes {@code true} if source and destination envelopes shall be taken in account.
      *        If {@code false}, then source and destination envelopes will be ignored and may be null.
@@ -220,11 +221,11 @@ public final class Matrices extends Static {
                     double scale = same ? +1 : -1;
                     double translate = 0;
                     if (useEnvelopes) {
-                        translate  = same ? dstEnvelope.getMinimum(dstIndex)
-                                          : dstEnvelope.getMaximum(dstIndex);
+                        translate  = dstEnvelope.getMinimum(dstIndex);
                         scale     *= dstEnvelope.getSpan(dstIndex) /
                                      srcEnvelope.getSpan(srcIndex);
-                        translate -= srcEnvelope.getMinimum(srcIndex) * scale;
+                        translate -= (same ? srcEnvelope.getMinimum(srcIndex)
+                                           : srcEnvelope.getMaximum(srcIndex)) * scale;
                     }
                     matrix.setElement(dstIndex, srcIndex,       scale);
                     matrix.setElement(dstIndex, srcAxes.length, translate);
@@ -252,6 +253,26 @@ public final class Matrices extends Static {
      *       then the transform will append trailing ordinates with the 0 value.</li>
      * </ul>
      *
+     * <b>Example:</b> Given a source envelope of size 100 × 200 (the units do not matter for this method)
+     * and a destination envelope of size 300 × 500, and given the {@linkplain Envelope#getLowerCorner()
+     * lower corner} translated from (-20, -40) to (-10, -25), then the following method call:
+     *
+     * {@preformat java
+     *   matrix = Matrices.createTransform(
+     *           new Envelope2D(null, -20, -40, 100, 200),
+     *           new Envelope2D(null, -10, -25, 300, 500));
+     * }
+     *
+     * will return the following square matrix. The transform of the lower corner is given as an example:
+     *
+     * {@preformat math
+     *   ┌     ┐   ┌              ┐   ┌     ┐
+     *   │ -10 │   │ 3.0  0    50 │   │ -20 │       // 3.0 is the scale factor from width of 100 to 300
+     *   │ -25 │ = │ 0    2.5  75 │ × │ -40 │       // 2.5 is the scale factor from height of 200 to 500
+     *   │   1 │   │ 0    0     1 │   │   1 │
+     *   └     ┘   └              ┘   └     ┘
+     * }
+     *
      * @param  srcEnvelope The source envelope.
      * @param  dstEnvelope The destination envelope.
      * @return The transform from the given source envelope to target envelope.
@@ -260,6 +281,8 @@ public final class Matrices extends Static {
      * @see #createTransform(Envelope, AxisDirection[], Envelope, AxisDirection[])
      */
     public static MatrixSIS createTransform(final Envelope srcEnvelope, final Envelope dstEnvelope) {
+        ArgumentChecks.ensureNonNull("srcEnvelope", srcEnvelope);
+        ArgumentChecks.ensureNonNull("dstEnvelope", dstEnvelope);
         final int srcDim = srcEnvelope.getDimension();
         final int dstDim = dstEnvelope.getDimension();
         final MatrixSIS matrix = createZero(dstDim+1, srcDim+1);
@@ -290,7 +313,7 @@ public final class Matrices extends Static {
      *           (<i>easting</i>, <i>northing</i>) - this is the first above case, but illegal
      *           to transform (<i>easting</i>, <i>northing</i>) to (<i>easting</i>, <i>up</i>).}
      *
-     * <b>Code example:</b> the following method call:
+     * <b>Example:</b> the following method call:
      *
      * {@preformat java
      *   matrix = Matrices.createTransform(
@@ -318,6 +341,8 @@ public final class Matrices extends Static {
      * @see #createTransform(Envelope, AxisDirection[], Envelope, AxisDirection[])
      */
     public static MatrixSIS createTransform(final AxisDirection[] srcAxes, final AxisDirection[] dstAxes) {
+        ArgumentChecks.ensureNonNull("srcAxes", srcAxes);
+        ArgumentChecks.ensureNonNull("dstAxes", dstAxes);
         return createTransform(null, srcAxes, null, dstAxes, false);
     }
 
@@ -330,6 +355,28 @@ public final class Matrices extends Static {
      *   <li><code>{@linkplain #createTransform(Envelope, Envelope) createTransform}(srcEnvelope, dstEnvelope)</code></li>
      *   <li><code>{@linkplain #createTransform(AxisDirection[], AxisDirection[]) createTransform}(srcAxes, dstAxes)</code></li>
      * </ul>
+     *
+     * <b>Example:</b> combining the examples documented in the above {@code createTransform(…)} methods,
+     * the following method call:
+     *
+     * {@preformat java
+     *   matrix = Matrices.createTransform(
+     *           new Envelope2D(null, -40, +20, 200, 100), new AxisDirection[] {AxisDirection.NORTH, AxisDirection.WEST},
+     *           new Envelope2D(null, -10, -25, 300, 500), new AxisDirection[] {AxisDirection.EAST, AxisDirection.NORTH});
+     * }
+     *
+     * will return the following square matrix. The transform of a corner is given as an example.
+     * Note that the input ordinate values are swapped because of the (<i>North</i>, <i>West</i>) axis directions,
+     * and the lower-left corner of the destination envelope is the lower-<em>right</em> corner of the source envelope
+     * because of the opposite axis direction.
+     *
+     * {@preformat math
+     *   ┌     ┐   ┌               ┐   ┌     ┐
+     *   │ -10 │   │ 0   -3.0  350 │   │ -40 │
+     *   │ -25 │ = │ 2.5  0     75 │ × │ 120 │       // 120 is the westernmost source ordinate: (x=20) + (width=100)
+     *   │   1 │   │ 0    0      1 │   │   1 │
+     *   └     ┘   └               ┘   └     ┘
+     * }
      *
      * @param  srcEnvelope The source envelope.
      * @param  srcAxes     The ordered sequence of axis directions for source coordinate system.
@@ -348,6 +395,8 @@ public final class Matrices extends Static {
     public static MatrixSIS createTransform(final Envelope srcEnvelope, final AxisDirection[] srcAxes,
                                             final Envelope dstEnvelope, final AxisDirection[] dstAxes)
     {
+        ArgumentChecks.ensureNonNull("srcEnvelope", srcEnvelope);
+        ArgumentChecks.ensureNonNull("dstEnvelope", dstEnvelope);
         ensureDimensionMatch("srcEnvelope", srcEnvelope, srcAxes.length);
         ensureDimensionMatch("dstEnvelope", dstEnvelope, dstAxes.length);
         return createTransform(srcEnvelope, srcAxes, dstEnvelope, dstAxes, true);
@@ -761,22 +810,24 @@ public final class Matrices extends Static {
          * Create now the string representation of all matrix elements and measure the width
          * of the integer field and the fraction field, then the total width of each column.
          */
+        int margin = 1; // Margin before the first column only.
         for (int i=0; i<numCol; i++) {
             for (int j=0; j<numRow; j++) {
-                final String element = Double.toString(matrix.getElement(j,i));
+                final String element = Double.toString(matrix.getElement(j,i)).replace("Infinity", "∞");
                 elements[j*numCol + i] = element;
                 int width = element.length();
                 int s = element.lastIndexOf('.');
                 if (s >= 0) {
-                    width = (maximumRemainingWidth[i] = Math.max(maximumRemainingWidth[i], ++s + MARGIN))
+                    width = (maximumRemainingWidth[i] = Math.max(maximumRemainingWidth[i], ++s + margin))
                           + (maximumFractionDigits[i] = Math.max(maximumFractionDigits[i], width - s));
                 } else {
                     // NaN or Infinity.
-                    width += MARGIN;
+                    width += margin;
                 }
                 columnWidth[i] = Math.max(columnWidth[i], width);
             }
             totalWidth += columnWidth[i];
+            margin = MARGIN; // Margin before all columns after the first one.
         }
         /*
          * Now append the formatted elements with the appropriate amount of spaces

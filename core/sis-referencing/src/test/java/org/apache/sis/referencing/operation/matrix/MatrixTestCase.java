@@ -23,7 +23,7 @@ import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOnMethod;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.apache.sis.test.Assert.*;
 
 
 /**
@@ -371,5 +371,16 @@ public abstract strictfp class MatrixTestCase extends TestCase {
             final MatrixSIS matrix = Matrices.create(numRow, numCol, elements);
             assertMatrixEquals(reference.inverse(), matrix.inverse(), TOLERANCE);
         }
+    }
+
+    /**
+     * Tests matrix serialization.
+     */
+    @Test
+    public void testSerialization() {
+        final int numRow = getNumRow();
+        final int numCol = getNumCol();
+        final MatrixSIS matrix = Matrices.create(numRow, numCol, createRandomPositiveValues(numRow * numCol));
+        assertNotSame(matrix, assertSerializedEquals(matrix));
     }
 }
