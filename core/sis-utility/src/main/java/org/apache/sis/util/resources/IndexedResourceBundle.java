@@ -49,8 +49,7 @@ import org.apache.sis.util.logging.Logging;
  * inlined right into class files at compile time, the declarative classes is not loaded at run time.
  *
  * <p>Localized resources are fetched by calls to {@link #getString(int)}.
- * Arguments can optionally be provided by calls to {@link #getString(int, Object)},
- * {@link #getString(int, Object, Object)}, <i>etc.</i>.
+ * Arguments can optionally be provided by calls to {@link #getString(int, Object) getString(int, Object, ...)}.
  * If arguments are present, then the string will be formatted using {@link MessageFormat},
  * completed by some special cases handled by this class. Roughly speaking:</p>
  *
