@@ -232,7 +232,7 @@ public final class Matrices extends Static {
             }
             if (!hasFound) {
                 throw new IllegalArgumentException(Errors.format(
-                        Errors.Keys.CanNotMapAxisToDirection_2, dstAxes[dstIndex], "srcAxes"));
+                        Errors.Keys.CanNotMapAxisToDirection_2, "srcAxes", dstAxes[dstIndex]));
             }
         }
         matrix.setElement(dstAxes.length, srcAxes.length, 1);
@@ -293,16 +293,17 @@ public final class Matrices extends Static {
      * <b>Code example:</b> the following method call:
      *
      * {@preformat java
-     *   matrix = Matrices.createTransform(new AxisDirection[] {AxisDirection.NORTH, AxisDirection.WEST},
-     *                                     new AxisDirection[] {AxisDirection.EAST, AxisDirection.NORTH});
+     *   matrix = Matrices.createTransform(
+     *           new AxisDirection[] {AxisDirection.NORTH, AxisDirection.WEST},
+     *           new AxisDirection[] {AxisDirection.EAST, AxisDirection.NORTH});
      * }
      *
      * will return the following square matrix, which can be used in coordinate conversions as below:
      *
      * {@preformat math
      *   ┌    ┐   ┌         ┐   ┌    ┐
-     *   │ -x │   │ 0 -1  0 │   │  y │
-     *   │  y │ = │ 1  0  0 │ × │ +x │
+     *   │ +x │   │ 0 -1  0 │   │  y │
+     *   │  y │ = │ 1  0  0 │ × │ -x │
      *   │  1 │   │ 0  0  1 │   │  1 │
      *   └    ┘   └         ┘   └    ┘
      * }

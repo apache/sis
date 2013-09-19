@@ -16,10 +16,17 @@
  */
 
 /**
- * {@linkplain org.opengis.referencing.operation.Matrix} implementations tuned for spatio-temporal referencing.
+ * {@linkplain org.opengis.referencing.operation.Matrix} implementations for spatio-temporal referencing.
  * Matrices can be of arbitrary size, but the most common ones in the context of geospatial coordinate operations
  * are not greater than 5×5 (number of spatio-temporal dimensions + 1).
- * This package differs from other matrix packages by the special treatment done for such small matrices.
+ * This package differs from other matrix packages by:
+ *
+ * <ul>
+ *   <li>The class specializations for such small matrices.</li>
+ *   <li>Methods specific to coordinate systems support like
+ *       {@link org.apache.sis.referencing.operation.matrix.Matrices#createTransform Matrices.createTransform(…)}.</li>
+ *   <li>Matrix inversions tolerant to {@link java.lang.Double#NaN NaN} values and non-square matrix in some situations.</li>
+ * </ul>
  *
  * <p>This package provides public implementations of small square matrices, with size ranging from 1×1 to 4×4.
  * Those implementations are made public because in many cases, the user know that (s)he is working with (for
