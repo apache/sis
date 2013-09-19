@@ -130,7 +130,7 @@ public final class Matrices extends Static {
 
     /**
      * Creates a matrix of size {@code numRow} × {@code numCol} filled with zero values.
-     * This constructor is convenient when the caller want to initialize the matrix elements himself.
+     * This constructor is convenient when the caller wants to initialize the matrix elements himself.
      *
      * <blockquote><font size=-1><b>Implementation note:</b>
      * For {@code numRow} == {@code numCol} with a value between
@@ -263,9 +263,20 @@ public final class Matrices extends Static {
      *       then the transform will append trailing ordinates with the 0 value.</li>
      * </ul>
      *
-     * <b>Example:</b> Given a source envelope of size 100 × 200 (the units do not matter for this method)
-     * and a destination envelope of size 300 × 500, and given the {@linkplain Envelope#getLowerCorner()
-     * lower corner} translated from (-20, -40) to (-10, -25), then the following method call:
+     * This method ignores the {@linkplain Envelope#getCoordinateReferenceSystem() envelope CRS}, which may be null.
+     * Actually this method is used more often for {@linkplain org.opengis.coverage.grid.GridEnvelope grid envelopes}
+     * (which have no CRS) than geodetic envelopes.
+     *
+     * {@section Spanning the anti-meridian of a Geographic CRS}
+     * If the given envelopes cross the date line, then this method requires their {@code getSpan(int)} method
+     * to behave as documented in the {@link org.apache.sis.geometry.AbstractEnvelope#getSpan(int)} javadoc.
+     * Furthermore the matrix created by this method will produce expected results only for source or destination
+     * points before the date line, since the wrap around operation can not be represented by an affine transform.
+     *
+     * {@section Example}
+     * Given a source envelope of size 100 × 200 (the units do not matter for this method) and a destination
+     * envelope of size 300 × 500, and given {@linkplain Envelope#getLowerCorner() lower corner} translation
+     * from (-20, -40) to (-10, -25), then the following method call:
      *
      * {@preformat java
      *   matrix = Matrices.createTransform(
@@ -282,12 +293,6 @@ public final class Matrices extends Static {
      *   │   1 │   │ 0    0     1 │   │   1 │
      *   └     ┘   └              ┘   └     ┘
      * }
-     *
-     * {@section Spanning the anti-meridian of a Geographic CRS}
-     * If the given envelope is crossing the date line, then this method requires the envelope {@code getSpan(int)}
-     * method to behave as documented in the {@link org.apache.sis.geometry.AbstractEnvelope#getSpan(int)} javadoc.
-     * Furthermore the matrix created by this method will produce expected results only for source or destination
-     * points before the date line, since the wrap around operation can not be represented by an affine transform.
      *
      * @param  srcEnvelope The source envelope.
      * @param  dstEnvelope The destination envelope.
@@ -345,7 +350,8 @@ public final class Matrices extends Static {
      *           (<i>easting</i>, <i>northing</i>) - this is the first above case, but illegal
      *           to transform (<i>easting</i>, <i>northing</i>) to (<i>easting</i>, <i>up</i>).}
      *
-     * <b>Example:</b> the following method call:
+     * {@section Example}
+     * The following method call:
      *
      * {@preformat java
      *   matrix = Matrices.createTransform(
@@ -388,8 +394,19 @@ public final class Matrices extends Static {
      *   <li><code>{@linkplain #createTransform(AxisDirection[], AxisDirection[]) createTransform}(srcAxes, dstAxes)</code></li>
      * </ul>
      *
-     * <b>Example:</b> combining the examples documented in the above {@code createTransform(…)} methods,
-     * the following method call:
+     * This method ignores the {@linkplain Envelope#getCoordinateReferenceSystem() envelope CRS}, which may be null.
+     * Actually this method is used more often for {@linkplain org.opengis.coverage.grid.GridEnvelope grid envelopes}
+     * (which have no CRS) than geodetic envelopes.
+     *
+     * {@section Spanning the anti-meridian of a Geographic CRS}
+     * If the given envelopes cross the date line, then this method requires their {@code getSpan(int)} method
+     * to behave as documented in the {@link org.apache.sis.geometry.AbstractEnvelope#getSpan(int)} javadoc.
+     * Furthermore the matrix created by this method will produce expected results only for source or destination
+     * points on one side of the date line (depending on whether axis direction is reversed), since the wrap around
+     * operation can not be represented by an affine transform.
+     *
+     * {@section Example}
+     * Combining the examples documented in the above {@code createTransform(…)} methods, the following method call:
      *
      * {@preformat java
      *   matrix = Matrices.createTransform(
@@ -409,13 +426,6 @@ public final class Matrices extends Static {
      *   │   1 │   │ 0    0      1 │   │   1 │
      *   └     ┘   └               ┘   └     ┘
      * }
-     *
-     * {@section Spanning the anti-meridian of a Geographic CRS}
-     * If the given envelope is crossing the date line, then this method requires the envelope {@code getSpan(int)}
-     * method to behave as documented in the {@link org.apache.sis.geometry.AbstractEnvelope#getSpan(int)} javadoc.
-     * Furthermore the matrix created by this method will produce expected results only for source or destination
-     * points on one side of the date line (depending on whether axis direction is reversed), since the wrap around
-     * operation can not be represented by an affine transform.
      *
      * @param  srcEnvelope The source envelope.
      * @param  srcAxes     The ordered sequence of axis directions for source coordinate system.
@@ -471,8 +481,9 @@ public final class Matrices extends Static {
      *   <li>For any row <var>j</var> other than the last row, the column {@code selectedDimensions[j]}.</li>
      * </ul>
      *
-     * <b>Example:</b> Given (<var>x</var>,<var>y</var>,<var>z</var>,<var>t</var>) ordinate values, if one wants to
-     * keep (<var>y</var>,<var>x</var>,<var>t</var>) ordinates (note the <var>x</var> ↔ <var>y</var> swapping)
+     * {@section Example}
+     * Given (<var>x</var>,<var>y</var>,<var>z</var>,<var>t</var>) ordinate values, if one wants to keep
+     * (<var>y</var>,<var>x</var>,<var>t</var>) ordinates (note the <var>x</var> ↔ <var>y</var> swapping)
      * and discard the <var>z</var> values, then the indices of source ordinates to select are 1 for <var>y</var>,
      * 0 for <var>x</var> and 3 for <var>t</var>. One can use the following method call:
      *
@@ -543,8 +554,8 @@ public final class Matrices extends Static {
      *       is copied in the last column of the sub-matrix.</li>
      * </ul>
      *
-     * <b>Example:</b> Given the following sub-matrix which converts height values from feet to metres,
-     * then subtract 25 metres:
+     * {@section Example}
+     * Given the following sub-matrix which converts height values from feet to metres before to subtracts 25 metres:
      *
      * {@preformat math
      *   ┌    ┐   ┌             ┐   ┌   ┐
@@ -555,7 +566,7 @@ public final class Matrices extends Static {
      *
      * Then a call to {@code Matrices.createPassThrough(2, subMatrix, 1)} will return the following matrix,
      * which can be used for converting the height (<var>z</var>) without affecting the other ordinate values
-     * in (<var>x</var>,<var>y</var>,<var>t</var>) coordinates:
+     * (<var>x</var>,<var>y</var>,<var>t</var>):
      *
      * {@preformat math
      *   ┌    ┐   ┌                      ┐   ┌   ┐
@@ -801,10 +812,12 @@ public final class Matrices extends Static {
      *   <li>{@link ComparisonMode#BY_CONTRACT BY_CONTRACT}:
      *       the two matrices must have the same size and the same element values,
      *       but are not required to be the same implementation class (any {@link Matrix} is okay).</li>
-     *   <li>{@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA}: same as {@code BY_CONTRACT}.
+     *   <li>{@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA}: same as {@code BY_CONTRACT},
+     *       since matrices have no metadata.</li>
      *   <li>{@link ComparisonMode#APPROXIMATIVE APPROXIMATIVE}:
      *       the two matrices must have the same size, but the element values can differ up to some threshold.
-     *       The threshold value is determined empirically and may change in any future SIS versions.</li>
+     *       The threshold value is determined empirically and may change in any future SIS versions.
+     *       For more control, use {@link #equals(Matrix, Matrix, double, boolean)} instead.</li>
      * </ul>
      *
      * @param  m1  The first matrix to compare, or {@code null}.
