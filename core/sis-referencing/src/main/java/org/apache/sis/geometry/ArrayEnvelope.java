@@ -189,9 +189,9 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
             box.getNorthBoundLatitude()
         };
         if (Boolean.FALSE.equals(box.getInclusion())) {
-            swap(0);
+            ArraysExt.swap(ordinates, 0, ordinates.length >>> 1);
             if (!isPoleToPole(ordinates[1], ordinates[3])) {
-                swap(1);
+                ArraysExt.swap(ordinates, 1, (ordinates.length >>> 1) + 1);
             }
         }
         try {
@@ -317,16 +317,6 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
             throw new MismatchedDimensionException(Errors.format(
                     Errors.Keys.MismatchedDimension_2, dim1, dim2));
         }
-    }
-
-    /**
-     * Swaps two ordinate values.
-     */
-    private void swap(final int i) {
-        final int m = i + (ordinates.length >>> 1);
-        final double t = ordinates[i];
-        ordinates[i] = ordinates[m];
-        ordinates[m] = t;
     }
 
     /**

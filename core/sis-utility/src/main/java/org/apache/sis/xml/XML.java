@@ -489,8 +489,6 @@ public final class XML extends Static {
      * @throws JAXBException If a property has an illegal value, or if an error occurred during the unmarshalling.
      *
      * @since 0.4
-     *
-     * @see org.apache.sis.storage.xml.XMLStore
      */
     public static Object unmarshal(final Source input, final Map<String,?> properties) throws JAXBException {
         ensureNonNull("input", input);

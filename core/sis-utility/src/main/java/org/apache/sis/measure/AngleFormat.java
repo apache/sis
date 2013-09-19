@@ -91,7 +91,7 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * The {@code ?} modifier specifies that the preceding field can be omitted if its value is zero.
  * Any field can be omitted for {@link Angle} object, but only trailing fields are omitted for
- * {@li{@link Longitude} and {@link Latitude}.
+ * {@link Longitude} and {@link Latitude}.
  *
  * {@example "<code>DD°MM′?SS″?</code>" will format an angle of 12.01° as <code>12°36″</code>,
  *           but a longitude of 12.01°N as <code>12°00′36″N</code> (not <code>12°36″N</code>).}

@@ -80,6 +80,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final int Attributes = 45;
 
         /**
+         * Barometric altitude
+         */
+        public static final int BarometricAltitude = 60;
+
+        /**
          * Character encoding
          */
         public static final int CharacterEncoding = 17;
@@ -135,6 +140,21 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final int Directory = 36;
 
         /**
+         * Dublin Julian
+         */
+        public static final int DublinJulian = 56;
+
+        /**
+         * Ellipsoidal
+         */
+        public static final int Ellipsoidal = 61;
+
+        /**
+         * Geoidal
+         */
+        public static final int Geoidal = 62;
+
+        /**
          * Identifier
          */
         public static final int Identifier = 42;
@@ -158,6 +178,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Java home directory
          */
         public static final int JavaHome = 30;
+
+        /**
+         * Julian
+         */
+        public static final int Julian = 57;
 
         /**
          * Latitude
@@ -210,6 +235,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final int MinimumValue = 4;
 
         /**
+         * Modified Julian
+         */
+        public static final int ModifiedJulian = 58;
+
+        /**
          * Name
          */
         public static final int Name = 0;
@@ -243,6 +273,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Options
          */
         public static final int Options = 49;
+
+        /**
+         * Other surface
+         */
+        public static final int OtherSurface = 63;
 
         /**
          * Others
@@ -288,6 +323,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Timezone
          */
         public static final int Timezone = 20;
+
+        /**
+         * Truncated Julian
+         */
+        public static final int TruncatedJulian = 59;
 
         /**
          * Type

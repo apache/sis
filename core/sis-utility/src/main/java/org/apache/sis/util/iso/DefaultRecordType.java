@@ -216,10 +216,10 @@ public class DefaultRecordType implements RecordType, Serializable {
 
     /**
      * Returns the type associated to the given attribute name, or {@code null} if none.
-     * This method is functionally equivalent to:
+     * This method is functionally equivalent to (omitting the check for null value):
      *
      * {@preformat java
-     *     getMemberTypes().get(name);
+     *     getMemberTypes().get(memberName).getTypeName();
      * }
      *
      * {@section Comparison with Java reflection}

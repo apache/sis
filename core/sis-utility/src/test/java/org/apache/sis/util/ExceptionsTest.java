@@ -23,6 +23,9 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
+// Related to JDK7
+import org.apache.sis.internal.jdk7.JDK7;
+
 
 /**
  * Tests the {@link Exceptions} utility methods.
@@ -38,6 +41,7 @@ public final strictfp class ExceptionsTest extends TestCase {
      */
     @Test
     public void testFormatChainedMessages() {
+        final String lineSeparator = JDK7.lineSeparator();
         final FileNotFoundException cause = new FileNotFoundException("MisingFile.txt");
         cause.initCause(new Exception("Disk is not mounted."));
         final Exception e = new Exception("Can not find “MisingFile.txt”.", cause);
@@ -50,14 +54,14 @@ public final strictfp class ExceptionsTest extends TestCase {
          *
          * But the second line shall be omitted because it duplicates the first line.
          */
-        assertEquals("Can not find “MisingFile.txt”.\n" +
+        assertEquals("Can not find “MisingFile.txt”." + lineSeparator +
                      "Disk is not mounted.",
                      Exceptions.formatChainedMessages(Locale.ENGLISH, null, e));
         /*
          * Test again with a header.
          */
-        assertEquals("Error while creating the data store.\n" +
-                     "Can not find “MisingFile.txt”.\n" +
+        assertEquals("Error while creating the data store." + lineSeparator +
+                     "Can not find “MisingFile.txt”." + lineSeparator +
                      "Disk is not mounted.",
                      Exceptions.formatChainedMessages(Locale.ENGLISH, "Error while creating the data store.", e));
     }

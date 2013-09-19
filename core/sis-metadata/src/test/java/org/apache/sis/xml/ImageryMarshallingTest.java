@@ -56,7 +56,8 @@ public final strictfp class ImageryMarshallingTest extends XMLTestCase {
          */
         String actual = XML.marshal(lineage);
         assertXmlEquals(
-            "<gmd:LI_Lineage xmlns:gmd=\"" + Namespaces.GMD + "\">\n" +
+            "<gmd:LI_Lineage xmlns:gmd=\"" + Namespaces.GMD + '"' +
+                           " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
             "  <gmd:source>\n" +
             "    <gmd:LI_Source>\n" +
             "      <gmd:description>\n" +
@@ -71,7 +72,9 @@ public final strictfp class ImageryMarshallingTest extends XMLTestCase {
         source.setProcessedLevel(new DefaultIdentifier("DummyLevel"));
         actual = XML.marshal(lineage);
         assertXmlEquals(
-            "<gmd:LI_Lineage xmlns:gmd=\"" + Namespaces.GMD + "\">\n" +
+            "<gmd:LI_Lineage xmlns:gmd=\"" + Namespaces.GMD + '"' +
+                           " xmlns:gmi=\"" + Namespaces.GMI + '"' +
+                           " xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
             "  <gmd:source>\n" +
             "    <gmi:LE_Source>\n" +
             "      <gmd:description>\n" +

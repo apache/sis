@@ -28,7 +28,7 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @since   0.3 (derived from geotk-3.04)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 public final strictfp class ArraysExtTest extends TestCase {
@@ -178,5 +178,75 @@ public final strictfp class ArraysExtTest extends TestCase {
         assertFalse(ArraysExt.isSorted(array, true));  array[3] = 3;
         assertFalse(ArraysExt.isSorted(array, false));
         assertFalse(ArraysExt.isSorted(array, true));
+    }
+
+    /**
+     * Tests the {@link ArraysExt#swap(double[], int, int)} method.
+     */
+    @Test
+    public void testSwapDouble() {
+        final double[] array = new double[] {4, 8, 12, 15, 18};
+        ArraysExt.swap(array, 1, 3);
+        assertArrayEquals(new double[] {4, 15, 12, 8, 18}, array, 0.0);
+    }
+
+    /**
+     * Tests the {@link ArraysExt#swap(double[], int, int)} method.
+     */
+    @Test
+    public void testSwapFloat() {
+        final float[] array = new float[] {4, 8, 12, 15, 18};
+        ArraysExt.swap(array, 1, 3);
+        assertArrayEquals(new float[] {4, 15, 12, 8, 18}, array, 0f);
+    }
+
+    /**
+     * Tests the {@link ArraysExt#swap(double[], int, int)} method.
+     */
+    @Test
+    public void testSwapLong() {
+        final long[] array = new long[] {4, 8, 12, 15, 18};
+        ArraysExt.swap(array, 1, 3);
+        assertArrayEquals(new long[] {4, 15, 12, 8, 18}, array);
+    }
+
+    /**
+     * Tests the {@link ArraysExt#swap(double[], int, int)} method.
+     */
+    @Test
+    public void testSwapInteger() {
+        final int[] array = new int[] {4, 8, 12, 15, 18};
+        ArraysExt.swap(array, 1, 3);
+        assertArrayEquals(new int[] {4, 15, 12, 8, 18}, array);
+    }
+
+    /**
+     * Tests the {@link ArraysExt#swap(double[], int, int)} method.
+     */
+    @Test
+    public void testSwapShort() {
+        final short[] array = new short[] {4, 8, 12, 15, 18};
+        ArraysExt.swap(array, 1, 3);
+        assertArrayEquals(new short[] {4, 15, 12, 8, 18}, array);
+    }
+
+    /**
+     * Tests the {@link ArraysExt#swap(double[], int, int)} method.
+     */
+    @Test
+    public void testSwapByte() {
+        final byte[] array = new byte[] {4, 8, 12, 15, 18};
+        ArraysExt.swap(array, 1, 3);
+        assertArrayEquals(new byte[] {4, 15, 12, 8, 18}, array);
+    }
+
+    /**
+     * Tests the {@link ArraysExt#swap(double[], int, int)} method.
+     */
+    @Test
+    public void testSwapChar() {
+        final char[] array = new char[] {4, 8, 12, 15, 18};
+        ArraysExt.swap(array, 1, 3);
+        assertArrayEquals(new char[] {4, 15, 12, 8, 18}, array);
     }
 }
