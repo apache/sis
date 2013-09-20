@@ -108,6 +108,24 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     }
 
     /**
+     * Casts or copies the given matrix to a SIS implementation. If {@code matrix} is already
+     * an instance of {@code MatrixSIS}, then it is returned unchanged. Otherwise all elements
+     * are copied in a new {@code MatrixSIS} object.
+     *
+     * @param  matrix The matrix to cast or copy, or {@code null}.
+     * @return The matrix argument if it can be safely casted (including {@code null} argument),
+     *         or a copy of the given matrix otherwise.
+     *
+     * @see Matrices#copy(Matrix)
+     */
+    public static MatrixSIS castOrCopy(final Matrix matrix) {
+        if (matrix == null || matrix instanceof MatrixSIS) {
+            return (MatrixSIS) matrix;
+        }
+        return Matrices.copy(matrix);
+    }
+
+    /**
      * Returns a copy of all matrix elements in a flat, row-major (column indices vary fastest) array.
      * The array length is <code>{@linkplain #getNumRow()} * {@linkplain #getNumCol()}</code>.
      *

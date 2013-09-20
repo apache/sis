@@ -155,6 +155,24 @@ public final class Matrix4 extends MatrixSIS {
         }
     }
 
+    /**
+     * Casts or copies the given matrix to a {@code Matrix4} implementation. If the given {@code matrix}
+     * is already an instance of {@code Matrix4}, then it is returned unchanged. Otherwise this method
+     * verifies the matrix size, then copies all elements in a new {@code Matrix4} object.
+     *
+     * @param  matrix The matrix to cast or copy, or {@code null}.
+     * @return The matrix argument if it can be safely casted (including {@code null} argument),
+     *         or a copy of the given matrix otherwise.
+     * @throws MismatchedMatrixSizeException If the size of the given matrix is not {@value #SIZE}×{@value #SIZE}.
+     */
+    public static Matrix4 castOrCopy(final Matrix matrix) throws MismatchedMatrixSizeException {
+        if (matrix == null || matrix instanceof Matrix4) {
+            return (Matrix4) matrix;
+        }
+        ensureSizeMatch(SIZE, matrix);
+        return new Matrix4(matrix);
+    }
+
     /*
      * The 'final' modifier in following method declarations is redundant with the 'final' modifier
      * in this class declaration, but we keep them as a reminder of which methods should stay final
