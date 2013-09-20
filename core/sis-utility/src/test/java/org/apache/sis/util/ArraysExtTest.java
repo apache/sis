@@ -181,6 +181,16 @@ public final strictfp class ArraysExtTest extends TestCase {
     }
 
     /**
+     * Tests the {@link ArraysExt#swap(Object[], int, int)} method.
+     */
+    @Test
+    public void testSwapObject() {
+        final Integer[] array = new Integer[] {4, 8, 12, 15, 18};
+        ArraysExt.swap(array, 1, 3);
+        assertArrayEquals(new Integer[] {4, 15, 12, 8, 18}, array);
+    }
+
+    /**
      * Tests the {@link ArraysExt#swap(double[], int, int)} method.
      */
     @Test

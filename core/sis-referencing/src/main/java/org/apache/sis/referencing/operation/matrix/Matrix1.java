@@ -100,6 +100,24 @@ public final class Matrix1 extends MatrixSIS {
         m00 = matrix.getElement(0,0);
     }
 
+    /**
+     * Casts or copies the given matrix to a {@code Matrix1} implementation. If the given {@code matrix}
+     * is already an instance of {@code Matrix1}, then it is returned unchanged. Otherwise this method
+     * verifies the matrix size, then copies the element in a new {@code Matrix1} object.
+     *
+     * @param  matrix The matrix to cast or copy, or {@code null}.
+     * @return The matrix argument if it can be safely casted (including {@code null} argument),
+     *         or a copy of the given matrix otherwise.
+     * @throws MismatchedMatrixSizeException If the size of the given matrix is not {@value #SIZE}×{@value #SIZE}.
+     */
+    public static Matrix1 castOrCopy(final Matrix matrix) throws MismatchedMatrixSizeException {
+        if (matrix == null || matrix instanceof Matrix1) {
+            return (Matrix1) matrix;
+        }
+        ensureSizeMatch(SIZE, matrix);
+        return new Matrix1(matrix);
+    }
+
     /*
      * The 'final' modifier in following method declarations is redundant with the 'final' modifier
      * in this class declaration, but we keep them as a reminder of which methods should stay final

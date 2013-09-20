@@ -43,16 +43,13 @@ import java.util.Objects;
  *       {@link #createIdentity createIdentity},
  *       {@link #createDiagonal createDiagonal},
  *       {@link #createZero     createZero},
- *       {@link #create         create}.
+ *       {@link #create         create},
+ *       {@link #copy           copy}.
  *   </li>
  *   <li>Creating new matrices for coordinate operation steps:
  *       {@link #createTransform(Envelope, AxisDirection[], Envelope, AxisDirection[]) createTransform},
  *       {@link #createDimensionSelect createDimensionSelect},
  *       {@link #createPassThrough     createPassThrough}.
- *   </li>
- *   <li>Copies matrices to a SIS implementation:
- *       {@link #copy       copy},
- *       {@link #castOrCopy castOrCopy}.
  *   </li>
  *   <li>Information:
  *       {@link #isAffine   isAffine},
@@ -646,6 +643,7 @@ public final class Matrices extends Static {
      * @return A copy of the given matrix, or {@code null} if the given matrix was null.
      *
      * @see MatrixSIS#clone()
+     * @see MatrixSIS#castOrCopy(Matrix)
      */
     public static MatrixSIS copy(final Matrix matrix) {
         if (matrix == null) {
@@ -661,22 +659,6 @@ public final class Matrices extends Static {
             }
         }
         return new GeneralMatrix(matrix);
-    }
-
-    /**
-     * Casts or copies the given matrix to a SIS implementation. If {@code matrix} is already
-     * an instance of {@code MatrixSIS}, then it is returned unchanged. Otherwise all elements
-     * are copied in a new {@code MatrixSIS} object.
-     *
-     * @param  matrix The matrix to cast or copy, or {@code null}.
-     * @return The matrix argument if it can be safely casted (including {@code null} argument),
-     *         or a copy of the given matrix otherwise.
-     */
-    public static MatrixSIS castOrCopy(final Matrix matrix) {
-        if (matrix instanceof MatrixSIS) {
-            return (MatrixSIS) matrix;
-        }
-        return copy(matrix);
     }
 
     /**
@@ -715,6 +697,11 @@ public final class Matrices extends Static {
      * This method is equivalent to computing the difference between the given matrix and an identity matrix
      * of identical size, and returning {@code true} if and only if all differences are smaller than or equal
      * to {@code tolerance}.
+     *
+     * <p><b>Caution:</b> {@linkplain org.apache.sis.referencing.datum.BursaWolfParameters Bursa-Wolf parameters},
+     * when represented as a matrix, are close to an identity transform and could easily be confused with rounding
+     * errors. In case of doubt, it is often safer to use the strict {@link MatrixSIS#isIdentity()} method instead
+     * than this one.</p>
      *
      * @param  matrix The matrix to test for identity.
      * @param  tolerance The tolerance value, or 0 for a strict comparison.
