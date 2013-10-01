@@ -358,6 +358,15 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
     }
 
     /**
+     * Returns a copy of the backing array. Note that the array type is {@code E[]} rather than {@code Object[]}.
+     * This is not what {@code ArrayList} does, but is not forbidden by {@link List#toArray()} javadoc neither.
+     */
+    @Override
+    public E[] toArray() {
+        return array.clone();
+    }
+
+    /**
      * Compares this list with the given object for equality.
      *
      * @param  object The object to compare with this list.
