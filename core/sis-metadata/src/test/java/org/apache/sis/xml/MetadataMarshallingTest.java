@@ -26,6 +26,7 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.JAXBException;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
@@ -97,6 +98,26 @@ public final strictfp class MetadataMarshallingTest extends XMLTestCase {
         final URL resource = MetadataMarshallingTest.class.getResource(filename);
         assertNotNull(filename, resource);
         return resource;
+    }
+
+    /**
+     * Tests a collection that contains no element.
+     * This was used to cause a {@code NullPointerException} prior SIS-139 fix.
+     *
+     * @throws JAXBException If an error occurred during the during unmarshalling processes.
+     *
+     * @since 0.4
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-139">SIS-139</a>
+     */
+    @Test
+    public void testEmptyCollection() throws JAXBException {
+        final String xml =
+                "<gmd:MD_Metadata xmlns:gmd=\"" + Namespaces.GMD + "\">\n" +
+                "  <gmd:contact/>\n" +
+                "</gmd:MD_Metadata>";
+        final DefaultMetadata metadata = (DefaultMetadata) XML.unmarshal(xml);
+        assertTrue(metadata.getContacts().isEmpty());
     }
 
     /**

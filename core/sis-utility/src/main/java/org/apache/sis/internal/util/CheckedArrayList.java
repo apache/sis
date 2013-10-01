@@ -17,9 +17,14 @@
 package org.apache.sis.internal.util;
 
 import java.util.List;
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.CheckedContainer;
 
@@ -42,7 +47,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.1)
- * @version 0.3
+ * @version 0.4
  * @module
  *
  * @see Collections#checkedList(List, Class)
@@ -90,30 +95,86 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
     }
 
     /**
+     * Returns {@code true} if a unmarshalling process is under way.
+     * In the later case, logs a warning for non-null element of the wrong type.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-139">SIS-139</a>
+     */
+    static boolean warning(final Collection<?> source, final Object element, final Class<?> type) {
+        final Context context = Context.current();
+        if (context == null) {
+            return false;
+        }
+        if (element != null) {
+            final LogRecord record = Errors.getResources(context.getLocale()).getLogRecord(Level.WARNING,
+                    Errors.Keys.IllegalArgumentClass_3, "element", type, element.getClass());
+            record.setSourceClassName(source.getClass().getName());
+            record.setSourceMethodName("add");
+            Context.warningOccured(context, source, record);
+        }
+        return true;
+    }
+
+    /**
      * Ensures that the given element is non-null and assignable to the type
      * specified at construction time.
      *
      * @param  element the object to check, or {@code null}.
+     * @return {@code true} if the instance is valid, {@code false} if it shall be ignored.
      * @throws IllegalArgumentException if the specified element can not be added to this list.
      */
-    private void ensureValid(final E element) throws IllegalArgumentException {
-        if (!type.isInstance(element)) {
-            ensureNonNull("element", element);
-            throw new IllegalArgumentException(Errors.format(
-                    Errors.Keys.IllegalArgumentClass_3, "element", type, element.getClass()));
+    private boolean ensureValid(final E element) throws IllegalArgumentException {
+        if (type.isInstance(element)) {
+            return true;
         }
+        if (warning(this, element, type)) {
+            /*
+             * If a unmarshalling process is under way, silently discard null element.
+             * This case happen when a XML element for a collection contains no child.
+             * See https://issues.apache.org/jira/browse/SIS-139
+             */
+            return false;
+        }
+        ensureNonNull("element", element);
+        throw new IllegalArgumentException(Errors.format(
+                Errors.Keys.IllegalArgumentClass_3, "element", type, element.getClass()));
     }
 
     /**
      * Ensures that all elements of the given collection can be added to this list.
      *
      * @param  collection the collection to check, or {@code null}.
+     * @return The potentially filtered collection of elements to add.
      * @throws IllegalArgumentException if at least one element can not be added to this list.
      */
-    private void ensureValidCollection(final Collection<? extends E> collection) throws IllegalArgumentException {
-        for (final E element : collection) {
-            ensureValid(element);
+    @SuppressWarnings("unchecked")
+    private List<E> ensureValidCollection(final Collection<? extends E> collection) throws IllegalArgumentException {
+        int count = 0;
+        final Object[] array = collection.toArray();
+        for (int i=0; i<array.length; i++) {
+            final Object element = array[i];
+            if (ensureValid((E) element)) {
+                array[count++] = element;
+            }
         }
+        // Not-so-unsafe cast: we verified in the above loop that all elements are instance of E.
+        // The array itself may not be an instance of E[], but this is not important for Mediator.
+        return new Mediator<>(ArraysExt.resize((E[]) array, count));
+    }
+
+    /**
+     * A wrapper around the given array for use by {@link #addAll(Collection)} only.  This wrapper violates
+     * some {@link List} method contracts, so it must really be used only as a temporary object for passing
+     * the array to {@code AbstractList.addAll(…)} implementation. In particular {@link #toArray()} returns
+     * directly the internal array, because this is the method to be invoked by {@code addAll(…)}  (this is
+     * actually the only important method for this wrapper).
+     */
+    private static final class Mediator<E> extends AbstractList<E> {
+        private final E[] array;
+        Mediator(final E[] array)           {this.array = array;}
+        @Override public int size()         {return array.length;}
+        @Override public E   get(int index) {return array[index];}
+        @Override public E[] toArray()      {return array;} // See class javadoc.
     }
 
     /**
@@ -127,8 +188,10 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
      */
     @Override
     public E set(final int index, final E element) throws IllegalArgumentException {
-        ensureValid(element);
-        return super.set(index, element);
+        if (ensureValid(element)) {
+            return super.set(index, element);
+        }
+        return get(index);
     }
 
     /**
@@ -140,8 +203,10 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
      */
     @Override
     public boolean add(final E element) throws IllegalArgumentException {
-        ensureValid(element);
-        return super.add(element);
+        if (ensureValid(element)) {
+            return super.add(element);
+        }
+        return false;
     }
 
     /**
@@ -154,8 +219,9 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
      */
     @Override
     public void add(final int index, final E element) throws IllegalArgumentException {
-        ensureValid(element);
-        super.add(index, element);
+        if (ensureValid(element)) {
+            super.add(index, element);
+        }
     }
 
     /**
@@ -168,8 +234,7 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
      */
     @Override
     public boolean addAll(final Collection<? extends E> collection) throws IllegalArgumentException {
-        ensureValidCollection(collection);
-        return super.addAll(collection);
+        return super.addAll(ensureValidCollection(collection));
     }
 
     /**
@@ -183,7 +248,6 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
      */
     @Override
     public boolean addAll(final int index, final Collection<? extends E> collection) throws IllegalArgumentException {
-        ensureValidCollection(collection);
-        return super.addAll(index, collection);
+        return super.addAll(index, ensureValidCollection(collection));
     }
 }
