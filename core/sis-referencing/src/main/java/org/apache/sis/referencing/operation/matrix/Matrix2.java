@@ -293,7 +293,7 @@ public final class Matrix2 extends MatrixSIS {
         final int nc = matrix.getNumCol();
         ensureNumRowMatch(SIZE, matrix, nc);
         if (nc != SIZE) {
-            return new NonSquareMatrix(this, matrix);
+            return new NonSquareMatrix(this, matrix, 1);
         }
         final Matrix2 k = (matrix instanceof Matrix2) ? (Matrix2) matrix : new Matrix2(matrix);
         return new Matrix2(m00 * k.m00  +  m01 * k.m10,

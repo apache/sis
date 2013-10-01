@@ -97,7 +97,7 @@ public final class Matrices extends Static {
             case 2:  return new Matrix2();
             case 3:  return new Matrix3();
             case 4:  return new Matrix4();
-            default: return new GeneralMatrix(size, size, true);
+            default: return new GeneralMatrix(size, size, true, 1);
         }
     }
 
@@ -121,7 +121,7 @@ public final class Matrices extends Static {
         if (numRow == numCol) {
             return createIdentity(numRow);
         } else {
-            return new NonSquareMatrix(numRow, numCol, true);
+            return new NonSquareMatrix(numRow, numCol, true, 1);
         }
     }
 
@@ -146,9 +146,9 @@ public final class Matrices extends Static {
             case 2:  return new Matrix2(false);
             case 3:  return new Matrix3(false);
             case 4:  return new Matrix4(false);
-            default: return new GeneralMatrix(numRow, numCol, false);
+            default: return new GeneralMatrix(numRow, numCol, false, 1);
         }
-        return new NonSquareMatrix(numRow, numCol, false);
+        return new NonSquareMatrix(numRow, numCol, false, 1);
     }
 
     /**
@@ -175,9 +175,9 @@ public final class Matrices extends Static {
             case 2:  return new Matrix2(elements);
             case 3:  return new Matrix3(elements);
             case 4:  return new Matrix4(elements);
-            default: return new GeneralMatrix(numRow, numCol, elements);
+            default: return new GeneralMatrix(numRow, numCol, elements, 1);
         }
-        return new NonSquareMatrix(numRow, numCol, elements);
+        return new NonSquareMatrix(numRow, numCol, elements, 1);
     }
 
     /**
@@ -658,7 +658,7 @@ public final class Matrices extends Static {
                 case 4: return new Matrix4(matrix);
             }
         }
-        return new GeneralMatrix(matrix);
+        return new GeneralMatrix(matrix, 1);
     }
 
     /**

@@ -112,7 +112,7 @@ public final class DoubleDouble extends Number {
          0.002777777777777777777777777777777778,    // 1/360°
          0.01,
          0.01666666666666666666666666666666667,     // Minute to degrees
-         0.01745329251994329576923690768488613, // Degrees to radians
+         0.01745329251994329576923690768488613,     // Degrees to radians
          0.1,
          0.201168,                                  // Link to metres
          0.3048,                                    // Feet to metres
