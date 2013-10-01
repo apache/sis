@@ -381,7 +381,7 @@ public final class Matrix4 extends MatrixSIS {
         final int nc = matrix.getNumCol();
         ensureNumRowMatch(SIZE, matrix, nc);
         if (nc != SIZE) {
-            return new NonSquareMatrix(this, matrix);
+            return new NonSquareMatrix(this, matrix, 1);
         }
         final Matrix4 k = (matrix instanceof Matrix4) ? (Matrix4) matrix : new Matrix4(matrix);
         return new Matrix4(m00 * k.m00  +  m01 * k.m10  +  m02 * k.m20  +  m03 * k.m30,

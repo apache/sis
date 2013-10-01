@@ -259,7 +259,7 @@ public final class Matrix1 extends MatrixSIS {
             throw new NoninvertibleMatrixException();
         }
         if (nc != SIZE) {
-            final NonSquareMatrix m = new NonSquareMatrix(SIZE, nc, false);
+            final NonSquareMatrix m = new NonSquareMatrix(SIZE, nc, false, 1);
             for (int i=0; i<nc; i++) {
                 m.elements[i] = matrix.getElement(0, i) / m00;
             }
@@ -276,7 +276,7 @@ public final class Matrix1 extends MatrixSIS {
         final int nc = matrix.getNumCol();
         ensureNumRowMatch(SIZE, matrix, nc);
         if (nc != SIZE) {
-            return new NonSquareMatrix(this, matrix);
+            return new NonSquareMatrix(this, matrix, 1);
         }
         return new Matrix1(m00 * matrix.getElement(0,0));
     }

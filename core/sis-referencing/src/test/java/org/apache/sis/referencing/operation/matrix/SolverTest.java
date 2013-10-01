@@ -48,7 +48,7 @@ public final strictfp class SolverTest extends TestCase {
      * Initializes the {@link #matrix} and {@link #reference} matrices to random values.
      */
     private void createMatrices(final int numRow, final int numCol, final Random random) {
-        matrix = new GeneralMatrix(numRow, numCol, false);
+        matrix = new GeneralMatrix(numRow, numCol, false, 1);
         reference = new Matrix(numRow, numCol);
         for (int j=0; j<numRow; j++) {
             for (int i=0; i<numCol; i++) {

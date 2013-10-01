@@ -330,7 +330,7 @@ public final class Matrix3 extends MatrixSIS {
         final int nc = matrix.getNumCol();
         ensureNumRowMatch(SIZE, matrix, nc);
         if (nc != SIZE) {
-            return new NonSquareMatrix(this, matrix);
+            return new NonSquareMatrix(this, matrix, 1);
         }
         final Matrix3 k = (matrix instanceof Matrix3) ? (Matrix3) matrix : new Matrix3(matrix);
         return new Matrix3(m00 * k.m00  +  m01 * k.m10  +  m02 * k.m20,

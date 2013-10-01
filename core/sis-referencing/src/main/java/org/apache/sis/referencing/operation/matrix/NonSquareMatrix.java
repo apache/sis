@@ -44,9 +44,10 @@ final class NonSquareMatrix extends GeneralMatrix {
      * @param numCol Number of columns.
      * @param setToIdentity {@code true} for initializing the matrix to the identity matrix,
      *        or {@code false} for leaving it initialized to zero.
+     * @param precision 1 for normal precision, or 2 for extended precision.
      */
-    NonSquareMatrix(final int numRow, final int numCol, final boolean setToIdentity) {
-        super(numRow, numCol, setToIdentity);
+    NonSquareMatrix(final int numRow, final int numCol, final boolean setToIdentity, final int precision) {
+        super(numRow, numCol, setToIdentity, precision);
     }
 
     /**
@@ -57,18 +58,20 @@ final class NonSquareMatrix extends GeneralMatrix {
      * @param numRow Number of rows.
      * @param numCol Number of columns.
      * @param elements Initial values.
+     * @param precision 1 for normal precision, or 2 for extended precision.
      */
-    NonSquareMatrix(final int numRow, final int numCol, final double[] elements) {
-        super(numRow, numCol, elements);
+    NonSquareMatrix(final int numRow, final int numCol, final double[] elements, final int precision) {
+        super(numRow, numCol, elements, precision);
     }
 
     /**
      * Constructs a new matrix and copies the initial values from the given matrix.
      *
      * @param matrix The matrix to copy.
+     * @param precision 1 for normal precision, or 2 for extended precision.
      */
-    NonSquareMatrix(final Matrix matrix) {
-        super(matrix);
+    NonSquareMatrix(final Matrix matrix, final int precision) {
+        super(matrix, precision);
     }
 
     /**
@@ -82,8 +85,8 @@ final class NonSquareMatrix extends GeneralMatrix {
      * Initializes this matrix to the product of the given matrices.
      * This constructor shall be invoked only when the result is known to be a non-square matrix.
      */
-    NonSquareMatrix(final Matrix A, final Matrix B) {
-        super(A.getNumRow(), B.getNumCol(), false);
+    NonSquareMatrix(final Matrix A, final Matrix B, final int precision) {
+        super(A.getNumRow(), B.getNumCol(), false, precision);
         final int numRow = this.numRow; // Protection against accidental changes.
         final int numCol = this.numCol;
         final int common = A.getNumCol();
@@ -107,11 +110,17 @@ final class NonSquareMatrix extends GeneralMatrix {
     public void transpose() {
         final short numRow = this.numRow; // Protection against accidental changes before we are done.
         final short numCol = this.numCol;
+        final int   errors = (numRow * numCol) % elements.length;
         final double[] copy = elements.clone();
         int k = 0;
         for (int j=0; j<numRow; j++) {
             for (int i=0; i<numCol; i++) {
-                elements[i*numRow + j] = copy[k++];
+                final int t = i*numRow + j;
+                elements[t] = copy[k];
+                if (errors != 0) {
+                    elements[t + errors] = copy[k + errors];
+                }
+                k++;
             }
         }
         this.numRow = numCol;
