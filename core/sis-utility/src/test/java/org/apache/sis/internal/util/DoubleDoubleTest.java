@@ -42,9 +42,9 @@ import static java.lang.StrictMath.*;
 @DependsOn(org.apache.sis.math.MathFunctionsTest.class)
 public final strictfp class DoubleDoubleTest extends TestCase {
     /**
-     * Number of iterations in each test method.
+     * Number of time to repeat arithmetic tests.
      */
-    private static final int NUM_ITERATIONS = 1000;
+    private static final int NUMBER_OF_REPETITIONS = 1000;
 
     /**
      * The tolerance factor (as a multiplicand) for the addition and subtraction operations.
@@ -57,6 +57,11 @@ public final strictfp class DoubleDoubleTest extends TestCase {
      * factor like 1E+4 should be very small compared to the {@link DoubleDouble#value}.
      */
     private static final double PRODUCT_TOLERANCE_FACTOR = 10000;
+
+    /**
+     * Tolerance threshold for strict comparisons of floating point values.
+     */
+    private static final double STRICT = 0;
 
     /**
      * The random number generator to use for the test.
@@ -96,7 +101,7 @@ public final strictfp class DoubleDoubleTest extends TestCase {
      */
     private static void assertNormalizedAndEquals(final double expected, final DoubleDouble actual) {
         assertTrue("DoubleDouble is not normalized.", abs(actual.error) <= ulp(actual.value));
-        assertEquals("Unexpected arithmetic result.", expected, actual.value, 0.0);
+        assertEquals("Unexpected arithmetic result.", expected, actual.value, STRICT);
     }
 
     /**
@@ -128,7 +133,7 @@ public final strictfp class DoubleDoubleTest extends TestCase {
     @DependsOnMethod("testSetToQuickSum")
     public void testNormalize() {
         final DoubleDouble dd = new DoubleDouble();
-        for (int i=0; i<NUM_ITERATIONS; i++) {
+        for (int i=0; i<NUMBER_OF_REPETITIONS; i++) {
             double a = nextRandom();
             double b = nextRandom();
             if (abs(a) < abs(b)) {
@@ -150,7 +155,7 @@ public final strictfp class DoubleDoubleTest extends TestCase {
     @Test
     public void testSetToQuickSum() {
         final DoubleDouble dd = new DoubleDouble();
-        for (int i=0; i<NUM_ITERATIONS; i++) {
+        for (int i=0; i<NUMBER_OF_REPETITIONS; i++) {
             double a = nextRandom();
             double b = nextRandom();
             if (abs(a) < abs(b)) {
@@ -170,7 +175,7 @@ public final strictfp class DoubleDoubleTest extends TestCase {
     @Test
     public void testSetToSum() {
         final DoubleDouble dd = new DoubleDouble();
-        for (int i=0; i<NUM_ITERATIONS; i++) {
+        for (int i=0; i<NUMBER_OF_REPETITIONS; i++) {
             final double a = nextRandom();
             final double b = nextRandom();
             dd.setToSum(a, b);
@@ -185,7 +190,7 @@ public final strictfp class DoubleDoubleTest extends TestCase {
     @Test
     public void testSetToProduct() {
         final DoubleDouble dd = new DoubleDouble();
-        for (int i=0; i<NUM_ITERATIONS; i++) {
+        for (int i=0; i<NUMBER_OF_REPETITIONS; i++) {
             final double a = nextRandom();
             final double b = nextRandom();
             dd.setToProduct(a, b);
@@ -202,7 +207,7 @@ public final strictfp class DoubleDoubleTest extends TestCase {
     public void testAdd() {
         final DoubleDouble dd = new DoubleDouble();
         final DoubleDouble op = new DoubleDouble();
-        for (int i=0; i<NUM_ITERATIONS; i++) {
+        for (int i=0; i<NUMBER_OF_REPETITIONS; i++) {
             nextRandom(dd);
             nextRandom(op);
             final BigDecimal expected = toBigDecimal(dd).add(toBigDecimal(op));
@@ -219,7 +224,7 @@ public final strictfp class DoubleDoubleTest extends TestCase {
     public void testMultiply() {
         final DoubleDouble dd = new DoubleDouble();
         final DoubleDouble op = new DoubleDouble();
-        for (int i=0; i<NUM_ITERATIONS; i++) {
+        for (int i=0; i<NUMBER_OF_REPETITIONS; i++) {
             nextRandom(dd);
             nextRandom(op);
             final BigDecimal expected = toBigDecimal(dd).multiply(toBigDecimal(op), MathContext.DECIMAL128);
@@ -236,7 +241,7 @@ public final strictfp class DoubleDoubleTest extends TestCase {
     public void testDivide() {
         final DoubleDouble dd = new DoubleDouble();
         final DoubleDouble op = new DoubleDouble();
-        for (int i=0; i<NUM_ITERATIONS; i++) {
+        for (int i=0; i<NUMBER_OF_REPETITIONS; i++) {
             nextRandom(dd);
             nextRandom(op);
             final BigDecimal expected = toBigDecimal(dd).divide(toBigDecimal(op), MathContext.DECIMAL128);
@@ -249,14 +254,30 @@ public final strictfp class DoubleDoubleTest extends TestCase {
      * List of all {@link DoubleDouble#VALUES} as string decimal representation.
      */
     private static final String[] PREDEFINED_VALUES = {
-        "0.000001",
-        "0.00001",
-        "0.0001",
-        "0.001",
-        "0.01",
-        "0.1",
-        "0.3048",
-        "0.9"
+         "0.000001",
+         "0.00001",
+         "0.0001",
+         "0.00027777777777777777777777777777777778",
+         "0.001",
+         "0.002777777777777777777777777777777778",
+         "0.01",
+         "0.01666666666666666666666666666666667",
+         "0.017453292519943295769236907684886127134428333",
+         "0.1",
+         "0.201168",
+         "0.3048",
+         "0.785398163397448309615660845819876",
+         "0.9",
+         "0.9144",
+         "1.111111111111111111111111111111111",
+         "1.570796326794896619231321691639751",
+         "1.8288",
+         "2.356194490192344928846982537459627",
+         "2.54",
+         "3.14159265358979323846264338327950",
+         "6.28318530717958647692528676655901",
+        "20.1168",
+        "57.2957795130823208767981548141052"
     };
 
     /**
@@ -290,9 +311,35 @@ public final strictfp class DoubleDoubleTest extends TestCase {
             final BigDecimal accurate      = new BigDecimal(text);
             final BigDecimal approximation = new BigDecimal(value);
             final double     expected      = accurate.subtract(approximation).doubleValue();
-            assertEquals(text,  expected, DoubleDouble.errorForWellKnownValue( value), 0);
-            assertEquals(text, -expected, DoubleDouble.errorForWellKnownValue(-value), 0);
+            assertEquals(text,  expected, DoubleDouble.errorForWellKnownValue( value), STRICT);
+            assertEquals(text, -expected, DoubleDouble.errorForWellKnownValue(-value), STRICT);
             assertFalse("There is no point to define an entry for values having no error.", expected == 0);
         }
+    }
+
+    /**
+     * Tests π values using the {@link Math#PI} constant.
+     * This test method serves two purposes:
+     *
+     * <ul>
+     *   <li>Ensure that the results of small arithmetic operations on {@link Math#PI} produce
+     *       numbers that {@link DoubleDouble#errorForWellKnownValue(double)} can find.</li>
+     *   <li>Compare with the values computed by the {@code qd-2.3.14} package (a C/C++ library),
+     *       which is taken as the reference implementation.</li>
+     * </ul>
+     */
+    @Test
+    @DependsOnMethod("testErrorForWellKnownValue")
+    public void testPI() {
+        assertEquals(1.224646799147353207E-16, DoubleDouble.errorForWellKnownValue(PI    ), STRICT);
+        assertEquals(2.449293598294706414E-16, DoubleDouble.errorForWellKnownValue(PI * 2), STRICT);
+        assertEquals(6.123233995736766036E-17, DoubleDouble.errorForWellKnownValue(PI / 2), STRICT);
+        assertEquals(3.061616997868383018E-17, DoubleDouble.errorForWellKnownValue(PI / 4), STRICT);
+        assertEquals(9.184850993605148436E-17, DoubleDouble.errorForWellKnownValue(PI * (3./4)), STRICT);
+
+        assertTrue("toDegrees", DoubleDouble.errorForWellKnownValue(180 / PI)     != 0);
+        assertTrue("toDegrees", DoubleDouble.errorForWellKnownValue(toDegrees(1)) != 0);
+        assertTrue("toRadians", DoubleDouble.errorForWellKnownValue(PI / 180)     != 0);
+        assertTrue("toRadians", DoubleDouble.errorForWellKnownValue(toRadians(1)) != 0);
     }
 }
