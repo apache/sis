@@ -105,6 +105,7 @@ class GeneralMatrix extends MatrixSIS {
         this.numRow = (short) numRow;
         this.numCol = (short) numCol;
         this.elements = Arrays.copyOf(elements, length * precision);
+        inferErrors();
     }
 
     /**
@@ -126,6 +127,7 @@ class GeneralMatrix extends MatrixSIS {
                 elements[k++] = matrix.getElement(j, i);
             }
         }
+        inferErrors();
     }
 
     /**
@@ -135,6 +137,19 @@ class GeneralMatrix extends MatrixSIS {
         numRow   = matrix.numRow;
         numCol   = matrix.numCol;
         elements = matrix.elements.clone();
+    }
+
+    /**
+     * Infers all {@link DoubleDouble#error} with a default values inferred from {@link DoubleDouble#value}.
+     * For example if a matrix element is exactly 3.141592653589793, there is good chances that the user's
+     * intend was to specify the {@link Math#PI} value, in which case this method will infer that we would
+     * need to add 1.2246467991473532E-16 in order to get a value closer to π.
+     */
+    private void inferErrors() {
+        final int length = numRow * numCol;
+        for (int i=length; i<elements.length; i++) {
+            elements[i] = DoubleDouble.errorForWellKnownValue(elements[i - length]);
+        }
     }
 
     /**
@@ -187,7 +202,12 @@ class GeneralMatrix extends MatrixSIS {
     @Override
     public final void setElement(final int row, final int column, final double value) {
         if (row >= 0 && row < numRow && column >= 0 && column < numCol) {
-            elements[row * numCol + column] = value;
+            int i = row * numCol + column;
+            elements[i] = value;
+            i += numRow * numCol;
+            if (i < elements.length) {
+                elements[i] = DoubleDouble.errorForWellKnownValue(value);
+            }
         } else {
             throw indexOutOfBounds(row, column);
         }
@@ -208,13 +228,11 @@ class GeneralMatrix extends MatrixSIS {
     public final void setElements(final double[] elements) {
         ensureLengthMatch(numRow*numCol, elements);
         System.arraycopy(elements, 0, this.elements, 0, elements.length);
+        inferErrors();
     }
 
     /**
      * {@inheritDoc}
-     *
-     * <p>If this matrix has extended precision, then the {@link DoubleDouble#error} values are ignored.
-     * Only the values representable as a {@code double} are verified.</p>
      */
     @Override
     public final boolean isAffine() {
@@ -229,6 +247,15 @@ class GeneralMatrix extends MatrixSIS {
                         return false;
                     }
                 }
+                /*
+                 * At this point, the 'double' values are those of an affine transform.
+                 * If this matrix uses extended precision, ensures that their errors are zero.
+                 */
+                for (i = base + numRow*numCol; i < elements.length; i++) {
+                    if (elements[i] != 0) {
+                        return false;
+                    }
+                }
                 return true;
             }
         }
@@ -237,9 +264,6 @@ class GeneralMatrix extends MatrixSIS {
 
     /**
      * {@inheritDoc}
-     *
-     * <p>If this matrix has extended precision, then the {@link DoubleDouble#error} values are ignored.
-     * Only the values representable as a {@code double} are verified.</p>
      */
     @Override
     public final boolean isIdentity() {
@@ -259,6 +283,15 @@ class GeneralMatrix extends MatrixSIS {
                 if (element != 0) return false;
             }
         }
+        /*
+         * At this point, the 'double' values are those of an identity transform.
+         * If this matrix uses extended precision, ensures that all errors are zero.
+         */
+        for (int i=length; i<elements.length; i++) {
+            if (elements[i] != 0) {
+                return false;
+            }
+        }
         return true;
     }
 
@@ -272,7 +305,7 @@ class GeneralMatrix extends MatrixSIS {
     public void transpose() {
         final int numRow = this.numRow; // Protection against accidental changes.
         final int numCol = this.numCol;
-        final int errors = (numRow * numCol) % elements.length;
+        final int errors = (numRow * numCol) % elements.length; // Where error values start, or 0 if none.
         for (int j=0; j<numRow; j++) {
             for (int i=0; i<j; i++) {
                 final int lo = j*numCol + i;
@@ -288,6 +321,8 @@ class GeneralMatrix extends MatrixSIS {
 
     /**
      * {@inheritDoc}
+     *
+     * <p>The current implementation discards the extended precision, if any.</p>
      */
     @Override
     public final void normalizeColumns() {
@@ -303,6 +338,7 @@ class GeneralMatrix extends MatrixSIS {
                 elements[j*numCol + i] /= m;
             }
         }
+        Arrays.fill(elements, numRow * numCol, elements.length, 0);
     }
 
     /**
