@@ -21,8 +21,6 @@ import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
@@ -106,11 +104,8 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
             return false;
         }
         if (element != null) {
-            final LogRecord record = Errors.getResources(context.getLocale()).getLogRecord(Level.WARNING,
-                    Errors.Keys.IllegalArgumentClass_3, "element", type, element.getClass());
-            record.setSourceClassName(source.getClass().getName());
-            record.setSourceMethodName("add");
-            Context.warningOccured(context, source, record);
+            Context.warningOccured(context, source, source.getClass(), "add",
+                    Errors.class, Errors.Keys.IllegalArgumentClass_3, "element", type, element.getClass());
         }
         return true;
     }

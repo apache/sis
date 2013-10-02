@@ -17,8 +17,6 @@
 package org.apache.sis.internal.jaxb.gco;
 
 import java.util.UUID;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import org.apache.sis.xml.XLink;
 import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
@@ -150,11 +148,8 @@ final class ObjectReference {
         if (value != null) {
             final T previous = map.putSpecialized(authority, value);
             if (previous != null && !previous.equals(value)) {
-                final LogRecord record = Errors.getResources((context != null) ? context.getLocale() : null)
-                        .getLogRecord(Level.WARNING, Errors.Keys.InconsistentAttribute_2, authority.getName(), value);
-                record.setSourceClassName(IdentifierMap.class.getName());
-                record.setSourceMethodName("putSpecialized");
-                Context.warningOccured(context, map, record);
+                Context.warningOccured(context, map, IdentifierMap.class, "putSpecialized",
+                        Errors.class, Errors.Keys.InconsistentAttribute_2, authority.getName(), value);
                 map.putSpecialized(authority, previous);
             }
         }
