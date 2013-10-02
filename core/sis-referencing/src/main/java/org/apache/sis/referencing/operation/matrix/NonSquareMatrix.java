@@ -110,7 +110,7 @@ final class NonSquareMatrix extends GeneralMatrix {
     public void transpose() {
         final short numRow = this.numRow; // Protection against accidental changes before we are done.
         final short numCol = this.numCol;
-        final int   errors = (numRow * numCol) % elements.length;
+        final int   errors = (numRow * numCol) % elements.length; // Where error values start, or 0 if none.
         final double[] copy = elements.clone();
         int k = 0;
         for (int j=0; j<numRow; j++) {
