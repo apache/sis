@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.operation.matrix;
 
 import org.opengis.referencing.operation.Matrix;
+import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.util.ArraysExt;
 
 
@@ -100,7 +101,8 @@ final class Solver implements Matrix {
      * (this is <strong>not</strong> verified by this method).
      */
     static MatrixSIS inverse(final MatrixSIS X) throws NoninvertibleMatrixException {
-        return solve(X, IDENTITY, X.getNumRow());
+        final int size = X.getNumRow();
+        return solve(X, IDENTITY, size, size);
     }
 
     /**
@@ -121,28 +123,34 @@ final class Solver implements Matrix {
      * }
      *
      * @param  X The matrix to invert.
+     * @param  size The value of {@code X.getNumRow()}, {@code X.getNumCol()} and {@code Y.getNumRow()}.
      * @param  innerSize The value of {@code Y.getNumCol()}.
      * @throws NoninvertibleMatrixException If the {@code X} matrix is singular.
      */
-    static MatrixSIS solve(final MatrixSIS X, final Matrix Y, final int innerSize)
+    static MatrixSIS solve(final MatrixSIS X, final Matrix Y, final int size, final int innerSize)
             throws NoninvertibleMatrixException
     {
-        final int size = X.getNumRow();
         /*
          * Use a "left-looking", dot-product, Crout/Doolittle algorithm.
          */
-        final double[] LU = X.getElements();
+        final int errorLU = size * size;
+        final double[] LU = GeneralMatrix.getExtendedElements(X, size, size);
+        assert errorLU == GeneralMatrix.indexOfErrors(size, size, LU);
         final int[] pivot = new int[size];
         for (int j=0; j<size; j++) {
            pivot[j] = j;
         }
-        final double[] column = new double[size];
+        final double[]  column = new double[size * 2];
+        final DoubleDouble dot = new DoubleDouble();
+        final DoubleDouble sum = new DoubleDouble();
         for (int i=0; i<size; i++) {
             /*
              * Make a copy of the i-th column.
              */
             for (int j=0; j<size; j++) {
-                column[j] = LU[j*size + i];
+                final int k = j*size + i;
+                column[j] = LU[k];
+                column[j + size] = LU[k + errorLU];
             }
             /*
              * Apply previous transformations.
@@ -150,11 +158,16 @@ final class Solver implements Matrix {
             for (int j=0; j<size; j++) {
                 final int rowOffset = j*size;
                 final int kmax = Math.min(j,i);
-                double s = 0.0;
+                sum.clear();
                 for (int k=0; k<kmax; k++) {
-                   s += LU[rowOffset + k] * column[k];
+                    dot.value = LU[rowOffset + k];
+                    dot.error = LU[rowOffset + k + errorLU];
+                    dot.multiply(column[k], column[k + size]);
+                    sum.add(dot);
                 }
-                LU[rowOffset + i] = (column[j] -= s);
+                sum.add(-column[j], -column[j + size]);
+                LU[rowOffset + i]           = column[j]        = -sum.value;
+                LU[rowOffset + i + errorLU] = column[j + size] = -sum.error;
             }
             /*
              * Find pivot and exchange if necessary.

@@ -265,27 +265,6 @@ public final class Matrix2 extends MatrixSIS {
     }
 
     /**
-     * {@inheritDoc}
-     */
-    @Override
-    public MatrixSIS inverse() throws NoninvertibleMatrixException {
-        final double det = m00*m11 - m01*m10;
-        if (det == 0) {
-            throw new NoninvertibleMatrixException();
-        }
-        return new Matrix2(m11 / det, -m01 / det,
-                          -m10 / det,  m00 / det);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public MatrixSIS solve(final Matrix matrix) throws MismatchedMatrixSizeException, NoninvertibleMatrixException {
-        throw new UnsupportedOperationException(); // TODO
-    }
-
-    /**
      * Returns {@code true} if the specified object is of type {@code Matrix2} and
      * all of the data members are equal to the corresponding data members in this matrix.
      *

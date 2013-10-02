@@ -18,6 +18,7 @@ package org.apache.sis.referencing.operation.matrix;
 
 import java.util.Random;
 import Jama.Matrix;
+import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOnMethod;
@@ -58,7 +59,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
      * The matrix elements used in this class varies between 0 and 100,
      * and the {@code Math.ulp(100.0)} value is approximatively 1.4E-14.
      */
-    static final double TOLERANCE = 1E-10;
+    static final double TOLERANCE = DoubleDouble.STRICTFP ? STRICT : 1E-8;
 
     /**
      * Number of random matrices to try in arithmetic operation tests.
@@ -104,9 +105,10 @@ public abstract strictfp class MatrixTestCase extends TestCase {
         final int numCol = actual.getNumCol();
         assertEquals("numRow", expected.getRowDimension(),    numRow);
         assertEquals("numCol", expected.getColumnDimension(), numCol);
+        final String name = actual.getClass().getSimpleName();
         for (int j=0; j<numRow; j++) {
             for (int i=0; i<numCol; i++) {
-                assertEquals(expected.get(j,i), actual.getElement(j,i), tolerance);
+                assertEquals(name, expected.get(j,i), actual.getElement(j,i), tolerance);
             }
         }
     }
@@ -273,7 +275,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
                 m += e*e;
             }
             m = StrictMath.sqrt(m);
-            assertEquals(1, m, TOLERANCE);
+            assertEquals(1, m, 1E-12);
         }
     }
 

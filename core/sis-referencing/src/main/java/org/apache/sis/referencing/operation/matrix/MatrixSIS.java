@@ -230,7 +230,9 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      *         to the number of columns in this matrix.
      * @throws NoninvertibleMatrixException if this matrix is not invertible.
      */
-    public abstract MatrixSIS solve(Matrix matrix) throws MismatchedMatrixSizeException, NoninvertibleMatrixException;
+    public MatrixSIS solve(final Matrix matrix) throws MismatchedMatrixSizeException, NoninvertibleMatrixException {
+        throw new UnsupportedOperationException(); // TODO
+    }
 
     /**
      * Returns the inverse of this matrix.
@@ -240,7 +242,9 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      *
      * @see java.awt.geom.AffineTransform#createInverse()
      */
-    public abstract MatrixSIS inverse() throws NoninvertibleMatrixException;
+    public MatrixSIS inverse() throws NoninvertibleMatrixException {
+        return Solver.inverse(this);
+    }
 
     /**
      * Compares the given matrices for equality, using the given absolute tolerance threshold.
