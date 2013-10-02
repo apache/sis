@@ -47,7 +47,7 @@ import org.apache.sis.util.Classes;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-2.4)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 public final class Logging extends Static {
@@ -178,13 +178,14 @@ public final class Logging extends Static {
      * This convenience method performs the following steps:
      *
      * <ul>
-     *   <li>Get the logger using {@link #getLogger(Class)};</li>
+     *   <li>Unconditionally {@linkplain LogRecord#setSourceClassName(String) set the source class name}
+     *       to the {@linkplain Class#getCanonicalName() canonical name} of the given class;</li>
+     *   <li>Unconditionally {@linkplain LogRecord#setSourceMethodName(String) set the source method name}
+     *       to the given value;</li>
+     *   <li>Get the logger for the {@linkplain LogRecord#getLoggerName() logger name} if specified,
+     *       or using {@link #getLogger(Class)} otherwise;</li>
      *   <li>{@linkplain LogRecord#setLoggerName(String) Set the logger name} of the given record,
      *       if not already set;</li>
-     *   <li>Unconditionally {@linkplain LogRecord#setSourceClassName(String) set the source class
-     *       name} to the {@linkplain Class#getCanonicalName() canonical name} of the given class;</li>
-     *   <li>Unconditionally {@linkplain LogRecord#setSourceMethodName(String) set the source method
-     *       name} to the given value;</li>
      *   <li>{@linkplain Logger#log(LogRecord) Log} the modified record.</li>
      * </ul>
      *
@@ -195,9 +196,13 @@ public final class Logging extends Static {
     public static void log(final Class<?> classe, final String method, final LogRecord record) {
         record.setSourceClassName(classe.getCanonicalName());
         record.setSourceMethodName(method);
-        final Logger logger = getLogger(classe);
-        if (record.getLoggerName() == null) {
+        final String loggerName = record.getLoggerName();
+        final Logger logger;
+        if (loggerName == null) {
+            logger = getLogger(classe);
             record.setLoggerName(logger.getName());
+        } else {
+            logger = getLogger(loggerName);
         }
         logger.log(record);
     }
