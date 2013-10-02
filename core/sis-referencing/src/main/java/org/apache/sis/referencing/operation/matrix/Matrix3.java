@@ -16,9 +16,7 @@
  */
 package org.apache.sis.referencing.operation.matrix;
 
-import java.util.Arrays;
 import org.opengis.referencing.operation.Matrix;
-import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.math.MathFunctions;
 
 
@@ -320,37 +318,5 @@ public final class Matrix3 extends MatrixSIS {
     @Override
     public MatrixSIS solve(final Matrix matrix) throws MismatchedMatrixSizeException, NoninvertibleMatrixException {
         throw new UnsupportedOperationException(); // TODO
-    }
-
-    /**
-     * Returns {@code true} if the specified object is of type {@code Matrix3} and
-     * all of the data members are equal to the corresponding data members in this matrix.
-     *
-     * @param object The object to compare with this matrix for equality.
-     * @return {@code true} if the given object is equal to this matrix.
-     */
-    @Override
-    public boolean equals(final Object object) {
-        if (object instanceof Matrix3) {
-            final Matrix3 that = (Matrix3) object;
-            return Numerics.equals(this.m00, that.m00) &&
-                   Numerics.equals(this.m01, that.m01) &&
-                   Numerics.equals(this.m02, that.m02) &&
-                   Numerics.equals(this.m10, that.m10) &&
-                   Numerics.equals(this.m11, that.m11) &&
-                   Numerics.equals(this.m12, that.m12) &&
-                   Numerics.equals(this.m20, that.m20) &&
-                   Numerics.equals(this.m21, that.m21) &&
-                   Numerics.equals(this.m22, that.m22);
-        }
-        return false;
-    }
-
-    /**
-     * Returns a hash code value based on the data values in this object.
-     */
-    @Override
-    public int hashCode() {
-        return Arrays.hashCode(getElements()) ^ (int) serialVersionUID;
     }
 }
