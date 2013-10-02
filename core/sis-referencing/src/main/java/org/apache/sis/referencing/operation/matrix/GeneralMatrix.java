@@ -455,32 +455,6 @@ class GeneralMatrix extends MatrixSIS {
     }
 
     /**
-     * Returns {@code true} if the specified object is of type {@code GeneralMatrix} and
-     * all of the data members are equal to the corresponding data members in this matrix.
-     *
-     * @param object The object to compare with this matrix for equality.
-     * @return {@code true} if the given object is equal to this matrix.
-     */
-    @Override
-    public final boolean equals(final Object object) {
-        if (object instanceof GeneralMatrix) {
-            final GeneralMatrix that = (GeneralMatrix) object;
-            return numRow == that.numRow &&
-                   numCol == that.numCol &&
-                   Arrays.equals(elements, that.elements);
-        }
-        return false;
-    }
-
-    /**
-     * Returns a hash code value based on the data values in this object.
-     */
-    @Override
-    public final int hashCode() {
-        return ((numRow << Short.SIZE) | numCol) ^ Arrays.hashCode(elements) ^ (int) serialVersionUID;
-    }
-
-    /**
      * {@inheritDoc}
      */
     @Override

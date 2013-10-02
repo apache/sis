@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.operation.matrix;
 
+import java.util.Arrays;
 import java.io.Serializable;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.util.ArgumentChecks;
@@ -300,6 +301,33 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
         return (object instanceof Matrix) && Matrices.equals(this, (Matrix) object, mode);
+    }
+
+    /**
+     * Returns {@code true} if the specified object is of same type than {@code this} and
+     * all of the data members are equal to the corresponding data members in this matrix.
+     *
+     * @param object The object to compare with this matrix for equality.
+     * @return {@code true} if the given object is equal to this matrix.
+     */
+    @Override
+    public boolean equals(final Object object) {
+        if (object != null && object.getClass() == getClass()) {
+            final MatrixSIS that = (MatrixSIS) object;
+            return getNumRow() == that.getNumRow() &&
+                   getNumCol() == that.getNumCol() &&
+                   Arrays.equals(getExtendedElements(), that.getExtendedElements());
+        }
+        return false;
+    }
+
+    /**
+     * Returns a hash code value based on the data values in this object.
+     */
+    @Override
+    public int hashCode() {
+        return (getNumRow() << Short.SIZE) ^ getNumCol() ^
+                Arrays.hashCode(getExtendedElements()) ^ (int) serialVersionUID;
     }
 
     /**
