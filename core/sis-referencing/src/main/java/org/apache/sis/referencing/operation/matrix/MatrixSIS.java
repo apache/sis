@@ -126,6 +126,17 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     }
 
     /**
+     * Returns all matrix elements, possibly including the error terms for extended-precision arithmetic.
+     * If the returned array contains error terms, then the array will have twice the normal length.
+     * See {@link GeneralMatrix#elements} for more discussion.
+     *
+     * <p>This method may return a direct reference to the internal array. <strong>Do not modify.</strong></p>
+     */
+    double[] getExtendedElements() {
+        return getElements();
+    }
+
+    /**
      * Returns a copy of all matrix elements in a flat, row-major (column indices vary fastest) array.
      * The array length is <code>{@linkplain #getNumRow()} * {@linkplain #getNumCol()}</code>.
      *
@@ -204,7 +215,20 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * @throws MismatchedMatrixSizeException if the number of rows in the given matrix is not equals to the
      *         number of columns in this matrix.
      */
-    public abstract MatrixSIS multiply(Matrix matrix) throws MismatchedMatrixSizeException;
+    public MatrixSIS multiply(final Matrix matrix) throws MismatchedMatrixSizeException {
+        final int numRow = getNumRow();
+        final int numCol = getNumCol();
+        final int nc = matrix.getNumCol();
+        ensureNumRowMatch(numCol, matrix, nc);
+        final GeneralMatrix result;
+        if (numRow == nc) {
+            result = new GeneralMatrix(numRow, nc, false, 2);
+        } else {
+            result = new NonSquareMatrix(numRow, nc, false, 2);
+        }
+        result.setToProduct(this, matrix);
+        return result;
+    }
 
     /**
      * Returns the value of <var>U</var> which solves {@code this} × <var>U</var> = {@code matrix}.

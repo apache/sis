@@ -323,28 +323,6 @@ public final class Matrix3 extends MatrixSIS {
     }
 
     /**
-     * {@inheritDoc}
-     */
-    @Override
-    public MatrixSIS multiply(final Matrix matrix) {
-        final int nc = matrix.getNumCol();
-        ensureNumRowMatch(SIZE, matrix, nc);
-        if (nc != SIZE) {
-            return new NonSquareMatrix(this, matrix, 1);
-        }
-        final Matrix3 k = (matrix instanceof Matrix3) ? (Matrix3) matrix : new Matrix3(matrix);
-        return new Matrix3(m00 * k.m00  +  m01 * k.m10  +  m02 * k.m20,
-                           m00 * k.m01  +  m01 * k.m11  +  m02 * k.m21,
-                           m00 * k.m02  +  m01 * k.m12  +  m02 * k.m22,
-                           m10 * k.m00  +  m11 * k.m10  +  m12 * k.m20,
-                           m10 * k.m01  +  m11 * k.m11  +  m12 * k.m21,
-                           m10 * k.m02  +  m11 * k.m12  +  m12 * k.m22,
-                           m20 * k.m00  +  m21 * k.m10  +  m22 * k.m20,
-                           m20 * k.m01  +  m21 * k.m11  +  m22 * k.m21,
-                           m20 * k.m02  +  m21 * k.m12  +  m22 * k.m22);
-    }
-
-    /**
      * Returns {@code true} if the specified object is of type {@code Matrix3} and
      * all of the data members are equal to the corresponding data members in this matrix.
      *

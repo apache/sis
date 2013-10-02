@@ -122,11 +122,7 @@ class GeneralMatrix extends MatrixSIS {
         this.numRow = (short) numRow;
         this.numCol = (short) numCol;
         elements = new double[numRow * numCol * precision];
-        for (int k=0,j=0; j<numRow; j++) {
-            for (int i=0; i<numCol; i++) {
-                elements[k++] = matrix.getElement(j, i);
-            }
-        }
+        getElements(matrix, numRow, numCol, elements);
         inferErrors();
     }
 
@@ -140,6 +136,23 @@ class GeneralMatrix extends MatrixSIS {
     }
 
     /**
+     * Copies the elements of the given matrix in the given array.
+     * This method ignores the error terms, if any.
+     *
+     * @param matrix   The matrix to copy.
+     * @param numRow   The number of rows to copy (usually {@code matrix.getNumRow()}).
+     * @param numCol   The number of columns to copy (usually {@code matrix.getNumCol()}).
+     * @param elements Where to copy the elements.
+     */
+    private static void getElements(final Matrix matrix, final int numRow, final int numCol, final double[] elements) {
+        for (int k=0,j=0; j<numRow; j++) {
+            for (int i=0; i<numCol; i++) {
+                elements[k++] = matrix.getElement(j, i);
+            }
+        }
+    }
+
+    /**
      * Infers all {@link DoubleDouble#error} with a default values inferred from {@link DoubleDouble#value}.
      * For example if a matrix element is exactly 3.141592653589793, there is good chances that the user's
      * intend was to specify the {@link Math#PI} value, in which case this method will infer that we would
@@ -150,6 +163,16 @@ class GeneralMatrix extends MatrixSIS {
         for (int i=length; i<elements.length; i++) {
             elements[i] = DoubleDouble.errorForWellKnownValue(elements[i - length]);
         }
+    }
+
+    /**
+     * Returns the index of the first {@link DoubleDouble#error} value in the {@link #elements} array,
+     * or 0 if none. This method returns a non-zero value only if the matrix has been created in extended
+     * precision mode.
+     */
+    static int indexOfErrors(final int numRow, final int numCol, final double[] elements) {
+        assert elements.length % (numRow * numCol) == 0;
+        return (numRow * numCol) % elements.length; // A % B is for getting 0 without branching if A == B.
     }
 
     /**
@@ -214,6 +237,31 @@ class GeneralMatrix extends MatrixSIS {
     }
 
     /**
+     * Returns all elements of the given matrix, possibly including the error terms for extended-precision arithmetic.
+     * If the returned array contains error terms, then the array will have twice the normal length.
+     * See {@link #elements} for more discussion.
+     *
+     * <p>This method may return a direct reference to the internal array. <strong>Do not modify.</strong></p>
+     */
+    private static double[] getExtendedElements(final Matrix matrix, final int numRow, final int numCol) {
+        if (matrix instanceof MatrixSIS) {
+            return ((MatrixSIS) matrix).getExtendedElements();
+        }
+        final double[] elements = new double[numRow * numCol];
+        getElements(matrix, numRow, numCol, elements);
+        return elements;
+    }
+
+    /**
+     * Returns a direct reference to the internal array, which may or may not contains error values
+     * for extended precision arithmetic.
+     */
+    @Override
+    final double[] getExtendedElements() {
+        return elements;
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -251,12 +299,7 @@ class GeneralMatrix extends MatrixSIS {
                  * At this point, the 'double' values are those of an affine transform.
                  * If this matrix uses extended precision, ensures that their errors are zero.
                  */
-                for (i = base + numRow*numCol; i < elements.length; i++) {
-                    if (elements[i] != 0) {
-                        return false;
-                    }
-                }
-                return true;
+                return errorsAreZero(base + numRow*numCol);
             }
         }
         return false;
@@ -287,8 +330,18 @@ class GeneralMatrix extends MatrixSIS {
          * At this point, the 'double' values are those of an identity transform.
          * If this matrix uses extended precision, ensures that all errors are zero.
          */
-        for (int i=length; i<elements.length; i++) {
-            if (elements[i] != 0) {
+        return errorsAreZero(length);
+    }
+
+    /**
+     * Returns {@code true} if this matrix has no error elements, or if all error elements starting
+     * at the given index are zero.
+     *
+     * @param i Index of the first error elements to check (may be greater than the array length).
+     */
+    private boolean errorsAreZero(int i) {
+        while (i < elements.length) {
+            if (elements[i++] != 0) {
                 return false;
             }
         }
@@ -305,7 +358,7 @@ class GeneralMatrix extends MatrixSIS {
     public void transpose() {
         final int numRow = this.numRow; // Protection against accidental changes.
         final int numCol = this.numCol;
-        final int errors = (numRow * numCol) % elements.length; // Where error values start, or 0 if none.
+        final int errors = indexOfErrors(numRow, numCol, elements); // Where error values start, or 0 if none.
         for (int j=0; j<numRow; j++) {
             for (int i=0; i<j; i++) {
                 final int lo = j*numCol + i;
@@ -358,26 +411,47 @@ class GeneralMatrix extends MatrixSIS {
     }
 
     /**
-     * {@inheritDoc}
+     * Sets this matrix to the product of the given matrices: {@code this = A × B}.
+     * The matrix sizes much match - this is not verified unless assertions are enabled.
      */
-    @Override
-    public final MatrixSIS multiply(final Matrix matrix) {
+    final void setToProduct(final MatrixSIS A, final Matrix B) {
         final int numRow = this.numRow; // Protection against accidental changes.
         final int numCol = this.numCol;
-        final int nc = matrix.getNumCol();
-        ensureNumRowMatch(numCol, matrix, nc);
-        final MatrixSIS result = Matrices.createZero(numRow, nc);
-        for (int j=0; j<numRow; j++) {
-            final int srcOff = j * numCol;
-            for (int i=0; i<nc; i++) {
-                double sum = 0;
-                for (int k=0; k<numCol; k++) {
-                    sum += elements[srcOff + k] * matrix.getElement(k, i);
+        final int nc = A.getNumCol();
+        assert B.getNumRow() == nc;
+        assert numRow == A.getNumRow() && numCol == B.getNumCol();
+        /*
+         * Get the matrix element values, together with the error terms if the matrix
+         * use extended precision (double-double arithmetic).
+         */
+        final double[] eltA   = A.getExtendedElements();
+        final double[] eltB   = getExtendedElements(B, nc, numCol);
+        final int      errors = indexOfErrors(numRow, numCol, elements); // Where error values start, or 0 if none.
+        final int      errA   = indexOfErrors(numRow, nc, eltA);
+        final int      errB   = indexOfErrors(nc, numCol, eltB);
+        /*
+         * Compute the product, to be stored directly in 'this'.
+         */
+        final DoubleDouble dot = new DoubleDouble();
+        final DoubleDouble sum = new DoubleDouble();
+        for (int k=0,j=0; j<numRow; j++) {
+            for (int i=0; i<numCol; i++) {
+                sum.clear();
+                int iB = i;       // Index of values in a single column of B.
+                int iA = j * nc;  // Index of values in a single row of A.
+                final int nextRow = iA + nc;
+                while (iA < nextRow) {
+                    dot.value = eltA[iA];
+                    dot.error = (errA != 0) ? eltA[iA + errA] : 0;
+                    dot.multiply(eltB[iB], (errB != 0) ? eltB[iB + errB] : 0);
+                    sum.add(dot);
+                    iB += numCol; // Move to next row of B.
+                    iA++;         // Move to next column of A.
                 }
-                result.setElement(j, i, sum);
+                elements[k + errors] = sum.error;
+                elements[k++] = sum.value;
             }
         }
-        return result;
     }
 
     /**

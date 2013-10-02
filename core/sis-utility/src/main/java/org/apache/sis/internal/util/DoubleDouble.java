@@ -206,6 +206,14 @@ public final class DoubleDouble extends Number {
     }
 
     /**
+     * Resets the {@link #value} and {@link #error} terms to zero.
+     */
+    public void clear() {
+        value = 0;
+        error = 0;
+    }
+
+    /**
      * Equivalent to a call to {@code setToQuickSum(value, error)} inlined.
      * This is invoked after addition or multiplication operations.
      */
