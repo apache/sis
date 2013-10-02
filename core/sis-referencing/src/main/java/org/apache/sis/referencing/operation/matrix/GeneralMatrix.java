@@ -400,22 +400,6 @@ class GeneralMatrix extends MatrixSIS {
     }
 
     /**
-     * {@inheritDoc}
-     */
-    @Override
-    public MatrixSIS inverse() throws NoninvertibleMatrixException {
-        return Solver.inverse(this);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public MatrixSIS solve(final Matrix matrix) throws MismatchedMatrixSizeException, NoninvertibleMatrixException {
-        throw new UnsupportedOperationException(); // TODO
-    }
-
-    /**
      * Sets this matrix to the product of the given matrices: {@code this = A × B}.
      * The matrix sizes much match - this is not verified unless assertions are enabled.
      */

@@ -307,22 +307,6 @@ public final class Matrix3 extends MatrixSIS {
     }
 
     /**
-     * {@inheritDoc}
-     */
-    @Override
-    public MatrixSIS inverse() throws NoninvertibleMatrixException {
-        return Solver.inverse(this);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public MatrixSIS solve(final Matrix matrix) throws MismatchedMatrixSizeException, NoninvertibleMatrixException {
-        throw new UnsupportedOperationException(); // TODO
-    }
-
-    /**
      * Returns {@code true} if the specified object is of type {@code Matrix3} and
      * all of the data members are equal to the corresponding data members in this matrix.
      *
