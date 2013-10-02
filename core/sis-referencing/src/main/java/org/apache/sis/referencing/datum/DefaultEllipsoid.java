@@ -19,8 +19,6 @@ package org.apache.sis.referencing.datum;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import javax.measure.unit.SI;
 import javax.measure.unit.Unit;
 import javax.measure.quantity.Length;
@@ -570,11 +568,9 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * Emits a warning telling that the given element is repeated twice.
      */
     private void warnDuplicated(final String element) {
-        final LogRecord record = Errors.getResources(null)
-                .getLogRecord(Level.WARNING, Errors.Keys.DuplicatedElement_1, element);
-        record.setSourceClassName(DefaultEllipsoid.class.getName());
-        record.setSourceMethodName("unmarshal"); // We cheat a bit since there is not such method...
-        Context.warningOccured(Context.current(), this, record);
+         // We cheat a bit for the "unmarshal" method name since there is not such method...
+        Context.warningOccured(Context.current(), this, DefaultEllipsoid.class, "unmarshal",
+                Errors.class, Errors.Keys.DuplicatedElement_1, element);
     }
 
     /**

@@ -17,8 +17,6 @@
 package org.apache.sis.internal.jaxb.gml;
 
 import java.util.Date;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.temporal.Period;
 import org.opengis.temporal.Instant;
@@ -128,12 +126,8 @@ public final class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimi
                      * TemporalPrimitive as the source class, since it is the closest we can get
                      * to a public API.
                      */
-                    final Context context = Context.current();
-                    final LogRecord record = Errors.getResources(context != null ? context.getLocale() : null)
-                            .getLogRecord(Level.WARNING, Errors.Keys.IllegalRange_2, begin, end);
-                    record.setSourceClassName(TemporalPrimitive.class.getName());
-                    record.setSourceMethodName("setTimePeriod");
-                    Context.warningOccured(context, this, record);
+                    Context.warningOccured(Context.current(), this, TemporalPrimitive.class, "setTimePeriod",
+                            Errors.class, Errors.Keys.IllegalRange_2, begin, end);
                 } else try {
                     metadata = TemporalUtilities.createPeriod(begin, end);
                     period.copyIdTo(metadata);

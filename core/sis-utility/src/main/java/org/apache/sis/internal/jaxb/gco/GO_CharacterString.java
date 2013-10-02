@@ -16,8 +16,6 @@
  */
 package org.apache.sis.internal.jaxb.gco;
 
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
@@ -137,13 +135,8 @@ public class GO_CharacterString {
                 property  = type;
                 noset     = true;
             }
-            final Context context = Context.current();
-            final LogRecord record = Messages.getResources(context != null ? context.getLocale() : null)
-                    .getLogRecord(Level.WARNING, Messages.Keys.DiscardedExclusiveProperty_2,
-                                  NAMES[discarded], NAMES[property]);
-            record.setSourceClassName(getClass().getCanonicalName());
-            record.setSourceMethodName("setText");
-            Context.warningOccured(context, value, record);
+            Context.warningOccured(Context.current(), value, getClass(), "setText",
+                    Messages.class, Messages.Keys.DiscardedExclusiveProperty_2, NAMES[discarded], NAMES[property]);
             if (noset) {
                 return;
             }

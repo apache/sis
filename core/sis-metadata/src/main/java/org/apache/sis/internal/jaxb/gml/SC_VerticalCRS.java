@@ -16,8 +16,6 @@
  */
 package org.apache.sis.internal.jaxb.gml;
 
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import javax.xml.bind.annotation.XmlAnyElement;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
@@ -116,12 +114,8 @@ public class SC_VerticalCRS extends PropertyType<SC_VerticalCRS, VerticalCRS> {
      */
     @XmlAnyElement(lax = true)
     public Object getElement() {
-        final LogRecord record = Errors.getResources(null).getLogRecord(Level.WARNING,
-                Errors.Keys.MissingRequiredModule_1, "sis-referencing");
-        record.setSourceClassName(SC_VerticalCRS.class.getName());
-        record.setSourceMethodName("getElement");
-        final Context context = Context.current();
-        Context.warningOccured(context, metadata, record);
+        Context.warningOccured(Context.current(), metadata, SC_VerticalCRS.class, "getElement",
+                Errors.class, Errors.Keys.MissingRequiredModule_1, "sis-referencing");
         return null;
     }
 
