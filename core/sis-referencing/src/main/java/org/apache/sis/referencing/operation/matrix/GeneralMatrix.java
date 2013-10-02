@@ -105,7 +105,9 @@ class GeneralMatrix extends MatrixSIS {
         this.numRow = (short) numRow;
         this.numCol = (short) numCol;
         this.elements = Arrays.copyOf(elements, length * precision);
-        inferErrors();
+        if (precision != 1) {
+            inferErrors(this.elements);
+        }
     }
 
     /**
@@ -123,7 +125,9 @@ class GeneralMatrix extends MatrixSIS {
         this.numCol = (short) numCol;
         elements = new double[numRow * numCol * precision];
         getElements(matrix, numRow, numCol, elements);
-        inferErrors();
+        if (precision != 1) {
+            inferErrors(elements);
+        }
     }
 
     /**
@@ -158,8 +162,8 @@ class GeneralMatrix extends MatrixSIS {
      * intend was to specify the {@link Math#PI} value, in which case this method will infer that we would
      * need to add 1.2246467991473532E-16 in order to get a value closer to π.
      */
-    private void inferErrors() {
-        final int length = numRow * numCol;
+    private static void inferErrors(final double[] elements) {
+        final int length = elements.length / 2;
         for (int i=length; i<elements.length; i++) {
             elements[i] = DoubleDouble.errorForWellKnownValue(elements[i - length]);
         }
@@ -237,27 +241,26 @@ class GeneralMatrix extends MatrixSIS {
     }
 
     /**
-     * Returns all elements of the given matrix, possibly including the error terms for extended-precision arithmetic.
-     * If the returned array contains error terms, then the array will have twice the normal length.
-     * See {@link #elements} for more discussion.
+     * Returns all elements of the given matrix followed by the error terms for extended-precision arithmetic.
+     * The array will have twice the normal length. See {@link #elements} for more discussion.
      *
      * <p>This method may return a direct reference to the internal array. <strong>Do not modify.</strong></p>
      */
-    private static double[] getExtendedElements(final Matrix matrix, final int numRow, final int numCol) {
-        if (matrix instanceof MatrixSIS) {
-            return ((MatrixSIS) matrix).getExtendedElements();
+    static double[] getExtendedElements(final Matrix matrix, final int numRow, final int numCol) {
+        double[] elements;
+        final int length = numRow * numCol * 2;
+        if (matrix instanceof GeneralMatrix) {
+            elements = ((GeneralMatrix) matrix).elements;
+            if (elements.length == length) {
+                return elements; // Internal array already uses extended precision.
+            } else {
+                elements = Arrays.copyOf(elements, length);
+            }
+        } else {
+            elements = new double[length];
+            getElements(matrix, numRow, numCol, elements);
         }
-        final double[] elements = new double[numRow * numCol];
-        getElements(matrix, numRow, numCol, elements);
-        return elements;
-    }
-
-    /**
-     * Returns a direct reference to the internal array, which may or may not contains error values
-     * for extended precision arithmetic.
-     */
-    @Override
-    final double[] getExtendedElements() {
+        inferErrors(elements);
         return elements;
     }
 
@@ -273,10 +276,12 @@ class GeneralMatrix extends MatrixSIS {
      * {@inheritDoc}
      */
     @Override
-    public final void setElements(final double[] elements) {
-        ensureLengthMatch(numRow*numCol, elements);
-        System.arraycopy(elements, 0, this.elements, 0, elements.length);
-        inferErrors();
+    public final void setElements(final double[] newValues) {
+        ensureLengthMatch(numRow*numCol, newValues);
+        System.arraycopy(newValues, 0, elements, 0, newValues.length);
+        if (elements.length != newValues.length) {
+            inferErrors(newValues);
+        }
     }
 
     /**
@@ -424,11 +429,11 @@ class GeneralMatrix extends MatrixSIS {
          * Get the matrix element values, together with the error terms if the matrix
          * use extended precision (double-double arithmetic).
          */
-        final double[] eltA   = A.getExtendedElements();
+        final double[] eltA   = getExtendedElements(A, numRow, nc);
         final double[] eltB   = getExtendedElements(B, nc, numCol);
-        final int      errors = indexOfErrors(numRow, numCol, elements); // Where error values start, or 0 if none.
-        final int      errA   = indexOfErrors(numRow, nc, eltA);
-        final int      errB   = indexOfErrors(nc, numCol, eltB);
+        final int      errors = numRow * numCol; // Where error values start, or 0 if none.
+        final int      errA   = numRow * nc;
+        final int      errB   = nc * numCol;
         /*
          * Compute the product, to be stored directly in 'this'.
          */
@@ -442,8 +447,8 @@ class GeneralMatrix extends MatrixSIS {
                 final int nextRow = iA + nc;
                 while (iA < nextRow) {
                     dot.value = eltA[iA];
-                    dot.error = (errA != 0) ? eltA[iA + errA] : 0;
-                    dot.multiply(eltB[iB], (errB != 0) ? eltB[iB + errB] : 0);
+                    dot.error = eltA[iA + errA];
+                    dot.multiply(eltB[iB], eltB[iB + errB]);
                     sum.add(dot);
                     iB += numCol; // Move to next row of B.
                     iA++;         // Move to next column of A.
@@ -452,6 +457,32 @@ class GeneralMatrix extends MatrixSIS {
                 elements[k++] = sum.value;
             }
         }
+    }
+
+    /**
+     * Returns {@code true} if the specified object is of type {@code GeneralMatrix} and
+     * all of the data members are equal to the corresponding data members in this matrix.
+     *
+     * @param object The object to compare with this matrix for equality.
+     * @return {@code true} if the given object is equal to this matrix.
+     */
+    @Override
+    public final boolean equals(final Object object) {
+        if (object instanceof GeneralMatrix) {
+            final GeneralMatrix that = (GeneralMatrix) object;
+            return numRow == that.numRow &&
+                   numCol == that.numCol &&
+                   Arrays.equals(elements, that.elements);
+        }
+        return false;
+    }
+
+    /**
+     * Returns a hash code value based on the data values in this object.
+     */
+    @Override
+    public final int hashCode() {
+        return ((numRow << Short.SIZE) | numCol) ^ Arrays.hashCode(elements) ^ (int) serialVersionUID;
     }
 
     /**
