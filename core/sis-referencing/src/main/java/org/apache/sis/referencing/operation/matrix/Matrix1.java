@@ -269,19 +269,6 @@ public final class Matrix1 extends MatrixSIS {
     }
 
     /**
-     * {@inheritDoc}
-     */
-    @Override
-    public MatrixSIS multiply(final Matrix matrix) {
-        final int nc = matrix.getNumCol();
-        ensureNumRowMatch(SIZE, matrix, nc);
-        if (nc != SIZE) {
-            return new NonSquareMatrix(this, matrix, 1);
-        }
-        return new Matrix1(m00 * matrix.getElement(0,0));
-    }
-
-    /**
      * Returns {@code true} if the specified object is of type {@code Matrix1} and
      * all of the data members are equal to the corresponding data members in this matrix.
      *

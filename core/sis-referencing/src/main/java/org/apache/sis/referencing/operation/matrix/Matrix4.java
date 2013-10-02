@@ -374,35 +374,6 @@ public final class Matrix4 extends MatrixSIS {
     }
 
     /**
-     * {@inheritDoc}
-     */
-    @Override
-    public MatrixSIS multiply(final Matrix matrix) {
-        final int nc = matrix.getNumCol();
-        ensureNumRowMatch(SIZE, matrix, nc);
-        if (nc != SIZE) {
-            return new NonSquareMatrix(this, matrix, 1);
-        }
-        final Matrix4 k = (matrix instanceof Matrix4) ? (Matrix4) matrix : new Matrix4(matrix);
-        return new Matrix4(m00 * k.m00  +  m01 * k.m10  +  m02 * k.m20  +  m03 * k.m30,
-                           m00 * k.m01  +  m01 * k.m11  +  m02 * k.m21  +  m03 * k.m31,
-                           m00 * k.m02  +  m01 * k.m12  +  m02 * k.m22  +  m03 * k.m32,
-                           m00 * k.m03  +  m01 * k.m13  +  m02 * k.m23  +  m03 * k.m33,
-                           m10 * k.m00  +  m11 * k.m10  +  m12 * k.m20  +  m13 * k.m30,
-                           m10 * k.m01  +  m11 * k.m11  +  m12 * k.m21  +  m13 * k.m31,
-                           m10 * k.m02  +  m11 * k.m12  +  m12 * k.m22  +  m13 * k.m32,
-                           m10 * k.m03  +  m11 * k.m13  +  m12 * k.m23  +  m13 * k.m33,
-                           m20 * k.m00  +  m21 * k.m10  +  m22 * k.m20  +  m23 * k.m30,
-                           m20 * k.m01  +  m21 * k.m11  +  m22 * k.m21  +  m23 * k.m31,
-                           m20 * k.m02  +  m21 * k.m12  +  m22 * k.m22  +  m23 * k.m32,
-                           m20 * k.m03  +  m21 * k.m13  +  m22 * k.m23  +  m23 * k.m33,
-                           m30 * k.m00  +  m31 * k.m10  +  m32 * k.m20  +  m33 * k.m30,
-                           m30 * k.m01  +  m31 * k.m11  +  m32 * k.m21  +  m33 * k.m31,
-                           m30 * k.m02  +  m31 * k.m12  +  m32 * k.m22  +  m33 * k.m32,
-                           m30 * k.m03  +  m31 * k.m13  +  m32 * k.m23  +  m33 * k.m33);
-    }
-
-    /**
      * Returns {@code true} if the specified object is of type {@code Matrix4} and
      * all of the data members are equal to the corresponding data members in this matrix.
      *
