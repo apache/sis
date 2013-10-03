@@ -98,11 +98,10 @@ class GeneralMatrix extends MatrixSIS {
      */
     GeneralMatrix(final int numRow, final int numCol, final double[] elements) {
         ensureValidSize(numRow, numCol);
-        final int length = numRow * numCol;
-        ensureLengthMatch(length, elements);
+        ensureLengthMatch(numRow * numCol, elements);
         this.numRow = (short) numRow;
         this.numCol = (short) numCol;
-        this.elements = Arrays.copyOf(elements, length);
+        this.elements = elements.clone();
     }
 
     /**

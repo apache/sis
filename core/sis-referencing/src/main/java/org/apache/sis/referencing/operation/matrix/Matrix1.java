@@ -241,17 +241,6 @@ public final class Matrix1 extends MatrixSIS {
      * {@inheritDoc}
      */
     @Override
-    public MatrixSIS inverse() throws NoninvertibleMatrixException {
-        if (m00 == 0) {
-            throw new NoninvertibleMatrixException();
-        }
-        return new Matrix1(1 / m00);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public MatrixSIS solve(final Matrix matrix) throws MismatchedMatrixSizeException, NoninvertibleMatrixException {
         final int nc = matrix.getNumCol();
         ensureNumRowMatch(SIZE, matrix, nc);
