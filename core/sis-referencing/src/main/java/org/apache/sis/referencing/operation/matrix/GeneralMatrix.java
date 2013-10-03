@@ -140,6 +140,20 @@ class GeneralMatrix extends MatrixSIS {
     }
 
     /**
+     * Creates a new extended precision matrix of the given size.
+     *
+     * @param numRow Number of rows.
+     * @param numCol Number of columns.
+     */
+    static GeneralMatrix createExtendedPrecision(final int numRow, final int numCol) {
+        if (numRow == numCol) {
+            return new GeneralMatrix(numRow, numCol, false, 2);
+        } else {
+            return new NonSquareMatrix(numRow, numCol, false, 2);
+        }
+    }
+
+    /**
      * Copies the elements of the given matrix in the given array.
      * This method ignores the error terms, if any.
      *
@@ -415,9 +429,9 @@ class GeneralMatrix extends MatrixSIS {
          */
         final double[] eltA   = getExtendedElements(A, numRow, nc);
         final double[] eltB   = getExtendedElements(B, nc, numCol);
-        final int      errors = numRow * numCol; // Where error values start, or 0 if none.
-        final int      errA   = numRow * nc;
-        final int      errB   = nc * numCol;
+        final int errorOffset = numRow * numCol; // Where error terms start.
+        final int errA        = numRow * nc;
+        final int errB        = nc * numCol;
         /*
          * Compute the product, to be stored directly in 'this'.
          */
@@ -430,15 +444,13 @@ class GeneralMatrix extends MatrixSIS {
                 int iA = j * nc;  // Index of values in a single row of A.
                 final int nextRow = iA + nc;
                 while (iA < nextRow) {
-                    dot.value = eltA[iA];
-                    dot.error = eltA[iA + errA];
-                    dot.multiply(eltB[iB], eltB[iB + errB]);
+                    dot.setFrom (eltA, iA, errA);
+                    dot.multiply(eltB, iB, errB);
                     sum.add(dot);
                     iB += numCol; // Move to next row of B.
                     iA++;         // Move to next column of A.
                 }
-                elements[k + errors] = sum.error;
-                elements[k++] = sum.value;
+                sum.storeTo(elements, k++, errorOffset);
             }
         }
     }

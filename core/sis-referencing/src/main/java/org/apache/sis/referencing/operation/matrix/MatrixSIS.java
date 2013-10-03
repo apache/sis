@@ -209,12 +209,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
         final int numCol = getNumCol();
         final int nc = matrix.getNumCol();
         ensureNumRowMatch(numCol, matrix, nc);
-        final GeneralMatrix result;
-        if (numRow == nc) {
-            result = new GeneralMatrix(numRow, nc, false, 2);
-        } else {
-            result = new NonSquareMatrix(numRow, nc, false, 2);
-        }
+        final GeneralMatrix result = GeneralMatrix.createExtendedPrecision(numRow, nc);
         result.setToProduct(this, matrix);
         return result;
     }

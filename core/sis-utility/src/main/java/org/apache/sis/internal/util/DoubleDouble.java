@@ -224,11 +224,38 @@ public final class DoubleDouble extends Number {
     }
 
     /**
+     * Returns {@code true} if this {@code DoubleDouble} is equals to zero.
+     *
+     * @return {@code true} if this {@code DoubleDouble} is equals to zero.
+     */
+    public boolean isZero() {
+        return value == 0 && error == 0;
+    }
+
+    /**
      * Resets the {@link #value} and {@link #error} terms to zero.
      */
     public void clear() {
         value = 0;
         error = 0;
+    }
+
+    /**
+     * Sets the {@link #value} and {@link #error} terms to values read from the given array.
+     * This is a convenience method for a frequently used operation, implemented as below:
+     *
+     * {@preformat java
+     *   value = array[index];
+     *   error = array[index + errorOffset];
+     * }
+     *
+     * @param array        The array from which to get the value and error.
+     * @param index        Index of the value in the given array.
+     * @param errorOffset  Offset to add to {@code index} in order to get the index of the error in the given array.
+     */
+    public void setFrom(final double[] array, final int index, final int errorOffset) {
+        value = array[index];
+        error = array[index + errorOffset];
     }
 
     /**
@@ -292,6 +319,51 @@ public final class DoubleDouble extends Number {
     }
 
     /**
+     * Stores the {@link #value} and {@link #error} terms in the given array.
+     * This is a convenience method for a frequently used operation, implemented as below:
+     *
+     * {@preformat java
+     *   array[index] = value;
+     *   array[index + errorOffset] = error;
+     * }
+     *
+     * @param array        The array where to store the value and error.
+     * @param index        Index of the value in the given array.
+     * @param errorOffset  Offset to add to {@code index} in order to get the index of the error in the given array.
+     */
+    public void storeTo(final double[] array, final int index, final int errorOffset) {
+        array[index] = value;
+        array[index + errorOffset] = error;
+    }
+
+    /**
+     * Swaps two double-double values in the given array.
+     *
+     * @param array        The array where to swap the values and errors.
+     * @param i0           Index of the first value to swap.
+     * @param i1           Index of the second value to swap.
+     * @param errorOffset  Offset to add to the indices in order to get the error indices in the given array.
+     *
+     * @see org.apache.sis.util.ArraysExt#swap(double[], int, int)
+     */
+    public static void swap(final double[] array, int i0, int i1, final int errorOffset) {
+        double t = array[i0];
+        array[i0] = array[i1];
+        array[i1] = t;
+        t = array[i0 += errorOffset];
+        array[i0] = array[i1 += errorOffset];
+        array[i1] = t;
+    }
+
+    /**
+     * Set this number to {@code -this}.
+     */
+    public void negate() {
+        value = -value;
+        error = -error;
+    }
+
+    /**
      * Adds an other double-double value to this {@code DoubleDouble}.
      * This is a convenience method for:
      *
@@ -340,6 +412,63 @@ public final class DoubleDouble extends Number {
         error += v - (value + (v -= value)) + (otherValue + v);
         error += otherError;
         normalize();
+    }
+
+    /**
+     * Adds an other double-double value to this {@code DoubleDouble}, reading the values from an array.
+     * This is a convenience method for a frequently used operation, implemented as below:
+     *
+     * {@preformat java
+     *    add(array[index], array[index + errorOffset]);
+     * }
+     *
+     * @param array        The array from which to get the value and error.
+     * @param index        Index of the value in the given array.
+     * @param errorOffset  Offset to add to {@code index} in order to get the index of the error in the given array.
+     */
+    public void add(final double[] array, final int index, final int errorOffset) {
+        add(array[index], array[index + errorOffset]);
+    }
+
+    /**
+     * Subtracts an other double-double value from this {@code DoubleDouble}.
+     * This is a convenience method for:
+     *
+     * {@preformat java
+     *    subtract(other.value, other.error);
+     * }
+     *
+     * @param other The other value to subtract from this value.
+     */
+    public void subtract(final DoubleDouble other) {
+        subtract(other.value, other.error);
+    }
+
+    /**
+     * Subtracts an other double-double value from this {@code DoubleDouble}.
+     * The result is stored in this instance.
+     *
+     * @param otherValue The other value to subtract from this {@code DoubleDouble}.
+     * @param otherError The error of the other value to subtract from this {@code DoubleDouble}.
+     */
+    public void subtract(final double otherValue, final double otherError) {
+        add(-otherValue, -otherError);
+    }
+
+    /**
+     * Subtracts an other double-double value from this {@code DoubleDouble}, reading the values from an array.
+     * This is a convenience method for a frequently used operation, implemented as below:
+     *
+     * {@preformat java
+     *    subtract(array[index], array[index + errorOffset]);
+     * }
+     *
+     * @param array        The array from which to get the value and error.
+     * @param index        Index of the value in the given array.
+     * @param errorOffset  Offset to add to {@code index} in order to get the index of the error in the given array.
+     */
+    public void subtract(final double[] array, final int index, final int errorOffset) {
+        subtract(array[index], array[index + errorOffset]);
     }
 
     /**
@@ -397,6 +526,22 @@ public final class DoubleDouble extends Number {
     }
 
     /**
+     * Multiplies this {@code DoubleDouble} by an other double-double value stored in the given array.
+     * This is a convenience method for a frequently used operation, implemented as below:
+     *
+     * {@preformat java
+     *    multiply(array[index], array[index + errorOffset]);
+     * }
+     *
+     * @param array        The array from which to get the value and error.
+     * @param index        Index of the value in the given array.
+     * @param errorOffset  Offset to add to {@code index} in order to get the index of the error in the given array.
+     */
+    public void multiply(final double[] array, final int index, final int errorOffset) {
+        multiply(array[index], array[index + errorOffset]);
+    }
+
+    /**
      * Divides this {@code DoubleDouble} by an other double-double value.
      * This is a convenience method for:
      *
@@ -418,6 +563,11 @@ public final class DoubleDouble extends Number {
      * @param denominatorError The error of the other value by which to divide this {@code DoubleDouble}.
      */
     public void divide(final double denominatorValue, final double denominatorError) {
+        if (STRICTFP) {
+            value /= denominatorValue;
+            error  = 0;
+            return;
+        }
         final double numeratorValue = value;
         final double numeratorError = error;
         value = denominatorValue;
