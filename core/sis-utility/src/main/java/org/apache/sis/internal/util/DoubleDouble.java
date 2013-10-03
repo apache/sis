@@ -67,7 +67,7 @@ public final class DoubleDouble extends Number {
      * are immediately followed by a clearing of {@link DoubleDouble#error}.  The result should then be
      * identical to computation performed using the normal {@code double} arithmetic.
      *
-     * <p>Since this flag is static final, all expressions of the form {@code if (STRICTFP)} should be
+     * <p>Since this flag is static final, all expressions of the form {@code if (DISABLED)} should be
      * omitted by the compiler from the class files in normal operations.</p>
      *
      * <p>Setting this flag to {@code true} causes some JUnit tests to fail. This is normal. The main
@@ -76,7 +76,7 @@ public final class DoubleDouble extends Number {
      * implementation. Since JAMA uses {@code double} arithmetic, SIS needs to disable {@code double-double}
      * arithmetic if the results are to be compared for strict equality.</p>
      */
-    public static final boolean STRICTFP = false;
+    public static final boolean DISABLED = false;
 
     /**
      * For cross-version compatibility.
@@ -218,7 +218,7 @@ public final class DoubleDouble extends Number {
      *         the given value is assumed to be the most accurate available representation.
      */
     public static double errorForWellKnownValue(final double value) {
-        if (STRICTFP) return 0;
+        if (DISABLED) return 0;
         final int i = Arrays.binarySearch(VALUES, Math.abs(value));
         return (i >= 0) ? MathFunctions.xorSign(ERRORS[i], value) : 0;
     }
@@ -264,7 +264,7 @@ public final class DoubleDouble extends Number {
      */
     final void normalize() {
         error += (value - (value += error));
-        if (STRICTFP) error = 0;
+        if (DISABLED) error = 0;
     }
 
     /**
@@ -279,7 +279,7 @@ public final class DoubleDouble extends Number {
     public void setToQuickSum(final double a, final double b) {
         value = a + b;
         error = b - (value - a);
-        if (STRICTFP) error = 0;
+        if (DISABLED) error = 0;
     }
 
     /**
@@ -294,7 +294,7 @@ public final class DoubleDouble extends Number {
         value = a + b;
         final double v = value - a;
         error = (a - (value - v)) + (b - v);
-        if (STRICTFP) error = 0;
+        if (DISABLED) error = 0;
     }
 
     /**
@@ -315,7 +315,7 @@ public final class DoubleDouble extends Number {
         final double bhi = t - (t - b);
         final double blo = b - bhi;
         error = ((ahi*bhi - value) + ahi*blo + alo*bhi) + alo*blo;
-        if (STRICTFP) error = 0;
+        if (DISABLED) error = 0;
     }
 
     /**
@@ -563,7 +563,7 @@ public final class DoubleDouble extends Number {
      * @param denominatorError The error of the other value by which to divide this {@code DoubleDouble}.
      */
     public void divide(final double denominatorValue, final double denominatorError) {
-        if (STRICTFP) {
+        if (DISABLED) {
             value /= denominatorValue;
             error  = 0;
             return;
