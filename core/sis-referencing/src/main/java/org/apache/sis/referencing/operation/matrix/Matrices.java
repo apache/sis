@@ -175,9 +175,9 @@ public final class Matrices extends Static {
             case 2:  return new Matrix2(elements);
             case 3:  return new Matrix3(elements);
             case 4:  return new Matrix4(elements);
-            default: return new GeneralMatrix(numRow, numCol, elements, 1);
+            default: return new GeneralMatrix(numRow, numCol, elements);
         }
-        return new NonSquareMatrix(numRow, numCol, elements, 1);
+        return new NonSquareMatrix(numRow, numCol, elements);
     }
 
     /**
@@ -650,15 +650,16 @@ public final class Matrices extends Static {
             return null;
         }
         final int size = matrix.getNumRow();
-        if (size == matrix.getNumCol()) {
-            switch (size) {
-                case 1: return new Matrix1(matrix);
-                case 2: return new Matrix2(matrix);
-                case 3: return new Matrix3(matrix);
-                case 4: return new Matrix4(matrix);
-            }
+        if (size != matrix.getNumCol()) {
+            return new NonSquareMatrix(matrix);
         }
-        return new GeneralMatrix(matrix, 1);
+        switch (size) {
+            case 1: return new Matrix1(matrix);
+            case 2: return new Matrix2(matrix);
+            case 3: return new Matrix3(matrix);
+            case 4: return new Matrix4(matrix);
+        }
+        return new GeneralMatrix(matrix);
     }
 
     /**

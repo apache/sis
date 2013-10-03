@@ -95,39 +95,29 @@ class GeneralMatrix extends MatrixSIS {
      * @param numRow Number of rows.
      * @param numCol Number of columns.
      * @param elements Initial values.
-     * @param precision 1 for normal precision, or 2 for extended precision.
-     *        No other value is allowed (this is not verified).
      */
-    GeneralMatrix(final int numRow, final int numCol, final double[] elements, final int precision) {
+    GeneralMatrix(final int numRow, final int numCol, final double[] elements) {
         ensureValidSize(numRow, numCol);
         final int length = numRow * numCol;
         ensureLengthMatch(length, elements);
         this.numRow = (short) numRow;
         this.numCol = (short) numCol;
-        this.elements = Arrays.copyOf(elements, length * precision);
-        if (precision != 1) {
-            inferErrors(this.elements);
-        }
+        this.elements = Arrays.copyOf(elements, length);
     }
 
     /**
      * Constructs a new matrix and copies the initial values from the given matrix.
      *
      * @param matrix The matrix to copy.
-     * @param precision 1 for normal precision, or 2 for extended precision.
-     *        No other value is allowed (this is not verified).
      */
-    GeneralMatrix(final Matrix matrix, final int precision) {
+    GeneralMatrix(final Matrix matrix) {
         final int numRow = matrix.getNumRow();
         final int numCol = matrix.getNumCol();
         ensureValidSize(numRow, numCol);
         this.numRow = (short) numRow;
         this.numCol = (short) numCol;
-        elements = new double[numRow * numCol * precision];
+        elements = new double[numRow * numCol];
         getElements(matrix, numRow, numCol, elements);
-        if (precision != 1) {
-            inferErrors(elements);
-        }
     }
 
     /**

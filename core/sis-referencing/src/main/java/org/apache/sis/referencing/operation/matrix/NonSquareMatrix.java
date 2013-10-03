@@ -58,20 +58,18 @@ final class NonSquareMatrix extends GeneralMatrix {
      * @param numRow Number of rows.
      * @param numCol Number of columns.
      * @param elements Initial values.
-     * @param precision 1 for normal precision, or 2 for extended precision.
      */
-    NonSquareMatrix(final int numRow, final int numCol, final double[] elements, final int precision) {
-        super(numRow, numCol, elements, precision);
+    NonSquareMatrix(final int numRow, final int numCol, final double[] elements) {
+        super(numRow, numCol, elements);
     }
 
     /**
      * Constructs a new matrix and copies the initial values from the given matrix.
      *
      * @param matrix The matrix to copy.
-     * @param precision 1 for normal precision, or 2 for extended precision.
      */
-    NonSquareMatrix(final Matrix matrix, final int precision) {
-        super(matrix, precision);
+    NonSquareMatrix(final Matrix matrix) {
+        super(matrix);
     }
 
     /**
