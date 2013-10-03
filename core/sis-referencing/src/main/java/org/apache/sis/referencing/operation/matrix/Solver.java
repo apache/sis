@@ -161,8 +161,8 @@ final class Solver implements Matrix {
            pivot[j] = j;
         }
         final double[]  column = new double[size * 2]; // [0 … size-1] : column values; [size … 2*size-1] : error terms.
-        final DoubleDouble tmp = new DoubleDouble();
-        final DoubleDouble sum = new DoubleDouble();
+        final DoubleDouble acc = new DoubleDouble();   // Temporary variable for sum ("accumulator") and subtraction.
+        final DoubleDouble rat = new DoubleDouble();   // Temporary variable for products and ratios.
         for (int i=0; i<size; i++) {
             /*
              * Make a copy of the i-th column.
@@ -185,16 +185,16 @@ final class Solver implements Matrix {
             for (int j=0; j<size; j++) {
                 final int rowOffset = j*size;
                 final int kmax = Math.min(j,i);
-                sum.clear();
+                acc.clear();
                 for (int k=0; k<kmax; k++) {
-                    tmp.setFrom(LU, rowOffset + k, errorLU);
-                    tmp.multiply(column, k, size);
-                    sum.add(tmp);
+                    rat.setFrom(LU, rowOffset + k, errorLU);
+                    rat.multiply(column, k, size);
+                    acc.add(rat);
                 }
-                sum.subtract(column, j, size);
-                sum.negate();
-                sum.storeTo(column, j, size);
-                sum.storeTo(LU, rowOffset + i, errorLU);
+                acc.subtract(column, j, size);
+                acc.negate();
+                acc.storeTo(column, j, size);
+                acc.storeTo(LU, rowOffset + i, errorLU);
             }
             /*
              * Find pivot and exchange if necessary. There is no floating-point arithmetic here
@@ -225,13 +225,13 @@ final class Solver implements Matrix {
              *         }
              *     }
              */
-            sum.setFrom(LU, i*size + i, errorLU);
-            if (!sum.isZero()) {
+            acc.setFrom(LU, i*size + i, errorLU);
+            if (!acc.isZero()) {
                 for (int j=i; ++j < size;) {
                     final int t = j*size + i;
-                    tmp.setFrom(sum);
-                    tmp.inverseDivide(LU, t, errorLU);
-                    tmp.storeTo      (LU, t, errorLU);
+                    rat.setFrom(acc);
+                    rat.inverseDivide(LU, t, errorLU);
+                    rat.storeTo      (LU, t, errorLU);
                 }
             }
         }
@@ -240,8 +240,8 @@ final class Solver implements Matrix {
          * Ensure that the matrix is not singular.
          */
         for (int j=0; j<size; j++) {
-            tmp.setFrom(LU, j*size + j, errorLU);
-            if (tmp.isZero()) {
+            rat.setFrom(LU, j*size + j, errorLU);
+            if (rat.isZero()) {
                 throw new NoninvertibleMatrixException();
             }
         }
@@ -277,11 +277,11 @@ final class Solver implements Matrix {
                 final int loRowOffset = j*innerSize;    // Offset of some row after the current row.
                 final int luRowOffset = j*size;         // Offset of the corresponding row in the LU matrix.
                 for (int i=0; i<innerSize; i++) {
-                    sum.setFrom (elements, loRowOffset + i, errorOffset);
-                    tmp.setFrom (elements, rowOffset   + i, errorOffset);
-                    tmp.multiply(LU,       luRowOffset + k, errorLU);
-                    sum.subtract(tmp);
-                    sum.storeTo (elements, loRowOffset + i, errorOffset);
+                    acc.setFrom (elements, loRowOffset + i, errorOffset);
+                    rat.setFrom (elements, rowOffset   + i, errorOffset);
+                    rat.multiply(LU,       luRowOffset + k, errorLU);
+                    acc.subtract(rat);
+                    acc.storeTo (elements, loRowOffset + i, errorOffset);
                 }
             }
         }
@@ -302,21 +302,21 @@ final class Solver implements Matrix {
          */
         for (int k=size; --k >= 0;) {
             final int rowOffset = k*innerSize;          // Offset of row computed by current iteration.
-            sum.setFrom(LU, k*size + k, errorLU);       // A diagonal element on the current row.
+            acc.setFrom(LU, k*size + k, errorLU);       // A diagonal element on the current row.
             for (int i=0; i<innerSize; i++) {           // Apply to all columns in the current row.
-                tmp.setFrom(sum);
-                tmp.inverseDivide(elements, rowOffset + i, errorOffset);
-                tmp.storeTo      (elements, rowOffset + i, errorOffset);
+                rat.setFrom(acc);
+                rat.inverseDivide(elements, rowOffset + i, errorOffset);
+                rat.storeTo      (elements, rowOffset + i, errorOffset);
             }
             for (int j=0; j<k; j++) {
                 final int upRowOffset = j*innerSize;    // Offset of a row before (locate upper) the current row.
-                sum.setFrom(LU, j*size + k, errorLU);   // Same column than the diagonal element, but in the upper row.
+                acc.setFrom(LU, j*size + k, errorLU);   // Same column than the diagonal element, but in the upper row.
                 for (int i=0; i<innerSize; i++) {       // Apply to all columns in the upper row.
-                    tmp.setFrom(elements, rowOffset + i, errorOffset);
-                    tmp.multiply(sum);
-                    tmp.subtract(elements, upRowOffset + i, errorOffset);
-                    tmp.negate();
-                    tmp.storeTo(elements, upRowOffset + i, errorOffset);
+                    rat.setFrom(elements, rowOffset + i, errorOffset);
+                    rat.multiply(acc);
+                    rat.subtract(elements, upRowOffset + i, errorOffset);
+                    rat.negate();
+                    rat.storeTo(elements, upRowOffset + i, errorOffset);
                 }
             }
         }
