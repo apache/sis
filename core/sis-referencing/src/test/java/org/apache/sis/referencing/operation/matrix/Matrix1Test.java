@@ -55,6 +55,7 @@ public final strictfp class Matrix1Test extends MatrixTestCase {
      */
     @Test
     public void testConstructor() {
+        initialize(415870088589607716L);
         final double[] elements = createRandomPositiveValues(SIZE * SIZE);
         final Matrix1 matrix = new Matrix1(
                 elements[0]);

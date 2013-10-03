@@ -18,6 +18,7 @@ package org.apache.sis.referencing.operation.matrix;
 
 import java.util.Random;
 import Jama.Matrix;
+import org.apache.sis.math.Statistics;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
@@ -49,22 +50,47 @@ import static org.apache.sis.test.Assert.*;
  */
 public abstract strictfp class MatrixTestCase extends TestCase {
     /**
+     * {@code true} for reusing the same sequences of random numbers in every execution of test cases, or
+     * {@code false} for "truly" random sequences of random numbers. This flag can be set to {@code false}
+     * for testing purpose, but should be set to {@code true} otherwise for avoiding random test failure.
+     * This is needed because we want to set {@link #TOLERANCE} to a small value, but it is very difficult
+     * to guaranteed that a random sequence of numbers will not cause a larger discrepancy.
+     *
+     * <p>Note that this flag is set to {@code false} if double-double arithmetic is disabled because in such
+     * case, the results should be identical to the JAMA results (i.e. equal using a {@link #TOLERANCE} of zero)
+     * for any sequence of numbers.</p>
+     */
+    protected static final boolean DETERMINIST = !DoubleDouble.DISABLED;
+
+    /**
      * A constant for any test in this class or a subclass which expect
      * a floating point value to be strictly equals to an other value.
      */
     static final double STRICT = 0;
 
     /**
-     * Tolerance factor for comparisons of floating point numbers.
-     * The matrix elements used in this class varies between 0 and 100,
+     * Tolerance factor for comparisons of floating point numbers between SIS and JAMA implementation,
+     * which is {@value}. Note that the matrix element values used in this class vary between 0 and 100,
      * and the {@code Math.ulp(100.0)} value is approximatively 1.4E-14.
+     *
+     * {@section How this value is determined}
+     * Experience (by looking at {@link #statistics}) shows that the differences are usually smaller than 1E-12.
+     * However when using non-determinist sequence of random values ({@link #DETERMINIST} sets to {@code false}),
+     * we do have from time-to-time a difference around 1E-9.
+     *
+     * Those differences exist because SIS uses double-double arithmetic, while JAMA uses ordinary double.
+     * To remove that ambiguity, one can temporarily set {@link DoubleDouble#DISABLED} to {@code true},
+     * in which case the SIS results should be strictly identical to the JAMA ones.
+     *
+     * @see SolverTest#TOLERANCE
+     * @see NonSquareMatrixTest#printStatistics()
      */
-    static final double TOLERANCE = DoubleDouble.DISABLED ? STRICT : 1E-8;
+    protected static final double TOLERANCE = DoubleDouble.DISABLED ? STRICT : 1E-12;
 
     /**
      * Number of random matrices to try in arithmetic operation tests.
      */
-    static final int NUMBER_OF_REPETITIONS = 10;
+    static final int NUMBER_OF_REPETITIONS = 100;
 
     /**
      * The threshold in matrix determinant for attempting to compute the inverse.
@@ -73,15 +99,45 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     private static final double DETERMINANT_THRESHOLD = 0.001;
 
     /**
-     * Random number generator, created by {@link #initialize(String, boolean)} when first needed.
+     * Statistics about the different between the JAMA and SIS matrix elements, or {@code null}
+     * if those statistics do not need to be collected. This is used during the test development
+     * phase for tuning the tolerance threshold.
+     *
+     * @see NonSquareMatrixTest#printStatistics()
      */
-    final Random random;
+    static final Statistics statistics = verbose ? new Statistics("|SIS - JAMA|") : null;
+
+    /**
+     * Random number generator, created by {@link #initialize(long)} as the first operation of
+     * any test method which will use random numbers. This random number generator will use a
+     * fixed seed if {@link #DETERMINIST} is {@code true}, which is the normal case.
+     */
+    private Random random;
 
     /**
      * For subclasses only.
      */
     MatrixTestCase() {
-        random = TestUtilities.createRandomNumberGenerator();
+    }
+
+    /**
+     * Initializes the random number generator to the given seed. If {@link #DETERMINIST} is {@code false}
+     * (which happen only when performing some more extensive tests), then the given seed will be replaced
+     * by a random one.
+     *
+     * @param seed The initial seed.
+     */
+    final void initialize(final long seed) {
+        random = DETERMINIST ? new Random(seed) : TestUtilities.createRandomNumberGenerator();
+    }
+
+    /**
+     * Computes a random size for the next matrix to create. This method is overridden
+     * only by subclasses that test matrix implementations supporting arbitrary sizes.
+     *
+     * @param random The random number generator to use for computing a random matrix size.
+     */
+    void prepareNewMatrixSize(final Random random) {
     }
 
     /** Returns the number of rows of the matrix being tested.    */ abstract int getNumRow();
@@ -99,6 +155,10 @@ public abstract strictfp class MatrixTestCase extends TestCase {
 
     /**
      * Verifies that the SIS matrix is equals to the JAMA one, up to the given tolerance value.
+     *
+     * @param expected  The JAMA matrix used as a reference implementation.
+     * @param actual    The SIS matrix to compare to JAMA.
+     * @param tolerance The tolerance threshold, usually either {@link #STRICT} or {@link #TOLERANCE}.
      */
     static void assertMatrixEquals(final Matrix expected, final MatrixSIS actual, final double tolerance) {
         final int numRow = actual.getNumRow();
@@ -108,7 +168,14 @@ public abstract strictfp class MatrixTestCase extends TestCase {
         final String name = actual.getClass().getSimpleName();
         for (int j=0; j<numRow; j++) {
             for (int i=0; i<numCol; i++) {
-                assertEquals(name, expected.get(j,i), actual.getElement(j,i), tolerance);
+                final double e = expected.get(j,i);
+                final double a = actual.getElement(j,i);
+                assertEquals(name, e, a, tolerance);
+                if (tolerance != STRICT && statistics != null) {
+                    synchronized (statistics) {
+                        statistics.accept(StrictMath.abs(e - a));
+                    }
+                }
             }
         }
     }
@@ -136,6 +203,8 @@ public abstract strictfp class MatrixTestCase extends TestCase {
      */
     @Test
     public void testGetElements() {
+        initialize(3812872376135347328L);
+        prepareNewMatrixSize(random);
         final int numRow = getNumRow();
         final int numCol = getNumCol();
         final double[] elements = createRandomPositiveValues(numRow * numCol);
@@ -157,6 +226,8 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     @Test
     @DependsOnMethod("testGetElements")
     public void testSetElement() {
+        initialize(-8079924100564483073L);
+        prepareNewMatrixSize(random);
         final int numRow = getNumRow();
         final int numCol = getNumCol();
         final MatrixSIS matrix = Matrices.createZero(numRow, numCol);
@@ -186,6 +257,8 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     @Test
     @DependsOnMethod("testSetElement")
     public void testIsIdentity() {
+        initialize(6173145457052452823L);
+        prepareNewMatrixSize(random);
         final int numRow = getNumRow();
         final int numCol = getNumCol();
         final MatrixSIS matrix = Matrices.createDiagonal(numRow, numCol);
@@ -215,6 +288,8 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     @Test
     @DependsOnMethod("testSetElement")
     public void testCloneEquals() {
+        initialize(-4572234104840706847L);
+        prepareNewMatrixSize(random);
         final int numRow = getNumRow();
         final int numCol = getNumCol();
         final double[] elements = createRandomPositiveValues(numRow * numCol);
@@ -243,6 +318,8 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     @Test
     @DependsOnMethod("testGetElements")
     public void testTranspose() {
+        initialize(585037875560696050L);
+        prepareNewMatrixSize(random);
         final int numRow = getNumRow();
         final int numCol = getNumCol();
         final double[] elements = createRandomPositiveValues(numRow * numCol);
@@ -262,6 +339,8 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     @Test
     @DependsOnMethod("testGetElements")
     public void testNormalizeColumns() {
+        initialize(1549772118153010333L);
+        prepareNewMatrixSize(random);
         final int numRow = getNumRow();
         final int numCol = getNumCol();
         final double[] elements = createRandomPositiveValues(numRow * numCol);
@@ -285,9 +364,11 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     @Test
     @DependsOnMethod("testGetElements")
     public void testMultiply() {
-        final int numRow = getNumRow();
-        final int numCol = getNumCol();
+        initialize(2478887638739725150L);
         for (int n=0; n<NUMBER_OF_REPETITIONS; n++) {
+            prepareNewMatrixSize(random);
+            final int numRow = getNumRow();
+            final int numCol = getNumCol();
             double[] elements = createRandomPositiveValues(numRow * numCol);
             final MatrixSIS matrix = Matrices.create(numRow, numCol, elements);
             final Matrix reference = new Matrix(elements, numCol).transpose();
@@ -320,12 +401,14 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     @Test
     @DependsOnMethod("testMultiply")
     public void testSolve() throws NoninvertibleMatrixException {
-        final int numRow = getNumRow();
-        final int numCol = getNumCol();
-
-        if (numRow != 1 || numCol != 1) return; // Temporary limitation.
-
+        initialize(2108474073121762244L);
         for (int n=0; n<NUMBER_OF_REPETITIONS; n++) {
+            prepareNewMatrixSize(random);
+            final int numRow = getNumRow();
+            final int numCol = getNumCol();
+
+            if (numRow != 1 || numCol != 1) return; // Temporary limitation.
+
             double[] elements = createRandomPositiveValues(numRow * numCol);
             final Matrix reference = new Matrix(elements, numCol).transpose();
             if (!(reference.det() >= DETERMINANT_THRESHOLD)) {
@@ -362,9 +445,11 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     @Test
     @DependsOnMethod("testSolve")
     public void testInverse() throws NoninvertibleMatrixException {
-        final int numRow = getNumRow();
-        final int numCol = getNumCol();
+        initialize(-9063921123024549789L);
         for (int n=0; n<NUMBER_OF_REPETITIONS; n++) {
+            prepareNewMatrixSize(random);
+            final int numRow = getNumRow();
+            final int numCol = getNumCol();
             final double[] elements = createRandomPositiveValues(numRow * numCol);
             final Matrix reference = new Matrix(elements, numCol).transpose();
             if (!(reference.det() >= DETERMINANT_THRESHOLD)) {
@@ -380,6 +465,8 @@ public abstract strictfp class MatrixTestCase extends TestCase {
      */
     @Test
     public void testSerialization() {
+        initialize(-3232759118744327281L);
+        prepareNewMatrixSize(random);
         final int numRow = getNumRow();
         final int numCol = getNumCol();
         final MatrixSIS matrix = Matrices.create(numRow, numCol, createRandomPositiveValues(numRow * numCol));

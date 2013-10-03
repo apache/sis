@@ -31,13 +31,13 @@ import org.junit.BeforeClass;
  */
 @Suite.SuiteClasses({
     // Test matrix first because they may be used in about every SIS corners.
+    org.apache.sis.referencing.operation.matrix.GeneralMatrixTest.class,
     org.apache.sis.referencing.operation.matrix.SolverTest.class,
     org.apache.sis.referencing.operation.matrix.Matrix1Test.class,
     org.apache.sis.referencing.operation.matrix.Matrix2Test.class,
     org.apache.sis.referencing.operation.matrix.Matrix3Test.class,
     org.apache.sis.referencing.operation.matrix.Matrix4Test.class,
-    org.apache.sis.referencing.operation.matrix.GeneralMatrixTest.class,
-    org.apache.sis.referencing.operation.matrix.NonSquareMatrixTest.class,
+    org.apache.sis.referencing.operation.matrix.NonSquareMatrixTest.class, // Expected to be last MatrixTestCase - see javadoc.
     org.apache.sis.referencing.operation.matrix.MatricesTest.class,
     org.apache.sis.referencing.operation.matrix.AffineTransforms2DTest.class,
 

@@ -55,6 +55,7 @@ public final strictfp class Matrix2Test extends MatrixTestCase {
      */
     @Test
     public void testConstructor() {
+        initialize(-8453835559080304420L);
         final double[] elements = createRandomPositiveValues(SIZE * SIZE);
         final Matrix2 matrix = new Matrix2(
                 elements[0],
@@ -63,5 +64,19 @@ public final strictfp class Matrix2Test extends MatrixTestCase {
                 elements[3]);
         validate(matrix);
         assertArrayEquals(elements, matrix.getElements(), STRICT);
+    }
+
+    /**
+     * Tests {@link GeneralMatrix#getExtendedElements(Matrix, int, int, boolean)}.
+     * This test is a copy of {@link GeneralMatrixTest#testGetExtendedElements()},
+     * but on a {@link Matrix2} instance instead of {@link GeneralMatrix}.
+     */
+    @Test
+    public void testGetExtendedElements() {
+        GeneralMatrixTest.testGetExtendedElements(new Matrix2(
+                StrictMath.PI / 180, // Degrees to radians
+                180 / StrictMath.PI, // Radians to degrees
+                0.9,                 // Gradians to degrees
+                0.1234567));         // Random value with no special meaning.
     }
 }
