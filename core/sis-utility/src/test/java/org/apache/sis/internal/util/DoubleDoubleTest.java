@@ -33,7 +33,7 @@ import static java.lang.StrictMath.*;
 
 /**
  * Tests {@link DoubleDouble} using {@link BigDecimal} as the references.
- * Those tests need {@link DoubleDouble#STRICTFP} to be set to {@code false}.
+ * Those tests need {@link DoubleDouble#DISABLED} to be set to {@code false}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4

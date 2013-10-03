@@ -59,7 +59,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
      * The matrix elements used in this class varies between 0 and 100,
      * and the {@code Math.ulp(100.0)} value is approximatively 1.4E-14.
      */
-    static final double TOLERANCE = DoubleDouble.STRICTFP ? STRICT : 1E-8;
+    static final double TOLERANCE = DoubleDouble.DISABLED ? STRICT : 1E-8;
 
     /**
      * Number of random matrices to try in arithmetic operation tests.
