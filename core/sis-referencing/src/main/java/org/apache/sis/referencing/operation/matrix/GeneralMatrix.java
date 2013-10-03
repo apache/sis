@@ -258,14 +258,20 @@ class GeneralMatrix extends MatrixSIS {
      * Returns all elements of the given matrix followed by the error terms for extended-precision arithmetic.
      * The array will have twice the normal length. See {@link #elements} for more discussion.
      *
-     * <p>This method may return a direct reference to the internal array. <strong>Do not modify.</strong></p>
+     * <p>This method may return a direct reference to the internal array. <strong>Do not modify.</strong>,
+     * unless the {@code copy} argument is {@code true}.</p>
+     *
+     * @param copy If {@code true}, then the returned array is guaranteed to be a copy, never the internal array.
      */
-    static double[] getExtendedElements(final Matrix matrix, final int numRow, final int numCol) {
+    static double[] getExtendedElements(final Matrix matrix, final int numRow, final int numCol, final boolean copy) {
         double[] elements;
         final int length = numRow * numCol * 2;
         if (matrix instanceof GeneralMatrix) {
             elements = ((GeneralMatrix) matrix).elements;
             if (elements.length == length) {
+                if (copy) {
+                    elements = elements.clone();
+                }
                 return elements; // Internal array already uses extended precision.
             } else {
                 elements = Arrays.copyOf(elements, length);
@@ -427,8 +433,8 @@ class GeneralMatrix extends MatrixSIS {
          * Get the matrix element values, together with the error terms if the matrix
          * use extended precision (double-double arithmetic).
          */
-        final double[] eltA   = getExtendedElements(A, numRow, nc);
-        final double[] eltB   = getExtendedElements(B, nc, numCol);
+        final double[] eltA   = getExtendedElements(A, numRow, nc, false);
+        final double[] eltB   = getExtendedElements(B, nc, numCol, false);
         final int errorOffset = numRow * numCol; // Where error terms start.
         final int errA        = numRow * nc;
         final int errB        = nc * numCol;

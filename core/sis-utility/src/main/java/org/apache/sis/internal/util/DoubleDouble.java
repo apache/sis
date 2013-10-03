@@ -241,6 +241,16 @@ public final class DoubleDouble extends Number {
     }
 
     /**
+     * Sets this {@code DoubleDouble} to the same value than the given instance.
+     *
+     * @param other The instance to copy.
+     */
+    public void setFrom(final DoubleDouble other) {
+        value = other.value;
+        error = other.error;
+    }
+
+    /**
      * Sets the {@link #value} and {@link #error} terms to values read from the given array.
      * This is a convenience method for a frequently used operation, implemented as below:
      *
@@ -576,6 +586,36 @@ public final class DoubleDouble extends Number {
     }
 
     /**
+     * Divides this {@code DoubleDouble} by an other double-double value stored in the given array.
+     * This is a convenience method for a frequently used operation, implemented as below:
+     *
+     * {@preformat java
+     *    divide(array[index], array[index + errorOffset]);
+     * }
+     *
+     * @param array        The array from which to get the value and error.
+     * @param index        Index of the value in the given array.
+     * @param errorOffset  Offset to add to {@code index} in order to get the index of the error in the given array.
+     */
+    public void divide(final double[] array, final int index, final int errorOffset) {
+        divide(array[index], array[index + errorOffset]);
+    }
+
+    /**
+     * Divides the given double-double value by this {@code DoubleDouble}.
+     * This is a convenience method for:
+     *
+     * {@preformat java
+     *    inverseDivide(other.value, other.error);
+     * }
+     *
+     * @param other The other value to add to this value.
+     */
+    public void inverseDivide(final DoubleDouble other) {
+        inverseDivide(other.value, other.error);
+    }
+
+    /**
      * Divides the given double-double value by this {@code DoubleDouble}.
      * The result is stored in this instance.
      *
@@ -592,6 +632,11 @@ public final class DoubleDouble extends Number {
      * @param numeratorError The error of the other value to divide by this {@code DoubleDouble}.
      */
     public void inverseDivide(final double numeratorValue, final double numeratorError) {
+        if (DISABLED) {
+            value = numeratorValue / value;
+            error = 0;
+            return;
+        }
         final double denominatorValue = value;
         /*
          * The 'b * (a.value / b.value)' part in the method javadoc.
@@ -611,6 +656,22 @@ public final class DoubleDouble extends Number {
          * is assumed okay since the second term is small compared to the first one.
          */
         setToQuickSum(quotient, (value + error) / denominatorValue);
+    }
+
+    /**
+     * Divides the given double-double value by this {@code DoubleDouble}.
+     * This is a convenience method for a frequently used operation, implemented as below:
+     *
+     * {@preformat java
+     *    inverseDivide(array[index], array[index + errorOffset]);
+     * }
+     *
+     * @param array        The array from which to get the value and error.
+     * @param index        Index of the value in the given array.
+     * @param errorOffset  Offset to add to {@code index} in order to get the index of the error in the given array.
+     */
+    public void inverseDivide(final double[] array, final int index, final int errorOffset) {
+        inverseDivide(array[index], array[index + errorOffset]);
     }
 
     /**

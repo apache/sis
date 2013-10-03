@@ -102,7 +102,7 @@ final class Solver implements Matrix {
      */
     static MatrixSIS inverse(final MatrixSIS X) throws NoninvertibleMatrixException {
         final int size = X.getNumRow();
-        return solve(X, IDENTITY, size, size);
+        return solve(X, IDENTITY, null, size, size);
     }
 
     /**
@@ -123,6 +123,7 @@ final class Solver implements Matrix {
      * }
      *
      * @param  X The matrix to invert.
+     * @param  Y The desired result of {@code X} × <var>U</var>.
      * @param  size The value of {@code X.getNumRow()}, {@code X.getNumCol()} and {@code Y.getNumRow()}.
      * @param  innerSize The value of {@code Y.getNumCol()}.
      * @throws NoninvertibleMatrixException If the {@code X} matrix is singular.
@@ -130,11 +131,30 @@ final class Solver implements Matrix {
     static MatrixSIS solve(final MatrixSIS X, final Matrix Y, final int size, final int innerSize)
             throws NoninvertibleMatrixException
     {
-        /*
-         * Use a "left-looking", dot-product, Crout/Doolittle algorithm.
-         */
+        double[] eltY = null;
+        if (Y instanceof GeneralMatrix) {
+            eltY = ((GeneralMatrix) Y).elements;
+            if (eltY.length == size * innerSize) {
+                eltY = null; // Matrix does not contains error terms.
+            }
+        }
+        return solve(X, Y, eltY, size, innerSize);
+    }
+
+    /**
+     * Implementation of {@code solve} and {@code inverse} methods.
+     * Use a "left-looking", dot-product, Crout/Doolittle algorithm.
+     *
+     * @param eltY Elements and error terms of the {@code Y} matrix, or {@code null} if not available.
+     */
+    private static MatrixSIS solve(final MatrixSIS X, final Matrix Y, final double[] eltY,
+            final int size, final int innerSize) throws NoninvertibleMatrixException
+    {
+        assert (X.getNumRow() == size && X.getNumCol() == size) : size;
+        assert (Y.getNumRow() == size && Y.getNumCol() == innerSize) || (Y instanceof Solver);
+
         final int errorLU = size * size;
-        final double[] LU = GeneralMatrix.getExtendedElements(X, size, size);
+        final double[] LU = GeneralMatrix.getExtendedElements(X, size, size, true);
         assert errorLU == GeneralMatrix.indexOfErrors(size, size, LU);
         final int[] pivot = new int[size];
         for (int j=0; j<size; j++) {
@@ -153,7 +173,14 @@ final class Solver implements Matrix {
                 column[j + size] = LU[k + errorLU];  // Error
             }
             /*
-             * Apply previous transformations.
+             * Apply previous transformations. This part is equivalent to the following code,
+             * but using double-double arithmetic instead than the primitive 'double' type:
+             *
+             *     double sum = 0;
+             *     for (int k=0; k<kmax; k++) {
+             *         sum += LU[rowOffset + k] * column[k];
+             *     }
+             *     LU[rowOffset + i] = (column[j] -= sum);
              */
             for (int j=0; j<size; j++) {
                 final int rowOffset = j*size;
@@ -170,7 +197,8 @@ final class Solver implements Matrix {
                 sum.storeTo(LU, rowOffset + i, errorLU);
             }
             /*
-             * Find pivot and exchange if necessary.
+             * Find pivot and exchange if necessary. There is no floating-point arithmetic here
+             * (ignoring the comparison for magnitude order), only work on index values.
              */
             int p = i;
             for (int j=i; ++j < size;) {
@@ -187,15 +215,23 @@ final class Solver implements Matrix {
                 ArraysExt.swap(pivot, p, i);
             }
             /*
-             * Compute multipliers.
+             * Compute multipliers. This part is equivalent to the following code, but
+             * using double-double arithmetic instead than the primitive 'double' type:
+             *
+             *     final double sum = LU[i*size + i];
+             *     if (sum != 0.0) {
+             *         for (int j=i; ++j < size;) {
+             *             LU[j*size + i] /= sum;
+             *         }
+             *     }
              */
             sum.setFrom(LU, i*size + i, errorLU);
             if (!sum.isZero()) {
                 for (int j=i; ++j < size;) {
                     final int t = j*size + i;
-                    tmp.setFrom(LU, t, errorLU);
-                    tmp.divide(sum);
-                    tmp.storeTo(LU, t, errorLU);
+                    tmp.setFrom(sum);
+                    tmp.inverseDivide(LU, t, errorLU);
+                    tmp.storeTo      (LU, t, errorLU);
                 }
             }
         }
@@ -210,44 +246,77 @@ final class Solver implements Matrix {
             }
         }
         /*
-         * Copy right hand side with pivoting.
-         * We will write the result of this method directly in the elements array.
+         * Copy right hand side with pivoting. Write the result directly in the elements array
+         * of the result matrix. This block does not perform floating-point arithmetic operations.
          */
         final GeneralMatrix result = GeneralMatrix.createExtendedPrecision(size, innerSize);
         final double[] elements = result.elements;
+        final int errorOffset = size * innerSize;
         for (int k=0,j=0; j<size; j++) {
             final int p = pivot[j];
             for (int i=0; i<innerSize; i++) {
-                elements[k++] = Y.getElement(p, i);
+                if (eltY != null) {
+                    final int t = p*innerSize + i;
+                    elements[k]               = eltY[t];
+                    elements[k + errorOffset] = eltY[t + errorOffset];
+                } else {
+                    elements[k] = Y.getElement(p, i);
+                }
+                k++;
             }
         }
         /*
-         * Solve L*Y = B(pivot, :)
+         * Solve L*Y = B(pivot, :). The inner block is equivalent to the following line,
+         * but using double-double arithmetic instead of 'double' primitive type:
+         *
+         *     elements[loRowOffset + i] -= (elements[rowOffset + i] * LU[luRowOffset + k]);
          */
         for (int k=0; k<size; k++) {
             final int rowOffset = k*innerSize;          // Offset of row computed by current iteration.
             for (int j=k; ++j < size;) {
-                final int loRowOffset = j*innerSize;    // Offset of a row after (locate lower) the current row.
+                final int loRowOffset = j*innerSize;    // Offset of some row after the current row.
                 final int luRowOffset = j*size;         // Offset of the corresponding row in the LU matrix.
                 for (int i=0; i<innerSize; i++) {
-                    elements[loRowOffset + i] -= (elements[rowOffset + i] * LU[luRowOffset + k]);
+                    sum.setFrom (elements, loRowOffset + i, errorOffset);
+                    tmp.setFrom (elements, rowOffset   + i, errorOffset);
+                    tmp.multiply(LU,       luRowOffset + k, errorLU);
+                    sum.subtract(tmp);
+                    sum.storeTo (elements, loRowOffset + i, errorOffset);
                 }
             }
         }
         /*
-         * Solve U*X = Y
+         * Solve U*X = Y. The content of the loop is equivalent to the following line,
+         * but using double-double arithmetic instead of 'double' primitive type:
+         *
+         *     double sum = LU[k*size + k];
+         *     for (int i=0; i<innerSize; i++) {
+         *         elements[rowOffset + i] /= sum;
+         *     }
+         *     for (int j=0; j<k; j++) {
+         *         sum = LU[j*size + k];
+         *         for (int i=0; i<innerSize; i++) {
+         *             elements[upRowOffset + i] -= (elements[rowOffset + i] * sum);
+         *         }
+         *     }
          */
         for (int k=size; --k >= 0;) {
             final int rowOffset = k*innerSize;          // Offset of row computed by current iteration.
-            final double d = LU[k*size + k];     // A diagonal element on the current row.
+            sum.setFrom(LU, k*size + k, errorLU);       // A diagonal element on the current row.
             for (int i=0; i<innerSize; i++) {           // Apply to all columns in the current row.
-                elements[rowOffset + i] /= d;
+                tmp.setFrom(sum);
+                tmp.inverseDivide(elements, rowOffset + i, errorOffset);
+                tmp.storeTo      (elements, rowOffset + i, errorOffset);
             }
             for (int j=0; j<k; j++) {
                 final int upRowOffset = j*innerSize;    // Offset of a row before (locate upper) the current row.
-                final double c = LU[j*size + k]; // Same column than the diagonal element, but in the upper row.
+                sum.setFrom(LU, j*size + k, errorLU);   // Same column than the diagonal element, but in the upper row.
                 for (int i=0; i<innerSize; i++) {       // Apply to all columns in the upper row.
-                    elements[upRowOffset + i] -= (elements[rowOffset + i] * c);
+                    tmp.setFrom(elements, rowOffset + i, errorOffset);
+                    tmp.multiply(sum);
+                    tmp.subtract(elements, upRowOffset + i, errorOffset);
+                    tmp.negate();
+                    tmp.storeTo(elements, upRowOffset + i, errorOffset);
                 }
             }
         }
