@@ -140,8 +140,8 @@ final class Solver implements Matrix {
         for (int j=0; j<size; j++) {
            pivot[j] = j;
         }
-        final double[]  column = new double[size * 2];
-        final DoubleDouble dot = new DoubleDouble();
+        final double[]  column = new double[size * 2]; // [0 … size-1] : column values; [size … 2*size-1] : error terms.
+        final DoubleDouble tmp = new DoubleDouble();
         final DoubleDouble sum = new DoubleDouble();
         for (int i=0; i<size; i++) {
             /*
@@ -149,8 +149,8 @@ final class Solver implements Matrix {
              */
             for (int j=0; j<size; j++) {
                 final int k = j*size + i;
-                column[j] = LU[k];
-                column[j + size] = LU[k + errorLU];
+                column[j]        = LU[k];            // Value
+                column[j + size] = LU[k + errorLU];  // Error
             }
             /*
              * Apply previous transformations.
@@ -160,14 +160,14 @@ final class Solver implements Matrix {
                 final int kmax = Math.min(j,i);
                 sum.clear();
                 for (int k=0; k<kmax; k++) {
-                    dot.value = LU[rowOffset + k];
-                    dot.error = LU[rowOffset + k + errorLU];
-                    dot.multiply(column[k], column[k + size]);
-                    sum.add(dot);
+                    tmp.setFrom(LU, rowOffset + k, errorLU);
+                    tmp.multiply(column, k, size);
+                    sum.add(tmp);
                 }
-                sum.add(-column[j], -column[j + size]);
-                LU[rowOffset + i]           = column[j]        = -sum.value;
-                LU[rowOffset + i + errorLU] = column[j + size] = -sum.error;
+                sum.subtract(column, j, size);
+                sum.negate();
+                sum.storeTo(column, j, size);
+                sum.storeTo(LU, rowOffset + i, errorLU);
             }
             /*
              * Find pivot and exchange if necessary.
@@ -182,17 +182,20 @@ final class Solver implements Matrix {
                 final int pRow = p*size;
                 final int iRow = i*size;
                 for (int k=0; k<size; k++) { // Swap two full rows.
-                    ArraysExt.swap(LU, pRow + k, iRow + k);
+                    DoubleDouble.swap(LU, pRow + k, iRow + k, errorLU);
                 }
                 ArraysExt.swap(pivot, p, i);
             }
             /*
              * Compute multipliers.
              */
-            final double d = LU[i*size + i];
-            if (d != 0.0) {
+            sum.setFrom(LU, i*size + i, errorLU);
+            if (!sum.isZero()) {
                 for (int j=i; ++j < size;) {
-                    LU[j*size + i] /= d;
+                    final int t = j*size + i;
+                    tmp.setFrom(LU, t, errorLU);
+                    tmp.divide(sum);
+                    tmp.storeTo(LU, t, errorLU);
                 }
             }
         }
@@ -201,7 +204,8 @@ final class Solver implements Matrix {
          * Ensure that the matrix is not singular.
          */
         for (int j=0; j<size; j++) {
-            if (LU[j*size + j] == 0) {
+            tmp.setFrom(LU, j*size + j, errorLU);
+            if (tmp.isZero()) {
                 throw new NoninvertibleMatrixException();
             }
         }
@@ -209,7 +213,8 @@ final class Solver implements Matrix {
          * Copy right hand side with pivoting.
          * We will write the result of this method directly in the elements array.
          */
-        final double[] elements = new double[size * innerSize];
+        final GeneralMatrix result = GeneralMatrix.createExtendedPrecision(size, innerSize);
+        final double[] elements = result.elements;
         for (int k=0,j=0; j<size; j++) {
             final int p = pivot[j];
             for (int i=0; i<innerSize; i++) {
@@ -223,7 +228,7 @@ final class Solver implements Matrix {
             final int rowOffset = k*innerSize;          // Offset of row computed by current iteration.
             for (int j=k; ++j < size;) {
                 final int loRowOffset = j*innerSize;    // Offset of a row after (locate lower) the current row.
-                final int luRowOffset = j*size;  // Offset of the corresponding row in the LU matrix.
+                final int luRowOffset = j*size;         // Offset of the corresponding row in the LU matrix.
                 for (int i=0; i<innerSize; i++) {
                     elements[loRowOffset + i] -= (elements[rowOffset + i] * LU[luRowOffset + k]);
                 }
@@ -246,6 +251,6 @@ final class Solver implements Matrix {
                 }
             }
         }
-        return Matrices.create(size, innerSize, elements);
+        return result;
     }
 }
