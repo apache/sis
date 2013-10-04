@@ -112,9 +112,6 @@ public final strictfp class Matrix4Test extends MatrixTestCase {
         final MatrixSIS step3 = step2.multiply(step1).inverse();
         /*
          * Concatenate everything, which should go back to the identity transform.
-         * We have a slight residu in the longitude translation term because of the
-         * prime meridian shift - we will set this residu to zero for this test.
-         *
          * Note that the 'isIdentity()' test fail if the double-double arithmetic is
          * disabled, because some scale factors will be 0.9999999999999999 instead of 1.
          */

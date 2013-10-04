@@ -68,7 +68,7 @@ public final class Matrices extends Static {
     /**
      * Number of spaces to put between columns formatted by {@link #toString(Matrix)}.
      */
-    private static final int MARGIN = 2;
+    private static final int SPACING = 2;
 
     /**
      * Do not allows instantiation of this class.
@@ -830,6 +830,25 @@ public final class Matrices extends Static {
      * Returns a unlocalized string representation of the given matrix.
      * For each column, the numbers are aligned on the decimal separator.
      *
+     * <p>The current implementation formats ±0 and ±1 without trailing {@code ".0"}, and all other values with
+     * a per-column uniform number of fraction digits. The ±0 and ±1 values are treated especially because they
+     * usually imply a "<cite>no scale</cite>", "<cite>no translation</cite>" or "<cite>orthogonal axes</cite>"
+     * meaning. A matrix in SIS is often populated mostly by ±0 and ±1 values, with a few "interesting" values.
+     * The simpler ±0 and ±1 formatting makes easier to spot the "interesting" values.</p>
+     *
+     * <p>The following example shows the string representation of an affine transform which swap
+     * (<var>latitude</var>, <var>longitude</var>) axes, converts degrees to radians and converts
+     * height values from feet to metres:</p>
+     *
+     * {@preformat math
+     *   ┌                                                       ┐
+     *   │ 0                     0.017453292519943295  0       0 │
+     *   │ 0.017453292519943295  0                     0       0 │
+     *   │ 0                     0                     0.3048  0 │
+     *   │ 0                     0                     0       1 │
+     *   └                                                       ┘
+     * }
+     *
      * {@note Formatting on a per-column basis is convenient for the kind of matrices used in referencing by coordinates,
      *        because each column is typically a displacement vector in a different dimension of the source coordinate
      *        reference system. In addition, the last column is often a translation vector having a magnitude very
@@ -841,53 +860,92 @@ public final class Matrices extends Static {
     public static String toString(final Matrix matrix) {
         final int numRow = matrix.getNumRow();
         final int numCol = matrix.getNumCol();
-        final String[] elements = new String[numRow * numCol];
-        final int[] columnWidth = new int[numCol];
-        final int[] maximumFractionDigits = new int[numCol];
-        final int[] maximumRemainingWidth = new int[numCol]; // Minus sign (if any) + integer digits + decimal separator + 2 spaces.
+        final String[]  elements            = new String [numCol * numRow];
+        final boolean[] noFractionDigits    = new boolean[numCol * numRow];
+        final boolean[] hasDecimalSeparator = new boolean[numCol];
+        final int[] maximumFractionDigits   = new int    [numCol];
+        final int[] widthBeforeFraction     = new int    [numCol]; // spacing + ('-') + integerDigits + '.'
+        final int[] columnWidth             = new int    [numCol];
         int totalWidth = 1;
         /*
          * Create now the string representation of all matrix elements and measure the width
          * of the integer field and the fraction field, then the total width of each column.
          */
-        int margin = 1; // Margin before the first column only.
+        int spacing = 1; // Spacing is 1 before the first column only, then SPACING for other columns.
         for (int i=0; i<numCol; i++) {
             for (int j=0; j<numRow; j++) {
-                final String element = Double.toString(matrix.getElement(j,i)).replace("Infinity", "∞");
-                elements[j*numCol + i] = element;
-                int width = element.length();
-                int s = element.lastIndexOf('.');
-                if (s >= 0) {
-                    width = (maximumRemainingWidth[i] = Math.max(maximumRemainingWidth[i], ++s + margin))
-                          + (maximumFractionDigits[i] = Math.max(maximumFractionDigits[i], width - s));
+                final int flatIndex = j*numCol + i;
+                final double value  = matrix.getElement(j,i);
+                String element = Double.toString(value);
+                final int width;
+                /*
+                 * Special case for ±0 and ±1 (because those values appear very often and have
+                 * a particular meaning): for those values, we will ignore the fraction digits.
+                 * For all other values, we will format all fraction digits.
+                 */
+                if (value == -1 || value == 0 || value == +1) {
+                    noFractionDigits[flatIndex] = true;
+                    width = spacing + element.length() - 2; // The -2 is for ignoring the trailing ".0"
+                    widthBeforeFraction[i] = Math.max(widthBeforeFraction[i], width);
                 } else {
-                    // NaN or Infinity.
-                    width += margin;
+                    /*
+                     * All values other than ±0 and ±1. Store separately the width before and after
+                     * the decimal separator. The width before the separator contains the spacing.
+                     */
+                    int s = element.lastIndexOf('.');
+                    if (s >= 0) {
+                        s++; // After the separator.
+                        hasDecimalSeparator[i] = true;
+                        width = (widthBeforeFraction  [i] = Math.max(widthBeforeFraction  [i], spacing + s))
+                              + (maximumFractionDigits[i] = Math.max(maximumFractionDigits[i], element.length() - s));
+                    } else {
+                        // NaN or Infinity.
+                        element = element.replace("Infinity", "∞");
+                        width = spacing + element.length();
+                    }
                 }
                 columnWidth[i] = Math.max(columnWidth[i], width);
+                elements[flatIndex] = element;
             }
             totalWidth += columnWidth[i];
-            margin = MARGIN; // Margin before all columns after the first one.
+            spacing = SPACING; // Specing before all columns after the first one.
         }
         /*
-         * Now append the formatted elements with the appropriate amount of spaces
-         * and trailling zeros for each column.
+         * Now append the formatted elements with the appropriate amount of spaces before each value,
+         * and trailling zeros after each value except ±0, ±1, NaN and infinities.
          */
-        final String lineSeparator = System.lineSeparator();
+        final String   lineSeparator = System.lineSeparator();
         final CharSequence whiteLine = CharSequences.spaces(totalWidth);
-        final StringBuffer buffer = new StringBuffer((totalWidth + 2 + lineSeparator.length()) * (numRow + 2));
+        final StringBuilder   buffer = new StringBuilder((totalWidth + 2 + lineSeparator.length()) * (numRow + 2));
         buffer.append('┌').append(whiteLine).append('┐').append(lineSeparator);
-        for (int k=0,j=0; j<numRow; j++) {
+        int flatIndex = 0;
+        for (int j=0; j<numRow; j++) {
             buffer.append('│');
             for (int i=0; i<numCol; i++) {
-                final String element = elements[k++];
+                final String element = elements[flatIndex];
                 final int width = element.length();
-                int s = element.lastIndexOf('.');
-                buffer.append(CharSequences.spaces(s >= 0 ? maximumRemainingWidth[i] - ++s : columnWidth[i] - width)).append(element);
-                s += maximumFractionDigits[i] - width;
-                while (--s >= 0) {
-                    buffer.append('0');
+                int spaces, s = element.lastIndexOf('.');
+                if (s >= 0) {
+                    if (hasDecimalSeparator[i]) s++;
+                    spaces = widthBeforeFraction[i] - s; // Number of spaces for alignment on the decimal separator
+                } else {
+                    spaces = columnWidth[i] - width; // Number of spaces for right alignment (NaN or ∞ cases)
                 }
+                buffer.append(CharSequences.spaces(spaces)).append(element);
+                /*
+                 * Append trailing spaces for ±0 and ±1 values,
+                 * or trailing zeros for all other real values.
+                 */
+                s += maximumFractionDigits[i] - width;
+                if (noFractionDigits[flatIndex]) {
+                    buffer.setLength(buffer.length() - 2); // Erase the trailing ".0"
+                    buffer.append(CharSequences.spaces(s + 2));
+                } else {
+                    while (--s >= 0) {
+                        buffer.append('0');
+                    }
+                }
+                flatIndex++;
             }
             buffer.append(" │").append(lineSeparator);
         }
