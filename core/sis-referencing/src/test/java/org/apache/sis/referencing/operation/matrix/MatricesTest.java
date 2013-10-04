@@ -331,18 +331,28 @@ public final strictfp class MatricesTest extends TestCase {
      */
     @Test
     public void testToString() {
-        final MatrixSIS matrix = Matrices.create(4, 4, new double[] {
-            39.5193682106975150,  -68.5200,     80.0,  98,
-           -66.0358637477182200,   Double.NaN,  43.9,  Double.NEGATIVE_INFINITY,
-             2.0741018968776337,   83.7260,     37.0,  -3,
-            91.8796187759200600,  -18.2674,     24.0,  36
+        assertMultilinesEquals(
+                "┌            ┐\n" +
+                "│ 1  0  0  0 │\n" +
+                "│ 0  1  0  0 │\n" +
+                "│ 0  0  1  0 │\n" +
+                "│ 0  0  0  1 │\n" +
+                "└            ┘\n", new Matrix4().toString());
+        /*
+         * Mix of values with different precision, ±0, ±1, NaN and infinities.
+         */
+        final MatrixSIS matrix = Matrices.create(4, 5, new double[] {
+            39.5193682106975150,  -68.5200,     -1.0,  1,  98,
+           -66.0358637477182200,   Double.NaN,  43.0,  0,  Double.NEGATIVE_INFINITY,
+             2.0741018968776337,   83.7260,     -0.0,  1,  -3,
+            91.8796187759200600,  -18.2674,     24.5,  0,  36.5
         });
         assertMultilinesEquals(
-                "┌                                            ┐\n" +
-                "│  39.5193682106975150  -68.5200  80.0  98.0 │\n" +
-                "│ -66.0358637477182200       NaN  43.9    -∞ │\n" +
-                "│   2.0741018968776337   83.7260  37.0  -3.0 │\n" +
-                "│  91.8796187759200600  -18.2674  24.0  36.0 │\n" +
-                "└                                            ┘\n", matrix.toString());
+                "┌                                               ┐\n" +
+                "│  39.5193682106975150  -68.5200  -1    1  98.0 │\n" +
+                "│ -66.0358637477182200       NaN  43.0  0    -∞ │\n" +
+                "│   2.0741018968776337   83.7260  -0    1  -3.0 │\n" +
+                "│  91.8796187759200600  -18.2674  24.5  0  36.5 │\n" +
+                "└                                               ┘\n", matrix.toString());
     }
 }
