@@ -401,14 +401,11 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     @Test
     @DependsOnMethod("testMultiply")
     public void testSolve() throws NoninvertibleMatrixException {
-        initialize(2108474073121762244L);
+        initialize(2108474073121762243L);
         for (int n=0; n<NUMBER_OF_REPETITIONS; n++) {
             prepareNewMatrixSize(random);
             final int numRow = getNumRow();
             final int numCol = getNumCol();
-
-            if (numRow != 1 || numCol != 1) return; // Temporary limitation.
-
             double[] elements = createRandomPositiveValues(numRow * numCol);
             final Matrix reference = new Matrix(elements, numCol).transpose();
             if (!(reference.det() >= DETERMINANT_THRESHOLD)) {
@@ -432,7 +429,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
              */
             final Matrix referenceResult = reference.solve(referenceArg);
             final MatrixSIS matrixResult = matrix.solve(matrixArg);
-            assertMatrixEquals(referenceResult, matrixResult, TOLERANCE);
+            assertMatrixEquals(referenceResult, matrixResult, SolverTest.TOLERANCE);
         }
     }
 

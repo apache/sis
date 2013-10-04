@@ -94,9 +94,8 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     static void ensureNumRowMatch(final int expected, final Matrix matrix, final int numCol) {
         final int actual = matrix.getNumRow();
         if (actual != expected) {
-            final Integer n = numCol;
             throw new MismatchedMatrixSizeException(Errors.format(
-                    Errors.Keys.MismatchedMatrixSize_4, expected, n, actual, n));
+                    Errors.Keys.MismatchedMatrixSize_4, expected, "⒩", actual, numCol));
         }
     }
 
@@ -226,7 +225,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * @throws NoninvertibleMatrixException if this matrix is not invertible.
      */
     public MatrixSIS solve(final Matrix matrix) throws MismatchedMatrixSizeException, NoninvertibleMatrixException {
-        throw new UnsupportedOperationException(); // TODO
+        return Solver.solve(this, matrix);
     }
 
     /**

@@ -18,6 +18,7 @@ package org.apache.sis.referencing.operation.matrix;
 
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.internal.util.DoubleDouble;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArraysExt;
 
 
@@ -97,11 +98,16 @@ final class Solver implements Matrix {
     }
 
     /**
-     * Computes the inverse of the given matrix. This method shall be invoked only for square matrices
-     * (this is <strong>not</strong> verified by this method).
+     * Computes the inverse of the given matrix. This method shall be invoked only for square matrices.
+     *
+     * @throws NoninvertibleMatrixException If the {@code X} matrix is not square or singular.
      */
     static MatrixSIS inverse(final MatrixSIS X) throws NoninvertibleMatrixException {
         final int size = X.getNumRow();
+        final int numCol = X.getNumCol();
+        if (numCol != size) {
+            throw new NoninvertibleMatrixException(Errors.format(Errors.Keys.NonInvertibleMatrix_2, size, numCol));
+        }
         return solve(X, IDENTITY, null, size, size);
     }
 
@@ -109,28 +115,18 @@ final class Solver implements Matrix {
      * Solves {@code X} × <var>U</var> = {@code Y}.
      * This method is an adaptation of the {@code LUDecomposition} class of the JAMA matrix package.
      *
-     * <p>This method does <strong>not</strong> checks the matrix size.
-     * Check for matrix size shall be performed by the caller like below:</p>
-     *
-     * {@preformat java
-     *     final int size = X.getNumRow();
-     *     if (X.getNumCol() != size) {
-     *         throw new NoninvertibleTransformException("Matrix must be square.");
-     *     }
-     *     if (Y.getNumRow() != size) {
-     *         throw new MismatchedMatrixSizeException("Matrix row dimensions must agree.");
-     *     }
-     * }
-     *
      * @param  X The matrix to invert.
      * @param  Y The desired result of {@code X} × <var>U</var>.
-     * @param  size The value of {@code X.getNumRow()}, {@code X.getNumCol()} and {@code Y.getNumRow()}.
-     * @param  innerSize The value of {@code Y.getNumCol()}.
-     * @throws NoninvertibleMatrixException If the {@code X} matrix is singular.
+     * @throws NoninvertibleMatrixException If the {@code X} matrix is not square or singular.
      */
-    static MatrixSIS solve(final MatrixSIS X, final Matrix Y, final int size, final int innerSize)
-            throws NoninvertibleMatrixException
-    {
+    static MatrixSIS solve(final MatrixSIS X, final Matrix Y) throws NoninvertibleMatrixException {
+        final int size = X.getNumRow();
+        final int numCol = X.getNumCol();
+        if (numCol != size) {
+            throw new NoninvertibleMatrixException(Errors.format(Errors.Keys.NonInvertibleMatrix_2, size, numCol));
+        }
+        final int innerSize = Y.getNumCol();
+        GeneralMatrix.ensureNumRowMatch(size, Y, innerSize);
         double[] eltY = null;
         if (Y instanceof GeneralMatrix) {
             eltY = ((GeneralMatrix) Y).elements;
@@ -145,7 +141,25 @@ final class Solver implements Matrix {
      * Implementation of {@code solve} and {@code inverse} methods.
      * Use a "left-looking", dot-product, Crout/Doolittle algorithm.
      *
-     * @param eltY Elements and error terms of the {@code Y} matrix, or {@code null} if not available.
+     * <p>This method does <strong>not</strong> checks the matrix size.
+     * Check for matrix size shall be performed by the caller like below:</p>
+     *
+     * {@preformat java
+     *     final int size = X.getNumRow();
+     *     if (X.getNumCol() != size) {
+     *         throw new NoninvertibleMatrixException("Matrix must be square.");
+     *     }
+     *     if (Y.getNumRow() != size) {
+     *         throw new MismatchedMatrixSizeException("Matrix row dimensions must agree.");
+     *     }
+     * }
+     *
+     * @param  X         The matrix to invert.
+     * @param  Y         The desired result of {@code X} × <var>U</var>.
+     * @param  eltY      Elements and error terms of the {@code Y} matrix, or {@code null} if not available.
+     * @param  size      The value of {@code X.getNumRow()}, {@code X.getNumCol()} and {@code Y.getNumRow()}.
+     * @param  innerSize The value of {@code Y.getNumCol()}.
+     * @throws NoninvertibleMatrixException If the {@code X} matrix is not square or singular.
      */
     private static MatrixSIS solve(final MatrixSIS X, final Matrix Y, final double[] eltY,
             final int size, final int innerSize) throws NoninvertibleMatrixException
@@ -242,7 +256,8 @@ final class Solver implements Matrix {
         for (int j=0; j<size; j++) {
             rat.setFrom(LU, j*size + j, errorLU);
             if (rat.isZero()) {
-                throw new NoninvertibleMatrixException();
+                final Integer n = size;
+                throw new NoninvertibleMatrixException(Errors.format(Errors.Keys.NonInvertibleMatrix_2, n, n));
             }
         }
         /*
