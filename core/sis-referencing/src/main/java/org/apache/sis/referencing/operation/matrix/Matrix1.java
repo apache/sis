@@ -84,6 +84,9 @@ public final class Matrix1 extends MatrixSIS {
      *
      * @param elements Elements of the matrix.
      * @throws IllegalArgumentException If the given array does not have the expected length.
+     *
+     * @see #setElements(double[])
+     * @see Matrices#create(int, int, double[])
      */
     public Matrix1(final double[] elements) throws IllegalArgumentException {
         setElements(elements);
@@ -191,7 +194,18 @@ public final class Matrix1 extends MatrixSIS {
      */
     @Override
     public final double[] getElements() {
-        return new double[] {m00};
+        final double[] elements = new double[SIZE*SIZE];
+        getElements(elements);
+        return elements;
+    }
+
+    /**
+     * Copies the matrix elements in the given flat array.
+     * The array length shall be at least 1, may also be 2.
+     */
+    @Override
+    final void getElements(final double[] elements) {
+        elements[0] = m00;
     }
 
     /**

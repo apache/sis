@@ -105,27 +105,15 @@ public final class Matrix4 extends MatrixSIS {
      * @param m32 The third matrix element in the forth row.
      * @param m33 The forth matrix element in the forth row.
      */
-    public Matrix4(double m00, double m01, double m02, double m03,
-                   double m10, double m11, double m12, double m13,
-                   double m20, double m21, double m22, double m23,
-                   double m30, double m31, double m32, double m33)
+    public Matrix4(final double m00, final double m01, final double m02, final double m03,
+                   final double m10, final double m11, final double m12, final double m13,
+                   final double m20, final double m21, final double m22, final double m23,
+                   final double m30, final double m31, final double m32, final double m33)
     {
-        this.m00 = m00;
-        this.m01 = m01;
-        this.m02 = m02;
-        this.m03 = m03;
-        this.m10 = m10;
-        this.m11 = m11;
-        this.m12 = m12;
-        this.m13 = m13;
-        this.m20 = m20;
-        this.m21 = m21;
-        this.m22 = m22;
-        this.m23 = m23;
-        this.m30 = m30;
-        this.m31 = m31;
-        this.m32 = m32;
-        this.m33 = m33;
+        this.m00 = m00;    this.m01 = m01;    this.m02 = m02;    this.m03 = m03;
+        this.m10 = m10;    this.m11 = m11;    this.m12 = m12;    this.m13 = m13;
+        this.m20 = m20;    this.m21 = m21;    this.m22 = m22;    this.m23 = m23;
+        this.m30 = m30;    this.m31 = m31;    this.m32 = m32;    this.m33 = m33;
     }
 
     /**
@@ -134,6 +122,9 @@ public final class Matrix4 extends MatrixSIS {
      *
      * @param elements Elements of the matrix. Column indices vary fastest.
      * @throws IllegalArgumentException If the given array does not have the expected length.
+     *
+     * @see #setElements(double[])
+     * @see Matrices#create(int, int, double[])
      */
     public Matrix4(final double[] elements) throws IllegalArgumentException {
         setElements(elements);
@@ -147,7 +138,7 @@ public final class Matrix4 extends MatrixSIS {
      * @param matrix The matrix to copy.
      * @throws IllegalArgumentException if the given matrix is not of the expected size.
      */
-    public Matrix4(final Matrix matrix) throws IllegalArgumentException {
+    Matrix4(final Matrix matrix) throws IllegalArgumentException {
         for (int j=0; j<SIZE; j++) {
             for (int i=0; i<SIZE; i++) {
                 setElement(j,i, matrix.getElement(j,i));
@@ -278,12 +269,21 @@ public final class Matrix4 extends MatrixSIS {
      */
     @Override
     public final double[] getElements() {
-        return new double[] {
-            m00, m01, m02, m03,
-            m10, m11, m12, m13,
-            m20, m21, m22, m23,
-            m30, m31, m32, m33
-        };
+        final double[] elements = new double[SIZE*SIZE];
+        getElements(elements);
+        return elements;
+    }
+
+    /**
+     * Copies the matrix elements in the given flat array.
+     * The array length shall be at least 16, may also be 32.
+     */
+    @Override
+    final void getElements(final double[] elements) {
+        elements[ 0] = m00;    elements[ 1] = m01;    elements[ 2] = m02;    elements[ 3] = m03;
+        elements[ 4] = m10;    elements[ 5] = m11;    elements[ 6] = m12;    elements[ 7] = m13;
+        elements[ 8] = m20;    elements[ 9] = m21;    elements[10] = m22;    elements[11] = m23;
+        elements[12] = m30;    elements[13] = m31;    elements[14] = m32;    elements[15] = m33;
     }
 
     /**
@@ -293,22 +293,10 @@ public final class Matrix4 extends MatrixSIS {
     @Override
     public final void setElements(final double[] elements) {
         ensureLengthMatch(SIZE*SIZE, elements);
-        m00 = elements[ 0];
-        m01 = elements[ 1];
-        m02 = elements[ 2];
-        m03 = elements[ 3];
-        m10 = elements[ 4];
-        m11 = elements[ 5];
-        m12 = elements[ 6];
-        m13 = elements[ 7];
-        m20 = elements[ 8];
-        m21 = elements[ 9];
-        m22 = elements[10];
-        m23 = elements[11];
-        m30 = elements[12];
-        m31 = elements[13];
-        m32 = elements[14];
-        m33 = elements[15];
+        m00 = elements[ 0];    m01 = elements[ 1];    m02 = elements[ 2];    m03 = elements[ 3];
+        m10 = elements[ 4];    m11 = elements[ 5];    m12 = elements[ 6];    m13 = elements[ 7];
+        m20 = elements[ 8];    m21 = elements[ 9];    m22 = elements[10];    m23 = elements[11];
+        m30 = elements[12];    m31 = elements[13];    m32 = elements[14];    m33 = elements[15];
     }
 
     /**

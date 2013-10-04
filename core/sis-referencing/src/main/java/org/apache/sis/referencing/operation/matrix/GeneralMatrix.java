@@ -152,9 +152,13 @@ class GeneralMatrix extends MatrixSIS {
      * @param elements Where to copy the elements.
      */
     private static void getElements(final Matrix matrix, final int numRow, final int numCol, final double[] elements) {
-        for (int k=0,j=0; j<numRow; j++) {
-            for (int i=0; i<numCol; i++) {
-                elements[k++] = matrix.getElement(j, i);
+        if (matrix instanceof MatrixSIS) {
+            ((MatrixSIS) matrix).getElements(elements);
+        } else {
+            for (int k=0,j=0; j<numRow; j++) {
+                for (int i=0; i<numCol; i++) {
+                    elements[k++] = matrix.getElement(j, i);
+                }
             }
         }
     }
@@ -279,6 +283,15 @@ class GeneralMatrix extends MatrixSIS {
     @Override
     public final double[] getElements() {
         return Arrays.copyOf(elements, numRow*numCol);
+    }
+
+    /**
+     * Copies the matrix elements in the given flat array. This method does not verify the array length,
+     * since the destination array may contain room for {@link DoubleDouble#error} terms.
+     */
+    @Override
+    final void getElements(final double[] dest) {
+        System.arraycopy(elements, 0, dest, 0, numRow*numCol);
     }
 
     /**

@@ -81,10 +81,8 @@ public final class Matrix2 extends MatrixSIS {
     public Matrix2(final double m00, final double m01,
                    final double m10, final double m11)
     {
-        this.m00 = m00;
-        this.m01 = m01;
-        this.m10 = m10;
-        this.m11 = m11;
+        this.m00 = m00;    this.m01 = m01;
+        this.m10 = m10;    this.m11 = m11;
     }
 
     /**
@@ -93,6 +91,9 @@ public final class Matrix2 extends MatrixSIS {
      *
      * @param elements Elements of the matrix. Column indices vary fastest.
      * @throws IllegalArgumentException If the given array does not have the expected length.
+     *
+     * @see #setElements(double[])
+     * @see Matrices#create(int, int, double[])
      */
     public Matrix2(final double[] elements) throws IllegalArgumentException {
         setElements(elements);
@@ -211,7 +212,19 @@ public final class Matrix2 extends MatrixSIS {
      */
     @Override
     public final double[] getElements() {
-        return new double[] {m00, m01, m10, m11};
+        final double[] elements = new double[SIZE*SIZE];
+        getElements(elements);
+        return elements;
+    }
+
+    /**
+     * Copies the matrix elements in the given flat array.
+     * The array length shall be at least 4, may also be 8.
+     */
+    @Override
+    final void getElements(final double[] elements) {
+        elements[0] = m00;    elements[1] = m01;
+        elements[2] = m10;    elements[3] = m11;
     }
 
     /**
@@ -221,10 +234,8 @@ public final class Matrix2 extends MatrixSIS {
     @Override
     public final void setElements(final double[] elements) {
         ensureLengthMatch(SIZE*SIZE, elements);
-        m00 = elements[0];
-        m01 = elements[1];
-        m10 = elements[2];
-        m11 = elements[3];
+        m00 = elements[0];    m01 = elements[1];
+        m10 = elements[2];    m11 = elements[3];
     }
 
     /**

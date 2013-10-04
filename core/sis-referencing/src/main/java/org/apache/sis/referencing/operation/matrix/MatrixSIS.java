@@ -133,6 +133,19 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     public abstract double[] getElements();
 
     /**
+     * Stores all matrix elements in the given flat array. This method does not verify the array length.
+     * All subclasses in this {@code org.apache.sis.referencing.operation.matrix} package override this
+     * method with a more efficient implementation.
+     *
+     * @param dest The destination array. May be longer than necessary (this happen when the caller needs to
+     *             append {@link org.apache.sis.internal.util.DoubleDouble#error} values after the elements).
+     */
+    void getElements(final double[] dest) {
+        final double[] elements = getElements();
+        System.arraycopy(elements, 0, dest, 0, elements.length);
+    }
+
+    /**
      * Sets all matrix elements from a flat, row-major (column indices vary fastest) array.
      * The array length shall be <code>{@linkplain #getNumRow()} * {@linkplain #getNumCol()}</code>.
      *
