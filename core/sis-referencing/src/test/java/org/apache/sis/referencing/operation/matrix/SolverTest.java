@@ -18,6 +18,7 @@ package org.apache.sis.referencing.operation.matrix;
 
 import java.util.Random;
 import Jama.Matrix;
+import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -27,12 +28,35 @@ import org.junit.Test;
  * Tests the {@link Solver} class using <a href="http://math.nist.gov/javanumerics/jama">JAMA</a>
  * as the reference implementation.
  *
+ * {@section Cyclic dependency}
+ * There is a cyclic test dependency since {@link GeneralMatrix} needs {@link Solver} for some operations,
+ * and conversely. To be more specific the dependency order is:
+ *
+ * <ol>
+ *   <li>Simple {@link GeneralMatrix} methods (construction, get/set elements)</li>
+ *   <li>{@link Solver}</li>
+ *   <li>More complex {@code GeneralMatrix} methods (matrix inversion, solve)</li>
+ * </ol>
+ *
+ * We test {@code GeneralMatrix} before {@code Solver} since nothing could be done without
+ * the above-cited simple operations anyway.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
  * @version 0.4
  * @module
  */
+@DependsOn(GeneralMatrixTest.class) // See class javadoc
 public final strictfp class SolverTest extends TestCase {
+    /**
+     * The tolerance threshold for this test case, which is {@value}. This value needs to be higher then the
+     * {@link MatrixTestCase#TOLERANCE} one because of the increased complexity of {@link Solver} operations.
+     *
+     * @see MatrixTestCase#TOLERANCE
+     * @see NonSquareMatrixTest#printStatistics()
+     */
+    protected static final double TOLERANCE = 100 * MatrixTestCase.TOLERANCE;
+
     /**
      * The matrix to test.
      */
@@ -48,7 +72,7 @@ public final strictfp class SolverTest extends TestCase {
      * Initializes the {@link #matrix} and {@link #reference} matrices to random values.
      */
     private void createMatrices(final int numRow, final int numCol, final Random random) {
-        matrix = new GeneralMatrix(numRow, numCol, false);
+        matrix = new GeneralMatrix(numRow, numCol, false, 1);
         reference = new Matrix(numRow, numCol);
         for (int j=0; j<numRow; j++) {
             for (int i=0; i<numCol; i++) {
@@ -66,7 +90,12 @@ public final strictfp class SolverTest extends TestCase {
      */
     @Test
     public void testSolve() throws NoninvertibleMatrixException {
-        final Random random = TestUtilities.createRandomNumberGenerator();
+        final Random random;
+        if (MatrixTestCase.DETERMINIST) {
+            random = new Random(7671901444622173417L);
+        } else {
+            random = TestUtilities.createRandomNumberGenerator();
+        }
         for (int k=0; k<MatrixTestCase.NUMBER_OF_REPETITIONS; k++) {
             final int size = random.nextInt(16) + 1;
             createMatrices(size, random.nextInt(16) + 1, random);
@@ -80,8 +109,8 @@ public final strictfp class SolverTest extends TestCase {
                 out.println(e); // "Matrix is singular."
                 continue;
             }
-            final MatrixSIS U = Solver.solve(matrix, matrixArg, matrixArg.getNumCol());
-            MatrixTestCase.assertMatrixEquals(jama, U, MatrixTestCase.TOLERANCE);
+            final MatrixSIS U = Solver.solve(matrix, matrixArg);
+            MatrixTestCase.assertMatrixEquals(jama, U, TOLERANCE);
         }
     }
 }

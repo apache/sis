@@ -17,6 +17,7 @@
 package org.apache.sis.console;
 
 import java.util.EnumSet;
+import java.io.Console;
 import java.io.IOException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.JAXBException;
@@ -93,7 +94,14 @@ final class MetadataSC extends SubCommand {
                 final Marshaller marshaller = pool.acquireMarshaller();
                 marshaller.setProperty(XML.LOCALE,   locale);
                 marshaller.setProperty(XML.TIMEZONE, timezone);
-                marshaller.marshal(metadata, out);
+                if (isConsole()) {
+                    marshaller.marshal(metadata, out);
+                } else {
+                    out.flush();
+                    marshaller.setProperty(Marshaller.JAXB_ENCODING, encoding.name());
+                    marshaller.marshal(metadata, System.out); // Use OutputStream instead than Writer.
+                    System.out.flush();
+                }
             } else {
                 final TreeTable tree = MetadataStandard.ISO_19115.asTreeTable(metadata, ValueExistencePolicy.NON_EMPTY);
                 final TreeTableFormat tf = new TreeTableFormat(locale, timezone);
@@ -103,5 +111,17 @@ final class MetadataSC extends SubCommand {
             out.flush();
         }
         return 0;
+    }
+
+    /**
+     * Returns {@code true} if {@link #out} is sending its output to the console.
+     * If not, then we are probably writing to a file or the user specified his own encoding.
+     * In such case, we will send the XML output to an {@code OutputStream} instead than to a
+     * {@code Writer} and let the marshaller apply the encoding itself.
+     */
+    private boolean isConsole() {
+        if (outputBuffer != null) return true; // Special case for JUnit tests only.
+        final Console console = System.console();
+        return (console != null) && console.writer() == out;
     }
 }

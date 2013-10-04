@@ -27,6 +27,7 @@ import static java.lang.Float.intBitsToFloat;
 import static java.lang.Float.floatToRawIntBits;
 import static java.lang.Double.longBitsToDouble;
 import static java.lang.Double.doubleToRawLongBits;
+import org.apache.sis.internal.util.DoubleDouble;
 import static org.apache.sis.internal.util.Numerics.SIGN_BIT_MASK;
 
 
@@ -173,27 +174,32 @@ public final class MathFunctions extends Static {
         int i = vector.length;
 
         // If every elements in the array are zero, returns zero.
-        double sum;
+        double v1;
         do if (i == 0) return 0;
-        while ((sum = vector[--i]) == 0);
+        while ((v1 = vector[--i]) == 0);
 
         // We have found a non-zero element. If it is the only one, returns it directly.
-        double v;
-        do if (i == 0) return Math.abs(sum);
-        while ((v = vector[--i]) == 0);
-
-        // If there is exactly 2 elements, use Math.hypot which is more robust than our algorithm.
         double v2;
-        do if (i == 0) return Math.hypot(sum, v);
+        do if (i == 0) return Math.abs(v1);
         while ((v2 = vector[--i]) == 0);
 
-        // Usual magnitude computation.
-        sum = sum*sum + v*v + v2*v2;
+        // If there is exactly 2 elements, use Math.hypot which is more robust than our algorithm.
+        double v3;
+        do if (i == 0) return Math.hypot(v1, v2);
+        while ((v3 = vector[--i]) == 0);
+
+        // Usual magnitude computation, but using double-double arithmetic.
+        final DoubleDouble sum = new DoubleDouble();
+        final DoubleDouble dot = new DoubleDouble();
+        sum.setToProduct(v1, v1);
+        dot.setToProduct(v2, v2); sum.add(dot);
+        dot.setToProduct(v3, v3); sum.add(dot);
         while (i != 0) {
-            v = vector[--i];
-            sum += v*v;
+            v1 = vector[--i];
+            dot.setToProduct(v1, v1);
+            sum.add(dot);
         }
-        return Math.sqrt(sum);
+        return Math.sqrt(sum.value);
     }
 
     /**

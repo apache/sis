@@ -44,7 +44,7 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from geotk-3.16)
- * @version 0.3
+ * @version 0.4
  * @module
  */
 public final strictfp class TestUtilities extends Static {
@@ -87,6 +87,17 @@ public final strictfp class TestUtilities extends Static {
      * Do not allow instantiation of this class.
      */
     private TestUtilities() {
+    }
+
+    /**
+     * Prints and clear the current content of {@link TestCase#out}, regardless of whether
+     * {@link TestCase#verbose} is {@code true} or {@code false}. This method should rarely
+     * be needed.
+     *
+     * @since 0.4
+     */
+    public static void forceFlushOutput() {
+        TestCase.flushOutput();
     }
 
     /**

@@ -1715,6 +1715,24 @@ public final class ArraysExt extends Static {
     }
 
     /**
+     * Swaps the elements at the given indices in the given array of {@code Object} values.
+     *
+     * {@note While trivial, this method is provided because its need occurs relatively often
+     *        and the availability of a <code>swap</code> method makes the code easier to read.}
+     *
+     * @param data The array in which to swap elements.
+     * @param i0   Index of one element to be swapped.
+     * @param i1   Index of the other element to be swapped.
+     *
+     * @since 0.4
+     */
+    public static void swap(final Object[] data, final int i0, final int i1) {
+        final Object t = data[i0];
+        data[i0] = data[i1];
+        data[i1] = t;
+    }
+
+    /**
      * Swaps the elements at the given indices in the given array of {@code double} values.
      *
      * {@note While trivial, this method is provided because its need occurs relatively often
