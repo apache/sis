@@ -295,6 +295,12 @@ class GeneralMatrix extends MatrixSIS {
 
     /**
      * {@inheritDoc}
+     *
+     * <p>This method does not check the error terms, because those terms are not visible to the user
+     * (they can not appear in the value returned by {@link #getElement(int, int)}, and are not shown
+     * by {@link #toString()}) - returning {@code false} while the matrix clearly looks like affine
+     * would be confusing for the user. Furthermore, the errors can be non-zero only in the very last
+     * element and that value always smaller than 2.3E-16.</p>
      */
     @Override
     public final boolean isAffine() {
@@ -309,11 +315,7 @@ class GeneralMatrix extends MatrixSIS {
                         return false;
                     }
                 }
-                /*
-                 * At this point, the 'double' values are those of an affine transform.
-                 * If this matrix uses extended precision, ensures that their errors are zero.
-                 */
-                return errorsAreZero(base + numRow*numCol);
+                return true;
             }
         }
         return false;
@@ -321,6 +323,16 @@ class GeneralMatrix extends MatrixSIS {
 
     /**
      * {@inheritDoc}
+     *
+     * <p>This method does not check the error terms, because those terms are not visible to the user
+     * (they can not appear in the value returned by {@link #getElement(int, int)}, and are not shown
+     * by {@link #toString()}) - returning {@code false} while the matrix clearly looks like identity
+     * would be confusing for the user. Furthermore, the errors can be non-zero only on the diagonal,
+     * and those values always smaller than 2.3E-16.</p>
+     *
+     * <p>An other argument is that the extended precision is for reducing rounding errors during
+     * matrix arithmetics. But since the user provided the original data as {@code double} values,
+     * the extra precision usually have no "real" meaning.</p>
      */
     @Override
     public final boolean isIdentity() {
@@ -338,25 +350,6 @@ class GeneralMatrix extends MatrixSIS {
                 di += numCol + 1;
             } else {
                 if (element != 0) return false;
-            }
-        }
-        /*
-         * At this point, the 'double' values are those of an identity transform.
-         * If this matrix uses extended precision, ensures that all errors are zero.
-         */
-        return errorsAreZero(length);
-    }
-
-    /**
-     * Returns {@code true} if this matrix has no error elements, or if all error elements starting
-     * at the given index are zero.
-     *
-     * @param i Index of the first error elements to check (may be greater than the array length).
-     */
-    private boolean errorsAreZero(int i) {
-        while (i < elements.length) {
-            if (elements[i++] != 0) {
-                return false;
             }
         }
         return true;
